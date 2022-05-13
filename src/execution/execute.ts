@@ -117,9 +117,6 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  // Key: Required path
-  // Value: Optional path
-  nullPropagationPairs: Map<String, Path>;
 }
 
 /**
@@ -352,7 +349,6 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
-    nullPropagationPairs: new Map(),
   };
 }
 
@@ -383,6 +379,7 @@ function executeOperation(
   // This is a fake path. It can't exist, so if there is null propagation, then it will go all
   // the way to data.
   const currentPropagationPath = addPath(undefined, '', undefined);
+  let nullPropagationPairs = new Map<String, Path>();
 
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
@@ -392,6 +389,7 @@ function executeOperation(
         rootValue,
         path,
         currentPropagationPath,
+        nullPropagationPairs,
         rootFields,
       );
     case OperationTypeNode.MUTATION:
@@ -401,6 +399,7 @@ function executeOperation(
         rootValue,
         path,
         currentPropagationPath,
+        nullPropagationPairs,
         rootFields,
       );
     case OperationTypeNode.SUBSCRIPTION:
@@ -412,6 +411,7 @@ function executeOperation(
         rootValue,
         path,
         currentPropagationPath,
+        nullPropagationPairs,
         rootFields,
       );
   }
@@ -427,6 +427,7 @@ function executeFieldsSerially(
   sourceValue: unknown,
   path: Path | undefined,
   currentPropagationPath: Path,
+  nullPropagationPairs: Map<String, Path>,
   fields: Map<string, ReadonlyArray<FieldNode>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
@@ -441,6 +442,7 @@ function executeFieldsSerially(
         fieldNodes,
         fieldPath,
         currentPropagationPath,
+        nullPropagationPairs,
       );
       if (result === undefined) {
         return results;
@@ -468,6 +470,7 @@ function executeFields(
   sourceValue: unknown,
   path: Path | undefined,
   currentPropagationPath: Path,
+  nullPropagationPairs: Map<String, Path>,
   fields: Map<string, ReadonlyArray<FieldNode>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
@@ -483,6 +486,7 @@ function executeFields(
       fieldNodes,
       fieldPath,
       currentPropagationPath,
+      nullPropagationPairs,
     );
 
     if (result !== undefined) {
@@ -517,6 +521,7 @@ function executeField(
   fieldNodes: ReadonlyArray<FieldNode>,
   path: Path,
   currentPropagationPath: Path,
+  nullPropagationPairs: Map<String, Path>,
 ): PromiseOrValue<unknown> {
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
   const requiredStatus = fieldNodes[0].required;
@@ -532,7 +537,7 @@ function executeField(
     newPropagationPath = path;
   } else if (requiredStatus?.kind === Kind.REQUIRED_DESIGNATOR) {
     const pathString = JSON.stringify(pathToArray(path));
-    exeContext.nullPropagationPairs.set(pathString, newPropagationPath);
+    nullPropagationPairs.set(pathString, newPropagationPath);
   }
 
   if (!fieldDef) {
@@ -597,6 +602,7 @@ function executeField(
           info,
           path,
           newPropagationPath,
+          nullPropagationPairs,
           resolved,
         ),
       );
@@ -608,24 +614,37 @@ function executeField(
         info,
         path,
         newPropagationPath,
+        nullPropagationPairs,
         result,
       );
     }
     // Clean up pair because `completeValue` didn't throw an error so null propagation won't need
     // it.
-    exeContext.nullPropagationPairs.delete(JSON.stringify(path));
+    nullPropagationPairs.delete(JSON.stringify(path));
     if (isPromise(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(path));
-        return handleFieldError(error, returnType, exeContext, path);
+        return handleFieldError(
+          error,
+          returnType,
+          exeContext,
+          path,
+          nullPropagationPairs,
+        );
       });
     }
     return completed;
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(path));
-    return handleFieldError(error, returnType, exeContext, path);
+    return handleFieldError(
+      error,
+      returnType,
+      exeContext,
+      path,
+      nullPropagationPairs,
+    );
   }
 }
 
@@ -660,6 +679,7 @@ function handleFieldError(
   returnType: GraphQLOutputType,
   exeContext: ExecutionContext,
   path: Path,
+  nullPropagationPairs: Map<String, Path>,
 ): null {
   /*
     options:
@@ -678,7 +698,7 @@ function handleFieldError(
   const errorPath = error.path;
 
   const pathString = JSON.stringify(errorPath);
-  const propagationPath = exeContext.nullPropagationPairs.get(pathString);
+  const propagationPath = nullPropagationPairs.get(pathString);
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
@@ -693,7 +713,7 @@ function handleFieldError(
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   exeContext.errors.push(error);
-  exeContext.nullPropagationPairs.delete(pathString);
+  nullPropagationPairs.delete(pathString);
   return null;
 }
 
@@ -725,6 +745,7 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: Path,
   currentPropagationPath: Path,
+  nullPropagationPairs: Map<String, Path>,
   result: unknown,
 ): PromiseOrValue<unknown> {
   // If result is an Error, throw a located error.
@@ -742,6 +763,7 @@ function completeValue(
       info,
       path,
       currentPropagationPath,
+      nullPropagationPairs,
       result,
     );
     if (completed === null) {
@@ -766,6 +788,7 @@ function completeValue(
       info,
       path,
       currentPropagationPath,
+      nullPropagationPairs,
       result,
     );
   }
@@ -786,6 +809,7 @@ function completeValue(
       info,
       path,
       currentPropagationPath,
+      nullPropagationPairs,
       result,
     );
   }
@@ -799,6 +823,7 @@ function completeValue(
       info,
       path,
       currentPropagationPath,
+      nullPropagationPairs,
       result,
     );
   }
@@ -821,6 +846,7 @@ function completeListValue(
   info: GraphQLResolveInfo,
   path: Path,
   currentPropagationPath: Path,
+  nullPropagationPairs: Map<String, Path>,
   result: unknown,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   if (!isIterableObject(result)) {
@@ -848,6 +874,7 @@ function completeListValue(
             info,
             itemPath,
             currentPropagationPath,
+            nullPropagationPairs,
             resolved,
           ),
         );
@@ -859,6 +886,7 @@ function completeListValue(
           info,
           itemPath,
           currentPropagationPath,
+          nullPropagationPairs,
           item,
         );
       }
@@ -873,13 +901,25 @@ function completeListValue(
             fieldNodes,
             pathToArray(itemPath),
           );
-          return handleFieldError(error, itemType, exeContext, path);
+          return handleFieldError(
+            error,
+            itemType,
+            exeContext,
+            path,
+            nullPropagationPairs,
+          );
         });
       }
       return completedItem;
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      return handleFieldError(error, itemType, exeContext, path);
+      return handleFieldError(
+        error,
+        itemType,
+        exeContext,
+        path,
+        nullPropagationPairs,
+      );
     }
   });
 
@@ -915,6 +955,7 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   path: Path,
   currentPropagationPath: Path,
+  nullPropagationPairs: Map<String, Path>,
   result: unknown,
 ): PromiseOrValue<ObjMap<unknown>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
@@ -937,6 +978,7 @@ function completeAbstractValue(
         info,
         path,
         currentPropagationPath,
+        nullPropagationPairs,
         result,
       ),
     );
@@ -956,6 +998,7 @@ function completeAbstractValue(
     info,
     path,
     currentPropagationPath,
+    nullPropagationPairs,
     result,
   );
 }
@@ -1025,6 +1068,7 @@ function completeObjectValue(
   info: GraphQLResolveInfo,
   path: Path,
   currentPropagationPath: Path,
+  nullPropagationPairs: Map<String, Path>,
   result: unknown,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
@@ -1047,6 +1091,7 @@ function completeObjectValue(
           result,
           path,
           currentPropagationPath,
+          nullPropagationPairs,
           subFieldNodes,
         );
       });
@@ -1063,6 +1108,7 @@ function completeObjectValue(
     result,
     path,
     currentPropagationPath,
+    nullPropagationPairs,
     subFieldNodes,
   );
 }
