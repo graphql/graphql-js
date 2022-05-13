@@ -12,15 +12,14 @@ const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 const minSamples = 5;
 
-// Get the revisions and make things happen!
-if (require.main === module) {
+async function runBenchmarks() {
+  // Get the revisions and make things happen!
   const { benchmarks, revisions } = getArguments(process.argv.slice(2));
   const benchmarkProjects = prepareBenchmarkProjects(revisions);
 
-  runBenchmarks(benchmarks, benchmarkProjects).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+  for (const benchmark of benchmarks) {
+    await runBenchmark(benchmark, benchmarkProjects);
+  }
 }
 
 function localDir(...paths: ReadonlyArray<string>) {
@@ -266,35 +265,33 @@ function maxBy<T>(array: ReadonlyArray<T>, fn: (obj: T) => number) {
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
-async function runBenchmarks(
-  benchmarks: ReadonlyArray<string>,
+async function runBenchmark(
+  benchmark: string,
   benchmarkProjects: ReadonlyArray<BenchmarkProject>,
 ) {
-  for (const benchmark of benchmarks) {
-    const results = [];
-    for (let i = 0; i < benchmarkProjects.length; ++i) {
-      const { revision, projectPath } = benchmarkProjects[i];
-      const modulePath = path.join(projectPath, benchmark);
+  const results = [];
+  for (let i = 0; i < benchmarkProjects.length; ++i) {
+    const { revision, projectPath } = benchmarkProjects[i];
+    const modulePath = path.join(projectPath, benchmark);
 
-      if (i === 0) {
-        const { name } = await sampleModule(modulePath);
-        console.log('⏱   ' + name);
-      }
-
-      try {
-        const samples = await collectSamples(modulePath);
-
-        results.push(computeStats(revision, samples));
-        process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
-      } catch (error) {
-        console.log('  ' + revision + ': ' + red(String(error)));
-      }
+    if (i === 0) {
+      const { name } = await sampleModule(modulePath);
+      console.log('⏱   ' + name);
     }
-    console.log('\n');
 
-    beautifyBenchmark(results);
-    console.log('');
+    try {
+      const samples = await collectSamples(modulePath);
+
+      results.push(computeStats(revision, samples));
+      process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
+    } catch (error) {
+      console.log('  ' + revision + ': ' + red(String(error)));
+    }
   }
+  console.log('\n');
+
+  beautifyBenchmark(results);
+  console.log('');
 }
 
 function getArguments(argv: ReadonlyArray<string>) {
@@ -422,3 +419,8 @@ function sampleModule(modulePath: string): Promise<BenchmarkSample> {
     });
   });
 }
+
+runBenchmarks().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
