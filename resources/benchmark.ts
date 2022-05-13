@@ -363,7 +363,8 @@ interface BenchmarkSample {
 
 function sampleModule(modulePath: string): Promise<BenchmarkSample> {
   const sampleCode = `
-    import assert from 'assert';
+    import assert from 'node:assert';
+
     assert(global.gc);
     assert(process.send);
 
