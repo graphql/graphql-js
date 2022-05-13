@@ -611,7 +611,9 @@ function executeField(
         result,
       );
     }
-
+    // Clean up pair because `completeValue` didn't throw an error so null propagation won't need
+    // it.
+    exeContext.nullPropagationPairs.delete(JSON.stringify(path));
     if (isPromise(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
