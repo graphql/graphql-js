@@ -1,5 +1,5 @@
-import * as https from 'https';
-import * as util from 'util';
+import * as https from 'node:https';
+import * as util from 'node:util';
 
 import { execOutput, readPackageJSON } from './utils';
 
