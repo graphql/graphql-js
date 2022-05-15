@@ -10,8 +10,7 @@
     "src/utilities/typedQueryDocumentNode.ts"
   ],
   "clean": true,
-  "temp-directory": "coverage",
-  "report-dir": "coverage",
+  "report-dir": "reports/coverage",
   "skip-full": true,
   "reporter": ["html", "text"],
   "check-coverage": true,

@@ -1,8 +1,9 @@
 # Copied from '.gitignore', please keep it in sync.
 /.eslintcache
 /.docusaurus
+/.stryker-tmp
 /node_modules
-/coverage
+/reports
 /npmDist
 /denoDist
 /websiteDist

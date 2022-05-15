@@ -9,8 +9,9 @@
 /.eslintcache
 /.cspellcache
 /.docusaurus
+/.stryker-tmp
 /node_modules
-/coverage
+/reports
 /npmDist
 /denoDist
 /websiteDist
