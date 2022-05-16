@@ -32,6 +32,8 @@ export class TypeInfo {
      *  beginning somewhere other than documents.
      */
     initialType,
+    /** @deprecated will be removed in 17.0.0 */
+    getFieldDefFn,
   ) {
     this._schema = schema;
     this._typeStack = [];
@@ -42,6 +44,7 @@ export class TypeInfo {
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
+    this._getFieldDef = getFieldDefFn ?? getFieldDef;
     if (initialType) {
       if (isInputType(initialType)) {
         this._inputTypeStack.push(initialType);
@@ -115,7 +118,7 @@ export class TypeInfo {
         let fieldDef;
         let fieldType;
         if (parentType) {
-          fieldDef = getFieldDef(schema, parentType, node);
+          fieldDef = this._getFieldDef(schema, parentType, node);
           if (fieldDef) {
             fieldType = fieldDef.type;
           }
@@ -248,24 +251,21 @@ export class TypeInfo {
  * and need to handle Interface and Union types.
  */
 function getFieldDef(schema, parentType, fieldNode) {
-  const fieldName = fieldNode.name.value;
+  const name = fieldNode.name.value;
   if (
-    fieldName === SchemaMetaFieldDef.name &&
+    name === SchemaMetaFieldDef.name &&
     schema.getQueryType() === parentType
   ) {
     return SchemaMetaFieldDef;
   }
-  if (
-    fieldName === TypeMetaFieldDef.name &&
-    schema.getQueryType() === parentType
-  ) {
+  if (name === TypeMetaFieldDef.name && schema.getQueryType() === parentType) {
     return TypeMetaFieldDef;
   }
-  if (fieldName === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
+  if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
     return TypeNameMetaFieldDef;
   }
   if (isObjectType(parentType) || isInterfaceType(parentType)) {
-    return parentType.getFields()[fieldName];
+    return parentType.getFields()[name];
   }
 }
 /**
