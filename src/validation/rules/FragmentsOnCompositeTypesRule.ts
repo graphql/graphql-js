@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -28,12 +26,10 @@ export function FragmentsOnCompositeTypesRule(
         const type = typeFromAST(context.getSchema(), typeCondition);
         if (type && !isCompositeType(type)) {
           const typeStr = print(typeCondition);
-          context.reportError(
-            new GraphQLError(
-              `Fragment cannot condition on non composite type "${typeStr}".`,
-              { nodes: typeCondition },
-            ),
-          );
+          context.report({
+            message: `Fragment cannot condition on non composite type "${typeStr}".`,
+            nodes: typeCondition,
+          });
         }
       }
     },
@@ -41,12 +37,10 @@ export function FragmentsOnCompositeTypesRule(
       const type = typeFromAST(context.getSchema(), node.typeCondition);
       if (type && !isCompositeType(type)) {
         const typeStr = print(node.typeCondition);
-        context.reportError(
-          new GraphQLError(
-            `Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`,
-            { nodes: node.typeCondition },
-          ),
-        );
+        context.report({
+          message: `Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`,
+          nodes: node.typeCondition,
+        });
       }
     },
   };

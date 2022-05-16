@@ -2,8 +2,6 @@ import { inspect } from '../../jsutils/inspect';
 import { keyMap } from '../../jsutils/keyMap';
 import type { ObjMap } from '../../jsutils/ObjMap';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { InputValueDefinitionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
@@ -46,12 +44,10 @@ export function ProvidedRequiredArgumentsRule(
         for (const argDef of fieldDef.args) {
           if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
             const argTypeStr = inspect(argDef.type);
-            context.reportError(
-              new GraphQLError(
-                `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
-                { nodes: fieldNode },
-              ),
-            );
+            context.report({
+              message: `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
+              nodes: fieldNode,
+            });
           }
         }
       },
@@ -108,12 +104,10 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
               const argType = isType(argDef.type)
                 ? inspect(argDef.type)
                 : print(argDef.type);
-              context.reportError(
-                new GraphQLError(
-                  `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
-                  { nodes: directiveNode },
-                ),
-              );
+              context.report({
+                message: `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
+                nodes: directiveNode,
+              });
             }
           }
         }

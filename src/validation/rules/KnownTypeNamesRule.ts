@@ -1,8 +1,6 @@
 import { didYouMean } from '../../jsutils/didYouMean';
 import { suggestionList } from '../../jsutils/suggestionList';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ASTNode } from '../../language/ast';
 import {
   isTypeDefinitionNode,
@@ -59,12 +57,10 @@ export function KnownTypeNamesRule(
           typeName,
           isSDL ? standardTypeNames.concat(typeNames) : typeNames,
         );
-        context.reportError(
-          new GraphQLError(
-            `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
-            { nodes: node },
-          ),
-        );
+        context.report({
+          message: `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
+          nodes: node,
+        });
       }
     },
   };

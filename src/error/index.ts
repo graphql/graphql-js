@@ -1,6 +1,7 @@
-export { GraphQLError } from './GraphQLError';
+export { GraphQLError, GraphQLValidationError } from './GraphQLError';
 export type {
   GraphQLErrorOptions,
+  GraphQLValidationErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
 } from './GraphQLError';

@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -25,12 +23,11 @@ export function LoneAnonymousOperationRule(
     },
     OperationDefinition(node) {
       if (!node.name && operationCount > 1) {
-        context.reportError(
-          new GraphQLError(
+        context.report({
+          message:
             'This anonymous operation must be the only defined operation.',
-            { nodes: node },
-          ),
-        );
+          nodes: node,
+        });
       }
     },
   };

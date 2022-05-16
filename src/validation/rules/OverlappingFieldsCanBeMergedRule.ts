@@ -2,8 +2,6 @@ import { inspect } from '../../jsutils/inspect';
 import type { Maybe } from '../../jsutils/Maybe';
 import type { ObjMap } from '../../jsutils/ObjMap';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type {
   FieldNode,
   FragmentDefinitionNode,
@@ -79,12 +77,10 @@ export function OverlappingFieldsCanBeMergedRule(
       );
       for (const [[responseName, reason], fields1, fields2] of conflicts) {
         const reasonMsg = reasonMessage(reason);
-        context.reportError(
-          new GraphQLError(
-            `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
-            { nodes: fields1.concat(fields2) },
-          ),
-        );
+        context.report({
+          message: `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
+          nodes: fields1.concat(fields2),
+        });
       }
     },
   };

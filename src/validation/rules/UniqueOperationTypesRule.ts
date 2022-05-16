@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type {
   SchemaDefinitionNode,
   SchemaExtensionNode,
@@ -43,19 +41,15 @@ export function UniqueOperationTypesRule(
       const alreadyDefinedOperationType = definedOperationTypes[operation];
 
       if (existingOperationTypes[operation]) {
-        context.reportError(
-          new GraphQLError(
-            `Type for ${operation} already defined in the schema. It cannot be redefined.`,
-            { nodes: operationType },
-          ),
-        );
+        context.report({
+          message: `Type for ${operation} already defined in the schema. It cannot be redefined.`,
+          nodes: operationType,
+        });
       } else if (alreadyDefinedOperationType) {
-        context.reportError(
-          new GraphQLError(
-            `There can be only one ${operation} type in schema.`,
-            { nodes: [alreadyDefinedOperationType, operationType] },
-          ),
-        );
+        context.report({
+          message: `There can be only one ${operation} type in schema.`,
+          nodes: [alreadyDefinedOperationType, operationType],
+        });
       } else {
         definedOperationTypes[operation] = operationType;
       }

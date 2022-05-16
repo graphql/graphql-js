@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type {
   FragmentDefinitionNode,
   OperationDefinitionNode,
@@ -45,11 +43,10 @@ export function NoUnusedFragmentsRule(
         for (const fragmentDef of fragmentDefs) {
           const fragName = fragmentDef.name.value;
           if (fragmentNameUsed[fragName] !== true) {
-            context.reportError(
-              new GraphQLError(`Fragment "${fragName}" is never used.`, {
-                nodes: fragmentDef,
-              }),
-            );
+            context.report({
+              message: `Fragment "${fragName}" is never used.`,
+              nodes: fragmentDef,
+            });
           }
         }
       },

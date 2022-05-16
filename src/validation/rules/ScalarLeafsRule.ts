@@ -1,7 +1,5 @@
 import { inspect } from '../../jsutils/inspect';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { FieldNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -25,22 +23,18 @@ export function ScalarLeafsRule(context: ValidationContext): ASTVisitor {
           if (selectionSet) {
             const fieldName = node.name.value;
             const typeStr = inspect(type);
-            context.reportError(
-              new GraphQLError(
-                `Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`,
-                { nodes: selectionSet },
-              ),
-            );
+            context.report({
+              message: `Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`,
+              nodes: selectionSet,
+            });
           }
         } else if (!selectionSet) {
           const fieldName = node.name.value;
           const typeStr = inspect(type);
-          context.reportError(
-            new GraphQLError(
-              `Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`,
-              { nodes: node },
-            ),
-          );
+          context.report({
+            message: `Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`,
+            nodes: node,
+          });
         }
       }
     },

@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { ASTValidationContext } from '../ValidationContext';
@@ -20,12 +18,10 @@ export function UniqueFragmentNamesRule(
     FragmentDefinition(node) {
       const fragmentName = node.name.value;
       if (knownFragmentNames[fragmentName]) {
-        context.reportError(
-          new GraphQLError(
-            `There can be only one fragment named "${fragmentName}".`,
-            { nodes: [knownFragmentNames[fragmentName], node.name] },
-          ),
-        );
+        context.report({
+          message: `There can be only one fragment named "${fragmentName}".`,
+          nodes: [knownFragmentNames[fragmentName], node.name],
+        });
       } else {
         knownFragmentNames[fragmentName] = node.name;
       }

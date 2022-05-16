@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import { Kind } from '../../language/kinds';
 import {
   isTypeDefinitionNode,
@@ -75,12 +73,10 @@ export function UniqueDirectivesPerLocationRule(
 
         if (uniqueDirectiveMap[directiveName]) {
           if (seenDirectives[directiveName]) {
-            context.reportError(
-              new GraphQLError(
-                `The directive "@${directiveName}" can only be used once at this location.`,
-                { nodes: [seenDirectives[directiveName], directive] },
-              ),
-            );
+            context.report({
+              message: `The directive "@${directiveName}" can only be used once at this location.`,
+              nodes: [seenDirectives[directiveName], directive],
+            });
           } else {
             seenDirectives[directiveName] = directive;
           }

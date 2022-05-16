@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type {
   FieldDefinitionNode,
   InputValueDefinitionNode,
@@ -58,19 +56,15 @@ export function UniqueFieldDefinitionNamesRule(
       const fieldName = fieldDef.name.value;
 
       if (hasField(existingTypeMap[typeName], fieldName)) {
-        context.reportError(
-          new GraphQLError(
-            `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
-            { nodes: fieldDef.name },
-          ),
-        );
+        context.report({
+          message: `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
+          nodes: fieldDef.name,
+        });
       } else if (fieldNames[fieldName]) {
-        context.reportError(
-          new GraphQLError(
-            `Field "${typeName}.${fieldName}" can only be defined once.`,
-            { nodes: [fieldNames[fieldName], fieldDef.name] },
-          ),
-        );
+        context.report({
+          message: `Field "${typeName}.${fieldName}" can only be defined once.`,
+          nodes: [fieldNames[fieldName], fieldDef.name],
+        });
       } else {
         fieldNames[fieldName] = fieldDef.name;
       }

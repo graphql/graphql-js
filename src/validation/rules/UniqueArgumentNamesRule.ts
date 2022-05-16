@@ -1,7 +1,5 @@
 import { groupBy } from '../../jsutils/groupBy';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ArgumentNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -34,12 +32,10 @@ export function UniqueArgumentNamesRule(
 
     for (const [argName, argNodes] of seenArgs) {
       if (argNodes.length > 1) {
-        context.reportError(
-          new GraphQLError(
-            `There can be only one argument named "${argName}".`,
-            { nodes: argNodes.map((node) => node.name) },
-          ),
-        );
+        context.report({
+          message: `There can be only one argument named "${argName}".`,
+          nodes: argNodes.map((node) => node.name),
+        });
       }
     }
   }

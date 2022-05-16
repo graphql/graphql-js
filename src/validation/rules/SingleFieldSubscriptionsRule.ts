@@ -1,7 +1,5 @@
 import type { ObjMap } from '../../jsutils/ObjMap';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type {
   FragmentDefinitionNode,
   OperationDefinitionNode,
@@ -52,27 +50,25 @@ export function SingleFieldSubscriptionsRule(
             const fieldSelectionLists = [...fields.values()];
             const extraFieldSelectionLists = fieldSelectionLists.slice(1);
             const extraFieldSelections = extraFieldSelectionLists.flat();
-            context.reportError(
-              new GraphQLError(
+            context.report({
+              message:
                 operationName != null
                   ? `Subscription "${operationName}" must select only one top level field.`
                   : 'Anonymous Subscription must select only one top level field.',
-                { nodes: extraFieldSelections },
-              ),
-            );
+              nodes: extraFieldSelections,
+            });
           }
           for (const fieldNodes of fields.values()) {
             const field = fieldNodes[0];
             const fieldName = field.name.value;
             if (fieldName.startsWith('__')) {
-              context.reportError(
-                new GraphQLError(
+              context.report({
+                message:
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  { nodes: fieldNodes },
-                ),
-              );
+                nodes: fieldNodes,
+              });
             }
           }
         }

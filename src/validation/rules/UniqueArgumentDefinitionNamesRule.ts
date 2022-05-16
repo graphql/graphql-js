@@ -1,7 +1,5 @@
 import { groupBy } from '../../jsutils/groupBy';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type {
   FieldDefinitionNode,
   InputValueDefinitionNode,
@@ -65,12 +63,10 @@ export function UniqueArgumentDefinitionNamesRule(
 
     for (const [argName, argNodes] of seenArgs) {
       if (argNodes.length > 1) {
-        context.reportError(
-          new GraphQLError(
-            `Argument "${parentName}(${argName}:)" can only be defined once.`,
-            { nodes: argNodes.map((node) => node.name) },
-          ),
-        );
+        context.report({
+          message: `Argument "${parentName}(${argName}:)" can only be defined once.`,
+          nodes: argNodes.map((node) => node.name),
+        });
       }
     }
 

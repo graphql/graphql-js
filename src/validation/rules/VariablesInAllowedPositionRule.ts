@@ -1,8 +1,6 @@
 import { inspect } from '../../jsutils/inspect';
 import type { Maybe } from '../../jsutils/Maybe';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ValueNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
@@ -59,12 +57,10 @@ export function VariablesInAllowedPositionRule(
             ) {
               const varTypeStr = inspect(varType);
               const typeStr = inspect(type);
-              context.reportError(
-                new GraphQLError(
-                  `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
-                  { nodes: [varDef, node] },
-                ),
-              );
+              context.report({
+                message: `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
+                nodes: [varDef, node],
+              });
             }
           }
         }

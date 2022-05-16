@@ -1,8 +1,6 @@
 import { didYouMean } from '../../jsutils/didYouMean';
 import { suggestionList } from '../../jsutils/suggestionList';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -35,13 +33,12 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
         const argName = argNode.name.value;
         const knownArgsNames = fieldDef.args.map((arg) => arg.name);
         const suggestions = suggestionList(argName, knownArgsNames);
-        context.reportError(
-          new GraphQLError(
+        context.report({
+          message:
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
-              didYouMean(suggestions),
-            { nodes: argNode },
-          ),
-        );
+            didYouMean(suggestions),
+          nodes: argNode,
+        });
       }
     },
   };
@@ -84,13 +81,12 @@ export function KnownArgumentNamesOnDirectivesRule(
           const argName = argNode.name.value;
           if (!knownArgs.includes(argName)) {
             const suggestions = suggestionList(argName, knownArgs);
-            context.reportError(
-              new GraphQLError(
+            context.report({
+              message:
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
-                  didYouMean(suggestions),
-                { nodes: argNode },
-              ),
-            );
+                didYouMean(suggestions),
+              nodes: argNode,
+            });
           }
         }
       }

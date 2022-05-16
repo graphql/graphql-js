@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { ValidationContext } from '../ValidationContext';
@@ -28,14 +26,12 @@ export function NoUndefinedVariablesRule(
         for (const { node } of usages) {
           const varName = node.name.value;
           if (variableNameDefined[varName] !== true) {
-            context.reportError(
-              new GraphQLError(
-                operation.name
-                  ? `Variable "$${varName}" is not defined by operation "${operation.name.value}".`
-                  : `Variable "$${varName}" is not defined.`,
-                { nodes: [node, operation] },
-              ),
-            );
+            context.report({
+              message: operation.name
+                ? `Variable "$${varName}" is not defined by operation "${operation.name.value}".`
+                : `Variable "$${varName}" is not defined.`,
+              nodes: [node, operation],
+            });
           }
         }
       },

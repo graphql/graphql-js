@@ -2,8 +2,6 @@ import { didYouMean } from '../../jsutils/didYouMean';
 import { naturalCompare } from '../../jsutils/naturalCompare';
 import { suggestionList } from '../../jsutils/suggestionList';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { FieldNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -54,13 +52,12 @@ export function FieldsOnCorrectTypeRule(
           }
 
           // Report an error, including helpful suggestions.
-          context.reportError(
-            new GraphQLError(
+          context.report({
+            message:
               `Cannot query field "${fieldName}" on type "${type.name}".` +
-                suggestion,
-              { nodes: node },
-            ),
-          );
+              suggestion,
+            nodes: node,
+          });
         }
       }
     },

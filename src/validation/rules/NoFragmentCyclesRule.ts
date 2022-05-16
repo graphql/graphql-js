@@ -1,7 +1,5 @@
 import type { ObjMap } from '../../jsutils/ObjMap';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type {
   FragmentDefinitionNode,
   FragmentSpreadNode,
@@ -74,13 +72,12 @@ export function NoFragmentCyclesRule(
           .map((s) => '"' + s.name.value + '"')
           .join(', ');
 
-        context.reportError(
-          new GraphQLError(
+        context.report({
+          message:
             `Cannot spread fragment "${spreadName}" within itself` +
-              (viaPath !== '' ? ` via ${viaPath}.` : '.'),
-            { nodes: cyclePath },
-          ),
-        );
+            (viaPath !== '' ? ` via ${viaPath}.` : '.'),
+          nodes: cyclePath,
+        });
       }
       spreadPath.pop();
     }

@@ -3,8 +3,6 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { DirectiveNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 
@@ -76,11 +74,10 @@ describe('Validate: Supports full validation', () => {
       return {
         Directive(node: DirectiveNode) {
           const directiveDef = context.getDirective();
-          const error = new GraphQLError(
-            'Reporting directive: ' + String(directiveDef),
-            { nodes: node },
-          );
-          context.reportError(error);
+          context.report({
+            message: 'Reporting directive: ' + String(directiveDef),
+            nodes: node,
+          });
         },
       };
     }

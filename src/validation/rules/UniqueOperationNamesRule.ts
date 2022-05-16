@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { ASTValidationContext } from '../ValidationContext';
@@ -20,17 +18,10 @@ export function UniqueOperationNamesRule(
       const operationName = node.name;
       if (operationName) {
         if (knownOperationNames[operationName.value]) {
-          context.reportError(
-            new GraphQLError(
-              `There can be only one operation named "${operationName.value}".`,
-              {
-                nodes: [
-                  knownOperationNames[operationName.value],
-                  operationName,
-                ],
-              },
-            ),
-          );
+          context.report({
+            message: `There can be only one operation named "${operationName.value}".`,
+            nodes: [knownOperationNames[operationName.value], operationName],
+          });
         } else {
           knownOperationNames[operationName.value] = operationName;
         }

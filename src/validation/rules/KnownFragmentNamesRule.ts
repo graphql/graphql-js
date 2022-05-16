@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { ValidationContext } from '../ValidationContext';
@@ -18,11 +16,10 @@ export function KnownFragmentNamesRule(context: ValidationContext): ASTVisitor {
       const fragmentName = node.name.value;
       const fragment = context.getFragment(fragmentName);
       if (!fragment) {
-        context.reportError(
-          new GraphQLError(`Unknown fragment "${fragmentName}".`, {
-            nodes: node.name,
-          }),
-        );
+        context.report({
+          message: `Unknown fragment "${fragmentName}".`,
+          nodes: node.name,
+        });
       }
     },
   };

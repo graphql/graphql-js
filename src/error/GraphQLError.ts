@@ -237,3 +237,21 @@ export interface GraphQLFormattedError {
    */
   readonly extensions?: { [key: string]: unknown };
 }
+
+export interface GraphQLValidationErrorOptions {
+  nodes: ReadonlyArray<ASTNode> | ASTNode;
+  originalError?: Error | undefined;
+  extensions?: GraphQLErrorExtensions | undefined;
+}
+
+export class GraphQLValidationError extends GraphQLError {
+  constructor(message: string, options: GraphQLValidationErrorOptions) {
+    super(message, options);
+
+    this.name = 'GraphQLValidationError';
+  }
+
+  get [Symbol.toStringTag](): string {
+    return 'GraphQLValidationError';
+  }
+}
