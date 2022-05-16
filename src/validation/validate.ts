@@ -40,6 +40,9 @@ export function validate(
   documentAST: DocumentNode,
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
   options?: { maxErrors?: number },
+
+  /** @deprecated will be removed in 17.0.0 */
+  typeInfo: TypeInfo = new TypeInfo(schema),
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
 
@@ -49,7 +52,6 @@ export function validate(
 
   const abortObj = Object.freeze({});
   const errors: Array<GraphQLError> = [];
-  const typeInfo = new TypeInfo(schema);
   const context = new ValidationContext(
     schema,
     documentAST,
