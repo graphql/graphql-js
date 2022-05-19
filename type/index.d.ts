@@ -60,6 +60,8 @@ export type {
   GraphQLAbstractType,
   GraphQLWrappingType,
   GraphQLNullableType,
+  GraphQLNullableInputType,
+  GraphQLNullableOutputType,
   GraphQLNamedType,
   GraphQLNamedInputType,
   GraphQLNamedOutputType,
