@@ -3,13 +3,13 @@
 /**
  * A string containing the version of the GraphQL.js library
  */
-export const version = '16.4.0';
+export const version = '17.0.0-alpha.1';
 /**
  * An object containing the components of the GraphQL.js version string
  */
 export const versionInfo = Object.freeze({
-  major: 16,
-  minor: 4,
+  major: 17,
+  minor: 0,
   patch: 0,
-  preReleaseTag: null,
+  preReleaseTag: 'alpha.1',
 });
