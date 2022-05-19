@@ -45,22 +45,9 @@ import type { GraphQLSchema } from './schema.ts';
  * These are all of the possible kinds of types.
  */
 export type GraphQLType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
+  | GraphQLNamedType
   | GraphQLList<GraphQLType>
-  | GraphQLNonNull<
-      | GraphQLScalarType
-      | GraphQLObjectType
-      | GraphQLInterfaceType
-      | GraphQLUnionType
-      | GraphQLEnumType
-      | GraphQLInputObjectType
-      | GraphQLList<GraphQLType>
-    >;
+  | GraphQLNonNull<GraphQLNullableType>;
 export function isType(type: unknown): type is GraphQLType {
   return (
     isScalarType(type) ||
@@ -182,9 +169,7 @@ export function assertNonNullType(type: unknown): GraphQLNonNull<GraphQLType> {
  * These types may be used as input types for arguments and directives.
  */
 export type GraphQLNullableInputType =
-  | GraphQLScalarType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
+  | GraphQLNamedInputType
   | GraphQLList<GraphQLInputType>;
 export type GraphQLInputType =
   | GraphQLNullableInputType
@@ -207,11 +192,7 @@ export function assertInputType(type: unknown): GraphQLInputType {
  * These types may be used as output types as the result of fields.
  */
 export type GraphQLNullableOutputType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
+  | GraphQLNamedOutputType
   | GraphQLList<GraphQLOutputType>;
 export type GraphQLOutputType =
   | GraphQLNullableOutputType
@@ -371,14 +352,7 @@ export function assertWrappingType(type: unknown): GraphQLWrappingType {
 /**
  * These types can all accept null as a value.
  */
-export type GraphQLNullableType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
-  | GraphQLList<GraphQLType>;
+export type GraphQLNullableType = GraphQLNamedType | GraphQLList<GraphQLType>;
 export function isNullableType(type: unknown): type is GraphQLNullableType {
   return isType(type) && !isNonNullType(type);
 }
