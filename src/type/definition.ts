@@ -183,16 +183,16 @@ export function assertListType(type: unknown): GraphQLList<GraphQLType> {
 
 export function isNonNullType(
   type: GraphQLInputType,
-): type is GraphQLNonNull<GraphQLInputType>;
+): type is GraphQLNonNull<GraphQLNullableInputType>;
 export function isNonNullType(
   type: GraphQLOutputType,
-): type is GraphQLNonNull<GraphQLOutputType>;
+): type is GraphQLNonNull<GraphQLNullableOutputType>;
 export function isNonNullType(
   type: unknown,
-): type is GraphQLNonNull<GraphQLType>;
+): type is GraphQLNonNull<GraphQLNullableType>;
 export function isNonNullType(
   type: unknown,
-): type is GraphQLNonNull<GraphQLType> {
+): type is GraphQLNonNull<GraphQLNullableType> {
   return instanceOf(type, GraphQLNonNull);
 }
 
@@ -206,17 +206,15 @@ export function assertNonNullType(type: unknown): GraphQLNonNull<GraphQLType> {
 /**
  * These types may be used as input types for arguments and directives.
  */
-export type GraphQLInputType =
+export type GraphQLNullableInputType =
   | GraphQLScalarType
   | GraphQLEnumType
   | GraphQLInputObjectType
-  | GraphQLList<GraphQLInputType>
-  | GraphQLNonNull<
-      | GraphQLScalarType
-      | GraphQLEnumType
-      | GraphQLInputObjectType
-      | GraphQLList<GraphQLInputType>
-    >;
+  | GraphQLList<GraphQLInputType>;
+
+export type GraphQLInputType =
+  | GraphQLNullableInputType
+  | GraphQLNonNull<GraphQLNullableInputType>;
 
 export function isInputType(type: unknown): type is GraphQLInputType {
   return (
@@ -237,21 +235,17 @@ export function assertInputType(type: unknown): GraphQLInputType {
 /**
  * These types may be used as output types as the result of fields.
  */
-export type GraphQLOutputType =
+export type GraphQLNullableOutputType =
   | GraphQLScalarType
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
   | GraphQLEnumType
-  | GraphQLList<GraphQLOutputType>
-  | GraphQLNonNull<
-      | GraphQLScalarType
-      | GraphQLObjectType
-      | GraphQLInterfaceType
-      | GraphQLUnionType
-      | GraphQLEnumType
-      | GraphQLList<GraphQLOutputType>
-    >;
+  | GraphQLList<GraphQLOutputType>;
+
+export type GraphQLOutputType =
+  | GraphQLNullableOutputType
+  | GraphQLNonNull<GraphQLNullableOutputType>;
 
 export function isOutputType(type: unknown): type is GraphQLOutputType {
   return (
