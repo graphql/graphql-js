@@ -28,22 +28,9 @@ import type { GraphQLSchema } from './schema';
  * These are all of the possible kinds of types.
  */
 export declare type GraphQLType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
+  | GraphQLNamedType
   | GraphQLList<GraphQLType>
-  | GraphQLNonNull<
-      | GraphQLScalarType
-      | GraphQLObjectType
-      | GraphQLInterfaceType
-      | GraphQLUnionType
-      | GraphQLEnumType
-      | GraphQLInputObjectType
-      | GraphQLList<GraphQLType>
-    >;
+  | GraphQLNonNull<GraphQLNullableType>;
 export declare function isType(type: unknown): type is GraphQLType;
 export declare function assertType(type: unknown): GraphQLType;
 /**
@@ -95,9 +82,7 @@ export declare function assertNonNullType(
  * These types may be used as input types for arguments and directives.
  */
 export declare type GraphQLNullableInputType =
-  | GraphQLScalarType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
+  | GraphQLNamedInputType
   | GraphQLList<GraphQLInputType>;
 export declare type GraphQLInputType =
   | GraphQLNullableInputType
@@ -108,11 +93,7 @@ export declare function assertInputType(type: unknown): GraphQLInputType;
  * These types may be used as output types as the result of fields.
  */
 export declare type GraphQLNullableOutputType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
+  | GraphQLNamedOutputType
   | GraphQLList<GraphQLOutputType>;
 export declare type GraphQLOutputType =
   | GraphQLNullableOutputType
@@ -216,12 +197,7 @@ export declare function assertWrappingType(type: unknown): GraphQLWrappingType;
  * These types can all accept null as a value.
  */
 export declare type GraphQLNullableType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
+  | GraphQLNamedType
   | GraphQLList<GraphQLType>;
 export declare function isNullableType(
   type: unknown,
