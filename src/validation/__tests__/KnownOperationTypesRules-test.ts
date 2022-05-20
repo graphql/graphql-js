@@ -1,0 +1,52 @@
+import { describe, it } from 'mocha';
+
+import { KnownOperationTypesRule } from '../rules/KnownOperationTypesRule';
+
+import { expectValidationErrors } from './harness';
+
+function expectErrors(queryStr: string) {
+  return expectValidationErrors(KnownOperationTypesRule, queryStr);
+}
+
+function expectValid(queryStr: string) {
+  expectErrors(queryStr).toDeepEqual([]);
+}
+
+describe('Validate: Known operation types', () => {
+  it('one known operation', () => {
+    expectValid(`
+      {
+        field
+      }
+    `);
+  });
+
+  it('one unknown operation', () => {
+    expectErrors(`
+      mutation {
+        field
+      }
+    `).toDeepEqual([
+      {
+        message: 'The mutation operation is not supported by the schema.',
+        locations: [{ line: 2, column: 7 }],
+      },
+    ]);
+  });
+
+  it('mixture of known and unknown operations', () => {
+    expectErrors(`
+      query {
+        field
+      }
+      mutation {
+        field
+      }
+  `).toDeepEqual([
+      {
+        message: 'The mutation operation is not supported by the schema.',
+        locations: [{ line: 5, column: 7 }],
+      },
+    ]);
+  });
+});

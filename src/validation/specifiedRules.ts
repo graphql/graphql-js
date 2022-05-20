@@ -13,6 +13,8 @@ import {
 import { KnownDirectivesRule } from './rules/KnownDirectivesRule';
 // Spec Section: "Fragment spread target defined"
 import { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule';
+// Spec Section: "Operation Type Existence"
+import { KnownOperationTypesRule } from './rules/KnownOperationTypesRule';
 // Spec Section: "Fragment Spread Type Existence"
 import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule';
 // Spec Section: "Lone Anonymous Operation"
@@ -75,6 +77,7 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext';
  */
 export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ExecutableDefinitionsRule,
+  KnownOperationTypesRule,
   UniqueOperationNamesRule,
   LoneAnonymousOperationRule,
   SingleFieldSubscriptionsRule,
