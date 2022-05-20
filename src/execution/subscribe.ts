@@ -180,8 +180,17 @@ export async function createSourceEventStream(
 async function executeSubscription(
   exeContext: ExecutionContext,
 ): Promise<unknown> {
-  const { schema, fragments, operation, variableValues, rootValue } =
-    exeContext;
+  // The resolve function's optional third argument is a context value that
+  // is provided to every resolve function within an execution. It is commonly
+  // used to represent an authenticated user, or request-specific caches.
+  const {
+    schema,
+    fragments,
+    operation,
+    contextValue,
+    variableValues,
+    rootValue,
+  } = exeContext;
 
   const rootType = schema.getSubscriptionType();
   if (rootType == null) {
@@ -224,12 +233,12 @@ async function executeSubscription(
 
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
-    const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
-
-    // The resolve function's optional third argument is a context value that
-    // is provided to every resolve function within an execution. It is commonly
-    // used to represent an authenticated user, or request-specific caches.
-    const contextValue = exeContext.contextValue;
+    const args = getArgumentValues(
+      fieldDef,
+      fieldNodes[0],
+      contextValue,
+      variableValues,
+    );
 
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.

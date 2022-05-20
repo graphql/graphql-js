@@ -35,9 +35,10 @@ import {
  * | NullValue            | null          |
  *
  */
-export function valueFromAST(
+export function valueFromAST<TContext = any>(
   valueNode: Maybe<ValueNode>,
   type: GraphQLInputType,
+  context?: Maybe<TContext>,
   variables?: Maybe<ObjMap<unknown>>,
 ): unknown {
   if (!valueNode) {
@@ -66,7 +67,7 @@ export function valueFromAST(
     if (valueNode.kind === Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
-    return valueFromAST(valueNode, type.ofType, variables);
+    return valueFromAST(valueNode, type.ofType, context, variables);
   }
 
   if (valueNode.kind === Kind.NULL) {
@@ -87,7 +88,12 @@ export function valueFromAST(
           }
           coercedValues.push(null);
         } else {
-          const itemValue = valueFromAST(itemNode, itemType, variables);
+          const itemValue = valueFromAST(
+            itemNode,
+            itemType,
+            context,
+            variables,
+          );
           if (itemValue === undefined) {
             return; // Invalid: intentionally return no value.
           }
@@ -96,7 +102,7 @@ export function valueFromAST(
       }
       return coercedValues;
     }
-    const coercedValue = valueFromAST(valueNode, itemType, variables);
+    const coercedValue = valueFromAST(valueNode, itemType, context, variables);
     if (coercedValue === undefined) {
       return; // Invalid: intentionally return no value.
     }
@@ -119,7 +125,12 @@ export function valueFromAST(
         }
         continue;
       }
-      const fieldValue = valueFromAST(fieldNode.value, field.type, variables);
+      const fieldValue = valueFromAST(
+        fieldNode.value,
+        field.type,
+        context,
+        variables,
+      );
       if (fieldValue === undefined) {
         return; // Invalid: intentionally return no value.
       }
@@ -134,7 +145,7 @@ export function valueFromAST(
     // no value is returned.
     let result;
     try {
-      result = type.parseLiteral(valueNode, variables);
+      result = type.parseLiteral(valueNode, context, variables);
     } catch (_error) {
       return; // Invalid: intentionally return no value.
     }

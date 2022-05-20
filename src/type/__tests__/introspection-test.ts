@@ -9,6 +9,7 @@ import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 import { graphqlSync } from '../../graphql';
 
 import type { GraphQLResolveInfo } from '../definition';
+import { assertScalarType } from '../definition';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {
@@ -1087,6 +1088,7 @@ describe('Introspection', () => {
       input InputObjectWithDefaultValues {
         a: String = "Emoji: \\u{1F600}"
         b: Complex = { x: ["abc"], y: 123 }
+        c: ContextScalar = false
       }
 
       input Complex {
@@ -1094,10 +1096,18 @@ describe('Introspection', () => {
         y: Int
       }
 
+      scalar ContextScalar
+
       type Query {
         someField(someArg: InputObjectWithDefaultValues): String
       }
     `);
+
+    // FIXME: workaround since we can't inject serialized into SDL
+    assertScalarType(schema.getType('ContextScalar')).serialize = (
+      _value,
+      context,
+    ) => context;
 
     const source = `
       {
@@ -1110,7 +1120,7 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync({ schema, source })).to.deep.equal({
+    expect(graphqlSync({ schema, source, contextValue: 1 })).to.deep.equal({
       data: {
         __type: {
           inputFields: [
@@ -1121,6 +1131,10 @@ describe('Introspection', () => {
             {
               name: 'b',
               defaultValue: '{ x: ["abc"], y: 123 }',
+            },
+            {
+              name: 'c',
+              defaultValue: '1',
             },
           ],
         },

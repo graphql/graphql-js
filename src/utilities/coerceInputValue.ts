@@ -27,12 +27,13 @@ type OnErrorCB = (
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
-export function coerceInputValue(
+export function coerceInputValue<TContext = any>(
   inputValue: unknown,
   type: GraphQLInputType,
+  context: TContext,
   onError: OnErrorCB = defaultOnError,
 ): unknown {
-  return coerceInputValueImpl(inputValue, type, onError, undefined);
+  return coerceInputValueImpl(inputValue, type, context, onError, undefined);
 }
 
 function defaultOnError(
@@ -48,15 +49,22 @@ function defaultOnError(
   throw error;
 }
 
-function coerceInputValueImpl(
+function coerceInputValueImpl<TContext>(
   inputValue: unknown,
   type: GraphQLInputType,
+  context: TContext,
   onError: OnErrorCB,
   path: Path | undefined,
 ): unknown {
   if (isNonNullType(type)) {
     if (inputValue != null) {
-      return coerceInputValueImpl(inputValue, type.ofType, onError, path);
+      return coerceInputValueImpl(
+        inputValue,
+        type.ofType,
+        context,
+        onError,
+        path,
+      );
     }
     onError(
       pathToArray(path),
@@ -78,11 +86,17 @@ function coerceInputValueImpl(
     if (isIterableObject(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
         const itemPath = addPath(path, index, undefined);
-        return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
+        return coerceInputValueImpl(
+          itemValue,
+          itemType,
+          context,
+          onError,
+          itemPath,
+        );
       });
     }
     // Lists accept a non-list value as a list of one.
-    return [coerceInputValueImpl(inputValue, itemType, onError, path)];
+    return [coerceInputValueImpl(inputValue, itemType, context, onError, path)];
   }
 
   if (isInputObjectType(type)) {
@@ -120,6 +134,7 @@ function coerceInputValueImpl(
       coercedValue[field.name] = coerceInputValueImpl(
         fieldValue,
         field.type,
+        context,
         onError,
         addPath(path, field.name, type.name),
       );
@@ -152,7 +167,7 @@ function coerceInputValueImpl(
     // which can throw to indicate failure. If it throws, maintain a reference
     // to the original error.
     try {
-      parseResult = type.parseValue(inputValue);
+      parseResult = type.parseValue(inputValue, context);
     } catch (error) {
       if (error instanceof GraphQLError) {
         onError(pathToArray(path), inputValue, error);

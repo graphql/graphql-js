@@ -38,6 +38,11 @@ const TestComplexScalar = new GraphQLScalarType({
   },
 });
 
+const TestContextScalar = new GraphQLScalarType({
+  name: 'ContextScalar',
+  parseValue: (_value, context) => context,
+});
+
 const TestInputObject = new GraphQLInputObjectType({
   name: 'TestInputObject',
   fields: {
@@ -45,6 +50,7 @@ const TestInputObject = new GraphQLInputObjectType({
     b: { type: new GraphQLList(GraphQLString) },
     c: { type: new GraphQLNonNull(GraphQLString) },
     d: { type: TestComplexScalar },
+    e: { type: TestContextScalar },
   },
 });
 
@@ -126,9 +132,10 @@ const schema = new GraphQLSchema({ query: TestType });
 function executeQuery(
   query: string,
   variableValues?: { [variable: string]: unknown },
+  contextValue?: unknown,
 ) {
   const document = parse(query);
-  return executeSync({ schema, document, variableValues });
+  return executeSync({ schema, document, contextValue, variableValues });
 }
 
 describe('Execute: Handles inputs', () => {
@@ -362,6 +369,18 @@ describe('Execute: Handles inputs', () => {
         expect(result).to.deep.equal({
           data: {
             fieldWithObjectInput: '{ c: "foo", d: "DeserializedValue" }',
+          },
+        });
+      });
+
+      it('executes with scalar access to context', () => {
+        const params = { input: { c: 'foo', e: false } };
+        const contextValue = true;
+        const result = executeQuery(doc, params, contextValue);
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithObjectInput: '{ c: "foo", e: true }',
           },
         });
       });
@@ -1044,6 +1063,7 @@ describe('Execute: Handles inputs', () => {
         schema,
         variableDefinitions,
         inputValue,
+        undefined,
         { maxErrors: 3 },
       );
 
@@ -1061,6 +1081,7 @@ describe('Execute: Handles inputs', () => {
         schema,
         variableDefinitions,
         inputValue,
+        undefined,
         { maxErrors: 2 },
       );
 

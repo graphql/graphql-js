@@ -212,6 +212,18 @@ describe('astFromValue', () => {
       'Cannot convert value to AST: Infinity.',
     );
 
+    const contextScalar = new GraphQLScalarType({
+      name: 'ContextScalar',
+      serialize(_value, context) {
+        return context;
+      },
+    });
+
+    expect(astFromValue('value', contextScalar, 1)).to.deep.equal({
+      kind: 'IntValue',
+      value: '1',
+    });
+
     const returnNullScalar = new GraphQLScalarType({
       name: 'ReturnNullScalar',
       serialize() {

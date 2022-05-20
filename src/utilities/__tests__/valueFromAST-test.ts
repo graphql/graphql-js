@@ -28,10 +28,11 @@ describe('valueFromAST', () => {
   function expectValueFrom(
     valueText: string,
     type: GraphQLInputType,
+    context?: unknown,
     variables?: ObjMap<unknown>,
   ) {
     const ast = parseValue(valueText);
-    const value = valueFromAST(ast, type, variables);
+    const value = valueFromAST(ast, type, context, variables);
     return expect(value);
   }
 
@@ -72,6 +73,14 @@ describe('valueFromAST', () => {
     });
 
     expectValueFrom('"value"', passthroughScalar).to.equal('value');
+
+    const contextScalar = new GraphQLScalarType({
+      name: 'ContextScalar',
+      parseLiteral: (_node, context) => context,
+      parseValue: identityFunc,
+    });
+
+    expectValueFrom('"value"', contextScalar, 1).to.equal(1);
 
     const throwScalar = new GraphQLScalarType({
       name: 'ThrowScalar',
@@ -223,24 +232,36 @@ describe('valueFromAST', () => {
   });
 
   it('accepts variable values assuming already coerced', () => {
-    expectValueFrom('$var', GraphQLBoolean, {}).to.equal(undefined);
-    expectValueFrom('$var', GraphQLBoolean, { var: true }).to.equal(true);
-    expectValueFrom('$var', GraphQLBoolean, { var: null }).to.equal(null);
-    expectValueFrom('$var', nonNullBool, { var: null }).to.equal(undefined);
+    expectValueFrom('$var', GraphQLBoolean, undefined, {}).to.equal(undefined);
+    expectValueFrom('$var', GraphQLBoolean, undefined, { var: true }).to.equal(
+      true,
+    );
+    expectValueFrom('$var', GraphQLBoolean, undefined, { var: null }).to.equal(
+      null,
+    );
+    expectValueFrom('$var', nonNullBool, undefined, { var: null }).to.equal(
+      undefined,
+    );
   });
 
   it('asserts variables are provided as items in lists', () => {
-    expectValueFrom('[ $foo ]', listOfBool, {}).to.deep.equal([null]);
-    expectValueFrom('[ $foo ]', listOfNonNullBool, {}).to.equal(undefined);
-    expectValueFrom('[ $foo ]', listOfNonNullBool, {
+    expectValueFrom('[ $foo ]', listOfBool, undefined, {}).to.deep.equal([
+      null,
+    ]);
+    expectValueFrom('[ $foo ]', listOfNonNullBool, undefined, {}).to.equal(
+      undefined,
+    );
+    expectValueFrom('[ $foo ]', listOfNonNullBool, undefined, {
       foo: true,
     }).to.deep.equal([true]);
     // Note: variables are expected to have already been coerced, so we
     // do not expect the singleton wrapping behavior for variables.
-    expectValueFrom('$foo', listOfNonNullBool, { foo: true }).to.equal(true);
-    expectValueFrom('$foo', listOfNonNullBool, { foo: [true] }).to.deep.equal([
-      true,
-    ]);
+    expectValueFrom('$foo', listOfNonNullBool, undefined, {
+      foo: true,
+    }).to.equal(true);
+    expectValueFrom('$foo', listOfNonNullBool, undefined, {
+      foo: [true],
+    }).to.deep.equal([true]);
   });
 
   it('omits input object fields for unprovided variables', () => {
@@ -250,11 +271,14 @@ describe('valueFromAST', () => {
       {},
     ).to.deep.equal({ int: 42, requiredBool: true });
 
-    expectValueFrom('{ requiredBool: $foo }', testInputObj, {}).to.equal(
+    expectValueFrom(
+      '{ requiredBool: $foo }',
+      testInputObj,
       undefined,
-    );
+      {},
+    ).to.equal(undefined);
 
-    expectValueFrom('{ requiredBool: $foo }', testInputObj, {
+    expectValueFrom('{ requiredBool: $foo }', testInputObj, undefined, {
       foo: true,
     }).to.deep.equal({
       int: 42,

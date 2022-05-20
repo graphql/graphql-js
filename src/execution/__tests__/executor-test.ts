@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
+import { identityFunc } from '../../jsutils/identityFunc';
 import { inspect } from '../../jsutils/inspect';
 
 import { Kind } from '../../language/kinds';
@@ -1144,6 +1145,93 @@ describe('Execute: Handles basic execution tasks', () => {
       contextValue,
     });
     expect(asyncResult).to.deep.equal(result);
+  });
+
+  it('passes context to custom scalar parseValue', () => {
+    const customScalar = new GraphQLScalarType({
+      name: 'CustomScalar',
+      parseValue: (_value, context) => context,
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          customScalar: {
+            type: GraphQLInt,
+            args: {
+              passThroughContext: {
+                type: customScalar,
+              },
+            },
+            resolve: (_source, _args, context) => context,
+          },
+        },
+      }),
+    });
+
+    const result = executeSync({
+      schema,
+      document: parse('{ customScalar(passThroughContext: 0) }'),
+      contextValue: 1,
+    });
+    expectJSON(result).toDeepEqual({
+      data: { customScalar: 1 },
+    });
+  });
+
+  it('passes context to custom scalar serialize', () => {
+    const customScalar = new GraphQLScalarType({
+      name: 'CustomScalar',
+      serialize: (_value, context) => context,
+      parseValue: identityFunc,
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          customScalar: {
+            type: customScalar,
+            resolve: () => 'CUSTOM_VALUE',
+          },
+        },
+      }),
+    });
+
+    const result = executeSync({
+      schema,
+      document: parse('{ customScalar }'),
+      contextValue: 1,
+    });
+    expectJSON(result).toDeepEqual({
+      data: { customScalar: 1 },
+    });
+  });
+
+  it('passes context to custom scalar serialize', () => {
+    const customScalar = new GraphQLScalarType({
+      name: 'CustomScalar',
+      serialize: (_value, context) => context,
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          customScalar: {
+            type: customScalar,
+            resolve: () => 'CUSTOM_VALUE',
+          },
+        },
+      }),
+    });
+
+    const result = executeSync({
+      schema,
+      document: parse('{ customScalar }'),
+      contextValue: 1,
+    });
+    expectJSON(result).toDeepEqual({
+      data: { customScalar: 1 },
+    });
   });
 
   it('fails when serialize of custom scalar does not return a value', () => {

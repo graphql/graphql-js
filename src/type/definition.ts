@@ -554,13 +554,17 @@ export interface GraphQLScalarTypeExtensions {
  * });
  * ```
  */
-export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
+export class GraphQLScalarType<
+  TInternal = unknown,
+  TExternal = TInternal,
+  TContext = any,
+> {
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
-  serialize: GraphQLScalarSerializer<TExternal>;
-  parseValue: GraphQLScalarValueParser<TInternal>;
-  parseLiteral: GraphQLScalarLiteralParser<TInternal>;
+  serialize: GraphQLScalarSerializer<TExternal, TContext>;
+  parseValue: GraphQLScalarValueParser<TInternal, TContext>;
+  parseLiteral: GraphQLScalarLiteralParser<TInternal, TContext>;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
@@ -578,7 +582,8 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
     this.parseValue = parseValue;
     this.parseLiteral =
       config.parseLiteral ??
-      ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
+      ((node, context, variables) =>
+        parseValue(valueFromASTUntyped(node, variables), context));
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
@@ -631,16 +636,19 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   }
 }
 
-export type GraphQLScalarSerializer<TExternal> = (
+export type GraphQLScalarSerializer<TExternal, TContext = any> = (
   outputValue: unknown,
+  context?: Maybe<TContext>,
 ) => TExternal;
 
-export type GraphQLScalarValueParser<TInternal> = (
+export type GraphQLScalarValueParser<TInternal, TContext = any> = (
   inputValue: unknown,
+  context?: Maybe<TContext>,
 ) => TInternal;
 
-export type GraphQLScalarLiteralParser<TInternal> = (
+export type GraphQLScalarLiteralParser<TInternal, TContext = any> = (
   valueNode: ValueNode,
+  context?: Maybe<TContext>,
   variables?: Maybe<ObjMap<unknown>>,
 ) => TInternal;
 
@@ -1401,6 +1409,7 @@ export class GraphQLEnumType /* <T> */ {
 
   parseLiteral(
     valueNode: ValueNode,
+    _context: unknown,
     _variables: Maybe<ObjMap<unknown>>,
   ): Maybe<any> /* T */ {
     // Note: variables will be resolved to a value before calling this function.

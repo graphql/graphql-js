@@ -323,6 +323,7 @@ export function buildExecutionContext(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
+    contextValue,
     { maxErrors: 50 },
   );
 
@@ -497,6 +498,11 @@ function executeField(
     path,
   );
 
+  // The resolve function's optional third argument is a context value that
+  // is provided to every resolve function within an execution. It is commonly
+  // used to represent an authenticated user, or request-specific caches.
+  const { contextValue, variableValues } = exeContext;
+
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
   try {
     // Build a JS object of arguments from the field.arguments AST, using the
@@ -505,13 +511,9 @@ function executeField(
     const args = getArgumentValues(
       fieldDef,
       fieldNodes[0],
-      exeContext.variableValues,
+      contextValue,
+      variableValues,
     );
-
-    // The resolve function's optional third argument is a context value that
-    // is provided to every resolve function within an execution. It is commonly
-    // used to represent an authenticated user, or request-specific caches.
-    const contextValue = exeContext.contextValue;
 
     const result = resolveFn(source, args, contextValue, info);
 
@@ -662,7 +664,7 @@ function completeValue(
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
   if (isLeafType(returnType)) {
-    return completeLeafValue(returnType, result);
+    return completeLeafValue(exeContext, returnType, result);
   }
 
   // If field type is an abstract type, Interface or Union, determine the
@@ -775,10 +777,14 @@ function completeListValue(
  * null if serialization is not possible.
  */
 function completeLeafValue(
+  exeContext: ExecutionContext,
   returnType: GraphQLLeafType,
   result: unknown,
 ): unknown {
-  const serializedResult = returnType.serialize(result);
+  const serializedResult = returnType.serialize(
+    result,
+    exeContext.contextValue,
+  );
   if (serializedResult == null) {
     throw new Error(
       `Expected \`${inspect(returnType)}.serialize(${inspect(result)})\` to ` +

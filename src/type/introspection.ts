@@ -393,9 +393,9 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         description:
           'A GraphQL-formatted string representing the default value for this input value.',
-        resolve(inputValue) {
+        resolve(inputValue, _args, context) {
           const { type, defaultValue } = inputValue;
-          const valueAST = astFromValue(defaultValue, type);
+          const valueAST = astFromValue(defaultValue, type, context);
           return valueAST ? print(valueAST) : null;
         },
       },

@@ -88,8 +88,23 @@ describe('Type System: Scalars', () => {
       'parseValue: { foo: "bar" }',
     );
     expect(
-      scalar.parseLiteral(parseValue('{ foo: { bar: $var } }'), { var: 'baz' }),
+      scalar.parseLiteral(parseValue('{ foo: { bar: $var } }'), undefined, {
+        var: 'baz',
+      }),
     ).to.equal('parseValue: { foo: { bar: "baz" } }');
+  });
+
+  it('pass context to scalar methods', () => {
+    const scalar = new GraphQLScalarType({
+      name: 'Foo',
+      serialize: (_value, context) => context,
+      parseValue: (_value, context) => context,
+      parseLiteral: (_value, context) => context,
+    });
+
+    expect(scalar.serialize(undefined, 1)).to.equal(1);
+    expect(scalar.parseValue(undefined, 1)).to.equal(1);
+    expect(scalar.parseLiteral(parseValue('null'), 1)).to.equal(1);
   });
 
   it('rejects a Scalar type without name', () => {

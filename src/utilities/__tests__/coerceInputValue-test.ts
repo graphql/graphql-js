@@ -27,11 +27,13 @@ interface CoerceError {
 function coerceValue(
   inputValue: unknown,
   type: GraphQLInputType,
+  context?: unknown,
 ): CoerceResult {
   const errors: Array<CoerceError> = [];
   const value = coerceInputValue(
     inputValue,
     type,
+    context,
     (path, invalidValue, error) => {
       errors.push({ path, value: invalidValue, error: error.message });
     },
@@ -84,9 +86,12 @@ describe('coerceInputValue', () => {
   describe('for GraphQLScalar', () => {
     const TestScalar = new GraphQLScalarType({
       name: 'TestScalar',
-      parseValue(input: any) {
+      parseValue(input: any, context: any) {
         if (input.error != null) {
           throw new Error(input.error);
+        }
+        if (input.context != null) {
+          return context;
         }
         return input.value;
       },
@@ -128,6 +133,22 @@ describe('coerceInputValue', () => {
           value: { error: 'Some error message' },
         },
       ]);
+    });
+
+    it('accesses context when directed', () => {
+      const inputValue = { context: true };
+      const result = coerceValue(inputValue, TestScalar, 1);
+      expectValue(result).to.equal(1);
+    });
+
+    const ContextScalar = new GraphQLScalarType({
+      name: 'ContextScalar',
+      parseValue: (_input, context) => context,
+    });
+
+    it('accesses context', () => {
+      const result = coerceValue({ value: 1 }, ContextScalar, 1);
+      expectValue(result).to.equal(1);
     });
   });
 
@@ -409,7 +430,7 @@ describe('coerceInputValue', () => {
   describe('with default onError', () => {
     it('throw error without path', () => {
       expect(() =>
-        coerceInputValue(null, new GraphQLNonNull(GraphQLInt)),
+        coerceInputValue(null, new GraphQLNonNull(GraphQLInt), undefined),
       ).to.throw(
         'Invalid value null: Expected non-nullable type "Int!" not to be null.',
       );
@@ -420,6 +441,7 @@ describe('coerceInputValue', () => {
         coerceInputValue(
           [null],
           new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+          undefined,
         ),
       ).to.throw(
         'Invalid value null at "value[0]": Expected non-nullable type "Int!" not to be null.',

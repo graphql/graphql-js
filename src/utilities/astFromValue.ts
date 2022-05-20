@@ -38,12 +38,13 @@ import { GraphQLID } from '../type/scalars';
  * | null          | NullValue            |
  *
  */
-export function astFromValue(
+export function astFromValue<TContext = any>(
   value: unknown,
   type: GraphQLInputType,
+  context?: Maybe<TContext>,
 ): Maybe<ValueNode> {
   if (isNonNullType(type)) {
-    const astValue = astFromValue(value, type.ofType);
+    const astValue = astFromValue(value, type.ofType, context);
     if (astValue?.kind === Kind.NULL) {
       return null;
     }
@@ -67,7 +68,7 @@ export function astFromValue(
     if (isIterableObject(value)) {
       const valuesNodes = [];
       for (const item of value) {
-        const itemNode = astFromValue(item, itemType);
+        const itemNode = astFromValue(item, itemType, context);
         if (itemNode != null) {
           valuesNodes.push(itemNode);
         }
@@ -85,7 +86,7 @@ export function astFromValue(
     }
     const fieldNodes: Array<ObjectFieldNode> = [];
     for (const field of Object.values(type.getFields())) {
-      const fieldValue = astFromValue(value[field.name], field.type);
+      const fieldValue = astFromValue(value[field.name], field.type, context);
       if (fieldValue) {
         fieldNodes.push({
           kind: Kind.OBJECT_FIELD,
@@ -100,7 +101,7 @@ export function astFromValue(
   if (isLeafType(type)) {
     // Since value is an internally represented value, it must be serialized
     // to an externally represented value before converting into an AST.
-    const serialized = type.serialize(value);
+    const serialized = type.serialize(value, context);
     if (serialized == null) {
       return null;
     }

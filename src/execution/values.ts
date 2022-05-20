@@ -36,10 +36,11 @@ type CoercedVariableValues =
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-export function getVariableValues(
+export function getVariableValues<TContext = any>(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { readonly [variable: string]: unknown },
+  context?: Maybe<TContext>,
   options?: { maxErrors?: number },
 ): CoercedVariableValues {
   const errors = [];
@@ -47,6 +48,7 @@ export function getVariableValues(
   try {
     const coerced = coerceVariableValues(
       schema,
+      context,
       varDefNodes,
       inputs,
       (error) => {
@@ -69,8 +71,9 @@ export function getVariableValues(
   return { errors };
 }
 
-function coerceVariableValues(
+function coerceVariableValues<TContext>(
   schema: GraphQLSchema,
+  context: TContext,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { readonly [variable: string]: unknown },
   onError: (error: GraphQLError) => void,
@@ -122,6 +125,7 @@ function coerceVariableValues(
     coercedValues[varName] = coerceInputValue(
       value,
       varType,
+      context,
       (path, invalidValue, error) => {
         let prefix =
           `Variable "$${varName}" got invalid value ` + inspect(invalidValue);
@@ -149,9 +153,10 @@ function coerceVariableValues(
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-export function getArgumentValues(
+export function getArgumentValues<TContext = any>(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
+  context?: TContext,
   variableValues?: Maybe<ObjMap<unknown>>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
@@ -210,7 +215,12 @@ export function getArgumentValues(
       );
     }
 
-    const coercedValue = valueFromAST(valueNode, argType, variableValues);
+    const coercedValue = valueFromAST(
+      valueNode,
+      argType,
+      context,
+      variableValues,
+    );
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
