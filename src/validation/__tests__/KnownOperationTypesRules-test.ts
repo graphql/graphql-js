@@ -15,17 +15,13 @@ function expectValid(queryStr: string) {
 describe('Validate: Known operation types', () => {
   it('one known operation', () => {
     expectValid(`
-      {
-        field
-      }
+      { field }
     `);
   });
 
   it('one unknown operation', () => {
     expectErrors(`
-      mutation {
-        field
-      }
+      mutation { field }
     `).toDeepEqual([
       {
         message: 'The mutation operation is not supported by the schema.',
@@ -36,16 +32,12 @@ describe('Validate: Known operation types', () => {
 
   it('mixture of known and unknown operations', () => {
     expectErrors(`
-      query {
-        field
-      }
-      mutation {
-        field
-      }
+      query { field }
+      mutation { field }
   `).toDeepEqual([
       {
         message: 'The mutation operation is not supported by the schema.',
-        locations: [{ line: 5, column: 7 }],
+        locations: [{ line: 3, column: 7 }],
       },
     ]);
   });
