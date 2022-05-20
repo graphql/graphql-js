@@ -33,6 +33,9 @@ export { KnownDirectivesRule } from './rules/KnownDirectivesRule.js';
 // Spec Section: "Fragment spread target defined"
 export { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.js';
 
+// Spec Section: "Operation Type Existence"
+export { KnownOperationTypesRule } from './rules/KnownOperationTypesRule.js';
+
 // Spec Section: "Fragment Spread Type Existence"
 export { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js';
 
