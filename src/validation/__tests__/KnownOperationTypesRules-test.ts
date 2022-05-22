@@ -19,7 +19,7 @@ describe('Validate: Known operation types', () => {
     `);
   });
 
-  it('one unknown operation', () => {
+  it('unknown mutation operation', () => {
     expectErrors(`
       mutation { field }
     `).toDeepEqual([
@@ -30,14 +30,30 @@ describe('Validate: Known operation types', () => {
     ]);
   });
 
+  it('unknown subscription operation', () => {
+    expectErrors(`
+      subscription { field }
+    `).toDeepEqual([
+      {
+        message: 'The subscription operation is not supported by the schema.',
+        locations: [{ line: 2, column: 7 }],
+      },
+    ]);
+  });
+
   it('mixture of known and unknown operations', () => {
     expectErrors(`
       query { field }
       mutation { field }
+      subscription { field }
   `).toDeepEqual([
       {
         message: 'The mutation operation is not supported by the schema.',
         locations: [{ line: 3, column: 7 }],
+      },
+      {
+        message: 'The subscription operation is not supported by the schema.',
+        locations: [{ line: 4, column: 7 }],
       },
     ]);
   });
