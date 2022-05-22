@@ -698,46 +698,48 @@ describe('Execute: Handles execution of abstract types', () => {
       };
     }
 
+    const namedType = assertInterfaceType(schema.getType('Named'));
     // FIXME: workaround since we can't inject resolveType into SDL
-    assertInterfaceType(schema.getType('Named')).resolveType = () => 'Animal';
+    namedType.resolveType = () => 'Animal';
     expectError().toEqual(
       'Abstract type resolution for "Named" for field "Query.named" failed. Interface type "Animal" is not a subtype of encountered interface type "Named".',
     );
 
+    const petType = assertInterfaceType(schema.getType('Pet'));
     // FIXME: workaround since we can't inject resolveType into SDL
-    assertInterfaceType(schema.getType('Named')).resolveType = () => 'Pet';
-    assertInterfaceType(schema.getType('Pet')).resolveType = () => undefined;
+    namedType.resolveType = () => 'Pet';
+    petType.resolveType = () => undefined;
     expectError().toEqual(
       'Abstract type resolution for "Named" for field "Query.named" failed. Encountered abstract type "Pet" must resolve to an Object or Interface type at runtime. Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    assertInterfaceType(schema.getType('Pet')).resolveType = () => 'Human';
+    petType.resolveType = () => 'Human';
     expectError().toEqual(
       'Abstract type resolution for "Named" for field "Query.named" failed. Encountered abstract type "Pet" was resolved to a type "Human" that does not exist inside the schema.',
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    assertInterfaceType(schema.getType('Pet')).resolveType = () => 'String';
+    petType.resolveType = () => 'String';
     expectError().toEqual(
       'Abstract type resolution for "Named" for field "Query.named" failed. Encountered abstract type "Pet" was resolved to a non-object type "String".',
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    assertInterfaceType(schema.getType('Pet')).resolveType = () => '__Schema';
+    petType.resolveType = () => '__Schema';
     expectError().toEqual(
       'Abstract type resolution for "Named" for field "Query.named" failed. Runtime Object type "__Schema" is not a possible type for encountered abstract type "Pet".',
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
     // @ts-expect-error
-    assertInterfaceType(schema.getType('Pet')).resolveType = () => [];
+    petType.resolveType = () => [];
     expectError().toEqual(
       'Abstract type resolution for "Named" for field "Query.named" with value {} failed. Encountered abstract type "Pet" must resolve to an Object or Interface type at runtime, received "[]".',
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
-    assertInterfaceType(schema.getType('Pet')).resolveType = () => 'Pet';
+    petType.resolveType = () => 'Pet';
     expectError().toEqual(
       'Abstract type resolution for "Named" for field "Query.named" failed. Encountered abstract type "Pet" resolved to "Pet", causing a cycle.',
     );
