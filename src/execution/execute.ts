@@ -840,17 +840,17 @@ function resolveType(
 ): GraphQLObjectType | Promise<GraphQLObjectType> {
   const resolveTypeFn = abstractType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
-  const possibleRuntimeType = resolveTypeFn(
+  const possibleRuntimeTypeName = resolveTypeFn(
     result,
     contextValue,
     info,
     abstractType,
   );
 
-  if (isPromise(possibleRuntimeType)) {
-    return possibleRuntimeType.then((resolvedPossibleRuntimeType) =>
-      ensureValidRuntimeType(
-        resolvedPossibleRuntimeType,
+  if (isPromise(possibleRuntimeTypeName)) {
+    return possibleRuntimeTypeName.then((resolvedPossibleRuntimeTypeName) =>
+      deriveRuntimeType(
+        resolvedPossibleRuntimeTypeName,
         exeContext,
         returnType,
         abstractType,
@@ -861,8 +861,8 @@ function resolveType(
       ),
     );
   }
-  return ensureValidRuntimeType(
-    possibleRuntimeType,
+  return deriveRuntimeType(
+    possibleRuntimeTypeName,
     exeContext,
     returnType,
     abstractType,
@@ -873,7 +873,7 @@ function resolveType(
   );
 }
 
-function ensureValidRuntimeType(
+function deriveRuntimeType(
   runtimeTypeName: unknown,
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
