@@ -655,7 +655,7 @@ describe('Execute: Handles execution of abstract types', () => {
         isFriendly: Boolean
       }
 
-      interface Pet implements Animal & Named {
+      interface Pet implements Named & Animal {
         name: String
         isFriendly: Boolean
       }
@@ -665,7 +665,7 @@ describe('Execute: Handles execution of abstract types', () => {
         isFriendly: Boolean
       }
 
-      type Dog implements Pet & Animal & Named {
+      type Dog implements Pet & Named & Animal {
         name: String
         isFriendly: Boolean
       }
