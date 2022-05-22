@@ -877,7 +877,7 @@ function deriveRuntimeType(
   runtimeTypeName: unknown,
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
-  abstractType: GraphQLAbstractType,
+  currentAbstractType: GraphQLAbstractType,
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   result: unknown,
@@ -886,8 +886,8 @@ function deriveRuntimeType(
   if (runtimeTypeName == null) {
     throw new GraphQLError(
       `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Encountered abstract type "${abstractType.name}" must resolve to an Object or Interface type at runtime. ` +
-        `Either the "${abstractType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
+        `Encountered abstract type "${currentAbstractType.name}" must resolve to an Object or Interface type at runtime. ` +
+        `Either the "${currentAbstractType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
       { nodes: fieldNodes },
     );
   }
@@ -904,7 +904,7 @@ function deriveRuntimeType(
     throw new GraphQLError(
       `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" ` +
         `with value ${inspect(result)} failed. ` +
-        `Encountered abstract type "${abstractType.name}" must resolve to an Object or Interface type at runtime, ` +
+        `Encountered abstract type "${currentAbstractType.name}" must resolve to an Object or Interface type at runtime, ` +
         `received "${inspect(runtimeTypeName)}".`,
     );
   }
@@ -912,7 +912,7 @@ function deriveRuntimeType(
   if (encounteredTypeNames.has(runtimeTypeName)) {
     throw new GraphQLError(
       `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Encountered abstract type "${abstractType.name}" resolved to "${runtimeTypeName}", causing a cycle.`,
+        `Encountered abstract type "${currentAbstractType.name}" resolved to "${runtimeTypeName}", causing a cycle.`,
     );
   }
   encounteredTypeNames.add(runtimeTypeName);
@@ -921,13 +921,13 @@ function deriveRuntimeType(
   if (runtimeType == null) {
     throw new GraphQLError(
       `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Encountered abstract type "${abstractType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
+        `Encountered abstract type "${currentAbstractType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
       { nodes: fieldNodes },
     );
   }
 
   if (isInterfaceType(runtimeType)) {
-    if (!exeContext.schema.isSubType(returnType, runtimeType)) {
+    if (!exeContext.schema.isSubType(currentAbstractType, runtimeType)) {
       throw new GraphQLError(
         `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
           `Interface type "${runtimeType.name}" is not a subtype of encountered interface type "${returnType.name}".`,
@@ -949,15 +949,15 @@ function deriveRuntimeType(
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
       `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Encountered abstract type "${abstractType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
+        `Encountered abstract type "${currentAbstractType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
       { nodes: fieldNodes },
     );
   }
 
-  if (!exeContext.schema.isSubType(returnType, runtimeType)) {
+  if (!exeContext.schema.isSubType(currentAbstractType, runtimeType)) {
     throw new GraphQLError(
       `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Runtime Object type "${runtimeType.name}" is not a possible type for encountered abstract type "${abstractType.name}".`,
+        `Runtime Object type "${runtimeType.name}" is not a possible type for encountered abstract type "${currentAbstractType.name}".`,
       { nodes: fieldNodes },
     );
   }

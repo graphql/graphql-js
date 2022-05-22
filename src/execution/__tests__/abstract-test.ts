@@ -669,6 +669,10 @@ describe('Execute: Handles execution of abstract types', () => {
         name: String
         isFriendly: Boolean
       }
+
+      type Person implements Named {
+        name: String
+      }
     `);
 
     const document = parse(`
@@ -706,6 +710,13 @@ describe('Execute: Handles execution of abstract types', () => {
     );
 
     const petType = assertInterfaceType(schema.getType('Pet'));
+    // FIXME: workaround since we can't inject resolveType into SDL
+    namedType.resolveType = () => 'Pet';
+    petType.resolveType = () => 'Person';
+    expectError().toEqual(
+      'Abstract type resolution for "Named" for field "Query.named" failed. Runtime Object type "Person" is not a possible type for encountered abstract type "Pet".',
+    );
+
     // FIXME: workaround since we can't inject resolveType into SDL
     namedType.resolveType = () => 'Pet';
     petType.resolveType = () => undefined;
