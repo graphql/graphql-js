@@ -51,22 +51,9 @@ import type { GraphQLSchema } from './schema';
  * These are all of the possible kinds of types.
  */
 export type GraphQLType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
+  | GraphQLNamedType
   | GraphQLList<GraphQLType>
-  | GraphQLNonNull<
-      | GraphQLScalarType
-      | GraphQLObjectType
-      | GraphQLInterfaceType
-      | GraphQLUnionType
-      | GraphQLEnumType
-      | GraphQLInputObjectType
-      | GraphQLList<GraphQLType>
-    >;
+  | GraphQLNonNull<GraphQLNullableType>;
 
 export function isType(type: unknown): type is GraphQLType {
   return (
@@ -183,16 +170,16 @@ export function assertListType(type: unknown): GraphQLList<GraphQLType> {
 
 export function isNonNullType(
   type: GraphQLInputType,
-): type is GraphQLNonNull<GraphQLInputType>;
+): type is GraphQLNonNull<GraphQLNullableInputType>;
 export function isNonNullType(
   type: GraphQLOutputType,
-): type is GraphQLNonNull<GraphQLOutputType>;
+): type is GraphQLNonNull<GraphQLNullableOutputType>;
 export function isNonNullType(
   type: unknown,
-): type is GraphQLNonNull<GraphQLType>;
+): type is GraphQLNonNull<GraphQLNullableType>;
 export function isNonNullType(
   type: unknown,
-): type is GraphQLNonNull<GraphQLType> {
+): type is GraphQLNonNull<GraphQLNullableType> {
   return instanceOf(type, GraphQLNonNull);
 }
 
@@ -206,17 +193,13 @@ export function assertNonNullType(type: unknown): GraphQLNonNull<GraphQLType> {
 /**
  * These types may be used as input types for arguments and directives.
  */
+export type GraphQLNullableInputType =
+  | GraphQLNamedInputType
+  | GraphQLList<GraphQLInputType>;
+
 export type GraphQLInputType =
-  | GraphQLScalarType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
-  | GraphQLList<GraphQLInputType>
-  | GraphQLNonNull<
-      | GraphQLScalarType
-      | GraphQLEnumType
-      | GraphQLInputObjectType
-      | GraphQLList<GraphQLInputType>
-    >;
+  | GraphQLNullableInputType
+  | GraphQLNonNull<GraphQLNullableInputType>;
 
 export function isInputType(type: unknown): type is GraphQLInputType {
   return (
@@ -237,21 +220,13 @@ export function assertInputType(type: unknown): GraphQLInputType {
 /**
  * These types may be used as output types as the result of fields.
  */
+export type GraphQLNullableOutputType =
+  | GraphQLNamedOutputType
+  | GraphQLList<GraphQLOutputType>;
+
 export type GraphQLOutputType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLList<GraphQLOutputType>
-  | GraphQLNonNull<
-      | GraphQLScalarType
-      | GraphQLObjectType
-      | GraphQLInterfaceType
-      | GraphQLUnionType
-      | GraphQLEnumType
-      | GraphQLList<GraphQLOutputType>
-    >;
+  | GraphQLNullableOutputType
+  | GraphQLNonNull<GraphQLNullableOutputType>;
 
 export function isOutputType(type: unknown): type is GraphQLOutputType {
   return (
@@ -436,14 +411,7 @@ export function assertWrappingType(type: unknown): GraphQLWrappingType {
 /**
  * These types can all accept null as a value.
  */
-export type GraphQLNullableType =
-  | GraphQLScalarType
-  | GraphQLObjectType
-  | GraphQLInterfaceType
-  | GraphQLUnionType
-  | GraphQLEnumType
-  | GraphQLInputObjectType
-  | GraphQLList<GraphQLType>;
+export type GraphQLNullableType = GraphQLNamedType | GraphQLList<GraphQLType>;
 
 export function isNullableType(type: unknown): type is GraphQLNullableType {
   return isType(type) && !isNonNullType(type);
@@ -1441,7 +1409,7 @@ export class GraphQLEnumType /* <T> */ {
       throw new GraphQLError(
         `Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
           didYouMeanEnumValue(this, valueStr),
-        valueNode,
+        { nodes: valueNode },
       );
     }
 
@@ -1451,7 +1419,7 @@ export class GraphQLEnumType /* <T> */ {
       throw new GraphQLError(
         `Value "${valueStr}" does not exist in "${this.name}" enum.` +
           didYouMeanEnumValue(this, valueStr),
-        valueNode,
+        { nodes: valueNode },
       );
     }
     return enumValue.value;

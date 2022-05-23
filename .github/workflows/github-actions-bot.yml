@@ -1,0 +1,159 @@
+name: GitHubActionsBot
+on:
+  issue_comment:
+    types:
+      - created
+
+  # We need to be call in context of the main branch to have write permissions
+  # "pull_request" target is called in context of a fork
+  # "pull_request_target" is called in context of the repository but not necessary latest main
+  workflow_run:
+    workflows:
+      - PullRequestOpened
+    types:
+      - completed
+env:
+  SUPPORTED_COMMANDS: |
+    <details>
+    <summary> Supported commands </summary>
+
+    Please post this commands in separate comments and only one per comment:
+    * `@github-actions run-benchmark` - Run benchmark comparing base and merge commits for this PR
+    * `@github-actions publish-pr-on-npm` - Build package from this PR and publish it on NPM
+    </details>
+jobs:
+  hello-message:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download event.json
+        run: gh run download "$WORKFLOW_ID" --repo "$REPO" --name event.json
+        env:
+          REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_ID: ${{github.event.workflow_run.id}}
+
+      - name: Add comment on PR
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const fs = require('fs');
+
+            const event = JSON.parse(fs.readFileSync('./event.json', 'utf8'));
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: event.pull_request.number,
+              body:
+                `Hi @${event.sender.login}, I'm @github-actions bot happy to help you with this PR 👋\n\n` +
+                process.env.SUPPORTED_COMMANDS,
+            })
+
+  accept-cmd:
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '@github-actions ')
+    runs-on: ubuntu-latest
+    outputs:
+      cmd: ${{ steps.parse-cmd.outputs.cmd }}
+      pullRequestJSON: ${{ steps.parse-cmd.outputs.pullRequestJSON }}
+    steps:
+      - uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.reactions.createForIssueComment({
+              ...context.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes',
+            });
+
+      - id: parse-cmd
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const comment = context.payload.comment.body;
+            core.setOutput('cmd', comment.replace('@github-actions ', '').trim());
+
+            const { url } = context.payload.issue.pull_request;
+            const { data } = await github.request(url);
+            core.setOutput('pullRequestJSON', JSON.stringify(data, null, 2));
+
+  cmd-publish-pr-on-npm:
+    needs: [accept-cmd]
+    if: needs.accept-cmd.outputs.cmd == 'publish-pr-on-npm'
+    uses: ./.github/workflows/cmd-publish-pr-on-npm.yml
+    with:
+      pullRequestJSON: ${{ needs.accept-cmd.outputs.pullRequestJSON }}
+    secrets:
+      NPM_CANARY_PR_PUBLISH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
+
+  cmd-run-benchmark:
+    needs: [accept-cmd]
+    if: needs.accept-cmd.outputs.cmd == 'run-benchmark'
+    uses: ./.github/workflows/cmd-run-benchmark.yml
+    with:
+      pullRequestJSON: ${{ needs.accept-cmd.outputs.pullRequestJSON }}
+
+  respond-to-cmd:
+    needs:
+      - accept-cmd
+      - cmd-publish-pr-on-npm
+      - cmd-run-benchmark
+    if: needs.accept-cmd.result != 'skipped' && always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: replyMessage
+
+      - if: failure()
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const fs = require('fs');
+
+            const needs = JSON.parse(process.env.NEEDS);
+
+            let allSkipped = true;
+            for (const [ name, job ] of Object.entries(needs)) {
+              if (name.startsWith('cmd-')) {
+                allSkipped = allSkipped && job.result === 'skipped';
+              }
+            }
+
+            const replyMessage = allSkipped
+              ? 'Unknown command 😕\n\n' + process.env.SUPPORTED_COMMANDS
+              : `Something went wrong, [please check log](${process.env.RUN_URL}).`;
+
+            fs.writeFileSync('./replyMessage.txt', replyMessage, 'utf-8');
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          RUN_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
+
+      - if: always()
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const fs = require('fs');
+
+            const replyMessage = fs.readFileSync('./replyMessage.txt', 'utf-8');
+            const { issue, comment, sender } = context.payload;
+
+            const quoteRequest = comment.body
+              .split('\n')
+              .map((line) => '> ' + line)
+              .join('\n');
+
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issue.number,
+              body: quoteRequest + `\n\n@${sender.login} ` + replyMessage,
+            });
+
+            // `github.rest` doesn't have this method :( so use graphql instead
+            github.graphql(`
+              mutation ($subjectId: ID!) {
+                minimizeComment(input: { subjectId: $subjectId, classifier: RESOLVED})
+                  { __typename }
+              }
+            `, { subjectId: comment.node_id });

@@ -165,12 +165,6 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  // Temporary for v15 to v16 migration. Remove in v17
-  devAssert(
-    arguments.length < 2,
-    'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
-  );
-
   const { schema, document, variableValues, rootValue } = args;
 
   // If arguments are missing or incorrect, throw an error.
@@ -253,7 +247,7 @@ export function assertValidExecutionArguments(
   document: DocumentNode,
   rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
 ): void {
-  devAssert(document, 'Must provide document.');
+  devAssert(document != null, 'Must provide document.');
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
@@ -362,7 +356,7 @@ function executeOperation(
   if (rootType == null) {
     throw new GraphQLError(
       `Schema is not configured to execute ${operation.operation} operation.`,
-      operation,
+      { nodes: operation },
     );
   }
 
@@ -858,7 +852,7 @@ function ensureValidRuntimeType(
   if (runtimeTypeName == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
@@ -881,21 +875,21 @@ function ensureValidRuntimeType(
   if (runtimeType == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
@@ -952,7 +946,7 @@ function invalidReturnTypeError(
 ): GraphQLError {
   return new GraphQLError(
     `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
-    fieldNodes,
+    { nodes: fieldNodes },
   );
 }
 

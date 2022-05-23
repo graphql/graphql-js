@@ -29,9 +29,6 @@ export type {
 // Gets the target Operation from a Document.
 export { getOperationAST } from './getOperationAST';
 
-// Gets the Type for the target Operation AST.
-export { getOperationRootType } from './getOperationRootType';
-
 // Convert a GraphQLSchema to an IntrospectionQuery.
 export { introspectionFromSchema } from './introspectionFromSchema';
 
@@ -88,9 +85,6 @@ export {
   isTypeSubTypeOf,
   doTypesOverlap,
 } from './typeComparators';
-
-// Asserts that a string is a valid GraphQL name
-export { assertValidName, isValidNameError } from './assertValidName';
 
 // Compares two GraphQLSchemas and detects breaking changes.
 export {

@@ -19,7 +19,9 @@ export function KnownFragmentNamesRule(context: ValidationContext): ASTVisitor {
       const fragment = context.getFragment(fragmentName);
       if (!fragment) {
         context.reportError(
-          new GraphQLError(`Unknown fragment "${fragmentName}".`, node.name),
+          new GraphQLError(`Unknown fragment "${fragmentName}".`, {
+            nodes: node.name,
+          }),
         );
       }
     },

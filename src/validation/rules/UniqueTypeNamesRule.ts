@@ -30,7 +30,7 @@ export function UniqueTypeNamesRule(context: SDLValidationContext): ASTVisitor {
       context.reportError(
         new GraphQLError(
           `Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`,
-          node.name,
+          { nodes: node.name },
         ),
       );
       return;
@@ -38,10 +38,9 @@ export function UniqueTypeNamesRule(context: SDLValidationContext): ASTVisitor {
 
     if (knownTypeNames[typeName]) {
       context.reportError(
-        new GraphQLError(`There can be only one type named "${typeName}".`, [
-          knownTypeNames[typeName],
-          node.name,
-        ]),
+        new GraphQLError(`There can be only one type named "${typeName}".`, {
+          nodes: [knownTypeNames[typeName], node.name],
+        }),
       );
     } else {
       knownTypeNames[typeName] = node.name;

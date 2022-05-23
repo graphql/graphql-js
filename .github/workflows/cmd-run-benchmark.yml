@@ -1,0 +1,48 @@
+name: run-benchmark
+on:
+  workflow_call:
+    inputs:
+      pullRequestJSON:
+        required: true
+        type: string
+jobs:
+  benchmark:
+    name: Run benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          ref: ${{ fromJSON(inputs.pullRequestJSON).merge_commit_sha }}
+
+      - name: Deepen cloned repo
+        env:
+          BASE_SHA: ${{ fromJSON(inputs.pullRequestJSON).base.sha }}
+        run: 'git fetch --depth=1 origin $BASE_SHA:refs/tags/BASE'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run Benchmark
+        run: |
+          cat <<EOF >> replyMessage.txt
+          <details>
+          <summary> Benchmark output </summary>
+          EOF
+          npm run benchmark -- --revs HEAD BASE | tee -a replyMessage.txt
+          cat <<EOF >> replyMessage.txt
+          </details>
+          EOF
+
+      - name: Upload replyMessage
+        uses: actions/upload-artifact@v2
+        with:
+          name: replyMessage
+          path: ./replyMessage.txt

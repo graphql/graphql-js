@@ -78,7 +78,7 @@ export function NoFragmentCyclesRule(
           new GraphQLError(
             `Cannot spread fragment "${spreadName}" within itself` +
               (viaPath !== '' ? ` via ${viaPath}.` : '.'),
-            cyclePath,
+            { nodes: cyclePath },
           ),
         );
       }

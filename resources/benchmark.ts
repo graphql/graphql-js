@@ -1,10 +1,8 @@
-'use strict';
-
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const assert = require('assert');
-const cp = require('child_process');
+import * as assert from 'node:assert';
+import * as cp from 'node:child_process';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
@@ -14,22 +12,21 @@ const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 const minSamples = 5;
 
-// Get the revisions and make things happen!
-if (require.main === module) {
+async function runBenchmarks() {
+  // Get the revisions and make things happen!
   const { benchmarks, revisions } = getArguments(process.argv.slice(2));
   const benchmarkProjects = prepareBenchmarkProjects(revisions);
 
-  runBenchmarks(benchmarks, benchmarkProjects).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+  for (const benchmark of benchmarks) {
+    await runBenchmark(benchmark, benchmarkProjects);
+  }
 }
 
-function localDir(...paths) {
+function localDir(...paths: ReadonlyArray<string>) {
   return path.join(__dirname, '..', ...paths);
 }
 
-function exec(command, options = {}) {
+function exec(command: string, options = {}) {
   const result = cp.execSync(command, {
     encoding: 'utf-8',
     stdio: ['inherit', 'pipe', 'inherit'],
@@ -38,9 +35,16 @@ function exec(command, options = {}) {
   return result?.trimEnd();
 }
 
+interface BenchmarkProject {
+  revision: string;
+  projectPath: string;
+}
+
 // Build a benchmark-friendly environment for the given revision
 // and returns path to its 'dist' directory.
-function prepareBenchmarkProjects(revisionList) {
+function prepareBenchmarkProjects(
+  revisionList: ReadonlyArray<string>,
+): Array<BenchmarkProject> {
   const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
   fs.rmSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir);
@@ -54,20 +58,27 @@ function prepareBenchmarkProjects(revisionList) {
     fs.rmSync(projectPath, { recursive: true, force: true });
     fs.mkdirSync(projectPath);
 
+    fs.cpSync(localDir('benchmark'), path.join(projectPath, 'benchmark'), {
+      recursive: true,
+    });
+
+    const packageJSON = {
+      private: true,
+      type: 'module',
+      dependencies: {
+        graphql: prepareNPMPackage(revision),
+      },
+    };
     fs.writeFileSync(
       path.join(projectPath, 'package.json'),
-      '{ "private": true }',
+      JSON.stringify(packageJSON, null, 2),
     );
-    exec(
-      'npm --quiet install --ignore-scripts ' + prepareNPMPackage(revision),
-      { cwd: projectPath },
-    );
-    exec(`cp -R ${localDir('benchmark')} ${projectPath}`);
+    exec('npm --quiet install --ignore-scripts ', { cwd: projectPath });
 
     return { revision, projectPath };
   });
 
-  function prepareNPMPackage(revision) {
+  function prepareNPMPackage(revision: string) {
     if (revision === LOCAL) {
       const repoDir = localDir();
       const archivePath = path.join(tmpDir, 'graphql-local.tgz');
@@ -93,7 +104,7 @@ function prepareBenchmarkProjects(revisionList) {
     return archivePath;
   }
 
-  function buildNPMArchive(repoDir) {
+  function buildNPMArchive(repoDir: string) {
     exec('npm --quiet run build:npm', { cwd: repoDir });
 
     const distDir = path.join(repoDir, 'npmDist');
@@ -102,16 +113,16 @@ function prepareBenchmarkProjects(revisionList) {
   }
 }
 
-async function collectSamples(modulePath) {
+async function collectSamples(modulePath: string) {
   const samples = [];
 
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
   while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
-    const { clocked, memUsed } = await sampleModule(modulePath);
-    assert(clocked > 0);
-    assert(memUsed > 0);
-    samples.push({ clocked, memUsed });
+    const sample = await sampleModule(modulePath);
+    assert(sample.clocked > 0);
+    assert(sample.memUsed > 0);
+    samples.push(sample);
   }
   return samples;
 }
@@ -119,17 +130,28 @@ async function collectSamples(modulePath) {
 // T-Distribution two-tailed critical values for 95% confidence.
 // See http://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.
 // prettier-ignore
-const tTable = {
+const tTable: { [v: number]: number } = {
   '1':  12.706, '2':  4.303, '3':  3.182, '4':  2.776, '5':  2.571, '6':  2.447,
   '7':  2.365,  '8':  2.306, '9':  2.262, '10': 2.228, '11': 2.201, '12': 2.179,
   '13': 2.16,   '14': 2.145, '15': 2.131, '16': 2.12,  '17': 2.11,  '18': 2.101,
   '19': 2.093,  '20': 2.086, '21': 2.08,  '22': 2.074, '23': 2.069, '24': 2.064,
   '25': 2.06,   '26': 2.056, '27': 2.052, '28': 2.048, '29': 2.045, '30': 2.042,
-  infinity: 1.96,
 };
+const tTableInfinity = 1.96;
+
+interface BenchmarkComputedStats {
+  name: string;
+  memPerOp: number;
+  ops: number;
+  deviation: number;
+  numSamples: number;
+}
 
 // Computes stats on benchmark results.
-function computeStats(samples) {
+function computeStats(
+  name: string,
+  samples: ReadonlyArray<BenchmarkSample>,
+): BenchmarkComputedStats {
   assert(samples.length > 1);
 
   // Compute the sample mean (estimate of the population mean).
@@ -159,7 +181,7 @@ function computeStats(samples) {
   const df = samples.length - 1;
 
   // Compute the critical value.
-  const critical = tTable[df] || tTable.infinity;
+  const critical = tTable[df] ?? tTableInfinity;
 
   // Compute the margin of error.
   const moe = sem * critical;
@@ -168,6 +190,7 @@ function computeStats(samples) {
   const rme = (moe / mean) * 100 || 0;
 
   return {
+    name,
     memPerOp: Math.floor(meanMemUsed),
     ops: NS_PER_SEC / mean,
     deviation: rme,
@@ -175,7 +198,7 @@ function computeStats(samples) {
   };
 }
 
-function beautifyBenchmark(results) {
+function beautifyBenchmark(results: ReadonlyArray<BenchmarkComputedStats>) {
   const nameMaxLen = maxBy(results, ({ name }) => name.length);
   const opsTop = maxBy(results, ({ ops }) => ops);
   const opsMaxLen = maxBy(results, ({ ops }) => beautifyNumber(ops).length);
@@ -188,7 +211,7 @@ function beautifyBenchmark(results) {
     printBench(result);
   }
 
-  function printBench(bench) {
+  function printBench(bench: BenchmarkComputedStats) {
     const { name, memPerOp, ops, deviation, numSamples } = bench;
     console.log(
       '  ' +
@@ -227,57 +250,54 @@ function beautifyBenchmark(results) {
   }
 }
 
-function beautifyBytes(bytes) {
+function beautifyBytes(bytes: number) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log2(bytes) / 10);
   return beautifyNumber(bytes / 2 ** (i * 10)) + ' ' + sizes[i];
 }
 
-function beautifyNumber(num) {
+function beautifyNumber(num: number) {
   return Number(num.toFixed(num > 100 ? 0 : 2)).toLocaleString();
 }
 
-function maxBy(array, fn) {
+function maxBy<T>(array: ReadonlyArray<T>, fn: (obj: T) => number) {
   return Math.max(...array.map(fn));
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
-async function runBenchmarks(benchmarks, benchmarkProjects) {
-  for (const benchmark of benchmarks) {
-    const results = [];
-    for (let i = 0; i < benchmarkProjects.length; ++i) {
-      const { revision, projectPath } = benchmarkProjects[i];
-      const modulePath = path.join(projectPath, benchmark);
+async function runBenchmark(
+  benchmark: string,
+  benchmarkProjects: ReadonlyArray<BenchmarkProject>,
+) {
+  const results = [];
+  for (let i = 0; i < benchmarkProjects.length; ++i) {
+    const { revision, projectPath } = benchmarkProjects[i];
+    const modulePath = path.join(projectPath, benchmark);
 
-      if (i === 0) {
-        const { name } = await sampleModule(modulePath);
-        console.log('⏱   ' + name);
-      }
-
-      try {
-        const samples = await collectSamples(modulePath);
-
-        results.push({
-          name: revision,
-          samples,
-          ...computeStats(samples),
-        });
-        process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
-      } catch (error) {
-        console.log('  ' + revision + ': ' + red(String(error)));
-      }
+    if (i === 0) {
+      const { name } = await sampleModule(modulePath);
+      console.log('⏱   ' + name);
     }
-    console.log('\n');
 
-    beautifyBenchmark(results);
-    console.log('');
+    try {
+      const samples = await collectSamples(modulePath);
+
+      results.push(computeStats(revision, samples));
+      process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
+    } catch (error) {
+      console.log('  ' + revision + ': ' + red(String(error)));
+    }
   }
+  console.log('\n');
+
+  beautifyBenchmark(results);
+  console.log('');
 }
 
-function getArguments(argv) {
+function getArguments(argv: ReadonlyArray<string>) {
   const revsIndex = argv.indexOf('--revs');
   const revisions = revsIndex === -1 ? [] : argv.slice(revsIndex + 1);
-  const benchmarks = revsIndex === -1 ? argv : argv.slice(0, revsIndex);
+  const benchmarks = revsIndex === -1 ? [...argv] : argv.slice(0, revsIndex);
 
   switch (revisions.length) {
     case 0:
@@ -308,47 +328,54 @@ function findAllBenchmarks() {
     .map((name) => path.join('benchmark', name));
 }
 
-function bold(str) {
+function bold(str: string | number) {
   return '\u001b[1m' + str + '\u001b[0m';
 }
 
-function red(str) {
+function red(str: string | number) {
   return '\u001b[31m' + str + '\u001b[0m';
 }
 
-function green(str) {
+function green(str: string | number) {
   return '\u001b[32m' + str + '\u001b[0m';
 }
 
-function yellow(str) {
+function yellow(str: string | number) {
   return '\u001b[33m' + str + '\u001b[0m';
 }
 
-function cyan(str) {
+function cyan(str: string | number) {
   return '\u001b[36m' + str + '\u001b[0m';
 }
 
-function grey(str) {
+function grey(str: string | number) {
   return '\u001b[90m' + str + '\u001b[0m';
 }
 
-function sampleModule(modulePath) {
+interface BenchmarkSample {
+  name: string;
+  clocked: number;
+  memUsed: number;
+}
+
+function sampleModule(modulePath: string): Promise<BenchmarkSample> {
   const sampleCode = `
-    const assert = require('assert');
+    import assert from 'node:assert';
 
     assert(global.gc);
     assert(process.send);
-    const module = require('${modulePath}');
 
-    clock(7, module.measure); // warm up
+    import { benchmark } from '${modulePath}';
+
+    clock(7, benchmark.measure); // warm up
     global.gc();
     process.nextTick(() => {
       const memBaseline = process.memoryUsage().heapUsed;
-      const clocked = clock(module.count, module.measure);
+      const clocked = clock(benchmark.count, benchmark.measure);
       process.send({
-        name: module.name,
-        clocked: clocked / module.count,
-        memUsed: (process.memoryUsage().heapUsed - memBaseline) / module.count,
+        name: benchmark.name,
+        clocked: clocked / benchmark.count,
+        memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
       });
     });
 
@@ -364,11 +391,12 @@ function sampleModule(modulePath) {
 
   return new Promise((resolve, reject) => {
     const child = cp.spawn(
-      process.argv[0],
+      process.execPath,
       [
         '--no-concurrent-sweeping',
         '--predictable',
         '--expose-gc',
+        '--input-type=module',
         '--eval',
         sampleCode,
       ],
@@ -378,8 +406,8 @@ function sampleModule(modulePath) {
       },
     );
 
-    let message;
-    let error;
+    let message: any;
+    let error: any;
 
     child.on('message', (msg) => (message = msg));
     child.on('error', (e) => (error = e));
@@ -391,3 +419,8 @@ function sampleModule(modulePath) {
     });
   });
 }
+
+runBenchmarks().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -1,17 +1,20 @@
-'use strict';
+import childProcess from 'child_process';
+import fs from 'fs';
 
-const path = require('path');
-const childProcess = require('child_process');
+const graphqlPackageJSON = JSON.parse(
+  fs.readFileSync('./node_modules/graphql/package.json', 'utf-8'),
+);
 
-const { dependencies } = require('./package.json');
-
-const nodeVersions = Object.keys(dependencies)
-  .filter((pkg) => pkg.startsWith('node-'))
+const nodeVersions = graphqlPackageJSON.engines.node
+  .split(' || ')
+  .map((version) => version.replace(/^(\^|>=)/, ''))
   .sort((a, b) => b.localeCompare(a));
 
 for (const version of nodeVersions) {
-  console.log(`Testing on ${version} ...`);
+  console.log(`Testing on node@${version} ...`);
 
-  const nodePath = path.join(__dirname, 'node_modules', version, 'bin/node');
-  childProcess.execSync(nodePath + ' index.js', { stdio: 'inherit' });
+  childProcess.execSync(
+    `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node ./index.js`,
+    { stdio: 'inherit' },
+  );
 }

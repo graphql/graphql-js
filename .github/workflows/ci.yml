@@ -1,16 +1,6 @@
 name: CI
 on: workflow_call
 jobs:
-  save-github-event:
-    name: "Save `github.event` as an artifact to use in subsequent 'workflow_run' actions"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Upload event.json
-        uses: actions/upload-artifact@v2
-        with:
-          name: event.json
-          path: ${{ github.event_path }}
-
   lint:
     name: Lint source files
     runs-on: ubuntu-latest
@@ -131,40 +121,12 @@ jobs:
       - name: Run Tests
         run: npm run fuzzonly
 
-  coverage:
-    name: Measure test coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          cache: npm
-          node-version-file: '.node-version'
-
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Run tests and measure code coverage
-        run: npm run testonly:cover
-
-      - name: Upload coverage to Codecov
-        if: ${{ always() }}
-        uses: codecov/codecov-action@v1
-        with:
-          file: ./coverage/coverage-final.json
-          fail_ci_if_error: true
-
   test:
     name: Run tests on Node v${{ matrix.node_version_to_setup }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version_to_setup: [12, 14, 16, 17]
+        node_version_to_setup: [14, 16, 18]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -180,8 +142,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run Tests
-        run: npm run testonly
+      - name: Run Tests with coverage
+        run: npm run testonly:cover
 
   build-npm-dist:
     name: Build 'npmDist' artifact

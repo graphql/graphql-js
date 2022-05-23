@@ -1,21 +1,29 @@
-'use strict';
+import * as assert from 'node:assert';
+import * as childProcess from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-const fs = require('fs');
-const path = require('path');
-const childProcess = require('child_process');
+import * as prettier from 'prettier';
 
-const prettier = require('prettier');
+export function exec(command: string, options?: { cwd: string }): void {
+  childProcess.execSync(command, options);
+}
 
-function exec(command, options) {
+export function execOutput(command: string, options?: { cwd: string }): string {
   const output = childProcess.execSync(command, {
     maxBuffer: 10 * 1024 * 1024, // 10MB
+    stdio: ['inherit', 'pipe', 'inherit'],
     encoding: 'utf-8',
     ...options,
   });
-  return output && output.trimEnd();
+  assert(output, `Missing output from "${command}"`);
+  return output?.trimEnd();
 }
 
-function readdirRecursive(dirPath, opts = {}) {
+export function readdirRecursive(
+  dirPath: string,
+  opts: { ignoreDir?: RegExp } = {},
+): Array<string> {
   const { ignoreDir } = opts;
   const result = [];
   for (const dirent of fs.readdirSync(dirPath, { withFileTypes: true })) {
@@ -25,7 +33,7 @@ function readdirRecursive(dirPath, opts = {}) {
       continue;
     }
 
-    if (ignoreDir && ignoreDir.test(name)) {
+    if (ignoreDir?.test(name)) {
       continue;
     }
     const list = readdirRecursive(path.join(dirPath, name), opts).map((f) =>
@@ -33,15 +41,18 @@ function readdirRecursive(dirPath, opts = {}) {
     );
     result.push(...list);
   }
-  return result;
+  return result.map((filepath) => './' + filepath);
 }
 
-function showDirStats(dirPath) {
-  const fileTypes = {};
+export function showDirStats(dirPath: string): void {
+  const fileTypes: {
+    [filetype: string]: { filepaths: Array<string>; size: number };
+  } = {};
   let totalSize = 0;
 
   for (const filepath of readdirRecursive(dirPath)) {
-    const name = filepath.split(path.sep).pop();
+    const name = filepath.split(path.sep).at(-1);
+    assert(name != null);
     const [base, ...splitExt] = name.split('.');
     const ext = splitExt.join('.');
 
@@ -54,7 +65,7 @@ function showDirStats(dirPath) {
     fileTypes[filetype].filepaths.push(filepath);
   }
 
-  let stats = [];
+  const stats: Array<[string, number]> = [];
   for (const [filetype, typeStats] of Object.entries(fileTypes)) {
     const numFiles = typeStats.filepaths.length;
 
@@ -65,11 +76,15 @@ function showDirStats(dirPath) {
     }
   }
   stats.sort((a, b) => b[1] - a[1]);
-  stats = stats.map(([type, size]) => [type, (size / 1024).toFixed(2) + ' KB']);
 
-  const typeMaxLength = Math.max(...stats.map((x) => x[0].length));
-  const sizeMaxLength = Math.max(...stats.map((x) => x[1].length));
-  for (const [type, size] of stats) {
+  const prettyStats = stats.map(([type, size]) => [
+    type,
+    (size / 1024).toFixed(2) + ' KB',
+  ]);
+
+  const typeMaxLength = Math.max(...prettyStats.map((x) => x[0].length));
+  const sizeMaxLength = Math.max(...prettyStats.map((x) => x[1].length));
+  for (const [type, size] of prettyStats) {
     console.log(
       type.padStart(typeMaxLength) + ' | ' + size.padStart(sizeMaxLength),
     );
@@ -86,14 +101,26 @@ const prettierConfig = JSON.parse(
   fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
 );
 
-function writeGeneratedFile(filepath, body) {
+export function writeGeneratedFile(filepath: string, body: string): void {
   const formatted = prettier.format(body, { filepath, ...prettierConfig });
   fs.writeFileSync(filepath, formatted);
 }
 
-module.exports = {
-  exec,
-  readdirRecursive,
-  showDirStats,
-  writeGeneratedFile,
-};
+interface PackageJSON {
+  version: string;
+  private?: boolean;
+  repository?: { url?: string };
+  scripts?: { [name: string]: string };
+  type?: string;
+  exports: { [path: string]: string };
+  types?: string;
+  typesVersions: { [ranges: string]: { [path: string]: Array<string> } };
+  devDependencies?: { [name: string]: string };
+  publishConfig?: { tag?: string };
+}
+
+export function readPackageJSON(): PackageJSON {
+  return JSON.parse(
+    fs.readFileSync(require.resolve('../package.json'), 'utf-8'),
+  );
+}

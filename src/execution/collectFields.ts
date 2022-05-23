@@ -1,3 +1,4 @@
+import { AccumulatorMap } from '../jsutils/AccumulatorMap';
 import type { ObjMap } from '../jsutils/ObjMap';
 
 import type {
@@ -37,7 +38,7 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
 ): Map<string, ReadonlyArray<FieldNode>> {
-  const fields = new Map();
+  const fields = new AccumulatorMap<string, FieldNode>();
   collectFieldsImpl(
     schema,
     fragments,
@@ -67,7 +68,7 @@ export function collectSubfields(
   returnType: GraphQLObjectType,
   fieldNodes: ReadonlyArray<FieldNode>,
 ): Map<string, ReadonlyArray<FieldNode>> {
-  const subFieldNodes = new Map();
+  const subFieldNodes = new AccumulatorMap<string, FieldNode>();
   const visitedFragmentNames = new Set<string>();
   for (const node of fieldNodes) {
     if (node.selectionSet) {
@@ -91,7 +92,7 @@ function collectFieldsImpl(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: Map<string, Array<FieldNode>>,
+  fields: AccumulatorMap<string, FieldNode>,
   visitedFragmentNames: Set<string>,
 ): void {
   for (const selection of selectionSet.selections) {
@@ -100,13 +101,7 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        const name = getFieldEntryKey(selection);
-        const fieldList = fields.get(name);
-        if (fieldList !== undefined) {
-          fieldList.push(selection);
-        } else {
-          fields.set(name, [selection]);
-        }
+        fields.add(getFieldEntryKey(selection), selection);
         break;
       }
       case Kind.INLINE_FRAGMENT: {

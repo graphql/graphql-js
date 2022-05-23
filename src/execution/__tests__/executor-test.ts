@@ -1,10 +1,9 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { inspect } from '../../jsutils/inspect';
-import { invariant } from '../../jsutils/invariant';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
@@ -265,7 +264,7 @@ describe('Execute: Handles basic execution tasks', () => {
     );
 
     const operation = document.definitions[0];
-    invariant(operation.kind === Kind.OPERATION_DEFINITION);
+    assert(operation.kind === Kind.OPERATION_DEFINITION);
 
     expect(resolvedInfo).to.include({
       fieldName: 'test',

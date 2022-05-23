@@ -963,7 +963,7 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
-          'Type1.field1 arg complexObject has changed defaultValue from {innerInputArray: [{arrayField: [1, 2, 3]}]} to {innerInputArray: [{arrayField: [3, 2, 1]}]}.',
+          'Type1.field1 arg complexObject has changed defaultValue from { innerInputArray: [{ arrayField: [1, 2, 3] }] } to { innerInputArray: [{ arrayField: [3, 2, 1] }] }.',
       },
     ]);
   });

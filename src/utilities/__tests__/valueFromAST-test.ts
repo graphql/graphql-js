@@ -1,8 +1,7 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { identityFunc } from '../../jsutils/identityFunc';
-import { invariant } from '../../jsutils/invariant';
 import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { parseValue } from '../../language/parser';
@@ -66,7 +65,7 @@ describe('valueFromAST', () => {
     const passthroughScalar = new GraphQLScalarType({
       name: 'PassthroughScalar',
       parseLiteral(node) {
-        invariant(node.kind === 'StringValue');
+        assert(node.kind === 'StringValue');
         return node.value;
       },
       parseValue: identityFunc,

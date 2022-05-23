@@ -28,7 +28,7 @@ export function NoSchemaIntrospectionCustomRule(
         context.reportError(
           new GraphQLError(
             `GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`,
-            node,
+            { nodes: node },
           ),
         );
       }

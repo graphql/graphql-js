@@ -51,7 +51,7 @@ export function KnownDirectivesRule(
 
       if (!locations) {
         context.reportError(
-          new GraphQLError(`Unknown directive "@${name}".`, node),
+          new GraphQLError(`Unknown directive "@${name}".`, { nodes: node }),
         );
         return;
       }
@@ -61,7 +61,7 @@ export function KnownDirectivesRule(
         context.reportError(
           new GraphQLError(
             `Directive "@${name}" may not be used on ${candidateLocation}.`,
-            node,
+            { nodes: node },
           ),
         );
       }
@@ -121,7 +121,7 @@ function getDirectiveLocationForASTPath(
         : DirectiveLocation.ARGUMENT_DEFINITION;
     }
     // Not reachable, all possible types have been considered.
-    /* c8 ignore next */
+    /* c8 ignore next 2 */
     default:
       invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
   }

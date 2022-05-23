@@ -1,0 +1,116 @@
+name: publish-pr-on-npm
+on:
+  workflow_call:
+    inputs:
+      pullRequestJSON:
+        required: true
+        type: string
+    secrets:
+      NPM_CANARY_PR_PUBLISH_TOKEN:
+        required: true
+jobs:
+  build-npm-dist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          ref: ${{ fromJSON(inputs.pullRequestJSON).merge_commit_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build NPM package
+        run: npm run build:npm
+
+      - name: Upload npmDist package
+        uses: actions/upload-artifact@v2
+        with:
+          name: npmDist
+          path: ./npmDist
+
+  publish-canary:
+    runs-on: ubuntu-latest
+    name: Publish Canary
+    environment: canary-pr-npm
+    needs: [build-npm-dist]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+          # 'registry-url' is required for 'npm publish'
+          registry-url: 'https://registry.npmjs.org'
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: npmDist
+          path: npmDist
+
+      - name: Modify NPM package to be canary release
+        env:
+          PULL_REQUEST_JSON: ${{ inputs.pullRequestJSON }}
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const fs = require('fs');
+            const assert = require('assert');
+
+            const pull_request = JSON.parse(process.env.PULL_REQUEST_JSON);
+            const packageJSONPath = './npmDist/package.json';
+            const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));
+
+            // Override entire 'publishConfig' since it can contain untrusted data.
+            packageJSON.publishConfig = { tag: `canary-pr-${pull_request.number}` };
+
+            assert(!packageJSON.version.includes('+'), 'Can not append after metadata');
+            packageJSON.version += packageJSON.version.includes('-') ? '.' : '-';
+            packageJSON.version += `canary.pr.${pull_request.number}.${pull_request.merge_commit_sha}`;
+
+            packageJSON.deprecated =
+              `You are using canary version build from ${pull_request.html_url}, no gurantees provided so please use your own discretion.`;
+
+            assert(
+              packageJSON.scripts == null,
+              'No scripts allowed for security reasons!',
+            );
+
+            fs.writeFileSync(
+              packageJSONPath,
+              JSON.stringify(packageJSON, null, 2),
+              'utf-8',
+            );
+
+            const replyMessage = `
+            The latest changes of this PR are available on NPM as
+            [graphql@${packageJSON.version}](https://www.npmjs.com/package/graphql/v/${packageJSON.version})
+            **Note: no gurantees provided so please use your own discretion.**
+
+            Also you can depend on latest version built from this PR:
+            \`npm install --save graphql@${packageJSON.publishConfig.tag}\`
+            `;
+            fs.writeFileSync('./replyMessage.txt', replyMessage.trim(), 'utf-8');
+
+      - name: Publish NPM package
+        run: npm publish --ignore-scripts ./npmDist
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
+
+      - name: Upload replyMessage
+        uses: actions/upload-artifact@v2
+        with:
+          name: replyMessage
+          path: ./replyMessage.txt

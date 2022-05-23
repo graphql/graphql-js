@@ -2,8 +2,9 @@
 /diff-npm-package.html
 /.eslintcache
 /.docusaurus
+/.stryker-tmp
 /node_modules
-/coverage
+/reports
 /npmDist
 /denoDist
 /websiteDist

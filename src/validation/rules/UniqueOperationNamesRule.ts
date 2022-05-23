@@ -23,7 +23,12 @@ export function UniqueOperationNamesRule(
           context.reportError(
             new GraphQLError(
               `There can be only one operation named "${operationName.value}".`,
-              [knownOperationNames[operationName.value], operationName],
+              {
+                nodes: [
+                  knownOperationNames[operationName.value],
+                  operationName,
+                ],
+              },
             ),
           );
         } else {

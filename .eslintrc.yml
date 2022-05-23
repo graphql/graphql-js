@@ -1,9 +1,8 @@
 parserOptions:
   sourceType: script
-  ecmaVersion: 2020
 env:
-  es6: true
-  node: true
+  es2022: true
+  shared-node-browser: true
 reportUnusedDisableDirectives: true
 plugins:
   - internal-rules
@@ -12,7 +11,10 @@ plugins:
   - simple-import-sort
 settings:
   node:
-    tryExtensions: ['.js', '.jsx', '.json', '.node', '.ts', '.d.ts']
+    tryExtensions: ['.js', '.ts', '.jsx', '.json', '.node', '.d.ts']
+  # eslint-plugin-import tries to parse all imported files included huge ones (e.g. 'typescript')
+  # that leads to very poor perfomance so to fix that we disable all checks on external files.
+  import/ignore: '/node_modules/'
 
 rules:
   ##############################################################################
@@ -36,7 +38,7 @@ rules:
   node/no-exports-assign: error
   node/no-extraneous-import: error
   node/no-extraneous-require: error
-  node/no-missing-import: error
+  node/no-missing-import: [error, { allowModules: ['graphql'] }]
   node/no-missing-require: error
   node/no-new-require: error
   node/no-path-concat: error
@@ -77,12 +79,12 @@ rules:
   node/prefer-promises/fs: off
 
   ##############################################################################
-  # `eslint-plugin-import` rule list based on `v2.25.x`
+  # `eslint-plugin-import` rule list based on `v2.26.x`
   ##############################################################################
 
   # Static analysis
   # https://github.com/benmosher/eslint-plugin-import#static-analysis
-  import/no-unresolved: error
+  import/no-unresolved: [error, { ignore: ['graphql'] }]
   import/named: error
   import/default: error
   import/namespace: error
@@ -148,6 +150,9 @@ rules:
   simple-import-sort/imports:
     - error
     - groups:
+        # Node.js builtin modules
+        - ["^node:\\w"]
+
         # Packages.
         # Things that start with a letter (or digit or underscore), or `@` followed by a letter.
         - ["^@?\\w"]
@@ -174,7 +179,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.8.x`
+  # ESLint builtin rules list based on `v8.15.x`
   ##############################################################################
 
   # Possible Errors
@@ -186,6 +191,7 @@ rules:
   no-await-in-loop: error
   no-compare-neg-zero: error
   no-cond-assign: error
+  no-constant-binary-expression: error
   no-console: warn
   no-constant-condition: error
   no-control-regex: error
@@ -487,7 +493,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.10.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.22.x`
       ##########################################################################
 
       # Supported Rules
@@ -514,6 +520,7 @@ overrides:
       '@typescript-eslint/no-base-to-string': error
       '@typescript-eslint/no-confusing-non-null-assertion': error
       '@typescript-eslint/no-confusing-void-expression': off # TODO enable with ignoreArrowShorthand
+      '@typescript-eslint/no-duplicate-enum-values': error
       '@typescript-eslint/no-dynamic-delete': off
       '@typescript-eslint/no-empty-interface': error
       '@typescript-eslint/no-explicit-any': off # TODO error
@@ -531,7 +538,7 @@ overrides:
       '@typescript-eslint/no-non-null-asserted-nullish-coalescing': error
       '@typescript-eslint/no-non-null-asserted-optional-chain': error
       '@typescript-eslint/no-non-null-assertion': error
-      '@typescript-eslint/no-parameter-properties': error
+      '@typescript-eslint/no-redundant-type-constituents': error
       '@typescript-eslint/no-invalid-void-type': error
       '@typescript-eslint/no-require-imports': error
       '@typescript-eslint/no-this-alias': error
@@ -547,8 +554,10 @@ overrides:
       '@typescript-eslint/no-unsafe-call': off # TODO consider
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
       '@typescript-eslint/no-unsafe-return': off # TODO consider
+      '@typescript-eslint/no-useless-empty-export': error
       '@typescript-eslint/no-var-requires': error
       '@typescript-eslint/non-nullable-type-assertion-style': off #TODO temporarily disabled
+      '@typescript-eslint/parameter-properties': error
       '@typescript-eslint/prefer-as-const': error
       '@typescript-eslint/prefer-enum-initializers': error
       '@typescript-eslint/prefer-for-of': error
@@ -647,6 +656,7 @@ overrides:
       '@typescript-eslint/no-extra-parens': off
       '@typescript-eslint/no-extra-semi': off
       '@typescript-eslint/semi': off
+      '@typescript-eslint/space-before-blocks': off
       '@typescript-eslint/space-before-function-paren': off
       '@typescript-eslint/space-infix-ops': off
       '@typescript-eslint/type-annotation-spacing': off
@@ -661,36 +671,49 @@ overrides:
       import/no-restricted-paths: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
   - files: 'integrationTests/*'
+    env:
+      node: true
     rules:
       node/no-sync: off
-      node/no-unpublished-require: [error, { allowModules: ['mocha'] }]
+      node/no-unpublished-import: [error, { allowModules: ['mocha'] }]
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
+      import/no-namespace: off
       import/no-nodejs-modules: off
   - files: 'integrationTests/*/**'
+    parserOptions:
+      sourceType: module
+    env:
+      node: true
     rules:
       node/no-sync: off
-      node/no-missing-require: [error, { allowModules: ['graphql'] }]
-      import/no-commonjs: off
       import/no-nodejs-modules: off
       no-console: off
   - files: 'benchmark/**'
+    parserOptions:
+      sourceType: module
+    env:
+      node: true
     rules:
-      internal-rules/only-ascii: [error, { allowEmoji: true }]
       node/no-sync: off
-      node/no-missing-require: off
+      import/no-unresolved: off
       import/no-nodejs-modules: off
-      import/no-commonjs: off
-      no-console: off
-      no-await-in-loop: off
   - files: 'resources/**'
+    env:
+      node: true
     rules:
       internal-rules/only-ascii: [error, { allowEmoji: true }]
-      node/no-unpublished-require: off
+      node/no-unpublished-import: off
       node/no-sync: off
+      import/no-namespace: off
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
-      import/no-commonjs: off
       no-console: off
+      no-await-in-loop: off
+  - files: 'resources/eslint-internal-rules/**'
+    env:
+      node: true
+    rules:
+      import/no-commonjs: off
   - files: '**/*.jsx'
     parserOptions:
       sourceType: module
@@ -700,6 +723,8 @@ overrides:
       node/no-unpublished-import: off
       import/no-default-export: off
   - files: 'website/**'
+    env:
+      node: true
     plugins:
       - 'react'
     extends:
