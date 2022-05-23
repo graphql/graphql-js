@@ -836,7 +836,6 @@ function resolveType(
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   result: unknown,
-  encounteredTypeNames: Set<string> = new Set(),
 ): GraphQLObjectType | Promise<GraphQLObjectType> {
   const resolveTypeFn = abstractType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
@@ -857,7 +856,6 @@ function resolveType(
         fieldNodes,
         info,
         result,
-        encounteredTypeNames,
       ),
     );
   }
@@ -869,7 +867,6 @@ function resolveType(
     fieldNodes,
     info,
     result,
-    encounteredTypeNames,
   );
 }
 
@@ -881,7 +878,6 @@ function deriveRuntimeType(
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   result: unknown,
-  encounteredTypeNames: Set<string>,
 ): GraphQLObjectType | Promise<GraphQLObjectType> {
   if (runtimeTypeName == null) {
     throw new GraphQLError(
@@ -909,14 +905,6 @@ function deriveRuntimeType(
     );
   }
 
-  if (encounteredTypeNames.has(runtimeTypeName)) {
-    throw new GraphQLError(
-      `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Encountered abstract type "${currentAbstractType.name}" resolved to "${runtimeTypeName}", causing a cycle.`,
-    );
-  }
-  encounteredTypeNames.add(runtimeTypeName);
-
   const runtimeType = exeContext.schema.getType(runtimeTypeName);
   if (runtimeType == null) {
     throw new GraphQLError(
@@ -942,7 +930,6 @@ function deriveRuntimeType(
       fieldNodes,
       info,
       result,
-      encounteredTypeNames,
     );
   }
 

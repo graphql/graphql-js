@@ -752,7 +752,7 @@ describe('Execute: Handles execution of abstract types', () => {
     // FIXME: workaround since we can't inject resolveType into SDL
     petType.resolveType = () => 'Pet';
     expectError().toEqual(
-      'Abstract type resolution for "Named" for field "Query.named" failed. Encountered abstract type "Pet" resolved to "Pet", causing a cycle.',
+      'Abstract type resolution for "Named" for field "Query.named" failed. Interface type "Pet" is not a subtype of encountered interface type "Named".',
     );
   });
 });
