@@ -194,7 +194,7 @@ function validateOneOfInputObject(
     context.reportError(
       new GraphQLError(
         `OneOf Input Object "${type.name}" must specify exactly one key.`,
-        node,
+        { nodes: [node] },
       ),
     );
     return;
@@ -206,10 +206,9 @@ function validateOneOfInputObject(
 
   if (isNullLiteral) {
     context.reportError(
-      new GraphQLError(
-        `Field "${type.name}.${keys[0]}" must be non-null.`,
-        node,
-      ),
+      new GraphQLError(`Field "${type.name}.${keys[0]}" must be non-null.`, {
+        nodes: [node],
+      }),
     );
     return;
   }
@@ -223,7 +222,7 @@ function validateOneOfInputObject(
       context.reportError(
         new GraphQLError(
           `Variable "${variableName}" must be non-nullable to be used for OneOf Input Object "${type.name}".`,
-          node,
+          { nodes: [node] },
         ),
       );
     }
