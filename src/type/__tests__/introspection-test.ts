@@ -1576,6 +1576,65 @@ describe('Introspection', () => {
     });
   });
 
+  it('returns null for oneOf for other types', () => {
+    const schema = buildSchema(`
+      type A implements I {
+        a: String
+      }
+      enum E {
+        A
+      }
+      interface I {
+        a: String
+      }
+      union U = A
+      type Query {
+        someField(e: E): U
+        anotherField(e: E): I
+      }
+    `);
+
+    const source = `
+      {
+        a: __type(name: "A") {
+          oneOf
+        }
+        e: __type(name: "E") {
+          oneOf
+        }
+        i: __type(name: "I") {
+          oneOf
+        }
+        o: __type(name: "String") {
+          oneOf
+        }
+        u: __type(name: "U") {
+          oneOf
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        a: {
+          oneOf: null,
+        },
+        e: {
+          oneOf: null,
+        },
+        i: {
+          oneOf: null,
+        },
+        o: {
+          oneOf: null,
+        },
+        u: {
+          oneOf: null,
+        },
+      },
+    });
+  });
+
   it('fails as expected on the __type root field without an arg', () => {
     const schema = buildSchema(`
       type Query {
