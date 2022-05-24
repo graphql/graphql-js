@@ -362,40 +362,47 @@ function sampleModule(modulePath: string): Promise<BenchmarkSample> {
   const sampleCode = `
     import assert from 'node:assert';
 
-    assert(global.gc);
     assert(process.send);
 
     import { benchmark } from '${modulePath}';
 
-    clock(7, benchmark.measure); // warm up
-    global.gc();
-    process.nextTick(() => {
-      const memBaseline = process.memoryUsage().heapUsed;
-      const clocked = clock(benchmark.count, benchmark.measure);
-      process.send({
-        name: benchmark.name,
-        clocked: clocked / benchmark.count,
-        memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
-      });
-    });
+    // warm up, it looks like 7 is a magic number to reliably trigger JIT
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
 
-    // Clocks the time taken to execute a test per cycle (secs).
-    function clock(count, fn) {
-      const start = process.hrtime.bigint();
-      for (let i = 0; i < count; ++i) {
-        fn();
-      }
-      return Number(process.hrtime.bigint() - start);
+    const memBaseline = process.memoryUsage().heapUsed;
+
+    const startTime = process.hrtime.bigint();
+    for (let i = 0; i < benchmark.count; ++i) {
+      benchmark.measure();
     }
+    const timeDiff = Number(process.hrtime.bigint() - startTime);
+
+    process.send({
+      name: benchmark.name,
+      clocked: timeDiff / benchmark.count,
+      memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
+    });
   `;
 
   return new Promise((resolve, reject) => {
     const child = cp.spawn(
       process.execPath,
       [
-        '--no-concurrent-sweeping',
+        // V8 flags
         '--predictable',
-        '--expose-gc',
+        '--no-concurrent-sweeping',
+        '--no-scavenge-task',
+        '--min-semi-space-size=1024', // 1GB
+        '--max-semi-space-size=1024', // 1GB
+        '--trace-gc', // no gc calls should happen during benchmark, so trace them
+
+        // Node.js flags
         '--input-type=module',
         '--eval',
         sampleCode,
