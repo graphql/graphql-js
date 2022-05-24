@@ -32,14 +32,30 @@ jobs:
 
       - name: Run Benchmark
         run: |
-          cat <<EOF >> replyMessage.txt
-          <details>
-          <summary> Benchmark output </summary>
-          EOF
-          npm run benchmark -- --revs HEAD BASE | tee -a replyMessage.txt
-          cat <<EOF >> replyMessage.txt
-          </details>
-          EOF
+          npm run benchmark -- --revs HEAD BASE
+
+      - name: Create replyMessage
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const fs = require('fs');
+
+            // GH doesn't expose job's id so we need to get it through API, see
+            // https://github.community/t/job-id-is-string-in-github-job-but-integer-in-actions-api/139060
+            const result = await github.rest.actions.listJobsForWorkflowRun({
+              ...context.repo,
+              run_id: context.runId,
+              filter: 'latest',
+            })
+
+            const currentJob = result.data.jobs.find(
+              (job) => job.name === 'cmd-run-benchmark / Run benchmark',
+            );
+
+            fs.writeFileSync(
+              './replyMessage.txt',
+              `Please, see benchmark results here: ${currentJob.html_url}#step:6:1`,
+            );
 
       - name: Upload replyMessage
         uses: actions/upload-artifact@v2
