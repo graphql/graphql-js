@@ -16,8 +16,7 @@ export function execOutput(command: string, options?: { cwd: string }): string {
     encoding: 'utf-8',
     ...options,
   });
-  assert(output, `Missing output from "${command}"`);
-  return output?.trimEnd();
+  return output.trimEnd();
 }
 
 export function readdirRecursive(
