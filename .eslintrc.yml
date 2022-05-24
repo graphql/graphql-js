@@ -708,7 +708,6 @@ overrides:
       import/no-extraneous-dependencies: [error, { devDependencies: true }]
       import/no-nodejs-modules: off
       no-console: off
-      no-await-in-loop: off
   - files: 'resources/eslint-internal-rules/**'
     env:
       node: true
