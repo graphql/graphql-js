@@ -114,12 +114,25 @@ function prepareBenchmarkProjects(
 }
 
 async function collectSamples(modulePath: string) {
+  let numOfConsequentlyRejectedSamples = 0;
   const samples = [];
 
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
   while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
     const sample = await sampleModule(modulePath);
+
+    if (sample.involuntaryContextSwitches > 0) {
+      numOfConsequentlyRejectedSamples++;
+      if (numOfConsequentlyRejectedSamples > 5) {
+        throw Error(
+          'Can not sample benchmark due to 5 consequent runs beings rejected because of context switching',
+        );
+      }
+      continue;
+    }
+    numOfConsequentlyRejectedSamples = 0;
+
     assert(sample.clocked > 0);
     assert(sample.memUsed > 0);
     samples.push(sample);
@@ -356,6 +369,7 @@ interface BenchmarkSample {
   name: string;
   clocked: number;
   memUsed: number;
+  involuntaryContextSwitches: number;
 }
 
 function sampleModule(modulePath: string): Promise<BenchmarkSample> {
@@ -377,16 +391,20 @@ function sampleModule(modulePath: string): Promise<BenchmarkSample> {
 
     const memBaseline = process.memoryUsage().heapUsed;
 
+    const resourcesStart = process.resourceUsage();
     const startTime = process.hrtime.bigint();
     for (let i = 0; i < benchmark.count; ++i) {
       benchmark.measure();
     }
     const timeDiff = Number(process.hrtime.bigint() - startTime);
+    const resourcesEnd = process.resourceUsage();
 
     process.send({
       name: benchmark.name,
       clocked: timeDiff / benchmark.count,
       memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
+      involuntaryContextSwitches:
+        resourcesEnd.involuntaryContextSwitches - resourcesStart.involuntaryContextSwitches,
     });
   `;
 
