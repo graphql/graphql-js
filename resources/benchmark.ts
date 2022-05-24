@@ -12,13 +12,13 @@ const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 const minSamples = 5;
 
-async function runBenchmarks() {
+function runBenchmarks() {
   // Get the revisions and make things happen!
   const { benchmarks, revisions } = getArguments(process.argv.slice(2));
   const benchmarkProjects = prepareBenchmarkProjects(revisions);
 
   for (const benchmark of benchmarks) {
-    await runBenchmark(benchmark, benchmarkProjects);
+    runBenchmark(benchmark, benchmarkProjects);
   }
 }
 
@@ -113,14 +113,14 @@ function prepareBenchmarkProjects(
   }
 }
 
-async function collectSamples(modulePath: string) {
+function collectSamples(modulePath: string) {
   let numOfConsequentlyRejectedSamples = 0;
   const samples = [];
 
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
   while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
-    const sample = await sampleModule(modulePath);
+    const sample = sampleModule(modulePath);
 
     if (sample.involuntaryContextSwitches > 0) {
       numOfConsequentlyRejectedSamples++;
@@ -278,7 +278,7 @@ function maxBy<T>(array: ReadonlyArray<T>, fn: (obj: T) => number) {
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
-async function runBenchmark(
+function runBenchmark(
   benchmark: string,
   benchmarkProjects: ReadonlyArray<BenchmarkProject>,
 ) {
@@ -288,17 +288,17 @@ async function runBenchmark(
     const modulePath = path.join(projectPath, benchmark);
 
     if (i === 0) {
-      const { name } = await sampleModule(modulePath);
+      const { name } = sampleModule(modulePath);
       console.log('⏱   ' + name);
     }
 
     try {
-      const samples = await collectSamples(modulePath);
+      const samples = collectSamples(modulePath);
 
       results.push(computeStats(revision, samples));
       process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
     } catch (error) {
-      console.log('  ' + revision + ': ' + red(String(error)));
+      console.log('  ' + revision + ': ' + red(error.message));
     }
   }
   console.log('\n');
@@ -372,11 +372,9 @@ interface BenchmarkSample {
   involuntaryContextSwitches: number;
 }
 
-function sampleModule(modulePath: string): Promise<BenchmarkSample> {
+function sampleModule(modulePath: string): BenchmarkSample {
   const sampleCode = `
-    import assert from 'node:assert';
-
-    assert(process.send);
+    import fs from 'node:fs';
 
     import { benchmark } from '${modulePath}';
 
@@ -399,53 +397,45 @@ function sampleModule(modulePath: string): Promise<BenchmarkSample> {
     const timeDiff = Number(process.hrtime.bigint() - startTime);
     const resourcesEnd = process.resourceUsage();
 
-    process.send({
+    const result = {
       name: benchmark.name,
       clocked: timeDiff / benchmark.count,
       memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
       involuntaryContextSwitches:
         resourcesEnd.involuntaryContextSwitches - resourcesStart.involuntaryContextSwitches,
-    });
+    };
+    fs.writeFileSync(3, JSON.stringify(result));
   `;
 
-  return new Promise((resolve, reject) => {
-    const child = cp.spawn(
-      process.execPath,
-      [
-        // V8 flags
-        '--predictable',
-        '--no-concurrent-sweeping',
-        '--no-scavenge-task',
-        '--min-semi-space-size=1024', // 1GB
-        '--max-semi-space-size=1024', // 1GB
-        '--trace-gc', // no gc calls should happen during benchmark, so trace them
+  const result = cp.spawnSync(
+    process.execPath,
+    [
+      // V8 flags
+      '--predictable',
+      '--no-concurrent-sweeping',
+      '--no-scavenge-task',
+      '--min-semi-space-size=1024', // 1GB
+      '--max-semi-space-size=1024', // 1GB
+      '--trace-gc', // no gc calls should happen during benchmark, so trace them
 
-        // Node.js flags
-        '--input-type=module',
-        '--eval',
-        sampleCode,
-      ],
-      {
-        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-        env: { NODE_ENV: 'production' },
-      },
-    );
+      // Node.js flags
+      '--input-type=module',
+      '--eval',
+      sampleCode,
+    ],
+    {
+      stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
+      env: { NODE_ENV: 'production' },
+    },
+  );
 
-    let message: any;
-    let error: any;
+  if (result.status !== 0) {
+    throw new Error(`Benchmark failed with "${result.status}" status.`);
+  }
 
-    child.on('message', (msg) => (message = msg));
-    child.on('error', (e) => (error = e));
-    child.on('close', () => {
-      if (message) {
-        return resolve(message);
-      }
-      reject(error || new Error('Spawn process closed without error'));
-    });
-  });
+  const resultStr = result.output[3]?.toString();
+  assert(resultStr != null);
+  return JSON.parse(resultStr);
 }
 
-runBenchmarks().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+runBenchmarks();
