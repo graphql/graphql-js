@@ -33,9 +33,13 @@ const testSchema = buildSchema(`
     name(surname: Boolean): String
   }
 
+  union HumanOrAlien = Human | Alien
+
   type QueryRoot {
     human(id: ID): Human
     alien: Alien
+    humanOrAlien: HumanOrAlien
+    pet: Pet
   }
 
   schema {
@@ -144,6 +148,62 @@ describe('visitWithTypeInfo', () => {
     );
 
     expect(visitorArgs).to.deep.equal(wrappedVisitorArgs);
+  });
+
+  it('supports introspection fields', () => {
+    const typeInfo = new TypeInfo(testSchema);
+
+    const ast = parse(`
+      {
+        __typename
+        __type(name: "Cat") { __typename }
+        __schema {
+          __typename # in object type
+        }
+        humanOrAlien {
+          __typename # in union type
+        }
+        pet {
+          __typename # in interface type
+        }
+        someUnknownType {
+          __typename # unknown
+        }
+        pet {
+          __type # unknown
+          __schema # unknown
+        }
+      }
+    `);
+
+    const visitedFields: Array<[string | undefined, string | undefined]> = [];
+    visit(
+      ast,
+      visitWithTypeInfo(typeInfo, {
+        Field() {
+          const typeName = typeInfo.getParentType()?.name;
+          const fieldName = typeInfo.getFieldDef()?.name;
+          visitedFields.push([typeName, fieldName]);
+        },
+      }),
+    );
+
+    expect(visitedFields).to.deep.equal([
+      ['QueryRoot', '__typename'],
+      ['QueryRoot', '__type'],
+      ['__Type', '__typename'],
+      ['QueryRoot', '__schema'],
+      ['__Schema', '__typename'],
+      ['QueryRoot', 'humanOrAlien'],
+      ['HumanOrAlien', '__typename'],
+      ['QueryRoot', 'pet'],
+      ['Pet', '__typename'],
+      ['QueryRoot', undefined],
+      [undefined, undefined],
+      ['QueryRoot', 'pet'],
+      ['Pet', undefined],
+      ['Pet', undefined],
+    ]);
   });
 
   it('maintains type info during visit', () => {

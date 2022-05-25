@@ -16,6 +16,8 @@ import { OperationTypeNode } from '../language/ast';
 
 import type {
   GraphQLAbstractType,
+  GraphQLCompositeType,
+  GraphQLField,
   GraphQLInterfaceType,
   GraphQLNamedType,
   GraphQLObjectType,
@@ -30,7 +32,12 @@ import {
 } from './definition';
 import type { GraphQLDirective } from './directives';
 import { isDirective, specifiedDirectives } from './directives';
-import { __Schema } from './introspection';
+import {
+  __Schema,
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from './introspection';
 
 /**
  * Test if the given value is a GraphQL schema.
@@ -348,6 +355,42 @@ export class GraphQLSchema {
 
   getDirective(name: string): Maybe<GraphQLDirective> {
     return this.getDirectives().find((directive) => directive.name === name);
+  }
+
+  /**
+   * This method looks up the field on the given type definition.
+   * It has special casing for the three introspection fields, `__schema`,
+   * `__type` and `__typename`.
+   *
+   * `__typename` is special because it can always be queried as a field, even
+   * in situations where no other fields are allowed, like on a Union.
+   *
+   * `__schema` and `__type` could get automatically added to the query type,
+   * but that would require mutating type definitions, which would cause issues.
+   */
+  getField(
+    parentType: GraphQLCompositeType,
+    fieldName: string,
+  ): GraphQLField<unknown, unknown> | undefined {
+    switch (fieldName) {
+      case SchemaMetaFieldDef.name:
+        return this.getQueryType() === parentType
+          ? SchemaMetaFieldDef
+          : undefined;
+      case TypeMetaFieldDef.name:
+        return this.getQueryType() === parentType
+          ? TypeMetaFieldDef
+          : undefined;
+      case TypeNameMetaFieldDef.name:
+        return TypeNameMetaFieldDef;
+    }
+
+    // this function is part "hot" path inside executor and check presence
+    // of 'getFields' is faster than to use `!isUnionType`
+    if ('getFields' in parentType) {
+      return parentType.getFields()[fieldName];
+    }
+    return undefined;
   }
 
   toConfig(): GraphQLSchemaNormalizedConfig {
