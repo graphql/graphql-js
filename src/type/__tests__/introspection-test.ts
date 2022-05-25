@@ -1001,7 +1001,7 @@ describe('Introspection', () => {
               ],
             },
             {
-              name: 'isOneOf',
+              name: 'oneOf',
               isRepeatable: false,
               locations: ['INPUT_OBJECT'],
               args: [],
