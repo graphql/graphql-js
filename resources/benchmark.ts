@@ -385,20 +385,20 @@ function sampleModule(modulePath: string): BenchmarkSample {
     import { benchmark } from '${moduleURL}';
 
     // warm up, it looks like 7 is a magic number to reliably trigger JIT
-    benchmark.measure();
-    benchmark.measure();
-    benchmark.measure();
-    benchmark.measure();
-    benchmark.measure();
-    benchmark.measure();
-    benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
 
     const memBaseline = process.memoryUsage().heapUsed;
 
     const resourcesStart = process.resourceUsage();
     const startTime = process.hrtime.bigint();
     for (let i = 0; i < benchmark.count; ++i) {
-      benchmark.measure();
+      await benchmark.measure();
     }
     const timeDiff = Number(process.hrtime.bigint() - startTime);
     const resourcesEnd = process.resourceUsage();
