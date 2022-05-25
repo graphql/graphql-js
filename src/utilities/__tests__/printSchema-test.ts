@@ -717,7 +717,7 @@ describe('Type System Printer', () => {
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
         inputFields(includeDeprecated: Boolean = false): [__InputValue!]
         ofType: __Type
-        oneOf: Boolean
+        isOneOf: Boolean
       }
 
       """An enum describing what kind of type a given \`__Type\` is."""

@@ -373,7 +373,7 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
-                  name: 'oneOf',
+                  name: 'isOneOf',
                   args: [],
                   type: {
                     kind: 'SCALAR',
@@ -1001,7 +1001,7 @@ describe('Introspection', () => {
               ],
             },
             {
-              name: 'oneOf',
+              name: 'isOneOf',
               isRepeatable: false,
               locations: ['INPUT_OBJECT'],
               args: [],
@@ -1556,10 +1556,10 @@ describe('Introspection', () => {
     const source = `
       {
         a: __type(name: "SomeInputObject") {
-          oneOf
+          isOneOf
         }
         b: __type(name: "AnotherInputObject") {
-          oneOf
+          isOneOf
         }
       }
     `;
@@ -1567,10 +1567,10 @@ describe('Introspection', () => {
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         a: {
-          oneOf: true,
+          isOneOf: true,
         },
         b: {
-          oneOf: false,
+          isOneOf: false,
         },
       },
     });
@@ -1597,19 +1597,19 @@ describe('Introspection', () => {
     const source = `
       {
         a: __type(name: "A") {
-          oneOf
+          isOneOf
         }
         e: __type(name: "E") {
-          oneOf
+          isOneOf
         }
         i: __type(name: "I") {
-          oneOf
+          isOneOf
         }
         o: __type(name: "String") {
-          oneOf
+          isOneOf
         }
         u: __type(name: "U") {
-          oneOf
+          isOneOf
         }
       }
     `;
@@ -1617,19 +1617,19 @@ describe('Introspection', () => {
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         a: {
-          oneOf: null,
+          isOneOf: null,
         },
         e: {
-          oneOf: null,
+          isOneOf: null,
         },
         i: {
-          oneOf: null,
+          isOneOf: null,
         },
         o: {
-          oneOf: null,
+          isOneOf: null,
         },
         u: {
-          oneOf: null,
+          isOneOf: null,
         },
       },
     });
