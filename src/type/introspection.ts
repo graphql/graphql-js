@@ -20,6 +20,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   isAbstractType,
+  isCompositeType,
   isEnumType,
   isInputObjectType,
   isInterfaceType,
@@ -264,7 +265,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
         },
         resolve(type, { includeDeprecated }) {
-          if (isObjectType(type) || isInterfaceType(type)) {
+          if (isCompositeType(type)) {
             const fields = Object.values(type.getFields());
             return includeDeprecated
               ? fields
@@ -275,7 +276,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       interfaces: {
         type: new GraphQLList(new GraphQLNonNull(__Type)),
         resolve(type) {
-          if (isObjectType(type) || isInterfaceType(type)) {
+          if (isCompositeType(type)) {
             return type.getInterfaces();
           }
         },

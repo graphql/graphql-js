@@ -262,7 +262,13 @@ export const QueryDocumentKeys: {
     'directives',
     'fields',
   ],
-  UnionTypeDefinition: ['description', 'name', 'directives', 'types'],
+  UnionTypeDefinition: [
+    'description',
+    'name',
+    'interfaces',
+    'directives',
+    'types',
+  ],
   EnumTypeDefinition: ['description', 'name', 'directives', 'values'],
   EnumValueDefinition: ['description', 'name', 'directives'],
   InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
@@ -274,7 +280,7 @@ export const QueryDocumentKeys: {
   ScalarTypeExtension: ['name', 'directives'],
   ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
   InterfaceTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
-  UnionTypeExtension: ['name', 'directives', 'types'],
+  UnionTypeExtension: ['name', 'interfaces', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
@@ -624,6 +630,7 @@ export interface UnionTypeDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly name: NameNode;
+  readonly interfaces?: ReadonlyArray<NamedTypeNode>;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly types?: ReadonlyArray<NamedTypeNode>;
 }
@@ -716,6 +723,7 @@ export interface UnionTypeExtensionNode {
   readonly kind: Kind.UNION_TYPE_EXTENSION;
   readonly loc?: Location;
   readonly name: NameNode;
+  readonly interfaces?: ReadonlyArray<NamedTypeNode>;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
   readonly types?: ReadonlyArray<NamedTypeNode>;
 }

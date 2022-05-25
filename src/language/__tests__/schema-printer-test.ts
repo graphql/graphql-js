@@ -110,6 +110,28 @@ describe('Printer: SDL document', () => {
 
       extend union Feed @onUnion
 
+      interface Node {
+        id: ID
+      }
+      
+      interface Resource {
+        url: String
+      }
+      
+      extend type Photo implements Node {
+        id: ID
+        url: String
+      }
+      
+      extend type Video implements Node {
+        id: ID
+        url: String
+      }
+      
+      union Media implements Node = Photo | Video
+      
+      extend union Media implements Resource
+      
       scalar CustomScalar
 
       scalar AnnotatedScalar @onScalar

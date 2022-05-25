@@ -472,6 +472,25 @@ describe('Schema Builder', () => {
     expect(errors).to.have.lengthOf.above(0);
   });
 
+  it('Union implementing Interface', () => {
+    const sdl = dedent`
+      union Hello implements Parent = World
+
+      type Query {
+        hello: Hello
+      }
+
+      interface Parent {
+        str: String
+      }
+
+      type World implements Parent {
+        str: String
+      }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
   it('Custom Scalar', () => {
     const sdl = dedent`
       scalar CustomScalar
@@ -592,6 +611,25 @@ describe('Schema Builder', () => {
 
       type Query {
         interfaceField: Parent
+      }
+    `;
+    expect(cycleSDL(sdl)).to.equal(sdl);
+  });
+
+  it('Unreferenced union implementing referenced interface', () => {
+    const sdl = dedent`
+      union Union implements Interface = Concrete
+
+      type Concrete implements Interface {
+        key: String
+      }
+
+      interface Interface {
+        key: String
+      }
+
+      type Query {
+        interface: Interface
       }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);

@@ -202,10 +202,16 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   UnionTypeDefinition: {
-    leave: ({ description, name, directives, types }) =>
+    leave: ({ description, name, interfaces, directives, types }) =>
       wrap('', description, '\n') +
       join(
-        ['union', name, join(directives, ' '), wrap('= ', join(types, ' | '))],
+        [
+          'union',
+          name,
+          wrap('implements ', join(interfaces, ' & ')),
+          join(directives, ' '),
+          wrap('= ', join(types, ' | ')),
+        ],
         ' ',
       ),
   },
@@ -282,11 +288,12 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   UnionTypeExtension: {
-    leave: ({ name, directives, types }) =>
+    leave: ({ name, interfaces, directives, types }) =>
       join(
         [
           'extend union',
           name,
+          wrap('implements ', join(interfaces, ' & ')),
           join(directives, ' '),
           wrap('= ', join(types, ' | ')),
         ],

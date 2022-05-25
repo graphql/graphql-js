@@ -16,10 +16,12 @@ import { OperationTypeNode } from '../language/ast';
 
 import type {
   GraphQLAbstractType,
+  GraphQLCompositeType,
   GraphQLInterfaceType,
   GraphQLNamedType,
   GraphQLObjectType,
   GraphQLType,
+  GraphQLUnionType,
 } from './definition';
 import {
   getNamedType,
@@ -145,6 +147,7 @@ export class GraphQLSchema {
   private _implementationsMap: ObjMap<{
     objects: Array<GraphQLObjectType>;
     interfaces: Array<GraphQLInterfaceType>;
+    unions: Array<GraphQLUnionType>;
   }>;
 
   constructor(config: Readonly<GraphQLSchemaConfig>) {
@@ -239,6 +242,7 @@ export class GraphQLSchema {
               implementations = this._implementationsMap[iface.name] = {
                 objects: [],
                 interfaces: [],
+                unions: [],
               };
             }
 
@@ -254,10 +258,27 @@ export class GraphQLSchema {
               implementations = this._implementationsMap[iface.name] = {
                 objects: [],
                 interfaces: [],
+                unions: [],
               };
             }
 
             implementations.objects.push(namedType);
+          }
+        }
+      } else if (isUnionType(namedType)) {
+        // Store implementations by unions.
+        for (const iface of namedType.getInterfaces()) {
+          if (isInterfaceType(iface)) {
+            let implementations = this._implementationsMap[iface.name];
+            if (implementations === undefined) {
+              implementations = this._implementationsMap[iface.name] = {
+                objects: [],
+                interfaces: [],
+                unions: [],
+              };
+            }
+
+            implementations.unions.push(namedType);
           }
         }
       }
@@ -310,14 +331,15 @@ export class GraphQLSchema {
   getImplementations(interfaceType: GraphQLInterfaceType): {
     objects: ReadonlyArray<GraphQLObjectType>;
     interfaces: ReadonlyArray<GraphQLInterfaceType>;
+    unions: ReadonlyArray<GraphQLUnionType>;
   } {
     const implementations = this._implementationsMap[interfaceType.name];
-    return implementations ?? { objects: [], interfaces: [] };
+    return implementations ?? { objects: [], interfaces: [], unions: [] };
   }
 
   isSubType(
     abstractType: GraphQLAbstractType,
-    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
+    maybeSubType: GraphQLCompositeType,
   ): boolean {
     let map = this._subTypeMap[abstractType.name];
     if (map === undefined) {
@@ -333,6 +355,9 @@ export class GraphQLSchema {
           map[type.name] = true;
         }
         for (const type of implementations.interfaces) {
+          map[type.name] = true;
+        }
+        for (const type of implementations.unions) {
           map[type.name] = true;
         }
       }
@@ -412,6 +437,10 @@ function collectReferencedTypes(
   if (!typeSet.has(namedType)) {
     typeSet.add(namedType);
     if (isUnionType(namedType)) {
+      for (const interfaceType of namedType.getInterfaces()) {
+        collectReferencedTypes(interfaceType, typeSet);
+      }
+
       for (const memberType of namedType.getTypes()) {
         collectReferencedTypes(memberType, typeSet);
       }

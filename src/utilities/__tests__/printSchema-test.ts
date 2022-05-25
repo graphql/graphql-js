@@ -17,7 +17,12 @@ import {
   GraphQLUnionType,
 } from '../../type/definition';
 import { GraphQLDirective } from '../../type/directives';
-import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
+import {
+  GraphQLBoolean,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../buildASTSchema';
@@ -482,6 +487,58 @@ describe('Type System Printer', () => {
       union MultipleUnion = Foo | Bar
 
       type Bar {
+        str: String
+      }
+    `);
+  });
+
+  it('Print Unions implementing Interfaces', () => {
+    const FooType = new GraphQLObjectType({
+      name: 'Foo',
+      interfaces: () => [Interface],
+      fields: {
+        id: { type: GraphQLID },
+        bool: { type: GraphQLBoolean },
+      },
+    });
+
+    const BarType = new GraphQLObjectType({
+      name: 'Bar',
+      interfaces: () => [Interface],
+      fields: {
+        id: { type: GraphQLID },
+        str: { type: GraphQLString },
+      },
+    });
+
+    const Union = new GraphQLUnionType({
+      name: 'Union',
+      interfaces: () => [Interface],
+      types: [FooType, BarType],
+    });
+
+    const Interface = new GraphQLInterfaceType({
+      name: 'Interface',
+      fields: {
+        id: { type: GraphQLID },
+      },
+    });
+
+    const schema = new GraphQLSchema({ types: [Union] });
+    expectPrintedSchema(schema).to.equal(dedent`
+      union Union implements Interface = Foo | Bar
+
+      interface Interface {
+        id: ID
+      }
+
+      type Foo implements Interface {
+        id: ID
+        bool: Boolean
+      }
+
+      type Bar implements Interface {
+        id: ID
         str: String
       }
     `);

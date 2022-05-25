@@ -209,7 +209,8 @@ export function buildClientSchema(
   function buildImplementationsList(
     implementingIntrospection:
       | IntrospectionObjectType
-      | IntrospectionInterfaceType,
+      | IntrospectionInterfaceType
+      | IntrospectionUnionType,
   ): Array<GraphQLInterfaceType> {
     // TODO: Temporary workaround until GraphQL ecosystem will fully support
     // 'interfaces' on interface types.
@@ -264,6 +265,7 @@ export function buildClientSchema(
     return new GraphQLUnionType({
       name: unionIntrospection.name,
       description: unionIntrospection.description,
+      interfaces: () => buildImplementationsList(unionIntrospection),
       types: () => unionIntrospection.possibleTypes.map(getObjectType),
     });
   }

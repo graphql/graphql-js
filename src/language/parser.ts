@@ -970,12 +970,14 @@ export class Parser {
     const description = this.parseDescription();
     this.expectKeyword('union');
     const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseConstDirectives();
     const types = this.parseUnionMemberTypes();
     return this.node<UnionTypeDefinitionNode>(start, {
       kind: Kind.UNION_TYPE_DEFINITION,
       description,
       name,
+      interfaces,
       directives,
       types,
     });
@@ -1249,14 +1251,20 @@ export class Parser {
     this.expectKeyword('extend');
     this.expectKeyword('union');
     const name = this.parseName();
+    const interfaces = this.parseImplementsInterfaces();
     const directives = this.parseConstDirectives();
     const types = this.parseUnionMemberTypes();
-    if (directives.length === 0 && types.length === 0) {
+    if (
+      interfaces.length === 0 &&
+      directives.length === 0 &&
+      types.length === 0
+    ) {
       throw this.unexpected();
     }
     return this.node<UnionTypeExtensionNode>(start, {
       kind: Kind.UNION_TYPE_EXTENSION,
       name,
+      interfaces,
       directives,
       types,
     });

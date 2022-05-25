@@ -110,6 +110,7 @@ const CatType: GraphQLObjectType = new GraphQLObjectType({
 
 const PetType = new GraphQLUnionType({
   name: 'Pet',
+  interfaces: [MammalType, LifeType, NamedType],
   types: [DogType, CatType],
   resolveType(value) {
     if (value instanceof Dog) {
@@ -211,8 +212,13 @@ describe('Execute: Union and intersection types', () => {
         Pet: {
           kind: 'UNION',
           name: 'Pet',
-          fields: null,
-          interfaces: null,
+          fields: [
+            { name: 'progeny' },
+            { name: 'mother' },
+            { name: 'father' },
+            { name: 'name' },
+          ],
+          interfaces: [{ name: 'Mammal' }, { name: 'Life' }, { name: 'Named' }],
           possibleTypes: [{ name: 'Dog' }, { name: 'Cat' }],
           enumValues: null,
           inputFields: null,
@@ -264,12 +270,11 @@ describe('Execute: Union and intersection types', () => {
         name
         pets {
           __typename
+          name
           ... on Dog {
-            name
             barks
           }
           ... on Cat {
-            name
             meows
           }
         }
@@ -436,12 +441,11 @@ describe('Execute: Union and intersection types', () => {
 
       fragment PetFields on Pet {
         __typename
+        name
         ... on Dog {
-          name
           barks
         }
         ... on Cat {
-          name
           meows
         }
       }

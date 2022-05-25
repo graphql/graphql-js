@@ -53,7 +53,7 @@ export const testSchema: GraphQLSchema = buildSchema(`
     furColor: FurColor
   }
 
-  union CatOrDog = Cat | Dog
+  union CatOrDog implements Pet = Cat | Dog
 
   type Human {
     name(surname: Boolean): String

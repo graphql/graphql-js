@@ -7,6 +7,7 @@ import { isObjectLike } from '../jsutils/isObjectLike';
 import { keyMap } from '../jsutils/keyMap';
 import { keyValMap } from '../jsutils/keyValMap';
 import { mapValue } from '../jsutils/mapValue';
+import { mapValues } from '../jsutils/mapValues';
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
 import type { Path } from '../jsutils/Path';
@@ -794,7 +795,9 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
 
 function defineInterfaces(
   config: Readonly<
-    GraphQLObjectTypeConfig<any, any> | GraphQLInterfaceTypeConfig<any, any>
+    | GraphQLObjectTypeConfig<any, any>
+    | GraphQLInterfaceTypeConfig<any, any>
+    | GraphQLUnionTypeConfig<any, any>
   >,
 ): ReadonlyArray<GraphQLInterfaceType> {
   const interfaces = resolveReadonlyArrayThunk(config.interfaces ?? []);
@@ -1214,7 +1217,9 @@ export class GraphQLUnionType {
   astNode: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
 
+  private _fields: GraphQLFieldMap<any, any> | undefined;
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
+  private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
     this.name = assertName(config.name);
@@ -1225,6 +1230,7 @@ export class GraphQLUnionType {
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
     this._types = defineTypes.bind(undefined, config);
+    this._interfaces = defineInterfaces.bind(undefined, config);
     devAssert(
       config.resolveType == null || typeof config.resolveType === 'function',
       `${this.name} must provide "resolveType" as a function, ` +
@@ -1236,6 +1242,19 @@ export class GraphQLUnionType {
     return 'GraphQLUnionType';
   }
 
+  getFields(): GraphQLFieldMap<any, any> {
+    if (this._fields !== undefined) {
+      return this._fields;
+    }
+
+    this._fields = mapValues(
+      this.getInterfaces().map((iface) => iface.getFields()),
+      identityFunc,
+    );
+
+    return this._fields;
+  }
+
   getTypes(): ReadonlyArray<GraphQLObjectType> {
     if (typeof this._types === 'function') {
       this._types = this._types();
@@ -1243,10 +1262,18 @@ export class GraphQLUnionType {
     return this._types;
   }
 
+  getInterfaces(): ReadonlyArray<GraphQLInterfaceType> {
+    if (typeof this._interfaces === 'function') {
+      this._interfaces = this._interfaces();
+    }
+    return this._interfaces;
+  }
+
   toConfig(): GraphQLUnionTypeNormalizedConfig {
     return {
       name: this.name,
       description: this.description,
+      interfaces: this.getInterfaces(),
       types: this.getTypes(),
       resolveType: this.resolveType,
       extensions: this.extensions,
@@ -1278,6 +1305,7 @@ function defineTypes(
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
+  interfaces?: ThunkReadonlyArray<GraphQLInterfaceType>;
   types: ThunkReadonlyArray<GraphQLObjectType>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
@@ -1292,6 +1320,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 
 interface GraphQLUnionTypeNormalizedConfig
   extends GraphQLUnionTypeConfig<any, any> {
+  interfaces: ReadonlyArray<GraphQLInterfaceType>;
   types: ReadonlyArray<GraphQLObjectType>;
   extensions: Readonly<GraphQLUnionTypeExtensions>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
