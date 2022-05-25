@@ -329,8 +329,6 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           if (isInputObjectType(type)) {
             return type.isOneOf;
           }
-
-          return null;
         },
       },
     } as GraphQLFieldConfigMap<GraphQLType, unknown>),
