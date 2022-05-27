@@ -8,16 +8,10 @@ import {
   isEnumType,
   isInputObjectType,
   isInputType,
-  isInterfaceType,
   isListType,
   isObjectType,
   isOutputType,
 } from '../type/definition.js';
-import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-  TypeNameMetaFieldDef,
-} from '../type/introspection.js';
 import { typeFromAST } from './typeFromAST.js';
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
@@ -245,28 +239,8 @@ export class TypeInfo {
     }
   }
 }
-/**
- * Not exactly the same as the executor's definition of getFieldDef, in this
- * statically evaluated environment we do not always have an Object type,
- * and need to handle Interface and Union types.
- */
 function getFieldDef(schema, parentType, fieldNode) {
-  const name = fieldNode.name.value;
-  if (
-    name === SchemaMetaFieldDef.name &&
-    schema.getQueryType() === parentType
-  ) {
-    return SchemaMetaFieldDef;
-  }
-  if (name === TypeMetaFieldDef.name && schema.getQueryType() === parentType) {
-    return TypeMetaFieldDef;
-  }
-  if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
-    return TypeNameMetaFieldDef;
-  }
-  if (isObjectType(parentType) || isInterfaceType(parentType)) {
-    return parentType.getFields()[name];
-  }
+  return schema.getField(parentType, fieldNode.name.value);
 }
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance

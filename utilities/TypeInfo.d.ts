@@ -53,7 +53,7 @@ export declare class TypeInfo {
 }
 declare type GetFieldDefFn = (
   schema: GraphQLSchema,
-  parentType: GraphQLType,
+  parentType: GraphQLCompositeType,
   fieldNode: FieldNode,
 ) => Maybe<GraphQLField<unknown, unknown>>;
 /**
