@@ -1002,9 +1002,9 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
   function (source: any, args, contextValue, info) {
     // ensure source is a value for which property access is acceptable.
     if (isObjectLike(source) || typeof source === 'function') {
-      const property = source[info.fieldName];
+      const property = source[info.path.key];
       if (typeof property === 'function') {
-        return source[info.fieldName](args, contextValue, info);
+        return source[info.path.key](args, contextValue, info);
       }
       return property;
     }
