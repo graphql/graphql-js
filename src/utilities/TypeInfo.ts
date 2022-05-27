@@ -23,17 +23,11 @@ import {
   isEnumType,
   isInputObjectType,
   isInputType,
-  isInterfaceType,
   isListType,
   isObjectType,
   isOutputType,
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
-import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-  TypeNameMetaFieldDef,
-} from '../type/introspection';
 import type { GraphQLSchema } from '../type/schema';
 
 import { typeFromAST } from './typeFromAST';
@@ -293,36 +287,16 @@ export class TypeInfo {
 
 type GetFieldDefFn = (
   schema: GraphQLSchema,
-  parentType: GraphQLType,
+  parentType: GraphQLCompositeType,
   fieldNode: FieldNode,
 ) => Maybe<GraphQLField<unknown, unknown>>;
 
-/**
- * Not exactly the same as the executor's definition of getFieldDef, in this
- * statically evaluated environment we do not always have an Object type,
- * and need to handle Interface and Union types.
- */
 function getFieldDef(
   schema: GraphQLSchema,
-  parentType: GraphQLType,
+  parentType: GraphQLCompositeType,
   fieldNode: FieldNode,
-): Maybe<GraphQLField<unknown, unknown>> {
-  const name = fieldNode.name.value;
-  if (
-    name === SchemaMetaFieldDef.name &&
-    schema.getQueryType() === parentType
-  ) {
-    return SchemaMetaFieldDef;
-  }
-  if (name === TypeMetaFieldDef.name && schema.getQueryType() === parentType) {
-    return TypeMetaFieldDef;
-  }
-  if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
-    return TypeNameMetaFieldDef;
-  }
-  if (isObjectType(parentType) || isInterfaceType(parentType)) {
-    return parentType.getFields()[name];
-  }
+) {
+  return schema.getField(parentType, fieldNode.name.value);
 }
 
 /**
