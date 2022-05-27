@@ -125,7 +125,7 @@ jobs:
               ? 'Unknown command 😕\n\n' + process.env.SUPPORTED_COMMANDS
               : `Something went wrong, [please check log](${process.env.RUN_URL}).`;
 
-            fs.writeFileSync('./replyMessage.txt', replyMessage, 'utf-8');
+            fs.writeFileSync('./replyMessage.txt', replyMessage);
         env:
           NEEDS: ${{ toJSON(needs) }}
           RUN_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
