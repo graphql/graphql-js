@@ -18,7 +18,6 @@ import {
   buildExecutionContext,
   buildResolveInfo,
   execute,
-  getFieldDef,
 } from './execute.ts';
 import { mapAsyncIterator } from './mapAsyncIterator.ts';
 import { getArgumentValues } from './values.ts';
@@ -183,9 +182,9 @@ async function executeSubscription(
     operation.selectionSet,
   );
   const [responseName, fieldNodes] = [...rootFields.entries()][0];
-  const fieldDef = getFieldDef(schema, rootType, fieldNodes[0]);
+  const fieldName = fieldNodes[0].name.value;
+  const fieldDef = schema.getField(rootType, fieldName);
   if (!fieldDef) {
-    const fieldName = fieldNodes[0].name.value;
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
       { nodes: fieldNodes },
