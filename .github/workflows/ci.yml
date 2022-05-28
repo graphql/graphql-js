@@ -31,6 +31,11 @@ jobs:
       - name: Spellcheck
         run: npm run check:spelling
 
+      - name: Lint GitHub Actions
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color
+
   checkForCommonlyIgnoredFiles:
     name: Check for commonly ignored files
     runs-on: ubuntu-latest

@@ -3,6 +3,7 @@ on:
   workflow_call:
     inputs:
       pullRequestJSON:
+        description: String that contain JSON payload for `pull_request` event.
         required: true
         type: string
 jobs:
@@ -19,7 +20,7 @@ jobs:
       - name: Deepen cloned repo
         env:
           BASE_SHA: ${{ fromJSON(inputs.pullRequestJSON).base.sha }}
-        run: 'git fetch --depth=1 origin $BASE_SHA:refs/tags/BASE'
+        run: 'git fetch --depth=1 origin "$BASE_SHA:refs/tags/BASE"'
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
