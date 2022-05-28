@@ -34,5 +34,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: npm-dist-diff.html
-          path: ./npm-dist-diff.html
+          path: ./reports/npm-dist-diff.html
           if-no-files-found: ignore
