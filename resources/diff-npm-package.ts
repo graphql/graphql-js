@@ -34,7 +34,7 @@ if (diff === '') {
   console.log('No changes found!');
 } else {
   const reportPath = path.join(localRepoDir, 'npm-dist-diff.html');
-  fs.writeFileSync(reportPath, generateReport(diff), 'utf-8');
+  fs.writeFileSync(reportPath, generateReport(diff));
   console.log('Report saved to: ', reportPath);
 }
 

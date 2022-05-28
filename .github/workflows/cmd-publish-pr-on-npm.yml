@@ -88,11 +88,7 @@ jobs:
               'No scripts allowed for security reasons!',
             );
 
-            fs.writeFileSync(
-              packageJSONPath,
-              JSON.stringify(packageJSON, null, 2),
-              'utf-8',
-            );
+            fs.writeFileSync(packageJSONPath, JSON.stringify(packageJSON, null, 2));
 
             const replyMessage = `
             The latest changes of this PR are available on NPM as
@@ -102,7 +98,7 @@ jobs:
             Also you can depend on latest version built from this PR:
             \`npm install --save graphql@${packageJSON.publishConfig.tag}\`
             `;
-            fs.writeFileSync('./replyMessage.txt', replyMessage.trim(), 'utf-8');
+            fs.writeFileSync('./replyMessage.txt', replyMessage.trim());
 
       - name: Publish NPM package
         run: npm publish --ignore-scripts ./npmDist
