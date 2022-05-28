@@ -42,11 +42,15 @@ jobs:
 
       - name: Check if commit contains files that should be ignored
         run: |
-          git clone --depth 1 https://github.com/github/gitignore.git &&
-          cat gitignore/Node.gitignore $(find gitignore/Global -name "*.gitignore" | grep -v ModelSim) > all.gitignore &&
-          if  [[ "$(git ls-files -iX all.gitignore)" != "" ]]; then
-            echo "::error::Please remove these files:"
-            git ls-files -iX all.gitignore
+          git clone --depth 1 https://github.com/github/gitignore.git
+
+          rm gitignore/Global/ModelSim.gitignore
+          rm gitignore/Global/Images.gitignore
+          cat gitignore/Node.gitignore gitignore/Global/*.gitignore > all.gitignore
+
+          IGNORED_FILES=$(git ls-files --cached --ignored --exclude-from=all.gitignore)
+          if  [[ "$IGNORED_FILES" != "" ]]; then
+            echo -e "::error::Please remove these files:\n$IGNORED_FILES" | sed -z 's/\n/%0A/g'
             exit 1
           fi
 
