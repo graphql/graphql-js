@@ -3,10 +3,12 @@ on:
   workflow_call:
     inputs:
       pullRequestJSON:
+        description: String that contain JSON payload for `pull_request` event.
         required: true
         type: string
     secrets:
       NPM_CANARY_PR_PUBLISH_TOKEN:
+        description: NPM token to publish canary release.
         required: true
 jobs:
   build-npm-dist:
