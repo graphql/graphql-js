@@ -7,6 +7,7 @@ import * as ts from 'typescript';
 import { addExtensionToImportPaths } from './add-extension-to-import-paths';
 import { inlineInvariant } from './inline-invariant';
 import {
+  localRepoPath,
   readdirRecursive,
   readPackageJSON,
   showDirStats,
@@ -18,7 +19,7 @@ fs.mkdirSync('./npmDist');
 
 // Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
 const tsConfig = JSON.parse(
-  fs.readFileSync(require.resolve('../tsconfig.json'), 'utf-8'),
+  fs.readFileSync(localRepoPath('tsconfig.json'), 'utf-8'),
 );
 assert(
   tsConfig.compilerOptions,

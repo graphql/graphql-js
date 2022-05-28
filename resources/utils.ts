@@ -5,6 +5,10 @@ import * as path from 'node:path';
 
 import * as prettier from 'prettier';
 
+export function localRepoPath(...paths: ReadonlyArray<string>): string {
+  return path.join(__dirname, '..', ...paths);
+}
+
 export function exec(command: string, options?: { cwd: string }): void {
   childProcess.execSync(command, options);
 }
@@ -97,7 +101,7 @@ export function showDirStats(dirPath: string): void {
 }
 
 const prettierConfig = JSON.parse(
-  fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
+  fs.readFileSync(localRepoPath('.prettierrc'), 'utf-8'),
 );
 
 export function writeGeneratedFile(filepath: string, body: string): void {
@@ -119,7 +123,5 @@ interface PackageJSON {
 }
 
 export function readPackageJSON(): PackageJSON {
-  return JSON.parse(
-    fs.readFileSync(require.resolve('../package.json'), 'utf-8'),
-  );
+  return JSON.parse(fs.readFileSync(localRepoPath('package.json'), 'utf-8'));
 }
