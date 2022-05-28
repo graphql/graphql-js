@@ -38,7 +38,7 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const fs = require('fs');
+            import fs from 'node:fs';
 
             // GH doesn't expose job's id so we need to get it through API, see
             // https://github.community/t/job-id-is-string-in-github-job-but-integer-in-actions-api/139060

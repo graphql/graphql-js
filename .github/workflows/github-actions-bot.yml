@@ -37,10 +37,10 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const fs = require('fs');
+            import fs from 'node:fs';
 
             const event = JSON.parse(fs.readFileSync('./event.json', 'utf8'));
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               ...context.repo,
               issue_number: event.pull_request.number,
               body:
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/github-script@v5
         with:
           script: |
-            github.rest.reactions.createForIssueComment({
+            await github.rest.reactions.createForIssueComment({
               ...context.repo,
               comment_id: context.payload.comment.id,
               content: 'eyes',
@@ -110,7 +110,7 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const fs = require('fs');
+            import fs from 'node:fs';
 
             const needs = JSON.parse(process.env.NEEDS);
 
@@ -134,7 +134,7 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const fs = require('fs');
+            import fs from 'node:fs';
 
             const replyMessage = fs.readFileSync('./replyMessage.txt', 'utf-8');
             const { issue, comment, sender } = context.payload;
@@ -144,14 +144,14 @@ jobs:
               .map((line) => '> ' + line)
               .join('\n');
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               ...context.repo,
               issue_number: issue.number,
               body: quoteRequest + `\n\n@${sender.login} ` + replyMessage,
             });
 
             // `github.rest` doesn't have this method :( so use graphql instead
-            github.graphql(`
+            await github.graphql(`
               mutation ($subjectId: ID!) {
                 minimizeComment(input: { subjectId: $subjectId, classifier: RESOLVED})
                   { __typename }
