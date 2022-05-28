@@ -4,6 +4,8 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
+import { localRepoPath } from './utils';
+
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
 
@@ -20,10 +22,6 @@ function runBenchmarks() {
   for (const benchmark of benchmarks) {
     runBenchmark(benchmark, benchmarkProjects);
   }
-}
-
-function localDir(...paths: ReadonlyArray<string>) {
-  return path.join(__dirname, '..', ...paths);
 }
 
 function exec(command: string, options = {}) {
@@ -58,7 +56,7 @@ function prepareBenchmarkProjects(
     fs.rmSync(projectPath, { recursive: true, force: true });
     fs.mkdirSync(projectPath);
 
-    fs.cpSync(localDir('benchmark'), path.join(projectPath, 'benchmark'), {
+    fs.cpSync(localRepoPath('benchmark'), path.join(projectPath, 'benchmark'), {
       recursive: true,
     });
 
@@ -80,7 +78,7 @@ function prepareBenchmarkProjects(
 
   function prepareNPMPackage(revision: string) {
     if (revision === LOCAL) {
-      const repoDir = localDir();
+      const repoDir = localRepoPath();
       const archivePath = path.join(tmpDir, 'graphql-local.tgz');
       fs.renameSync(buildNPMArchive(repoDir), archivePath);
       return archivePath;
@@ -334,7 +332,7 @@ function getArguments(argv: ReadonlyArray<string>) {
 
 function findAllBenchmarks() {
   return fs
-    .readdirSync(localDir('benchmark'), { withFileTypes: true })
+    .readdirSync(localRepoPath('benchmark'), { withFileTypes: true })
     .filter((dirent) => dirent.isFile())
     .map((dirent) => dirent.name)
     .filter((name) => name.endsWith('-benchmark.js'))
