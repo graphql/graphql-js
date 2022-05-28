@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
 
@@ -19,7 +19,7 @@ jobs:
         run: 'git fetch --depth=1 origin "$BASE_SHA:refs/tags/BASE"'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -31,7 +31,7 @@ jobs:
         run: 'npm run diff:npm BASE HEAD'
 
       - name: Upload generated report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: npm-dist-diff.html
           path: ./reports/npm-dist-diff.html

@@ -15,13 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
           ref: ${{ fromJSON(inputs.pullRequestJSON).merge_commit_sha }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -33,7 +33,7 @@ jobs:
         run: npm run build:npm
 
       - name: Upload npmDist package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: npmDist
           path: ./npmDist
@@ -45,19 +45,19 @@ jobs:
     needs: [build-npm-dist]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           cache: npm
           node-version-file: '.node-version'
           # 'registry-url' is required for 'npm publish'
           registry-url: 'https://registry.npmjs.org'
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: npmDist
           path: npmDist
@@ -65,7 +65,7 @@ jobs:
       - name: Modify NPM package to be canary release
         env:
           PULL_REQUEST_JSON: ${{ inputs.pullRequestJSON }}
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             import fs from 'node:fs';
@@ -108,7 +108,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
 
       - name: Upload replyMessage
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: replyMessage
           path: ./replyMessage.txt
