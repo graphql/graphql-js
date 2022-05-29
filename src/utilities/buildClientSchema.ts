@@ -6,31 +6,41 @@ import { keyValMap } from '../jsutils/keyValMap';
 import { parseValue } from '../language/parser';
 
 import type {
+  GraphQLEnumType,
   GraphQLFieldConfig,
   GraphQLFieldConfigMap,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
   GraphQLNamedType,
+  GraphQLObjectType,
+  GraphQLScalarType,
   GraphQLType,
+  GraphQLUnionType,
 } from '../type/definition';
 import {
   assertInterfaceType,
   assertNullableType,
   assertObjectType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLScalarType,
-  GraphQLUnionType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLScalarTypeImpl,
+  GraphQLUnionTypeImpl,
   isInputType,
   isOutputType,
 } from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
+import type { GraphQLDirective } from '../type/directives';
+import { GraphQLDirectiveImpl } from '../type/directives';
 import { introspectionTypes, TypeKind } from '../type/introspection';
 import { specifiedScalarTypes } from '../type/scalars';
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
-import { GraphQLSchema } from '../type/schema';
+import type {
+  GraphQLSchema,
+  GraphQLSchemaValidationOptions,
+} from '../type/schema';
+import { GraphQLSchemaImpl } from '../type/schema';
 
 import type {
   IntrospectionDirective,
@@ -109,7 +119,7 @@ export function buildClientSchema(
     : [];
 
   // Then produce and return a Schema with these types.
-  return new GraphQLSchema({
+  return new GraphQLSchemaImpl({
     description: schemaIntrospection.description,
     query: queryType,
     mutation: mutationType,
@@ -127,7 +137,7 @@ export function buildClientSchema(
       if (!itemRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
-      return new GraphQLList(getType(itemRef));
+      return new GraphQLListImpl(getType(itemRef));
     }
     if (typeRef.kind === TypeKind.NON_NULL) {
       const nullableRef = typeRef.ofType;
@@ -135,7 +145,7 @@ export function buildClientSchema(
         throw new Error('Decorated type deeper than introspection query.');
       }
       const nullableType = getType(nullableRef);
-      return new GraphQLNonNull(assertNullableType(nullableType));
+      return new GraphQLNonNullImpl(assertNullableType(nullableType));
     }
     return getNamedType(typeRef);
   }
@@ -199,7 +209,7 @@ export function buildClientSchema(
   function buildScalarDef(
     scalarIntrospection: IntrospectionScalarType,
   ): GraphQLScalarType {
-    return new GraphQLScalarType({
+    return new GraphQLScalarTypeImpl({
       name: scalarIntrospection.name,
       description: scalarIntrospection.description,
       specifiedByURL: scalarIntrospection.specifiedByURL,
@@ -233,7 +243,7 @@ export function buildClientSchema(
   function buildObjectDef(
     objectIntrospection: IntrospectionObjectType,
   ): GraphQLObjectType {
-    return new GraphQLObjectType({
+    return new GraphQLObjectTypeImpl({
       name: objectIntrospection.name,
       description: objectIntrospection.description,
       interfaces: () => buildImplementationsList(objectIntrospection),
@@ -244,7 +254,7 @@ export function buildClientSchema(
   function buildInterfaceDef(
     interfaceIntrospection: IntrospectionInterfaceType,
   ): GraphQLInterfaceType {
-    return new GraphQLInterfaceType({
+    return new GraphQLInterfaceTypeImpl({
       name: interfaceIntrospection.name,
       description: interfaceIntrospection.description,
       interfaces: () => buildImplementationsList(interfaceIntrospection),
@@ -261,7 +271,7 @@ export function buildClientSchema(
         `Introspection result missing possibleTypes: ${unionIntrospectionStr}.`,
       );
     }
-    return new GraphQLUnionType({
+    return new GraphQLUnionTypeImpl({
       name: unionIntrospection.name,
       description: unionIntrospection.description,
       types: () => unionIntrospection.possibleTypes.map(getObjectType),
@@ -277,7 +287,7 @@ export function buildClientSchema(
         `Introspection result missing enumValues: ${enumIntrospectionStr}.`,
       );
     }
-    return new GraphQLEnumType({
+    return new GraphQLEnumTypeImpl({
       name: enumIntrospection.name,
       description: enumIntrospection.description,
       values: keyValMap(
@@ -300,7 +310,7 @@ export function buildClientSchema(
         `Introspection result missing inputFields: ${inputObjectIntrospectionStr}.`,
       );
     }
-    return new GraphQLInputObjectType({
+    return new GraphQLInputObjectTypeImpl({
       name: inputObjectIntrospection.name,
       description: inputObjectIntrospection.description,
       fields: () => buildInputValueDefMap(inputObjectIntrospection.inputFields),
@@ -395,7 +405,7 @@ export function buildClientSchema(
         `Introspection result missing directive locations: ${directiveIntrospectionStr}.`,
       );
     }
-    return new GraphQLDirective({
+    return new GraphQLDirectiveImpl({
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
       isRepeatable: directiveIntrospection.isRepeatable,

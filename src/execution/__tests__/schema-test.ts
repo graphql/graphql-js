@@ -3,10 +3,11 @@ import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
+import type { GraphQLObjectType } from '../../type/definition';
 import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
 } from '../../type/definition';
 import {
   GraphQLBoolean,
@@ -14,13 +15,13 @@ import {
   GraphQLInt,
   GraphQLString,
 } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { executeSync } from '../execute';
 
 describe('Execute: Handles execution with a complex schema', () => {
   it('executes using a schema', () => {
-    const BlogImage = new GraphQLObjectType({
+    const BlogImage = new GraphQLObjectTypeImpl({
       name: 'Image',
       fields: {
         url: { type: GraphQLString },
@@ -29,7 +30,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       },
     });
 
-    const BlogAuthor: GraphQLObjectType = new GraphQLObjectType({
+    const BlogAuthor: GraphQLObjectType = new GraphQLObjectTypeImpl({
       name: 'Author',
       fields: () => ({
         id: { type: GraphQLString },
@@ -43,19 +44,19 @@ describe('Execute: Handles execution with a complex schema', () => {
       }),
     });
 
-    const BlogArticle = new GraphQLObjectType({
+    const BlogArticle = new GraphQLObjectTypeImpl({
       name: 'Article',
       fields: {
-        id: { type: new GraphQLNonNull(GraphQLString) },
+        id: { type: new GraphQLNonNullImpl(GraphQLString) },
         isPublished: { type: GraphQLBoolean },
         author: { type: BlogAuthor },
         title: { type: GraphQLString },
         body: { type: GraphQLString },
-        keywords: { type: new GraphQLList(GraphQLString) },
+        keywords: { type: new GraphQLListImpl(GraphQLString) },
       },
     });
 
-    const BlogQuery = new GraphQLObjectType({
+    const BlogQuery = new GraphQLObjectTypeImpl({
       name: 'Query',
       fields: {
         article: {
@@ -64,7 +65,7 @@ describe('Execute: Handles execution with a complex schema', () => {
           resolve: (_, { id }) => article(id),
         },
         feed: {
-          type: new GraphQLList(BlogArticle),
+          type: new GraphQLListImpl(BlogArticle),
           resolve: () => [
             article(1),
             article(2),
@@ -81,7 +82,7 @@ describe('Execute: Handles execution with a complex schema', () => {
       },
     });
 
-    const BlogSchema = new GraphQLSchema({
+    const BlogSchema = new GraphQLSchemaImpl({
       query: BlogQuery,
     });
 

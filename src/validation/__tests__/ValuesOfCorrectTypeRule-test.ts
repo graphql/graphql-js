@@ -7,9 +7,13 @@ import { inspect } from '../../jsutils/inspect';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition';
+import {
+  GraphQLObjectTypeImpl,
+  GraphQLScalarTypeImpl,
+} from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule';
 import { validate } from '../validate';
@@ -947,7 +951,7 @@ describe('Validate: Values of correct type', () => {
     });
 
     it('reports original error for custom scalar which throws', () => {
-      const customScalar = new GraphQLScalarType({
+      const customScalar = new GraphQLScalarTypeImpl({
         name: 'Invalid',
         parseValue(value) {
           throw new Error(
@@ -956,8 +960,8 @@ describe('Validate: Values of correct type', () => {
         },
       });
 
-      const schema = new GraphQLSchema({
-        query: new GraphQLObjectType({
+      const schema = new GraphQLSchemaImpl({
+        query: new GraphQLObjectTypeImpl({
           name: 'Query',
           fields: {
             invalidArg: {
@@ -986,15 +990,15 @@ describe('Validate: Values of correct type', () => {
     });
 
     it('reports error for custom scalar that returns undefined', () => {
-      const customScalar = new GraphQLScalarType({
+      const customScalar = new GraphQLScalarTypeImpl({
         name: 'CustomScalar',
         parseValue() {
           return undefined;
         },
       });
 
-      const schema = new GraphQLSchema({
-        query: new GraphQLObjectType({
+      const schema = new GraphQLSchemaImpl({
+        query: new GraphQLObjectTypeImpl({
           name: 'Query',
           fields: {
             invalidArg: {
@@ -1014,9 +1018,9 @@ describe('Validate: Values of correct type', () => {
     });
 
     it('allows custom scalar to accept complex literals', () => {
-      const customScalar = new GraphQLScalarType({ name: 'Any' });
-      const schema = new GraphQLSchema({
-        query: new GraphQLObjectType({
+      const customScalar = new GraphQLScalarTypeImpl({ name: 'Any' });
+      const schema = new GraphQLSchemaImpl({
+        query: new GraphQLObjectTypeImpl({
           name: 'Query',
           fields: {
             anyArg: {

@@ -7,27 +7,27 @@ import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { printSchema } from '../../utilities/printSchema';
 
-import type { GraphQLCompositeType } from '../definition';
+import type { GraphQLCompositeType, GraphQLObjectType } from '../definition';
 import {
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLObjectType,
-  GraphQLScalarType,
-  GraphQLUnionType,
+  GraphQLInputObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLListImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLScalarTypeImpl,
+  GraphQLUnionTypeImpl,
 } from '../definition';
-import { GraphQLDirective } from '../directives';
+import { GraphQLDirectiveImpl } from '../directives';
 import {
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../introspection';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars';
-import { GraphQLSchema } from '../schema';
+import { GraphQLSchemaImpl } from '../schema';
 
 describe('Type System: Schema', () => {
   it('Define sample schema', () => {
-    const BlogImage = new GraphQLObjectType({
+    const BlogImage = new GraphQLObjectTypeImpl({
       name: 'Image',
       fields: {
         url: { type: GraphQLString },
@@ -36,7 +36,7 @@ describe('Type System: Schema', () => {
       },
     });
 
-    const BlogAuthor: GraphQLObjectType = new GraphQLObjectType({
+    const BlogAuthor: GraphQLObjectType = new GraphQLObjectTypeImpl({
       name: 'Author',
       fields: () => ({
         id: { type: GraphQLString },
@@ -49,7 +49,7 @@ describe('Type System: Schema', () => {
       }),
     });
 
-    const BlogArticle: GraphQLObjectType = new GraphQLObjectType({
+    const BlogArticle: GraphQLObjectType = new GraphQLObjectTypeImpl({
       name: 'Article',
       fields: {
         id: { type: GraphQLString },
@@ -60,7 +60,7 @@ describe('Type System: Schema', () => {
       },
     });
 
-    const BlogQuery = new GraphQLObjectType({
+    const BlogQuery = new GraphQLObjectTypeImpl({
       name: 'Query',
       fields: {
         article: {
@@ -68,12 +68,12 @@ describe('Type System: Schema', () => {
           type: BlogArticle,
         },
         feed: {
-          type: new GraphQLList(BlogArticle),
+          type: new GraphQLListImpl(BlogArticle),
         },
       },
     });
 
-    const BlogMutation = new GraphQLObjectType({
+    const BlogMutation = new GraphQLObjectTypeImpl({
       name: 'Mutation',
       fields: {
         writeArticle: {
@@ -82,7 +82,7 @@ describe('Type System: Schema', () => {
       },
     });
 
-    const BlogSubscription = new GraphQLObjectType({
+    const BlogSubscription = new GraphQLObjectTypeImpl({
       name: 'Subscription',
       fields: {
         articleSubscribe: {
@@ -92,7 +92,7 @@ describe('Type System: Schema', () => {
       },
     });
 
-    const schema = new GraphQLSchema({
+    const schema = new GraphQLSchemaImpl({
       description: 'Sample schema',
       query: BlogQuery,
       mutation: BlogMutation,
@@ -144,22 +144,25 @@ describe('Type System: Schema', () => {
   });
 
   describe('Root types', () => {
-    const testType = new GraphQLObjectType({ name: 'TestType', fields: {} });
+    const testType = new GraphQLObjectTypeImpl({
+      name: 'TestType',
+      fields: {},
+    });
 
     it('defines a query root', () => {
-      const schema = new GraphQLSchema({ query: testType });
+      const schema = new GraphQLSchemaImpl({ query: testType });
       expect(schema.getQueryType()).to.equal(testType);
       expect(schema.getTypeMap()).to.include.keys('TestType');
     });
 
     it('defines a mutation root', () => {
-      const schema = new GraphQLSchema({ mutation: testType });
+      const schema = new GraphQLSchemaImpl({ mutation: testType });
       expect(schema.getMutationType()).to.equal(testType);
       expect(schema.getTypeMap()).to.include.keys('TestType');
     });
 
     it('defines a subscription root', () => {
-      const schema = new GraphQLSchema({ subscription: testType });
+      const schema = new GraphQLSchemaImpl({ subscription: testType });
       expect(schema.getSubscriptionType()).to.equal(testType);
       expect(schema.getTypeMap()).to.include.keys('TestType');
     });
@@ -167,19 +170,19 @@ describe('Type System: Schema', () => {
 
   describe('Type Map', () => {
     it('includes interface possible types in the type map', () => {
-      const SomeInterface = new GraphQLInterfaceType({
+      const SomeInterface = new GraphQLInterfaceTypeImpl({
         name: 'SomeInterface',
         fields: {},
       });
 
-      const SomeSubtype = new GraphQLObjectType({
+      const SomeSubtype = new GraphQLObjectTypeImpl({
         name: 'SomeSubtype',
         fields: {},
         interfaces: [SomeInterface],
       });
 
-      const schema = new GraphQLSchema({
-        query: new GraphQLObjectType({
+      const schema = new GraphQLSchemaImpl({
+        query: new GraphQLObjectTypeImpl({
           name: 'Query',
           fields: {
             iface: { type: SomeInterface },
@@ -195,24 +198,24 @@ describe('Type System: Schema', () => {
     });
 
     it("includes interface's thunk subtypes in the type map", () => {
-      const SomeInterface = new GraphQLInterfaceType({
+      const SomeInterface = new GraphQLInterfaceTypeImpl({
         name: 'SomeInterface',
         fields: {},
         interfaces: () => [AnotherInterface],
       });
 
-      const AnotherInterface = new GraphQLInterfaceType({
+      const AnotherInterface = new GraphQLInterfaceTypeImpl({
         name: 'AnotherInterface',
         fields: {},
       });
 
-      const SomeSubtype = new GraphQLObjectType({
+      const SomeSubtype = new GraphQLObjectTypeImpl({
         name: 'SomeSubtype',
         fields: {},
         interfaces: () => [SomeInterface],
       });
 
-      const schema = new GraphQLSchema({ types: [SomeSubtype] });
+      const schema = new GraphQLSchemaImpl({ types: [SomeSubtype] });
 
       expect(schema.getType('SomeInterface')).to.equal(SomeInterface);
       expect(schema.getType('AnotherInterface')).to.equal(AnotherInterface);
@@ -220,18 +223,18 @@ describe('Type System: Schema', () => {
     });
 
     it('includes nested input objects in the map', () => {
-      const NestedInputObject = new GraphQLInputObjectType({
+      const NestedInputObject = new GraphQLInputObjectTypeImpl({
         name: 'NestedInputObject',
         fields: {},
       });
 
-      const SomeInputObject = new GraphQLInputObjectType({
+      const SomeInputObject = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         fields: { nested: { type: NestedInputObject } },
       });
 
-      const schema = new GraphQLSchema({
-        query: new GraphQLObjectType({
+      const schema = new GraphQLSchemaImpl({
+        query: new GraphQLObjectTypeImpl({
           name: 'Query',
           fields: {
             something: {
@@ -247,48 +250,48 @@ describe('Type System: Schema', () => {
     });
 
     it('includes input types only used in directives', () => {
-      const directive = new GraphQLDirective({
+      const directive = new GraphQLDirectiveImpl({
         name: 'dir',
         locations: [DirectiveLocation.OBJECT],
         args: {
           arg: {
-            type: new GraphQLInputObjectType({ name: 'Foo', fields: {} }),
+            type: new GraphQLInputObjectTypeImpl({ name: 'Foo', fields: {} }),
           },
           argList: {
-            type: new GraphQLList(
-              new GraphQLInputObjectType({ name: 'Bar', fields: {} }),
+            type: new GraphQLListImpl(
+              new GraphQLInputObjectTypeImpl({ name: 'Bar', fields: {} }),
             ),
           },
         },
       });
-      const schema = new GraphQLSchema({ directives: [directive] });
+      const schema = new GraphQLSchemaImpl({ directives: [directive] });
 
       expect(schema.getTypeMap()).to.include.keys('Foo', 'Bar');
     });
   });
 
   it('preserves the order of user provided types', () => {
-    const aType = new GraphQLObjectType({
+    const aType = new GraphQLObjectTypeImpl({
       name: 'A',
       fields: {
-        sub: { type: new GraphQLScalarType({ name: 'ASub' }) },
+        sub: { type: new GraphQLScalarTypeImpl({ name: 'ASub' }) },
       },
     });
-    const zType = new GraphQLObjectType({
+    const zType = new GraphQLObjectTypeImpl({
       name: 'Z',
       fields: {
-        sub: { type: new GraphQLScalarType({ name: 'ZSub' }) },
+        sub: { type: new GraphQLScalarTypeImpl({ name: 'ZSub' }) },
       },
     });
-    const queryType = new GraphQLObjectType({
+    const queryType = new GraphQLObjectTypeImpl({
       name: 'Query',
       fields: {
         a: { type: aType },
         z: { type: zType },
-        sub: { type: new GraphQLScalarType({ name: 'QuerySub' }) },
+        sub: { type: new GraphQLScalarTypeImpl({ name: 'QuerySub' }) },
       },
     });
-    const schema = new GraphQLSchema({
+    const schema = new GraphQLSchemaImpl({
       types: [zType, queryType, aType],
       query: queryType,
     });
@@ -314,12 +317,12 @@ describe('Type System: Schema', () => {
     ]);
 
     // Also check that this order is stable
-    const copySchema = new GraphQLSchema(schema.toConfig());
+    const copySchema = new GraphQLSchemaImpl(schema.toConfig());
     expect(Object.keys(copySchema.getTypeMap())).to.deep.equal(typeNames);
   });
 
   it('can be Object.toStringified', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
 
     expect(Object.prototype.toString.call(schema)).to.equal(
       '[object GraphQLSchema]',
@@ -327,14 +330,14 @@ describe('Type System: Schema', () => {
   });
 
   describe('getField', () => {
-    const petType = new GraphQLInterfaceType({
+    const petType = new GraphQLInterfaceTypeImpl({
       name: 'Pet',
       fields: {
         name: { type: GraphQLString },
       },
     });
 
-    const catType = new GraphQLObjectType({
+    const catType = new GraphQLObjectTypeImpl({
       name: 'Cat',
       interfaces: [petType],
       fields: {
@@ -342,7 +345,7 @@ describe('Type System: Schema', () => {
       },
     });
 
-    const dogType = new GraphQLObjectType({
+    const dogType = new GraphQLObjectTypeImpl({
       name: 'Dog',
       interfaces: [petType],
       fields: {
@@ -350,29 +353,29 @@ describe('Type System: Schema', () => {
       },
     });
 
-    const catOrDog = new GraphQLUnionType({
+    const catOrDog = new GraphQLUnionTypeImpl({
       name: 'CatOrDog',
       types: [catType, dogType],
     });
 
-    const queryType = new GraphQLObjectType({
+    const queryType = new GraphQLObjectTypeImpl({
       name: 'Query',
       fields: {
         catOrDog: { type: catOrDog },
       },
     });
 
-    const mutationType = new GraphQLObjectType({
+    const mutationType = new GraphQLObjectTypeImpl({
       name: 'Mutation',
       fields: {},
     });
 
-    const subscriptionType = new GraphQLObjectType({
+    const subscriptionType = new GraphQLObjectTypeImpl({
       name: 'Subscription',
       fields: {},
     });
 
-    const schema = new GraphQLSchema({
+    const schema = new GraphQLSchemaImpl({
       query: queryType,
       mutation: mutationType,
       subscription: subscriptionType,
@@ -433,7 +436,7 @@ describe('Type System: Schema', () => {
     describe('when not assumed valid', () => {
       it('configures the schema to still needing validation', () => {
         expect(
-          new GraphQLSchema({
+          new GraphQLSchemaImpl({
             assumeValid: false,
           }).__validationErrors,
         ).to.equal(undefined);
@@ -441,19 +444,19 @@ describe('Type System: Schema', () => {
 
       it('checks the configuration for mistakes', () => {
         // @ts-expect-error
-        expect(() => new GraphQLSchema(JSON.parse)).to.throw();
+        expect(() => new GraphQLSchemaImpl(JSON.parse)).to.throw();
         // @ts-expect-error
-        expect(() => new GraphQLSchema({ types: {} })).to.throw();
+        expect(() => new GraphQLSchemaImpl({ types: {} })).to.throw();
         // @ts-expect-error
-        expect(() => new GraphQLSchema({ directives: {} })).to.throw();
+        expect(() => new GraphQLSchemaImpl({ directives: {} })).to.throw();
       });
     });
 
     describe('A Schema must contain uniquely named types', () => {
       it('rejects a Schema which redefines a built-in type', () => {
-        const FakeString = new GraphQLScalarType({ name: 'String' });
+        const FakeString = new GraphQLScalarTypeImpl({ name: 'String' });
 
-        const QueryType = new GraphQLObjectType({
+        const QueryType = new GraphQLObjectTypeImpl({
           name: 'Query',
           fields: {
             normal: { type: GraphQLString },
@@ -461,46 +464,50 @@ describe('Type System: Schema', () => {
           },
         });
 
-        expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
+        expect(() => new GraphQLSchemaImpl({ query: QueryType })).to.throw(
           'Schema must contain uniquely named types but contains multiple types named "String".',
         );
       });
 
       it('rejects a Schema when a provided type has no name', () => {
-        const query = new GraphQLObjectType({
+        const query = new GraphQLObjectTypeImpl({
           name: 'Query',
           fields: { foo: { type: GraphQLString } },
         });
         const types = [{}, query, {}];
 
         // @ts-expect-error
-        expect(() => new GraphQLSchema({ query, types })).to.throw(
+        expect(() => new GraphQLSchemaImpl({ query, types })).to.throw(
           'One of the provided types for building the Schema is missing a name.',
         );
       });
 
       it('rejects a Schema which defines an object type twice', () => {
         const types = [
-          new GraphQLObjectType({ name: 'SameName', fields: {} }),
-          new GraphQLObjectType({ name: 'SameName', fields: {} }),
+          new GraphQLObjectTypeImpl({ name: 'SameName', fields: {} }),
+          new GraphQLObjectTypeImpl({ name: 'SameName', fields: {} }),
         ];
 
-        expect(() => new GraphQLSchema({ types })).to.throw(
+        expect(() => new GraphQLSchemaImpl({ types })).to.throw(
           'Schema must contain uniquely named types but contains multiple types named "SameName".',
         );
       });
 
       it('rejects a Schema which defines fields with conflicting types', () => {
         const fields = {};
-        const QueryType = new GraphQLObjectType({
+        const QueryType = new GraphQLObjectTypeImpl({
           name: 'Query',
           fields: {
-            a: { type: new GraphQLObjectType({ name: 'SameName', fields }) },
-            b: { type: new GraphQLObjectType({ name: 'SameName', fields }) },
+            a: {
+              type: new GraphQLObjectTypeImpl({ name: 'SameName', fields }),
+            },
+            b: {
+              type: new GraphQLObjectTypeImpl({ name: 'SameName', fields }),
+            },
           },
         });
 
-        expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
+        expect(() => new GraphQLSchemaImpl({ query: QueryType })).to.throw(
           'Schema must contain uniquely named types but contains multiple types named "SameName".',
         );
       });
@@ -509,7 +516,7 @@ describe('Type System: Schema', () => {
     describe('when assumed valid', () => {
       it('configures the schema to have no errors', () => {
         expect(
-          new GraphQLSchema({
+          new GraphQLSchemaImpl({
             assumeValid: true,
           }).__validationErrors,
         ).to.deep.equal([]);

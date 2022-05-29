@@ -5,7 +5,7 @@ import { identityFunc } from '../../jsutils/identityFunc';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { TypeInfo } from '../../utilities/TypeInfo';
 
@@ -17,7 +17,7 @@ import {
 
 describe('ValidationContext', () => {
   it('can be Object.toStringified', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
     const typeInfo = new TypeInfo(schema);
     const ast = parse('{ foo }');
     const onError = identityFunc;

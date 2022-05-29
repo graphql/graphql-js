@@ -33,7 +33,7 @@ import {
   GraphQLInt,
   GraphQLString,
 } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 import { validateSchema } from '../../type/validate';
 
 import { graphqlSync } from '../../graphql';
@@ -109,7 +109,7 @@ describe('Schema Builder', () => {
   });
 
   it('Match order of default types and directives', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
     const sdlSchema = buildASTSchema({
       kind: Kind.DOCUMENT,
       definitions: [],

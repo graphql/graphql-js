@@ -25,7 +25,8 @@ import {
   GraphQLInt,
   GraphQLString,
 } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 import { validateSchema } from '../../type/validate';
 
 import { graphqlSync } from '../../graphql';
@@ -498,7 +499,7 @@ describe('extendSchema', () => {
   });
 
   it('builds types with deprecated fields/values', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
     const extendAST = parse(`
       type SomeObject {
         deprecatedField: String @deprecated(reason: "not used anymore")
@@ -1111,7 +1112,7 @@ describe('extendSchema', () => {
   });
 
   it('Rejects invalid SDL', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
     const extendAST = parse('extend schema @unknown');
 
     expect(() => extendSchema(schema, extendAST)).to.throw(
@@ -1120,7 +1121,7 @@ describe('extendSchema', () => {
   });
 
   it('Allows to disable SDL validation', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
     const extendAST = parse('extend schema @unknown');
 
     extendSchema(schema, extendAST, { assumeValid: true });
@@ -1128,7 +1129,7 @@ describe('extendSchema', () => {
   });
 
   it('Throws on unknown types', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
     const ast = parse(`
       type Query {
         unknown: UnknownType
@@ -1140,7 +1141,7 @@ describe('extendSchema', () => {
   });
 
   it('Rejects invalid AST', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
 
     // @ts-expect-error (Second argument expects DocumentNode)
     expect(() => extendSchema(schema, null)).to.throw(
@@ -1154,7 +1155,7 @@ describe('extendSchema', () => {
   });
 
   it('does not allow replacing a default directive', () => {
-    const schema = new GraphQLSchema({});
+    const schema = new GraphQLSchemaImpl({});
     const extendAST = parse(`
       directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD
     `);
@@ -1183,7 +1184,7 @@ describe('extendSchema', () => {
 
   describe('can add additional root operation types', () => {
     it('does not automatically include common root type names', () => {
-      const schema = new GraphQLSchema({});
+      const schema = new GraphQLSchemaImpl({});
       const extendedSchema = extendSchema(schema, parse('type Mutation'));
 
       expect(extendedSchema.getType('Mutation')).to.not.equal(undefined);

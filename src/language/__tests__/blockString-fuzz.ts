@@ -7,10 +7,10 @@ import { inspectStr } from '../../__testUtils__/inspectStr';
 
 import { isPrintableAsBlockString, printBlockString } from '../blockString';
 import { Lexer } from '../lexer';
-import { Source } from '../source';
+import { SourceImpl } from '../source';
 
 function lexValue(str: string): string {
-  const lexer = new Lexer(new Source(str));
+  const lexer = new Lexer(new SourceImpl(str));
   const value = lexer.advance().value;
 
   assert(typeof value === 'string');

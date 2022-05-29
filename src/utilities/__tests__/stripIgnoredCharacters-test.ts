@@ -9,12 +9,12 @@ import type { Maybe } from '../../jsutils/Maybe';
 
 import { Lexer } from '../../language/lexer';
 import { parse } from '../../language/parser';
-import { Source } from '../../language/source';
+import { SourceImpl } from '../../language/source';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
 
 function lexValue(str: string): Maybe<string> {
-  const lexer = new Lexer(new Source(str));
+  const lexer = new Lexer(new SourceImpl(str));
   const value = lexer.advance().value;
 
   assert(lexer.advance().kind === '<EOF>', 'Expected EOF');
@@ -56,7 +56,7 @@ describe('stripIgnoredCharacters', () => {
   });
 
   it('accepts Source object', () => {
-    expect(stripIgnoredCharacters(new Source('{ a }'))).to.equal('{a}');
+    expect(stripIgnoredCharacters(new SourceImpl('{ a }'))).to.equal('{a}');
   });
 
   it('strips ignored characters from GraphQL SDL document', () => {

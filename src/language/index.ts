@@ -1,4 +1,5 @@
-export { Source } from './source';
+export type { Source } from './source';
+export { SourceImpl } from './source';
 
 export { getLocation } from './location';
 export type { SourceLocation } from './location';
@@ -16,7 +17,7 @@ export type { ParseOptions } from './parser';
 
 export { print } from './printer';
 
-export { visit, visitInParallel, getEnterLeaveForKind, BREAK } from './visitor';
+export { visit, visitInParallel, getEnterLeaveForKind } from './visitor';
 export type { ASTVisitor, ASTVisitFn, ASTVisitorKeyMap } from './visitor';
 
 export { Location, Token, OperationTypeNode } from './ast';

@@ -7,7 +7,7 @@ import {
   GraphQLSkipDirective,
   GraphQLSpecifiedByDirective,
 } from '../../type/directives';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { buildSchema } from '../buildASTSchema';
 import {
@@ -795,9 +795,9 @@ describe('findBreakingChanges', () => {
   });
 
   it('should detect if a directive was implicitly removed', () => {
-    const oldSchema = new GraphQLSchema({});
+    const oldSchema = new GraphQLSchemaImpl({});
 
-    const newSchema = new GraphQLSchema({
+    const newSchema = new GraphQLSchemaImpl({
       directives: [
         GraphQLSkipDirective,
         GraphQLIncludeDirective,

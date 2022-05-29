@@ -7,8 +7,11 @@ import { parse } from '../language/parser';
 import type { Source } from '../language/source';
 
 import { specifiedDirectives } from '../type/directives';
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
-import { GraphQLSchema } from '../type/schema';
+import type {
+  GraphQLSchema,
+  GraphQLSchemaValidationOptions,
+} from '../type/schema';
+import { GraphQLSchemaImpl } from '../type/schema';
 
 import { assertValidSDL } from '../validation/validate';
 
@@ -88,7 +91,7 @@ export function buildASTSchema(
     ),
   ];
 
-  return new GraphQLSchema({ ...config, directives });
+  return new GraphQLSchemaImpl({ ...config, directives });
 }
 
 /**

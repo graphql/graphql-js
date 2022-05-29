@@ -2,17 +2,17 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-  GraphQLScalarType,
-  GraphQLUnionType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLScalarTypeImpl,
+  GraphQLUnionTypeImpl,
 } from '../definition';
-import { GraphQLDirective } from '../directives';
-import { GraphQLSchema } from '../schema';
+import { GraphQLDirectiveImpl } from '../directives';
+import { GraphQLSchemaImpl } from '../schema';
 
-const dummyType = new GraphQLScalarType({ name: 'DummyScalar' });
+const dummyType = new GraphQLScalarTypeImpl({ name: 'DummyScalar' });
 
 function expectObjMap(value: unknown) {
   assert(value != null && typeof value === 'object');
@@ -23,7 +23,7 @@ function expectObjMap(value: unknown) {
 describe('Type System: Extensions', () => {
   describe('GraphQLScalarType', () => {
     it('without extensions', () => {
-      const someScalar = new GraphQLScalarType({ name: 'SomeScalar' });
+      const someScalar = new GraphQLScalarTypeImpl({ name: 'SomeScalar' });
       expect(someScalar.extensions).to.deep.equal({});
 
       const config = someScalar.toConfig();
@@ -32,7 +32,7 @@ describe('Type System: Extensions', () => {
 
     it('with extensions', () => {
       const scalarExtensions = Object.freeze({ SomeScalarExt: 'scalar' });
-      const someScalar = new GraphQLScalarType({
+      const someScalar = new GraphQLScalarTypeImpl({
         name: 'SomeScalar',
         extensions: scalarExtensions,
       });
@@ -46,7 +46,7 @@ describe('Type System: Extensions', () => {
 
   describe('GraphQLObjectType', () => {
     it('without extensions', () => {
-      const someObject = new GraphQLObjectType({
+      const someObject = new GraphQLObjectTypeImpl({
         name: 'SomeObject',
         fields: {
           someField: {
@@ -80,7 +80,7 @@ describe('Type System: Extensions', () => {
       const fieldExtensions = Object.freeze({ SomeFieldExt: 'field' });
       const argExtensions = Object.freeze({ SomeArgExt: 'arg' });
 
-      const someObject = new GraphQLObjectType({
+      const someObject = new GraphQLObjectTypeImpl({
         name: 'SomeObject',
         fields: {
           someField: {
@@ -115,7 +115,7 @@ describe('Type System: Extensions', () => {
 
   describe('GraphQLInterfaceType', () => {
     it('without extensions', () => {
-      const someInterface = new GraphQLInterfaceType({
+      const someInterface = new GraphQLInterfaceTypeImpl({
         name: 'SomeInterface',
         fields: {
           someField: {
@@ -151,7 +151,7 @@ describe('Type System: Extensions', () => {
       const fieldExtensions = Object.freeze({ SomeFieldExt: 'field' });
       const argExtensions = Object.freeze({ SomeArgExt: 'arg' });
 
-      const someInterface = new GraphQLInterfaceType({
+      const someInterface = new GraphQLInterfaceTypeImpl({
         name: 'SomeInterface',
         fields: {
           someField: {
@@ -186,7 +186,7 @@ describe('Type System: Extensions', () => {
 
   describe('GraphQLUnionType', () => {
     it('without extensions', () => {
-      const someUnion = new GraphQLUnionType({
+      const someUnion = new GraphQLUnionTypeImpl({
         name: 'SomeUnion',
         types: [],
       });
@@ -200,7 +200,7 @@ describe('Type System: Extensions', () => {
     it('with extensions', () => {
       const unionExtensions = Object.freeze({ SomeUnionExt: 'union' });
 
-      const someUnion = new GraphQLUnionType({
+      const someUnion = new GraphQLUnionTypeImpl({
         name: 'SomeUnion',
         types: [],
         extensions: unionExtensions,
@@ -215,7 +215,7 @@ describe('Type System: Extensions', () => {
 
   describe('GraphQLEnumType', () => {
     it('without extensions', () => {
-      const someEnum = new GraphQLEnumType({
+      const someEnum = new GraphQLEnumTypeImpl({
         name: 'SomeEnum',
         values: {
           SOME_VALUE: {},
@@ -236,7 +236,7 @@ describe('Type System: Extensions', () => {
       const enumExtensions = Object.freeze({ SomeEnumExt: 'enum' });
       const valueExtensions = Object.freeze({ SomeValueExt: 'value' });
 
-      const someEnum = new GraphQLEnumType({
+      const someEnum = new GraphQLEnumTypeImpl({
         name: 'SomeEnum',
         values: {
           SOME_VALUE: {
@@ -259,7 +259,7 @@ describe('Type System: Extensions', () => {
 
   describe('GraphQLInputObjectType', () => {
     it('without extensions', () => {
-      const someInputObject = new GraphQLInputObjectType({
+      const someInputObject = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         fields: {
           someInputField: {
@@ -286,7 +286,7 @@ describe('Type System: Extensions', () => {
         SomeInputFieldExt: 'inputField',
       });
 
-      const someInputObject = new GraphQLInputObjectType({
+      const someInputObject = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         fields: {
           someInputField: {
@@ -316,7 +316,7 @@ describe('Type System: Extensions', () => {
 
   describe('GraphQLDirective', () => {
     it('without extensions', () => {
-      const someDirective = new GraphQLDirective({
+      const someDirective = new GraphQLDirectiveImpl({
         name: 'SomeDirective',
         args: {
           someArg: {
@@ -342,7 +342,7 @@ describe('Type System: Extensions', () => {
       });
       const argExtensions = Object.freeze({ SomeArgExt: 'arg' });
 
-      const someDirective = new GraphQLDirective({
+      const someDirective = new GraphQLDirectiveImpl({
         name: 'SomeDirective',
         args: {
           someArg: {
@@ -367,7 +367,7 @@ describe('Type System: Extensions', () => {
 
   describe('GraphQLSchema', () => {
     it('without extensions', () => {
-      const schema = new GraphQLSchema({});
+      const schema = new GraphQLSchemaImpl({});
 
       expect(schema.extensions).to.deep.equal({});
 
@@ -380,7 +380,7 @@ describe('Type System: Extensions', () => {
         schemaExtension: 'schema',
       });
 
-      const schema = new GraphQLSchema({ extensions: schemaExtensions });
+      const schema = new GraphQLSchemaImpl({ extensions: schemaExtensions });
 
       expectObjMap(schema.extensions).to.deep.equal(schemaExtensions);
 

@@ -3,7 +3,7 @@ title: graphql/language
 layout: ../_core/GraphQLJSLayout
 category: API Reference
 permalink: /graphql-js/language/
-sublinks: BREAK,getLocation,Kind,lex,parse,parseValue,printSource,visit
+sublinks: getLocation,Kind,lex,parse,parseValue,printSource,visit
 next: /graphql-js/type/
 ---
 
@@ -74,12 +74,6 @@ _Visitor_
     <a href="#visit">
       <pre>function visit</pre>
       A general-purpose visitor to traverse a parsed GraphQL AST
-    </a>
-  </li>
-  <li>
-    <a href="#break">
-      <pre>var BREAK</pre>
-      A token to allow breaking out of the visitor.
     </a>
   </li>
 </ul>
@@ -215,7 +209,7 @@ visit function.
 
 ```js
 var editedAST = visit(ast, {
-  enter(node, key, parent, path, ancestors) {
+  enter(node, key, parent, path, ancestors, BREAK) {
     // @return
     //   undefined: no action
     //   false: skip visiting this node
@@ -223,7 +217,7 @@ var editedAST = visit(ast, {
     //   null: delete this node
     //   any value: replace this node with the returned value
   },
-  leave(node, key, parent, path, ancestors) {
+  leave(node, key, parent, path, ancestors, BREAK) {
     // @return
     //   undefined: no action
     //   false: no action
@@ -294,10 +288,6 @@ visit(ast, {
   },
 });
 ```
-
-### BREAK
-
-The sentinel `BREAK` value described in the documentation of `visitor`.
 
 ## Printer
 

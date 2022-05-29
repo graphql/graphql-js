@@ -5,11 +5,11 @@ import { dedent } from '../../__testUtils__/dedent';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
-import { Source } from '../../language/source';
+import { SourceImpl } from '../../language/source';
 
 import { GraphQLError } from '../GraphQLError';
 
-const source = new Source(dedent`
+const source = new SourceImpl(dedent`
   {
     field
   }
@@ -237,7 +237,7 @@ describe('toString', () => {
 
   it('prints an error with nodes from different sources', () => {
     const docA = parse(
-      new Source(
+      new SourceImpl(
         dedent`
           type Foo {
             field: String
@@ -251,7 +251,7 @@ describe('toString', () => {
     const fieldA = opA.fields[0];
 
     const docB = parse(
-      new Source(
+      new SourceImpl(
         dedent`
           type Foo {
             field: Int

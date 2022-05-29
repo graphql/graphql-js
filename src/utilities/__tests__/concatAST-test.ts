@@ -5,17 +5,17 @@ import { dedent } from '../../__testUtils__/dedent';
 
 import { parse } from '../../language/parser';
 import { print } from '../../language/printer';
-import { Source } from '../../language/source';
+import { SourceImpl } from '../../language/source';
 
 import { concatAST } from '../concatAST';
 
 describe('concatAST', () => {
   it('concatenates two ASTs together', () => {
-    const sourceA = new Source(`
+    const sourceA = new SourceImpl(`
       { a, b, ...Frag }
     `);
 
-    const sourceB = new Source(`
+    const sourceB = new SourceImpl(`
       fragment Frag on T {
         c
       }

@@ -1,15 +1,30 @@
 export type { Path as ResponsePath } from '../jsutils/Path';
 
+export type {
+  // GraphQL Schema interface
+  GraphQLSchema,
+} from './schema';
 export {
   // Predicate
   isSchema,
   // Assertion
   assertSchema,
   // GraphQL Schema definition
-  GraphQLSchema,
+  GraphQLSchemaImpl,
 } from './schema';
 export type { GraphQLSchemaConfig, GraphQLSchemaExtensions } from './schema';
 
+export type {
+  // Interfaces
+  GraphQLScalarType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+} from './definition';
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
@@ -55,15 +70,15 @@ export {
   getNullableType,
   getNamedType,
   // Definitions
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
+  GraphQLScalarTypeImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLUnionTypeImpl,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
   // Type Wrappers
-  GraphQLList,
-  GraphQLNonNull,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
 } from './definition';
 
 export type {
@@ -121,13 +136,17 @@ export type {
   GraphQLScalarLiteralParser,
 } from './definition';
 
+export type {
+  // Directive Interface
+  GraphQLDirective,
+} from './directives';
 export {
   // Predicate
   isDirective,
   // Assertion
   assertDirective,
   // Directives Definition
-  GraphQLDirective,
+  GraphQLDirectiveImpl,
   // Built-in Directives defined by the Spec
   isSpecifiedDirective,
   specifiedDirectives,

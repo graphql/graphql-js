@@ -3,11 +3,11 @@ import { describe, it } from 'mocha';
 
 import type { GraphQLInputType } from '../../type/definition';
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLScalarTypeImpl,
 } from '../../type/definition';
 import { GraphQLInt } from '../../type/scalars';
 
@@ -51,7 +51,7 @@ function expectErrors(result: CoerceResult) {
 
 describe('coerceInputValue', () => {
   describe('for GraphQLNonNull', () => {
-    const TestNonNull = new GraphQLNonNull(GraphQLInt);
+    const TestNonNull = new GraphQLNonNullImpl(GraphQLInt);
 
     it('returns no error for non-null value', () => {
       const result = coerceValue(1, TestNonNull);
@@ -82,7 +82,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLScalar', () => {
-    const TestScalar = new GraphQLScalarType({
+    const TestScalar = new GraphQLScalarTypeImpl({
       name: 'TestScalar',
       parseValue(input: any) {
         if (input.error != null) {
@@ -132,7 +132,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLEnum', () => {
-    const TestEnum = new GraphQLEnumType({
+    const TestEnum = new GraphQLEnumTypeImpl({
       name: 'TestEnum',
       values: {
         FOO: { value: 'InternalFoo' },
@@ -183,10 +183,10 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject', () => {
-    const TestInputObject = new GraphQLInputObjectType({
+    const TestInputObject = new GraphQLInputObjectTypeImpl({
       name: 'TestInputObject',
       fields: {
-        foo: { type: new GraphQLNonNull(GraphQLInt) },
+        foo: { type: new GraphQLNonNullImpl(GraphQLInt) },
         bar: { type: GraphQLInt },
       },
     });
@@ -275,11 +275,11 @@ describe('coerceInputValue', () => {
 
   describe('for GraphQLInputObject with default value', () => {
     const makeTestInputObject = (defaultValue: any) =>
-      new GraphQLInputObjectType({
+      new GraphQLInputObjectTypeImpl({
         name: 'TestInputObject',
         fields: {
           foo: {
-            type: new GraphQLScalarType({ name: 'TestScalar' }),
+            type: new GraphQLScalarTypeImpl({ name: 'TestScalar' }),
             defaultValue,
           },
         },
@@ -307,7 +307,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLList', () => {
-    const TestList = new GraphQLList(GraphQLInt);
+    const TestList = new GraphQLListImpl(GraphQLInt);
 
     it('returns no error for a valid input', () => {
       const result = coerceValue([1, 2, 3], TestList);
@@ -347,8 +347,8 @@ describe('coerceInputValue', () => {
     });
 
     it('returns a list for a non-list object value', () => {
-      const TestListOfObjects = new GraphQLList(
-        new GraphQLInputObjectType({
+      const TestListOfObjects = new GraphQLListImpl(
+        new GraphQLInputObjectTypeImpl({
           name: 'TestObject',
           fields: {
             length: { type: GraphQLInt },
@@ -378,7 +378,7 @@ describe('coerceInputValue', () => {
   });
 
   describe('for nested GraphQLList', () => {
-    const TestNestedList = new GraphQLList(new GraphQLList(GraphQLInt));
+    const TestNestedList = new GraphQLListImpl(new GraphQLListImpl(GraphQLInt));
 
     it('returns no error for a valid input', () => {
       const result = coerceValue([[1], [2, 3]], TestNestedList);
@@ -409,7 +409,7 @@ describe('coerceInputValue', () => {
   describe('with default onError', () => {
     it('throw error without path', () => {
       expect(() =>
-        coerceInputValue(null, new GraphQLNonNull(GraphQLInt)),
+        coerceInputValue(null, new GraphQLNonNullImpl(GraphQLInt)),
       ).to.throw(
         'Invalid value null: Expected non-nullable type "Int!" not to be null.',
       );
@@ -419,7 +419,7 @@ describe('coerceInputValue', () => {
       expect(() =>
         coerceInputValue(
           [null],
-          new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+          new GraphQLListImpl(new GraphQLNonNullImpl(GraphQLInt)),
         ),
       ).to.throw(
         'Invalid value null at "value[0]": Expected non-nullable type "Int!" not to be null.',

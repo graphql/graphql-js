@@ -1,6 +1,7 @@
 import { printBlockString } from '../language/blockString';
 import { isPunctuatorTokenKind, Lexer } from '../language/lexer';
-import { isSource, Source } from '../language/source';
+import type { Source } from '../language/source';
+import { isSource, SourceImpl } from '../language/source';
 import { TokenKind } from '../language/tokenKind';
 
 /**
@@ -64,7 +65,7 @@ import { TokenKind } from '../language/tokenKind';
  * ```
  */
 export function stripIgnoredCharacters(source: string | Source): string {
-  const sourceObj = isSource(source) ? source : new Source(source);
+  const sourceObj = isSource(source) ? source : new SourceImpl(source);
 
   const body = sourceObj.body;
   const lexer = new Lexer(sourceObj);

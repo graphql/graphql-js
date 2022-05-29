@@ -3,9 +3,9 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
-import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLObjectTypeImpl } from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { buildClientSchema } from '../buildClientSchema';
 import type { IntrospectionQuery } from '../getIntrospectionQuery';
@@ -17,9 +17,9 @@ function introspectionToSDL(introspection: IntrospectionQuery): string {
 }
 
 describe('introspectionFromSchema', () => {
-  const schema = new GraphQLSchema({
+  const schema = new GraphQLSchemaImpl({
     description: 'This is a simple schema',
-    query: new GraphQLObjectType({
+    query: new GraphQLObjectTypeImpl({
       name: 'Simple',
       description: 'This is a simple type',
       fields: {

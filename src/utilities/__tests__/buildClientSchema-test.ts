@@ -5,8 +5,8 @@ import { dedent } from '../../__testUtils__/dedent';
 
 import {
   assertEnumType,
-  GraphQLEnumType,
-  GraphQLObjectType,
+  GraphQLEnumTypeImpl,
+  GraphQLObjectTypeImpl,
 } from '../../type/definition';
 import {
   GraphQLBoolean,
@@ -15,7 +15,7 @@ import {
   GraphQLInt,
   GraphQLString,
 } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { graphqlSync } from '../../graphql';
 
@@ -331,7 +331,7 @@ describe('Type System: build schema from introspection', () => {
   });
 
   it('builds a schema with an enum', () => {
-    const foodEnum = new GraphQLEnumType({
+    const foodEnum = new GraphQLEnumTypeImpl({
       name: 'Food',
       description: 'Varieties of food stuffs',
       values: {
@@ -348,8 +348,8 @@ describe('Type System: build schema from introspection', () => {
         },
       },
     });
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
+    const schema = new GraphQLSchemaImpl({
+      query: new GraphQLObjectTypeImpl({
         name: 'EnumFields',
         fields: {
           food: {

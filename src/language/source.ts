@@ -2,9 +2,23 @@ import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { instanceOf } from '../jsutils/instanceOf';
 
+import type { GraphQLEntity } from '../utilities/entities';
+import {
+  GRAPHQL_SOURCE_SYMBOL,
+  GraphQLEntityImpl,
+  GraphQLEntityKind,
+} from '../utilities/entities';
+
 interface Location {
   line: number;
   column: number;
+}
+
+export interface Source extends GraphQLEntity {
+  readonly [GRAPHQL_SOURCE_SYMBOL]: unknown;
+  body: string;
+  name: string;
+  locationOffset: Location;
 }
 
 /**
@@ -14,7 +28,8 @@ interface Location {
  * be useful for `name` to be `"Foo.graphql"` and location to be `{ line: 40, column: 1 }`.
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
-export class Source {
+export class SourceImpl extends GraphQLEntityImpl implements Source {
+  readonly [GRAPHQL_SOURCE_SYMBOL] = true;
   body: string;
   name: string;
   locationOffset: Location;
@@ -24,6 +39,7 @@ export class Source {
     name: string = 'GraphQL request',
     locationOffset: Location = { line: 1, column: 1 },
   ) {
+    super();
     devAssert(
       typeof body === 'string',
       `Body must be a string. Received: ${inspect(body)}.`,
@@ -53,5 +69,5 @@ export class Source {
  * @internal
  */
 export function isSource(source: unknown): source is Source {
-  return instanceOf(source, Source);
+  return instanceOf(source, GraphQLEntityKind.SOURCE);
 }

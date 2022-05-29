@@ -40,6 +40,19 @@ import type {
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 
+import type { GraphQLEntity } from '../utilities/entities';
+import {
+  GRAPHQL_ENUM_TYPE_SYMBOL,
+  GRAPHQL_INPUT_OBJECT_TYPE_SYMBOL,
+  GRAPHQL_INTERFACE_TYPE_SYMBOL,
+  GRAPHQL_LIST_TYPE_SYMBOL,
+  GRAPHQL_NON_NULL_TYPE_SYMBOL,
+  GRAPHQL_OBJECT_TYPE_SYMBOL,
+  GRAPHQL_SCALAR_TYPE_SYMBOL,
+  GRAPHQL_UNION_TYPE_SYMBOL,
+  GraphQLEntityImpl,
+  GraphQLEntityKind,
+} from '../utilities/entities';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
 import { assertEnumValueName, assertName } from './assertName';
@@ -79,7 +92,7 @@ export function assertType(type: unknown): GraphQLType {
  * There are predicates for each kind of GraphQL type.
  */
 export function isScalarType(type: unknown): type is GraphQLScalarType {
-  return instanceOf(type, GraphQLScalarType);
+  return instanceOf(type, GraphQLEntityKind.SCALAR_TYPE);
 }
 
 export function assertScalarType(type: unknown): GraphQLScalarType {
@@ -90,7 +103,7 @@ export function assertScalarType(type: unknown): GraphQLScalarType {
 }
 
 export function isObjectType(type: unknown): type is GraphQLObjectType {
-  return instanceOf(type, GraphQLObjectType);
+  return instanceOf(type, GraphQLEntityKind.OBJECT_TYPE);
 }
 
 export function assertObjectType(type: unknown): GraphQLObjectType {
@@ -101,7 +114,7 @@ export function assertObjectType(type: unknown): GraphQLObjectType {
 }
 
 export function isInterfaceType(type: unknown): type is GraphQLInterfaceType {
-  return instanceOf(type, GraphQLInterfaceType);
+  return instanceOf(type, GraphQLEntityKind.INTERFACE_TYPE);
 }
 
 export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
@@ -114,7 +127,7 @@ export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
 }
 
 export function isUnionType(type: unknown): type is GraphQLUnionType {
-  return instanceOf(type, GraphQLUnionType);
+  return instanceOf(type, GraphQLEntityKind.UNION_TYPE);
 }
 
 export function assertUnionType(type: unknown): GraphQLUnionType {
@@ -125,7 +138,7 @@ export function assertUnionType(type: unknown): GraphQLUnionType {
 }
 
 export function isEnumType(type: unknown): type is GraphQLEnumType {
-  return instanceOf(type, GraphQLEnumType);
+  return instanceOf(type, GraphQLEntityKind.ENUM_TYPE);
 }
 
 export function assertEnumType(type: unknown): GraphQLEnumType {
@@ -138,7 +151,7 @@ export function assertEnumType(type: unknown): GraphQLEnumType {
 export function isInputObjectType(
   type: unknown,
 ): type is GraphQLInputObjectType {
-  return instanceOf(type, GraphQLInputObjectType);
+  return instanceOf(type, GraphQLEntityKind.INPUT_OBJECT_TYPE);
 }
 
 export function assertInputObjectType(type: unknown): GraphQLInputObjectType {
@@ -158,7 +171,7 @@ export function isListType(
 ): type is GraphQLList<GraphQLOutputType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType> {
-  return instanceOf(type, GraphQLList);
+  return instanceOf(type, GraphQLEntityKind.LIST_TYPE);
 }
 
 export function assertListType(type: unknown): GraphQLList<GraphQLType> {
@@ -180,10 +193,12 @@ export function isNonNullType(
 export function isNonNullType(
   type: unknown,
 ): type is GraphQLNonNull<GraphQLNullableType> {
-  return instanceOf(type, GraphQLNonNull);
+  return instanceOf(type, GraphQLEntityKind.NON_NULL_TYPE);
 }
 
-export function assertNonNullType(type: unknown): GraphQLNonNull<GraphQLType> {
+export function assertNonNullType(
+  type: unknown,
+): GraphQLNonNull<GraphQLNullableType> {
   if (!isNonNullType(type)) {
     throw new Error(`Expected ${inspect(type)} to be a GraphQL Non-Null type.`);
   }
@@ -299,6 +314,11 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
   return type;
 }
 
+export interface GraphQLList<T extends GraphQLType> extends GraphQLEntity {
+  readonly [GRAPHQL_LIST_TYPE_SYMBOL]: unknown;
+  readonly ofType: T;
+}
+
 /**
  * List Type Wrapper
  *
@@ -309,19 +329,24 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * Example:
  *
  * ```ts
- * const PersonType = new GraphQLObjectType({
+ * const PersonType = new GraphQLObjectTypeImpl({
  *   name: 'Person',
  *   fields: () => ({
- *     parents: { type: new GraphQLList(PersonType) },
- *     children: { type: new GraphQLList(PersonType) },
+ *     parents: { type: new GraphQLListImpl(PersonType) },
+ *     children: { type: new GraphQLListImpl(PersonType) },
  *   })
  * })
  * ```
  */
-export class GraphQLList<T extends GraphQLType> {
+export class GraphQLListImpl<T extends GraphQLType>
+  extends GraphQLEntityImpl
+  implements GraphQLList<T>
+{
+  readonly [GRAPHQL_LIST_TYPE_SYMBOL] = true;
   readonly ofType: T;
 
   constructor(ofType: T) {
+    super();
     devAssert(
       isType(ofType),
       `Expected ${inspect(ofType)} to be a GraphQL type.`,
@@ -343,6 +368,12 @@ export class GraphQLList<T extends GraphQLType> {
   }
 }
 
+export interface GraphQLNonNull<T extends GraphQLNullableType>
+  extends GraphQLEntity {
+  readonly [GRAPHQL_NON_NULL_TYPE_SYMBOL]: unknown;
+  readonly ofType: T;
+}
+
 /**
  * Non-Null Type Wrapper
  *
@@ -355,19 +386,24 @@ export class GraphQLList<T extends GraphQLType> {
  * Example:
  *
  * ```ts
- * const RowType = new GraphQLObjectType({
+ * const RowType = new GraphQLObjectTypeImpl({
  *   name: 'Row',
  *   fields: () => ({
- *     id: { type: new GraphQLNonNull(GraphQLString) },
+ *     id: { type: new GraphQLNonNullImpl(GraphQLString) },
  *   })
  * })
  * ```
  * Note: the enforcement of non-nullability occurs within the executor.
  */
-export class GraphQLNonNull<T extends GraphQLNullableType> {
+export class GraphQLNonNullImpl<T extends GraphQLNullableType>
+  extends GraphQLEntityImpl
+  implements GraphQLNonNull<T>
+{
+  readonly [GRAPHQL_NON_NULL_TYPE_SYMBOL] = true;
   readonly ofType: T;
 
   constructor(ofType: T) {
+    super();
     devAssert(
       isNullableType(ofType),
       `Expected ${inspect(ofType)} to be a GraphQL nullable type.`,
@@ -395,7 +431,7 @@ export class GraphQLNonNull<T extends GraphQLNullableType> {
 
 export type GraphQLWrappingType =
   | GraphQLList<GraphQLType>
-  | GraphQLNonNull<GraphQLType>;
+  | GraphQLNonNull<GraphQLNullableType>;
 
 export function isWrappingType(type: unknown): type is GraphQLWrappingType {
   return isListType(type) || isNonNullType(type);
@@ -523,6 +559,23 @@ export interface GraphQLScalarTypeExtensions {
   [attributeName: string]: unknown;
 }
 
+export interface GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
+  extends GraphQLEntity {
+  readonly [GRAPHQL_SCALAR_TYPE_SYMBOL]: unknown;
+  name: string;
+  description: Maybe<string>;
+  specifiedByURL: Maybe<string>;
+  serialize: GraphQLScalarSerializer<TExternal>;
+  parseValue: GraphQLScalarValueParser<TInternal>;
+  parseLiteral: GraphQLScalarLiteralParser<TInternal>;
+  extensions: Readonly<GraphQLScalarTypeExtensions>;
+  astNode: Maybe<ScalarTypeDefinitionNode>;
+  extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
+  toConfig: () => GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>;
+  toString: () => string;
+  toJSON: () => string;
+}
+
 /**
  * Scalar Type Definition
  *
@@ -537,7 +590,7 @@ export interface GraphQLScalarTypeExtensions {
  * Example:
  *
  * ```ts
- * const OddType = new GraphQLScalarType({
+ * const OddType = new GraphQLScalarTypeImpl({
  *   name: 'Odd',
  *   serialize(value) {
  *     if (!Number.isFinite(value)) {
@@ -554,7 +607,12 @@ export interface GraphQLScalarTypeExtensions {
  * });
  * ```
  */
-export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
+export class GraphQLScalarTypeImpl<TInternal = unknown, TExternal = TInternal>
+  extends GraphQLEntityImpl
+  implements GraphQLScalarType
+{
+  readonly [GRAPHQL_SCALAR_TYPE_SYMBOL] = true;
+
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
@@ -566,6 +624,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>) {
+    super();
     const parseValue =
       config.parseValue ??
       (identityFunc as GraphQLScalarValueParser<TInternal>);
@@ -684,6 +743,22 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
   [attributeName: string]: unknown;
 }
 
+export interface GraphQLObjectType<TSource = any, TContext = any>
+  extends GraphQLEntity {
+  readonly [GRAPHQL_OBJECT_TYPE_SYMBOL]: unknown;
+  name: string;
+  description: Maybe<string>;
+  isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
+  extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
+  astNode: Maybe<ObjectTypeDefinitionNode>;
+  extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
+  getFields: () => GraphQLFieldMap<TSource, TContext>;
+  getInterfaces: () => ReadonlyArray<GraphQLInterfaceType>;
+  toConfig: () => GraphQLObjectTypeNormalizedConfig<TSource, TContext>;
+  toString: () => string;
+  toJSON: () => string;
+}
+
 /**
  * Object Type Definition
  *
@@ -693,7 +768,7 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * Example:
  *
  * ```ts
- * const AddressType = new GraphQLObjectType({
+ * const AddressType = new GraphQLObjectTypeImpl({
  *   name: 'Address',
  *   fields: {
  *     street: { type: GraphQLString },
@@ -715,7 +790,7 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * Example:
  *
  * ```ts
- * const PersonType = new GraphQLObjectType({
+ * const PersonType = new GraphQLObjectTypeImpl({
  *   name: 'Person',
  *   fields: () => ({
  *     name: { type: GraphQLString },
@@ -724,7 +799,12 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * });
  * ```
  */
-export class GraphQLObjectType<TSource = any, TContext = any> {
+export class GraphQLObjectTypeImpl<TSource = any, TContext = any>
+  extends GraphQLEntityImpl
+  implements GraphQLObjectType<TSource, TContext>
+{
+  readonly [GRAPHQL_OBJECT_TYPE_SYMBOL] = true;
+
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
@@ -736,6 +816,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
+    super();
     this.name = assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
@@ -1058,6 +1139,21 @@ export interface GraphQLInterfaceTypeExtensions {
   [attributeName: string]: unknown;
 }
 
+export interface GraphQLInterfaceType extends GraphQLEntity {
+  readonly [GRAPHQL_INTERFACE_TYPE_SYMBOL]: unknown;
+  name: string;
+  description: Maybe<string>;
+  resolveType: Maybe<GraphQLTypeResolver<any, any>>;
+  extensions: Readonly<GraphQLInterfaceTypeExtensions>;
+  astNode: Maybe<InterfaceTypeDefinitionNode>;
+  extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
+  getFields: () => GraphQLFieldMap<any, any>;
+  getInterfaces: () => ReadonlyArray<GraphQLInterfaceType>;
+  toConfig: () => GraphQLInterfaceTypeNormalizedConfig;
+  toString: () => string;
+  toJSON: () => string;
+}
+
 /**
  * Interface Type Definition
  *
@@ -1069,7 +1165,7 @@ export interface GraphQLInterfaceTypeExtensions {
  * Example:
  *
  * ```ts
- * const EntityType = new GraphQLInterfaceType({
+ * const EntityType = new GraphQLInterfaceTypeImpl({
  *   name: 'Entity',
  *   fields: {
  *     name: { type: GraphQLString }
@@ -1077,7 +1173,12 @@ export interface GraphQLInterfaceTypeExtensions {
  * });
  * ```
  */
-export class GraphQLInterfaceType {
+export class GraphQLInterfaceTypeImpl
+  extends GraphQLEntityImpl
+  implements GraphQLInterfaceType
+{
+  readonly [GRAPHQL_INTERFACE_TYPE_SYMBOL] = true;
+
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1089,6 +1190,7 @@ export class GraphQLInterfaceType {
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>) {
+    super();
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1182,6 +1284,20 @@ export interface GraphQLUnionTypeExtensions {
   [attributeName: string]: unknown;
 }
 
+export interface GraphQLUnionType extends GraphQLEntity {
+  readonly [GRAPHQL_UNION_TYPE_SYMBOL]: unknown;
+  name: string;
+  description: Maybe<string>;
+  resolveType: Maybe<GraphQLTypeResolver<any, any>>;
+  extensions: Readonly<GraphQLUnionTypeExtensions>;
+  astNode: Maybe<UnionTypeDefinitionNode>;
+  extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
+  getTypes: () => ReadonlyArray<GraphQLObjectType>;
+  toConfig: () => GraphQLUnionTypeNormalizedConfig;
+  toString: () => string;
+  toJSON: () => string;
+}
+
 /**
  * Union Type Definition
  *
@@ -1192,7 +1308,7 @@ export interface GraphQLUnionTypeExtensions {
  * Example:
  *
  * ```ts
- * const PetType = new GraphQLUnionType({
+ * const PetType = new GraphQLUnionTypeImpl({
  *   name: 'Pet',
  *   types: [ DogType, CatType ],
  *   resolveType(value) {
@@ -1206,7 +1322,12 @@ export interface GraphQLUnionTypeExtensions {
  * });
  * ```
  */
-export class GraphQLUnionType {
+export class GraphQLUnionTypeImpl
+  extends GraphQLEntityImpl
+  implements GraphQLUnionType
+{
+  readonly [GRAPHQL_UNION_TYPE_SYMBOL] = true;
+
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1217,6 +1338,7 @@ export class GraphQLUnionType {
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
+    super();
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1310,6 +1432,26 @@ export interface GraphQLEnumTypeExtensions {
   [attributeName: string]: unknown;
 }
 
+export interface GraphQLEnumType extends GraphQLEntity {
+  readonly [GRAPHQL_ENUM_TYPE_SYMBOL]: unknown;
+  name: string;
+  description: Maybe<string>;
+  extensions: Readonly<GraphQLEnumTypeExtensions>;
+  astNode: Maybe<EnumTypeDefinitionNode>;
+  extensionASTNodes: ReadonlyArray<EnumTypeExtensionNode>;
+  getValues: () => ReadonlyArray<GraphQLEnumValue /* <T> */>;
+  getValue: (name: string) => Maybe<GraphQLEnumValue>;
+  serialize: (outputValue: unknown /* T */) => Maybe<string>;
+  parseValue: (inputValue: unknown) => Maybe<any> /* T */;
+  parseLiteral: (
+    valueNode: ValueNode,
+    _variables: Maybe<ObjMap<unknown>>,
+  ) => Maybe<any> /* T */;
+  toConfig: () => GraphQLEnumTypeNormalizedConfig;
+  toString: () => string;
+  toJSON: () => string;
+}
+
 /**
  * Enum Type Definition
  *
@@ -1320,7 +1462,7 @@ export interface GraphQLEnumTypeExtensions {
  * Example:
  *
  * ```ts
- * const RGBType = new GraphQLEnumType({
+ * const RGBType = new GraphQLEnumTypeImpl({
  *   name: 'RGB',
  *   values: {
  *     RED: { value: 0 },
@@ -1333,7 +1475,13 @@ export interface GraphQLEnumTypeExtensions {
  * Note: If a value is not provided in a definition, the name of the enum value
  * will be used as its internal value.
  */
-export class GraphQLEnumType /* <T> */ {
+export class GraphQLEnumTypeImpl
+  extends GraphQLEntityImpl
+  implements GraphQLEnumType
+{
+  /* <T> */
+  readonly [GRAPHQL_ENUM_TYPE_SYMBOL] = true;
+
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
@@ -1345,6 +1493,7 @@ export class GraphQLEnumType /* <T> */ {
   private _nameLookup: ObjMap<GraphQLEnumValue>;
 
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
+    super();
     this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);
@@ -1552,6 +1701,19 @@ export interface GraphQLInputObjectTypeExtensions {
   [attributeName: string]: unknown;
 }
 
+export interface GraphQLInputObjectType extends GraphQLEntity {
+  readonly [GRAPHQL_INPUT_OBJECT_TYPE_SYMBOL]: unknown;
+  name: string;
+  description: Maybe<string>;
+  extensions: Readonly<GraphQLInputObjectTypeExtensions>;
+  astNode: Maybe<InputObjectTypeDefinitionNode>;
+  extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
+  getFields: () => GraphQLInputFieldMap;
+  toConfig: () => GraphQLInputObjectTypeNormalizedConfig;
+  toString: () => string;
+  toJSON: () => string;
+}
+
 /**
  * Input Object Type Definition
  *
@@ -1563,17 +1725,22 @@ export interface GraphQLInputObjectTypeExtensions {
  * Example:
  *
  * ```ts
- * const GeoPoint = new GraphQLInputObjectType({
+ * const GeoPoint = new GraphQLInputObjectTypeImpl({
  *   name: 'GeoPoint',
  *   fields: {
- *     lat: { type: new GraphQLNonNull(GraphQLFloat) },
- *     lon: { type: new GraphQLNonNull(GraphQLFloat) },
+ *     lat: { type: new GraphQLNonNullImpl(GraphQLFloat) },
+ *     lon: { type: new GraphQLNonNullImpl(GraphQLFloat) },
  *     alt: { type: GraphQLFloat, defaultValue: 0 },
  *   }
  * });
  * ```
  */
-export class GraphQLInputObjectType {
+export class GraphQLInputObjectTypeImpl
+  extends GraphQLEntityImpl
+  implements GraphQLInputObjectType
+{
+  readonly [GRAPHQL_INPUT_OBJECT_TYPE_SYMBOL] = true;
+
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
@@ -1583,6 +1750,7 @@ export class GraphQLInputObjectType {
   private _fields: ThunkObjMap<GraphQLInputField>;
 
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
+    super();
     this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);

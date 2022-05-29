@@ -2,11 +2,11 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLScalarTypeImpl,
 } from '../../type/definition';
 import {
   GraphQLBoolean,
@@ -46,7 +46,7 @@ describe('astFromValue', () => {
       value: true,
     });
 
-    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
+    const NonNullBoolean = new GraphQLNonNullImpl(GraphQLBoolean);
     expect(astFromValue(0, NonNullBoolean)).to.deep.equal({
       kind: 'BooleanValue',
       value: false,
@@ -193,7 +193,7 @@ describe('astFromValue', () => {
   });
 
   it('converts using serialize from a custom scalar type', () => {
-    const passthroughScalar = new GraphQLScalarType({
+    const passthroughScalar = new GraphQLScalarTypeImpl({
       name: 'PassthroughScalar',
       serialize(value) {
         return value;
@@ -212,7 +212,7 @@ describe('astFromValue', () => {
       'Cannot convert value to AST: Infinity.',
     );
 
-    const returnNullScalar = new GraphQLScalarType({
+    const returnNullScalar = new GraphQLScalarTypeImpl({
       name: 'ReturnNullScalar',
       serialize() {
         return null;
@@ -223,7 +223,7 @@ describe('astFromValue', () => {
 
     class SomeClass {}
 
-    const returnCustomClassScalar = new GraphQLScalarType({
+    const returnCustomClassScalar = new GraphQLScalarTypeImpl({
       name: 'ReturnCustomClassScalar',
       serialize() {
         return new SomeClass();
@@ -236,13 +236,13 @@ describe('astFromValue', () => {
   });
 
   it('does not converts NonNull values to NullValue', () => {
-    const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
+    const NonNullBoolean = new GraphQLNonNullImpl(GraphQLBoolean);
     expect(astFromValue(null, NonNullBoolean)).to.deep.equal(null);
   });
 
   const complexValue = { someArbitrary: 'complexValue' };
 
-  const myEnum = new GraphQLEnumType({
+  const myEnum = new GraphQLEnumTypeImpl({
     name: 'MyEnum',
     values: {
       HELLO: {},
@@ -275,7 +275,7 @@ describe('astFromValue', () => {
 
   it('converts array values to List ASTs', () => {
     expect(
-      astFromValue(['FOO', 'BAR'], new GraphQLList(GraphQLString)),
+      astFromValue(['FOO', 'BAR'], new GraphQLListImpl(GraphQLString)),
     ).to.deep.equal({
       kind: 'ListValue',
       values: [
@@ -285,7 +285,7 @@ describe('astFromValue', () => {
     });
 
     expect(
-      astFromValue(['HELLO', 'GOODBYE'], new GraphQLList(myEnum)),
+      astFromValue(['HELLO', 'GOODBYE'], new GraphQLListImpl(myEnum)),
     ).to.deep.equal({
       kind: 'ListValue',
       values: [
@@ -301,7 +301,7 @@ describe('astFromValue', () => {
     }
 
     expect(
-      astFromValue(listGenerator(), new GraphQLList(GraphQLInt)),
+      astFromValue(listGenerator(), new GraphQLListImpl(GraphQLInt)),
     ).to.deep.equal({
       kind: 'ListValue',
       values: [
@@ -313,7 +313,9 @@ describe('astFromValue', () => {
   });
 
   it('converts list singletons', () => {
-    expect(astFromValue('FOO', new GraphQLList(GraphQLString))).to.deep.equal({
+    expect(
+      astFromValue('FOO', new GraphQLListImpl(GraphQLString)),
+    ).to.deep.equal({
       kind: 'StringValue',
       value: 'FOO',
     });
@@ -322,7 +324,7 @@ describe('astFromValue', () => {
   it('skip invalid list items', () => {
     const ast = astFromValue(
       ['FOO', null, 'BAR'],
-      new GraphQLList(new GraphQLNonNull(GraphQLString)),
+      new GraphQLListImpl(new GraphQLNonNullImpl(GraphQLString)),
     );
 
     expect(ast).to.deep.equal({
@@ -334,7 +336,7 @@ describe('astFromValue', () => {
     });
   });
 
-  const inputObj = new GraphQLInputObjectType({
+  const inputObj = new GraphQLInputObjectTypeImpl({
     name: 'MyInputObj',
     fields: {
       foo: { type: GraphQLFloat },

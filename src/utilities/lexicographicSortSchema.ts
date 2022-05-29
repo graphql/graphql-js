@@ -13,13 +13,13 @@ import type {
   GraphQLType,
 } from '../type/definition';
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLUnionType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLUnionTypeImpl,
   isEnumType,
   isInputObjectType,
   isInterfaceType,
@@ -29,9 +29,11 @@ import {
   isScalarType,
   isUnionType,
 } from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
+import type { GraphQLDirective } from '../type/directives';
+import { GraphQLDirectiveImpl } from '../type/directives';
 import { isIntrospectionType } from '../type/introspection';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
+import { GraphQLSchemaImpl } from '../type/schema';
 
 /**
  * Sort GraphQLSchema.
@@ -46,7 +48,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     sortNamedType,
   );
 
-  return new GraphQLSchema({
+  return new GraphQLSchemaImpl({
     ...schemaConfig,
     types: Object.values(typeMap),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
@@ -58,10 +60,10 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
       // @ts-expect-error
-      return new GraphQLList(replaceType(type.ofType));
+      return new GraphQLListImpl(replaceType(type.ofType));
     } else if (isNonNullType(type)) {
       // @ts-expect-error
-      return new GraphQLNonNull(replaceType(type.ofType));
+      return new GraphQLNonNullImpl(replaceType(type.ofType));
     }
     // @ts-expect-error FIXME: TS Conversion
     return replaceNamedType<GraphQLNamedType>(type);
@@ -79,7 +81,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
 
   function sortDirective(directive: GraphQLDirective) {
     const config = directive.toConfig();
-    return new GraphQLDirective({
+    return new GraphQLDirectiveImpl({
       ...config,
       locations: sortBy(config.locations, (x) => x),
       args: sortArgs(config.args),
@@ -120,7 +122,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
     if (isObjectType(type)) {
       const config = type.toConfig();
-      return new GraphQLObjectType({
+      return new GraphQLObjectTypeImpl({
         ...config,
         interfaces: () => sortTypes(config.interfaces),
         fields: () => sortFields(config.fields),
@@ -128,7 +130,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
     if (isInterfaceType(type)) {
       const config = type.toConfig();
-      return new GraphQLInterfaceType({
+      return new GraphQLInterfaceTypeImpl({
         ...config,
         interfaces: () => sortTypes(config.interfaces),
         fields: () => sortFields(config.fields),
@@ -136,21 +138,21 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     }
     if (isUnionType(type)) {
       const config = type.toConfig();
-      return new GraphQLUnionType({
+      return new GraphQLUnionTypeImpl({
         ...config,
         types: () => sortTypes(config.types),
       });
     }
     if (isEnumType(type)) {
       const config = type.toConfig();
-      return new GraphQLEnumType({
+      return new GraphQLEnumTypeImpl({
         ...config,
         values: sortObjMap(config.values, (value) => value),
       });
     }
     if (isInputObjectType(type)) {
       const config = type.toConfig();
-      return new GraphQLInputObjectType({
+      return new GraphQLInputObjectTypeImpl({
         ...config,
         fields: () => sortInputFields(config.fields),
       });

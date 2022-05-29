@@ -6,7 +6,7 @@ import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings';
 import { inspectStr } from '../../__testUtils__/inspectStr';
 
 import { Lexer } from '../../language/lexer';
-import { Source } from '../../language/source';
+import { SourceImpl } from '../../language/source';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
 
@@ -55,7 +55,7 @@ const nonPunctuatorTokens = [
 ];
 
 function lexValue(str: string) {
-  const lexer = new Lexer(new Source(str));
+  const lexer = new Lexer(new SourceImpl(str));
   const value = lexer.advance().value;
 
   assert(lexer.advance().kind === '<EOF>', 'Expected EOF');

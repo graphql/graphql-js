@@ -8,11 +8,11 @@ import { parseValue } from '../../language/parser';
 
 import type { GraphQLInputType } from '../../type/definition';
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLScalarType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLScalarTypeImpl,
 } from '../../type/definition';
 import {
   GraphQLBoolean,
@@ -62,7 +62,7 @@ describe('valueFromAST', () => {
   });
 
   it('convert using parseLiteral from a custom scalar type', () => {
-    const passthroughScalar = new GraphQLScalarType({
+    const passthroughScalar = new GraphQLScalarTypeImpl({
       name: 'PassthroughScalar',
       parseLiteral(node) {
         assert(node.kind === 'StringValue');
@@ -73,7 +73,7 @@ describe('valueFromAST', () => {
 
     expectValueFrom('"value"', passthroughScalar).to.equal('value');
 
-    const throwScalar = new GraphQLScalarType({
+    const throwScalar = new GraphQLScalarTypeImpl({
       name: 'ThrowScalar',
       parseLiteral() {
         throw new Error('Test');
@@ -83,7 +83,7 @@ describe('valueFromAST', () => {
 
     expectValueFrom('value', throwScalar).to.equal(undefined);
 
-    const returnUndefinedScalar = new GraphQLScalarType({
+    const returnUndefinedScalar = new GraphQLScalarTypeImpl({
       name: 'ReturnUndefinedScalar',
       parseLiteral() {
         return undefined;
@@ -95,7 +95,7 @@ describe('valueFromAST', () => {
   });
 
   it('converts enum values according to input coercion rules', () => {
-    const testEnum = new GraphQLEnumType({
+    const testEnum = new GraphQLEnumTypeImpl({
       name: 'TestColor',
       values: {
         RED: { value: 1 },
@@ -113,21 +113,21 @@ describe('valueFromAST', () => {
     expectValueFrom('"BLUE"', testEnum).to.equal(undefined);
     expectValueFrom('null', testEnum).to.equal(null);
     expectValueFrom('NULL', testEnum).to.equal(null);
-    expectValueFrom('NULL', new GraphQLNonNull(testEnum)).to.equal(null);
+    expectValueFrom('NULL', new GraphQLNonNullImpl(testEnum)).to.equal(null);
     expectValueFrom('NAN', testEnum).to.deep.equal(NaN);
     expectValueFrom('NO_CUSTOM_VALUE', testEnum).to.equal('NO_CUSTOM_VALUE');
   });
 
   // Boolean!
-  const nonNullBool = new GraphQLNonNull(GraphQLBoolean);
+  const nonNullBool = new GraphQLNonNullImpl(GraphQLBoolean);
   // [Boolean]
-  const listOfBool = new GraphQLList(GraphQLBoolean);
+  const listOfBool = new GraphQLListImpl(GraphQLBoolean);
   // [Boolean!]
-  const listOfNonNullBool = new GraphQLList(nonNullBool);
+  const listOfNonNullBool = new GraphQLListImpl(nonNullBool);
   // [Boolean]!
-  const nonNullListOfBool = new GraphQLNonNull(listOfBool);
+  const nonNullListOfBool = new GraphQLNonNullImpl(listOfBool);
   // [Boolean!]!
-  const nonNullListOfNonNullBool = new GraphQLNonNull(listOfNonNullBool);
+  const nonNullListOfNonNullBool = new GraphQLNonNullImpl(listOfNonNullBool);
 
   it('coerces to null unless non-null', () => {
     expectValueFrom('null', GraphQLBoolean).to.equal(null);
@@ -187,7 +187,7 @@ describe('valueFromAST', () => {
     );
   });
 
-  const testInputObj = new GraphQLInputObjectType({
+  const testInputObj = new GraphQLInputObjectTypeImpl({
     name: 'TestInput',
     fields: {
       int: { type: GraphQLInt, defaultValue: 42 },

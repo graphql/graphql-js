@@ -10,16 +10,16 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import type { Token } from '../ast';
 import { isPunctuatorTokenKind, Lexer } from '../lexer';
-import { Source } from '../source';
+import { SourceImpl } from '../source';
 import { TokenKind } from '../tokenKind';
 
 function lexOne(str: string) {
-  const lexer = new Lexer(new Source(str));
+  const lexer = new Lexer(new SourceImpl(str));
   return lexer.advance();
 }
 
 function lexSecond(str: string) {
-  const lexer = new Lexer(new Source(str));
+  const lexer = new Lexer(new SourceImpl(str));
   lexer.advance();
   return lexer.advance();
 }
@@ -109,7 +109,7 @@ describe('Lexer', () => {
   });
 
   it('can be Object.toStringified, JSON.stringified, or jsutils.inspected', () => {
-    const lexer = new Lexer(new Source('foo'));
+    const lexer = new Lexer(new SourceImpl('foo'));
     const token = lexer.advance();
 
     expect(Object.prototype.toString.call(lexer)).to.equal('[object Lexer]');
@@ -187,7 +187,7 @@ describe('Lexer', () => {
     let caughtError;
     try {
       const str = ['', '', '     ~', ''].join('\n');
-      const source = new Source(str, 'foo.js', { line: 11, column: 12 });
+      const source = new SourceImpl(str, 'foo.js', { line: 11, column: 12 });
       new Lexer(source).advance();
     } catch (error) {
       caughtError = error;
@@ -206,7 +206,7 @@ describe('Lexer', () => {
   it('updates column numbers in error for file context', () => {
     let caughtError;
     try {
-      const source = new Source('~', 'foo.js', { line: 1, column: 5 });
+      const source = new SourceImpl('~', 'foo.js', { line: 1, column: 5 });
       new Lexer(source).advance();
     } catch (error) {
       caughtError = error;
@@ -1084,7 +1084,7 @@ describe('Lexer', () => {
   });
 
   it('lex reports useful information for dashes in names', () => {
-    const source = new Source('a-b');
+    const source = new SourceImpl('a-b');
     const lexer = new Lexer(source);
     const firstToken = lexer.advance();
     expect(firstToken).to.contain({
@@ -1103,7 +1103,7 @@ describe('Lexer', () => {
   });
 
   it('produces double linked list of tokens, including comments', () => {
-    const source = new Source(`
+    const source = new SourceImpl(`
       {
         #comment
         field

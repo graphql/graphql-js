@@ -3,14 +3,18 @@ import { describe, it } from 'mocha';
 
 import { parse } from '../../language/parser';
 
-import {
+import type {
   GraphQLInterfaceType,
-  GraphQLList,
   GraphQLObjectType,
-  GraphQLUnionType,
+} from '../../type/definition';
+import {
+  GraphQLInterfaceTypeImpl,
+  GraphQLListImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLUnionTypeImpl,
 } from '../../type/definition';
 import { GraphQLBoolean, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { executeSync } from '../execute';
 
@@ -58,57 +62,57 @@ class Person {
   }
 }
 
-const NamedType = new GraphQLInterfaceType({
+const NamedType = new GraphQLInterfaceTypeImpl({
   name: 'Named',
   fields: {
     name: { type: GraphQLString },
   },
 });
 
-const LifeType: GraphQLInterfaceType = new GraphQLInterfaceType({
+const LifeType: GraphQLInterfaceType = new GraphQLInterfaceTypeImpl({
   name: 'Life',
   fields: () => ({
-    progeny: { type: new GraphQLList(LifeType) },
+    progeny: { type: new GraphQLListImpl(LifeType) },
   }),
 });
 
-const MammalType: GraphQLInterfaceType = new GraphQLInterfaceType({
+const MammalType: GraphQLInterfaceType = new GraphQLInterfaceTypeImpl({
   name: 'Mammal',
   interfaces: [LifeType],
   fields: () => ({
-    progeny: { type: new GraphQLList(MammalType) },
+    progeny: { type: new GraphQLListImpl(MammalType) },
     mother: { type: MammalType },
     father: { type: MammalType },
   }),
 });
 
-const DogType: GraphQLObjectType = new GraphQLObjectType({
+const DogType: GraphQLObjectType = new GraphQLObjectTypeImpl({
   name: 'Dog',
   interfaces: [MammalType, LifeType, NamedType],
   fields: () => ({
     name: { type: GraphQLString },
     barks: { type: GraphQLBoolean },
-    progeny: { type: new GraphQLList(DogType) },
+    progeny: { type: new GraphQLListImpl(DogType) },
     mother: { type: DogType },
     father: { type: DogType },
   }),
   isTypeOf: (value) => value instanceof Dog,
 });
 
-const CatType: GraphQLObjectType = new GraphQLObjectType({
+const CatType: GraphQLObjectType = new GraphQLObjectTypeImpl({
   name: 'Cat',
   interfaces: [MammalType, LifeType, NamedType],
   fields: () => ({
     name: { type: GraphQLString },
     meows: { type: GraphQLBoolean },
-    progeny: { type: new GraphQLList(CatType) },
+    progeny: { type: new GraphQLListImpl(CatType) },
     mother: { type: CatType },
     father: { type: CatType },
   }),
   isTypeOf: (value) => value instanceof Cat,
 });
 
-const PetType = new GraphQLUnionType({
+const PetType = new GraphQLUnionTypeImpl({
   name: 'Pet',
   types: [DogType, CatType],
   resolveType(value) {
@@ -124,21 +128,21 @@ const PetType = new GraphQLUnionType({
   },
 });
 
-const PersonType: GraphQLObjectType = new GraphQLObjectType({
+const PersonType: GraphQLObjectType = new GraphQLObjectTypeImpl({
   name: 'Person',
   interfaces: [NamedType, MammalType, LifeType],
   fields: () => ({
     name: { type: GraphQLString },
-    pets: { type: new GraphQLList(PetType) },
-    friends: { type: new GraphQLList(NamedType) },
-    progeny: { type: new GraphQLList(PersonType) },
+    pets: { type: new GraphQLListImpl(PetType) },
+    friends: { type: new GraphQLListImpl(NamedType) },
+    progeny: { type: new GraphQLListImpl(PersonType) },
     mother: { type: PersonType },
     father: { type: PersonType },
   }),
   isTypeOf: (value) => value instanceof Person,
 });
 
-const schema = new GraphQLSchema({
+const schema = new GraphQLSchemaImpl({
   query: PersonType,
   types: [PetType],
 });
@@ -502,7 +506,7 @@ describe('Execute: Union and intersection types', () => {
     let encounteredSchema;
     let encounteredRootValue;
 
-    const NamedType2: GraphQLInterfaceType = new GraphQLInterfaceType({
+    const NamedType2: GraphQLInterfaceType = new GraphQLInterfaceTypeImpl({
       name: 'Named',
       fields: {
         name: { type: GraphQLString },
@@ -515,15 +519,15 @@ describe('Execute: Union and intersection types', () => {
       },
     });
 
-    const PersonType2: GraphQLObjectType = new GraphQLObjectType({
+    const PersonType2: GraphQLObjectType = new GraphQLObjectTypeImpl({
       name: 'Person',
       interfaces: [NamedType2],
       fields: {
         name: { type: GraphQLString },
-        friends: { type: new GraphQLList(NamedType2) },
+        friends: { type: new GraphQLListImpl(NamedType2) },
       },
     });
-    const schema2 = new GraphQLSchema({ query: PersonType2 });
+    const schema2 = new GraphQLSchemaImpl({ query: PersonType2 });
     const document = parse('{ name, friends { name } }');
     const rootValue = new Person('John', [], [liz]);
     const contextValue = { authToken: '123abc' };

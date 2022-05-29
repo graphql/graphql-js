@@ -3,12 +3,12 @@ import { describe, it } from 'mocha';
 
 import { DirectiveLocation } from '../../language/directiveLocation';
 
-import { GraphQLDirective } from '../directives';
+import { GraphQLDirectiveImpl } from '../directives';
 import { GraphQLInt, GraphQLString } from '../scalars';
 
 describe('Type System: Directive', () => {
   it('defines a directive with no args', () => {
-    const directive = new GraphQLDirective({
+    const directive = new GraphQLDirectiveImpl({
       name: 'Foo',
       locations: [DirectiveLocation.QUERY],
     });
@@ -22,7 +22,7 @@ describe('Type System: Directive', () => {
   });
 
   it('defines a directive with multiple args', () => {
-    const directive = new GraphQLDirective({
+    const directive = new GraphQLDirectiveImpl({
       name: 'Foo',
       args: {
         foo: { type: GraphQLString },
@@ -59,7 +59,7 @@ describe('Type System: Directive', () => {
   });
 
   it('defines a repeatable directive', () => {
-    const directive = new GraphQLDirective({
+    const directive = new GraphQLDirectiveImpl({
       name: 'Foo',
       isRepeatable: true,
       locations: [DirectiveLocation.QUERY],
@@ -74,7 +74,7 @@ describe('Type System: Directive', () => {
   });
 
   it('can be stringified, JSON.stringified and Object.toStringified', () => {
-    const directive = new GraphQLDirective({
+    const directive = new GraphQLDirectiveImpl({
       name: 'Foo',
       locations: [DirectiveLocation.QUERY],
     });
@@ -89,7 +89,7 @@ describe('Type System: Directive', () => {
   it('rejects a directive with invalid name', () => {
     expect(
       () =>
-        new GraphQLDirective({
+        new GraphQLDirectiveImpl({
           name: 'bad-name',
           locations: [DirectiveLocation.QUERY],
         }),
@@ -99,7 +99,7 @@ describe('Type System: Directive', () => {
   it('rejects a directive with incorrectly typed args', () => {
     expect(
       () =>
-        new GraphQLDirective({
+        new GraphQLDirectiveImpl({
           name: 'Foo',
           locations: [DirectiveLocation.QUERY],
           // @ts-expect-error
@@ -111,7 +111,7 @@ describe('Type System: Directive', () => {
   it('rejects a directive with incorrectly named arg', () => {
     expect(
       () =>
-        new GraphQLDirective({
+        new GraphQLDirectiveImpl({
           name: 'Foo',
           locations: [DirectiveLocation.QUERY],
           args: {
@@ -123,15 +123,15 @@ describe('Type System: Directive', () => {
 
   it('rejects a directive with undefined locations', () => {
     // @ts-expect-error
-    expect(() => new GraphQLDirective({ name: 'Foo' })).to.throw(
+    expect(() => new GraphQLDirectiveImpl({ name: 'Foo' })).to.throw(
       '@Foo locations must be an Array.',
     );
   });
 
   it('rejects a directive with incorrectly typed locations', () => {
-    // @ts-expect-error
-    expect(() => new GraphQLDirective({ name: 'Foo', locations: {} })).to.throw(
-      '@Foo locations must be an Array.',
-    );
+    expect(
+      // @ts-expect-error
+      () => new GraphQLDirectiveImpl({ name: 'Foo', locations: {} }),
+    ).to.throw('@Foo locations must be an Array.');
   });
 });

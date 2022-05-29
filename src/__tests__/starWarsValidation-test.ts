@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { parse } from '../language/parser';
-import { Source } from '../language/source';
+import { SourceImpl } from '../language/source';
 
 import { validate } from '../validation/validate';
 
@@ -12,7 +12,7 @@ import { StarWarsSchema } from './starWarsSchema';
  * Helper function to test a query and the expected response.
  */
 function validationErrors(query: string) {
-  const source = new Source(query, 'StarWars.graphql');
+  const source = new SourceImpl(query, 'StarWars.graphql');
   const ast = parse(source);
   return validate(StarWarsSchema, ast);
 }

@@ -6,9 +6,9 @@ import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLObjectTypeImpl } from '../../type/definition';
 import { GraphQLInt } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { execute, executeSync } from '../execute';
 
@@ -47,21 +47,21 @@ class Root {
   }
 }
 
-const numberHolderType = new GraphQLObjectType({
+const numberHolderType = new GraphQLObjectTypeImpl({
   fields: {
     theNumber: { type: GraphQLInt },
   },
   name: 'NumberHolder',
 });
 
-const schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
+const schema = new GraphQLSchemaImpl({
+  query: new GraphQLObjectTypeImpl({
     fields: {
       numberHolder: { type: numberHolderType },
     },
     name: 'Query',
   }),
-  mutation: new GraphQLObjectType({
+  mutation: new GraphQLObjectTypeImpl({
     fields: {
       immediatelyChangeTheNumber: {
         type: numberHolderType,

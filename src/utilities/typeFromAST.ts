@@ -6,8 +6,14 @@ import type {
 } from '../language/ast';
 import { Kind } from '../language/kinds';
 
-import type { GraphQLNamedType, GraphQLType } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/definition';
+import type {
+  GraphQLList,
+  GraphQLNamedType,
+  GraphQLNonNull,
+  GraphQLNullableType,
+  GraphQLType,
+} from '../type/definition';
+import { GraphQLListImpl, GraphQLNonNullImpl } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
 /**
@@ -40,11 +46,13 @@ export function typeFromAST(
   switch (typeNode.kind) {
     case Kind.LIST_TYPE: {
       const innerType = typeFromAST(schema, typeNode.type);
-      return innerType && new GraphQLList(innerType);
+      return innerType && new GraphQLListImpl(innerType);
     }
     case Kind.NON_NULL_TYPE: {
       const innerType = typeFromAST(schema, typeNode.type);
-      return innerType && new GraphQLNonNull(innerType);
+      return (
+        innerType && new GraphQLNonNullImpl(innerType as GraphQLNullableType)
+      );
     }
     case Kind.NAMED_TYPE:
       return schema.getType(typeNode.name.value);

@@ -7,11 +7,11 @@ import { introspectionFromSchema } from '../../utilities/introspectionFromSchema
 
 import { graphqlSync } from '../../graphql';
 
-import { GraphQLEnumType, GraphQLObjectType } from '../definition';
+import { GraphQLEnumTypeImpl, GraphQLObjectTypeImpl } from '../definition';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars';
-import { GraphQLSchema } from '../schema';
+import { GraphQLSchemaImpl } from '../schema';
 
-const ColorType = new GraphQLEnumType({
+const ColorType = new GraphQLEnumTypeImpl({
   name: 'Color',
   values: {
     RED: { value: 0 },
@@ -23,7 +23,7 @@ const ColorType = new GraphQLEnumType({
 const Complex1 = { someRandomObject: new Date() };
 const Complex2 = { someRandomValue: 123 };
 
-const ComplexEnum = new GraphQLEnumType({
+const ComplexEnum = new GraphQLEnumTypeImpl({
   name: 'Complex',
   values: {
     ONE: { value: Complex1 },
@@ -31,7 +31,7 @@ const ComplexEnum = new GraphQLEnumType({
   },
 });
 
-const QueryType = new GraphQLObjectType({
+const QueryType = new GraphQLObjectTypeImpl({
   name: 'Query',
   fields: {
     colorEnum: {
@@ -87,7 +87,7 @@ const QueryType = new GraphQLObjectType({
   },
 });
 
-const MutationType = new GraphQLObjectType({
+const MutationType = new GraphQLObjectTypeImpl({
   name: 'Mutation',
   fields: {
     favoriteEnum: {
@@ -98,7 +98,7 @@ const MutationType = new GraphQLObjectType({
   },
 });
 
-const SubscriptionType = new GraphQLObjectType({
+const SubscriptionType = new GraphQLObjectTypeImpl({
   name: 'Subscription',
   fields: {
     subscribeToEnum: {
@@ -109,7 +109,7 @@ const SubscriptionType = new GraphQLObjectType({
   },
 });
 
-const schema = new GraphQLSchema({
+const schema = new GraphQLSchemaImpl({
   query: QueryType,
   mutation: MutationType,
   subscription: SubscriptionType,

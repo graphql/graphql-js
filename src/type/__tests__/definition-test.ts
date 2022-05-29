@@ -8,46 +8,51 @@ import { parseValue } from '../../language/parser';
 
 import type { GraphQLNullableType, GraphQLType } from '../definition';
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLScalarType,
-  GraphQLUnionType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLScalarTypeImpl,
+  GraphQLUnionTypeImpl,
 } from '../definition';
 
-const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
-const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
-const InterfaceType = new GraphQLInterfaceType({
+const ScalarType = new GraphQLScalarTypeImpl({ name: 'Scalar' });
+const ObjectType = new GraphQLObjectTypeImpl({ name: 'Object', fields: {} });
+const InterfaceType = new GraphQLInterfaceTypeImpl({
   name: 'Interface',
   fields: {},
 });
-const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
-const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
-const InputObjectType = new GraphQLInputObjectType({
+const UnionType = new GraphQLUnionTypeImpl({
+  name: 'Union',
+  types: [ObjectType],
+});
+const EnumType = new GraphQLEnumTypeImpl({ name: 'Enum', values: { foo: {} } });
+const InputObjectType = new GraphQLInputObjectTypeImpl({
   name: 'InputObject',
   fields: {},
 });
 
-const ListOfScalarsType = new GraphQLList(ScalarType);
-const NonNullScalarType = new GraphQLNonNull(ScalarType);
-const ListOfNonNullScalarsType = new GraphQLList(NonNullScalarType);
-const NonNullListOfScalars = new GraphQLNonNull(ListOfScalarsType);
+const ListOfScalarsType = new GraphQLListImpl(ScalarType);
+const NonNullScalarType = new GraphQLNonNullImpl(ScalarType);
+const ListOfNonNullScalarsType = new GraphQLListImpl(NonNullScalarType);
+const NonNullListOfScalars = new GraphQLNonNullImpl(ListOfScalarsType);
 
 /* c8 ignore next */
 const dummyFunc = () => expect.fail('Never called and used as a placeholder');
 
 describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining serialize', () => {
-    expect(() => new GraphQLScalarType({ name: 'SomeScalar' })).to.not.throw();
+    expect(
+      () => new GraphQLScalarTypeImpl({ name: 'SomeScalar' }),
+    ).to.not.throw();
   });
 
   it('accepts a Scalar type defining specifiedByURL', () => {
     expect(
       () =>
-        new GraphQLScalarType({
+        new GraphQLScalarTypeImpl({
           name: 'SomeScalar',
           specifiedByURL: 'https://example.com/foo_spec',
         }),
@@ -57,7 +62,7 @@ describe('Type System: Scalars', () => {
   it('accepts a Scalar type defining parseValue and parseLiteral', () => {
     expect(
       () =>
-        new GraphQLScalarType({
+        new GraphQLScalarTypeImpl({
           name: 'SomeScalar',
           parseValue: dummyFunc,
           parseLiteral: dummyFunc,
@@ -66,7 +71,7 @@ describe('Type System: Scalars', () => {
   });
 
   it('provides default methods if omitted', () => {
-    const scalar = new GraphQLScalarType({ name: 'Foo' });
+    const scalar = new GraphQLScalarTypeImpl({ name: 'Foo' });
 
     expect(scalar.serialize).to.equal(identityFunc);
     expect(scalar.parseValue).to.equal(identityFunc);
@@ -74,7 +79,7 @@ describe('Type System: Scalars', () => {
   });
 
   it('use parseValue for parsing literals if parseLiteral omitted', () => {
-    const scalar = new GraphQLScalarType({
+    const scalar = new GraphQLScalarTypeImpl({
       name: 'Foo',
       parseValue(value) {
         return 'parseValue: ' + inspect(value);
@@ -94,13 +99,13 @@ describe('Type System: Scalars', () => {
 
   it('rejects a Scalar type without name', () => {
     // @ts-expect-error
-    expect(() => new GraphQLScalarType({})).to.throw('Must provide name.');
+    expect(() => new GraphQLScalarTypeImpl({})).to.throw('Must provide name.');
   });
 
   it('rejects a Scalar type defining serialize with an incorrect type', () => {
     expect(
       () =>
-        new GraphQLScalarType({
+        new GraphQLScalarTypeImpl({
           name: 'SomeScalar',
           // @ts-expect-error
           serialize: {},
@@ -113,7 +118,7 @@ describe('Type System: Scalars', () => {
   it('rejects a Scalar type defining parseLiteral but not parseValue', () => {
     expect(
       () =>
-        new GraphQLScalarType({
+        new GraphQLScalarTypeImpl({
           name: 'SomeScalar',
           parseLiteral: dummyFunc,
         }),
@@ -125,7 +130,7 @@ describe('Type System: Scalars', () => {
   it('rejects a Scalar type defining parseValue and parseLiteral with an incorrect type', () => {
     expect(
       () =>
-        new GraphQLScalarType({
+        new GraphQLScalarTypeImpl({
           name: 'SomeScalar',
           // @ts-expect-error
           parseValue: {},
@@ -140,7 +145,7 @@ describe('Type System: Scalars', () => {
   it('rejects a Scalar type defining specifiedByURL with an incorrect type', () => {
     expect(
       () =>
-        new GraphQLScalarType({
+        new GraphQLScalarTypeImpl({
           name: 'SomeScalar',
           // @ts-expect-error
           specifiedByURL: {},
@@ -162,11 +167,11 @@ describe('Type System: Objects', () => {
         },
       },
     };
-    const testObject1 = new GraphQLObjectType({
+    const testObject1 = new GraphQLObjectTypeImpl({
       name: 'Test1',
       fields: outputFields,
     });
-    const testObject2 = new GraphQLObjectType({
+    const testObject2 = new GraphQLObjectTypeImpl({
       name: 'Test2',
       fields: outputFields,
     });
@@ -188,11 +193,11 @@ describe('Type System: Objects', () => {
       field1: { type: ScalarType },
       field2: { type: ScalarType },
     };
-    const testInputObject1 = new GraphQLInputObjectType({
+    const testInputObject1 = new GraphQLInputObjectTypeImpl({
       name: 'Test1',
       fields: inputFields,
     });
-    const testInputObject2 = new GraphQLInputObjectType({
+    const testInputObject2 = new GraphQLInputObjectTypeImpl({
       name: 'Test2',
       fields: inputFields,
     });
@@ -207,7 +212,7 @@ describe('Type System: Objects', () => {
   });
 
   it('defines an object type with deprecated field', () => {
-    const TypeWithDeprecatedField = new GraphQLObjectType({
+    const TypeWithDeprecatedField = new GraphQLObjectTypeImpl({
       name: 'foo',
       fields: {
         bar: {
@@ -233,7 +238,7 @@ describe('Type System: Objects', () => {
   });
 
   it('accepts an Object type with a field function', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: () => ({
         f: { type: ScalarType },
@@ -255,7 +260,7 @@ describe('Type System: Objects', () => {
   });
 
   it('accepts an Object type with field args', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {
         f: {
@@ -292,7 +297,7 @@ describe('Type System: Objects', () => {
   });
 
   it('accepts an Object type with array interfaces', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {},
       interfaces: [InterfaceType],
@@ -301,7 +306,7 @@ describe('Type System: Objects', () => {
   });
 
   it('accepts an Object type with interfaces as a function returning an array', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {},
       interfaces: () => [InterfaceType],
@@ -310,7 +315,7 @@ describe('Type System: Objects', () => {
   });
 
   it('accepts a lambda as an Object field resolver', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {
         f: {
@@ -324,12 +329,12 @@ describe('Type System: Objects', () => {
 
   it('rejects an Object type with invalid name', () => {
     expect(
-      () => new GraphQLObjectType({ name: 'bad-name', fields: {} }),
+      () => new GraphQLObjectTypeImpl({ name: 'bad-name', fields: {} }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
   it('rejects an Object type field with undefined config', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {
         // @ts-expect-error (must not be undefined)
@@ -342,7 +347,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an Object type with incorrectly typed fields', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       // @ts-expect-error
       fields: [{ field: ScalarType }],
@@ -353,7 +358,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an Object type with incorrectly named fields', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {
         'bad-name': { type: ScalarType },
@@ -365,7 +370,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an Object type with a field function that returns incorrect type', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       // @ts-expect-error (Wrong type of return)
       fields() {
@@ -376,7 +381,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an Object type with incorrectly typed field args', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {
         badField: {
@@ -392,7 +397,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an Object type with incorrectly named field args', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {
         badField: {
@@ -409,7 +414,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an Object type with incorrectly typed interfaces', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {},
       // @ts-expect-error
@@ -421,7 +426,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an Object type with interfaces as a function returning an incorrect type', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {},
       // @ts-expect-error (Expected interfaces to return array)
@@ -435,7 +440,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects an empty Object field resolver', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {
         // @ts-expect-error (Expected resolve to be a function)
@@ -449,7 +454,7 @@ describe('Type System: Objects', () => {
   });
 
   it('rejects a constant scalar value resolver', () => {
-    const objType = new GraphQLObjectType({
+    const objType = new GraphQLObjectTypeImpl({
       name: 'SomeObject',
       fields: {
         // @ts-expect-error (Expected resolve to be a function)
@@ -465,7 +470,7 @@ describe('Type System: Objects', () => {
   it('rejects an Object type with an incorrect type for isTypeOf', () => {
     expect(
       () =>
-        new GraphQLObjectType({
+        new GraphQLObjectTypeImpl({
           name: 'AnotherObject',
           fields: {},
           // @ts-expect-error
@@ -481,7 +486,7 @@ describe('Type System: Interfaces', () => {
   it('accepts an Interface type defining resolveType', () => {
     expect(
       () =>
-        new GraphQLInterfaceType({
+        new GraphQLInterfaceTypeImpl({
           name: 'AnotherInterface',
           fields: { f: { type: ScalarType } },
         }),
@@ -489,7 +494,7 @@ describe('Type System: Interfaces', () => {
   });
 
   it('accepts an Interface type with an array of interfaces', () => {
-    const implementing = new GraphQLInterfaceType({
+    const implementing = new GraphQLInterfaceTypeImpl({
       name: 'AnotherInterface',
       fields: {},
       interfaces: [InterfaceType],
@@ -498,7 +503,7 @@ describe('Type System: Interfaces', () => {
   });
 
   it('accepts an Interface type with interfaces as a function returning an array', () => {
-    const implementing = new GraphQLInterfaceType({
+    const implementing = new GraphQLInterfaceTypeImpl({
       name: 'AnotherInterface',
       fields: {},
       interfaces: () => [InterfaceType],
@@ -508,12 +513,12 @@ describe('Type System: Interfaces', () => {
 
   it('rejects an Interface type with invalid name', () => {
     expect(
-      () => new GraphQLInterfaceType({ name: 'bad-name', fields: {} }),
+      () => new GraphQLInterfaceTypeImpl({ name: 'bad-name', fields: {} }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
   it('rejects an Interface type with incorrectly typed interfaces', () => {
-    const objType = new GraphQLInterfaceType({
+    const objType = new GraphQLInterfaceTypeImpl({
       name: 'AnotherInterface',
       fields: {},
       // @ts-expect-error
@@ -525,7 +530,7 @@ describe('Type System: Interfaces', () => {
   });
 
   it('rejects an Interface type with interfaces as a function returning an incorrect type', () => {
-    const objType = new GraphQLInterfaceType({
+    const objType = new GraphQLInterfaceTypeImpl({
       name: 'AnotherInterface',
       fields: {},
       // @ts-expect-error (Expected Array return)
@@ -541,7 +546,7 @@ describe('Type System: Interfaces', () => {
   it('rejects an Interface type with an incorrect type for resolveType', () => {
     expect(
       () =>
-        new GraphQLInterfaceType({
+        new GraphQLInterfaceTypeImpl({
           name: 'AnotherInterface',
           fields: {},
           // @ts-expect-error
@@ -557,7 +562,7 @@ describe('Type System: Unions', () => {
   it('accepts a Union type defining resolveType', () => {
     expect(
       () =>
-        new GraphQLUnionType({
+        new GraphQLUnionTypeImpl({
           name: 'SomeUnion',
           types: [ObjectType],
         }),
@@ -565,7 +570,7 @@ describe('Type System: Unions', () => {
   });
 
   it('accepts a Union type with array types', () => {
-    const unionType = new GraphQLUnionType({
+    const unionType = new GraphQLUnionTypeImpl({
       name: 'SomeUnion',
       types: [ObjectType],
     });
@@ -573,7 +578,7 @@ describe('Type System: Unions', () => {
   });
 
   it('accepts a Union type with function returning an array of types', () => {
-    const unionType = new GraphQLUnionType({
+    const unionType = new GraphQLUnionTypeImpl({
       name: 'SomeUnion',
       types: () => [ObjectType],
     });
@@ -581,7 +586,7 @@ describe('Type System: Unions', () => {
   });
 
   it('accepts a Union type without types', () => {
-    const unionType = new GraphQLUnionType({
+    const unionType = new GraphQLUnionTypeImpl({
       name: 'SomeUnion',
       types: [],
     });
@@ -590,14 +595,14 @@ describe('Type System: Unions', () => {
 
   it('rejects an Union type with invalid name', () => {
     expect(
-      () => new GraphQLUnionType({ name: 'bad-name', types: [] }),
+      () => new GraphQLUnionTypeImpl({ name: 'bad-name', types: [] }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
   it('rejects an Union type with an incorrect type for resolveType', () => {
     expect(
       () =>
-        new GraphQLUnionType({
+        new GraphQLUnionTypeImpl({
           name: 'SomeUnion',
           types: [],
           // @ts-expect-error
@@ -609,7 +614,7 @@ describe('Type System: Unions', () => {
   });
 
   it('rejects a Union type with incorrectly typed types', () => {
-    const unionType = new GraphQLUnionType({
+    const unionType = new GraphQLUnionTypeImpl({
       name: 'SomeUnion',
       // @ts-expect-error
       types: { ObjectType },
@@ -623,7 +628,7 @@ describe('Type System: Unions', () => {
 
 describe('Type System: Enums', () => {
   it('defines an enum type with deprecated value', () => {
-    const EnumTypeWithDeprecatedValue = new GraphQLEnumType({
+    const EnumTypeWithDeprecatedValue = new GraphQLEnumTypeImpl({
       name: 'EnumWithDeprecatedValue',
       values: {
         foo: { deprecationReason: 'Just because' },
@@ -643,7 +648,7 @@ describe('Type System: Enums', () => {
   });
 
   it('defines an enum type with a value of `null` and `undefined`', () => {
-    const EnumTypeWithNullishValue = new GraphQLEnumType({
+    const EnumTypeWithNullishValue = new GraphQLEnumTypeImpl({
       name: 'EnumWithNullishValue',
       values: {
         NULL: { value: null },
@@ -681,7 +686,7 @@ describe('Type System: Enums', () => {
   });
 
   it('accepts a well defined Enum type with empty value definition', () => {
-    const enumType = new GraphQLEnumType({
+    const enumType = new GraphQLEnumTypeImpl({
       name: 'SomeEnum',
       values: {
         FOO: {},
@@ -693,7 +698,7 @@ describe('Type System: Enums', () => {
   });
 
   it('accepts a well defined Enum type with internal value definition', () => {
-    const enumType = new GraphQLEnumType({
+    const enumType = new GraphQLEnumTypeImpl({
       name: 'SomeEnum',
       values: {
         FOO: { value: 10 },
@@ -706,14 +711,14 @@ describe('Type System: Enums', () => {
 
   it('rejects an Enum type with invalid name', () => {
     expect(
-      () => new GraphQLEnumType({ name: 'bad-name', values: {} }),
+      () => new GraphQLEnumTypeImpl({ name: 'bad-name', values: {} }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
   it('rejects an Enum type with incorrectly typed values', () => {
     expect(
       () =>
-        new GraphQLEnumType({
+        new GraphQLEnumTypeImpl({
           name: 'SomeEnum',
           // @ts-expect-error
           values: [{ FOO: 10 }],
@@ -724,7 +729,7 @@ describe('Type System: Enums', () => {
   it('rejects an Enum type with incorrectly named values', () => {
     expect(
       () =>
-        new GraphQLEnumType({
+        new GraphQLEnumTypeImpl({
           name: 'SomeEnum',
           values: {
             'bad-name': {},
@@ -736,7 +741,7 @@ describe('Type System: Enums', () => {
   it('rejects an Enum type with missing value definition', () => {
     expect(
       () =>
-        new GraphQLEnumType({
+        new GraphQLEnumTypeImpl({
           name: 'SomeEnum',
           // @ts-expect-error (must not be null)
           values: { FOO: null },
@@ -749,7 +754,7 @@ describe('Type System: Enums', () => {
   it('rejects an Enum type with incorrectly typed value definition', () => {
     expect(
       () =>
-        new GraphQLEnumType({
+        new GraphQLEnumTypeImpl({
           name: 'SomeEnum',
           // @ts-expect-error
           values: { FOO: 10 },
@@ -763,7 +768,7 @@ describe('Type System: Enums', () => {
 describe('Type System: Input Objects', () => {
   describe('Input Objects must have fields', () => {
     it('accepts an Input Object type with fields', () => {
-      const inputObjType = new GraphQLInputObjectType({
+      const inputObjType = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         fields: {
           f: { type: ScalarType },
@@ -783,7 +788,7 @@ describe('Type System: Input Objects', () => {
     });
 
     it('accepts an Input Object type with a field function', () => {
-      const inputObjType = new GraphQLInputObjectType({
+      const inputObjType = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         fields: () => ({
           f: { type: ScalarType },
@@ -804,14 +809,14 @@ describe('Type System: Input Objects', () => {
 
     it('rejects an Input Object type with invalid name', () => {
       expect(
-        () => new GraphQLInputObjectType({ name: 'bad-name', fields: {} }),
+        () => new GraphQLInputObjectTypeImpl({ name: 'bad-name', fields: {} }),
       ).to.throw(
         'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
       );
     });
 
     it('rejects an Input Object type with incorrect fields', () => {
-      const inputObjType = new GraphQLInputObjectType({
+      const inputObjType = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         // @ts-expect-error
         fields: [],
@@ -822,7 +827,7 @@ describe('Type System: Input Objects', () => {
     });
 
     it('rejects an Input Object type with fields function that returns incorrect type', () => {
-      const inputObjType = new GraphQLInputObjectType({
+      const inputObjType = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         // @ts-expect-error
         fields: () => [],
@@ -833,7 +838,7 @@ describe('Type System: Input Objects', () => {
     });
 
     it('rejects an Input Object type with incorrectly named fields', () => {
-      const inputObjType = new GraphQLInputObjectType({
+      const inputObjType = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         fields: {
           'bad-name': { type: ScalarType },
@@ -847,7 +852,7 @@ describe('Type System: Input Objects', () => {
 
   describe('Input Object fields must not have resolvers', () => {
     it('rejects an Input Object type with resolvers', () => {
-      const inputObjType = new GraphQLInputObjectType({
+      const inputObjType = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         fields: {
           // @ts-expect-error (Input fields cannot have resolvers)
@@ -860,7 +865,7 @@ describe('Type System: Input Objects', () => {
     });
 
     it('rejects an Input Object type with resolver constant', () => {
-      const inputObjType = new GraphQLInputObjectType({
+      const inputObjType = new GraphQLInputObjectTypeImpl({
         name: 'SomeInputObject',
         fields: {
           // @ts-expect-error (Input fields cannot have resolvers)
@@ -874,7 +879,7 @@ describe('Type System: Input Objects', () => {
   });
 
   it('Deprecation reason is preserved on fields', () => {
-    const inputObjType = new GraphQLInputObjectType({
+    const inputObjType = new GraphQLInputObjectTypeImpl({
       name: 'SomeInputObject',
       fields: {
         deprecatedField: {
@@ -892,7 +897,7 @@ describe('Type System: Input Objects', () => {
 
 describe('Type System: List', () => {
   function expectList(type: GraphQLType) {
-    return expect(() => new GraphQLList(type));
+    return expect(() => new GraphQLListImpl(type));
   }
 
   it('accepts an type as item type of list', () => {
@@ -922,7 +927,7 @@ describe('Type System: List', () => {
 
 describe('Type System: Non-Null', () => {
   function expectNonNull(type: GraphQLNullableType) {
-    return expect(() => new GraphQLNonNull(type));
+    return expect(() => new GraphQLNonNullImpl(type));
   }
 
   it('accepts an type as nullable type of non-null', () => {
@@ -937,6 +942,7 @@ describe('Type System: Non-Null', () => {
   });
 
   it('rejects a non-type as nullable type of non-null', () => {
+    // @ts-expect-error
     expectNonNull(NonNullScalarType).to.throw(
       'Expected Scalar! to be a GraphQL nullable type.',
     );
@@ -970,7 +976,9 @@ describe('Type System: test utility methods', () => {
     expect(String(ListOfScalarsType)).to.equal('[Scalar]');
     expect(String(NonNullListOfScalars)).to.equal('[Scalar]!');
     expect(String(ListOfNonNullScalarsType)).to.equal('[Scalar!]');
-    expect(String(new GraphQLList(ListOfScalarsType))).to.equal('[[Scalar]]');
+    expect(String(new GraphQLListImpl(ListOfScalarsType))).to.equal(
+      '[[Scalar]]',
+    );
   });
 
   it('JSON.stringifies types', () => {
@@ -985,7 +993,7 @@ describe('Type System: test utility methods', () => {
     expect(JSON.stringify(ListOfScalarsType)).to.equal('"[Scalar]"');
     expect(JSON.stringify(NonNullListOfScalars)).to.equal('"[Scalar]!"');
     expect(JSON.stringify(ListOfNonNullScalarsType)).to.equal('"[Scalar!]"');
-    expect(JSON.stringify(new GraphQLList(ListOfScalarsType))).to.equal(
+    expect(JSON.stringify(new GraphQLListImpl(ListOfScalarsType))).to.equal(
       '"[[Scalar]]"',
     );
   });

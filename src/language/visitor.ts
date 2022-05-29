@@ -41,6 +41,7 @@ export type ASTVisitFn<TVisitedNode extends ASTNode> = (
    * Note: ancestors includes arrays which contain the parent of visited node.
    */
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+  BREAK: unknown,
 ) => any;
 
 /**
@@ -84,7 +85,7 @@ export type ASTVisitorKeyMap = {
   [NodeT in ASTNode as NodeT['kind']]?: ReadonlyArray<keyof NodeT>;
 };
 
-export const BREAK: unknown = Object.freeze({});
+const BREAK: unknown = Object.freeze({});
 
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
@@ -251,7 +252,15 @@ export function visit(
         ? enterLeaveMap.get(node.kind)?.leave
         : enterLeaveMap.get(node.kind)?.enter;
 
-      result = visitFn?.call(visitor, node, key, parent, path, ancestors);
+      result = visitFn?.call(
+        visitor,
+        node,
+        key,
+        parent,
+        path,
+        ancestors,
+        BREAK,
+      );
 
       if (result === BREAK) {
         break;

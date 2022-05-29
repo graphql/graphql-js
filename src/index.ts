@@ -38,16 +38,16 @@ export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
   // Definitions
-  GraphQLSchema,
-  GraphQLDirective,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
+  GraphQLSchemaImpl,
+  GraphQLDirectiveImpl,
+  GraphQLScalarTypeImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLUnionTypeImpl,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
   // Standard GraphQL Scalars
   specifiedScalarTypes,
   GraphQLInt,
@@ -201,7 +201,7 @@ export type {
 // Parse and operate on GraphQL language source files.
 export {
   Token,
-  Source,
+  SourceImpl,
   Location,
   OperationTypeNode,
   getLocation,
@@ -222,7 +222,6 @@ export {
   visit,
   visitInParallel,
   getEnterLeaveForKind,
-  BREAK,
   Kind,
   DirectiveLocation,
   // Predicates
@@ -240,6 +239,7 @@ export {
 
 export type {
   ParseOptions,
+  Source,
   SourceLocation,
   // Visitor utilities
   ASTVisitor,
@@ -440,9 +440,30 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  // Base class containing version.
+  GraphQLEntityImpl,
+  // Enum of GraphQL entity kinds.
+  GraphQLEntityKind,
+  // Symbol for GraphQL entity version
+  GRAPHQL_VERSION_SYMBOL,
+  // Symbols for GraphQL entity kinds
+  GRAPHQL_SCALAR_TYPE_SYMBOL,
+  GRAPHQL_OBJECT_TYPE_SYMBOL,
+  GRAPHQL_INTERFACE_TYPE_SYMBOL,
+  GRAPHQL_UNION_TYPE_SYMBOL,
+  GRAPHQL_ENUM_TYPE_SYMBOL,
+  GRAPHQL_INPUT_OBJECT_TYPE_SYMBOL,
+  GRAPHQL_LIST_TYPE_SYMBOL,
+  GRAPHQL_NON_NULL_TYPE_SYMBOL,
+  GRAPHQL_DIRECTIVE_SYMBOL,
+  GRAPHQL_SCHEMA_SYMBOL,
+  GRAPHQL_SOURCE_SYMBOL,
+  isEntity,
+  ofVersion,
 } from './utilities/index';
 
 export type {
+  GraphQLEntity,
   IntrospectionOptions,
   IntrospectionQuery,
   IntrospectionSchema,

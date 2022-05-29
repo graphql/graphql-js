@@ -3,15 +3,15 @@ title: graphql/type
 layout: ../_core/GraphQLJSLayout
 category: API Reference
 permalink: /graphql-js/type/
-sublinks: getNamedType,getNullableType,GraphQLBoolean,GraphQLEnumType,GraphQLFloat,GraphQLID,GraphQLInputObjectType,GraphQLInt,GraphQLInterfaceType,GraphQLList,GraphQLNonNull,GraphQLObjectType,GraphQLScalarType,GraphQLSchema,GraphQLString,GraphQLUnionType,isAbstractType,isCompositeType,isInputType,isLeafType,isOutputType
+sublinks: getNamedType,getNullableType,GraphQLBoolean,GraphQLEnumTypeImpl,GraphQLFloat,GraphQLID,GraphQLInputObjectTypeImpl,GraphQLInt,GraphQLInterfaceTypeImpl,GraphQLListImpl,GraphQLNonNullImpl,GraphQLObjectTypeImpl,GraphQLScalarTypeImpl,GraphQLSchemaImpl,GraphQLString,GraphQLUnionTypeImpl,isAbstractType,isCompositeType,isInputType,isLeafType,isOutputType
 next: /graphql-js/utilities/
 ---
 
 The `graphql/type` module is responsible for defining GraphQL types and schema. You can import either from the `graphql/type` module, or from the root `graphql` module. For example:
 
 ```js
-import { GraphQLSchema } from 'graphql'; // ES6
-var { GraphQLSchema } = require('graphql'); // CommonJS
+import { GraphQLSchemaImpl } from 'graphql'; // ES6
+var { GraphQLSchemaImpl } = require('graphql'); // CommonJS
 ```
 
 ## Overview
@@ -20,8 +20,8 @@ _Schema_
 
 <ul class="apiIndex">
   <li>
-    <a href="#graphqlschema">
-      <pre>class GraphQLSchema</pre>
+    <a href="#graphqlschemaimpl">
+      <pre>class GraphQLSchemaImpl</pre>
       A representation of the capabilities of a GraphQL Server.
     </a>
   </li>
@@ -31,50 +31,50 @@ _Definitions_
 
 <ul class="apiIndex">
   <li>
-    <a href="#graphqlscalartype">
-      <pre>class GraphQLScalarType</pre>
+    <a href="#graphqlscalartypeimpl">
+      <pre>class GraphQLScalarTypeImpl</pre>
       A scalar type within GraphQL.
     </a>
   </li>
   <li>
-    <a href="#graphqlobjecttype">
-      <pre>class GraphQLObjectType</pre>
+    <a href="#graphqlobjecttypeimpl">
+      <pre>class GraphQLObjectTypeImpl</pre>
       An object type within GraphQL that contains fields.
     </a>
   </li>
   <li>
-    <a href="#graphqlinterfacetype">
-      <pre>class GraphQLInterfaceType</pre>
+    <a href="#graphqlinterfacetypeimpl">
+      <pre>class GraphQLInterfaceTypeImpl</pre>
       An interface type within GraphQL that defines fields implementations will contain.
     </a>
   </li>
   <li>
-    <a href="#graphqluniontype">
-      <pre>class GraphQLUnionType</pre>
+    <a href="#graphqluniontypeimpl">
+      <pre>class GraphQLUnionTypeImpl</pre>
       A union type within GraphQL that defines a list of implementations.
     </a>
   </li>
   <li>
-    <a href="#graphqlenumtype">
-      <pre>class GraphQLEnumType</pre>
+    <a href="#graphqlenumtypeimpl">
+      <pre>class GraphQLEnumTypeImpl</pre>
       An enum type within GraphQL that defines a list of valid values.
     </a>
   </li>
   <li>
-    <a href="#graphqlinputobjecttype">
-      <pre>class GraphQLInputObjectType</pre>
+    <a href="#graphqlinputobjecttypeimpl">
+      <pre>class GraphQLInputObjectTypeImpl</pre>
       An input object type within GraphQL that represents structured inputs.
     </a>
   </li>
   <li>
-    <a href="#graphqllist">
-      <pre>class GraphQLList</pre>
+    <a href="#graphqllistimpl">
+      <pre>class GraphQLListImpl</pre>
       A type wrapper around other types that represents a list of those types.
     </a>
   </li>
   <li>
-    <a href="#graphqlnonnull">
-      <pre>class GraphQLNonNull</pre>
+    <a href="#graphqlnonnullimpl">
+      <pre>class GraphQLNonNullImpl</pre>
       A type wrapper around other types that represents a non-null version of those types.
     </a>
   </li>
@@ -188,7 +188,7 @@ validator and executor.
 #### Example
 
 ```js
-var MyAppSchema = new GraphQLSchema({
+var MyAppSchema = new GraphQLSchemaImpl({
   query: MyAppQueryRootType
   mutation: MyAppMutationRootType
 });
@@ -220,7 +220,7 @@ functions used to ensure validity.
 #### Example
 
 ```js
-var OddType = new GraphQLScalarType({
+var OddType = new GraphQLScalarTypeImpl({
   name: 'Odd',
   serialize: oddValue,
   parseValue: oddValue,
@@ -315,7 +315,7 @@ that value can always be referenced with `this`.
 #### Examples
 
 ```js
-var AddressType = new GraphQLObjectType({
+var AddressType = new GraphQLObjectTypeImpl({
   name: 'Address',
   fields: {
     street: { type: GraphQLString },
@@ -329,7 +329,7 @@ var AddressType = new GraphQLObjectType({
   },
 });
 
-var PersonType = new GraphQLObjectType({
+var PersonType = new GraphQLObjectTypeImpl({
   name: 'Person',
   fields: () => ({
     name: { type: GraphQLString },
@@ -361,7 +361,7 @@ when the field is resolved.
 #### Example
 
 ```js
-var EntityType = new GraphQLInterfaceType({
+var EntityType = new GraphQLInterfaceTypeImpl({
   name: 'Entity',
   fields: {
     name: { type: GraphQLString },
@@ -393,7 +393,7 @@ to determine which type is actually used when the field is resolved.
 ### Example
 
 ```js
-var PetType = new GraphQLUnionType({
+var PetType = new GraphQLUnionTypeImpl({
   name: 'Pet',
   types: [DogType, CatType],
   resolveType(value) {
@@ -448,7 +448,7 @@ will be used as its internal value.
 #### Example
 
 ```js
-var RGBType = new GraphQLEnumType({
+var RGBType = new GraphQLEnumTypeImpl({
   name: 'RGB',
   values: {
     RED: { value: 0 },
@@ -503,11 +503,11 @@ Using `NonNull` will ensure that a value must be provided by the query
 #### Example
 
 ```js
-var GeoPoint = new GraphQLInputObjectType({
+var GeoPoint = new GraphQLInputObjectTypeImpl({
   name: 'GeoPoint',
   fields: {
-    lat: { type: new GraphQLNonNull(GraphQLFloat) },
-    lon: { type: new GraphQLNonNull(GraphQLFloat) },
+    lat: { type: new GraphQLNonNullImpl(GraphQLFloat) },
+    lon: { type: new GraphQLNonNullImpl(GraphQLFloat) },
     alt: { type: GraphQLFloat, defaultValue: 0 },
   },
 });
@@ -528,11 +528,11 @@ an object type.
 #### Example
 
 ```js
-var PersonType = new GraphQLObjectType({
+var PersonType = new GraphQLObjectTypeImpl({
   name: 'Person',
   fields: () => ({
-    parents: { type: new GraphQLList(Person) },
-    children: { type: new GraphQLList(Person) },
+    parents: { type: new GraphQLListImpl(Person) },
+    children: { type: new GraphQLListImpl(Person) },
   }),
 });
 ```
@@ -554,10 +554,10 @@ usually the id field of a database row will never be null.
 #### Example
 
 ```js
-var RowType = new GraphQLObjectType({
+var RowType = new GraphQLObjectTypeImpl({
   name: 'Row',
   fields: () => ({
-    id: { type: new GraphQLNonNull(String) },
+    id: { type: new GraphQLNonNullImpl(String) },
   }),
 });
 ```

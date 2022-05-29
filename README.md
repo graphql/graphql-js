@@ -48,8 +48,8 @@ import {
   GraphQLString,
 } from 'graphql';
 
-var schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
+var schema = new GraphQLSchemaImpl({
+  query: new GraphQLObjectTypeImpl({
     name: 'RootQueryType',
     fields: {
       hello: {

@@ -97,3 +97,23 @@ export type { BreakingChange, DangerousChange } from './findBreakingChanges';
 
 // Wrapper type that contains DocumentNode and types that can be deduced from it.
 export type { TypedQueryDocumentNode } from './typedQueryDocumentNode';
+
+export type { GraphQLEntity } from './entities';
+export {
+  GraphQLEntityImpl,
+  GraphQLEntityKind,
+  GRAPHQL_SCALAR_TYPE_SYMBOL,
+  GRAPHQL_OBJECT_TYPE_SYMBOL,
+  GRAPHQL_INTERFACE_TYPE_SYMBOL,
+  GRAPHQL_UNION_TYPE_SYMBOL,
+  GRAPHQL_ENUM_TYPE_SYMBOL,
+  GRAPHQL_INPUT_OBJECT_TYPE_SYMBOL,
+  GRAPHQL_LIST_TYPE_SYMBOL,
+  GRAPHQL_NON_NULL_TYPE_SYMBOL,
+  GRAPHQL_DIRECTIVE_SYMBOL,
+  GRAPHQL_SCHEMA_SYMBOL,
+  GRAPHQL_SOURCE_SYMBOL,
+  GRAPHQL_VERSION_SYMBOL,
+  isEntity,
+  ofVersion,
+} from './entities';

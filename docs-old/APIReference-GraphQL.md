@@ -32,8 +32,8 @@ _Schema_
 
 <ul class="apiIndex">
   <li>
-    <a href="../type/#graphqlschema">
-      <pre>class GraphQLSchema</pre>
+    <a href="../type/#graphqlschemaimpl">
+      <pre>class GraphQLSchemaImpl</pre>
       A representation of the capabilities of a GraphQL Server.
     </a>
   </li>
@@ -43,50 +43,50 @@ _Type Definitions_
 
 <ul class="apiIndex">
   <li>
-    <a href="../type/#graphqlscalartype">
-      <pre>class GraphQLScalarType</pre>
+    <a href="../type/#graphqlscalartypeimpl">
+      <pre>class GraphQLScalarTypeImpl</pre>
       A scalar type within GraphQL.
     </a>
   </li>
   <li>
-    <a href="../type/#graphqlobjecttype">
-      <pre>class GraphQLObjectType</pre>
+    <a href="../type/#graphqlobjecttypeimpl">
+      <pre>class GraphQLObjectTypeImpl</pre>
       An object type within GraphQL that contains fields.
     </a>
   </li>
   <li>
-    <a href="../type/#graphqlinterfacetype">
-      <pre>class GraphQLInterfaceType</pre>
+    <a href="../type/#graphqlinterfacetypeimpl">
+      <pre>class GraphQLInterfaceTypeImpl</pre>
       An interface type within GraphQL that defines fields implementations will contain.
     </a>
   </li>
   <li>
-    <a href="../type/#graphqluniontype">
-      <pre>class GraphQLUnionType</pre>
+    <a href="../type/#graphqluniontypeimpl">
+      <pre>class GraphQLUnionTypeImpl</pre>
       A union type within GraphQL that defines a list of implementations.
     </a>
   </li>
   <li>
-    <a href="../type/#graphqlenumtype">
-      <pre>class GraphQLEnumType</pre>
+    <a href="../type/#graphqlenumtypeimpl">
+      <pre>class GraphQLEnumTypeImpl</pre>
       An enum type within GraphQL that defines a list of valid values.
     </a>
   </li>
   <li>
-    <a href="../type/#graphqlinputobjecttype">
-      <pre>class GraphQLInputObjectType</pre>
+    <a href="../type/#graphqlinputobjecttypeimpl">
+      <pre>class GraphQLInputObjectTypeImpl</pre>
       An input object type within GraphQL that represents structured inputs.
     </a>
   </li>
   <li>
-    <a href="../type/#graphqllist">
-      <pre>class GraphQLList</pre>
+    <a href="../type/#graphqllistimpl">
+      <pre>class GraphQLListImpl</pre>
       A type wrapper around other types that represents a list of those types.
     </a>
   </li>
   <li>
-    <a href="../type/#graphqlnonnull">
-      <pre>class GraphQLNonNull</pre>
+    <a href="../type/#graphqlnonnullimpl">
+      <pre>class GraphQLNonNullImpl</pre>
       A type wrapper around other types that represents a non-null version of those types.
     </a>
   </li>

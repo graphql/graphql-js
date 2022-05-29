@@ -6,8 +6,8 @@ import { GraphQLError } from '../error/GraphQLError';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 
-import type { GraphQLNamedType } from './definition';
-import { GraphQLScalarType } from './definition';
+import type { GraphQLNamedType, GraphQLScalarType } from './definition';
+import { GraphQLScalarTypeImpl } from './definition';
 
 /**
  * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).
@@ -21,7 +21,7 @@ export const GRAPHQL_MAX_INT = 2147483647;
  * */
 export const GRAPHQL_MIN_INT = -2147483648;
 
-export const GraphQLInt = new GraphQLScalarType<number>({
+export const GraphQLInt = new GraphQLScalarTypeImpl<number>({
   name: 'Int',
   description:
     'The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.',
@@ -84,7 +84,7 @@ export const GraphQLInt = new GraphQLScalarType<number>({
   },
 });
 
-export const GraphQLFloat = new GraphQLScalarType<number>({
+export const GraphQLFloat = new GraphQLScalarTypeImpl<number>({
   name: 'Float',
   description:
     'The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
@@ -129,7 +129,7 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
   },
 });
 
-export const GraphQLString = new GraphQLScalarType<string>({
+export const GraphQLString = new GraphQLScalarTypeImpl<string>({
   name: 'String',
   description:
     'The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.',
@@ -173,7 +173,7 @@ export const GraphQLString = new GraphQLScalarType<string>({
   },
 });
 
-export const GraphQLBoolean = new GraphQLScalarType<boolean>({
+export const GraphQLBoolean = new GraphQLScalarTypeImpl<boolean>({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
 
@@ -211,7 +211,7 @@ export const GraphQLBoolean = new GraphQLScalarType<boolean>({
   },
 });
 
-export const GraphQLID = new GraphQLScalarType<string>({
+export const GraphQLID = new GraphQLScalarTypeImpl<string>({
   name: 'ID',
   description:
     'The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.',

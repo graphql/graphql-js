@@ -1,12 +1,14 @@
+import type { GraphQLInterfaceType } from '../type/definition';
 import {
-  GraphQLEnumType,
-  GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
+  GraphQLEnumTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
 } from '../type/definition';
 import { GraphQLString } from '../type/scalars';
-import { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema';
+import { GraphQLSchemaImpl } from '../type/schema';
 
 import { getDroid, getFriends, getHero, getHuman } from './starWarsData';
 
@@ -69,7 +71,7 @@ import { getDroid, getFriends, getHero, getHuman } from './starWarsData';
  * enum Episode { NEW_HOPE, EMPIRE, JEDI }
  * ```
  */
-const episodeEnum = new GraphQLEnumType({
+const episodeEnum = new GraphQLEnumTypeImpl({
   name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
   values: {
@@ -102,12 +104,12 @@ const episodeEnum = new GraphQLEnumType({
  * }
  * ```
  */
-const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceType({
+const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceTypeImpl({
   name: 'Character',
   description: 'A character in the Star Wars Trilogy',
   fields: () => ({
     id: {
-      type: new GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNullImpl(GraphQLString),
       description: 'The id of the character.',
     },
     name: {
@@ -115,12 +117,12 @@ const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceType({
       description: 'The name of the character.',
     },
     friends: {
-      type: new GraphQLList(characterInterface),
+      type: new GraphQLListImpl(characterInterface),
       description:
         'The friends of the character, or an empty list if they have none.',
     },
     appearsIn: {
-      type: new GraphQLList(episodeEnum),
+      type: new GraphQLListImpl(episodeEnum),
       description: 'Which movies they appear in.',
     },
     secretBackstory: {
@@ -152,12 +154,12 @@ const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceType({
  * }
  * ```
  */
-const humanType = new GraphQLObjectType({
+const humanType = new GraphQLObjectTypeImpl({
   name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
   fields: () => ({
     id: {
-      type: new GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNullImpl(GraphQLString),
       description: 'The id of the human.',
     },
     name: {
@@ -165,13 +167,13 @@ const humanType = new GraphQLObjectType({
       description: 'The name of the human.',
     },
     friends: {
-      type: new GraphQLList(characterInterface),
+      type: new GraphQLListImpl(characterInterface),
       description:
         'The friends of the human, or an empty list if they have none.',
       resolve: (human) => getFriends(human),
     },
     appearsIn: {
-      type: new GraphQLList(episodeEnum),
+      type: new GraphQLListImpl(episodeEnum),
       description: 'Which movies they appear in.',
     },
     homePlanet: {
@@ -204,12 +206,12 @@ const humanType = new GraphQLObjectType({
  * }
  * ```
  */
-const droidType = new GraphQLObjectType({
+const droidType = new GraphQLObjectTypeImpl({
   name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
   fields: () => ({
     id: {
-      type: new GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNullImpl(GraphQLString),
       description: 'The id of the droid.',
     },
     name: {
@@ -217,13 +219,13 @@ const droidType = new GraphQLObjectType({
       description: 'The name of the droid.',
     },
     friends: {
-      type: new GraphQLList(characterInterface),
+      type: new GraphQLListImpl(characterInterface),
       description:
         'The friends of the droid, or an empty list if they have none.',
       resolve: (droid) => getFriends(droid),
     },
     appearsIn: {
-      type: new GraphQLList(episodeEnum),
+      type: new GraphQLListImpl(episodeEnum),
       description: 'Which movies they appear in.',
     },
     secretBackstory: {
@@ -256,7 +258,7 @@ const droidType = new GraphQLObjectType({
  * }
  * ```
  */
-const queryType = new GraphQLObjectType({
+const queryType = new GraphQLObjectTypeImpl({
   name: 'Query',
   fields: () => ({
     hero: {
@@ -275,7 +277,7 @@ const queryType = new GraphQLObjectType({
       args: {
         id: {
           description: 'id of the human',
-          type: new GraphQLNonNull(GraphQLString),
+          type: new GraphQLNonNullImpl(GraphQLString),
         },
       },
       resolve: (_source, { id }) => getHuman(id),
@@ -285,7 +287,7 @@ const queryType = new GraphQLObjectType({
       args: {
         id: {
           description: 'id of the droid',
-          type: new GraphQLNonNull(GraphQLString),
+          type: new GraphQLNonNullImpl(GraphQLString),
         },
       },
       resolve: (_source, { id }) => getDroid(id),
@@ -297,7 +299,7 @@ const queryType = new GraphQLObjectType({
  * Finally, we construct our schema (whose starting query type is the query
  * type we defined above) and export it.
  */
-export const StarWarsSchema: GraphQLSchema = new GraphQLSchema({
+export const StarWarsSchema: GraphQLSchema = new GraphQLSchemaImpl({
   query: queryType,
   types: [humanType, droidType],
 });

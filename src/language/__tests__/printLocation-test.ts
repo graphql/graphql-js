@@ -4,11 +4,11 @@ import { describe, it } from 'mocha';
 import { dedent } from '../../__testUtils__/dedent';
 
 import { printSourceLocation } from '../printLocation';
-import { Source } from '../source';
+import { SourceImpl } from '../source';
 
 describe('printSourceLocation', () => {
   it('prints minified documents', () => {
-    const minifiedSource = new Source(
+    const minifiedSource = new SourceImpl(
       'query SomeMinifiedQueryWithErrorInside($foo:String!=FIRST_ERROR_HERE$bar:String){someField(foo:$foo bar:$bar baz:SECOND_ERROR_HERE){fieldA fieldB{fieldC fieldD...on THIRD_ERROR_HERE}}}',
     );
 
@@ -50,7 +50,7 @@ describe('printSourceLocation', () => {
 
   it('prints single digit line number with no padding', () => {
     const result = printSourceLocation(
-      new Source('*', 'Test', { line: 9, column: 1 }),
+      new SourceImpl('*', 'Test', { line: 9, column: 1 }),
       { line: 1, column: 1 },
     );
 
@@ -63,7 +63,7 @@ describe('printSourceLocation', () => {
 
   it('prints an line numbers with correct padding', () => {
     const result = printSourceLocation(
-      new Source('*\n', 'Test', { line: 9, column: 1 }),
+      new SourceImpl('*\n', 'Test', { line: 9, column: 1 }),
       { line: 1, column: 1 },
     );
 

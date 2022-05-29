@@ -5,9 +5,9 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLObjectTypeImpl } from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { validate } from '../../validation/validate';
 
@@ -16,8 +16,8 @@ import { graphqlSync } from '../../graphql';
 import { execute, executeSync } from '../execute';
 
 describe('Execute: synchronously when possible', () => {
-  const schema = new GraphQLSchema({
-    query: new GraphQLObjectType({
+  const schema = new GraphQLSchemaImpl({
+    query: new GraphQLObjectTypeImpl({
       name: 'Query',
       fields: {
         syncField: {
@@ -34,7 +34,7 @@ describe('Execute: synchronously when possible', () => {
         },
       },
     }),
-    mutation: new GraphQLObjectType({
+    mutation: new GraphQLObjectTypeImpl({
       name: 'Mutation',
       fields: {
         syncMutationField: {
@@ -117,7 +117,7 @@ describe('Execute: synchronously when possible', () => {
 
   describe('graphqlSync', () => {
     it('report errors raised during schema validation', () => {
-      const badSchema = new GraphQLSchema({});
+      const badSchema = new GraphQLSchemaImpl({});
       const result = graphqlSync({
         schema: badSchema,
         source: '{ __typename }',

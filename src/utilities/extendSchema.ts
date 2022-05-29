@@ -37,23 +37,30 @@ import {
 
 import type {
   GraphQLArgumentConfig,
+  GraphQLEnumType,
   GraphQLEnumValueConfigMap,
   GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLInputFieldConfigMap,
-  GraphQLNamedType,
-  GraphQLType,
-} from '../type/definition';
-import {
-  GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
+  GraphQLNamedType,
+  GraphQLNullableType,
   GraphQLObjectType,
   GraphQLScalarType,
+  GraphQLType,
   GraphQLUnionType,
+} from '../type/definition';
+import {
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLScalarTypeImpl,
+  GraphQLUnionTypeImpl,
   isEnumType,
   isInputObjectType,
   isInterfaceType,
@@ -63,18 +70,20 @@ import {
   isScalarType,
   isUnionType,
 } from '../type/definition';
+import type { GraphQLDirective } from '../type/directives';
 import {
   GraphQLDeprecatedDirective,
-  GraphQLDirective,
+  GraphQLDirectiveImpl,
   GraphQLSpecifiedByDirective,
 } from '../type/directives';
 import { introspectionTypes, isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType, specifiedScalarTypes } from '../type/scalars';
 import type {
+  GraphQLSchema,
   GraphQLSchemaNormalizedConfig,
   GraphQLSchemaValidationOptions,
 } from '../type/schema';
-import { assertSchema, GraphQLSchema } from '../type/schema';
+import { assertSchema, GraphQLSchemaImpl } from '../type/schema';
 
 import { assertValidSDLExtension } from '../validation/validate';
 
@@ -123,7 +132,7 @@ export function extendSchema(
   const extendedConfig = extendSchemaImpl(schemaConfig, documentAST, options);
   return schemaConfig === extendedConfig
     ? schema
-    : new GraphQLSchema(extendedConfig);
+    : new GraphQLSchemaImpl(extendedConfig);
 }
 
 /**
@@ -218,11 +227,11 @@ export function extendSchemaImpl(
   function replaceType<T extends GraphQLType>(type: T): T {
     if (isListType(type)) {
       // @ts-expect-error
-      return new GraphQLList(replaceType(type.ofType));
+      return new GraphQLListImpl(replaceType(type.ofType));
     }
     if (isNonNullType(type)) {
       // @ts-expect-error
-      return new GraphQLNonNull(replaceType(type.ofType));
+      return new GraphQLNonNullImpl(replaceType(type.ofType));
     }
     // @ts-expect-error FIXME
     return replaceNamedType(type);
@@ -237,7 +246,7 @@ export function extendSchemaImpl(
 
   function replaceDirective(directive: GraphQLDirective): GraphQLDirective {
     const config = directive.toConfig();
-    return new GraphQLDirective({
+    return new GraphQLDirectiveImpl({
       ...config,
       args: mapValue(config.args, extendArg),
     });
@@ -277,7 +286,7 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
-    return new GraphQLInputObjectType({
+    return new GraphQLInputObjectTypeImpl({
       ...config,
       fields: () => ({
         ...mapValue(config.fields, (field) => ({
@@ -294,7 +303,7 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[type.name] ?? [];
 
-    return new GraphQLEnumType({
+    return new GraphQLEnumTypeImpl({
       ...config,
       values: {
         ...config.values,
@@ -313,7 +322,7 @@ export function extendSchemaImpl(
       specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
     }
 
-    return new GraphQLScalarType({
+    return new GraphQLScalarTypeImpl({
       ...config,
       specifiedByURL,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
@@ -324,7 +333,7 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
-    return new GraphQLObjectType({
+    return new GraphQLObjectTypeImpl({
       ...config,
       interfaces: () => [
         ...type.getInterfaces().map(replaceNamedType),
@@ -344,7 +353,7 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
-    return new GraphQLInterfaceType({
+    return new GraphQLInterfaceTypeImpl({
       ...config,
       interfaces: () => [
         ...type.getInterfaces().map(replaceNamedType),
@@ -362,7 +371,7 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
-    return new GraphQLUnionType({
+    return new GraphQLUnionTypeImpl({
       ...config,
       types: () => [
         ...type.getTypes().map(replaceNamedType),
@@ -426,16 +435,18 @@ export function extendSchemaImpl(
 
   function getWrappedType(node: TypeNode): GraphQLType {
     if (node.kind === Kind.LIST_TYPE) {
-      return new GraphQLList(getWrappedType(node.type));
+      return new GraphQLListImpl(getWrappedType(node.type));
     }
     if (node.kind === Kind.NON_NULL_TYPE) {
-      return new GraphQLNonNull(getWrappedType(node.type));
+      return new GraphQLNonNullImpl(
+        getWrappedType(node.type) as GraphQLNullableType,
+      );
     }
     return getNamedType(node);
   }
 
   function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
-    return new GraphQLDirective({
+    return new GraphQLDirectiveImpl({
       name: node.name.value,
       description: node.description?.value,
       // @ts-expect-error
@@ -585,7 +596,7 @@ export function extendSchemaImpl(
       case Kind.OBJECT_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
 
-        return new GraphQLObjectType({
+        return new GraphQLObjectTypeImpl({
           name,
           description: astNode.description?.value,
           interfaces: () => buildInterfaces(allNodes),
@@ -597,7 +608,7 @@ export function extendSchemaImpl(
       case Kind.INTERFACE_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
 
-        return new GraphQLInterfaceType({
+        return new GraphQLInterfaceTypeImpl({
           name,
           description: astNode.description?.value,
           interfaces: () => buildInterfaces(allNodes),
@@ -609,7 +620,7 @@ export function extendSchemaImpl(
       case Kind.ENUM_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
 
-        return new GraphQLEnumType({
+        return new GraphQLEnumTypeImpl({
           name,
           description: astNode.description?.value,
           values: buildEnumValueMap(allNodes),
@@ -620,7 +631,7 @@ export function extendSchemaImpl(
       case Kind.UNION_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
 
-        return new GraphQLUnionType({
+        return new GraphQLUnionTypeImpl({
           name,
           description: astNode.description?.value,
           types: () => buildUnionTypes(allNodes),
@@ -629,7 +640,7 @@ export function extendSchemaImpl(
         });
       }
       case Kind.SCALAR_TYPE_DEFINITION: {
-        return new GraphQLScalarType({
+        return new GraphQLScalarTypeImpl({
           name,
           description: astNode.description?.value,
           specifiedByURL: getSpecifiedByURL(astNode),
@@ -640,7 +651,7 @@ export function extendSchemaImpl(
       case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
 
-        return new GraphQLInputObjectType({
+        return new GraphQLInputObjectTypeImpl({
           name,
           description: astNode.description?.value,
           fields: () => buildInputFieldMap(allNodes),

@@ -4,16 +4,16 @@ import { describe, it } from 'mocha';
 import { parse } from '../../language/parser';
 
 import type { GraphQLFieldConfig } from '../../type/definition';
-import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLObjectTypeImpl } from '../../type/definition';
 import { GraphQLInt, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { executeSync } from '../execute';
 
 describe('Execute: resolve function', () => {
   function testSchema(testField: GraphQLFieldConfig<any, any>) {
-    return new GraphQLSchema({
-      query: new GraphQLObjectType({
+    return new GraphQLSchemaImpl({
+      query: new GraphQLObjectTypeImpl({
         name: 'Query',
         fields: {
           test: testField,

@@ -6,7 +6,7 @@ import { print } from '../../language/printer';
 import { visit } from '../../language/visitor';
 
 import { getNamedType, isCompositeType } from '../../type/definition';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { buildSchema } from '../buildASTSchema';
 import { TypeInfo, visitWithTypeInfo } from '../TypeInfo';
@@ -48,7 +48,7 @@ const testSchema = buildSchema(`
 `);
 
 describe('TypeInfo', () => {
-  const schema = new GraphQLSchema({});
+  const schema = new GraphQLSchemaImpl({});
 
   it('can be Object.toStringified', () => {
     const typeInfo = new TypeInfo(schema);

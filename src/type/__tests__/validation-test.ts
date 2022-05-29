@@ -17,7 +17,9 @@ import type {
   GraphQLFieldConfig,
   GraphQLInputFieldConfig,
   GraphQLInputType,
+  GraphQLList,
   GraphQLNamedType,
+  GraphQLNonNull,
   GraphQLOutputType,
 } from '../definition';
 import {
@@ -27,17 +29,18 @@ import {
   assertObjectType,
   assertScalarType,
   assertUnionType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLInterfaceType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLUnionType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLInterfaceTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLUnionTypeImpl,
 } from '../definition';
-import { assertDirective, GraphQLDirective } from '../directives';
+import { assertDirective, GraphQLDirectiveImpl } from '../directives';
 import { GraphQLString } from '../scalars';
-import { GraphQLSchema } from '../schema';
+import type { GraphQLSchema } from '../schema';
+import { GraphQLSchemaImpl } from '../schema';
 import { assertValidSchema, validateSchema } from '../validate';
 
 const SomeSchema = buildSchema(`
@@ -74,9 +77,9 @@ function withModifiers<T extends GraphQLNamedType>(
 ): Array<T | GraphQLList<T> | GraphQLNonNull<T | GraphQLList<T>>> {
   return [
     type,
-    new GraphQLList(type),
-    new GraphQLNonNull(type),
-    new GraphQLNonNull(new GraphQLList(type)),
+    new GraphQLListImpl(type),
+    new GraphQLNonNullImpl(type),
+    new GraphQLNonNullImpl(new GraphQLListImpl(type)),
   ];
 }
 
@@ -107,8 +110,8 @@ const notInputTypes: ReadonlyArray<GraphQLOutputType> = [
 ];
 
 function schemaWithFieldType(type: GraphQLOutputType): GraphQLSchema {
-  return new GraphQLSchema({
-    query: new GraphQLObjectType({
+  return new GraphQLSchemaImpl({
+    query: new GraphQLObjectTypeImpl({
       name: 'Query',
       fields: { f: { type } },
     }),
@@ -396,7 +399,7 @@ describe('Type System: A Schema must have Object root types', () => {
   });
 
   it('rejects a Schema whose types are incorrectly typed', () => {
-    const schema = new GraphQLSchema({
+    const schema = new GraphQLSchemaImpl({
       query: SomeObjectType,
       // @ts-expect-error
       types: [{ name: 'SomeType' }, SomeDirective],
@@ -413,7 +416,7 @@ describe('Type System: A Schema must have Object root types', () => {
   });
 
   it('rejects a Schema whose directives are incorrectly typed', () => {
-    const schema = new GraphQLSchema({
+    const schema = new GraphQLSchemaImpl({
       query: SomeObjectType,
       // @ts-expect-error
       directives: [null, 'SomeDirective', SomeScalarType],
@@ -543,7 +546,7 @@ describe('Type System: Objects must have fields', () => {
     ]);
 
     const manualSchema = schemaWithFieldType(
-      new GraphQLObjectType({
+      new GraphQLObjectTypeImpl({
         name: 'IncompleteObject',
         fields: {},
       }),
@@ -555,7 +558,7 @@ describe('Type System: Objects must have fields', () => {
     ]);
 
     const manualSchema2 = schemaWithFieldType(
-      new GraphQLObjectType({
+      new GraphQLObjectTypeImpl({
         name: 'IncompleteObject',
         fields() {
           return {};
@@ -571,7 +574,7 @@ describe('Type System: Objects must have fields', () => {
 
   it('rejects an Object type with incorrectly named fields', () => {
     const schema = schemaWithFieldType(
-      new GraphQLObjectType({
+      new GraphQLObjectTypeImpl({
         name: 'SomeObject',
         fields: {
           __badName: { type: GraphQLString },
@@ -590,7 +593,7 @@ describe('Type System: Objects must have fields', () => {
 describe('Type System: Fields args must be properly named', () => {
   it('accepts field args with valid names', () => {
     const schema = schemaWithFieldType(
-      new GraphQLObjectType({
+      new GraphQLObjectTypeImpl({
         name: 'SomeObject',
         fields: {
           goodField: {
@@ -607,7 +610,7 @@ describe('Type System: Fields args must be properly named', () => {
 
   it('rejects field arg with invalid names', () => {
     const schema = schemaWithFieldType(
-      new GraphQLObjectType({
+      new GraphQLObjectTypeImpl({
         name: 'SomeObject',
         fields: {
           badField: {
@@ -767,15 +770,15 @@ describe('Type System: Union types must be valid', () => {
 
     const badUnionMemberTypes = [
       GraphQLString,
-      new GraphQLNonNull(SomeObjectType),
-      new GraphQLList(SomeObjectType),
+      new GraphQLNonNullImpl(SomeObjectType),
+      new GraphQLListImpl(SomeObjectType),
       SomeInterfaceType,
       SomeUnionType,
       SomeEnumType,
       SomeInputObjectType,
     ];
     for (const memberType of badUnionMemberTypes) {
-      const badUnion = new GraphQLUnionType({
+      const badUnion = new GraphQLUnionTypeImpl({
         name: 'BadUnion',
         // @ts-expect-error
         types: [memberType],
@@ -1045,7 +1048,7 @@ describe('Type System: Enum types must be well defined', () => {
 
   it('rejects an Enum type with incorrectly named values', () => {
     const schema = schemaWithFieldType(
-      new GraphQLEnumType({
+      new GraphQLEnumTypeImpl({
         name: 'SomeEnum',
         values: {
           __badName: {},
@@ -1066,15 +1069,15 @@ describe('Type System: Object fields must have output types', () => {
   function schemaWithObjectField(
     fieldConfig: GraphQLFieldConfig<unknown, unknown>,
   ): GraphQLSchema {
-    const BadObjectType = new GraphQLObjectType({
+    const BadObjectType = new GraphQLObjectTypeImpl({
       name: 'BadObject',
       fields: {
         badField: fieldConfig,
       },
     });
 
-    return new GraphQLSchema({
-      query: new GraphQLObjectType({
+    return new GraphQLSchemaImpl({
+      query: new GraphQLObjectTypeImpl({
         name: 'Query',
         fields: {
           f: { type: BadObjectType },
@@ -1152,8 +1155,8 @@ describe('Type System: Object fields must have output types', () => {
 
 describe('Type System: Objects can only implement unique interfaces', () => {
   it('rejects an Object implementing a non-type value', () => {
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
+    const schema = new GraphQLSchemaImpl({
+      query: new GraphQLObjectTypeImpl({
         name: 'BadObject',
         // @ts-expect-error (interfaces must not contain undefined)
         interfaces: [undefined],
@@ -1383,19 +1386,19 @@ describe('Type System: Interface fields must have output types', () => {
   ): GraphQLSchema {
     const fields = { badField: fieldConfig };
 
-    const BadInterfaceType = new GraphQLInterfaceType({
+    const BadInterfaceType = new GraphQLInterfaceTypeImpl({
       name: 'BadInterface',
       fields,
     });
 
-    const BadImplementingType = new GraphQLObjectType({
+    const BadImplementingType = new GraphQLObjectTypeImpl({
       name: 'BadImplementing',
       interfaces: [BadInterfaceType],
       fields,
     });
 
-    return new GraphQLSchema({
-      query: new GraphQLObjectType({
+    return new GraphQLSchemaImpl({
+      query: new GraphQLObjectTypeImpl({
         name: 'Query',
         fields: {
           f: { type: BadInterfaceType },
@@ -1510,7 +1513,7 @@ describe('Type System: Interface fields must have output types', () => {
 
 describe('Type System: Arguments must have input types', () => {
   function schemaWithArg(argConfig: GraphQLArgumentConfig): GraphQLSchema {
-    const BadObjectType = new GraphQLObjectType({
+    const BadObjectType = new GraphQLObjectTypeImpl({
       name: 'BadObject',
       fields: {
         badField: {
@@ -1522,15 +1525,15 @@ describe('Type System: Arguments must have input types', () => {
       },
     });
 
-    return new GraphQLSchema({
-      query: new GraphQLObjectType({
+    return new GraphQLSchemaImpl({
+      query: new GraphQLObjectTypeImpl({
         name: 'Query',
         fields: {
           f: { type: BadObjectType },
         },
       }),
       directives: [
-        new GraphQLDirective({
+        new GraphQLDirectiveImpl({
           name: 'BadDirective',
           args: {
             badArg: argConfig,
@@ -1657,15 +1660,15 @@ describe('Type System: Input Object fields must have input types', () => {
   function schemaWithInputField(
     inputFieldConfig: GraphQLInputFieldConfig,
   ): GraphQLSchema {
-    const BadInputObjectType = new GraphQLInputObjectType({
+    const BadInputObjectType = new GraphQLInputObjectTypeImpl({
       name: 'BadInputObject',
       fields: {
         badField: inputFieldConfig,
       },
     });
 
-    return new GraphQLSchema({
-      query: new GraphQLObjectType({
+    return new GraphQLSchemaImpl({
+      query: new GraphQLObjectTypeImpl({
         name: 'Query',
         fields: {
           f: {

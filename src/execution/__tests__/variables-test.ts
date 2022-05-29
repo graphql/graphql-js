@@ -13,20 +13,20 @@ import type {
   GraphQLFieldConfig,
 } from '../../type/definition';
 import {
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLObjectType,
-  GraphQLScalarType,
+  GraphQLEnumTypeImpl,
+  GraphQLInputObjectTypeImpl,
+  GraphQLListImpl,
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
+  GraphQLScalarTypeImpl,
 } from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { executeSync } from '../execute';
 import { getVariableValues } from '../values';
 
-const TestComplexScalar = new GraphQLScalarType({
+const TestComplexScalar = new GraphQLScalarTypeImpl({
   name: 'ComplexScalar',
   parseValue(value) {
     expect(value).to.equal('SerializedValue');
@@ -38,25 +38,25 @@ const TestComplexScalar = new GraphQLScalarType({
   },
 });
 
-const TestInputObject = new GraphQLInputObjectType({
+const TestInputObject = new GraphQLInputObjectTypeImpl({
   name: 'TestInputObject',
   fields: {
     a: { type: GraphQLString },
-    b: { type: new GraphQLList(GraphQLString) },
-    c: { type: new GraphQLNonNull(GraphQLString) },
+    b: { type: new GraphQLListImpl(GraphQLString) },
+    c: { type: new GraphQLNonNullImpl(GraphQLString) },
     d: { type: TestComplexScalar },
   },
 });
 
-const TestNestedInputObject = new GraphQLInputObjectType({
+const TestNestedInputObject = new GraphQLInputObjectTypeImpl({
   name: 'TestNestedInputObject',
   fields: {
-    na: { type: new GraphQLNonNull(TestInputObject) },
-    nb: { type: new GraphQLNonNull(GraphQLString) },
+    na: { type: new GraphQLNonNullImpl(TestInputObject) },
+    nb: { type: new GraphQLNonNullImpl(GraphQLString) },
   },
 });
 
-const TestEnum = new GraphQLEnumType({
+const TestEnum = new GraphQLEnumTypeImpl({
   name: 'TestEnum',
   values: {
     NULL: { value: null },
@@ -82,46 +82,46 @@ function fieldWithInputArg(
   };
 }
 
-const TestType = new GraphQLObjectType({
+const TestType = new GraphQLObjectTypeImpl({
   name: 'TestType',
   fields: {
     fieldWithEnumInput: fieldWithInputArg({ type: TestEnum }),
     fieldWithNonNullableEnumInput: fieldWithInputArg({
-      type: new GraphQLNonNull(TestEnum),
+      type: new GraphQLNonNullImpl(TestEnum),
     }),
     fieldWithObjectInput: fieldWithInputArg({ type: TestInputObject }),
     fieldWithNullableStringInput: fieldWithInputArg({ type: GraphQLString }),
     fieldWithNonNullableStringInput: fieldWithInputArg({
-      type: new GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNullImpl(GraphQLString),
     }),
     fieldWithDefaultArgumentValue: fieldWithInputArg({
       type: GraphQLString,
       defaultValue: 'Hello World',
     }),
     fieldWithNonNullableStringInputAndDefaultArgumentValue: fieldWithInputArg({
-      type: new GraphQLNonNull(GraphQLString),
+      type: new GraphQLNonNullImpl(GraphQLString),
       defaultValue: 'Hello World',
     }),
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
       defaultValue: 'Hello World',
     }),
-    list: fieldWithInputArg({ type: new GraphQLList(GraphQLString) }),
+    list: fieldWithInputArg({ type: new GraphQLListImpl(GraphQLString) }),
     nnList: fieldWithInputArg({
-      type: new GraphQLNonNull(new GraphQLList(GraphQLString)),
+      type: new GraphQLNonNullImpl(new GraphQLListImpl(GraphQLString)),
     }),
     listNN: fieldWithInputArg({
-      type: new GraphQLList(new GraphQLNonNull(GraphQLString)),
+      type: new GraphQLListImpl(new GraphQLNonNullImpl(GraphQLString)),
     }),
     nnListNN: fieldWithInputArg({
-      type: new GraphQLNonNull(
-        new GraphQLList(new GraphQLNonNull(GraphQLString)),
+      type: new GraphQLNonNullImpl(
+        new GraphQLListImpl(new GraphQLNonNullImpl(GraphQLString)),
       ),
     }),
   },
 });
 
-const schema = new GraphQLSchema({ query: TestType });
+const schema = new GraphQLSchemaImpl({ query: TestType });
 
 function executeQuery(
   query: string,

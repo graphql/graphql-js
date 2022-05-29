@@ -14,6 +14,13 @@ import type {
 } from '../language/ast';
 import { OperationTypeNode } from '../language/ast';
 
+import type { GraphQLEntity } from '../utilities/entities';
+import {
+  GRAPHQL_SCHEMA_SYMBOL,
+  GraphQLEntityImpl,
+  GraphQLEntityKind,
+} from '../utilities/entities';
+
 import type {
   GraphQLAbstractType,
   GraphQLCompositeType,
@@ -43,7 +50,7 @@ import {
  * Test if the given value is a GraphQL schema.
  */
 export function isSchema(schema: unknown): schema is GraphQLSchema {
-  return instanceOf(schema, GraphQLSchema);
+  return instanceOf(schema, GraphQLEntityKind.SCHEMA);
 }
 
 export function assertSchema(schema: unknown): GraphQLSchema {
@@ -66,6 +73,40 @@ export interface GraphQLSchemaExtensions {
   [attributeName: string]: unknown;
 }
 
+export interface GraphQLSchema extends GraphQLEntity {
+  readonly [GRAPHQL_SCHEMA_SYMBOL]: unknown;
+  __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
+  description: Maybe<string>;
+  extensions: Readonly<GraphQLSchemaExtensions>;
+  astNode: Maybe<SchemaDefinitionNode>;
+  extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
+  getQueryType: () => Maybe<GraphQLObjectType>;
+  getMutationType: () => Maybe<GraphQLObjectType>;
+  getSubscriptionType: () => Maybe<GraphQLObjectType>;
+  getRootType: (operation: OperationTypeNode) => Maybe<GraphQLObjectType>;
+  getTypeMap: () => TypeMap;
+  getType: (name: string) => GraphQLNamedType | undefined;
+  getPossibleTypes: (
+    abstractType: GraphQLAbstractType,
+  ) => ReadonlyArray<GraphQLObjectType>;
+  getImplementations: (interfaceType: GraphQLInterfaceType) => {
+    objects: ReadonlyArray<GraphQLObjectType>;
+    interfaces: ReadonlyArray<GraphQLInterfaceType>;
+  };
+  isSubType: (
+    abstractType: GraphQLAbstractType,
+    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
+  ) => boolean;
+  getDirectives: () => ReadonlyArray<GraphQLDirective>;
+  getDirective: (name: string) => Maybe<GraphQLDirective>;
+  getField: (
+    parentType: GraphQLCompositeType,
+    fieldName: string,
+  ) => GraphQLField<unknown, unknown> | undefined;
+  toConfig: () => GraphQLSchemaNormalizedConfig;
+  toString: () => string;
+}
+
 /**
  * Schema Definition
  *
@@ -76,7 +117,7 @@ export interface GraphQLSchemaExtensions {
  * Example:
  *
  * ```ts
- * const MyAppSchema = new GraphQLSchema({
+ * const MyAppSchema = new GraphQLSchemaImpl({
  *   query: MyAppQueryRootType,
  *   mutation: MyAppMutationRootType,
  * })
@@ -89,25 +130,25 @@ export interface GraphQLSchemaExtensions {
  * Example:
  *
  * ```ts
- * const characterInterface = new GraphQLInterfaceType({
+ * const characterInterface = new GraphQLInterfaceTypeImpl({
  *   name: 'Character',
  *   ...
  * });
  *
- * const humanType = new GraphQLObjectType({
+ * const humanType = new GraphQLObjectTypeImpl({
  *   name: 'Human',
  *   interfaces: [characterInterface],
  *   ...
  * });
  *
- * const droidType = new GraphQLObjectType({
+ * const droidType = new GraphQLObjectTypeImpl({
  *   name: 'Droid',
  *   interfaces: [characterInterface],
  *   ...
  * });
  *
- * const schema = new GraphQLSchema({
- *   query: new GraphQLObjectType({
+ * const schema = new GraphQLSchemaImpl({
+ *   query: new GraphQLObjectTypeImpl({
  *     name: 'Query',
  *     fields: {
  *       hero: { type: characterInterface, ... },
@@ -128,13 +169,17 @@ export interface GraphQLSchemaExtensions {
  * specified directives, you must explicitly declare them. Example:
  *
  * ```ts
- * const MyAppSchema = new GraphQLSchema({
+ * const MyAppSchema = new GraphQLSchemaImpl({
  *   ...
  *   directives: specifiedDirectives.concat([ myCustomDirective ]),
  * })
  * ```
  */
-export class GraphQLSchema {
+export class GraphQLSchemaImpl
+  extends GraphQLEntityImpl
+  implements GraphQLSchema
+{
+  readonly [GRAPHQL_SCHEMA_SYMBOL] = true;
   description: Maybe<string>;
   extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
@@ -155,6 +200,7 @@ export class GraphQLSchema {
   }>;
 
   constructor(config: Readonly<GraphQLSchemaConfig>) {
+    super();
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
     this.__validationErrors = config.assumeValid === true ? [] : undefined;

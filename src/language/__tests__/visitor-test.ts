@@ -8,7 +8,7 @@ import { isNode } from '../ast';
 import { Kind } from '../kinds';
 import { parse } from '../parser';
 import type { ASTVisitor, ASTVisitorKeyMap } from '../visitor';
-import { BREAK, visit, visitInParallel } from '../visitor';
+import { visit, visitInParallel } from '../visitor';
 
 function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   const [node, key, parent, path, ancestors] = args;
@@ -320,7 +320,7 @@ describe('Visitor', () => {
 
     const ast = parse('{ a, b { x }, c }', { noLocation: true });
     visit(ast, {
-      enter(node) {
+      enter(node, _key, _parent, _path, _ancestors, BREAK) {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['enter', node.kind, getValue(node)]);
         if (node.kind === 'Name' && node.value === 'x') {
@@ -360,7 +360,7 @@ describe('Visitor', () => {
         visited.push(['enter', node.kind, getValue(node)]);
       },
 
-      leave(node) {
+      leave(node, _key, _parent, _path, _ancestors, BREAK) {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['leave', node.kind, getValue(node)]);
         if (node.kind === 'Name' && node.value === 'x') {
@@ -1016,7 +1016,7 @@ describe('Visitor', () => {
         ast,
         visitInParallel([
           {
-            enter(node) {
+            enter(node, _key, _parent, _path, _ancestors, BREAK) {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['enter', node.kind, getValue(node)]);
               if (node.kind === 'Name' && node.value === 'x') {
@@ -1056,7 +1056,7 @@ describe('Visitor', () => {
         ast,
         visitInParallel([
           {
-            enter(node) {
+            enter(node, _key, _parent, _path, _ancestors, BREAK) {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['break-a', 'enter', node.kind, getValue(node)]);
               if (node.kind === 'Name' && node.value === 'a') {
@@ -1069,7 +1069,7 @@ describe('Visitor', () => {
             },
           },
           {
-            enter(node) {
+            enter(node, _key, _parent, _path, _ancestors, BREAK) {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['break-b', 'enter', node.kind, getValue(node)]);
               if (node.kind === 'Name' && node.value === 'b') {
@@ -1122,7 +1122,7 @@ describe('Visitor', () => {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['enter', node.kind, getValue(node)]);
             },
-            leave(node) {
+            leave(node, _key, _parent, _path, _ancestors, BREAK) {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['leave', node.kind, getValue(node)]);
               if (node.kind === 'Name' && node.value === 'x') {
@@ -1163,7 +1163,7 @@ describe('Visitor', () => {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['break-a', 'enter', node.kind, getValue(node)]);
             },
-            leave(node) {
+            leave(node, _key, _parent, _path, _ancestors, BREAK) {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['break-a', 'leave', node.kind, getValue(node)]);
               if (node.kind === 'Field' && node.name.value === 'a') {
@@ -1176,7 +1176,7 @@ describe('Visitor', () => {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['break-b', 'enter', node.kind, getValue(node)]);
             },
-            leave(node) {
+            leave(node, _key, _parent, _path, _ancestors, BREAK) {
               checkVisitorFnArgs(ast, arguments);
               visited.push(['break-b', 'leave', node.kind, getValue(node)]);
               if (node.kind === 'Field' && node.name.value === 'b') {

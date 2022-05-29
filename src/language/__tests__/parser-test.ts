@@ -9,7 +9,7 @@ import { inspect } from '../../jsutils/inspect';
 
 import { Kind } from '../kinds';
 import { parse, parseConstValue, parseType, parseValue } from '../parser';
-import { Source } from '../source';
+import { SourceImpl } from '../source';
 import { TokenKind } from '../tokenKind';
 
 function expectSyntaxError(text: string) {
@@ -71,7 +71,7 @@ describe('Parser', () => {
   it('parse provides useful error when using source', () => {
     let caughtError;
     try {
-      parse(new Source('query', 'MyQuery.graphql'));
+      parse(new SourceImpl('query', 'MyQuery.graphql'));
     } catch (error) {
       caughtError = error;
     }
@@ -400,7 +400,7 @@ describe('Parser', () => {
   });
 
   it('contains references to source', () => {
-    const source = new Source('{ id }');
+    const source = new SourceImpl('{ id }');
     const result = parse(source);
 
     expect(result).to.have.nested.property('loc.source', source);

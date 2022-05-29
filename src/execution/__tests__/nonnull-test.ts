@@ -5,9 +5,12 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { parse } from '../../language/parser';
 
-import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
+import {
+  GraphQLNonNullImpl,
+  GraphQLObjectTypeImpl,
+} from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLSchemaImpl } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
@@ -525,15 +528,15 @@ describe('Execute: handles non-nullable types', () => {
   });
 
   describe('Handles non-null argument', () => {
-    const schemaWithNonNullArg = new GraphQLSchema({
-      query: new GraphQLObjectType({
+    const schemaWithNonNullArg = new GraphQLSchemaImpl({
+      query: new GraphQLObjectTypeImpl({
         name: 'Query',
         fields: {
           withNonNullArg: {
             type: GraphQLString,
             args: {
               cannotBeNull: {
-                type: new GraphQLNonNull(GraphQLString),
+                type: new GraphQLNonNullImpl(GraphQLString),
               },
             },
             resolve: (_, args) => 'Passed: ' + String(args.cannotBeNull),

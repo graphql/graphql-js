@@ -1,9 +1,14 @@
 import type { ExecutionResult } from 'graphql/execution';
 
 import { graphqlSync } from 'graphql';
-import { GraphQLString, GraphQLSchema, GraphQLObjectType } from 'graphql/type';
+import type { GraphQLSchema, GraphQLObjectType } from 'graphql/type';
+import {
+  GraphQLString,
+  GraphQLSchemaImpl,
+  GraphQLObjectTypeImpl,
+} from 'graphql/type';
 
-const queryType: GraphQLObjectType = new GraphQLObjectType({
+const queryType: GraphQLObjectType = new GraphQLObjectTypeImpl({
   name: 'Query',
   fields: () => ({
     sayHi: {
@@ -21,7 +26,7 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
   }),
 });
 
-const schema: GraphQLSchema = new GraphQLSchema({ query: queryType });
+const schema: GraphQLSchema = new GraphQLSchemaImpl({ query: queryType });
 
 const result: ExecutionResult = graphqlSync({
   schema,

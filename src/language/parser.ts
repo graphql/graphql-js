@@ -64,7 +64,8 @@ import { Location, OperationTypeNode } from './ast';
 import { DirectiveLocation } from './directiveLocation';
 import { Kind } from './kinds';
 import { isPunctuatorTokenKind, Lexer } from './lexer';
-import { isSource, Source } from './source';
+import type { Source } from './source';
+import { isSource, SourceImpl } from './source';
 import { TokenKind } from './tokenKind';
 
 /**
@@ -181,7 +182,7 @@ export class Parser {
   protected _lexer: Lexer;
 
   constructor(source: string | Source, options?: ParseOptions) {
-    const sourceObj = isSource(source) ? source : new Source(source);
+    const sourceObj = isSource(source) ? source : new SourceImpl(source);
 
     this._lexer = new Lexer(sourceObj);
     this._options = options;

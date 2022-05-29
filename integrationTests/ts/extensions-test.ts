@@ -1,5 +1,6 @@
 import { GraphQLError } from 'graphql/error';
-import { GraphQLString, GraphQLObjectType } from 'graphql/type';
+import { GraphQLString, GraphQLObjectTypeImpl } from 'graphql/type';
+import type { GraphQLObjectType } from 'graphql/type';
 
 interface SomeExtension {
   meaningOfLife: 42;
@@ -19,7 +20,7 @@ declare module 'graphql' {
   }
 }
 
-const queryType: GraphQLObjectType = new GraphQLObjectType({
+const queryType: GraphQLObjectType = new GraphQLObjectTypeImpl({
   name: 'Query',
   fields: () => ({
     sayHi: {
