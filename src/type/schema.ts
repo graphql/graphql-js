@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect';
-import { instanceOf } from '../jsutils/instanceOf';
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { toObjMap } from '../jsutils/toObjMap';
@@ -41,7 +40,9 @@ import {
  * Test if the given value is a GraphQL schema.
  */
 export function isSchema(schema: unknown): schema is GraphQLSchema {
-  return instanceOf(schema, GraphQLSchema);
+  return (
+    typeof schema === 'object' && schema != null && isSchemaSymbol in schema
+  );
 }
 
 export function assertSchema(schema: unknown): GraphQLSchema {
@@ -63,6 +64,8 @@ export function assertSchema(schema: unknown): GraphQLSchema {
 export interface GraphQLSchemaExtensions {
   [attributeName: string]: unknown;
 }
+
+const isSchemaSymbol = Symbol.for('GraphQLSchema');
 
 /**
  * Schema Definition
@@ -137,6 +140,7 @@ export class GraphQLSchema {
   extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
+  [isSchemaSymbol]: true = true;
 
   // Used as a cache for validateSchema().
   __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
