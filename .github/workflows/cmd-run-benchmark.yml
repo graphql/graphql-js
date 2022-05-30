@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
           ref: ${{ fromJSON(inputs.pullRequestJSON).merge_commit_sha }}
@@ -23,7 +23,7 @@ jobs:
         run: 'git fetch --depth=1 origin "$BASE_SHA:refs/tags/BASE"'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -36,7 +36,7 @@ jobs:
           npm run benchmark -- --revs HEAD BASE
 
       - name: Create replyMessage
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             import fs from 'node:fs';
@@ -59,7 +59,7 @@ jobs:
             );
 
       - name: Upload replyMessage
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: replyMessage
           path: ./replyMessage.txt
