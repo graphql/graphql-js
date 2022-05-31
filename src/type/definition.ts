@@ -183,7 +183,9 @@ export function isNonNullType(
   return instanceOf(type, GraphQLNonNull);
 }
 
-export function assertNonNullType(type: unknown): GraphQLNonNull<GraphQLType> {
+export function assertNonNullType(
+  type: unknown,
+): GraphQLNonNull<GraphQLNullableType> {
   if (!isNonNullType(type)) {
     throw new Error(`Expected ${inspect(type)} to be a GraphQL Non-Null type.`);
   }
@@ -395,7 +397,7 @@ export class GraphQLNonNull<T extends GraphQLNullableType> {
 
 export type GraphQLWrappingType =
   | GraphQLList<GraphQLType>
-  | GraphQLNonNull<GraphQLType>;
+  | GraphQLNonNull<GraphQLNullableType>;
 
 export function isWrappingType(type: unknown): type is GraphQLWrappingType {
   return isListType(type) || isNonNullType(type);
