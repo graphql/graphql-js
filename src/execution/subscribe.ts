@@ -1,12 +1,15 @@
 import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
+import { isPromise } from '../jsutils/isPromise';
 import type { Maybe } from '../jsutils/Maybe';
+import type { Path } from '../jsutils/Path';
 import { addPath, pathToArray } from '../jsutils/Path';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
-import type { DocumentNode } from '../language/ast';
+import type { DocumentNode, FieldNode } from '../language/ast';
 
 import type { GraphQLFieldResolver } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
@@ -47,9 +50,11 @@ import { getArgumentValues } from './values';
  *
  * Accepts either an object with named arguments, or individual arguments.
  */
-export async function subscribe(
+export function subscribe(
   args: ExecutionArgs,
-): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult> {
+): PromiseOrValue<
+  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+> {
   const {
     schema,
     document,
@@ -61,7 +66,7 @@ export async function subscribe(
     subscribeFieldResolver,
   } = args;
 
-  const resultOrStream = await createSourceEventStream(
+  const resultOrStream = createSourceEventStream(
     schema,
     document,
     rootValue,
@@ -71,6 +76,42 @@ export async function subscribe(
     subscribeFieldResolver,
   );
 
+  if (isPromise(resultOrStream)) {
+    return resultOrStream.then((resolvedResultOrStream) =>
+      mapSourceToResponse(
+        schema,
+        document,
+        resolvedResultOrStream,
+        contextValue,
+        variableValues,
+        operationName,
+        fieldResolver,
+      ),
+    );
+  }
+
+  return mapSourceToResponse(
+    schema,
+    document,
+    resultOrStream,
+    contextValue,
+    variableValues,
+    operationName,
+    fieldResolver,
+  );
+}
+
+function mapSourceToResponse(
+  schema: GraphQLSchema,
+  document: DocumentNode,
+  resultOrStream: ExecutionResult | AsyncIterable<unknown>,
+  contextValue?: unknown,
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
+  operationName?: Maybe<string>,
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+): PromiseOrValue<
+  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+> {
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
   }
@@ -81,7 +122,7 @@ export async function subscribe(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  const mapSourceToResponse = (payload: unknown) =>
+  return mapAsyncIterator(resultOrStream, (payload: unknown) =>
     execute({
       schema,
       document,
@@ -90,10 +131,8 @@ export async function subscribe(
       variableValues,
       operationName,
       fieldResolver,
-    });
-
-  // Map every source value to a ExecutionResult value as described above.
-  return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+    }),
+  );
 }
 
 /**
@@ -124,7 +163,7 @@ export async function subscribe(
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
-export async function createSourceEventStream(
+export function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: unknown,
@@ -132,7 +171,7 @@ export async function createSourceEventStream(
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
   operationName?: Maybe<string>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): Promise<AsyncIterable<unknown> | ExecutionResult> {
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
@@ -155,7 +194,10 @@ export async function createSourceEventStream(
   }
 
   try {
-    const eventStream = await executeSubscription(exeContext);
+    const eventStream = executeSubscription(exeContext);
+    if (isPromise(eventStream)) {
+      return eventStream.then(undefined, (error) => ({ errors: [error] }));
+    }
 
     return eventStream;
   } catch (error) {
@@ -163,9 +205,9 @@ export async function createSourceEventStream(
   }
 }
 
-async function executeSubscription(
+function executeSubscription(
   exeContext: ExecutionContext,
-): Promise<AsyncIterable<unknown>> {
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   const { schema, fragments, operation, variableValues, rootValue } =
     exeContext;
 
@@ -220,22 +262,44 @@ async function executeSubscription(
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
     const resolveFn = fieldDef.subscribe ?? exeContext.subscribeFieldResolver;
-    const eventStream = await resolveFn(rootValue, args, contextValue, info);
+    const eventStream = resolveFn(rootValue, args, contextValue, info);
 
-    if (eventStream instanceof Error) {
-      throw eventStream;
-    }
-
-    // Assert field returned an event stream, otherwise yield an error.
-    if (!isAsyncIterable(eventStream)) {
-      throw new GraphQLError(
-        'Subscription field must return Async Iterable. ' +
-          `Received: ${inspect(eventStream)}.`,
+    if (isPromise(eventStream)) {
+      return eventStream.then(
+        (resolvedEventStream) =>
+          ensureAsyncIterable(resolvedEventStream, fieldNodes, path),
+        (error) => {
+          throw locatedError(error, fieldNodes, pathToArray(path));
+        },
       );
     }
 
-    return eventStream;
+    return ensureAsyncIterable(eventStream, fieldNodes, path);
   } catch (error) {
     throw locatedError(error, fieldNodes, pathToArray(path));
   }
+}
+
+function ensureAsyncIterable(
+  eventStream: unknown,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  path: Path,
+): AsyncIterable<unknown> {
+  if (eventStream instanceof Error) {
+    throw locatedError(eventStream, fieldNodes, pathToArray(path));
+  }
+
+  // Assert field returned an event stream, otherwise yield an error.
+  if (!isAsyncIterable(eventStream)) {
+    throw locatedError(
+      new GraphQLError(
+        'Subscription field must return Async Iterable. ' +
+          `Received: ${inspect(eventStream)}.`,
+      ),
+      fieldNodes,
+      pathToArray(path),
+    );
+  }
+
+  return eventStream;
 }

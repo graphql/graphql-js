@@ -5,6 +5,8 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
+import { isPromise } from '../../jsutils/isPromise';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
 
 import { parse } from '../../language/parser';
 
@@ -135,9 +137,6 @@ async function expectPromise(promise: Promise<unknown>) {
   }
 
   return {
-    toReject() {
-      expect(caughtError).to.be.an.instanceOf(Error);
-    },
     toRejectWith(message: string) {
       expect(caughtError).to.be.an.instanceOf(Error);
       expect(caughtError).to.have.property('message', message);
@@ -152,9 +151,9 @@ const DummyQueryType = new GraphQLObjectType({
   },
 });
 
-async function subscribeWithBadFn(
+function subscribeWithBadFn(
   subscribeFn: () => unknown,
-): Promise<ExecutionResult> {
+): PromiseOrValue<ExecutionResult> {
   const schema = new GraphQLSchema({
     query: DummyQueryType,
     subscription: new GraphQLObjectType({
@@ -165,13 +164,28 @@ async function subscribeWithBadFn(
     }),
   });
   const document = parse('subscription { foo }');
-  const result = await subscribe({ schema, document });
 
-  assert(!isAsyncIterable(result));
-  expectJSON(await createSourceEventStream(schema, document)).toDeepEqual(
-    result,
-  );
-  return result;
+  const subscribeResult = subscribe({ schema, document });
+  const streamResult = createSourceEventStream(schema, document);
+
+  if (isPromise(subscribeResult)) {
+    assert(isPromise(streamResult));
+    return Promise.all([subscribeResult, streamResult]).then((resolved) =>
+      expectEquivalentStreamErrors(resolved[0], resolved[1]),
+    );
+  }
+
+  assert(!isPromise(streamResult));
+  return expectEquivalentStreamErrors(subscribeResult, streamResult);
+}
+
+function expectEquivalentStreamErrors(
+  subscribeResult: ExecutionResult | AsyncGenerator<ExecutionResult>,
+  createSourceEventStreamResult: ExecutionResult | AsyncIterable<unknown>,
+): ExecutionResult {
+  assert(!isAsyncIterable(subscribeResult));
+  expectJSON(createSourceEventStreamResult).toDeepEqual(subscribeResult);
+  return subscribeResult;
 }
 
 /* eslint-disable @typescript-eslint/require-await */
@@ -379,24 +393,22 @@ describe('Subscription Initialization Phase', () => {
     });
 
     // @ts-expect-error (schema must not be null)
-    (await expectPromise(subscribe({ schema: null, document }))).toRejectWith(
+    expect(() => subscribe({ schema: null, document })).to.throw(
       'Expected null to be a GraphQL schema.',
     );
 
     // @ts-expect-error
-    (await expectPromise(subscribe({ document }))).toRejectWith(
+    expect(() => subscribe({ document })).to.throw(
       'Expected undefined to be a GraphQL schema.',
     );
 
     // @ts-expect-error (document must not be null)
-    (await expectPromise(subscribe({ schema, document: null }))).toRejectWith(
+    expect(() => subscribe({ schema, document: null })).to.throw(
       'Must provide document.',
     );
 
     // @ts-expect-error
-    (await expectPromise(subscribe({ schema }))).toRejectWith(
-      'Must provide document.',
-    );
+    expect(() => subscribe({ schema })).to.throw('Must provide document.');
   });
 
   it('resolves to an error if schema does not support subscriptions', async () => {
@@ -450,11 +462,11 @@ describe('Subscription Initialization Phase', () => {
     });
 
     // @ts-expect-error
-    (await expectPromise(subscribe({ schema, document: {} }))).toReject();
+    expect(() => subscribe({ schema, document: {} })).to.throw();
   });
 
   it('throws an error if subscribe does not return an iterator', async () => {
-    expectJSON(await subscribeWithBadFn(() => 'test')).toDeepEqual({
+    const expectedResult = {
       errors: [
         {
           message:
@@ -463,7 +475,13 @@ describe('Subscription Initialization Phase', () => {
           path: ['foo'],
         },
       ],
-    });
+    };
+
+    expectJSON(subscribeWithBadFn(() => 'test')).toDeepEqual(expectedResult);
+
+    const result = subscribeWithBadFn(() => Promise.resolve('test'));
+    assert(isPromise(result));
+    expectJSON(await result).toDeepEqual(expectedResult);
   });
 
   it('resolves to an error for subscription resolver errors', async () => {
@@ -479,12 +497,12 @@ describe('Subscription Initialization Phase', () => {
 
     expectJSON(
       // Returning an error
-      await subscribeWithBadFn(() => new Error('test error')),
+      subscribeWithBadFn(() => new Error('test error')),
     ).toDeepEqual(expectedResult);
 
     expectJSON(
       // Throwing an error
-      await subscribeWithBadFn(() => {
+      subscribeWithBadFn(() => {
         throw new Error('test error');
       }),
     ).toDeepEqual(expectedResult);
