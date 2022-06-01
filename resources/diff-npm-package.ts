@@ -33,7 +33,7 @@ if (diff === '') {
   console.log('No changes found!');
 } else {
   const reportPath = localRepoPath('reports', 'npm-dist-diff.html');
-  if (!fs.existsSync) {
+  if (!fs.existsSync(reportPath)) {
     fs.mkdirSync(reportPath);
   }
   fs.writeFileSync(reportPath, generateReport(diff));
