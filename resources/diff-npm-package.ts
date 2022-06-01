@@ -32,10 +32,11 @@ const diff = execOutput(`npm diff --diff=${fromPackage} --diff=${toPackage}`);
 if (diff === '') {
   console.log('No changes found!');
 } else {
-  const reportPath = localRepoPath('reports', 'npm-dist-diff.html');
-  if (!fs.existsSync(reportPath)) {
-    fs.mkdirSync(reportPath);
+  const reportsDir = localRepoPath('reports');
+  if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir);
   }
+  const reportPath = path.join(reportsDir, 'npm-dist-diff.html');
   fs.writeFileSync(reportPath, generateReport(diff));
   console.log('Report saved to: ', reportPath);
 }
