@@ -668,6 +668,7 @@ function completeValue(
     return completeAbstractValue(
       exeContext,
       returnType,
+      returnType,
       fieldNodes,
       info,
       path,
@@ -792,25 +793,50 @@ function completeLeafValue(
 function completeAbstractValue(
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
+  abstractType: GraphQLAbstractType,
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
 ): PromiseOrValue<ObjMap<unknown>> {
-  const runtimeType = resolveType(
-    exeContext,
-    returnType,
-    returnType,
-    fieldNodes,
-    info,
+  const resolveTypeFn = abstractType.resolveType ?? exeContext.typeResolver;
+  const contextValue = exeContext.contextValue;
+  const runtimeTypeName = resolveTypeFn(
     result,
+    contextValue,
+    info,
+    abstractType,
   );
 
-  if (isPromise(runtimeType)) {
-    return runtimeType.then((resolvedRuntimeType) =>
-      completeObjectValue(
+  return resolveRuntimeTypeName(
+    exeContext,
+    returnType,
+    abstractType,
+    runtimeTypeName,
+    fieldNodes,
+    info,
+    path,
+    result,
+  );
+}
+
+function resolveRuntimeTypeName(
+  exeContext: ExecutionContext,
+  returnType: GraphQLAbstractType,
+  currentAbstractType: GraphQLAbstractType,
+  runtimeTypeName: PromiseOrValue<string | undefined>,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: Path,
+  result: unknown,
+): PromiseOrValue<ObjMap<unknown>> {
+  if (isPromise(runtimeTypeName)) {
+    return runtimeTypeName.then((resolved) =>
+      resolveRuntimeTypeName(
         exeContext,
-        resolvedRuntimeType,
+        returnType,
+        currentAbstractType,
+        resolved,
         fieldNodes,
         info,
         path,
@@ -819,66 +845,6 @@ function completeAbstractValue(
     );
   }
 
-  return completeObjectValue(
-    exeContext,
-    runtimeType,
-    fieldNodes,
-    info,
-    path,
-    result,
-  );
-}
-
-function resolveType(
-  exeContext: ExecutionContext,
-  returnType: GraphQLAbstractType,
-  abstractType: GraphQLAbstractType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  info: GraphQLResolveInfo,
-  result: unknown,
-): GraphQLObjectType | Promise<GraphQLObjectType> {
-  const resolveTypeFn = abstractType.resolveType ?? exeContext.typeResolver;
-  const contextValue = exeContext.contextValue;
-  const possibleRuntimeTypeName = resolveTypeFn(
-    result,
-    contextValue,
-    info,
-    abstractType,
-  );
-
-  if (isPromise(possibleRuntimeTypeName)) {
-    return possibleRuntimeTypeName.then((resolvedPossibleRuntimeTypeName) =>
-      deriveRuntimeType(
-        resolvedPossibleRuntimeTypeName,
-        exeContext,
-        returnType,
-        abstractType,
-        fieldNodes,
-        info,
-        result,
-      ),
-    );
-  }
-  return deriveRuntimeType(
-    possibleRuntimeTypeName,
-    exeContext,
-    returnType,
-    abstractType,
-    fieldNodes,
-    info,
-    result,
-  );
-}
-
-function deriveRuntimeType(
-  runtimeTypeName: unknown,
-  exeContext: ExecutionContext,
-  returnType: GraphQLAbstractType,
-  currentAbstractType: GraphQLAbstractType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  info: GraphQLResolveInfo,
-  result: unknown,
-): GraphQLObjectType | Promise<GraphQLObjectType> {
   if (runtimeTypeName == null) {
     throw new GraphQLError(
       `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
@@ -922,13 +888,13 @@ function deriveRuntimeType(
         { nodes: fieldNodes },
       );
     }
-
-    return resolveType(
+    return completeAbstractValue(
       exeContext,
       returnType,
       runtimeType,
       fieldNodes,
       info,
+      path,
       result,
     );
   }
@@ -949,7 +915,14 @@ function deriveRuntimeType(
     );
   }
 
-  return runtimeType;
+  return completeObjectValue(
+    exeContext,
+    runtimeType,
+    fieldNodes,
+    info,
+    path,
+    result,
+  );
 }
 
 /**
