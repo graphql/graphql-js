@@ -379,7 +379,7 @@ function executeOperation(
   // This is a fake path. It can't exist, so if there is null propagation, then it will go all
   // the way to data.
   const currentPropagationPath = addPath(undefined, '', undefined);
-  let nullPropagationPairs = new Map<String, Path>();
+  const nullPropagationPairs = new Map<String, Path>();
 
   switch (operation.operation) {
     case OperationTypeNode.QUERY:

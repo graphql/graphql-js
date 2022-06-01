@@ -603,8 +603,8 @@ function findConflict(
   const type2 = def2?.type;
 
   if (type1 && type2) {
-    const modifiedType1 = applyRequiredStatus(type1, node1.required);
-    const modifiedType2 = applyRequiredStatus(type2, node2.required);
+    const modifiedType1 = applyRequiredStatus(type1, node1.nullabilityModifier);
+    const modifiedType2 = applyRequiredStatus(type2, node2.nullabilityModifier);
 
     if (doTypesConflict(modifiedType1, modifiedType2)) {
       return [

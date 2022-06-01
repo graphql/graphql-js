@@ -67,13 +67,13 @@ describe('applyRequiredStatus', () => {
 
   it('applyRequiredStatus with required designator functions when list syntax is excluded', () => {
     expect(applyRequiredStatusTest('[[[Int!]]!]', '!')).to.equal(
-      '[[[Int!]]!]!'
+      '[[[Int!]]!]!',
     );
   });
 
   it('applyRequiredStatus with optional designator functions when list syntax is excluded', () => {
     expect(applyRequiredStatusTest('[[[Int!]]!]!', '?')).to.equal(
-      '[[[Int!]]!]'
+      '[[[Int!]]!]',
     );
   });
 });
