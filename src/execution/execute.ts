@@ -524,7 +524,7 @@ function executeField(
   nullPropagationPairs: Map<String, Path>,
 ): PromiseOrValue<unknown> {
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
-  const requiredStatus = fieldNodes[0].required;
+  const requiredStatus = fieldNodes[0].nullabilityModifier;
   let newPropagationPath: Path = currentPropagationPath;
 
   /*
@@ -533,9 +533,9 @@ function executeField(
   If we ever null propagate from a required field, we propagate to that point
   */
 
-  if (requiredStatus?.kind === Kind.OPTIONAL_DESIGNATOR) {
+  if (requiredStatus?.kind === Kind.OPTIONAL_NULLABILITY_MODIFIER) {
     newPropagationPath = path;
-  } else if (requiredStatus?.kind === Kind.REQUIRED_DESIGNATOR) {
+  } else if (requiredStatus?.kind === Kind.REQUIRED_NULLABILITY_MODIFIER) {
     const pathString = JSON.stringify(pathToArray(path));
     nullPropagationPairs.set(pathString, newPropagationPath);
   }

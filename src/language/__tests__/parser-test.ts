@@ -231,7 +231,6 @@ describe('Parser', () => {
   it('parses required field', () => {
     const result = parseCCN('{ requiredField! }');
 
-<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -240,46 +239,6 @@ describe('Parser', () => {
         nullabilityModifier: undefined,
       },
     );
-=======
-    expectJSON(parsedDocument).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 18 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 18 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 18 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 2, end: 16 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 2, end: 15 },
-                  value: 'requiredField',
-                },
-                arguments: [],
-                directives: [],
-                selectionSet: undefined,
-                required: {
-                  kind: Kind.REQUIRED_DESIGNATOR,
-                  loc: { start: 15, end: 16 },
-                  element: undefined,
-                },
-              },
-            ],
-          },
-        },
-      ],
-    });
->>>>>>> 45c65268 (remove parse step required chain logic)
   });
 
   it('parses optional field', () => {
@@ -320,11 +279,11 @@ describe('Parser', () => {
     expect(() => parseCCN('{ requiredField?: field? }')).to.throw();
   });
 
-  it('does not parse designator on query', () => {
+  it('does not parse required designator on query', () => {
     expect(() => parseCCN('query? { field }')).to.throw();
   });
 
-  it('does not parse designator on query', () => {
+  it('does not parse optional designator on query', () => {
     const document = 'query? { field }';
 
     expect(() =>
@@ -347,7 +306,6 @@ describe('Parser', () => {
   it('parses field with required list elements', () => {
     const result = parseCCN('{ field[!] }');
 
-<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -357,47 +315,6 @@ describe('Parser', () => {
           kind: Kind.REQUIRED_NULLABILITY_MODIFIER,
           loc: { start: 8, end: 9 },
           nullabilityModifier: undefined,
-=======
-    expectJSON(result).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 12 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 12 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 12 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 2, end: 10 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 2, end: 7 },
-                  value: 'field',
-                },
-                arguments: [],
-                directives: [],
-                required: {
-                  kind: Kind.LIST_NULLABILITY,
-                  loc: { start: 7, end: 10 },
-                  element: {
-                    kind: Kind.REQUIRED_DESIGNATOR,
-                    loc: { start: 8, end: 9 },
-                    element: undefined,
-                  },
-                },
-                selectionSet: undefined,
-              },
-            ],
-          },
->>>>>>> 45c65268 (remove parse step required chain logic)
         },
       },
     );
@@ -406,7 +323,6 @@ describe('Parser', () => {
   it('parses field with optional list elements', () => {
     const result = parseCCN('{ field[?] }');
 
-<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -416,47 +332,6 @@ describe('Parser', () => {
           kind: Kind.OPTIONAL_NULLABILITY_MODIFIER,
           loc: { start: 8, end: 9 },
           nullabilityModifier: undefined,
-=======
-    expectJSON(result).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 12 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 12 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 12 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 2, end: 10 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 2, end: 7 },
-                  value: 'field',
-                },
-                arguments: [],
-                directives: [],
-                required: {
-                  kind: Kind.LIST_NULLABILITY,
-                  loc: { start: 7, end: 10 },
-                  element: {
-                    kind: Kind.OPTIONAL_DESIGNATOR,
-                    loc: { start: 8, end: 9 },
-                    element: undefined,
-                  },
-                },
-                selectionSet: undefined,
-              },
-            ],
-          },
->>>>>>> 45c65268 (remove parse step required chain logic)
         },
       },
     );
@@ -465,7 +340,6 @@ describe('Parser', () => {
   it('parses field with required list', () => {
     const result = parseCCN('{ field[]! }');
 
-<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -475,47 +349,6 @@ describe('Parser', () => {
           kind: Kind.LIST_NULLABILITY_MODIFIER,
           loc: { start: 7, end: 9 },
           nullabilityModifier: undefined,
-=======
-    expectJSON(result).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 12 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 12 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 12 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 2, end: 10 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 2, end: 7 },
-                  value: 'field',
-                },
-                arguments: [],
-                directives: [],
-                selectionSet: undefined,
-                required: {
-                  kind: Kind.REQUIRED_DESIGNATOR,
-                  loc: { start: 9, end: 10 },
-                  element: {
-                    kind: Kind.LIST_NULLABILITY,
-                    element: undefined,
-                    loc: { start: 7, end: 9 },
-                  },
-                },
-              },
-            ],
-          },
->>>>>>> 45c65268 (remove parse step required chain logic)
         },
       },
     );
@@ -524,7 +357,6 @@ describe('Parser', () => {
   it('parses field with optional list', () => {
     const result = parseCCN('{ field[]? }');
 
-<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -534,47 +366,6 @@ describe('Parser', () => {
           kind: Kind.LIST_NULLABILITY_MODIFIER,
           loc: { start: 7, end: 9 },
           nullabilityModifier: undefined,
-=======
-    expectJSON(result).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 12 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 12 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 12 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 2, end: 10 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 2, end: 7 },
-                  value: 'field',
-                },
-                arguments: [],
-                directives: [],
-                required: {
-                  kind: Kind.OPTIONAL_DESIGNATOR,
-                  loc: { start: 9, end: 10 },
-                  element: {
-                    kind: Kind.LIST_NULLABILITY,
-                    loc: { start: 7, end: 9 },
-                    element: undefined,
-                  },
-                },
-                selectionSet: undefined,
-              },
-            ],
-          },
->>>>>>> 45c65268 (remove parse step required chain logic)
         },
       },
     );
@@ -583,7 +374,6 @@ describe('Parser', () => {
   it('parses multidimensional field with mixed list elements', () => {
     const result = parseCCN('{ field[[[?]!]]! }');
 
-<<<<<<< HEAD
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
@@ -605,58 +395,6 @@ describe('Parser', () => {
                   kind: Kind.OPTIONAL_NULLABILITY_MODIFIER,
                   loc: { start: 10, end: 11 },
                   nullabilityModifier: undefined,
-=======
-    expectJSON(result).toDeepEqual({
-      kind: Kind.DOCUMENT,
-      loc: { start: 0, end: 18 },
-      definitions: [
-        {
-          kind: Kind.OPERATION_DEFINITION,
-          loc: { start: 0, end: 18 },
-          operation: 'query',
-          name: undefined,
-          variableDefinitions: [],
-          directives: [],
-          selectionSet: {
-            kind: Kind.SELECTION_SET,
-            loc: { start: 0, end: 18 },
-            selections: [
-              {
-                kind: Kind.FIELD,
-                loc: { start: 2, end: 16 },
-                alias: undefined,
-                name: {
-                  kind: Kind.NAME,
-                  loc: { start: 2, end: 7 },
-                  value: 'field',
-                },
-                arguments: [],
-                directives: [],
-                required: {
-                  kind: Kind.REQUIRED_DESIGNATOR,
-                  loc: { start: 15, end: 16 },
-                  element: {
-                    kind: Kind.LIST_NULLABILITY,
-                    loc: { start: 7, end: 15 },
-                    element: {
-                      kind: Kind.LIST_NULLABILITY,
-                      loc: { start: 8, end: 14 },
-                      element: {
-                        kind: Kind.REQUIRED_DESIGNATOR,
-                        loc: { start: 12, end: 13 },
-                        element: {
-                          kind: Kind.LIST_NULLABILITY,
-                          loc: { start: 9, end: 12 },
-                          element: {
-                            kind: Kind.OPTIONAL_DESIGNATOR,
-                            loc: { start: 10, end: 11 },
-                            element: undefined,
-                          },
-                        },
-                      },
-                    },
-                  },
->>>>>>> 45c65268 (remove parse step required chain logic)
                 },
               },
             },
@@ -732,10 +470,6 @@ describe('Parser', () => {
                   loc: { start: 4, end: 8 },
                   value: 'node',
                 },
-<<<<<<< HEAD
-=======
-                required: undefined,
->>>>>>> 45c65268 (remove parse step required chain logic)
                 arguments: [
                   {
                     kind: Kind.ARGUMENT,

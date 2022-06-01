@@ -452,25 +452,12 @@ export class Parser {
     } else {
       name = nameOrAlias;
     }
-    const args = this.parseArguments(false);
-
-    const required = this._options?.experimentalClientControlledNullability
-      ? this.parseRequiredStatus()
-      : undefined;
-
-    const directives = this.parseDirectives(false);
-
-    const selectionSet = this.peek(TokenKind.BRACE_L)
-      ? this.parseSelectionSet()
-      : undefined;
 
     return this.node<FieldNode>(start, {
       kind: Kind.FIELD,
       alias,
       name,
-      arguments: args,
-      // Experimental support for Client Controlled Nullability changes
-      // the grammar of Field:
+      arguments: this.parseArguments(false),
       nullabilityModifier: this.parseNullabilityModifier(),
       directives: this.parseDirectives(false),
       selectionSet: this.peek(TokenKind.BRACE_L)

@@ -66,56 +66,14 @@ describe('applyRequiredStatus', () => {
   });
 
   it('applyRequiredStatus with required designator functions when list syntax is excluded', () => {
-    // [[[!]]!]
-    const type = new GraphQLList(
-      new GraphQLNonNull(
-        new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
-      ),
+    expect(applyRequiredStatusTest('[[[Int!]]!]', '!')).to.equal(
+      '[[[Int!]]!]!'
     );
-
-    // !
-    const nullabilityNode: NullabilityDesignatorNode | ListNullabilityNode = {
-      kind: Kind.REQUIRED_DESIGNATOR,
-      element: undefined,
-    };
-
-    const outputType = applyRequiredStatus(type, nullabilityNode);
-    // [[[!]]!]!
-    const expectedOutputType = new GraphQLNonNull(
-      new GraphQLList(
-        new GraphQLNonNull(
-          new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
-        ),
-      ),
-    );
-
-    expect(outputType).to.deep.equal(expectedOutputType);
   });
 
   it('applyRequiredStatus with optional designator functions when list syntax is excluded', () => {
-    // [[[!]]!]!
-    const type = new GraphQLNonNull(
-      new GraphQLList(
-        new GraphQLNonNull(
-          new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
-        ),
-      ),
+    expect(applyRequiredStatusTest('[[[Int!]]!]!', '?')).to.equal(
+      '[[[Int!]]!]'
     );
-
-    // !
-    const nullabilityNode: NullabilityDesignatorNode | ListNullabilityNode = {
-      kind: Kind.OPTIONAL_DESIGNATOR,
-      element: undefined,
-    };
-
-    const outputType = applyRequiredStatus(type, nullabilityNode);
-    // [[[!]]!]
-    const expectedOutputType = new GraphQLList(
-      new GraphQLNonNull(
-        new GraphQLList(new GraphQLList(new GraphQLNonNull(GraphQLInt))),
-      ),
-    );
-
-    expect(outputType).to.deep.equal(expectedOutputType);
   });
 });

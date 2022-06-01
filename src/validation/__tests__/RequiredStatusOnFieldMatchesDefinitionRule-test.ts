@@ -76,7 +76,7 @@ describe('Validate: Field uses correct list depth', () => {
       },
       {
         message: 'List nullability modifier is too shallow.',
-        locations: [{ line: 4, column: 29 }],
+        locations: [{ line: 4, column: 24 }],
       },
     ]);
   });

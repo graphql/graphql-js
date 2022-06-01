@@ -2,8 +2,8 @@ import { GraphQLError } from '../../error/GraphQLError';
 
 import type {
   FieldNode,
-  ListNullabilityNode,
-  NullabilityDesignatorNode,
+  ListNullabilityModifierNode,
+  NullabilityModifierNode,
 } from '../../language/ast';
 import type { ASTReducer, ASTVisitor } from '../../language/visitor';
 import { visit } from '../../language/visitor';
@@ -31,7 +31,7 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
   return {
     Field(node: FieldNode) {
       const fieldDef = context.getFieldDef();
-      const requiredNode = node.required;
+      const requiredNode = node.nullabilityModifier;
       if (fieldDef && requiredNode) {
         const typeDepth = getTypeDepth(fieldDef.type);
         const designatorDepth = getDesignatorDepth(requiredNode);
@@ -40,14 +40,14 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
           context.reportError(
             new GraphQLError(
               'List nullability modifier is too shallow.',
-              node.required,
+              node.nullabilityModifier,
             ),
           );
         } else if (typeDepth < designatorDepth) {
           context.reportError(
             new GraphQLError(
               'List nullability modifier is too deep.',
-              node.required,
+              node.nullabilityModifier,
             ),
           );
         }
@@ -68,24 +68,24 @@ export function RequiredStatusOnFieldMatchesDefinitionRule(
   }
 
   function getDesignatorDepth(
-    designator: ListNullabilityNode | NullabilityDesignatorNode,
+    designator: ListNullabilityModifierNode | NullabilityModifierNode,
   ): number {
     const getDepth: ASTReducer<number> = {
-      RequiredDesignator: {
-        leave({ element }) {
-          return element ?? 0;
+      RequiredNullabilityModifier: {
+        leave({ nullabilityModifier }) {
+          return nullabilityModifier ?? 0;
         },
       },
 
-      OptionalDesignator: {
-        leave({ element }) {
-          return element ?? 0;
+      OptionalNullabilityModifier: {
+        leave({ nullabilityModifier }) {
+          return nullabilityModifier ?? 0;
         },
       },
 
-      ListNullability: {
-        leave({ element }) {
-          return (element ?? 0) + 1;
+      ListNullabilityModifier: {
+        leave({ nullabilityModifier }) {
+          return (nullabilityModifier ?? 0) + 1;
         },
       },
     };

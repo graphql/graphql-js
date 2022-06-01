@@ -1,6 +1,7 @@
 import { GraphQLError } from '../error/GraphQLError';
 
 import type { NullabilityModifierNode } from '../language/ast';
+import { Kind } from '../language/kinds';
 import type { ASTReducer } from '../language/visitor';
 import { visit } from '../language/visitor';
 
@@ -30,10 +31,10 @@ export function applyRequiredStatus(
   //  short-circuit
   if (nullabilityNode === undefined) {
     return type;
-  } else if (nullabilityNode?.element === undefined) {
-    if (nullabilityNode?.kind === Kind.REQUIRED_DESIGNATOR) {
+  } else if (nullabilityNode?.nullabilityModifier === undefined) {
+    if (nullabilityNode?.kind === Kind.REQUIRED_NULLABILITY_MODIFIER) {
       return new GraphQLNonNull(getNullableType(type));
-    } else if (nullabilityNode?.kind === Kind.OPTIONAL_DESIGNATOR) {
+    } else if (nullabilityNode?.kind === Kind.OPTIONAL_NULLABILITY_MODIFIER) {
       return getNullableType(type);
     }
   }
