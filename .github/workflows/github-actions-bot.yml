@@ -37,7 +37,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            import fs from 'node:fs';
+            const fs = require('node:fs');
 
             const event = JSON.parse(fs.readFileSync('./event.json', 'utf8'));
             await github.rest.issues.createComment({
@@ -110,7 +110,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            import fs from 'node:fs';
+            const fs = require('node:fs');
 
             const needs = JSON.parse(process.env.NEEDS);
 
@@ -134,7 +134,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            import fs from 'node:fs';
+            const fs = require('node:fs');
 
             const replyMessage = fs.readFileSync('./replyMessage.txt', 'utf-8');
             const { issue, comment, sender } = context.payload;
