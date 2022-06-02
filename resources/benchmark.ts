@@ -122,9 +122,12 @@ function collectSamples(modulePath: string) {
 
     if (sample.involuntaryContextSwitches > 0) {
       numOfConsequentlyRejectedSamples++;
-      if (numOfConsequentlyRejectedSamples > 5) {
-        throw Error(
-          'Can not sample benchmark due to 5 consequent runs beings rejected because of context switching',
+      if (numOfConsequentlyRejectedSamples === 5) {
+        console.error(
+          yellow(
+            '  Five or more consequent runs beings rejected because of context switching.\n' +
+              '  Measurement can take a significantly longer time and its correctness can also be impacted.',
+          ),
         );
       }
       continue;
