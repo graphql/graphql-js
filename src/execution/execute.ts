@@ -808,7 +808,7 @@ function completeAbstractValue(
     abstractType,
   );
 
-  return resolveRuntimeTypeName(
+  return completeAbstractValueImpl(
     exeContext,
     returnType,
     abstractType,
@@ -820,7 +820,7 @@ function completeAbstractValue(
   );
 }
 
-function resolveRuntimeTypeName(
+function completeAbstractValueImpl(
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
   currentAbstractType: GraphQLAbstractType,
@@ -832,7 +832,7 @@ function resolveRuntimeTypeName(
 ): PromiseOrValue<ObjMap<unknown>> {
   if (isPromise(runtimeTypeName)) {
     return runtimeTypeName.then((resolved) =>
-      resolveRuntimeTypeName(
+      completeAbstractValueImpl(
         exeContext,
         returnType,
         currentAbstractType,
