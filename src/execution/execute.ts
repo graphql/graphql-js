@@ -668,7 +668,6 @@ function completeValue(
     return completeAbstractValue(
       exeContext,
       returnType,
-      returnType,
       fieldNodes,
       info,
       path,
@@ -792,7 +791,6 @@ function completeLeafValue(
  */
 function completeAbstractValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLAbstractType,
   abstractType: GraphQLAbstractType,
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
@@ -810,7 +808,6 @@ function completeAbstractValue(
 
   return completeAbstractValueImpl(
     exeContext,
-    returnType,
     abstractType,
     runtimeTypeName,
     fieldNodes,
@@ -822,8 +819,7 @@ function completeAbstractValue(
 
 function completeAbstractValueImpl(
   exeContext: ExecutionContext,
-  returnType: GraphQLAbstractType,
-  currentAbstractType: GraphQLAbstractType,
+  abstractType: GraphQLAbstractType,
   runtimeTypeName: PromiseOrValue<string | undefined>,
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
@@ -834,8 +830,7 @@ function completeAbstractValueImpl(
     return runtimeTypeName.then((resolved) =>
       completeAbstractValueImpl(
         exeContext,
-        returnType,
-        currentAbstractType,
+        abstractType,
         resolved,
         fieldNodes,
         info,
@@ -847,9 +842,7 @@ function completeAbstractValueImpl(
 
   if (runtimeTypeName == null) {
     throw new GraphQLError(
-      `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Encountered abstract type "${currentAbstractType.name}" must resolve to an Object or Interface type at runtime. ` +
-        `Either the "${currentAbstractType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
+      `Abstract type "${abstractType.name}" must resolve to an Object type or an intermediate Interface type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${abstractType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
       { nodes: fieldNodes },
     );
   }
@@ -864,33 +857,29 @@ function completeAbstractValueImpl(
 
   if (typeof runtimeTypeName !== 'string') {
     throw new GraphQLError(
-      `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" ` +
-        `with value ${inspect(result)} failed. ` +
-        `Encountered abstract type "${currentAbstractType.name}" must resolve to an Object or Interface type at runtime, ` +
-        `received "${inspect(runtimeTypeName)}".`,
+      `Abstract type "${abstractType.name}" must resolve to an Object type or an intermediate Interface type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` +
+        `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`,
     );
   }
 
   const runtimeType = exeContext.schema.getType(runtimeTypeName);
   if (runtimeType == null) {
     throw new GraphQLError(
-      `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Encountered abstract type "${currentAbstractType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
+      `Abstract type "${abstractType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
       { nodes: fieldNodes },
     );
   }
 
   if (isInterfaceType(runtimeType)) {
-    if (!exeContext.schema.isSubType(currentAbstractType, runtimeType)) {
+    if (!exeContext.schema.isSubType(abstractType, runtimeType)) {
       throw new GraphQLError(
-        `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-          `Interface type "${runtimeType.name}" is not a subtype of encountered interface type "${returnType.name}".`,
+        `Interface type "${runtimeType.name}" is not a possible type for "${abstractType.name}".`,
         { nodes: fieldNodes },
       );
     }
+
     return completeAbstractValue(
       exeContext,
-      returnType,
       runtimeType,
       fieldNodes,
       info,
@@ -901,20 +890,17 @@ function completeAbstractValueImpl(
 
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
-      `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Encountered abstract type "${currentAbstractType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
+      `Abstract type "${abstractType.name}" was resolved to a non-object and non-interface type "${runtimeTypeName}".`,
       { nodes: fieldNodes },
     );
   }
 
-  if (!exeContext.schema.isSubType(currentAbstractType, runtimeType)) {
+  if (!exeContext.schema.isSubType(abstractType, runtimeType)) {
     throw new GraphQLError(
-      `Abstract type resolution for "${returnType.name}" for field "${info.parentType.name}.${info.fieldName}" failed. ` +
-        `Runtime Object type "${runtimeType.name}" is not a possible type for encountered abstract type "${currentAbstractType.name}".`,
+      `Runtime Object type "${runtimeType.name}" is not a possible type for "${abstractType.name}".`,
       { nodes: fieldNodes },
     );
   }
-
   return completeObjectValue(
     exeContext,
     runtimeType,
