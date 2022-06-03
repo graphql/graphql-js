@@ -17,7 +17,7 @@ import {
   assertScalarType,
   assertUnionType,
 } from '../../type/definition';
-import { assertDirective } from '../../type/directives';
+import { assertDirective, specifiedDirectives } from '../../type/directives';
 import {
   GraphQLBoolean,
   GraphQLFloat,
@@ -83,6 +83,34 @@ describe('extendSchema', () => {
     expect(result).to.deep.equal({
       data: { newField: '123' },
     });
+  });
+
+  it('Do not modify built-in types and directives', () => {
+    const schema = buildSchema(`
+      type Query {
+        str: String
+        int: Int
+        float: Float
+        id: ID
+        bool: Boolean
+      }
+    `);
+
+    const extensionSDL = dedent`
+      extend type Query {
+        foo: String
+      }
+    `;
+    const extendedSchema = extendSchema(schema, parse(extensionSDL));
+
+    // Built-ins are used
+    expect(extendedSchema.getType('Int')).to.equal(GraphQLInt);
+    expect(extendedSchema.getType('Float')).to.equal(GraphQLFloat);
+    expect(extendedSchema.getType('String')).to.equal(GraphQLString);
+    expect(extendedSchema.getType('Boolean')).to.equal(GraphQLBoolean);
+    expect(extendedSchema.getType('ID')).to.equal(GraphQLID);
+
+    expect(extendedSchema.getDirectives()).to.have.members(specifiedDirectives);
   });
 
   it('extends objects by adding new fields', () => {
