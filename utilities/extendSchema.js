@@ -30,6 +30,7 @@ import {
   GraphQLDeprecatedDirective,
   GraphQLDirective,
   GraphQLSpecifiedByDirective,
+  isSpecifiedDirective,
 } from '../type/directives.js';
 import {
   introspectionTypes,
@@ -162,6 +163,10 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     return typeMap[type.name];
   }
   function replaceDirective(directive) {
+    if (isSpecifiedDirective(directive)) {
+      // Builtin directives are not extended.
+      return directive;
+    }
     const config = directive.toConfig();
     return new GraphQLDirective({
       ...config,
