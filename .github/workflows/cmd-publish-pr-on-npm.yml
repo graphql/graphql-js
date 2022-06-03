@@ -68,8 +68,8 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            import fs from 'node:fs';
-            import assert from 'node:assert';
+            const fs = require('node:fs');
+            const assert = require('node:assert');
 
             const pull_request = JSON.parse(process.env.PULL_REQUEST_JSON);
             const packageJSONPath = './npmDist/package.json';
