@@ -180,8 +180,8 @@ export type ASTNode =
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
-  | RequiredNullabilityModifierNode
-  | OptionalNullabilityModifierNode
+  | NonNullAssertionNode
+  | ErrorBoundaryNode
   | ListNullabilityModifierNode;
 
 /**
@@ -223,8 +223,8 @@ export const QueryDocumentKeys: {
   // Note: Client Controlled Nullability is experimental and may be changed
   // or removed in the future.
   ListNullabilityModifier: ['nullabilityModifier'],
-  RequiredNullabilityModifier: ['nullabilityModifier'],
-  OptionalNullabilityModifier: ['nullabilityModifier'],
+  NonNullAssertion: ['nullabilityModifier'],
+  ErrorBoundary: ['nullabilityModifier'],
 
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
@@ -383,8 +383,8 @@ export interface FieldNode {
 }
 
 export type NullabilityModifierNode =
-  | RequiredNullabilityModifierNode
-  | OptionalNullabilityModifierNode
+  | NonNullAssertionNode
+  | ErrorBoundaryNode
   | ListNullabilityModifierNode;
 
 export interface ListNullabilityModifierNode {
@@ -393,14 +393,14 @@ export interface ListNullabilityModifierNode {
   readonly nullabilityModifier?: NullabilityModifierNode;
 }
 
-export interface RequiredNullabilityModifierNode {
-  readonly kind: Kind.REQUIRED_NULLABILITY_MODIFIER;
+export interface NonNullAssertionNode {
+  readonly kind: Kind.NON_NULL_ASSERTION;
   readonly loc?: Location;
   readonly nullabilityModifier?: ListNullabilityModifierNode;
 }
 
-export interface OptionalNullabilityModifierNode {
-  readonly kind: Kind.OPTIONAL_NULLABILITY_MODIFIER;
+export interface ErrorBoundaryNode {
+  readonly kind: Kind.ERROR_BOUNDARY;
   readonly loc?: Location;
   readonly nullabilityModifier?: ListNullabilityModifierNode;
 }

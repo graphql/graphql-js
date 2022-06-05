@@ -44,8 +44,8 @@ export function isNullabilityModifierNode(
 ): node is NullabilityModifierNode {
   return (
     node.kind === Kind.LIST_NULLABILITY_MODIFIER ||
-    node.kind === Kind.REQUIRED_NULLABILITY_MODIFIER ||
-    node.kind === Kind.OPTIONAL_NULLABILITY_MODIFIER
+    node.kind === Kind.NON_NULL_ASSERTION ||
+    node.kind === Kind.ERROR_BOUNDARY
   );
 }
 

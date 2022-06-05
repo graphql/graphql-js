@@ -15,8 +15,8 @@ export enum Kind {
 
   /** Nullability Modifiers */
   LIST_NULLABILITY_MODIFIER = 'ListNullabilityModifier',
-  REQUIRED_NULLABILITY_MODIFIER = 'RequiredNullabilityModifier',
-  OPTIONAL_NULLABILITY_MODIFIER = 'OptionalNullabilityModifier',
+  NON_NULL_ASSERTION = 'NonNullAssertion',
+  ERROR_BOUNDARY = 'ErrorBoundary',
 
   /** Fragments */
   FRAGMENT_SPREAD = 'FragmentSpread',

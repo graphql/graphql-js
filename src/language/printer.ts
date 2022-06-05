@@ -90,13 +90,13 @@ const printDocASTReducer: ASTReducer<string> = {
     },
   },
 
-  RequiredNullabilityModifier: {
+  NonNullAssertion: {
     leave({ nullabilityModifier }) {
       return join([nullabilityModifier, '!']);
     },
   },
 
-  OptionalNullabilityModifier: {
+  ErrorBoundary: {
     leave({ nullabilityModifier }) {
       return join([nullabilityModifier, '?']);
     },

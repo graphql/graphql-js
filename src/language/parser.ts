@@ -46,8 +46,8 @@ import type {
   ObjectValueNode,
   OperationDefinitionNode,
   OperationTypeDefinitionNode,
-  OptionalNullabilityModifierNode,
-  RequiredNullabilityModifierNode,
+  ErrorBoundaryNode,
+  NonNullAssertionNode,
   ScalarTypeDefinitionNode,
   ScalarTypeExtensionNode,
   SchemaDefinitionNode,
@@ -489,13 +489,13 @@ export class Parser {
     }
 
     if (this.expectOptionalToken(TokenKind.BANG)) {
-      nullabilityModifier = this.node<RequiredNullabilityModifierNode>(start, {
-        kind: Kind.REQUIRED_NULLABILITY_MODIFIER,
+      nullabilityModifier = this.node<NonNullAssertionNode>(start, {
+        kind: Kind.NON_NULL_ASSERTION,
         nullabilityModifier,
       });
     } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-      nullabilityModifier = this.node<OptionalNullabilityModifierNode>(start, {
-        kind: Kind.OPTIONAL_NULLABILITY_MODIFIER,
+      nullabilityModifier = this.node<ErrorBoundaryNode>(start, {
+        kind: Kind.ERROR_BOUNDARY,
         nullabilityModifier,
       });
     }
