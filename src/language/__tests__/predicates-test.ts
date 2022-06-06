@@ -65,7 +65,7 @@ describe('AST node predicates', () => {
 
   it('isNullabilityAssertionNode', () => {
     expect(filterNodes(isNullabilityAssertionNode)).to.deep.equal([
-      'ListNullabilityModifier',
+      'ListNullabilityOperator',
       'NonNullAssertion',
       'ErrorBoundary',
     ]);

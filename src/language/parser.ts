@@ -104,7 +104,7 @@ export interface ParseOptions {
    *
    * If enabled, the parser will understand and parse Client Controlled Nullability
    * Designators contained in Fields. They'll be represented in the
-   * `nullabilityModifier` field of the FieldNode.
+   * `nullabilityAssertion` field of the FieldNode.
    *
    * The syntax looks like the following:
    *
@@ -460,7 +460,7 @@ export class Parser {
       arguments: this.parseArguments(false),
       // Experimental support for Client Controlled Nullability changes
       // the grammar of Field:
-      nullabilityModifier: this.parseNullabilityModifier(),
+      nullabilityAssertion: this.parseNullabilityAssertion(),
       directives: this.parseDirectives(false),
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
@@ -469,7 +469,7 @@ export class Parser {
   }
 
   // TODO: add grammar comment after it finalizes
-  parseNullabilityModifier(): NullabilityAssertionNode | undefined {
+  parseNullabilityAssertion(): NullabilityAssertionNode | undefined {
     // Note: Client Controlled Nullability is experimental and may be changed or
     // removed in the future.
     if (this._options?.experimentalClientControlledNullability !== true) {
@@ -477,30 +477,30 @@ export class Parser {
     }
 
     const start = this._lexer.token;
-    let nullabilityModifier;
+    let nullabilityAssertion;
 
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
-      const innerModifier = this.parseNullabilityModifier();
+      const innerModifier = this.parseNullabilityAssertion();
       this.expectToken(TokenKind.BRACKET_R);
-      nullabilityModifier = this.node<ListNullabilityOperatorNode>(start, {
+      nullabilityAssertion = this.node<ListNullabilityOperatorNode>(start, {
         kind: Kind.LIST_NULLABILITY_OPERATOR,
-        nullabilityModifier: innerModifier,
+        nullabilityAssertion: innerModifier,
       });
     }
 
     if (this.expectOptionalToken(TokenKind.BANG)) {
-      nullabilityModifier = this.node<NonNullAssertionNode>(start, {
+      nullabilityAssertion = this.node<NonNullAssertionNode>(start, {
         kind: Kind.NON_NULL_ASSERTION,
-        nullabilityModifier,
+        nullabilityAssertion: nullabilityAssertion,
       });
     } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-      nullabilityModifier = this.node<ErrorBoundaryNode>(start, {
+      nullabilityAssertion = this.node<ErrorBoundaryNode>(start, {
         kind: Kind.ERROR_BOUNDARY,
-        nullabilityModifier,
+        nullabilityAssertion: nullabilityAssertion,
       });
     }
 
-    return nullabilityModifier;
+    return nullabilityAssertion;
   }
 
   /**

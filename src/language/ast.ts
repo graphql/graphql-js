@@ -217,14 +217,14 @@ export const QueryDocumentKeys: {
     'selectionSet',
     // Note: Client Controlled Nullability is experimental and may be changed
     // or removed in the future.
-    'nullabilityModifier',
+    'nullabilityAssertion',
   ],
   Argument: ['name', 'value'],
   // Note: Client Controlled Nullability is experimental and may be changed
   // or removed in the future.
-  ListNullabilityModifier: ['nullabilityModifier'],
-  NonNullAssertion: ['nullabilityModifier'],
-  ErrorBoundary: ['nullabilityModifier'],
+  ListNullabilityOperator: ['nullabilityAssertion'],
+  NonNullAssertion: ['nullabilityAssertion'],
+  ErrorBoundary: ['nullabilityAssertion'],
 
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
@@ -377,7 +377,7 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   // Note: Client Controlled Nullability is experimental
   // and may be changed or removed in the future.
-  readonly nullabilityModifier?: NullabilityAssertionNode;
+  readonly nullabilityAssertion?: NullabilityAssertionNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
 }
@@ -390,19 +390,19 @@ export type NullabilityAssertionNode =
 export interface ListNullabilityOperatorNode {
   readonly kind: Kind.LIST_NULLABILITY_OPERATOR;
   readonly loc?: Location;
-  readonly nullabilityModifier?: NullabilityAssertionNode;
+  readonly nullabilityAssertion?: NullabilityAssertionNode;
 }
 
 export interface NonNullAssertionNode {
   readonly kind: Kind.NON_NULL_ASSERTION;
   readonly loc?: Location;
-  readonly nullabilityModifier?: ListNullabilityOperatorNode;
+  readonly nullabilityAssertion?: ListNullabilityOperatorNode;
 }
 
 export interface ErrorBoundaryNode {
   readonly kind: Kind.ERROR_BOUNDARY;
   readonly loc?: Location;
-  readonly nullabilityModifier?: ListNullabilityOperatorNode;
+  readonly nullabilityAssertion?: ListNullabilityOperatorNode;
 }
 
 export interface ArgumentNode {

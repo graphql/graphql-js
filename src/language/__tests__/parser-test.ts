@@ -232,11 +232,11 @@ describe('Parser', () => {
     const result = parseCCN('{ requiredField! }');
 
     expectJSON(result).toDeepNestedProperty(
-      'definitions[0].selectionSet.selections[0].nullabilityModifier',
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
       {
         kind: Kind.NON_NULL_ASSERTION,
         loc: { start: 15, end: 16 },
-        nullabilityModifier: undefined,
+        nullabilityAssertion: undefined,
       },
     );
   });
@@ -299,14 +299,14 @@ describe('Parser', () => {
     const result = parseCCN('{ field[!] }');
 
     expectJSON(result).toDeepNestedProperty(
-      'definitions[0].selectionSet.selections[0].nullabilityModifier',
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
       {
         kind: Kind.LIST_NULLABILITY_OPERATOR,
         loc: { start: 7, end: 10 },
-        nullabilityModifier: {
+        nullabilityAssertion: {
           kind: Kind.NON_NULL_ASSERTION,
           loc: { start: 8, end: 9 },
-          nullabilityModifier: undefined,
+          nullabilityAssertion: undefined,
         },
       },
     );
@@ -316,14 +316,14 @@ describe('Parser', () => {
     const result = parseCCN('{ field[?] }');
 
     expectJSON(result).toDeepNestedProperty(
-      'definitions[0].selectionSet.selections[0].nullabilityModifier',
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
       {
         kind: Kind.LIST_NULLABILITY_OPERATOR,
         loc: { start: 7, end: 10 },
-        nullabilityModifier: {
+        nullabilityAssertion: {
           kind: Kind.ERROR_BOUNDARY,
           loc: { start: 8, end: 9 },
-          nullabilityModifier: undefined,
+          nullabilityAssertion: undefined,
         },
       },
     );
@@ -333,14 +333,14 @@ describe('Parser', () => {
     const result = parseCCN('{ field[]! }');
 
     expectJSON(result).toDeepNestedProperty(
-      'definitions[0].selectionSet.selections[0].nullabilityModifier',
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
       {
         kind: Kind.NON_NULL_ASSERTION,
         loc: { start: 7, end: 10 },
-        nullabilityModifier: {
+        nullabilityAssertion: {
           kind: Kind.LIST_NULLABILITY_OPERATOR,
           loc: { start: 7, end: 9 },
-          nullabilityModifier: undefined,
+          nullabilityAssertion: undefined,
         },
       },
     );
@@ -350,14 +350,14 @@ describe('Parser', () => {
     const result = parseCCN('{ field[]? }');
 
     expectJSON(result).toDeepNestedProperty(
-      'definitions[0].selectionSet.selections[0].nullabilityModifier',
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
       {
         kind: Kind.ERROR_BOUNDARY,
         loc: { start: 7, end: 10 },
-        nullabilityModifier: {
+        nullabilityAssertion: {
           kind: Kind.LIST_NULLABILITY_OPERATOR,
           loc: { start: 7, end: 9 },
-          nullabilityModifier: undefined,
+          nullabilityAssertion: undefined,
         },
       },
     );
@@ -367,26 +367,26 @@ describe('Parser', () => {
     const result = parseCCN('{ field[[[?]!]]! }');
 
     expectJSON(result).toDeepNestedProperty(
-      'definitions[0].selectionSet.selections[0].nullabilityModifier',
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
       {
         kind: Kind.NON_NULL_ASSERTION,
         loc: { start: 7, end: 16 },
-        nullabilityModifier: {
+        nullabilityAssertion: {
           kind: Kind.LIST_NULLABILITY_OPERATOR,
           loc: { start: 7, end: 15 },
-          nullabilityModifier: {
+          nullabilityAssertion: {
             kind: Kind.LIST_NULLABILITY_OPERATOR,
             loc: { start: 8, end: 14 },
-            nullabilityModifier: {
+            nullabilityAssertion: {
               kind: Kind.NON_NULL_ASSERTION,
               loc: { start: 9, end: 13 },
-              nullabilityModifier: {
+              nullabilityAssertion: {
                 kind: Kind.LIST_NULLABILITY_OPERATOR,
                 loc: { start: 9, end: 12 },
-                nullabilityModifier: {
+                nullabilityAssertion: {
                   kind: Kind.ERROR_BOUNDARY,
                   loc: { start: 10, end: 11 },
-                  nullabilityModifier: undefined,
+                  nullabilityAssertion: undefined,
                 },
               },
             },
@@ -478,7 +478,7 @@ describe('Parser', () => {
                     loc: { start: 9, end: 14 },
                   },
                 ],
-                nullabilityModifier: undefined,
+                nullabilityAssertion: undefined,
                 directives: [],
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
@@ -494,7 +494,7 @@ describe('Parser', () => {
                         value: 'id',
                       },
                       arguments: [],
-                      nullabilityModifier: undefined,
+                      nullabilityAssertion: undefined,
                       directives: [],
                       selectionSet: undefined,
                     },
@@ -508,7 +508,7 @@ describe('Parser', () => {
                         value: 'name',
                       },
                       arguments: [],
-                      nullabilityModifier: undefined,
+                      nullabilityAssertion: undefined,
                       directives: [],
                       selectionSet: undefined,
                     },
@@ -556,7 +556,7 @@ describe('Parser', () => {
                   value: 'node',
                 },
                 arguments: [],
-                nullabilityModifier: undefined,
+                nullabilityAssertion: undefined,
                 directives: [],
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
@@ -572,7 +572,7 @@ describe('Parser', () => {
                         value: 'id',
                       },
                       arguments: [],
-                      nullabilityModifier: undefined,
+                      nullabilityAssertion: undefined,
                       directives: [],
                       selectionSet: undefined,
                     },

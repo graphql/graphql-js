@@ -59,7 +59,7 @@ const printDocASTReducer: ASTReducer<string> = {
       alias,
       name,
       arguments: args,
-      nullabilityModifier,
+      nullabilityAssertion: nullabilityAssertion,
       directives,
       selectionSet,
     }) {
@@ -74,7 +74,7 @@ const printDocASTReducer: ASTReducer<string> = {
         argsLine,
         // Note: Client Controlled Nullability is experimental and may be
         // changed or removed in the future.
-        nullabilityModifier,
+        nullabilityAssertion,
         wrap(' ', join(directives, ' ')),
         wrap(' ', selectionSet),
       ]);
@@ -84,21 +84,21 @@ const printDocASTReducer: ASTReducer<string> = {
 
   // Nullability Modifiers
 
-  ListNullabilityModifier: {
-    leave({ nullabilityModifier }) {
-      return join(['[', nullabilityModifier, ']']);
+  ListNullabilityOperator: {
+    leave({ nullabilityAssertion }) {
+      return join(['[', nullabilityAssertion, ']']);
     },
   },
 
   NonNullAssertion: {
-    leave({ nullabilityModifier }) {
-      return join([nullabilityModifier, '!']);
+    leave({ nullabilityAssertion }) {
+      return join([nullabilityAssertion, '!']);
     },
   },
 
   ErrorBoundary: {
-    leave({ nullabilityModifier }) {
-      return join([nullabilityModifier, '?']);
+    leave({ nullabilityAssertion }) {
+      return join([nullabilityAssertion, '?']);
     },
   },
 
