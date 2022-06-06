@@ -301,7 +301,7 @@ describe('Parser', () => {
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
-        kind: Kind.LIST_NULLABILITY_MODIFIER,
+        kind: Kind.LIST_NULLABILITY_OPERATOR,
         loc: { start: 7, end: 10 },
         nullabilityModifier: {
           kind: Kind.NON_NULL_ASSERTION,
@@ -318,7 +318,7 @@ describe('Parser', () => {
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityModifier',
       {
-        kind: Kind.LIST_NULLABILITY_MODIFIER,
+        kind: Kind.LIST_NULLABILITY_OPERATOR,
         loc: { start: 7, end: 10 },
         nullabilityModifier: {
           kind: Kind.ERROR_BOUNDARY,
@@ -338,7 +338,7 @@ describe('Parser', () => {
         kind: Kind.NON_NULL_ASSERTION,
         loc: { start: 7, end: 10 },
         nullabilityModifier: {
-          kind: Kind.LIST_NULLABILITY_MODIFIER,
+          kind: Kind.LIST_NULLABILITY_OPERATOR,
           loc: { start: 7, end: 9 },
           nullabilityModifier: undefined,
         },
@@ -355,7 +355,7 @@ describe('Parser', () => {
         kind: Kind.ERROR_BOUNDARY,
         loc: { start: 7, end: 10 },
         nullabilityModifier: {
-          kind: Kind.LIST_NULLABILITY_MODIFIER,
+          kind: Kind.LIST_NULLABILITY_OPERATOR,
           loc: { start: 7, end: 9 },
           nullabilityModifier: undefined,
         },
@@ -372,16 +372,16 @@ describe('Parser', () => {
         kind: Kind.NON_NULL_ASSERTION,
         loc: { start: 7, end: 16 },
         nullabilityModifier: {
-          kind: Kind.LIST_NULLABILITY_MODIFIER,
+          kind: Kind.LIST_NULLABILITY_OPERATOR,
           loc: { start: 7, end: 15 },
           nullabilityModifier: {
-            kind: Kind.LIST_NULLABILITY_MODIFIER,
+            kind: Kind.LIST_NULLABILITY_OPERATOR,
             loc: { start: 8, end: 14 },
             nullabilityModifier: {
               kind: Kind.NON_NULL_ASSERTION,
               loc: { start: 9, end: 13 },
               nullabilityModifier: {
-                kind: Kind.LIST_NULLABILITY_MODIFIER,
+                kind: Kind.LIST_NULLABILITY_OPERATOR,
                 loc: { start: 9, end: 12 },
                 nullabilityModifier: {
                   kind: Kind.ERROR_BOUNDARY,

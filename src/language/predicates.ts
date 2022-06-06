@@ -43,7 +43,7 @@ export function isNullabilityAssertionNode(
   node: ASTNode,
 ): node is NullabilityAssertionNode {
   return (
-    node.kind === Kind.LIST_NULLABILITY_MODIFIER ||
+    node.kind === Kind.LIST_NULLABILITY_OPERATOR ||
     node.kind === Kind.NON_NULL_ASSERTION ||
     node.kind === Kind.ERROR_BOUNDARY
   );

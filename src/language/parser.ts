@@ -483,7 +483,7 @@ export class Parser {
       const innerModifier = this.parseNullabilityModifier();
       this.expectToken(TokenKind.BRACKET_R);
       nullabilityModifier = this.node<ListNullabilityOperatorNode>(start, {
-        kind: Kind.LIST_NULLABILITY_MODIFIER,
+        kind: Kind.LIST_NULLABILITY_OPERATOR,
         nullabilityModifier: innerModifier,
       });
     }

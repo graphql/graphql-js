@@ -14,7 +14,7 @@ export enum Kind {
   ARGUMENT = 'Argument',
 
   /** Nullability Modifiers */
-  LIST_NULLABILITY_MODIFIER = 'ListNullabilityModifier',
+  LIST_NULLABILITY_OPERATOR = 'ListNullabilityOperator',
   NON_NULL_ASSERTION = 'NonNullAssertion',
   ERROR_BOUNDARY = 'ErrorBoundary',
 

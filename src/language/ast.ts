@@ -388,7 +388,7 @@ export type NullabilityAssertionNode =
   | ListNullabilityOperatorNode;
 
 export interface ListNullabilityOperatorNode {
-  readonly kind: Kind.LIST_NULLABILITY_MODIFIER;
+  readonly kind: Kind.LIST_NULLABILITY_OPERATOR;
   readonly loc?: Location;
   readonly nullabilityModifier?: NullabilityAssertionNode;
 }
