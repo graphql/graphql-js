@@ -27,10 +27,7 @@ import type { GraphQLSchema } from './schema';
 /**
  * These are all of the possible kinds of types.
  */
-export declare type GraphQLType =
-  | GraphQLNamedType
-  | GraphQLList<GraphQLType>
-  | GraphQLNonNull<GraphQLNullableType>;
+export declare type GraphQLType = GraphQLNamedType | GraphQLWrappingType;
 export declare function isType(type: unknown): type is GraphQLType;
 export declare function assertType(type: unknown): GraphQLType;
 /**
