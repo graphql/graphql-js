@@ -3,7 +3,7 @@ import type {
   ConstValueNode,
   DefinitionNode,
   ExecutableDefinitionNode,
-  NullabilityModifierNode,
+  NullabilityAssertionNode,
   SelectionNode,
   TypeDefinitionNode,
   TypeExtensionNode,
@@ -39,9 +39,9 @@ export function isSelectionNode(node: ASTNode): node is SelectionNode {
   );
 }
 
-export function isNullabilityModifierNode(
+export function isNullabilityAssertionNode(
   node: ASTNode,
-): node is NullabilityModifierNode {
+): node is NullabilityAssertionNode {
   return (
     node.kind === Kind.LIST_NULLABILITY_MODIFIER ||
     node.kind === Kind.NON_NULL_ASSERTION ||

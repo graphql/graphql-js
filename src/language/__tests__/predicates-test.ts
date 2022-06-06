@@ -8,7 +8,7 @@ import {
   isConstValueNode,
   isDefinitionNode,
   isExecutableDefinitionNode,
-  isNullabilityModifierNode,
+  isNullabilityAssertionNode,
   isSelectionNode,
   isTypeDefinitionNode,
   isTypeExtensionNode,
@@ -63,8 +63,8 @@ describe('AST node predicates', () => {
     ]);
   });
 
-  it('isNullabilityModifierNode', () => {
-    expect(filterNodes(isNullabilityModifierNode)).to.deep.equal([
+  it('isNullabilityAssertionNode', () => {
+    expect(filterNodes(isNullabilityAssertionNode)).to.deep.equal([
       'ListNullabilityModifier',
       'NonNullAssertion',
       'ErrorBoundary',

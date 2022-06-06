@@ -33,14 +33,14 @@ import type {
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
   IntValueNode,
-  ListNullabilityModifierNode,
+  ListNullabilityOperatorNode,
   ListTypeNode,
   ListValueNode,
   NamedTypeNode,
   NameNode,
   NonNullAssertionNode,
   NonNullTypeNode,
-  NullabilityModifierNode,
+  NullabilityAssertionNode,
   NullValueNode,
   ObjectFieldNode,
   ObjectTypeDefinitionNode,
@@ -469,7 +469,7 @@ export class Parser {
   }
 
   // TODO: add grammar comment after it finalizes
-  parseNullabilityModifier(): NullabilityModifierNode | undefined {
+  parseNullabilityModifier(): NullabilityAssertionNode | undefined {
     // Note: Client Controlled Nullability is experimental and may be changed or
     // removed in the future.
     if (this._options?.experimentalClientControlledNullability !== true) {
@@ -482,7 +482,7 @@ export class Parser {
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
       const innerModifier = this.parseNullabilityModifier();
       this.expectToken(TokenKind.BRACKET_R);
-      nullabilityModifier = this.node<ListNullabilityModifierNode>(start, {
+      nullabilityModifier = this.node<ListNullabilityOperatorNode>(start, {
         kind: Kind.LIST_NULLABILITY_MODIFIER,
         nullabilityModifier: innerModifier,
       });

@@ -182,7 +182,7 @@ export type ASTNode =
   | InputObjectTypeExtensionNode
   | NonNullAssertionNode
   | ErrorBoundaryNode
-  | ListNullabilityModifierNode;
+  | ListNullabilityOperatorNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -377,32 +377,32 @@ export interface FieldNode {
   readonly arguments?: ReadonlyArray<ArgumentNode>;
   // Note: Client Controlled Nullability is experimental
   // and may be changed or removed in the future.
-  readonly nullabilityModifier?: NullabilityModifierNode;
+  readonly nullabilityModifier?: NullabilityAssertionNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
 }
 
-export type NullabilityModifierNode =
+export type NullabilityAssertionNode =
   | NonNullAssertionNode
   | ErrorBoundaryNode
-  | ListNullabilityModifierNode;
+  | ListNullabilityOperatorNode;
 
-export interface ListNullabilityModifierNode {
+export interface ListNullabilityOperatorNode {
   readonly kind: Kind.LIST_NULLABILITY_MODIFIER;
   readonly loc?: Location;
-  readonly nullabilityModifier?: NullabilityModifierNode;
+  readonly nullabilityModifier?: NullabilityAssertionNode;
 }
 
 export interface NonNullAssertionNode {
   readonly kind: Kind.NON_NULL_ASSERTION;
   readonly loc?: Location;
-  readonly nullabilityModifier?: ListNullabilityModifierNode;
+  readonly nullabilityModifier?: ListNullabilityOperatorNode;
 }
 
 export interface ErrorBoundaryNode {
   readonly kind: Kind.ERROR_BOUNDARY;
   readonly loc?: Location;
-  readonly nullabilityModifier?: ListNullabilityModifierNode;
+  readonly nullabilityModifier?: ListNullabilityOperatorNode;
 }
 
 export interface ArgumentNode {
