@@ -77,7 +77,7 @@ export declare function isNonNullType(
 ): type is GraphQLNonNull<GraphQLNullableType>;
 export declare function assertNonNullType(
   type: unknown,
-): GraphQLNonNull<GraphQLType>;
+): GraphQLNonNull<GraphQLNullableType>;
 /**
  * These types may be used as input types for arguments and directives.
  */
@@ -188,7 +188,7 @@ export declare class GraphQLNonNull<T extends GraphQLNullableType> {
  */
 export declare type GraphQLWrappingType =
   | GraphQLList<GraphQLType>
-  | GraphQLNonNull<GraphQLType>;
+  | GraphQLNonNull<GraphQLNullableType>;
 export declare function isWrappingType(
   type: unknown,
 ): type is GraphQLWrappingType;
