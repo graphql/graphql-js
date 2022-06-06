@@ -59,7 +59,7 @@ const printDocASTReducer: ASTReducer<string> = {
       alias,
       name,
       arguments: args,
-      nullabilityAssertion: nullabilityAssertion,
+      nullabilityAssertion,
       directives,
       selectionSet,
     }) {

@@ -491,12 +491,12 @@ export class Parser {
     if (this.expectOptionalToken(TokenKind.BANG)) {
       nullabilityAssertion = this.node<NonNullAssertionNode>(start, {
         kind: Kind.NON_NULL_ASSERTION,
-        nullabilityAssertion: nullabilityAssertion,
+        nullabilityAssertion,
       });
     } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
       nullabilityAssertion = this.node<ErrorBoundaryNode>(start, {
         kind: Kind.ERROR_BOUNDARY,
-        nullabilityAssertion: nullabilityAssertion,
+        nullabilityAssertion,
       });
     }
 
