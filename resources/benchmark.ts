@@ -95,7 +95,8 @@ function prepareBenchmarkProjects(
     const repoDir = path.join(tmpDir, hash);
     fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
-    exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
+    exec(`git clone --quiet "${localRepoPath()}" "${repoDir}"`);
+    exec(`git checkout --quiet --detach "${hash}"`, { cwd: repoDir });
     exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
     fs.rmSync(repoDir, { recursive: true });
@@ -111,14 +112,14 @@ function prepareBenchmarkProjects(
   }
 }
 
-function collectSamples(modulePath: string) {
+function collectSamples(projectPath: string, benchmark: string) {
   let numOfConsequentlyRejectedSamples = 0;
   const samples = [];
 
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
   while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
-    const sample = sampleModule(modulePath);
+    const sample = sampleModule(projectPath, benchmark);
 
     if (sample.involuntaryContextSwitches > 0) {
       numOfConsequentlyRejectedSamples++;
@@ -286,15 +287,14 @@ function runBenchmark(
   const results = [];
   for (let i = 0; i < benchmarkProjects.length; ++i) {
     const { revision, projectPath } = benchmarkProjects[i];
-    const modulePath = path.join(projectPath, benchmark);
 
     if (i === 0) {
-      const { name } = sampleModule(modulePath);
+      const { name } = sampleModule(projectPath, benchmark);
       console.log('⏱   ' + name);
     }
 
     try {
-      const samples = collectSamples(modulePath);
+      const samples = collectSamples(projectPath, benchmark);
 
       results.push(computeStats(revision, samples));
       process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
@@ -373,11 +373,18 @@ interface BenchmarkSample {
   involuntaryContextSwitches: number;
 }
 
-function sampleModule(modulePath: string): BenchmarkSample {
+function normalizePath(rawPath: string): string {
+  if (process.platform === 'win32') {
+    return path.posix.join(...rawPath.split(path.sep));
+  }
+  return rawPath;
+}
+
+function sampleModule(projectPath: string, benchmark: string): BenchmarkSample {
   const sampleCode = `
     import fs from 'node:fs';
 
-    import { benchmark } from '${modulePath}';
+    import { benchmark } from './${normalizePath(benchmark)}';
 
     // warm up, it looks like 7 is a magic number to reliably trigger JIT
     benchmark.measure();
@@ -427,6 +434,7 @@ function sampleModule(modulePath: string): BenchmarkSample {
     {
       stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
       env: { NODE_ENV: 'production' },
+      cwd: projectPath,
     },
   );
 
