@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Benchmark
         run: |
-          npm run benchmark -- --revs HEAD BASE
+          sudo npm run benchmark -- --revs HEAD BASE
 
       - name: Create replyMessage
         uses: actions/github-script@v6

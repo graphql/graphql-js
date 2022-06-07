@@ -381,8 +381,11 @@ function sampleModule(modulePath: string): BenchmarkSample {
 
   const sampleCode = `
     import fs from 'node:fs';
+    import os from 'node:os';
 
     import { benchmark } from '${moduleURL}';
+
+    os.setPriority(os.constants.priority.PRIORITY_HIGHEST);
 
     // warm up, it looks like 7 is a magic number to reliably trigger JIT
     benchmark.measure();
