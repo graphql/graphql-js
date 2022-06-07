@@ -65,10 +65,9 @@ export function PossibleTypeExtensionsRule(
       if (expectedKind !== node.kind) {
         const kindStr = extensionKindToTypeName(node.kind);
         context.reportError(
-          new GraphQLError(
-            `Cannot extend non-${kindStr} type "${typeName}".`,
-            defNode ? [defNode, node] : node,
-          ),
+          new GraphQLError(`Cannot extend non-${kindStr} type "${typeName}".`, {
+            nodes: defNode ? [defNode, node] : node,
+          }),
         );
       }
     } else {
@@ -82,7 +81,7 @@ export function PossibleTypeExtensionsRule(
         new GraphQLError(
           `Cannot extend type "${typeName}" because it is not defined.` +
             didYouMean(suggestedTypes),
-          node.name,
+          { nodes: node.name },
         ),
       );
     }
@@ -137,7 +136,7 @@ function extensionKindToTypeName(kind: Kind): string {
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
     // Not reachable. All possible types have been considered
-    /* c8 ignore next */
+    /* c8 ignore next 2 */
     default:
       invariant(false, 'Unexpected kind: ' + inspect(kind));
   }

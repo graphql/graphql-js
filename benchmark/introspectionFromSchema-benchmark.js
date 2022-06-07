@@ -1,20 +1,16 @@
-'use strict';
+import { executeSync } from 'graphql/execution/execute.js';
+import { parse } from 'graphql/language/parser.js';
+import { buildSchema } from 'graphql/utilities/buildASTSchema.js';
+import { getIntrospectionQuery } from 'graphql/utilities/getIntrospectionQuery.js';
 
-const { parse } = require('graphql/language/parser.js');
-const { executeSync } = require('graphql/execution/execute.js');
-const { buildSchema } = require('graphql/utilities/buildASTSchema.js');
-const {
-  getIntrospectionQuery,
-} = require('graphql/utilities/getIntrospectionQuery.js');
-
-const { bigSchemaSDL } = require('./fixtures.js');
+import { bigSchemaSDL } from './fixtures.js';
 
 const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
 const document = parse(getIntrospectionQuery());
 
-module.exports = {
+export const benchmark = {
   name: 'Execute Introspection Query',
-  count: 10,
+  count: 20,
   measure() {
     executeSync({ schema, document });
   },

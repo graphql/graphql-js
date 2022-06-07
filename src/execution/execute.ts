@@ -44,11 +44,6 @@ import {
   isNonNullType,
   isObjectType,
 } from '../type/definition';
-import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-  TypeNameMetaFieldDef,
-} from '../type/introspection';
 import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
@@ -167,12 +162,6 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  // Temporary for v15 to v16 migration. Remove in v17
-  devAssert(
-    arguments.length < 2,
-    'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
-  );
-
   const { schema, document, variableValues, rootValue } = args;
 
   // If arguments are missing or incorrect, throw an error.
@@ -255,7 +244,7 @@ export function assertValidExecutionArguments(
   document: DocumentNode,
   rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
 ): void {
-  devAssert(document, 'Must provide document.');
+  devAssert(document != null, 'Must provide document.');
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
@@ -364,7 +353,7 @@ function executeOperation(
   if (rootType == null) {
     throw new GraphQLError(
       `Schema is not configured to execute ${operation.operation} operation.`,
-      operation,
+      { nodes: operation },
     );
   }
 
@@ -523,7 +512,8 @@ function executeField(
   currentPropagationPath: Path,
   nullPropagationPairs: Map<String, Path>,
 ): PromiseOrValue<unknown> {
-  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
+  const fieldName = fieldNodes[0].name.value;
+  const fieldDef = exeContext.schema.getField(parentType, fieldName);
   const requiredStatus = fieldNodes[0].nullabilityModifier;
   let newPropagationPath: Path = currentPropagationPath;
 
@@ -1014,7 +1004,7 @@ function ensureValidRuntimeType(
   if (runtimeTypeName == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
@@ -1037,21 +1027,21 @@ function ensureValidRuntimeType(
   if (runtimeType == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
-      fieldNodes,
+      { nodes: fieldNodes },
     );
   }
 
@@ -1120,7 +1110,7 @@ function invalidReturnTypeError(
 ): GraphQLError {
   return new GraphQLError(
     `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
-    fieldNodes,
+    { nodes: fieldNodes },
   );
 }
 
@@ -1187,37 +1177,3 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
       return property;
     }
   };
-
-/**
- * This method looks up the field on the given type definition.
- * It has special casing for the three introspection fields,
- * __schema, __type and __typename. __typename is special because
- * it can always be queried as a field, even in situations where no
- * other fields are allowed, like on a Union. __schema and __type
- * could get automatically added to the query type, but that would
- * require mutating type definitions, which would cause issues.
- *
- * @internal
- */
-export function getFieldDef(
-  schema: GraphQLSchema,
-  parentType: GraphQLObjectType,
-  fieldNode: FieldNode,
-): Maybe<GraphQLField<unknown, unknown>> {
-  const fieldName = fieldNode.name.value;
-
-  if (
-    fieldName === SchemaMetaFieldDef.name &&
-    schema.getQueryType() === parentType
-  ) {
-    return SchemaMetaFieldDef;
-  } else if (
-    fieldName === TypeMetaFieldDef.name &&
-    schema.getQueryType() === parentType
-  ) {
-    return TypeMetaFieldDef;
-  } else if (fieldName === TypeNameMetaFieldDef.name) {
-    return TypeNameMetaFieldDef;
-  }
-  return parentType.getFields()[fieldName];
-}

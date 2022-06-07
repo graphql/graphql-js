@@ -1,9 +1,6 @@
-'use strict';
+import { readPackageJSON, writeGeneratedFile } from './utils';
 
-const { version } = require('../package.json');
-
-const { writeGeneratedFile } = require('./utils.js');
-
+const { version } = readPackageJSON();
 const versionMatch = /^(\d+)\.(\d+)\.(\d+)-?(.*)?$/.exec(version);
 if (!versionMatch) {
   throw new Error('Version does not match semver spec: ' + version);
@@ -33,6 +30,4 @@ export const versionInfo = Object.freeze({
 });
 `;
 
-if (require.main === module) {
-  writeGeneratedFile('./src/version.ts', body);
-}
+writeGeneratedFile('./src/version.ts', body);

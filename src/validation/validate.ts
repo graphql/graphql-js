@@ -46,7 +46,7 @@ export function validate(
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
 
-  devAssert(documentAST, 'Must provide document.');
+  devAssert(documentAST != null, 'Must provide document.');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
 

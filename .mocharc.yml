@@ -2,6 +2,6 @@ fail-zero: true
 throw-deprecation: true
 check-leaks: true
 require:
-  - 'resources/ts-register.js'
+  - 'ts-node/register/transpile-only'
 extension:
   - 'ts'

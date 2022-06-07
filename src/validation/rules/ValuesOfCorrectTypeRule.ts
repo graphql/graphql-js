@@ -57,7 +57,7 @@ export function ValuesOfCorrectTypeRule(
           context.reportError(
             new GraphQLError(
               `Field "${type.name}.${fieldDef.name}" of required type "${typeStr}" was not provided.`,
-              node,
+              { nodes: node },
             ),
           );
         }
@@ -75,7 +75,7 @@ export function ValuesOfCorrectTypeRule(
           new GraphQLError(
             `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
               didYouMean(suggestions),
-            node,
+            { nodes: node },
           ),
         );
       }
@@ -86,7 +86,7 @@ export function ValuesOfCorrectTypeRule(
         context.reportError(
           new GraphQLError(
             `Expected value of type "${inspect(type)}", found ${print(node)}.`,
-            node,
+            { nodes: node },
           ),
         );
       }
@@ -117,7 +117,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     context.reportError(
       new GraphQLError(
         `Expected value of type "${typeStr}", found ${print(node)}.`,
-        node,
+        { nodes: node },
       ),
     );
     return;
@@ -132,7 +132,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
       context.reportError(
         new GraphQLError(
           `Expected value of type "${typeStr}", found ${print(node)}.`,
-          node,
+          { nodes: node },
         ),
       );
     }
@@ -145,11 +145,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
         new GraphQLError(
           `Expected value of type "${typeStr}", found ${print(node)}; ` +
             error.message,
-          node,
-          undefined,
-          undefined,
-          undefined,
-          error, // Ensure a reference to the original error is maintained.
+          { nodes: node, originalError: error },
         ),
       );
     }

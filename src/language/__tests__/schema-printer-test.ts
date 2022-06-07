@@ -59,7 +59,7 @@ describe('Printer: SDL document', () => {
         three(argument: InputType, other: String): Int
         four(argument: String = "string"): String
         five(argument: [String] = ["string", "string"]): String
-        six(argument: InputType = {key: "value"}): Type
+        six(argument: InputType = { key: "value" }): Type
         seven(argument: Int = null): Type
       }
 

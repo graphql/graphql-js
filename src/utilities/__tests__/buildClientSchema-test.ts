@@ -1,9 +1,7 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
-
-import { invariant } from '../../jsutils/invariant';
 
 import {
   assertEnumType,
@@ -443,7 +441,7 @@ describe('Type System: build schema from introspection', () => {
       type Query {
         defaultInt(intArg: Int = 30): String
         defaultList(listArg: [Int] = [1, 2, 3]): String
-        defaultObject(objArg: Geo = {lat: 37.485, lon: -122.148}): String
+        defaultObject(objArg: Geo = { lat: 37.485, lon: -122.148 }): String
         defaultNull(intArg: Int = null): String
         noDefault(intArg: Int): String
       }
@@ -690,7 +688,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       // @ts-expect-error
       delete queryTypeIntrospection.kind;
 
@@ -707,7 +705,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(queryTypeIntrospection).to.have.property('interfaces');
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       // @ts-expect-error
       delete queryTypeIntrospection.interfaces;
 
@@ -722,7 +720,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeInterface',
       );
 
-      invariant(someInterfaceIntrospection?.kind === 'INTERFACE');
+      assert(someInterfaceIntrospection?.kind === 'INTERFACE');
       // @ts-expect-error
       someInterfaceIntrospection.interfaces = null;
 
@@ -736,7 +734,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       // @ts-expect-error
       delete queryTypeIntrospection.fields;
 
@@ -751,7 +749,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       // @ts-expect-error
       delete queryTypeIntrospection.fields[0].args;
 
@@ -766,9 +764,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       const argType = queryTypeIntrospection.fields[0].args[0].type;
-      invariant(argType.kind === 'SCALAR');
+      assert(argType.kind === 'SCALAR');
 
       expect(argType).to.have.property('name', 'String');
       // @ts-expect-error
@@ -785,9 +783,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       const fieldType = queryTypeIntrospection.fields[0].type;
-      invariant(fieldType.kind === 'SCALAR');
+      assert(fieldType.kind === 'SCALAR');
 
       expect(fieldType).to.have.property('name', 'String');
       // @ts-expect-error
@@ -804,7 +802,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeUnion',
       );
 
-      invariant(someUnionIntrospection?.kind === 'UNION');
+      assert(someUnionIntrospection?.kind === 'UNION');
       // @ts-expect-error
       delete someUnionIntrospection.possibleTypes;
 
@@ -819,7 +817,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeEnum',
       );
 
-      invariant(someEnumIntrospection?.kind === 'ENUM');
+      assert(someEnumIntrospection?.kind === 'ENUM');
       // @ts-expect-error
       delete someEnumIntrospection.enumValues;
 
@@ -834,7 +832,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeInputObject',
       );
 
-      invariant(someInputObjectIntrospection?.kind === 'INPUT_OBJECT');
+      assert(someInputObjectIntrospection?.kind === 'INPUT_OBJECT');
       // @ts-expect-error
       delete someInputObjectIntrospection.inputFields;
 

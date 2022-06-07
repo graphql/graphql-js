@@ -20,39 +20,13 @@ export interface GraphQLErrorExtensions {
   [attributeName: string]: unknown;
 }
 
-export interface GraphQLErrorArgs {
+export interface GraphQLErrorOptions {
   nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
   source?: Maybe<Source>;
   positions?: Maybe<ReadonlyArray<number>>;
   path?: Maybe<ReadonlyArray<string | number>>;
   originalError?: Maybe<Error & { readonly extensions?: unknown }>;
   extensions?: Maybe<GraphQLErrorExtensions>;
-}
-
-type BackwardsCompatibleArgs =
-  | [args?: GraphQLErrorArgs]
-  | [
-      nodes?: GraphQLErrorArgs['nodes'],
-      source?: GraphQLErrorArgs['source'],
-      positions?: GraphQLErrorArgs['positions'],
-      path?: GraphQLErrorArgs['path'],
-      originalError?: GraphQLErrorArgs['originalError'],
-      extensions?: GraphQLErrorArgs['extensions'],
-    ];
-
-function toNormalizedArgs(args: BackwardsCompatibleArgs): GraphQLErrorArgs {
-  const firstArg = args[0];
-  if (firstArg == null || 'kind' in firstArg || 'length' in firstArg) {
-    return {
-      nodes: firstArg,
-      source: args[1],
-      positions: args[2],
-      path: args[3],
-      originalError: args[4],
-      extensions: args[5],
-    };
-  }
-  return firstArg;
 }
 
 /**
@@ -111,22 +85,10 @@ export class GraphQLError extends Error {
    */
   readonly extensions: GraphQLErrorExtensions;
 
-  /**
-   * @deprecated Please use the `GraphQLErrorArgs` constructor overload instead.
-   */
-  constructor(
-    message: string,
-    nodes?: ReadonlyArray<ASTNode> | ASTNode | null,
-    source?: Maybe<Source>,
-    positions?: Maybe<ReadonlyArray<number>>,
-    path?: Maybe<ReadonlyArray<string | number>>,
-    originalError?: Maybe<Error & { readonly extensions?: unknown }>,
-    extensions?: Maybe<GraphQLErrorExtensions>,
-  );
-  constructor(message: string, args?: GraphQLErrorArgs);
-  constructor(message: string, ...rawArgs: BackwardsCompatibleArgs) {
+  constructor(message: string, options: GraphQLErrorOptions = {}) {
     const { nodes, source, positions, path, originalError, extensions } =
-      toNormalizedArgs(rawArgs);
+      options;
+
     super(message);
 
     this.name = 'GraphQLError';
@@ -274,24 +236,4 @@ export interface GraphQLFormattedError {
    * and hence there are no additional restrictions on its contents.
    */
   readonly extensions?: { [key: string]: unknown };
-}
-
-/**
- * Prints a GraphQLError to a string, representing useful location information
- * about the error's position in the source.
- *
- * @deprecated Please use `error.toString` instead. Will be removed in v17
- */
-export function printError(error: GraphQLError): string {
-  return error.toString();
-}
-
-/**
- * Given a GraphQLError, format it according to the rules described by the
- * Response Format, Errors section of the GraphQL Specification.
- *
- * @deprecated Please use `error.toString` instead. Will be removed in v17
- */
-export function formatError(error: GraphQLError): GraphQLFormattedError {
-  return error.toJSON();
 }

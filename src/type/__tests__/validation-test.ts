@@ -341,6 +341,12 @@ describe('Type System: A Schema must have Object root types', () => {
       input SomeInputObject {
         test: String
       }
+
+      scalar SomeScalar
+
+      enum SomeEnum {
+        ENUM_VALUE
+      }
     `);
 
     schema = extendSchema(
@@ -356,7 +362,7 @@ describe('Type System: A Schema must have Object root types', () => {
       schema,
       parse(`
         extend schema {
-          mutation: SomeInputObject
+          mutation: SomeScalar
         }
       `),
     );
@@ -365,7 +371,7 @@ describe('Type System: A Schema must have Object root types', () => {
       schema,
       parse(`
         extend schema {
-          subscription: SomeInputObject
+          subscription: SomeEnum
         }
       `),
     );
@@ -378,12 +384,12 @@ describe('Type System: A Schema must have Object root types', () => {
       },
       {
         message:
-          'Mutation root type must be Object type if provided, it cannot be SomeInputObject.',
+          'Mutation root type must be Object type if provided, it cannot be SomeScalar.',
         locations: [{ line: 3, column: 21 }],
       },
       {
         message:
-          'Subscription root type must be Object type if provided, it cannot be SomeInputObject.',
+          'Subscription root type must be Object type if provided, it cannot be SomeEnum.',
         locations: [{ line: 3, column: 25 }],
       },
     ]);
@@ -422,6 +428,86 @@ describe('Type System: A Schema must have Object root types', () => {
       {
         message: 'Expected directive but got: SomeScalar.',
         locations: [{ line: 2, column: 3 }],
+      },
+    ]);
+  });
+});
+
+describe('Type System: Root types must all be different if provided', () => {
+  it('accepts a Schema with different root types', () => {
+    const schema = buildSchema(`
+      type SomeObject1 {
+        field: String
+      }
+
+      type SomeObject2 {
+        field: String
+      }
+
+      type SomeObject3 {
+        field: String
+      }
+
+      schema {
+        query: SomeObject1
+        mutation: SomeObject2
+        subscription: SomeObject3
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects a Schema where the same type is used for multiple root types', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        field: String
+      }
+
+      type UniqueObject {
+        field: String
+      }
+
+      schema {
+        query: SomeObject
+        mutation: UniqueObject
+        subscription: SomeObject
+      }
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, "SomeObject" type is used as query and subscription root types.',
+        locations: [
+          { line: 11, column: 16 },
+          { line: 13, column: 23 },
+        ],
+      },
+    ]);
+  });
+
+  it('rejects a Schema where the same type is used for all root types', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        field: String
+      }
+
+      schema {
+        query: SomeObject
+        mutation: SomeObject
+        subscription: SomeObject
+      }
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'All root types must be different, "SomeObject" type is used as query, mutation, and subscription root types.',
+        locations: [
+          { line: 7, column: 16 },
+          { line: 8, column: 19 },
+          { line: 9, column: 23 },
+        ],
       },
     ]);
   });

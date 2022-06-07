@@ -1,4 +1,4 @@
-import { invariant } from '../../jsutils/invariant';
+import { assert } from 'chai';
 
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
@@ -64,7 +64,7 @@ export class SimplePubSub<T> {
       const value: R = transform(event);
       if (pullQueue.length > 0) {
         const receiver = pullQueue.shift();
-        invariant(receiver);
+        assert(receiver != null);
         receiver({ value, done: false });
       } else {
         pushQueue.push(value);

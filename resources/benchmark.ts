@@ -1,10 +1,10 @@
-'use strict';
+import * as assert from 'node:assert';
+import * as cp from 'node:child_process';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const assert = require('assert');
-const cp = require('child_process');
+import { localRepoPath } from './utils';
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
@@ -14,22 +14,17 @@ const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 const minSamples = 5;
 
-// Get the revisions and make things happen!
-if (require.main === module) {
+function runBenchmarks() {
+  // Get the revisions and make things happen!
   const { benchmarks, revisions } = getArguments(process.argv.slice(2));
   const benchmarkProjects = prepareBenchmarkProjects(revisions);
 
-  runBenchmarks(benchmarks, benchmarkProjects).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+  for (const benchmark of benchmarks) {
+    runBenchmark(benchmark, benchmarkProjects);
+  }
 }
 
-function localDir(...paths) {
-  return path.join(__dirname, '..', ...paths);
-}
-
-function exec(command, options = {}) {
+function exec(command: string, options = {}) {
   const result = cp.execSync(command, {
     encoding: 'utf-8',
     stdio: ['inherit', 'pipe', 'inherit'],
@@ -38,9 +33,16 @@ function exec(command, options = {}) {
   return result?.trimEnd();
 }
 
+interface BenchmarkProject {
+  revision: string;
+  projectPath: string;
+}
+
 // Build a benchmark-friendly environment for the given revision
 // and returns path to its 'dist' directory.
-function prepareBenchmarkProjects(revisionList) {
+function prepareBenchmarkProjects(
+  revisionList: ReadonlyArray<string>,
+): Array<BenchmarkProject> {
   const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
   fs.rmSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir);
@@ -54,22 +56,29 @@ function prepareBenchmarkProjects(revisionList) {
     fs.rmSync(projectPath, { recursive: true, force: true });
     fs.mkdirSync(projectPath);
 
+    fs.cpSync(localRepoPath('benchmark'), path.join(projectPath, 'benchmark'), {
+      recursive: true,
+    });
+
+    const packageJSON = {
+      private: true,
+      type: 'module',
+      dependencies: {
+        graphql: prepareNPMPackage(revision),
+      },
+    };
     fs.writeFileSync(
       path.join(projectPath, 'package.json'),
-      '{ "private": true }',
+      JSON.stringify(packageJSON, null, 2),
     );
-    exec(
-      'npm --quiet install --ignore-scripts ' + prepareNPMPackage(revision),
-      { cwd: projectPath },
-    );
-    exec(`cp -R ${localDir('benchmark')} ${projectPath}`);
+    exec('npm --quiet install --ignore-scripts ', { cwd: projectPath });
 
     return { revision, projectPath };
   });
 
-  function prepareNPMPackage(revision) {
+  function prepareNPMPackage(revision: string) {
     if (revision === LOCAL) {
-      const repoDir = localDir();
+      const repoDir = localRepoPath();
       const archivePath = path.join(tmpDir, 'graphql-local.tgz');
       fs.renameSync(buildNPMArchive(repoDir), archivePath);
       return archivePath;
@@ -93,7 +102,7 @@ function prepareBenchmarkProjects(revisionList) {
     return archivePath;
   }
 
-  function buildNPMArchive(repoDir) {
+  function buildNPMArchive(repoDir: string) {
     exec('npm --quiet run build:npm', { cwd: repoDir });
 
     const distDir = path.join(repoDir, 'npmDist');
@@ -102,16 +111,32 @@ function prepareBenchmarkProjects(revisionList) {
   }
 }
 
-async function collectSamples(modulePath) {
+function collectSamples(modulePath: string) {
+  let numOfConsequentlyRejectedSamples = 0;
   const samples = [];
 
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
   while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
-    const { clocked, memUsed } = await sampleModule(modulePath);
-    assert(clocked > 0);
-    assert(memUsed > 0);
-    samples.push({ clocked, memUsed });
+    const sample = sampleModule(modulePath);
+
+    if (sample.involuntaryContextSwitches > 0) {
+      numOfConsequentlyRejectedSamples++;
+      if (numOfConsequentlyRejectedSamples === 5) {
+        console.error(
+          yellow(
+            '  Five or more consequent runs beings rejected because of context switching.\n' +
+              '  Measurement can take a significantly longer time and its correctness can also be impacted.',
+          ),
+        );
+      }
+      continue;
+    }
+    numOfConsequentlyRejectedSamples = 0;
+
+    assert(sample.clocked > 0);
+    assert(sample.memUsed > 0);
+    samples.push(sample);
   }
   return samples;
 }
@@ -119,17 +144,28 @@ async function collectSamples(modulePath) {
 // T-Distribution two-tailed critical values for 95% confidence.
 // See http://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.
 // prettier-ignore
-const tTable = {
+const tTable: { [v: number]: number } = {
   '1':  12.706, '2':  4.303, '3':  3.182, '4':  2.776, '5':  2.571, '6':  2.447,
   '7':  2.365,  '8':  2.306, '9':  2.262, '10': 2.228, '11': 2.201, '12': 2.179,
   '13': 2.16,   '14': 2.145, '15': 2.131, '16': 2.12,  '17': 2.11,  '18': 2.101,
   '19': 2.093,  '20': 2.086, '21': 2.08,  '22': 2.074, '23': 2.069, '24': 2.064,
   '25': 2.06,   '26': 2.056, '27': 2.052, '28': 2.048, '29': 2.045, '30': 2.042,
-  infinity: 1.96,
 };
+const tTableInfinity = 1.96;
+
+interface BenchmarkComputedStats {
+  name: string;
+  memPerOp: number;
+  ops: number;
+  deviation: number;
+  numSamples: number;
+}
 
 // Computes stats on benchmark results.
-function computeStats(samples) {
+function computeStats(
+  name: string,
+  samples: ReadonlyArray<BenchmarkSample>,
+): BenchmarkComputedStats {
   assert(samples.length > 1);
 
   // Compute the sample mean (estimate of the population mean).
@@ -159,7 +195,7 @@ function computeStats(samples) {
   const df = samples.length - 1;
 
   // Compute the critical value.
-  const critical = tTable[df] || tTable.infinity;
+  const critical = tTable[df] ?? tTableInfinity;
 
   // Compute the margin of error.
   const moe = sem * critical;
@@ -168,6 +204,7 @@ function computeStats(samples) {
   const rme = (moe / mean) * 100 || 0;
 
   return {
+    name,
     memPerOp: Math.floor(meanMemUsed),
     ops: NS_PER_SEC / mean,
     deviation: rme,
@@ -175,7 +212,7 @@ function computeStats(samples) {
   };
 }
 
-function beautifyBenchmark(results) {
+function beautifyBenchmark(results: ReadonlyArray<BenchmarkComputedStats>) {
   const nameMaxLen = maxBy(results, ({ name }) => name.length);
   const opsTop = maxBy(results, ({ ops }) => ops);
   const opsMaxLen = maxBy(results, ({ ops }) => beautifyNumber(ops).length);
@@ -188,7 +225,7 @@ function beautifyBenchmark(results) {
     printBench(result);
   }
 
-  function printBench(bench) {
+  function printBench(bench: BenchmarkComputedStats) {
     const { name, memPerOp, ops, deviation, numSamples } = bench;
     console.log(
       '  ' +
@@ -227,57 +264,54 @@ function beautifyBenchmark(results) {
   }
 }
 
-function beautifyBytes(bytes) {
+function beautifyBytes(bytes: number) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log2(bytes) / 10);
   return beautifyNumber(bytes / 2 ** (i * 10)) + ' ' + sizes[i];
 }
 
-function beautifyNumber(num) {
+function beautifyNumber(num: number) {
   return Number(num.toFixed(num > 100 ? 0 : 2)).toLocaleString();
 }
 
-function maxBy(array, fn) {
+function maxBy<T>(array: ReadonlyArray<T>, fn: (obj: T) => number) {
   return Math.max(...array.map(fn));
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
-async function runBenchmarks(benchmarks, benchmarkProjects) {
-  for (const benchmark of benchmarks) {
-    const results = [];
-    for (let i = 0; i < benchmarkProjects.length; ++i) {
-      const { revision, projectPath } = benchmarkProjects[i];
-      const modulePath = path.join(projectPath, benchmark);
+function runBenchmark(
+  benchmark: string,
+  benchmarkProjects: ReadonlyArray<BenchmarkProject>,
+) {
+  const results = [];
+  for (let i = 0; i < benchmarkProjects.length; ++i) {
+    const { revision, projectPath } = benchmarkProjects[i];
+    const modulePath = path.join(projectPath, benchmark);
 
-      if (i === 0) {
-        const { name } = await sampleModule(modulePath);
-        console.log('⏱   ' + name);
-      }
-
-      try {
-        const samples = await collectSamples(modulePath);
-
-        results.push({
-          name: revision,
-          samples,
-          ...computeStats(samples),
-        });
-        process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
-      } catch (error) {
-        console.log('  ' + revision + ': ' + red(String(error)));
-      }
+    if (i === 0) {
+      const { name } = sampleModule(modulePath);
+      console.log('⏱   ' + name);
     }
-    console.log('\n');
 
-    beautifyBenchmark(results);
-    console.log('');
+    try {
+      const samples = collectSamples(modulePath);
+
+      results.push(computeStats(revision, samples));
+      process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
+    } catch (error) {
+      console.log('  ' + revision + ': ' + red(error.message));
+    }
   }
+  console.log('\n');
+
+  beautifyBenchmark(results);
+  console.log('');
 }
 
-function getArguments(argv) {
+function getArguments(argv: ReadonlyArray<string>) {
   const revsIndex = argv.indexOf('--revs');
   const revisions = revsIndex === -1 ? [] : argv.slice(revsIndex + 1);
-  const benchmarks = revsIndex === -1 ? argv : argv.slice(0, revsIndex);
+  const benchmarks = revsIndex === -1 ? [...argv] : argv.slice(0, revsIndex);
 
   switch (revisions.length) {
     case 0:
@@ -301,93 +335,108 @@ function getArguments(argv) {
 
 function findAllBenchmarks() {
   return fs
-    .readdirSync(localDir('benchmark'), { withFileTypes: true })
+    .readdirSync(localRepoPath('benchmark'), { withFileTypes: true })
     .filter((dirent) => dirent.isFile())
     .map((dirent) => dirent.name)
     .filter((name) => name.endsWith('-benchmark.js'))
     .map((name) => path.join('benchmark', name));
 }
 
-function bold(str) {
+function bold(str: string | number) {
   return '\u001b[1m' + str + '\u001b[0m';
 }
 
-function red(str) {
+function red(str: string | number) {
   return '\u001b[31m' + str + '\u001b[0m';
 }
 
-function green(str) {
+function green(str: string | number) {
   return '\u001b[32m' + str + '\u001b[0m';
 }
 
-function yellow(str) {
+function yellow(str: string | number) {
   return '\u001b[33m' + str + '\u001b[0m';
 }
 
-function cyan(str) {
+function cyan(str: string | number) {
   return '\u001b[36m' + str + '\u001b[0m';
 }
 
-function grey(str) {
+function grey(str: string | number) {
   return '\u001b[90m' + str + '\u001b[0m';
 }
 
-function sampleModule(modulePath) {
+interface BenchmarkSample {
+  name: string;
+  clocked: number;
+  memUsed: number;
+  involuntaryContextSwitches: number;
+}
+
+function sampleModule(modulePath: string): BenchmarkSample {
   const sampleCode = `
-    const assert = require('assert');
+    import fs from 'node:fs';
 
-    assert(global.gc);
-    assert(process.send);
-    const module = require('${modulePath}');
+    import { benchmark } from '${modulePath}';
 
-    clock(7, module.measure); // warm up
-    global.gc();
-    process.nextTick(() => {
-      const memBaseline = process.memoryUsage().heapUsed;
-      const clocked = clock(module.count, module.measure);
-      process.send({
-        name: module.name,
-        clocked: clocked / module.count,
-        memUsed: (process.memoryUsage().heapUsed - memBaseline) / module.count,
-      });
-    });
+    // warm up, it looks like 7 is a magic number to reliably trigger JIT
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
+    benchmark.measure();
 
-    // Clocks the time taken to execute a test per cycle (secs).
-    function clock(count, fn) {
-      const start = process.hrtime.bigint();
-      for (let i = 0; i < count; ++i) {
-        fn();
-      }
-      return Number(process.hrtime.bigint() - start);
+    const memBaseline = process.memoryUsage().heapUsed;
+
+    const resourcesStart = process.resourceUsage();
+    const startTime = process.hrtime.bigint();
+    for (let i = 0; i < benchmark.count; ++i) {
+      benchmark.measure();
     }
+    const timeDiff = Number(process.hrtime.bigint() - startTime);
+    const resourcesEnd = process.resourceUsage();
+
+    const result = {
+      name: benchmark.name,
+      clocked: timeDiff / benchmark.count,
+      memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
+      involuntaryContextSwitches:
+        resourcesEnd.involuntaryContextSwitches - resourcesStart.involuntaryContextSwitches,
+    };
+    fs.writeFileSync(3, JSON.stringify(result));
   `;
 
-  return new Promise((resolve, reject) => {
-    const child = cp.spawn(
-      process.argv[0],
-      [
-        '--no-concurrent-sweeping',
-        '--predictable',
-        '--expose-gc',
-        '--eval',
-        sampleCode,
-      ],
-      {
-        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-        env: { NODE_ENV: 'production' },
-      },
-    );
+  const result = cp.spawnSync(
+    process.execPath,
+    [
+      // V8 flags
+      '--predictable',
+      '--no-concurrent-sweeping',
+      '--no-scavenge-task',
+      '--min-semi-space-size=1024', // 1GB
+      '--max-semi-space-size=1024', // 1GB
+      '--trace-gc', // no gc calls should happen during benchmark, so trace them
 
-    let message;
-    let error;
+      // Node.js flags
+      '--input-type=module',
+      '--eval',
+      sampleCode,
+    ],
+    {
+      stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
+      env: { NODE_ENV: 'production' },
+    },
+  );
 
-    child.on('message', (msg) => (message = msg));
-    child.on('error', (e) => (error = e));
-    child.on('close', () => {
-      if (message) {
-        return resolve(message);
-      }
-      reject(error || new Error('Spawn process closed without error'));
-    });
-  });
+  if (result.status !== 0) {
+    throw new Error(`Benchmark failed with "${result.status}" status.`);
+  }
+
+  const resultStr = result.output[3]?.toString();
+  assert(resultStr != null);
+  return JSON.parse(resultStr);
 }
+
+runBenchmarks();

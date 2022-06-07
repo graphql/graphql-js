@@ -7,14 +7,21 @@ import { DirectiveLocation } from '../../language/directiveLocation';
 
 import { printSchema } from '../../utilities/printSchema';
 
+import type { GraphQLCompositeType } from '../definition';
 import {
   GraphQLInputObjectType,
   GraphQLInterfaceType,
   GraphQLList,
   GraphQLObjectType,
   GraphQLScalarType,
+  GraphQLUnionType,
 } from '../definition';
 import { GraphQLDirective } from '../directives';
+import {
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from '../introspection';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars';
 import { GraphQLSchema } from '../schema';
 
@@ -317,6 +324,109 @@ describe('Type System: Schema', () => {
     expect(Object.prototype.toString.call(schema)).to.equal(
       '[object GraphQLSchema]',
     );
+  });
+
+  describe('getField', () => {
+    const petType = new GraphQLInterfaceType({
+      name: 'Pet',
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const catType = new GraphQLObjectType({
+      name: 'Cat',
+      interfaces: [petType],
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const dogType = new GraphQLObjectType({
+      name: 'Dog',
+      interfaces: [petType],
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const catOrDog = new GraphQLUnionType({
+      name: 'CatOrDog',
+      types: [catType, dogType],
+    });
+
+    const queryType = new GraphQLObjectType({
+      name: 'Query',
+      fields: {
+        catOrDog: { type: catOrDog },
+      },
+    });
+
+    const mutationType = new GraphQLObjectType({
+      name: 'Mutation',
+      fields: {},
+    });
+
+    const subscriptionType = new GraphQLObjectType({
+      name: 'Subscription',
+      fields: {},
+    });
+
+    const schema = new GraphQLSchema({
+      query: queryType,
+      mutation: mutationType,
+      subscription: subscriptionType,
+    });
+
+    function expectField(parentType: GraphQLCompositeType, name: string) {
+      return expect(schema.getField(parentType, name));
+    }
+
+    it('returns known fields', () => {
+      expectField(petType, 'name').to.equal(petType.getFields().name);
+      expectField(catType, 'name').to.equal(catType.getFields().name);
+
+      expectField(queryType, 'catOrDog').to.equal(
+        queryType.getFields().catOrDog,
+      );
+    });
+
+    it('returns `undefined` for unknown fields', () => {
+      expectField(catOrDog, 'name').to.equal(undefined);
+
+      expectField(queryType, 'unknown').to.equal(undefined);
+      expectField(petType, 'unknown').to.equal(undefined);
+      expectField(catType, 'unknown').to.equal(undefined);
+      expectField(catOrDog, 'unknown').to.equal(undefined);
+    });
+
+    it('handles introspection fields', () => {
+      expectField(queryType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(mutationType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(subscriptionType, '__typename').to.equal(
+        TypeNameMetaFieldDef,
+      );
+
+      expectField(petType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(catType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(dogType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(catOrDog, '__typename').to.equal(TypeNameMetaFieldDef);
+
+      expectField(queryType, '__type').to.equal(TypeMetaFieldDef);
+      expectField(queryType, '__schema').to.equal(SchemaMetaFieldDef);
+    });
+
+    it('returns `undefined` for introspection fields in wrong location', () => {
+      expect(schema.getField(petType, '__type')).to.equal(undefined);
+      expect(schema.getField(dogType, '__type')).to.equal(undefined);
+      expect(schema.getField(mutationType, '__type')).to.equal(undefined);
+      expect(schema.getField(subscriptionType, '__type')).to.equal(undefined);
+
+      expect(schema.getField(petType, '__schema')).to.equal(undefined);
+      expect(schema.getField(dogType, '__schema')).to.equal(undefined);
+      expect(schema.getField(mutationType, '__schema')).to.equal(undefined);
+      expect(schema.getField(subscriptionType, '__schema')).to.equal(undefined);
+    });
   });
 
   describe('Validity', () => {

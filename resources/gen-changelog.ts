@@ -1,14 +1,11 @@
-'use strict';
+import * as https from 'node:https';
+import * as util from 'node:util';
 
-const util = require('util');
-const https = require('https');
+import { execOutput, readPackageJSON } from './utils';
 
-const packageJSON = require('../package.json');
-
-const { exec } = require('./utils.js');
-
+const packageJSON = readPackageJSON();
 const graphqlRequest = util.promisify(graphqlRequestImpl);
-const labelsConfig = {
+const labelsConfig: { [label: string]: { section: string; fold?: boolean } } = {
   'PR: breaking change 💥': {
     section: 'Breaking Change 💥',
   },
@@ -54,7 +51,7 @@ const repoURLMatch =
   /https:\/\/github.com\/(?<githubOrg>[^/]+)\/(?<githubRepo>[^/]+).git/.exec(
     packageJSON.repository.url,
   );
-if (repoURLMatch == null) {
+if (repoURLMatch?.groups == null) {
   console.error('Cannot extract organization and repo name from repo URL!');
   process.exit(1);
 }
@@ -67,27 +64,35 @@ getChangeLog()
     process.exit(1);
   });
 
-function getChangeLog() {
+function getChangeLog(): Promise<string> {
   const { version } = packageJSON;
 
-  let tag = null;
-  let commitsList = exec(`git rev-list --reverse v${version}..`);
+  let tag: string | null = null;
+  let commitsList = execOutput(`git rev-list --reverse v${version}..`);
   if (commitsList === '') {
-    const parentPackageJSON = exec('git cat-file blob HEAD~1:package.json');
+    const parentPackageJSON = execOutput(
+      'git cat-file blob HEAD~1:package.json',
+    );
     const parentVersion = JSON.parse(parentPackageJSON).version;
-    commitsList = exec(`git rev-list --reverse v${parentVersion}..HEAD~1`);
+    commitsList = execOutput(
+      `git rev-list --reverse v${parentVersion}..HEAD~1`,
+    );
     tag = `v${version}`;
   }
 
-  const date = exec('git log -1 --format=%cd --date=short');
+  const date = execOutput('git log -1 --format=%cd --date=short');
   return getCommitsInfo(commitsList.split('\n'))
     .then((commitsInfo) => getPRsInfo(commitsInfoToPRs(commitsInfo)))
     .then((prsInfo) => genChangeLog(tag, date, prsInfo));
 }
 
-function genChangeLog(tag, date, allPRs) {
-  const byLabel = {};
-  const committersByLogin = {};
+function genChangeLog(
+  tag: string | null,
+  date: string,
+  allPRs: ReadonlyArray<PRInfo>,
+): string {
+  const byLabel: { [label: string]: Array<PRInfo> } = {};
+  const committersByLogin: { [login: string]: AuthorInfo } = {};
 
   for (const pr of allPRs) {
     const labels = pr.labels.nodes
@@ -112,7 +117,7 @@ function genChangeLog(tag, date, allPRs) {
     committersByLogin[pr.author.login] = pr.author;
   }
 
-  let changelog = `## ${tag || 'Unreleased'} (${date})\n`;
+  let changelog = `## ${tag ?? 'Unreleased'} (${date})\n`;
   for (const [label, config] of Object.entries(labelsConfig)) {
     const prs = byLabel[label];
     if (prs) {
@@ -146,9 +151,10 @@ function genChangeLog(tag, date, allPRs) {
   return changelog;
 }
 
-function graphqlRequestImpl(query, variables, cb) {
-  const resultCB = typeof variables === 'function' ? variables : cb;
-
+function graphqlRequestImpl(
+  query: string,
+  resultCB: (error?: Error, data?: any) => void,
+) {
   const req = https.request('https://api.github.com/graphql', {
     method: 'POST',
     headers: {
@@ -193,11 +199,26 @@ function graphqlRequestImpl(query, variables, cb) {
   });
 
   req.on('error', (error) => resultCB(error));
-  req.write(JSON.stringify({ query, variables }));
+  req.write(JSON.stringify({ query }));
   req.end();
 }
 
-async function batchCommitInfo(commits) {
+interface CommitInfo {
+  oid: string;
+  message: string;
+  associatedPullRequests: {
+    nodes: ReadonlyArray<{
+      number: number;
+      repository: {
+        nameWithOwner: string;
+      };
+    }>;
+  };
+}
+
+async function batchCommitInfo(
+  commits: ReadonlyArray<string>,
+): Promise<Array<CommitInfo>> {
   let commitsSubQuery = '';
   for (const oid of commits) {
     commitsSubQuery += `
@@ -233,9 +254,27 @@ async function batchCommitInfo(commits) {
   return commitsInfo;
 }
 
-async function batchPRInfo(prs) {
+interface AuthorInfo {
+  login: string;
+  url: string;
+  name: string;
+}
+
+interface PRInfo {
+  number: number;
+  title: string;
+  url: string;
+  author: AuthorInfo;
+  labels: {
+    nodes: ReadonlyArray<{
+      name: string;
+    }>;
+  };
+}
+
+async function batchPRInfo(prNumbers: Array<number>): Promise<Array<PRInfo>> {
   let prsSubQuery = '';
-  for (const number of prs) {
+  for (const number of prNumbers) {
     prsSubQuery += `
         pr_${number}: pullRequest(number: ${number}) {
           number
@@ -266,22 +305,22 @@ async function batchPRInfo(prs) {
   `);
 
   const prsInfo = [];
-  for (const number of prs) {
+  for (const number of prNumbers) {
     prsInfo.push(response.repository['pr_' + number]);
   }
   return prsInfo;
 }
 
-function commitsInfoToPRs(commits) {
-  const prs = {};
+function commitsInfoToPRs(commits: ReadonlyArray<CommitInfo>): Array<number> {
+  const prNumbers = new Set<number>();
   for (const commit of commits) {
     const associatedPRs = commit.associatedPullRequests.nodes.filter(
       (pr) => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
     );
     if (associatedPRs.length === 0) {
       const match = / \(#(?<prNumber>[0-9]+)\)$/m.exec(commit.message);
-      if (match) {
-        prs[parseInt(match.groups.prNumber, 10)] = true;
+      if (match?.groups?.prNumber != null) {
+        prNumbers.add(parseInt(match.groups.prNumber, 10));
         continue;
       }
       throw new Error(
@@ -294,24 +333,28 @@ function commitsInfoToPRs(commits) {
       );
     }
 
-    prs[associatedPRs[0].number] = true;
+    prNumbers.add(associatedPRs[0].number);
   }
 
-  return Object.keys(prs);
+  return [...prNumbers.values()];
 }
 
-async function getPRsInfo(commits) {
+async function getPRsInfo(
+  prNumbers: ReadonlyArray<number>,
+): Promise<Array<PRInfo>> {
   // Split pr into batches of 50 to prevent timeouts
   const prInfoPromises = [];
-  for (let i = 0; i < commits.length; i += 50) {
-    const batch = commits.slice(i, i + 50);
+  for (let i = 0; i < prNumbers.length; i += 50) {
+    const batch = prNumbers.slice(i, i + 50);
     prInfoPromises.push(batchPRInfo(batch));
   }
 
   return (await Promise.all(prInfoPromises)).flat();
 }
 
-async function getCommitsInfo(commits) {
+async function getCommitsInfo(
+  commits: ReadonlyArray<string>,
+): Promise<Array<CommitInfo>> {
   // Split commits into batches of 50 to prevent timeouts
   const commitInfoPromises = [];
   for (let i = 0; i < commits.length; i += 50) {

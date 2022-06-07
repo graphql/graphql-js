@@ -91,7 +91,7 @@ describe('mapAsyncIterator', () => {
     async function* source() {
       try {
         yield 1;
-        /* c8 ignore next 2 */
+        /* c8 ignore next 3 */
         yield 2;
         yield 3; // Shouldn't be reached.
       } finally {
@@ -155,7 +155,7 @@ describe('mapAsyncIterator', () => {
     async function* source() {
       try {
         yield 'a';
-        /* c8 ignore next 2 */
+        /* c8 ignore next 3 */
         yield 'b';
         yield 'c'; // Shouldn't be reached.
       } finally {
@@ -211,7 +211,7 @@ describe('mapAsyncIterator', () => {
     // Throw error
     let caughtError;
     try {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       await doubles.throw('ouch');
     } catch (e) {
       caughtError = e;
@@ -267,7 +267,7 @@ describe('mapAsyncIterator', () => {
 
     let caughtError;
     try {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       await doubles.next();
     } catch (e) {
       caughtError = e;
@@ -284,7 +284,7 @@ describe('mapAsyncIterator', () => {
     async function* source() {
       try {
         yield 1;
-        /* c8 ignore next 2 */
+        /* c8 ignore next 3 */
         yield 2;
         yield 3; // Shouldn't be reached.
       } finally {
@@ -299,7 +299,7 @@ describe('mapAsyncIterator', () => {
 
     let expectedError;
     try {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       await throwOver1.next();
     } catch (error) {
       expectedError = error;
