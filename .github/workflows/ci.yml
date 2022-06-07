@@ -157,7 +157,6 @@ jobs:
   build-npm-dist:
     name: Build 'npmDist' artifact
     runs-on: ubuntu-latest
-    needs: [test, fuzz, lint, integrationTests]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -185,7 +184,6 @@ jobs:
   build-deno-dist:
     name: Build 'denoDist' artifact
     runs-on: ubuntu-latest
-    needs: [test, fuzz, lint, integrationTests]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
