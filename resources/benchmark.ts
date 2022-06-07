@@ -3,6 +3,7 @@ import * as cp from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import * as url from 'node:url';
 
 import { localRepoPath } from './utils';
 
@@ -112,14 +113,14 @@ function prepareBenchmarkProjects(
   }
 }
 
-function collectSamples(projectPath: string, benchmark: string) {
+function collectSamples(modulePath: string) {
   let numOfConsequentlyRejectedSamples = 0;
   const samples = [];
 
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
   while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
-    const sample = sampleModule(projectPath, benchmark);
+    const sample = sampleModule(modulePath);
 
     if (sample.involuntaryContextSwitches > 0) {
       numOfConsequentlyRejectedSamples++;
@@ -287,14 +288,15 @@ function runBenchmark(
   const results = [];
   for (let i = 0; i < benchmarkProjects.length; ++i) {
     const { revision, projectPath } = benchmarkProjects[i];
+    const modulePath = path.join(projectPath, benchmark);
 
     if (i === 0) {
-      const { name } = sampleModule(projectPath, benchmark);
+      const { name } = sampleModule(modulePath);
       console.log('⏱   ' + name);
     }
 
     try {
-      const samples = collectSamples(projectPath, benchmark);
+      const samples = collectSamples(modulePath);
 
       results.push(computeStats(revision, samples));
       process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
@@ -373,18 +375,11 @@ interface BenchmarkSample {
   involuntaryContextSwitches: number;
 }
 
-function normalizePath(rawPath: string): string {
-  if (process.platform === 'win32') {
-    return path.posix.join(...rawPath.split(path.sep));
-  }
-  return rawPath;
-}
-
-function sampleModule(projectPath: string, benchmark: string): BenchmarkSample {
+function sampleModule(modulePath: string): BenchmarkSample {
   const sampleCode = `
     import fs from 'node:fs';
 
-    import { benchmark } from './${normalizePath(benchmark)}';
+    import { benchmark } from '${url.pathToFileURL(modulePath)}';
 
     // warm up, it looks like 7 is a magic number to reliably trigger JIT
     benchmark.measure();
@@ -434,7 +429,6 @@ function sampleModule(projectPath: string, benchmark: string): BenchmarkSample {
     {
       stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
       env: { NODE_ENV: 'production' },
-      cwd: projectPath,
     },
   );
 
