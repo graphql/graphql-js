@@ -3,6 +3,7 @@ import * as cp from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import * as url from 'node:url';
 
 import { localRepoPath } from './utils';
 
@@ -95,7 +96,8 @@ function prepareBenchmarkProjects(
     const repoDir = path.join(tmpDir, hash);
     fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
-    exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
+    exec(`git clone --quiet "${localRepoPath()}" "${repoDir}"`);
+    exec(`git checkout --quiet --detach "${hash}"`, { cwd: repoDir });
     exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
     fs.rmSync(repoDir, { recursive: true });
@@ -374,10 +376,13 @@ interface BenchmarkSample {
 }
 
 function sampleModule(modulePath: string): BenchmarkSample {
+  // To support Windows we need to use URL instead of path
+  const moduleURL = url.pathToFileURL(modulePath);
+
   const sampleCode = `
     import fs from 'node:fs';
 
-    import { benchmark } from '${modulePath}';
+    import { benchmark } from '${moduleURL}';
 
     // warm up, it looks like 7 is a magic number to reliably trigger JIT
     benchmark.measure();
