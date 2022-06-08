@@ -435,6 +435,7 @@ function sampleModule(modulePath: string): BenchmarkSample {
     {
       stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
       env: { NODE_ENV: 'production' },
+      uid: process.getuid(),
     },
   );
 
