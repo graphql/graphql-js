@@ -207,7 +207,7 @@ export function createSourceEventStream(
 
 function executeSubscription(
   exeContext: ExecutionContext,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
+): PromiseOrValue<AsyncIterable<unknown>> {
   const { schema, fragments, operation, variableValues, rootValue } =
     exeContext;
 
