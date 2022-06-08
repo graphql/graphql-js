@@ -132,21 +132,9 @@ export async function createSourceEventStream(
   }
   try {
     const eventStream = await executeSubscription(exeContext);
-    // Assert field returned an event stream, otherwise yield an error.
-    if (!isAsyncIterable(eventStream)) {
-      throw new Error(
-        'Subscription field must return Async Iterable. ' +
-          `Received: ${inspect(eventStream)}.`,
-      );
-    }
     return eventStream;
   } catch (error) {
-    // If it GraphQLError, report it as an ExecutionResult, containing only errors and no data.
-    // Otherwise treat the error as a system-class error and re-throw it.
-    if (error instanceof GraphQLError) {
-      return { errors: [error] };
-    }
-    throw error;
+    return { errors: [error] };
   }
 }
 async function executeSubscription(exeContext) {
@@ -199,6 +187,13 @@ async function executeSubscription(exeContext) {
     const eventStream = await resolveFn(rootValue, args, contextValue, info);
     if (eventStream instanceof Error) {
       throw eventStream;
+    }
+    // Assert field returned an event stream, otherwise yield an error.
+    if (!isAsyncIterable(eventStream)) {
+      throw new GraphQLError(
+        'Subscription field must return Async Iterable. ' +
+          `Received: ${inspect(eventStream)}.`,
+      );
     }
     return eventStream;
   } catch (error) {
