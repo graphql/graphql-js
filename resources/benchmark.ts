@@ -417,8 +417,10 @@ function sampleModule(modulePath: string): BenchmarkSample {
   `;
 
   const result = cp.spawnSync(
-    process.execPath,
+    'sudo',
     [
+      '--close-from=4',
+      `"${process.execPath}"`,
       // V8 flags
       '--predictable',
       '--no-concurrent-sweeping',
@@ -430,12 +432,12 @@ function sampleModule(modulePath: string): BenchmarkSample {
       // Node.js flags
       '--input-type=module',
       '--eval',
-      sampleCode,
+      `"${sampleCode}"`,
     ],
     {
+      shell: true,
       stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
       env: { NODE_ENV: 'production' },
-      uid: process.getuid(),
     },
   );
 
