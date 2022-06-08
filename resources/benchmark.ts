@@ -376,10 +376,13 @@ interface BenchmarkSample {
 }
 
 function sampleModule(modulePath: string): BenchmarkSample {
+  // To support Windows we need to use URL instead of path
+  const moduleURL = url.pathToFileURL(modulePath);
+
   const sampleCode = `
     import fs from 'node:fs';
 
-    import { benchmark } from '${url.pathToFileURL(modulePath)}';
+    import { benchmark } from '${moduleURL}';
 
     // warm up, it looks like 7 is a magic number to reliably trigger JIT
     benchmark.measure();
