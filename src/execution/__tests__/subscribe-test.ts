@@ -454,9 +454,16 @@ describe('Subscription Initialization Phase', () => {
   });
 
   it('throws an error if subscribe does not return an iterator', async () => {
-    (await expectPromise(subscribeWithBadFn(() => 'test'))).toRejectWith(
-      'Subscription field must return Async Iterable. Received: "test".',
-    );
+    expectJSON(await subscribeWithBadFn(() => 'test')).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Subscription field must return Async Iterable. Received: "test".',
+          locations: [{ line: 1, column: 16 }],
+          path: ['foo'],
+        },
+      ],
+    });
   });
 
   it('resolves to an error for subscription resolver errors', async () => {
