@@ -12,6 +12,7 @@ import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
+import type { ExecutionResult } from '../execute';
 import { createSourceEventStream, subscribe } from '../subscribe';
 
 import { SimplePubSub } from './simplePubSub';
@@ -150,6 +151,28 @@ const DummyQueryType = new GraphQLObjectType({
     dummy: { type: GraphQLString },
   },
 });
+
+async function subscribeWithBadFn(
+  subscribeFn: () => unknown,
+): Promise<ExecutionResult> {
+  const schema = new GraphQLSchema({
+    query: DummyQueryType,
+    subscription: new GraphQLObjectType({
+      name: 'Subscription',
+      fields: {
+        foo: { type: GraphQLString, subscribe: subscribeFn },
+      },
+    }),
+  });
+  const document = parse('subscription { foo }');
+  const result = await subscribe({ schema, document });
+
+  assert(!isAsyncIterable(result));
+  expectJSON(await createSourceEventStream(schema, document)).toDeepEqual(
+    result,
+  );
+  return result;
+}
 
 /* eslint-disable @typescript-eslint/require-await */
 // Check all error cases when initializing the subscription.
@@ -431,46 +454,12 @@ describe('Subscription Initialization Phase', () => {
   });
 
   it('throws an error if subscribe does not return an iterator', async () => {
-    const schema = new GraphQLSchema({
-      query: DummyQueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
-          foo: {
-            type: GraphQLString,
-            subscribe: () => 'test',
-          },
-        },
-      }),
-    });
-
-    const document = parse('subscription { foo }');
-
-    (await expectPromise(subscribe({ schema, document }))).toRejectWith(
+    (await expectPromise(subscribeWithBadFn(() => 'test'))).toRejectWith(
       'Subscription field must return Async Iterable. Received: "test".',
     );
   });
 
   it('resolves to an error for subscription resolver errors', async () => {
-    async function subscribeWithFn(subscribeFn: () => unknown) {
-      const schema = new GraphQLSchema({
-        query: DummyQueryType,
-        subscription: new GraphQLObjectType({
-          name: 'Subscription',
-          fields: {
-            foo: { type: GraphQLString, subscribe: subscribeFn },
-          },
-        }),
-      });
-      const document = parse('subscription { foo }');
-      const result = await subscribe({ schema, document });
-
-      expectJSON(await createSourceEventStream(schema, document)).toDeepEqual(
-        result,
-      );
-      return result;
-    }
-
     const expectedResult = {
       errors: [
         {
@@ -483,24 +472,24 @@ describe('Subscription Initialization Phase', () => {
 
     expectJSON(
       // Returning an error
-      await subscribeWithFn(() => new Error('test error')),
+      await subscribeWithBadFn(() => new Error('test error')),
     ).toDeepEqual(expectedResult);
 
     expectJSON(
       // Throwing an error
-      await subscribeWithFn(() => {
+      await subscribeWithBadFn(() => {
         throw new Error('test error');
       }),
     ).toDeepEqual(expectedResult);
 
     expectJSON(
       // Resolving to an error
-      await subscribeWithFn(() => Promise.resolve(new Error('test error'))),
+      await subscribeWithBadFn(() => Promise.resolve(new Error('test error'))),
     ).toDeepEqual(expectedResult);
 
     expectJSON(
       // Rejecting with an error
-      await subscribeWithFn(() => Promise.reject(new Error('test error'))),
+      await subscribeWithBadFn(() => Promise.reject(new Error('test error'))),
     ).toDeepEqual(expectedResult);
   });
 
