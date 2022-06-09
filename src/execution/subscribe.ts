@@ -2,14 +2,13 @@ import { inspect } from '../jsutils/inspect';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { isPromise } from '../jsutils/isPromise';
 import type { Maybe } from '../jsutils/Maybe';
-import type { Path } from '../jsutils/Path';
 import { addPath, pathToArray } from '../jsutils/Path';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
 
-import type { DocumentNode, FieldNode } from '../language/ast';
+import type { DocumentNode } from '../language/ast';
 
 import type { GraphQLFieldResolver } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
@@ -265,39 +264,27 @@ function executeSubscription(
     const eventStream = resolveFn(rootValue, args, contextValue, info);
 
     if (isPromise(eventStream)) {
-      return eventStream.then(
-        (resolvedEventStream) =>
-          ensureAsyncIterable(resolvedEventStream, fieldNodes, path),
-        (error) => {
-          throw locatedError(error, fieldNodes, pathToArray(path));
-        },
-      );
+      return eventStream.then(assertEventStream).then(undefined, (error) => {
+        throw locatedError(error, fieldNodes, pathToArray(path));
+      });
     }
 
-    return ensureAsyncIterable(eventStream, fieldNodes, path);
+    return assertEventStream(eventStream);
   } catch (error) {
     throw locatedError(error, fieldNodes, pathToArray(path));
   }
 }
 
-function ensureAsyncIterable(
-  eventStream: unknown,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  path: Path,
-): AsyncIterable<unknown> {
+function assertEventStream(eventStream: unknown): AsyncIterable<unknown> {
   if (eventStream instanceof Error) {
-    throw locatedError(eventStream, fieldNodes, pathToArray(path));
+    throw eventStream;
   }
 
   // Assert field returned an event stream, otherwise yield an error.
   if (!isAsyncIterable(eventStream)) {
-    throw locatedError(
-      new GraphQLError(
-        'Subscription field must return Async Iterable. ' +
-          `Received: ${inspect(eventStream)}.`,
-      ),
-      fieldNodes,
-      pathToArray(path),
+    throw new GraphQLError(
+      'Subscription field must return Async Iterable. ' +
+        `Received: ${inspect(eventStream)}.`,
     );
   }
 
