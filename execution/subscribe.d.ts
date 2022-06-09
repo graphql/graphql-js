@@ -1,4 +1,5 @@
 import type { Maybe } from '../jsutils/Maybe';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import type { DocumentNode } from '../language/ast';
 import type { GraphQLFieldResolver } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
@@ -26,7 +27,9 @@ import type { ExecutionArgs, ExecutionResult } from './execute';
  */
 export declare function subscribe(
   args: ExecutionArgs,
-): Promise<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
+): PromiseOrValue<
+  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+>;
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.
@@ -65,4 +68,4 @@ export declare function createSourceEventStream(
   }>,
   operationName?: Maybe<string>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): Promise<AsyncIterable<unknown> | ExecutionResult>;
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
