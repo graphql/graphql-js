@@ -125,6 +125,7 @@ function createSubscription(pubsub: SimplePubSub<Email>) {
   return subscribe({ schema: emailSchema, document, rootValue: data });
 }
 
+// TODO: consider adding this method to testUtils (with tests)
 function expectPromise(maybePromise: unknown) {
   assert(isPromise(maybePromise));
 
@@ -149,6 +150,7 @@ function expectPromise(maybePromise: unknown) {
   };
 }
 
+// TODO: consider adding this method to testUtils (with tests)
 function expectEqualPromisesOrValues<T>(
   value1: PromiseOrValue<T>,
   value2: PromiseOrValue<T>,
