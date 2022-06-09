@@ -261,32 +261,32 @@ function executeSubscription(
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
     const resolveFn = fieldDef.subscribe ?? exeContext.subscribeFieldResolver;
-    const eventStream = resolveFn(rootValue, args, contextValue, info);
+    const result = resolveFn(rootValue, args, contextValue, info);
 
-    if (isPromise(eventStream)) {
-      return eventStream.then(assertEventStream).then(undefined, (error) => {
+    if (isPromise(result)) {
+      return result.then(assertEventStream).then(undefined, (error) => {
         throw locatedError(error, fieldNodes, pathToArray(path));
       });
     }
 
-    return assertEventStream(eventStream);
+    return assertEventStream(result);
   } catch (error) {
     throw locatedError(error, fieldNodes, pathToArray(path));
   }
 }
 
-function assertEventStream(eventStream: unknown): AsyncIterable<unknown> {
-  if (eventStream instanceof Error) {
-    throw eventStream;
+function assertEventStream(result: unknown): AsyncIterable<unknown> {
+  if (result instanceof Error) {
+    throw result;
   }
 
   // Assert field returned an event stream, otherwise yield an error.
-  if (!isAsyncIterable(eventStream)) {
+  if (!isAsyncIterable(result)) {
     throw new GraphQLError(
       'Subscription field must return Async Iterable. ' +
-        `Received: ${inspect(eventStream)}.`,
+        `Received: ${inspect(result)}.`,
     );
   }
 
-  return eventStream;
+  return result;
 }
