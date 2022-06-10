@@ -1,4 +1,5 @@
 import { inspect } from '../jsutils/inspect';
+import { invariant } from '../jsutils/invariant';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { isPromise } from '../jsutils/isPromise';
 import type { Maybe } from '../jsutils/Maybe';
@@ -12,6 +13,7 @@ import type { DocumentNode } from '../language/ast';
 
 import type { GraphQLFieldResolver } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
+import { isSchema } from '../type/schema';
 
 import { collectFields } from './collectFields';
 import type {
@@ -54,60 +56,20 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    subscribeFieldResolver,
-  } = args;
-
-  const resultOrStream = createSourceEventStream(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  );
+  const resultOrStream = createSourceEventStream(args);
 
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(
-        schema,
-        document,
-        resolvedResultOrStream,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver,
-      ),
+      mapSourceToResponse(resolvedResultOrStream, args),
     );
   }
 
-  return mapSourceToResponse(
-    schema,
-    document,
-    resultOrStream,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-  );
+  return mapSourceToResponse(resultOrStream, args);
 }
 
 function mapSourceToResponse(
-  schema: GraphQLSchema,
-  document: DocumentNode,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
-  contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  args: ExecutionArgs,
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
@@ -123,13 +85,8 @@ function mapSourceToResponse(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   return mapAsyncIterator(resultOrStream, (payload: unknown) =>
     execute({
-      schema,
-      document,
+      ...args,
       rootValue: payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
     }),
   );
 }
@@ -163,14 +120,50 @@ function mapSourceToResponse(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export function createSourceEventStream(
-  schema: GraphQLSchema,
-  document: DocumentNode,
+  argsOrSchema: ExecutionArgs | GraphQLSchema,
+  /** Note: document argument is required if positional arguments are used */
+  /** @deprecated will be removed in next major version in favor of named arguments */
+  document?: DocumentNode,
+  /** @deprecated will be removed in next major version in favor of named arguments */
   rootValue?: unknown,
+  /** @deprecated will be removed in next major version in favor of named arguments */
   contextValue?: unknown,
+  /** @deprecated will be removed in next major version in favor of named arguments */
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
+  /** @deprecated will be removed in next major version in favor of named arguments */
   operationName?: Maybe<string>,
+  /** @deprecated will be removed in next major version in favor of named arguments */
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
+  if (isSchema(argsOrSchema)) {
+    invariant(document != null, 'Must provide document.');
+    return createSourceEventStreamImpl({
+      schema: argsOrSchema,
+      document,
+      rootValue,
+      contextValue,
+      variableValues,
+      operationName,
+      subscribeFieldResolver,
+    });
+  }
+
+  return createSourceEventStreamImpl(argsOrSchema);
+}
+
+export function createSourceEventStreamImpl(
+  args: ExecutionArgs,
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    subscribeFieldResolver,
+  } = args;
+
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
