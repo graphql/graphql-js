@@ -120,19 +120,25 @@ function mapSourceToResponse(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export function createSourceEventStream(
-  argsOrSchema: ExecutionArgs | GraphQLSchema,
-  /** Note: document argument is required if positional arguments are used */
-  /** @deprecated will be removed in next major version in favor of named arguments */
-  document?: DocumentNode,
-  /** @deprecated will be removed in next major version in favor of named arguments */
+  args: ExecutionArgs,
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
+/** @deprecated will be removed in next major version in favor of named arguments */
+export function createSourceEventStream(
+  schema: GraphQLSchema,
+  document: DocumentNode,
   rootValue?: unknown,
-  /** @deprecated will be removed in next major version in favor of named arguments */
   contextValue?: unknown,
-  /** @deprecated will be removed in next major version in favor of named arguments */
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  /** @deprecated will be removed in next major version in favor of named arguments */
   operationName?: Maybe<string>,
-  /** @deprecated will be removed in next major version in favor of named arguments */
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
+export function createSourceEventStream(
+  argsOrSchema: ExecutionArgs | GraphQLSchema,
+  document?: DocumentNode,
+  rootValue?: unknown,
+  contextValue?: unknown,
+  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
+  operationName?: Maybe<string>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   if (isSchema(argsOrSchema)) {

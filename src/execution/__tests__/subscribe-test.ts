@@ -458,6 +458,7 @@ describe('Subscription Initialization Phase', () => {
       'Must provide document.',
     );
 
+    // @ts-expect-error
     expect(() => createSourceEventStream(schema)).to.throw(
       'Must provide document.',
     );
