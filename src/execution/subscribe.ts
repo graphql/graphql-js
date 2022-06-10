@@ -13,7 +13,6 @@ import type { DocumentNode } from '../language/ast';
 
 import type { GraphQLFieldResolver } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
-import { isSchema } from '../type/schema';
 
 import { collectFields } from './collectFields';
 import type {
@@ -91,6 +90,37 @@ function mapSourceToResponse(
   );
 }
 
+type BackwardsCompatibleArgs =
+  | [options: ExecutionArgs]
+  | [
+      schema: ExecutionArgs['schema'],
+      document: ExecutionArgs['document'],
+      rootValue?: ExecutionArgs['rootValue'],
+      contextValue?: ExecutionArgs['contextValue'],
+      variableValues?: ExecutionArgs['variableValues'],
+      operationName?: ExecutionArgs['operationName'],
+      subscribeFieldResolver?: ExecutionArgs['subscribeFieldResolver'],
+    ];
+
+function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
+  const firstArg = args[0];
+  if ('document' in firstArg) {
+    return firstArg;
+  }
+
+  invariant(args[1] != null, 'Must provide document.');
+
+  return {
+    schema: firstArg,
+    document: args[1],
+    rootValue: args[2],
+    contextValue: args[3],
+    variableValues: args[4],
+    operationName: args[5],
+    subscribeFieldResolver: args[6],
+  };
+}
+
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.
@@ -132,34 +162,7 @@ export function createSourceEventStream(
   operationName?: Maybe<string>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
-export function createSourceEventStream(
-  argsOrSchema: ExecutionArgs | GraphQLSchema,
-  document?: DocumentNode,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  if (isSchema(argsOrSchema)) {
-    invariant(document != null, 'Must provide document.');
-    return createSourceEventStreamImpl({
-      schema: argsOrSchema,
-      document,
-      rootValue,
-      contextValue,
-      variableValues,
-      operationName,
-      subscribeFieldResolver,
-    });
-  }
-
-  return createSourceEventStreamImpl(argsOrSchema);
-}
-
-export function createSourceEventStreamImpl(
-  args: ExecutionArgs,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
+export function createSourceEventStream(...rawArgs: BackwardsCompatibleArgs) {
   const {
     schema,
     document,
@@ -168,7 +171,7 @@ export function createSourceEventStreamImpl(
     variableValues,
     operationName,
     subscribeFieldResolver,
-  } = args;
+  } = toNormalizedArgs(rawArgs);
 
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.

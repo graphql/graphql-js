@@ -421,7 +421,7 @@ describe('Subscription Initialization Phase', () => {
     expect(() => subscribe({ schema })).to.throw('Must provide document.');
   });
 
-  it('allows positional arguments to createSourceEventStream', () => {
+  it('Deprecated: allows positional arguments to createSourceEventStream', () => {
     async function* fooGenerator() {
       /* c8 ignore next 2 */
       yield { foo: 'FooValue' };
