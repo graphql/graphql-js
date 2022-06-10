@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { isPromise } from '../jsutils/isPromise';
 import type { Maybe } from '../jsutils/Maybe';
@@ -108,11 +107,10 @@ function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
     return firstArg;
   }
 
-  invariant(args[1] != null, 'Must provide document.');
-
   return {
     schema: firstArg,
-    document: args[1],
+    // FIXME: when underlying TS bug fixed, see https://github.com/microsoft/TypeScript/issues/31613
+    document: args[1] as DocumentNode,
     rootValue: args[2],
     contextValue: args[3],
     variableValues: args[4],
