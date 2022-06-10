@@ -33,6 +33,10 @@ import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext';
 
+/* eslint-disable max-params */
+// This file contains a lot of such errors but we plan to refactor it anyway
+// so just disable it for entire file.
+
 function reasonMessage(reason: ConflictReasonMessage): string {
   if (Array.isArray(reason)) {
     return reason
