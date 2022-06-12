@@ -54,60 +54,20 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    subscribeFieldResolver,
-  } = args;
-
-  const resultOrStream = createSourceEventStream(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  );
+  const resultOrStream = createSourceEventStream(args);
 
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(
-        schema,
-        document,
-        resolvedResultOrStream,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver,
-      ),
+      mapSourceToResponse(resolvedResultOrStream, args),
     );
   }
 
-  return mapSourceToResponse(
-    schema,
-    document,
-    resultOrStream,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-  );
+  return mapSourceToResponse(resultOrStream, args);
 }
 
 function mapSourceToResponse(
-  schema: GraphQLSchema,
-  document: DocumentNode,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
-  contextValue?: unknown,
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
-  operationName?: Maybe<string>,
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
+  args: ExecutionArgs,
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
@@ -123,15 +83,40 @@ function mapSourceToResponse(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   return mapAsyncIterator(resultOrStream, (payload: unknown) =>
     execute({
-      schema,
-      document,
+      ...args,
       rootValue: payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
     }),
   );
+}
+
+type BackwardsCompatibleArgs =
+  | [options: ExecutionArgs]
+  | [
+      schema: ExecutionArgs['schema'],
+      document: ExecutionArgs['document'],
+      rootValue?: ExecutionArgs['rootValue'],
+      contextValue?: ExecutionArgs['contextValue'],
+      variableValues?: ExecutionArgs['variableValues'],
+      operationName?: ExecutionArgs['operationName'],
+      subscribeFieldResolver?: ExecutionArgs['subscribeFieldResolver'],
+    ];
+
+function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
+  const firstArg = args[0];
+  if ('document' in firstArg) {
+    return firstArg;
+  }
+
+  return {
+    schema: firstArg,
+    // FIXME: when underlying TS bug fixed, see https://github.com/microsoft/TypeScript/issues/31613
+    document: args[1] as DocumentNode,
+    rootValue: args[2],
+    contextValue: args[3],
+    variableValues: args[4],
+    operationName: args[5],
+    subscribeFieldResolver: args[6],
+  };
 }
 
 /**
@@ -163,6 +148,10 @@ function mapSourceToResponse(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export function createSourceEventStream(
+  args: ExecutionArgs,
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
+/** @deprecated will be removed in next major version in favor of named arguments */
+export function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: unknown,
@@ -170,7 +159,18 @@ export function createSourceEventStream(
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
   operationName?: Maybe<string>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
+export function createSourceEventStream(...rawArgs: BackwardsCompatibleArgs) {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    subscribeFieldResolver,
+  } = toNormalizedArgs(rawArgs);
+
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
