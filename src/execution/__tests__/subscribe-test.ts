@@ -442,7 +442,7 @@ describe('Subscription Initialization Phase', () => {
     assert(isAsyncIterable(eventStream));
   });
 
-  it('throws an error if document is missing when using positional arguments', async () => {
+  it('Deprecated: throws an error if document is missing when using positional arguments', async () => {
     const schema = new GraphQLSchema({
       query: DummyQueryType,
       subscription: new GraphQLObjectType({
