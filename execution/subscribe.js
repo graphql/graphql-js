@@ -35,57 +35,15 @@ import { getArgumentValues } from './values.js';
  * Accepts either an object with named arguments, or individual arguments.
  */
 export function subscribe(args) {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    subscribeFieldResolver,
-  } = args;
-  const resultOrStream = createSourceEventStream(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  );
+  const resultOrStream = createSourceEventStream(args);
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(
-        schema,
-        document,
-        resolvedResultOrStream,
-        contextValue,
-        variableValues,
-        operationName,
-        fieldResolver,
-      ),
+      mapSourceToResponse(resolvedResultOrStream, args),
     );
   }
-  return mapSourceToResponse(
-    schema,
-    document,
-    resultOrStream,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-  );
+  return mapSourceToResponse(resultOrStream, args);
 }
-function mapSourceToResponse(
-  schema,
-  document,
-  resultOrStream,
-  contextValue,
-  variableValues,
-  operationName,
-  fieldResolver,
-) {
+function mapSourceToResponse(resultOrStream, args) {
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
   }
@@ -97,53 +55,37 @@ function mapSourceToResponse(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   return mapAsyncIterator(resultOrStream, (payload) =>
     execute({
-      schema,
-      document,
+      ...args,
       rootValue: payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
     }),
   );
 }
-/**
- * Implements the "CreateSourceEventStream" algorithm described in the
- * GraphQL specification, resolving the subscription source event stream.
- *
- * Returns a Promise which resolves to either an AsyncIterable (if successful)
- * or an ExecutionResult (error). The promise will be rejected if the schema or
- * other arguments to this function are invalid, or if the resolved event stream
- * is not an async iterable.
- *
- * If the client-provided arguments to this function do not result in a
- * compliant subscription, a GraphQL Response (ExecutionResult) with
- * descriptive errors and no data will be returned.
- *
- * If the the source stream could not be created due to faulty subscription
- * resolver logic or underlying systems, the promise will resolve to a single
- * ExecutionResult containing `errors` and no `data`.
- *
- * If the operation succeeded, the promise resolves to the AsyncIterable for the
- * event stream returned by the resolver.
- *
- * A Source Event Stream represents a sequence of events, each of which triggers
- * a GraphQL execution for that event.
- *
- * This may be useful when hosting the stateful subscription service in a
- * different process or machine than the stateless GraphQL execution engine,
- * or otherwise separating these two steps. For more on this, see the
- * "Supporting Subscriptions at Scale" information in the GraphQL specification.
- */
-export function createSourceEventStream(
-  schema,
-  document,
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  subscribeFieldResolver,
-) {
+function toNormalizedArgs(args) {
+  const firstArg = args[0];
+  if ('document' in firstArg) {
+    return firstArg;
+  }
+  return {
+    schema: firstArg,
+    // FIXME: when underlying TS bug fixed, see https://github.com/microsoft/TypeScript/issues/31613
+    document: args[1],
+    rootValue: args[2],
+    contextValue: args[3],
+    variableValues: args[4],
+    operationName: args[5],
+    subscribeFieldResolver: args[6],
+  };
+}
+export function createSourceEventStream(...rawArgs) {
+  const {
+    schema,
+    document,
+    rootValue,
+    contextValue,
+    variableValues,
+    operationName,
+    subscribeFieldResolver,
+  } = toNormalizedArgs(rawArgs);
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);

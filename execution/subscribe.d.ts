@@ -59,6 +59,10 @@ export declare function subscribe(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export declare function createSourceEventStream(
+  args: ExecutionArgs,
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
+/** @deprecated will be removed in next major version in favor of named arguments */
+export declare function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: unknown,
