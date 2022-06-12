@@ -14,7 +14,7 @@ import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import type { ExecutionResult } from '../execute';
+import type { ExecutionArgs, ExecutionResult } from '../execute';
 import { createSourceEventStream, subscribe } from '../execute';
 
 import { SimplePubSub } from './simplePubSub';
@@ -192,6 +192,15 @@ function subscribeWithBadFn(
   return expectEqualPromisesOrValues(
     subscribe({ schema, document }),
     createSourceEventStream({ schema, document }),
+  );
+}
+
+function subscribeWithBadArgs(
+  args: ExecutionArgs,
+): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
+  return expectEqualPromisesOrValues(
+    subscribe(args),
+    createSourceEventStream(args),
   );
 }
 
@@ -394,7 +403,7 @@ describe('Subscription Initialization Phase', () => {
     const schema = new GraphQLSchema({ query: DummyQueryType });
     const document = parse('subscription { unknownField }');
 
-    const result = subscribe({ schema, document });
+    const result = subscribeWithBadArgs({ schema, document });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -418,7 +427,7 @@ describe('Subscription Initialization Phase', () => {
     });
     const document = parse('subscription { unknownField }');
 
-    const result = subscribe({ schema, document });
+    const result = subscribeWithBadArgs({ schema, document });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -441,7 +450,7 @@ describe('Subscription Initialization Phase', () => {
     });
 
     // @ts-expect-error
-    expect(() => subscribe({ schema, document: {} })).to.throw();
+    expect(() => subscribeWithBadArgs({ schema, document: {} })).to.throw();
   });
 
   it('throws an error if subscribe does not return an iterator', async () => {
@@ -526,7 +535,7 @@ describe('Subscription Initialization Phase', () => {
 
     // If we receive variables that cannot be coerced correctly, subscribe() will
     // resolve to an ExecutionResult that contains an informative error description.
-    const result = subscribe({ schema, document, variableValues });
+    const result = subscribeWithBadArgs({ schema, document, variableValues });
     expectJSON(result).toDeepEqual({
       errors: [
         {
