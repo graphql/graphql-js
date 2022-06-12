@@ -162,10 +162,7 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  const { schema, document, variableValues, rootValue } = args;
-
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, variableValues);
+  const { rootValue } = args;
 
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
@@ -280,6 +277,9 @@ export function buildExecutionContext(
     typeResolver,
     subscribeFieldResolver,
   } = args;
+
+  // If arguments are missing or incorrect, throw an error.
+  assertValidExecutionArguments(schema, document, rawVariableValues);
 
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -1116,10 +1116,6 @@ export function createSourceEventStream(
     operationName,
     subscribeFieldResolver,
   } = args;
-
-  // If arguments are missing or incorrectly typed, this is an internal
-  // developer mistake which should throw an early error.
-  assertValidExecutionArguments(schema, document, variableValues);
 
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
