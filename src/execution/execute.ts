@@ -1141,12 +1141,15 @@ export function createSourceEventStream(
   try {
     const eventStream = executeSubscription(exeContext);
     if (isPromise(eventStream)) {
-      return eventStream.then(undefined, (error) => ({ errors: [error] }));
+      return eventStream.then(undefined, (error) => ({
+        data: null,
+        errors: [error],
+      }));
     }
 
     return eventStream;
   } catch (error) {
-    return { errors: [error] };
+    return { data: null, errors: [error] };
   }
 }
 

@@ -427,6 +427,7 @@ describe('Subscription Initialization Phase', () => {
 
     const result = subscribe({ schema, document });
     expectJSON(result).toDeepEqual({
+      data: null,
       errors: [
         {
           message:
@@ -451,6 +452,7 @@ describe('Subscription Initialization Phase', () => {
 
     const result = subscribe({ schema, document });
     expectJSON(result).toDeepEqual({
+      data: null,
       errors: [
         {
           message: 'The subscription field "unknownField" is not defined.',
@@ -477,6 +479,7 @@ describe('Subscription Initialization Phase', () => {
 
   it('throws an error if subscribe does not return an iterator', async () => {
     const expectedResult = {
+      data: null,
       errors: [
         {
           message:
@@ -498,6 +501,7 @@ describe('Subscription Initialization Phase', () => {
 
   it('resolves to an error for subscription resolver errors', async () => {
     const expectedResult = {
+      data: null,
       errors: [
         {
           message: 'test error',
