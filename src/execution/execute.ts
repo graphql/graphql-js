@@ -1106,27 +1106,9 @@ function mapSourceToResponse(
 export function createSourceEventStream(
   args: ExecutionArgs,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  } = args;
-
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext({
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  });
+  const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
