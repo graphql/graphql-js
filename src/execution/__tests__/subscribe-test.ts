@@ -421,49 +421,6 @@ describe('Subscription Initialization Phase', () => {
     expect(() => subscribe({ schema })).to.throw('Must provide document.');
   });
 
-  it('Deprecated: allows positional arguments to createSourceEventStream', () => {
-    async function* fooGenerator() {
-      /* c8 ignore next 2 */
-      yield { foo: 'FooValue' };
-    }
-
-    const schema = new GraphQLSchema({
-      query: DummyQueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
-          foo: { type: GraphQLString, subscribe: fooGenerator },
-        },
-      }),
-    });
-    const document = parse('subscription { foo }');
-
-    const eventStream = createSourceEventStream(schema, document);
-    assert(isAsyncIterable(eventStream));
-  });
-
-  it('Deprecated: throws an error if document is missing when using positional arguments', async () => {
-    const schema = new GraphQLSchema({
-      query: DummyQueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
-          foo: { type: GraphQLString },
-        },
-      }),
-    });
-
-    // @ts-expect-error
-    expect(() => createSourceEventStream(schema, null)).to.throw(
-      'Must provide document.',
-    );
-
-    // @ts-expect-error
-    expect(() => createSourceEventStream(schema)).to.throw(
-      'Must provide document.',
-    );
-  });
-
   it('resolves to an error if schema does not support subscriptions', async () => {
     const schema = new GraphQLSchema({ query: DummyQueryType });
     const document = parse('subscription { unknownField }');
