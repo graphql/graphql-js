@@ -347,7 +347,7 @@ export function buildExecutionContext(
 function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
-): PromiseOrValue<ObjMap<unknown> | null> {
+): PromiseOrValue<ObjMap<unknown>> {
   const rootType = exeContext.schema.getRootType(operation.operation);
   if (rootType == null) {
     throw new GraphQLError(
