@@ -1,14 +1,10 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isPromise } from '../jsutils/isPromise.ts';
-import type { Maybe } from '../jsutils/Maybe.ts';
 import { addPath, pathToArray } from '../jsutils/Path.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
-import type { DocumentNode } from '../language/ast.ts';
-import type { GraphQLFieldResolver } from '../type/definition.ts';
-import type { GraphQLSchema } from '../type/schema.ts';
 import { collectFields } from './collectFields.ts';
 import type {
   ExecutionArgs,
@@ -79,33 +75,6 @@ function mapSourceToResponse(
     }),
   );
 }
-type BackwardsCompatibleArgs =
-  | [options: ExecutionArgs]
-  | [
-      schema: ExecutionArgs['schema'],
-      document: ExecutionArgs['document'],
-      rootValue?: ExecutionArgs['rootValue'],
-      contextValue?: ExecutionArgs['contextValue'],
-      variableValues?: ExecutionArgs['variableValues'],
-      operationName?: ExecutionArgs['operationName'],
-      subscribeFieldResolver?: ExecutionArgs['subscribeFieldResolver'],
-    ];
-function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
-  const firstArg = args[0];
-  if ('document' in firstArg) {
-    return firstArg;
-  }
-  return {
-    schema: firstArg,
-    // FIXME: when underlying TS bug fixed, see https://github.com/microsoft/TypeScript/issues/31613
-    document: args[1] as DocumentNode,
-    rootValue: args[2],
-    contextValue: args[3],
-    variableValues: args[4],
-    operationName: args[5],
-    subscribeFieldResolver: args[6],
-  };
-}
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.
@@ -136,20 +105,7 @@ function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
  */
 export function createSourceEventStream(
   args: ExecutionArgs,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
-/** @deprecated will be removed in next major version in favor of named arguments */
-export function createSourceEventStream(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Maybe<{
-    readonly [variable: string]: unknown;
-  }>,
-  operationName?: Maybe<string>,
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
-export function createSourceEventStream(...rawArgs: BackwardsCompatibleArgs) {
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   const {
     schema,
     document,
@@ -158,7 +114,7 @@ export function createSourceEventStream(...rawArgs: BackwardsCompatibleArgs) {
     variableValues,
     operationName,
     subscribeFieldResolver,
-  } = toNormalizedArgs(rawArgs);
+  } = args;
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
