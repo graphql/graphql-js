@@ -1,11 +1,12 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path.js';
 export {
+  createSourceEventStream,
   execute,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
+  subscribe,
 } from './execute.js';
-export { subscribe, createSourceEventStream } from './subscribe.js';
 export {
   getArgumentValues,
   getVariableValues,
