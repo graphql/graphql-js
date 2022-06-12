@@ -236,8 +236,11 @@ function buildResponse(
 /**
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
+ *
+ * TODO: consider no longer exporting this function
+ * @internal
  */
-function assertValidExecutionArguments(
+export function assertValidExecutionArguments(
   schema: GraphQLSchema,
   document: DocumentNode,
   rawVariableValues: Maybe<{ readonly [variable: string]: unknown }>,
@@ -259,8 +262,11 @@ function assertValidExecutionArguments(
  * execute, which we will pass throughout the other execution methods.
  *
  * Throws a GraphQLError if a valid execution context cannot be created.
+ *
+ * TODO: consider no longer exporting this function
+ * @internal
  */
-function buildExecutionContext(
+export function buildExecutionContext(
   args: ExecutionArgs,
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
   const {
@@ -540,7 +546,11 @@ function executeField(
   }
 }
 
-function buildResolveInfo(
+/**
+ * TODO: consider no longer exporting this function
+ * @internal
+ */
+export function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<unknown, unknown>,
   fieldNodes: ReadonlyArray<FieldNode>,
