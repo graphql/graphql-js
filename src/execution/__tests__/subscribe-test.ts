@@ -15,7 +15,7 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
 import type { ExecutionResult } from '../execute';
-import { createSourceEventStream, subscribe } from '../subscribe';
+import { createSourceEventStream, subscribe } from '../execute';
 
 import { SimplePubSub } from './simplePubSub';
 
