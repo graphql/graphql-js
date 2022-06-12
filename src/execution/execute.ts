@@ -174,6 +174,12 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
+  return executeImpl(exeContext);
+}
+
+function executeImpl(
+  exeContext: ExecutionContext,
+): PromiseOrValue<ExecutionResult> {
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
@@ -315,6 +321,17 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+    errors: [],
+  };
+}
+
+function buildPerEventExecutionContext(
+  exeContext: ExecutionContext,
+  payload: unknown,
+): ExecutionContext {
+  return {
+    ...exeContext,
+    rootValue: payload,
     errors: [],
   };
 }
@@ -1017,20 +1034,29 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  const resultOrStream = createSourceEventStream(args);
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const exeContext = buildExecutionContext(args);
+
+  // Return early errors if execution context failed.
+  if (!('schema' in exeContext)) {
+    return { errors: exeContext };
+  }
+
+  const resultOrStream = createSourceEventStreamImpl(exeContext);
 
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(resolvedResultOrStream, args),
+      mapSourceToResponse(exeContext, resolvedResultOrStream),
     );
   }
 
-  return mapSourceToResponse(resultOrStream, args);
+  return mapSourceToResponse(exeContext, resultOrStream);
 }
 
 function mapSourceToResponse(
+  exeContext: ExecutionContext,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
-  args: ExecutionArgs,
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
@@ -1045,10 +1071,7 @@ function mapSourceToResponse(
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   return mapAsyncIterator(resultOrStream, (payload: unknown) =>
-    execute({
-      ...args,
-      rootValue: payload,
-    }),
+    executeImpl(buildPerEventExecutionContext(exeContext, payload)),
   );
 }
 
@@ -1092,6 +1115,12 @@ export function createSourceEventStream(
     return { errors: exeContext };
   }
 
+  return createSourceEventStreamImpl(exeContext);
+}
+
+function createSourceEventStreamImpl(
+  exeContext: ExecutionContext,
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   try {
     const eventStream = executeSubscription(exeContext);
     if (isPromise(eventStream)) {
