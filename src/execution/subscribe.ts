@@ -58,26 +58,7 @@ export async function subscribe(
     'graphql@16 dropped long-deprecated support for positional arguments, please pass an object instead.',
   );
 
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    subscribeFieldResolver,
-  } = args;
-
-  const resultOrStream = await createSourceEventStream(
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  );
+  const resultOrStream = await createSourceEventStream(args);
 
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
@@ -91,17 +72,42 @@ export async function subscribe(
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   const mapSourceToResponse = (payload: unknown) =>
     execute({
-      schema,
-      document,
+      ...args,
       rootValue: payload,
-      contextValue,
-      variableValues,
-      operationName,
-      fieldResolver,
     });
 
   // Map every source value to a ExecutionResult value as described above.
   return mapAsyncIterator(resultOrStream, mapSourceToResponse);
+}
+
+type BackwardsCompatibleArgs =
+  | [options: ExecutionArgs]
+  | [
+      schema: ExecutionArgs['schema'],
+      document: ExecutionArgs['document'],
+      rootValue?: ExecutionArgs['rootValue'],
+      contextValue?: ExecutionArgs['contextValue'],
+      variableValues?: ExecutionArgs['variableValues'],
+      operationName?: ExecutionArgs['operationName'],
+      subscribeFieldResolver?: ExecutionArgs['subscribeFieldResolver'],
+    ];
+
+function toNormalizedArgs(args: BackwardsCompatibleArgs): ExecutionArgs {
+  const firstArg = args[0];
+  if (firstArg && 'document' in firstArg) {
+    return firstArg;
+  }
+
+  return {
+    schema: firstArg,
+    // FIXME: when underlying TS bug fixed, see https://github.com/microsoft/TypeScript/issues/31613
+    document: args[1] as DocumentNode,
+    rootValue: args[2],
+    contextValue: args[3],
+    variableValues: args[4],
+    operationName: args[5],
+    subscribeFieldResolver: args[6],
+  };
 }
 
 /**
@@ -133,6 +139,10 @@ export async function subscribe(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export async function createSourceEventStream(
+  args: ExecutionArgs,
+): Promise<AsyncIterable<unknown> | ExecutionResult>;
+/** @deprecated will be removed in next major version in favor of named arguments */
+export async function createSourceEventStream(
   schema: GraphQLSchema,
   document: DocumentNode,
   rootValue?: unknown,
@@ -140,22 +150,21 @@ export async function createSourceEventStream(
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>,
   operationName?: Maybe<string>,
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>,
-): Promise<AsyncIterable<unknown> | ExecutionResult> {
+): Promise<AsyncIterable<unknown> | ExecutionResult>;
+export async function createSourceEventStream(
+  ...rawArgs: BackwardsCompatibleArgs
+) {
+  const args = toNormalizedArgs(rawArgs);
+
+  const { schema, document, variableValues } = args;
+
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
   assertValidExecutionArguments(schema, document, variableValues);
 
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext({
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  });
+  const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {

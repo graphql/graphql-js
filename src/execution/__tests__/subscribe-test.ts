@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
@@ -373,6 +373,65 @@ describe('Subscription Initialization Phase', () => {
 
     // @ts-expect-error
     (await expectPromise(subscribe({ schema }))).toRejectWith(
+      'Must provide document.',
+    );
+  });
+
+  it('Deprecated: allows positional arguments to createSourceEventStream', async () => {
+    async function* fooGenerator() {
+      /* c8 ignore next 2 */
+      yield { foo: 'FooValue' };
+    }
+
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString, subscribe: fooGenerator },
+        },
+      }),
+    });
+    const document = parse('subscription { foo }');
+
+    const eventStream = await createSourceEventStream(schema, document);
+    assert(isAsyncIterable(eventStream));
+  });
+
+  it('Deprecated: throws an error if document is missing when using positional arguments', async () => {
+    const document = parse('subscription { foo }');
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+
+    // @ts-expect-error (schema must not be null)
+    (await expectPromise(createSourceEventStream(null, document))).toRejectWith(
+      'Expected null to be a GraphQL schema.',
+    );
+
+    (
+      await expectPromise(
+        createSourceEventStream(
+          // @ts-expect-error
+          undefined,
+          document,
+        ),
+      )
+    ).toRejectWith('Expected undefined to be a GraphQL schema.');
+
+    // @ts-expect-error (document must not be null)
+    (await expectPromise(createSourceEventStream(schema, null))).toRejectWith(
+      'Must provide document.',
+    );
+
+    // @ts-expect-error
+    (await expectPromise(createSourceEventStream(schema))).toRejectWith(
       'Must provide document.',
     );
   });
