@@ -390,37 +390,6 @@ describe('Subscription Initialization Phase', () => {
     });
   });
 
-  it('throws an error if some of required arguments are missing', async () => {
-    const document = parse('subscription { foo }');
-    const schema = new GraphQLSchema({
-      query: DummyQueryType,
-      subscription: new GraphQLObjectType({
-        name: 'Subscription',
-        fields: {
-          foo: { type: GraphQLString },
-        },
-      }),
-    });
-
-    // @ts-expect-error (schema must not be null)
-    expect(() => subscribe({ schema: null, document })).to.throw(
-      'Expected null to be a GraphQL schema.',
-    );
-
-    // @ts-expect-error
-    expect(() => subscribe({ document })).to.throw(
-      'Expected undefined to be a GraphQL schema.',
-    );
-
-    // @ts-expect-error (document must not be null)
-    expect(() => subscribe({ schema, document: null })).to.throw(
-      'Must provide document.',
-    );
-
-    // @ts-expect-error
-    expect(() => subscribe({ schema })).to.throw('Must provide document.');
-  });
-
   it('resolves to an error if schema does not support subscriptions', async () => {
     const schema = new GraphQLSchema({ query: DummyQueryType });
     const document = parse('subscription { unknownField }');

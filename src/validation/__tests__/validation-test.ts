@@ -17,11 +17,6 @@ import type { ValidationContext } from '../ValidationContext';
 import { testSchema } from './harness';
 
 describe('Validate: Supports full validation', () => {
-  it('rejects invalid documents', () => {
-    // @ts-expect-error (expects a DocumentNode as a second parameter)
-    expect(() => validate(testSchema, null)).to.throw('Must provide document.');
-  });
-
   it('validates queries', () => {
     const doc = parse(`
       query {

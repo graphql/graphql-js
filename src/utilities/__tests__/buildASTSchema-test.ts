@@ -1092,16 +1092,4 @@ describe('Schema Builder', () => {
       'Unknown type: "UnknownType".',
     );
   });
-
-  it('Rejects invalid AST', () => {
-    // @ts-expect-error (First parameter expected to be DocumentNode)
-    expect(() => buildASTSchema(null)).to.throw(
-      'Must provide valid Document AST',
-    );
-
-    // @ts-expect-error
-    expect(() => buildASTSchema({})).to.throw(
-      'Must provide valid Document AST',
-    );
-  });
 });

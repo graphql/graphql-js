@@ -1,7 +1,5 @@
-import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { instanceOf } from '../jsutils/instanceOf';
-import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { toObjMap } from '../jsutils/toObjMap';
@@ -159,18 +157,6 @@ export class GraphQLSchema {
     // marked with assumeValid to avoid an additional type system validation.
     this.__validationErrors = config.assumeValid === true ? [] : undefined;
 
-    // Check for common mistakes during construction to produce early errors.
-    devAssert(isObjectLike(config), 'Must provide configuration object.');
-    devAssert(
-      !config.types || Array.isArray(config.types),
-      `"types" must be Array if provided but got: ${inspect(config.types)}.`,
-    );
-    devAssert(
-      !config.directives || Array.isArray(config.directives),
-      '"directives" must be Array if provided but got: ' +
-        `${inspect(config.directives)}.`,
-    );
-
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
@@ -226,10 +212,6 @@ export class GraphQLSchema {
       }
 
       const typeName = namedType.name;
-      devAssert(
-        typeName != null,
-        'One of the provided types for building the Schema is missing a name.',
-      );
       if (this._typeMap[typeName] !== undefined) {
         throw new Error(
           `Schema must contain uniquely named types but contains multiple types named "${typeName}".`,
