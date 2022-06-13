@@ -55,6 +55,10 @@ import {
 import { mapAsyncIterator } from './mapAsyncIterator';
 import { getArgumentValues, getVariableValues } from './values';
 
+/* eslint-disable max-params */
+// This file contains a lot of such errors but we plan to refactor it anyway
+// so just disable it for entire file.
+
 /**
  * A memoized collection of relevant subfields with regard to the return
  * type. Memoizing ensures the subfields are not repeatedly calculated, which

@@ -348,7 +348,7 @@ rules:
   max-lines: off
   max-lines-per-function: off
   max-nested-callbacks: off
-  max-params: off
+  max-params: [error, 5] # TODO: drop to default number, which is 3
   max-statements: off
   max-statements-per-line: off
   multiline-comment-style: off
