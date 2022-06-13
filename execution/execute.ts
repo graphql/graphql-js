@@ -155,9 +155,6 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  const { schema, document, variableValues, rootValue } = args;
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, variableValues);
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
@@ -178,7 +175,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // in this case is the entire response.
   try {
     const { operation } = exeContext;
-    const result = executeOperation(exeContext, operation, rootValue);
+    const result = executeOperation(exeContext, operation);
     if (isPromise(result)) {
       return result.then(
         (data) => buildResponse(data, exeContext.errors),
@@ -265,6 +262,8 @@ export function buildExecutionContext(
     typeResolver,
     subscribeFieldResolver,
   } = args;
+  // If arguments are missing or incorrect, throw an error.
+  assertValidExecutionArguments(schema, document, rawVariableValues);
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {
@@ -327,8 +326,7 @@ export function buildExecutionContext(
 function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
-  rootValue: unknown,
-): PromiseOrValue<ObjMap<unknown> | null> {
+): PromiseOrValue<ObjMap<unknown>> {
   const rootType = exeContext.schema.getRootType(operation.operation);
   if (rootType == null) {
     throw new GraphQLError(
@@ -344,6 +342,7 @@ function executeOperation(
     operation.selectionSet,
   );
   const path = undefined;
+  const { rootValue } = exeContext;
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
       return executeFields(exeContext, rootType, rootValue, path, rootFields);
@@ -1026,29 +1025,9 @@ function mapSourceToResponse(
 export function createSourceEventStream(
   args: ExecutionArgs,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  } = args;
-  // If arguments are missing or incorrectly typed, this is an internal
-  // developer mistake which should throw an early error.
-  assertValidExecutionArguments(schema, document, variableValues);
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext({
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  });
+  const exeContext = buildExecutionContext(args);
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
     return { errors: exeContext };
