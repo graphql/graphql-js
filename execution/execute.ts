@@ -1,4 +1,3 @@
-import { devAssert } from '../jsutils/devAssert.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
@@ -224,23 +223,9 @@ function buildResponse(
  * TODO: consider no longer exporting this function
  * @internal
  */
-export function assertValidExecutionArguments(
-  schema: GraphQLSchema,
-  document: DocumentNode,
-  rawVariableValues: Maybe<{
-    readonly [variable: string]: unknown;
-  }>,
-): void {
-  document != null || devAssert(false, 'Must provide document.');
+export function assertValidExecutionArguments(schema: GraphQLSchema): void {
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
-  // Variables, if provided, must be an object.
-  rawVariableValues == null ||
-    isObjectLike(rawVariableValues) ||
-    devAssert(
-      false,
-      'Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.',
-    );
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
@@ -266,7 +251,7 @@ export function buildExecutionContext(
     subscribeFieldResolver,
   } = args;
   // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, rawVariableValues);
+  assertValidExecutionArguments(schema);
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {

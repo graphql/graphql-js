@@ -1,12 +1,9 @@
-import { devAssert } from '../jsutils/devAssert.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { isNameContinue, isNameStart } from '../language/characterClasses.ts';
 /**
  * Upholds the spec rules about naming.
  */
 export function assertName(name: string): string {
-  name != null || devAssert(false, 'Must provide name.');
-  typeof name === 'string' || devAssert(false, 'Expected name to be a string.');
   if (name.length === 0) {
     throw new GraphQLError('Expected name to be a non-empty string.');
   }

@@ -1,6 +1,4 @@
-import { devAssert } from '../jsutils/devAssert.ts';
 import type { DocumentNode } from '../language/ast.ts';
-import { Kind } from '../language/kinds.ts';
 import type { ParseOptions } from '../language/parser.ts';
 import { parse } from '../language/parser.ts';
 import type { Source } from '../language/source.ts';
@@ -31,8 +29,6 @@ export function buildASTSchema(
   documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema {
-  (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
-    devAssert(false, 'Must provide valid Document AST.');
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDL(documentAST);
   }

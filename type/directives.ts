@@ -1,7 +1,5 @@
-import { devAssert } from '../jsutils/devAssert.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { instanceOf } from '../jsutils/instanceOf.ts';
-import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import { toObjMap } from '../jsutils/toObjMap.ts';
 import type { DirectiveDefinitionNode } from '../language/ast.ts';
@@ -62,14 +60,7 @@ export class GraphQLDirective {
     this.isRepeatable = config.isRepeatable ?? false;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
-    Array.isArray(config.locations) ||
-      devAssert(false, `@${config.name} locations must be an Array.`);
     const args = config.args ?? {};
-    (isObjectLike(args) && !Array.isArray(args)) ||
-      devAssert(
-        false,
-        `@${config.name} args must be an object with argument names as keys.`,
-      );
     this.args = defineArguments(args);
   }
   get [Symbol.toStringTag]() {

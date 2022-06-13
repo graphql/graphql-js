@@ -1,5 +1,4 @@
 import { devAssert } from '../jsutils/devAssert.ts';
-import { inspect } from '../jsutils/inspect.ts';
 import { instanceOf } from '../jsutils/instanceOf.ts';
 interface Location {
   line: number;
@@ -21,8 +20,6 @@ export class Source {
     name: string = 'GraphQL request',
     locationOffset: Location = { line: 1, column: 1 },
   ) {
-    typeof body === 'string' ||
-      devAssert(false, `Body must be a string. Received: ${inspect(body)}.`);
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;

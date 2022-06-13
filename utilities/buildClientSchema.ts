@@ -61,6 +61,8 @@ export function buildClientSchema(
   introspection: IntrospectionQuery,
   options?: GraphQLSchemaValidationOptions,
 ): GraphQLSchema {
+  // Even even though `introspection` argument is typed in most cases it's received
+  // as untyped value from server, so we will do an additional check here.
   (isObjectLike(introspection) && isObjectLike(introspection.__schema)) ||
     devAssert(
       false,
