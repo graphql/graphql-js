@@ -44,6 +44,7 @@ import {
   isNonNullType,
   isObjectType,
 } from '../type/definition';
+import { GraphQLStreamDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
@@ -52,7 +53,11 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields';
 import { mapAsyncIterator } from './mapAsyncIterator';
-import { getArgumentValues, getVariableValues } from './values';
+import {
+  getArgumentValues,
+  getDirectiveValues,
+  getVariableValues,
+} from './values';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -169,7 +174,7 @@ export interface ExecutionPatchResult<
 }
 
 export interface FormattedExecutionPatchResult<
-  TData = ObjMap<unknown>,
+  TData = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
@@ -783,6 +788,58 @@ function completeValue(
 }
 
 /**
+ * Returns an object containing the `@stream` arguments if a field should be
+ * streamed based on the experimental flag, stream directive present and
+ * not disabled by the "if" argument.
+ */
+function getStreamValues(
+  exeContext: ExecutionContext,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  path: Path,
+):
+  | undefined
+  | {
+      initialCount?: number;
+      label?: string;
+    } {
+  // do not stream inner lists of multi-dimensional lists
+  if (typeof path.key === 'number') {
+    return;
+  }
+
+  // validation only allows equivalent streams on multiple fields, so it is
+  // safe to only check the first fieldNode for the stream directive
+  const stream = getDirectiveValues(
+    GraphQLStreamDirective,
+    fieldNodes[0],
+    exeContext.variableValues,
+  );
+
+  if (!stream) {
+    return;
+  }
+
+  if (stream.if === false) {
+    return;
+  }
+
+  invariant(
+    typeof stream.initialCount === 'number',
+    'initialCount must be a number',
+  );
+
+  invariant(
+    stream.initialCount >= 0,
+    'initialCount must be a positive integer',
+  );
+
+  return {
+    initialCount: stream.initialCount,
+    label: typeof stream.label === 'string' ? stream.label : undefined,
+  };
+}
+
+/**
  * Complete a async iterator value by completing the result and calling
  * recursively until all the results are completed.
  */
@@ -795,12 +852,33 @@ async function completeAsyncIteratorValue(
   iterator: AsyncIterator<unknown>,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): Promise<ReadonlyArray<unknown>> {
-  const errors = exeContext.errors;
+  const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+  const stream = getStreamValues(exeContext, fieldNodes, path);
   let containsPromise = false;
   const completedResults = [];
   let index = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    if (
+      stream &&
+      typeof stream.initialCount === 'number' &&
+      index >= stream.initialCount
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      executeStreamIterator(
+        index,
+        iterator,
+        exeContext,
+        fieldNodes,
+        info,
+        itemType,
+        path,
+        stream.label,
+        asyncPayloadRecord,
+      );
+      break;
+    }
+
     const fieldPath = addPath(path, index, undefined);
     try {
       // eslint-disable-next-line no-await-in-loop
@@ -880,15 +958,39 @@ function completeListValue(
     );
   }
 
+  const stream = getStreamValues(exeContext, fieldNodes, path);
+
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
-  const completedResults = Array.from(result, (item, index) => {
+  let previousAsyncPayloadRecord = asyncPayloadRecord;
+  const completedResults = [];
+  let index = 0;
+  for (const item of result) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
     try {
       let completedItem;
+
+      if (
+        stream &&
+        typeof stream.initialCount === 'number' &&
+        index >= stream.initialCount
+      ) {
+        previousAsyncPayloadRecord = executeStreamField(
+          itemPath,
+          item,
+          exeContext,
+          fieldNodes,
+          info,
+          itemType,
+          stream.label,
+          previousAsyncPayloadRecord,
+        );
+        index++;
+        continue;
+      }
       if (isPromise(item)) {
         completedItem = item.then((resolved) =>
           completeValue(
@@ -917,21 +1019,25 @@ function completeListValue(
         containsPromise = true;
         // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
-        return completedItem.then(undefined, (rawError) => {
-          const error = locatedError(
-            rawError,
-            fieldNodes,
-            pathToArray(itemPath),
-          );
-          return handleFieldError(error, itemType, errors);
-        });
+        completedResults.push(
+          completedItem.then(undefined, (rawError) => {
+            const error = locatedError(
+              rawError,
+              fieldNodes,
+              pathToArray(itemPath),
+            );
+            return handleFieldError(error, itemType, errors);
+          }),
+        );
+      } else {
+        completedResults.push(completedItem);
       }
-      return completedItem;
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      return handleFieldError(error, itemType, errors);
+      completedResults.push(handleFieldError(error, itemType, errors));
     }
-  });
+    index++;
+  }
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
@@ -1490,6 +1596,198 @@ function executeDeferredFragment(
   exeContext.subsequentPayloads.push(asyncPayloadRecord);
 }
 
+function executeStreamField(
+  path: Path,
+  item: PromiseOrValue<unknown>,
+  exeContext: ExecutionContext,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  itemType: GraphQLOutputType,
+  label?: string,
+  parentContext?: AsyncPayloadRecord,
+): AsyncPayloadRecord {
+  const asyncPayloadRecord = new AsyncPayloadRecord({
+    label,
+    path,
+    parentContext,
+  });
+  let completedItem: PromiseOrValue<unknown>;
+  try {
+    try {
+      if (isPromise(item)) {
+        completedItem = item.then((resolved) =>
+          completeValue(
+            exeContext,
+            itemType,
+            fieldNodes,
+            info,
+            path,
+            resolved,
+            asyncPayloadRecord,
+          ),
+        );
+      } else {
+        completedItem = completeValue(
+          exeContext,
+          itemType,
+          fieldNodes,
+          info,
+          path,
+          item,
+          asyncPayloadRecord,
+        );
+      }
+
+      if (isPromise(completedItem)) {
+        // Note: we don't rely on a `catch` method, but we do expect "thenable"
+        // to take a second callback for the error case.
+        completedItem = completedItem.then(undefined, (rawError) => {
+          const error = locatedError(rawError, fieldNodes, pathToArray(path));
+          return handleFieldError(error, itemType, asyncPayloadRecord.errors);
+        });
+      }
+    } catch (rawError) {
+      const error = locatedError(rawError, fieldNodes, pathToArray(path));
+      completedItem = handleFieldError(
+        error,
+        itemType,
+        asyncPayloadRecord.errors,
+      );
+    }
+  } catch (error) {
+    asyncPayloadRecord.errors.push(error);
+    asyncPayloadRecord.addData(null);
+    exeContext.subsequentPayloads.push(asyncPayloadRecord);
+    return asyncPayloadRecord;
+  }
+
+  if (isPromise(completedItem)) {
+    completedItem = completedItem.then(
+      (value) => [value],
+      (error) => {
+        asyncPayloadRecord.errors.push(error);
+        return null;
+      },
+    );
+  } else {
+    completedItem = [completedItem];
+  }
+
+  asyncPayloadRecord.addData(completedItem);
+  exeContext.subsequentPayloads.push(asyncPayloadRecord);
+  return asyncPayloadRecord;
+}
+
+async function executeStreamIteratorItem(
+  iterator: AsyncIterator<unknown>,
+  exeContext: ExecutionContext,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  itemType: GraphQLOutputType,
+  asyncPayloadRecord: AsyncPayloadRecord,
+  fieldPath: Path,
+): Promise<IteratorResult<unknown>> {
+  let item;
+  try {
+    const { value, done } = await iterator.next();
+    if (done) {
+      asyncPayloadRecord.setIsCompletedIterator();
+      return { done, value: undefined };
+    }
+    item = value;
+  } catch (rawError) {
+    const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
+    const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
+    // don't continue if iterator throws
+    return { done: true, value };
+  }
+  let completedItem;
+  try {
+    completedItem = completeValue(
+      exeContext,
+      itemType,
+      fieldNodes,
+      info,
+      fieldPath,
+      item,
+      asyncPayloadRecord,
+    );
+
+    if (isPromise(completedItem)) {
+      completedItem = completedItem.then(undefined, (rawError) => {
+        const error = locatedError(
+          rawError,
+          fieldNodes,
+          pathToArray(fieldPath),
+        );
+        return handleFieldError(error, itemType, asyncPayloadRecord.errors);
+      });
+    }
+    return { done: false, value: completedItem };
+  } catch (rawError) {
+    const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
+    const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
+    return { done: false, value };
+  }
+}
+
+async function executeStreamIterator(
+  initialIndex: number,
+  iterator: AsyncIterator<unknown>,
+  exeContext: ExecutionContext,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  itemType: GraphQLOutputType,
+  path?: Path,
+  label?: string,
+  parentContext?: AsyncPayloadRecord,
+): Promise<void> {
+  const subsequentPayloads = exeContext.subsequentPayloads;
+  let index = initialIndex;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const fieldPath = addPath(path, index, undefined);
+    const asyncPayloadRecord = new AsyncPayloadRecord({
+      label,
+      path: fieldPath,
+      parentContext,
+    });
+
+    const dataPromise = executeStreamIteratorItem(
+      iterator,
+      exeContext,
+      fieldNodes,
+      info,
+      itemType,
+      asyncPayloadRecord,
+      fieldPath,
+    );
+
+    asyncPayloadRecord.addData(
+      dataPromise
+        .then(({ value }) => value)
+        .then(
+          (value) => [value],
+          (err) => {
+            asyncPayloadRecord.errors.push(err);
+            return null;
+          },
+        ),
+    );
+    subsequentPayloads.push(asyncPayloadRecord);
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const { done } = await dataPromise;
+      if (done) {
+        break;
+      }
+    } catch (err) {
+      // do nothing, error is already handled above
+    }
+    index++;
+  }
+}
+
 function yieldSubsequentPayloads(
   exeContext: ExecutionContext,
   initialResult: ExecutionResult,
@@ -1497,13 +1795,23 @@ function yieldSubsequentPayloads(
   let _hasReturnedInitialResult = false;
 
   async function race(): Promise<IteratorResult<AsyncExecutionResult>> {
+    if (exeContext.subsequentPayloads.length === 0) {
+      // async iterable resolver just finished and no more pending payloads
+      return {
+        value: {
+          hasNext: false,
+        },
+        done: false,
+      };
+    }
+
     const asyncPayloadRecord: AsyncPayloadRecord = await new Promise(
       (resolve) => {
         exeContext.subsequentPayloads.forEach((payload) => {
-          const payloadData = payload.getData();
-          if (isPromise(payloadData)) {
+          const data = payload.getData();
+          if (isPromise(data)) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            payloadData.then(() => {
+            data.then(() => {
               resolve(payload);
             });
           } else {
@@ -1517,6 +1825,12 @@ function yieldSubsequentPayloads(
 
     const index = exeContext.subsequentPayloads.indexOf(asyncPayloadRecord);
     exeContext.subsequentPayloads.splice(index, 1);
+
+    if (asyncPayloadRecord.isCompletedIterator) {
+      // async iterable resolver just finished but there may be pending payloads
+      // return the next one
+      return race();
+    }
 
     const returnValue: ExecutionPatchResult = {
       data,
@@ -1571,14 +1885,18 @@ class AsyncPayloadRecord {
   path?: Path;
   data?: PromiseOrValue<unknown>;
   parentContext?: AsyncPayloadRecord;
+  iterator?: AsyncIterator<unknown>;
+  isCompletedIterator?: boolean;
   constructor(opts: {
     label?: string;
     path?: Path;
+    iterator?: AsyncIterator<unknown>;
     parentContext?: AsyncPayloadRecord;
   }) {
     this.label = opts.label;
     this.path = opts.path;
     this.parentContext = opts.parentContext;
+    this.iterator = opts.iterator;
     this.errors = [];
   }
 
@@ -1587,10 +1905,14 @@ class AsyncPayloadRecord {
   }
 
   getData(): PromiseOrValue<unknown> {
-    const parentData = this.parentContext?.data;
+    const parentData = this.parentContext?.getData();
     if (parentData) {
       return Promise.resolve(parentData).then(() => this.data);
     }
     return this.data;
+  }
+
+  setIsCompletedIterator() {
+    this.isCompletedIterator = true;
   }
 }
