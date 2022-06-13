@@ -52,9 +52,6 @@ const collectSubfields = memoize3((exeContext, returnType, fieldNodes) =>
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args) {
-  const { schema, document, variableValues, rootValue } = args;
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema, document, variableValues);
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
@@ -75,7 +72,7 @@ export function execute(args) {
   // in this case is the entire response.
   try {
     const { operation } = exeContext;
-    const result = executeOperation(exeContext, operation, rootValue);
+    const result = executeOperation(exeContext, operation);
     if (isPromise(result)) {
       return result.then(
         (data) => buildResponse(data, exeContext.errors),
@@ -155,6 +152,8 @@ export function buildExecutionContext(args) {
     typeResolver,
     subscribeFieldResolver,
   } = args;
+  // If arguments are missing or incorrect, throw an error.
+  assertValidExecutionArguments(schema, document, rawVariableValues);
   let operation;
   const fragments = Object.create(null);
   for (const definition of document.definitions) {
@@ -214,7 +213,7 @@ export function buildExecutionContext(args) {
 /**
  * Implements the "Executing operations" section of the spec.
  */
-function executeOperation(exeContext, operation, rootValue) {
+function executeOperation(exeContext, operation) {
   const rootType = exeContext.schema.getRootType(operation.operation);
   if (rootType == null) {
     throw new GraphQLError(
@@ -230,6 +229,7 @@ function executeOperation(exeContext, operation, rootValue) {
     operation.selectionSet,
   );
   const path = undefined;
+  const { rootValue } = exeContext;
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
       return executeFields(exeContext, rootType, rootValue, path, rootFields);
@@ -879,29 +879,9 @@ function mapSourceToResponse(resultOrStream, args) {
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export function createSourceEventStream(args) {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  } = args;
-  // If arguments are missing or incorrectly typed, this is an internal
-  // developer mistake which should throw an early error.
-  assertValidExecutionArguments(schema, document, variableValues);
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext({
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    subscribeFieldResolver,
-  });
+  const exeContext = buildExecutionContext(args);
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
     return { errors: exeContext };
