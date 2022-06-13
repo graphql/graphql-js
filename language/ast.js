@@ -22,6 +22,7 @@ export class Location {
  * within a Source.
  */
 export class Token {
+  // eslint-disable-next-line max-params
   constructor(kind, start, end, line, column, value) {
     this.kind = kind;
     this.start = start;

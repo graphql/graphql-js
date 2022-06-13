@@ -12,6 +12,9 @@ import {
 } from '../../type/definition.js';
 import { sortValueNode } from '../../utilities/sortValueNode.js';
 import { typeFromAST } from '../../utilities/typeFromAST.js';
+/* eslint-disable max-params */
+// This file contains a lot of such errors but we plan to refactor it anyway
+// so just disable it for entire file.
 function reasonMessage(reason) {
   if (Array.isArray(reason)) {
     return reason
