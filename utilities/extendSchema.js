@@ -1,4 +1,3 @@
-import { devAssert } from '../jsutils/devAssert.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { keyMap } from '../jsutils/keyMap.js';
@@ -58,8 +57,6 @@ import { valueFromAST } from './valueFromAST.js';
  */
 export function extendSchema(schema, documentAST, options) {
   assertSchema(schema);
-  (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
-    devAssert(false, 'Must provide valid Document AST.');
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDLExtension(documentAST, schema);
   }

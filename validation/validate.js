@@ -1,4 +1,3 @@
-import { devAssert } from '../jsutils/devAssert.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import { visit, visitInParallel } from '../language/visitor.js';
 import { assertValidSchema } from '../type/validate.js';
@@ -37,7 +36,6 @@ export function validate(
   typeInfo = new TypeInfo(schema),
 ) {
   const maxErrors = options?.maxErrors ?? 100;
-  documentAST != null || devAssert(false, 'Must provide document.');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
   const abortObj = Object.freeze({});

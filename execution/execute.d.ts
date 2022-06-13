@@ -121,10 +121,6 @@ export declare function executeSync(args: ExecutionArgs): ExecutionResult;
  */
 export declare function assertValidExecutionArguments(
   schema: GraphQLSchema,
-  document: DocumentNode,
-  rawVariableValues: Maybe<{
-    readonly [variable: string]: unknown;
-  }>,
 ): void;
 /**
  * Constructs a ExecutionContext object from the arguments passed to

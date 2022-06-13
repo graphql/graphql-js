@@ -1,5 +1,3 @@
-import { devAssert } from '../jsutils/devAssert.js';
-import { Kind } from '../language/kinds.js';
 import { parse } from '../language/parser.js';
 import { specifiedDirectives } from '../type/directives.js';
 import { GraphQLSchema } from '../type/schema.js';
@@ -16,8 +14,6 @@ import { extendSchemaImpl } from './extendSchema.js';
  * has no resolve methods, so execution will use default resolvers.
  */
 export function buildASTSchema(documentAST, options) {
-  (documentAST != null && documentAST.kind === Kind.DOCUMENT) ||
-    devAssert(false, 'Must provide valid Document AST.');
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDL(documentAST);
   }
