@@ -83,6 +83,7 @@ export function collectSubfields(
   }
   return subFieldNodes;
 }
+// eslint-disable-next-line max-params
 function collectFieldsImpl(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,

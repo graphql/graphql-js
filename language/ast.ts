@@ -82,6 +82,7 @@ export class Token {
    */
   readonly prev: Token | null;
   readonly next: Token | null;
+  // eslint-disable-next-line max-params
   constructor(
     kind: TokenKind,
     start: number,
