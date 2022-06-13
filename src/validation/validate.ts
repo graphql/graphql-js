@@ -1,4 +1,3 @@
-import { devAssert } from '../jsutils/devAssert';
 import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -46,7 +45,6 @@ export function validate(
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
 
-  devAssert(documentAST != null, 'Must provide document.');
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
 

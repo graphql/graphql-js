@@ -1167,20 +1167,6 @@ describe('extendSchema', () => {
     );
   });
 
-  it('Rejects invalid AST', () => {
-    const schema = new GraphQLSchema({});
-
-    // @ts-expect-error (Second argument expects DocumentNode)
-    expect(() => extendSchema(schema, null)).to.throw(
-      'Must provide valid Document AST',
-    );
-
-    // @ts-expect-error
-    expect(() => extendSchema(schema, {})).to.throw(
-      'Must provide valid Document AST',
-    );
-  });
-
   it('does not allow replacing a default directive', () => {
     const schema = new GraphQLSchema({});
     const extendAST = parse(`

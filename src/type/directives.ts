@@ -1,7 +1,5 @@
-import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { instanceOf } from '../jsutils/instanceOf';
-import { isObjectLike } from '../jsutils/isObjectLike';
 import type { Maybe } from '../jsutils/Maybe';
 import { toObjMap } from '../jsutils/toObjMap';
 
@@ -70,17 +68,7 @@ export class GraphQLDirective {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
 
-    devAssert(
-      Array.isArray(config.locations),
-      `@${config.name} locations must be an Array.`,
-    );
-
     const args = config.args ?? {};
-    devAssert(
-      isObjectLike(args) && !Array.isArray(args),
-      `@${config.name} args must be an object with argument names as keys.`,
-    );
-
     this.args = defineArguments(args);
   }
 

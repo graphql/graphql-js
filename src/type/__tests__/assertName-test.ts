@@ -8,11 +8,6 @@ describe('assertName', () => {
     expect(assertName('_ValidName123')).to.equal('_ValidName123');
   });
 
-  it('throws for non-strings', () => {
-    // @ts-expect-error
-    expect(() => assertName({})).to.throw('Expected name to be a string.');
-  });
-
   it('throws on empty strings', () => {
     expect(() => assertName('')).to.throw(
       'Expected name to be a non-empty string.',

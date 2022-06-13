@@ -92,24 +92,6 @@ describe('Type System: Scalars', () => {
     ).to.equal('parseValue: { foo: { bar: "baz" } }');
   });
 
-  it('rejects a Scalar type without name', () => {
-    // @ts-expect-error
-    expect(() => new GraphQLScalarType({})).to.throw('Must provide name.');
-  });
-
-  it('rejects a Scalar type defining serialize with an incorrect type', () => {
-    expect(
-      () =>
-        new GraphQLScalarType({
-          name: 'SomeScalar',
-          // @ts-expect-error
-          serialize: {},
-        }),
-    ).to.throw(
-      'SomeScalar must provide "serialize" function. If this custom Scalar is also used as an input type, ensure "parseValue" and "parseLiteral" functions are also provided.',
-    );
-  });
-
   it('rejects a Scalar type defining parseLiteral but not parseValue', () => {
     expect(
       () =>
@@ -119,34 +101,6 @@ describe('Type System: Scalars', () => {
         }),
     ).to.throw(
       'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
-    );
-  });
-
-  it('rejects a Scalar type defining parseValue and parseLiteral with an incorrect type', () => {
-    expect(
-      () =>
-        new GraphQLScalarType({
-          name: 'SomeScalar',
-          // @ts-expect-error
-          parseValue: {},
-          // @ts-expect-error
-          parseLiteral: {},
-        }),
-    ).to.throw(
-      'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
-    );
-  });
-
-  it('rejects a Scalar type defining specifiedByURL with an incorrect type', () => {
-    expect(
-      () =>
-        new GraphQLScalarType({
-          name: 'SomeScalar',
-          // @ts-expect-error
-          specifiedByURL: {},
-        }),
-    ).to.throw(
-      'SomeScalar must provide "specifiedByURL" as a string, but got: {}.',
     );
   });
 });
@@ -328,30 +282,6 @@ describe('Type System: Objects', () => {
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
-  it('rejects an Object type field with undefined config', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {
-        // @ts-expect-error (must not be undefined)
-        f: undefined,
-      },
-    });
-    expect(() => objType.getFields()).to.throw(
-      'SomeObject.f field config must be an object.',
-    );
-  });
-
-  it('rejects an Object type with incorrectly typed fields', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      // @ts-expect-error
-      fields: [{ field: ScalarType }],
-    });
-    expect(() => objType.getFields()).to.throw(
-      'SomeObject fields must be an object with field names as keys or a function which returns such an object.',
-    );
-  });
-
   it('rejects an Object type with incorrectly named fields', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
@@ -375,22 +305,6 @@ describe('Type System: Objects', () => {
     expect(() => objType.getFields()).to.throw();
   });
 
-  it('rejects an Object type with incorrectly typed field args', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {
-        badField: {
-          type: ScalarType,
-          // @ts-expect-error
-          args: [{ badArg: ScalarType }],
-        },
-      },
-    });
-    expect(() => objType.getFields()).to.throw(
-      'SomeObject.badField args must be an object with argument names as keys.',
-    );
-  });
-
   it('rejects an Object type with incorrectly named field args', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
@@ -405,74 +319,6 @@ describe('Type System: Objects', () => {
     });
     expect(() => objType.getFields()).to.throw(
       'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
-    );
-  });
-
-  it('rejects an Object type with incorrectly typed interfaces', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {},
-      // @ts-expect-error
-      interfaces: {},
-    });
-    expect(() => objType.getInterfaces()).to.throw(
-      'SomeObject interfaces must be an Array or a function which returns an Array.',
-    );
-  });
-
-  it('rejects an Object type with interfaces as a function returning an incorrect type', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {},
-      // @ts-expect-error (Expected interfaces to return array)
-      interfaces() {
-        return {};
-      },
-    });
-    expect(() => objType.getInterfaces()).to.throw(
-      'SomeObject interfaces must be an Array or a function which returns an Array.',
-    );
-  });
-
-  it('rejects an empty Object field resolver', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {
-        // @ts-expect-error (Expected resolve to be a function)
-        field: { type: ScalarType, resolve: {} },
-      },
-    });
-
-    expect(() => objType.getFields()).to.throw(
-      'SomeObject.field field resolver must be a function if provided, but got: {}.',
-    );
-  });
-
-  it('rejects a constant scalar value resolver', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {
-        // @ts-expect-error (Expected resolve to be a function)
-        field: { type: ScalarType, resolve: 0 },
-      },
-    });
-
-    expect(() => objType.getFields()).to.throw(
-      'SomeObject.field field resolver must be a function if provided, but got: 0.',
-    );
-  });
-
-  it('rejects an Object type with an incorrect type for isTypeOf', () => {
-    expect(
-      () =>
-        new GraphQLObjectType({
-          name: 'AnotherObject',
-          fields: {},
-          // @ts-expect-error
-          isTypeOf: {},
-        }),
-    ).to.throw(
-      'AnotherObject must provide "isTypeOf" as a function, but got: {}.',
     );
   });
 });
@@ -510,46 +356,6 @@ describe('Type System: Interfaces', () => {
     expect(
       () => new GraphQLInterfaceType({ name: 'bad-name', fields: {} }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
-  });
-
-  it('rejects an Interface type with incorrectly typed interfaces', () => {
-    const objType = new GraphQLInterfaceType({
-      name: 'AnotherInterface',
-      fields: {},
-      // @ts-expect-error
-      interfaces: {},
-    });
-    expect(() => objType.getInterfaces()).to.throw(
-      'AnotherInterface interfaces must be an Array or a function which returns an Array.',
-    );
-  });
-
-  it('rejects an Interface type with interfaces as a function returning an incorrect type', () => {
-    const objType = new GraphQLInterfaceType({
-      name: 'AnotherInterface',
-      fields: {},
-      // @ts-expect-error (Expected Array return)
-      interfaces() {
-        return {};
-      },
-    });
-    expect(() => objType.getInterfaces()).to.throw(
-      'AnotherInterface interfaces must be an Array or a function which returns an Array.',
-    );
-  });
-
-  it('rejects an Interface type with an incorrect type for resolveType', () => {
-    expect(
-      () =>
-        new GraphQLInterfaceType({
-          name: 'AnotherInterface',
-          fields: {},
-          // @ts-expect-error
-          resolveType: {},
-        }),
-    ).to.throw(
-      'AnotherInterface must provide "resolveType" as a function, but got: {}.',
-    );
   });
 });
 
@@ -592,32 +398,6 @@ describe('Type System: Unions', () => {
     expect(
       () => new GraphQLUnionType({ name: 'bad-name', types: [] }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
-  });
-
-  it('rejects an Union type with an incorrect type for resolveType', () => {
-    expect(
-      () =>
-        new GraphQLUnionType({
-          name: 'SomeUnion',
-          types: [],
-          // @ts-expect-error
-          resolveType: {},
-        }),
-    ).to.throw(
-      'SomeUnion must provide "resolveType" as a function, but got: {}.',
-    );
-  });
-
-  it('rejects a Union type with incorrectly typed types', () => {
-    const unionType = new GraphQLUnionType({
-      name: 'SomeUnion',
-      // @ts-expect-error
-      types: { ObjectType },
-    });
-
-    expect(() => unionType.getTypes()).to.throw(
-      'Must provide Array of types or a function which returns such an array for Union SomeUnion.',
-    );
   });
 });
 
@@ -710,17 +490,6 @@ describe('Type System: Enums', () => {
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
-  it('rejects an Enum type with incorrectly typed values', () => {
-    expect(
-      () =>
-        new GraphQLEnumType({
-          name: 'SomeEnum',
-          // @ts-expect-error
-          values: [{ FOO: 10 }],
-        }),
-    ).to.throw('SomeEnum values must be an object with value names as keys.');
-  });
-
   it('rejects an Enum type with incorrectly named values', () => {
     expect(
       () =>
@@ -731,32 +500,6 @@ describe('Type System: Enums', () => {
           },
         }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
-  });
-
-  it('rejects an Enum type with missing value definition', () => {
-    expect(
-      () =>
-        new GraphQLEnumType({
-          name: 'SomeEnum',
-          // @ts-expect-error (must not be null)
-          values: { FOO: null },
-        }),
-    ).to.throw(
-      'SomeEnum.FOO must refer to an object with a "value" key representing an internal value but got: null.',
-    );
-  });
-
-  it('rejects an Enum type with incorrectly typed value definition', () => {
-    expect(
-      () =>
-        new GraphQLEnumType({
-          name: 'SomeEnum',
-          // @ts-expect-error
-          values: { FOO: 10 },
-        }),
-    ).to.throw(
-      'SomeEnum.FOO must refer to an object with a "value" key representing an internal value but got: 10.',
-    );
   });
 });
 
@@ -807,28 +550,6 @@ describe('Type System: Input Objects', () => {
         () => new GraphQLInputObjectType({ name: 'bad-name', fields: {} }),
       ).to.throw(
         'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
-      );
-    });
-
-    it('rejects an Input Object type with incorrect fields', () => {
-      const inputObjType = new GraphQLInputObjectType({
-        name: 'SomeInputObject',
-        // @ts-expect-error
-        fields: [],
-      });
-      expect(() => inputObjType.getFields()).to.throw(
-        'SomeInputObject fields must be an object with field names as keys or a function which returns such an object.',
-      );
-    });
-
-    it('rejects an Input Object type with fields function that returns incorrect type', () => {
-      const inputObjType = new GraphQLInputObjectType({
-        name: 'SomeInputObject',
-        // @ts-expect-error
-        fields: () => [],
-      });
-      expect(() => inputObjType.getFields()).to.throw(
-        'SomeInputObject fields must be an object with field names as keys or a function which returns such an object.',
       );
     });
 
@@ -905,19 +626,6 @@ describe('Type System: List', () => {
     expectList(ListOfScalarsType).to.not.throw();
     expectList(NonNullScalarType).to.not.throw();
   });
-
-  it('rejects a non-type as item type of list', () => {
-    // @ts-expect-error
-    expectList({}).to.throw('Expected {} to be a GraphQL type.');
-    // @ts-expect-error
-    expectList(String).to.throw(
-      'Expected [function String] to be a GraphQL type.',
-    );
-    // @ts-expect-error (must provide type)
-    expectList(null).to.throw('Expected null to be a GraphQL type.');
-    // @ts-expect-error (must provide type)
-    expectList(undefined).to.throw('Expected undefined to be a GraphQL type.');
-  });
 });
 
 describe('Type System: Non-Null', () => {
@@ -934,26 +642,6 @@ describe('Type System: Non-Null', () => {
     expectNonNull(InputObjectType).to.not.throw();
     expectNonNull(ListOfScalarsType).to.not.throw();
     expectNonNull(ListOfNonNullScalarsType).to.not.throw();
-  });
-
-  it('rejects a non-type as nullable type of non-null', () => {
-    expectNonNull(NonNullScalarType).to.throw(
-      'Expected Scalar! to be a GraphQL nullable type.',
-    );
-    // @ts-expect-error
-    expectNonNull({}).to.throw('Expected {} to be a GraphQL nullable type.');
-    // @ts-expect-error
-    expectNonNull(String).to.throw(
-      'Expected [function String] to be a GraphQL nullable type.',
-    );
-    // @ts-expect-error (must provide type)
-    expectNonNull(null).to.throw(
-      'Expected null to be a GraphQL nullable type.',
-    );
-    // @ts-expect-error (must provide type)
-    expectNonNull(undefined).to.throw(
-      'Expected undefined to be a GraphQL nullable type.',
-    );
   });
 });
 

@@ -438,15 +438,6 @@ describe('Type System: Schema', () => {
           }).__validationErrors,
         ).to.equal(undefined);
       });
-
-      it('checks the configuration for mistakes', () => {
-        // @ts-expect-error
-        expect(() => new GraphQLSchema(JSON.parse)).to.throw();
-        // @ts-expect-error
-        expect(() => new GraphQLSchema({ types: {} })).to.throw();
-        // @ts-expect-error
-        expect(() => new GraphQLSchema({ directives: {} })).to.throw();
-      });
     });
 
     describe('A Schema must contain uniquely named types', () => {
@@ -463,19 +454,6 @@ describe('Type System: Schema', () => {
 
         expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
           'Schema must contain uniquely named types but contains multiple types named "String".',
-        );
-      });
-
-      it('rejects a Schema when a provided type has no name', () => {
-        const query = new GraphQLObjectType({
-          name: 'Query',
-          fields: { foo: { type: GraphQLString } },
-        });
-        const types = [{}, query, {}];
-
-        // @ts-expect-error
-        expect(() => new GraphQLSchema({ query, types })).to.throw(
-          'One of the provided types for building the Schema is missing a name.',
         );
       });
 
