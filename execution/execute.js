@@ -111,17 +111,6 @@ function buildResponse(data, errors) {
   return errors.length === 0 ? { data } : { errors, data };
 }
 /**
- * Essential assertions before executing to provide developer feedback for
- * improper use of the GraphQL library.
- *
- * TODO: consider no longer exporting this function
- * @internal
- */
-export function assertValidExecutionArguments(schema) {
-  // If the schema used for execution is invalid, throw an error.
-  assertValidSchema(schema);
-}
-/**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
  *
@@ -142,8 +131,8 @@ export function buildExecutionContext(args) {
     typeResolver,
     subscribeFieldResolver,
   } = args;
-  // If arguments are missing or incorrect, throw an error.
-  assertValidExecutionArguments(schema);
+  // If the schema used for execution is invalid, throw an error.
+  assertValidSchema(schema);
   let operation;
   const fragments = Object.create(null);
   for (const definition of document.definitions) {

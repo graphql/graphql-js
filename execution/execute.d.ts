@@ -113,16 +113,6 @@ export declare function execute(
  */
 export declare function executeSync(args: ExecutionArgs): ExecutionResult;
 /**
- * Essential assertions before executing to provide developer feedback for
- * improper use of the GraphQL library.
- *
- * TODO: consider no longer exporting this function
- * @internal
- */
-export declare function assertValidExecutionArguments(
-  schema: GraphQLSchema,
-): void;
-/**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
  *
