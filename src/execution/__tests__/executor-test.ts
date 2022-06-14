@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { inspect } from '../../jsutils/inspect';
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
@@ -833,7 +834,7 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({ data: { c: 'd' } });
   });
 
-  it('uses the subscription schema for subscriptions', () => {
+  it('uses the subscription schema for subscriptions', async () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Q',
@@ -852,11 +853,22 @@ describe('Execute: Handles basic execution tasks', () => {
       query Q { a }
       subscription S { a }
     `);
-    const rootValue = { a: 'b', c: 'd' };
+    const rootValue = {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      async *a() {
+        yield { a: 'b' }; /* c8 ignore start */
+      } /* c8 ignore stop */,
+      c: 'd',
+    };
     const operationName = 'S';
 
     const result = executeSync({ schema, document, rootValue, operationName });
-    expect(result).to.deep.equal({ data: { a: 'b' } });
+
+    assert(isAsyncIterable(result));
+    expect(await result.next()).to.deep.equal({
+      value: { data: { a: 'b' } },
+      done: false,
+    });
   });
 
   it('resolves to an error if schema does not support operation', () => {
@@ -895,7 +907,6 @@ describe('Execute: Handles basic execution tasks', () => {
     expectJSON(
       executeSync({ schema, document, operationName: 'S' }),
     ).toDeepEqual({
-      data: null,
       errors: [
         {
           message:

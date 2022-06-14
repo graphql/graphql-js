@@ -15,7 +15,7 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
 import type { ExecutionArgs, ExecutionResult } from '../execute';
-import { createSourceEventStream, subscribe } from '../execute';
+import { createSourceEventStream, execute, subscribe } from '../execute';
 
 import { SimplePubSub } from './simplePubSub';
 
@@ -122,7 +122,7 @@ function createSubscription(pubsub: SimplePubSub<Email>) {
     }),
   };
 
-  return subscribe({ schema: emailSchema, document, rootValue: data });
+  return execute({ schema: emailSchema, document, rootValue: data });
 }
 
 // TODO: consider adding this method to testUtils (with tests)
@@ -150,22 +150,46 @@ function expectPromise(maybePromise: unknown) {
   };
 }
 
-// TODO: consider adding this method to testUtils (with tests)
+// TODO: consider adding these method to testUtils (with tests)
 function expectEqualPromisesOrValues<T>(
-  value1: PromiseOrValue<T>,
-  value2: PromiseOrValue<T>,
+  items: ReadonlyArray<PromiseOrValue<T>>,
 ): PromiseOrValue<T> {
-  if (isPromise(value1)) {
-    assert(isPromise(value2));
-    return Promise.all([value1, value2]).then((resolved) => {
-      expectJSON(resolved[1]).toDeepEqual(resolved[0]);
-      return resolved[0];
-    });
+  if (isPromise(items[0])) {
+    if (assertAllPromises(items)) {
+      return Promise.all(items).then(expectMatchingValues);
+    }
+  } else if (assertNoPromises(items)) {
+    return expectMatchingValues(items);
   }
+  /* c8 ignore next 3 */
+  // Not reachable, all possible output types have been considered.
+  assert(false, 'Receives mixture of promises and values.');
+}
 
-  assert(!isPromise(value2));
-  expectJSON(value2).toDeepEqual(value1);
-  return value1;
+function expectMatchingValues<T>(values: ReadonlyArray<T>): T {
+  const remainingValues = values.slice(1);
+  for (const value of remainingValues) {
+    expectJSON(value).toDeepEqual(values[0]);
+  }
+  return values[0];
+}
+
+function assertAllPromises<T>(
+  items: ReadonlyArray<PromiseOrValue<T>>,
+): items is ReadonlyArray<Promise<T>> {
+  for (const item of items) {
+    assert(isPromise(item));
+  }
+  return true;
+}
+
+function assertNoPromises<T>(
+  items: ReadonlyArray<PromiseOrValue<T>>,
+): items is ReadonlyArray<T> {
+  for (const item of items) {
+    assert(!isPromise(item));
+  }
+  return true;
 }
 
 const DummyQueryType = new GraphQLObjectType({
@@ -195,10 +219,11 @@ function subscribeWithBadFn(
 function subscribeWithBadArgs(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
-  return expectEqualPromisesOrValues(
-    subscribe(args),
+  return expectEqualPromisesOrValues([
+    execute(args),
     createSourceEventStream(args),
-  );
+    subscribe(args),
+  ]);
 }
 
 /* eslint-disable @typescript-eslint/require-await */
@@ -220,7 +245,7 @@ describe('Subscription Initialization Phase', () => {
       yield { foo: 'FooValue' };
     }
 
-    const subscription = subscribe({
+    const subscription = execute({
       schema,
       document: parse('subscription { foo }'),
       rootValue: { foo: fooGenerator },
@@ -256,7 +281,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const subscription = subscribe({
+    const subscription = execute({
       schema,
       document: parse('subscription { foo }'),
     });
@@ -294,7 +319,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const promise = subscribe({
+    const promise = execute({
       schema,
       document: parse('subscription { foo }'),
     });
@@ -329,7 +354,7 @@ describe('Subscription Initialization Phase', () => {
       yield { foo: 'FooValue' };
     }
 
-    const subscription = subscribe({
+    const subscription = execute({
       schema,
       document: parse('subscription { foo }'),
       rootValue: { customFoo: fooGenerator },
@@ -379,7 +404,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const subscription = subscribe({
+    const subscription = execute({
       schema,
       document: parse('subscription { foo bar }'),
     });
@@ -530,7 +555,7 @@ describe('Subscription Initialization Phase', () => {
       }
     `);
 
-    // If we receive variables that cannot be coerced correctly, subscribe() will
+    // If we receive variables that cannot be coerced correctly, execute() will
     // resolve to an ExecutionResult that contains an informative error description.
     const result = subscribeWithBadArgs({ schema, document, variableValues });
     expectJSON(result).toDeepEqual({
@@ -945,7 +970,7 @@ describe('Subscription Publish Phase', () => {
     });
 
     const document = parse('subscription { newMessage }');
-    const subscription = subscribe({ schema, document });
+    const subscription = execute({ schema, document });
     assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
@@ -1006,7 +1031,7 @@ describe('Subscription Publish Phase', () => {
     });
 
     const document = parse('subscription { newMessage }');
-    const subscription = subscribe({ schema, document });
+    const subscription = execute({ schema, document });
     assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
