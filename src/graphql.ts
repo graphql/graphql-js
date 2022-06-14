@@ -67,7 +67,9 @@ export interface GraphQLArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 
-export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
+export function graphql(
+  args: GraphQLArgs,
+): Promise<ExecutionResult | AsyncGenerator<ExecutionResult, void, void>> {
   // Always return a Promise for a consistent API.
   return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
@@ -78,7 +80,9 @@ export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-export function graphqlSync(args: GraphQLArgs): ExecutionResult {
+export function graphqlSync(
+  args: GraphQLArgs,
+): ExecutionResult | AsyncGenerator<ExecutionResult, void, void> {
   const result = graphqlImpl(args);
 
   // Assert that the execution was synchronous.
@@ -89,7 +93,11 @@ export function graphqlSync(args: GraphQLArgs): ExecutionResult {
   return result;
 }
 
-function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
+function graphqlImpl(
+  args: GraphQLArgs,
+): PromiseOrValue<
+  ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
+> {
   const {
     schema,
     source,

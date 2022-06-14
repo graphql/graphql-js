@@ -1,7 +1,9 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
+
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 
 import { introspectionFromSchema } from '../../utilities/introspectionFromSchema';
 
@@ -104,7 +106,10 @@ const SubscriptionType = new GraphQLObjectType({
     subscribeToEnum: {
       type: ColorType,
       args: { color: { type: ColorType } },
-      resolve: (_source, { color }) => color,
+      // eslint-disable-next-line @typescript-eslint/require-await
+      async *subscribe(_source, { color }) {
+        yield { subscribeToEnum: color }; /* c8 ignore start */
+      } /* c8 ignore stop */,
     },
   },
 });
@@ -248,13 +253,15 @@ describe('Type System: Enum Values', () => {
     });
   });
 
-  it('accepts enum literals as input arguments to subscriptions', () => {
+  it('accepts enum literals as input arguments to subscriptions', async () => {
     const doc =
       'subscription ($color: Color!) { subscribeToEnum(color: $color) }';
     const result = executeQuery(doc, { color: 'GREEN' });
 
-    expect(result).to.deep.equal({
-      data: { subscribeToEnum: 'GREEN' },
+    assert(isAsyncIterable(result));
+    expect(await result.next()).to.deep.equal({
+      value: { data: { subscribeToEnum: 'GREEN' } },
+      done: false,
     });
   });
 

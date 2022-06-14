@@ -1,7 +1,10 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
+
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
 
 import { parse } from '../../language/parser';
 
@@ -109,7 +112,9 @@ const schema = buildSchema(`
 function executeQuery(
   query: string,
   rootValue: unknown,
-): ExecutionResult | Promise<ExecutionResult> {
+): PromiseOrValue<
+  ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
+> {
   return execute({ schema, document: parse(query), rootValue });
 }
 
@@ -132,6 +137,7 @@ async function executeSyncAndAsync(query: string, rootValue: unknown) {
     rootValue,
   });
 
+  assert(!isAsyncIterable(syncResult));
   expectJSON(asyncResult).toDeepEqual(patchData(syncResult));
   return syncResult;
 }

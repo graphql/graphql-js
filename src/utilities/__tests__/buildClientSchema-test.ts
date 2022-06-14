@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
+
 import {
   assertEnumType,
   GraphQLEnumType,
@@ -591,6 +593,7 @@ describe('Type System: build schema from introspection', () => {
       variableValues: { v: 'baz' },
     });
 
+    assert(!isAsyncIterable(result));
     expect(result.data).to.deep.equal({ foo: 'bar' });
   });
 

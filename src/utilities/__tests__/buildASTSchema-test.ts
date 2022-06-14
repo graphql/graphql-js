@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 import type { Maybe } from '../../jsutils/Maybe';
 
 import type { ASTNode } from '../../language/ast';
@@ -76,6 +77,7 @@ describe('Schema Builder', () => {
       source: '{ str }',
       rootValue: { str: 123 },
     });
+    assert(!isAsyncIterable(result));
     expect(result.data).to.deep.equal({ str: '123' });
   });
 

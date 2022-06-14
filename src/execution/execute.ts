@@ -154,6 +154,14 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
+type FieldsExecutor = (
+  exeContext: ExecutionContext,
+  parentType: GraphQLObjectType,
+  sourceValue: unknown,
+  path: Path | undefined,
+  fields: Map<string, ReadonlyArray<FieldNode>>,
+) => PromiseOrValue<ObjMap<unknown>>;
+
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
  *
@@ -164,8 +172,12 @@ export interface ExecutionArgs {
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
-export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  return prepareContextAndRunFn(args, executeImpl);
+export function execute(
+  args: ExecutionArgs,
+): PromiseOrValue<
+  ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
+> {
+  return prepareContextAndRunFn(args, executeOperation);
 }
 
 function prepareContextAndRunFn<T>(
@@ -185,10 +197,41 @@ function prepareContextAndRunFn<T>(
 }
 
 /**
- * Implements the "Executing operations" section of the spec for queries and mutations.
+ * Implements the "Executing operations" section of the spec.
  */
-function executeImpl(
+function executeOperation(
   exeContext: ExecutionContext,
+): PromiseOrValue<
+  ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
+> {
+  const operationType = exeContext.operation.operation;
+
+  if (operationType === OperationTypeNode.QUERY) {
+    return executeQuery(exeContext);
+  }
+
+  if (operationType === OperationTypeNode.MUTATION) {
+    return executeMutation(exeContext);
+  }
+
+  return executeSubscription(exeContext);
+}
+
+function executeQuery(
+  exeContext: ExecutionContext,
+): PromiseOrValue<ExecutionResult> {
+  return executeQueryOrMutation(exeContext, executeFields);
+}
+
+function executeMutation(
+  exeContext: ExecutionContext,
+): PromiseOrValue<ExecutionResult> {
+  return executeQueryOrMutation(exeContext, executeFieldsSerially);
+}
+
+function executeQueryOrMutation(
+  exeContext: ExecutionContext,
+  fieldsExecutor: FieldsExecutor,
 ): PromiseOrValue<ExecutionResult> {
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
@@ -202,7 +245,7 @@ function executeImpl(
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
   try {
-    const result = executeQueryOrMutationRootFields(exeContext);
+    const result = executeQueryOrMutationRootFields(exeContext, fieldsExecutor);
     if (isPromise(result)) {
       return result.then(
         (data) => buildResponse(data, exeContext.errors),
@@ -224,7 +267,9 @@ function executeImpl(
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
  */
-export function executeSync(args: ExecutionArgs): ExecutionResult {
+export function executeSync(
+  args: ExecutionArgs,
+): ExecutionResult | AsyncGenerator<ExecutionResult, void, void> {
   const result = execute(args);
 
   // Assert that the execution was synchronous.
@@ -348,6 +393,7 @@ function buildPerEventExecutionContext(
 
 function executeQueryOrMutationRootFields(
   exeContext: ExecutionContext,
+  fieldsExecutor: FieldsExecutor,
 ): PromiseOrValue<ObjMap<unknown>> {
   const { operation, schema, fragments, variableValues, rootValue } =
     exeContext;
@@ -368,22 +414,7 @@ function executeQueryOrMutationRootFields(
   );
   const path = undefined;
 
-  switch (operation.operation) {
-    case OperationTypeNode.QUERY:
-      return executeFields(exeContext, rootType, rootValue, path, rootFields);
-    case OperationTypeNode.MUTATION:
-      return executeFieldsSerially(
-        exeContext,
-        rootType,
-        rootValue,
-        path,
-        rootFields,
-      );
-    case OperationTypeNode.SUBSCRIPTION:
-      // TODO: deprecate `subscribe` and move all logic here
-      // Temporary solution until we finish merging execute and subscribe together
-      return executeFields(exeContext, rootType, rootValue, path, rootFields);
-  }
+  return fieldsExecutor(exeContext, rootType, rootValue, path, rootFields);
 }
 
 /**
@@ -1035,23 +1066,31 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  * yields a stream of ExecutionResults representing the response stream.
  *
  * Accepts either an object with named arguments, or individual arguments.
+ *
+ * @deprecated subscribe will be removed in v18; use execute instead
  */
 export function subscribe(
   args: ExecutionArgs,
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  return prepareContextAndRunFn(args, (exeContext: ExecutionContext) => {
-    const resultOrStream = createSourceEventStreamImpl(exeContext);
+  return execute(args);
+}
 
-    if (isPromise(resultOrStream)) {
-      return resultOrStream.then((resolvedResultOrStream) =>
-        mapSourceToResponse(exeContext, resolvedResultOrStream),
-      );
-    }
+function executeSubscription(
+  exeContext: ExecutionContext,
+): PromiseOrValue<
+  ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
+> {
+  const resultOrStream = createSourceEventStreamImpl(exeContext);
 
-    return mapSourceToResponse(exeContext, resultOrStream);
-  });
+  if (isPromise(resultOrStream)) {
+    return resultOrStream.then((resolvedResultOrStream) =>
+      mapSourceToResponse(exeContext, resolvedResultOrStream),
+    );
+  }
+
+  return mapSourceToResponse(exeContext, resultOrStream);
 }
 
 function mapSourceToResponse(
@@ -1071,7 +1110,10 @@ function mapSourceToResponse(
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   return mapAsyncIterator(resultOrStream, (payload: unknown) =>
-    executeImpl(buildPerEventExecutionContext(exeContext, payload)),
+    executeQueryOrMutation(
+      buildPerEventExecutionContext(exeContext, payload),
+      executeFields,
+    ),
   );
 }
 

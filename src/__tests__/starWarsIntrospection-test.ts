@@ -1,5 +1,7 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
+
+import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 
 import { graphqlSync } from '../graphql';
 
@@ -8,6 +10,7 @@ import { StarWarsSchema } from './starWarsSchema';
 function queryStarWars(source: string) {
   const result = graphqlSync({ schema: StarWarsSchema, source });
   expect(Object.keys(result)).to.deep.equal(['data']);
+  assert(!isAsyncIterable(result));
   return result.data;
 }
 
