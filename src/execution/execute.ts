@@ -170,7 +170,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
-  if (Array.isArray(exeContext)) {
+  if (Array.isArray(exeContext) || !('schema' in exeContext)) {
     return { errors: exeContext };
   }
 
@@ -1090,7 +1090,7 @@ export function createSourceEventStream(
   const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
-  if (Array.isArray(exeContext)) {
+  if (Array.isArray(exeContext) || !('schema' in exeContext)) {
     return { errors: exeContext };
   }
 
