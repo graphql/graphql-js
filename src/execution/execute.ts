@@ -1127,27 +1127,29 @@ function executeSubscription(
     rootType,
     operation.selectionSet,
   );
+
   const [responseName, fieldNodes] = [...rootFields.entries()][0];
-  const fieldName = fieldNodes[0].name.value;
-  const fieldDef = schema.getField(rootType, fieldName);
-
-  if (!fieldDef) {
-    throw new GraphQLError(
-      `The subscription field "${fieldName}" is not defined.`,
-      { nodes: fieldNodes },
-    );
-  }
-
   const path = addPath(undefined, responseName, rootType.name);
-  const info = buildResolveInfo(
-    exeContext,
-    fieldDef,
-    fieldNodes,
-    rootType,
-    path,
-  );
 
   try {
+    const fieldName = fieldNodes[0].name.value;
+    const fieldDef = schema.getField(rootType, fieldName);
+
+    if (!fieldDef) {
+      throw new GraphQLError(
+        `The subscription field "${fieldName}" is not defined.`,
+        { nodes: fieldNodes },
+      );
+    }
+
+    const info = buildResolveInfo(
+      exeContext,
+      fieldDef,
+      fieldNodes,
+      rootType,
+      path,
+    );
+
     // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
     // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
 

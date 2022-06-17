@@ -424,6 +424,7 @@ describe('Subscription Initialization Phase', () => {
         {
           message: 'The subscription field "unknownField" is not defined.',
           locations: [{ line: 1, column: 16 }],
+          path: ['unknownField'],
         },
       ],
     });
