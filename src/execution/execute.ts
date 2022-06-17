@@ -346,31 +346,36 @@ function executeOperation(
     rootType,
     operation.selectionSet,
   );
-  const path = undefined;
-
-  const { rootValue } = exeContext;
 
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
-      return executeFields(exeContext, rootType, rootValue, path, rootFields);
+      return executeRootFields(exeContext, rootType, rootFields, false);
     case OperationTypeNode.MUTATION:
-      return executeFieldsSerially(
-        exeContext,
-        rootType,
-        rootValue,
-        path,
-        rootFields,
-      );
+      return executeRootFields(exeContext, rootType, rootFields, true);
     case OperationTypeNode.SUBSCRIPTION:
       // TODO: deprecate `subscribe` and move all logic here
       // Temporary solution until we finish merging execute and subscribe together
-      return executeFields(exeContext, rootType, rootValue, path, rootFields);
+      return executeRootFields(exeContext, rootType, rootFields, false);
   }
+}
+
+function executeRootFields(
+  exeContext: ExecutionContext,
+  rootType: GraphQLObjectType,
+  rootFields: Map<string, ReadonlyArray<FieldNode>>,
+  executeSerially: boolean,
+): PromiseOrValue<ObjMap<unknown>> {
+  const { rootValue } = exeContext;
+  const path = undefined;
+
+  return executeSerially
+    ? executeFieldsSerially(exeContext, rootType, rootValue, path, rootFields)
+    : executeFields(exeContext, rootType, rootValue, path, rootFields);
 }
 
 /**
  * Implements the "Executing selection sets" section of the spec
- * for fields that must be executed serially.
+ * for root fields that must be executed serially.
  */
 function executeFieldsSerially(
   exeContext: ExecutionContext,
