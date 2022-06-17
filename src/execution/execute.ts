@@ -231,6 +231,10 @@ function buildResponse(
   return errors.length === 0 ? { data } : { errors, data };
 }
 
+function buildErrorResponse(error: GraphQLError) {
+  return { errors: [error] };
+}
+
 /**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
@@ -1094,29 +1098,22 @@ export function createSourceEventStream(
     return { errors: exeContext };
   }
 
-  try {
-    const eventStream = executeSubscription(exeContext);
-    if (isPromise(eventStream)) {
-      return eventStream.then(undefined, (error) => ({ errors: [error] }));
-    }
-
-    return eventStream;
-  } catch (error) {
-    return { errors: [error] };
-  }
+  return executeSubscription(exeContext);
 }
 
 function executeSubscription(
   exeContext: ExecutionContext,
-): PromiseOrValue<AsyncIterable<unknown>> {
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   const { schema, fragments, operation, variableValues, rootValue } =
     exeContext;
 
   const rootType = schema.getSubscriptionType();
   if (rootType == null) {
-    throw new GraphQLError(
-      'Schema is not configured to execute subscription operation.',
-      { nodes: operation },
+    return buildErrorResponse(
+      new GraphQLError(
+        'Schema is not configured to execute subscription operation.',
+        { nodes: operation },
+      ),
     );
   }
 
@@ -1168,14 +1165,20 @@ function executeSubscription(
     const result = resolveFn(rootValue, args, contextValue, info);
 
     if (isPromise(result)) {
-      return result.then(assertEventStream).then(undefined, (error) => {
-        throw locatedError(error, fieldNodes, pathToArray(path));
-      });
+      return result
+        .then(assertEventStream)
+        .then(undefined, (error) =>
+          buildErrorResponse(
+            locatedError(error, fieldNodes, pathToArray(path)),
+          ),
+        );
     }
 
     return assertEventStream(result);
   } catch (error) {
-    throw locatedError(error, fieldNodes, pathToArray(path));
+    return buildErrorResponse(
+      locatedError(error, fieldNodes, pathToArray(path)),
+    );
   }
 }
 
