@@ -871,7 +871,6 @@ describe('Execute: Handles basic execution tasks', () => {
     expectJSON(
       executeSync({ schema, document, operationName: 'Q' }),
     ).toDeepEqual({
-      data: null,
       errors: [
         {
           message: 'Schema is not configured to execute query operation.',
@@ -883,7 +882,6 @@ describe('Execute: Handles basic execution tasks', () => {
     expectJSON(
       executeSync({ schema, document, operationName: 'M' }),
     ).toDeepEqual({
-      data: null,
       errors: [
         {
           message: 'Schema is not configured to execute mutation operation.',
@@ -895,7 +893,6 @@ describe('Execute: Handles basic execution tasks', () => {
     expectJSON(
       executeSync({ schema, document, operationName: 'S' }),
     ).toDeepEqual({
-      data: null,
       errors: [
         {
           message:

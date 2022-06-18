@@ -174,34 +174,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  // Return a Promise that will eventually resolve to the data described by
-  // The "Response" section of the GraphQL specification.
-  //
-  // If errors are encountered while executing a GraphQL field, only that
-  // field and its descendants will be omitted, and sibling fields will still
-  // be executed. An execution which encounters errors will still result in a
-  // resolved Promise.
-  //
-  // Errors from sub-fields of a NonNull type may propagate to the top level,
-  // at which point we still log the error and null the parent field, which
-  // in this case is the entire response.
-  try {
-    const { operation } = exeContext;
-    const result = executeOperation(exeContext, operation);
-    if (isPromise(result)) {
-      return result.then(
-        (data) => buildResponse(data, exeContext.errors),
-        (error) => {
-          exeContext.errors.push(error);
-          return buildResponse(null, exeContext.errors);
-        },
-      );
-    }
-    return buildResponse(result, exeContext.errors);
-  } catch (error) {
-    exeContext.errors.push(error);
-    return buildResponse(null, exeContext.errors);
-  }
+  return executeOperation(exeContext, exeContext.operation);
 }
 
 /**
@@ -330,12 +303,14 @@ export function buildExecutionContext(
 function executeOperation(
   exeContext: ExecutionContext,
   operation: OperationDefinitionNode,
-): PromiseOrValue<ObjMap<unknown>> {
+): PromiseOrValue<ExecutionResult> {
   const rootType = exeContext.schema.getRootType(operation.operation);
   if (rootType == null) {
-    throw new GraphQLError(
-      `Schema is not configured to execute ${operation.operation} operation.`,
-      { nodes: operation },
+    return buildErrorResponse(
+      new GraphQLError(
+        `Schema is not configured to execute ${operation.operation} operation.`,
+        { nodes: operation },
+      ),
     );
   }
 
@@ -364,13 +339,40 @@ function executeRootFields(
   rootType: GraphQLObjectType,
   rootFields: Map<string, ReadonlyArray<FieldNode>>,
   executeSerially: boolean,
-): PromiseOrValue<ObjMap<unknown>> {
+): PromiseOrValue<ExecutionResult> {
   const { rootValue } = exeContext;
   const path = undefined;
 
-  return executeSerially
-    ? executeFieldsSerially(exeContext, rootType, rootValue, path, rootFields)
-    : executeFields(exeContext, rootType, rootValue, path, rootFields);
+  // Return a Promise that will eventually resolve to the data described by
+  // The "Response" section of the GraphQL specification.
+  //
+  // If errors are encountered while executing a GraphQL field, only that
+  // field and its descendants will be omitted, and sibling fields will still
+  // be executed. An execution which encounters errors will still result in a
+  // resolved Promise.
+  //
+  // Errors from sub-fields of a NonNull type may propagate to the top level,
+  // at which point we still log the error and null the parent field, which
+  // in this case is the entire response.
+  try {
+    const data = executeSerially
+      ? executeFieldsSerially(exeContext, rootType, rootValue, path, rootFields)
+      : executeFields(exeContext, rootType, rootValue, path, rootFields);
+
+    if (isPromise(data)) {
+      return data.then(
+        (resolvedData) => buildResponse(resolvedData, exeContext.errors),
+        (error) => {
+          exeContext.errors.push(error);
+          return buildResponse(null, exeContext.errors);
+        },
+      );
+    }
+    return buildResponse(data, exeContext.errors);
+  } catch (error) {
+    exeContext.errors.push(error);
+    return { errors: exeContext.errors, data: null };
+  }
 }
 
 /**
