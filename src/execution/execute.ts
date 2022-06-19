@@ -186,8 +186,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
   try {
-    const { operation } = exeContext;
-    const result = executeOperation(exeContext, operation);
+    const result = executeOperation(exeContext);
     if (isPromise(result)) {
       return result.then(
         (data) => buildResponse(data, exeContext.errors),
@@ -325,8 +324,8 @@ export function buildExecutionContext(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-  operation: OperationDefinitionNode,
 ): PromiseOrValue<ObjMap<unknown>> {
+  const { operation } = exeContext;
   const rootType = exeContext.schema.getRootType(operation.operation);
   if (rootType == null) {
     throw new GraphQLError(
