@@ -643,27 +643,6 @@ describe('Type System: Non-Null', () => {
     expectNonNull(ListOfScalarsType).to.not.throw();
     expectNonNull(ListOfNonNullScalarsType).to.not.throw();
   });
-
-  it('rejects a non-type as nullable type of non-null', () => {
-    // @ts-expect-error
-    expectNonNull(NonNullScalarType).to.throw(
-      'Expected Scalar! to be a GraphQL nullable type.',
-    );
-    // @ts-expect-error
-    expectNonNull({}).to.throw('Expected {} to be a GraphQL nullable type.');
-    // @ts-expect-error
-    expectNonNull(String).to.throw(
-      'Expected [function String] to be a GraphQL nullable type.',
-    );
-    // @ts-expect-error (must provide type)
-    expectNonNull(null).to.throw(
-      'Expected null to be a GraphQL nullable type.',
-    );
-    // @ts-expect-error (must provide type)
-    expectNonNull(undefined).to.throw(
-      'Expected undefined to be a GraphQL nullable type.',
-    );
-  });
 });
 
 describe('Type System: test utility methods', () => {
