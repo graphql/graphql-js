@@ -57,7 +57,7 @@ const isGraphQLDirectiveSymbol = Symbol.for('GraphQLDirective');
  * behavior. Type system creators will usually not create these directly.
  */
 export class GraphQLDirective {
-  [isGraphQLDirectiveSymbol]: true = true;
+  readonly [isGraphQLDirectiveSymbol]: true = true;
   name: string;
   description: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;

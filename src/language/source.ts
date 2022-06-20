@@ -15,7 +15,7 @@ const isSourceSymbol = Symbol.for('Source');
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 export class Source {
-  [isSourceSymbol]: true = true;
+  readonly [isSourceSymbol]: true = true;
   body: string;
   name: string;
   locationOffset: Location;

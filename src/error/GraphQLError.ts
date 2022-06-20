@@ -44,7 +44,7 @@ export function isGraphQLError(error: unknown): error is GraphQLError {
  * GraphQL document and/or execution result that correspond to the Error.
  */
 export class GraphQLError extends Error {
-  [isGraphQLErrorSymbol]: true = true;
+  readonly [isGraphQLErrorSymbol]: true = true;
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
    * which correspond to this error.

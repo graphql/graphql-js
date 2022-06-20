@@ -136,11 +136,12 @@ const isSchemaSymbol = Symbol.for('GraphQLSchema');
  * ```
  */
 export class GraphQLSchema {
+  readonly [isSchemaSymbol]: true = true;
+
   description: Maybe<string>;
   extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
-  [isSchemaSymbol]: true = true;
 
   // Used as a cache for validateSchema().
   __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
