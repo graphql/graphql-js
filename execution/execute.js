@@ -73,8 +73,7 @@ export function execute(args) {
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
   try {
-    const { operation } = exeContext;
-    const result = executeOperation(exeContext, operation);
+    const result = executeOperation(exeContext);
     if (isPromise(result)) {
       return result.then(
         (data) => buildResponse(data, exeContext.errors),
@@ -192,8 +191,10 @@ export function buildExecutionContext(args) {
 /**
  * Implements the "Executing operations" section of the spec.
  */
-function executeOperation(exeContext, operation) {
-  const rootType = exeContext.schema.getRootType(operation.operation);
+function executeOperation(exeContext) {
+  const { operation, schema, fragments, variableValues, rootValue } =
+    exeContext;
+  const rootType = schema.getRootType(operation.operation);
   if (rootType == null) {
     throw new GraphQLError(
       `Schema is not configured to execute ${operation.operation} operation.`,
@@ -201,14 +202,13 @@ function executeOperation(exeContext, operation) {
     );
   }
   const rootFields = collectFields(
-    exeContext.schema,
-    exeContext.fragments,
-    exeContext.variableValues,
+    schema,
+    fragments,
+    variableValues,
     rootType,
     operation.selectionSet,
   );
   const path = undefined;
-  const { rootValue } = exeContext;
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
       return executeFields(exeContext, rootType, rootValue, path, rootFields);
