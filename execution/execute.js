@@ -61,6 +61,9 @@ export function execute(args) {
   if (!('schema' in exeContext)) {
     return { errors: exeContext };
   }
+  return executeImpl(exeContext);
+}
+function executeImpl(exeContext) {
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
@@ -185,6 +188,13 @@ export function buildExecutionContext(args) {
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+    errors: [],
+  };
+}
+function buildPerEventExecutionContext(exeContext, payload) {
+  return {
+    ...exeContext,
+    rootValue: payload,
     errors: [],
   };
 }
@@ -804,15 +814,22 @@ export const defaultFieldResolver = function (
  * Accepts either an object with named arguments, or individual arguments.
  */
 export function subscribe(args) {
-  const resultOrStream = createSourceEventStream(args);
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const exeContext = buildExecutionContext(args);
+  // Return early errors if execution context failed.
+  if (!('schema' in exeContext)) {
+    return { errors: exeContext };
+  }
+  const resultOrStream = createSourceEventStreamImpl(exeContext);
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(resolvedResultOrStream, args),
+      mapSourceToResponse(exeContext, resolvedResultOrStream),
     );
   }
-  return mapSourceToResponse(resultOrStream, args);
+  return mapSourceToResponse(exeContext, resultOrStream);
 }
-function mapSourceToResponse(resultOrStream, args) {
+function mapSourceToResponse(exeContext, resultOrStream) {
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
   }
@@ -823,10 +840,7 @@ function mapSourceToResponse(resultOrStream, args) {
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   return mapAsyncIterator(resultOrStream, (payload) =>
-    execute({
-      ...args,
-      rootValue: payload,
-    }),
+    executeImpl(buildPerEventExecutionContext(exeContext, payload)),
   );
 }
 /**
@@ -865,6 +879,9 @@ export function createSourceEventStream(args) {
   if (!('schema' in exeContext)) {
     return { errors: exeContext };
   }
+  return createSourceEventStreamImpl(exeContext);
+}
+function createSourceEventStreamImpl(exeContext) {
   try {
     const eventStream = executeSubscription(exeContext);
     if (isPromise(eventStream)) {
