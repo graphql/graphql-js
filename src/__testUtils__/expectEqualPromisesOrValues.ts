@@ -3,7 +3,7 @@ import { assert } from 'chai';
 import { isPromise } from '../jsutils/isPromise';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 
-import { expectJSON } from './expectJSON';
+import { expectMatchingValues } from './expectMatchingValues';
 
 export function expectEqualPromisesOrValues<T>(
   items: ReadonlyArray<PromiseOrValue<T>>,
@@ -20,12 +20,4 @@ export function expectEqualPromisesOrValues<T>(
   }
 
   assert(false, 'Received an invalid mixture of promises and values.');
-}
-
-function expectMatchingValues<T>(values: ReadonlyArray<T>): T {
-  const remainingValues = values.slice(1);
-  for (const value of remainingValues) {
-    expectJSON(value).toDeepEqual(values[0]);
-  }
-  return values[0];
 }
