@@ -165,6 +165,13 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  return prepareContextAndRunFn(args, executeImpl);
+}
+
+function prepareContextAndRunFn<T>(
+  args: ExecutionArgs,
+  fn: (exeContext: ExecutionContext) => T,
+): ExecutionResult | T {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
@@ -174,7 +181,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: exeContext };
   }
 
-  return executeImpl(exeContext);
+  return fn(exeContext);
 }
 
 function executeImpl(
@@ -1107,24 +1114,17 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
+  return prepareContextAndRunFn(args, (exeContext: ExecutionContext) => {
+    const resultOrStream = createSourceEventStreamImpl(exeContext);
 
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
+    if (isPromise(resultOrStream)) {
+      return resultOrStream.then((resolvedResultOrStream) =>
+        mapSourceToResponse(exeContext, resolvedResultOrStream),
+      );
+    }
 
-  const resultOrStream = createSourceEventStreamImpl(exeContext);
-
-  if (isPromise(resultOrStream)) {
-    return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(exeContext, resolvedResultOrStream),
-    );
-  }
-
-  return mapSourceToResponse(exeContext, resultOrStream);
+    return mapSourceToResponse(exeContext, resultOrStream);
+  });
 }
 
 function mapSourceToResponse(
@@ -1179,16 +1179,7 @@ function mapSourceToResponse(
 export function createSourceEventStream(
   args: ExecutionArgs,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
-
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
-
-  return createSourceEventStreamImpl(exeContext);
+  return prepareContextAndRunFn(args, createSourceEventStreamImpl);
 }
 
 function createSourceEventStreamImpl(
