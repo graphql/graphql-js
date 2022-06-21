@@ -189,10 +189,7 @@ function subscribeWithBadFn(
   });
   const document = parse('subscription { foo }');
 
-  return expectEqualPromisesOrValues(
-    subscribe({ schema, document }),
-    createSourceEventStream({ schema, document }),
-  );
+  return subscribeWithBadArgs({ schema, document });
 }
 
 function subscribeWithBadArgs(
