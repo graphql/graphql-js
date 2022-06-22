@@ -184,6 +184,9 @@ function prepareContextAndRunFn<T>(
   return fn(exeContext);
 }
 
+/**
+ * Implements the "Executing operations" section of the spec for queries and mutations.
+ */
 function executeImpl(
   exeContext: ExecutionContext,
 ): PromiseOrValue<ExecutionResult> {
@@ -199,7 +202,7 @@ function executeImpl(
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
   try {
-    const result = executeOperation(exeContext);
+    const result = executeQueryOrMutationRootFields(exeContext);
     if (isPromise(result)) {
       return result.then(
         (data) => buildResponse(data, exeContext.errors),
@@ -343,10 +346,7 @@ function buildPerEventExecutionContext(
   };
 }
 
-/**
- * Implements the "Executing operations" section of the spec.
- */
-function executeOperation(
+function executeQueryOrMutationRootFields(
   exeContext: ExecutionContext,
 ): PromiseOrValue<ObjMap<unknown>> {
   const { operation, schema, fragments, variableValues, rootValue } =
