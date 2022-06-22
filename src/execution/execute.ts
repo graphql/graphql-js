@@ -1113,7 +1113,7 @@ function createSourceEventStreamImpl(
   exeContext: ExecutionContext,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   try {
-    const eventStream = executeSubscription(exeContext);
+    const eventStream = executeSubscriptionRootField(exeContext);
     if (isPromise(eventStream)) {
       return eventStream.then(undefined, (error) => ({ errors: [error] }));
     }
@@ -1124,7 +1124,7 @@ function createSourceEventStreamImpl(
   }
 }
 
-function executeSubscription(
+function executeSubscriptionRootField(
   exeContext: ExecutionContext,
 ): PromiseOrValue<AsyncIterable<unknown>> {
   const { schema, fragments, operation, variableValues, rootValue } =
