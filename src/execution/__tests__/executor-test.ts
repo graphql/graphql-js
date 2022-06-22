@@ -20,7 +20,7 @@ import {
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import { execute, executeSync } from '../execute';
+import { execute, executeSubscriptionEvent, executeSync } from '../execute';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('executes arbitrary code', async () => {
@@ -907,6 +907,19 @@ describe('Execute: Handles basic execution tasks', () => {
     expectJSON(
       executeSync({ schema, document, operationName: 'S' }),
     ).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Schema is not configured to execute subscription operation.',
+          locations: [{ line: 4, column: 7 }],
+        },
+      ],
+    });
+
+    expectJSON(
+      executeSubscriptionEvent({ schema, document, operationName: 'S' }),
+    ).toDeepEqual({
+      data: null,
       errors: [
         {
           message:

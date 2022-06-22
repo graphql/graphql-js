@@ -110,6 +110,7 @@ const SubscriptionType = new GraphQLObjectType({
       async *subscribe(_source, { color }) {
         yield { subscribeToEnum: color }; /* c8 ignore start */
       } /* c8 ignore stop */,
+      resolve: (_source, { color }) => color,
     },
   },
 });
