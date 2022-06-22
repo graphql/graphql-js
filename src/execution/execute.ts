@@ -52,6 +52,7 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
+import { flattenAsyncIterator } from './flattenAsyncIterator';
 import { mapAsyncIterator } from './mapAsyncIterator';
 import {
   getArgumentValues,
@@ -1397,19 +1398,11 @@ function mapSourceToResponse(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  return mapAsyncIterator(resultOrStream, (payload: unknown) => {
-    const executionResult = executeImpl(
-      buildPerEventExecutionContext(exeContext, payload),
-    );
-    /* c8 ignore next 6 */
-    // TODO: implement support for defer/stream in subscriptions
-    if (isAsyncIterable(executionResult)) {
-      throw new Error(
-        'TODO: implement support for defer/stream in subscriptions',
-      );
-    }
-    return executionResult as PromiseOrValue<ExecutionResult>;
-  });
+  return flattenAsyncIterator<ExecutionResult, AsyncExecutionResult>(
+    mapAsyncIterator(resultOrStream, (payload: unknown) =>
+      executeImpl(buildPerEventExecutionContext(exeContext, payload)),
+    ),
+  );
 }
 
 /**
