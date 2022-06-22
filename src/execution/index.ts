@@ -3,6 +3,7 @@ export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 export {
   createSourceEventStream,
   execute,
+  executeSubscriptionEvent,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,

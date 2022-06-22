@@ -1151,6 +1151,16 @@ export function createSourceEventStream(
   return prepareContextAndRunFn(args, createSourceEventStreamImpl);
 }
 
+/**
+ * Implements the "ExecuteSubscriptionEvent" algorithm described in the
+ * GraphQL specification.
+ */
+export function executeSubscriptionEvent(
+  args: ExecutionArgs,
+): PromiseOrValue<ExecutionResult> {
+  return prepareContextAndRunFn(args, executeQuery);
+}
+
 function createSourceEventStreamImpl(
   exeContext: ExecutionContext,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
