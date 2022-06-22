@@ -328,6 +328,9 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  ExecutionPatchResult,
+  FormattedExecutionPatchResult,
+  AsyncExecutionResult,
 } from './execution/index';
 
 // Validate GraphQL documents.
