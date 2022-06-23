@@ -503,6 +503,63 @@ function completeValue(exeContext, returnType, fieldNodes, info, path, result) {
     );
 }
 /**
+ * Complete a async iterator value by completing the result and calling
+ * recursively until all the results are completed.
+ */
+async function completeAsyncIteratorValue(
+  exeContext,
+  itemType,
+  fieldNodes,
+  info,
+  path,
+  iterator,
+) {
+  let containsPromise = false;
+  const completedResults = [];
+  let index = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const fieldPath = addPath(path, index, undefined);
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const { value, done } = await iterator.next();
+      if (done) {
+        break;
+      }
+      try {
+        // TODO can the error checking logic be consolidated with completeListValue?
+        const completedItem = completeValue(
+          exeContext,
+          itemType,
+          fieldNodes,
+          info,
+          fieldPath,
+          value,
+        );
+        if (isPromise(completedItem)) {
+          containsPromise = true;
+        }
+        completedResults.push(completedItem);
+      } catch (rawError) {
+        completedResults.push(null);
+        const error = locatedError(
+          rawError,
+          fieldNodes,
+          pathToArray(fieldPath),
+        );
+        handleFieldError(error, itemType, exeContext);
+      }
+    } catch (rawError) {
+      completedResults.push(null);
+      const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
+      handleFieldError(error, itemType, exeContext);
+      break;
+    }
+    index += 1;
+  }
+  return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+/**
  * Complete a list value by completing each item in the list with the
  * inner type
  */
@@ -514,6 +571,18 @@ function completeListValue(
   path,
   result,
 ) {
+  const itemType = returnType.ofType;
+  if (isAsyncIterable(result)) {
+    const iterator = result[Symbol.asyncIterator]();
+    return completeAsyncIteratorValue(
+      exeContext,
+      itemType,
+      fieldNodes,
+      info,
+      path,
+      iterator,
+    );
+  }
   if (!isIterableObject(result)) {
     throw new GraphQLError(
       `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
@@ -521,7 +590,6 @@ function completeListValue(
   }
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
-  const itemType = returnType.ofType;
   let containsPromise = false;
   const completedResults = Array.from(result, (item, index) => {
     // No need to modify the info object containing the path,
