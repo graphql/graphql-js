@@ -9,6 +9,7 @@ import type {
 } from '../error/GraphQLError';
 
 import type { DocumentNode } from '../language/ast';
+import { OperationTypeNode } from '../language/ast';
 
 import type {
   GraphQLFieldResolver,
@@ -19,6 +20,8 @@ import type { GraphQLSchema } from '../type/schema';
 import type { ExecutionContext } from './compiledDocument';
 import { buildExecutionContext } from './compiledDocument';
 import { GraphQLCompiledSchema } from './compiledSchema';
+import { GraphQLExecution } from './execution';
+import { getVariableValues } from './values';
 
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
@@ -75,7 +78,33 @@ export function execute(
 ): PromiseOrValue<
   ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
 > {
-  return prepareContextAndRunFn(args, GraphQLCompiledSchema.executeOperation);
+  return prepareContextAndRunFn(
+    args,
+    (
+      compiledSchema: GraphQLCompiledSchema,
+      exeContext: ExecutionContext,
+      coercedVariableValues: { [variable: string]: unknown },
+    ) => {
+      const execution = new GraphQLExecution({
+        compiledSchema,
+        exeContext,
+        rootValue: args.rootValue,
+        contextValue: args.contextValue,
+        variableValues: coercedVariableValues,
+      });
+
+      const operationType = exeContext.operation.operation;
+      if (operationType === OperationTypeNode.QUERY) {
+        return execution.executeQuery(exeContext);
+      }
+
+      if (operationType === OperationTypeNode.MUTATION) {
+        return execution.executeMutation(exeContext);
+      }
+
+      return execution.executeSubscription(exeContext);
+    },
+  );
 }
 
 function prepareContextAndRunFn<T>(
@@ -83,6 +112,7 @@ function prepareContextAndRunFn<T>(
   fn: (
     compiledSchema: GraphQLCompiledSchema,
     exeContext: ExecutionContext,
+    coercedVariableValues: { [variable: string]: unknown },
   ) => T,
 ): ExecutionResult | T {
   // If a valid execution context cannot be created due to incorrect arguments,
@@ -94,9 +124,24 @@ function prepareContextAndRunFn<T>(
     return { errors: exeContext };
   }
 
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
+  /* c8 ignore next */
+  const variableDefinitions = exeContext.operation.variableDefinitions ?? [];
+
   const compiledSchema = new GraphQLCompiledSchema(args);
 
-  return fn(compiledSchema, exeContext);
+  const coercedVariableValues = getVariableValues(
+    compiledSchema.schema,
+    variableDefinitions,
+    args.variableValues ?? {},
+    { maxErrors: 50 },
+  );
+
+  if (coercedVariableValues.errors) {
+    return { errors: coercedVariableValues.errors };
+  }
+
+  return fn(compiledSchema, exeContext, coercedVariableValues.coerced);
 }
 
 /**
@@ -181,7 +226,21 @@ export function createSourceEventStream(
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   return prepareContextAndRunFn(
     args,
-    GraphQLCompiledSchema.createSourceEventStream,
+    (
+      compiledSchema: GraphQLCompiledSchema,
+      exeContext: ExecutionContext,
+      coercedVariableValues: { [variable: string]: unknown },
+    ) => {
+      const execution = new GraphQLExecution({
+        compiledSchema,
+        exeContext,
+        rootValue: args.rootValue,
+        contextValue: args.contextValue,
+        variableValues: coercedVariableValues,
+      });
+
+      return execution.createSourceEventStreamImpl(exeContext);
+    },
   );
 }
 
@@ -194,6 +253,20 @@ export function executeSubscriptionEvent(
 ): PromiseOrValue<ExecutionResult> {
   return prepareContextAndRunFn(
     args,
-    GraphQLCompiledSchema.executeSubscriptionEvent,
+    (
+      compiledSchema: GraphQLCompiledSchema,
+      exeContext: ExecutionContext,
+      coercedVariableValues: { [variable: string]: unknown },
+    ) => {
+      const execution = new GraphQLExecution({
+        compiledSchema,
+        exeContext,
+        rootValue: args.rootValue,
+        contextValue: args.contextValue,
+        variableValues: coercedVariableValues,
+      });
+
+      return execution.executeQuery(exeContext);
+    },
   );
 }

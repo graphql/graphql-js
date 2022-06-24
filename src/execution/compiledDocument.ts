@@ -11,7 +11,6 @@ import { Kind } from '../language/kinds';
 import { assertValidSchema } from '../type/validate';
 
 import type { ExecutionArgs } from './execute';
-import { getVariableValues } from './values';
 
 /**
  * Data that must be available at all points during query execution.
@@ -21,11 +20,7 @@ import { getVariableValues } from './values';
  */
 export interface ExecutionContext {
   fragments: ObjMap<FragmentDefinitionNode>;
-  rootValue: unknown;
-  contextValue: unknown;
   operation: OperationDefinitionNode;
-  variableValues: { [variable: string]: unknown };
-  errors: Array<GraphQLError>;
 }
 
 /**
@@ -40,14 +35,7 @@ export interface ExecutionContext {
 export function buildExecutionContext(
   args: ExecutionArgs,
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
-  const {
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues: rawVariableValues,
-    operationName,
-  } = args;
+  const { schema, document, operationName } = args;
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
@@ -85,41 +73,8 @@ export function buildExecutionContext(
     return [new GraphQLError('Must provide an operation.')];
   }
 
-  // FIXME: https://github.com/graphql/graphql-js/issues/2203
-  /* c8 ignore next */
-  const variableDefinitions = operation.variableDefinitions ?? [];
-
-  const coercedVariableValues = getVariableValues(
-    schema,
-    variableDefinitions,
-    rawVariableValues ?? {},
-    { maxErrors: 50 },
-  );
-
-  if (coercedVariableValues.errors) {
-    return coercedVariableValues.errors;
-  }
-
   return {
     fragments,
-    rootValue,
-    contextValue,
     operation,
-    variableValues: coercedVariableValues.coerced,
-    errors: [],
-  };
-}
-
-/**
- * @internal
- */
-export function buildPerEventExecutionContext(
-  exeContext: ExecutionContext,
-  payload: unknown,
-): ExecutionContext {
-  return {
-    ...exeContext,
-    rootValue: payload,
-    errors: [],
   };
 }
