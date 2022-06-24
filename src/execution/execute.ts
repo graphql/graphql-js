@@ -90,11 +90,11 @@ function prepareContextAndRunFn<T>(
   const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
+  if (!('fragments' in exeContext)) {
     return { errors: exeContext };
   }
 
-  const compiledSchema = new GraphQLCompiledSchema();
+  const compiledSchema = new GraphQLCompiledSchema(args);
 
   return fn(compiledSchema, exeContext);
 }

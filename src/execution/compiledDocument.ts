@@ -1,5 +1,3 @@
-import { isObjectLike } from '../jsutils/isObjectLike';
-import { isPromise } from '../jsutils/isPromise';
 import type { ObjMap } from '../jsutils/ObjMap';
 
 import { GraphQLError } from '../error/GraphQLError';
@@ -10,11 +8,6 @@ import type {
 } from '../language/ast';
 import { Kind } from '../language/kinds';
 
-import type {
-  GraphQLFieldResolver,
-  GraphQLTypeResolver,
-} from '../type/definition';
-import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
 import type { ExecutionArgs } from './execute';
@@ -27,15 +20,11 @@ import { getVariableValues } from './values';
  * and the fragments defined in the query document
  */
 export interface ExecutionContext {
-  schema: GraphQLSchema;
   fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: unknown;
   contextValue: unknown;
   operation: OperationDefinitionNode;
   variableValues: { [variable: string]: unknown };
-  fieldResolver: GraphQLFieldResolver<any, any>;
-  typeResolver: GraphQLTypeResolver<any, any>;
-  subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 }
 
@@ -58,9 +47,6 @@ export function buildExecutionContext(
     contextValue,
     variableValues: rawVariableValues,
     operationName,
-    fieldResolver,
-    typeResolver,
-    subscribeFieldResolver,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -115,15 +101,11 @@ export function buildExecutionContext(
   }
 
   return {
-    schema,
     fragments,
     rootValue,
     contextValue,
     operation,
     variableValues: coercedVariableValues.coerced,
-    fieldResolver: fieldResolver ?? defaultFieldResolver,
-    typeResolver: typeResolver ?? defaultTypeResolver,
-    subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
   };
 }
@@ -141,67 +123,3 @@ export function buildPerEventExecutionContext(
     errors: [],
   };
 }
-
-/**
- * If a resolveType function is not given, then a default resolve behavior is
- * used which attempts two strategies:
- *
- * First, See if the provided value has a `__typename` field defined, if so, use
- * that value as name of the resolved type.
- *
- * Otherwise, test each possible type for the abstract type by calling
- * isTypeOf for the object being coerced, returning the first type that matches.
- */
-export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
-  function (value, contextValue, info, abstractType) {
-    // First, look for `__typename`.
-    if (isObjectLike(value) && typeof value.__typename === 'string') {
-      return value.__typename;
-    }
-
-    // Otherwise, test each possible type.
-    const possibleTypes = info.schema.getPossibleTypes(abstractType);
-    const promisedIsTypeOfResults = [];
-
-    for (let i = 0; i < possibleTypes.length; i++) {
-      const type = possibleTypes[i];
-
-      if (type.isTypeOf) {
-        const isTypeOfResult = type.isTypeOf(value, contextValue, info);
-
-        if (isPromise(isTypeOfResult)) {
-          promisedIsTypeOfResults[i] = isTypeOfResult;
-        } else if (isTypeOfResult) {
-          return type.name;
-        }
-      }
-    }
-
-    if (promisedIsTypeOfResults.length) {
-      return Promise.all(promisedIsTypeOfResults).then((isTypeOfResults) => {
-        for (let i = 0; i < isTypeOfResults.length; i++) {
-          if (isTypeOfResults[i]) {
-            return possibleTypes[i].name;
-          }
-        }
-      });
-    }
-  };
-
-/**
- * If a resolve function is not given, then a default resolve behavior is used
- * which takes the property of the source object of the same name as the field
- * and returns it as the result, or if it's a function, returns the result
- * of calling that function while passing along args and context value.
- */
-export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
-  function (source: any, args, contextValue, info) {
-    // ensure source is a value for which property access is acceptable.
-    if (isObjectLike(source) || typeof source === 'function') {
-      const property = source[info.fieldName];
-      if (typeof property === 'function') {
-        return source[info.fieldName](args, contextValue, info);
-      }
-      return property;
-    }
-  };
