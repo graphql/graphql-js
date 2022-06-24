@@ -18,11 +18,7 @@ import type { GraphQLSchema } from '../type/schema';
 
 import type { ExecutionContext } from './compiledDocument';
 import { buildExecutionContext } from './compiledDocument';
-import {
-  createSourceEventStreamImpl,
-  executeOperation,
-  executeQuery,
-} from './compiledSchema';
+import { GraphQLCompiledSchema } from './compiledSchema';
 
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
@@ -79,12 +75,15 @@ export function execute(
 ): PromiseOrValue<
   ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
 > {
-  return prepareContextAndRunFn(args, executeOperation);
+  return prepareContextAndRunFn(args, GraphQLCompiledSchema.executeOperation);
 }
 
 function prepareContextAndRunFn<T>(
   args: ExecutionArgs,
-  fn: (exeContext: ExecutionContext) => T,
+  fn: (
+    compiledSchema: GraphQLCompiledSchema,
+    exeContext: ExecutionContext,
+  ) => T,
 ): ExecutionResult | T {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
@@ -95,7 +94,9 @@ function prepareContextAndRunFn<T>(
     return { errors: exeContext };
   }
 
-  return fn(exeContext);
+  const compiledSchema = new GraphQLCompiledSchema();
+
+  return fn(compiledSchema, exeContext);
 }
 
 /**
@@ -178,7 +179,10 @@ export function subscribe(
 export function createSourceEventStream(
   args: ExecutionArgs,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  return prepareContextAndRunFn(args, createSourceEventStreamImpl);
+  return prepareContextAndRunFn(
+    args,
+    GraphQLCompiledSchema.createSourceEventStream,
+  );
 }
 
 /**
@@ -188,5 +192,8 @@ export function createSourceEventStream(
 export function executeSubscriptionEvent(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult> {
-  return prepareContextAndRunFn(args, executeQuery);
+  return prepareContextAndRunFn(
+    args,
+    GraphQLCompiledSchema.executeSubscriptionEvent,
+  );
 }
