@@ -20,6 +20,7 @@ import type {
   EnumTypeExtensionNode,
   EnumValueDefinitionNode,
   EnumValueNode,
+  ErrorBoundaryNode,
   FieldDefinitionNode,
   FieldNode,
   FloatValueNode,
@@ -32,11 +33,14 @@ import type {
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
   IntValueNode,
+  ListNullabilityOperatorNode,
   ListTypeNode,
   ListValueNode,
   NamedTypeNode,
   NameNode,
+  NonNullAssertionNode,
   NonNullTypeNode,
+  NullabilityAssertionNode,
   NullValueNode,
   ObjectFieldNode,
   ObjectTypeDefinitionNode,
@@ -94,6 +98,29 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser will understand and parse Client Controlled Nullability
+   * Designators contained in Fields. They'll be represented in the
+   * `nullabilityAssertion` field of the FieldNode.
+   *
+   * The syntax looks like the following:
+   *
+   * ```graphql
+   *   {
+   *     nullableField!
+   *     nonNullableField?
+   *     nonNullableSelectionSet? {
+   *       childField!
+   *     }
+   *   }
+   * ```
+   * Note: this feature is experimental and may change or be removed in the
+   * future.
+   */
+  experimentalClientControlledNullability?: boolean;
 }
 
 /**
@@ -431,11 +458,49 @@ export class Parser {
       alias,
       name,
       arguments: this.parseArguments(false),
+      // Experimental support for Client Controlled Nullability changes
+      // the grammar of Field:
+      nullabilityAssertion: this.parseNullabilityAssertion(),
       directives: this.parseDirectives(false),
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
         : undefined,
     });
+  }
+
+  // TODO: add grammar comment after it finalizes
+  parseNullabilityAssertion(): NullabilityAssertionNode | undefined {
+    // Note: Client Controlled Nullability is experimental and may be changed or
+    // removed in the future.
+    if (this._options?.experimentalClientControlledNullability !== true) {
+      return undefined;
+    }
+
+    const start = this._lexer.token;
+    let nullabilityAssertion;
+
+    if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
+      const innerModifier = this.parseNullabilityAssertion();
+      this.expectToken(TokenKind.BRACKET_R);
+      nullabilityAssertion = this.node<ListNullabilityOperatorNode>(start, {
+        kind: Kind.LIST_NULLABILITY_OPERATOR,
+        nullabilityAssertion: innerModifier,
+      });
+    }
+
+    if (this.expectOptionalToken(TokenKind.BANG)) {
+      nullabilityAssertion = this.node<NonNullAssertionNode>(start, {
+        kind: Kind.NON_NULL_ASSERTION,
+        nullabilityAssertion,
+      });
+    } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+      nullabilityAssertion = this.node<ErrorBoundaryNode>(start, {
+        kind: Kind.ERROR_BOUNDARY,
+        nullabilityAssertion,
+      });
+    }
+
+    return nullabilityAssertion;
   }
 
   /**

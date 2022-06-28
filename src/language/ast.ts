@@ -180,7 +180,10 @@ export type ASTNode =
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
-  | InputObjectTypeExtensionNode;
+  | InputObjectTypeExtensionNode
+  | NonNullAssertionNode
+  | ErrorBoundaryNode
+  | ListNullabilityOperatorNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -207,8 +210,22 @@ export const QueryDocumentKeys: {
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
+  Field: [
+    'alias',
+    'name',
+    'arguments',
+    'directives',
+    'selectionSet',
+    // Note: Client Controlled Nullability is experimental and may be changed
+    // or removed in the future.
+    'nullabilityAssertion',
+  ],
   Argument: ['name', 'value'],
+  // Note: Client Controlled Nullability is experimental and may be changed
+  // or removed in the future.
+  ListNullabilityOperator: ['nullabilityAssertion'],
+  NonNullAssertion: ['nullabilityAssertion'],
+  ErrorBoundary: ['nullabilityAssertion'],
 
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
@@ -359,8 +376,34 @@ export interface FieldNode {
   readonly alias?: NameNode;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
+  // Note: Client Controlled Nullability is experimental
+  // and may be changed or removed in the future.
+  readonly nullabilityAssertion?: NullabilityAssertionNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
+}
+
+export type NullabilityAssertionNode =
+  | NonNullAssertionNode
+  | ErrorBoundaryNode
+  | ListNullabilityOperatorNode;
+
+export interface ListNullabilityOperatorNode {
+  readonly kind: Kind.LIST_NULLABILITY_OPERATOR;
+  readonly loc?: Location;
+  readonly nullabilityAssertion?: NullabilityAssertionNode;
+}
+
+export interface NonNullAssertionNode {
+  readonly kind: Kind.NON_NULL_ASSERTION;
+  readonly loc?: Location;
+  readonly nullabilityAssertion?: ListNullabilityOperatorNode;
+}
+
+export interface ErrorBoundaryNode {
+  readonly kind: Kind.ERROR_BOUNDARY;
+  readonly loc?: Location;
+  readonly nullabilityAssertion?: ListNullabilityOperatorNode;
 }
 
 export interface ArgumentNode {

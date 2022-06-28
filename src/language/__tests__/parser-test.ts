@@ -12,6 +12,10 @@ import { parse, parseConstValue, parseType, parseValue } from '../parser';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
 
+function parseCCN(source: string) {
+  return parse(source, { experimentalClientControlledNullability: true });
+}
+
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));
 }
@@ -153,7 +157,7 @@ describe('Parser', () => {
   });
 
   it('parses kitchen sink', () => {
-    expect(() => parse(kitchenSinkQuery)).to.not.throw();
+    expect(() => parseCCN(kitchenSinkQuery)).to.not.throw();
   });
 
   it('allows non-keywords anywhere a Name is allowed', () => {
@@ -224,6 +228,206 @@ describe('Parser', () => {
     ).to.not.throw();
   });
 
+  it('parses required field', () => {
+    const result = parseCCN('{ requiredField! }');
+
+    expectJSON(result).toDeepNestedProperty(
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
+      {
+        kind: Kind.NON_NULL_ASSERTION,
+        loc: { start: 15, end: 16 },
+        nullabilityAssertion: undefined,
+      },
+    );
+  });
+
+  it('parses optional field', () => {
+    expect(() => parseCCN('{ optionalField? }')).to.not.throw();
+  });
+
+  it('does not parse field with multiple designators', () => {
+    expect(() => parseCCN('{ optionalField?! }')).to.throw(
+      'Syntax Error: Expected Name, found "!".',
+    );
+
+    expect(() => parseCCN('{ optionalField!? }')).to.throw(
+      'Syntax Error: Expected Name, found "?".',
+    );
+  });
+
+  it('parses required with alias', () => {
+    expect(() => parseCCN('{ requiredField: field! }')).to.not.throw();
+  });
+
+  it('parses optional with alias', () => {
+    expect(() => parseCCN('{ requiredField: field? }')).to.not.throw();
+  });
+
+  it('does not parse aliased field with bang on left of colon', () => {
+    expect(() => parseCCN('{ requiredField!: field }')).to.throw();
+  });
+
+  it('does not parse aliased field with question mark on left of colon', () => {
+    expect(() => parseCCN('{ requiredField?: field }')).to.throw();
+  });
+
+  it('does not parse aliased field with bang on left and right of colon', () => {
+    expect(() => parseCCN('{ requiredField!: field! }')).to.throw();
+  });
+
+  it('does not parse aliased field with question mark on left and right of colon', () => {
+    expect(() => parseCCN('{ requiredField?: field? }')).to.throw();
+  });
+
+  it('does not parse designator on query', () => {
+    expect(() => parseCCN('query? { field }')).to.throw();
+  });
+
+  it('parses required within fragment', () => {
+    expect(() =>
+      parseCCN('fragment MyFragment on Query { field! }'),
+    ).to.not.throw();
+  });
+
+  it('parses optional within fragment', () => {
+    expect(() =>
+      parseCCN('fragment MyFragment on Query { field? }'),
+    ).to.not.throw();
+  });
+
+  it('parses field with required list elements', () => {
+    const result = parseCCN('{ field[!] }');
+
+    expectJSON(result).toDeepNestedProperty(
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
+      {
+        kind: Kind.LIST_NULLABILITY_OPERATOR,
+        loc: { start: 7, end: 10 },
+        nullabilityAssertion: {
+          kind: Kind.NON_NULL_ASSERTION,
+          loc: { start: 8, end: 9 },
+          nullabilityAssertion: undefined,
+        },
+      },
+    );
+  });
+
+  it('parses field with optional list elements', () => {
+    const result = parseCCN('{ field[?] }');
+
+    expectJSON(result).toDeepNestedProperty(
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
+      {
+        kind: Kind.LIST_NULLABILITY_OPERATOR,
+        loc: { start: 7, end: 10 },
+        nullabilityAssertion: {
+          kind: Kind.ERROR_BOUNDARY,
+          loc: { start: 8, end: 9 },
+          nullabilityAssertion: undefined,
+        },
+      },
+    );
+  });
+
+  it('parses field with required list', () => {
+    const result = parseCCN('{ field[]! }');
+
+    expectJSON(result).toDeepNestedProperty(
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
+      {
+        kind: Kind.NON_NULL_ASSERTION,
+        loc: { start: 7, end: 10 },
+        nullabilityAssertion: {
+          kind: Kind.LIST_NULLABILITY_OPERATOR,
+          loc: { start: 7, end: 9 },
+          nullabilityAssertion: undefined,
+        },
+      },
+    );
+  });
+
+  it('parses field with optional list', () => {
+    const result = parseCCN('{ field[]? }');
+
+    expectJSON(result).toDeepNestedProperty(
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
+      {
+        kind: Kind.ERROR_BOUNDARY,
+        loc: { start: 7, end: 10 },
+        nullabilityAssertion: {
+          kind: Kind.LIST_NULLABILITY_OPERATOR,
+          loc: { start: 7, end: 9 },
+          nullabilityAssertion: undefined,
+        },
+      },
+    );
+  });
+
+  it('parses multidimensional field with mixed list elements', () => {
+    const result = parseCCN('{ field[[[?]!]]! }');
+
+    expectJSON(result).toDeepNestedProperty(
+      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
+      {
+        kind: Kind.NON_NULL_ASSERTION,
+        loc: { start: 7, end: 16 },
+        nullabilityAssertion: {
+          kind: Kind.LIST_NULLABILITY_OPERATOR,
+          loc: { start: 7, end: 15 },
+          nullabilityAssertion: {
+            kind: Kind.LIST_NULLABILITY_OPERATOR,
+            loc: { start: 8, end: 14 },
+            nullabilityAssertion: {
+              kind: Kind.NON_NULL_ASSERTION,
+              loc: { start: 9, end: 13 },
+              nullabilityAssertion: {
+                kind: Kind.LIST_NULLABILITY_OPERATOR,
+                loc: { start: 9, end: 12 },
+                nullabilityAssertion: {
+                  kind: Kind.ERROR_BOUNDARY,
+                  loc: { start: 10, end: 11 },
+                  nullabilityAssertion: undefined,
+                },
+              },
+            },
+          },
+        },
+      },
+    );
+  });
+
+  it('does not parse field with unbalanced brackets', () => {
+    expect(() => parseCCN('{ field[[] }')).to.throw(
+      'Syntax Error: Expected "]", found "}".',
+    );
+
+    expect(() => parseCCN('{ field[]] }')).to.throw(
+      'Syntax Error: Expected Name, found "]".',
+    );
+
+    expect(() => parse('{ field] }')).to.throw(
+      'Syntax Error: Expected Name, found "]".',
+    );
+
+    expect(() => parseCCN('{ field[ }')).to.throw(
+      'Syntax Error: Expected "]", found "}".',
+    );
+  });
+
+  it('does not parse field with assorted invalid nullability designators', () => {
+    expect(() => parseCCN('{ field[][] }')).to.throw(
+      'Syntax Error: Expected Name, found "[".',
+    );
+
+    expect(() => parseCCN('{ field[!!] }')).to.throw(
+      'Syntax Error: Expected "]", found "!".',
+    );
+
+    expect(() => parseCCN('{ field[]?! }')).to.throw(
+      'Syntax Error: Expected Name, found "!".',
+    );
+  });
+
   it('creates ast', () => {
     const result = parse(dedent`
       {
@@ -274,6 +478,7 @@ describe('Parser', () => {
                     loc: { start: 9, end: 14 },
                   },
                 ],
+                nullabilityAssertion: undefined,
                 directives: [],
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
@@ -289,6 +494,7 @@ describe('Parser', () => {
                         value: 'id',
                       },
                       arguments: [],
+                      nullabilityAssertion: undefined,
                       directives: [],
                       selectionSet: undefined,
                     },
@@ -302,6 +508,7 @@ describe('Parser', () => {
                         value: 'name',
                       },
                       arguments: [],
+                      nullabilityAssertion: undefined,
                       directives: [],
                       selectionSet: undefined,
                     },
@@ -349,6 +556,7 @@ describe('Parser', () => {
                   value: 'node',
                 },
                 arguments: [],
+                nullabilityAssertion: undefined,
                 directives: [],
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
@@ -364,6 +572,7 @@ describe('Parser', () => {
                         value: 'id',
                       },
                       arguments: [],
+                      nullabilityAssertion: undefined,
                       directives: [],
                       selectionSet: undefined,
                     },
