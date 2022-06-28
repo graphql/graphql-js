@@ -320,8 +320,6 @@ export {
   getVariableValues,
   getDirectiveValues,
   subscribe,
-  createSourceEventStream,
-  executeSubscriptionEvent,
 } from './execution/index';
 
 export type {

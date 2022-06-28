@@ -1235,7 +1235,7 @@ function executeSubscription(
 ): PromiseOrValue<
   ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
 > {
-  const resultOrStream = createSourceEventStreamImpl(exeInfo);
+  const resultOrStream = createSourceEventStream(exeInfo);
 
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
@@ -1297,28 +1297,8 @@ function mapSourceToResponse(
  * different process or machine than the stateless GraphQL execution engine,
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
- *
- * @deprecated will be removed in the next major version
  */
 export function createSourceEventStream(
-  args: ExecutionArgs,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  return prepareContextAndRunFn(args, createSourceEventStreamImpl);
-}
-
-/**
- * Implements the "ExecuteSubscriptionEvent" algorithm described in the
- * GraphQL specification.
- *
- * @deprecated will be removed in the next major version
- */
-export function executeSubscriptionEvent(
-  args: ExecutionArgs,
-): PromiseOrValue<ExecutionResult> {
-  return prepareContextAndRunFn(args, executeQuery);
-}
-
-export function createSourceEventStreamImpl(
   exeInfo: ExecutionInfo,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   try {

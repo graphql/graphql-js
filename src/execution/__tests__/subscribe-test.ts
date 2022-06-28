@@ -15,7 +15,7 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
 import type { ExecutionArgs, ExecutionResult } from '../execute';
-import { createSourceEventStream, execute, subscribe } from '../execute';
+import { execute, subscribe } from '../execute';
 
 import { SimplePubSub } from './simplePubSub';
 
@@ -221,7 +221,6 @@ function subscribeWithBadArgs(
 ): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
   return expectEqualPromisesOrValues([
     execute(args),
-    createSourceEventStream(args),
     subscribe(args),
   ]);
 }
