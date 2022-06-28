@@ -2,7 +2,6 @@ import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 import { isIterableObject } from '../jsutils/isIterableObject';
-import { isObjectLike } from '../jsutils/isObjectLike';
 import { isPromise } from '../jsutils/isPromise';
 import type { Maybe } from '../jsutils/Maybe';
 import { memoize3 } from '../jsutils/memoize3';
@@ -51,6 +50,7 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
+import { GraphQLExecutableSchema } from './executableSchema';
 import { mapAsyncIterator } from './mapAsyncIterator';
 import { getArgumentValues, getVariableValues } from './values';
 
@@ -105,15 +105,13 @@ const collectSubfields = memoize3(
  * and the fragments defined in the query document
  */
 export interface ExecutionContext {
+  executableSchema: GraphQLExecutableSchema;
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: unknown;
   contextValue: unknown;
   operation: OperationDefinitionNode;
   variableValues: { [variable: string]: unknown };
-  fieldResolver: GraphQLFieldResolver<any, any>;
-  typeResolver: GraphQLTypeResolver<any, any>;
-  subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
 }
 
@@ -318,9 +316,12 @@ export function buildExecutionContext(
     contextValue,
     operation,
     variableValues: coercedVariableValues.coerced,
-    fieldResolver: fieldResolver ?? defaultFieldResolver,
-    typeResolver: typeResolver ?? defaultTypeResolver,
-    subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+    executableSchema: new GraphQLExecutableSchema({
+      schema,
+      fieldResolver,
+      typeResolver,
+      subscribeFieldResolver,
+    }),
     errors: [],
   };
 }
@@ -480,7 +481,7 @@ function executeField(
   }
 
   const returnType = fieldDef.type;
-  const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
+  const resolveFn = exeContext.executableSchema.getFieldResolver(fieldDef);
 
   const info = buildResolveInfo(
     exeContext,
@@ -867,7 +868,7 @@ function completeAbstractValue(
   path: Path,
   result: unknown,
 ): PromiseOrValue<ObjMap<unknown>> {
-  const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
+  const resolveTypeFn = exeContext.executableSchema.getTypeResolver(returnType);
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
@@ -1016,70 +1017,6 @@ function invalidReturnTypeError(
     { nodes: fieldNodes },
   );
 }
-
-/**
- * If a resolveType function is not given, then a default resolve behavior is
- * used which attempts two strategies:
- *
- * First, See if the provided value has a `__typename` field defined, if so, use
- * that value as name of the resolved type.
- *
- * Otherwise, test each possible type for the abstract type by calling
- * isTypeOf for the object being coerced, returning the first type that matches.
- */
-export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
-  function (value, contextValue, info, abstractType) {
-    // First, look for `__typename`.
-    if (isObjectLike(value) && typeof value.__typename === 'string') {
-      return value.__typename;
-    }
-
-    // Otherwise, test each possible type.
-    const possibleTypes = info.schema.getPossibleTypes(abstractType);
-    const promisedIsTypeOfResults = [];
-
-    for (let i = 0; i < possibleTypes.length; i++) {
-      const type = possibleTypes[i];
-
-      if (type.isTypeOf) {
-        const isTypeOfResult = type.isTypeOf(value, contextValue, info);
-
-        if (isPromise(isTypeOfResult)) {
-          promisedIsTypeOfResults[i] = isTypeOfResult;
-        } else if (isTypeOfResult) {
-          return type.name;
-        }
-      }
-    }
-
-    if (promisedIsTypeOfResults.length) {
-      return Promise.all(promisedIsTypeOfResults).then((isTypeOfResults) => {
-        for (let i = 0; i < isTypeOfResults.length; i++) {
-          if (isTypeOfResults[i]) {
-            return possibleTypes[i].name;
-          }
-        }
-      });
-    }
-  };
-
-/**
- * If a resolve function is not given, then a default resolve behavior is used
- * which takes the property of the source object of the same name as the field
- * and returns it as the result, or if it's a function, returns the result
- * of calling that function while passing along args and context value.
- */
-export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
-  function (source: any, args, contextValue, info) {
-    // ensure source is a value for which property access is acceptable.
-    if (isObjectLike(source) || typeof source === 'function') {
-      const property = source[info.fieldName];
-      if (typeof property === 'function') {
-        return source[info.fieldName](args, contextValue, info);
-      }
-      return property;
-    }
-  };
 
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
@@ -1262,7 +1199,8 @@ function executeSubscription(
 
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
-    const resolveFn = fieldDef.subscribe ?? exeContext.subscribeFieldResolver;
+    const resolveFn =
+      exeContext.executableSchema.getSubscribeResolver(fieldDef);
     const result = resolveFn(rootValue, args, contextValue, info);
 
     if (isPromise(result)) {

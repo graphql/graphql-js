@@ -1,11 +1,11 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 
+export { defaultFieldResolver, defaultTypeResolver } from './executableSchema';
+
 export {
   createSourceEventStream,
   execute,
   executeSync,
-  defaultFieldResolver,
-  defaultTypeResolver,
   subscribe,
 } from './execute';
 
