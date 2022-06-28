@@ -210,7 +210,7 @@ export function execute(
 /**
  * Implements the "Executing operations" section of the spec.
  */
-function executeOperation(
+export function executeOperation(
   exeInfo: ExecutionInfo,
 ): PromiseOrValue<
   ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
@@ -234,7 +234,7 @@ export function executeQuery(
   return executeQueryOrMutation(exeInfo, { errors: [] }, executeFields);
 }
 
-function executeMutation(
+export function executeMutation(
   exeInfo: ExecutionInfo,
 ): PromiseOrValue<ExecutionResult> {
   return executeQueryOrMutation(exeInfo, { errors: [] }, executeFieldsSerially);
@@ -1211,7 +1211,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  */
-function executeSubscription(
+export function executeSubscription(
   exeInfo: ExecutionInfo,
 ): PromiseOrValue<
   ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
