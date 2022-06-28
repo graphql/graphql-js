@@ -1217,19 +1217,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  *
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
- *
- * Accepts either an object with named arguments, or individual arguments.
- *
- * @deprecated subscribe will be removed in v18; use execute instead
  */
-export function subscribe(
-  args: ExecutionArgs,
-): PromiseOrValue<
-  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
-> {
-  return execute(args);
-}
-
 function executeSubscription(
   exeInfo: ExecutionInfo,
 ): PromiseOrValue<

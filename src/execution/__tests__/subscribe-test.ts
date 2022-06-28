@@ -14,8 +14,8 @@ import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import type { ExecutionArgs, ExecutionResult } from '../execute';
-import { execute, subscribe } from '../execute';
+import type { ExecutionResult } from '../execute';
+import { execute } from '../execute';
 
 import { SimplePubSub } from './simplePubSub';
 
@@ -150,48 +150,6 @@ function expectPromise(maybePromise: unknown) {
   };
 }
 
-// TODO: consider adding these method to testUtils (with tests)
-function expectEqualPromisesOrValues<T>(
-  items: ReadonlyArray<PromiseOrValue<T>>,
-): PromiseOrValue<T> {
-  if (isPromise(items[0])) {
-    if (assertAllPromises(items)) {
-      return Promise.all(items).then(expectMatchingValues);
-    }
-  } else if (assertNoPromises(items)) {
-    return expectMatchingValues(items);
-  }
-  /* c8 ignore next 3 */
-  // Not reachable, all possible output types have been considered.
-  assert(false, 'Receives mixture of promises and values.');
-}
-
-function expectMatchingValues<T>(values: ReadonlyArray<T>): T {
-  const remainingValues = values.slice(1);
-  for (const value of remainingValues) {
-    expectJSON(value).toDeepEqual(values[0]);
-  }
-  return values[0];
-}
-
-function assertAllPromises<T>(
-  items: ReadonlyArray<PromiseOrValue<T>>,
-): items is ReadonlyArray<Promise<T>> {
-  for (const item of items) {
-    assert(isPromise(item));
-  }
-  return true;
-}
-
-function assertNoPromises<T>(
-  items: ReadonlyArray<PromiseOrValue<T>>,
-): items is ReadonlyArray<T> {
-  for (const item of items) {
-    assert(!isPromise(item));
-  }
-  return true;
-}
-
 const DummyQueryType = new GraphQLObjectType({
   name: 'Query',
   fields: {
@@ -213,16 +171,7 @@ function subscribeWithBadFn(
   });
   const document = parse('subscription { foo }');
 
-  return subscribeWithBadArgs({ schema, document });
-}
-
-function subscribeWithBadArgs(
-  args: ExecutionArgs,
-): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
-  return expectEqualPromisesOrValues([
-    execute(args),
-    subscribe(args),
-  ]);
+  return execute({ schema, document });
 }
 
 /* eslint-disable @typescript-eslint/require-await */
@@ -424,7 +373,7 @@ describe('Subscription Initialization Phase', () => {
     const schema = new GraphQLSchema({ query: DummyQueryType });
     const document = parse('subscription { unknownField }');
 
-    const result = subscribeWithBadArgs({ schema, document });
+    const result = execute({ schema, document });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -448,7 +397,7 @@ describe('Subscription Initialization Phase', () => {
     });
     const document = parse('subscription { unknownField }');
 
-    const result = subscribeWithBadArgs({ schema, document });
+    const result = execute({ schema, document });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -471,7 +420,7 @@ describe('Subscription Initialization Phase', () => {
     });
 
     // @ts-expect-error
-    expect(() => subscribeWithBadArgs({ schema, document: {} })).to.throw();
+    expect(() => execute({ schema, document: {} })).to.throw();
   });
 
   it('throws an error if subscribe does not return an iterator', async () => {
@@ -556,7 +505,7 @@ describe('Subscription Initialization Phase', () => {
 
     // If we receive variables that cannot be coerced correctly, execute() will
     // resolve to an ExecutionResult that contains an informative error description.
-    const result = subscribeWithBadArgs({ schema, document, variableValues });
+    const result = execute({ schema, document, variableValues });
     expectJSON(result).toDeepEqual({
       errors: [
         {

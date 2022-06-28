@@ -319,7 +319,6 @@ export {
   getArgumentValues,
   getVariableValues,
   getDirectiveValues,
-  subscribe,
 } from './execution/index';
 
 export type {
