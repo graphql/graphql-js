@@ -22,6 +22,7 @@ import type {
   FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
+  VariableDefinitionNode,
 } from '../language/ast';
 import { OperationTypeNode } from '../language/ast';
 import { Kind } from '../language/kinds';
@@ -52,6 +53,7 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields';
 import { mapAsyncIterator } from './mapAsyncIterator';
+import type { CoercedVariableValues } from './values';
 import { getArgumentValues, getVariableValues } from './values';
 
 /* eslint-disable max-params */
@@ -101,15 +103,27 @@ const collectSubfields = memoize3(
 /**
  * Data that must be available at all points during query execution.
  *
- * Namely, schema of the type system that is currently executing,
- * and the fragments defined in the query document
+ * Namely, the fragments defined in the query document and the
+ * original operation.
+ *
+ * This interface is provided separately in the expectation that
+ * advanced clients may cache this information separately.
  */
-export interface ExecutionContext {
-  schema: GraphQLSchema;
+export interface DocumentInfo {
   fragments: ObjMap<FragmentDefinitionNode>;
+  operation: OperationDefinitionNode;
+}
+
+/**
+ * Data that must be available at all points during query execution.
+ *
+ * Also included is data accumulated during the course of execution,
+ * i.e. errors.
+ */
+export interface ExecutionContext extends DocumentInfo {
+  schema: GraphQLSchema;
   rootValue: unknown;
   contextValue: unknown;
-  operation: OperationDefinitionNode;
   variableValues: { [variable: string]: unknown };
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
@@ -184,7 +198,7 @@ function prepareContextAndRunFn<T>(
   args: ExecutionArgs,
   fn: (exeContext: ExecutionContext) => T,
 ): ExecutionResult | T {
-  // If a valid execution context cannot be created due to incorrect arguments,
+  // If a valid execution info object cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
 
@@ -318,6 +332,42 @@ export function buildExecutionContext(
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
 
+  const documentInfo = buildDocumentInfo(document, operationName);
+
+  if (!('fragments' in documentInfo)) {
+    return documentInfo;
+  }
+
+  const { fragments, operation } = documentInfo;
+
+  const coercedVariableValues = coerceVariableValues(
+    schema,
+    operation.variableDefinitions,
+    rawVariableValues,
+  );
+
+  if (coercedVariableValues.errors) {
+    return coercedVariableValues.errors;
+  }
+
+  return {
+    schema,
+    fragments,
+    rootValue,
+    contextValue,
+    operation,
+    variableValues: coercedVariableValues.coerced,
+    fieldResolver: fieldResolver ?? defaultFieldResolver,
+    typeResolver: typeResolver ?? defaultTypeResolver,
+    subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+    errors: [],
+  };
+}
+
+function buildDocumentInfo(
+  document: DocumentNode,
+  operationName: Maybe<string>,
+): ReadonlyArray<GraphQLError> | DocumentInfo {
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
   for (const definition of document.definitions) {
@@ -351,33 +401,22 @@ export function buildExecutionContext(
     return [new GraphQLError('Must provide an operation.')];
   }
 
+  return { fragments, operation };
+}
+
+export function coerceVariableValues(
+  schema: GraphQLSchema,
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
-  const variableDefinitions = operation.variableDefinitions ?? [];
-
-  const coercedVariableValues = getVariableValues(
+  variableDefinitions: ReadonlyArray<VariableDefinitionNode> = [],
+  rawVariableValues?: Maybe<{ readonly [variable: string]: unknown }>,
+): CoercedVariableValues {
+  return getVariableValues(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
     { maxErrors: 50 },
   );
-
-  if (coercedVariableValues.errors) {
-    return coercedVariableValues.errors;
-  }
-
-  return {
-    schema,
-    fragments,
-    rootValue,
-    contextValue,
-    operation,
-    variableValues: coercedVariableValues.coerced,
-    fieldResolver: fieldResolver ?? defaultFieldResolver,
-    typeResolver: typeResolver ?? defaultTypeResolver,
-    subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    errors: [],
-  };
 }
 
 function buildPerEventExecutionContext(
