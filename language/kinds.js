@@ -12,6 +12,10 @@ export var Kind;
   Kind['SELECTION_SET'] = 'SelectionSet';
   Kind['FIELD'] = 'Field';
   Kind['ARGUMENT'] = 'Argument';
+  /** Nullability Modifiers */
+  Kind['LIST_NULLABILITY_OPERATOR'] = 'ListNullabilityOperator';
+  Kind['NON_NULL_ASSERTION'] = 'NonNullAssertion';
+  Kind['ERROR_BOUNDARY'] = 'ErrorBoundary';
   /** Fragments */
   Kind['FRAGMENT_SPREAD'] = 'FragmentSpread';
   Kind['INLINE_FRAGMENT'] = 'InlineFragment';

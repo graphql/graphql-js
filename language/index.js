@@ -17,6 +17,7 @@ export {
   isDefinitionNode,
   isExecutableDefinitionNode,
   isSelectionNode,
+  isNullabilityAssertionNode,
   isValueNode,
   isConstValueNode,
   isTypeNode,

@@ -134,7 +134,10 @@ export declare type ASTNode =
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
-  | InputObjectTypeExtensionNode;
+  | InputObjectTypeExtensionNode
+  | NonNullAssertionNode
+  | ErrorBoundaryNode
+  | ListNullabilityOperatorNode;
 /**
  * Utility type listing all nodes indexed by their kind.
  */
@@ -212,8 +215,28 @@ export interface FieldNode {
   readonly alias?: NameNode;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ArgumentNode>;
+  readonly nullabilityAssertion?: NullabilityAssertionNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;
   readonly selectionSet?: SelectionSetNode;
+}
+export declare type NullabilityAssertionNode =
+  | NonNullAssertionNode
+  | ErrorBoundaryNode
+  | ListNullabilityOperatorNode;
+export interface ListNullabilityOperatorNode {
+  readonly kind: Kind.LIST_NULLABILITY_OPERATOR;
+  readonly loc?: Location;
+  readonly nullabilityAssertion?: NullabilityAssertionNode;
+}
+export interface NonNullAssertionNode {
+  readonly kind: Kind.NON_NULL_ASSERTION;
+  readonly loc?: Location;
+  readonly nullabilityAssertion?: ListNullabilityOperatorNode;
+}
+export interface ErrorBoundaryNode {
+  readonly kind: Kind.ERROR_BOUNDARY;
+  readonly loc?: Location;
+  readonly nullabilityAssertion?: ListNullabilityOperatorNode;
 }
 export interface ArgumentNode {
   readonly kind: Kind.ARGUMENT;

@@ -3,6 +3,7 @@ import type {
   ConstValueNode,
   DefinitionNode,
   ExecutableDefinitionNode,
+  NullabilityAssertionNode,
   SelectionNode,
   TypeDefinitionNode,
   TypeExtensionNode,
@@ -16,6 +17,9 @@ export declare function isExecutableDefinitionNode(
   node: ASTNode,
 ): node is ExecutableDefinitionNode;
 export declare function isSelectionNode(node: ASTNode): node is SelectionNode;
+export declare function isNullabilityAssertionNode(
+  node: ASTNode,
+): node is NullabilityAssertionNode;
 export declare function isValueNode(node: ASTNode): node is ValueNode;
 export declare function isConstValueNode(node: ASTNode): node is ConstValueNode;
 export declare function isTypeNode(node: ASTNode): node is TypeNode;

@@ -61,8 +61,22 @@ export const QueryDocumentKeys = {
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
+  Field: [
+    'alias',
+    'name',
+    'arguments',
+    'directives',
+    'selectionSet',
+    // Note: Client Controlled Nullability is experimental and may be changed
+    // or removed in the future.
+    'nullabilityAssertion',
+  ],
   Argument: ['name', 'value'],
+  // Note: Client Controlled Nullability is experimental and may be changed
+  // or removed in the future.
+  ListNullabilityOperator: ['nullabilityAssertion'],
+  NonNullAssertion: ['nullabilityAssertion'],
+  ErrorBoundary: ['nullabilityAssertion'],
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [

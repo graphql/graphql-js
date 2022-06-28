@@ -299,11 +299,44 @@ export class Parser {
       alias,
       name,
       arguments: this.parseArguments(false),
+      // Experimental support for Client Controlled Nullability changes
+      // the grammar of Field:
+      nullabilityAssertion: this.parseNullabilityAssertion(),
       directives: this.parseDirectives(false),
       selectionSet: this.peek(TokenKind.BRACE_L)
         ? this.parseSelectionSet()
         : undefined,
     });
+  }
+  // TODO: add grammar comment after it finalizes
+  parseNullabilityAssertion() {
+    // Note: Client Controlled Nullability is experimental and may be changed or
+    // removed in the future.
+    if (this._options?.experimentalClientControlledNullability !== true) {
+      return undefined;
+    }
+    const start = this._lexer.token;
+    let nullabilityAssertion;
+    if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
+      const innerModifier = this.parseNullabilityAssertion();
+      this.expectToken(TokenKind.BRACKET_R);
+      nullabilityAssertion = this.node(start, {
+        kind: Kind.LIST_NULLABILITY_OPERATOR,
+        nullabilityAssertion: innerModifier,
+      });
+    }
+    if (this.expectOptionalToken(TokenKind.BANG)) {
+      nullabilityAssertion = this.node(start, {
+        kind: Kind.NON_NULL_ASSERTION,
+        nullabilityAssertion,
+      });
+    } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+      nullabilityAssertion = this.node(start, {
+        kind: Kind.ERROR_BOUNDARY,
+        nullabilityAssertion,
+      });
+    }
+    return nullabilityAssertion;
   }
   parseArguments(isConst) {
     const item = isConst ? this.parseConstArgument : this.parseArgument;

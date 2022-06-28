@@ -28,6 +28,7 @@ import type {
   ListValueNode,
   NamedTypeNode,
   NameNode,
+  NullabilityAssertionNode,
   ObjectFieldNode,
   ObjectTypeDefinitionNode,
   ObjectTypeExtensionNode,
@@ -80,6 +81,28 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser will understand and parse Client Controlled Nullability
+   * Designators contained in Fields. They'll be represented in the
+   * `nullabilityAssertion` field of the FieldNode.
+   *
+   * The syntax looks like the following:
+   *
+   * ```graphql
+   *   {
+   *     nullableField!
+   *     nonNullableField?
+   *     nonNullableSelectionSet? {
+   *       childField!
+   *     }
+   *   }
+   * ```
+   * Note: this feature is experimental and may change or be removed in the
+   * future.
+   */
+  experimentalClientControlledNullability?: boolean;
 }
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -213,6 +236,7 @@ export declare class Parser {
    * Alias : Name :
    */
   parseField(): FieldNode;
+  parseNullabilityAssertion(): NullabilityAssertionNode | undefined;
   /**
    * Arguments[Const] : ( Argument[?Const]+ )
    */
