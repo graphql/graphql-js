@@ -235,7 +235,9 @@ function executeOperation(
   return executeSubscription(exeInfo);
 }
 
-function executeQuery(exeInfo: ExecutionInfo): PromiseOrValue<ExecutionResult> {
+export function executeQuery(
+  exeInfo: ExecutionInfo,
+): PromiseOrValue<ExecutionResult> {
   return executeQueryOrMutation(exeInfo, { errors: [] }, executeFields);
 }
 
@@ -1295,6 +1297,8 @@ function mapSourceToResponse(
  * different process or machine than the stateless GraphQL execution engine,
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
+ *
+ * @deprecated will be removed in the next major version
  */
 export function createSourceEventStream(
   args: ExecutionArgs,
@@ -1305,6 +1309,8 @@ export function createSourceEventStream(
 /**
  * Implements the "ExecuteSubscriptionEvent" algorithm described in the
  * GraphQL specification.
+ *
+ * @deprecated will be removed in the next major version
  */
 export function executeSubscriptionEvent(
   args: ExecutionArgs,
@@ -1312,7 +1318,7 @@ export function executeSubscriptionEvent(
   return prepareContextAndRunFn(args, executeQuery);
 }
 
-function createSourceEventStreamImpl(
+export function createSourceEventStreamImpl(
   exeInfo: ExecutionInfo,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   try {
