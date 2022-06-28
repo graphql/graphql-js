@@ -5,6 +5,7 @@ export {
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
+  defaultSubscriptionEventExecutor,
 } from './execute';
 
 export type {

@@ -315,6 +315,7 @@ export {
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
+  defaultSubscriptionEventExecutor,
   responsePathAsArray,
   getArgumentValues,
   getVariableValues,

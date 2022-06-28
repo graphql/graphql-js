@@ -125,6 +125,10 @@ export interface ExecutionInfo extends DocumentInfo {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
+  subscriptionEventExecutor: (
+    exeInfo: ExecutionInfo,
+    payload: unknown,
+  ) => PromiseOrValue<ExecutionResult>;
 }
 
 /**
@@ -169,6 +173,12 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  subscriptionEventExecutor?: Maybe<
+    (
+      exeInfo: ExecutionInfo,
+      payload: unknown,
+    ) => PromiseOrValue<ExecutionResult>
+  >;
 }
 
 type FieldsExecutor = (
@@ -329,6 +339,7 @@ export function buildExecutionInfo(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    subscriptionEventExecutor,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -362,6 +373,8 @@ export function buildExecutionInfo(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+    subscriptionEventExecutor:
+      subscriptionEventExecutor ?? defaultSubscriptionEventExecutor,
   };
 }
 
@@ -1244,12 +1257,18 @@ function mapSourceToResponse(
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
   return mapAsyncIterator(resultOrStream, (payload: unknown) =>
-    executeQuery({
-      ...exeInfo,
-      rootValue: payload,
-    }),
+    exeInfo.subscriptionEventExecutor(exeInfo, payload),
   );
 }
+
+export const defaultSubscriptionEventExecutor = (
+  exeInfo: ExecutionInfo,
+  payload: unknown,
+): PromiseOrValue<ExecutionResult> =>
+  executeQuery({
+    ...exeInfo,
+    rootValue: payload,
+  });
 
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
