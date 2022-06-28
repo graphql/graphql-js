@@ -195,13 +195,6 @@ export function execute(
 ): PromiseOrValue<
   ExecutionResult | AsyncGenerator<ExecutionResult, void, void>
 > {
-  return prepareContextAndRunFn(args, executeOperation);
-}
-
-function prepareContextAndRunFn<T>(
-  args: ExecutionArgs,
-  fn: (exeInfo: ExecutionInfo) => T,
-): ExecutionResult | T {
   // If a valid execution info object cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeInfo = buildExecutionInfo(args);
@@ -211,7 +204,7 @@ function prepareContextAndRunFn<T>(
     return { errors: exeInfo };
   }
 
-  return fn(exeInfo);
+  return executeOperation(exeInfo);
 }
 
 /**
