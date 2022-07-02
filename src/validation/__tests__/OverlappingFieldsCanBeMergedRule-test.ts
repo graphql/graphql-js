@@ -1089,7 +1089,6 @@ describe('Validate: Overlapping fields can be merged', () => {
           experimentalClientControlledNullability: true,
         },
       );
-      // TODO: need one with list designators
     });
 
     it('disallows conflicting overlapping required statuses', () => {
@@ -1179,7 +1178,6 @@ describe('Validate: Overlapping fields can be merged', () => {
           ],
         },
       ]);
-      // TODO: need one with list designators
     });
 
     it('same wrapped scalar return types', () => {
