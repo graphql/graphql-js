@@ -2,7 +2,8 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
 import type { Maybe } from '../../jsutils/Maybe.js';
 
-import { parse } from '../../language/parser.js';
+import type { ParseOptions } from '../../language/parser';
+import { parse } from '../../language/parser';
 
 import type { GraphQLSchema } from '../../type/schema.js';
 
@@ -122,8 +123,9 @@ export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,
   queryStr: string,
+  parseOptions?: ParseOptions,
 ): any {
-  const doc = parse(queryStr);
+  const doc = parse(queryStr, parseOptions);
   const errors = validate(schema, doc, [rule]);
   return expectJSON(errors);
 }
@@ -131,8 +133,14 @@ export function expectValidationErrorsWithSchema(
 export function expectValidationErrors(
   rule: ValidationRule,
   queryStr: string,
+  parseOptions?: ParseOptions,
 ): any {
-  return expectValidationErrorsWithSchema(testSchema, rule, queryStr);
+  return expectValidationErrorsWithSchema(
+    testSchema,
+    rule,
+    queryStr,
+    parseOptions,
+  );
 }
 
 export function expectSDLValidationErrors(

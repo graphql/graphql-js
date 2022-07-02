@@ -29,8 +29,9 @@ import {
   isObjectType,
 } from '../../type/definition.js';
 
-import { sortValueNode } from '../../utilities/sortValueNode.js';
-import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { applyRequiredStatus } from '../../utilities/applyRequiredStatus';
+import { sortValueNode } from '../../utilities/sortValueNode';
+import { typeFromAST } from '../../utilities/typeFromAST';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
@@ -617,17 +618,22 @@ function findConflict(
   const type1 = def1?.type;
   const type2 = def2?.type;
 
-  if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [
-      [
-        responseName,
-        `they return conflicting types "${inspect(type1)}" and "${inspect(
-          type2,
-        )}"`,
-      ],
-      [node1],
-      [node2],
-    ];
+  if (type1 && type2) {
+    const modifiedType1 = applyRequiredStatus(type1, node1.nullabilityAssertion);
+    const modifiedType2 = applyRequiredStatus(type2, node2.nullabilityAssertion);
+
+    if (doTypesConflict(modifiedType1, modifiedType2)) {
+      return [
+        [
+          responseName,
+          `they return conflicting types "${inspect(
+            modifiedType1,
+          )}" and "${inspect(modifiedType2)}"`,
+        ],
+        [node1],
+        [node2],
+      ];
+    }
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list
