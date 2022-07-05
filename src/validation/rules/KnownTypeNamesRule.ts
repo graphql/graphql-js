@@ -59,8 +59,9 @@ export function KnownTypeNamesRule(
           typeName,
           isSDL ? standardTypeNames.concat(typeNames) : typeNames,
         );
-        const parentName = ancestors[2]
-          ? ` in type "${ancestors[2].name.value}"`
+        const parentNode: any = ancestors[2];
+        const parentName = parentNode?.name
+          ? ` in type "${parentNode.name.value}"`
           : '';
         context.reportError(
           new GraphQLError(
