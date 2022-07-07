@@ -18,9 +18,12 @@ fs.rmSync('./npmDist', { recursive: true, force: true });
 fs.mkdirSync('./npmDist');
 
 // Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
-const tsConfig = JSON.parse(
-  fs.readFileSync(localRepoPath('tsconfig.json'), 'utf-8'),
+const tsConfigPath = localRepoPath('tsconfig.json');
+const { config: tsConfig, error: tsConfigError } = ts.parseConfigFileTextToJson(
+  tsConfigPath,
+  fs.readFileSync(tsConfigPath, 'utf-8'),
 );
+assert(tsConfigError === undefined, 'Fail to parse config: ' + tsConfigError);
 assert(
   tsConfig.compilerOptions,
   '"tsconfig.json" should have `compilerOptions`',

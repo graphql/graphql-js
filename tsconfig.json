@@ -14,16 +14,20 @@
     "isolatedModules": true,
     "importsNotUsedAsValues": "error",
     "forceConsistentCasingInFileNames": true,
+
+    // Type Checking
+    // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
     "strict": true,
-    "useUnknownInCatchVariables": false,
+    "useUnknownInCatchVariables": false, // FIXME part of 'strict' but is temporary disabled
+    // All checks that are not part of "strict"
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "exactOptionalPropertyTypes": false,
-    "noFallthroughCasesInSwitch": false,
-    "noImplicitOverride": false,
-    "noImplicitReturns": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false, // FIXME
+    "noFallthroughCasesInSwitch": false, // TODO consider
+    "noImplicitOverride": false, // FIXME
+    "noImplicitReturns": false, // TODO consider
+    "noPropertyAccessFromIndexSignature": false, // TODO consider
+    "noUncheckedIndexedAccess": false, // FIXME
     "noUnusedLocals": true,
     "noUnusedParameters": true
   }
