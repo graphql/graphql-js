@@ -24,7 +24,7 @@
     "allowUnusedLabels": false,
     "exactOptionalPropertyTypes": false, // FIXME
     "noFallthroughCasesInSwitch": false, // TODO consider
-    "noImplicitOverride": false, // FIXME
+    "noImplicitOverride": true,
     "noImplicitReturns": false, // TODO consider
     "noPropertyAccessFromIndexSignature": false, // TODO consider
     "noUncheckedIndexedAccess": false, // FIXME

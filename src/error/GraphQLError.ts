@@ -160,7 +160,7 @@ export class GraphQLError extends Error {
     return 'GraphQLError';
   }
 
-  toString(): string {
+  override toString(): string {
     let output = this.message;
 
     if (this.nodes) {
