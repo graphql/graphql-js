@@ -144,7 +144,7 @@ export class GraphQLError extends Error {
   get [Symbol.toStringTag](): string {
     return 'GraphQLError';
   }
-  toString(): string {
+  override toString(): string {
     let output = this.message;
     if (this.nodes) {
       for (const node of this.nodes) {
