@@ -179,7 +179,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.16.x`
+  # ESLint builtin rules list based on `v8.19.x`
   ##############################################################################
 
   # Possible Errors
@@ -493,7 +493,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.26.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.30.x`
       ##########################################################################
 
       # Supported Rules
@@ -505,6 +505,7 @@ overrides:
       '@typescript-eslint/ban-tslint-comment': error
       '@typescript-eslint/ban-types': off # TODO temporarily disabled
       '@typescript-eslint/class-literal-property-style': off # TODO enable after TS conversion
+      '@typescript-eslint/consistent-generic-constructors': error
       '@typescript-eslint/consistent-indexed-object-style':
         [error, index-signature]
       '@typescript-eslint/consistent-type-assertions': off # TODO temporarily disable
