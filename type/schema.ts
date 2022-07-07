@@ -157,7 +157,7 @@ export class GraphQLSchema {
     this._directives = config.directives ?? specifiedDirectives;
     // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
-    const allReferencedTypes: Set<GraphQLNamedType> = new Set(config.types);
+    const allReferencedTypes = new Set<GraphQLNamedType>(config.types);
     if (config.types != null) {
       for (const type of config.types) {
         // When we ready to process this type, we remove it from "collected" types

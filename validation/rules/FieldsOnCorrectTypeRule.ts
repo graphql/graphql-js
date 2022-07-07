@@ -72,8 +72,7 @@ function getSuggestedTypeNames(
     // Must be an Object type, which does not have possible fields.
     return [];
   }
-  const suggestedTypes: Set<GraphQLObjectType | GraphQLInterfaceType> =
-    new Set();
+  const suggestedTypes = new Set<GraphQLObjectType | GraphQLInterfaceType>();
   const usageCount = Object.create(null);
   for (const possibleType of schema.getPossibleTypes(type)) {
     if (!possibleType.getFields()[fieldName]) {
