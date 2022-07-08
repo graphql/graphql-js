@@ -22,7 +22,7 @@
     // All checks that are not part of "strict"
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "exactOptionalPropertyTypes": false, // FIXME
+    "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": false, // TODO consider
     "noImplicitOverride": true,
     "noImplicitReturns": false, // TODO consider

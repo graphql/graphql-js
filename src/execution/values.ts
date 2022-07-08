@@ -238,7 +238,7 @@ export function getArgumentValues(
  */
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
-  node: { readonly directives?: ReadonlyArray<DirectiveNode> },
+  node: { readonly directives?: ReadonlyArray<DirectiveNode> | undefined },
   variableValues?: Maybe<ObjMap<unknown>>,
 ): undefined | { [argument: string]: unknown } {
   const directiveNode = node.directives?.find(

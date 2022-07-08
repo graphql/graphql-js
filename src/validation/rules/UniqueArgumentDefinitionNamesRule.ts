@@ -36,7 +36,7 @@ export function UniqueArgumentDefinitionNamesRule(
 
   function checkArgUniquenessPerField(typeNode: {
     readonly name: NameNode;
-    readonly fields?: ReadonlyArray<FieldDefinitionNode>;
+    readonly fields?: ReadonlyArray<FieldDefinitionNode> | undefined;
   }) {
     const typeName = typeNode.name.value;
 

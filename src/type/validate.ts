@@ -630,7 +630,9 @@ function getUnionMemberTypeNodes(
 }
 
 function getDeprecatedDirectiveNode(
-  definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode> }>,
+  definitionNode: Maybe<{
+    readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
+  }>,
 ): Maybe<DirectiveNode> {
   return definitionNode?.directives?.find(
     (node) => node.name.value === GraphQLDeprecatedDirective.name,
