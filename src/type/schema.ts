@@ -212,7 +212,7 @@ export class GraphQLSchema {
       }
 
       const typeName = namedType.name;
-      if (this._typeMap[typeName] !== undefined) {
+      if (this._typeMap[typeName] !== undefined && !config.allowOverride) {
         throw new Error(
           `Schema must contain uniquely named types but contains multiple types named "${typeName}".`,
         );
@@ -414,6 +414,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
+  allowOverride?: Maybe<boolean>;
 }
 
 /**
