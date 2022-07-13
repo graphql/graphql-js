@@ -3,9 +3,14 @@
   "version": "16.5.0",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
-  "private": true,
-  "main": "index",
-  "module": "index.mjs",
+  "type": "commonjs",
+  "main": "index.js",
+  "exports": {
+    ".": {
+      "require": "./index.js",
+      "import": "./index.mjs"
+    }
+  },
   "typesVersions": {
     ">=4.1.0": {
       "*": [
