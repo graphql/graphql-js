@@ -19,7 +19,7 @@ export function UniqueArgumentNamesRule(
     Directive: checkArgUniqueness,
   };
   function checkArgUniqueness(parentNode: {
-    arguments?: ReadonlyArray<ArgumentNode>;
+    arguments?: ReadonlyArray<ArgumentNode> | undefined;
   }) {
     // FIXME: https://github.com/graphql/graphql-js/issues/2203
     /* c8 ignore next */

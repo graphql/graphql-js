@@ -30,7 +30,7 @@ export function UniqueArgumentDefinitionNamesRule(
   };
   function checkArgUniquenessPerField(typeNode: {
     readonly name: NameNode;
-    readonly fields?: ReadonlyArray<FieldDefinitionNode>;
+    readonly fields?: ReadonlyArray<FieldDefinitionNode> | undefined;
   }) {
     const typeName = typeNode.name.value;
     // FIXME: https://github.com/graphql/graphql-js/issues/2203

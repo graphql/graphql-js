@@ -21,7 +21,7 @@ export interface GraphQLErrorExtensions {
   [attributeName: string]: unknown;
 }
 export interface GraphQLErrorOptions {
-  nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
+  nodes?: ReadonlyArray<ASTNode> | ASTNode | null | undefined;
   source?: Maybe<Source>;
   positions?: Maybe<ReadonlyArray<number>>;
   path?: Maybe<ReadonlyArray<string | number>>;

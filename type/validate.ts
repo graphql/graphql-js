@@ -554,7 +554,7 @@ function getUnionMemberTypeNodes(
 }
 function getDeprecatedDirectiveNode(
   definitionNode: Maybe<{
-    readonly directives?: ReadonlyArray<DirectiveNode>;
+    readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
   }>,
 ): Maybe<DirectiveNode> {
   return definitionNode?.directives?.find(

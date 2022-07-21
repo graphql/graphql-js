@@ -33,9 +33,9 @@ export function UniqueFieldDefinitionNamesRule(
   };
   function checkFieldUniqueness(node: {
     readonly name: NameNode;
-    readonly fields?: ReadonlyArray<
-      InputValueDefinitionNode | FieldDefinitionNode
-    >;
+    readonly fields?:
+      | ReadonlyArray<InputValueDefinitionNode | FieldDefinitionNode>
+      | undefined;
   }) {
     const typeName = node.name.value;
     if (!knownFieldNames[typeName]) {

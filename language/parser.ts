@@ -77,7 +77,7 @@ export interface ParseOptions {
    * in the source that they correspond to. This configuration flag
    * disables that behavior for performance or testing.
    */
-  noLocation?: boolean;
+  noLocation?: boolean | undefined;
   /**
    * @deprecated will be removed in the v17.0.0
    *
@@ -93,7 +93,7 @@ export interface ParseOptions {
    * }
    * ```
    */
-  allowLegacyFragmentVariables?: boolean;
+  allowLegacyFragmentVariables?: boolean | undefined;
   /**
    * EXPERIMENTAL:
    *
@@ -115,7 +115,7 @@ export interface ParseOptions {
    * Note: this feature is experimental and may change or be removed in the
    * future.
    */
-  experimentalClientControlledNullability?: boolean;
+  experimentalClientControlledNullability?: boolean | undefined;
 }
 /**
  * Given a GraphQL source, parses it into a Document.
@@ -1354,7 +1354,7 @@ export class Parser {
    */
   node<
     T extends {
-      loc?: Location;
+      loc?: Location | undefined;
     },
   >(startToken: Token, node: T): T {
     if (this._options?.noLocation !== true) {
