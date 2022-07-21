@@ -401,7 +401,7 @@ export interface GraphQLSchemaValidationOptions {
    *
    * Default: false
    */
-  assumeValid?: boolean;
+  assumeValid?: boolean | undefined;
 }
 
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {

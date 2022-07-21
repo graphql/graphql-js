@@ -44,8 +44,8 @@ class Cat {
 
 class Person {
   name: string;
-  pets?: ReadonlyArray<Dog | Cat>;
-  friends?: ReadonlyArray<Dog | Cat | Person>;
+  pets: ReadonlyArray<Dog | Cat> | undefined;
+  friends: ReadonlyArray<Dog | Cat | Person> | undefined;
 
   constructor(
     name: string,
