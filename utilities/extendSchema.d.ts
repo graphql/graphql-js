@@ -10,7 +10,7 @@ interface Options extends GraphQLSchemaValidationOptions {
    *
    * Default: false
    */
-  assumeValidSDL?: boolean;
+  assumeValidSDL?: boolean | undefined;
 }
 /**
  * Produces a new schema given an existing schema and a document which may

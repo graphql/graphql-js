@@ -68,7 +68,7 @@ export declare function getArgumentValues(
 export declare function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: {
-    readonly directives?: ReadonlyArray<DirectiveNode>;
+    readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
   },
   variableValues?: Maybe<ObjMap<unknown>>,
 ):

@@ -9,7 +9,7 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
    *
    * Default: false
    */
-  assumeValidSDL?: boolean;
+  assumeValidSDL?: boolean | undefined;
 }
 /**
  * This takes the ast of a schema document produced by the parse function in
