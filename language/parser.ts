@@ -123,7 +123,7 @@ export interface ParseOptions {
  */
 export function parse(
   source: string | Source,
-  options?: ParseOptions,
+  options?: ParseOptions | undefined,
 ): DocumentNode {
   const parser = new Parser(source, options);
   return parser.parseDocument();
@@ -140,7 +140,7 @@ export function parse(
  */
 export function parseValue(
   source: string | Source,
-  options?: ParseOptions,
+  options?: ParseOptions | undefined,
 ): ValueNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
@@ -154,7 +154,7 @@ export function parseValue(
  */
 export function parseConstValue(
   source: string | Source,
-  options?: ParseOptions,
+  options?: ParseOptions | undefined,
 ): ConstValueNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
@@ -174,7 +174,7 @@ export function parseConstValue(
  */
 export function parseType(
   source: string | Source,
-  options?: ParseOptions,
+  options?: ParseOptions | undefined,
 ): TypeNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
@@ -194,9 +194,9 @@ export function parseType(
  * @internal
  */
 export class Parser {
-  protected _options: Maybe<ParseOptions>;
+  protected _options: ParseOptions;
   protected _lexer: Lexer;
-  constructor(source: string | Source, options?: ParseOptions) {
+  constructor(source: string | Source, options: ParseOptions = {}) {
     const sourceObj = isSource(source) ? source : new Source(source);
     this._lexer = new Lexer(sourceObj);
     this._options = options;
@@ -438,7 +438,7 @@ export class Parser {
   parseNullabilityAssertion(): NullabilityAssertionNode | undefined {
     // Note: Client Controlled Nullability is experimental and may be changed or
     // removed in the future.
-    if (this._options?.experimentalClientControlledNullability !== true) {
+    if (this._options.experimentalClientControlledNullability !== true) {
       return undefined;
     }
     const start = this._lexer.token;
@@ -529,7 +529,7 @@ export class Parser {
     // Legacy support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options?.allowLegacyFragmentVariables === true) {
+    if (this._options.allowLegacyFragmentVariables === true) {
       return this.node<FragmentDefinitionNode>(start, {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
@@ -1357,7 +1357,7 @@ export class Parser {
       loc?: Location | undefined;
     },
   >(startToken: Token, node: T): T {
-    if (this._options?.noLocation !== true) {
+    if (this._options.noLocation !== true) {
       node.loc = new Location(
         startToken,
         this._lexer.lastToken,
