@@ -70,7 +70,7 @@ export function parseType(source, options) {
  * @internal
  */
 export class Parser {
-  constructor(source, options) {
+  constructor(source, options = {}) {
     const sourceObj = isSource(source) ? source : new Source(source);
     this._lexer = new Lexer(sourceObj);
     this._options = options;
@@ -312,7 +312,7 @@ export class Parser {
   parseNullabilityAssertion() {
     // Note: Client Controlled Nullability is experimental and may be changed or
     // removed in the future.
-    if (this._options?.experimentalClientControlledNullability !== true) {
+    if (this._options.experimentalClientControlledNullability !== true) {
       return undefined;
     }
     const start = this._lexer.token;
@@ -393,7 +393,7 @@ export class Parser {
     // Legacy support for defining variables within fragments changes
     // the grammar of FragmentDefinition:
     //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options?.allowLegacyFragmentVariables === true) {
+    if (this._options.allowLegacyFragmentVariables === true) {
       return this.node(start, {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
@@ -1162,7 +1162,7 @@ export class Parser {
    * given parsed object.
    */
   node(startToken, node) {
-    if (this._options?.noLocation !== true) {
+    if (this._options.noLocation !== true) {
       node.loc = new Location(
         startToken,
         this._lexer.lastToken,

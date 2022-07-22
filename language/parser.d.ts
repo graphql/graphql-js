@@ -110,7 +110,7 @@ export interface ParseOptions {
  */
 export declare function parse(
   source: string | Source,
-  options?: ParseOptions,
+  options?: ParseOptions | undefined,
 ): DocumentNode;
 /**
  * Given a string containing a GraphQL value (ex. `[42]`), parse the AST for
@@ -124,7 +124,7 @@ export declare function parse(
  */
 export declare function parseValue(
   source: string | Source,
-  options?: ParseOptions,
+  options?: ParseOptions | undefined,
 ): ValueNode;
 /**
  * Similar to parseValue(), but raises a parse error if it encounters a
@@ -132,7 +132,7 @@ export declare function parseValue(
  */
 export declare function parseConstValue(
   source: string | Source,
-  options?: ParseOptions,
+  options?: ParseOptions | undefined,
 ): ConstValueNode;
 /**
  * Given a string containing a GraphQL Type (ex. `[Int!]`), parse the AST for
@@ -146,7 +146,7 @@ export declare function parseConstValue(
  */
 export declare function parseType(
   source: string | Source,
-  options?: ParseOptions,
+  options?: ParseOptions | undefined,
 ): TypeNode;
 /**
  * This class is exported only to assist people in implementing their own parsers
@@ -160,7 +160,7 @@ export declare function parseType(
  * @internal
  */
 export declare class Parser {
-  protected _options: Maybe<ParseOptions>;
+  protected _options: ParseOptions;
   protected _lexer: Lexer;
   constructor(source: string | Source, options?: ParseOptions);
   /**
