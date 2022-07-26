@@ -118,7 +118,7 @@ describe('coerceInputValue', () => {
       ]);
     });
 
-    it('returns an error for undefined result', () => {
+    it('returns a thrown error', () => {
       const inputValue = { error: 'Some error message' };
       const result = coerceValue(inputValue, TestScalar);
       expectErrors(result).to.deep.equal([
