@@ -44,7 +44,9 @@ export function validate(
   const maxErrors = options?.maxErrors ?? 100;
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
-  const abortObj = Object.freeze({});
+  const abortError = new GraphQLError(
+    'Too many validation errors, error limit reached. Validation aborted.',
+  );
   const errors: Array<GraphQLError> = [];
   const context = new ValidationContext(
     schema,
@@ -52,13 +54,7 @@ export function validate(
     typeInfo,
     (error) => {
       if (errors.length >= maxErrors) {
-        errors.push(
-          new GraphQLError(
-            'Too many validation errors, error limit reached. Validation aborted.',
-          ),
-        );
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
-        throw abortObj;
+        throw abortError;
       }
       errors.push(error);
     },
@@ -69,8 +65,10 @@ export function validate(
   // Visit the whole document with each instance of all provided rules.
   try {
     visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
-  } catch (e) {
-    if (e !== abortObj) {
+  } catch (e: unknown) {
+    if (e === abortError) {
+      errors.push(abortError);
+    } else {
       throw e;
     }
   }
