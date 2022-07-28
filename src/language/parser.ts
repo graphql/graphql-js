@@ -83,6 +83,15 @@ export interface ParseOptions {
   noLocation?: boolean | undefined;
 
   /**
+   * Parser CPU and memory usage is linear to the number of tokens in a document
+   * however in extreme cases it becomes quadratic due to memory exhaustion.
+   * Parsing happens before validation so even invalid queries can burn a lots of
+   * CPU time and memory.
+   * To prevent this you can set limit on maximum number of tokens.
+   */
+  maxTokens?: number | undefined;
+
+  /**
    * @deprecated will be removed in the v17.0.0
    *
    * If enabled, the parser will understand and parse variable definitions
@@ -206,12 +215,14 @@ export function parseType(
 export class Parser {
   protected _options: ParseOptions;
   protected _lexer: Lexer;
+  protected _tokenCounter: number;
 
   constructor(source: string | Source, options: ParseOptions = {}) {
     const sourceObj = isSource(source) ? source : new Source(source);
 
     this._lexer = new Lexer(sourceObj);
     this._options = options;
+    this._tokenCounter = 0;
   }
 
   /**
@@ -634,13 +645,13 @@ export class Parser {
       case TokenKind.BRACE_L:
         return this.parseObject(isConst);
       case TokenKind.INT:
-        this._lexer.advance();
+        this.advanceLexer();
         return this.node<IntValueNode>(token, {
           kind: Kind.INT,
           value: token.value,
         });
       case TokenKind.FLOAT:
-        this._lexer.advance();
+        this.advanceLexer();
         return this.node<FloatValueNode>(token, {
           kind: Kind.FLOAT,
           value: token.value,
@@ -649,7 +660,7 @@ export class Parser {
       case TokenKind.BLOCK_STRING:
         return this.parseStringLiteral();
       case TokenKind.NAME:
-        this._lexer.advance();
+        this.advanceLexer();
         switch (token.value) {
           case 'true':
             return this.node<BooleanValueNode>(token, {
@@ -695,7 +706,7 @@ export class Parser {
 
   parseStringLiteral(): StringValueNode {
     const token = this._lexer.token;
-    this._lexer.advance();
+    this.advanceLexer();
     return this.node<StringValueNode>(token, {
       kind: Kind.STRING,
       value: token.value,
@@ -1479,7 +1490,7 @@ export class Parser {
   expectToken(kind: TokenKind): Token {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advanceLexer();
       return token;
     }
 
@@ -1497,7 +1508,7 @@ export class Parser {
   expectOptionalToken(kind: TokenKind): boolean {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advanceLexer();
       return true;
     }
     return false;
@@ -1510,7 +1521,7 @@ export class Parser {
   expectKeyword(value: string): void {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
     } else {
       throw syntaxError(
         this._lexer.source,
@@ -1527,7 +1538,7 @@ export class Parser {
   expectOptionalKeyword(value: string): boolean {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
       return true;
     }
     return false;
@@ -1615,6 +1626,22 @@ export class Parser {
       nodes.push(parseFn.call(this));
     } while (this.expectOptionalToken(delimiterKind));
     return nodes;
+  }
+
+  advanceLexer(): void {
+    const { maxTokens } = this._options;
+    const token = this._lexer.advance();
+
+    if (maxTokens !== undefined && token.kind !== TokenKind.EOF) {
+      ++this._tokenCounter;
+      if (this._tokenCounter > maxTokens) {
+        throw syntaxError(
+          this._lexer.source,
+          token.start,
+          `Document contains more that ${maxTokens} tokens. Parsing aborted.`,
+        );
+      }
+    }
   }
 }
 
