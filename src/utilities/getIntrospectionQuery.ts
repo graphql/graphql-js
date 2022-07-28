@@ -32,6 +32,12 @@ export interface IntrospectionOptions {
    * Default: false
    */
   inputValueDeprecation?: boolean;
+
+  /**
+   * Whether to include 'memberTypes' field on types.
+   * Default: false
+   */
+  memberTypes?: boolean;
 }
 
 /**
@@ -45,6 +51,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     directiveIsRepeatable: false,
     schemaDescription: false,
     inputValueDeprecation: false,
+    memberTypes: false,
     ...options,
   };
 
@@ -62,6 +69,12 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   function inputDeprecation(str: string) {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
+
+  const memberTypes = optionsWithDefault.memberTypes
+    ? `memberTypes {
+      ...TypeRef
+    }`
+    : '';
 
   return `
     query IntrospectionQuery {
@@ -114,6 +127,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         isDeprecated
         deprecationReason
       }
+      ${memberTypes}
       possibleTypes {
         ...TypeRef
       }
@@ -234,6 +248,13 @@ export interface IntrospectionUnionType {
   readonly kind: 'UNION';
   readonly name: string;
   readonly description?: Maybe<string>;
+  readonly memberTypes: ReadonlyArray<
+    IntrospectionNamedTypeRef<
+      | IntrospectionObjectType
+      | IntrospectionInterfaceType
+      | IntrospectionUnionType
+    >
+  >;
   readonly possibleTypes: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionObjectType>
   >;

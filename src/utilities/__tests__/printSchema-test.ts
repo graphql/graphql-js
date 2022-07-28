@@ -710,6 +710,7 @@ describe('Type System Printer', () => {
         specifiedByURL: String
         fields(includeDeprecated: Boolean = false): [__Field!]
         interfaces: [__Type!]
+        memberTypes: [__Type!]
         possibleTypes: [__Type!]
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
         inputFields(includeDeprecated: Boolean = false): [__InputValue!]
@@ -731,7 +732,9 @@ describe('Type System Printer', () => {
         """
         INTERFACE
 
-        """Indicates this type is a union. \`possibleTypes\` is a valid field."""
+        """
+        Indicates this type is a union. \`memberTypes\` and \`possibleTypes\` are valid fields.
+        """
         UNION
 
         """Indicates this type is an enum. \`enumValues\` is a valid field."""

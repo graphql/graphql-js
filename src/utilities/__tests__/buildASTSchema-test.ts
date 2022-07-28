@@ -469,7 +469,7 @@ describe('Schema Builder', () => {
       }
     `);
     const errors = validateSchema(schema);
-    expect(errors).to.have.lengthOf.above(0);
+    expect(errors).to.have.lengthOf(0);
   });
 
   it('Custom Scalar', () => {

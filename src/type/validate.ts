@@ -30,6 +30,7 @@ import type {
   GraphQLUnionType,
 } from './definition';
 import {
+  isCompositeType,
   isEnumType,
   isInputObjectType,
   isInputType,
@@ -461,7 +462,7 @@ function validateUnionMembers(
   context: SchemaValidationContext,
   union: GraphQLUnionType,
 ): void {
-  const memberTypes = union.getTypes();
+  const memberTypes = union.getMemberTypes();
 
   if (memberTypes.length === 0) {
     context.reportError(
@@ -480,11 +481,54 @@ function validateUnionMembers(
       continue;
     }
     includedTypeNames[memberType.name] = true;
-    if (!isObjectType(memberType)) {
+    if (!isCompositeType(memberType)) {
       context.reportError(
-        `Union type ${union.name} can only include Object types, ` +
+        `Union type ${union.name} can only include Object, Interface, or Union types, ` +
           `it cannot include ${inspect(memberType)}.`,
         getUnionMemberTypeNodes(union, String(memberType)),
+      );
+    } else if (isUnionType(memberType)) {
+      validateUnionIncludesUnionMembers(context, union, memberType);
+    } else if (isInterfaceType(memberType)) {
+      validateUnionIncludesInterfaceImplementations(context, union, memberType);
+    }
+  }
+}
+
+function validateUnionIncludesUnionMembers(
+  context: SchemaValidationContext,
+  union: GraphQLUnionType,
+  memberUnion: GraphQLUnionType,
+): void {
+  const unionMemberTypes = union.getMemberTypes();
+  for (const transitive of memberUnion.getMemberTypes()) {
+    if (!unionMemberTypes.includes(transitive)) {
+      context.reportError(
+        `Union type ${union.name} must include ${transitive.name} because ${union.name} includes ${memberUnion.name} and ${memberUnion.name} includes ${transitive.name}.`,
+        [
+          ...getUnionMemberTypeNodes(memberUnion, transitive.name),
+          ...getUnionMemberTypeNodes(union, memberUnion.name),
+        ],
+      );
+    }
+  }
+}
+
+function validateUnionIncludesInterfaceImplementations(
+  context: SchemaValidationContext,
+  union: GraphQLUnionType,
+  memberInterface: GraphQLInterfaceType,
+): void {
+  const unionMemberTypes = union.getMemberTypes();
+  for (const transitive of context.schema.getImplementations(memberInterface)
+    .objects) {
+    if (!unionMemberTypes.includes(transitive)) {
+      context.reportError(
+        `Union type ${union.name} must include ${transitive.name} because ${union.name} includes ${memberInterface.name} and ${transitive.name} implements ${memberInterface.name}.`,
+        [
+          ...getAllImplementsInterfaceNodes(transitive, memberInterface),
+          ...getUnionMemberTypeNodes(union, memberInterface.name),
+        ],
       );
     }
   }
@@ -618,7 +662,7 @@ function getAllImplementsInterfaceNodes(
 function getUnionMemberTypeNodes(
   union: GraphQLUnionType,
   typeName: string,
-): Maybe<ReadonlyArray<NamedTypeNode>> {
+): ReadonlyArray<NamedTypeNode> {
   const { astNode, extensionASTNodes } = union;
   const nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode> =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;

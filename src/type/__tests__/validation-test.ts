@@ -730,7 +730,7 @@ describe('Type System: Union types must be valid', () => {
     ]);
   });
 
-  it('rejects a Union type with non-Object members types', () => {
+  it('rejects a Union type with non-composite member types', () => {
     let schema = buildSchema(`
       type Query {
         test: BadUnion
@@ -755,12 +755,12 @@ describe('Type System: Union types must be valid', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Union type BadUnion can only include Object types, it cannot include String.',
+          'Union type BadUnion can only include Object, Interface, or Union types, it cannot include String.',
         locations: [{ line: 16, column: 11 }],
       },
       {
         message:
-          'Union type BadUnion can only include Object types, it cannot include Int.',
+          'Union type BadUnion can only include Object, Interface, or Union types, it cannot include Int.',
         locations: [{ line: 1, column: 25 }],
       },
     ]);
@@ -769,8 +769,6 @@ describe('Type System: Union types must be valid', () => {
       GraphQLString,
       new GraphQLNonNull(SomeObjectType),
       new GraphQLList(SomeObjectType),
-      SomeInterfaceType,
-      SomeUnionType,
       SomeEnumType,
       SomeInputObjectType,
     ];
@@ -784,11 +782,67 @@ describe('Type System: Union types must be valid', () => {
       expectJSON(validateSchema(badSchema)).toDeepEqual([
         {
           message:
-            'Union type BadUnion can only include Object types, ' +
+            'Union type BadUnion can only include Object, Interface, or Union types, ' +
             `it cannot include ${inspect(memberType)}.`,
         },
       ]);
     }
+  });
+
+  it('rejects a Union type that does not include transitive member union type members', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: BadUnion
+      }
+
+      type TypeA {
+        field: String
+      }
+
+      union SomeUnion = TypeA
+
+      union BadUnion = SomeUnion
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Union type BadUnion must include TypeA because BadUnion includes SomeUnion and SomeUnion includes TypeA.',
+        locations: [
+          { line: 10, column: 25 },
+          { line: 12, column: 24 },
+        ],
+      },
+    ]);
+  });
+
+  it('rejects a Union type that does not include member interface type implementations', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: BadUnion
+      }
+
+      type TypeA implements SomeInterface {
+        field: String
+      }
+
+      interface SomeInterface {
+        field: String
+      }
+
+      union BadUnion = SomeInterface
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Union type BadUnion must include TypeA because BadUnion includes SomeInterface and TypeA implements SomeInterface.',
+        locations: [
+          { line: 6, column: 29 },
+          { line: 14, column: 24 },
+        ],
+      },
+    ]);
   });
 });
 
@@ -1900,7 +1954,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
-  it('accepts an Object with a subtyped Interface field (union)', () => {
+  it('accepts an Object with a subtyped Interface field (union subtyped by object)', () => {
     const schema = buildSchema(`
       type Query {
         test: AnotherObject
@@ -1918,6 +1972,58 @@ describe('Objects must adhere to Interface they implement', () => {
 
       type AnotherObject implements AnotherInterface {
         field: SomeObject
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Object with a subtyped Interface field (union subtyped by union)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = ChildUnionType | SomeObject
+
+      union ChildUnionType = SomeObject
+
+      interface AnotherInterface {
+        field: SomeUnionType
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: ChildUnionType
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Object with a subtyped Interface field (union subtyped by interface)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: AnotherObject
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = SomeInterface | SomeObject
+
+      interface SomeInterface {
+        field: String
+      }
+
+      interface AnotherInterface {
+        field: SomeUnionType
+      }
+
+      type AnotherObject implements AnotherInterface {
+        field: SomeInterface
       }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([]);
@@ -2334,7 +2440,7 @@ describe('Interfaces must adhere to Interface they implement', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
-  it('accepts an Interface with a subtyped Interface field (union)', () => {
+  it('accepts an Interface with a subtyped Interface field (union subtyped by object)', () => {
     const schema = buildSchema(`
       type Query {
         test: ChildInterface
@@ -2352,6 +2458,58 @@ describe('Interfaces must adhere to Interface they implement', () => {
 
       interface ChildInterface implements ParentInterface {
         field: SomeObject
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Interface with a subtyped Interface field (union subtyped by union)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = ChildUnionType | SomeObject
+
+      union ChildUnionType = SomeObject
+
+      interface ParentInterface {
+        field: SomeUnionType
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: ChildUnionType
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts an Interface with a subtyped Interface field (union subtyped by interface)', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: ChildInterface
+      }
+
+      type SomeObject {
+        field: String
+      }
+
+      union SomeUnionType = AnotherChildInterface | SomeObject
+
+      interface AnotherChildInterface {
+        field: String
+      }
+
+      interface ParentInterface {
+        field: SomeUnionType
+      }
+
+      interface ChildInterface implements ParentInterface {
+        field: AnotherChildInterface
       }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([]);

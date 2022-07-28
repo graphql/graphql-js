@@ -280,6 +280,14 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           }
         },
       },
+      memberTypes: {
+        type: new GraphQLList(new GraphQLNonNull(__Type)),
+        resolve(type, _args, _context) {
+          if (isUnionType(type)) {
+            return type.getMemberTypes();
+          }
+        },
+      },
       possibleTypes: {
         type: new GraphQLList(new GraphQLNonNull(__Type)),
         resolve(type, _args, _context, { schema }) {
@@ -467,7 +475,7 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
     UNION: {
       value: TypeKind.UNION,
       description:
-        'Indicates this type is a union. `possibleTypes` is a valid field.',
+        'Indicates this type is a union. `memberTypes` and `possibleTypes` are valid fields.',
     },
     ENUM: {
       value: TypeKind.ENUM,

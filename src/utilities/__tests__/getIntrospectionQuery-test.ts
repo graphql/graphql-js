@@ -130,4 +130,12 @@ describe('getIntrospectionQuery', () => {
       2,
     );
   });
+
+  it('include "memberTypes" field on types', () => {
+    expectIntrospectionQuery().toNotMatch('memberTypes');
+
+    expectIntrospectionQuery({ memberTypes: true }).toMatch('memberTypes');
+
+    expectIntrospectionQuery({ memberTypes: false }).toNotMatch('memberTypes');
+  });
 });

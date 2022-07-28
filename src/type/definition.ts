@@ -1152,7 +1152,8 @@ export class GraphQLUnionType {
   astNode: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
 
-  private _types: ThunkReadonlyArray<GraphQLObjectType>;
+  private _memberTypes: ThunkReadonlyArray<GraphQLCompositeType>;
+  private _possibleTypes: ThunkReadonlyArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
     this.name = assertName(config.name);
@@ -1162,25 +1163,33 @@ export class GraphQLUnionType {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
-    this._types = defineTypes.bind(undefined, config);
+    this._memberTypes = defineMemberTypes.bind(undefined, config);
+    this._possibleTypes = definePossibleTypes.bind(undefined, config);
   }
 
   get [Symbol.toStringTag]() {
     return 'GraphQLUnionType';
   }
 
-  getTypes(): ReadonlyArray<GraphQLObjectType> {
-    if (typeof this._types === 'function') {
-      this._types = this._types();
+  getMemberTypes(): ReadonlyArray<GraphQLCompositeType> {
+    if (typeof this._memberTypes === 'function') {
+      this._memberTypes = this._memberTypes();
     }
-    return this._types;
+    return this._memberTypes;
+  }
+
+  getPossibleTypes(): ReadonlyArray<GraphQLObjectType> {
+    if (typeof this._possibleTypes === 'function') {
+      this._possibleTypes = this._possibleTypes();
+    }
+    return this._possibleTypes;
   }
 
   toConfig(): GraphQLUnionTypeNormalizedConfig {
     return {
       name: this.name,
       description: this.description,
-      types: this.getTypes(),
+      types: this.getMemberTypes(),
       resolveType: this.resolveType,
       extensions: this.extensions,
       astNode: this.astNode,
@@ -1197,16 +1206,29 @@ export class GraphQLUnionType {
   }
 }
 
-function defineTypes(
+function defineMemberTypes(
+  config: Readonly<GraphQLUnionTypeConfig<unknown, unknown>>,
+): ReadonlyArray<GraphQLCompositeType> {
+  return resolveReadonlyArrayThunk(config.types);
+}
+
+function definePossibleTypes(
   config: Readonly<GraphQLUnionTypeConfig<unknown, unknown>>,
 ): ReadonlyArray<GraphQLObjectType> {
-  return resolveReadonlyArrayThunk(config.types);
+  const memberTypes = resolveReadonlyArrayThunk(config.types);
+  const possibleTypes: Array<GraphQLObjectType> = [];
+  for (const memberType of memberTypes) {
+    if (isObjectType(memberType)) {
+      possibleTypes.push(memberType);
+    }
+  }
+  return possibleTypes;
 }
 
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
   name: string;
   description?: Maybe<string>;
-  types: ThunkReadonlyArray<GraphQLObjectType>;
+  types: ThunkReadonlyArray<GraphQLCompositeType>;
   /**
    * Optionally provide a custom type resolver function. If one is not provided,
    * the default implementation will call `isTypeOf` on each implementing
@@ -1220,7 +1242,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 
 interface GraphQLUnionTypeNormalizedConfig
   extends GraphQLUnionTypeConfig<any, any> {
-  types: ReadonlyArray<GraphQLObjectType>;
+  types: ReadonlyArray<GraphQLCompositeType>;
   extensions: Readonly<GraphQLUnionTypeExtensions>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
 }

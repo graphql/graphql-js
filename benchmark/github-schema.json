@@ -56058,7 +56058,7 @@
             },
             {
               "name": "UNION",
-              "description": "Indicates this type is a union. `possibleTypes` is a valid field.",
+              "description": "Indicates this type is a union. `memberTypes` and `possibleTypes` are valid fields.",
               "isDeprecated": false,
               "deprecationReason": null
             },

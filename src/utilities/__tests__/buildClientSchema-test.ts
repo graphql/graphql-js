@@ -5,6 +5,7 @@ import { dedent } from '../../__testUtils__/dedent';
 
 import {
   assertEnumType,
+  assertUnionType,
   GraphQLEnumType,
   GraphQLObjectType,
 } from '../../type/definition';
@@ -958,12 +959,10 @@ describe('Type System: build schema from introspection', () => {
       );
       expect(fooIntrospection).to.deep.include({
         name: 'Foo',
-        possibleTypes: [{ kind: 'UNION', name: 'Foo', ofType: null }],
+        possibleTypes: [],
       });
 
-      expect(() => buildClientSchema(introspection)).to.throw(
-        'Expected Foo to be a GraphQL Object type.',
-      );
+      assertUnionType(buildClientSchema(introspection).getType('Foo'));
     });
   });
 });

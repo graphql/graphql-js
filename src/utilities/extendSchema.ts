@@ -36,6 +36,7 @@ import {
 
 import type {
   GraphQLArgumentConfig,
+  GraphQLCompositeType,
   GraphQLEnumValueConfigMap,
   GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
@@ -365,7 +366,7 @@ export function extendSchemaImpl(
     return new GraphQLUnionType({
       ...config,
       types: () => [
-        ...type.getTypes().map(replaceNamedType),
+        ...type.getMemberTypes().map(replaceNamedType),
         ...buildUnionTypes(extensions),
       ],
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
@@ -566,7 +567,7 @@ export function extendSchemaImpl(
 
   function buildUnionTypes(
     nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
-  ): Array<GraphQLObjectType> {
+  ): Array<GraphQLCompositeType> {
     // Note: While this could make assertions to get the correctly typed
     // values below, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
