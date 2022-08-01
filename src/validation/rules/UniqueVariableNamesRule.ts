@@ -1,7 +1,5 @@
 import { groupBy } from '../../jsutils/groupBy';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { ASTValidationContext } from '../ValidationContext';
@@ -27,12 +25,10 @@ export function UniqueVariableNamesRule(
 
       for (const [variableName, variableNodes] of seenVariableDefinitions) {
         if (variableNodes.length > 1) {
-          context.reportError(
-            new GraphQLError(
-              `There can be only one variable named "$${variableName}".`,
-              { nodes: variableNodes.map((node) => node.variable.name) },
-            ),
-          );
+          context.report({
+            message: `There can be only one variable named "$${variableName}".`,
+            nodes: variableNodes.map((node) => node.variable.name),
+          });
         }
       }
     },

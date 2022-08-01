@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { VariableDefinitionNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
@@ -32,14 +30,12 @@ export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
         for (const variableDef of variableDefs) {
           const variableName = variableDef.variable.name.value;
           if (variableNameUsed[variableName] !== true) {
-            context.reportError(
-              new GraphQLError(
-                operation.name
-                  ? `Variable "$${variableName}" is never used in operation "${operation.name.value}".`
-                  : `Variable "$${variableName}" is never used.`,
-                { nodes: variableDef },
-              ),
-            );
+            context.report({
+              message: operation.name
+                ? `Variable "$${variableName}" is never used in operation "${operation.name.value}".`
+                : `Variable "$${variableName}" is never used.`,
+              nodes: variableDef,
+            });
           }
         }
       },

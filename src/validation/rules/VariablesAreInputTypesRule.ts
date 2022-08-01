@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { VariableDefinitionNode } from '../../language/ast';
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
@@ -29,12 +27,10 @@ export function VariablesAreInputTypesRule(
         const variableName = node.variable.name.value;
         const typeName = print(node.type);
 
-        context.reportError(
-          new GraphQLError(
-            `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
-            { nodes: node.type },
-          ),
-        );
+        context.report({
+          message: `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
+          nodes: node.type,
+        });
       }
     },
   };

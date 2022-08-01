@@ -1,8 +1,6 @@
 import { inspect } from '../../jsutils/inspect';
 import { invariant } from '../../jsutils/invariant';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ASTNode } from '../../language/ast';
 import { OperationTypeNode } from '../../language/ast';
 import { DirectiveLocation } from '../../language/directiveLocation';
@@ -50,20 +48,19 @@ export function KnownDirectivesRule(
       const locations = locationsMap[name];
 
       if (!locations) {
-        context.reportError(
-          new GraphQLError(`Unknown directive "@${name}".`, { nodes: node }),
-        );
+        context.report({
+          message: `Unknown directive "@${name}".`,
+          nodes: node,
+        });
         return;
       }
 
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
       if (candidateLocation && !locations.includes(candidateLocation)) {
-        context.reportError(
-          new GraphQLError(
-            `Directive "@${name}" may not be used on ${candidateLocation}.`,
-            { nodes: node },
-          ),
-        );
+        context.report({
+          message: `Directive "@${name}" may not be used on ${candidateLocation}.`,
+          nodes: node,
+        });
       }
     },
   };

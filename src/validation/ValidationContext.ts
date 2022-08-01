@@ -1,9 +1,14 @@
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
 
-import type { GraphQLError } from '../error/GraphQLError';
+import type {
+  GraphQLError,
+  GraphQLErrorExtensions,
+} from '../error/GraphQLError';
+import { GraphQLValidationError } from '../error/GraphQLError';
 
 import type {
+  ASTNode,
   DocumentNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
@@ -35,6 +40,13 @@ interface VariableUsage {
   readonly defaultValue: Maybe<unknown>;
 }
 
+interface ValidationReportOptions {
+  message: string;
+  nodes: ReadonlyArray<ASTNode> | ASTNode;
+  originalError?: Error | undefined;
+  extensions?: GraphQLErrorExtensions | undefined;
+}
+
 /**
  * An instance of this class is passed as the "this" context to all validators,
  * allowing access to commonly useful contextual information from within a
@@ -62,7 +74,19 @@ export class ASTValidationContext {
     return 'ASTValidationContext';
   }
 
+  // TODO: when remove change `onError` to use GraphQLValidationError type instead
+  /* c8 ignore next 4 */
+  /** @deprecated Use `report` instead, will be removed in v18 */
   reportError(error: GraphQLError): void {
+    this._onError(error);
+  }
+
+  report(options: ValidationReportOptions): void {
+    const error = new GraphQLValidationError(options.message, {
+      nodes: options.nodes,
+      originalError: options.originalError,
+      extensions: options.extensions,
+    });
     this._onError(error);
   }
 

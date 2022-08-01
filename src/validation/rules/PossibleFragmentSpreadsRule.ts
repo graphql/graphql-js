@@ -1,8 +1,6 @@
 import { inspect } from '../../jsutils/inspect';
 import type { Maybe } from '../../jsutils/Maybe';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { GraphQLCompositeType } from '../../type/definition';
@@ -34,12 +32,10 @@ export function PossibleFragmentSpreadsRule(
       ) {
         const parentTypeStr = inspect(parentType);
         const fragTypeStr = inspect(fragType);
-        context.reportError(
-          new GraphQLError(
-            `Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            { nodes: node },
-          ),
-        );
+        context.report({
+          message: `Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
+          nodes: node,
+        });
       }
     },
     FragmentSpread(node) {
@@ -53,12 +49,10 @@ export function PossibleFragmentSpreadsRule(
       ) {
         const parentTypeStr = inspect(parentType);
         const fragTypeStr = inspect(fragType);
-        context.reportError(
-          new GraphQLError(
-            `Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            { nodes: node },
-          ),
-        );
+        context.report({
+          message: `Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
+          nodes: node,
+        });
       }
     },
   };

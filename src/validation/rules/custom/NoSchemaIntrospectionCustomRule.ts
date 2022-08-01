@@ -1,5 +1,3 @@
-import { GraphQLError } from '../../../error/GraphQLError';
-
 import type { FieldNode } from '../../../language/ast';
 import type { ASTVisitor } from '../../../language/visitor';
 
@@ -25,12 +23,10 @@ export function NoSchemaIntrospectionCustomRule(
     Field(node: FieldNode) {
       const type = getNamedType(context.getType());
       if (type && isIntrospectionType(type)) {
-        context.reportError(
-          new GraphQLError(
-            `GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`,
-            { nodes: node },
-          ),
-        );
+        context.report({
+          message: `GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`,
+          nodes: node,
+        });
       }
     },
   };

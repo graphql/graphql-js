@@ -4,8 +4,6 @@ import { invariant } from '../../jsutils/invariant';
 import type { ObjMap } from '../../jsutils/ObjMap';
 import { suggestionList } from '../../jsutils/suggestionList';
 
-import { GraphQLError } from '../../error/GraphQLError';
-
 import type { DefinitionNode, TypeExtensionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { isTypeDefinitionNode } from '../../language/predicates';
@@ -64,11 +62,10 @@ export function PossibleTypeExtensionsRule(
     if (expectedKind) {
       if (expectedKind !== node.kind) {
         const kindStr = extensionKindToTypeName(node.kind);
-        context.reportError(
-          new GraphQLError(`Cannot extend non-${kindStr} type "${typeName}".`, {
-            nodes: defNode ? [defNode, node] : node,
-          }),
-        );
+        context.report({
+          message: `Cannot extend non-${kindStr} type "${typeName}".`,
+          nodes: defNode ? [defNode, node] : node,
+        });
       }
     } else {
       const allTypeNames = Object.keys({
@@ -77,13 +74,12 @@ export function PossibleTypeExtensionsRule(
       });
 
       const suggestedTypes = suggestionList(typeName, allTypeNames);
-      context.reportError(
-        new GraphQLError(
+      context.report({
+        message:
           `Cannot extend type "${typeName}" because it is not defined.` +
-            didYouMean(suggestedTypes),
-          { nodes: node.name },
-        ),
-      );
+          didYouMean(suggestedTypes),
+        nodes: node.name,
+      });
     }
   }
 }
