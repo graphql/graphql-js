@@ -1,3 +1,5 @@
+export { Anonymizer } from './Anonymizer';
+
 // Produce the GraphQL query recommended for a full schema introspection.
 export { getIntrospectionQuery } from './getIntrospectionQuery';
 

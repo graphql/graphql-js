@@ -394,6 +394,7 @@ export type {
 
 // Utilities for operating on GraphQL type schema and parsed sources.
 export {
+  Anonymizer,
   // Produce the GraphQL query recommended for a full schema introspection.
   // Accepts optional IntrospectionOptions.
   getIntrospectionQuery,
