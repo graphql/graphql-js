@@ -292,7 +292,7 @@ export class GraphQLSchema {
     abstractType: GraphQLAbstractType,
   ): ReadonlyArray<GraphQLObjectType> {
     return isUnionType(abstractType)
-      ? abstractType.getTypes()
+      ? abstractType.getPossibleTypes()
       : this.getImplementations(abstractType).objects;
   }
 
@@ -306,14 +306,14 @@ export class GraphQLSchema {
 
   isSubType(
     abstractType: GraphQLAbstractType,
-    maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
+    maybeSubType: GraphQLCompositeType,
   ): boolean {
     let map = this._subTypeMap[abstractType.name];
     if (map === undefined) {
       map = Object.create(null);
 
       if (isUnionType(abstractType)) {
-        for (const type of abstractType.getTypes()) {
+        for (const type of abstractType.getMemberTypes()) {
           map[type.name] = true;
         }
       } else {
@@ -437,7 +437,7 @@ function collectReferencedTypes(
   if (!typeSet.has(namedType)) {
     typeSet.add(namedType);
     if (isUnionType(namedType)) {
-      for (const memberType of namedType.getTypes()) {
+      for (const memberType of namedType.getMemberTypes()) {
         collectReferencedTypes(memberType, typeSet);
       }
     } else if (isObjectType(namedType) || isInterfaceType(namedType)) {

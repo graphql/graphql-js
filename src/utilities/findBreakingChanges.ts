@@ -271,19 +271,22 @@ function findUnionTypeChanges(
   newType: GraphQLUnionType,
 ): Array<BreakingChange | DangerousChange> {
   const schemaChanges = [];
-  const possibleTypesDiff = diff(oldType.getTypes(), newType.getTypes());
+  const memberTypesDiff = diff(
+    oldType.getMemberTypes(),
+    newType.getMemberTypes(),
+  );
 
-  for (const newPossibleType of possibleTypesDiff.added) {
+  for (const newMemberType of memberTypesDiff.added) {
     schemaChanges.push({
       type: DangerousChangeType.TYPE_ADDED_TO_UNION,
-      description: `${newPossibleType.name} was added to union type ${oldType.name}.`,
+      description: `${newMemberType.name} was added to union type ${oldType.name}.`,
     });
   }
 
-  for (const oldPossibleType of possibleTypesDiff.removed) {
+  for (const oldMemberType of memberTypesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED_FROM_UNION,
-      description: `${oldPossibleType.name} was removed from union type ${oldType.name}.`,
+      description: `${oldMemberType.name} was removed from union type ${oldType.name}.`,
     });
   }
 

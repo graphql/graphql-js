@@ -186,9 +186,9 @@ function printInterface(type: GraphQLInterfaceType): string {
 }
 
 function printUnion(type: GraphQLUnionType): string {
-  const types = type.getTypes();
-  const possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
-  return printDescription(type) + 'union ' + type.name + possibleTypes;
+  const types = type.getMemberTypes();
+  const memberTypes = types.length ? ' = ' + types.join(' | ') : '';
+  return printDescription(type) + 'union ' + type.name + memberTypes;
 }
 
 function printEnum(type: GraphQLEnumType): string {

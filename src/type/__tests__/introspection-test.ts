@@ -26,6 +26,7 @@ describe('Introspection', () => {
       descriptions: false,
       specifiedByUrl: true,
       directiveIsRepeatable: true,
+      memberTypes: true,
     });
 
     const result = graphqlSync({ schema, source });
@@ -56,6 +57,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -66,6 +68,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: null,
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -76,6 +79,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: null,
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -181,6 +185,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -267,6 +272,25 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'interfaces',
+                  args: [],
+                  type: {
+                    kind: 'LIST',
+                    name: null,
+                    ofType: {
+                      kind: 'NON_NULL',
+                      name: null,
+                      ofType: {
+                        kind: 'OBJECT',
+                        name: '__Type',
+                        ofType: null,
+                      },
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'memberTypes',
                   args: [],
                   type: {
                     kind: 'LIST',
@@ -376,6 +400,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -427,6 +452,7 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
               ],
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -538,6 +564,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -627,6 +654,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -690,6 +718,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -798,6 +827,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              memberTypes: null,
               possibleTypes: null,
             },
             {
@@ -904,6 +934,7 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
               ],
+              memberTypes: null,
               possibleTypes: null,
             },
           ],
@@ -1612,6 +1643,68 @@ describe('Introspection', () => {
     });
   });
 
+  it('exposes memberTypes for Union types', () => {
+    const schema = buildSchema(`
+      union SomeUnion = SomeObject
+      
+      union AnotherUnion = SomeUnion | SomeObject
+
+      type SomeObject {
+        someField(arg: String): String
+      }
+
+      schema {
+        query: SomeObject
+      }
+    `);
+
+    const source = `
+      {
+        SomeObject: __type(name: "SomeObject") {
+          memberTypes {
+            name
+          }
+          possibleTypes {
+            name
+          }
+        }
+        SomeUnion: __type(name: "SomeUnion") {
+          memberTypes {
+            name
+          }
+          possibleTypes {
+            name
+          }
+        }
+        AnotherUnion: __type(name: "AnotherUnion") {
+          memberTypes {
+            name
+          }
+          possibleTypes {
+            name
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        SomeObject: {
+          memberTypes: null,
+          possibleTypes: null,
+        },
+        SomeUnion: {
+          memberTypes: [{ name: 'SomeObject' }],
+          possibleTypes: [{ name: 'SomeObject' }],
+        },
+        AnotherUnion: {
+          memberTypes: [{ name: 'SomeUnion' }, { name: 'SomeObject' }],
+          possibleTypes: [{ name: 'SomeObject' }],
+        },
+      },
+    });
+  });
+
   it('executes an introspection query without calling global resolvers', () => {
     const schema = buildSchema(`
       type Query {
@@ -1623,6 +1716,7 @@ describe('Introspection', () => {
       specifiedByUrl: true,
       directiveIsRepeatable: true,
       schemaDescription: true,
+      memberTypes: true,
     });
 
     /* c8 ignore start */

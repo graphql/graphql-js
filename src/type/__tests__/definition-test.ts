@@ -375,7 +375,8 @@ describe('Type System: Unions', () => {
       name: 'SomeUnion',
       types: [ObjectType],
     });
-    expect(unionType.getTypes()).to.deep.equal([ObjectType]);
+    expect(unionType.getMemberTypes()).to.deep.equal([ObjectType]);
+    expect(unionType.getPossibleTypes()).to.deep.equal([ObjectType]);
   });
 
   it('accepts a Union type with function returning an array of types', () => {
@@ -383,15 +384,15 @@ describe('Type System: Unions', () => {
       name: 'SomeUnion',
       types: () => [ObjectType],
     });
-    expect(unionType.getTypes()).to.deep.equal([ObjectType]);
+    expect(unionType.getMemberTypes()).to.deep.equal([ObjectType]);
   });
 
-  it('accepts a Union type without types', () => {
-    const unionType = new GraphQLUnionType({
+  it('accepts a recursive Union type', () => {
+    const unionType: GraphQLUnionType = new GraphQLUnionType({
       name: 'SomeUnion',
-      types: [],
+      types: () => [unionType],
     });
-    expect(unionType.getTypes()).to.deep.equal([]);
+    expect(unionType.getMemberTypes()).to.deep.equal([unionType]);
   });
 
   it('rejects an Union type with invalid name', () => {
