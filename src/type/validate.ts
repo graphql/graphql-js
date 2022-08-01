@@ -618,7 +618,7 @@ function getAllImplementsInterfaceNodes(
 function getUnionMemberTypeNodes(
   union: GraphQLUnionType,
   typeName: string,
-): Maybe<ReadonlyArray<NamedTypeNode>> {
+): ReadonlyArray<NamedTypeNode> {
   const { astNode, extensionASTNodes } = union;
   const nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode> =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
