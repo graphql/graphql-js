@@ -323,11 +323,12 @@ export interface OperationDefinitionNode {
   readonly selectionSet: SelectionSetNode;
 }
 
-export enum OperationTypeNode {
+enum OperationTypeNode {
   QUERY = 'query',
   MUTATION = 'mutation',
   SUBSCRIPTION = 'subscription',
 }
+export { OperationTypeNode };
 
 export interface VariableDefinitionNode {
   readonly kind: Kind.VARIABLE_DEFINITION;
