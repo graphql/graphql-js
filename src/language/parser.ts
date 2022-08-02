@@ -85,9 +85,9 @@ export interface ParseOptions {
   /**
    * Parser CPU and memory usage is linear to the number of tokens in a document
    * however in extreme cases it becomes quadratic due to memory exhaustion.
-   * Parsing happens before validation so even invalid queries can burn a lots of
+   * Parsing happens before validation so even invalid queries can burn lots of
    * CPU time and memory.
-   * To prevent this you can set limit on maximum number of tokens.
+   * To prevent this you can set a maximum number of tokens allowed within a document.
    */
   maxTokens?: number | undefined;
 
