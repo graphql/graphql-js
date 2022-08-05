@@ -209,7 +209,9 @@ export class GraphQLSchema {
     // Keep track of all implementations by interface name.
     this._implementationsMap = Object.create(null);
 
-    for (const namedType of allReferencedTypes) {
+    const refTypes = Array.from(allReferencedTypes)
+    for (let j = 0; j < refTypes.length; j++) {
+      const namedType = refTypes[j]
       if (namedType == null) {
         continue;
       }
