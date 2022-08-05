@@ -141,7 +141,8 @@ export function extendSchemaImpl(
   // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
-  for (const def of documentAST.definitions) {
+  for (let i = 0; i < documentAST.definitions.length; i++) {
+    const def = documentAST.definitions[i]
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
     } else if (def.kind === Kind.SCHEMA_EXTENSION) {
@@ -172,11 +173,13 @@ export function extendSchemaImpl(
   }
 
   const typeMap = Object.create(null);
-  for (const existingType of schemaConfig.types) {
+  for (let i = 0; i < schemaConfig.types.length; i++) {
+    const existingType = schemaConfig.types[i]
     typeMap[existingType.name] = extendNamedType(existingType);
   }
 
-  for (const typeNode of typeDefs) {
+  for (let i = 0; i < typeDefs.length; i++) {
+    const typeNode = typeDefs[i]
     const name = typeNode.name.value;
     typeMap[name] = stdTypeMap[name] ?? buildType(typeNode);
   }
@@ -309,7 +312,8 @@ export function extendSchemaImpl(
     const extensions = typeExtensionsMap[config.name] ?? [];
 
     let specifiedByURL = config.specifiedByURL;
-    for (const extensionNode of extensions) {
+    for (let i = 0; i < extensions.length; i++) {
+      const extensionNode = extensions[i]
       specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
     }
 
@@ -397,12 +401,14 @@ export function extendSchemaImpl(
     subscription?: Maybe<GraphQLObjectType>;
   } {
     const opTypes = {};
-    for (const node of nodes) {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const operationTypesNodes =
         /* c8 ignore next */ node.operationTypes ?? [];
 
-      for (const operationType of operationTypesNodes) {
+      for (let j = 0; j < operationTypesNodes.length; j++) {
+        const operationType = operationTypesNodes[j]
         // Note: While this could make early assertions to get the correctly
         // typed values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
@@ -455,11 +461,13 @@ export function extendSchemaImpl(
     >,
   ): GraphQLFieldConfigMap<unknown, unknown> {
     const fieldConfigMap = Object.create(null);
-    for (const node of nodes) {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const nodeFields = /* c8 ignore next */ node.fields ?? [];
 
-      for (const field of nodeFields) {
+      for (let j = 0; j < nodeFields.length; j++) {
+        const field = nodeFields[j]
         fieldConfigMap[field.name.value] = {
           // Note: While this could make assertions to get the correctly typed
           // value, that would throw immediately while type system validation
@@ -482,7 +490,8 @@ export function extendSchemaImpl(
     const argsNodes = /* c8 ignore next */ args ?? [];
 
     const argConfigMap = Object.create(null);
-    for (const arg of argsNodes) {
+    for (let i = 0; i < argsNodes.length; i++) {
+      const arg = argsNodes[i]
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
       // with validateSchema() will produce more actionable results.
@@ -505,11 +514,13 @@ export function extendSchemaImpl(
     >,
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
-    for (const node of nodes) {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const fieldsNodes = /* c8 ignore next */ node.fields ?? [];
 
-      for (const field of fieldsNodes) {
+      for (let j = 0; j < fieldsNodes.length; j++) {
+        const field = fieldsNodes[j]
         // Note: While this could make assertions to get the correctly typed
         // value, that would throw immediately while type system validation
         // with validateSchema() will produce more actionable results.
@@ -531,11 +542,13 @@ export function extendSchemaImpl(
     nodes: ReadonlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
-    for (const node of nodes) {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const valuesNodes = /* c8 ignore next */ node.values ?? [];
 
-      for (const value of valuesNodes) {
+      for (let j = 0; j < valuesNodes.length; j++) {
+        const value = valuesNodes[j]
         enumValueMap[value.name.value] = {
           description: value.description?.value,
           deprecationReason: getDeprecationReason(value),

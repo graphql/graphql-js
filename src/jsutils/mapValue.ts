@@ -9,8 +9,9 @@ export function mapValue<T, V>(
   fn: (value: T, key: string) => V,
 ): ObjMap<V> {
   const result = Object.create(null);
-
-  for (const key of Object.keys(map)) {
+  const keys = Object.keys(map)
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
     result[key] = fn(map[key], key);
   }
   return result;

@@ -32,8 +32,9 @@ export function keyMap<T>(
   keyFn: (item: T) => string,
 ): ObjMap<T> {
   const result = Object.create(null);
-  for (const item of list) {
-    result[keyFn(item)] = item;
+  for (let i = 0; i < list.length; i++) {
+    const key = list[i]
+    result[keyFn(key)] = key;
   }
   return result;
 }
