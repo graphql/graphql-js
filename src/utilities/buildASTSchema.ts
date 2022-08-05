@@ -50,7 +50,7 @@ export function buildASTSchema(
 
   if (config.astNode == null) {
     for (let i = 0; i < config.types.length; i++) {
-      const type = config.types[i]
+      const type = config.types[i];
       switch (type.name) {
         // Note: While this could make early assertions to get the correctly
         // typed values below, that would throw immediately while type system

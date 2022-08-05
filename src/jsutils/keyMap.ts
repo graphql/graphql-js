@@ -33,7 +33,7 @@ export function keyMap<T>(
 ): ObjMap<T> {
   const result = Object.create(null);
   for (let i = 0; i < list.length; i++) {
-    const key = list[i]
+    const key = list[i];
     result[keyFn(key)] = key;
   }
   return result;

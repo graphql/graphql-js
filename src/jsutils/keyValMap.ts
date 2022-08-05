@@ -24,7 +24,7 @@ export function keyValMap<T, V>(
 ): ObjMap<V> {
   const result = Object.create(null);
   for (let i = 0; i < list.length; i++) {
-    const item = list[i]
+    const item = list[i];
     result[keyFn(item)] = valFn(item);
   }
   return result;

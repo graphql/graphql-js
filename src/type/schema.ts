@@ -173,7 +173,7 @@ export class GraphQLSchema {
     const allReferencedTypes = new Set<GraphQLNamedType>(config.types);
     if (config.types != null) {
       for (let i = 0; i < config.types.length; i++) {
-        const type = config.types[i]
+        const type = config.types[i];
         // When we ready to process this type, we remove it from "collected" types
         // and then add it together with all dependent types in the correct position.
         allReferencedTypes.delete(type);
@@ -192,11 +192,11 @@ export class GraphQLSchema {
     }
 
     for (let i = 0; i < this._directives.length; i++) {
-      const directive = this._directives[i]
+      const directive = this._directives[i];
       // Directives are not validated until validateSchema() is called.
       if (isDirective(directive)) {
-      for (let j = 0; j < directive.args.length; j++) {
-        const arg = directive.args[j]
+        for (let j = 0; j < directive.args.length; j++) {
+          const arg = directive.args[j];
           collectReferencedTypes(arg.type, allReferencedTypes);
         }
       }
@@ -209,9 +209,9 @@ export class GraphQLSchema {
     // Keep track of all implementations by interface name.
     this._implementationsMap = Object.create(null);
 
-    const refTypes = Array.from(allReferencedTypes)
+    const refTypes = Array.from(allReferencedTypes);
     for (let j = 0; j < refTypes.length; j++) {
-      const namedType = refTypes[j]
+      const namedType = refTypes[j];
       if (namedType == null) {
         continue;
       }
@@ -228,7 +228,7 @@ export class GraphQLSchema {
         // Store implementations by interface.
         const interfaces = namedType.getInterfaces();
         for (let i = 0; i < interfaces.length; i++) {
-          const iface = interfaces[i]
+          const iface = interfaces[i];
           if (isInterfaceType(iface)) {
             let implementations = this._implementationsMap[iface.name];
             if (implementations === undefined) {
@@ -245,7 +245,7 @@ export class GraphQLSchema {
         // Store implementations by objects.
         const interfaces = namedType.getInterfaces();
         for (let i = 0; i < interfaces.length; i++) {
-          const iface = interfaces[i]
+          const iface = interfaces[i];
           if (isInterfaceType(iface)) {
             let implementations = this._implementationsMap[iface.name];
             if (implementations === undefined) {
@@ -322,7 +322,7 @@ export class GraphQLSchema {
       map = Object.create(null);
 
       if (isUnionType(abstractType)) {
-        const types = abstractType.getTypes()
+        const types = abstractType.getTypes();
         for (let i = 0; i < types.length; i++) {
           map[types[i].name] = true;
         }
@@ -452,21 +452,21 @@ function collectReferencedTypes(
         collectReferencedTypes(types[i], typeSet);
       }
     } else if (isObjectType(namedType) || isInterfaceType(namedType)) {
-      const interfaces = namedType.getInterfaces()
+      const interfaces = namedType.getInterfaces();
       for (let i = 0; i < interfaces.length; i++) {
         collectReferencedTypes(interfaces[i], typeSet);
       }
 
-      const fields = Object.values(namedType.getFields())
+      const fields = Object.values(namedType.getFields());
       for (let i = 0; i < fields.length; i++) {
-        const field = fields[i]
+        const field = fields[i];
         collectReferencedTypes(field.type, typeSet);
         for (let j = 0; j < field.args.length; j++) {
           collectReferencedTypes(field.args[j].type, typeSet);
         }
       }
     } else if (isInputObjectType(namedType)) {
-      const fields = Object.values(namedType.getFields())
+      const fields = Object.values(namedType.getFields());
       for (let i = 0; i < fields.length; i++) {
         collectReferencedTypes(fields[i].type, typeSet);
       }

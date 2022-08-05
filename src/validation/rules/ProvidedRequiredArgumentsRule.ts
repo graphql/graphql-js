@@ -103,7 +103,9 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
           /* c8 ignore next */
           const argNodes = directiveNode.arguments ?? [];
           const argNodeMap = new Set(argNodes.map((arg) => arg.name.value));
-          for (const { 0: argName, 1: argDef } of Object.entries(requiredArgs)) {
+          for (const { 0: argName, 1: argDef } of Object.entries(
+            requiredArgs,
+          )) {
             if (!argNodeMap.has(argName)) {
               const argType = isType(argDef.type)
                 ? inspect(argDef.type)

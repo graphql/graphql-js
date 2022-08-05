@@ -124,9 +124,9 @@ function validateRootTypes(context: SchemaValidationContext): void {
     GraphQLObjectType,
     OperationTypeNode
   >();
-  const operationTypeNodes = Object.values(OperationTypeNode)
+  const operationTypeNodes = Object.values(OperationTypeNode);
   for (let i = 0; i < operationTypeNodes.length; i++) {
-    const operationType = operationTypeNodes[i]
+    const operationType = operationTypeNodes[i];
     const rootType = schema.getRootType(operationType);
 
     if (rootType != null) {
@@ -146,9 +146,9 @@ function validateRootTypes(context: SchemaValidationContext): void {
     }
   }
 
-  const rootTypeEntries = Array.from(rootTypesMap.entries())
+  const rootTypeEntries = Array.from(rootTypesMap.entries());
   for (let i = 0; i < rootTypeEntries.length; i++) {
-    const { 0: rootType, 1: operationTypes } = rootTypeEntries[i]
+    const { 0: rootType, 1: operationTypes } = rootTypeEntries[i];
     if (operationTypes.length > 1) {
       const operationList = andList(operationTypes);
       context.reportError(
@@ -174,9 +174,9 @@ function getOperationTypeNode(
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
-  const directives = context.schema.getDirectives()
+  const directives = context.schema.getDirectives();
   for (let i = 0; i < directives.length; i++) {
-    const directive = directives[i]
+    const directive = directives[i];
     // Ensure all directives are in fact GraphQL directives.
     if (!isDirective(directive)) {
       context.reportError(
@@ -193,7 +193,7 @@ function validateDirectives(context: SchemaValidationContext): void {
 
     // Ensure the arguments are valid.
     for (let j = 0; j < directive.args.length; j++) {
-      const arg = directive.args[j]
+      const arg = directive.args[j];
       // Ensure they are named correctly.
       validateName(context, arg);
 
@@ -234,7 +234,7 @@ function validateTypes(context: SchemaValidationContext): void {
     createInputObjectCircularRefsValidator(context);
   const types = Object.values(context.schema.getTypeMap());
   for (let i = 0; i < types.length; i++) {
-    const type = types[i]
+    const type = types[i];
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
       context.reportError(
@@ -292,7 +292,7 @@ function validateFields(
   }
 
   for (let i = 0; i < fields.length; i++) {
-    const field = fields[i]
+    const field = fields[i];
     // Ensure they are named correctly.
     validateName(context, field);
 
@@ -307,7 +307,7 @@ function validateFields(
 
     // Ensure the arguments are valid
     for (let j = 0; j < field.args.length; j++) {
-      const arg = field.args[j]
+      const arg = field.args[j];
       const argName = arg.name;
 
       // Ensure they are named correctly.
@@ -339,7 +339,7 @@ function validateInterfaces(
   const ifaceTypeNames = Object.create(null);
   const interfaces = type.getInterfaces();
   for (let i = 0; i < interfaces.length; i++) {
-    const iface = interfaces[i]
+    const iface = interfaces[i];
     if (!isInterfaceType(iface)) {
       context.reportError(
         `Type ${inspect(type)} must only implement Interface types, ` +
@@ -380,9 +380,9 @@ function validateTypeImplementsInterface(
   const typeFieldMap = type.getFields();
 
   // Assert each interface field is implemented.
-  const interfaceFields = Object.values(iface.getFields())
+  const interfaceFields = Object.values(iface.getFields());
   for (let i = 0; i < interfaceFields.length; i++) {
-    const ifaceField = interfaceFields[i]
+    const ifaceField = interfaceFields[i];
     const fieldName = ifaceField.name;
     const typeField = typeFieldMap[fieldName];
 
@@ -407,8 +407,8 @@ function validateTypeImplementsInterface(
     }
 
     // Assert each interface field arg is implemented.
-    for (let j = 0; j  < ifaceField.args.length; j++) {
-      const ifaceArg = ifaceField.args[j]
+    for (let j = 0; j < ifaceField.args.length; j++) {
+      const ifaceArg = ifaceField.args[j];
       const argName = ifaceArg.name;
       const typeArg = typeField.args.find((arg) => arg.name === argName);
 
@@ -438,8 +438,8 @@ function validateTypeImplementsInterface(
     }
 
     // Assert additional arguments must not be required.
-    for (let j = 0; j  < typeField.args.length; j++) {
-      const typeArg = typeField.args[j]
+    for (let j = 0; j < typeField.args.length; j++) {
+      const typeArg = typeField.args[j];
       const argName = typeArg.name;
       const ifaceArg = ifaceField.args.find((arg) => arg.name === argName);
       if (!ifaceArg && isRequiredArgument(typeArg)) {
@@ -458,9 +458,9 @@ function validateTypeImplementsAncestors(
   iface: GraphQLInterfaceType,
 ): void {
   const ifaceInterfaces = type.getInterfaces();
-  const interfaces = iface.getInterfaces()
+  const interfaces = iface.getInterfaces();
   for (let i = 0; i < interfaces.length; i++) {
-    const transitive = interfaces[i]
+    const transitive = interfaces[i];
     if (!ifaceInterfaces.includes(transitive)) {
       context.reportError(
         transitive === type
@@ -490,7 +490,7 @@ function validateUnionMembers(
 
   const includedTypeNames = Object.create(null);
   for (let i = 0; i < memberTypes.length; i++) {
-    const memberType = memberTypes[i]
+    const memberType = memberTypes[i];
     if (includedTypeNames[memberType.name]) {
       context.reportError(
         `Union type ${union.name} can only include type ${memberType.name} once.`,
@@ -543,7 +543,7 @@ function validateInputFields(
 
   // Ensure the arguments are valid
   for (let i = 0; i < fields.length; i++) {
-    const field = fields[i]
+    const field = fields[i];
     // Ensure they are named correctly.
     validateName(context, field);
 
@@ -594,7 +594,7 @@ function createInputObjectCircularRefsValidator(
 
     const fields = Object.values(inputObj.getFields());
     for (let i = 0; i < fields.length; i++) {
-      const field = fields[i]
+      const field = fields[i];
       if (isNonNullType(field.type) && isInputObjectType(field.type.ofType)) {
         const fieldType = field.type.ofType;
         const cycleIndex = fieldPathIndexByTypeName[fieldType.name];

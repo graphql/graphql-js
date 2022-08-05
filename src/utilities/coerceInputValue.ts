@@ -97,10 +97,10 @@ function coerceInputValueImpl(
 
     const coercedValue: any = {};
     const fieldDefs = type.getFields();
-    const fields = Object.values(fieldDefs)
+    const fields = Object.values(fieldDefs);
 
     for (let i = 0; i < fields.length; i++) {
-      const field = fields[i]
+      const field = fields[i];
       const fieldValue = inputValue[field.name];
 
       if (fieldValue === undefined) {
@@ -128,9 +128,9 @@ function coerceInputValueImpl(
     }
 
     // Ensure every provided field is defined.
-    const inputKeys = Object.keys(inputValue)
+    const inputKeys = Object.keys(inputValue);
     for (let i = 0; i < inputKeys.length; i++) {
-      const fieldName = inputKeys[i]
+      const fieldName = inputKeys[i];
       if (!fieldDefs[fieldName]) {
         const suggestions = suggestionList(
           fieldName,

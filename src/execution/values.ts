@@ -77,7 +77,7 @@ function coerceVariableValues(
 ): { [variable: string]: unknown } {
   const coercedValues: { [variable: string]: unknown } = {};
   for (let i = 0; i < varDefNodes.length; i++) {
-    const varDefNode = varDefNodes[i]
+    const varDefNode = varDefNodes[i];
     const varName = varDefNode.variable.name.value;
     const varType = typeFromAST(schema, varDefNode.type);
     if (!isInputType(varType)) {
@@ -163,7 +163,7 @@ export function getArgumentValues(
   const argNodeMap = keyMap(argumentNodes, (arg) => arg.name.value);
 
   for (let i = 0; i < def.args.length; i++) {
-    const argDef = def.args[i]
+    const argDef = def.args[i];
     const name = argDef.name;
     const argType = argDef.type;
     const argumentNode = argNodeMap[name];

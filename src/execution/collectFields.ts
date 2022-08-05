@@ -71,7 +71,7 @@ export function collectSubfields(
   const subFieldNodes = new AccumulatorMap<string, FieldNode>();
   const visitedFragmentNames = new Set<string>();
   for (let i = 0; i < fieldNodes.length; i++) {
-    const node = fieldNodes[i]
+    const node = fieldNodes[i];
     if (node.selectionSet) {
       collectFieldsImpl(
         schema,
@@ -98,7 +98,7 @@ function collectFieldsImpl(
   visitedFragmentNames: Set<string>,
 ): void {
   for (let i = 0; i < selectionSet.selections.length; i++) {
-    const selection = selectionSet.selections[i]
+    const selection = selectionSet.selections[i];
     switch (selection.kind) {
       case Kind.FIELD: {
         if (!shouldIncludeNode(variableValues, selection)) {

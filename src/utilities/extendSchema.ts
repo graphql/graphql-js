@@ -142,7 +142,7 @@ export function extendSchemaImpl(
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
   for (let i = 0; i < documentAST.definitions.length; i++) {
-    const def = documentAST.definitions[i]
+    const def = documentAST.definitions[i];
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
     } else if (def.kind === Kind.SCHEMA_EXTENSION) {
@@ -174,12 +174,12 @@ export function extendSchemaImpl(
 
   const typeMap = Object.create(null);
   for (let i = 0; i < schemaConfig.types.length; i++) {
-    const existingType = schemaConfig.types[i]
+    const existingType = schemaConfig.types[i];
     typeMap[existingType.name] = extendNamedType(existingType);
   }
 
   for (let i = 0; i < typeDefs.length; i++) {
-    const typeNode = typeDefs[i]
+    const typeNode = typeDefs[i];
     const name = typeNode.name.value;
     typeMap[name] = stdTypeMap[name] ?? buildType(typeNode);
   }
@@ -313,7 +313,7 @@ export function extendSchemaImpl(
 
     let specifiedByURL = config.specifiedByURL;
     for (let i = 0; i < extensions.length; i++) {
-      const extensionNode = extensions[i]
+      const extensionNode = extensions[i];
       specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
     }
 
@@ -402,13 +402,13 @@ export function extendSchemaImpl(
   } {
     const opTypes = {};
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i]
+      const node = nodes[i];
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const operationTypesNodes =
         /* c8 ignore next */ node.operationTypes ?? [];
 
       for (let j = 0; j < operationTypesNodes.length; j++) {
-        const operationType = operationTypesNodes[j]
+        const operationType = operationTypesNodes[j];
         // Note: While this could make early assertions to get the correctly
         // typed values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
@@ -462,12 +462,12 @@ export function extendSchemaImpl(
   ): GraphQLFieldConfigMap<unknown, unknown> {
     const fieldConfigMap = Object.create(null);
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i]
+      const node = nodes[i];
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const nodeFields = /* c8 ignore next */ node.fields ?? [];
 
       for (let j = 0; j < nodeFields.length; j++) {
-        const field = nodeFields[j]
+        const field = nodeFields[j];
         fieldConfigMap[field.name.value] = {
           // Note: While this could make assertions to get the correctly typed
           // value, that would throw immediately while type system validation
@@ -491,7 +491,7 @@ export function extendSchemaImpl(
 
     const argConfigMap = Object.create(null);
     for (let i = 0; i < argsNodes.length; i++) {
-      const arg = argsNodes[i]
+      const arg = argsNodes[i];
       // Note: While this could make assertions to get the correctly typed
       // value, that would throw immediately while type system validation
       // with validateSchema() will produce more actionable results.
@@ -515,12 +515,12 @@ export function extendSchemaImpl(
   ): GraphQLInputFieldConfigMap {
     const inputFieldMap = Object.create(null);
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i]
+      const node = nodes[i];
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const fieldsNodes = /* c8 ignore next */ node.fields ?? [];
 
       for (let j = 0; j < fieldsNodes.length; j++) {
-        const field = fieldsNodes[j]
+        const field = fieldsNodes[j];
         // Note: While this could make assertions to get the correctly typed
         // value, that would throw immediately while type system validation
         // with validateSchema() will produce more actionable results.
@@ -543,12 +543,12 @@ export function extendSchemaImpl(
   ): GraphQLEnumValueConfigMap {
     const enumValueMap = Object.create(null);
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i]
+      const node = nodes[i];
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const valuesNodes = /* c8 ignore next */ node.values ?? [];
 
       for (let j = 0; j < valuesNodes.length; j++) {
-        const value = valuesNodes[j]
+        const value = valuesNodes[j];
         enumValueMap[value.name.value] = {
           description: value.description?.value,
           deprecationReason: getDeprecationReason(value),

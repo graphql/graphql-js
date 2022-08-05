@@ -84,9 +84,9 @@ export function astFromValue(
       return null;
     }
     const fieldNodes: Array<ObjectFieldNode> = [];
-    const fields = Object.values(type.getFields())
+    const fields = Object.values(type.getFields());
     for (let i = 0; i < fields.length; i++) {
-      const field = fields[i]
+      const field = fields[i];
       const fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {
         fieldNodes.push({

@@ -78,7 +78,7 @@ export class ASTValidationContext {
       fragments = Object.create(null);
       const docDefs = this.getDocument().definitions;
       for (let i = 0; i < docDefs.length; i++) {
-        const defNode = docDefs[i]
+        const defNode = docDefs[i];
         if (defNode.kind === Kind.FRAGMENT_DEFINITION) {
           fragments[defNode.name.value] = defNode;
         }
@@ -98,7 +98,7 @@ export class ASTValidationContext {
       let set: SelectionSetNode | undefined;
       while ((set = setsToVisit.pop())) {
         for (let i = 0; i < set.selections.length; i++) {
-          const selection = set.selections[i]
+          const selection = set.selections[i];
           if (selection.kind === Kind.FRAGMENT_SPREAD) {
             spreads.push(selection);
           } else if (selection.selectionSet) {
@@ -121,9 +121,9 @@ export class ASTValidationContext {
       const nodesToVisit: Array<SelectionSetNode> = [operation.selectionSet];
       let node: SelectionSetNode | undefined;
       while ((node = nodesToVisit.pop())) {
-        const spreads = this.getFragmentSpreads(node)
+        const spreads = this.getFragmentSpreads(node);
         for (let i = 0; i < spreads.length; i++) {
-          const spread = spreads[i]
+          const spread = spreads[i];
           const fragName = spread.name.value;
           if (collectedNames[fragName] !== true) {
             collectedNames[fragName] = true;
@@ -230,9 +230,12 @@ export class ValidationContext extends ASTValidationContext {
     let usages = this._recursiveVariableUsages.get(operation);
     if (!usages) {
       usages = this.getVariableUsages(operation);
-      const recursivelyReferencedFragments = this.getRecursivelyReferencedFragments(operation)
+      const recursivelyReferencedFragments =
+        this.getRecursivelyReferencedFragments(operation);
       for (let i = 0; i < recursivelyReferencedFragments.length; i++) {
-        usages = usages.concat(this.getVariableUsages(recursivelyReferencedFragments[i]));
+        usages = usages.concat(
+          this.getVariableUsages(recursivelyReferencedFragments[i]),
+        );
       }
       this._recursiveVariableUsages.set(operation, usages);
     }

@@ -9,7 +9,7 @@ export function groupBy<K, T>(
 ): Map<K, ReadonlyArray<T>> {
   const result = new AccumulatorMap<K, T>();
   for (let i = 0; i < list.length; i++) {
-    const item = list[i]
+    const item = list[i];
     result.add(keyFn(item), item);
   }
   return result;

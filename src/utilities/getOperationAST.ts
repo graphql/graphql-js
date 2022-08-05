@@ -14,7 +14,7 @@ export function getOperationAST(
 ): Maybe<OperationDefinitionNode> {
   let operation = null;
   for (let i = 0; i < documentAST.definitions.length; i++) {
-    const definition = documentAST.definitions[i]
+    const definition = documentAST.definitions[i];
     if (definition.kind === Kind.OPERATION_DEFINITION) {
       if (operationName == null) {
         // If no operation name was provided, only return an Operation if there
