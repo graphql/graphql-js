@@ -81,11 +81,11 @@ export function OverlappingFieldsCanBeMergedRule(
         context.getParentType(),
         selectionSet,
       );
-      for (const [[responseName, reason], fields1, fields2] of conflicts) {
-        const reasonMsg = reasonMessage(reason);
+      for (const { 0: response, 1: fields1, 2: fields2 } of conflicts) {
+        const reasonMsg = reasonMessage(response[1]);
         context.reportError(
           new GraphQLError(
-            `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
+            `Fields "${response[0]}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
             { nodes: fields1.concat(fields2) },
           ),
         );
@@ -484,7 +484,7 @@ function collectConflictsWithin(
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fields] of Object.entries(fieldMap)) {
+  for (const { 0: responseName, 1: fields } of Object.entries(fieldMap)) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.
@@ -528,7 +528,7 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const [responseName, fields1] of Object.entries(fieldMap1)) {
+  for (const { 0: responseName, 1: fields1 } of Object.entries(fieldMap1)) {
     const fields2 = fieldMap2[responseName];
     if (fields2) {
       for (const field1 of fields1) {

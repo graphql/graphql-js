@@ -265,7 +265,8 @@ export function buildExecutionContext(
 
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
-  for (const definition of document.definitions) {
+  for (let i = 0; i < document.definitions.length; i++) {
+    const definition = document.definitions[i]
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
         if (operationName == null) {
@@ -431,7 +432,9 @@ function executeFields(
   const results = Object.create(null);
   let containsPromise = false;
 
-  for (const [responseName, fieldNodes] of fields.entries()) {
+  const fieldsEntries = Array.from(fields.entries())
+  for (let i = 0; i < fieldsEntries.length; i++) {
+    const { 0: responseName, 1: fieldNodes } = fieldsEntries[i]
     const fieldPath = addPath(path, responseName, parentType.name);
     const result = executeField(
       exeContext,
@@ -1227,7 +1230,7 @@ function executeSubscription(
     rootType,
     operation.selectionSet,
   );
-  const [responseName, fieldNodes] = [...rootFields.entries()][0];
+  const {0:responseName, 1:fieldNodes} = Array.from(rootFields.entries())[0];
   const fieldName = fieldNodes[0].name.value;
   const fieldDef = schema.getField(rootType, fieldName);
 

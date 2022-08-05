@@ -13,7 +13,9 @@ export function toObjMap<T>(
   }
 
   const map = Object.create(null);
-  for (const [key, value] of Object.entries(obj)) {
+  const entries = Object.entries(obj)
+  for (let i = 0; i < entries.length; i++) {
+    const { 0: key, 1: value } = entries[i]
     map[key] = value;
   }
   return map;

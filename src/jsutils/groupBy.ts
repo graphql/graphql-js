@@ -8,7 +8,8 @@ export function groupBy<K, T>(
   keyFn: (item: T) => K,
 ): Map<K, ReadonlyArray<T>> {
   const result = new AccumulatorMap<K, T>();
-  for (const item of list) {
+  for (let i = 0; i < list.length; i++) {
+    const item = list[i]
     result.add(keyFn(item), item);
   }
   return result;

@@ -25,7 +25,7 @@ export function UniqueVariableNamesRule(
         (node) => node.variable.name.value,
       );
 
-      for (const [variableName, variableNodes] of seenVariableDefinitions) {
+      for (const { 0: variableName, 1: variableNodes} of seenVariableDefinitions) {
         if (variableNodes.length > 1) {
           context.reportError(
             new GraphQLError(

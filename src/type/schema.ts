@@ -172,7 +172,8 @@ export class GraphQLSchema {
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
     const allReferencedTypes = new Set<GraphQLNamedType>(config.types);
     if (config.types != null) {
-      for (const type of config.types) {
+      for (let i = 0; i < config.types.length; i++) {
+        const type = config.types[i]
         // When we ready to process this type, we remove it from "collected" types
         // and then add it together with all dependent types in the correct position.
         allReferencedTypes.delete(type);
@@ -190,10 +191,12 @@ export class GraphQLSchema {
       collectReferencedTypes(this._subscriptionType, allReferencedTypes);
     }
 
-    for (const directive of this._directives) {
+    for (let i = 0; i < this._directives.length; i++) {
+      const directive = this._directives[i]
       // Directives are not validated until validateSchema() is called.
       if (isDirective(directive)) {
-        for (const arg of directive.args) {
+      for (let j = 0; j < directive.args.length; j++) {
+        const arg = directive.args[j]
           collectReferencedTypes(arg.type, allReferencedTypes);
         }
       }

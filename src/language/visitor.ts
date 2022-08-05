@@ -210,7 +210,8 @@ export function visit(
           node = node.slice();
 
           let editOffset = 0;
-          for (const [editKey, editValue] of edits) {
+          for (const edit of edits) {
+            const { 0: editKey, 1: editValue } = edit
             const arrayKey = editKey - editOffset;
             if (editValue === null) {
               node.splice(arrayKey, 1);
@@ -224,7 +225,8 @@ export function visit(
             {},
             Object.getOwnPropertyDescriptors(node),
           );
-          for (const [editKey, editValue] of edits) {
+          for (const edit of edits) {
+            const { 0: editKey, 1: editValue } = edit
             node[editKey] = editValue;
           }
         }

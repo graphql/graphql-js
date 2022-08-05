@@ -128,7 +128,7 @@ function findDirectiveChanges(
     });
   }
 
-  for (const [oldDirective, newDirective] of directivesDiff.persisted) {
+  for (const { 0: oldDirective, 1: newDirective } of directivesDiff.persisted) {
     const argsDiff = diff(oldDirective.args, newDirective.args);
 
     for (const newArg of argsDiff.added) {
@@ -187,7 +187,7 @@ function findTypeChanges(
     });
   }
 
-  for (const [oldType, newType] of typesDiff.persisted) {
+  for (const { 0: oldType, 1: newType } of typesDiff.persisted) {
     if (isEnumType(oldType) && isEnumType(newType)) {
       schemaChanges.push(...findEnumTypeChanges(oldType, newType));
     } else if (isUnionType(oldType) && isUnionType(newType)) {
@@ -248,7 +248,7 @@ function findInputObjectTypeChanges(
     });
   }
 
-  for (const [oldField, newField] of fieldsDiff.persisted) {
+  for (const { 0: oldField, 1: newField } of fieldsDiff.persisted) {
     const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
       oldField.type,
       newField.type,
@@ -355,7 +355,7 @@ function findFieldChanges(
     });
   }
 
-  for (const [oldField, newField] of fieldsDiff.persisted) {
+  for (const { 0: oldField, 1: newField } of fieldsDiff.persisted) {
     schemaChanges.push(...findArgChanges(oldType, oldField, newField));
 
     const isSafe = isChangeSafeForObjectOrInterfaceField(
@@ -390,7 +390,7 @@ function findArgChanges(
     });
   }
 
-  for (const [oldArg, newArg] of argsDiff.persisted) {
+  for (const { 0: oldArg, 1: newArg } of argsDiff.persisted) {
     const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
       oldArg.type,
       newArg.type,

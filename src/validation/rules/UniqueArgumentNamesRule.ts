@@ -32,7 +32,7 @@ export function UniqueArgumentNamesRule(
 
     const seenArgs = groupBy(argumentNodes, (arg) => arg.name.value);
 
-    for (const [argName, argNodes] of seenArgs) {
+    for (const { 0: argName, 1: argNodes } of seenArgs) {
       if (argNodes.length > 1) {
         context.reportError(
           new GraphQLError(
