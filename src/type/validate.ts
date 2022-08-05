@@ -306,7 +306,8 @@ function validateFields(
     }
 
     // Ensure the arguments are valid
-    for (const arg of field.args) {
+    for (let j = 0; j < field.args.length; j++) {
+      const arg = field.args[j]
       const argName = arg.name;
 
       // Ensure they are named correctly.
@@ -336,7 +337,9 @@ function validateInterfaces(
   type: GraphQLObjectType | GraphQLInterfaceType,
 ): void {
   const ifaceTypeNames = Object.create(null);
-  for (const iface of type.getInterfaces()) {
+  const interfaces = type.getInterfaces();
+  for (let i = 0; i < interfaces.length; i++) {
+    const iface = interfaces[i]
     if (!isInterfaceType(iface)) {
       context.reportError(
         `Type ${inspect(type)} must only implement Interface types, ` +
@@ -377,7 +380,9 @@ function validateTypeImplementsInterface(
   const typeFieldMap = type.getFields();
 
   // Assert each interface field is implemented.
-  for (const ifaceField of Object.values(iface.getFields())) {
+  const interfaceFields = Object.values(iface.getFields())
+  for (let i = 0; i < interfaceFields.length; i++) {
+    const ifaceField = interfaceFields[i]
     const fieldName = ifaceField.name;
     const typeField = typeFieldMap[fieldName];
 
@@ -402,7 +407,8 @@ function validateTypeImplementsInterface(
     }
 
     // Assert each interface field arg is implemented.
-    for (const ifaceArg of ifaceField.args) {
+    for (let j = 0; j  < ifaceField.args.length; j++) {
+      const ifaceArg = ifaceField.args[j]
       const argName = ifaceArg.name;
       const typeArg = typeField.args.find((arg) => arg.name === argName);
 
@@ -432,7 +438,8 @@ function validateTypeImplementsInterface(
     }
 
     // Assert additional arguments must not be required.
-    for (const typeArg of typeField.args) {
+    for (let j = 0; j  < typeField.args.length; j++) {
+      const typeArg = typeField.args[j]
       const argName = typeArg.name;
       const ifaceArg = ifaceField.args.find((arg) => arg.name === argName);
       if (!ifaceArg && isRequiredArgument(typeArg)) {
@@ -451,7 +458,9 @@ function validateTypeImplementsAncestors(
   iface: GraphQLInterfaceType,
 ): void {
   const ifaceInterfaces = type.getInterfaces();
-  for (const transitive of iface.getInterfaces()) {
+  const interfaces = iface.getInterfaces()
+  for (let i = 0; i < interfaces.length; i++) {
+    const transitive = interfaces[i]
     if (!ifaceInterfaces.includes(transitive)) {
       context.reportError(
         transitive === type
@@ -480,7 +489,8 @@ function validateUnionMembers(
   }
 
   const includedTypeNames = Object.create(null);
-  for (const memberType of memberTypes) {
+  for (let i = 0; i < memberTypes.length; i++) {
+    const memberType = memberTypes[i]
     if (includedTypeNames[memberType.name]) {
       context.reportError(
         `Union type ${union.name} can only include type ${memberType.name} once.`,
@@ -512,9 +522,9 @@ function validateEnumValues(
     );
   }
 
-  for (const enumValue of enumValues) {
+  for (let i = 0; i < enumValues.length; i++) {
     // Ensure valid name.
-    validateName(context, enumValue);
+    validateName(context, enumValues[i]);
   }
 }
 
@@ -532,7 +542,8 @@ function validateInputFields(
   }
 
   // Ensure the arguments are valid
-  for (const field of fields) {
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i]
     // Ensure they are named correctly.
     validateName(context, field);
 
@@ -582,7 +593,8 @@ function createInputObjectCircularRefsValidator(
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
 
     const fields = Object.values(inputObj.getFields());
-    for (const field of fields) {
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i]
       if (isNonNullType(field.type) && isInputObjectType(field.type.ofType)) {
         const fieldType = field.type.ofType;
         const cycleIndex = fieldPathIndexByTypeName[fieldType.name];

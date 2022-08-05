@@ -78,7 +78,8 @@ export function valueFromAST(
     const itemType = type.ofType;
     if (valueNode.kind === Kind.LIST) {
       const coercedValues = [];
-      for (const itemNode of valueNode.values) {
+      for (let i = 0; i < valueNode.values.length; i++) {
+        const itemNode = valueNode.values[i];
         if (isMissingVariable(itemNode, variables)) {
           // If an array contains a missing variable, it is either coerced to
           // null or if the item type is non-null, it considered invalid.

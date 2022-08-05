@@ -10,8 +10,8 @@ export function concatAST(
   documents: ReadonlyArray<DocumentNode>,
 ): DocumentNode {
   const definitions: Array<DefinitionNode> = [];
-  for (const doc of documents) {
-    definitions.push(...doc.definitions);
+  for (let i = 0; i < documents.length; i++) {
+    definitions.push(...documents[i].definitions);
   }
   return { kind: Kind.DOCUMENT, definitions };
 }

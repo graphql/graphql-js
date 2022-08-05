@@ -224,7 +224,9 @@ export class GraphQLSchema {
 
       if (isInterfaceType(namedType)) {
         // Store implementations by interface.
-        for (const iface of namedType.getInterfaces()) {
+        const interfaces = namedType.getInterfaces();
+        for (let i = 0; i < interfaces.length; i++) {
+          const iface = interfaces[i]
           if (isInterfaceType(iface)) {
             let implementations = this._implementationsMap[iface.name];
             if (implementations === undefined) {
@@ -239,7 +241,9 @@ export class GraphQLSchema {
         }
       } else if (isObjectType(namedType)) {
         // Store implementations by objects.
-        for (const iface of namedType.getInterfaces()) {
+        const interfaces = namedType.getInterfaces();
+        for (let i = 0; i < interfaces.length; i++) {
+          const iface = interfaces[i]
           if (isInterfaceType(iface)) {
             let implementations = this._implementationsMap[iface.name];
             if (implementations === undefined) {
@@ -316,16 +320,17 @@ export class GraphQLSchema {
       map = Object.create(null);
 
       if (isUnionType(abstractType)) {
-        for (const type of abstractType.getTypes()) {
-          map[type.name] = true;
+        const types = abstractType.getTypes()
+        for (let i = 0; i < types.length; i++) {
+          map[types[i].name] = true;
         }
       } else {
         const implementations = this.getImplementations(abstractType);
-        for (const type of implementations.objects) {
-          map[type.name] = true;
+        for (let i = 0; i < implementations.objects.length; i++) {
+          map[implementations.objects[i].name] = true;
         }
-        for (const type of implementations.interfaces) {
-          map[type.name] = true;
+        for (let i = 0; i < implementations.interfaces.length; i++) {
+          map[implementations.interfaces[i].name] = true;
         }
       }
 
@@ -440,23 +445,28 @@ function collectReferencedTypes(
   if (!typeSet.has(namedType)) {
     typeSet.add(namedType);
     if (isUnionType(namedType)) {
-      for (const memberType of namedType.getTypes()) {
-        collectReferencedTypes(memberType, typeSet);
+      const types = namedType.getTypes();
+      for (let i = 0; i < types.length; i++) {
+        collectReferencedTypes(types[i], typeSet);
       }
     } else if (isObjectType(namedType) || isInterfaceType(namedType)) {
-      for (const interfaceType of namedType.getInterfaces()) {
-        collectReferencedTypes(interfaceType, typeSet);
+      const interfaces = namedType.getInterfaces()
+      for (let i = 0; i < interfaces.length; i++) {
+        collectReferencedTypes(interfaces[i], typeSet);
       }
 
-      for (const field of Object.values(namedType.getFields())) {
+      const fields = Object.values(namedType.getFields())
+      for (let i = 0; i < fields.length; i++) {
+        const field = fields[i]
         collectReferencedTypes(field.type, typeSet);
-        for (const arg of field.args) {
-          collectReferencedTypes(arg.type, typeSet);
+        for (let j = 0; j < field.args.length; j++) {
+          collectReferencedTypes(field.args[j].type, typeSet);
         }
       }
     } else if (isInputObjectType(namedType)) {
-      for (const field of Object.values(namedType.getFields())) {
-        collectReferencedTypes(field.type, typeSet);
+      const fields = Object.values(namedType.getFields())
+      for (let i = 0; i < fields.length; i++) {
+        collectReferencedTypes(fields[i].type, typeSet);
       }
     }
   }

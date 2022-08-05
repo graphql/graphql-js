@@ -85,6 +85,7 @@ export type ASTVisitorKeyMap = {
 };
 
 export const BREAK: unknown = Object.freeze({});
+const KINDS = Object.values(Kind)
 
 /**
  * visit() will walk through an AST using a depth-first traversal, calling
@@ -180,7 +181,8 @@ export function visit(
   visitorKeys: ASTVisitorKeyMap = QueryDocumentKeys,
 ): any {
   const enterLeaveMap = new Map<Kind, EnterLeaveVisitor<ASTNode>>();
-  for (const kind of Object.values(Kind)) {
+  for (let i = 0; i < KINDS.length; i++) {
+    const kind = KINDS[i]
     enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
   }
 
@@ -210,8 +212,8 @@ export function visit(
           node = node.slice();
 
           let editOffset = 0;
-          for (const edit of edits) {
-            const { 0: editKey, 1: editValue } = edit
+          for (let i = 0; i < edits.length; i++) {
+            const { 0: editKey, 1: editValue } = edits[i]
             const arrayKey = editKey - editOffset;
             if (editValue === null) {
               node.splice(arrayKey, 1);
@@ -225,8 +227,8 @@ export function visit(
             {},
             Object.getOwnPropertyDescriptors(node),
           );
-          for (const edit of edits) {
-            const { 0: editKey, 1: editValue } = edit
+          for (let i = 0; i < edits.length; i++) {
+            const { 0: editKey, 1: editValue } = edits[i]
             node[editKey] = editValue;
           }
         }
@@ -316,7 +318,8 @@ export function visitInParallel(
   const skipping = new Array(visitors.length).fill(null);
   const mergedVisitor = Object.create(null);
 
-  for (const kind of Object.values(Kind)) {
+  for (let j = 0; j < KINDS.length; j++) {
+    const kind = KINDS[j]
     let hasVisitor = false;
     const enterList = new Array(visitors.length).fill(undefined);
     const leaveList = new Array(visitors.length).fill(undefined);
