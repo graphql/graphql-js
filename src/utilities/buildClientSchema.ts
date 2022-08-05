@@ -85,7 +85,9 @@ export function buildClientSchema(
   );
 
   // Include standard types only if they are used.
-  for (const stdType of [...specifiedScalarTypes, ...introspectionTypes]) {
+  const stdTypes = [...specifiedScalarTypes, ...introspectionTypes]
+  for (let i = 0; i < stdTypes.length; i++) {
+    const stdType = stdTypes[i]
     if (typeMap[stdType.name]) {
       typeMap[stdType.name] = stdType;
     }

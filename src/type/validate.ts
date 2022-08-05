@@ -124,7 +124,9 @@ function validateRootTypes(context: SchemaValidationContext): void {
     GraphQLObjectType,
     OperationTypeNode
   >();
-  for (const operationType of Object.values(OperationTypeNode)) {
+  const operationTypeNodes = Object.values(OperationTypeNode)
+  for (let i = 0; i < operationTypeNodes.length; i++) {
+    const operationType = operationTypeNodes[i]
     const rootType = schema.getRootType(operationType);
 
     if (rootType != null) {
@@ -144,7 +146,9 @@ function validateRootTypes(context: SchemaValidationContext): void {
     }
   }
 
-  for (const [rootType, operationTypes] of rootTypesMap.entries()) {
+  const rootTypeEntries = Array.from(rootTypesMap.entries())
+  for (let i = 0; i < rootTypeEntries.length; i++) {
+    const { 0: rootType, 1: operationTypes } = rootTypeEntries[i]
     if (operationTypes.length > 1) {
       const operationList = andList(operationTypes);
       context.reportError(
@@ -170,7 +174,9 @@ function getOperationTypeNode(
 }
 
 function validateDirectives(context: SchemaValidationContext): void {
-  for (const directive of context.schema.getDirectives()) {
+  const directives = context.schema.getDirectives()
+  for (let i = 0; i < directives.length; i++) {
+    const directive = directives[i]
     // Ensure all directives are in fact GraphQL directives.
     if (!isDirective(directive)) {
       context.reportError(
@@ -186,7 +192,8 @@ function validateDirectives(context: SchemaValidationContext): void {
     // TODO: Ensure proper locations.
 
     // Ensure the arguments are valid.
-    for (const arg of directive.args) {
+    for (let j = 0; j < directive.args.length; j++) {
+      const arg = directive.args[j]
       // Ensure they are named correctly.
       validateName(context, arg);
 
@@ -225,8 +232,9 @@ function validateName(
 function validateTypes(context: SchemaValidationContext): void {
   const validateInputObjectCircularRefs =
     createInputObjectCircularRefsValidator(context);
-  const typeMap = context.schema.getTypeMap();
-  for (const type of Object.values(typeMap)) {
+  const types = Object.values(context.schema.getTypeMap());
+  for (let i = 0; i < types.length; i++) {
+    const type = types[i]
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
       context.reportError(
@@ -283,7 +291,8 @@ function validateFields(
     ]);
   }
 
-  for (const field of fields) {
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i]
     // Ensure they are named correctly.
     validateName(context, field);
 

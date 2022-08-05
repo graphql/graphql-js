@@ -109,7 +109,9 @@ export function valueFromAST(
     }
     const coercedObj = Object.create(null);
     const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
-    for (const field of Object.values(type.getFields())) {
+    const typeFields = Object.values(type.getFields())
+    for (let i = 0; i < typeFields.length; i++) {
+      const field = typeFields[i]
       const fieldNode = fieldNodes[field.name];
       if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
