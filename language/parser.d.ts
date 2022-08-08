@@ -66,6 +66,14 @@ export interface ParseOptions {
    */
   noLocation?: boolean | undefined;
   /**
+   * Parser CPU and memory usage is linear to the number of tokens in a document
+   * however in extreme cases it becomes quadratic due to memory exhaustion.
+   * Parsing happens before validation so even invalid queries can burn lots of
+   * CPU time and memory.
+   * To prevent this you can set a maximum number of tokens allowed within a document.
+   */
+  maxTokens?: number | undefined;
+  /**
    * @deprecated will be removed in the v17.0.0
    *
    * If enabled, the parser will understand and parse variable definitions
@@ -162,6 +170,7 @@ export declare function parseType(
 export declare class Parser {
   protected _options: ParseOptions;
   protected _lexer: Lexer;
+  protected _tokenCounter: number;
   constructor(source: string | Source, options?: ParseOptions);
   /**
    * Converts a name lex token into a name parse node.
@@ -575,4 +584,5 @@ export declare class Parser {
    * Advances the parser to the next lex token after last item in the list.
    */
   delimitedMany<T>(delimiterKind: TokenKind, parseFn: () => T): Array<T>;
+  advanceLexer(): void;
 }

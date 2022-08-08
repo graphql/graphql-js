@@ -74,6 +74,7 @@ export class Parser {
     const sourceObj = isSource(source) ? source : new Source(source);
     this._lexer = new Lexer(sourceObj);
     this._options = options;
+    this._tokenCounter = 0;
   }
   /**
    * Converts a name lex token into a name parse node.
@@ -428,13 +429,13 @@ export class Parser {
       case TokenKind.BRACE_L:
         return this.parseObject(isConst);
       case TokenKind.INT:
-        this._lexer.advance();
+        this.advanceLexer();
         return this.node(token, {
           kind: Kind.INT,
           value: token.value,
         });
       case TokenKind.FLOAT:
-        this._lexer.advance();
+        this.advanceLexer();
         return this.node(token, {
           kind: Kind.FLOAT,
           value: token.value,
@@ -443,7 +444,7 @@ export class Parser {
       case TokenKind.BLOCK_STRING:
         return this.parseStringLiteral();
       case TokenKind.NAME:
-        this._lexer.advance();
+        this.advanceLexer();
         switch (token.value) {
           case 'true':
             return this.node(token, {
@@ -487,7 +488,7 @@ export class Parser {
   }
   parseStringLiteral() {
     const token = this._lexer.token;
-    this._lexer.advance();
+    this.advanceLexer();
     return this.node(token, {
       kind: Kind.STRING,
       value: token.value,
@@ -1184,7 +1185,7 @@ export class Parser {
   expectToken(kind) {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advanceLexer();
       return token;
     }
     throw syntaxError(
@@ -1200,7 +1201,7 @@ export class Parser {
   expectOptionalToken(kind) {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advanceLexer();
       return true;
     }
     return false;
@@ -1212,7 +1213,7 @@ export class Parser {
   expectKeyword(value) {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
     } else {
       throw syntaxError(
         this._lexer.source,
@@ -1228,7 +1229,7 @@ export class Parser {
   expectOptionalKeyword(value) {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
       return true;
     }
     return false;
@@ -1298,6 +1299,20 @@ export class Parser {
       nodes.push(parseFn.call(this));
     } while (this.expectOptionalToken(delimiterKind));
     return nodes;
+  }
+  advanceLexer() {
+    const { maxTokens } = this._options;
+    const token = this._lexer.advance();
+    if (maxTokens !== undefined && token.kind !== TokenKind.EOF) {
+      ++this._tokenCounter;
+      if (this._tokenCounter > maxTokens) {
+        throw syntaxError(
+          this._lexer.source,
+          token.start,
+          `Document contains more that ${maxTokens} tokens. Parsing aborted.`,
+        );
+      }
+    }
   }
 }
 /**
