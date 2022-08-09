@@ -144,7 +144,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     }
   }
 
-  for (const [rootType, operationTypes] of rootTypesMap.entries()) {
+  for (const [rootType, operationTypes] of rootTypesMap) {
     if (operationTypes.length > 1) {
       const operationList = andList(operationTypes);
       context.reportError(

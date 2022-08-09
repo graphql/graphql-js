@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 import { AccumulatorMap } from '../AccumulatorMap';
 
 function expectMap<K, V>(map: Map<K, V>) {
-  return expect(Object.fromEntries(map.entries()));
+  return expect(Object.fromEntries(map));
 }
 
 describe('AccumulatorMap', () => {
