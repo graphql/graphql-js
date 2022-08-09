@@ -96,7 +96,7 @@ type NodeAndDef = [
 ];
 // Map of array of those.
 type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
-type FragmentNames = Array<string>;
+type FragmentNames = ReadonlyArray<string>;
 type FieldsAndFragmentNames = readonly [NodeAndDefCollection, FragmentNames];
 /**
  * Algorithm:
@@ -648,7 +648,7 @@ function getFieldsAndFragmentNames(
     return cached;
   }
   const nodeAndDefs: NodeAndDefCollection = Object.create(null);
-  const fragmentNames: ObjMap<boolean> = Object.create(null);
+  const fragmentNames = new Set<string>();
   _collectFieldsAndFragmentNames(
     context,
     parentType,
@@ -656,7 +656,7 @@ function getFieldsAndFragmentNames(
     nodeAndDefs,
     fragmentNames,
   );
-  const result = [nodeAndDefs, Object.keys(fragmentNames)] as const;
+  const result = [nodeAndDefs, [...fragmentNames]] as const;
   cachedFieldsAndFragmentNames.set(selectionSet, result);
   return result;
 }
@@ -685,7 +685,7 @@ function _collectFieldsAndFragmentNames(
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
   nodeAndDefs: NodeAndDefCollection,
-  fragmentNames: ObjMap<boolean>,
+  fragmentNames: Set<string>,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -705,7 +705,7 @@ function _collectFieldsAndFragmentNames(
         break;
       }
       case Kind.FRAGMENT_SPREAD:
-        fragmentNames[selection.name.value] = true;
+        fragmentNames.add(selection.name.value);
         break;
       case Kind.INLINE_FRAGMENT: {
         const typeCondition = selection.typeCondition;
