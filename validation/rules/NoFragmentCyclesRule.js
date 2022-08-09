@@ -10,7 +10,7 @@ import { GraphQLError } from '../../error/GraphQLError.js';
 export function NoFragmentCyclesRule(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
-  const visitedFrags = Object.create(null);
+  const visitedFrags = new Set();
   // Array of AST nodes used to produce meaningful errors
   const spreadPath = [];
   // Position in the spread path
@@ -26,11 +26,11 @@ export function NoFragmentCyclesRule(context) {
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
   function detectCycleRecursive(fragment) {
-    if (visitedFrags[fragment.name.value]) {
+    if (visitedFrags.has(fragment.name.value)) {
       return;
     }
     const fragmentName = fragment.name.value;
-    visitedFrags[fragmentName] = true;
+    visitedFrags.add(fragmentName);
     const spreadNodes = context.getFragmentSpreads(fragment.selectionSet);
     if (spreadNodes.length === 0) {
       return;

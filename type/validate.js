@@ -239,7 +239,7 @@ function validateFields(context, type) {
   }
 }
 function validateInterfaces(context, type) {
-  const ifaceTypeNames = Object.create(null);
+  const ifaceTypeNames = new Set();
   for (const iface of type.getInterfaces()) {
     if (!isInterfaceType(iface)) {
       context.reportError(
@@ -256,14 +256,14 @@ function validateInterfaces(context, type) {
       );
       continue;
     }
-    if (ifaceTypeNames[iface.name]) {
+    if (ifaceTypeNames.has(iface.name)) {
       context.reportError(
         `Type ${type.name} can only implement ${iface.name} once.`,
         getAllImplementsInterfaceNodes(type, iface),
       );
       continue;
     }
-    ifaceTypeNames[iface.name] = true;
+    ifaceTypeNames.add(iface.name);
     validateTypeImplementsAncestors(context, type, iface);
     validateTypeImplementsInterface(context, type, iface);
   }
@@ -355,16 +355,16 @@ function validateUnionMembers(context, union) {
       [union.astNode, ...union.extensionASTNodes],
     );
   }
-  const includedTypeNames = Object.create(null);
+  const includedTypeNames = new Set();
   for (const memberType of memberTypes) {
-    if (includedTypeNames[memberType.name]) {
+    if (includedTypeNames.has(memberType.name)) {
       context.reportError(
         `Union type ${union.name} can only include type ${memberType.name} once.`,
         getUnionMemberTypeNodes(union, memberType.name),
       );
       continue;
     }
-    includedTypeNames[memberType.name] = true;
+    includedTypeNames.add(memberType.name);
     if (!isObjectType(memberType)) {
       context.reportError(
         `Union type ${union.name} can only include Object types, ` +
@@ -419,7 +419,7 @@ function createInputObjectCircularRefsValidator(context) {
   // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
   // Tracks already visited types to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
-  const visitedTypes = Object.create(null);
+  const visitedTypes = new Set();
   // Array of types nodes used to produce meaningful errors
   const fieldPath = [];
   // Position in the type path
@@ -429,10 +429,10 @@ function createInputObjectCircularRefsValidator(context) {
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
   function detectCycleRecursive(inputObj) {
-    if (visitedTypes[inputObj.name]) {
+    if (visitedTypes.has(inputObj)) {
       return;
     }
-    visitedTypes[inputObj.name] = true;
+    visitedTypes.add(inputObj);
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
     const fields = Object.values(inputObj.getFields());
     for (const field of fields) {

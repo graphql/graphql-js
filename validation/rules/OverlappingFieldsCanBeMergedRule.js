@@ -613,7 +613,7 @@ function getFieldsAndFragmentNames(
     return cached;
   }
   const nodeAndDefs = Object.create(null);
-  const fragmentNames = Object.create(null);
+  const fragmentNames = new Set();
   _collectFieldsAndFragmentNames(
     context,
     parentType,
@@ -621,7 +621,7 @@ function getFieldsAndFragmentNames(
     nodeAndDefs,
     fragmentNames,
   );
-  const result = [nodeAndDefs, Object.keys(fragmentNames)];
+  const result = [nodeAndDefs, [...fragmentNames]];
   cachedFieldsAndFragmentNames.set(selectionSet, result);
   return result;
 }
@@ -670,7 +670,7 @@ function _collectFieldsAndFragmentNames(
         break;
       }
       case Kind.FRAGMENT_SPREAD:
-        fragmentNames[selection.name.value] = true;
+        fragmentNames.add(selection.name.value);
         break;
       case Kind.INLINE_FRAGMENT: {
         const typeCondition = selection.typeCondition;

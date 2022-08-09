@@ -141,7 +141,7 @@ export class GraphQLSchema {
     collectReferencedTypes(__Schema, allReferencedTypes);
     // Storing the resulting map for reference by the schema.
     this._typeMap = Object.create(null);
-    this._subTypeMap = Object.create(null);
+    this._subTypeMap = new Map();
     // Keep track of all implementations by interface name.
     this._implementationsMap = Object.create(null);
     for (const namedType of allReferencedTypes) {
@@ -224,25 +224,20 @@ export class GraphQLSchema {
     return implementations ?? { objects: [], interfaces: [] };
   }
   isSubType(abstractType, maybeSubType) {
-    let map = this._subTypeMap[abstractType.name];
-    if (map === undefined) {
-      map = Object.create(null);
+    let set = this._subTypeMap.get(abstractType);
+    if (set === undefined) {
       if (isUnionType(abstractType)) {
-        for (const type of abstractType.getTypes()) {
-          map[type.name] = true;
-        }
+        set = new Set(abstractType.getTypes());
       } else {
         const implementations = this.getImplementations(abstractType);
-        for (const type of implementations.objects) {
-          map[type.name] = true;
-        }
-        for (const type of implementations.interfaces) {
-          map[type.name] = true;
-        }
+        set = new Set([
+          ...implementations.objects,
+          ...implementations.interfaces,
+        ]);
       }
-      this._subTypeMap[abstractType.name] = map;
+      this._subTypeMap.set(abstractType, set);
     }
-    return map[maybeSubType.name] !== undefined;
+    return set.has(maybeSubType);
   }
   getDirectives() {
     return this._directives;

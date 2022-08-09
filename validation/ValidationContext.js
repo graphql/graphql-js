@@ -61,14 +61,14 @@ export class ASTValidationContext {
     let fragments = this._recursivelyReferencedFragments.get(operation);
     if (!fragments) {
       fragments = [];
-      const collectedNames = Object.create(null);
+      const collectedNames = new Set();
       const nodesToVisit = [operation.selectionSet];
       let node;
       while ((node = nodesToVisit.pop())) {
         for (const spread of this.getFragmentSpreads(node)) {
           const fragName = spread.name.value;
-          if (collectedNames[fragName] !== true) {
-            collectedNames[fragName] = true;
+          if (!collectedNames.has(fragName)) {
+            collectedNames.add(fragName);
             const fragment = this.getFragment(fragName);
             if (fragment) {
               fragments.push(fragment);
