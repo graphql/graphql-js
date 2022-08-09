@@ -248,7 +248,7 @@ function executeFieldsSerially(
   fields,
 ) {
   return promiseReduce(
-    fields.entries(),
+    fields,
     (results, [responseName, fieldNodes]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = executeField(
@@ -280,7 +280,7 @@ function executeFieldsSerially(
 function executeFields(exeContext, parentType, sourceValue, path, fields) {
   const results = Object.create(null);
   let containsPromise = false;
-  for (const [responseName, fieldNodes] of fields.entries()) {
+  for (const [responseName, fieldNodes] of fields) {
     const fieldPath = addPath(path, responseName, parentType.name);
     const result = executeField(
       exeContext,
@@ -977,7 +977,8 @@ function executeSubscription(exeContext) {
     rootType,
     operation.selectionSet,
   );
-  const [responseName, fieldNodes] = [...rootFields.entries()][0];
+  const firstRootField = rootFields.entries().next().value;
+  const [responseName, fieldNodes] = firstRootField;
   const fieldName = fieldNodes[0].name.value;
   const fieldDef = schema.getField(rootType, fieldName);
   if (!fieldDef) {
