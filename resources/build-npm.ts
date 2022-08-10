@@ -6,6 +6,7 @@ import * as ts from 'typescript';
 
 import { addExtensionToImportPaths } from './add-extension-to-import-paths';
 import { inlineInvariant } from './inline-invariant';
+import { optimiseForOf } from './optimise-for-of';
 import {
   localRepoPath,
   readdirRecursive,
@@ -55,6 +56,7 @@ tsHost.writeFile = (filepath, body) => {
 
 const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
 const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
+  before: [optimiseForOf(tsProgram)],
   after: [addExtensionToImportPaths({ extension: '.js' }), inlineInvariant],
 });
 assert(
