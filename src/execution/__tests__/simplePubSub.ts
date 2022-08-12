@@ -18,7 +18,7 @@ export class SimplePubSub<T> {
     return this._subscribers.size > 0;
   }
 
-  getSubscriber<R>(transform: (value: T) => R): AsyncGenerator<R, void, void> {
+  getSubscriber<R>(transform: (value: T) => R) {
     const pullQueue: Array<(result: IteratorResult<R, void>) => void> = [];
     const pushQueue: Array<R> = [];
     let listening = true;
