@@ -1,10 +1,6 @@
-import * as https from 'node:https';
-import * as util from 'node:util';
-
 import { execOutput, readPackageJSON } from './utils';
 
 const packageJSON = readPackageJSON();
-const graphqlRequest = util.promisify(graphqlRequestImpl);
 const labelsConfig: { [label: string]: { section: string; fold?: boolean } } = {
   'PR: breaking change 💥': {
     section: 'Breaking Change 💥',
@@ -151,56 +147,29 @@ function genChangeLog(
   return changelog;
 }
 
-function graphqlRequestImpl(
-  query: string,
-  resultCB: (error?: Error, data?: any) => void,
-) {
-  const req = https.request('https://api.github.com/graphql', {
+async function graphqlRequest(query: string) {
+  const response = await fetch('https://api.github.com/graphql', {
     method: 'POST',
     headers: {
       Authorization: 'bearer ' + GH_TOKEN,
       'Content-Type': 'application/json',
       'User-Agent': 'gen-changelog',
     },
+    body: JSON.stringify({ query }),
   });
 
-  req.on('response', (res) => {
-    let responseBody = '';
+  if (!response.ok) {
+    throw new Error(
+      `GitHub responded with ${response.status}: ${response.statusText}\n` +
+        (await response.text()),
+    );
+  }
 
-    res.setEncoding('utf8');
-    res.on('data', (d) => (responseBody += d));
-    res.on('error', (error) => resultCB(error));
-
-    res.on('end', () => {
-      if (res.statusCode !== 200) {
-        return resultCB(
-          new Error(
-            `GitHub responded with ${res.statusCode}: ${res.statusMessage}\n` +
-              responseBody,
-          ),
-        );
-      }
-
-      let json;
-      try {
-        json = JSON.parse(responseBody);
-      } catch (error) {
-        return resultCB(error);
-      }
-
-      if (json.errors) {
-        return resultCB(
-          new Error('Errors: ' + JSON.stringify(json.errors, null, 2)),
-        );
-      }
-
-      resultCB(undefined, json.data);
-    });
-  });
-
-  req.on('error', (error) => resultCB(error));
-  req.write(JSON.stringify({ query }));
-  req.end();
+  const json = await response.json();
+  if (json.errors) {
+    throw new Error('Errors: ' + JSON.stringify(json.errors, null, 2));
+  }
+  return json.data;
 }
 
 interface CommitInfo {
