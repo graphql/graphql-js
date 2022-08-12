@@ -6,7 +6,10 @@
     "benchmark/benchmark.ts"
   ],
   "compilerOptions": {
-    "lib": ["es2020"],
+    "lib": [
+      "es2020",
+      "dom" // Workaround for missing web-compatible globals in `@types/node`
+    ],
     "target": "es2020",
     "module": "commonjs",
     "moduleResolution": "node",
