@@ -276,8 +276,8 @@ describe('mapAsyncIterable', () => {
         yield 3; // Shouldn't be reached.
       } finally {
         didVisitFinally = true;
-        yield 1000;
-      }
+        yield 1000; /* c8 ignore start */
+      } /* c8 ignore stop */
     }
 
     const throwOver1 = mapAsyncIterable(source(), mapper);

@@ -739,9 +739,8 @@ describe('Subscription Publish Phase', () => {
       },
     });
 
+    const returned = await subscription.return();
     payload = subscription.next();
-    await subscription.return();
-
     // A new email arrives!
     expect(
       pubsub.emit({
@@ -752,6 +751,10 @@ describe('Subscription Publish Phase', () => {
       }),
     ).to.equal(false);
 
+    expect(returned).to.deep.equal({
+      done: true,
+      value: undefined,
+    });
     expect(await payload).to.deep.equal({
       done: true,
       value: undefined,
@@ -793,17 +796,21 @@ describe('Subscription Publish Phase', () => {
       },
     });
 
+    const error = new Error('should not trigger when subscription is thrown');
+    const caughtError = subscription.throw(error).catch((e) => e);
     payload = subscription.next();
 
-    // Throw error
-    let caughtError;
-    try {
-      /* c8 ignore next 2 */
-      await subscription.throw('ouch');
-    } catch (e) {
-      caughtError = e;
-    }
-    expect(caughtError).to.equal('ouch');
+    // A new email arrives!
+    expect(
+      pubsub.emit({
+        from: 'yuzhi@graphql.org',
+        subject: 'Alright 2',
+        message: 'Tests are good 2',
+        unread: true,
+      }),
+    ).to.equal(true);
+
+    expect(await caughtError).to.equal(error);
 
     expect(await payload).to.deep.equal({
       done: true,
