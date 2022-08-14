@@ -51,7 +51,7 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
-import { mapAsyncIterator } from './mapAsyncIterator';
+import { mapAsyncIterable } from './mapAsyncIterable';
 import { getArgumentValues, getVariableValues } from './values';
 
 /* eslint-disable max-params */
@@ -1143,7 +1143,7 @@ function mapSourceToResponse(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  return mapAsyncIterator(resultOrStream, (payload: unknown) =>
+  return mapAsyncIterable(resultOrStream, (payload: unknown) =>
     executeImpl(buildPerEventExecutionContext(exeContext, payload)),
   );
 }
