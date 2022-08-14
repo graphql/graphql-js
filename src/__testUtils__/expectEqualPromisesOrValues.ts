@@ -8,9 +8,7 @@ import { expectMatchingValues } from './expectMatchingValues';
 export function expectEqualPromisesOrValues<T>(
   items: ReadonlyArray<PromiseOrValue<T>>,
 ): PromiseOrValue<T> {
-  const remainingItems = items.slice();
-  const firstItem = remainingItems.shift();
-
+  const [firstItem, ...remainingItems] = items;
   if (isPromise(firstItem)) {
     if (remainingItems.every(isPromise)) {
       return Promise.all(items).then(expectMatchingValues);
