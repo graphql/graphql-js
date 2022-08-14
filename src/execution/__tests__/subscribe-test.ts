@@ -1,7 +1,9 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues';
 import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectPromise } from '../../__testUtils__/expectPromise';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
@@ -125,49 +127,6 @@ function createSubscription(pubsub: SimplePubSub<Email>) {
   return subscribe({ schema: emailSchema, document, rootValue: data });
 }
 
-// TODO: consider adding this method to testUtils (with tests)
-function expectPromise(maybePromise: unknown) {
-  assert(isPromise(maybePromise));
-
-  return {
-    toResolve() {
-      return maybePromise;
-    },
-    async toRejectWith(message: string) {
-      let caughtError: Error;
-
-      try {
-        /* c8 ignore next 2 */
-        await maybePromise;
-        expect.fail('promise should have thrown but did not');
-      } catch (error) {
-        caughtError = error;
-      }
-
-      expect(caughtError).to.be.an.instanceOf(Error);
-      expect(caughtError).to.have.property('message', message);
-    },
-  };
-}
-
-// TODO: consider adding this method to testUtils (with tests)
-function expectEqualPromisesOrValues<T>(
-  value1: PromiseOrValue<T>,
-  value2: PromiseOrValue<T>,
-): PromiseOrValue<T> {
-  if (isPromise(value1)) {
-    assert(isPromise(value2));
-    return Promise.all([value1, value2]).then((resolved) => {
-      expectJSON(resolved[1]).toDeepEqual(resolved[0]);
-      return resolved[0];
-    });
-  }
-
-  assert(!isPromise(value2));
-  expectJSON(value2).toDeepEqual(value1);
-  return value1;
-}
-
 const DummyQueryType = new GraphQLObjectType({
   name: 'Query',
   fields: {
@@ -195,10 +154,10 @@ function subscribeWithBadFn(
 function subscribeWithBadArgs(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
-  return expectEqualPromisesOrValues(
+  return expectEqualPromisesOrValues([
     subscribe(args),
     createSourceEventStream(args),
-  );
+  ]);
 }
 
 /* eslint-disable @typescript-eslint/require-await */
