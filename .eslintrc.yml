@@ -179,7 +179,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.19.x`
+  # ESLint builtin rules list based on `v8.21.x`
   ##############################################################################
 
   # Possible Errors
@@ -493,7 +493,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.30.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.33.x`
       ##########################################################################
 
       # Supported Rules
