@@ -14,8 +14,8 @@ import { GraphQLList, GraphQLObjectType } from '../../type/definition';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import type { ExecutionArgs, ExecutionResult } from '../execute';
-import { createSourceEventStream, subscribe } from '../execute';
+import type { ExecutionResult } from '../execute';
+import { execute } from '../execute';
 
 import { SimplePubSub } from './simplePubSub';
 
@@ -122,7 +122,7 @@ function createSubscription(pubsub: SimplePubSub<Email>) {
     }),
   };
 
-  return subscribe({ schema: emailSchema, document, rootValue: data });
+  return execute({ schema: emailSchema, document, rootValue: data });
 }
 
 // TODO: consider adding this method to testUtils (with tests)
@@ -150,24 +150,6 @@ function expectPromise(maybePromise: unknown) {
   };
 }
 
-// TODO: consider adding this method to testUtils (with tests)
-function expectEqualPromisesOrValues<T>(
-  value1: PromiseOrValue<T>,
-  value2: PromiseOrValue<T>,
-): PromiseOrValue<T> {
-  if (isPromise(value1)) {
-    assert(isPromise(value2));
-    return Promise.all([value1, value2]).then((resolved) => {
-      expectJSON(resolved[1]).toDeepEqual(resolved[0]);
-      return resolved[0];
-    });
-  }
-
-  assert(!isPromise(value2));
-  expectJSON(value2).toDeepEqual(value1);
-  return value1;
-}
-
 const DummyQueryType = new GraphQLObjectType({
   name: 'Query',
   fields: {
@@ -189,16 +171,7 @@ function subscribeWithBadFn(
   });
   const document = parse('subscription { foo }');
 
-  return subscribeWithBadArgs({ schema, document });
-}
-
-function subscribeWithBadArgs(
-  args: ExecutionArgs,
-): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
-  return expectEqualPromisesOrValues(
-    subscribe(args),
-    createSourceEventStream(args),
-  );
+  return execute({ schema, document });
 }
 
 /* eslint-disable @typescript-eslint/require-await */
@@ -220,7 +193,7 @@ describe('Subscription Initialization Phase', () => {
       yield { foo: 'FooValue' };
     }
 
-    const subscription = subscribe({
+    const subscription = execute({
       schema,
       document: parse('subscription { foo }'),
       rootValue: { foo: fooGenerator },
@@ -256,7 +229,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const subscription = subscribe({
+    const subscription = execute({
       schema,
       document: parse('subscription { foo }'),
     });
@@ -294,7 +267,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const promise = subscribe({
+    const promise = execute({
       schema,
       document: parse('subscription { foo }'),
     });
@@ -329,7 +302,7 @@ describe('Subscription Initialization Phase', () => {
       yield { foo: 'FooValue' };
     }
 
-    const subscription = subscribe({
+    const subscription = execute({
       schema,
       document: parse('subscription { foo }'),
       rootValue: { customFoo: fooGenerator },
@@ -379,7 +352,7 @@ describe('Subscription Initialization Phase', () => {
       }),
     });
 
-    const subscription = subscribe({
+    const subscription = execute({
       schema,
       document: parse('subscription { foo bar }'),
     });
@@ -400,7 +373,7 @@ describe('Subscription Initialization Phase', () => {
     const schema = new GraphQLSchema({ query: DummyQueryType });
     const document = parse('subscription { unknownField }');
 
-    const result = subscribeWithBadArgs({ schema, document });
+    const result = execute({ schema, document });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -424,7 +397,7 @@ describe('Subscription Initialization Phase', () => {
     });
     const document = parse('subscription { unknownField }');
 
-    const result = subscribeWithBadArgs({ schema, document });
+    const result = execute({ schema, document });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -447,7 +420,7 @@ describe('Subscription Initialization Phase', () => {
     });
 
     // @ts-expect-error
-    expect(() => subscribeWithBadArgs({ schema, document: {} })).to.throw();
+    expect(() => execute({ schema, document: {} })).to.throw();
   });
 
   it('throws an error if subscribe does not return an iterator', async () => {
@@ -530,9 +503,9 @@ describe('Subscription Initialization Phase', () => {
       }
     `);
 
-    // If we receive variables that cannot be coerced correctly, subscribe() will
+    // If we receive variables that cannot be coerced correctly, execute() will
     // resolve to an ExecutionResult that contains an informative error description.
-    const result = subscribeWithBadArgs({ schema, document, variableValues });
+    const result = execute({ schema, document, variableValues });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -945,7 +918,7 @@ describe('Subscription Publish Phase', () => {
     });
 
     const document = parse('subscription { newMessage }');
-    const subscription = subscribe({ schema, document });
+    const subscription = execute({ schema, document });
     assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({
@@ -1006,7 +979,7 @@ describe('Subscription Publish Phase', () => {
     });
 
     const document = parse('subscription { newMessage }');
-    const subscription = subscribe({ schema, document });
+    const subscription = execute({ schema, document });
     assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({

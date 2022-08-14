@@ -23,12 +23,13 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
 
 const schema: GraphQLSchema = new GraphQLSchema({ query: queryType });
 
-const result: ExecutionResult = graphqlSync({
-  schema,
-  source: `
+const result: ExecutionResult | AsyncGenerator<ExecutionResult, void, void> =
+  graphqlSync({
+    schema,
+    source: `
     query helloWho($who: String){
       test(who: $who)
     }
   `,
-  variableValues: { who: 'Dolly' },
-});
+    variableValues: { who: 'Dolly' },
+  });

@@ -23,7 +23,7 @@ import { coerceInputValue } from '../utilities/coerceInputValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
 
-type CoercedVariableValues =
+export type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
   | { coerced: { [variable: string]: unknown }; errors?: never };
 

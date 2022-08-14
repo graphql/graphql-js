@@ -1,4 +1,5 @@
 import { invariant } from '../jsutils/invariant';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable';
 
 import { parse } from '../language/parser';
 
@@ -35,6 +36,7 @@ export function introspectionFromSchema(
 
   const document = parse(getIntrospectionQuery(optionsWithDefaults));
   const result = executeSync({ schema, document });
+  invariant(!isAsyncIterable(result));
   invariant(result.errors == null && result.data != null);
   return result.data as any;
 }

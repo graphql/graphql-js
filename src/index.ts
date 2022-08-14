@@ -320,12 +320,11 @@ export {
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
+  defaultSubscriptionEventExecutor,
   responsePathAsArray,
   getArgumentValues,
   getVariableValues,
   getDirectiveValues,
-  subscribe,
-  createSourceEventStream,
 } from './execution/index';
 
 export type {
