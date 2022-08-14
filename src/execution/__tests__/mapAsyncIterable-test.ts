@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectPromise } from '../../__testUtils__/expectPromise';
+
 import { mapAsyncIterable } from '../mapAsyncIterable';
 
 /* eslint-disable @typescript-eslint/require-await */
@@ -209,14 +211,9 @@ describe('mapAsyncIterable', () => {
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
 
     // Throw error
-    let caughtError;
-    try {
-      /* c8 ignore next 2 */
-      await doubles.throw('ouch');
-    } catch (e) {
-      caughtError = e;
-    }
-    expect(caughtError).to.equal('ouch');
+    const message = 'allows throwing errors when mapping async iterable';
+    const thrown = doubles.throw(new Error(message));
+    await expectPromise(thrown).toRejectWith(message);
   });
 
   it('passes through caught errors through async generators', async () => {
@@ -265,17 +262,7 @@ describe('mapAsyncIterable', () => {
       done: false,
     });
 
-    let caughtError;
-    try {
-      /* c8 ignore next 2 */
-      await doubles.next();
-    } catch (e) {
-      caughtError = e;
-    }
-
-    expect(caughtError)
-      .to.be.an.instanceOf(Error)
-      .with.property('message', 'Goodbye');
+    await expectPromise(doubles.next()).toRejectWith('Goodbye');
   });
 
   async function testClosesSourceWithMapper<T>(mapper: (value: number) => T) {
@@ -297,17 +284,7 @@ describe('mapAsyncIterable', () => {
 
     expect(await throwOver1.next()).to.deep.equal({ value: 1, done: false });
 
-    let expectedError;
-    try {
-      /* c8 ignore next 2 */
-      await throwOver1.next();
-    } catch (error) {
-      expectedError = error;
-    }
-
-    expect(expectedError)
-      .to.be.an.instanceOf(Error)
-      .with.property('message', 'Cannot count to 2');
+    await expectPromise(throwOver1.next()).toRejectWith('Cannot count to 2');
 
     expect(await throwOver1.next()).to.deep.equal({
       value: undefined,
