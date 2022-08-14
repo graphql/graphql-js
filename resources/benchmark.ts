@@ -5,7 +5,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as url from 'node:url';
 
-import { localRepoPath } from './utils';
+import { exec, execOutput, localRepoPath } from './utils';
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
@@ -23,15 +23,6 @@ function runBenchmarks() {
   for (const benchmark of benchmarks) {
     runBenchmark(benchmark, benchmarkProjects);
   }
-}
-
-function exec(command: string, options = {}) {
-  const result = cp.execSync(command, {
-    encoding: 'utf-8',
-    stdio: ['inherit', 'pipe', 'inherit'],
-    ...options,
-  });
-  return result?.trimEnd();
 }
 
 interface BenchmarkProject {
@@ -86,7 +77,7 @@ function prepareBenchmarkProjects(
     }
 
     // Returns the complete git hash for a given git revision reference.
-    const hash = exec(`git rev-parse "${revision}"`);
+    const hash = execOutput(`git rev-parse "${revision}"`);
 
     const archivePath = path.join(tmpDir, `graphql-${hash}.tgz`);
     if (fs.existsSync(archivePath)) {
@@ -108,7 +99,9 @@ function prepareBenchmarkProjects(
     exec('npm --quiet run build:npm', { cwd: repoDir });
 
     const distDir = path.join(repoDir, 'npmDist');
-    const archiveName = exec(`npm --quiet pack ${distDir}`, { cwd: repoDir });
+    const archiveName = execOutput(`npm --quiet pack ${distDir}`, {
+      cwd: repoDir,
+    });
     return path.join(repoDir, archiveName);
   }
 }
