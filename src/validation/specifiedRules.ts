@@ -1,3 +1,7 @@
+// Spec Section: "Defer And Stream Directive Labels Are Unique"
+import { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule';
+// Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
+import { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule';
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
@@ -93,6 +97,8 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   NoUnusedVariablesRule,
   KnownDirectivesRule,
   UniqueDirectivesPerLocationRule,
+  DeferStreamDirectiveOnRootFieldRule,
+  DeferStreamDirectiveLabelRule,
   KnownArgumentNamesRule,
   UniqueArgumentNamesRule,
   ValuesOfCorrectTypeRule,
