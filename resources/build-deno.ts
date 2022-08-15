@@ -33,7 +33,6 @@ for (const filepath of srcFiles) {
     transformed.dispose();
 
     const destPath = path.join('./denoDist', filepath);
-    fs.mkdirSync(path.dirname(destPath), { recursive: true });
     writeGeneratedFile(destPath, newContent);
   }
 }

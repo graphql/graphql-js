@@ -106,6 +106,7 @@ const prettierConfig = JSON.parse(
 
 export function writeGeneratedFile(filepath: string, body: string): void {
   const formatted = prettier.format(body, { filepath, ...prettierConfig });
+  fs.mkdirSync(path.dirname(filepath), { recursive: true });
   fs.writeFileSync(filepath, formatted);
 }
 
