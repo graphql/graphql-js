@@ -2,7 +2,7 @@
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
-export function mapAsyncIterator(iterable, callback) {
+export function mapAsyncIterable(iterable, callback) {
   const iterator = iterable[Symbol.asyncIterator]();
   async function mapResult(result) {
     if (result.done) {
