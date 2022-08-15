@@ -14,7 +14,7 @@ import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import type { ExecutionResult } from '../execute';
+import type { AsyncExecutionResult, ExecutionResult } from '../execute';
 import { execute, executeSync } from '../execute';
 
 describe('Execute: Accepts any iterable as list value', () => {
@@ -85,7 +85,9 @@ describe('Execute: Accepts async iterables as list value', () => {
 
   function completeObjectList(
     resolve: GraphQLFieldResolver<{ index: number }, unknown>,
-  ): PromiseOrValue<ExecutionResult> {
+  ): PromiseOrValue<
+    ExecutionResult | AsyncGenerator<AsyncExecutionResult, void, void>
+  > {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',

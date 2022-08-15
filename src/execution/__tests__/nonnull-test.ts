@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
+
 import { parse } from '../../language/parser';
 
 import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
@@ -11,7 +13,7 @@ import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import type { ExecutionResult } from '../execute';
+import type { AsyncExecutionResult, ExecutionResult } from '../execute';
 import { execute, executeSync } from '../execute';
 
 const syncError = new Error('sync');
@@ -109,7 +111,9 @@ const schema = buildSchema(`
 function executeQuery(
   query: string,
   rootValue: unknown,
-): ExecutionResult | Promise<ExecutionResult> {
+): PromiseOrValue<
+  ExecutionResult | AsyncGenerator<AsyncExecutionResult, void, void>
+> {
   return execute({ schema, document: parse(query), rootValue });
 }
 
