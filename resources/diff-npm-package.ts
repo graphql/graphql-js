@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { exec, execOutput, localRepoPath } from './utils';
+import { exec, execOutput, localRepoPath, writeGeneratedFile } from './utils';
 
 const LOCAL = 'local';
 const tmpDir = path.join(os.tmpdir(), 'graphql-js-npm-diff');
@@ -32,12 +32,8 @@ const diff = execOutput(`npm diff --diff=${fromPackage} --diff=${toPackage}`);
 if (diff === '') {
   console.log('No changes found!');
 } else {
-  const reportsDir = localRepoPath('reports');
-  if (!fs.existsSync(reportsDir)) {
-    fs.mkdirSync(reportsDir);
-  }
-  const reportPath = path.join(reportsDir, 'npm-dist-diff.html');
-  fs.writeFileSync(reportPath, generateReport(diff));
+  const reportPath = localRepoPath('reports', 'npm-dist-diff.html');
+  writeGeneratedFile(reportPath, generateReport(diff));
   console.log('Report saved to: ', reportPath);
 }
 

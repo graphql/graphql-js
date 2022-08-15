@@ -48,10 +48,7 @@ assert(
 );
 
 const tsHost = ts.createCompilerHost(tsOptions);
-tsHost.writeFile = (filepath, body) => {
-  fs.mkdirSync(path.dirname(filepath), { recursive: true });
-  writeGeneratedFile(filepath, body);
-};
+tsHost.writeFile = writeGeneratedFile;
 
 const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
 const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
