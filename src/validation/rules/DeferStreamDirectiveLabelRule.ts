@@ -3,7 +3,10 @@ import { GraphQLError } from '../../error/GraphQLError';
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
-import { GraphQLDeferDirective } from '../../type/directives';
+import {
+  GraphQLDeferDirective,
+  GraphQLStreamDirective,
+} from '../../type/directives';
 
 import type { ValidationContext } from '../ValidationContext';
 
@@ -18,7 +21,10 @@ export function DeferStreamDirectiveLabelRule(
   const knownLabels = Object.create(null);
   return {
     Directive(node) {
-      if (node.name.value === GraphQLDeferDirective.name) {
+      if (
+        node.name.value === GraphQLDeferDirective.name ||
+        node.name.value === GraphQLStreamDirective.name
+      ) {
         const labelArgument = node.arguments?.find(
           (arg) => arg.name.value === 'label',
         );

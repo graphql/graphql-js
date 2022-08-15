@@ -336,6 +336,7 @@ export type {
   FormattedExecutionResult,
   SubsequentExecutionResult,
   IncrementalDeferResult,
+  IncrementalStreamResult,
   IncrementalResult,
   AsyncExecutionResult,
 } from './execution/index';
