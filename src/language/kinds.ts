@@ -1,7 +1,7 @@
 /**
  * The set of allowed kind values for AST nodes.
  */
-export enum Kind {
+enum Kind {
   /** Name */
   NAME = 'Name',
 
@@ -72,3 +72,5 @@ export enum Kind {
   ENUM_TYPE_EXTENSION = 'EnumTypeExtension',
   INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension',
 }
+
+export { Kind };
