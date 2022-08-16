@@ -1,7 +1,7 @@
 /**
  * The set of allowed directive location values.
  */
-export enum DirectiveLocation {
+enum DirectiveLocation {
   /** Request Definitions */
   QUERY = 'QUERY',
   MUTATION = 'MUTATION',
@@ -24,6 +24,7 @@ export enum DirectiveLocation {
   INPUT_OBJECT = 'INPUT_OBJECT',
   INPUT_FIELD_DEFINITION = 'INPUT_FIELD_DEFINITION',
 }
+export { DirectiveLocation };
 
 /**
  * The enum type representing the directive location values.
