@@ -4,6 +4,18 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
+  dependency-review:
+    name: Security check of added dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v2
+
   diff-npm-package:
     name: Diff content of NPM package
     runs-on: ubuntu-latest
