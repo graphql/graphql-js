@@ -84,6 +84,19 @@ describe('Parser', () => {
     `);
   });
 
+  it('limit maximum number of tokens', () => {
+    expect(() => parse('{ foo }', { maxTokens: 3 })).to.not.throw();
+    expect(() => parse('{ foo }', { maxTokens: 2 })).to.throw(
+      'Syntax Error: Document contains more that 2 tokens. Parsing aborted.',
+    );
+
+    expect(() => parse('{ foo(bar: "baz") }', { maxTokens: 8 })).to.not.throw();
+
+    expect(() => parse('{ foo(bar: "baz") }', { maxTokens: 7 })).to.throw(
+      'Syntax Error: Document contains more that 7 tokens. Parsing aborted.',
+    );
+  });
+
   it('parses variable inline values', () => {
     expect(() =>
       parse('{ field(complex: { a: { b: [ $var ] } }) }'),
