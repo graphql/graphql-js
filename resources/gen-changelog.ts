@@ -1,4 +1,4 @@
-import { execOutput, readPackageJSON } from './utils';
+import { exec, readPackageJSON } from './utils';
 
 const packageJSON = readPackageJSON();
 const labelsConfig: { [label: string]: { section: string; fold?: boolean } } = {
@@ -64,19 +64,15 @@ function getChangeLog(): Promise<string> {
   const { version } = packageJSON;
 
   let tag: string | null = null;
-  let commitsList = execOutput(`git rev-list --reverse v${version}..`);
+  let commitsList = exec(`git rev-list --reverse v${version}..`);
   if (commitsList === '') {
-    const parentPackageJSON = execOutput(
-      'git cat-file blob HEAD~1:package.json',
-    );
+    const parentPackageJSON = exec('git cat-file blob HEAD~1:package.json');
     const parentVersion = JSON.parse(parentPackageJSON).version;
-    commitsList = execOutput(
-      `git rev-list --reverse v${parentVersion}..HEAD~1`,
-    );
+    commitsList = exec(`git rev-list --reverse v${parentVersion}..HEAD~1`);
     tag = `v${version}`;
   }
 
-  const date = execOutput('git log -1 --format=%cd --date=short');
+  const date = exec('git log -1 --format=%cd --date=short');
   return getCommitsInfo(commitsList.split('\n'))
     .then((commitsInfo) => getPRsInfo(commitsInfoToPRs(commitsInfo)))
     .then((prsInfo) => genChangeLog(tag, date, prsInfo));

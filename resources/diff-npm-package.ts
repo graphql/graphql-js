@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { exec, execOutput, localRepoPath, writeGeneratedFile } from './utils';
+import { exec, localRepoPath, writeGeneratedFile } from './utils';
 
 const LOCAL = 'local';
 const tmpDir = path.join(os.tmpdir(), 'graphql-js-npm-diff');
@@ -27,7 +27,7 @@ console.log(`📦 Building NPM package for ${toRevision}...`);
 const toPackage = prepareNPMPackage(toRevision);
 
 console.log('➖➕ Generating diff...');
-const diff = execOutput(`npm diff --diff=${fromPackage} --diff=${toPackage}`);
+const diff = exec(`npm diff --diff=${fromPackage} --diff=${toPackage}`);
 
 if (diff === '') {
   console.log('No changes found!');
@@ -83,7 +83,7 @@ function prepareNPMPackage(revision: string): string {
   }
 
   // Returns the complete git hash for a given git revision reference.
-  const hash = execOutput(`git rev-parse "${revision}"`);
+  const hash = exec(`git rev-parse "${revision}"`);
   assert(hash != null);
 
   const repoDir = path.join(tmpDir, hash);
