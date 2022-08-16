@@ -9,18 +9,15 @@ export function localRepoPath(...paths: ReadonlyArray<string>): string {
   return path.join(__dirname, '..', ...paths);
 }
 
-export function exec(command: string, options?: { cwd: string }): void {
-  childProcess.execSync(command, options);
-}
-
-export function execOutput(command: string, options?: { cwd: string }): string {
+type ExecOptions = Parameters<typeof childProcess.execSync>[1];
+export function exec(command: string, options?: ExecOptions): string {
   const output = childProcess.execSync(command, {
     maxBuffer: 10 * 1024 * 1024, // 10MB
     stdio: ['inherit', 'pipe', 'inherit'],
     encoding: 'utf-8',
     ...options,
   });
-  return output.trimEnd();
+  return output.toString().trimEnd();
 }
 
 export function readdirRecursive(
