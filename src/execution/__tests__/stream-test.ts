@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
-import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
 
 import type { DocumentNode } from '../../language/ast';
 import { parse } from '../../language/parser';
@@ -16,7 +16,11 @@ import {
 import { GraphQLID, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import { execute } from '../execute';
+import type {
+  InitialIncrementalExecutionResult,
+  SubsequentIncrementalExecutionResult,
+} from '../execute';
+import { experimentalExecuteIncrementally } from '../execute';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -65,16 +69,22 @@ const query = new GraphQLObjectType({
 const schema = new GraphQLSchema({ query });
 
 async function complete(document: DocumentNode, rootValue: unknown = {}) {
-  const result = await execute({ schema, document, rootValue });
+  const result = await experimentalExecuteIncrementally({
+    schema,
+    document,
+    rootValue,
+  });
 
-  if (isAsyncIterable(result)) {
-    const results = [];
-    for await (const patch of result) {
+  if ('initialResult' in result) {
+    const results: Array<
+      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+    > = [result.initialResult];
+    for await (const patch of result.subsequentResults) {
       results.push(patch);
     }
     return results;
   }
-  return result;
+  return result.singleResult;
 }
 
 async function completeAsync(
@@ -82,13 +92,23 @@ async function completeAsync(
   numCalls: number,
   rootValue: unknown = {},
 ) {
-  const result = await execute({ schema, document, rootValue });
+  const result = await experimentalExecuteIncrementally({
+    schema,
+    document,
+    rootValue,
+  });
 
-  assert(isAsyncIterable(result));
+  assert('initialResult' in result);
 
-  const iterator = result[Symbol.asyncIterator]();
+  const iterator = result.subsequentResults[Symbol.asyncIterator]();
 
-  const promises = [];
+  const promises: Array<
+    PromiseOrValue<
+      IteratorResult<
+        InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+      >
+    >
+  > = [{ done: false, value: result.initialResult }];
   for (let i = 0; i < numCalls; i++) {
     promises.push(iterator.next());
   }
@@ -593,7 +613,7 @@ describe('Execute: stream directive', () => {
         }
       }
     `);
-    const result = await completeAsync(document, 4, {
+    const result = await completeAsync(document, 3, {
       async *friendList() {
         yield await Promise.resolve(friends[0]);
         yield await Promise.resolve(friends[1]);
@@ -997,7 +1017,7 @@ describe('Execute: stream directive', () => {
         }
       }
     `);
-    const executeResult = await execute({
+    const executeResult = await experimentalExecuteIncrementally({
       schema,
       document,
       rootValue: {
@@ -1010,18 +1030,15 @@ describe('Execute: stream directive', () => {
         },
       },
     });
-    assert(isAsyncIterable(executeResult));
-    const iterator = executeResult[Symbol.asyncIterator]();
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
-    const result1 = await iterator.next();
+    const result1 = executeResult.initialResult;
     expectJSON(result1).toDeepEqual({
-      value: {
-        data: {
-          nestedObject: {},
-        },
-        hasNext: true,
+      data: {
+        nestedObject: {},
       },
-      done: false,
+      hasNext: true,
     });
 
     const result2Promise = iterator.next();
@@ -1093,7 +1110,7 @@ describe('Execute: stream directive', () => {
     }
   `);
 
-    const executeResult = await execute({
+    const executeResult = await experimentalExecuteIncrementally({
       schema,
       document,
       rootValue: {
@@ -1107,18 +1124,15 @@ describe('Execute: stream directive', () => {
         },
       },
     });
-    assert(isAsyncIterable(executeResult));
-    const iterator = executeResult[Symbol.asyncIterator]();
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
-    const result1 = await iterator.next();
+    const result1 = executeResult.initialResult;
     expectJSON(result1).toDeepEqual({
-      value: {
-        data: {
-          friendList: [{ id: '1' }],
-        },
-        hasNext: true,
+      data: {
+        friendList: [{ id: '1' }],
       },
-      done: false,
+      hasNext: true,
     });
 
     const result2 = await iterator.next();
@@ -1191,7 +1205,7 @@ describe('Execute: stream directive', () => {
     }
   `);
 
-    const executeResult = await execute({
+    const executeResult = await experimentalExecuteIncrementally({
       schema,
       document,
       rootValue: {
@@ -1205,18 +1219,15 @@ describe('Execute: stream directive', () => {
         },
       },
     });
-    assert(isAsyncIterable(executeResult));
-    const iterator = executeResult[Symbol.asyncIterator]();
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
-    const result1 = await iterator.next();
+    const result1 = executeResult.initialResult;
     expectJSON(result1).toDeepEqual({
-      value: {
-        data: {
-          friendList: [{ id: '1' }],
-        },
-        hasNext: true,
+      data: {
+        friendList: [{ id: '1' }],
       },
-      done: false,
+      hasNext: true,
     });
 
     const result2 = await iterator.next();
@@ -1307,25 +1318,26 @@ describe('Execute: stream directive', () => {
       }
     `);
 
-    const executeResult = await execute({
+    const executeResult = await experimentalExecuteIncrementally({
       schema,
       document,
       rootValue: {
         friendList: iterable,
       },
     });
-    assert(isAsyncIterable(executeResult));
-    const iterator = executeResult[Symbol.asyncIterator]();
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
-    const result1 = await iterator.next();
+    const result1 = executeResult.initialResult;
     expectJSON(result1).toDeepEqual({
-      done: false,
-      value: {
-        data: {
-          friendList: [{ id: '1' }],
-        },
-        hasNext: true,
+      data: {
+        friendList: [
+          {
+            id: '1',
+          },
+        ],
       },
+      hasNext: true,
     });
     const returnPromise = iterator.return();
 
@@ -1374,25 +1386,27 @@ describe('Execute: stream directive', () => {
       }
     `);
 
-    const executeResult = await execute({
+    const executeResult = await experimentalExecuteIncrementally({
       schema,
       document,
       rootValue: {
         friendList: iterable,
       },
     });
-    assert(isAsyncIterable(executeResult));
-    const iterator = executeResult[Symbol.asyncIterator]();
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
-    const result1 = await iterator.next();
+    const result1 = executeResult.initialResult;
     expectJSON(result1).toDeepEqual({
-      done: false,
-      value: {
-        data: {
-          friendList: [{ id: '1', name: 'Luke' }],
-        },
-        hasNext: true,
+      data: {
+        friendList: [
+          {
+            id: '1',
+            name: 'Luke',
+          },
+        ],
       },
+      hasNext: true,
     });
 
     const returnPromise = iterator.return();
@@ -1447,25 +1461,27 @@ describe('Execute: stream directive', () => {
         }
       }
     `);
-    const executeResult = await execute({
+
+    const executeResult = await experimentalExecuteIncrementally({
       schema,
       document,
       rootValue: {
         friendList: iterable,
       },
     });
-    assert(isAsyncIterable(executeResult));
-    const iterator = executeResult[Symbol.asyncIterator]();
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
-    const result1 = await iterator.next();
+    const result1 = executeResult.initialResult;
     expectJSON(result1).toDeepEqual({
-      done: false,
-      value: {
-        data: {
-          friendList: [{ id: '1' }],
-        },
-        hasNext: true,
+      data: {
+        friendList: [
+          {
+            id: '1',
+          },
+        ],
       },
+      hasNext: true,
     });
 
     const throwPromise = iterator.throw(new Error('bad'));

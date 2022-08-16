@@ -139,9 +139,7 @@ export interface ExecutionResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   data?: TData | null;
-  hasNext?: boolean;
   extensions?: TExtensions;
-  incremental?: ReadonlyArray<IncrementalResult>;
 }
 
 export interface FormattedExecutionResult<
@@ -150,28 +148,67 @@ export interface FormattedExecutionResult<
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   data?: TData | null;
-  hasNext?: boolean;
   extensions?: TExtensions;
-  incremental?: ReadonlyArray<IncrementalResult>;
 }
 
-export interface SubsequentExecutionResult<TExtensions = ObjMap<unknown>> {
-  hasNext?: boolean;
-  extensions?: TExtensions;
-  incremental?: ReadonlyArray<IncrementalResult>;
+export type ExperimentalExecuteIncrementallyResults<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> =
+  | { singleResult: ExecutionResult<TData, TExtensions> }
+  | {
+      initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
+      subsequentResults: AsyncGenerator<
+        SubsequentIncrementalExecutionResult<TData, TExtensions>,
+        void,
+        void
+      >;
+    };
+
+export interface InitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends ExecutionResult<TData, TExtensions> {
+  hasNext: boolean;
 }
 
-export type AsyncExecutionResult = ExecutionResult | SubsequentExecutionResult;
+export interface FormattedInitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends FormattedExecutionResult<TData, TExtensions> {
+  hasNext: boolean;
+}
+
+export interface SubsequentIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+}
+
+export interface FormattedSubsequentIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
+}
 
 export interface IncrementalDeferResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
+> extends ExecutionResult<TData, TExtensions> {
   path?: ReadonlyArray<string | number>;
   label?: string;
-  extensions?: TExtensions;
+}
+
+export interface FormattedIncrementalDeferResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends FormattedExecutionResult<TData, TExtensions> {
+  path?: ReadonlyArray<string | number>;
+  label?: string;
 }
 
 export interface IncrementalStreamResult<
@@ -185,9 +222,30 @@ export interface IncrementalStreamResult<
   extensions?: TExtensions;
 }
 
-export type IncrementalResult =
-  | IncrementalDeferResult
-  | IncrementalStreamResult;
+export interface FormattedIncrementalStreamResult<
+  TData = Array<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+  items?: TData | null;
+  path?: ReadonlyArray<string | number>;
+  label?: string;
+  extensions?: TExtensions;
+}
+
+export type IncrementalResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> =
+  | IncrementalDeferResult<TData, TExtensions>
+  | IncrementalStreamResult<TData, TExtensions>;
+
+export type FormattedIncrementalResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> =
+  | FormattedIncrementalDeferResult<TData, TExtensions>
+  | FormattedIncrementalStreamResult<TData, TExtensions>;
 
 export interface ExecutionArgs {
   schema: GraphQLSchema;
@@ -210,12 +268,58 @@ export interface ExecutionArgs {
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
+ *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
+ * If an operation which would defer or stream data is executed with this function,
+ * it will throw or reject instead. Use `experimentalExecuteIncrementally` if you
+ * want to support incremental delivery.
  */
-export function execute(
+export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  const result = executeSyncOrIncrementally(args);
+  if (!isPromise(result)) {
+    return result;
+  }
+
+  return result.then((incrementalResult) => {
+    if ('singleResult' in incrementalResult) {
+      return incrementalResult.singleResult;
+    }
+    throw new GraphQLError(
+      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
+    );
+  });
+}
+
+/**
+ * Implements the "Executing requests" section of the GraphQL specification,
+ * including `@defer` and `@stream` as proposed in
+ * https://github.com/graphql/graphql-spec/pull/742
+ *
+ * This function returns a Promise of an ExperimentalExecuteIncrementallyResults
+ * object. This object either contains a single ExecutionResult as
+ * `singleResult`, or an `initialResult` and a stream of `subsequentResults`.
+ *
+ * If the arguments to this function do not result in a legal execution context,
+ * a GraphQLError will be thrown immediately explaining the invalid input.
+ */
+export function experimentalExecuteIncrementally(
   args: ExecutionArgs,
-): PromiseOrValue<
-  ExecutionResult | AsyncGenerator<AsyncExecutionResult, void, void>
-> {
+): Promise<ExperimentalExecuteIncrementallyResults> {
+  const result = executeSyncOrIncrementally(args);
+  if (isPromise(result)) {
+    return result;
+  }
+  // Always return a Promise for a consistent API.
+  return Promise.resolve({ singleResult: result });
+}
+
+/**
+ * Helper for the other execute functions. Returns an ExecutionResult
+ * synchronously if all resolvers return non-Promises
+ */
+function executeSyncOrIncrementally(
+  args: ExecutionArgs,
+): ExecutionResult | Promise<ExperimentalExecuteIncrementallyResults> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
@@ -230,9 +334,7 @@ export function execute(
 
 function executeImpl(
   exeContext: ExecutionContext,
-): PromiseOrValue<
-  ExecutionResult | AsyncGenerator<AsyncExecutionResult, void, void>
-> {
+): ExecutionResult | Promise<ExperimentalExecuteIncrementallyResults> {
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
@@ -251,19 +353,31 @@ function executeImpl(
         (data) => {
           const initialResult = buildResponse(data, exeContext.errors);
           if (exeContext.subsequentPayloads.length > 0) {
-            return yieldSubsequentPayloads(exeContext, initialResult);
+            return {
+              initialResult: {
+                ...initialResult,
+                hasNext: true,
+              },
+              subsequentResults: yieldSubsequentPayloads(exeContext),
+            };
           }
-          return initialResult;
+          return { singleResult: initialResult };
         },
         (error) => {
           exeContext.errors.push(error);
-          return buildResponse(null, exeContext.errors);
+          return { singleResult: buildResponse(null, exeContext.errors) };
         },
       );
     }
     const initialResult = buildResponse(result, exeContext.errors);
     if (exeContext.subsequentPayloads.length > 0) {
-      return yieldSubsequentPayloads(exeContext, initialResult);
+      return Promise.resolve({
+        initialResult: {
+          ...initialResult,
+          hasNext: true,
+        },
+        subsequentResults: yieldSubsequentPayloads(exeContext),
+      });
     }
     return initialResult;
   } catch (error) {
@@ -281,7 +395,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
   const result = execute(args);
 
   // Assert that the execution was synchronous.
-  if (isPromise(result) || isAsyncIterable(result)) {
+  if (isPromise(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
@@ -1362,7 +1476,13 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
 export function subscribe(
   args: ExecutionArgs,
 ): PromiseOrValue<
-  | AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void>
+  | AsyncGenerator<
+      | ExecutionResult
+      | InitialIncrementalExecutionResult
+      | SubsequentIncrementalExecutionResult,
+      void,
+      void
+    >
   | ExecutionResult
 > {
   // If a valid execution context cannot be created due to incorrect arguments,
@@ -1388,11 +1508,25 @@ export function subscribe(
 async function* ensureAsyncIterable(
   someExecutionResult:
     | ExecutionResult
-    | AsyncGenerator<AsyncExecutionResult, void, void>,
-): AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void> {
-  if (isAsyncIterable(someExecutionResult)) {
-    yield* someExecutionResult;
+    | ExperimentalExecuteIncrementallyResults,
+): AsyncGenerator<
+  | ExecutionResult
+  | InitialIncrementalExecutionResult
+  | SubsequentIncrementalExecutionResult,
+  void,
+  void
+> {
+  if ('initialResult' in someExecutionResult) {
+    yield someExecutionResult.initialResult;
+    yield* someExecutionResult.subsequentResults;
+  } else if ('singleResult' in someExecutionResult) {
+    yield someExecutionResult.singleResult;
+    /* c8 ignore start */
+    // For some reason, c8 says that this function has complete statement
+    // coverage but that this `else` isn't branch-covered. Seems like a bug.
+    // And these comments have to be c8-ignored too!
   } else {
+    /* c8 ignore stop */
     yield someExecutionResult;
   }
 }
@@ -1401,7 +1535,13 @@ function mapSourceToResponse(
   exeContext: ExecutionContext,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
 ): PromiseOrValue<
-  | AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void>
+  | AsyncGenerator<
+      | ExecutionResult
+      | InitialIncrementalExecutionResult
+      | SubsequentIncrementalExecutionResult,
+      void,
+      void
+    >
   | ExecutionResult
 > {
   if (!isAsyncIterable(resultOrStream)) {
@@ -1807,12 +1947,12 @@ async function executeStreamIterator(
 
 function yieldSubsequentPayloads(
   exeContext: ExecutionContext,
-  initialResult: ExecutionResult,
-): AsyncGenerator<AsyncExecutionResult, void, void> {
-  let _hasReturnedInitialResult = false;
+): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void> {
   let isDone = false;
 
-  async function race(): Promise<IteratorResult<AsyncExecutionResult>> {
+  async function race(): Promise<
+    IteratorResult<SubsequentIncrementalExecutionResult>
+  > {
     if (exeContext.subsequentPayloads.length === 0) {
       // async iterable resolver just finished and no more pending payloads
       return {
@@ -1888,21 +2028,14 @@ function yieldSubsequentPayloads(
       return this;
     },
     next: () => {
-      if (!_hasReturnedInitialResult) {
-        _hasReturnedInitialResult = true;
-        return Promise.resolve({
-          value: {
-            ...initialResult,
-            hasNext: true,
-          },
-          done: false,
-        });
-      } else if (exeContext.subsequentPayloads.length === 0 || isDone) {
+      if (exeContext.subsequentPayloads.length === 0 || isDone) {
         return Promise.resolve({ value: undefined, done: true });
       }
       return race();
     },
-    async return(): Promise<IteratorResult<AsyncExecutionResult, void>> {
+    async return(): Promise<
+      IteratorResult<SubsequentIncrementalExecutionResult, void>
+    > {
       await Promise.all(
         exeContext.subsequentPayloads.map((asyncPayloadRecord) => {
           if (isStreamPayload(asyncPayloadRecord)) {
@@ -1916,7 +2049,7 @@ function yieldSubsequentPayloads(
     },
     async throw(
       error?: unknown,
-    ): Promise<IteratorResult<AsyncExecutionResult, void>> {
+    ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> {
       await Promise.all(
         exeContext.subsequentPayloads.map((asyncPayloadRecord) => {
           if (isStreamPayload(asyncPayloadRecord)) {

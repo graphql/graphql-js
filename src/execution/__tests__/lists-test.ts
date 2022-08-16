@@ -3,8 +3,6 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
-
 import { parse } from '../../language/parser';
 
 import type { GraphQLFieldResolver } from '../../type/definition';
@@ -14,8 +12,12 @@ import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import type { AsyncExecutionResult, ExecutionResult } from '../execute';
-import { execute, executeSync } from '../execute';
+import type { ExperimentalExecuteIncrementallyResults } from '../execute';
+import {
+  execute,
+  executeSync,
+  experimentalExecuteIncrementally,
+} from '../execute';
 
 describe('Execute: Accepts any iterable as list value', () => {
   function complete(rootValue: unknown) {
@@ -85,9 +87,7 @@ describe('Execute: Accepts async iterables as list value', () => {
 
   function completeObjectList(
     resolve: GraphQLFieldResolver<{ index: number }, unknown>,
-  ): PromiseOrValue<
-    ExecutionResult | AsyncGenerator<AsyncExecutionResult, void, void>
-  > {
+  ): Promise<ExperimentalExecuteIncrementallyResults> {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -113,7 +113,7 @@ describe('Execute: Accepts async iterables as list value', () => {
         },
       }),
     });
-    return execute({
+    return experimentalExecuteIncrementally({
       schema,
       document: parse('{ listField { index } }'),
     });
@@ -191,7 +191,9 @@ describe('Execute: Accepts async iterables as list value', () => {
     expectJSON(
       await completeObjectList(({ index }) => Promise.resolve(index)),
     ).toDeepEqual({
-      data: { listField: [{ index: '0' }, { index: '1' }, { index: '2' }] },
+      singleResult: {
+        data: { listField: [{ index: '0' }, { index: '1' }, { index: '2' }] },
+      },
     });
   });
 
@@ -204,14 +206,16 @@ describe('Execute: Accepts async iterables as list value', () => {
         return Promise.resolve(index);
       }),
     ).toDeepEqual({
-      data: { listField: [{ index: '0' }, { index: '1' }, { index: null }] },
-      errors: [
-        {
-          message: 'bad',
-          locations: [{ line: 1, column: 15 }],
-          path: ['listField', 2, 'index'],
-        },
-      ],
+      singleResult: {
+        data: { listField: [{ index: '0' }, { index: '1' }, { index: null }] },
+        errors: [
+          {
+            message: 'bad',
+            locations: [{ line: 1, column: 15 }],
+            path: ['listField', 2, 'index'],
+          },
+        ],
+      },
     });
   });
   it('Handles nulls yielded by async generator', async () => {

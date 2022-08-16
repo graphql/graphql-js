@@ -12,12 +12,18 @@ export {
 export type {
   ExecutionArgs,
   ExecutionResult,
-  FormattedExecutionResult,
-  SubsequentExecutionResult,
+  ExperimentalExecuteIncrementallyResults,
+  InitialIncrementalExecutionResult,
+  SubsequentIncrementalExecutionResult,
   IncrementalDeferResult,
   IncrementalStreamResult,
   IncrementalResult,
-  AsyncExecutionResult,
+  FormattedExecutionResult,
+  FormattedInitialIncrementalExecutionResult,
+  FormattedSubsequentIncrementalExecutionResult,
+  FormattedIncrementalDeferResult,
+  FormattedIncrementalStreamResult,
+  FormattedIncrementalResult,
 } from './execute';
 
 export {

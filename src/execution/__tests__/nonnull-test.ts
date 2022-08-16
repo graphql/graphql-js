@@ -13,7 +13,7 @@ import { GraphQLSchema } from '../../type/schema';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 
-import type { AsyncExecutionResult, ExecutionResult } from '../execute';
+import type { ExecutionResult } from '../execute';
 import { execute, executeSync } from '../execute';
 
 const syncError = new Error('sync');
@@ -111,9 +111,7 @@ const schema = buildSchema(`
 function executeQuery(
   query: string,
   rootValue: unknown,
-): PromiseOrValue<
-  ExecutionResult | AsyncGenerator<AsyncExecutionResult, void, void>
-> {
+): PromiseOrValue<ExecutionResult> {
   return execute({ schema, document: parse(query), rootValue });
 }
 
