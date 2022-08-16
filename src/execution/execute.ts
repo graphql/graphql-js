@@ -1362,7 +1362,8 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
 export function subscribe(
   args: ExecutionArgs,
 ): PromiseOrValue<
-  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+  | AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void>
+  | ExecutionResult
 > {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
@@ -1384,11 +1385,24 @@ export function subscribe(
   return mapSourceToResponse(exeContext, resultOrStream);
 }
 
+async function* ensureAsyncIterable(
+  someExecutionResult:
+    | ExecutionResult
+    | AsyncGenerator<AsyncExecutionResult, void, void>,
+): AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void> {
+  if (isAsyncIterable(someExecutionResult)) {
+    yield* someExecutionResult;
+  } else {
+    yield someExecutionResult;
+  }
+}
+
 function mapSourceToResponse(
   exeContext: ExecutionContext,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
 ): PromiseOrValue<
-  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+  | AsyncGenerator<ExecutionResult | AsyncExecutionResult, void, void>
+  | ExecutionResult
 > {
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
@@ -1400,9 +1414,11 @@ function mapSourceToResponse(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  return flattenAsyncIterable<ExecutionResult, AsyncExecutionResult>(
-    mapAsyncIterable(resultOrStream, (payload: unknown) =>
-      executeImpl(buildPerEventExecutionContext(exeContext, payload)),
+  return flattenAsyncIterable(
+    mapAsyncIterable(resultOrStream, async (payload: unknown) =>
+      ensureAsyncIterable(
+        await executeImpl(buildPerEventExecutionContext(exeContext, payload)),
+      ),
     ),
   );
 }
