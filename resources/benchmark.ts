@@ -5,7 +5,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as url from 'node:url';
 
-import { exec, localRepoPath } from './utils';
+import { git, localRepoPath, npm } from './utils';
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
@@ -63,7 +63,7 @@ function prepareBenchmarkProjects(
       path.join(projectPath, 'package.json'),
       JSON.stringify(packageJSON, null, 2),
     );
-    exec('npm --quiet install --ignore-scripts ', { cwd: projectPath });
+    npm(['--quiet', 'install', '--ignore-scripts'], { cwd: projectPath });
 
     return { revision, projectPath };
   });
@@ -77,7 +77,7 @@ function prepareBenchmarkProjects(
     }
 
     // Returns the complete git hash for a given git revision reference.
-    const hash = exec(`git rev-parse "${revision}"`);
+    const hash = git(['rev-parse', revision]);
 
     const archivePath = path.join(tmpDir, `graphql-${hash}.tgz`);
     if (fs.existsSync(archivePath)) {
@@ -87,19 +87,19 @@ function prepareBenchmarkProjects(
     const repoDir = path.join(tmpDir, hash);
     fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
-    exec(`git clone --quiet "${localRepoPath()}" "${repoDir}"`);
-    exec(`git checkout --quiet --detach "${hash}"`, { cwd: repoDir });
-    exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
+    git(['clone', '--quiet', localRepoPath(), repoDir]);
+    git(['checkout', '--quiet', '--detach', hash], { cwd: repoDir });
+    npm(['--quiet', 'ci', '--ignore-scripts'], { cwd: repoDir });
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
     fs.rmSync(repoDir, { recursive: true });
     return archivePath;
   }
 
   function buildNPMArchive(repoDir: string) {
-    exec('npm --quiet run build:npm', { cwd: repoDir });
+    npm(['--quiet', 'run', 'build:npm'], { cwd: repoDir });
 
     const distDir = path.join(repoDir, 'npmDist');
-    const archiveName = exec(`npm --quiet pack ${distDir}`, {
+    const archiveName = npm(['--quiet', 'pack', distDir], {
       cwd: repoDir,
     });
     return path.join(repoDir, archiveName);

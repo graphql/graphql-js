@@ -1,9 +1,10 @@
 import * as assert from 'node:assert';
+import * as childProcess from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { exec, localRepoPath, writeGeneratedFile } from './utils';
+import { git, localRepoPath, npm, writeGeneratedFile } from './utils';
 
 const LOCAL = 'local';
 const tmpDir = path.join(os.tmpdir(), 'graphql-js-npm-diff');
@@ -27,7 +28,7 @@ console.log(`📦 Building NPM package for ${toRevision}...`);
 const toPackage = prepareNPMPackage(toRevision);
 
 console.log('➖➕ Generating diff...');
-const diff = exec(`npm diff --diff=${fromPackage} --diff=${toPackage}`);
+const diff = npm(['diff', '--diff', fromPackage, '--diff', toPackage]);
 
 if (diff === '') {
   console.log('No changes found!');
@@ -78,19 +79,19 @@ function generateReport(diffString: string): string {
 
 function prepareNPMPackage(revision: string): string {
   if (revision === LOCAL) {
-    exec('npm --quiet run build:npm', { cwd: localRepoPath() });
+    npm(['--quiet', 'run', 'build:npm'], { cwd: localRepoPath() });
     return localRepoPath('npmDist');
   }
 
   // Returns the complete git hash for a given git revision reference.
-  const hash = exec(`git rev-parse "${revision}"`);
+  const hash = git(['rev-parse', revision]);
   assert(hash != null);
 
   const repoDir = path.join(tmpDir, hash);
   fs.rmSync(repoDir, { recursive: true, force: true });
   fs.mkdirSync(repoDir);
-  exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
-  exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
-  exec('npm --quiet run build:npm', { cwd: repoDir });
+  childProcess.execSync(`git archive "${hash}" | tar -xC "${repoDir}"`);
+  npm(['--quiet', 'ci', '--ignore-scripts'], { cwd: repoDir });
+  npm(['--quiet', 'run', 'build:npm'], { cwd: repoDir });
   return path.join(repoDir, 'npmDist');
 }
