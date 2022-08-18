@@ -4,6 +4,30 @@ import { describe, it } from 'mocha';
 import { flattenAsyncIterable } from '../flattenAsyncIterable';
 
 describe('flattenAsyncIterable', () => {
+  it('completely yields sub-iterables even when next() called in parallel', async () => {
+    async function* source() {
+      yield await Promise.resolve(
+        (async function* nested(): AsyncGenerator<number, void, void> {
+          yield await Promise.resolve(1.1);
+          yield await Promise.resolve(1.2);
+        })(),
+      );
+      yield await Promise.resolve(2);
+    }
+
+    const result = flattenAsyncIterable(source());
+
+    const promise1 = result.next();
+    const promise2 = result.next();
+    expect(await promise1).to.deep.equal({ value: 1.1, done: false });
+    expect(await promise2).to.deep.equal({ value: 1.2, done: false });
+    expect(await result.next()).to.deep.equal({ value: 2, done: false });
+    expect(await result.next()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+  });
+
   it('does not modify an already flat async generator', async () => {
     async function* source() {
       yield await Promise.resolve(1);
