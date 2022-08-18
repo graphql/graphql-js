@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import inspect from '../../jsutils/inspect';
 import invariant from '../../jsutils/invariant';
+import resolveOnNextTick from '../../__testUtils__/resolveOnNextTick';
 
 import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
@@ -641,6 +642,55 @@ describe('Execute: Handles basic execution tasks', () => {
           locations: [{ column: 9, line: 3 }],
           message: 'Oops',
           path: ['foods'],
+        },
+      ],
+    });
+  });
+
+  it('handles sync errors combined with rejections', async () => {
+    let isAsyncResolverCalled = false;
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          syncNullError: {
+            type: new GraphQLNonNull(GraphQLString),
+            resolve: () => null,
+          },
+          asyncNullError: {
+            type: new GraphQLNonNull(GraphQLString),
+            async resolve() {
+              await resolveOnNextTick();
+              await resolveOnNextTick();
+              await resolveOnNextTick();
+              isAsyncResolverCalled = true;
+              return Promise.resolve(null);
+            },
+          },
+        },
+      }),
+    });
+
+    // Order is important here, as the promise has to be created before the synchronous error is thrown
+    const document = parse(`
+      {
+        asyncNullError
+        syncNullError
+      }
+    `);
+
+    const result = await execute({ schema, document });
+
+    expect(isAsyncResolverCalled).to.equal(true);
+    expect(result).to.deep.equal({
+      data: null,
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field Query.syncNullError.',
+          locations: [{ line: 4, column: 9 }],
+          path: ['syncNullError'],
         },
       ],
     });
