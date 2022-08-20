@@ -5,6 +5,7 @@ import path from 'node:path';
 import ts from 'typescript';
 
 import { inlineInvariant } from './inline-invariant.js';
+import { transformArrayDestructuring } from './transform-array-destruct.js'
 import {
   localRepoPath,
   readdirRecursive,
@@ -51,6 +52,7 @@ tsHost.writeFile = writeGeneratedFile;
 
 const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
 const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
+  before: [transformArrayDestructuring()],
   after: [inlineInvariant],
 });
 assert(
