@@ -5,12 +5,14 @@ import * as path from 'node:path';
 
 import { describe, it } from 'mocha';
 
-function exec(command: string, options = {}) {
-  const output = childProcess.execSync(command, {
+function npm(args: ReadonlyArray<string>, options = {}): string {
+  const result = childProcess.spawnSync('npm', [...args], {
+    maxBuffer: 10 * 1024 * 1024, // 10MB
+    stdio: ['inherit', 'pipe', 'inherit'],
     encoding: 'utf-8',
     ...options,
   });
-  return output?.trimEnd();
+  return result.stdout.toString().trimEnd();
 }
 
 describe('Integration Tests', () => {
@@ -19,7 +21,7 @@ describe('Integration Tests', () => {
   fs.mkdirSync(tmpDir);
 
   const distDir = path.resolve('./npmDist');
-  const archiveName = exec(`npm --quiet pack ${distDir}`, { cwd: tmpDir });
+  const archiveName = npm(['--quiet', 'pack', distDir], { cwd: tmpDir });
   fs.renameSync(
     path.join(tmpDir, archiveName),
     path.join(tmpDir, 'graphql.tgz'),
@@ -38,8 +40,8 @@ describe('Integration Tests', () => {
 
       const cwd = path.join(tmpDir, projectName);
       // TODO: figure out a way to run it with --ignore-scripts
-      exec('npm --quiet install', { cwd, stdio: 'inherit' });
-      exec('npm --quiet test', { cwd, stdio: 'inherit' });
+      npm(['--quiet', 'install'], { cwd });
+      npm(['--quiet', 'test'], { cwd });
     }).timeout(120000);
   }
 

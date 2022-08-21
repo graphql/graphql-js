@@ -9,15 +9,36 @@ export function localRepoPath(...paths: ReadonlyArray<string>): string {
   return path.join(__dirname, '..', ...paths);
 }
 
-type ExecOptions = Parameters<typeof childProcess.execSync>[1];
-export function exec(command: string, options?: ExecOptions): string {
-  const output = childProcess.execSync(command, {
+export function npm(
+  args: ReadonlyArray<string>,
+  options?: SpawnOptions,
+): string {
+  return spawn('npm', args, options);
+}
+
+export function git(
+  args: ReadonlyArray<string>,
+  options?: SpawnOptions,
+): string {
+  return spawn('git', args, options);
+}
+
+interface SpawnOptions {
+  cwd?: string;
+}
+
+function spawn(
+  command: string,
+  args: ReadonlyArray<string>,
+  options?: SpawnOptions,
+): string {
+  const result = childProcess.spawnSync(command, args, {
     maxBuffer: 10 * 1024 * 1024, // 10MB
     stdio: ['inherit', 'pipe', 'inherit'],
     encoding: 'utf-8',
     ...options,
   });
-  return output.toString().trimEnd();
+  return result.stdout.toString().trimEnd();
 }
 
 export function readdirRecursive(
