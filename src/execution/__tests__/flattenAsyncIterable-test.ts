@@ -112,8 +112,6 @@ describe('flattenAsyncIterable', () => {
     let caughtError;
     try {
       await doubles.throw('ouch'); /* c8 ignore start */
-      // Not reachable, always throws
-      /* c8 ignore stop */
     } catch (e) {
       caughtError = e;
     }

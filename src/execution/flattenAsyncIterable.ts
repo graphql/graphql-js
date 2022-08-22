@@ -99,7 +99,6 @@ export function flattenAsyncIterable<T>(
       throw error;
     },
     [Symbol.asyncIterator]() {
-      /* c8 ignore next */
       return this;
     },
   };
