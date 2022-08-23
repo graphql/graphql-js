@@ -1750,6 +1750,7 @@ async function executeStreamIterator(
       label,
       path: fieldPath,
       parentContext: previousAsyncPayloadRecord,
+      iterator,
     });
 
     const dataPromise = executeStreamIteratorItem(
@@ -1793,6 +1794,7 @@ function yieldSubsequentPayloads(
   initialResult: ExecutionResult,
 ): AsyncGenerator<AsyncExecutionResult, void, void> {
   let _hasReturnedInitialResult = false;
+  let isDone = false;
 
   async function race(): Promise<IteratorResult<AsyncExecutionResult>> {
     if (exeContext.subsequentPayloads.length === 0) {
@@ -1870,19 +1872,37 @@ function yieldSubsequentPayloads(
           },
           done: false,
         });
-      } else if (exeContext.subsequentPayloads.length === 0) {
+      } else if (exeContext.subsequentPayloads.length === 0 || isDone) {
         return Promise.resolve({ value: undefined, done: true });
       }
       return race();
     },
-    // TODO: implement return & throw
-    // c8 ignore next 2
-    // will be covered in follow up
-    return: () => Promise.resolve({ value: undefined, done: true }),
-
-    // c8 ignore next 2
-    // will be covered in follow up
-    throw: (error?: unknown) => Promise.reject(error),
+    async return(): Promise<IteratorResult<AsyncExecutionResult, void>> {
+      await Promise.all(
+        exeContext.subsequentPayloads.map((asyncPayloadRecord) => {
+          if (isStreamPayload(asyncPayloadRecord)) {
+            return asyncPayloadRecord.iterator?.return?.();
+          }
+          return undefined;
+        }),
+      );
+      isDone = true;
+      return { value: undefined, done: true };
+    },
+    async throw(
+      error?: unknown,
+    ): Promise<IteratorResult<AsyncExecutionResult, void>> {
+      await Promise.all(
+        exeContext.subsequentPayloads.map((asyncPayloadRecord) => {
+          if (isStreamPayload(asyncPayloadRecord)) {
+            return asyncPayloadRecord.iterator?.return?.();
+          }
+          return undefined;
+        }),
+      );
+      isDone = true;
+      return Promise.reject(error);
+    },
   };
 }
 

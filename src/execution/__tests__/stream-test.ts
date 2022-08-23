@@ -1215,4 +1215,226 @@ describe('Execute: stream directive', () => {
       done: true,
     });
   });
+  it('Returns underlying async iterables when returned generator is returned', async () => {
+    let returned = false;
+    let index = 0;
+    const iterable = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => {
+          const friend = friends[index++];
+          if (!friend) {
+            return Promise.resolve({ done: true, value: undefined });
+          }
+          return Promise.resolve({ done: false, value: friend });
+        },
+        return: () => {
+          returned = true;
+        },
+      }),
+    };
+
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          id
+          ... @defer {
+            name
+          }
+        }
+      }
+    `);
+
+    const executeResult = await execute({
+      schema,
+      document,
+      rootValue: {
+        friendList: iterable,
+      },
+    });
+    assert(isAsyncIterable(executeResult));
+    const iterator = executeResult[Symbol.asyncIterator]();
+
+    const result1 = await iterator.next();
+    expectJSON(result1).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          friendList: [{ id: '1' }],
+        },
+        hasNext: true,
+      },
+    });
+    const returnPromise = iterator.return();
+
+    // these results had started processing before return was called
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            data: { name: 'Luke' },
+            path: ['friendList', 0],
+          },
+        ],
+        hasNext: true,
+      },
+    });
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+    await returnPromise;
+    assert(returned);
+  });
+  it('Can return async iterable when underlying iterable does not have a return method', async () => {
+    let index = 0;
+    const iterable = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => {
+          const friend = friends[index++];
+          if (!friend) {
+            return Promise.resolve({ done: true, value: undefined });
+          }
+          return Promise.resolve({ done: false, value: friend });
+        },
+      }),
+    };
+
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          name
+          id
+        }
+      }
+    `);
+
+    const executeResult = await execute({
+      schema,
+      document,
+      rootValue: {
+        friendList: iterable,
+      },
+    });
+    assert(isAsyncIterable(executeResult));
+    const iterator = executeResult[Symbol.asyncIterator]();
+
+    const result1 = await iterator.next();
+    expectJSON(result1).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          friendList: [{ id: '1', name: 'Luke' }],
+        },
+        hasNext: true,
+      },
+    });
+
+    const returnPromise = iterator.return();
+
+    // this result had started processing before return was called
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            items: [{ id: '2', name: 'Han' }],
+            path: ['friendList', 1],
+          },
+        ],
+        hasNext: true,
+      },
+    });
+
+    // third result is not returned because async iterator has returned
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+    await returnPromise;
+  });
+  it('Returns underlying async iterables when returned generator is thrown', async () => {
+    let index = 0;
+    let returned = false;
+    const iterable = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => {
+          const friend = friends[index++];
+          if (!friend) {
+            return Promise.resolve({ done: true, value: undefined });
+          }
+          return Promise.resolve({ done: false, value: friend });
+        },
+        return: () => {
+          returned = true;
+        },
+      }),
+    };
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          ... @defer {
+            name
+          }
+          id
+        }
+      }
+    `);
+    const executeResult = await execute({
+      schema,
+      document,
+      rootValue: {
+        friendList: iterable,
+      },
+    });
+    assert(isAsyncIterable(executeResult));
+    const iterator = executeResult[Symbol.asyncIterator]();
+
+    const result1 = await iterator.next();
+    expectJSON(result1).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          friendList: [{ id: '1' }],
+        },
+        hasNext: true,
+      },
+    });
+
+    const throwPromise = iterator.throw(new Error('bad'));
+
+    // these results had started processing before return was called
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            data: { name: 'Luke' },
+            path: ['friendList', 0],
+          },
+        ],
+        hasNext: true,
+      },
+    });
+
+    // this result is not returned because async iterator has returned
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+    try {
+      await throwPromise; /* c8 ignore start */
+      // Not reachable, always throws
+      /* c8 ignore stop */
+    } catch (e) {
+      // ignore error
+    }
+    assert(returned);
+  });
 });
