@@ -51,7 +51,6 @@ export class SimplePubSub<T> {
         emptyQueue();
         return Promise.resolve({ value: undefined, done: true });
       },
-      /* c8 ignore next 4 */
       throw(error: unknown) {
         emptyQueue();
         return Promise.reject(error);
