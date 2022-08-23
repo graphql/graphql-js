@@ -333,6 +333,10 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  SubsequentExecutionResult,
+  IncrementalDeferResult,
+  IncrementalResult,
+  AsyncExecutionResult,
 } from './execution/index';
 
 // Validate GraphQL documents.

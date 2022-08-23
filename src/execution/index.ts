@@ -13,6 +13,10 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   FormattedExecutionResult,
+  SubsequentExecutionResult,
+  IncrementalDeferResult,
+  IncrementalResult,
+  AsyncExecutionResult,
 } from './execute';
 
 export {
