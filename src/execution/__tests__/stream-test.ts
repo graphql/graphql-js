@@ -77,6 +77,24 @@ async function complete(document: DocumentNode, rootValue: unknown = {}) {
   return result;
 }
 
+async function completeAsync(
+  document: DocumentNode,
+  numCalls: number,
+  rootValue: unknown = {},
+) {
+  const result = await execute({ schema, document, rootValue });
+
+  assert(isAsyncIterable(result));
+
+  const iterator = result[Symbol.asyncIterator]();
+
+  const promises = [];
+  for (let i = 0; i < numCalls; i++) {
+    promises.push(iterator.next());
+  }
+  return Promise.all(promises);
+}
+
 function createResolvablePromise<T>(): [Promise<T>, (value?: T) => void] {
   let resolveFn;
   const promise = new Promise<T>((resolve) => {
@@ -565,6 +583,51 @@ describe('Execute: stream directive', () => {
         friendList: null,
       },
     });
+  });
+  it('Can handle concurrent calls to .next() without waiting', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 2) {
+          name
+          id
+        }
+      }
+    `);
+    const result = await completeAsync(document, 4, {
+      async *friendList() {
+        yield await Promise.resolve(friends[0]);
+        yield await Promise.resolve(friends[1]);
+        yield await Promise.resolve(friends[2]);
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        done: false,
+        value: {
+          data: {
+            friendList: [
+              { name: 'Luke', id: '1' },
+              { name: 'Han', id: '2' },
+            ],
+          },
+          hasNext: true,
+        },
+      },
+      {
+        done: false,
+        value: {
+          incremental: [
+            {
+              items: [{ name: 'Leia', id: '3' }],
+              path: ['friendList', 2],
+            },
+          ],
+          hasNext: true,
+        },
+      },
+      { done: false, value: { hasNext: false } },
+      { done: true, value: undefined },
+    ]);
   });
   it('Handles error thrown in async iterable before initialCount is reached', async () => {
     const document = parse(`
