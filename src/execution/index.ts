@@ -15,6 +15,7 @@ export type {
   FormattedExecutionResult,
   SubsequentExecutionResult,
   IncrementalDeferResult,
+  IncrementalStreamResult,
   IncrementalResult,
   AsyncExecutionResult,
 } from './execute';

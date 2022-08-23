@@ -36,6 +36,7 @@ const schema = buildSchema(`
 
   type QueryRoot {
     message: Message
+    messages: [Message]
   }
 
   schema {
@@ -166,5 +167,92 @@ describe('Validate: Defer/Stream directive on root field', () => {
         body
       }
     `);
+  });
+  it('Stream field on root query field', () => {
+    expectValid(`
+      {
+        messages @stream {
+          name
+        }
+      }
+    `);
+  });
+  it('Stream field on fragment on root query field', () => {
+    expectValid(`
+      {
+        ...rootFragment
+      }
+      fragment rootFragment on QueryType {
+        messages @stream {
+          name
+        }
+      }
+    `);
+  });
+  it('Stream field on root mutation field', () => {
+    expectErrors(`
+      mutation {
+        mutationListField @stream {
+          name
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Stream directive cannot be used on root mutation type "MutationRoot".',
+        locations: [{ line: 3, column: 27 }],
+      },
+    ]);
+  });
+  it('Stream field on fragment on root mutation field', () => {
+    expectErrors(`
+      mutation {
+        ...rootFragment
+      }
+      fragment rootFragment on MutationRoot {
+        mutationListField @stream {
+          name
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Stream directive cannot be used on root mutation type "MutationRoot".',
+        locations: [{ line: 6, column: 27 }],
+      },
+    ]);
+  });
+  it('Stream field on root subscription field', () => {
+    expectErrors(`
+      subscription {
+        subscriptionListField @stream {
+          name
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Stream directive cannot be used on root subscription type "SubscriptionRoot".',
+        locations: [{ line: 3, column: 31 }],
+      },
+    ]);
+  });
+  it('Stream field on fragment on root subscription field', () => {
+    expectErrors(`
+      subscription {
+        ...rootFragment
+      }
+      fragment rootFragment on SubscriptionRoot {
+        subscriptionListField @stream {
+          name
+        }
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Stream directive cannot be used on root subscription type "SubscriptionRoot".',
+        locations: [{ line: 6, column: 31 }],
+      },
+    ]);
   });
 });
