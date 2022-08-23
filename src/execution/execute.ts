@@ -170,6 +170,8 @@ export interface InitialIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > extends ExecutionResult<TData, TExtensions> {
   hasNext: boolean;
+  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
 }
 
 export interface FormattedInitialIncrementalExecutionResult<
@@ -177,6 +179,8 @@ export interface FormattedInitialIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > extends FormattedExecutionResult<TData, TExtensions> {
   hasNext: boolean;
+  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
 }
 
 export interface SubsequentIncrementalExecutionResult<
@@ -185,6 +189,7 @@ export interface SubsequentIncrementalExecutionResult<
 > {
   hasNext: boolean;
   incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
 }
 
 export interface FormattedSubsequentIncrementalExecutionResult<
@@ -193,6 +198,7 @@ export interface FormattedSubsequentIncrementalExecutionResult<
 > {
   hasNext: boolean;
   incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
 }
 
 export interface IncrementalDeferResult<
