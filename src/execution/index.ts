@@ -3,10 +3,12 @@ export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 export {
   createSourceEventStream,
   execute,
+  experimentalExecuteIncrementally,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
   subscribe,
+  experimentalSubscribeIncrementally,
 } from './execute';
 
 export type {
