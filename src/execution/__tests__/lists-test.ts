@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
+
 import { parse } from '../../language/parser';
 
 import type { GraphQLFieldResolver } from '../../type/definition';
@@ -87,7 +89,7 @@ describe('Execute: Accepts async iterables as list value', () => {
 
   function completeObjectList(
     resolve: GraphQLFieldResolver<{ index: number }, unknown>,
-  ): Promise<ExperimentalExecuteIncrementallyResults> {
+  ): PromiseOrValue<ExperimentalExecuteIncrementallyResults> {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',

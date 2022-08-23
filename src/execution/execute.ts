@@ -265,6 +265,9 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
+const UNEXPECTED_MULTIPLE_PAYLOADS =
+  'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
+
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
  *
@@ -276,23 +279,27 @@ export interface ExecutionArgs {
  * a GraphQLError will be thrown immediately explaining the invalid input.
  *
  * This function does not support incremental delivery (`@defer` and `@stream`).
- * If an operation which would defer or stream data is executed with this function,
- * it will throw or reject instead. Use `experimentalExecuteIncrementally` if you
- * want to support incremental delivery.
+ * If an operation which would defer or stream data is executed with this
+ * function, it will throw or resolve to an object containing an error instead.
+ * Use `experimentalExecuteIncrementally` if you want to support incremental
+ * delivery.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  const result = executeSyncOrIncrementally(args);
+  const result = experimentalExecuteIncrementally(args);
   if (!isPromise(result)) {
-    return result;
+    if ('singleResult' in result) {
+      return result.singleResult;
+    }
+    throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
   }
 
   return result.then((incrementalResult) => {
     if ('singleResult' in incrementalResult) {
       return incrementalResult.singleResult;
     }
-    throw new GraphQLError(
-      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
-    );
+    return {
+      errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
+    };
   });
 }
 
@@ -310,29 +317,14 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
  */
 export function experimentalExecuteIncrementally(
   args: ExecutionArgs,
-): Promise<ExperimentalExecuteIncrementallyResults> {
-  const result = executeSyncOrIncrementally(args);
-  if (isPromise(result)) {
-    return result;
-  }
-  // Always return a Promise for a consistent API.
-  return Promise.resolve({ singleResult: result });
-}
-
-/**
- * Helper for the other execute functions. Returns an ExecutionResult
- * synchronously if all resolvers return non-Promises
- */
-function executeSyncOrIncrementally(
-  args: ExecutionArgs,
-): ExecutionResult | Promise<ExperimentalExecuteIncrementallyResults> {
+): PromiseOrValue<ExperimentalExecuteIncrementallyResults> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
-    return { errors: exeContext };
+    return { singleResult: { errors: exeContext } };
   }
 
   return executeImpl(exeContext);
@@ -340,7 +332,7 @@ function executeSyncOrIncrementally(
 
 function executeImpl(
   exeContext: ExecutionContext,
-): ExecutionResult | Promise<ExperimentalExecuteIncrementallyResults> {
+): PromiseOrValue<ExperimentalExecuteIncrementallyResults> {
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
@@ -377,18 +369,18 @@ function executeImpl(
     }
     const initialResult = buildResponse(result, exeContext.errors);
     if (exeContext.subsequentPayloads.length > 0) {
-      return Promise.resolve({
+      return {
         initialResult: {
           ...initialResult,
           hasNext: true,
         },
         subsequentResults: yieldSubsequentPayloads(exeContext),
-      });
+      };
     }
-    return initialResult;
+    return { singleResult: initialResult };
   } catch (error) {
     exeContext.errors.push(error);
-    return buildResponse(null, exeContext.errors);
+    return { singleResult: buildResponse(null, exeContext.errors) };
   }
 }
 
@@ -398,14 +390,14 @@ function executeImpl(
  * that all field resolvers are also synchronous.
  */
 export function executeSync(args: ExecutionArgs): ExecutionResult {
-  const result = execute(args);
+  const result = experimentalExecuteIncrementally(args);
 
   // Assert that the execution was synchronous.
-  if (isPromise(result)) {
+  if (isPromise(result) || 'initialResult' in result) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
-  return result;
+  return result.singleResult;
 }
 
 /**
@@ -1512,9 +1504,7 @@ export function subscribe(
 }
 
 async function* ensureAsyncIterable(
-  someExecutionResult:
-    | ExecutionResult
-    | ExperimentalExecuteIncrementallyResults,
+  someExecutionResult: ExperimentalExecuteIncrementallyResults,
 ): AsyncGenerator<
   | ExecutionResult
   | InitialIncrementalExecutionResult
@@ -1525,15 +1515,8 @@ async function* ensureAsyncIterable(
   if ('initialResult' in someExecutionResult) {
     yield someExecutionResult.initialResult;
     yield* someExecutionResult.subsequentResults;
-  } else if ('singleResult' in someExecutionResult) {
-    yield someExecutionResult.singleResult;
-    /* c8 ignore start */
-    // For some reason, c8 says that this function has complete statement
-    // coverage but that this `else` isn't branch-covered. Seems like a bug.
-    // And these comments have to be c8-ignored too!
   } else {
-    /* c8 ignore stop */
-    yield someExecutionResult;
+    yield someExecutionResult.singleResult;
   }
 }
 
