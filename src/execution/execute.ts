@@ -121,7 +121,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  subsequentPayloads: Array<AsyncPayloadRecord>;
+  subsequentPayloads: Set<AsyncPayloadRecord>;
 }
 
 /**
@@ -350,7 +350,7 @@ function executeImpl(
       return result.then(
         (data) => {
           const initialResult = buildResponse(data, exeContext.errors);
-          if (exeContext.subsequentPayloads.length > 0) {
+          if (exeContext.subsequentPayloads.size > 0) {
             return {
               initialResult: {
                 ...initialResult,
@@ -368,7 +368,7 @@ function executeImpl(
       );
     }
     const initialResult = buildResponse(result, exeContext.errors);
-    if (exeContext.subsequentPayloads.length > 0) {
+    if (exeContext.subsequentPayloads.size > 0) {
       return {
         initialResult: {
           ...initialResult,
@@ -496,7 +496,7 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    subsequentPayloads: [],
+    subsequentPayloads: new Set(),
     errors: [],
   };
 }
@@ -1808,7 +1808,7 @@ function executeDeferredFragment(
     promiseOrData = null;
   }
   asyncPayloadRecord.addData(promiseOrData);
-  exeContext.subsequentPayloads.push(asyncPayloadRecord);
+  exeContext.subsequentPayloads.add(asyncPayloadRecord);
 }
 
 function executeStreamField(
@@ -1873,7 +1873,7 @@ function executeStreamField(
   } catch (error) {
     asyncPayloadRecord.errors.push(error);
     asyncPayloadRecord.addItems(null);
-    exeContext.subsequentPayloads.push(asyncPayloadRecord);
+    exeContext.subsequentPayloads.add(asyncPayloadRecord);
     return asyncPayloadRecord;
   }
 
@@ -1890,7 +1890,7 @@ function executeStreamField(
   }
 
   asyncPayloadRecord.addItems(completedItems);
-  exeContext.subsequentPayloads.push(asyncPayloadRecord);
+  exeContext.subsequentPayloads.add(asyncPayloadRecord);
   return asyncPayloadRecord;
 }
 
@@ -1992,7 +1992,7 @@ async function executeStreamIterator(
           },
         ),
     );
-    subsequentPayloads.push(asyncPayloadRecord);
+    subsequentPayloads.add(asyncPayloadRecord);
     try {
       // eslint-disable-next-line no-await-in-loop
       const { done } = await dataPromise;
@@ -2015,7 +2015,7 @@ function yieldSubsequentPayloads(
   async function race(): Promise<
     IteratorResult<SubsequentIncrementalExecutionResult>
   > {
-    if (exeContext.subsequentPayloads.length === 0) {
+    if (exeContext.subsequentPayloads.size === 0) {
       // async iterable resolver just finished and no more pending payloads
       return {
         value: {
@@ -2041,17 +2041,16 @@ function yieldSubsequentPayloads(
       },
     );
 
-    if (exeContext.subsequentPayloads.length === 0) {
+    if (exeContext.subsequentPayloads.size === 0) {
       // a different call to next has exhausted all payloads
       return { value: undefined, done: true };
     }
-    const index = exeContext.subsequentPayloads.indexOf(asyncPayloadRecord);
-    if (index === -1) {
+    if (!exeContext.subsequentPayloads.has(asyncPayloadRecord)) {
       // a different call to next has consumed this payload
       return race();
     }
 
-    exeContext.subsequentPayloads.splice(index, 1);
+    exeContext.subsequentPayloads.delete(asyncPayloadRecord);
 
     const incrementalResult: IncrementalResult = {};
     if (isStreamPayload(asyncPayloadRecord)) {
@@ -2079,10 +2078,23 @@ function yieldSubsequentPayloads(
     return {
       value: {
         incremental: [incrementalResult],
-        hasNext: exeContext.subsequentPayloads.length > 0,
+        hasNext: exeContext.subsequentPayloads.size > 0,
       },
       done: false,
     };
+  }
+
+  function returnStreamIterators() {
+    const promises: Array<Promise<IteratorResult<unknown>>> = [];
+    exeContext.subsequentPayloads.forEach((asyncPayloadRecord) => {
+      if (
+        isStreamPayload(asyncPayloadRecord) &&
+        asyncPayloadRecord.iterator?.return
+      ) {
+        promises.push(asyncPayloadRecord.iterator.return());
+      }
+    });
+    return Promise.all(promises);
   }
 
   return {
@@ -2090,7 +2102,7 @@ function yieldSubsequentPayloads(
       return this;
     },
     next: () => {
-      if (exeContext.subsequentPayloads.length === 0 || isDone) {
+      if (exeContext.subsequentPayloads.size === 0 || isDone) {
         return Promise.resolve({ value: undefined, done: true });
       }
       return race();
@@ -2098,28 +2110,14 @@ function yieldSubsequentPayloads(
     async return(): Promise<
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > {
-      await Promise.all(
-        exeContext.subsequentPayloads.map((asyncPayloadRecord) => {
-          if (isStreamPayload(asyncPayloadRecord)) {
-            return asyncPayloadRecord.iterator?.return?.();
-          }
-          return undefined;
-        }),
-      );
+      await returnStreamIterators();
       isDone = true;
       return { value: undefined, done: true };
     },
     async throw(
       error?: unknown,
     ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> {
-      await Promise.all(
-        exeContext.subsequentPayloads.map((asyncPayloadRecord) => {
-          if (isStreamPayload(asyncPayloadRecord)) {
-            return asyncPayloadRecord.iterator?.return?.();
-          }
-          return undefined;
-        }),
-      );
+      await returnStreamIterators();
       isDone = true;
       return Promise.reject(error);
     },
