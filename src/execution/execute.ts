@@ -1785,6 +1785,7 @@ function executeDeferredFragment(
     label,
     path,
     parentContext,
+    exeContext,
   });
   let promiseOrData;
   try {
@@ -1808,7 +1809,6 @@ function executeDeferredFragment(
     promiseOrData = null;
   }
   asyncPayloadRecord.addData(promiseOrData);
-  exeContext.subsequentPayloads.add(asyncPayloadRecord);
 }
 
 function executeStreamField(
@@ -1825,6 +1825,7 @@ function executeStreamField(
     label,
     path,
     parentContext,
+    exeContext,
   });
   let completedItem: PromiseOrValue<unknown>;
   let completedItems: PromiseOrValue<Array<unknown> | null>;
@@ -1873,7 +1874,6 @@ function executeStreamField(
   } catch (error) {
     asyncPayloadRecord.errors.push(error);
     asyncPayloadRecord.addItems(null);
-    exeContext.subsequentPayloads.add(asyncPayloadRecord);
     return asyncPayloadRecord;
   }
 
@@ -1890,7 +1890,6 @@ function executeStreamField(
   }
 
   asyncPayloadRecord.addItems(completedItems);
-  exeContext.subsequentPayloads.add(asyncPayloadRecord);
   return asyncPayloadRecord;
 }
 
@@ -1958,7 +1957,6 @@ async function executeStreamIterator(
   label?: string,
   parentContext?: AsyncPayloadRecord,
 ): Promise<void> {
-  const subsequentPayloads = exeContext.subsequentPayloads;
   let index = initialIndex;
   let previousAsyncPayloadRecord = parentContext ?? undefined;
   // eslint-disable-next-line no-constant-condition
@@ -1969,6 +1967,7 @@ async function executeStreamIterator(
       path: fieldPath,
       parentContext: previousAsyncPayloadRecord,
       iterator,
+      exeContext,
     });
 
     const dataPromise = executeStreamIteratorItem(
@@ -1992,7 +1991,6 @@ async function executeStreamIterator(
           },
         ),
     );
-    subsequentPayloads.add(asyncPayloadRecord);
     try {
       // eslint-disable-next-line no-await-in-loop
       const { done } = await dataPromise;
@@ -2007,62 +2005,25 @@ async function executeStreamIterator(
   }
 }
 
-function yieldSubsequentPayloads(
+function getCompletedIncrementalResults(
   exeContext: ExecutionContext,
-): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void> {
-  let isDone = false;
-
-  async function race(): Promise<
-    IteratorResult<SubsequentIncrementalExecutionResult>
-  > {
-    if (exeContext.subsequentPayloads.size === 0) {
-      // async iterable resolver just finished and no more pending payloads
-      return {
-        value: {
-          hasNext: false,
-        },
-        done: false,
-      };
-    }
-
-    const asyncPayloadRecord: AsyncPayloadRecord = await new Promise(
-      (resolve) => {
-        exeContext.subsequentPayloads.forEach((payload) => {
-          const data = payload.getData();
-          if (isPromise(data)) {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            data.then(() => {
-              resolve(payload);
-            });
-          } else {
-            resolve(payload);
-          }
-        });
-      },
-    );
-
-    if (exeContext.subsequentPayloads.size === 0) {
-      // a different call to next has exhausted all payloads
-      return { value: undefined, done: true };
-    }
-    if (!exeContext.subsequentPayloads.has(asyncPayloadRecord)) {
-      // a different call to next has consumed this payload
-      return race();
-    }
-
-    exeContext.subsequentPayloads.delete(asyncPayloadRecord);
-
+): Array<IncrementalResult> {
+  const incrementalResults: Array<IncrementalResult> = [];
+  for (const asyncPayloadRecord of exeContext.subsequentPayloads) {
     const incrementalResult: IncrementalResult = {};
+    if (!asyncPayloadRecord.isCompleted) {
+      continue;
+    }
+    exeContext.subsequentPayloads.delete(asyncPayloadRecord);
     if (isStreamPayload(asyncPayloadRecord)) {
-      const items = await asyncPayloadRecord.items;
+      const items = asyncPayloadRecord.items;
       if (asyncPayloadRecord.isCompletedIterator) {
         // async iterable resolver just finished but there may be pending payloads
-        // return the next one
-        return race();
+        continue;
       }
       (incrementalResult as IncrementalStreamResult).items = items;
     } else {
-      const data = await asyncPayloadRecord.data;
+      const data = asyncPayloadRecord.data;
       (incrementalResult as IncrementalDeferResult).data = data ?? null;
     }
 
@@ -2075,11 +2036,45 @@ function yieldSubsequentPayloads(
     if (asyncPayloadRecord.errors.length > 0) {
       incrementalResult.errors = asyncPayloadRecord.errors;
     }
+    incrementalResults.push(incrementalResult);
+  }
+  return incrementalResults;
+}
+
+function yieldSubsequentPayloads(
+  exeContext: ExecutionContext,
+): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void> {
+  let isDone = false;
+
+  async function next(): Promise<
+    IteratorResult<SubsequentIncrementalExecutionResult, void>
+  > {
+    if (isDone) {
+      return { value: undefined, done: true };
+    }
+
+    await Promise.race(
+      Array.from(exeContext.subsequentPayloads).map((p) => p.promise),
+    );
+
+    if (isDone) {
+      // a different call to next has exhausted all payloads
+      return { value: undefined, done: true };
+    }
+
+    const incremental = getCompletedIncrementalResults(exeContext);
+    const hasNext = exeContext.subsequentPayloads.size > 0;
+
+    if (!incremental.length && hasNext) {
+      return next();
+    }
+
+    if (!hasNext) {
+      isDone = true;
+    }
+
     return {
-      value: {
-        incremental: [incrementalResult],
-        hasNext: exeContext.subsequentPayloads.size > 0,
-      },
+      value: incremental.length ? { incremental, hasNext } : { hasNext },
       done: false,
     };
   }
@@ -2101,12 +2096,7 @@ function yieldSubsequentPayloads(
     [Symbol.asyncIterator]() {
       return this;
     },
-    next: () => {
-      if (exeContext.subsequentPayloads.size === 0 || isDone) {
-        return Promise.resolve({ value: undefined, done: true });
-      }
-      return race();
-    },
+    next,
     async return(): Promise<
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > {
@@ -2129,31 +2119,44 @@ class DeferredFragmentRecord {
   errors: Array<GraphQLError>;
   label: string | undefined;
   path: Path | undefined;
-  data: PromiseOrValue<ObjMap<unknown> | null> | null;
+  promise: Promise<void>;
+  data: ObjMap<unknown> | null;
   parentContext: AsyncPayloadRecord | undefined;
+  isCompleted: boolean;
+  _exeContext: ExecutionContext;
+  _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
     parentContext: AsyncPayloadRecord | undefined;
+    exeContext: ExecutionContext;
   }) {
     this.type = 'defer';
-    this.data = null;
     this.label = opts.label;
     this.path = opts.path;
     this.parentContext = opts.parentContext;
     this.errors = [];
+    this._exeContext = opts.exeContext;
+    this._exeContext.subsequentPayloads.add(this);
+    this.isCompleted = false;
+    this.data = null;
+    this.promise = new Promise<ObjMap<unknown> | null>((resolve) => {
+      this._resolve = (promiseOrValue) => {
+        resolve(promiseOrValue);
+      };
+    }).then((data) => {
+      this.data = data;
+      this.isCompleted = true;
+    });
   }
 
   addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
-    this.data = data;
-  }
-
-  getData(): PromiseOrValue<ObjMap<unknown> | null> {
-    const parentData = this.parentContext?.getData();
+    const parentData = this.parentContext?.promise;
     if (parentData) {
-      return Promise.resolve<unknown>(parentData).then(() => this.data);
+      this._resolve?.(parentData.then(() => data));
+      return;
     }
-    return this.data;
+    this._resolve?.(data);
   }
 }
 
@@ -2162,15 +2165,20 @@ class StreamRecord {
   errors: Array<GraphQLError>;
   label: string | undefined;
   path: Path | undefined;
-  items: PromiseOrValue<Array<unknown> | null>;
+  items: Array<unknown> | null;
+  promise: Promise<void>;
   parentContext: AsyncPayloadRecord | undefined;
   iterator: AsyncIterator<unknown> | undefined;
   isCompletedIterator?: boolean;
+  isCompleted: boolean;
+  _exeContext: ExecutionContext;
+  _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
     iterator?: AsyncIterator<unknown>;
     parentContext: AsyncPayloadRecord | undefined;
+    exeContext: ExecutionContext;
   }) {
     this.type = 'stream';
     this.items = null;
@@ -2179,18 +2187,27 @@ class StreamRecord {
     this.parentContext = opts.parentContext;
     this.iterator = opts.iterator;
     this.errors = [];
+    this._exeContext = opts.exeContext;
+    this._exeContext.subsequentPayloads.add(this);
+    this.isCompleted = false;
+    this.items = null;
+    this.promise = new Promise<Array<unknown> | null>((resolve) => {
+      this._resolve = (promiseOrValue) => {
+        resolve(promiseOrValue);
+      };
+    }).then((items) => {
+      this.items = items;
+      this.isCompleted = true;
+    });
   }
 
   addItems(items: PromiseOrValue<Array<unknown> | null>) {
-    this.items = items;
-  }
-
-  getData(): PromiseOrValue<Array<unknown> | null> {
-    const parentData = this.parentContext?.getData();
+    const parentData = this.parentContext?.promise;
     if (parentData) {
-      return Promise.resolve<unknown>(parentData).then(() => this.items);
+      this._resolve?.(parentData.then(() => items));
+      return;
     }
-    return this.items;
+    this._resolve?.(items);
   }
 
   setIsCompletedIterator() {

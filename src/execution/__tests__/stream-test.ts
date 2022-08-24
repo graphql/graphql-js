@@ -1135,7 +1135,9 @@ describe('Execute: stream directive', () => {
       hasNext: true,
     });
 
-    const result2 = await iterator.next();
+    const result2Promise = iterator.next();
+    resolveIterableCompletion();
+    const result2 = await result2Promise;
     expectJSON(result2).toDeepEqual({
       value: {
         incremental: [
@@ -1144,18 +1146,6 @@ describe('Execute: stream directive', () => {
             path: ['friendList', 0],
             label: 'DeferName',
           },
-        ],
-        hasNext: true,
-      },
-      done: false,
-    });
-
-    const result3Promise = iterator.next();
-    resolveIterableCompletion();
-    const result3 = await result3Promise;
-    expectJSON(result3).toDeepEqual({
-      value: {
-        incremental: [
           {
             items: [{ id: '2' }],
             path: ['friendList', 1],
@@ -1166,10 +1156,11 @@ describe('Execute: stream directive', () => {
       },
       done: false,
     });
-    const result4Promise = iterator.next();
+
+    const result3Promise = iterator.next();
     resolveSlowField('Han');
-    const result4 = await result4Promise;
-    expectJSON(result4).toDeepEqual({
+    const result3 = await result3Promise;
+    expectJSON(result3).toDeepEqual({
       value: {
         incremental: [
           {
@@ -1182,8 +1173,8 @@ describe('Execute: stream directive', () => {
       },
       done: false,
     });
-    const result5 = await iterator.next();
-    expectJSON(result5).toDeepEqual({
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
       value: undefined,
       done: true,
     });
@@ -1230,7 +1221,9 @@ describe('Execute: stream directive', () => {
       hasNext: true,
     });
 
-    const result2 = await iterator.next();
+    const result2Promise = iterator.next();
+    resolveSlowField('Han');
+    const result2 = await result2Promise;
     expectJSON(result2).toDeepEqual({
       value: {
         incremental: [
@@ -1239,18 +1232,6 @@ describe('Execute: stream directive', () => {
             path: ['friendList', 0],
             label: 'DeferName',
           },
-        ],
-        hasNext: true,
-      },
-      done: false,
-    });
-
-    const result3Promise = iterator.next();
-    resolveSlowField('Han');
-    const result3 = await result3Promise;
-    expectJSON(result3).toDeepEqual({
-      value: {
-        incremental: [
           {
             items: [{ id: '2' }],
             path: ['friendList', 1],
@@ -1261,8 +1242,9 @@ describe('Execute: stream directive', () => {
       },
       done: false,
     });
-    const result4 = await iterator.next();
-    expectJSON(result4).toDeepEqual({
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
       value: {
         incremental: [
           {
@@ -1275,16 +1257,16 @@ describe('Execute: stream directive', () => {
       },
       done: false,
     });
-    const result5Promise = iterator.next();
+    const result4Promise = iterator.next();
     resolveIterableCompletion();
-    const result5 = await result5Promise;
-    expectJSON(result5).toDeepEqual({
+    const result4 = await result4Promise;
+    expectJSON(result4).toDeepEqual({
       value: { hasNext: false },
       done: false,
     });
 
-    const result6 = await iterator.next();
-    expectJSON(result6).toDeepEqual({
+    const result5 = await iterator.next();
+    expectJSON(result5).toDeepEqual({
       value: undefined,
       done: true,
     });
@@ -1341,22 +1323,8 @@ describe('Execute: stream directive', () => {
     });
     const returnPromise = iterator.return();
 
-    // these results had started processing before return was called
     const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
-      done: false,
-      value: {
-        incremental: [
-          {
-            data: { name: 'Luke' },
-            path: ['friendList', 0],
-          },
-        ],
-        hasNext: true,
-      },
-    });
-    const result3 = await iterator.next();
-    expectJSON(result3).toDeepEqual({
       done: true,
       value: undefined,
     });
@@ -1411,24 +1379,8 @@ describe('Execute: stream directive', () => {
 
     const returnPromise = iterator.return();
 
-    // this result had started processing before return was called
     const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
-      done: false,
-      value: {
-        incremental: [
-          {
-            items: [{ id: '2', name: 'Han' }],
-            path: ['friendList', 1],
-          },
-        ],
-        hasNext: true,
-      },
-    });
-
-    // third result is not returned because async iterator has returned
-    const result3 = await iterator.next();
-    expectJSON(result3).toDeepEqual({
       done: true,
       value: undefined,
     });
@@ -1486,24 +1438,8 @@ describe('Execute: stream directive', () => {
 
     const throwPromise = iterator.throw(new Error('bad'));
 
-    // these results had started processing before return was called
     const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
-      done: false,
-      value: {
-        incremental: [
-          {
-            data: { name: 'Luke' },
-            path: ['friendList', 0],
-          },
-        ],
-        hasNext: true,
-      },
-    });
-
-    // this result is not returned because async iterator has returned
-    const result3 = await iterator.next();
-    expectJSON(result3).toDeepEqual({
       done: true,
       value: undefined,
     });
