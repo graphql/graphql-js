@@ -3,21 +3,29 @@ export { pathToArray as responsePathAsArray } from '../jsutils/Path';
 export {
   createSourceEventStream,
   execute,
+  experimentalExecuteIncrementally,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
   subscribe,
+  experimentalSubscribeIncrementally,
 } from './execute';
 
 export type {
   ExecutionArgs,
   ExecutionResult,
-  FormattedExecutionResult,
-  SubsequentExecutionResult,
+  ExperimentalExecuteIncrementallyResults,
+  InitialIncrementalExecutionResult,
+  SubsequentIncrementalExecutionResult,
   IncrementalDeferResult,
   IncrementalStreamResult,
   IncrementalResult,
-  AsyncExecutionResult,
+  FormattedExecutionResult,
+  FormattedInitialIncrementalExecutionResult,
+  FormattedSubsequentIncrementalExecutionResult,
+  FormattedIncrementalDeferResult,
+  FormattedIncrementalStreamResult,
+  FormattedIncrementalResult,
 } from './execute';
 
 export {

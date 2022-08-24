@@ -4,15 +4,17 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../__testUtils__/expectJSON';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
-import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
-
 import { parse } from '../../language/parser';
 
 import { GraphQLObjectType } from '../../type/definition';
 import { GraphQLInt } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import { execute, executeSync } from '../execute';
+import {
+  execute,
+  executeSync,
+  experimentalExecuteIncrementally,
+} from '../execute';
 
 class NumberHolder {
   theNumber: number;
@@ -216,15 +218,16 @@ describe('Execute: Handles mutation execution ordering', () => {
     `);
 
     const rootValue = new Root(6);
-    const mutationResult = await execute({
+    const mutationResult = await experimentalExecuteIncrementally({
       schema,
       document,
       rootValue,
     });
     const patches = [];
 
-    assert(isAsyncIterable(mutationResult));
-    for await (const patch of mutationResult) {
+    assert('initialResult' in mutationResult);
+    patches.push(mutationResult.initialResult);
+    for await (const patch of mutationResult.subsequentResults) {
       patches.push(patch);
     }
 
@@ -291,15 +294,16 @@ describe('Execute: Handles mutation execution ordering', () => {
     `);
 
     const rootValue = new Root(6);
-    const mutationResult = await execute({
+    const mutationResult = await experimentalExecuteIncrementally({
       schema,
       document,
       rootValue,
     });
     const patches = [];
 
-    assert(isAsyncIterable(mutationResult));
-    for await (const patch of mutationResult) {
+    assert('initialResult' in mutationResult);
+    patches.push(mutationResult.initialResult);
+    for await (const patch of mutationResult.subsequentResults) {
       patches.push(patch);
     }
 

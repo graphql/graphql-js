@@ -1,9 +1,9 @@
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectPromise } from '../../__testUtils__/expectPromise';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
-
-import { isAsyncIterable } from '../../jsutils/isAsyncIterable';
 
 import type { DocumentNode } from '../../language/ast';
 import { parse } from '../../language/parser';
@@ -16,7 +16,11 @@ import {
 import { GraphQLID, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import { execute } from '../execute';
+import type {
+  InitialIncrementalExecutionResult,
+  SubsequentIncrementalExecutionResult,
+} from '../execute';
+import { execute, experimentalExecuteIncrementally } from '../execute';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -77,23 +81,25 @@ const query = new GraphQLObjectType({
   name: 'Query',
 });
 
-async function complete(document: DocumentNode) {
-  const schema = new GraphQLSchema({ query });
+const schema = new GraphQLSchema({ query });
 
-  const result = await execute({
+async function complete(document: DocumentNode) {
+  const result = await experimentalExecuteIncrementally({
     schema,
     document,
     rootValue: {},
   });
 
-  if (isAsyncIterable(result)) {
-    const results = [];
-    for await (const patch of result) {
+  if ('initialResult' in result) {
+    const results: Array<
+      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+    > = [result.initialResult];
+    for await (const patch of result.subsequentResults) {
       results.push(patch);
     }
     return results;
   }
-  return result;
+  return result.singleResult;
 }
 
 describe('Execute: defer directive', () => {
@@ -669,5 +675,47 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+  });
+
+  it('original execute function throws error if anything is deferred and everything else is sync', () => {
+    const doc = `
+    query Deferred {
+      ... @defer { hero { id } }
+    }
+  `;
+    expect(() =>
+      execute({
+        schema,
+        document: parse(doc),
+        rootValue: {},
+      }),
+    ).to.throw(
+      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
+    );
+  });
+
+  it('original execute function resolves to error if anything is deferred and something else is async', async () => {
+    const doc = `
+    query Deferred {
+      hero { slowField }
+      ... @defer { hero { id } }
+    }
+  `;
+    expectJSON(
+      await expectPromise(
+        execute({
+          schema,
+          document: parse(doc),
+          rootValue: {},
+        }),
+      ).toResolve(),
+    ).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
+        },
+      ],
+    });
   });
 });

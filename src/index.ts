@@ -319,6 +319,7 @@ export type {
 // Execute GraphQL queries.
 export {
   execute,
+  experimentalExecuteIncrementally,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
@@ -327,18 +328,25 @@ export {
   getVariableValues,
   getDirectiveValues,
   subscribe,
+  experimentalSubscribeIncrementally,
   createSourceEventStream,
 } from './execution/index';
 
 export type {
   ExecutionArgs,
   ExecutionResult,
-  FormattedExecutionResult,
-  SubsequentExecutionResult,
+  ExperimentalExecuteIncrementallyResults,
+  InitialIncrementalExecutionResult,
+  SubsequentIncrementalExecutionResult,
   IncrementalDeferResult,
   IncrementalStreamResult,
   IncrementalResult,
-  AsyncExecutionResult,
+  FormattedExecutionResult,
+  FormattedInitialIncrementalExecutionResult,
+  FormattedSubsequentIncrementalExecutionResult,
+  FormattedIncrementalDeferResult,
+  FormattedIncrementalStreamResult,
+  FormattedIncrementalResult,
 } from './execution/index';
 
 // Validate GraphQL documents.

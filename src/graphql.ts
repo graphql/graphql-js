@@ -1,4 +1,3 @@
-import { isAsyncIterable } from './jsutils/isAsyncIterable';
 import { isPromise } from './jsutils/isPromise';
 import type { Maybe } from './jsutils/Maybe';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
@@ -15,10 +14,7 @@ import { validateSchema } from './type/validate';
 
 import { validate } from './validation/validate';
 
-import type {
-  AsyncExecutionResult,
-  ExecutionResult,
-} from './execution/execute';
+import type { ExecutionResult } from './execution/execute';
 import { execute } from './execution/execute';
 
 /**
@@ -29,6 +25,8 @@ import { execute } from './execution/execute';
  * More sophisticated GraphQL servers, such as those which persist queries,
  * may wish to separate the validation and execution phases to a static time
  * tooling step, and a server runtime step.
+ *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
  *
  * Accepts either an object with named arguments, or individual arguments:
  *
@@ -71,9 +69,7 @@ export interface GraphQLArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 
-export function graphql(
-  args: GraphQLArgs,
-): Promise<ExecutionResult | AsyncGenerator<AsyncExecutionResult, void, void>> {
+export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
   // Always return a Promise for a consistent API.
   return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
@@ -88,18 +84,14 @@ export function graphqlSync(args: GraphQLArgs): ExecutionResult {
   const result = graphqlImpl(args);
 
   // Assert that the execution was synchronous.
-  if (isPromise(result) || isAsyncIterable(result)) {
+  if (isPromise(result)) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
   return result;
 }
 
-function graphqlImpl(
-  args: GraphQLArgs,
-): PromiseOrValue<
-  ExecutionResult | AsyncGenerator<AsyncExecutionResult, void, void>
-> {
+function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   const {
     schema,
     source,
