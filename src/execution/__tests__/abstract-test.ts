@@ -271,7 +271,7 @@ describe('Execute: Handles execution of abstract types', () => {
       errors: [
         {
           message:
-            'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
+            'Abstract type "Pet" must resolve to an Object type or an intermediate Interface type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
           locations: [{ line: 3, column: 9 }],
           path: ['pet'],
         },
@@ -610,7 +610,7 @@ describe('Execute: Handles execution of abstract types', () => {
     }
 
     expectError({ forTypeName: undefined }).toEqual(
-      'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
+      'Abstract type "Pet" must resolve to an Object type or an intermediate Interface type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
     );
 
     expectError({ forTypeName: 'Human' }).toEqual(
@@ -618,7 +618,7 @@ describe('Execute: Handles execution of abstract types', () => {
     );
 
     expectError({ forTypeName: 'String' }).toEqual(
-      'Abstract type "Pet" was resolved to a non-object type "String".',
+      'Abstract type "Pet" was resolved to a non-object and non-interface type "String".',
     );
 
     expectError({ forTypeName: '__Schema' }).toEqual(
@@ -629,7 +629,7 @@ describe('Execute: Handles execution of abstract types', () => {
     // @ts-expect-error
     assertInterfaceType(schema.getType('Pet')).resolveType = () => [];
     expectError({ forTypeName: undefined }).toEqual(
-      'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]".',
+      'Abstract type "Pet" must resolve to an Object type or an intermediate Interface type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]".',
     );
 
     // FIXME: workaround since we can't inject resolveType into SDL
@@ -638,6 +638,121 @@ describe('Execute: Handles execution of abstract types', () => {
       schema.getType('Cat');
     expectError({ forTypeName: undefined }).toEqual(
       'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
+    );
+  });
+
+  it('hierarchical resolveType with Interfaces yields useful error', () => {
+    const schema = buildSchema(`
+      type Query {
+        named: Named
+      }
+
+      interface Named {
+        name: String
+      }
+
+      interface Animal {
+        isFriendly: Boolean
+      }
+
+      interface Pet implements Named & Animal {
+        name: String
+        isFriendly: Boolean
+      }
+
+      type Cat implements Pet & Named & Animal {
+        name: String
+        isFriendly: Boolean
+      }
+
+      type Dog implements Pet & Named & Animal {
+        name: String
+        isFriendly: Boolean
+      }
+
+      type Person implements Named {
+        name: String
+      }
+    `);
+
+    const document = parse(`
+      {
+        named {
+          name
+        }
+      }
+    `);
+
+    function expectError() {
+      const rootValue = { named: {} };
+      const result = executeSync({ schema, document, rootValue });
+      return {
+        toEqual(message: string) {
+          expectJSON(result).toDeepEqual({
+            data: { named: null },
+            errors: [
+              {
+                message,
+                locations: [{ line: 3, column: 9 }],
+                path: ['named'],
+              },
+            ],
+          });
+        },
+      };
+    }
+
+    const namedType = assertInterfaceType(schema.getType('Named'));
+    // FIXME: workaround since we can't inject resolveType into SDL
+    namedType.resolveType = () => 'Animal';
+    expectError().toEqual(
+      'Interface type "Animal" is not a possible type for "Named".',
+    );
+
+    const petType = assertInterfaceType(schema.getType('Pet'));
+    // FIXME: workaround since we can't inject resolveType into SDL
+    namedType.resolveType = () => 'Pet';
+    petType.resolveType = () => 'Person';
+    expectError().toEqual(
+      'Runtime Object type "Person" is not a possible type for "Pet".',
+    );
+
+    // FIXME: workaround since we can't inject resolveType into SDL
+    namedType.resolveType = () => 'Pet';
+    petType.resolveType = () => undefined;
+    expectError().toEqual(
+      'Abstract type "Pet" must resolve to an Object type or an intermediate Interface type at runtime for field "Query.named". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
+    );
+
+    // FIXME: workaround since we can't inject resolveType into SDL
+    petType.resolveType = () => 'Human';
+    expectError().toEqual(
+      'Abstract type "Pet" was resolved to a type "Human" that does not exist inside the schema.',
+    );
+
+    // FIXME: workaround since we can't inject resolveType into SDL
+    petType.resolveType = () => 'String';
+    expectError().toEqual(
+      'Abstract type "Pet" was resolved to a non-object and non-interface type "String".',
+    );
+
+    // FIXME: workaround since we can't inject resolveType into SDL
+    petType.resolveType = () => '__Schema';
+    expectError().toEqual(
+      'Runtime Object type "__Schema" is not a possible type for "Pet".',
+    );
+
+    // FIXME: workaround since we can't inject resolveType into SDL
+    // @ts-expect-error
+    petType.resolveType = () => [];
+    expectError().toEqual(
+      'Abstract type "Pet" must resolve to an Object type or an intermediate Interface type at runtime for field "Query.named" with value {}, received "[]".',
+    );
+
+    // FIXME: workaround since we can't inject resolveType into SDL
+    petType.resolveType = () => 'Pet';
+    expectError().toEqual(
+      'Interface type "Pet" is not a possible type for "Pet".',
     );
   });
 });

@@ -39,6 +39,7 @@ import type {
 } from '../type/definition';
 import {
   isAbstractType,
+  isInterfaceType,
   isLeafType,
   isListType,
   isNonNullType,
@@ -861,28 +862,47 @@ function completeLeafValue(
  */
 function completeAbstractValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLAbstractType,
+  abstractType: GraphQLAbstractType,
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
 ): PromiseOrValue<ObjMap<unknown>> {
-  const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
+  const resolveTypeFn = abstractType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
-  const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
+  const possibleRuntimeTypeName = resolveTypeFn(
+    result,
+    contextValue,
+    info,
+    abstractType,
+  );
 
-  if (isPromise(runtimeType)) {
-    return runtimeType.then((resolvedRuntimeType) =>
-      completeObjectValue(
+  return completeAbstractValueImpl(
+    exeContext,
+    abstractType,
+    possibleRuntimeTypeName,
+    fieldNodes,
+    info,
+    path,
+    result,
+  );
+}
+
+function completeAbstractValueImpl(
+  exeContext: ExecutionContext,
+  abstractType: GraphQLAbstractType,
+  possibleRuntimeTypeName: PromiseOrValue<string | undefined>,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: Path,
+  result: unknown,
+): PromiseOrValue<ObjMap<unknown>> {
+  if (isPromise(possibleRuntimeTypeName)) {
+    return possibleRuntimeTypeName.then((resolved) =>
+      completeAbstractValueImpl(
         exeContext,
-        ensureValidRuntimeType(
-          resolvedRuntimeType,
-          exeContext,
-          returnType,
-          fieldNodes,
-          info,
-          result,
-        ),
+        abstractType,
+        resolved,
         fieldNodes,
         info,
         path,
@@ -891,76 +911,79 @@ function completeAbstractValue(
     );
   }
 
-  return completeObjectValue(
-    exeContext,
-    ensureValidRuntimeType(
-      runtimeType,
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      result,
-    ),
-    fieldNodes,
-    info,
-    path,
-    result,
-  );
-}
-
-function ensureValidRuntimeType(
-  runtimeTypeName: unknown,
-  exeContext: ExecutionContext,
-  returnType: GraphQLAbstractType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  info: GraphQLResolveInfo,
-  result: unknown,
-): GraphQLObjectType {
-  if (runtimeTypeName == null) {
+  if (possibleRuntimeTypeName == null) {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
+      `Abstract type "${abstractType.name}" must resolve to an Object type or an intermediate Interface type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${abstractType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
       { nodes: fieldNodes },
     );
   }
 
   // releases before 16.0.0 supported returning `GraphQLObjectType` from `resolveType`
   // TODO: remove in 17.0.0 release
-  if (isObjectType(runtimeTypeName)) {
+  if (isObjectType(possibleRuntimeTypeName)) {
     throw new GraphQLError(
       'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
     );
   }
 
-  if (typeof runtimeTypeName !== 'string') {
+  if (typeof possibleRuntimeTypeName !== 'string') {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` +
-        `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`,
+      `Abstract type "${abstractType.name}" must resolve to an Object type or an intermediate Interface type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` +
+        `value ${inspect(result)}, received "${inspect(
+          possibleRuntimeTypeName,
+        )}".`,
     );
   }
 
-  const runtimeType = exeContext.schema.getType(runtimeTypeName);
-  if (runtimeType == null) {
+  const possibleRuntimeType = exeContext.schema.getType(
+    possibleRuntimeTypeName,
+  );
+  if (possibleRuntimeType == null) {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
+      `Abstract type "${abstractType.name}" was resolved to a type "${possibleRuntimeTypeName}" that does not exist inside the schema.`,
       { nodes: fieldNodes },
     );
   }
 
-  if (!isObjectType(runtimeType)) {
+  if (isInterfaceType(possibleRuntimeType)) {
+    if (!exeContext.schema.isSubType(abstractType, possibleRuntimeType)) {
+      throw new GraphQLError(
+        `Interface type "${possibleRuntimeType.name}" is not a possible type for "${abstractType.name}".`,
+        { nodes: fieldNodes },
+      );
+    }
+
+    return completeAbstractValue(
+      exeContext,
+      possibleRuntimeType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
+  }
+
+  if (!isObjectType(possibleRuntimeType)) {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
+      `Abstract type "${abstractType.name}" was resolved to a non-object and non-interface type "${possibleRuntimeTypeName}".`,
       { nodes: fieldNodes },
     );
   }
 
-  if (!exeContext.schema.isSubType(returnType, runtimeType)) {
+  if (!exeContext.schema.isSubType(abstractType, possibleRuntimeType)) {
     throw new GraphQLError(
-      `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
+      `Runtime Object type "${possibleRuntimeType.name}" is not a possible type for "${abstractType.name}".`,
       { nodes: fieldNodes },
     );
   }
-
-  return runtimeType;
+  return completeObjectValue(
+    exeContext,
+    possibleRuntimeType,
+    fieldNodes,
+    info,
+    path,
+    result,
+  );
 }
 
 /**
