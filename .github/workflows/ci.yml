@@ -154,6 +154,25 @@ jobs:
       - name: Run Tests with coverage
         run: npm run testonly:cover
 
+  codeql:
+    name: Run CodeQL security scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: 'javascript, typescript'
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v2
+
   build-npm-dist:
     name: Build 'npmDist' artifact
     runs-on: ubuntu-latest
