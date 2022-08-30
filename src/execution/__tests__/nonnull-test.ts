@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue';
+
 import { parse } from '../../language/parser';
 
 import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
@@ -109,7 +111,7 @@ const schema = buildSchema(`
 function executeQuery(
   query: string,
   rootValue: unknown,
-): ExecutionResult | Promise<ExecutionResult> {
+): PromiseOrValue<ExecutionResult> {
   return execute({ schema, document: parse(query), rootValue });
 }
 

@@ -16,5 +16,6 @@ module.exports = {
       items: ['tutorials/constructing-types'],
     },
     'tutorials/express-graphql',
+    'tutorials/defer-stream',
   ],
 };
