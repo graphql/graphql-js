@@ -6,6 +6,14 @@ import type {
 } from '../language/ast';
 import type { GraphQLObjectType } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
+export interface PatchFields {
+  label: string | undefined;
+  fields: Map<string, ReadonlyArray<FieldNode>>;
+}
+export interface FieldsAndPatches {
+  fields: Map<string, ReadonlyArray<FieldNode>>;
+  patches: Array<PatchFields>;
+}
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -23,7 +31,7 @@ export declare function collectFields(
   },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-): Map<string, ReadonlyArray<FieldNode>>;
+): FieldsAndPatches;
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
  * in fields, and returns them at the end.
@@ -42,4 +50,4 @@ export declare function collectSubfields(
   },
   returnType: GraphQLObjectType,
   fieldNodes: ReadonlyArray<FieldNode>,
-): Map<string, ReadonlyArray<FieldNode>>;
+): FieldsAndPatches;

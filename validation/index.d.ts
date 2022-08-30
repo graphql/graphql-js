@@ -2,6 +2,8 @@ export { validate } from './validate';
 export { ValidationContext } from './ValidationContext';
 export type { ValidationRule } from './ValidationContext';
 export { specifiedRules } from './specifiedRules';
+export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule';
+export { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule';
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
 export { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule';
 export { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule';
@@ -19,6 +21,7 @@ export { PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreadsRule
 export { ProvidedRequiredArgumentsRule } from './rules/ProvidedRequiredArgumentsRule';
 export { ScalarLeafsRule } from './rules/ScalarLeafsRule';
 export { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule';
+export { StreamDirectiveOnListFieldRule } from './rules/StreamDirectiveOnListFieldRule';
 export { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule';
 export { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocationRule';
 export { UniqueFragmentNamesRule } from './rules/UniqueFragmentNamesRule';

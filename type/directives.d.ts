@@ -65,6 +65,14 @@ export declare const GraphQLIncludeDirective: GraphQLDirective;
  */
 export declare const GraphQLSkipDirective: GraphQLDirective;
 /**
+ * Used to conditionally defer fragments.
+ */
+export declare const GraphQLDeferDirective: GraphQLDirective;
+/**
+ * Used to conditionally stream list fields.
+ */
+export declare const GraphQLStreamDirective: GraphQLDirective;
+/**
  * Constant string used for default reason for a deprecation.
  */
 export declare const DEFAULT_DEPRECATION_REASON = 'No longer supported';

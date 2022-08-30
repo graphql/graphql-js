@@ -56,13 +56,16 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
+  subsequentPayloads: Set<AsyncPayloadRecord>;
 }
 /**
  * The result of GraphQL execution.
  *
  *   - `errors` is included when any errors occurred as a non-empty array.
  *   - `data` is the result of a successful execution of the query.
+ *   - `hasNext` is true if a future payload is expected.
  *   - `extensions` is reserved for adding non-standard properties.
+ *   - `incremental` is a list of the results from defer/stream directives.
  */
 export interface ExecutionResult<
   TData = ObjMap<unknown>,
@@ -80,6 +83,99 @@ export interface FormattedExecutionResult<
   data?: TData | null;
   extensions?: TExtensions;
 }
+export declare type ExperimentalExecuteIncrementallyResults<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> =
+  | {
+      singleResult: ExecutionResult<TData, TExtensions>;
+    }
+  | {
+      initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
+      subsequentResults: AsyncGenerator<
+        SubsequentIncrementalExecutionResult<TData, TExtensions>,
+        void,
+        void
+      >;
+    };
+export interface InitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends ExecutionResult<TData, TExtensions> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
+}
+export interface FormattedInitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends FormattedExecutionResult<TData, TExtensions> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
+}
+export interface SubsequentIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
+}
+export interface FormattedSubsequentIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
+}
+export interface IncrementalDeferResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends ExecutionResult<TData, TExtensions> {
+  path?: ReadonlyArray<string | number>;
+  label?: string;
+}
+export interface FormattedIncrementalDeferResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends FormattedExecutionResult<TData, TExtensions> {
+  path?: ReadonlyArray<string | number>;
+  label?: string;
+}
+export interface IncrementalStreamResult<
+  TData = Array<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  items?: TData | null;
+  path?: ReadonlyArray<string | number>;
+  label?: string;
+  extensions?: TExtensions;
+}
+export interface FormattedIncrementalStreamResult<
+  TData = Array<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+  items?: TData | null;
+  path?: ReadonlyArray<string | number>;
+  label?: string;
+  extensions?: TExtensions;
+}
+export declare type IncrementalResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> =
+  | IncrementalDeferResult<TData, TExtensions>
+  | IncrementalStreamResult<TData, TExtensions>;
+export declare type FormattedIncrementalResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> =
+  | FormattedIncrementalDeferResult<TData, TExtensions>
+  | FormattedIncrementalStreamResult<TData, TExtensions>;
 export interface ExecutionArgs {
   schema: GraphQLSchema;
   document: DocumentNode;
@@ -102,10 +198,31 @@ export interface ExecutionArgs {
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
+ *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
+ * If an operation which would defer or stream data is executed with this
+ * function, it will throw or resolve to an object containing an error instead.
+ * Use `experimentalExecuteIncrementally` if you want to support incremental
+ * delivery.
  */
 export declare function execute(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult>;
+/**
+ * Implements the "Executing requests" section of the GraphQL specification,
+ * including `@defer` and `@stream` as proposed in
+ * https://github.com/graphql/graphql-spec/pull/742
+ *
+ * This function returns a Promise of an ExperimentalExecuteIncrementallyResults
+ * object. This object either contains a single ExecutionResult as
+ * `singleResult`, or an `initialResult` and a stream of `subsequentResults`.
+ *
+ * If the arguments to this function do not result in a legal execution context,
+ * a GraphQLError will be thrown immediately explaining the invalid input.
+ */
+export declare function experimentalExecuteIncrementally(
+  args: ExecutionArgs,
+): PromiseOrValue<ExperimentalExecuteIncrementallyResults>;
 /**
  * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
@@ -165,22 +282,75 @@ export declare const defaultFieldResolver: GraphQLFieldResolver<
  * is not an async iterable.
  *
  * If the client-provided arguments to this function do not result in a
- * compliant subscription, a GraphQL Response (ExecutionResult) with
- * descriptive errors and no data will be returned.
+ * compliant subscription, a GraphQL Response (ExecutionResult) with descriptive
+ * errors and no data will be returned.
  *
- * If the source stream could not be created due to faulty subscription
- * resolver logic or underlying systems, the promise will resolve to a single
+ * If the source stream could not be created due to faulty subscription resolver
+ * logic or underlying systems, the promise will resolve to a single
  * ExecutionResult containing `errors` and no `data`.
  *
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
- * Accepts either an object with named arguments, or individual arguments.
+ * This function does not support incremental delivery (`@defer` and `@stream`).
+ * If an operation which would defer or stream data is executed with this
+ * function, each `InitialIncrementalExecutionResult` and
+ * `SubsequentIncrementalExecutionResult` in the result stream will be replaced
+ * with an `ExecutionResult` with a single error stating that defer/stream is
+ * not supported.  Use `experimentalSubscribeIncrementally` if you want to
+ * support incremental delivery.
+ *
+ * Accepts an object with named arguments.
  */
 export declare function subscribe(
   args: ExecutionArgs,
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+>;
+/**
+ * Implements the "Subscribe" algorithm described in the GraphQL specification,
+ * including `@defer` and `@stream` as proposed in
+ * https://github.com/graphql/graphql-spec/pull/742
+ *
+ * Returns a Promise which resolves to either an AsyncIterator (if successful)
+ * or an ExecutionResult (error). The promise will be rejected if the schema or
+ * other arguments to this function are invalid, or if the resolved event stream
+ * is not an async iterable.
+ *
+ * If the client-provided arguments to this function do not result in a
+ * compliant subscription, a GraphQL Response (ExecutionResult) with descriptive
+ * errors and no data will be returned.
+ *
+ * If the source stream could not be created due to faulty subscription resolver
+ * logic or underlying systems, the promise will resolve to a single
+ * ExecutionResult containing `errors` and no `data`.
+ *
+ * If the operation succeeded, the promise resolves to an AsyncIterator, which
+ * yields a stream of result representing the response stream.
+ *
+ * Each result may be an ExecutionResult with no `hasNext` (if executing the
+ * event did not use `@defer` or `@stream`), or an
+ * `InitialIncrementalExecutionResult` or `SubsequentIncrementalExecutionResult`
+ * (if executing the event used `@defer` or `@stream`). In the case of
+ * incremental execution results, each event produces a single
+ * `InitialIncrementalExecutionResult` followed by one or more
+ * `SubsequentIncrementalExecutionResult`s; all but the last have `hasNext: true`,
+ * and the last has `hasNext: false`. There is no interleaving between results
+ * generated from the same original event.
+ *
+ * Accepts an object with named arguments.
+ */
+export declare function experimentalSubscribeIncrementally(
+  args: ExecutionArgs,
+): PromiseOrValue<
+  | AsyncGenerator<
+      | ExecutionResult
+      | InitialIncrementalExecutionResult
+      | SubsequentIncrementalExecutionResult,
+      void,
+      void
+    >
+  | ExecutionResult
 >;
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
@@ -213,3 +383,47 @@ export declare function subscribe(
 export declare function createSourceEventStream(
   args: ExecutionArgs,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
+declare class DeferredFragmentRecord {
+  type: 'defer';
+  errors: Array<GraphQLError>;
+  label: string | undefined;
+  path: Path | undefined;
+  promise: Promise<void>;
+  data: ObjMap<unknown> | null;
+  parentContext: AsyncPayloadRecord | undefined;
+  isCompleted: boolean;
+  _exeContext: ExecutionContext;
+  _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
+  constructor(opts: {
+    label: string | undefined;
+    path: Path | undefined;
+    parentContext: AsyncPayloadRecord | undefined;
+    exeContext: ExecutionContext;
+  });
+  addData(data: PromiseOrValue<ObjMap<unknown> | null>): void;
+}
+declare class StreamRecord {
+  type: 'stream';
+  errors: Array<GraphQLError>;
+  label: string | undefined;
+  path: Path | undefined;
+  items: Array<unknown> | null;
+  promise: Promise<void>;
+  parentContext: AsyncPayloadRecord | undefined;
+  iterator: AsyncIterator<unknown> | undefined;
+  isCompletedIterator?: boolean;
+  isCompleted: boolean;
+  _exeContext: ExecutionContext;
+  _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
+  constructor(opts: {
+    label: string | undefined;
+    path: Path | undefined;
+    iterator?: AsyncIterator<unknown>;
+    parentContext: AsyncPayloadRecord | undefined;
+    exeContext: ExecutionContext;
+  });
+  addItems(items: PromiseOrValue<Array<unknown> | null>): void;
+  setIsCompletedIterator(): void;
+}
+declare type AsyncPayloadRecord = DeferredFragmentRecord | StreamRecord;
+export {};

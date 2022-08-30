@@ -52,6 +52,8 @@ export {
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLDeferDirective,
+  GraphQLStreamDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
   TypeKind,
@@ -283,6 +285,7 @@ export type {
 } from './language/index';
 export {
   execute,
+  experimentalExecuteIncrementally,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
@@ -291,12 +294,24 @@ export {
   getVariableValues,
   getDirectiveValues,
   subscribe,
+  experimentalSubscribeIncrementally,
   createSourceEventStream,
 } from './execution/index';
 export type {
   ExecutionArgs,
   ExecutionResult,
+  ExperimentalExecuteIncrementallyResults,
+  InitialIncrementalExecutionResult,
+  SubsequentIncrementalExecutionResult,
+  IncrementalDeferResult,
+  IncrementalStreamResult,
+  IncrementalResult,
   FormattedExecutionResult,
+  FormattedInitialIncrementalExecutionResult,
+  FormattedSubsequentIncrementalExecutionResult,
+  FormattedIncrementalDeferResult,
+  FormattedIncrementalStreamResult,
+  FormattedIncrementalResult,
 } from './execution/index';
 export {
   validate,
