@@ -3,6 +3,7 @@ import type { Maybe } from '../../jsutils/Maybe.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type {
+  DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
   ObjectValueNode,
@@ -559,6 +560,16 @@ function findConflict(
       ];
     }
   }
+  // FIXME https://github.com/graphql/graphql-js/issues/2203
+  const directives1 = /* c8 ignore next */ node1.directives ?? [];
+  const directives2 = /* c8 ignore next */ node2.directives ?? [];
+  if (!sameStreams(directives1, directives2)) {
+    return [
+      [responseName, 'they have differing stream directives'],
+      [node1],
+      [node2],
+    ];
+  }
   // The return type for each field.
   const type1 = def1?.type;
   const type2 = def2?.type;
@@ -593,7 +604,7 @@ function findConflict(
     return subfieldConflicts(conflicts, responseName, node1, node2);
   }
 }
-function stringifyArguments(fieldNode: FieldNode): string {
+function stringifyArguments(fieldNode: FieldNode | DirectiveNode): string {
   // FIXME https://github.com/graphql/graphql-js/issues/2203
   const args = /* c8 ignore next */ fieldNode.arguments ?? [];
   const inputObjectWithArgs: ObjectValueNode = {
@@ -605,6 +616,27 @@ function stringifyArguments(fieldNode: FieldNode): string {
     })),
   };
   return print(sortValueNode(inputObjectWithArgs));
+}
+function getStreamDirective(
+  directives: ReadonlyArray<DirectiveNode>,
+): DirectiveNode | undefined {
+  return directives.find((directive) => directive.name.value === 'stream');
+}
+function sameStreams(
+  directives1: ReadonlyArray<DirectiveNode>,
+  directives2: ReadonlyArray<DirectiveNode>,
+): boolean {
+  const stream1 = getStreamDirective(directives1);
+  const stream2 = getStreamDirective(directives2);
+  if (!stream1 && !stream2) {
+    // both fields do not have streams
+    return true;
+  } else if (stream1 && stream2) {
+    // check if both fields have equivalent streams
+    return stringifyArguments(stream1) === stringifyArguments(stream2);
+  }
+  // fields have a mix of stream and no stream
+  return false;
 }
 // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared

@@ -21,6 +21,8 @@ import { execute } from './execution/execute.ts';
  * may wish to separate the validation and execution phases to a static time
  * tooling step, and a server runtime step.
  *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
+ *
  * Accepts either an object with named arguments, or individual arguments:
  *
  * schema:

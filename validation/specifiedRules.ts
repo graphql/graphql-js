@@ -1,3 +1,7 @@
+// Spec Section: "Defer And Stream Directive Labels Are Unique"
+import { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.ts';
+// Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
+import { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.ts';
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.ts';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
@@ -41,6 +45,8 @@ import {
 import { ScalarLeafsRule } from './rules/ScalarLeafsRule.ts';
 // Spec Section: "Subscriptions with Single Root Field"
 import { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule.ts';
+// Spec Section: "Stream Directives Are Used On List Fields"
+import { StreamDirectiveOnListFieldRule } from './rules/StreamDirectiveOnListFieldRule.ts';
 import { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule.ts';
 // Spec Section: "Argument Uniqueness"
 import { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule.ts';
@@ -92,6 +98,9 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   NoUnusedVariablesRule,
   KnownDirectivesRule,
   UniqueDirectivesPerLocationRule,
+  DeferStreamDirectiveOnRootFieldRule,
+  DeferStreamDirectiveLabelRule,
+  StreamDirectiveOnListFieldRule,
   KnownArgumentNamesRule,
   UniqueArgumentNamesRule,
   ValuesOfCorrectTypeRule,
