@@ -29,6 +29,14 @@ export interface GraphQLErrorOptions {
   extensions?: Maybe<GraphQLErrorExtensions>;
 }
 
+const isGraphQLErrorSymbol = Symbol.for('GraphQLError');
+
+export function isGraphQLError(error: unknown): error is GraphQLError {
+  return (
+    typeof error === 'object' && error != null && isGraphQLErrorSymbol in error
+  );
+}
+
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -36,6 +44,7 @@ export interface GraphQLErrorOptions {
  * GraphQL document and/or execution result that correspond to the Error.
  */
 export class GraphQLError extends Error {
+  readonly [isGraphQLErrorSymbol]: true = true;
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
    * which correspond to this error.

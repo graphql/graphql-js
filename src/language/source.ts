@@ -1,10 +1,11 @@
 import { devAssert } from '../jsutils/devAssert';
-import { instanceOf } from '../jsutils/instanceOf';
 
 interface Location {
   line: number;
   column: number;
 }
+
+const isSourceSymbol = Symbol.for('Source');
 
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -14,6 +15,7 @@ interface Location {
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 export class Source {
+  readonly [isSourceSymbol]: true = true;
   body: string;
   name: string;
   locationOffset: Location;
@@ -47,5 +49,7 @@ export class Source {
  * @internal
  */
 export function isSource(source: unknown): source is Source {
-  return instanceOf(source, Source);
+  return (
+    typeof source === 'object' && source != null && isSourceSymbol in source
+  );
 }

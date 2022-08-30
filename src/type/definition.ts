@@ -2,7 +2,6 @@ import { devAssert } from '../jsutils/devAssert';
 import { didYouMean } from '../jsutils/didYouMean';
 import { identityFunc } from '../jsutils/identityFunc';
 import { inspect } from '../jsutils/inspect';
-import { instanceOf } from '../jsutils/instanceOf';
 import { keyMap } from '../jsutils/keyMap';
 import { keyValMap } from '../jsutils/keyValMap';
 import { mapValue } from '../jsutils/mapValue';
@@ -71,11 +70,17 @@ export function assertType(type: unknown): GraphQLType {
   return type;
 }
 
+const isGraphQLScalarTypeSymbol = Symbol.for('GraphQLScalarType');
+
 /**
  * There are predicates for each kind of GraphQL type.
  */
 export function isScalarType(type: unknown): type is GraphQLScalarType {
-  return instanceOf(type, GraphQLScalarType);
+  return (
+    typeof type === 'object' &&
+    type != null &&
+    isGraphQLScalarTypeSymbol in type
+  );
 }
 
 export function assertScalarType(type: unknown): GraphQLScalarType {
@@ -85,8 +90,14 @@ export function assertScalarType(type: unknown): GraphQLScalarType {
   return type;
 }
 
+const isGraphQLObjectTypeSymbol = Symbol.for('GraphQLObjectType');
+
 export function isObjectType(type: unknown): type is GraphQLObjectType {
-  return instanceOf(type, GraphQLObjectType);
+  return (
+    typeof type === 'object' &&
+    type != null &&
+    isGraphQLObjectTypeSymbol in type
+  );
 }
 
 export function assertObjectType(type: unknown): GraphQLObjectType {
@@ -96,8 +107,14 @@ export function assertObjectType(type: unknown): GraphQLObjectType {
   return type;
 }
 
+const isGraphQLInterfaceTypeSymbol = Symbol.for('GraphQLInterfaceType');
+
 export function isInterfaceType(type: unknown): type is GraphQLInterfaceType {
-  return instanceOf(type, GraphQLInterfaceType);
+  return (
+    typeof type === 'object' &&
+    type != null &&
+    isGraphQLInterfaceTypeSymbol in type
+  );
 }
 
 export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
@@ -109,8 +126,12 @@ export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
   return type;
 }
 
+const isGraphQLUnionTypeSymbol = Symbol.for('GraphQLUnionType');
+
 export function isUnionType(type: unknown): type is GraphQLUnionType {
-  return instanceOf(type, GraphQLUnionType);
+  return (
+    typeof type === 'object' && type != null && isGraphQLUnionTypeSymbol in type
+  );
 }
 
 export function assertUnionType(type: unknown): GraphQLUnionType {
@@ -120,8 +141,12 @@ export function assertUnionType(type: unknown): GraphQLUnionType {
   return type;
 }
 
+const isGraphQLEnumTypeSymbol = Symbol.for('GraphQLEnumType');
+
 export function isEnumType(type: unknown): type is GraphQLEnumType {
-  return instanceOf(type, GraphQLEnumType);
+  return (
+    typeof type === 'object' && type != null && isGraphQLEnumTypeSymbol in type
+  );
 }
 
 export function assertEnumType(type: unknown): GraphQLEnumType {
@@ -131,10 +156,16 @@ export function assertEnumType(type: unknown): GraphQLEnumType {
   return type;
 }
 
+const isGraphQLInputObjectTypeSymbol = Symbol.for('GraphQLInputObjectType');
+
 export function isInputObjectType(
   type: unknown,
 ): type is GraphQLInputObjectType {
-  return instanceOf(type, GraphQLInputObjectType);
+  return (
+    typeof type === 'object' &&
+    type != null &&
+    isGraphQLInputObjectTypeSymbol in type
+  );
 }
 
 export function assertInputObjectType(type: unknown): GraphQLInputObjectType {
@@ -146,6 +177,8 @@ export function assertInputObjectType(type: unknown): GraphQLInputObjectType {
   return type;
 }
 
+const isGraphQLListTypeSymbol = Symbol.for('GraphQLListType');
+
 export function isListType(
   type: GraphQLInputType,
 ): type is GraphQLList<GraphQLInputType>;
@@ -154,7 +187,9 @@ export function isListType(
 ): type is GraphQLList<GraphQLOutputType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType> {
-  return instanceOf(type, GraphQLList);
+  return (
+    typeof type === 'object' && type != null && isGraphQLListTypeSymbol in type
+  );
 }
 
 export function assertListType(type: unknown): GraphQLList<GraphQLType> {
@@ -163,6 +198,8 @@ export function assertListType(type: unknown): GraphQLList<GraphQLType> {
   }
   return type;
 }
+
+const isGraphQLNonNullTypeSymbol = Symbol.for('GraphQLNonNullType');
 
 export function isNonNullType(
   type: GraphQLInputType,
@@ -176,7 +213,11 @@ export function isNonNullType(
 export function isNonNullType(
   type: unknown,
 ): type is GraphQLNonNull<GraphQLNullableType> {
-  return instanceOf(type, GraphQLNonNull);
+  return (
+    typeof type === 'object' &&
+    type != null &&
+    isGraphQLNonNullTypeSymbol in type
+  );
 }
 
 export function assertNonNullType(
@@ -317,6 +358,7 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * ```
  */
 export class GraphQLList<T extends GraphQLType> {
+  readonly [isGraphQLListTypeSymbol]: true = true;
   readonly ofType: T;
 
   constructor(ofType: T) {
@@ -358,6 +400,7 @@ export class GraphQLList<T extends GraphQLType> {
  * Note: the enforcement of non-nullability occurs within the executor.
  */
 export class GraphQLNonNull<T extends GraphQLNullableType> {
+  readonly [isGraphQLNonNullTypeSymbol]: true = true;
   readonly ofType: T;
 
   constructor(ofType: T) {
@@ -543,6 +586,7 @@ export interface GraphQLScalarTypeExtensions {
  * ```
  */
 export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
+  readonly [isGraphQLScalarTypeSymbol]: true = true;
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
@@ -701,6 +745,7 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * ```
  */
 export class GraphQLObjectType<TSource = any, TContext = any> {
+  readonly [isGraphQLObjectTypeSymbol]: true = true;
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
@@ -1021,6 +1066,7 @@ export interface GraphQLInterfaceTypeExtensions {
  * ```
  */
 export class GraphQLInterfaceType {
+  readonly [isGraphQLInterfaceTypeSymbol]: true = true;
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1145,6 +1191,7 @@ export interface GraphQLUnionTypeExtensions {
  * ```
  */
 export class GraphQLUnionType {
+  readonly [isGraphQLUnionTypeSymbol]: true = true;
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1262,6 +1309,7 @@ export interface GraphQLEnumTypeExtensions {
  * will be used as its internal value.
  */
 export class GraphQLEnumType /* <T> */ {
+  readonly [isGraphQLEnumTypeSymbol]: true = true;
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
@@ -1486,6 +1534,7 @@ export interface GraphQLInputObjectTypeExtensions {
  * ```
  */
 export class GraphQLInputObjectType {
+  readonly [isGraphQLInputObjectTypeSymbol]: true = true;
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;

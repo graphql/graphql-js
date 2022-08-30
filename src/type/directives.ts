@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect';
-import { instanceOf } from '../jsutils/instanceOf';
 import type { Maybe } from '../jsutils/Maybe';
 import { toObjMap } from '../jsutils/toObjMap';
 
@@ -22,7 +21,11 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars';
  * Test if the given value is a GraphQL directive.
  */
 export function isDirective(directive: unknown): directive is GraphQLDirective {
-  return instanceOf(directive, GraphQLDirective);
+  return (
+    typeof directive === 'object' &&
+    directive != null &&
+    isGraphQLDirectiveSymbol in directive
+  );
 }
 
 export function assertDirective(directive: unknown): GraphQLDirective {
@@ -47,11 +50,14 @@ export interface GraphQLDirectiveExtensions {
   [attributeName: string]: unknown;
 }
 
+const isGraphQLDirectiveSymbol = Symbol.for('GraphQLDirective');
+
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
 export class GraphQLDirective {
+  readonly [isGraphQLDirectiveSymbol]: true = true;
   name: string;
   description: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;

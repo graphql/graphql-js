@@ -3,7 +3,7 @@ import { inspect } from '../../jsutils/inspect';
 import { keyMap } from '../../jsutils/keyMap';
 import { suggestionList } from '../../jsutils/suggestionList';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError, isGraphQLError } from '../../error/GraphQLError';
 
 import type { ValueNode } from '../../language/ast';
 import { print } from '../../language/printer';
@@ -138,7 +138,7 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     }
   } catch (error) {
     const typeStr = inspect(locationType);
-    if (error instanceof GraphQLError) {
+    if (isGraphQLError(error)) {
       context.reportError(error);
     } else {
       context.reportError(

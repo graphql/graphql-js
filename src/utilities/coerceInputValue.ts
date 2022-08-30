@@ -8,7 +8,7 @@ import { addPath, pathToArray } from '../jsutils/Path';
 import { printPathArray } from '../jsutils/printPathArray';
 import { suggestionList } from '../jsutils/suggestionList';
 
-import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError, isGraphQLError } from '../error/GraphQLError';
 
 import type { GraphQLInputType } from '../type/definition';
 import {
@@ -154,7 +154,7 @@ function coerceInputValueImpl(
     try {
       parseResult = type.parseValue(inputValue);
     } catch (error) {
-      if (error instanceof GraphQLError) {
+      if (isGraphQLError(error)) {
         onError(pathToArray(path), inputValue, error);
       } else {
         onError(
