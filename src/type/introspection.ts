@@ -1,5 +1,6 @@
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
+import type { ValueTypes } from '../jsutils/ValueTypes';
 
 import { DirectiveLocation } from '../language/directiveLocation';
 import { print } from '../language/printer';
@@ -435,16 +436,19 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
     } as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>),
 });
 
-export enum TypeKind {
-  SCALAR = 'SCALAR',
-  OBJECT = 'OBJECT',
-  INTERFACE = 'INTERFACE',
-  UNION = 'UNION',
-  ENUM = 'ENUM',
-  INPUT_OBJECT = 'INPUT_OBJECT',
-  LIST = 'LIST',
-  NON_NULL = 'NON_NULL',
-}
+export const TypeKind = Object.freeze({
+  SCALAR: 'SCALAR',
+  OBJECT: 'OBJECT',
+  INTERFACE: 'INTERFACE',
+  UNION: 'UNION',
+  ENUM: 'ENUM',
+  INPUT_OBJECT: 'INPUT_OBJECT',
+  LIST: 'LIST',
+  NON_NULL: 'NON_NULL',
+} as const);
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type TypeKind = ValueTypes<typeof TypeKind>;
 
 export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   name: '__TypeKind',
