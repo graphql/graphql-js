@@ -58,7 +58,21 @@ const query = new GraphQLObjectType({
           scalarField: {
             type: GraphQLString,
           },
+          nonNullScalarField: {
+            type: new GraphQLNonNull(GraphQLString),
+          },
           nestedFriendList: { type: new GraphQLList(friendType) },
+          deeperNestedObject: {
+            type: new GraphQLObjectType({
+              name: 'DeeperNestedObject',
+              fields: {
+                nonNullScalarField: {
+                  type: new GraphQLNonNull(GraphQLString),
+                },
+                deeperNestedFriendList: { type: new GraphQLList(friendType) },
+              },
+            }),
+          },
         },
       }),
     },
@@ -765,9 +779,15 @@ describe('Execute: stream directive', () => {
     `);
     const result = await complete(document, {
       async *nonNullFriendList() {
-        yield await Promise.resolve(friends[0]);
-        yield await Promise.resolve(null);
-        yield await Promise.resolve(friends[1]);
+        try {
+          yield await Promise.resolve(friends[0]);
+          yield await Promise.resolve(null); /* c8 ignore start */
+          // Not reachable, early return
+        } finally {
+          /* c8 ignore stop */
+          // eslint-disable-next-line no-unsafe-finally
+          throw new Error('Oops');
+        }
       },
     });
     expectJSON(result).toDeepEqual([
@@ -792,18 +812,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ name: 'Han' }],
-            path: ['nonNullFriendList', 2],
-          },
-        ],
-        hasNext: true,
-      },
-      {
         hasNext: false,
       },
     ]);
@@ -886,15 +894,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ nonNullName: 'Han' }],
-            path: ['nonNullFriendList', 2],
-          },
-        ],
         hasNext: false,
       },
     ]);
@@ -952,6 +951,302 @@ describe('Execute: stream directive', () => {
         hasNext: false,
       },
     ]);
+  });
+  it('Filters payloads that are nulled', async () => {
+    const document = parse(`
+      query { 
+        nestedObject {
+          nonNullScalarField
+          nestedFriendList @stream(initialCount: 0) {
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedObject: {
+        nonNullScalarField: () => Promise.resolve(null),
+        async *nestedFriendList() {
+          yield await Promise.resolve(friends[0]);
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
+          locations: [{ line: 4, column: 11 }],
+          path: ['nestedObject', 'nonNullScalarField'],
+        },
+      ],
+      data: {
+        nestedObject: null,
+      },
+    });
+  });
+  it('Does not filter payloads when null error is in a different path', async () => {
+    const document = parse(`
+      query { 
+        otherNestedObject: nestedObject {
+          ... @defer {
+            scalarField
+          }
+        }
+        nestedObject {
+          nestedFriendList @stream(initialCount: 0) {
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedObject: {
+        scalarField: () => Promise.reject(new Error('Oops')),
+        async *nestedFriendList() {
+          yield await Promise.resolve(friends[0]);
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          otherNestedObject: {},
+          nestedObject: { nestedFriendList: [] },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { scalarField: null },
+            path: ['otherNestedObject'],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 5, column: 13 }],
+                path: ['otherNestedObject', 'scalarField'],
+              },
+            ],
+          },
+          {
+            items: [{ name: 'Luke' }],
+            path: ['nestedObject', 'nestedFriendList', 0],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Filters stream payloads that are nulled in a deferred payload', async () => {
+    const document = parse(`
+      query { 
+        nestedObject {
+          ... @defer {
+            deeperNestedObject {
+              nonNullScalarField
+              deeperNestedFriendList @stream(initialCount: 0) {
+                name
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedObject: {
+        deeperNestedObject: {
+          nonNullScalarField: () => Promise.resolve(null),
+          async *deeperNestedFriendList() {
+            yield await Promise.resolve(friends[0]);
+          },
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nestedObject: {},
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              deeperNestedObject: null,
+            },
+            path: ['nestedObject'],
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field DeeperNestedObject.nonNullScalarField.',
+                locations: [{ line: 6, column: 15 }],
+                path: [
+                  'nestedObject',
+                  'deeperNestedObject',
+                  'nonNullScalarField',
+                ],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Filters defer payloads that are nulled in a stream response', async () => {
+    const document = parse(`
+    query { 
+      friendList @stream(initialCount: 0) {
+        nonNullName
+        ... @defer {
+          name
+        }
+      }
+    }
+  `);
+    const result = await complete(document, {
+      async *friendList() {
+        yield await Promise.resolve({
+          name: friends[0].name,
+          nonNullName: () => Promise.resolve(null),
+        });
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 0],
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Friend.nonNullName.',
+                locations: [{ line: 4, column: 9 }],
+                path: ['friendList', 0, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Returns iterator and ignores errors when stream payloads are filtered', async () => {
+    let returned = false;
+    let index = 0;
+    const iterable = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => {
+          const friend = friends[index++];
+          if (!friend) {
+            return Promise.resolve({ done: true, value: undefined });
+          }
+          return Promise.resolve({
+            done: false,
+            value: {
+              name: friend.name,
+              nonNullName: null,
+            },
+          });
+        },
+        return: () => {
+          returned = true;
+          return Promise.reject(new Error('Oops'));
+        },
+      }),
+    };
+
+    const document = parse(`
+      query { 
+        nestedObject {
+          ... @defer {
+            deeperNestedObject {
+              nonNullScalarField
+              deeperNestedFriendList @stream(initialCount: 0) {
+                name
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const executeResult = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        nestedObject: {
+          deeperNestedObject: {
+            nonNullScalarField: () => Promise.resolve(null),
+            deeperNestedFriendList: iterable,
+          },
+        },
+      },
+    });
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {
+        nestedObject: {},
+      },
+      hasNext: true,
+    });
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            data: {
+              deeperNestedObject: null,
+            },
+            path: ['nestedObject'],
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field DeeperNestedObject.nonNullScalarField.',
+                locations: [{ line: 6, column: 15 }],
+                path: [
+                  'nestedObject',
+                  'deeperNestedObject',
+                  'nonNullScalarField',
+                ],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+    });
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: false,
+      value: { hasNext: false },
+    });
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({ done: true, value: undefined });
+
+    assert(returned);
   });
   it('Handles promises returned by completeValue after initialCount is reached', async () => {
     const document = parse(`
