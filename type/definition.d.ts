@@ -1,7 +1,7 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
-import type { Path } from '../jsutils/Path';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { Path } from '../jsutils/Path.js';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import type {
   EnumTypeDefinitionNode,
   EnumTypeExtensionNode,
@@ -22,8 +22,8 @@ import type {
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
   ValueNode,
-} from '../language/ast';
-import type { GraphQLSchema } from './schema';
+} from '../language/ast.js';
+import type { GraphQLSchema } from './schema.js';
 /**
  * These are all of the possible kinds of types.
  */

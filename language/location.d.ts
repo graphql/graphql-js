@@ -1,4 +1,4 @@
-import type { Source } from './source';
+import type { Source } from './source.js';
 /**
  * Represents a location in a Source.
  */

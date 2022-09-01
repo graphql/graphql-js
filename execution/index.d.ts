@@ -1,4 +1,4 @@
-export { pathToArray as responsePathAsArray } from '../jsutils/Path';
+export { pathToArray as responsePathAsArray } from '../jsutils/Path.js';
 export {
   createSourceEventStream,
   execute,
@@ -8,7 +8,7 @@ export {
   defaultTypeResolver,
   subscribe,
   experimentalSubscribeIncrementally,
-} from './execute';
+} from './execute.js';
 export type {
   ExecutionArgs,
   ExecutionResult,
@@ -24,9 +24,9 @@ export type {
   FormattedIncrementalDeferResult,
   FormattedIncrementalStreamResult,
   FormattedIncrementalResult,
-} from './execute';
+} from './execute.js';
 export {
   getArgumentValues,
   getVariableValues,
   getDirectiveValues,
-} from './values';
+} from './values.js';

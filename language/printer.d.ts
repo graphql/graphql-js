@@ -1,4 +1,4 @@
-import type { ASTNode } from './ast';
+import type { ASTNode } from './ast.js';
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.

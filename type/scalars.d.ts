@@ -1,5 +1,5 @@
-import type { GraphQLNamedType } from './definition';
-import { GraphQLScalarType } from './definition';
+import type { GraphQLNamedType } from './definition.js';
+import { GraphQLScalarType } from './definition.js';
 /**
  * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).
  * n.b. This differs from JavaScript's numbers that are IEEE 754 doubles safe up-to 2^53 - 1

@@ -11,7 +11,7 @@ import type {
   TypeSystemDefinitionNode,
   TypeSystemExtensionNode,
   ValueNode,
-} from './ast';
+} from './ast.js';
 export declare function isDefinitionNode(node: ASTNode): node is DefinitionNode;
 export declare function isExecutableDefinitionNode(
   node: ASTNode,

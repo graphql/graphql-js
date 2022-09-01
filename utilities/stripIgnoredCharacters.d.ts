@@ -1,4 +1,4 @@
-import { Source } from '../language/source';
+import { Source } from '../language/source.js';
 /**
  * Strips characters that are not significant to the validity or execution
  * of a GraphQL document:

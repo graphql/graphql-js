@@ -1,5 +1,5 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { GraphQLError } from '../error/GraphQLError';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { GraphQLError } from '../error/GraphQLError.js';
 import type {
   ArgumentNode,
   ConstArgumentNode,
@@ -50,11 +50,11 @@ import type {
   ValueNode,
   VariableDefinitionNode,
   VariableNode,
-} from './ast';
-import { Location, OperationTypeNode } from './ast';
-import { Lexer } from './lexer';
-import { Source } from './source';
-import { TokenKind } from './tokenKind';
+} from './ast.js';
+import { Location, OperationTypeNode } from './ast.js';
+import { Lexer } from './lexer.js';
+import { Source } from './source.js';
+import { TokenKind } from './tokenKind.js';
 /**
  * Configuration options to control parser behavior
  */

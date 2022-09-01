@@ -1,4 +1,4 @@
-export { getIntrospectionQuery } from './getIntrospectionQuery';
+export { getIntrospectionQuery } from './getIntrospectionQuery.js';
 export type {
   IntrospectionOptions,
   IntrospectionQuery,
@@ -22,38 +22,38 @@ export type {
   IntrospectionInputValue,
   IntrospectionEnumValue,
   IntrospectionDirective,
-} from './getIntrospectionQuery';
-export { getOperationAST } from './getOperationAST';
-export { introspectionFromSchema } from './introspectionFromSchema';
-export { buildClientSchema } from './buildClientSchema';
-export { buildASTSchema, buildSchema } from './buildASTSchema';
-export type { BuildSchemaOptions } from './buildASTSchema';
-export { extendSchema } from './extendSchema';
-export { lexicographicSortSchema } from './lexicographicSortSchema';
+} from './getIntrospectionQuery.js';
+export { getOperationAST } from './getOperationAST.js';
+export { introspectionFromSchema } from './introspectionFromSchema.js';
+export { buildClientSchema } from './buildClientSchema.js';
+export { buildASTSchema, buildSchema } from './buildASTSchema.js';
+export type { BuildSchemaOptions } from './buildASTSchema.js';
+export { extendSchema } from './extendSchema.js';
+export { lexicographicSortSchema } from './lexicographicSortSchema.js';
 export {
   printSchema,
   printType,
   printIntrospectionSchema,
-} from './printSchema';
-export { typeFromAST } from './typeFromAST';
-export { valueFromAST } from './valueFromAST';
-export { valueFromASTUntyped } from './valueFromASTUntyped';
-export { astFromValue } from './astFromValue';
-export { TypeInfo, visitWithTypeInfo } from './TypeInfo';
-export { coerceInputValue } from './coerceInputValue';
-export { concatAST } from './concatAST';
-export { separateOperations } from './separateOperations';
-export { stripIgnoredCharacters } from './stripIgnoredCharacters';
+} from './printSchema.js';
+export { typeFromAST } from './typeFromAST.js';
+export { valueFromAST } from './valueFromAST.js';
+export { valueFromASTUntyped } from './valueFromASTUntyped.js';
+export { astFromValue } from './astFromValue.js';
+export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';
+export { coerceInputValue } from './coerceInputValue.js';
+export { concatAST } from './concatAST.js';
+export { separateOperations } from './separateOperations.js';
+export { stripIgnoredCharacters } from './stripIgnoredCharacters.js';
 export {
   isEqualType,
   isTypeSubTypeOf,
   doTypesOverlap,
-} from './typeComparators';
+} from './typeComparators.js';
 export {
   BreakingChangeType,
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-} from './findBreakingChanges';
-export type { BreakingChange, DangerousChange } from './findBreakingChanges';
-export type { TypedQueryDocumentNode } from './typedQueryDocumentNode';
+} from './findBreakingChanges.js';
+export type { BreakingChange, DangerousChange } from './findBreakingChanges.js';
+export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.js';

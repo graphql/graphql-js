@@ -1,6 +1,6 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { ASTNode, FieldNode } from '../language/ast';
-import type { ASTVisitor } from '../language/visitor';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ASTNode, FieldNode } from '../language/ast.js';
+import type { ASTVisitor } from '../language/visitor.js';
 import type {
   GraphQLArgument,
   GraphQLCompositeType,
@@ -9,9 +9,9 @@ import type {
   GraphQLInputType,
   GraphQLOutputType,
   GraphQLType,
-} from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
-import type { GraphQLSchema } from '../type/schema';
+} from '../type/definition.js';
+import type { GraphQLDirective } from '../type/directives.js';
+import type { GraphQLSchema } from '../type/schema.js';
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
  * of the current field and type definitions at any point in a GraphQL document

@@ -1,10 +1,10 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { DirectiveDefinitionNode } from '../language/ast';
-import { DirectiveLocation } from '../language/directiveLocation';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { DirectiveDefinitionNode } from '../language/ast.js';
+import { DirectiveLocation } from '../language/directiveLocation.js';
 import type {
   GraphQLArgument,
   GraphQLFieldConfigArgumentMap,
-} from './definition';
+} from './definition.js';
 /**
  * Test if the given value is a GraphQL directive.
  */

@@ -1,6 +1,6 @@
-import type { Kind } from './kinds';
-import type { Source } from './source';
-import type { TokenKind } from './tokenKind';
+import type { Kind } from './kinds.js';
+import type { Source } from './source.js';
+import type { TokenKind } from './tokenKind.js';
 /**
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.

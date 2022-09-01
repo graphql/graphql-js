@@ -3,6 +3,7 @@
   "version": "17.0.0-alpha.1",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
+  "type": "module",
   "typesVersions": {
     ">=4.4.0": {
       "*": [
@@ -34,7 +35,6 @@
   "publishConfig": {
     "tag": "alpha"
   },
-  "type": "module",
   "exports": {
     "./error": "./error/index.js",
     "./execution": "./execution/index.js",

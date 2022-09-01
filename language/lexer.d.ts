@@ -1,6 +1,6 @@
-import { Token } from './ast';
-import type { Source } from './source';
-import { TokenKind } from './tokenKind';
+import { Token } from './ast.js';
+import type { Source } from './source.js';
+import { TokenKind } from './tokenKind.js';
 /**
  * Given a Source object, creates a Lexer for that source.
  * A Lexer is a stateful stream generator in that every time

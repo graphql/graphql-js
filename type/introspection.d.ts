@@ -1,5 +1,5 @@
-import type { GraphQLField, GraphQLNamedType } from './definition';
-import { GraphQLEnumType, GraphQLObjectType } from './definition';
+import type { GraphQLField, GraphQLNamedType } from './definition.js';
+import { GraphQLEnumType, GraphQLObjectType } from './definition.js';
 export declare const __Schema: GraphQLObjectType;
 export declare const __Directive: GraphQLObjectType;
 export declare const __DirectiveLocation: GraphQLEnumType;

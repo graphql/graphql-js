@@ -1,4 +1,4 @@
-import type { PromiseOrValue } from './PromiseOrValue';
+import type { PromiseOrValue } from './PromiseOrValue.js';
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
  * a Promise, in which case reduction will continue after each promise resolves.

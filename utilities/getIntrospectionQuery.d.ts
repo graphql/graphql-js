@@ -1,5 +1,5 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { DirectiveLocation } from '../language/directiveLocation';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { DirectiveLocation } from '../language/directiveLocation.js';
 export interface IntrospectionOptions {
   /**
    * Whether to include descriptions in the introspection result.

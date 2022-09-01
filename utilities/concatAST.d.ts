@@ -1,4 +1,4 @@
-import type { DocumentNode } from '../language/ast';
+import type { DocumentNode } from '../language/ast.js';
 /**
  * Provided a collection of ASTs, presumably each from different files,
  * concatenate the ASTs together into batched AST, useful for validating many

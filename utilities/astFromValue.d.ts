@@ -1,6 +1,6 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { ValueNode } from '../language/ast';
-import type { GraphQLInputType } from '../type/definition';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ValueNode } from '../language/ast.js';
+import type { GraphQLInputType } from '../type/definition.js';
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format

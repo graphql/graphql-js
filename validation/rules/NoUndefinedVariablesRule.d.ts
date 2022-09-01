@@ -1,5 +1,5 @@
-import type { ASTVisitor } from '../../language/visitor';
-import type { ValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from '../../language/visitor.js';
+import type { ValidationContext } from '../ValidationContext.js';
 /**
  * No undefined variables
  *

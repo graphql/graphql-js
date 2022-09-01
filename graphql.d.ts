@@ -1,11 +1,11 @@
-import type { Maybe } from './jsutils/Maybe';
-import type { Source } from './language/source';
+import type { Maybe } from './jsutils/Maybe.js';
+import type { Source } from './language/source.js';
 import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
-} from './type/definition';
-import type { GraphQLSchema } from './type/schema';
-import type { ExecutionResult } from './execution/execute';
+} from './type/definition.js';
+import type { GraphQLSchema } from './type/schema.js';
+import type { ExecutionResult } from './execution/execute.js';
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
  * by parsing, validating, and executing a GraphQL document along side a

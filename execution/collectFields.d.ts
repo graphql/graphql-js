@@ -1,11 +1,11 @@
-import type { ObjMap } from '../jsutils/ObjMap';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 import type {
   FieldNode,
   FragmentDefinitionNode,
   SelectionSetNode,
-} from '../language/ast';
-import type { GraphQLObjectType } from '../type/definition';
-import type { GraphQLSchema } from '../type/schema';
+} from '../language/ast.js';
+import type { GraphQLObjectType } from '../type/definition.js';
+import type { GraphQLSchema } from '../type/schema.js';
 export interface PatchFields {
   label: string | undefined;
   fields: Map<string, ReadonlyArray<FieldNode>>;

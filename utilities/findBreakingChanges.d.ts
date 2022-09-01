@@ -1,4 +1,4 @@
-import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLSchema } from '../type/schema.js';
 export declare enum BreakingChangeType {
   TYPE_REMOVED = 'TYPE_REMOVED',
   TYPE_CHANGED_KIND = 'TYPE_CHANGED_KIND',
