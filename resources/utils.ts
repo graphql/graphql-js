@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import childProcess from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import prettier from 'prettier';
@@ -8,6 +9,20 @@ import prettier from 'prettier';
 export function localRepoPath(...paths: ReadonlyArray<string>): string {
   const repoDir = new URL('..', import.meta.url).pathname;
   return path.join(repoDir, ...paths);
+}
+
+interface MakeTmpDirReturn {
+  tmpDirPath: (...paths: ReadonlyArray<string>) => string;
+}
+
+export function makeTmpDir(name: string): MakeTmpDirReturn {
+  const tmpDir = path.join(os.tmpdir(), name);
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.mkdirSync(tmpDir);
+
+  return {
+    tmpDirPath: (...paths) => path.join(tmpDir, ...paths),
+  };
 }
 
 export function npm(
@@ -133,6 +148,7 @@ export function writeGeneratedFile(filepath: string, body: string): void {
 }
 
 interface PackageJSON {
+  description: string;
   version: string;
   private?: boolean;
   repository?: { url?: string };
@@ -145,6 +161,9 @@ interface PackageJSON {
   publishConfig?: { tag?: string };
 }
 
-export function readPackageJSON(): PackageJSON {
-  return JSON.parse(fs.readFileSync(localRepoPath('package.json'), 'utf-8'));
+export function readPackageJSON(
+  dirPath: string = localRepoPath(),
+): PackageJSON {
+  const filepath = path.join(dirPath, 'package.json');
+  return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
 }

@@ -44,7 +44,7 @@
     "prettier": "prettier --cache --cache-strategy metadata --write --list-different .",
     "prettier:check": "prettier --cache --cache-strategy metadata --check .",
     "check:spelling": "cspell --cache --no-progress '**/*'",
-    "check:integrations": "npm run build:npm && npm run build:deno && mocha --full-trace resources/integration-test.ts",
+    "check:integrations": "mocha --full-trace resources/integration-test.ts",
     "serve": "docusaurus serve --dir websiteDist/ --config website/docusaurus.config.cjs",
     "start": "npm run build:website && npm run serve",
     "build:website": "ts-node resources/build-docusaurus.ts",

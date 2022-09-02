@@ -1,15 +1,18 @@
 import assert from 'node:assert';
 import childProcess from 'node:child_process';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 
-import { git, localRepoPath, npm, writeGeneratedFile } from './utils.js';
+import {
+  git,
+  localRepoPath,
+  makeTmpDir,
+  npm,
+  writeGeneratedFile,
+} from './utils.js';
 
 const LOCAL = 'local';
-const tmpDir = path.join(os.tmpdir(), 'graphql-js-npm-diff');
-fs.rmSync(tmpDir, { recursive: true, force: true });
-fs.mkdirSync(tmpDir);
+const { tmpDirPath } = makeTmpDir('graphql-js-npm-diff');
 
 const args = process.argv.slice(2);
 let [fromRevision, toRevision] = args;
@@ -87,7 +90,7 @@ function prepareNPMPackage(revision: string): string {
   const hash = git(['rev-parse', revision]);
   assert(hash != null);
 
-  const repoDir = path.join(tmpDir, hash);
+  const repoDir = tmpDirPath(hash);
   fs.rmSync(repoDir, { recursive: true, force: true });
   fs.mkdirSync(repoDir);
   childProcess.execSync(`git archive "${hash}" | tar -xC "${repoDir}"`);
