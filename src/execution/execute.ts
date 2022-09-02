@@ -278,7 +278,7 @@ const UNEXPECTED_MULTIPLE_PAYLOADS =
  *
  * This function does not support incremental delivery (`@defer` and `@stream`).
  * If an operation which would defer or stream data is executed with this
- * function, it will throw or resolve to an object containing an error instead.
+ * function, it will throw or return a rejected promise.
  * Use `experimentalExecuteIncrementally` if you want to support incremental
  * delivery.
  */
@@ -293,9 +293,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
 
   return result.then((incrementalResult) => {
     if ('initialResult' in incrementalResult) {
-      return {
-        errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
-      };
+      throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
     }
     return incrementalResult;
   });
