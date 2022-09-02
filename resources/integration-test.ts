@@ -1,26 +1,17 @@
-import childProcess from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 import { describe, it } from 'mocha';
 
-function npm(args: ReadonlyArray<string>, options = {}): string {
-  const result = childProcess.spawnSync('npm', [...args], {
-    maxBuffer: 10 * 1024 * 1024, // 10MB
-    stdio: ['inherit', 'pipe', 'inherit'],
-    encoding: 'utf-8',
-    ...options,
-  });
-  return result.stdout.toString().trimEnd();
-}
+import { localRepoPath, npm } from './utils.js';
 
 describe('Integration Tests', () => {
   const tmpDir = path.join(os.tmpdir(), 'graphql-js-integrationTmp');
   fs.rmSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir);
 
-  const distDir = path.resolve('./npmDist');
+  const distDir = localRepoPath('npmDist');
   const archiveName = npm(['--quiet', 'pack', distDir], { cwd: tmpDir });
   fs.renameSync(
     path.join(tmpDir, archiveName),
@@ -28,7 +19,7 @@ describe('Integration Tests', () => {
   );
 
   function testOnNodeProject(projectName: string) {
-    const projectPath = new URL(projectName, import.meta.url).pathname;
+    const projectPath = localRepoPath('integrationTests', projectName);
 
     const packageJSONPath = path.join(projectPath, 'package.json');
     const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath, 'utf-8'));
