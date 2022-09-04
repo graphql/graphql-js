@@ -64,15 +64,15 @@ function getChangeLog(): Promise<string> {
   const { version } = packageJSON;
 
   let tag: string | null = null;
-  let commitsList = git(['rev-list', '--reverse', `v${version}..`]);
+  let commitsList = git().revList('--reverse', `v${version}..`);
   if (commitsList === '') {
-    const parentPackageJSON = git(['cat-file', 'blob', 'HEAD~1:package.json']);
+    const parentPackageJSON = git().catFile('blob', 'HEAD~1:package.json');
     const parentVersion = JSON.parse(parentPackageJSON).version;
-    commitsList = git(['rev-list', '--reverse', `v${parentVersion}..HEAD~1`]);
+    commitsList = git().revList('--reverse', `v${parentVersion}..HEAD~1`);
     tag = `v${version}`;
   }
 
-  const date = git(['log', '-1', '--format=%cd', '--date=short']);
+  const date = git().log('-1', '--format=%cd', '--date=short');
   return getCommitsInfo(commitsList.split('\n'))
     .then((commitsInfo) => getPRsInfo(commitsInfoToPRs(commitsInfo)))
     .then((prsInfo) => genChangeLog(tag, date, prsInfo));

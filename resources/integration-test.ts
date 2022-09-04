@@ -10,12 +10,12 @@ describe('Integration Tests', () => {
     recursive: true,
   });
 
-  npm(['run', 'build:npm']);
+  npm().run('build:npm');
   const distDir = localRepoPath('npmDist');
-  const archiveName = npm(['--quiet', 'pack', distDir], { cwd: tmpDirPath() });
+  const archiveName = npm({ cwd: tmpDirPath(), quiet: true }).pack(distDir);
   fs.renameSync(tmpDirPath(archiveName), tmpDirPath('graphql.tgz'));
 
-  npm(['run', 'build:deno']);
+  npm().run('build:deno');
 
   function testOnNodeProject(projectName: string) {
     const projectPath = tmpDirPath(projectName);
@@ -23,8 +23,8 @@ describe('Integration Tests', () => {
 
     it(packageJSON.description, () => {
       // TODO: figure out a way to run it with --ignore-scripts
-      npm(['--quiet', 'install'], { cwd: projectPath });
-      npm(['--quiet', 'test'], { cwd: projectPath });
+      npm({ cwd: projectPath, quiet: true }).install();
+      npm({ cwd: projectPath, quiet: true }).run('test');
     }).timeout(120000);
   }
 
