@@ -3,14 +3,10 @@
 // Should be just: `docusaurus build --out-dir ./websiteDist ./website`
 
 import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 
-import { localRepoPath, npm, readPackageJSON } from './utils.js';
+import { localRepoPath, makeTmpDir, npm, readPackageJSON } from './utils.js';
 
-const tmpDir = path.join(os.tmpdir(), 'graphql-run-docusaurus');
-fs.rmSync(tmpDir, { recursive: true, force: true });
-fs.mkdirSync(tmpDir);
+const { tmpDirPath } = makeTmpDir('graphql-js-run-docusaurus');
 
 const packageJSON = readPackageJSON();
 delete packageJSON.type;
@@ -21,7 +17,7 @@ copyToTmpDir('tsconfig.json');
 copyToTmpDir('src');
 copyToTmpDir('website');
 
-npm(['install', 'ci'], { cwd: tmpDir });
+npm(['install', 'ci'], { cwd: tmpDirPath() });
 
 const env = {
   ...process.env,
@@ -33,14 +29,13 @@ const docusaurusArgs = [
   localRepoPath('websiteDist'),
   tmpDirPath('website'),
 ];
-npm(['exec', 'docusaurus', '--', ...docusaurusArgs], { env, cwd: tmpDir });
+npm(['exec', 'docusaurus', '--', ...docusaurusArgs], {
+  env,
+  cwd: tmpDirPath(),
+});
 
 function copyToTmpDir(relativePath: string) {
   fs.cpSync(localRepoPath(relativePath), tmpDirPath(relativePath), {
     recursive: true,
   });
-}
-
-function tmpDirPath(...paths: ReadonlyArray<string>): string {
-  return path.join(tmpDir, ...paths);
 }

@@ -1,11 +1,10 @@
 import assert from 'node:assert';
 import cp from 'node:child_process';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import url from 'node:url';
 
-import { git, localRepoPath, npm } from './utils.js';
+import { git, localRepoPath, makeTmpDir, npm } from './utils.js';
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
@@ -35,18 +34,13 @@ interface BenchmarkProject {
 function prepareBenchmarkProjects(
   revisionList: ReadonlyArray<string>,
 ): Array<BenchmarkProject> {
-  const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
-  fs.rmSync(tmpDir, { recursive: true, force: true });
-  fs.mkdirSync(tmpDir);
-
-  const setupDir = path.join(tmpDir, 'setup');
-  fs.mkdirSync(setupDir);
+  const { tmpDirPath } = makeTmpDir('graphql-js-benchmark');
 
   return revisionList.map((revision) => {
     console.log(`🍳  Preparing ${revision}...`);
-    const projectPath = path.join(setupDir, revision);
+    const projectPath = tmpDirPath('setup', revision);
     fs.rmSync(projectPath, { recursive: true, force: true });
-    fs.mkdirSync(projectPath);
+    fs.mkdirSync(projectPath, { recursive: true });
 
     fs.cpSync(localRepoPath('benchmark'), path.join(projectPath, 'benchmark'), {
       recursive: true,
@@ -71,7 +65,7 @@ function prepareBenchmarkProjects(
   function prepareNPMPackage(revision: string) {
     if (revision === LOCAL) {
       const repoDir = localRepoPath();
-      const archivePath = path.join(tmpDir, 'graphql-local.tgz');
+      const archivePath = tmpDirPath('graphql-local.tgz');
       fs.renameSync(buildNPMArchive(repoDir), archivePath);
       return archivePath;
     }
@@ -79,12 +73,12 @@ function prepareBenchmarkProjects(
     // Returns the complete git hash for a given git revision reference.
     const hash = git(['rev-parse', revision]);
 
-    const archivePath = path.join(tmpDir, `graphql-${hash}.tgz`);
+    const archivePath = tmpDirPath(`graphql-${hash}.tgz`);
     if (fs.existsSync(archivePath)) {
       return archivePath;
     }
 
-    const repoDir = path.join(tmpDir, hash);
+    const repoDir = tmpDirPath(hash);
     fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
     git(['clone', '--quiet', localRepoPath(), repoDir]);
