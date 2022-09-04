@@ -31,7 +31,7 @@ console.log(`📦 Building NPM package for ${toRevision}...`);
 const toPackage = prepareNPMPackage(toRevision);
 
 console.log('➖➕ Generating diff...');
-const diff = npm(['diff', '--diff', fromPackage, '--diff', toPackage]);
+const diff = npm().diff('--diff', fromPackage, '--diff', toPackage);
 
 if (diff === '') {
   console.log('No changes found!');
@@ -82,19 +82,19 @@ function generateReport(diffString: string): string {
 
 function prepareNPMPackage(revision: string): string {
   if (revision === LOCAL) {
-    npm(['--quiet', 'run', 'build:npm'], { cwd: localRepoPath() });
+    npm({ cwd: localRepoPath(), quiet: true }).run('build:npm');
     return localRepoPath('npmDist');
   }
 
   // Returns the complete git hash for a given git revision reference.
-  const hash = git(['rev-parse', revision]);
+  const hash = git().revParse(revision);
   assert(hash != null);
 
   const repoDir = tmpDirPath(hash);
   fs.rmSync(repoDir, { recursive: true, force: true });
   fs.mkdirSync(repoDir);
   childProcess.execSync(`git archive "${hash}" | tar -xC "${repoDir}"`);
-  npm(['--quiet', 'ci', '--ignore-scripts'], { cwd: repoDir });
-  npm(['--quiet', 'run', 'build:npm'], { cwd: repoDir });
+  npm({ cwd: repoDir, quiet: true }).ci('--ignore-scripts');
+  npm({ cwd: repoDir, quiet: true }).run('build:npm');
   return path.join(repoDir, 'npmDist');
 }

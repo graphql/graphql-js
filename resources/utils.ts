@@ -25,18 +25,60 @@ export function makeTmpDir(name: string): MakeTmpDirReturn {
   };
 }
 
-export function npm(
-  args: ReadonlyArray<string>,
-  options?: SpawnOptions,
-): string {
-  return spawn('npm', args, options);
+interface NPMOptions extends SpawnOptions {
+  quiet?: boolean;
 }
 
-export function git(
-  args: ReadonlyArray<string>,
-  options?: SpawnOptions,
-): string {
-  return spawn('git', args, options);
+export function npm(options?: NPMOptions) {
+  const globalOptions = options?.quiet === true ? ['--quiet'] : [];
+  return {
+    run(...args: ReadonlyArray<string>): void {
+      spawn('npm', [...globalOptions, 'run', ...args], options);
+    },
+    install(...args: ReadonlyArray<string>): void {
+      spawn('npm', [...globalOptions, 'install', ...args], options);
+    },
+    ci(...args: ReadonlyArray<string>): void {
+      spawn('npm', [...globalOptions, 'ci', ...args], options);
+    },
+    exec(...args: ReadonlyArray<string>): void {
+      spawn('npm', [...globalOptions, 'exec', ...args], options);
+    },
+    pack(...args: ReadonlyArray<string>): string {
+      return spawnOutput('npm', [...globalOptions, 'pack', ...args], options);
+    },
+    diff(...args: ReadonlyArray<string>): string {
+      return spawnOutput('npm', [...globalOptions, 'diff', ...args], options);
+    },
+  };
+}
+
+interface GITOptions extends SpawnOptions {
+  quiet?: boolean;
+}
+
+export function git(options?: GITOptions) {
+  const cmdOptions = options?.quiet === true ? ['--quiet'] : [];
+  return {
+    clone(...args: ReadonlyArray<string>): void {
+      spawn('git', ['clone', ...cmdOptions, ...args], options);
+    },
+    checkout(...args: ReadonlyArray<string>): void {
+      spawn('git', ['checkout', ...cmdOptions, ...args], options);
+    },
+    revParse(...args: ReadonlyArray<string>): string {
+      return spawnOutput('git', ['rev-parse', ...cmdOptions, ...args], options);
+    },
+    revList(...args: ReadonlyArray<string>): string {
+      return spawnOutput('git', ['rev-list', ...cmdOptions, ...args], options);
+    },
+    catFile(...args: ReadonlyArray<string>): string {
+      return spawnOutput('git', ['cat-file', ...cmdOptions, ...args], options);
+    },
+    log(...args: ReadonlyArray<string>): string {
+      return spawnOutput('git', ['log', ...cmdOptions, ...args], options);
+    },
+  };
 }
 
 interface SpawnOptions {
@@ -44,7 +86,7 @@ interface SpawnOptions {
   env?: typeof process.env;
 }
 
-function spawn(
+function spawnOutput(
   command: string,
   args: ReadonlyArray<string>,
   options?: SpawnOptions,
@@ -56,6 +98,14 @@ function spawn(
     ...options,
   });
   return result.stdout.toString().trimEnd();
+}
+
+function spawn(
+  command: string,
+  args: ReadonlyArray<string>,
+  options?: SpawnOptions,
+): void {
+  childProcess.spawnSync(command, args, { stdio: 'inherit', ...options });
 }
 
 export function readdirRecursive(

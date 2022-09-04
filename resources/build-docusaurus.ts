@@ -17,22 +17,20 @@ copyToTmpDir('tsconfig.json');
 copyToTmpDir('src');
 copyToTmpDir('website');
 
-npm(['install', 'ci'], { cwd: tmpDirPath() });
+npm({ cwd: tmpDirPath(), quiet: true }).ci('--ignore-scripts');
 
 const env = {
   ...process.env,
   DOCUSAURUS_GENERATED_FILES_DIR_NAME: tmpDirPath('.docusaurus'),
 };
-const docusaurusArgs = [
+npm({ env, cwd: tmpDirPath() }).exec(
+  'docusaurus',
+  '--',
   'build',
   '--out-dir',
   localRepoPath('websiteDist'),
   tmpDirPath('website'),
-];
-npm(['exec', 'docusaurus', '--', ...docusaurusArgs], {
-  env,
-  cwd: tmpDirPath(),
-});
+);
 
 function copyToTmpDir(relativePath: string) {
   fs.cpSync(localRepoPath(relativePath), tmpDirPath(relativePath), {
