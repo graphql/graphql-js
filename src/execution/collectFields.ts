@@ -42,12 +42,14 @@ export interface FieldsAndPatches {
  *
  * @internal
  */
+// eslint-disable-next-line max-params
 export function collectFields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
+  enableIncremental = false,
 ): FieldsAndPatches {
   const fields = new AccumulatorMap<string, FieldNode>();
   const patches: Array<PatchFields> = [];
@@ -60,6 +62,7 @@ export function collectFields(
     fields,
     patches,
     new Set(),
+    enableIncremental,
   );
   return { fields, patches };
 }
@@ -74,12 +77,14 @@ export function collectFields(
  *
  * @internal
  */
+// eslint-disable-next-line max-params
 export function collectSubfields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
   variableValues: { [variable: string]: unknown },
   returnType: GraphQLObjectType,
   fieldNodes: ReadonlyArray<FieldNode>,
+  enableIncremental = false,
 ): FieldsAndPatches {
   const subFieldNodes = new AccumulatorMap<string, FieldNode>();
   const visitedFragmentNames = new Set<string>();
@@ -101,6 +106,7 @@ export function collectSubfields(
         subFieldNodes,
         subPatches,
         visitedFragmentNames,
+        enableIncremental,
       );
     }
   }
@@ -117,6 +123,7 @@ function collectFieldsImpl(
   fields: AccumulatorMap<string, FieldNode>,
   patches: Array<PatchFields>,
   visitedFragmentNames: Set<string>,
+  enableIncremental: boolean,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -135,7 +142,8 @@ function collectFieldsImpl(
           continue;
         }
 
-        const defer = getDeferValues(variableValues, selection);
+        const defer =
+          enableIncremental && getDeferValues(variableValues, selection);
 
         if (defer) {
           const patchFields = new AccumulatorMap<string, FieldNode>();
@@ -148,6 +156,7 @@ function collectFieldsImpl(
             patchFields,
             patches,
             visitedFragmentNames,
+            enableIncremental,
           );
           patches.push({
             label: defer.label,
@@ -163,6 +172,7 @@ function collectFieldsImpl(
             fields,
             patches,
             visitedFragmentNames,
+            enableIncremental,
           );
         }
         break;
@@ -174,7 +184,8 @@ function collectFieldsImpl(
           continue;
         }
 
-        const defer = getDeferValues(variableValues, selection);
+        const defer =
+          enableIncremental && getDeferValues(variableValues, selection);
         if (visitedFragmentNames.has(fragName) && !defer) {
           continue;
         }
@@ -202,6 +213,7 @@ function collectFieldsImpl(
             patchFields,
             patches,
             visitedFragmentNames,
+            enableIncremental,
           );
           patches.push({
             label: defer.label,
@@ -217,6 +229,7 @@ function collectFieldsImpl(
             fields,
             patches,
             visitedFragmentNames,
+            enableIncremental,
           );
         }
         break;

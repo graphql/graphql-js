@@ -321,6 +321,7 @@ export {
   execute,
   experimentalExecuteIncrementally,
   executeSync,
+  experimentalExecuteIncrementallySync,
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,

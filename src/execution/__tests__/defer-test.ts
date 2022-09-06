@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
@@ -657,45 +656,46 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('original execute function throws error if anything is deferred and everything else is sync', () => {
+  it('original execute function ignores defer if anything is deferred and everything else is sync', () => {
     const doc = `
     query Deferred {
       ... @defer { hero { id } }
     }
   `;
-    expect(() =>
-      execute({
-        schema,
-        document: parse(doc),
-        rootValue: {},
-      }),
-    ).to.throw(
-      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
-    );
+    const result = execute({
+      schema,
+      document: parse(doc),
+      rootValue: {},
+    });
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: { id: '1' },
+      },
+    });
   });
 
-  it('original execute function resolves to error if anything is deferred and something else is async', async () => {
+  it('original execute function ignores if anything is deferred and something else is async', async () => {
     const doc = `
     query Deferred {
       hero { slowField }
       ... @defer { hero { id } }
     }
   `;
-    expectJSON(
-      await expectPromise(
-        execute({
-          schema,
-          document: parse(doc),
-          rootValue: {},
-        }),
-      ).toResolve(),
-    ).toDeepEqual({
-      errors: [
-        {
-          message:
-            'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
+
+    const result = execute({
+      schema,
+      document: parse(doc),
+      rootValue: {},
+    });
+
+    expectJSON(await expectPromise(result).toResolve()).toDeepEqual({
+      data: {
+        hero: {
+          id: '1',
+          slowField: 'slow',
         },
-      ],
+      },
     });
   });
 });
