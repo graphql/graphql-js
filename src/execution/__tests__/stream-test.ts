@@ -17,10 +17,12 @@ import { GraphQLID, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
 import type {
+  ExecutionArgs,
+  ExperimentalExecuteIncrementallyResults,
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
 } from '../execute.js';
-import { experimentalExecuteIncrementally } from '../execute.js';
+import { execute } from '../execute.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -67,6 +69,14 @@ const query = new GraphQLObjectType({
 });
 
 const schema = new GraphQLSchema({ query });
+
+function experimentalExecuteIncrementally(
+  args: ExecutionArgs,
+): PromiseOrValue<ExperimentalExecuteIncrementallyResults> {
+  return execute(args, {
+    enableIncremental: true,
+  });
+}
 
 async function complete(document: DocumentNode, rootValue: unknown = {}) {
   const result = await experimentalExecuteIncrementally({

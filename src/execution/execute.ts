@@ -269,9 +269,15 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
-export interface ExperimentalExecutionOptions {
-  enableIncremental?: boolean;
+export interface ExperimentalExecutionOptions<
+  TEnableIncremental extends boolean = false,
+> {
+  enableIncremental?: TEnableIncremental;
 }
+
+type MaybeIncrementalMap<TEnableIncremental> = TEnableIncremental extends true
+  ? ExperimentalExecuteIncrementallyResults
+  : ExecutionResult;
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -283,66 +289,50 @@ export interface ExperimentalExecutionOptions {
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  *
- * This function does not support incremental delivery (`@defer` and `@stream`).
- * If an operation using these directives is executed with this function, they
- * will be ignored.
- * Use `experimentalExecuteIncrementally` if you want to support incremental delivery.
- */
-export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
-
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
-
-  const result = executeImpl(exeContext);
-  if (!isPromise(result)) {
-    if ('singleResult' in result) {
-      return result.singleResult;
-    }
-    /* c8 ignore next 3 */
-    // Not reachable, incremental delivery not supported.
-    invariant(false);
-  }
-
-  return result.then((incrementalResult) => {
-    if ('singleResult' in incrementalResult) {
-      return incrementalResult.singleResult;
-    }
-    /* c8 ignore next 3 */
-    // Not reachable, incremental delivery not supported.
-    invariant(false);
-  });
-}
-
-/**
- * Implements the "Executing requests" section of the GraphQL specification,
- * including `@defer` and `@stream` as proposed in
- * https://github.com/graphql/graphql-spec/pull/742
- *
- * This function returns a Promise of an ExperimentalExecuteIncrementallyResults
+ * This function supports incremental delivery (`@defer` and `@stream`) if and
+ * only if the `enableIncremental`experimental option is set to `true`. In that
+ * case, it returns a Promise of an ExperimentalExecuteIncrementallyResults
  * object. This object either contains a single ExecutionResult as
  * `singleResult`, or an `initialResult` and a stream of `subsequentResults`.
  *
- * If the arguments to this function do not result in a legal execution context,
- * a GraphQLError will be thrown immediately explaining the invalid input.
+ * When `enableIncremental` is set to `false`, this functions ignores the
+ * incremental delivery directives and returns a single ExecutionResult.
  */
-export function experimentalExecuteIncrementally(
+export function execute<TEnableIncremental extends boolean = false>(
   args: ExecutionArgs,
-): PromiseOrValue<ExperimentalExecuteIncrementallyResults> {
+  experimentalOptions: ExperimentalExecutionOptions<TEnableIncremental> = {},
+): PromiseOrValue<MaybeIncrementalMap<TEnableIncremental>> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args, { enableIncremental: true });
+  const exeContext = buildExecutionContext(args, experimentalOptions);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
-    return { singleResult: { errors: exeContext } };
+    return (
+      experimentalOptions.enableIncremental
+        ? { singleResult: { errors: exeContext } }
+        : { errors: exeContext }
+    ) as MaybeIncrementalMap<TEnableIncremental>;
   }
 
-  return executeImpl(exeContext);
+  const experimentalResult = executeImpl(exeContext);
+
+  if (isPromise(experimentalResult)) {
+    return (
+      experimentalOptions.enableIncremental
+        ? experimentalResult
+        : experimentalResult.then(
+            (resolved) =>
+              (resolved as { singleResult: ExecutionResult }).singleResult,
+          )
+    ) as Promise<MaybeIncrementalMap<TEnableIncremental>>;
+  }
+
+  return (
+    experimentalOptions.enableIncremental
+      ? experimentalResult
+      : (experimentalResult as { singleResult: ExecutionResult }).singleResult
+  ) as MaybeIncrementalMap<TEnableIncremental>;
 }
 
 function executeImpl(
@@ -403,45 +393,24 @@ function executeImpl(
  * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
- *
- * This function does not support incremental delivery (`@defer` and `@stream`).
- * If an operation using these directives is executed with this function, they
- * will be ignored.
- * Use `experimentalExecuteIncrementallySync` if you want to check that operations using
- * these directives do not result in incremental payloads.
  */
-export function executeSync(args: ExecutionArgs): ExecutionResult {
-  const result = execute(args);
-
-  // Assert that the execution was synchronous.
-  if (isPromise(result)) {
-    throw new Error('GraphQL execution failed to complete synchronously.');
-  }
-
-  return result;
-}
-
-/**
- * Also implements the "Executing requests" section of the GraphQL specification.
- * However, it guarantees to complete synchronously (or throw an error) assuming
- * that all field resolvers are also synchronous.
- *
- * This function supports incremental delivery (`@defer` and `@stream`).
- * If an operation using these directives is executed with this function, they
- * will be ignored.
- * Use `experimentalExecuteIncrementallySync` if you want to support incremental delivery.
- */
-export function experimentalExecuteIncrementallySync(
+export function executeSync<TEnableIncremental extends boolean = false>(
   args: ExecutionArgs,
+  experimentalOptions: ExperimentalExecutionOptions<TEnableIncremental> = {},
 ): ExecutionResult {
-  const result = experimentalExecuteIncrementally(args);
+  const result = execute(args, experimentalOptions);
 
   // Assert that the execution was synchronous.
   if (isPromise(result) || 'initialResult' in result) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
-  return result.singleResult;
+  // Incremental delivery is enabled, but the execution was synchronous.
+  if ('singleResult' in result) {
+    return result.singleResult;
+  }
+
+  return result;
 }
 
 /**
@@ -464,9 +433,11 @@ function buildResponse(
  * TODO: consider no longer exporting this function
  * @internal
  */
-export function buildExecutionContext(
+export function buildExecutionContext<
+  TEnableIncremental extends boolean = false,
+>(
   args: ExecutionArgs,
-  experimentalOptions: ExperimentalExecutionOptions = {},
+  experimentalOptions: ExperimentalExecutionOptions<TEnableIncremental> = {},
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
   const {
     schema,
@@ -1499,6 +1470,14 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
     }
   };
 
+type MaybeIncrementalResult<TEnableIncremental> =
+  TEnableIncremental extends true
+    ?
+        | ExecutionResult
+        | InitialIncrementalExecutionResult
+        | SubsequentIncrementalExecutionResult
+    : ExecutionResult;
+
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
@@ -1518,61 +1497,11 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
- * If an operation using these directives is executed with this function, they
- * will be ignored.
- * Use `experimentalSubscribeIncrementally` if you want to support incremental
- * delivery.
+ * This function supports incremental delivery (`@defer` and `@stream`) if and
+ * only if the  `enableIncremental`experimental option is set to `true`.
  *
- * Accepts an object with named arguments.
- */
-export function subscribe(
-  args: ExecutionArgs,
-): PromiseOrValue<
-  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
-> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
-
-  // Return early errors if execution context failed.
-  if (!('schema' in exeContext)) {
-    return { errors: exeContext };
-  }
-
-  const resultOrStream = createSourceEventStreamImpl(exeContext);
-
-  if (isPromise(resultOrStream)) {
-    return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(exeContext, resolvedResultOrStream),
-    );
-  }
-
-  return mapSourceToResponse(exeContext, resultOrStream);
-}
-
-/**
- * Implements the "Subscribe" algorithm described in the GraphQL specification,
- * including `@defer` and `@stream` as proposed in
- * https://github.com/graphql/graphql-spec/pull/742
- *
- * Returns a Promise which resolves to either an AsyncIterator (if successful)
- * or an ExecutionResult (error). The promise will be rejected if the schema or
- * other arguments to this function are invalid, or if the resolved event stream
- * is not an async iterable.
- *
- * If the client-provided arguments to this function do not result in a
- * compliant subscription, a GraphQL Response (ExecutionResult) with descriptive
- * errors and no data will be returned.
- *
- * If the source stream could not be created due to faulty subscription resolver
- * logic or underlying systems, the promise will resolve to a single
- * ExecutionResult containing `errors` and no `data`.
- *
- * If the operation succeeded, the promise resolves to an AsyncIterator, which
- * yields a stream of result representing the response stream.
- *
- * Each result may be an ExecutionResult with no `hasNext` (if executing the
- * event did not use `@defer` or `@stream`), or an
+ * In that case, each payload may be an ExecutionResult with no `hasNext`
+ * (if executing the event did not use `@defer` or `@stream`), or an
  * `InitialIncrementalExecutionResult` or `SubsequentIncrementalExecutionResult`
  * (if executing the event used `@defer` or `@stream`). In the case of
  * incremental execution results, each event produces a single
@@ -1581,23 +1510,21 @@ export function subscribe(
  * and the last has `hasNext: false`. There is no interleaving between results
  * generated from the same original event.
  *
+ * When `enableIncremental` is set to `false`, this functions ignores the
+ * incremental delivery directives. Each payload will be of type ExecutionResult.
+
  * Accepts an object with named arguments.
  */
-export function experimentalSubscribeIncrementally(
+export function subscribe<TEnableIncremental extends boolean = false>(
   args: ExecutionArgs,
+  experimentalOptions: ExperimentalExecutionOptions<TEnableIncremental> = {},
 ): PromiseOrValue<
-  | AsyncGenerator<
-      | ExecutionResult
-      | InitialIncrementalExecutionResult
-      | SubsequentIncrementalExecutionResult,
-      void,
-      void
-    >
+  | AsyncGenerator<MaybeIncrementalResult<TEnableIncremental>, void, void>
   | ExecutionResult
 > {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args, { enableIncremental: true });
+  const exeContext = buildExecutionContext(args, experimentalOptions);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {

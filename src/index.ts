@@ -319,9 +319,7 @@ export type {
 // Execute GraphQL queries.
 export {
   execute,
-  experimentalExecuteIncrementally,
   executeSync,
-  experimentalExecuteIncrementallySync,
   defaultFieldResolver,
   defaultTypeResolver,
   responsePathAsArray,
@@ -329,7 +327,6 @@ export {
   getVariableValues,
   getDirectiveValues,
   subscribe,
-  experimentalSubscribeIncrementally,
   createSourceEventStream,
 } from './execution/index.js';
 
@@ -337,6 +334,7 @@ export type {
   ExecutionArgs,
   ExecutionResult,
   ExperimentalExecuteIncrementallyResults,
+  ExperimentalExecutionOptions,
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
   IncrementalDeferResult,

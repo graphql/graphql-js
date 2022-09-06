@@ -21,11 +21,7 @@ import {
 import { GraphQLSchema } from '../../type/schema.js';
 
 import type { ExecutionArgs, ExecutionResult } from '../execute.js';
-import {
-  createSourceEventStream,
-  experimentalSubscribeIncrementally,
-  subscribe,
-} from '../execute.js';
+import { createSourceEventStream, subscribe } from '../execute.js';
 
 import { SimplePubSub } from './simplePubSub.js';
 
@@ -145,12 +141,17 @@ function createSubscription(
     }),
   };
 
-  return (originalSubscribe ? subscribe : experimentalSubscribeIncrementally)({
-    schema: emailSchema,
-    document,
-    rootValue: data,
-    variableValues,
-  });
+  return subscribe(
+    {
+      schema: emailSchema,
+      document,
+      rootValue: data,
+      variableValues,
+    },
+    {
+      enableIncremental: !originalSubscribe,
+    },
+  );
 }
 
 const DummyQueryType = new GraphQLObjectType({
@@ -182,7 +183,6 @@ function subscribeWithBadArgs(
 ): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
   return expectEqualPromisesOrValues([
     subscribe(args),
-    experimentalSubscribeIncrementally(args),
     createSourceEventStream(args),
   ]);
 }

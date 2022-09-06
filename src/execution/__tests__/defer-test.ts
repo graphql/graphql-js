@@ -19,7 +19,7 @@ import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
 } from '../execute.js';
-import { execute, experimentalExecuteIncrementally } from '../execute.js';
+import { execute } from '../execute.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -83,11 +83,16 @@ const query = new GraphQLObjectType({
 const schema = new GraphQLSchema({ query });
 
 async function complete(document: DocumentNode) {
-  const result = await experimentalExecuteIncrementally({
-    schema,
-    document,
-    rootValue: {},
-  });
+  const result = await execute(
+    {
+      schema,
+      document,
+      rootValue: {},
+    },
+    {
+      enableIncremental: true,
+    },
+  );
 
   if ('initialResult' in result) {
     const results: Array<
@@ -656,7 +661,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('original execute function ignores defer if anything is deferred and everything else is sync', () => {
+  it('execute with enableIncremental set to false ignores defer if anything is deferred and everything else is sync', () => {
     const doc = `
     query Deferred {
       ... @defer { hero { id } }
@@ -675,7 +680,7 @@ describe('Execute: defer directive', () => {
     });
   });
 
-  it('original execute function ignores if anything is deferred and something else is async', async () => {
+  it('execute with enableIncremental set to false ignores if anything is deferred and something else is async', async () => {
     const doc = `
     query Deferred {
       hero { slowField }

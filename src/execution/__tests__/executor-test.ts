@@ -25,16 +25,14 @@ import {
 import { GraphQLSchema } from '../../type/schema.js';
 
 import type { ExecutionArgs, ExecutionResult } from '../execute.js';
-import {
-  execute,
-  executeSync,
-  experimentalExecuteIncrementallySync,
-} from '../execute.js';
+import { execute, executeSync } from '../execute.js';
 
 function executeSyncWithBadArgs(args: ExecutionArgs): ExecutionResult {
   return expectMatchingValues([
     executeSync(args),
-    experimentalExecuteIncrementallySync(args),
+    executeSync(args, {
+      enableIncremental: true,
+    }),
   ]);
 }
 
