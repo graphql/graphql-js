@@ -807,7 +807,12 @@ describe('Execute: Handles basic execution tasks', () => {
     const rootValue = { a: 'b', c: 'd' };
     const operationName = 'Q';
 
-    const result = executeSync({ schema, document, rootValue, operationName });
+    const result = executeSync({
+      schema,
+      document,
+      rootValue,
+      operationName,
+    });
     expect(result).to.deep.equal({ data: { a: 'b' } });
   });
 

@@ -10,11 +10,7 @@ import { GraphQLObjectType } from '../../type/definition.js';
 import { GraphQLInt } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import {
-  execute,
-  executeSync,
-  experimentalExecuteIncrementally,
-} from '../execute.js';
+import { execute, executeSync } from '../execute.js';
 
 class NumberHolder {
   theNumber: number;
@@ -218,7 +214,7 @@ describe('Execute: Handles mutation execution ordering', () => {
     `);
 
     const rootValue = new Root(6);
-    const mutationResult = await experimentalExecuteIncrementally({
+    const mutationResult = await execute<true>({
       schema,
       document,
       rootValue,
@@ -294,7 +290,7 @@ describe('Execute: Handles mutation execution ordering', () => {
     `);
 
     const rootValue = new Root(6);
-    const mutationResult = await experimentalExecuteIncrementally({
+    const mutationResult = await execute<true>({
       schema,
       document,
       rootValue,

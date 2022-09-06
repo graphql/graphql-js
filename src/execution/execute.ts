@@ -263,8 +263,9 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
-const UNEXPECTED_MULTIPLE_PAYLOADS =
-  'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
+type MaybeIncrementalMap<TMaybeIncremental> = TMaybeIncremental extends true
+  ? ExecutionResult | ExperimentalIncrementalExecutionResults
+  : ExecutionResult;
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -276,56 +277,34 @@ const UNEXPECTED_MULTIPLE_PAYLOADS =
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  *
- * This function does not support incremental delivery (`@defer` and `@stream`).
- * If an operation which would defer or stream data is executed with this
- * function, it will throw or resolve to an object containing an error instead.
- * Use `experimentalExecuteIncrementally` if you want to support incremental
- * delivery.
- */
-export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  const result = experimentalExecuteIncrementally(args);
-  if (!isPromise(result)) {
-    if ('initialResult' in result) {
-      throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-    }
-    return result;
-  }
-
-  return result.then((incrementalResult) => {
-    if ('initialResult' in incrementalResult) {
-      return {
-        errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
-      };
-    }
-    return incrementalResult;
-  });
-}
-
-/**
- * Implements the "Executing requests" section of the GraphQL specification,
- * including `@defer` and `@stream` as proposed in
- * https://github.com/graphql/graphql-spec/pull/742
+ * This function also supports experimental incremental delivery directives
+ * (`@defer` and `@stream`). To use these directives, they should be added to
+ * the schema and TS generic parameter TMaybeIncremental should be set to `true`
+ * (default: false).
  *
- * This function returns a Promise of an ExperimentalIncrementalExecutionResults
- * object. This object either consists of a single ExecutionResult, or an
- * object containing an `initialResult` and a stream of `subsequentResults`.
+ * Note: At runtime, the schema is not checked as to whether these directives are
+ * actually present; all operations passed to execute are assumed to be valid.
  *
- * If the arguments to this function do not result in a legal execution context,
- * a GraphQLError will be thrown immediately explaining the invalid input.
+ * If the incremental delivery directives are used the return type of this
+ * function may also be an ExperimentalIncrementalExecutionResults object (or a
+ * Promise thereof), This object either consists of a an `initialResult` and a
+ * stream of `subsequentResults`.
  */
-export function experimentalExecuteIncrementally(
+export function execute<TEnableIncremental extends boolean = false>(
   args: ExecutionArgs,
-): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+): PromiseOrValue<MaybeIncrementalMap<TEnableIncremental>> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
-    return { errors: exeContext };
+    return { errors: exeContext } as MaybeIncrementalMap<TEnableIncremental>;
   }
 
-  return executeImpl(exeContext);
+  return executeImpl(exeContext) as PromiseOrValue<
+    MaybeIncrementalMap<TEnableIncremental>
+  >;
 }
 
 function executeImpl(
@@ -388,7 +367,7 @@ function executeImpl(
  * that all field resolvers are also synchronous.
  */
 export function executeSync(args: ExecutionArgs): ExecutionResult {
-  const result = experimentalExecuteIncrementally(args);
+  const result = execute(args);
 
   // Assert that the execution was synchronous.
   if (isPromise(result) || 'initialResult' in result) {
@@ -1457,6 +1436,13 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
     }
   };
 
+type MaybeIncrementalPayload<TMaybeIncremental> = TMaybeIncremental extends true
+  ?
+      | ExecutionResult
+      | InitialIncrementalExecutionResult
+      | SubsequentIncrementalExecutionResult
+  : ExecutionResult;
+
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
@@ -1476,71 +1462,16 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
- * This function does not support incremental delivery (`@defer` and `@stream`).
- * If an operation which would defer or stream data is executed with this
- * function, each `InitialIncrementalExecutionResult` and
- * `SubsequentIncrementalExecutionResult` in the result stream will be replaced
- * with an `ExecutionResult` with a single error stating that defer/stream is
- * not supported.  Use `experimentalSubscribeIncrementally` if you want to
- * support incremental delivery.
+ * This function also supports experimental incremental delivery directives
+ * (`@defer` and `@stream`). To use these directives, they should be added to
+ * the schema and TS generic parameter TMaybeIncremental should be set to `true`
+ * (default: false).
  *
- * Accepts an object with named arguments.
- */
-export function subscribe(
-  args: ExecutionArgs,
-): PromiseOrValue<
-  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
-> {
-  const maybePromise = experimentalSubscribeIncrementally(args);
-  if (isPromise(maybePromise)) {
-    return maybePromise.then((resultOrIterable) =>
-      isAsyncIterable(resultOrIterable)
-        ? mapAsyncIterable(resultOrIterable, ensureSingleExecutionResult)
-        : resultOrIterable,
-    );
-  }
-  return isAsyncIterable(maybePromise)
-    ? mapAsyncIterable(maybePromise, ensureSingleExecutionResult)
-    : maybePromise;
-}
-
-function ensureSingleExecutionResult(
-  result:
-    | ExecutionResult
-    | InitialIncrementalExecutionResult
-    | SubsequentIncrementalExecutionResult,
-): ExecutionResult {
-  if ('hasNext' in result) {
-    return {
-      errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
-    };
-  }
-  return result;
-}
-
-/**
- * Implements the "Subscribe" algorithm described in the GraphQL specification,
- * including `@defer` and `@stream` as proposed in
- * https://github.com/graphql/graphql-spec/pull/742
+ * Note: At runtime, the schema is not checked as to whether these directives are
+ * actually present; all operations passed to execute are assumed to be valid.
  *
- * Returns a Promise which resolves to either an AsyncIterator (if successful)
- * or an ExecutionResult (error). The promise will be rejected if the schema or
- * other arguments to this function are invalid, or if the resolved event stream
- * is not an async iterable.
- *
- * If the client-provided arguments to this function do not result in a
- * compliant subscription, a GraphQL Response (ExecutionResult) with descriptive
- * errors and no data will be returned.
- *
- * If the source stream could not be created due to faulty subscription resolver
- * logic or underlying systems, the promise will resolve to a single
- * ExecutionResult containing `errors` and no `data`.
- *
- * If the operation succeeded, the promise resolves to an AsyncIterator, which
- * yields a stream of result representing the response stream.
- *
- * Each result may be an ExecutionResult with no `hasNext` (if executing the
- * event did not use `@defer` or `@stream`), or an
+ * In that case, each payload may be an ExecutionResult with no `hasNext`
+ * (if executing the event did not use `@defer` or `@stream`), or an
  * `InitialIncrementalExecutionResult` or `SubsequentIncrementalExecutionResult`
  * (if executing the event used `@defer` or `@stream`). In the case of
  * incremental execution results, each event produces a single
@@ -1551,16 +1482,10 @@ function ensureSingleExecutionResult(
  *
  * Accepts an object with named arguments.
  */
-export function experimentalSubscribeIncrementally(
+export function subscribe<TMaybeIncremental extends boolean = false>(
   args: ExecutionArgs,
 ): PromiseOrValue<
-  | AsyncGenerator<
-      | ExecutionResult
-      | InitialIncrementalExecutionResult
-      | SubsequentIncrementalExecutionResult,
-      void,
-      void
-    >
+  | AsyncGenerator<MaybeIncrementalPayload<TMaybeIncremental>, void, void>
   | ExecutionResult
 > {
   // If a valid execution context cannot be created due to incorrect arguments,

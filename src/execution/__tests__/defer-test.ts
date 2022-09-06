@@ -1,8 +1,6 @@
-import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import type { DocumentNode } from '../../language/ast.js';
@@ -20,7 +18,7 @@ import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
 } from '../execute.js';
-import { execute, experimentalExecuteIncrementally } from '../execute.js';
+import { execute } from '../execute.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -84,7 +82,7 @@ const query = new GraphQLObjectType({
 const schema = new GraphQLSchema({ query });
 
 async function complete(document: DocumentNode) {
-  const result = await experimentalExecuteIncrementally({
+  const result = await execute<true>({
     schema,
     document,
     rootValue: {},
@@ -655,47 +653,5 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
-  });
-
-  it('original execute function throws error if anything is deferred and everything else is sync', () => {
-    const doc = `
-    query Deferred {
-      ... @defer { hero { id } }
-    }
-  `;
-    expect(() =>
-      execute({
-        schema,
-        document: parse(doc),
-        rootValue: {},
-      }),
-    ).to.throw(
-      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
-    );
-  });
-
-  it('original execute function resolves to error if anything is deferred and something else is async', async () => {
-    const doc = `
-    query Deferred {
-      hero { slowField }
-      ... @defer { hero { id } }
-    }
-  `;
-    expectJSON(
-      await expectPromise(
-        execute({
-          schema,
-          document: parse(doc),
-          rootValue: {},
-        }),
-      ).toResolve(),
-    ).toDeepEqual({
-      errors: [
-        {
-          message:
-            'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
-        },
-      ],
-    });
   });
 });

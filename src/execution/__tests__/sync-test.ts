@@ -114,6 +114,16 @@ describe('Execute: synchronously when possible', () => {
       }).to.throw('GraphQL execution failed to complete synchronously.');
     });
 
+    it('return successfully if incremental delivery is enabled but async iterable is not returned', () => {
+      const doc = 'query Example { syncField }';
+      const result = executeSync({
+        schema,
+        document: parse(doc),
+        rootValue: 'rootValue',
+      });
+      expect(result).to.deep.equal({ data: { syncField: 'rootValue' } });
+    });
+
     it('throws if encountering async iterable execution', () => {
       const doc = `
         query Example {

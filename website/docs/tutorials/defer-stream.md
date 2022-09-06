@@ -29,3 +29,12 @@ const result = experimentalExecuteIncrementally({
 ```
 
 If the `directives` option is passed to `GraphQLSchema`, the default directives will not be included. `specifiedDirectives` must be passed to ensure all standard directives are added in addition to `defer` & `stream`.
+
+When using TypeScript, remember to set the `TMaybeIncremental` generic parameter of `execute` to `true`:
+
+```ts
+const result = execute<true>({
+  schema,
+  document,
+});
+```
