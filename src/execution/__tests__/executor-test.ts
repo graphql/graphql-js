@@ -2,6 +2,7 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectMatchingValues } from '../../__testUtils__/expectMatchingValues.js';
 
 import { inspect } from '../../jsutils/inspect.js';
 
@@ -23,7 +24,19 @@ import {
 } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { execute, executeSync } from '../execute.js';
+import type { ExecutionArgs, ExecutionResult } from '../execute.js';
+import {
+  execute,
+  executeSync,
+  experimentalExecuteIncrementallySync,
+} from '../execute.js';
+
+function executeSyncWithBadArgs(args: ExecutionArgs): ExecutionResult {
+  return expectMatchingValues([
+    executeSync(args),
+    experimentalExecuteIncrementallySync(args),
+  ]);
+}
 
 describe('Execute: Handles basic execution tasks', () => {
   it('executes arbitrary code', async () => {
@@ -708,7 +721,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const document = parse('fragment Example on Type { a }');
     const rootValue = { a: 'b' };
 
-    const result = executeSync({ schema, document, rootValue });
+    const result = executeSyncWithBadArgs({ schema, document, rootValue });
     expectJSON(result).toDeepEqual({
       errors: [{ message: 'Must provide an operation.' }],
     });
@@ -728,7 +741,7 @@ describe('Execute: Handles basic execution tasks', () => {
       query OtherExample { a }
     `);
 
-    const result = executeSync({ schema, document });
+    const result = executeSyncWithBadArgs({ schema, document });
     expectJSON(result).toDeepEqual({
       errors: [
         {
@@ -754,7 +767,7 @@ describe('Execute: Handles basic execution tasks', () => {
     `);
     const operationName = 'UnknownExample';
 
-    const result = executeSync({ schema, document, operationName });
+    const result = executeSyncWithBadArgs({ schema, document, operationName });
     expectJSON(result).toDeepEqual({
       errors: [{ message: 'Unknown operation named "UnknownExample".' }],
     });
@@ -772,7 +785,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const document = parse('{ a }');
     const operationName = '';
 
-    const result = executeSync({ schema, document, operationName });
+    const result = executeSyncWithBadArgs({ schema, document, operationName });
     expectJSON(result).toDeepEqual({
       errors: [{ message: 'Unknown operation named "".' }],
     });
@@ -807,7 +820,12 @@ describe('Execute: Handles basic execution tasks', () => {
     const rootValue = { a: 'b', c: 'd' };
     const operationName = 'Q';
 
-    const result = executeSync({ schema, document, rootValue, operationName });
+    const result = executeSyncWithBadArgs({
+      schema,
+      document,
+      rootValue,
+      operationName,
+    });
     expect(result).to.deep.equal({ data: { a: 'b' } });
   });
 
@@ -873,7 +891,7 @@ describe('Execute: Handles basic execution tasks', () => {
     `);
 
     expectJSON(
-      executeSync({ schema, document, operationName: 'Q' }),
+      executeSyncWithBadArgs({ schema, document, operationName: 'Q' }),
     ).toDeepEqual({
       data: null,
       errors: [
@@ -885,7 +903,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     expectJSON(
-      executeSync({ schema, document, operationName: 'M' }),
+      executeSyncWithBadArgs({ schema, document, operationName: 'M' }),
     ).toDeepEqual({
       data: null,
       errors: [
@@ -897,7 +915,7 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     expectJSON(
-      executeSync({ schema, document, operationName: 'S' }),
+      executeSyncWithBadArgs({ schema, document, operationName: 'S' }),
     ).toDeepEqual({
       data: null,
       errors: [

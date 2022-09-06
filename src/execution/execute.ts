@@ -81,6 +81,7 @@ const collectSubfields = memoize3(
       exeContext.variableValues,
       returnType,
       fieldNodes,
+      exeContext.enableIncremental,
     ),
 );
 
@@ -110,7 +111,9 @@ const collectSubfields = memoize3(
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
  */
-export interface ExecutionContext {
+export interface ExecutionContext<
+  TEnableIncremental extends boolean = boolean,
+> {
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDefinitionNode>;
   rootValue: unknown;
@@ -122,6 +125,7 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
+  enableIncremental: TEnableIncremental;
 }
 
 /**
@@ -265,8 +269,9 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
-const UNEXPECTED_MULTIPLE_PAYLOADS =
-  'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
+export interface ExperimentalExecutionOptions {
+  enableIncremental?: boolean;
+}
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -279,27 +284,37 @@ const UNEXPECTED_MULTIPLE_PAYLOADS =
  * a GraphQLError will be thrown immediately explaining the invalid input.
  *
  * This function does not support incremental delivery (`@defer` and `@stream`).
- * If an operation which would defer or stream data is executed with this
- * function, it will throw or resolve to an object containing an error instead.
- * Use `experimentalExecuteIncrementally` if you want to support incremental
- * delivery.
+ * If an operation using these directives is executed with this function, they
+ * will be ignored.
+ * Use `experimentalExecuteIncrementally` if you want to support incremental delivery.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  const result = experimentalExecuteIncrementally(args);
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const exeContext = buildExecutionContext(args);
+
+  // Return early errors if execution context failed.
+  if (!('schema' in exeContext)) {
+    return { errors: exeContext };
+  }
+
+  const result = executeImpl(exeContext);
   if (!isPromise(result)) {
     if ('singleResult' in result) {
       return result.singleResult;
     }
-    throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
+    /* c8 ignore next 3 */
+    // Not reachable, incremental delivery not supported.
+    invariant(false);
   }
 
   return result.then((incrementalResult) => {
     if ('singleResult' in incrementalResult) {
       return incrementalResult.singleResult;
     }
-    return {
-      errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
-    };
+    /* c8 ignore next 3 */
+    // Not reachable, incremental delivery not supported.
+    invariant(false);
   });
 }
 
@@ -320,7 +335,7 @@ export function experimentalExecuteIncrementally(
 ): PromiseOrValue<ExperimentalExecuteIncrementallyResults> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
+  const exeContext = buildExecutionContext(args, { enableIncremental: true });
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
@@ -388,8 +403,37 @@ function executeImpl(
  * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
  * that all field resolvers are also synchronous.
+ *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
+ * If an operation using these directives is executed with this function, they
+ * will be ignored.
+ * Use `experimentalExecuteIncrementallySync` if you want to check that operations using
+ * these directives do not result in incremental payloads.
  */
 export function executeSync(args: ExecutionArgs): ExecutionResult {
+  const result = execute(args);
+
+  // Assert that the execution was synchronous.
+  if (isPromise(result)) {
+    throw new Error('GraphQL execution failed to complete synchronously.');
+  }
+
+  return result;
+}
+
+/**
+ * Also implements the "Executing requests" section of the GraphQL specification.
+ * However, it guarantees to complete synchronously (or throw an error) assuming
+ * that all field resolvers are also synchronous.
+ *
+ * This function supports incremental delivery (`@defer` and `@stream`).
+ * If an operation using these directives is executed with this function, they
+ * will be ignored.
+ * Use `experimentalExecuteIncrementallySync` if you want to support incremental delivery.
+ */
+export function experimentalExecuteIncrementallySync(
+  args: ExecutionArgs,
+): ExecutionResult {
   const result = experimentalExecuteIncrementally(args);
 
   // Assert that the execution was synchronous.
@@ -422,6 +466,7 @@ function buildResponse(
  */
 export function buildExecutionContext(
   args: ExecutionArgs,
+  experimentalOptions: ExperimentalExecutionOptions = {},
 ): ReadonlyArray<GraphQLError> | ExecutionContext {
   const {
     schema,
@@ -496,6 +541,7 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+    enableIncremental: experimentalOptions.enableIncremental ?? false,
     subsequentPayloads: new Set(),
     errors: [],
   };
@@ -534,6 +580,7 @@ function executeOperation(
     variableValues,
     rootType,
     operation.selectionSet,
+    exeContext.enableIncremental,
   );
   const path = undefined;
   let result;
@@ -924,11 +971,13 @@ function getStreamValues(
 
   // validation only allows equivalent streams on multiple fields, so it is
   // safe to only check the first fieldNode for the stream directive
-  const stream = getDirectiveValues(
-    GraphQLStreamDirective,
-    fieldNodes[0],
-    exeContext.variableValues,
-  );
+  const stream =
+    exeContext.enableIncremental &&
+    getDirectiveValues(
+      GraphQLStreamDirective,
+      fieldNodes[0],
+      exeContext.variableValues,
+    );
 
   if (!stream) {
     return;
@@ -1469,13 +1518,10 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
- * This function does not support incremental delivery (`@defer` and `@stream`).
- * If an operation which would defer or stream data is executed with this
- * function, each `InitialIncrementalExecutionResult` and
- * `SubsequentIncrementalExecutionResult` in the result stream will be replaced
- * with an `ExecutionResult` with a single error stating that defer/stream is
- * not supported.  Use `experimentalSubscribeIncrementally` if you want to
- * support incremental delivery.
+ * If an operation using these directives is executed with this function, they
+ * will be ignored.
+ * Use `experimentalSubscribeIncrementally` if you want to support incremental
+ * delivery.
  *
  * Accepts an object with named arguments.
  */
@@ -1484,31 +1530,24 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  const maybePromise = experimentalSubscribeIncrementally(args);
-  if (isPromise(maybePromise)) {
-    return maybePromise.then((resultOrIterable) =>
-      isAsyncIterable(resultOrIterable)
-        ? mapAsyncIterable(resultOrIterable, ensureSingleExecutionResult)
-        : resultOrIterable,
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const exeContext = buildExecutionContext(args);
+
+  // Return early errors if execution context failed.
+  if (!('schema' in exeContext)) {
+    return { errors: exeContext };
+  }
+
+  const resultOrStream = createSourceEventStreamImpl(exeContext);
+
+  if (isPromise(resultOrStream)) {
+    return resultOrStream.then((resolvedResultOrStream) =>
+      mapSourceToResponse(exeContext, resolvedResultOrStream),
     );
   }
-  return isAsyncIterable(maybePromise)
-    ? mapAsyncIterable(maybePromise, ensureSingleExecutionResult)
-    : maybePromise;
-}
 
-function ensureSingleExecutionResult(
-  result:
-    | ExecutionResult
-    | InitialIncrementalExecutionResult
-    | SubsequentIncrementalExecutionResult,
-): ExecutionResult {
-  if ('hasNext' in result) {
-    return {
-      errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
-    };
-  }
-  return result;
+  return mapSourceToResponse(exeContext, resultOrStream);
 }
 
 /**
@@ -1558,7 +1597,7 @@ export function experimentalSubscribeIncrementally(
 > {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const exeContext = buildExecutionContext(args);
+  const exeContext = buildExecutionContext(args, { enableIncremental: true });
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
@@ -1703,6 +1742,7 @@ function executeSubscription(
     variableValues,
     rootType,
     operation.selectionSet,
+    exeContext.enableIncremental,
   );
 
   const firstRootField = rootFields.entries().next().value;

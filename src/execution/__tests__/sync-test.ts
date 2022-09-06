@@ -13,7 +13,11 @@ import { validate } from '../../validation/validate.js';
 
 import { graphqlSync } from '../../graphql.js';
 
-import { execute, executeSync } from '../execute.js';
+import {
+  execute,
+  executeSync,
+  experimentalExecuteIncrementallySync,
+} from '../execute.js';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({
@@ -114,6 +118,16 @@ describe('Execute: synchronously when possible', () => {
       }).to.throw('GraphQL execution failed to complete synchronously.');
     });
 
+    it('return successfully if incremental delivery is enabled but async iterable is not returned', () => {
+      const doc = 'query Example { syncField }';
+      const result = experimentalExecuteIncrementallySync({
+        schema,
+        document: parse(doc),
+        rootValue: 'rootValue',
+      });
+      expect(result).to.deep.equal({ data: { syncField: 'rootValue' } });
+    });
+
     it('throws if encountering async iterable execution', () => {
       const doc = `
         query Example {
@@ -124,7 +138,7 @@ describe('Execute: synchronously when possible', () => {
         }
       `;
       expect(() => {
-        executeSync({
+        experimentalExecuteIncrementallySync({
           schema,
           document: parse(doc),
           rootValue: 'rootValue',
