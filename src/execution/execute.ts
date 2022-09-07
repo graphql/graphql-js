@@ -1045,9 +1045,8 @@ async function completeAsyncIteratorValue(
         handleFieldError(error, itemType, errors);
       }
     } catch (rawError) {
-      completedResults.push(null);
       const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
-      handleFieldError(error, itemType, errors);
+      completedResults.push(handleFieldError(error, itemType, errors));
       break;
     }
     index += 1;
