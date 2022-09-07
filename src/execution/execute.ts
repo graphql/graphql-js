@@ -972,7 +972,7 @@ async function completeAsyncIteratorValue(
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
   const stream = getStreamValues(exeContext, fieldNodes, path);
   let containsPromise = false;
-  const completedResults = [];
+  const completedResults: Array<unknown> = [];
   let index = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -997,57 +997,33 @@ async function completeAsyncIteratorValue(
     }
 
     const itemPath = addPath(path, index, undefined);
+    let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
-      const { value, done } = await iterator.next();
-      if (done) {
+      iteration = await iterator.next();
+      if (iteration.done) {
         break;
-      }
-
-      try {
-        // TODO can the error checking logic be consolidated with completeListValue?
-        const completedItem = completeValue(
-          exeContext,
-          itemType,
-          fieldNodes,
-          info,
-          itemPath,
-          value,
-          asyncPayloadRecord,
-        );
-        if (isPromise(completedItem)) {
-          containsPromise = true;
-          // Note: we don't rely on a `catch` method, but we do expect "thenable"
-          // to take a second callback for the error case.
-          completedResults.push(
-            completedItem.then(undefined, (rawError) => {
-              const error = locatedError(
-                rawError,
-                fieldNodes,
-                pathToArray(itemPath),
-              );
-              const handledError = handleFieldError(error, itemType, errors);
-              filterSubsequentPayloads(
-                exeContext,
-                itemPath,
-                asyncPayloadRecord,
-              );
-              return handledError;
-            }),
-          );
-        } else {
-          completedResults.push(completedItem);
-        }
-      } catch (rawError) {
-        completedResults.push(null);
-        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-        handleFieldError(error, itemType, errors);
       }
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
       completedResults.push(handleFieldError(error, itemType, errors));
       break;
+    }
+
+    if (
+      completeListItemValue(
+        iteration.value,
+        completedResults,
+        errors,
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+        asyncPayloadRecord,
+      )
+    ) {
+      containsPromise = true;
     }
     index += 1;
   }
