@@ -1096,7 +1096,7 @@ function completeListValue(
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
   let previousAsyncPayloadRecord = asyncPayloadRecord;
-  const completedResults = [];
+  const completedResults: Array<unknown> = [];
   let index = 0;
   for (const item of result) {
     // No need to modify the info object containing the path,
@@ -1123,61 +1123,98 @@ function completeListValue(
       continue;
     }
 
-    try {
-      let completedItem;
-      if (isPromise(item)) {
-        completedItem = item.then((resolved) =>
-          completeValue(
-            exeContext,
-            itemType,
-            fieldNodes,
-            info,
-            itemPath,
-            resolved,
-            asyncPayloadRecord,
-          ),
-        );
-      } else {
-        completedItem = completeValue(
+    if (
+      completeListItemValue(
+        item,
+        completedResults,
+        errors,
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+        asyncPayloadRecord,
+      )
+    ) {
+      containsPromise = true;
+    }
+
+    index++;
+  }
+
+  return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+
+/**
+ * Complete a list item value by adding it to the completed results.
+ *
+ * Returns true if the value is a Promise.
+ */
+function completeListItemValue(
+  item: unknown,
+  completedResults: Array<unknown>,
+  errors: Array<GraphQLError>,
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  itemPath: Path,
+  asyncPayloadRecord?: AsyncPayloadRecord,
+): boolean {
+  try {
+    let completedItem;
+    if (isPromise(item)) {
+      completedItem = item.then((resolved) =>
+        completeValue(
           exeContext,
           itemType,
           fieldNodes,
           info,
           itemPath,
-          item,
+          resolved,
           asyncPayloadRecord,
-        );
-      }
-
-      if (isPromise(completedItem)) {
-        containsPromise = true;
-        // Note: we don't rely on a `catch` method, but we do expect "thenable"
-        // to take a second callback for the error case.
-        completedResults.push(
-          completedItem.then(undefined, (rawError) => {
-            const error = locatedError(
-              rawError,
-              fieldNodes,
-              pathToArray(itemPath),
-            );
-            const handledError = handleFieldError(error, itemType, errors);
-            filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-            return handledError;
-          }),
-        );
-      } else {
-        completedResults.push(completedItem);
-      }
-    } catch (rawError) {
-      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      const handledError = handleFieldError(error, itemType, errors);
-      filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-      completedResults.push(handledError);
+        ),
+      );
+    } else {
+      completedItem = completeValue(
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+        item,
+        asyncPayloadRecord,
+      );
     }
-    index++;
+
+    if (isPromise(completedItem)) {
+      // Note: we don't rely on a `catch` method, but we do expect "thenable"
+      // to take a second callback for the error case.
+      completedResults.push(
+        completedItem.then(undefined, (rawError) => {
+          const error = locatedError(
+            rawError,
+            fieldNodes,
+            pathToArray(itemPath),
+          );
+          const handledError = handleFieldError(error, itemType, errors);
+          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+          return handledError;
+        }),
+      );
+
+      return true;
+    }
+
+    completedResults.push(completedItem);
+  } catch (rawError) {
+    const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+    const handledError = handleFieldError(error, itemType, errors);
+    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+    completedResults.push(handledError);
   }
 
-  return containsPromise ? Promise.all(completedResults) : completedResults;
+  return false;
 }
 
 /**
