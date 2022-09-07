@@ -1103,28 +1103,29 @@ function completeListValue(
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
+
+    if (
+      stream &&
+      typeof stream.initialCount === 'number' &&
+      index >= stream.initialCount
+    ) {
+      previousAsyncPayloadRecord = executeStreamField(
+        path,
+        itemPath,
+        item,
+        exeContext,
+        fieldNodes,
+        info,
+        itemType,
+        stream.label,
+        previousAsyncPayloadRecord,
+      );
+      index++;
+      continue;
+    }
+
     try {
       let completedItem;
-
-      if (
-        stream &&
-        typeof stream.initialCount === 'number' &&
-        index >= stream.initialCount
-      ) {
-        previousAsyncPayloadRecord = executeStreamField(
-          path,
-          itemPath,
-          item,
-          exeContext,
-          fieldNodes,
-          info,
-          itemType,
-          stream.label,
-          previousAsyncPayloadRecord,
-        );
-        index++;
-        continue;
-      }
       if (isPromise(item)) {
         completedItem = item.then((resolved) =>
           completeValue(
