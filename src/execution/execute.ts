@@ -151,19 +151,17 @@ export interface FormattedExecutionResult<
   extensions?: TExtensions;
 }
 
-export type ExperimentalExecuteIncrementallyResults<
+export interface ExperimentalIncrementalExecutionResults<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> =
-  | { singleResult: ExecutionResult<TData, TExtensions> }
-  | {
-      initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
-      subsequentResults: AsyncGenerator<
-        SubsequentIncrementalExecutionResult<TData, TExtensions>,
-        void,
-        void
-      >;
-    };
+> {
+  initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
+  subsequentResults: AsyncGenerator<
+    SubsequentIncrementalExecutionResult<TData, TExtensions>,
+    void,
+    void
+  >;
+}
 
 export interface InitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
@@ -287,19 +285,19 @@ const UNEXPECTED_MULTIPLE_PAYLOADS =
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   const result = experimentalExecuteIncrementally(args);
   if (!isPromise(result)) {
-    if ('singleResult' in result) {
-      return result.singleResult;
+    if ('initialResult' in result) {
+      throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
     }
-    throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
+    return result;
   }
 
   return result.then((incrementalResult) => {
-    if ('singleResult' in incrementalResult) {
-      return incrementalResult.singleResult;
+    if ('initialResult' in incrementalResult) {
+      return {
+        errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
+      };
     }
-    return {
-      errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
-    };
+    return incrementalResult;
   });
 }
 
@@ -308,23 +306,23 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
  * including `@defer` and `@stream` as proposed in
  * https://github.com/graphql/graphql-spec/pull/742
  *
- * This function returns a Promise of an ExperimentalExecuteIncrementallyResults
- * object. This object either contains a single ExecutionResult as
- * `singleResult`, or an `initialResult` and a stream of `subsequentResults`.
+ * This function returns a Promise of an ExperimentalIncrementalExecutionResults
+ * object. This object either consists of a single ExecutionResult, or an
+ * object containing an `initialResult` and a stream of `subsequentResults`.
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export function experimentalExecuteIncrementally(
   args: ExecutionArgs,
-): PromiseOrValue<ExperimentalExecuteIncrementallyResults> {
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in exeContext)) {
-    return { singleResult: { errors: exeContext } };
+    return { errors: exeContext };
   }
 
   return executeImpl(exeContext);
@@ -332,7 +330,7 @@ export function experimentalExecuteIncrementally(
 
 function executeImpl(
   exeContext: ExecutionContext,
-): PromiseOrValue<ExperimentalExecuteIncrementallyResults> {
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
@@ -359,11 +357,11 @@ function executeImpl(
               subsequentResults: yieldSubsequentPayloads(exeContext),
             };
           }
-          return { singleResult: initialResult };
+          return initialResult;
         },
         (error) => {
           exeContext.errors.push(error);
-          return { singleResult: buildResponse(null, exeContext.errors) };
+          return buildResponse(null, exeContext.errors);
         },
       );
     }
@@ -377,10 +375,10 @@ function executeImpl(
         subsequentResults: yieldSubsequentPayloads(exeContext),
       };
     }
-    return { singleResult: initialResult };
+    return initialResult;
   } catch (error) {
     exeContext.errors.push(error);
-    return { singleResult: buildResponse(null, exeContext.errors) };
+    return buildResponse(null, exeContext.errors);
   }
 }
 
@@ -397,7 +395,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
-  return result.singleResult;
+  return result;
 }
 
 /**
@@ -1469,7 +1467,11 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
- * This function does not support incremental delivery (`@defer` and `@stream`).
+ * This function also supports experimental incremental delivery directives
+ * (`@defer` and `@stream`). To use these directives, they should be added to
+ * the schema and TS generic parameter TMaybeIncremental should be set to `true`
+ * (default: false).
+ * * This function does not support incremental delivery (`@defer` and `@stream`).
  * If an operation which would defer or stream data is executed with this
  * function, each `InitialIncrementalExecutionResult` and
  * `SubsequentIncrementalExecutionResult` in the result stream will be replaced
@@ -1577,7 +1579,9 @@ export function experimentalSubscribeIncrementally(
 }
 
 async function* ensureAsyncIterable(
-  someExecutionResult: ExperimentalExecuteIncrementallyResults,
+  someExecutionResult:
+    | ExecutionResult
+    | ExperimentalIncrementalExecutionResults,
 ): AsyncGenerator<
   | ExecutionResult
   | InitialIncrementalExecutionResult
@@ -1589,7 +1593,7 @@ async function* ensureAsyncIterable(
     yield someExecutionResult.initialResult;
     yield* someExecutionResult.subsequentResults;
   } else {
-    yield someExecutionResult.singleResult;
+    yield someExecutionResult;
   }
 }
 

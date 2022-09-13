@@ -84,7 +84,7 @@ async function complete(document: DocumentNode, rootValue: unknown = {}) {
     }
     return results;
   }
-  return result.singleResult;
+  return result;
 }
 
 async function completeAsync(
