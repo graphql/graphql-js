@@ -283,9 +283,17 @@ const UNEXPECTED_MULTIPLE_PAYLOADS =
  * delivery.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  if (args.schema.getDirective('defer') || args.schema.getDirective('stream')) {
+    throw new Error(
+      'Use function `experimentalExecuteIncrementally` to execute operations against schemas that define the experimental @defer or @stream directives.',
+    );
+  }
+
   const result = experimentalExecuteIncrementally(args);
   if (!isPromise(result)) {
     if ('initialResult' in result) {
+      // This can happen if the operation contains @defer or @stream directives
+      // and is not validated prior to execution
       throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
     }
     return result;
@@ -293,6 +301,8 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
 
   return result.then((incrementalResult) => {
     if ('initialResult' in incrementalResult) {
+      // This can happen if the operation contains @defer or @stream directives
+      // and is not validated prior to execution
       throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
     }
     return incrementalResult;
