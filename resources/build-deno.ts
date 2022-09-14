@@ -27,7 +27,7 @@ for (const filepath of srcFiles) {
     ]);
     const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
     const newContent = printer.printBundle(
-      ts.createBundle(transformed.transformed),
+      ts.factory.createBundle(transformed.transformed),
     );
 
     transformed.dispose();
