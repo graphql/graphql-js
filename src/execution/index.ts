@@ -14,7 +14,7 @@ export {
 export type {
   ExecutionArgs,
   ExecutionResult,
-  ExperimentalExecuteIncrementallyResults,
+  ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
   IncrementalDeferResult,

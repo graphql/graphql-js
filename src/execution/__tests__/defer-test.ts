@@ -99,7 +99,7 @@ async function complete(document: DocumentNode) {
     }
     return results;
   }
-  return result.singleResult;
+  return result;
 }
 
 describe('Execute: defer directive', () => {
