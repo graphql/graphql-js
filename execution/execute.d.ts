@@ -387,7 +387,7 @@ declare class DeferredFragmentRecord {
   type: 'defer';
   errors: Array<GraphQLError>;
   label: string | undefined;
-  path: Path | undefined;
+  path: Array<string | number>;
   promise: Promise<void>;
   data: ObjMap<unknown> | null;
   parentContext: AsyncPayloadRecord | undefined;
@@ -406,7 +406,7 @@ declare class StreamRecord {
   type: 'stream';
   errors: Array<GraphQLError>;
   label: string | undefined;
-  path: Path | undefined;
+  path: Array<string | number>;
   items: Array<unknown> | null;
   promise: Promise<void>;
   parentContext: AsyncPayloadRecord | undefined;
