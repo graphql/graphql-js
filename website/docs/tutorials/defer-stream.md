@@ -3,7 +3,7 @@ title: Enabling Defer & Stream
 sidebar_label: Enabling Defer & Stream
 ---
 
-The `@defer` and `@stream` directives are not enabled by default. In order to use these directives, you must add them to your GraphQL Schema.
+The `@defer` and `@stream` directives are not enabled by default. In order to use these directives, you must add them to your GraphQL Schema and use the `experimentalExecuteIncrementally` function instead of `execute`.
 
 ```js
 import {
@@ -20,6 +20,11 @@ const schema = new GraphQLSchema({
     GraphQLDeferDirective,
     GraphQLStreamDirective,
   ],
+});
+
+const result = experimentalExecuteIncrementally({
+  schema,
+  document,
 });
 ```
 
