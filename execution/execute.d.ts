@@ -83,21 +83,17 @@ export interface FormattedExecutionResult<
   data?: TData | null;
   extensions?: TExtensions;
 }
-export declare type ExperimentalExecuteIncrementallyResults<
+export interface ExperimentalIncrementalExecutionResults<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> =
-  | {
-      singleResult: ExecutionResult<TData, TExtensions>;
-    }
-  | {
-      initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
-      subsequentResults: AsyncGenerator<
-        SubsequentIncrementalExecutionResult<TData, TExtensions>,
-        void,
-        void
-      >;
-    };
+> {
+  initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
+  subsequentResults: AsyncGenerator<
+    SubsequentIncrementalExecutionResult<TData, TExtensions>,
+    void,
+    void
+  >;
+}
 export interface InitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
@@ -213,16 +209,16 @@ export declare function execute(
  * including `@defer` and `@stream` as proposed in
  * https://github.com/graphql/graphql-spec/pull/742
  *
- * This function returns a Promise of an ExperimentalExecuteIncrementallyResults
- * object. This object either contains a single ExecutionResult as
- * `singleResult`, or an `initialResult` and a stream of `subsequentResults`.
+ * This function returns a Promise of an ExperimentalIncrementalExecutionResults
+ * object. This object either consists of a single ExecutionResult, or an
+ * object containing an `initialResult` and a stream of `subsequentResults`.
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
 export declare function experimentalExecuteIncrementally(
   args: ExecutionArgs,
-): PromiseOrValue<ExperimentalExecuteIncrementallyResults>;
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults>;
 /**
  * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
