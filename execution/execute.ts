@@ -680,13 +680,17 @@ function executeField(
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(path));
-        return handleFieldError(error, returnType, errors);
+        const handledError = handleFieldError(error, returnType, errors);
+        filterSubsequentPayloads(exeContext, path);
+        return handledError;
       });
     }
     return completed;
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(path));
-    return handleFieldError(error, returnType, errors);
+    const handledError = handleFieldError(error, returnType, errors);
+    filterSubsequentPayloads(exeContext, path);
+    return handledError;
   }
 }
 /**
@@ -1009,6 +1013,7 @@ function completeListValue(
         index >= stream.initialCount
       ) {
         previousAsyncPayloadRecord = executeStreamField(
+          path,
           itemPath,
           item,
           exeContext,
@@ -1055,7 +1060,9 @@ function completeListValue(
               fieldNodes,
               pathToArray(itemPath),
             );
-            return handleFieldError(error, itemType, errors);
+            const handledError = handleFieldError(error, itemType, errors);
+            filterSubsequentPayloads(exeContext, itemPath);
+            return handledError;
           }),
         );
       } else {
@@ -1063,7 +1070,9 @@ function completeListValue(
       }
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      completedResults.push(handleFieldError(error, itemType, errors));
+      const handledError = handleFieldError(error, itemType, errors);
+      filterSubsequentPayloads(exeContext, itemPath);
+      completedResults.push(handledError);
     }
     index++;
   }
@@ -1666,6 +1675,7 @@ function executeDeferredFragment(
 }
 function executeStreamField(
   path: Path,
+  itemPath: Path,
   item: PromiseOrValue<unknown>,
   exeContext: ExecutionContext,
   fieldNodes: ReadonlyArray<FieldNode>,
@@ -1676,7 +1686,7 @@ function executeStreamField(
 ): AsyncPayloadRecord {
   const asyncPayloadRecord = new StreamRecord({
     label,
-    path,
+    path: itemPath,
     parentContext,
     exeContext,
   });
@@ -1691,7 +1701,7 @@ function executeStreamField(
             itemType,
             fieldNodes,
             info,
-            path,
+            itemPath,
             resolved,
             asyncPayloadRecord,
           ),
@@ -1702,7 +1712,7 @@ function executeStreamField(
           itemType,
           fieldNodes,
           info,
-          path,
+          itemPath,
           item,
           asyncPayloadRecord,
         );
@@ -1711,20 +1721,32 @@ function executeStreamField(
         // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
         completedItem = completedItem.then(undefined, (rawError) => {
-          const error = locatedError(rawError, fieldNodes, pathToArray(path));
-          return handleFieldError(error, itemType, asyncPayloadRecord.errors);
+          const error = locatedError(
+            rawError,
+            fieldNodes,
+            pathToArray(itemPath),
+          );
+          const handledError = handleFieldError(
+            error,
+            itemType,
+            asyncPayloadRecord.errors,
+          );
+          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+          return handledError;
         });
       }
     } catch (rawError) {
-      const error = locatedError(rawError, fieldNodes, pathToArray(path));
+      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
       completedItems = handleFieldError(
         error,
         itemType,
         asyncPayloadRecord.errors,
       );
+      filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
     }
   } catch (error) {
     asyncPayloadRecord.errors.push(error);
+    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
     asyncPayloadRecord.addItems(null);
     return asyncPayloadRecord;
   }
@@ -1733,6 +1755,7 @@ function executeStreamField(
       (value) => [value],
       (error) => {
         asyncPayloadRecord.errors.push(error);
+        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
         return null;
       },
     );
@@ -1762,6 +1785,7 @@ async function executeStreamIteratorItem(
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
+    filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
     // don't continue if iterator throws
     return { done: true, value };
   }
@@ -1783,13 +1807,20 @@ async function executeStreamIteratorItem(
           fieldNodes,
           pathToArray(fieldPath),
         );
-        return handleFieldError(error, itemType, asyncPayloadRecord.errors);
+        const handledError = handleFieldError(
+          error,
+          itemType,
+          asyncPayloadRecord.errors,
+        );
+        filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
+        return handledError;
       });
     }
     return { done: false, value: completedItem };
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
+    filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
     return { done: false, value };
   }
 }
@@ -1843,11 +1874,44 @@ async function executeStreamIterator(
         break;
       }
     } catch (err) {
-      // do nothing, error is already handled above
+      // entire stream has errored and bubbled upwards
+      filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+      if (iterator?.return) {
+        iterator.return().catch(() => {
+          // ignore errors
+        });
+      }
+      return;
     }
     previousAsyncPayloadRecord = asyncPayloadRecord;
     index++;
   }
+}
+function filterSubsequentPayloads(
+  exeContext: ExecutionContext,
+  nullPath?: Path,
+  currentAsyncRecord?: AsyncPayloadRecord,
+): void {
+  const nullPathArray = pathToArray(nullPath);
+  exeContext.subsequentPayloads.forEach((asyncRecord) => {
+    if (asyncRecord === currentAsyncRecord) {
+      // don't remove payload from where error originates
+      return;
+    }
+    for (let i = 0; i < nullPathArray.length; i++) {
+      if (asyncRecord.path[i] !== nullPathArray[i]) {
+        // asyncRecord points to a path unaffected by this payload
+        return;
+      }
+    }
+    // asyncRecord path points to nulled error field
+    if (isStreamPayload(asyncRecord) && asyncRecord.iterator?.return) {
+      asyncRecord.iterator.return().catch(() => {
+        // ignore error
+      });
+    }
+    exeContext.subsequentPayloads.delete(asyncRecord);
+  });
 }
 function getCompletedIncrementalResults(
   exeContext: ExecutionContext,
@@ -1870,9 +1934,7 @@ function getCompletedIncrementalResults(
       const data = asyncPayloadRecord.data;
       (incrementalResult as IncrementalDeferResult).data = data ?? null;
     }
-    incrementalResult.path = asyncPayloadRecord.path
-      ? pathToArray(asyncPayloadRecord.path)
-      : [];
+    incrementalResult.path = asyncPayloadRecord.path;
     if (asyncPayloadRecord.label) {
       incrementalResult.label = asyncPayloadRecord.label;
     }
@@ -1950,7 +2012,7 @@ class DeferredFragmentRecord {
   type: 'defer';
   errors: Array<GraphQLError>;
   label: string | undefined;
-  path: Path | undefined;
+  path: Array<string | number>;
   promise: Promise<void>;
   data: ObjMap<unknown> | null;
   parentContext: AsyncPayloadRecord | undefined;
@@ -1965,7 +2027,7 @@ class DeferredFragmentRecord {
   }) {
     this.type = 'defer';
     this.label = opts.label;
-    this.path = opts.path;
+    this.path = pathToArray(opts.path);
     this.parentContext = opts.parentContext;
     this.errors = [];
     this._exeContext = opts.exeContext;
@@ -1994,7 +2056,7 @@ class StreamRecord {
   type: 'stream';
   errors: Array<GraphQLError>;
   label: string | undefined;
-  path: Path | undefined;
+  path: Array<string | number>;
   items: Array<unknown> | null;
   promise: Promise<void>;
   parentContext: AsyncPayloadRecord | undefined;
@@ -2013,7 +2075,7 @@ class StreamRecord {
     this.type = 'stream';
     this.items = null;
     this.label = opts.label;
-    this.path = opts.path;
+    this.path = pathToArray(opts.path);
     this.parentContext = opts.parentContext;
     this.iterator = opts.iterator;
     this.errors = [];
