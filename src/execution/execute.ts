@@ -1467,11 +1467,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
  *
- * This function also supports experimental incremental delivery directives
- * (`@defer` and `@stream`). To use these directives, they should be added to
- * the schema and TS generic parameter TMaybeIncremental should be set to `true`
- * (default: false).
- * * This function does not support incremental delivery (`@defer` and `@stream`).
+ * This function does not support incremental delivery (`@defer` and `@stream`).
  * If an operation which would defer or stream data is executed with this
  * function, each `InitialIncrementalExecutionResult` and
  * `SubsequentIncrementalExecutionResult` in the result stream will be replaced
