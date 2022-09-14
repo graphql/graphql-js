@@ -69,8 +69,9 @@ export function git(options?: GITOptions) {
     revParse(...args: ReadonlyArray<string>): string {
       return spawnOutput('git', ['rev-parse', ...cmdOptions, ...args], options);
     },
-    revList(...args: ReadonlyArray<string>): string {
-      return spawnOutput('git', ['rev-list', ...cmdOptions, ...args], options);
+    revList(...args: ReadonlyArray<string>): Array<string> {
+      const allArgs = ['rev-list', ...cmdOptions, ...args];
+      return spawnOutput('git', allArgs, options).split('\n');
     },
     catFile(...args: ReadonlyArray<string>): string {
       return spawnOutput('git', ['cat-file', ...cmdOptions, ...args], options);

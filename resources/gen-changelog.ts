@@ -53,36 +53,23 @@ if (repoURLMatch?.groups == null) {
 }
 const { githubOrg, githubRepo } = repoURLMatch.groups;
 
-getChangeLog()
-  .then((changelog) => process.stdout.write(changelog))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+process.stdout.write(await genChangeLog());
 
-function getChangeLog(): Promise<string> {
+async function genChangeLog(): Promise<string> {
   const { version } = packageJSON;
 
   let tag: string | null = null;
   let commitsList = git().revList('--reverse', `v${version}..`);
-  if (commitsList === '') {
+  if (commitsList.length === 0) {
     const parentPackageJSON = git().catFile('blob', 'HEAD~1:package.json');
     const parentVersion = JSON.parse(parentPackageJSON).version;
     commitsList = git().revList('--reverse', `v${parentVersion}..HEAD~1`);
     tag = `v${version}`;
   }
 
+  const allPRs = await getPRsInfo(commitsList);
   const date = git().log('-1', '--format=%cd', '--date=short');
-  return getCommitsInfo(commitsList.split('\n'))
-    .then((commitsInfo) => getPRsInfo(commitsInfoToPRs(commitsInfo)))
-    .then((prsInfo) => genChangeLog(tag, date, prsInfo));
-}
 
-function genChangeLog(
-  tag: string | null,
-  date: string,
-  allPRs: ReadonlyArray<PRInfo>,
-): string {
   const byLabel: { [label: string]: Array<PRInfo> } = {};
   const committersByLogin: { [login: string]: AuthorInfo } = {};
 
@@ -181,9 +168,9 @@ interface CommitInfo {
   };
 }
 
-async function batchCommitInfo(
+async function batchCommitToPR(
   commits: ReadonlyArray<string>,
-): Promise<Array<CommitInfo>> {
+): Promise<ReadonlyArray<number>> {
   let commitsSubQuery = '';
   for (const oid of commits) {
     commitsSubQuery += `
@@ -212,11 +199,12 @@ async function batchCommitInfo(
     }
   `);
 
-  const commitsInfo = [];
+  const prNumbers = [];
   for (const oid of commits) {
-    commitsInfo.push(response.repository['commit_' + oid]);
+    const commitInfo: CommitInfo = response.repository['commit_' + oid];
+    prNumbers.push(commitInfoToPR(commitInfo));
   }
-  return commitsInfo;
+  return prNumbers;
 }
 
 interface AuthorInfo {
@@ -237,7 +225,9 @@ interface PRInfo {
   };
 }
 
-async function batchPRInfo(prNumbers: Array<number>): Promise<Array<PRInfo>> {
+async function batchPRInfo(
+  prNumbers: ReadonlyArray<number>,
+): Promise<Array<PRInfo>> {
   let prsSubQuery = '';
   for (const number of prNumbers) {
     prsSubQuery += `
@@ -276,56 +266,47 @@ async function batchPRInfo(prNumbers: Array<number>): Promise<Array<PRInfo>> {
   return prsInfo;
 }
 
-function commitsInfoToPRs(commits: ReadonlyArray<CommitInfo>): Array<number> {
-  const prNumbers = new Set<number>();
-  for (const commit of commits) {
-    const associatedPRs = commit.associatedPullRequests.nodes.filter(
-      (pr) => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
+function commitInfoToPR(commit: CommitInfo): number {
+  const associatedPRs = commit.associatedPullRequests.nodes.filter(
+    (pr) => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
+  );
+  if (associatedPRs.length === 0) {
+    const match = / \(#(?<prNumber>[0-9]+)\)$/m.exec(commit.message);
+    if (match?.groups?.prNumber != null) {
+      return parseInt(match.groups.prNumber, 10);
+    }
+    throw new Error(
+      `Commit ${commit.oid} has no associated PR: ${commit.message}`,
     );
-    if (associatedPRs.length === 0) {
-      const match = / \(#(?<prNumber>[0-9]+)\)$/m.exec(commit.message);
-      if (match?.groups?.prNumber != null) {
-        prNumbers.add(parseInt(match.groups.prNumber, 10));
-        continue;
-      }
-      throw new Error(
-        `Commit ${commit.oid} has no associated PR: ${commit.message}`,
-      );
-    }
-    if (associatedPRs.length > 1) {
-      throw new Error(
-        `Commit ${commit.oid} is associated with multiple PRs: ${commit.message}`,
-      );
-    }
-
-    prNumbers.add(associatedPRs[0].number);
+  }
+  if (associatedPRs.length > 1) {
+    throw new Error(
+      `Commit ${commit.oid} is associated with multiple PRs: ${commit.message}`,
+    );
   }
 
-  return [...prNumbers.values()];
+  return associatedPRs[0].number;
 }
 
 async function getPRsInfo(
-  prNumbers: ReadonlyArray<number>,
-): Promise<Array<PRInfo>> {
-  // Split pr into batches of 50 to prevent timeouts
-  const prInfoPromises = [];
-  for (let i = 0; i < prNumbers.length; i += 50) {
-    const batch = prNumbers.slice(i, i + 50);
-    prInfoPromises.push(batchPRInfo(batch));
-  }
+  commits: ReadonlyArray<string>,
+): Promise<ReadonlyArray<PRInfo>> {
+  let prNumbers = await splitBatches(commits, batchCommitToPR);
+  prNumbers = Array.from(new Set(prNumbers)); // Remove duplicates
 
-  return (await Promise.all(prInfoPromises)).flat();
+  return splitBatches(prNumbers, batchPRInfo);
 }
 
-async function getCommitsInfo(
-  commits: ReadonlyArray<string>,
-): Promise<Array<CommitInfo>> {
-  // Split commits into batches of 50 to prevent timeouts
-  const commitInfoPromises = [];
-  for (let i = 0; i < commits.length; i += 50) {
-    const batch = commits.slice(i, i + 50);
-    commitInfoPromises.push(batchCommitInfo(batch));
+// Split commits into batches of 50 to prevent timeouts
+async function splitBatches<I, R>(
+  array: ReadonlyArray<I>,
+  batchFn: (array: ReadonlyArray<I>) => Promise<ReadonlyArray<R>>,
+): Promise<ReadonlyArray<R>> {
+  const promises = [];
+  for (let i = 0; i < array.length; i += 50) {
+    const batchItems = array.slice(i, i + 50);
+    promises.push(batchFn(batchItems));
   }
 
-  return (await Promise.all(commitInfoPromises)).flat();
+  return (await Promise.all(promises)).flat();
 }
