@@ -5,14 +5,13 @@
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
-export function promiseForObject(object) {
+export async function promiseForObject(object) {
   const keys = Object.keys(object);
   const values = Object.values(object);
-  return Promise.all(values).then((resolvedValues) => {
-    const resolvedObject = Object.create(null);
-    for (let i = 0; i < keys.length; ++i) {
-      resolvedObject[keys[i]] = resolvedValues[i];
-    }
-    return resolvedObject;
-  });
+  const resolvedValues = await Promise.all(values);
+  const resolvedObject = Object.create(null);
+  for (let i = 0; i < keys.length; ++i) {
+    resolvedObject[keys[i]] = resolvedValues[i];
+  }
+  return resolvedObject;
 }
