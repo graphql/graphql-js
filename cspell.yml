@@ -21,6 +21,7 @@ overrides:
       - clsx
       - infima
 
+validateDirectives: true
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
 
