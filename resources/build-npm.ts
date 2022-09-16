@@ -6,70 +6,24 @@ import ts from 'typescript';
 
 import { inlineInvariant } from './inline-invariant.js';
 import {
-  localRepoPath,
-  readdirRecursive,
   readPackageJSON,
+  readTSConfig,
   showDirStats,
   writeGeneratedFile,
 } from './utils.js';
 
-fs.rmSync('./npmDist', { recursive: true, force: true });
-fs.mkdirSync('./npmDist');
-
-// Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
-const tsConfigPath = localRepoPath('tsconfig.json');
-const { config: tsConfig, error: tsConfigError } = ts.parseConfigFileTextToJson(
-  tsConfigPath,
-  fs.readFileSync(tsConfigPath, 'utf-8'),
-);
-assert(tsConfigError === undefined, 'Fail to parse config: ' + tsConfigError);
-assert(
-  tsConfig.compilerOptions,
-  '"tsconfig.json" should have `compilerOptions`',
-);
-
-const { options: tsOptions, errors: tsOptionsErrors } =
-  ts.convertCompilerOptionsFromJson(
-    {
-      ...tsConfig.compilerOptions,
-      module: 'es2020',
-      noEmit: false,
-      declaration: true,
-      declarationDir: './npmDist',
-      outDir: './npmDist',
-    },
-    process.cwd(),
-  );
-
-assert(
-  tsOptionsErrors.length === 0,
-  'Fail to parse options: ' + tsOptionsErrors,
-);
-
-const tsHost = ts.createCompilerHost(tsOptions);
-tsHost.writeFile = writeGeneratedFile;
-
-const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
-const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
-  after: [inlineInvariant],
-});
-assert(
-  !tsResult.emitSkipped,
-  'Fail to generate `*.d.ts` files, please run `npm run check`',
-);
-
-fs.copyFileSync('./LICENSE', './npmDist/LICENSE');
-fs.copyFileSync('./README.md', './npmDist/README.md');
-
-// Should be done as the last step so only valid packages can be published
-writeGeneratedFile(
-  './npmDist/package.json',
-  JSON.stringify(buildPackageJSON()),
-);
-
+buildPackage();
 showDirStats('./npmDist');
 
-function buildPackageJSON() {
+function buildPackage() {
+  fs.rmSync('./npmDist', { recursive: true, force: true });
+  fs.mkdirSync('./npmDist');
+
+  fs.copyFileSync('./LICENSE', './npmDist/LICENSE');
+  fs.copyFileSync('./README.md', './npmDist/README.md');
+
+  const { emittedTSFiles } = emitTSFiles('./npmDist');
+
   const packageJSON = readPackageJSON();
 
   delete packageJSON.private;
@@ -97,10 +51,10 @@ function buildPackageJSON() {
 
   packageJSON.exports = {};
 
-  for (const filepath of readdirRecursive('./src', { ignoreDir: /^__.*__$/ })) {
-    if (path.basename(filepath) === 'index.ts') {
-      const key = path.dirname(filepath);
-      packageJSON.exports[key] = filepath.replace(/\.ts$/, '.js');
+  for (const filepath of emittedTSFiles) {
+    if (path.basename(filepath) === 'index.js') {
+      const relativePath = './' + path.relative('./npmDist', filepath);
+      packageJSON.exports[path.dirname(relativePath)] = relativePath;
     }
   }
 
@@ -136,5 +90,37 @@ function buildPackageJSON() {
     );
   }
 
-  return packageJSON;
+  // Should be done as the last step so only valid packages can be published
+  writeGeneratedFile('./npmDist/package.json', JSON.stringify(packageJSON));
+}
+
+// Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
+function emitTSFiles(outDir: string): {
+  emittedTSFiles: ReadonlyArray<string>;
+} {
+  const tsOptions = readTSConfig({
+    module: 'es2020',
+    noEmit: false,
+    declaration: true,
+    declarationDir: outDir,
+    outDir,
+    listEmittedFiles: true,
+  });
+
+  const tsHost = ts.createCompilerHost(tsOptions);
+  tsHost.writeFile = writeGeneratedFile;
+
+  const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
+  const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
+    after: [inlineInvariant],
+  });
+  assert(
+    !tsResult.emitSkipped,
+    'Fail to generate `*.d.ts` files, please run `npm run check`',
+  );
+
+  assert(tsResult.emittedFiles != null);
+  return {
+    emittedTSFiles: tsResult.emittedFiles.sort((a, b) => a.localeCompare(b)),
+  };
 }
