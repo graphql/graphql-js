@@ -712,7 +712,7 @@ describe('Execute: defer directive', () => {
         rootValue: {},
       }),
     ).to.throw(
-      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive). Disable `@defer` or `@stream` by setting the `if` argument to `false`.',
+      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
     );
   });
 
@@ -735,7 +735,7 @@ describe('Execute: defer directive', () => {
       errors: [
         {
           message:
-            'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive). Disable `@defer` or `@stream` by setting the `if` argument to `false`.',
+            'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
         },
       ],
     });

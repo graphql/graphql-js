@@ -78,6 +78,7 @@ const collectSubfields = memoize3(
       exeContext.schema,
       exeContext.fragments,
       exeContext.variableValues,
+      exeContext.operation,
       returnType,
       fieldNodes,
     ),
@@ -263,7 +264,7 @@ export interface ExecutionArgs {
 }
 
 const UNEXPECTED_MULTIPLE_PAYLOADS =
-  'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive). Disable `@defer` or `@stream` by setting the `if` argument to `false`.';
+  'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -531,7 +532,7 @@ function executeOperation(
     fragments,
     variableValues,
     rootType,
-    operation.selectionSet,
+    operation,
   );
   const path = undefined;
   let result;
@@ -990,6 +991,11 @@ function getStreamValues(
   invariant(
     stream.initialCount >= 0,
     'initialCount must be a positive integer',
+  );
+
+  invariant(
+    exeContext.operation.operation !== OperationTypeNode.SUBSCRIPTION,
+    '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
   );
 
   return {
@@ -1529,17 +1535,6 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
     }
   };
 
-function ensureSingleExecutionResult(
-  result: ExecutionResult | ExperimentalIncrementalExecutionResults,
-): ExecutionResult {
-  if ('initialResult' in result) {
-    return {
-      errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
-    };
-  }
-  return result;
-}
-
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
@@ -1561,8 +1556,8 @@ function ensureSingleExecutionResult(
  *
  * This function does not support incremental delivery (`@defer` and `@stream`).
  * If an operation which would defer or stream data is executed with this
- * function, the result stream will be replaced with an `ExecutionResult`
- * with a single error stating that defer/stream is not supported.
+ * function, a field error will be raised at the location of the `@defer` or
+ * `@stream` directive.
  *
  * Accepts an object with named arguments.
  */
@@ -1605,10 +1600,15 @@ function mapSourceToResponse(
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  return mapAsyncIterable(resultOrStream, async (payload: unknown) =>
-    ensureSingleExecutionResult(
-      await executeImpl(buildPerEventExecutionContext(exeContext, payload)),
-    ),
+  return mapAsyncIterable(
+    resultOrStream,
+    (payload: unknown) =>
+      executeImpl(
+        buildPerEventExecutionContext(exeContext, payload),
+        // typecast to ExecutionResult, not possible to return
+        // ExperimentalIncrementalExecutionResults when
+        // exeContext.operation is 'subscription'.
+      ) as ExecutionResult,
   );
 }
 
@@ -1689,7 +1689,7 @@ function executeSubscription(
     fragments,
     variableValues,
     rootType,
-    operation.selectionSet,
+    operation,
   );
 
   const firstRootField = rootFields.entries().next().value;
