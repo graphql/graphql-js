@@ -1948,7 +1948,6 @@ async function executeStreamIteratorItem(
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
-    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
     // don't continue if iterator throws
     return { done: true, value };
   }
