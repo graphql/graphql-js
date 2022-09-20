@@ -1689,7 +1689,6 @@ function executeStreamField(
     exeContext,
   });
   let completedItem: PromiseOrValue<unknown>;
-  let completedItems: PromiseOrValue<Array<unknown> | null>;
   try {
     try {
       if (isPromise(item)) {
@@ -1735,7 +1734,7 @@ function executeStreamField(
       }
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      completedItems = handleFieldError(
+      completedItem = handleFieldError(
         error,
         itemType,
         asyncPayloadRecord.errors,
@@ -1748,6 +1747,7 @@ function executeStreamField(
     asyncPayloadRecord.addItems(null);
     return asyncPayloadRecord;
   }
+  let completedItems: PromiseOrValue<Array<unknown> | null>;
   if (isPromise(completedItem)) {
     completedItems = completedItem.then(
       (value) => [value],
