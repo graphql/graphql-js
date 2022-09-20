@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import prettier from 'prettier';
+import ts from 'typescript';
 
 export function localRepoPath(...paths: ReadonlyArray<string>): string {
   const repoDir = new URL('..', import.meta.url).pathname;
@@ -109,30 +110,21 @@ function spawn(
   childProcess.spawnSync(command, args, { stdio: 'inherit', ...options });
 }
 
-export function readdirRecursive(
-  dirPath: string,
-  opts: { ignoreDir?: RegExp } = {},
-): Array<string> {
-  const { ignoreDir } = opts;
-  const result = [];
-  for (const dirent of fs.readdirSync(dirPath, { withFileTypes: true })) {
-    const name = dirent.name;
-    if (!dirent.isDirectory()) {
-      result.push(dirent.name);
-      continue;
-    }
+function* readdirRecursive(dirPath: string): Generator<{
+  name: string;
+  filepath: string;
+  stats: fs.Stats;
+}> {
+  for (const name of fs.readdirSync(dirPath)) {
+    const filepath = path.join(dirPath, name);
+    const stats = fs.lstatSync(filepath);
 
-    if (ignoreDir?.test(name)) {
-      continue;
+    if (stats.isDirectory()) {
+      yield* readdirRecursive(filepath);
+    } else {
+      yield { name, filepath, stats };
     }
-    const list = readdirRecursive(path.join(dirPath, name), opts).map((f) =>
-      path.join(name, f),
-    );
-    result.push(...list);
   }
-
-  result.sort((a, b) => a.localeCompare(b));
-  return result.map((filepath) => './' + filepath);
 }
 
 export function showDirStats(dirPath: string): void {
@@ -141,18 +133,14 @@ export function showDirStats(dirPath: string): void {
   } = {};
   let totalSize = 0;
 
-  for (const filepath of readdirRecursive(dirPath)) {
-    const name = filepath.split(path.sep).at(-1);
-    assert(name != null);
-    const [base, ...splitExt] = name.split('.');
-    const ext = splitExt.join('.');
+  for (const { name, filepath, stats } of readdirRecursive(dirPath)) {
+    const ext = name.split('.').slice(1).join('.');
+    const filetype = ext ? '*.' + ext : name;
 
-    const filetype = ext ? '*.' + ext : base;
-    fileTypes[filetype] = fileTypes[filetype] || { filepaths: [], size: 0 };
+    fileTypes[filetype] = fileTypes[filetype] ?? { filepaths: [], size: 0 };
 
-    const { size } = fs.lstatSync(path.join(dirPath, filepath));
-    totalSize += size;
-    fileTypes[filetype].size += size;
+    totalSize += stats.size;
+    fileTypes[filetype].size += stats.size;
     fileTypes[filetype].filepaths.push(filepath);
   }
 
@@ -163,7 +151,8 @@ export function showDirStats(dirPath: string): void {
     if (numFiles > 1) {
       stats.push([filetype + ' x' + numFiles, typeStats.size]);
     } else {
-      stats.push([typeStats.filepaths[0], typeStats.size]);
+      const relativePath = path.relative(dirPath, typeStats.filepaths[0]);
+      stats.push([relativePath, typeStats.size]);
     }
   }
   stats.sort((a, b) => b[1] - a[1]);
@@ -217,4 +206,32 @@ export function readPackageJSON(
 ): PackageJSON {
   const filepath = path.join(dirPath, 'package.json');
   return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+}
+
+export function readTSConfig(overrides?: any): ts.CompilerOptions {
+  const tsConfigPath = localRepoPath('tsconfig.json');
+
+  const { config: tsConfig, error: tsConfigError } =
+    ts.parseConfigFileTextToJson(
+      tsConfigPath,
+      fs.readFileSync(tsConfigPath, 'utf-8'),
+    );
+  assert(tsConfigError === undefined, 'Fail to parse config: ' + tsConfigError);
+  assert(
+    tsConfig.compilerOptions,
+    '"tsconfig.json" should have `compilerOptions`',
+  );
+
+  const { options: tsOptions, errors: tsOptionsErrors } =
+    ts.convertCompilerOptionsFromJson(
+      { ...tsConfig.compilerOptions, ...overrides },
+      process.cwd(),
+    );
+
+  assert(
+    tsOptionsErrors.length === 0,
+    'Fail to parse options: ' + tsOptionsErrors,
+  );
+
+  return tsOptions;
 }
