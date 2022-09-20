@@ -2,7 +2,7 @@ name: run-benchmark
 on:
   workflow_call:
     inputs:
-      pullRequestJSON:
+      pull_request_json:
         description: String that contain JSON payload for `pull_request` event.
         required: true
         type: string
@@ -15,11 +15,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-          ref: ${{ fromJSON(inputs.pullRequestJSON).merge_commit_sha }}
+          ref: ${{ fromJSON(inputs.pull_request_json).merge_commit_sha }}
 
       - name: Deepen cloned repo
         env:
-          BASE_SHA: ${{ fromJSON(inputs.pullRequestJSON).base.sha }}
+          BASE_SHA: ${{ fromJSON(inputs.pull_request_json).base.sha }}
         run: 'git fetch --depth=1 origin "$BASE_SHA:refs/tags/BASE"'
 
       - name: Setup Node.js

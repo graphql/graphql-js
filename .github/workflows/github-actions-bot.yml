@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       cmd: ${{ steps.parse-cmd.outputs.cmd }}
-      pullRequestJSON: ${{ steps.parse-cmd.outputs.pullRequestJSON }}
+      pull_request_json: ${{ steps.parse-cmd.outputs.pull_request_json }}
     steps:
       - uses: actions/github-script@v6
         with:
@@ -76,23 +76,23 @@ jobs:
 
             const { url } = context.payload.issue.pull_request;
             const { data } = await github.request(url);
-            core.setOutput('pullRequestJSON', JSON.stringify(data, null, 2));
+            core.setOutput('pull_request_json', JSON.stringify(data, null, 2));
 
   cmd-publish-pr-on-npm:
     needs: [accept-cmd]
     if: needs.accept-cmd.outputs.cmd == 'publish-pr-on-npm'
     uses: ./.github/workflows/cmd-publish-pr-on-npm.yml
     with:
-      pullRequestJSON: ${{ needs.accept-cmd.outputs.pullRequestJSON }}
+      pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
     secrets:
-      NPM_CANARY_PR_PUBLISH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
+      npm_canary_pr_publish_token: ${{ secrets.npm_canary_pr_publish_token }}
 
   cmd-run-benchmark:
     needs: [accept-cmd]
     if: needs.accept-cmd.outputs.cmd == 'run-benchmark'
     uses: ./.github/workflows/cmd-run-benchmark.yml
     with:
-      pullRequestJSON: ${{ needs.accept-cmd.outputs.pullRequestJSON }}
+      pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
 
   respond-to-cmd:
     needs:
