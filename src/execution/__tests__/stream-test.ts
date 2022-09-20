@@ -823,10 +823,7 @@ describe('Execute: stream directive', () => {
       }
     `);
     const result = await complete(document, {
-      async *scalarList() {
-        yield await Promise.resolve(friends[0].name);
-        yield await Promise.resolve({});
-      },
+      scalarList: () => [friends[0].name, {}],
     });
     expectJSON(result).toDeepEqual([
       {
@@ -849,9 +846,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
         hasNext: false,
       },
     ]);
