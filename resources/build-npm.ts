@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import ts from 'typescript';
 
+import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
 import { inlineInvariant } from './inline-invariant.js';
 import {
   readPackageJSON,
@@ -12,17 +13,20 @@ import {
   writeGeneratedFile,
 } from './utils.js';
 
-buildPackage();
+console.log('\n./npmDist');
+buildPackage('./npmDist', false);
 showDirStats('./npmDist');
 
-function buildPackage() {
-  fs.rmSync('./npmDist', { recursive: true, force: true });
-  fs.mkdirSync('./npmDist');
+console.log('\n./npmEsmDist');
+buildPackage('./npmEsmDist', true);
+showDirStats('./npmEsmDist');
 
-  fs.copyFileSync('./LICENSE', './npmDist/LICENSE');
-  fs.copyFileSync('./README.md', './npmDist/README.md');
+function buildPackage(outDir: string, isESMOnly: boolean): void {
+  fs.rmSync(outDir, { recursive: true, force: true });
+  fs.mkdirSync(outDir);
 
-  const { emittedTSFiles } = emitTSFiles('./npmDist');
+  fs.copyFileSync('./LICENSE', `./${outDir}/LICENSE`);
+  fs.copyFileSync('./README.md', `./${outDir}/README.md`);
 
   const packageJSON = readPackageJSON();
 
@@ -39,7 +43,7 @@ function buildPackage() {
   // TODO: revisit once TS implements https://github.com/microsoft/TypeScript/issues/32166
   const notSupportedTSVersionFile = 'NotSupportedTSVersion.d.ts';
   fs.writeFileSync(
-    path.join('./npmDist', notSupportedTSVersionFile),
+    path.join(outDir, notSupportedTSVersionFile),
     // Provoke syntax error to show this message
     `"Package 'graphql' support only TS versions that are ${supportedTSVersions[0]}".`,
   );
@@ -48,19 +52,6 @@ function buildPackage() {
     ...packageJSON.typesVersions,
     '*': { '*': [notSupportedTSVersionFile] },
   };
-
-  packageJSON.exports = {};
-
-  for (const filepath of emittedTSFiles) {
-    if (path.basename(filepath) === 'index.js') {
-      const relativePath = './' + path.relative('./npmDist', filepath);
-      packageJSON.exports[path.dirname(relativePath)] = relativePath;
-    }
-  }
-
-  // Temporary workaround to allow "internal" imports, no grantees provided
-  packageJSON.exports['./*.js'] = './*.js';
-  packageJSON.exports['./*'] = './*.js';
 
   // TODO: move to integration tests
   const publishTag = packageJSON.publishConfig?.tag;
@@ -90,16 +81,51 @@ function buildPackage() {
     );
   }
 
+  if (isESMOnly) {
+    packageJSON.exports = {};
+
+    const { emittedTSFiles } = emitTSFiles({
+      outDir,
+      module: 'es2020',
+      extension: '.js',
+    });
+
+    for (const filepath of emittedTSFiles) {
+      if (path.basename(filepath) === 'index.js') {
+        const relativePath = './' + path.relative('./npmEsmDist', filepath);
+        packageJSON.exports[path.dirname(relativePath)] = relativePath;
+      }
+    }
+
+    // Temporary workaround to allow "internal" imports, no grantees provided
+    packageJSON.exports['./*.js'] = './*.js';
+    packageJSON.exports['./*'] = './*.js';
+
+    packageJSON.publishConfig.tag += '-esm';
+    packageJSON.version += '+esm';
+  } else {
+    delete packageJSON.type;
+    packageJSON.main = 'index';
+    packageJSON.module = 'index.mjs';
+    emitTSFiles({ outDir, module: 'commonjs', extension: '.js' });
+    emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
+  }
+
   // Should be done as the last step so only valid packages can be published
-  writeGeneratedFile('./npmDist/package.json', JSON.stringify(packageJSON));
+  writeGeneratedFile(`./${outDir}/package.json`, JSON.stringify(packageJSON));
 }
 
 // Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
-function emitTSFiles(outDir: string): {
+function emitTSFiles(options: {
+  outDir: string;
+  module: string;
+  extension: string;
+}): {
   emittedTSFiles: ReadonlyArray<string>;
 } {
+  const { outDir, module, extension } = options;
   const tsOptions = readTSConfig({
-    module: 'es2020',
+    module,
     noEmit: false,
     declaration: true,
     declarationDir: outDir,
@@ -108,11 +134,12 @@ function emitTSFiles(outDir: string): {
   });
 
   const tsHost = ts.createCompilerHost(tsOptions);
-  tsHost.writeFile = writeGeneratedFile;
+  tsHost.writeFile = (filepath, body) =>
+    writeGeneratedFile(filepath.replace(/.js$/, extension), body);
 
   const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
   const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
-    after: [inlineInvariant],
+    after: [changeExtensionInImportPaths({ extension }), inlineInvariant],
   });
   assert(
     !tsResult.emitSkipped,
