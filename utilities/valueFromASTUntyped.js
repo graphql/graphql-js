@@ -1,5 +1,8 @@
-import { keyValMap } from '../jsutils/keyValMap.js';
-import { Kind } from '../language/kinds.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.valueFromASTUntyped = void 0;
+const keyValMap_js_1 = require('../jsutils/keyValMap.js');
+const kinds_js_1 = require('../language/kinds.js');
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
@@ -16,29 +19,30 @@ import { Kind } from '../language/kinds.js';
  * | Null                 | null             |
  *
  */
-export function valueFromASTUntyped(valueNode, variables) {
+function valueFromASTUntyped(valueNode, variables) {
   switch (valueNode.kind) {
-    case Kind.NULL:
+    case kinds_js_1.Kind.NULL:
       return null;
-    case Kind.INT:
+    case kinds_js_1.Kind.INT:
       return parseInt(valueNode.value, 10);
-    case Kind.FLOAT:
+    case kinds_js_1.Kind.FLOAT:
       return parseFloat(valueNode.value);
-    case Kind.STRING:
-    case Kind.ENUM:
-    case Kind.BOOLEAN:
+    case kinds_js_1.Kind.STRING:
+    case kinds_js_1.Kind.ENUM:
+    case kinds_js_1.Kind.BOOLEAN:
       return valueNode.value;
-    case Kind.LIST:
+    case kinds_js_1.Kind.LIST:
       return valueNode.values.map((node) =>
         valueFromASTUntyped(node, variables),
       );
-    case Kind.OBJECT:
-      return keyValMap(
+    case kinds_js_1.Kind.OBJECT:
+      return (0, keyValMap_js_1.keyValMap)(
         valueNode.fields,
         (field) => field.name.value,
         (field) => valueFromASTUntyped(field.value, variables),
       );
-    case Kind.VARIABLE:
+    case kinds_js_1.Kind.VARIABLE:
       return variables?.[valueNode.name.value];
   }
 }
+exports.valueFromASTUntyped = valueFromASTUntyped;

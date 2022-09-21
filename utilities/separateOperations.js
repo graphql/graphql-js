@@ -1,21 +1,24 @@
-import { Kind } from '../language/kinds.js';
-import { visit } from '../language/visitor.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.separateOperations = void 0;
+const kinds_js_1 = require('../language/kinds.js');
+const visitor_js_1 = require('../language/visitor.js');
 /**
  * separateOperations accepts a single AST document which may contain many
  * operations and fragments and returns a collection of AST documents each of
  * which contains a single operation as well the fragment definitions it
  * refers to.
  */
-export function separateOperations(documentAST) {
+function separateOperations(documentAST) {
   const operations = [];
   const depGraph = Object.create(null);
   // Populate metadata and build a dependency graph.
   for (const definitionNode of documentAST.definitions) {
     switch (definitionNode.kind) {
-      case Kind.OPERATION_DEFINITION:
+      case kinds_js_1.Kind.OPERATION_DEFINITION:
         operations.push(definitionNode);
         break;
-      case Kind.FRAGMENT_DEFINITION:
+      case kinds_js_1.Kind.FRAGMENT_DEFINITION:
         depGraph[definitionNode.name.value] = collectDependencies(
           definitionNode.selectionSet,
         );
@@ -37,17 +40,18 @@ export function separateOperations(documentAST) {
     // The list of definition nodes to be included for this operation, sorted
     // to retain the same order as the original document.
     separatedDocumentASTs[operationName] = {
-      kind: Kind.DOCUMENT,
+      kind: kinds_js_1.Kind.DOCUMENT,
       definitions: documentAST.definitions.filter(
         (node) =>
           node === operation ||
-          (node.kind === Kind.FRAGMENT_DEFINITION &&
+          (node.kind === kinds_js_1.Kind.FRAGMENT_DEFINITION &&
             dependencies.has(node.name.value)),
       ),
     };
   }
   return separatedDocumentASTs;
 }
+exports.separateOperations = separateOperations;
 // From a dependency graph, collects a list of transitive dependencies by
 // recursing through a dependency graph.
 function collectTransitiveDependencies(collected, depGraph, fromName) {
@@ -63,7 +67,7 @@ function collectTransitiveDependencies(collected, depGraph, fromName) {
 }
 function collectDependencies(selectionSet) {
   const dependencies = [];
-  visit(selectionSet, {
+  (0, visitor_js_1.visit)(selectionSet, {
     FragmentSpread(node) {
       dependencies.push(node.name.value);
     },

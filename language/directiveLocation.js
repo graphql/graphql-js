@@ -1,7 +1,10 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.DirectiveLocation = void 0;
 /**
  * The set of allowed directive location values.
  */
-export var DirectiveLocation;
+var DirectiveLocation;
 (function (DirectiveLocation) {
   /** Request Definitions */
   DirectiveLocation['QUERY'] = 'QUERY';
@@ -24,4 +27,7 @@ export var DirectiveLocation;
   DirectiveLocation['ENUM_VALUE'] = 'ENUM_VALUE';
   DirectiveLocation['INPUT_OBJECT'] = 'INPUT_OBJECT';
   DirectiveLocation['INPUT_FIELD_DEFINITION'] = 'INPUT_FIELD_DEFINITION';
-})(DirectiveLocation || (DirectiveLocation = {}));
+})(
+  (DirectiveLocation =
+    exports.DirectiveLocation || (exports.DirectiveLocation = {})),
+);

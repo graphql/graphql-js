@@ -1,13 +1,16 @@
-import { Kind } from '../language/kinds.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.getOperationAST = void 0;
+const kinds_js_1 = require('../language/kinds.js');
 /**
  * Returns an operation AST given a document AST and optionally an operation
  * name. If a name is not provided, an operation is only returned if only one is
  * provided in the document.
  */
-export function getOperationAST(documentAST, operationName) {
+function getOperationAST(documentAST, operationName) {
   let operation = null;
   for (const definition of documentAST.definitions) {
-    if (definition.kind === Kind.OPERATION_DEFINITION) {
+    if (definition.kind === kinds_js_1.Kind.OPERATION_DEFINITION) {
       if (operationName == null) {
         // If no operation name was provided, only return an Operation if there
         // is one defined in the document. Upon encountering the second, return
@@ -23,3 +26,4 @@ export function getOperationAST(documentAST, operationName) {
   }
   return operation;
 }
+exports.getOperationAST = getOperationAST;

@@ -1,6 +1,9 @@
-import { GraphQLError } from '../../../error/GraphQLError.js';
-import { getNamedType } from '../../../type/definition.js';
-import { isIntrospectionType } from '../../../type/introspection.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.NoSchemaIntrospectionCustomRule = void 0;
+const GraphQLError_js_1 = require('../../../error/GraphQLError.js');
+const definition_js_1 = require('../../../type/definition.js');
+const introspection_js_1 = require('../../../type/introspection.js');
 /**
  * Prohibit introspection queries
  *
@@ -11,13 +14,13 @@ import { isIntrospectionType } from '../../../type/introspection.js';
  * GraphQL Specification. This rule effectively disables introspection, which
  * does not reflect best practices and should only be done if absolutely necessary.
  */
-export function NoSchemaIntrospectionCustomRule(context) {
+function NoSchemaIntrospectionCustomRule(context) {
   return {
     Field(node) {
-      const type = getNamedType(context.getType());
-      if (type && isIntrospectionType(type)) {
+      const type = (0, definition_js_1.getNamedType)(context.getType());
+      if (type && (0, introspection_js_1.isIntrospectionType)(type)) {
         context.reportError(
-          new GraphQLError(
+          new GraphQLError_js_1.GraphQLError(
             `GraphQL introspection has been disabled, but the requested query contained the field "${node.name.value}".`,
             { nodes: node },
           ),
@@ -26,3 +29,4 @@ export function NoSchemaIntrospectionCustomRule(context) {
     },
   };
 }
+exports.NoSchemaIntrospectionCustomRule = NoSchemaIntrospectionCustomRule;

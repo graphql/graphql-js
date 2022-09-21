@@ -1,4 +1,7 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.NoFragmentCyclesRule = void 0;
+const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 /**
  * No fragment cycles
  *
@@ -7,7 +10,7 @@ import { GraphQLError } from '../../error/GraphQLError.js';
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-spreads-must-not-form-cycles
  */
-export function NoFragmentCyclesRule(context) {
+function NoFragmentCyclesRule(context) {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
   const visitedFrags = new Set();
@@ -52,7 +55,7 @@ export function NoFragmentCyclesRule(context) {
           .map((s) => '"' + s.name.value + '"')
           .join(', ');
         context.reportError(
-          new GraphQLError(
+          new GraphQLError_js_1.GraphQLError(
             `Cannot spread fragment "${spreadName}" within itself` +
               (viaPath !== '' ? ` via ${viaPath}.` : '.'),
             { nodes: cyclePath },
@@ -64,3 +67,4 @@ export function NoFragmentCyclesRule(context) {
     spreadPathIndexByName[fragmentName] = undefined;
   }
 }
+exports.NoFragmentCyclesRule = NoFragmentCyclesRule;

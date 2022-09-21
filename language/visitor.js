@@ -1,11 +1,18 @@
-import { devAssert } from '../jsutils/devAssert.js';
-import { inspect } from '../jsutils/inspect.js';
-import { isNode, QueryDocumentKeys } from './ast.js';
-import { Kind } from './kinds.js';
-export const BREAK = Object.freeze({});
-export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.getEnterLeaveForKind =
+  exports.visitInParallel =
+  exports.visit =
+  exports.BREAK =
+    void 0;
+const devAssert_js_1 = require('../jsutils/devAssert.js');
+const inspect_js_1 = require('../jsutils/inspect.js');
+const ast_js_1 = require('./ast.js');
+const kinds_js_1 = require('./kinds.js');
+exports.BREAK = Object.freeze({});
+function visit(root, visitor, visitorKeys = ast_js_1.QueryDocumentKeys) {
   const enterLeaveMap = new Map();
-  for (const kind of Object.values(Kind)) {
+  for (const kind of Object.values(kinds_js_1.Kind)) {
     enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
   }
   /* eslint-disable no-undef-init */
@@ -66,12 +73,16 @@ export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
     }
     let result;
     if (!Array.isArray(node)) {
-      isNode(node) || devAssert(false, `Invalid AST Node: ${inspect(node)}.`);
+      (0, ast_js_1.isNode)(node) ||
+        devAssert(
+          false,
+          `Invalid AST Node: ${(0, inspect_js_1.inspect)(node)}.`,
+        );
       const visitFn = isLeaving
         ? enterLeaveMap.get(node.kind)?.leave
         : enterLeaveMap.get(node.kind)?.enter;
       result = visitFn?.call(visitor, node, key, parent, path, ancestors);
-      if (result === BREAK) {
+      if (result === exports.BREAK) {
         break;
       }
       if (result === false) {
@@ -82,7 +93,7 @@ export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
       } else if (result !== undefined) {
         edits.push([key, result]);
         if (!isLeaving) {
-          if (isNode(result)) {
+          if ((0, ast_js_1.isNode)(result)) {
             node = result;
           } else {
             path.pop();
@@ -114,16 +125,17 @@ export function visit(root, visitor, visitorKeys = QueryDocumentKeys) {
   }
   return root;
 }
+exports.visit = visit;
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
  *
  * If a prior visitor edits a node, no following visitors will see that node.
  */
-export function visitInParallel(visitors) {
+function visitInParallel(visitors) {
   const skipping = new Array(visitors.length).fill(null);
   const mergedVisitor = Object.create(null);
-  for (const kind of Object.values(Kind)) {
+  for (const kind of Object.values(kinds_js_1.Kind)) {
     let hasVisitor = false;
     const enterList = new Array(visitors.length).fill(undefined);
     const leaveList = new Array(visitors.length).fill(undefined);
@@ -144,8 +156,8 @@ export function visitInParallel(visitors) {
             const result = enterList[i]?.apply(visitors[i], args);
             if (result === false) {
               skipping[i] = node;
-            } else if (result === BREAK) {
-              skipping[i] = BREAK;
+            } else if (result === exports.BREAK) {
+              skipping[i] = exports.BREAK;
             } else if (result !== undefined) {
               return result;
             }
@@ -157,8 +169,8 @@ export function visitInParallel(visitors) {
         for (let i = 0; i < visitors.length; i++) {
           if (skipping[i] === null) {
             const result = leaveList[i]?.apply(visitors[i], args);
-            if (result === BREAK) {
-              skipping[i] = BREAK;
+            if (result === exports.BREAK) {
+              skipping[i] = exports.BREAK;
             } else if (result !== undefined && result !== false) {
               return result;
             }
@@ -172,10 +184,11 @@ export function visitInParallel(visitors) {
   }
   return mergedVisitor;
 }
+exports.visitInParallel = visitInParallel;
 /**
  * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
  */
-export function getEnterLeaveForKind(visitor, kind) {
+function getEnterLeaveForKind(visitor, kind) {
   const kindVisitor = visitor[kind];
   if (typeof kindVisitor === 'object') {
     // { Kind: { enter() {}, leave() {} } }
@@ -187,3 +200,4 @@ export function getEnterLeaveForKind(visitor, kind) {
   // { enter() {}, leave() {} }
   return { enter: visitor.enter, leave: visitor.leave };
 }
+exports.getEnterLeaveForKind = getEnterLeaveForKind;

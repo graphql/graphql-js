@@ -1,8 +1,11 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.flattenAsyncIterable = void 0;
 /**
  * Given an AsyncIterable of AsyncIterables, flatten all yielded results into a
  * single AsyncIterable.
  */
-export function flattenAsyncIterable(iterable) {
+function flattenAsyncIterable(iterable) {
   // You might think this whole function could be replaced with
   //
   //    async function* flattenAsyncIterable(iterable) {
@@ -92,3 +95,4 @@ export function flattenAsyncIterable(iterable) {
     },
   };
 }
+exports.flattenAsyncIterable = flattenAsyncIterable;

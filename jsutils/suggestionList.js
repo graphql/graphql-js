@@ -1,9 +1,12 @@
-import { naturalCompare } from './naturalCompare.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.suggestionList = void 0;
+const naturalCompare_js_1 = require('./naturalCompare.js');
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
  */
-export function suggestionList(input, options) {
+function suggestionList(input, options) {
   const optionsByDistance = Object.create(null);
   const lexicalDistance = new LexicalDistance(input);
   const threshold = Math.floor(input.length * 0.4) + 1;
@@ -15,9 +18,12 @@ export function suggestionList(input, options) {
   }
   return Object.keys(optionsByDistance).sort((a, b) => {
     const distanceDiff = optionsByDistance[a] - optionsByDistance[b];
-    return distanceDiff !== 0 ? distanceDiff : naturalCompare(a, b);
+    return distanceDiff !== 0
+      ? distanceDiff
+      : (0, naturalCompare_js_1.naturalCompare)(a, b);
   });
 }
+exports.suggestionList = suggestionList;
 /**
  * Computes the lexical distance between strings A and B.
  *

@@ -1,16 +1,16 @@
-import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { getLocation } from '../language/location.js';
-import {
-  printLocation,
-  printSourceLocation,
-} from '../language/printLocation.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.GraphQLError = void 0;
+const isObjectLike_js_1 = require('../jsutils/isObjectLike.js');
+const location_js_1 = require('../language/location.js');
+const printLocation_js_1 = require('../language/printLocation.js');
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
  * and stack trace, it also includes information about the locations in a
  * GraphQL document and/or execution result that correspond to the Error.
  */
-export class GraphQLError extends Error {
+class GraphQLError extends Error {
   constructor(message, options = {}) {
     const { nodes, source, positions, path, originalError, extensions } =
       options;
@@ -30,9 +30,13 @@ export class GraphQLError extends Error {
     this.positions = positions ?? nodeLocations?.map((loc) => loc.start);
     this.locations =
       positions && source
-        ? positions.map((pos) => getLocation(source, pos))
-        : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
-    const originalExtensions = isObjectLike(originalError?.extensions)
+        ? positions.map((pos) => (0, location_js_1.getLocation)(source, pos))
+        : nodeLocations?.map((loc) =>
+            (0, location_js_1.getLocation)(loc.source, loc.start),
+          );
+    const originalExtensions = (0, isObjectLike_js_1.isObjectLike)(
+      originalError?.extensions,
+    )
       ? originalError?.extensions
       : undefined;
     this.extensions = extensions ?? originalExtensions ?? Object.create(null);
@@ -77,12 +81,14 @@ export class GraphQLError extends Error {
     if (this.nodes) {
       for (const node of this.nodes) {
         if (node.loc) {
-          output += '\n\n' + printLocation(node.loc);
+          output += '\n\n' + (0, printLocation_js_1.printLocation)(node.loc);
         }
       }
     } else if (this.source && this.locations) {
       for (const location of this.locations) {
-        output += '\n\n' + printSourceLocation(this.source, location);
+        output +=
+          '\n\n' +
+          (0, printLocation_js_1.printSourceLocation)(this.source, location);
       }
     }
     return output;
@@ -103,6 +109,7 @@ export class GraphQLError extends Error {
     return formattedError;
   }
 }
+exports.GraphQLError = GraphQLError;
 function undefinedIfEmpty(array) {
   return array === undefined || array.length === 0 ? undefined : array;
 }

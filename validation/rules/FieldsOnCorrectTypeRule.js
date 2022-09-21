@@ -1,12 +1,11 @@
-import { didYouMean } from '../../jsutils/didYouMean.js';
-import { naturalCompare } from '../../jsutils/naturalCompare.js';
-import { suggestionList } from '../../jsutils/suggestionList.js';
-import { GraphQLError } from '../../error/GraphQLError.js';
-import {
-  isAbstractType,
-  isInterfaceType,
-  isObjectType,
-} from '../../type/definition.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.FieldsOnCorrectTypeRule = void 0;
+const didYouMean_js_1 = require('../../jsutils/didYouMean.js');
+const naturalCompare_js_1 = require('../../jsutils/naturalCompare.js');
+const suggestionList_js_1 = require('../../jsutils/suggestionList.js');
+const GraphQLError_js_1 = require('../../error/GraphQLError.js');
+const definition_js_1 = require('../../type/definition.js');
 /**
  * Fields on correct type
  *
@@ -15,7 +14,7 @@ import {
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selections
  */
-export function FieldsOnCorrectTypeRule(context) {
+function FieldsOnCorrectTypeRule(context) {
   return {
     Field(node) {
       const type = context.getParentType();
@@ -26,17 +25,19 @@ export function FieldsOnCorrectTypeRule(context) {
           const schema = context.getSchema();
           const fieldName = node.name.value;
           // First determine if there are any suggested types to condition on.
-          let suggestion = didYouMean(
+          let suggestion = (0, didYouMean_js_1.didYouMean)(
             'to use an inline fragment on',
             getSuggestedTypeNames(schema, type, fieldName),
           );
           // If there are no suggested types, then perhaps this was a typo?
           if (suggestion === '') {
-            suggestion = didYouMean(getSuggestedFieldNames(type, fieldName));
+            suggestion = (0, didYouMean_js_1.didYouMean)(
+              getSuggestedFieldNames(type, fieldName),
+            );
           }
           // Report an error, including helpful suggestions.
           context.reportError(
-            new GraphQLError(
+            new GraphQLError_js_1.GraphQLError(
               `Cannot query field "${fieldName}" on type "${type.name}".` +
                 suggestion,
               { nodes: node },
@@ -47,13 +48,14 @@ export function FieldsOnCorrectTypeRule(context) {
     },
   };
 }
+exports.FieldsOnCorrectTypeRule = FieldsOnCorrectTypeRule;
 /**
  * Go through all of the implementations of type, as well as the interfaces that
  * they implement. If any of those types include the provided field, suggest them,
  * sorted by how often the type is referenced.
  */
 function getSuggestedTypeNames(schema, type, fieldName) {
-  if (!isAbstractType(type)) {
+  if (!(0, definition_js_1.isAbstractType)(type)) {
     // Must be an Object type, which does not have possible fields.
     return [];
   }
@@ -84,13 +86,19 @@ function getSuggestedTypeNames(schema, type, fieldName) {
         return usageCountDiff;
       }
       // Suggest super types first followed by subtypes
-      if (isInterfaceType(typeA) && schema.isSubType(typeA, typeB)) {
+      if (
+        (0, definition_js_1.isInterfaceType)(typeA) &&
+        schema.isSubType(typeA, typeB)
+      ) {
         return -1;
       }
-      if (isInterfaceType(typeB) && schema.isSubType(typeB, typeA)) {
+      if (
+        (0, definition_js_1.isInterfaceType)(typeB) &&
+        schema.isSubType(typeB, typeA)
+      ) {
         return 1;
       }
-      return naturalCompare(typeA.name, typeB.name);
+      return (0, naturalCompare_js_1.naturalCompare)(typeA.name, typeB.name);
     })
     .map((x) => x.name);
 }
@@ -99,9 +107,15 @@ function getSuggestedTypeNames(schema, type, fieldName) {
  * that may be the result of a typo.
  */
 function getSuggestedFieldNames(type, fieldName) {
-  if (isObjectType(type) || isInterfaceType(type)) {
+  if (
+    (0, definition_js_1.isObjectType)(type) ||
+    (0, definition_js_1.isInterfaceType)(type)
+  ) {
     const possibleFieldNames = Object.keys(type.getFields());
-    return suggestionList(fieldName, possibleFieldNames);
+    return (0, suggestionList_js_1.suggestionList)(
+      fieldName,
+      possibleFieldNames,
+    );
   }
   // Otherwise, must be a Union type, which does not define fields.
   return [];

@@ -1,4 +1,7 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.NoUnusedVariablesRule = void 0;
+const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 /**
  * No unused variables
  *
@@ -7,7 +10,7 @@ import { GraphQLError } from '../../error/GraphQLError.js';
  *
  * See https://spec.graphql.org/draft/#sec-All-Variables-Used
  */
-export function NoUnusedVariablesRule(context) {
+function NoUnusedVariablesRule(context) {
   return {
     OperationDefinition(operation) {
       const usages = context.getRecursiveVariableUsages(operation);
@@ -21,7 +24,7 @@ export function NoUnusedVariablesRule(context) {
         const variableName = variableDef.variable.name.value;
         if (!variableNameUsed.has(variableName)) {
           context.reportError(
-            new GraphQLError(
+            new GraphQLError_js_1.GraphQLError(
               operation.name
                 ? `Variable "$${variableName}" is never used in operation "${operation.name.value}".`
                 : `Variable "$${variableName}" is never used.`,
@@ -33,3 +36,4 @@ export function NoUnusedVariablesRule(context) {
     },
   };
 }
+exports.NoUnusedVariablesRule = NoUnusedVariablesRule;

@@ -1,8 +1,16 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.OperationTypeNode =
+  exports.isNode =
+  exports.QueryDocumentKeys =
+  exports.Token =
+  exports.Location =
+    void 0;
 /**
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
  */
-export class Location {
+class Location {
   constructor(startToken, endToken, source) {
     this.start = startToken.start;
     this.end = endToken.end;
@@ -17,11 +25,12 @@ export class Location {
     return { start: this.start, end: this.end };
   }
 }
+exports.Location = Location;
 /**
  * Represents a range of characters represented by a lexical token
  * within a Source.
  */
-export class Token {
+class Token {
   // eslint-disable-next-line max-params
   constructor(kind, start, end, line, column, value) {
     this.kind = kind;
@@ -46,10 +55,11 @@ export class Token {
     };
   }
 }
+exports.Token = Token;
 /**
  * @internal
  */
-export const QueryDocumentKeys = {
+exports.QueryDocumentKeys = {
   Name: [],
   Document: ['definitions'],
   OperationDefinition: [
@@ -138,17 +148,21 @@ export const QueryDocumentKeys = {
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 };
-const kindValues = new Set(Object.keys(QueryDocumentKeys));
+const kindValues = new Set(Object.keys(exports.QueryDocumentKeys));
 /**
  * @internal
  */
-export function isNode(maybeNode) {
+function isNode(maybeNode) {
   const maybeKind = maybeNode?.kind;
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
-export var OperationTypeNode;
+exports.isNode = isNode;
+var OperationTypeNode;
 (function (OperationTypeNode) {
   OperationTypeNode['QUERY'] = 'query';
   OperationTypeNode['MUTATION'] = 'mutation';
   OperationTypeNode['SUBSCRIPTION'] = 'subscription';
-})(OperationTypeNode || (OperationTypeNode = {}));
+})(
+  (OperationTypeNode =
+    exports.OperationTypeNode || (exports.OperationTypeNode = {})),
+);

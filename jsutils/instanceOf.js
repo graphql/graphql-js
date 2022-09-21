@@ -1,11 +1,14 @@
-import { inspect } from './inspect.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.instanceOf = void 0;
+const inspect_js_1 = require('./inspect.js');
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
  */
-export const instanceOf =
+exports.instanceOf =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
   globalThis.process?.env.NODE_ENV === 'production'
@@ -26,7 +29,7 @@ export const instanceOf =
                 value[Symbol.toStringTag]
               : value.constructor?.name;
           if (className === valueClassName) {
-            const stringifiedValue = inspect(value);
+            const stringifiedValue = (0, inspect_js_1.inspect)(value);
             throw new Error(`Cannot use ${className} "${stringifiedValue}" from another module or realm.
 
 Ensure that there is only one instance of "graphql" in the node_modules

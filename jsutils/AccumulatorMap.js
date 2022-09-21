@@ -1,7 +1,10 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.AccumulatorMap = void 0;
 /**
  * ES6 Map with additional `add` method to accumulate items.
  */
-export class AccumulatorMap extends Map {
+class AccumulatorMap extends Map {
   get [Symbol.toStringTag]() {
     return 'AccumulatorMap';
   }
@@ -14,3 +17,4 @@ export class AccumulatorMap extends Map {
     }
   }
 }
+exports.AccumulatorMap = AccumulatorMap;

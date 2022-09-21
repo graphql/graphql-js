@@ -1,8 +1,11 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.mapAsyncIterable = void 0;
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
-export function mapAsyncIterable(iterable, callback) {
+function mapAsyncIterable(iterable, callback) {
   const iterator = iterable[Symbol.asyncIterator]();
   async function mapResult(result) {
     if (result.done) {
@@ -45,3 +48,4 @@ export function mapAsyncIterable(iterable, callback) {
     },
   };
 }
+exports.mapAsyncIterable = mapAsyncIterable;

@@ -1,8 +1,11 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.getIntrospectionQuery = void 0;
 /**
  * Produce the GraphQL query recommended for a full schema introspection.
  * Accepts optional IntrospectionOptions.
  */
-export function getIntrospectionQuery(options) {
+function getIntrospectionQuery(options) {
   const optionsWithDefault = {
     descriptions: true,
     specifiedByUrl: false,
@@ -123,3 +126,4 @@ export function getIntrospectionQuery(options) {
     }
   `;
 }
+exports.getIntrospectionQuery = getIntrospectionQuery;

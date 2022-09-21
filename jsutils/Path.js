@@ -1,13 +1,17 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.pathToArray = exports.addPath = void 0;
 /**
  * Given a Path and a key, return a new Path containing the new key.
  */
-export function addPath(prev, key, typename) {
+function addPath(prev, key, typename) {
   return { prev, key, typename };
 }
+exports.addPath = addPath;
 /**
  * Given a Path, return an Array of the path keys.
  */
-export function pathToArray(path) {
+function pathToArray(path) {
   const flattened = [];
   let curr = path;
   while (curr) {
@@ -16,3 +20,4 @@ export function pathToArray(path) {
   }
   return flattened.reverse();
 }
+exports.pathToArray = pathToArray;

@@ -1,8 +1,12 @@
-import { didYouMean } from '../../jsutils/didYouMean.js';
-import { suggestionList } from '../../jsutils/suggestionList.js';
-import { GraphQLError } from '../../error/GraphQLError.js';
-import { Kind } from '../../language/kinds.js';
-import { specifiedDirectives } from '../../type/directives.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.KnownArgumentNamesOnDirectivesRule = exports.KnownArgumentNamesRule =
+  void 0;
+const didYouMean_js_1 = require('../../jsutils/didYouMean.js');
+const suggestionList_js_1 = require('../../jsutils/suggestionList.js');
+const GraphQLError_js_1 = require('../../error/GraphQLError.js');
+const kinds_js_1 = require('../../language/kinds.js');
+const directives_js_1 = require('../../type/directives.js');
 /**
  * Known argument names
  *
@@ -12,7 +16,7 @@ import { specifiedDirectives } from '../../type/directives.js';
  * See https://spec.graphql.org/draft/#sec-Argument-Names
  * See https://spec.graphql.org/draft/#sec-Directives-Are-In-Valid-Locations
  */
-export function KnownArgumentNamesRule(context) {
+function KnownArgumentNamesRule(context) {
   return {
     // eslint-disable-next-line new-cap
     ...KnownArgumentNamesOnDirectivesRule(context),
@@ -23,11 +27,14 @@ export function KnownArgumentNamesRule(context) {
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
         const knownArgsNames = fieldDef.args.map((arg) => arg.name);
-        const suggestions = suggestionList(argName, knownArgsNames);
+        const suggestions = (0, suggestionList_js_1.suggestionList)(
+          argName,
+          knownArgsNames,
+        );
         context.reportError(
-          new GraphQLError(
+          new GraphQLError_js_1.GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
-              didYouMean(suggestions),
+              (0, didYouMean_js_1.didYouMean)(suggestions),
             { nodes: argNode },
           ),
         );
@@ -35,21 +42,22 @@ export function KnownArgumentNamesRule(context) {
     },
   };
 }
+exports.KnownArgumentNamesRule = KnownArgumentNamesRule;
 /**
  * @internal
  */
-export function KnownArgumentNamesOnDirectivesRule(context) {
+function KnownArgumentNamesOnDirectivesRule(context) {
   const directiveArgs = Object.create(null);
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
-    : specifiedDirectives;
+    : directives_js_1.specifiedDirectives;
   for (const directive of definedDirectives) {
     directiveArgs[directive.name] = directive.args.map((arg) => arg.name);
   }
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
-    if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+    if (def.kind === kinds_js_1.Kind.DIRECTIVE_DEFINITION) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       /* c8 ignore next */
       const argsNodes = def.arguments ?? [];
@@ -64,11 +72,14 @@ export function KnownArgumentNamesOnDirectivesRule(context) {
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
           if (!knownArgs.includes(argName)) {
-            const suggestions = suggestionList(argName, knownArgs);
+            const suggestions = (0, suggestionList_js_1.suggestionList)(
+              argName,
+              knownArgs,
+            );
             context.reportError(
-              new GraphQLError(
+              new GraphQLError_js_1.GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
-                  didYouMean(suggestions),
+                  (0, didYouMean_js_1.didYouMean)(suggestions),
                 { nodes: argNode },
               ),
             );
@@ -79,3 +90,4 @@ export function KnownArgumentNamesOnDirectivesRule(context) {
     },
   };
 }
+exports.KnownArgumentNamesOnDirectivesRule = KnownArgumentNamesOnDirectivesRule;

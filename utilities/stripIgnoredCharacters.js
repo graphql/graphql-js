@@ -1,7 +1,10 @@
-import { printBlockString } from '../language/blockString.js';
-import { isPunctuatorTokenKind, Lexer } from '../language/lexer.js';
-import { isSource, Source } from '../language/source.js';
-import { TokenKind } from '../language/tokenKind.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.stripIgnoredCharacters = void 0;
+const blockString_js_1 = require('../language/blockString.js');
+const lexer_js_1 = require('../language/lexer.js');
+const source_js_1 = require('../language/source.js');
+const tokenKind_js_1 = require('../language/tokenKind.js');
 /**
  * Strips characters that are not significant to the validity or execution
  * of a GraphQL document:
@@ -62,13 +65,15 @@ import { TokenKind } from '../language/tokenKind.js';
  * """Type description""" type Foo{"""Field description""" bar:String}
  * ```
  */
-export function stripIgnoredCharacters(source) {
-  const sourceObj = isSource(source) ? source : new Source(source);
+function stripIgnoredCharacters(source) {
+  const sourceObj = (0, source_js_1.isSource)(source)
+    ? source
+    : new source_js_1.Source(source);
   const body = sourceObj.body;
-  const lexer = new Lexer(sourceObj);
+  const lexer = new lexer_js_1.Lexer(sourceObj);
   let strippedBody = '';
   let wasLastAddedTokenNonPunctuator = false;
-  while (lexer.advance().kind !== TokenKind.EOF) {
+  while (lexer.advance().kind !== tokenKind_js_1.TokenKind.EOF) {
     const currentToken = lexer.token;
     const tokenKind = currentToken.kind;
     /**
@@ -76,15 +81,23 @@ export function stripIgnoredCharacters(source) {
      * Also prevent case of non-punctuator token following by spread resulting
      * in invalid token (e.g. `1...` is invalid Float token).
      */
-    const isNonPunctuator = !isPunctuatorTokenKind(currentToken.kind);
+    const isNonPunctuator = !(0, lexer_js_1.isPunctuatorTokenKind)(
+      currentToken.kind,
+    );
     if (wasLastAddedTokenNonPunctuator) {
-      if (isNonPunctuator || currentToken.kind === TokenKind.SPREAD) {
+      if (
+        isNonPunctuator ||
+        currentToken.kind === tokenKind_js_1.TokenKind.SPREAD
+      ) {
         strippedBody += ' ';
       }
     }
     const tokenBody = body.slice(currentToken.start, currentToken.end);
-    if (tokenKind === TokenKind.BLOCK_STRING) {
-      strippedBody += printBlockString(currentToken.value, { minimize: true });
+    if (tokenKind === tokenKind_js_1.TokenKind.BLOCK_STRING) {
+      strippedBody += (0, blockString_js_1.printBlockString)(
+        currentToken.value,
+        { minimize: true },
+      );
     } else {
       strippedBody += tokenBody;
     }
@@ -92,3 +105,4 @@ export function stripIgnoredCharacters(source) {
   }
   return strippedBody;
 }
+exports.stripIgnoredCharacters = stripIgnoredCharacters;

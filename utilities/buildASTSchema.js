@@ -1,8 +1,11 @@
-import { parse } from '../language/parser.js';
-import { specifiedDirectives } from '../type/directives.js';
-import { GraphQLSchema } from '../type/schema.js';
-import { assertValidSDL } from '../validation/validate.js';
-import { extendSchemaImpl } from './extendSchema.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.buildSchema = exports.buildASTSchema = void 0;
+const parser_js_1 = require('../language/parser.js');
+const directives_js_1 = require('../type/directives.js');
+const schema_js_1 = require('../type/schema.js');
+const validate_js_1 = require('../validation/validate.js');
+const extendSchema_js_1 = require('./extendSchema.js');
 /**
  * This takes the ast of a schema document produced by the parse function in
  * src/language/parser.js.
@@ -13,9 +16,9 @@ import { extendSchemaImpl } from './extendSchema.js';
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
  */
-export function buildASTSchema(documentAST, options) {
+function buildASTSchema(documentAST, options) {
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
-    assertValidSDL(documentAST);
+    (0, validate_js_1.assertValidSDL)(documentAST);
   }
   const emptySchemaConfig = {
     description: undefined,
@@ -25,7 +28,11 @@ export function buildASTSchema(documentAST, options) {
     extensionASTNodes: [],
     assumeValid: false,
   };
-  const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
+  const config = (0, extendSchema_js_1.extendSchemaImpl)(
+    emptySchemaConfig,
+    documentAST,
+    options,
+  );
   if (config.astNode == null) {
     for (const type of config.types) {
       switch (type.name) {
@@ -50,20 +57,21 @@ export function buildASTSchema(documentAST, options) {
   const directives = [
     ...config.directives,
     // If specified directives were not explicitly declared, add them.
-    ...specifiedDirectives.filter((stdDirective) =>
+    ...directives_js_1.specifiedDirectives.filter((stdDirective) =>
       config.directives.every(
         (directive) => directive.name !== stdDirective.name,
       ),
     ),
   ];
-  return new GraphQLSchema({ ...config, directives });
+  return new schema_js_1.GraphQLSchema({ ...config, directives });
 }
+exports.buildASTSchema = buildASTSchema;
 /**
  * A helper function to build a GraphQLSchema directly from a source
  * document.
  */
-export function buildSchema(source, options) {
-  const document = parse(source, {
+function buildSchema(source, options) {
+  const document = (0, parser_js_1.parse)(source, {
     noLocation: options?.noLocation,
     allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
   });
@@ -72,3 +80,4 @@ export function buildSchema(source, options) {
     assumeValid: options?.assumeValid,
   });
 }
+exports.buildSchema = buildSchema;

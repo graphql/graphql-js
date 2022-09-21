@@ -1,4 +1,10 @@
-import { isWhiteSpace } from './characterClasses.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.printBlockString =
+  exports.isPrintableAsBlockString =
+  exports.dedentBlockStringLines =
+    void 0;
+const characterClasses_js_1 = require('./characterClasses.js');
 /**
  * Produces the value of a block string from its parsed raw value, similar to
  * CoffeeScript's block string, Python's docstring trim or Ruby's strip_heredoc.
@@ -7,7 +13,7 @@ import { isWhiteSpace } from './characterClasses.js';
  *
  * @internal
  */
-export function dedentBlockStringLines(lines) {
+function dedentBlockStringLines(lines) {
   let commonIndent = Number.MAX_SAFE_INTEGER;
   let firstNonEmptyLine = null;
   let lastNonEmptyLine = -1;
@@ -31,9 +37,13 @@ export function dedentBlockStringLines(lines) {
       .slice(firstNonEmptyLine ?? 0, lastNonEmptyLine + 1)
   );
 }
+exports.dedentBlockStringLines = dedentBlockStringLines;
 function leadingWhitespace(str) {
   let i = 0;
-  while (i < str.length && isWhiteSpace(str.charCodeAt(i))) {
+  while (
+    i < str.length &&
+    (0, characterClasses_js_1.isWhiteSpace)(str.charCodeAt(i))
+  ) {
     ++i;
   }
   return i;
@@ -41,7 +51,7 @@ function leadingWhitespace(str) {
 /**
  * @internal
  */
-export function isPrintableAsBlockString(value) {
+function isPrintableAsBlockString(value) {
   if (value === '') {
     return true; // empty string is printable
   }
@@ -92,6 +102,7 @@ export function isPrintableAsBlockString(value) {
   }
   return true;
 }
+exports.isPrintableAsBlockString = isPrintableAsBlockString;
 /**
  * Print a block string in the indented block form by adding a leading and
  * trailing blank line. However, if a block string starts with whitespace and is
@@ -99,7 +110,7 @@ export function isPrintableAsBlockString(value) {
  *
  * @internal
  */
-export function printBlockString(value, options) {
+function printBlockString(value, options) {
   const escapedValue = value.replace(/"""/g, '\\"""');
   // Expand a block string's raw value into independent lines.
   const lines = escapedValue.split(/\r\n|[\n\r]/g);
@@ -109,7 +120,11 @@ export function printBlockString(value, options) {
     lines.length > 1 &&
     lines
       .slice(1)
-      .every((line) => line.length === 0 || isWhiteSpace(line.charCodeAt(0)));
+      .every(
+        (line) =>
+          line.length === 0 ||
+          (0, characterClasses_js_1.isWhiteSpace)(line.charCodeAt(0)),
+      );
   // Trailing triple quotes just looks confusing but doesn't force trailing new line
   const hasTrailingTripleQuotes = escapedValue.endsWith('\\"""');
   // Trailing quote (single or double) or slash forces trailing new line
@@ -126,7 +141,9 @@ export function printBlockString(value, options) {
       hasTrailingTripleQuotes);
   let result = '';
   // Format a multi-line block quote to account for leading space.
-  const skipLeadingNewLine = isSingleLine && isWhiteSpace(value.charCodeAt(0));
+  const skipLeadingNewLine =
+    isSingleLine &&
+    (0, characterClasses_js_1.isWhiteSpace)(value.charCodeAt(0));
   if ((printAsMultipleLines && !skipLeadingNewLine) || forceLeadingNewLine) {
     result += '\n';
   }
@@ -136,3 +153,4 @@ export function printBlockString(value, options) {
   }
   return '"""' + result + '"""';
 }
+exports.printBlockString = printBlockString;

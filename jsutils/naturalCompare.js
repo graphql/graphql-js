@@ -1,3 +1,6 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.naturalCompare = void 0;
 /**
  * Returns a number indicating whether a reference string comes before, or after,
  * or is the same as the given string in natural sort order.
@@ -5,7 +8,7 @@
  * See: https://en.wikipedia.org/wiki/Natural_sort_order
  *
  */
-export function naturalCompare(aStr, bStr) {
+function naturalCompare(aStr, bStr) {
   let aIndex = 0;
   let bIndex = 0;
   while (aIndex < aStr.length && bIndex < bStr.length) {
@@ -43,6 +46,7 @@ export function naturalCompare(aStr, bStr) {
   }
   return aStr.length - bStr.length;
 }
+exports.naturalCompare = naturalCompare;
 const DIGIT_0 = 48;
 const DIGIT_9 = 57;
 function isDigit(code) {

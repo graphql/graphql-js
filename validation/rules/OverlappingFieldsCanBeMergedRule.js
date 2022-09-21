@@ -1,17 +1,13 @@
-import { inspect } from '../../jsutils/inspect.js';
-import { GraphQLError } from '../../error/GraphQLError.js';
-import { Kind } from '../../language/kinds.js';
-import { print } from '../../language/printer.js';
-import {
-  getNamedType,
-  isInterfaceType,
-  isLeafType,
-  isListType,
-  isNonNullType,
-  isObjectType,
-} from '../../type/definition.js';
-import { sortValueNode } from '../../utilities/sortValueNode.js';
-import { typeFromAST } from '../../utilities/typeFromAST.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.OverlappingFieldsCanBeMergedRule = void 0;
+const inspect_js_1 = require('../../jsutils/inspect.js');
+const GraphQLError_js_1 = require('../../error/GraphQLError.js');
+const kinds_js_1 = require('../../language/kinds.js');
+const printer_js_1 = require('../../language/printer.js');
+const definition_js_1 = require('../../type/definition.js');
+const sortValueNode_js_1 = require('../../utilities/sortValueNode.js');
+const typeFromAST_js_1 = require('../../utilities/typeFromAST.js');
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
@@ -36,7 +32,7 @@ function reasonMessage(reason) {
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
  */
-export function OverlappingFieldsCanBeMergedRule(context) {
+function OverlappingFieldsCanBeMergedRule(context) {
   // A memoization for when two fragments are compared "between" each other for
   // conflicts. Two fragments may be compared many times, so memoizing this can
   // dramatically improve the performance of this validator.
@@ -57,7 +53,7 @@ export function OverlappingFieldsCanBeMergedRule(context) {
       for (const [[responseName, reason], fields1, fields2] of conflicts) {
         const reasonMsg = reasonMessage(reason);
         context.reportError(
-          new GraphQLError(
+          new GraphQLError_js_1.GraphQLError(
             `Fields "${responseName}" conflict because ${reasonMsg}. Use different aliases on the fields to fetch both if this was intentional.`,
             { nodes: fields1.concat(fields2) },
           ),
@@ -66,6 +62,7 @@ export function OverlappingFieldsCanBeMergedRule(context) {
     },
   };
 }
+exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 /**
  * Algorithm:
  *
@@ -505,8 +502,8 @@ function findConflict(
   const areMutuallyExclusive =
     parentFieldsAreMutuallyExclusive ||
     (parentType1 !== parentType2 &&
-      isObjectType(parentType1) &&
-      isObjectType(parentType2));
+      (0, definition_js_1.isObjectType)(parentType1) &&
+      (0, definition_js_1.isObjectType)(parentType2));
   if (!areMutuallyExclusive) {
     // Two aliases must refer to the same field.
     const name1 = node1.name.value;
@@ -544,9 +541,9 @@ function findConflict(
     return [
       [
         responseName,
-        `they return conflicting types "${inspect(type1)}" and "${inspect(
-          type2,
-        )}"`,
+        `they return conflicting types "${(0, inspect_js_1.inspect)(
+          type1,
+        )}" and "${(0, inspect_js_1.inspect)(type2)}"`,
       ],
       [node1],
       [node2],
@@ -563,9 +560,9 @@ function findConflict(
       cachedFieldsAndFragmentNames,
       comparedFragmentPairs,
       areMutuallyExclusive,
-      getNamedType(type1),
+      (0, definition_js_1.getNamedType)(type1),
       selectionSet1,
-      getNamedType(type2),
+      (0, definition_js_1.getNamedType)(type2),
       selectionSet2,
     );
     return subfieldConflicts(conflicts, responseName, node1, node2);
@@ -575,14 +572,16 @@ function stringifyArguments(fieldNode) {
   // FIXME https://github.com/graphql/graphql-js/issues/2203
   const args = /* c8 ignore next */ fieldNode.arguments ?? [];
   const inputObjectWithArgs = {
-    kind: Kind.OBJECT,
+    kind: kinds_js_1.Kind.OBJECT,
     fields: args.map((argNode) => ({
-      kind: Kind.OBJECT_FIELD,
+      kind: kinds_js_1.Kind.OBJECT_FIELD,
       name: argNode.name,
       value: argNode.value,
     })),
   };
-  return print(sortValueNode(inputObjectWithArgs));
+  return (0, printer_js_1.print)(
+    (0, sortValueNode_js_1.sortValueNode)(inputObjectWithArgs),
+  );
 }
 function getStreamDirective(directives) {
   return directives.find((directive) => directive.name.value === 'stream');
@@ -604,23 +603,26 @@ function sameStreams(directives1, directives2) {
 // Composite types are ignored as their individual field types will be compared
 // later recursively. However List and Non-Null types must match.
 function doTypesConflict(type1, type2) {
-  if (isListType(type1)) {
-    return isListType(type2)
+  if ((0, definition_js_1.isListType)(type1)) {
+    return (0, definition_js_1.isListType)(type2)
       ? doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
-  if (isListType(type2)) {
+  if ((0, definition_js_1.isListType)(type2)) {
     return true;
   }
-  if (isNonNullType(type1)) {
-    return isNonNullType(type2)
+  if ((0, definition_js_1.isNonNullType)(type1)) {
+    return (0, definition_js_1.isNonNullType)(type2)
       ? doTypesConflict(type1.ofType, type2.ofType)
       : true;
   }
-  if (isNonNullType(type2)) {
+  if ((0, definition_js_1.isNonNullType)(type2)) {
     return true;
   }
-  if (isLeafType(type1) || isLeafType(type2)) {
+  if (
+    (0, definition_js_1.isLeafType)(type1) ||
+    (0, definition_js_1.isLeafType)(type2)
+  ) {
     return type1 !== type2;
   }
   return false;
@@ -663,7 +665,10 @@ function getReferencedFieldsAndFragmentNames(
   if (cached) {
     return cached;
   }
-  const fragmentType = typeFromAST(context.getSchema(), fragment.typeCondition);
+  const fragmentType = (0, typeFromAST_js_1.typeFromAST)(
+    context.getSchema(),
+    fragment.typeCondition,
+  );
   return getFieldsAndFragmentNames(
     context,
     cachedFieldsAndFragmentNames,
@@ -680,10 +685,13 @@ function _collectFieldsAndFragmentNames(
 ) {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
-      case Kind.FIELD: {
+      case kinds_js_1.Kind.FIELD: {
         const fieldName = selection.name.value;
         let fieldDef;
-        if (isObjectType(parentType) || isInterfaceType(parentType)) {
+        if (
+          (0, definition_js_1.isObjectType)(parentType) ||
+          (0, definition_js_1.isInterfaceType)(parentType)
+        ) {
           fieldDef = parentType.getFields()[fieldName];
         }
         const responseName = selection.alias
@@ -695,13 +703,16 @@ function _collectFieldsAndFragmentNames(
         nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
         break;
       }
-      case Kind.FRAGMENT_SPREAD:
+      case kinds_js_1.Kind.FRAGMENT_SPREAD:
         fragmentNames.add(selection.name.value);
         break;
-      case Kind.INLINE_FRAGMENT: {
+      case kinds_js_1.Kind.INLINE_FRAGMENT: {
         const typeCondition = selection.typeCondition;
         const inlineFragmentType = typeCondition
-          ? typeFromAST(context.getSchema(), typeCondition)
+          ? (0, typeFromAST_js_1.typeFromAST)(
+              context.getSchema(),
+              typeCondition,
+            )
           : parentType;
         _collectFieldsAndFragmentNames(
           context,

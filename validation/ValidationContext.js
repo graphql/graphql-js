@@ -1,12 +1,18 @@
-import { Kind } from '../language/kinds.js';
-import { visit } from '../language/visitor.js';
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.ValidationContext =
+  exports.SDLValidationContext =
+  exports.ASTValidationContext =
+    void 0;
+const kinds_js_1 = require('../language/kinds.js');
+const visitor_js_1 = require('../language/visitor.js');
+const TypeInfo_js_1 = require('../utilities/TypeInfo.js');
 /**
  * An instance of this class is passed as the "this" context to all validators,
  * allowing access to commonly useful contextual information from within a
  * validation rule.
  */
-export class ASTValidationContext {
+class ASTValidationContext {
   constructor(ast, onError) {
     this._ast = ast;
     this._fragments = undefined;
@@ -30,7 +36,7 @@ export class ASTValidationContext {
     } else {
       fragments = Object.create(null);
       for (const defNode of this.getDocument().definitions) {
-        if (defNode.kind === Kind.FRAGMENT_DEFINITION) {
+        if (defNode.kind === kinds_js_1.Kind.FRAGMENT_DEFINITION) {
           fragments[defNode.name.value] = defNode;
         }
       }
@@ -46,7 +52,7 @@ export class ASTValidationContext {
       let set;
       while ((set = setsToVisit.pop())) {
         for (const selection of set.selections) {
-          if (selection.kind === Kind.FRAGMENT_SPREAD) {
+          if (selection.kind === kinds_js_1.Kind.FRAGMENT_SPREAD) {
             spreads.push(selection);
           } else if (selection.selectionSet) {
             setsToVisit.push(selection.selectionSet);
@@ -82,7 +88,8 @@ export class ASTValidationContext {
     return fragments;
   }
 }
-export class SDLValidationContext extends ASTValidationContext {
+exports.ASTValidationContext = ASTValidationContext;
+class SDLValidationContext extends ASTValidationContext {
   constructor(ast, schema, onError) {
     super(ast, onError);
     this._schema = schema;
@@ -94,7 +101,8 @@ export class SDLValidationContext extends ASTValidationContext {
     return this._schema;
   }
 }
-export class ValidationContext extends ASTValidationContext {
+exports.SDLValidationContext = SDLValidationContext;
+class ValidationContext extends ASTValidationContext {
   constructor(schema, ast, typeInfo, onError) {
     super(ast, onError);
     this._schema = schema;
@@ -112,10 +120,10 @@ export class ValidationContext extends ASTValidationContext {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages = [];
-      const typeInfo = new TypeInfo(this._schema);
-      visit(
+      const typeInfo = new TypeInfo_js_1.TypeInfo(this._schema);
+      (0, visitor_js_1.visit)(
         node,
-        visitWithTypeInfo(typeInfo, {
+        (0, TypeInfo_js_1.visitWithTypeInfo)(typeInfo, {
           VariableDefinition: () => false,
           Variable(variable) {
             newUsages.push({
@@ -167,3 +175,4 @@ export class ValidationContext extends ASTValidationContext {
     return this._typeInfo.getEnumValue();
   }
 }
+exports.ValidationContext = ValidationContext;

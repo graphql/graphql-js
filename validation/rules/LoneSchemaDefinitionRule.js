@@ -1,10 +1,13 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.LoneSchemaDefinitionRule = void 0;
+const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 /**
  * Lone Schema definition
  *
  * A GraphQL document is only valid if it contains only one schema definition.
  */
-export function LoneSchemaDefinitionRule(context) {
+function LoneSchemaDefinitionRule(context) {
   const oldSchema = context.getSchema();
   const alreadyDefined =
     oldSchema?.astNode ??
@@ -16,7 +19,7 @@ export function LoneSchemaDefinitionRule(context) {
     SchemaDefinition(node) {
       if (alreadyDefined) {
         context.reportError(
-          new GraphQLError(
+          new GraphQLError_js_1.GraphQLError(
             'Cannot define a new schema within a schema extension.',
             { nodes: node },
           ),
@@ -25,12 +28,16 @@ export function LoneSchemaDefinitionRule(context) {
       }
       if (schemaDefinitionsCount > 0) {
         context.reportError(
-          new GraphQLError('Must provide only one schema definition.', {
-            nodes: node,
-          }),
+          new GraphQLError_js_1.GraphQLError(
+            'Must provide only one schema definition.',
+            {
+              nodes: node,
+            },
+          ),
         );
       }
       ++schemaDefinitionsCount;
     },
   };
 }
+exports.LoneSchemaDefinitionRule = LoneSchemaDefinitionRule;
