@@ -99,6 +99,11 @@ function spawnOutput(
     encoding: 'utf-8',
     ...options,
   });
+
+  if (result.status !== 0) {
+    throw new Error(`Command failed: ${command} ${args.join(' ')}`);
+  }
+
   return result.stdout.toString().trimEnd();
 }
 
@@ -107,7 +112,13 @@ function spawn(
   args: ReadonlyArray<string>,
   options?: SpawnOptions,
 ): void {
-  childProcess.spawnSync(command, args, { stdio: 'inherit', ...options });
+  const result = childProcess.spawnSync(command, args, {
+    stdio: 'inherit',
+    ...options,
+  });
+  if (result.status !== 0) {
+    throw new Error(`Command failed: ${command} ${args.join(' ')}`);
+  }
 }
 
 function* readdirRecursive(dirPath: string): Generator<{
