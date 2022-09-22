@@ -26,6 +26,10 @@ const friendType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
+    promiseNonNullErrorField: {
+      type: new GraphQLNonNull(GraphQLString),
+      resolve: () => Promise.resolve(null),
+    },
   },
   name: 'Friend',
 });
@@ -64,6 +68,12 @@ const heroType = new GraphQLObjectType({
     friends: {
       type: new GraphQLList(friendType),
       resolve: () => friends,
+    },
+    asyncFriends: {
+      type: new GraphQLList(friendType),
+      async *resolve() {
+        yield await Promise.resolve(friends[0]);
+      },
     },
   },
   name: 'Hero',
@@ -655,6 +665,38 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+  });
+
+  it('Filters deferred payloads when a list item returned by an async iterable is nulled', async () => {
+    const document = parse(`
+    query {
+      hero {
+        asyncFriends {
+          promiseNonNullErrorField
+          ...NameFragment @defer 
+        }
+      }
+    }
+    fragment NameFragment on Friend {
+      name
+    }
+  `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: {
+          asyncFriends: [null],
+        },
+      },
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field Friend.promiseNonNullErrorField.',
+          locations: [{ line: 5, column: 11 }],
+          path: ['hero', 'asyncFriends', 0, 'promiseNonNullErrorField'],
+        },
+      ],
+    });
   });
 
   it('original execute function throws error if anything is deferred and everything else is sync', () => {

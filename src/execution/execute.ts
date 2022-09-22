@@ -1027,6 +1027,7 @@ async function completeAsyncIteratorValue(
                 pathToArray(fieldPath),
               );
               const handledError = handleFieldError(error, itemType, errors);
+              filterSubsequentPayloads(exeContext, fieldPath);
               return handledError;
             }),
           );
@@ -1040,6 +1041,7 @@ async function completeAsyncIteratorValue(
           fieldNodes,
           pathToArray(fieldPath),
         );
+        filterSubsequentPayloads(exeContext, fieldPath);
         handleFieldError(error, itemType, errors);
       }
     } catch (rawError) {
