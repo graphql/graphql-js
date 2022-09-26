@@ -1,5 +1,6 @@
 name: Push
 on: push
+permissions: {}
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
