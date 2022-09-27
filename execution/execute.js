@@ -739,8 +739,22 @@ async function completeAsyncIteratorValue(
         );
         if ((0, isPromise_js_1.isPromise)(completedItem)) {
           containsPromise = true;
+          // Note: we don't rely on a `catch` method, but we do expect "thenable"
+          // to take a second callback for the error case.
+          completedResults.push(
+            completedItem.then(undefined, (rawError) => {
+              const error = (0, locatedError_js_1.locatedError)(
+                rawError,
+                fieldNodes,
+                (0, Path_js_1.pathToArray)(fieldPath),
+              );
+              const handledError = handleFieldError(error, itemType, errors);
+              return handledError;
+            }),
+          );
+        } else {
+          completedResults.push(completedItem);
         }
-        completedResults.push(completedItem);
       } catch (rawError) {
         completedResults.push(null);
         const error = (0, locatedError_js_1.locatedError)(
