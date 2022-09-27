@@ -979,6 +979,39 @@ describe('Execute: stream directive', () => {
       },
     });
   });
+  it('Filters payloads that are nulled by a later synchronous error', async () => {
+    const document = parse(`
+      query { 
+        nestedObject {
+          nestedFriendList @stream(initialCount: 0) {
+            name
+          }
+          nonNullScalarField
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedObject: {
+        async *nestedFriendList() {
+          yield await Promise.resolve(friends[0]); /* c8 ignore start */
+        } /* c8 ignore stop */,
+        nonNullScalarField: () => null,
+      },
+    });
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
+          locations: [{ line: 7, column: 11 }],
+          path: ['nestedObject', 'nonNullScalarField'],
+        },
+      ],
+      data: {
+        nestedObject: null,
+      },
+    });
+  });
   it('Does not filter payloads when null error is in a different path', async () => {
     const document = parse(`
       query { 
