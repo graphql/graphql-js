@@ -21,8 +21,13 @@ env:
     * `@github-actions run-benchmark` - Run benchmark comparing base and merge commits for this PR
     * `@github-actions publish-pr-on-npm` - Build package from this PR and publish it on NPM
     </details>
+permissions: {}
 jobs:
   hello-message:
+    permissions:
+      actions: read # to download event.json
+      pull-requests: write # to add comment to pull request
+
     if: github.event_name == 'workflow_run'
     runs-on: ubuntu-latest
     steps:
@@ -49,6 +54,9 @@ jobs:
             })
 
   accept-cmd:
+    permissions:
+      pull-requests: write # to add comment to pull request
+
     if: |
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
@@ -95,6 +103,9 @@ jobs:
       pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
 
   respond-to-cmd:
+    permissions:
+      pull-requests: write # to add comment to pull request
+
     needs:
       - accept-cmd
       - cmd-publish-pr-on-npm

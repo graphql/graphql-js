@@ -10,6 +10,8 @@ on:
       npm_canary_pr_publish_token:
         description: NPM token to publish canary release.
         required: true
+permissions:
+  contents: read
 jobs:
   build-npm-dist:
     runs-on: ubuntu-latest

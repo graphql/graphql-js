@@ -1,5 +1,7 @@
 name: CI
 on: workflow_call
+permissions:
+  contents: read
 jobs:
   lint:
     name: Lint source files
@@ -158,6 +160,7 @@ jobs:
     name: Run CodeQL security scan
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       security-events: write
     steps:
       - name: Checkout repo

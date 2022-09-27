@@ -18,8 +18,11 @@ on:
         description: Commit message
         required: true
         type: string
+permissions: {}
 jobs:
   deploy-artifact-as-branch:
+    permissions:
+      contents: write # to push branch
     environment:
       name: ${{ inputs.environment }}
       url: ${{ github.server_url }}/${{ github.repository }}/tree/${{ inputs.target_branch }}
