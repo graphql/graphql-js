@@ -8,7 +8,11 @@ import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 import { parse } from '../../language/parser.js';
 
 import type { GraphQLFieldResolver } from '../../type/definition.js';
-import { GraphQLList, GraphQLObjectType } from '../../type/definition.js';
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+} from '../../type/definition.js';
 import { GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
@@ -101,7 +105,7 @@ describe('Execute: Accepts async iterables as list value', () => {
                 name: 'ObjectWrapper',
                 fields: {
                   index: {
-                    type: GraphQLString,
+                    type: new GraphQLNonNull(GraphQLString),
                     resolve,
                   },
                 },
@@ -202,7 +206,7 @@ describe('Execute: Accepts async iterables as list value', () => {
         return Promise.resolve(index);
       }),
     ).toDeepEqual({
-      data: { listField: [{ index: '0' }, { index: '1' }, { index: null }] },
+      data: { listField: [{ index: '0' }, { index: '1' }, null] },
       errors: [
         {
           message: 'bad',
