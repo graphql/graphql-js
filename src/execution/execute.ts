@@ -1995,7 +1995,7 @@ async function executeStreamIterator(
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
-  path?: Path,
+  path: Path,
   label?: string,
   parentContext?: AsyncPayloadRecord,
 ): Promise<void> {
@@ -2056,7 +2056,7 @@ async function executeStreamIterator(
 
 function filterSubsequentPayloads(
   exeContext: ExecutionContext,
-  nullPath: Path | undefined,
+  nullPath: Path,
   currentAsyncRecord: AsyncPayloadRecord | undefined,
 ): void {
   const nullPathArray = pathToArray(nullPath);
