@@ -996,7 +996,7 @@ async function completeAsyncIteratorValue(
       break;
     }
 
-    const fieldPath = addPath(path, index, undefined);
+    const itemPath = addPath(path, index, undefined);
     try {
       // eslint-disable-next-line no-await-in-loop
       const { value, done } = await iterator.next();
@@ -1011,7 +1011,7 @@ async function completeAsyncIteratorValue(
           itemType,
           fieldNodes,
           info,
-          fieldPath,
+          itemPath,
           value,
           asyncPayloadRecord,
         );
@@ -1024,10 +1024,10 @@ async function completeAsyncIteratorValue(
               const error = locatedError(
                 rawError,
                 fieldNodes,
-                pathToArray(fieldPath),
+                pathToArray(itemPath),
               );
               const handledError = handleFieldError(error, itemType, errors);
-              filterSubsequentPayloads(exeContext, fieldPath);
+              filterSubsequentPayloads(exeContext, itemPath);
               return handledError;
             }),
           );
@@ -1036,18 +1036,13 @@ async function completeAsyncIteratorValue(
         }
       } catch (rawError) {
         completedResults.push(null);
-        const error = locatedError(
-          rawError,
-          fieldNodes,
-          pathToArray(fieldPath),
-        );
-        filterSubsequentPayloads(exeContext, fieldPath);
+        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+        filterSubsequentPayloads(exeContext, itemPath);
         handleFieldError(error, itemType, errors);
       }
     } catch (rawError) {
-      completedResults.push(null);
-      const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
-      handleFieldError(error, itemType, errors);
+      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      completedResults.push(handleFieldError(error, itemType, errors));
       break;
     }
     index += 1;
@@ -1103,28 +1098,29 @@ function completeListValue(
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
+
+    if (
+      stream &&
+      typeof stream.initialCount === 'number' &&
+      index >= stream.initialCount
+    ) {
+      previousAsyncPayloadRecord = executeStreamField(
+        path,
+        itemPath,
+        item,
+        exeContext,
+        fieldNodes,
+        info,
+        itemType,
+        stream.label,
+        previousAsyncPayloadRecord,
+      );
+      index++;
+      continue;
+    }
+
     try {
       let completedItem;
-
-      if (
-        stream &&
-        typeof stream.initialCount === 'number' &&
-        index >= stream.initialCount
-      ) {
-        previousAsyncPayloadRecord = executeStreamField(
-          path,
-          itemPath,
-          item,
-          exeContext,
-          fieldNodes,
-          info,
-          itemType,
-          stream.label,
-          previousAsyncPayloadRecord,
-        );
-        index++;
-        continue;
-      }
       if (isPromise(item)) {
         completedItem = item.then((resolved) =>
           completeValue(
@@ -1939,7 +1935,7 @@ async function executeStreamIteratorItem(
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
   asyncPayloadRecord: StreamRecord,
-  fieldPath: Path,
+  itemPath: Path,
 ): Promise<IteratorResult<unknown>> {
   let item;
   try {
@@ -1950,9 +1946,8 @@ async function executeStreamIteratorItem(
     }
     item = value;
   } catch (rawError) {
-    const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
+    const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
-    filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
     // don't continue if iterator throws
     return { done: true, value };
   }
@@ -1963,32 +1958,28 @@ async function executeStreamIteratorItem(
       itemType,
       fieldNodes,
       info,
-      fieldPath,
+      itemPath,
       item,
       asyncPayloadRecord,
     );
 
     if (isPromise(completedItem)) {
       completedItem = completedItem.then(undefined, (rawError) => {
-        const error = locatedError(
-          rawError,
-          fieldNodes,
-          pathToArray(fieldPath),
-        );
+        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
         const handledError = handleFieldError(
           error,
           itemType,
           asyncPayloadRecord.errors,
         );
-        filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
+        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
         return handledError;
       });
     }
     return { done: false, value: completedItem };
   } catch (rawError) {
-    const error = locatedError(rawError, fieldNodes, pathToArray(fieldPath));
+    const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
-    filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
     return { done: false, value };
   }
 }
@@ -2008,10 +1999,10 @@ async function executeStreamIterator(
   let previousAsyncPayloadRecord = parentContext ?? undefined;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const fieldPath = addPath(path, index, undefined);
+    const itemPath = addPath(path, index, undefined);
     const asyncPayloadRecord = new StreamRecord({
       label,
-      path: fieldPath,
+      path: itemPath,
       parentContext: previousAsyncPayloadRecord,
       iterator,
       exeContext,
@@ -2024,7 +2015,7 @@ async function executeStreamIterator(
       info,
       itemType,
       asyncPayloadRecord,
-      fieldPath,
+      itemPath,
     );
 
     asyncPayloadRecord.addItems(
