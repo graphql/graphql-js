@@ -734,7 +734,7 @@ function executeField(
       return completed.then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(path));
         const handledError = handleFieldError(error, returnType, errors);
-        filterSubsequentPayloads(exeContext, path);
+        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
         return handledError;
       });
     }
@@ -742,7 +742,7 @@ function executeField(
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(path));
     const handledError = handleFieldError(error, returnType, errors);
-    filterSubsequentPayloads(exeContext, path);
+    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
     return handledError;
   }
 }
@@ -1027,7 +1027,11 @@ async function completeAsyncIteratorValue(
                 pathToArray(itemPath),
               );
               const handledError = handleFieldError(error, itemType, errors);
-              filterSubsequentPayloads(exeContext, itemPath);
+              filterSubsequentPayloads(
+                exeContext,
+                itemPath,
+                asyncPayloadRecord,
+              );
               return handledError;
             }),
           );
@@ -1037,7 +1041,7 @@ async function completeAsyncIteratorValue(
       } catch (rawError) {
         completedResults.push(null);
         const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        filterSubsequentPayloads(exeContext, itemPath);
+        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
         handleFieldError(error, itemType, errors);
       }
     } catch (rawError) {
@@ -1157,7 +1161,7 @@ function completeListValue(
               pathToArray(itemPath),
             );
             const handledError = handleFieldError(error, itemType, errors);
-            filterSubsequentPayloads(exeContext, itemPath);
+            filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
             return handledError;
           }),
         );
@@ -1167,7 +1171,7 @@ function completeListValue(
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
       const handledError = handleFieldError(error, itemType, errors);
-      filterSubsequentPayloads(exeContext, itemPath);
+      filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
       completedResults.push(handledError);
     }
     index++;
@@ -2052,8 +2056,8 @@ async function executeStreamIterator(
 
 function filterSubsequentPayloads(
   exeContext: ExecutionContext,
-  nullPath?: Path,
-  currentAsyncRecord?: AsyncPayloadRecord,
+  nullPath: Path | undefined,
+  currentAsyncRecord: AsyncPayloadRecord | undefined,
 ): void {
   const nullPathArray = pathToArray(nullPath);
   exeContext.subsequentPayloads.forEach((asyncRecord) => {
