@@ -1052,7 +1052,7 @@ async function completeAsyncIteratorValue(
     }
 
     const itemPath = addPath(path, index, undefined);
-    let iteration;
+    let iteration: IteratorResult<unknown>;
     try {
       // eslint-disable-next-line no-await-in-loop
       iteration = await iterator.next();
@@ -1911,7 +1911,7 @@ async function executeStreamIteratorItem(
   asyncPayloadRecord: StreamRecord,
   itemPath: Path,
 ): Promise<IteratorResult<unknown>> {
-  let iteration;
+  let iteration: IteratorResult<unknown>;
   try {
     iteration = await iterator.next();
   } catch (rawError) {
@@ -1985,7 +1985,7 @@ async function executeStreamIterator(
       exeContext,
     });
 
-    let iteration;
+    let iteration: IteratorResult<unknown>;
     try {
       // eslint-disable-next-line no-await-in-loop
       iteration = await executeStreamIteratorItem(
