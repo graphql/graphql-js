@@ -1056,12 +1056,13 @@ async function completeAsyncIteratorValue(
     try {
       // eslint-disable-next-line no-await-in-loop
       iteration = await iterator.next();
-      if (iteration.done) {
-        break;
-      }
     } catch (rawError) {
       const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
       completedResults.push(handleFieldError(error, itemType, errors));
+      break;
+    }
+
+    if (iteration.done) {
       break;
     }
 
@@ -1910,20 +1911,23 @@ async function executeStreamIteratorItem(
   asyncPayloadRecord: StreamRecord,
   itemPath: Path,
 ): Promise<IteratorResult<unknown>> {
-  let item;
+  let iteration;
   try {
-    const { value, done } = await iterator.next();
-    if (done) {
-      asyncPayloadRecord.setIsCompletedIterator();
-      return { done, value: undefined };
-    }
-    item = value;
+    iteration = await iterator.next();
   } catch (rawError) {
     const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
     // don't continue if iterator throws
     return { done: true, value };
   }
+
+  const { done, value: item } = iteration;
+
+  if (done) {
+    asyncPayloadRecord.setIsCompletedIterator();
+    return { done, value: undefined };
+  }
+
   let completedItem;
   try {
     completedItem = completeValue(
