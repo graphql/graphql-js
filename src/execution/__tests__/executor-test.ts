@@ -582,7 +582,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('handles sync errors combined with rejections', async () => {
-    let isAsyncResolverCalled = false;
+    let isAsyncResolverFinished = false;
 
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -598,8 +598,8 @@ describe('Execute: Handles basic execution tasks', () => {
               await resolveOnNextTick();
               await resolveOnNextTick();
               await resolveOnNextTick();
-              isAsyncResolverCalled = true;
-              return Promise.resolve(null);
+              isAsyncResolverFinished = true;
+              return null;
             },
           },
         },
@@ -614,10 +614,10 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     `);
 
-    const result = await execute({ schema, document });
+    const result = execute({ schema, document });
 
-    expect(isAsyncResolverCalled).to.equal(true);
-    expectJSON(result).toDeepEqual({
+    expect(isAsyncResolverFinished).to.equal(false);
+    expectJSON(await result).toDeepEqual({
       data: null,
       errors: [
         {
@@ -628,6 +628,7 @@ describe('Execute: Handles basic execution tasks', () => {
         },
       ],
     });
+    expect(isAsyncResolverFinished).to.equal(true);
   });
 
   it('Full response path is included for non-nullable fields', () => {
