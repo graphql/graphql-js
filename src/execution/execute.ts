@@ -506,6 +506,7 @@ function buildPerEventExecutionContext(
   return {
     ...exeContext,
     rootValue: payload,
+    subsequentPayloads: new Set(),
     errors: [],
   };
 }
