@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
 
 import { inspect } from '../../jsutils/inspect';
 import { invariant } from '../../jsutils/invariant';
@@ -623,6 +624,56 @@ describe('Execute: Handles basic execution tasks', () => {
         },
       ],
     });
+  });
+
+  it('handles sync errors combined with rejections', async () => {
+    let isAsyncResolverFinished = false;
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          syncNullError: {
+            type: new GraphQLNonNull(GraphQLString),
+            resolve: () => null,
+          },
+          asyncNullError: {
+            type: new GraphQLNonNull(GraphQLString),
+            async resolve() {
+              await resolveOnNextTick();
+              await resolveOnNextTick();
+              await resolveOnNextTick();
+              isAsyncResolverFinished = true;
+              return null;
+            },
+          },
+        },
+      }),
+    });
+
+    // Order is important here, as the promise has to be created before the synchronous error is thrown
+    const document = parse(`
+      {
+        asyncNullError
+        syncNullError
+      }
+    `);
+
+    const result = execute({ schema, document });
+
+    expect(isAsyncResolverFinished).to.equal(false);
+    expectJSON(await result).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field Query.syncNullError.',
+          locations: [{ line: 4, column: 9 }],
+          path: ['syncNullError'],
+        },
+      ],
+    });
+    expect(isAsyncResolverFinished).to.equal(true);
   });
 
   it('Full response path is included for non-nullable fields', () => {
