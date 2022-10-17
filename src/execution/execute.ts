@@ -624,23 +624,33 @@ function executeFields(
   const results = Object.create(null);
   let containsPromise = false;
 
-  for (const [responseName, fieldNodes] of fields) {
-    const fieldPath = addPath(path, responseName, parentType.name);
-    const result = executeField(
-      exeContext,
-      parentType,
-      sourceValue,
-      fieldNodes,
-      fieldPath,
-      asyncPayloadRecord,
-    );
+  try {
+    for (const [responseName, fieldNodes] of fields) {
+      const fieldPath = addPath(path, responseName, parentType.name);
+      const result = executeField(
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
+        asyncPayloadRecord,
+      );
 
-    if (result !== undefined) {
-      results[responseName] = result;
-      if (isPromise(result)) {
-        containsPromise = true;
+      if (result !== undefined) {
+        results[responseName] = result;
+        if (isPromise(result)) {
+          containsPromise = true;
+        }
       }
     }
+  } catch (error) {
+    if (containsPromise) {
+      // Ensure that any promises returned by other fields are handled, as they may also reject.
+      return promiseForObject(results).finally(() => {
+        throw error;
+      });
+    }
+    throw error;
   }
 
   // If there are no promises, we can just return the object
