@@ -89,6 +89,8 @@ jobs:
   cmd-publish-pr-on-npm:
     needs: [accept-cmd]
     if: needs.accept-cmd.outputs.cmd == 'publish-pr-on-npm'
+    permissions:
+      contents: read
     uses: ./.github/workflows/cmd-publish-pr-on-npm.yml
     with:
       pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
@@ -98,6 +100,9 @@ jobs:
   cmd-run-benchmark:
     needs: [accept-cmd]
     if: needs.accept-cmd.outputs.cmd == 'run-benchmark'
+    permissions:
+      contents: read # for checkout
+      actions: read # to list workflow runs
     uses: ./.github/workflows/cmd-run-benchmark.yml
     with:
       pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
