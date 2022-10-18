@@ -505,7 +505,7 @@ describe('Execute: Handles execution of abstract types', () => {
 
       interface Pet {
         name: String
-        }
+      }
 
       type Cat implements Pet {
         name: String
