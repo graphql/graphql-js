@@ -1,4 +1,4 @@
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
@@ -853,6 +853,57 @@ describe('Execute: stream directive', () => {
   it('Handles async errors thrown by completeValue after initialCount is reached', async () => {
     const document = parse(`
       query { 
+        friendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    const result = await complete(document, {
+      friendList: () => [
+        Promise.resolve({ nonNullName: friends[0].name }),
+        Promise.resolve({
+          nonNullName: () => Promise.reject(new Error('Oops')),
+        }),
+        Promise.resolve({ nonNullName: friends[1].name }),
+      ],
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['friendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ nonNullName: 'Han' }],
+            path: ['friendList', 2],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles async errors thrown by completeValue after initialCount is reached for a non-nullable list', async () => {
+    const document = parse(`
+      query { 
         nonNullFriendList @stream(initialCount: 1) {
           nonNullName
         }
@@ -942,6 +993,50 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    const result = await complete(document, {
+      async *nonNullFriendList() {
+        yield await Promise.resolve({ nonNullName: friends[0].name });
+        yield await Promise.resolve({
+          nonNullName: () => Promise.reject(new Error('Oops')),
+        });
+        yield await Promise.resolve({
+          nonNullName: friends[1].name,
+        }); /* c8 ignore start */
+      } /* c8 ignore stop */,
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
         hasNext: false,
       },
     ]);
