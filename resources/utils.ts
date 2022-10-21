@@ -72,7 +72,8 @@ export function git(options?: GITOptions) {
     },
     revList(...args: ReadonlyArray<string>): Array<string> {
       const allArgs = ['rev-list', ...cmdOptions, ...args];
-      return spawnOutput('git', allArgs, options).split('\n');
+      const result = spawnOutput('git', allArgs, options);
+      return result === '' ? [] : result.split('\n');
     },
     catFile(...args: ReadonlyArray<string>): string {
       return spawnOutput('git', ['cat-file', ...cmdOptions, ...args], options);
