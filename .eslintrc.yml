@@ -178,7 +178,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.23.x`
+  # ESLint builtin rules list based on `v8.26.x`
   ##############################################################################
 
   # Possible Errors
@@ -317,6 +317,7 @@ rules:
   # https://eslint.org/docs/rules/#variables
 
   init-declarations: off
+  logical-assignment-operators: off # TODO
   no-delete-var: error
   no-label-var: error
   no-restricted-globals: off
@@ -496,11 +497,11 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.37.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.41.x`
       ##########################################################################
 
       # Supported Rules
-      # https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#supported-rules
+      # https://typescript-eslint.io/rules/#extension-rules
       '@typescript-eslint/adjacent-overload-signatures': error
       '@typescript-eslint/array-type': [error, { default: generic }]
       '@typescript-eslint/await-thenable': error
@@ -556,6 +557,7 @@ overrides:
       '@typescript-eslint/no-unsafe-argument': off # TODO consider
       '@typescript-eslint/no-unsafe-assignment': off # TODO consider
       '@typescript-eslint/no-unsafe-call': off # TODO consider
+      '@typescript-eslint/no-unsafe-declaration-merging': error
       '@typescript-eslint/no-unsafe-member-access': off # TODO consider
       '@typescript-eslint/no-unsafe-return': off # TODO consider
       '@typescript-eslint/no-useless-empty-export': error
