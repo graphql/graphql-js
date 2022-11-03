@@ -417,15 +417,15 @@ describe('Type System: Schema', () => {
     });
 
     it('returns `undefined` for introspection fields in wrong location', () => {
-      expect(schema.getField(petType, '__type')).to.equal(undefined);
-      expect(schema.getField(dogType, '__type')).to.equal(undefined);
-      expect(schema.getField(mutationType, '__type')).to.equal(undefined);
-      expect(schema.getField(subscriptionType, '__type')).to.equal(undefined);
+      expectField(petType, '__type').to.equal(undefined);
+      expectField(dogType, '__type').to.equal(undefined);
+      expectField(mutationType, '__type').to.equal(undefined);
+      expectField(subscriptionType, '__type').to.equal(undefined);
 
-      expect(schema.getField(petType, '__schema')).to.equal(undefined);
-      expect(schema.getField(dogType, '__schema')).to.equal(undefined);
-      expect(schema.getField(mutationType, '__schema')).to.equal(undefined);
-      expect(schema.getField(subscriptionType, '__schema')).to.equal(undefined);
+      expectField(petType, '__schema').to.equal(undefined);
+      expectField(dogType, '__schema').to.equal(undefined);
+      expectField(mutationType, '__schema').to.equal(undefined);
+      expectField(subscriptionType, '__schema').to.equal(undefined);
     });
   });
 
