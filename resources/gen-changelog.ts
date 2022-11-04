@@ -91,7 +91,7 @@ async function genChangeLog(): Promise<string> {
     if (!labelsConfig[label]) {
       throw new Error(`Unknown label: ${label}. See ${pr.url}`);
     }
-    byLabel[label] = byLabel[label] || [];
+    byLabel[label] ??= [];
     byLabel[label].push(pr);
     committersByLogin[pr.author.login] = pr.author;
   }

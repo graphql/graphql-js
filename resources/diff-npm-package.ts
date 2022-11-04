@@ -17,8 +17,8 @@ const { tmpDirPath } = makeTmpDir('graphql-js-npm-diff');
 const args = process.argv.slice(2);
 let [fromRevision, toRevision] = args;
 if (args.length < 2) {
-  fromRevision = fromRevision ?? 'HEAD';
-  toRevision = toRevision ?? LOCAL;
+  fromRevision ??= 'HEAD';
+  toRevision ??= LOCAL;
   console.warn(
     `Assuming you meant: diff-npm-package ${fromRevision} ${toRevision}`,
   );

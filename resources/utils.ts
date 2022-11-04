@@ -149,7 +149,7 @@ export function showDirStats(dirPath: string): void {
     const ext = name.split('.').slice(1).join('.');
     const filetype = ext ? '*.' + ext : name;
 
-    fileTypes[filetype] = fileTypes[filetype] ?? { filepaths: [], size: 0 };
+    fileTypes[filetype] ??= { filepaths: [], size: 0 };
 
     totalSize += stats.size;
     fileTypes[filetype].size += stats.size;
