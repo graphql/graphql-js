@@ -317,7 +317,7 @@ rules:
   # https://eslint.org/docs/rules/#variables
 
   init-declarations: off
-  logical-assignment-operators: off # TODO
+  logical-assignment-operators: error
   no-delete-var: error
   no-label-var: error
   no-restricted-globals: off
