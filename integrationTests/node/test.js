@@ -7,7 +7,7 @@ const graphqlPackageJSON = JSON.parse(
 
 const nodeVersions = graphqlPackageJSON.engines.node
   .split(' || ')
-  .map((version) => version.replace(/^(\^|>=)/, ''))
+  .map((version) => version.replace('^', '').replace('>=', ''))
   .sort((a, b) => b.localeCompare(a));
 
 for (const version of nodeVersions) {
