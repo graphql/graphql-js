@@ -196,6 +196,27 @@ describe('extendSchema', () => {
     expect(extendedTwiceSchema.getType('ID')).to.equal(GraphQLID);
   });
 
+  it('copies original schema description to extended schema', () => {
+    const description = 'A schema description';
+
+    const extendedSchema = extendSchema(
+      buildSchema(`
+        "${description}"
+        schema {
+          query: Foo
+        }
+        
+        type Foo {
+          foo: String
+        }
+      `),
+      parse('scalar Bar'),
+    );
+
+    expect(extendedSchema.astNode?.description?.value).to.equal(description);
+    expect(extendedSchema.description).to.equal(description);
+  });
+
   it('extends enums by adding new values', () => {
     const schema = buildSchema(`
       type Query {
