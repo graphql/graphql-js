@@ -227,7 +227,7 @@ rules:
   no-template-curly-in-string: error
   no-this-before-super: error
   no-undef: error
-  no-unexpected-multiline: off
+  no-unexpected-multiline: error
   no-unmodified-loop-condition: error
   no-unreachable: error
   no-unreachable-loop: error
@@ -253,7 +253,7 @@ rules:
   class-methods-use-this: off
   complexity: off
   consistent-return: off
-  consistent-this: off
+  consistent-this: error
   curly: error
   default-case: off
   default-case-last: error
@@ -369,7 +369,7 @@ rules:
   prefer-const: error
   prefer-destructuring: off
   prefer-exponentiation-operator: error
-  prefer-named-capture-group: off # ES2018
+  prefer-named-capture-group: off # needs a better support in TS, see https://github.com/microsoft/TypeScript/issues/32098
   prefer-numeric-literals: error
   prefer-object-has-own: off # TODO requires Node.js v16.9.0
   prefer-object-spread: error
@@ -378,7 +378,7 @@ rules:
   prefer-rest-params: off # TODO
   prefer-spread: error
   prefer-template: off
-  quote-props: off # Superseded by prettier
+  quote-props: [error, as-needed]
   radix: error
   require-await: error
   require-unicode-regexp: off
