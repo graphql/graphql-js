@@ -12,6 +12,7 @@
     "typescript-4.5": "npm:typescript@4.5.x",
     "typescript-4.6": "npm:typescript@4.6.x",
     "typescript-4.7": "npm:typescript@4.7.x",
-    "typescript-4.8": "npm:typescript@4.8.x"
+    "typescript-4.8": "npm:typescript@4.8.x",
+    "typescript-4.9": "npm:typescript@4.9.x"
   }
 }
