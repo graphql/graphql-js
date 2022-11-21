@@ -113,6 +113,17 @@ describe('extendSchema', () => {
     expect(extendedSchema.getDirectives()).to.have.members(specifiedDirectives);
   });
 
+  it('preserves original schema config', () => {
+    const description = 'A schema description';
+    const extensions = Object.freeze({ foo: 'bar' });
+    const schema = new GraphQLSchema({ description, extensions });
+
+    const extendedSchema = extendSchema(schema, parse('scalar Bar'));
+
+    expect(extendedSchema.description).to.equal(description);
+    expect(extendedSchema.extensions).to.deep.equal(extensions);
+  });
+
   it('extends objects by adding new fields', () => {
     const schema = buildSchema(`
       type Query {
