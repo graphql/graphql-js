@@ -160,7 +160,7 @@ describe('Validate: Defer/Stream directive on root field', () => {
     expectValid(`
       subscription {
         subscriptionField {
-          ...nestedFragment
+          ...nestedFragment @defer
         }
       }
       fragment nestedFragment on Message {
