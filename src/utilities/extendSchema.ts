@@ -246,7 +246,7 @@ export function extendSchemaImpl(
       ...schemaConfig.directives.map(replaceDirective),
       ...directiveDefs.map(buildDirective),
     ],
-    extensions: Object.create(null),
+    extensions: schemaConfig.extensions,
     astNode: schemaDef ?? schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     assumeValid: options?.assumeValid ?? false,
