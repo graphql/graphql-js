@@ -178,7 +178,7 @@ rules:
   simple-import-sort/exports: off # TODO
 
   ##############################################################################
-  # ESLint builtin rules list based on `v8.26.x`
+  # ESLint builtin rules list based on `v8.27.x`
   ##############################################################################
 
   # Possible Errors
@@ -216,6 +216,7 @@ rules:
   no-irregular-whitespace: error
   no-loss-of-precision: error
   no-misleading-character-class: error
+  no-new-native-nonconstructor: error
   no-new-symbol: error
   no-obj-calls: error
   no-promise-executor-return: off # TODO
@@ -292,6 +293,7 @@ rules:
   no-else-return: error
   no-empty: error
   no-empty-function: error
+  no-empty-static-block: error
   no-eq-null: off
   no-eval: error
   no-extend-native: error
@@ -485,7 +487,7 @@ overrides:
       tsdoc/syntax: error
 
       ##########################################################################
-      # `@typescript-eslint/eslint-plugin` rule list based on `v5.41.x`
+      # `@typescript-eslint/eslint-plugin` rule list based on `v5.43.x`
       ##########################################################################
 
       # Supported Rules
