@@ -29,8 +29,8 @@ import {
   isObjectType,
 } from '../../type/definition.js';
 
-import { sortValueNode } from '../../utilities/sortValueNode';
-import { typeFromAST } from '../../utilities/typeFromAST';
+import { sortValueNode } from '../../utilities/sortValueNode.js';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 

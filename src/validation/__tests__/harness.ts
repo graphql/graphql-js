@@ -2,8 +2,8 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
 import type { Maybe } from '../../jsutils/Maybe.js';
 
-import type { ParseOptions } from '../../language/parser';
-import { parse } from '../../language/parser';
+import type { ParseOptions } from '../../language/parser.js';
+import { parse } from '../../language/parser.js';
 
 import type { GraphQLSchema } from '../../type/schema.js';
 
