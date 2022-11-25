@@ -49,6 +49,7 @@ export { lexicographicSortSchema } from './lexicographicSortSchema.js';
 export {
   printSchema,
   printType,
+  printDirective,
   printIntrospectionSchema,
 } from './printSchema.js';
 
