@@ -1798,16 +1798,21 @@ function executeDeferredFragment(
       fields,
       asyncPayloadRecord,
     );
-
-    if (isPromise(promiseOrData)) {
-      promiseOrData = promiseOrData.then(null, (e) => {
-        asyncPayloadRecord.errors.push(e);
-        return null;
-      });
-    }
   } catch (e) {
     asyncPayloadRecord.errors.push(e);
-    promiseOrData = null;
+    asyncPayloadRecord.addData(null);
+    return;
+  }
+
+  if (isPromise(promiseOrData)) {
+    promiseOrData.then(
+      (value) => asyncPayloadRecord.addData(value),
+      (error) => {
+        asyncPayloadRecord.errors.push(error);
+        asyncPayloadRecord.addData(null);
+      },
+    );
+    return;
   }
   asyncPayloadRecord.addData(promiseOrData);
 }
@@ -1830,7 +1835,7 @@ function executeStreamField(
     exeContext,
   });
   if (isPromise(item)) {
-    const completedItems = completePromisedValue(
+    completePromisedValue(
       exeContext,
       itemType,
       fieldNodes,
@@ -1839,15 +1844,14 @@ function executeStreamField(
       item,
       asyncPayloadRecord,
     ).then(
-      (value) => [value],
+      (value) => asyncPayloadRecord.addItems([value]),
       (error) => {
         asyncPayloadRecord.errors.push(error);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-        return null;
+        asyncPayloadRecord.addItems(null);
       },
     );
 
-    asyncPayloadRecord.addItems(completedItems);
     return asyncPayloadRecord;
   }
 
@@ -1880,7 +1884,7 @@ function executeStreamField(
   }
 
   if (isPromise(completedItem)) {
-    const completedItems = completedItem
+    completedItem
       .then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
         const handledError = handleFieldError(
@@ -1892,15 +1896,14 @@ function executeStreamField(
         return handledError;
       })
       .then(
-        (value) => [value],
+        (value) => asyncPayloadRecord.addItems([value]),
         (error) => {
           asyncPayloadRecord.errors.push(error);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
+          asyncPayloadRecord.addItems(null);
         },
       );
 
-    asyncPayloadRecord.addItems(completedItems);
     return asyncPayloadRecord;
   }
 
@@ -2015,21 +2018,18 @@ async function executeStreamIterator(
 
     const { done, value: completedItem } = iteration;
 
-    let completedItems: PromiseOrValue<Array<unknown> | null>;
     if (isPromise(completedItem)) {
-      completedItems = completedItem.then(
-        (value) => [value],
+      completedItem.then(
+        (resolvedItem) => asyncPayloadRecord.addItems([resolvedItem]),
         (error) => {
           asyncPayloadRecord.errors.push(error);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
+          asyncPayloadRecord.addItems(null);
         },
       );
     } else {
-      completedItems = [completedItem];
+      asyncPayloadRecord.addItems([completedItem]);
     }
-
-    asyncPayloadRecord.addItems(completedItems);
 
     if (done) {
       break;
@@ -2095,12 +2095,14 @@ class DeferredFragmentRecord {
   errors: Array<GraphQLError>;
   label: string | undefined;
   path: Array<string | number>;
-  promise: Promise<void>;
   data: ObjMap<unknown> | null;
   parentContext: AsyncPayloadRecord | undefined;
-  isCompleted: boolean;
-  _exeContext: ExecutionContext;
-  _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
+  _publisher: Publisher<
+    AsyncPayloadRecord,
+    IncrementalResult,
+    SubsequentIncrementalExecutionResult
+  >;
+
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
@@ -2112,27 +2114,14 @@ class DeferredFragmentRecord {
     this.path = pathToArray(opts.path);
     this.parentContext = opts.parentContext;
     this.errors = [];
-    this._exeContext = opts.exeContext;
-    this._exeContext.publisher.add(this);
-    this.isCompleted = false;
+    this._publisher = opts.exeContext.publisher;
+    this._publisher.add(this);
     this.data = null;
-    this.promise = new Promise<ObjMap<unknown> | null>((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((data) => {
-      this.data = data;
-      this.isCompleted = true;
-    });
   }
 
-  addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
-    const parentData = this.parentContext?.promise;
-    if (parentData) {
-      this._resolve?.(parentData.then(() => data));
-      return;
-    }
-    this._resolve?.(data);
+  addData(data: ObjMap<unknown> | null) {
+    this.data = data;
+    this._publisher.complete(this);
   }
 }
 
@@ -2142,13 +2131,15 @@ class StreamRecord {
   label: string | undefined;
   path: Array<string | number>;
   items: Array<unknown> | null;
-  promise: Promise<void>;
   parentContext: AsyncPayloadRecord | undefined;
   iterator: AsyncIterator<unknown> | undefined;
   isCompletedIterator?: boolean;
-  isCompleted: boolean;
-  _exeContext: ExecutionContext;
-  _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
+  _publisher: Publisher<
+    AsyncPayloadRecord,
+    IncrementalResult,
+    SubsequentIncrementalExecutionResult
+  >;
+
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
@@ -2163,27 +2154,14 @@ class StreamRecord {
     this.parentContext = opts.parentContext;
     this.iterator = opts.iterator;
     this.errors = [];
-    this._exeContext = opts.exeContext;
-    this._exeContext.publisher.add(this);
-    this.isCompleted = false;
+    this._publisher = opts.exeContext.publisher;
+    this._publisher.add(this);
     this.items = null;
-    this.promise = new Promise<Array<unknown> | null>((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((items) => {
-      this.items = items;
-      this.isCompleted = true;
-    });
   }
 
-  addItems(items: PromiseOrValue<Array<unknown> | null>) {
-    const parentData = this.parentContext?.promise;
-    if (parentData) {
-      this._resolve?.(parentData.then(() => items));
-      return;
-    }
-    this._resolve?.(items);
+  addItems(items: Array<unknown> | null) {
+    this.items = items;
+    this._publisher.complete(this);
   }
 
   setIsCompletedIterator() {

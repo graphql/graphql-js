@@ -605,11 +605,6 @@ describe('Execute: defer directive', () => {
             data: { slowField: 'slow', friends: [{}, {}, {}] },
             path: ['hero'],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
           { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
           { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
@@ -653,11 +648,6 @@ describe('Execute: defer directive', () => {
             },
             path: ['hero'],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
           { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
           { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
