@@ -1,21 +1,21 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
   FieldNode,
   ListNullabilityOperatorNode,
   NullabilityAssertionNode,
-} from '../../language/ast';
-import type { ASTReducer, ASTVisitor } from '../../language/visitor';
-import { visit } from '../../language/visitor';
+} from '../../language/ast.js';
+import type { ASTReducer, ASTVisitor } from '../../language/visitor.js';
+import { visit } from '../../language/visitor.js';
 
-import type { GraphQLOutputType } from '../../type/definition';
+import type { GraphQLOutputType } from '../../type/definition.js';
 import {
   assertListType,
   getNullableType,
   isListType,
-} from '../../type/definition';
+} from '../../type/definition.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * List element nullability designators need to use a depth that is the same as or less than the
