@@ -1791,16 +1791,21 @@ function executeDeferredFragment(
       fields,
       asyncPayloadRecord,
     );
-
-    if (isPromise(promiseOrData)) {
-      promiseOrData = promiseOrData.then(null, (e) => {
-        asyncPayloadRecord.errors.push(e);
-        return null;
-      });
-    }
   } catch (e) {
     asyncPayloadRecord.errors.push(e);
-    promiseOrData = null;
+    asyncPayloadRecord.addData(null);
+    return;
+  }
+
+  if (isPromise(promiseOrData)) {
+    promiseOrData.then(
+      (value) => asyncPayloadRecord.addData(value),
+      (error) => {
+        asyncPayloadRecord.errors.push(error);
+        asyncPayloadRecord.addData(null);
+      },
+    );
+    return;
   }
   asyncPayloadRecord.addData(promiseOrData);
 }
@@ -1823,7 +1828,7 @@ function executeStreamField(
     exeContext,
   });
   if (isPromise(item)) {
-    const completedItems = completePromisedValue(
+    completePromisedValue(
       exeContext,
       itemType,
       fieldNodes,
@@ -1832,15 +1837,14 @@ function executeStreamField(
       item,
       asyncPayloadRecord,
     ).then(
-      (value) => [value],
+      (value) => asyncPayloadRecord.addItems([value]),
       (error) => {
         asyncPayloadRecord.errors.push(error);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-        return null;
+        asyncPayloadRecord.addItems(null);
       },
     );
 
-    asyncPayloadRecord.addItems(completedItems);
     return asyncPayloadRecord;
   }
 
@@ -1873,7 +1877,7 @@ function executeStreamField(
   }
 
   if (isPromise(completedItem)) {
-    const completedItems = completedItem
+    completedItem
       .then(undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
         const handledError = handleFieldError(
@@ -1885,15 +1889,14 @@ function executeStreamField(
         return handledError;
       })
       .then(
-        (value) => [value],
+        (value) => asyncPayloadRecord.addItems([value]),
         (error) => {
           asyncPayloadRecord.errors.push(error);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
+          asyncPayloadRecord.addItems(null);
         },
       );
 
-    asyncPayloadRecord.addItems(completedItems);
     return asyncPayloadRecord;
   }
 
@@ -2008,21 +2011,18 @@ async function executeStreamIterator(
 
     const { done, value: completedItem } = iteration;
 
-    let completedItems: PromiseOrValue<Array<unknown> | null>;
     if (isPromise(completedItem)) {
-      completedItems = completedItem.then(
-        (value) => [value],
+      completedItem.then(
+        (resolvedItem) => asyncPayloadRecord.addItems([resolvedItem]),
         (error) => {
           asyncPayloadRecord.errors.push(error);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
+          asyncPayloadRecord.addItems(null);
         },
       );
     } else {
-      completedItems = [completedItem];
+      asyncPayloadRecord.addItems([completedItem]);
     }
-
-    asyncPayloadRecord.addItems(completedItems);
 
     if (done) {
       break;
@@ -2202,7 +2202,7 @@ class DeferredFragmentRecord {
     });
   }
 
-  addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
+  addData(data: ObjMap<unknown> | null) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
       this._resolve?.(parentData.then(() => data));
@@ -2253,7 +2253,7 @@ class StreamRecord {
     });
   }
 
-  addItems(items: PromiseOrValue<Array<unknown> | null>) {
+  addItems(items: Array<unknown> | null) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
       this._resolve?.(parentData.then(() => items));
