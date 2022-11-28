@@ -122,6 +122,10 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
+  signal: Maybe<{
+    isAborted: boolean;
+    instance: AbortSignal;
+  }>;
 }
 
 /**
@@ -261,6 +265,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  signal?: AbortSignal;
 }
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
@@ -337,9 +342,29 @@ export function experimentalExecuteIncrementally(
   return executeImpl(exeContext);
 }
 
+function subscribeToAbortSignal(exeContext: ExecutionContext): {
+  unsubscribeFromAbortSignal: () => void;
+} {
+  const onAbort = () => {
+    if ('signal' in exeContext && exeContext.signal) {
+      exeContext.signal.isAborted = true;
+    }
+  };
+
+  exeContext.signal?.instance.addEventListener('abort', onAbort);
+
+  return {
+    unsubscribeFromAbortSignal: () => {
+      exeContext.signal?.instance.removeEventListener('abort', onAbort);
+    },
+  };
+}
+
 function executeImpl(
   exeContext: ExecutionContext,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+  const { unsubscribeFromAbortSignal } = subscribeToAbortSignal(exeContext);
+
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
@@ -356,6 +381,8 @@ function executeImpl(
     if (isPromise(result)) {
       return result.then(
         (data) => {
+          unsubscribeFromAbortSignal();
+
           const initialResult = buildResponse(data, exeContext.errors);
           if (exeContext.subsequentPayloads.size > 0) {
             return {
@@ -369,11 +396,16 @@ function executeImpl(
           return initialResult;
         },
         (error) => {
+          unsubscribeFromAbortSignal();
+
           exeContext.errors.push(error);
           return buildResponse(null, exeContext.errors);
         },
       );
     }
+
+    unsubscribeFromAbortSignal();
+
     const initialResult = buildResponse(result, exeContext.errors);
     if (exeContext.subsequentPayloads.size > 0) {
       return {
@@ -386,6 +418,7 @@ function executeImpl(
     }
     return initialResult;
   } catch (error) {
+    unsubscribeFromAbortSignal();
     exeContext.errors.push(error);
     return buildResponse(null, exeContext.errors);
   }
@@ -440,6 +473,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    signal,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -505,6 +539,7 @@ export function buildExecutionContext(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     subsequentPayloads: new Set(),
     errors: [],
+    signal: signal ? { instance: signal, isAborted: false } : null,
   };
 }
 
@@ -838,6 +873,14 @@ function completeValue(
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
+  if (exeContext.signal?.isAborted) {
+    throw new GraphQLError(
+      `Execution aborted. Reason: ${
+        exeContext.signal.instance.reason ?? 'Unknown.'
+      }`,
+    );
+  }
+
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
