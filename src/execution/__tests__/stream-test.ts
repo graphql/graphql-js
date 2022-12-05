@@ -1174,6 +1174,9 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
+        hasNext: true,
+      },
+      {
         hasNext: false,
       },
     ]);
@@ -1197,19 +1200,25 @@ describe('Execute: stream directive', () => {
         } /* c8 ignore stop */,
       },
     });
-    expectJSON(result).toDeepEqual({
-      errors: [
-        {
-          message:
-            'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
-          locations: [{ line: 4, column: 11 }],
-          path: ['nestedObject', 'nonNullScalarField'],
+    expectJSON(result).toDeepEqual([
+      {
+        errors: [
+          {
+            message:
+              'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
+            locations: [{ line: 4, column: 11 }],
+            path: ['nestedObject', 'nonNullScalarField'],
+          },
+        ],
+        data: {
+          nestedObject: null,
         },
-      ],
-      data: {
-        nestedObject: null,
+        hasNext: true,
       },
-    });
+      {
+        hasNext: false,
+      },
+    ]);
   });
   it('Filters payloads that are nulled by a later synchronous error', async () => {
     const document = parse(`
@@ -1350,6 +1359,9 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
+        hasNext: true,
+      },
+      {
         hasNext: false,
       },
     ]);
