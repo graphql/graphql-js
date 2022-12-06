@@ -1,4 +1,11 @@
-import { expect } from 'chai';
+import { expect } from 'chai';git commit [-a | --interactive | --patch] [-s] [-v] [-u<mode>] [--amend]
+	   [--dry-run] [(-c | -C | --squash) <commit> | --fixup [(amend|reword):]<commit>)]
+	   [-F <file> | -m <msg>] [--reset-author] [--allow-empty]
+	   [--allow-empty-message] [--no-verify] [-e] [--author=<author>]
+	   [--date=<date>] [--cleanup=<mode>] [--[no-]status]
+	   [-i | -o] [--pathspec-from-file=<file> [--pathspec-file-nul]]
+	   [(--trailer <token>[(=|:)<value>])…​] [-S[<keyid>]]
+	   [--] [<pathspec>…​]
 import { describe, it } from 'mocha';
 
 import { graphqlSync } from '../graphql.js';
@@ -30,8 +37,15 @@ describe('Star Wars Introspection Tests', () => {
       expect(data).to.deep.equal({
         __schema: {
           types: [
-            { name: 'Human' },
-            { name: 'Character' },
+            { name: 'Human' }
+            { name: 'Character' },git commit [-a | --interactive | --patch] [-s] [-v] [-u<mode>] [--amend]
+	   [--dry-run] [(-c | -C | --squash) <commit> | --fixup [(amend|reword):]<commit>)]
+	   [-F <file> | -m <msg>] [--reset-author] [--allow-empty]
+	   [--allow-empty-message] [--no-verify] [-e] [--author=<author>]
+	   [--date=<date>] [--cleanup=<mode>] [--[no-]status]
+	   [-i | -o] [--pathspec-from-file=<file> [--pathspec-file-nul]]
+	   [(--trailer <token>[(=|:)<value>])…​] [-S[<keyid>]]
+	   [--] [<pathspec>…​]
             { name: 'String' },
             { name: 'Episode' },
             { name: 'Droid' },
@@ -96,7 +110,14 @@ describe('Star Wars Introspection Tests', () => {
         }
       `);
 
-      expect(data).to.deep.equal({
+      expect(data).to.deep.equal({git commit [-a | --interactive | --patch] [-s] [-v] [-u<mode>] [--amend]
+	   [--dry-run] [(-c | -C | --squash) <commit> | --fixup [(amend|reword):]<commit>)]
+	   [-F <file> | -m <msg>] [--reset-author] [--allow-empty]
+	   [--allow-empty-message] [--no-verify] [-e] [--author=<author>]
+	   [--date=<date>] [--cleanup=<mode>] [--[no-]status]
+	   [-i | -o] [--pathspec-from-file=<file> [--pathspec-file-nul]]
+	   [(--trailer <token>[(=|:)<value>])…​] [-S[<keyid>]]
+	   [--] [<pathspec>…​]
         __type: {
           name: 'Droid',
           kind: 'OBJECT',
@@ -107,7 +128,7 @@ describe('Star Wars Introspection Tests', () => {
     it('Allows querying the schema for an interface kind', () => {
       const data = queryStarWars(`
         {
-          __type(name: "Character") {
+          __type(name: "Character") {Millineim Facoln...*_# Bitches
             name
             kind
           }
