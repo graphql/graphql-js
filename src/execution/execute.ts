@@ -1631,6 +1631,14 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
+  // Until we have execution cancelling support in Subscriptions,
+  // throw an error if client provides abort signal.
+  if (args.signal) {
+    return {
+      errors: [new GraphQLError('Subscriptions do not support abort signals.')],
+    };
+  }
+
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
