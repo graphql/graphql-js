@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
+import { AbortController } from '../../jsutils/AbortController.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../../language/kinds.js';
@@ -1314,59 +1315,59 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(possibleTypes).to.deep.equal([fooObject]);
   });
 
-  describe('Abort execution', () => {
-    it('stops execution and throws an error when signal is aborted', async () => {
-      /**
-       * This test has 3 resolvers nested in each other.
-       * Every resolve function waits 200ms before returning data.
-       *
-       * The test waits for the first resolver and half of the 2nd resolver execution time (200ms + 100ms)
-       * and then aborts the execution.
-       *
-       * 2nd resolver execution finishes, and we then expect to not execute the 3rd resolver
-       * and to get an error about aborted operation.
-       */
+  it('stops execution and throws an error when signal is aborted', async () => {
+    /**
+     * This test has 3 resolvers nested in each other.
+     * Every resolve function waits 200ms before returning data.
+     *
+     * The test waits for the first resolver and half of the 2nd resolver execution time (200ms + 100ms)
+     * and then aborts the execution.
+     *
+     * 2nd resolver execution finishes, and we then expect to not execute the 3rd resolver
+     * and to get an error about aborted operation.
+     */
 
-      const WAIT_MS_BEFORE_RESOLVING = 200;
-      const ABORT_IN_MS_AFTER_STARTING_EXECUTION =
-        WAIT_MS_BEFORE_RESOLVING + WAIT_MS_BEFORE_RESOLVING / 2;
+    const WAIT_MS_BEFORE_RESOLVING = 200;
+    const ABORT_IN_MS_AFTER_STARTING_EXECUTION =
+      WAIT_MS_BEFORE_RESOLVING + WAIT_MS_BEFORE_RESOLVING / 2;
 
-      const schema = new GraphQLSchema({
-        query: new GraphQLObjectType({
-          name: 'Query',
-          fields: {
-            resolvesIn500ms: {
-              type: new GraphQLObjectType({
-                name: 'ResolvesIn500ms',
-                fields: {
-                  resolvesIn400ms: {
-                    type: new GraphQLObjectType({
-                      name: 'ResolvesIn400ms',
-                      fields: {
-                        shouldNotBeResolved: {
-                          type: GraphQLString,
-                          resolve: () => {
-                            throw new Error('This should not be executed!');
-                          },
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          resolvesIn500ms: {
+            type: new GraphQLObjectType({
+              name: 'ResolvesIn500ms',
+              fields: {
+                resolvesIn400ms: {
+                  type: new GraphQLObjectType({
+                    name: 'ResolvesIn400ms',
+                    fields: {
+                      shouldNotBeResolved: {
+                        type: GraphQLString,
+                        /* c8 ignore next 3 */
+                        resolve: () => {
+                          throw new Error('This should not be executed!');
                         },
                       },
+                    },
+                  }),
+                  resolve: () =>
+                    new Promise((resolve) => {
+                      setTimeout(() => resolve({}), WAIT_MS_BEFORE_RESOLVING);
                     }),
-                    resolve: () =>
-                      new Promise((resolve) => {
-                        setTimeout(() => resolve({}), WAIT_MS_BEFORE_RESOLVING);
-                      }),
-                  },
                 },
+              },
+            }),
+            resolve: () =>
+              new Promise((resolve) => {
+                setTimeout(() => resolve({}), WAIT_MS_BEFORE_RESOLVING);
               }),
-              resolve: () =>
-                new Promise((resolve) => {
-                  setTimeout(() => resolve({}), WAIT_MS_BEFORE_RESOLVING);
-                }),
-            },
           },
-        }),
-      });
-      const document = parse(`
+        },
+      }),
+    });
+    const document = parse(`
       query {
         resolvesIn500ms {
           resolvesIn400ms {
@@ -1376,67 +1377,22 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     `);
 
-      const abortController = new AbortController();
-      const executionPromise = execute({
-        schema,
-        document,
-        signal: abortController.signal,
-      });
-
-      setTimeout(
-        () => abortController.abort(),
-        ABORT_IN_MS_AFTER_STARTING_EXECUTION,
-      );
-
-      const result = await executionPromise;
-      expect(result.errors?.[0].message).to.eq(
-        'Execution aborted. Reason: AbortError: This operation was aborted',
-      );
-      expect(result.data).to.eql({
-        resolvesIn500ms: { resolvesIn400ms: null },
-      });
+    const abortController = new AbortController();
+    const executionPromise = execute({
+      schema,
+      document,
+      signal: abortController.signal,
     });
 
-    const abortMessageTestInputs = [
-      { message: 'Aborted from somewhere', reason: 'Aborted from somewhere' },
-      { message: undefined, reason: 'AbortError: This operation was aborted' },
-    ];
+    setTimeout(
+      () => abortController.abort(),
+      ABORT_IN_MS_AFTER_STARTING_EXECUTION,
+    );
 
-    for (const { message, reason } of abortMessageTestInputs) {
-      it('aborts with "Reason:" in the error message', async () => {
-        const schema = new GraphQLSchema({
-          query: new GraphQLObjectType({
-            name: 'Query',
-            fields: {
-              a: {
-                type: GraphQLString,
-                resolve: () =>
-                  new Promise((resolve) => {
-                    setTimeout(() => resolve({}), 100);
-                  }),
-              },
-            },
-          }),
-        });
-
-        const document = parse(`
-        query { a }
-      `);
-
-        const abortController = new AbortController();
-        const executionPromise = execute({
-          schema,
-          document,
-          signal: abortController.signal,
-        });
-
-        abortController.abort(message);
-
-        const { errors } = await executionPromise;
-        expect(errors?.[0].message).to.eq(
-          `Execution aborted. Reason: ${reason}`,
-        );
-      });
-    }
+    const result = await executionPromise;
+    expect(result.errors?.[0].message).to.eq('Execution aborted.');
+    expect(result.data).to.eql({
+      resolvesIn500ms: { resolvesIn400ms: null },
+    });
   });
 });

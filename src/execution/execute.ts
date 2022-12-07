@@ -1,3 +1,8 @@
+import type {
+  IAbortController,
+  IAbortSignal,
+} from '../jsutils/AbortController.js';
+import { AbortController } from '../jsutils/AbortController.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
@@ -122,9 +127,10 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
-  signal: Maybe<{
-    isAborted: boolean;
-    instance: AbortSignal;
+  abortion: Maybe<{
+    passedInAbortSignal: IAbortSignal;
+    executionAbortController: IAbortController;
+    executionAbortSignal: IAbortSignal;
   }>;
 }
 
@@ -265,7 +271,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  signal?: AbortSignal;
+  signal?: IAbortSignal;
 }
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
@@ -342,28 +348,25 @@ export function experimentalExecuteIncrementally(
   return executeImpl(exeContext);
 }
 
-function subscribeToAbortSignal(exeContext: ExecutionContext): {
-  unsubscribeFromAbortSignal: () => void;
-} {
-  const onAbort = () => {
-    if ('signal' in exeContext && exeContext.signal) {
-      exeContext.signal.isAborted = true;
-    }
-  };
+function subscribeToAbortSignal(exeContext: ExecutionContext): () => void {
+  const { abortion } = exeContext;
+  if (!abortion) {
+    return () => null;
+  }
 
-  exeContext.signal?.instance.addEventListener('abort', onAbort);
+  const onAbort = () => abortion.executionAbortController.abort(abortion);
+  abortion.passedInAbortSignal.addEventListener('abort', onAbort);
 
-  return {
-    unsubscribeFromAbortSignal: () => {
-      exeContext.signal?.instance.removeEventListener('abort', onAbort);
-    },
+  return () => {
+    abortion.passedInAbortSignal.removeEventListener('abort', onAbort);
+    abortion.executionAbortController.abort();
   };
 }
 
 function executeImpl(
   exeContext: ExecutionContext,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  const { unsubscribeFromAbortSignal } = subscribeToAbortSignal(exeContext);
+  const unsubscribeFromAbortSignal = subscribeToAbortSignal(exeContext);
 
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
@@ -473,7 +476,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
-    signal,
+    signal: passedInAbortSignal,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -539,7 +542,23 @@ export function buildExecutionContext(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     subsequentPayloads: new Set(),
     errors: [],
-    signal: signal ? { instance: signal, isAborted: false } : null,
+    abortion: getContextAbortionEntities(passedInAbortSignal),
+  };
+}
+
+function getContextAbortionEntities(
+  passedInAbortSignal: Maybe<IAbortSignal>,
+): ExecutionContext['abortion'] {
+  if (!passedInAbortSignal) {
+    return null;
+  }
+
+  const executionAbortController = new AbortController();
+
+  return {
+    passedInAbortSignal,
+    executionAbortController,
+    executionAbortSignal: executionAbortController.signal,
   };
 }
 
@@ -873,12 +892,8 @@ function completeValue(
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
-  if (exeContext.signal?.isAborted) {
-    throw new GraphQLError(
-      `Execution aborted. Reason: ${
-        exeContext.signal.instance.reason ?? 'Unknown.'
-      }`,
-    );
+  if (exeContext.abortion?.executionAbortSignal.aborted) {
+    throw new GraphQLError('Execution aborted.');
   }
 
   // If result is an Error, throw a located error.
