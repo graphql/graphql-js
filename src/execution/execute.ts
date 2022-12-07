@@ -348,6 +348,7 @@ export function experimentalExecuteIncrementally(
   return executeImpl(exeContext);
 }
 
+/* c8 ignore start */
 function subscribeToAbortSignal(exeContext: ExecutionContext): () => void {
   const { abortion } = exeContext;
   if (!abortion) {
@@ -362,6 +363,7 @@ function subscribeToAbortSignal(exeContext: ExecutionContext): () => void {
     abortion.executionAbortController.abort();
   };
 }
+/* c8 ignore stop */
 
 function executeImpl(
   exeContext: ExecutionContext,
@@ -546,6 +548,7 @@ export function buildExecutionContext(
   };
 }
 
+/* c8 ignore start */
 function getContextAbortionEntities(
   passedInAbortSignal: Maybe<IAbortSignal>,
 ): ExecutionContext['abortion'] {
@@ -561,6 +564,7 @@ function getContextAbortionEntities(
     executionAbortSignal: executionAbortController.signal,
   };
 }
+/* c8 ignore stop */
 
 function buildPerEventExecutionContext(
   exeContext: ExecutionContext,
@@ -892,12 +896,11 @@ function completeValue(
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
-  // Ignoring test coverage for abortion check since Node 14 doesn't support AbortSignal
-  // and this condition is never true.
-  /* c8 ignore next 3 */
+  /* c8 ignore start */
   if (exeContext.abortion?.executionAbortSignal.aborted) {
     throw new GraphQLError('Execution aborted.');
   }
+  /* c8 ignore stop */
 
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
@@ -1636,11 +1639,13 @@ export function subscribe(
 > {
   // Until we have execution cancelling support in Subscriptions,
   // throw an error if client provides abort signal.
+  /* c8 ignore start */
   if (args.signal) {
     return {
       errors: [new GraphQLError('Subscriptions do not support abort signals.')],
     };
   }
+  /* c8 ignore stop */
 
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.

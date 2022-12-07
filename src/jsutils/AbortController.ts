@@ -28,4 +28,9 @@ export const AbortController: new () => IAbortController =
       this._signal.aborted = true;
     }
   };
+
+export const hasAbortControllerSupport =
+  // eslint-disable-next-line no-undef
+  Boolean(global.AbortController);
+
 /* c8 ignore stop */
