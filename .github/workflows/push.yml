@@ -3,11 +3,16 @@ on: push
 permissions: {}
 jobs:
   ci:
+    permissions:
+      contents: read # for actions/checkout
+      security-events: write
     uses: ./.github/workflows/ci.yml
   deploy-to-npm-branch:
     name: Deploy to `npm` branch
     needs: ci
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write # for actions/checkout and to push branch
     uses: ./.github/workflows/deploy-artifact-as-branch.yml
     with:
       environment: npm-branch
@@ -19,6 +24,8 @@ jobs:
     name: Deploy to `deno` branch
     needs: ci
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write # for actions/checkout and to push branch
     uses: ./.github/workflows/deploy-artifact-as-branch.yml
     with:
       environment: deno-branch

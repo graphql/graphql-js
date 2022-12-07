@@ -24,12 +24,11 @@ env:
 permissions: {}
 jobs:
   hello-message:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
     permissions:
       actions: read # to download event.json
       pull-requests: write # to add comment to pull request
-
-    if: github.event_name == 'workflow_run'
-    runs-on: ubuntu-latest
     steps:
       - name: Download event.json
         run: gh run download "$WORKFLOW_ID" --repo "$REPO" --name event.json
@@ -54,14 +53,13 @@ jobs:
             })
 
   accept-cmd:
-    permissions:
-      pull-requests: write # to add comment to pull request
-
     if: |
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '@github-actions ')
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # to add comment to pull request
     outputs:
       cmd: ${{ steps.parse-cmd.outputs.cmd }}
       pull_request_json: ${{ steps.parse-cmd.outputs.pull_request_json }}
@@ -90,7 +88,7 @@ jobs:
     needs: [accept-cmd]
     if: needs.accept-cmd.outputs.cmd == 'publish-pr-on-npm'
     permissions:
-      contents: read
+      contents: read # for actions/checkout
     uses: ./.github/workflows/cmd-publish-pr-on-npm.yml
     with:
       pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
@@ -101,22 +99,21 @@ jobs:
     needs: [accept-cmd]
     if: needs.accept-cmd.outputs.cmd == 'run-benchmark'
     permissions:
-      contents: read # for checkout
+      contents: read # for actions/checkout
       actions: read # to list workflow runs
     uses: ./.github/workflows/cmd-run-benchmark.yml
     with:
       pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
 
   respond-to-cmd:
-    permissions:
-      pull-requests: write # to add comment to pull request
-
     needs:
       - accept-cmd
       - cmd-publish-pr-on-npm
       - cmd-run-benchmark
     if: needs.accept-cmd.result != 'skipped' && always()
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # to add comment to pull request
     steps:
       - uses: actions/download-artifact@v3
         with:

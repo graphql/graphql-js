@@ -21,12 +21,12 @@ on:
 permissions: {}
 jobs:
   deploy-artifact-as-branch:
-    permissions:
-      contents: write # to push branch
     environment:
       name: ${{ inputs.environment }}
       url: ${{ github.server_url }}/${{ github.repository }}/tree/${{ inputs.target_branch }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # for actions/checkout and to push branch
     steps:
       - name: Checkout `${{ inputs.target_branch }}` branch
         uses: actions/checkout@v3

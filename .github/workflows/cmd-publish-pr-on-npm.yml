@@ -10,11 +10,12 @@ on:
       npm_canary_pr_publish_token:
         description: NPM token to publish canary release.
         required: true
-permissions:
-  contents: read
+permissions: {}
 jobs:
   build-npm-dist:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -45,6 +46,8 @@ jobs:
     name: Publish Canary
     environment: canary-pr-npm
     needs: [build-npm-dist]
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
