@@ -9,11 +9,13 @@ export interface IAbortController {
   abort: (reason?: any) => void;
 }
 
+// We need to polyfill abort controller in case of Node@14 which doesn't have it
 /* c8 ignore start */
 export const AbortController: new () => IAbortController =
   // eslint-disable-next-line no-undef
   global.AbortController ||
-  class MockAbortController implements IAbortController {
+  // This is a dummy implementation that doesn't actually abort anything
+  class DummyAbortController implements IAbortController {
     private _signal: IAbortSignal = {
       aborted: false,
       addEventListener: () => null,
