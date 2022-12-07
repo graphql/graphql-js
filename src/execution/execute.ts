@@ -892,6 +892,9 @@ function completeValue(
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
+  // Ignoring test coverage for abortion check since Node 14 doesn't support AbortSignal
+  // and this condition is never true.
+  /* c8 ignore next 3 */
   if (exeContext.abortion?.executionAbortSignal.aborted) {
     throw new GraphQLError('Execution aborted.');
   }
