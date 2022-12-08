@@ -271,7 +271,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  signal?: IAbortSignal;
+  signal?: Maybe<IAbortSignal>;
 }
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
