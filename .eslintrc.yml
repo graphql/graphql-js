@@ -9,6 +9,7 @@ plugins:
   - node
   - import
   - simple-import-sort
+  - promise
 settings:
   node:
     tryExtensions: ['.js', '.ts', '.jsx', '.json', '.node', '.d.ts']
@@ -176,6 +177,27 @@ rules:
         - ["^(\\.\\./){1}"]
         - ["^\\./"]
   simple-import-sort/exports: off # TODO
+
+  ##############################################################################
+  # `eslint-plugin-promise` rule list based on `v6.1.x`
+  # https://github.com/eslint-community/eslint-plugin-promise/blob/main/README.md
+  ##############################################################################
+
+  promise/always-return: off
+  promise/avoid-new: off
+  promise/catch-or-return: error
+  promise/no-callback-in-promise: error
+  promise/no-multiple-resolved: error
+  promise/no-native: off
+  promise/no-nesting: error
+  promise/no-new-statics: error
+  promise/no-promise-in-callback: off
+  promise/no-return-in-finally: error
+  promise/no-return-wrap: error
+  promise/param-names: off
+  promise/prefer-await-to-callbacks: off
+  promise/prefer-await-to-then: off
+  promise/valid-params: error
 
   ##############################################################################
   # ESLint builtin rules list based on `v8.27.x`
