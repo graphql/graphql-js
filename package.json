@@ -5,6 +5,7 @@
   "license": "MIT",
   "private": true,
   "main": "index.js",
+  "types": "index.d.ts",
   "module": "index.mjs",
   "typesVersions": {
     ">=4.1.0": {
