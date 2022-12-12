@@ -7,7 +7,7 @@ import {
 } from '../../type/directives.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
- * Stream directive on list field
+ * Defer and stream directive labels are unique
  *
  * A GraphQL document is only valid if defer and stream directives' label argument is static and unique.
  */

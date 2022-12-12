@@ -19,7 +19,7 @@ export function dedentBlockStringLines(
     if (indent === line.length) {
       continue; // skip empty lines
     }
-    firstNonEmptyLine = firstNonEmptyLine ?? i;
+    firstNonEmptyLine ??= i;
     lastNonEmptyLine = i;
     if (i !== 0 && indent < commonIndent) {
       commonIndent = indent;

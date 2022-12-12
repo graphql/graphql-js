@@ -218,14 +218,14 @@ export function extendSchemaImpl(
   };
   // Then produce and return a Schema config with these types.
   return {
-    description: schemaDef?.description?.value,
+    description: schemaDef?.description?.value ?? schemaConfig.description,
     ...operationTypes,
     types: Object.values(typeMap),
     directives: [
       ...schemaConfig.directives.map(replaceDirective),
       ...directiveDefs.map(buildDirective),
     ],
-    extensions: Object.create(null),
+    extensions: schemaConfig.extensions,
     astNode: schemaDef ?? schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     assumeValid: options?.assumeValid ?? false,

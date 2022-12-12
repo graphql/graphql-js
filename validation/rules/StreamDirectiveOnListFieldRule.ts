@@ -5,7 +5,7 @@ import { isListType, isWrappingType } from '../../type/definition.ts';
 import { GraphQLStreamDirective } from '../../type/directives.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
- * Stream directive on list field
+ * Stream directives are used on list fields
  *
  * A GraphQL document is only valid if stream directives are used on list fields.
  */

@@ -6,7 +6,7 @@ import {
 } from '../../type/directives.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 /**
- * Stream directive on list field
+ * Defer and stream directives are used on valid root field
  *
  * A GraphQL document is only valid if defer directives are not used on root mutation or subscription types.
  */
