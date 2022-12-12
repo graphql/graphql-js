@@ -51,7 +51,7 @@ export declare class TypeInfo {
   enter(node: ASTNode): void;
   leave(node: ASTNode): void;
 }
-declare type GetFieldDefFn = (
+type GetFieldDefFn = (
   schema: GraphQLSchema,
   parentType: GraphQLCompositeType,
   fieldNode: FieldNode,

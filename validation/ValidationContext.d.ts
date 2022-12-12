@@ -20,9 +20,7 @@ import type {
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import { TypeInfo } from '../utilities/TypeInfo.js';
-declare type NodeWithSelectionSet =
-  | OperationDefinitionNode
-  | FragmentDefinitionNode;
+type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
@@ -49,9 +47,7 @@ export declare class ASTValidationContext {
     operation: OperationDefinitionNode,
   ): ReadonlyArray<FragmentDefinitionNode>;
 }
-export declare type ASTValidationRule = (
-  context: ASTValidationContext,
-) => ASTVisitor;
+export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
 export declare class SDLValidationContext extends ASTValidationContext {
   private _schema;
   constructor(
@@ -62,9 +58,7 @@ export declare class SDLValidationContext extends ASTValidationContext {
   get [Symbol.toStringTag](): string;
   getSchema(): Maybe<GraphQLSchema>;
 }
-export declare type SDLValidationRule = (
-  context: SDLValidationContext,
-) => ASTVisitor;
+export type SDLValidationRule = (context: SDLValidationContext) => ASTVisitor;
 export declare class ValidationContext extends ASTValidationContext {
   private _schema;
   private _typeInfo;
@@ -91,5 +85,5 @@ export declare class ValidationContext extends ASTValidationContext {
   getArgument(): Maybe<GraphQLArgument>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
 }
-export declare type ValidationRule = (context: ValidationContext) => ASTVisitor;
+export type ValidationRule = (context: ValidationContext) => ASTVisitor;
 export {};

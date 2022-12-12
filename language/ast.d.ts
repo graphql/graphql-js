@@ -91,7 +91,7 @@ export declare class Token {
 /**
  * The list of all possible AST node types.
  */
-export declare type ASTNode =
+export type ASTNode =
   | NameNode
   | DocumentNode
   | OperationDefinitionNode
@@ -141,7 +141,7 @@ export declare type ASTNode =
 /**
  * Utility type listing all nodes indexed by their kind.
  */
-export declare type ASTKindToNode = {
+export type ASTKindToNode = {
   [NodeT in ASTNode as NodeT['kind']]: NodeT;
 };
 /**
@@ -166,11 +166,11 @@ export interface DocumentNode {
   readonly loc?: Location | undefined;
   readonly definitions: ReadonlyArray<DefinitionNode>;
 }
-export declare type DefinitionNode =
+export type DefinitionNode =
   | ExecutableDefinitionNode
   | TypeSystemDefinitionNode
   | TypeSystemExtensionNode;
-export declare type ExecutableDefinitionNode =
+export type ExecutableDefinitionNode =
   | OperationDefinitionNode
   | FragmentDefinitionNode;
 export interface OperationDefinitionNode {
@@ -207,10 +207,7 @@ export interface SelectionSetNode {
   loc?: Location | undefined;
   selections: ReadonlyArray<SelectionNode>;
 }
-export declare type SelectionNode =
-  | FieldNode
-  | FragmentSpreadNode
-  | InlineFragmentNode;
+export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 export interface FieldNode {
   readonly kind: Kind.FIELD;
   readonly loc?: Location | undefined;
@@ -221,7 +218,7 @@ export interface FieldNode {
   readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
   readonly selectionSet?: SelectionSetNode | undefined;
 }
-export declare type NullabilityAssertionNode =
+export type NullabilityAssertionNode =
   | NonNullAssertionNode
   | ErrorBoundaryNode
   | ListNullabilityOperatorNode;
@@ -279,7 +276,7 @@ export interface FragmentDefinitionNode {
   readonly selectionSet: SelectionSetNode;
 }
 /** Values */
-export declare type ValueNode =
+export type ValueNode =
   | VariableNode
   | IntValueNode
   | FloatValueNode
@@ -289,7 +286,7 @@ export declare type ValueNode =
   | EnumValueNode
   | ListValueNode
   | ObjectValueNode;
-export declare type ConstValueNode =
+export type ConstValueNode =
   | IntValueNode
   | FloatValueNode
   | StringValueNode
@@ -374,7 +371,7 @@ export interface ConstDirectiveNode {
   readonly arguments?: ReadonlyArray<ConstArgumentNode> | undefined;
 }
 /** Type Reference */
-export declare type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
+export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 export interface NamedTypeNode {
   readonly kind: Kind.NAMED_TYPE;
   readonly loc?: Location | undefined;
@@ -391,7 +388,7 @@ export interface NonNullTypeNode {
   readonly type: NamedTypeNode | ListTypeNode;
 }
 /** Type System Definition */
-export declare type TypeSystemDefinitionNode =
+export type TypeSystemDefinitionNode =
   | SchemaDefinitionNode
   | TypeDefinitionNode
   | DirectiveDefinitionNode;
@@ -409,7 +406,7 @@ export interface OperationTypeDefinitionNode {
   readonly type: NamedTypeNode;
 }
 /** Type Definition */
-export declare type TypeDefinitionNode =
+export type TypeDefinitionNode =
   | ScalarTypeDefinitionNode
   | ObjectTypeDefinitionNode
   | InterfaceTypeDefinitionNode
@@ -501,9 +498,7 @@ export interface DirectiveDefinitionNode {
   readonly locations: ReadonlyArray<NameNode>;
 }
 /** Type System Extensions */
-export declare type TypeSystemExtensionNode =
-  | SchemaExtensionNode
-  | TypeExtensionNode;
+export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 export interface SchemaExtensionNode {
   readonly kind: Kind.SCHEMA_EXTENSION;
   readonly loc?: Location | undefined;
@@ -513,7 +508,7 @@ export interface SchemaExtensionNode {
     | undefined;
 }
 /** Type Extensions */
-export declare type TypeExtensionNode =
+export type TypeExtensionNode =
   | ScalarTypeExtensionNode
   | ObjectTypeExtensionNode
   | InterfaceTypeExtensionNode

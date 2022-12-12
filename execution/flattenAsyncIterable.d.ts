@@ -1,4 +1,4 @@
-declare type AsyncIterableOrGenerator<T> =
+type AsyncIterableOrGenerator<T> =
   | AsyncGenerator<T, void, void>
   | AsyncIterable<T>;
 /**

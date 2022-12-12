@@ -273,6 +273,7 @@ function buildPerEventExecutionContext(exeContext, payload) {
   return {
     ...exeContext,
     rootValue: payload,
+    subsequentPayloads: new Set(),
     errors: [],
   };
 }
@@ -384,26 +385,38 @@ function executeFields(
 ) {
   const results = Object.create(null);
   let containsPromise = false;
-  for (const [responseName, fieldNodes] of fields) {
-    const fieldPath = (0, Path_js_1.addPath)(
-      path,
-      responseName,
-      parentType.name,
-    );
-    const result = executeField(
-      exeContext,
-      parentType,
-      sourceValue,
-      fieldNodes,
-      fieldPath,
-      asyncPayloadRecord,
-    );
-    if (result !== undefined) {
-      results[responseName] = result;
-      if ((0, isPromise_js_1.isPromise)(result)) {
-        containsPromise = true;
+  try {
+    for (const [responseName, fieldNodes] of fields) {
+      const fieldPath = (0, Path_js_1.addPath)(
+        path,
+        responseName,
+        parentType.name,
+      );
+      const result = executeField(
+        exeContext,
+        parentType,
+        sourceValue,
+        fieldNodes,
+        fieldPath,
+        asyncPayloadRecord,
+      );
+      if (result !== undefined) {
+        results[responseName] = result;
+        if ((0, isPromise_js_1.isPromise)(result)) {
+          containsPromise = true;
+        }
       }
     }
+  } catch (error) {
+    if (containsPromise) {
+      // Ensure that any promises returned by other fields are handled, as they may also reject.
+      return (0, promiseForObject_js_1.promiseForObject)(results).finally(
+        () => {
+          throw error;
+        },
+      );
+    }
+    throw error;
   }
   // If there are no promises, we can just return the object
   if (!containsPromise) {
@@ -492,7 +505,7 @@ function executeField(
           (0, Path_js_1.pathToArray)(path),
         );
         const handledError = handleFieldError(error, returnType, errors);
-        filterSubsequentPayloads(exeContext, path);
+        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
         return handledError;
       });
     }
@@ -504,7 +517,7 @@ function executeField(
       (0, Path_js_1.pathToArray)(path),
     );
     const handledError = handleFieldError(error, returnType, errors);
-    filterSubsequentPayloads(exeContext, path);
+    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
     return handledError;
   }
 }
@@ -719,60 +732,37 @@ async function completeAsyncIteratorValue(
       );
       break;
     }
-    const fieldPath = (0, Path_js_1.addPath)(path, index, undefined);
+    const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
+    let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
-      const { value, done } = await iterator.next();
-      if (done) {
+      iteration = await iterator.next();
+      if (iteration.done) {
         break;
       }
-      try {
-        // TODO can the error checking logic be consolidated with completeListValue?
-        const completedItem = completeValue(
-          exeContext,
-          itemType,
-          fieldNodes,
-          info,
-          fieldPath,
-          value,
-          asyncPayloadRecord,
-        );
-        if ((0, isPromise_js_1.isPromise)(completedItem)) {
-          containsPromise = true;
-          // Note: we don't rely on a `catch` method, but we do expect "thenable"
-          // to take a second callback for the error case.
-          completedResults.push(
-            completedItem.then(undefined, (rawError) => {
-              const error = (0, locatedError_js_1.locatedError)(
-                rawError,
-                fieldNodes,
-                (0, Path_js_1.pathToArray)(fieldPath),
-              );
-              const handledError = handleFieldError(error, itemType, errors);
-              return handledError;
-            }),
-          );
-        } else {
-          completedResults.push(completedItem);
-        }
-      } catch (rawError) {
-        completedResults.push(null);
-        const error = (0, locatedError_js_1.locatedError)(
-          rawError,
-          fieldNodes,
-          (0, Path_js_1.pathToArray)(fieldPath),
-        );
-        handleFieldError(error, itemType, errors);
-      }
     } catch (rawError) {
-      completedResults.push(null);
       const error = (0, locatedError_js_1.locatedError)(
         rawError,
         fieldNodes,
-        (0, Path_js_1.pathToArray)(fieldPath),
+        (0, Path_js_1.pathToArray)(itemPath),
       );
-      handleFieldError(error, itemType, errors);
+      completedResults.push(handleFieldError(error, itemType, errors));
       break;
+    }
+    if (
+      completeListItemValue(
+        iteration.value,
+        completedResults,
+        errors,
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+        asyncPayloadRecord,
+      )
+    ) {
+      containsPromise = true;
     }
     index += 1;
   }
@@ -821,82 +811,114 @@ function completeListValue(
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
-    try {
-      let completedItem;
-      if (
-        stream &&
-        typeof stream.initialCount === 'number' &&
-        index >= stream.initialCount
-      ) {
-        previousAsyncPayloadRecord = executeStreamField(
-          path,
-          itemPath,
-          item,
-          exeContext,
-          fieldNodes,
-          info,
-          itemType,
-          stream.label,
-          previousAsyncPayloadRecord,
-        );
-        index++;
-        continue;
-      }
-      if ((0, isPromise_js_1.isPromise)(item)) {
-        completedItem = item.then((resolved) =>
-          completeValue(
-            exeContext,
-            itemType,
-            fieldNodes,
-            info,
-            itemPath,
-            resolved,
-            asyncPayloadRecord,
-          ),
-        );
-      } else {
-        completedItem = completeValue(
-          exeContext,
-          itemType,
-          fieldNodes,
-          info,
-          itemPath,
-          item,
-          asyncPayloadRecord,
-        );
-      }
-      if ((0, isPromise_js_1.isPromise)(completedItem)) {
-        containsPromise = true;
-        // Note: we don't rely on a `catch` method, but we do expect "thenable"
-        // to take a second callback for the error case.
-        completedResults.push(
-          completedItem.then(undefined, (rawError) => {
-            const error = (0, locatedError_js_1.locatedError)(
-              rawError,
-              fieldNodes,
-              (0, Path_js_1.pathToArray)(itemPath),
-            );
-            const handledError = handleFieldError(error, itemType, errors);
-            filterSubsequentPayloads(exeContext, itemPath);
-            return handledError;
-          }),
-        );
-      } else {
-        completedResults.push(completedItem);
-      }
-    } catch (rawError) {
-      const error = (0, locatedError_js_1.locatedError)(
-        rawError,
+    if (
+      stream &&
+      typeof stream.initialCount === 'number' &&
+      index >= stream.initialCount
+    ) {
+      previousAsyncPayloadRecord = executeStreamField(
+        path,
+        itemPath,
+        item,
+        exeContext,
         fieldNodes,
-        (0, Path_js_1.pathToArray)(itemPath),
+        info,
+        itemType,
+        stream.label,
+        previousAsyncPayloadRecord,
       );
-      const handledError = handleFieldError(error, itemType, errors);
-      filterSubsequentPayloads(exeContext, itemPath);
-      completedResults.push(handledError);
+      index++;
+      continue;
+    }
+    if (
+      completeListItemValue(
+        item,
+        completedResults,
+        errors,
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+        asyncPayloadRecord,
+      )
+    ) {
+      containsPromise = true;
     }
     index++;
   }
   return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+/**
+ * Complete a list item value by adding it to the completed results.
+ *
+ * Returns true if the value is a Promise.
+ */
+function completeListItemValue(
+  item,
+  completedResults,
+  errors,
+  exeContext,
+  itemType,
+  fieldNodes,
+  info,
+  itemPath,
+  asyncPayloadRecord,
+) {
+  try {
+    let completedItem;
+    if ((0, isPromise_js_1.isPromise)(item)) {
+      completedItem = item.then((resolved) =>
+        completeValue(
+          exeContext,
+          itemType,
+          fieldNodes,
+          info,
+          itemPath,
+          resolved,
+          asyncPayloadRecord,
+        ),
+      );
+    } else {
+      completedItem = completeValue(
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+        item,
+        asyncPayloadRecord,
+      );
+    }
+    if ((0, isPromise_js_1.isPromise)(completedItem)) {
+      // Note: we don't rely on a `catch` method, but we do expect "thenable"
+      // to take a second callback for the error case.
+      completedResults.push(
+        completedItem.then(undefined, (rawError) => {
+          const error = (0, locatedError_js_1.locatedError)(
+            rawError,
+            fieldNodes,
+            (0, Path_js_1.pathToArray)(itemPath),
+          );
+          const handledError = handleFieldError(error, itemType, errors);
+          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+          return handledError;
+        }),
+      );
+      return true;
+    }
+    completedResults.push(completedItem);
+  } catch (rawError) {
+    const error = (0, locatedError_js_1.locatedError)(
+      rawError,
+      fieldNodes,
+      (0, Path_js_1.pathToArray)(itemPath),
+    );
+    const handledError = handleFieldError(error, itemType, errors);
+    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+    completedResults.push(handledError);
+  }
+  return false;
 }
 /**
  * Complete a Scalar or Enum by serializing to a valid value, returning
@@ -1579,7 +1601,7 @@ async function executeStreamIteratorItem(
   info,
   itemType,
   asyncPayloadRecord,
-  fieldPath,
+  itemPath,
 ) {
   let item;
   try {
@@ -1593,10 +1615,9 @@ async function executeStreamIteratorItem(
     const error = (0, locatedError_js_1.locatedError)(
       rawError,
       fieldNodes,
-      (0, Path_js_1.pathToArray)(fieldPath),
+      (0, Path_js_1.pathToArray)(itemPath),
     );
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
-    filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
     // don't continue if iterator throws
     return { done: true, value };
   }
@@ -1607,7 +1628,7 @@ async function executeStreamIteratorItem(
       itemType,
       fieldNodes,
       info,
-      fieldPath,
+      itemPath,
       item,
       asyncPayloadRecord,
     );
@@ -1616,14 +1637,14 @@ async function executeStreamIteratorItem(
         const error = (0, locatedError_js_1.locatedError)(
           rawError,
           fieldNodes,
-          (0, Path_js_1.pathToArray)(fieldPath),
+          (0, Path_js_1.pathToArray)(itemPath),
         );
         const handledError = handleFieldError(
           error,
           itemType,
           asyncPayloadRecord.errors,
         );
-        filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
+        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
         return handledError;
       });
     }
@@ -1632,10 +1653,10 @@ async function executeStreamIteratorItem(
     const error = (0, locatedError_js_1.locatedError)(
       rawError,
       fieldNodes,
-      (0, Path_js_1.pathToArray)(fieldPath),
+      (0, Path_js_1.pathToArray)(itemPath),
     );
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
-    filterSubsequentPayloads(exeContext, fieldPath, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
     return { done: false, value };
   }
 }
@@ -1654,49 +1675,55 @@ async function executeStreamIterator(
   let previousAsyncPayloadRecord = parentContext ?? undefined;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const fieldPath = (0, Path_js_1.addPath)(path, index, undefined);
+    const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
     const asyncPayloadRecord = new StreamRecord({
       label,
-      path: fieldPath,
+      path: itemPath,
       parentContext: previousAsyncPayloadRecord,
       iterator,
       exeContext,
     });
-    const dataPromise = executeStreamIteratorItem(
-      iterator,
-      exeContext,
-      fieldNodes,
-      info,
-      itemType,
-      asyncPayloadRecord,
-      fieldPath,
-    );
-    asyncPayloadRecord.addItems(
-      dataPromise
-        .then(({ value }) => value)
-        .then(
-          (value) => [value],
-          (err) => {
-            asyncPayloadRecord.errors.push(err);
-            return null;
-          },
-        ),
-    );
+    let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
-      const { done } = await dataPromise;
-      if (done) {
-        break;
-      }
-    } catch (err) {
-      // entire stream has errored and bubbled upwards
+      iteration = await executeStreamIteratorItem(
+        iterator,
+        exeContext,
+        fieldNodes,
+        info,
+        itemType,
+        asyncPayloadRecord,
+        itemPath,
+      );
+    } catch (error) {
+      asyncPayloadRecord.errors.push(error);
       filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+      asyncPayloadRecord.addItems(null);
+      // entire stream has errored and bubbled upwards
       if (iterator?.return) {
         iterator.return().catch(() => {
           // ignore errors
         });
       }
       return;
+    }
+    const { done, value: completedItem } = iteration;
+    let completedItems;
+    if ((0, isPromise_js_1.isPromise)(completedItem)) {
+      completedItems = completedItem.then(
+        (value) => [value],
+        (error) => {
+          asyncPayloadRecord.errors.push(error);
+          filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+          return null;
+        },
+      );
+    } else {
+      completedItems = [completedItem];
+    }
+    asyncPayloadRecord.addItems(completedItems);
+    if (done) {
+      break;
     }
     previousAsyncPayloadRecord = asyncPayloadRecord;
     index++;

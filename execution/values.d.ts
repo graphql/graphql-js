@@ -9,7 +9,7 @@ import type {
 import type { GraphQLField } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
-declare type CoercedVariableValues =
+type CoercedVariableValues =
   | {
       errors: ReadonlyArray<GraphQLError>;
       coerced?: never;

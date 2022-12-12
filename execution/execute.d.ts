@@ -160,13 +160,13 @@ export interface FormattedIncrementalStreamResult<
   label?: string;
   extensions?: TExtensions;
 }
-export declare type IncrementalResult<
+export type IncrementalResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > =
   | IncrementalDeferResult<TData, TExtensions>
   | IncrementalStreamResult<TData, TExtensions>;
-export declare type FormattedIncrementalResult<
+export type FormattedIncrementalResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > =
@@ -421,5 +421,5 @@ declare class StreamRecord {
   addItems(items: PromiseOrValue<Array<unknown> | null>): void;
   setIsCompletedIterator(): void;
 }
-declare type AsyncPayloadRecord = DeferredFragmentRecord | StreamRecord;
+type AsyncPayloadRecord = DeferredFragmentRecord | StreamRecord;
 export {};

@@ -5,7 +5,7 @@ const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 const definition_js_1 = require('../../type/definition.js');
 const directives_js_1 = require('../../type/directives.js');
 /**
- * Stream directive on list field
+ * Stream directives are used on list fields
  *
  * A GraphQL document is only valid if stream directives are used on list fields.
  */

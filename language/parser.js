@@ -1353,7 +1353,7 @@ class Parser {
         throw (0, syntaxError_js_1.syntaxError)(
           this._lexer.source,
           token.start,
-          `Document contains more that ${maxTokens} tokens. Parsing aborted.`,
+          `Document contains more than ${maxTokens} tokens. Parsing aborted.`,
         );
       }
     }

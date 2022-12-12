@@ -1309,7 +1309,7 @@ export class Parser {
         throw syntaxError(
           this._lexer.source,
           token.start,
-          `Document contains more that ${maxTokens} tokens. Parsing aborted.`,
+          `Document contains more than ${maxTokens} tokens. Parsing aborted.`,
         );
       }
     }

@@ -22,8 +22,7 @@ export const instanceOf =
           const valueClassName =
             // We still need to support constructor's name to detect conflicts with older versions of this library.
             Symbol.toStringTag in value
-              ? // @ts-expect-error TS bug see, https://github.com/microsoft/TypeScript/issues/38009
-                value[Symbol.toStringTag]
+              ? value[Symbol.toStringTag]
               : value.constructor?.name;
           if (className === valueClassName) {
             const stringifiedValue = inspect(value);

@@ -4,7 +4,7 @@ exports.DeferStreamDirectiveOnRootFieldRule = void 0;
 const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 const directives_js_1 = require('../../type/directives.js');
 /**
- * Stream directive on list field
+ * Defer and stream directives are used on valid root field
  *
  * A GraphQL document is only valid if defer directives are not used on root mutation or subscription types.
  */

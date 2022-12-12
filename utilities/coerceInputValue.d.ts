@@ -1,6 +1,6 @@
 import { GraphQLError } from '../error/GraphQLError.js';
 import type { GraphQLInputType } from '../type/definition.js';
-declare type OnErrorCB = (
+type OnErrorCB = (
   path: ReadonlyArray<string | number>,
   invalidValue: unknown,
   error: GraphQLError,

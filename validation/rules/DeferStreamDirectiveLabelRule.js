@@ -5,7 +5,7 @@ const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 const kinds_js_1 = require('../../language/kinds.js');
 const directives_js_1 = require('../../type/directives.js');
 /**
- * Stream directive on list field
+ * Defer and stream directive labels are unique
  *
  * A GraphQL document is only valid if defer and stream directives' label argument is static and unique.
  */

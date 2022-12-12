@@ -151,7 +151,7 @@ export declare class GraphQLSchema {
   ): GraphQLField<unknown, unknown> | undefined;
   toConfig(): GraphQLSchemaNormalizedConfig;
 }
-declare type TypeMap = ObjMap<GraphQLNamedType>;
+type TypeMap = ObjMap<GraphQLNamedType>;
 export interface GraphQLSchemaValidationOptions {
   /**
    * When building a schema from a GraphQL service's introspection result, it

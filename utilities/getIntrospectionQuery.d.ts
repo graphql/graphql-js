@@ -49,20 +49,20 @@ export interface IntrospectionSchema {
   readonly types: ReadonlyArray<IntrospectionType>;
   readonly directives: ReadonlyArray<IntrospectionDirective>;
 }
-export declare type IntrospectionType =
+export type IntrospectionType =
   | IntrospectionScalarType
   | IntrospectionObjectType
   | IntrospectionInterfaceType
   | IntrospectionUnionType
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
-export declare type IntrospectionOutputType =
+export type IntrospectionOutputType =
   | IntrospectionScalarType
   | IntrospectionObjectType
   | IntrospectionInterfaceType
   | IntrospectionUnionType
   | IntrospectionEnumType;
-export declare type IntrospectionInputType =
+export type IntrospectionInputType =
   | IntrospectionScalarType
   | IntrospectionEnumType
   | IntrospectionInputObjectType;
@@ -125,20 +125,20 @@ export interface IntrospectionNonNullTypeRef<
   readonly kind: 'NON_NULL';
   readonly ofType: T;
 }
-export declare type IntrospectionTypeRef =
+export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef
   | IntrospectionListTypeRef
   | IntrospectionNonNullTypeRef<
       IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >;
-export declare type IntrospectionOutputTypeRef =
+export type IntrospectionOutputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionOutputType>
   | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
   | IntrospectionNonNullTypeRef<
       | IntrospectionNamedTypeRef<IntrospectionOutputType>
       | IntrospectionListTypeRef<IntrospectionOutputTypeRef>
     >;
-export declare type IntrospectionInputTypeRef =
+export type IntrospectionInputTypeRef =
   | IntrospectionNamedTypeRef<IntrospectionInputType>
   | IntrospectionListTypeRef<IntrospectionInputTypeRef>
   | IntrospectionNonNullTypeRef<
