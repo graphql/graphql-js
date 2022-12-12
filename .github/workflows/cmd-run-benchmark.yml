@@ -6,13 +6,14 @@ on:
         description: String that contain JSON payload for `pull_request` event.
         required: true
         type: string
-permissions:
-  contents: read # for checkout
-  actions: read # to list workflow runs
+permissions: {}
 jobs:
   benchmark:
     name: Run benchmark
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
+      actions: read # to list workflow runs
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3

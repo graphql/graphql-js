@@ -1,11 +1,12 @@
 name: CI
 on: workflow_call
-permissions:
-  contents: read
+permissions: {}
 jobs:
   lint:
     name: Lint source files
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -41,6 +42,8 @@ jobs:
   checkForCommonlyIgnoredFiles:
     name: Check for commonly ignored files
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -64,6 +67,8 @@ jobs:
   checkPackageLock:
     name: Check health of package-lock.json file
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -92,6 +97,8 @@ jobs:
   integrationTests:
     name: Run integration tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -114,6 +121,8 @@ jobs:
   fuzz:
     name: Run fuzzing tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -138,6 +147,8 @@ jobs:
     strategy:
       matrix:
         node_version_to_setup: [14, 16, 18]
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -160,7 +171,7 @@ jobs:
     name: Run CodeQL security scan
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read # for actions/checkout
       security-events: write
     steps:
       - name: Checkout repo
@@ -179,6 +190,8 @@ jobs:
   build-npm-dist:
     name: Build 'npmDist' artifact
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -206,6 +219,8 @@ jobs:
   build-deno-dist:
     name: Build 'denoDist' artifact
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -233,6 +248,8 @@ jobs:
   build-website-dist:
     name: Build website
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
