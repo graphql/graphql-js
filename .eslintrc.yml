@@ -183,7 +183,7 @@ rules:
   # https://github.com/eslint-community/eslint-plugin-promise/blob/main/README.md
   ##############################################################################
 
-  promise/always-return: off
+  promise/always-return: error
   promise/avoid-new: off
   promise/catch-or-return: error
   promise/no-callback-in-promise: error
