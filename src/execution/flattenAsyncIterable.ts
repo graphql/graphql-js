@@ -38,8 +38,8 @@ export function flattenAsyncIterable<T>(
         }
         // Nobody else is getting it. We should!
         let resolve: () => void;
-        waitForCurrentNestedIterator = new Promise<void>((r) => {
-          resolve = r;
+        waitForCurrentNestedIterator = new Promise<void>((_resolve) => {
+          resolve = _resolve;
         });
         const topIteratorResult = await topIterator.next();
         if (topIteratorResult.done) {

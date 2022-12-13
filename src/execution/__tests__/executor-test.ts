@@ -419,7 +419,7 @@ describe('Execute: Handles basic execution tasks', () => {
         return new Promise((resolve) => resolve('async'));
       },
       asyncReject() {
-        return new Promise((_, reject) =>
+        return new Promise((_resolve, reject) =>
           reject(new Error('Error getting asyncReject')),
         );
       },
