@@ -7,12 +7,13 @@ describe('resolveOnNextTick', () => {
   it('resolves promise on the next tick', async () => {
     const output = [];
 
-    const promise1 = resolveOnNextTick().then(() => {
-      output.push('second');
-    });
-    const promise2 = resolveOnNextTick().then(() => {
-      output.push('third');
-    });
+    async function outputOnNextTick(message: string) {
+      await resolveOnNextTick();
+      output.push(message);
+    }
+
+    const promise1 = outputOnNextTick('second');
+    const promise2 = outputOnNextTick('third');
     output.push('first');
 
     await Promise.all([promise1, promise2]);

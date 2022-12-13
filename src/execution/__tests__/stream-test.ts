@@ -984,11 +984,6 @@ describe('Execute: stream directive', () => {
               },
             ],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ nonNullName: 'Han' }],
             path: ['friendList', 2],

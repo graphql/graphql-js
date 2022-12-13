@@ -22,9 +22,13 @@ describe('SimplePubSub', () => {
       value: 'Banana',
     });
 
+    async function getNextItem(i: AsyncIterator<unknown>) {
+      return i.next();
+    }
+
     // Read ahead
-    const i3 = iterator.next().then((x) => x);
-    const i4 = iterator.next().then((x) => x);
+    const i3 = getNextItem(iterator);
+    const i4 = getNextItem(iterator);
 
     // Publish
     expect(pubsub.emit('Coconut')).to.equal(true);
@@ -35,7 +39,7 @@ describe('SimplePubSub', () => {
     expect(await i3).to.deep.equal({ done: false, value: 'Coconut' });
 
     // Read ahead
-    const i5 = iterator.next().then((x) => x);
+    const i5 = getNextItem(iterator);
 
     // Terminate queue
     await iterator.return();

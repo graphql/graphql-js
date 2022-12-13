@@ -15,9 +15,15 @@ export function promiseReduce<T, U>(
 ): PromiseOrValue<U> {
   let accumulator = initialValue;
   for (const value of values) {
-    accumulator = isPromise(accumulator)
-      ? accumulator.then((resolved) => callbackFn(resolved, value))
-      : callbackFn(accumulator, value);
+    if (isPromise(accumulator)) {
+      const intermediateValue = accumulator;
+      accumulator = (async () => {
+        const resolved = await intermediateValue;
+        return callbackFn(resolved, value);
+      })();
+      continue;
+    }
+    accumulator = callbackFn(accumulator, value);
   }
   return accumulator;
 }

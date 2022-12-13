@@ -291,14 +291,15 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return result;
   }
 
-  return result.then((incrementalResult) => {
+  return (async () => {
+    const incrementalResult = await result;
     if ('initialResult' in incrementalResult) {
       return {
         errors: [new GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS)],
       };
     }
     return incrementalResult;
-  });
+  })();
 }
 
 /**
@@ -345,8 +346,9 @@ function executeImpl(
   try {
     const result = executeOperation(exeContext);
     if (isPromise(result)) {
-      return result.then(
-        (data) => {
+      return (async () => {
+        try {
+          const data = await result;
           const initialResult = buildResponse(data, exeContext.errors);
           if (exeContext.subsequentPayloads.size > 0) {
             return {
@@ -358,13 +360,13 @@ function executeImpl(
             };
           }
           return initialResult;
-        },
-        (error) => {
+        } catch (error) {
           exeContext.errors.push(error);
           return buildResponse(null, exeContext.errors);
-        },
-      );
+        }
+      })();
     }
+
     const initialResult = buildResponse(result, exeContext.errors);
     if (exeContext.subsequentPayloads.size > 0) {
       return {
@@ -597,10 +599,10 @@ function executeFieldsSerially(
         return results;
       }
       if (isPromise(result)) {
-        return result.then((resolvedResult) => {
-          results[responseName] = resolvedResult;
+        return (async () => {
+          results[responseName] = await result;
           return results;
-        });
+        })();
       }
       results[responseName] = result;
       return results;
@@ -646,9 +648,14 @@ function executeFields(
   } catch (error) {
     if (containsPromise) {
       // Ensure that any promises returned by other fields are handled, as they may also reject.
-      return promiseForObject(results).finally(() => {
-        throw error;
-      });
+      return (async () => {
+        try {
+          await promiseForObject(results);
+          throw error;
+        } catch {
+          throw error;
+        }
+      })();
     }
     throw error;
   }
@@ -678,7 +685,6 @@ function executeField(
   path: Path,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
-  const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
   const fieldName = fieldNodes[0].name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
   if (!fieldDef) {
@@ -737,17 +743,37 @@ function executeField(
     );
 
     if (isPromise(completed)) {
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      return completed.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(path));
-        const handledError = handleFieldError(error, returnType, errors);
-        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-        return handledError;
-      });
+      return handleAsyncCompletionError(
+        completed,
+        exeContext,
+        returnType,
+        fieldNodes,
+        path,
+        asyncPayloadRecord,
+      );
     }
     return completed;
   } catch (rawError) {
+    const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+    const error = locatedError(rawError, fieldNodes, pathToArray(path));
+    const handledError = handleFieldError(error, returnType, errors);
+    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+    return handledError;
+  }
+}
+
+async function handleAsyncCompletionError(
+  promised: Promise<unknown>,
+  exeContext: ExecutionContext,
+  returnType: GraphQLOutputType,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  path: Path,
+  asyncPayloadRecord?: AsyncPayloadRecord,
+): Promise<unknown> {
+  try {
+    return await promised;
+  } catch (rawError) {
+    const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
     const error = locatedError(rawError, fieldNodes, pathToArray(path));
     const handledError = handleFieldError(error, returnType, errors);
     filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
@@ -1211,16 +1237,14 @@ function completeListItemValue(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       completedResults.push(
-        completedItem.then(undefined, (rawError) => {
-          const error = locatedError(
-            rawError,
-            fieldNodes,
-            pathToArray(itemPath),
-          );
-          const handledError = handleFieldError(error, itemType, errors);
-          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-          return handledError;
-        }),
+        handleAsyncCompletionError(
+          completedItem,
+          exeContext,
+          itemType,
+          fieldNodes,
+          itemPath,
+          asyncPayloadRecord,
+        ),
       );
 
       return true;
@@ -1273,8 +1297,9 @@ function completeAbstractValue(
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
   if (isPromise(runtimeType)) {
-    return runtimeType.then((resolvedRuntimeType) =>
-      completeObjectValue(
+    return (async () => {
+      const resolvedRuntimeType = await runtimeType;
+      return completeObjectValue(
         exeContext,
         ensureValidRuntimeType(
           resolvedRuntimeType,
@@ -1289,8 +1314,8 @@ function completeAbstractValue(
         path,
         result,
         asyncPayloadRecord,
-      ),
-    );
+      );
+    })();
   }
 
   return completeObjectValue(
@@ -1385,8 +1410,9 @@ function completeObjectValue(
     const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
     if (isPromise(isTypeOf)) {
-      return isTypeOf.then((resolvedIsTypeOf) => {
-        if (!resolvedIsTypeOf) {
+      return (async () => {
+        const condition = await isTypeOf;
+        if (!condition) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
         return collectAndExecuteSubfields(
@@ -1397,7 +1423,7 @@ function completeObjectValue(
           result,
           asyncPayloadRecord,
         );
-      });
+      })();
     }
 
     if (!isTypeOf) {
@@ -1502,13 +1528,14 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
     }
 
     if (promisedIsTypeOfResults.length) {
-      return Promise.all(promisedIsTypeOfResults).then((isTypeOfResults) => {
+      return (async () => {
+        const isTypeOfResults = await Promise.all(promisedIsTypeOfResults);
         for (let i = 0; i < isTypeOfResults.length; i++) {
           if (isTypeOfResults[i]) {
             return possibleTypes[i].name;
           }
         }
-      });
+      })();
     }
   };
 
@@ -1566,11 +1593,12 @@ export function subscribe(
 > {
   const maybePromise = experimentalSubscribeIncrementally(args);
   if (isPromise(maybePromise)) {
-    return maybePromise.then((resultOrIterable) =>
-      isAsyncIterable(resultOrIterable)
+    return (async () => {
+      const resultOrIterable = await maybePromise;
+      return isAsyncIterable(resultOrIterable)
         ? mapAsyncIterable(resultOrIterable, ensureSingleExecutionResult)
-        : resultOrIterable,
-    );
+        : resultOrIterable;
+    })();
   }
   return isAsyncIterable(maybePromise)
     ? mapAsyncIterable(maybePromise, ensureSingleExecutionResult)
@@ -1648,9 +1676,10 @@ export function experimentalSubscribeIncrementally(
   const resultOrStream = createSourceEventStreamImpl(exeContext);
 
   if (isPromise(resultOrStream)) {
-    return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(exeContext, resolvedResultOrStream),
-    );
+    return (async () => {
+      const resolvedResultOrStream = await resultOrStream;
+      return mapSourceToResponse(exeContext, resolvedResultOrStream);
+    })();
   }
 
   return mapSourceToResponse(exeContext, resultOrStream);
@@ -1755,7 +1784,13 @@ function createSourceEventStreamImpl(
   try {
     const eventStream = executeSubscription(exeContext);
     if (isPromise(eventStream)) {
-      return eventStream.then(undefined, (error) => ({ errors: [error] }));
+      return (async () => {
+        try {
+          return await eventStream;
+        } catch (error) {
+          return { errors: [error] };
+        }
+      })();
     }
 
     return eventStream;
@@ -1826,9 +1861,13 @@ function executeSubscription(
     const result = resolveFn(rootValue, args, contextValue, info);
 
     if (isPromise(result)) {
-      return result.then(assertEventStream).then(undefined, (error) => {
-        throw locatedError(error, fieldNodes, pathToArray(path));
-      });
+      return (async () => {
+        try {
+          return assertEventStream(await result);
+        } catch (error) {
+          throw locatedError(error, fieldNodes, pathToArray(path));
+        }
+      })();
     }
 
     return assertEventStream(result);
@@ -1880,10 +1919,14 @@ function executeDeferredFragment(
     );
 
     if (isPromise(promiseOrData)) {
-      promiseOrData = promiseOrData.then(null, (e) => {
-        asyncPayloadRecord.errors.push(e);
-        return null;
-      });
+      promiseOrData = (async () => {
+        try {
+          return await promiseOrData;
+        } catch (e) {
+          asyncPayloadRecord.errors.push(e);
+          return null;
+        }
+      })();
     }
   } catch (e) {
     asyncPayloadRecord.errors.push(e);
@@ -1910,22 +1953,25 @@ function executeStreamField(
     exeContext,
   });
   if (isPromise(item)) {
-    const completedItems = completePromisedValue(
-      exeContext,
-      itemType,
-      fieldNodes,
-      info,
-      itemPath,
-      item,
-      asyncPayloadRecord,
-    ).then(
-      (value) => [value],
-      (error) => {
+    const completedItems = (async () => {
+      try {
+        return [
+          await completePromisedValue(
+            exeContext,
+            itemType,
+            fieldNodes,
+            info,
+            itemPath,
+            item,
+            asyncPayloadRecord,
+          ),
+        ];
+      } catch (error) {
         asyncPayloadRecord.errors.push(error);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
         return null;
-      },
-    );
+      }
+    })();
 
     asyncPayloadRecord.addItems(completedItems);
     return asyncPayloadRecord;
@@ -1960,25 +2006,30 @@ function executeStreamField(
   }
 
   if (isPromise(completedItem)) {
-    const completedItems = completedItem
-      .then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        const handledError = handleFieldError(
-          error,
-          itemType,
-          asyncPayloadRecord.errors,
-        );
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-        return handledError;
-      })
-      .then(
-        (value) => [value],
-        (error) => {
-          asyncPayloadRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
-        },
-      );
+    const completedItems = (async () => {
+      try {
+        try {
+          return [await completedItem];
+        } catch (rawError) {
+          const error = locatedError(
+            rawError,
+            fieldNodes,
+            pathToArray(itemPath),
+          );
+          const handledError = handleFieldError(
+            error,
+            itemType,
+            asyncPayloadRecord.errors,
+          );
+          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+          return [handledError];
+        }
+      } catch (error) {
+        asyncPayloadRecord.errors.push(error);
+        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+        return null;
+      }
+    })();
 
     asyncPayloadRecord.addItems(completedItems);
     return asyncPayloadRecord;
@@ -2024,16 +2075,14 @@ async function executeStreamIteratorItem(
     );
 
     if (isPromise(completedItem)) {
-      completedItem = completedItem.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        const handledError = handleFieldError(
-          error,
-          itemType,
-          asyncPayloadRecord.errors,
-        );
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-        return handledError;
-      });
+      completedItem = handleAsyncCompletionError(
+        completedItem,
+        exeContext,
+        itemType,
+        fieldNodes,
+        itemPath,
+        asyncPayloadRecord,
+      );
     }
     return { done: false, value: completedItem };
   } catch (rawError) {
@@ -2086,6 +2135,7 @@ async function executeStreamIterator(
       asyncPayloadRecord.addItems(null);
       // entire stream has errored and bubbled upwards
       if (iterator?.return) {
+        // eslint-disable-next-line promise/prefer-await-to-then
         iterator.return().catch(() => {
           // ignore errors
         });
@@ -2097,14 +2147,15 @@ async function executeStreamIterator(
 
     let completedItems: PromiseOrValue<Array<unknown> | null>;
     if (isPromise(completedItem)) {
-      completedItems = completedItem.then(
-        (value) => [value],
-        (error) => {
+      completedItems = (async () => {
+        try {
+          return [await completedItem];
+        } catch (error) {
           asyncPayloadRecord.errors.push(error);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
           return null;
-        },
-      );
+        }
+      })();
     } else {
       completedItems = [completedItem];
     }
@@ -2138,6 +2189,7 @@ function filterSubsequentPayloads(
     }
     // asyncRecord path points to nulled error field
     if (isStreamPayload(asyncRecord) && asyncRecord.iterator?.return) {
+      // eslint-disable-next-line promise/prefer-await-to-then
       asyncRecord.iterator.return().catch(() => {
         // ignore error
       });
@@ -2279,20 +2331,25 @@ class DeferredFragmentRecord {
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
     this.data = null;
-    this.promise = new Promise<ObjMap<unknown> | null>((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((data) => {
-      this.data = data;
+    this.promise = (async () => {
+      this.data = await new Promise<ObjMap<unknown> | null>((resolve) => {
+        this._resolve = (promiseOrValue) => {
+          resolve(promiseOrValue);
+        };
+      });
       this.isCompleted = true;
-    });
+    })();
   }
 
   addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
-      this._resolve?.(parentData.then(() => data));
+      this._resolve?.(
+        (async () => {
+          await parentData;
+          return data;
+        })(),
+      );
       return;
     }
     this._resolve?.(data);
@@ -2330,20 +2387,26 @@ class StreamRecord {
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
     this.items = null;
-    this.promise = new Promise<Array<unknown> | null>((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((items) => {
+    this.promise = (async () => {
+      const items = await new Promise<Array<unknown> | null>((resolve) => {
+        this._resolve = (promiseOrValue) => {
+          resolve(promiseOrValue);
+        };
+      });
       this.items = items;
       this.isCompleted = true;
-    });
+    })();
   }
 
   addItems(items: PromiseOrValue<Array<unknown> | null>) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
-      this._resolve?.(parentData.then(() => items));
+      this._resolve?.(
+        (async () => {
+          await parentData;
+          return items;
+        })(),
+      );
       return;
     }
     this._resolve?.(items);
