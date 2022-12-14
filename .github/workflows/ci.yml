@@ -172,7 +172,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read # for actions/checkout
-      security-events: write
+      security-events: write # for codeql-action
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
