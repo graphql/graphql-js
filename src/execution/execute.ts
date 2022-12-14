@@ -715,7 +715,7 @@ function executeField(
     const result = resolveFn(source, args, contextValue, info);
 
     if (isPromise(result)) {
-      return completePromise(
+      return completePromisedValue(
         exeContext,
         returnType,
         fieldNodes,
@@ -912,7 +912,7 @@ function completeValue(
   );
 }
 
-async function completePromise(
+async function completePromisedValue(
   exeContext: ExecutionContext,
   returnType: GraphQLOutputType,
   fieldNodes: ReadonlyArray<FieldNode>,
@@ -1182,7 +1182,7 @@ function completeListItemValue(
 ): boolean {
   if (isPromise(item)) {
     completedResults.push(
-      completePromise(
+      completePromisedValue(
         exeContext,
         itemType,
         fieldNodes,
@@ -1911,7 +1911,7 @@ function executeStreamField(
     exeContext,
   });
   if (isPromise(item)) {
-    const completedItems = completePromise(
+    const completedItems = completePromisedValue(
       exeContext,
       itemType,
       fieldNodes,
