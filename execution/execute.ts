@@ -659,25 +659,15 @@ function executeField(
     const contextValue = exeContext.contextValue;
     const result = resolveFn(source, args, contextValue, info);
     if (isPromise(result)) {
-      const completed = result.then((resolved) =>
-        completeValue(
-          exeContext,
-          returnType,
-          fieldNodes,
-          info,
-          path,
-          resolved,
-          asyncPayloadRecord,
-        ),
+      return completePromisedValue(
+        exeContext,
+        returnType,
+        fieldNodes,
+        info,
+        path,
+        result,
+        asyncPayloadRecord,
       );
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      return completed.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(path));
-        const handledError = handleFieldError(error, returnType, errors);
-        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-        return handledError;
-      });
     }
     const completed = completeValue(
       exeContext,
@@ -853,6 +843,40 @@ function completeValue(
       false,
       'Cannot complete value of unexpected output type: ' + inspect(returnType),
     );
+}
+async function completePromisedValue(
+  exeContext: ExecutionContext,
+  returnType: GraphQLOutputType,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: Path,
+  result: Promise<unknown>,
+  asyncPayloadRecord?: AsyncPayloadRecord,
+): Promise<unknown> {
+  try {
+    const resolved = await result;
+    let completed = completeValue(
+      exeContext,
+      returnType,
+      fieldNodes,
+      info,
+      path,
+      resolved,
+      asyncPayloadRecord,
+    );
+    if (isPromise(completed)) {
+      // see: https://github.com/tc39/proposal-faster-promise-adoption
+      // it is faster to await a promise prior to returning it from an async function
+      completed = await completed;
+    }
+    return completed;
+  } catch (rawError) {
+    const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+    const error = locatedError(rawError, fieldNodes, pathToArray(path));
+    const handledError = handleFieldError(error, returnType, errors);
+    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+    return handledError;
+  }
 }
 /**
  * Returns an object containing the `@stream` arguments if a field should be
@@ -1064,26 +1088,16 @@ function completeListItemValue(
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): boolean {
   if (isPromise(item)) {
-    const completedItem = item.then((resolved) =>
-      completeValue(
+    completedResults.push(
+      completePromisedValue(
         exeContext,
         itemType,
         fieldNodes,
         info,
         itemPath,
-        resolved,
+        item,
         asyncPayloadRecord,
       ),
-    );
-    // Note: we don't rely on a `catch` method, but we do expect "thenable"
-    // to take a second callback for the error case.
-    completedResults.push(
-      completedItem.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        const handledError = handleFieldError(error, itemType, errors);
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-        return handledError;
-      }),
     );
     return true;
   }
@@ -1738,36 +1752,22 @@ function executeStreamField(
     exeContext,
   });
   if (isPromise(item)) {
-    const completedItems = item
-      .then((resolved) =>
-        completeValue(
-          exeContext,
-          itemType,
-          fieldNodes,
-          info,
-          itemPath,
-          resolved,
-          asyncPayloadRecord,
-        ),
-      )
-      .then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        const handledError = handleFieldError(
-          error,
-          itemType,
-          asyncPayloadRecord.errors,
-        );
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-        return handledError;
-      })
-      .then(
-        (value) => [value],
-        (error) => {
-          asyncPayloadRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
-        },
-      );
+    const completedItems = completePromisedValue(
+      exeContext,
+      itemType,
+      fieldNodes,
+      info,
+      itemPath,
+      item,
+      asyncPayloadRecord,
+    ).then(
+      (value) => [value],
+      (error) => {
+        asyncPayloadRecord.errors.push(error);
+        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+        return null;
+      },
+    );
     asyncPayloadRecord.addItems(completedItems);
     return asyncPayloadRecord;
   }
