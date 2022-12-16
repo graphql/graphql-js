@@ -369,7 +369,6 @@ function executeImpl(
         },
       );
     }
-
     const initialResult = buildResponse(result, exeContext.errors);
     if (exeContext.subsequentPayloads.size > 0) {
       return {
@@ -688,6 +687,7 @@ function executeField(
   path: Path,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
+  const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
   const fieldName = fieldNodes[0].name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
   if (!fieldDef) {
@@ -747,7 +747,6 @@ function executeField(
 
     if (isPromise(completed)) {
       return catchAfter(completed, (rawError) => {
-        const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
         const error = locatedError(rawError, fieldNodes, pathToArray(path));
         const handledError = handleFieldError(error, returnType, errors);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
@@ -756,7 +755,6 @@ function executeField(
     }
     return completed;
   } catch (rawError) {
-    const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
     const error = locatedError(rawError, fieldNodes, pathToArray(path));
     const handledError = handleFieldError(error, returnType, errors);
     filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
@@ -2041,9 +2039,8 @@ async function executeStreamIteratorItem(
 
     if (isPromise(completedItem)) {
       completedItem = catchAfter(completedItem, (rawError) => {
-        const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
         const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        const handledError = handleFieldError(error, itemType, errors);
+        const handledError = handleFieldError(error, itemType, asyncPayloadRecord.errors);
         filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
         return handledError;
       });
