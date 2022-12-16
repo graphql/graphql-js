@@ -1,3 +1,4 @@
+import { after } from './after.js';
 import { isPromise } from './isPromise.js';
 import type { PromiseOrValue } from './PromiseOrValue.js';
 
@@ -15,15 +16,9 @@ export function promiseReduce<T, U>(
 ): PromiseOrValue<U> {
   let accumulator = initialValue;
   for (const value of values) {
-    if (isPromise(accumulator)) {
-      const intermediateValue = accumulator;
-      accumulator = (async () => {
-        const resolved = await intermediateValue;
-        return callbackFn(resolved, value);
-      })();
-      continue;
-    }
-    accumulator = callbackFn(accumulator, value);
+    accumulator = isPromise(accumulator)
+      ? after(accumulator, (resolved) => callbackFn(resolved, value))
+      : callbackFn(accumulator, value);
   }
   return accumulator;
 }
