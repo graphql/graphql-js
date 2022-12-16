@@ -2040,7 +2040,11 @@ async function executeStreamIteratorItem(
     if (isPromise(completedItem)) {
       completedItem = catchAfter(completedItem, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        const handledError = handleFieldError(error, itemType, asyncPayloadRecord.errors);
+        const handledError = handleFieldError(
+          error,
+          itemType,
+          asyncPayloadRecord.errors,
+        );
         filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
         return handledError;
       });
