@@ -23,7 +23,7 @@ describe('SimplePubSub', () => {
     });
 
     async function getNextItem(i: AsyncIterator<unknown>) {
-      return i.next();
+      return await i.next();
     }
 
     // Read ahead

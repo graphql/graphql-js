@@ -294,7 +294,7 @@ async function getPRsInfo(
   let prNumbers = await splitBatches(commits, batchCommitToPR);
   prNumbers = Array.from(new Set(prNumbers)); // Remove duplicates
 
-  return splitBatches(prNumbers, batchPRInfo);
+  return await splitBatches(prNumbers, batchPRInfo);
 }
 
 // Split commits into batches of 50 to prevent timeouts

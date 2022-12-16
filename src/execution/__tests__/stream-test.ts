@@ -126,7 +126,7 @@ async function completeAsync(
   for (let i = 0; i < numCalls; i++) {
     promises.push(iterator.next());
   }
-  return Promise.all(promises);
+  return await Promise.all(promises);
 }
 
 function createResolvablePromise<T>(): [Promise<T>, (value?: T) => void] {
@@ -531,11 +531,6 @@ describe('Execute: stream directive', () => {
               },
             ],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ name: 'Leia', id: '3' }],
             path: ['friendList', 2],

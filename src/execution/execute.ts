@@ -1077,7 +1077,9 @@ async function completeAsyncIteratorValue(
     }
     index += 1;
   }
-  return containsPromise ? Promise.all(completedResults) : completedResults;
+  return containsPromise
+    ? await Promise.all(completedResults)
+    : completedResults;
 }
 
 /**
@@ -2222,7 +2224,7 @@ function yieldSubsequentPayloads(
     const hasNext = exeContext.subsequentPayloads.size > 0;
 
     if (!incremental.length && hasNext) {
-      return next();
+      return await next();
     }
 
     if (!hasNext) {
@@ -2265,7 +2267,7 @@ function yieldSubsequentPayloads(
     ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> {
       await returnStreamIterators();
       isDone = true;
-      return Promise.reject(error);
+      return await Promise.reject(error);
     },
   };
 }

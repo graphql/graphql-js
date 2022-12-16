@@ -651,7 +651,7 @@ overrides:
         ]
       '@typescript-eslint/no-useless-constructor': error
       '@typescript-eslint/require-await': error
-      '@typescript-eslint/return-await': error
+      '@typescript-eslint/return-await': [error, 'always']
 
       # Disable for JS and TS
       '@typescript-eslint/init-declarations': off
