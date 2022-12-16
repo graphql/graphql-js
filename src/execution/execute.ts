@@ -746,35 +746,15 @@ function executeField(
     );
 
     if (isPromise(completed)) {
-      return handleAsyncCompletionError(
-        completed,
-        exeContext,
-        returnType,
-        fieldNodes,
-        path,
-        asyncPayloadRecord,
-      );
+      return catchAfter(completed, (rawError) => {
+        const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+        const error = locatedError(rawError, fieldNodes, pathToArray(path));
+        const handledError = handleFieldError(error, returnType, errors);
+        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+        return handledError;
+      });
     }
     return completed;
-  } catch (rawError) {
-    const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
-    const error = locatedError(rawError, fieldNodes, pathToArray(path));
-    const handledError = handleFieldError(error, returnType, errors);
-    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-    return handledError;
-  }
-}
-
-async function handleAsyncCompletionError(
-  promised: Promise<unknown>,
-  exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  path: Path,
-  asyncPayloadRecord?: AsyncPayloadRecord,
-): Promise<unknown> {
-  try {
-    return await promised;
   } catch (rawError) {
     const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
     const error = locatedError(rawError, fieldNodes, pathToArray(path));
@@ -1240,14 +1220,16 @@ function completeListItemValue(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       completedResults.push(
-        handleAsyncCompletionError(
-          completedItem,
-          exeContext,
-          itemType,
-          fieldNodes,
-          itemPath,
-          asyncPayloadRecord,
-        ),
+        catchAfter(completedItem, (rawError) => {
+          const error = locatedError(
+            rawError,
+            fieldNodes,
+            pathToArray(itemPath),
+          );
+          const handledError = handleFieldError(error, itemType, errors);
+          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+          return handledError;
+        }),
       );
 
       return true;
@@ -2058,14 +2040,13 @@ async function executeStreamIteratorItem(
     );
 
     if (isPromise(completedItem)) {
-      completedItem = handleAsyncCompletionError(
-        completedItem,
-        exeContext,
-        itemType,
-        fieldNodes,
-        itemPath,
-        asyncPayloadRecord,
-      );
+      completedItem = catchAfter(completedItem, (rawError) => {
+        const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+        const handledError = handleFieldError(error, itemType, errors);
+        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+        return handledError;
+      });
     }
     return { done: false, value: completedItem };
   } catch (rawError) {
