@@ -1,4 +1,4 @@
-import { after } from './after.js';
+import { afterMaybeAsync } from './afterMaybeAsync.js';
 import { isPromise } from './isPromise.js';
 import type { PromiseOrValue } from './PromiseOrValue.js';
 
@@ -17,7 +17,7 @@ export function promiseReduce<T, U>(
   let accumulator = initialValue;
   for (const value of values) {
     accumulator = isPromise(accumulator)
-      ? after(accumulator, (resolved) => callbackFn(resolved, value))
+      ? afterMaybeAsync(accumulator, (resolved) => callbackFn(resolved, value))
       : callbackFn(accumulator, value);
   }
   return accumulator;

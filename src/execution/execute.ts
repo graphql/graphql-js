@@ -1,4 +1,5 @@
 import { after } from '../jsutils/after.js';
+import { afterMaybeAsync } from '../jsutils/afterMaybeAsync.js';
 import { catchAfter } from '../jsutils/catchAfter.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
@@ -1282,7 +1283,7 @@ function completeAbstractValue(
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
   if (isPromise(runtimeType)) {
-    return after(runtimeType, (resolvedRuntimeType) =>
+    return afterMaybeAsync(runtimeType, (resolvedRuntimeType) =>
       completeObjectValue(
         exeContext,
         ensureValidRuntimeType(
@@ -1394,7 +1395,7 @@ function completeObjectValue(
     const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
     if (isPromise(isTypeOf)) {
-      return after(isTypeOf, (resolvedIsTypeOf) => {
+      return afterMaybeAsync(isTypeOf, (resolvedIsTypeOf) => {
         if (!resolvedIsTypeOf) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
@@ -2314,7 +2315,7 @@ class DeferredFragmentRecord {
   addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
-      this._resolve?.(after(parentData, () => data));
+      this._resolve?.(afterMaybeAsync(parentData, () => data));
       return;
     }
     this._resolve?.(data);
@@ -2368,7 +2369,7 @@ class StreamRecord {
   addItems(items: PromiseOrValue<Array<unknown> | null>) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
-      this._resolve?.(after(parentData, () => items));
+      this._resolve?.(afterMaybeAsync(parentData, () => items));
       return;
     }
     this._resolve?.(items);
