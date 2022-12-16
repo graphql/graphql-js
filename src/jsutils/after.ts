@@ -1,8 +1,8 @@
 import type { PromiseOrValue } from './PromiseOrValue';
 
-export async function after<T, U, R = T>(
+export async function after<T, R>(
   promise: Promise<T>,
   onFulfilled: (value: T) => PromiseOrValue<R>,
-): Promise<R | U> {
+): Promise<R> {
   return onFulfilled(await promise);
 }
