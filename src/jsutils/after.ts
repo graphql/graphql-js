@@ -1,3 +1,6 @@
+import { isPromise } from './isPromise.js';
+import type { PromiseOrValue } from './PromiseOrValue.js';
+
 /**
  * Async Helper Function that avoids `.then()`
  *
@@ -6,10 +9,24 @@
  *
  * see: https://github.com/tc39/proposal-faster-promise-adoption
  */
-export async function after<T, R>(
+export async function after<T, R = T, U = T>(
   promise: Promise<T>,
-  onFulfilled: (value: T) => R,
-): Promise<R> {
-  const result = onFulfilled(await promise);
-  return result;
+  onFulfilled?: (value: T) => PromiseOrValue<R>,
+  onError?: (error: any) => U,
+): Promise<R | U> {
+  try {
+    const result =
+      onFulfilled === undefined
+        ? ((await promise) as R)
+        : onFulfilled(await promise);
+    if (isPromise(result)) {
+      return await result;
+    }
+    return result;
+  } catch (error) {
+    if (onError === undefined) {
+      throw error;
+    }
+    return onError(error);
+  }
 }

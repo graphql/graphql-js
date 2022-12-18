@@ -1,6 +1,4 @@
 import { after } from '../jsutils/after.js';
-import { afterMaybeAsync } from '../jsutils/afterMaybeAsync.js';
-import { catchAfter } from '../jsutils/catchAfter.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
@@ -15,7 +13,6 @@ import { addPath, pathToArray } from '../jsutils/Path.js';
 import { promiseForObject } from '../jsutils/promiseForObject.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { promiseReduce } from '../jsutils/promiseReduce.js';
-import { tryAfter } from '../jsutils/tryAfter.js';
 
 import type { GraphQLFormattedError } from '../error/GraphQLError.js';
 import { GraphQLError } from '../error/GraphQLError.js';
@@ -349,7 +346,7 @@ function executeImpl(
   try {
     const result = executeOperation(exeContext);
     if (isPromise(result)) {
-      return tryAfter(
+      return after(
         result,
         (data) => {
           const initialResult = buildResponse(data, exeContext.errors);
@@ -650,7 +647,7 @@ function executeFields(
     }
   } catch (error) {
     if (containsPromise) {
-      return tryAfter(
+      return after(
         promiseForObject(results),
         () => {
           throw error;
@@ -747,7 +744,7 @@ function executeField(
     );
 
     if (isPromise(completed)) {
-      return catchAfter(completed, (rawError) => {
+      return after(completed, undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(path));
         const handledError = handleFieldError(error, returnType, errors);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
@@ -1221,7 +1218,7 @@ function completeListItemValue(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       completedResults.push(
-        catchAfter(completedItem, (rawError) => {
+        after(completedItem, undefined, (rawError) => {
           const error = locatedError(
             rawError,
             fieldNodes,
@@ -1283,7 +1280,7 @@ function completeAbstractValue(
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
   if (isPromise(runtimeType)) {
-    return afterMaybeAsync(runtimeType, (resolvedRuntimeType) =>
+    return after(runtimeType, (resolvedRuntimeType) =>
       completeObjectValue(
         exeContext,
         ensureValidRuntimeType(
@@ -1395,7 +1392,7 @@ function completeObjectValue(
     const isTypeOf = returnType.isTypeOf(result, exeContext.contextValue, info);
 
     if (isPromise(isTypeOf)) {
-      return afterMaybeAsync(isTypeOf, (resolvedIsTypeOf) => {
+      return after(isTypeOf, (resolvedIsTypeOf) => {
         if (!resolvedIsTypeOf) {
           throw invalidReturnTypeError(returnType, result, fieldNodes);
         }
@@ -1765,7 +1762,7 @@ function createSourceEventStreamImpl(
   try {
     const eventStream = executeSubscription(exeContext);
     if (isPromise(eventStream)) {
-      return catchAfter(eventStream, (error) => ({ errors: [error] }));
+      return after(eventStream, undefined, (error) => ({ errors: [error] }));
     }
 
     return eventStream;
@@ -1836,7 +1833,7 @@ function executeSubscription(
     const result = resolveFn(rootValue, args, contextValue, info);
 
     if (isPromise(result)) {
-      return tryAfter(result, assertEventStream, (error) => {
+      return after(result, assertEventStream, (error) => {
         throw locatedError(error, fieldNodes, pathToArray(path));
       });
     }
@@ -1890,7 +1887,7 @@ function executeDeferredFragment(
     );
 
     if (isPromise(promiseOrData)) {
-      promiseOrData = catchAfter(promiseOrData, (error) => {
+      promiseOrData = after(promiseOrData, undefined, (error) => {
         asyncPayloadRecord.errors.push(error);
         return null;
       });
@@ -1929,7 +1926,7 @@ function executeStreamField(
       item,
       asyncPayloadRecord,
     );
-    const completedItems = tryAfter(
+    const completedItems = after(
       completedItem,
       (resolved) => [resolved],
       (error) => {
@@ -1972,7 +1969,7 @@ function executeStreamField(
   }
 
   if (isPromise(completedItem)) {
-    const completedItems = tryAfter(
+    const completedItems = after(
       completedItem,
       (resolved) => [resolved],
       (rawError) => {
@@ -2041,7 +2038,7 @@ async function executeStreamIteratorItem(
     );
 
     if (isPromise(completedItem)) {
-      completedItem = catchAfter(completedItem, (rawError) => {
+      completedItem = after(completedItem, undefined, (rawError) => {
         const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
         const handledError = handleFieldError(
           error,
@@ -2115,7 +2112,7 @@ async function executeStreamIterator(
 
     let completedItems: PromiseOrValue<Array<unknown> | null>;
     if (isPromise(completedItem)) {
-      completedItems = tryAfter(
+      completedItems = after(
         completedItem,
         (resolved) => [resolved],
         (error) => {
@@ -2315,7 +2312,7 @@ class DeferredFragmentRecord {
   addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
-      this._resolve?.(afterMaybeAsync(parentData, () => data));
+      this._resolve?.(after(parentData, () => data));
       return;
     }
     this._resolve?.(data);
@@ -2369,7 +2366,7 @@ class StreamRecord {
   addItems(items: PromiseOrValue<Array<unknown> | null>) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
-      this._resolve?.(afterMaybeAsync(parentData, () => items));
+      this._resolve?.(after(parentData, () => items));
       return;
     }
     this._resolve?.(items);
