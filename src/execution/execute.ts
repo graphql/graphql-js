@@ -1678,7 +1678,7 @@ async function* ensureAsyncIterable(
 function mapSourceToResponse(
   exeContext: ExecutionContext,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
-): PromiseOrValue<
+):
   | AsyncGenerator<
       | ExecutionResult
       | InitialIncrementalExecutionResult
@@ -1686,8 +1686,7 @@ function mapSourceToResponse(
       void,
       void
     >
-  | ExecutionResult
-> {
+  | ExecutionResult {
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
   }
