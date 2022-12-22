@@ -12,6 +12,9 @@ export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabel
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
 export { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.js';
 
+// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
+export { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.js';
+
 // Spec Section: "Executable Definitions"
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.js';
 
