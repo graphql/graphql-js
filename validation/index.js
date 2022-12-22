@@ -37,6 +37,7 @@ exports.NoSchemaIntrospectionCustomRule =
   exports.FragmentsOnCompositeTypesRule =
   exports.FieldsOnCorrectTypeRule =
   exports.ExecutableDefinitionsRule =
+  exports.DeferStreamDirectiveOnValidOperationsRule =
   exports.DeferStreamDirectiveOnRootFieldRule =
   exports.DeferStreamDirectiveLabelRule =
   exports.specifiedRules =
@@ -79,6 +80,14 @@ Object.defineProperty(exports, 'DeferStreamDirectiveOnRootFieldRule', {
   enumerable: true,
   get: function () {
     return DeferStreamDirectiveOnRootFieldRule_js_1.DeferStreamDirectiveOnRootFieldRule;
+  },
+});
+// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
+var DeferStreamDirectiveOnValidOperationsRule_js_1 = require('./rules/DeferStreamDirectiveOnValidOperationsRule.js');
+Object.defineProperty(exports, 'DeferStreamDirectiveOnValidOperationsRule', {
+  enumerable: true,
+  get: function () {
+    return DeferStreamDirectiveOnValidOperationsRule_js_1.DeferStreamDirectiveOnValidOperationsRule;
   },
 });
 // Spec Section: "Executable Definitions"

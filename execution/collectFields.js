@@ -2,6 +2,8 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.collectSubfields = exports.collectFields = void 0;
 const AccumulatorMap_js_1 = require('../jsutils/AccumulatorMap.js');
+const invariant_js_1 = require('../jsutils/invariant.js');
+const ast_js_1 = require('../language/ast.js');
 const kinds_js_1 = require('../language/kinds.js');
 const definition_js_1 = require('../type/definition.js');
 const directives_js_1 = require('../type/directives.js');
@@ -21,7 +23,7 @@ function collectFields(
   fragments,
   variableValues,
   runtimeType,
-  selectionSet,
+  operation,
 ) {
   const fields = new AccumulatorMap_js_1.AccumulatorMap();
   const patches = [];
@@ -29,8 +31,9 @@ function collectFields(
     schema,
     fragments,
     variableValues,
+    operation,
     runtimeType,
-    selectionSet,
+    operation.selectionSet,
     fields,
     patches,
     new Set(),
@@ -48,10 +51,12 @@ exports.collectFields = collectFields;
  *
  * @internal
  */
+// eslint-disable-next-line max-params
 function collectSubfields(
   schema,
   fragments,
   variableValues,
+  operation,
   returnType,
   fieldNodes,
 ) {
@@ -68,6 +73,7 @@ function collectSubfields(
         schema,
         fragments,
         variableValues,
+        operation,
         returnType,
         node.selectionSet,
         subFieldNodes,
@@ -84,6 +90,7 @@ function collectFieldsImpl(
   schema,
   fragments,
   variableValues,
+  operation,
   runtimeType,
   selectionSet,
   fields,
@@ -106,13 +113,14 @@ function collectFieldsImpl(
         ) {
           continue;
         }
-        const defer = getDeferValues(variableValues, selection);
+        const defer = getDeferValues(operation, variableValues, selection);
         if (defer) {
           const patchFields = new AccumulatorMap_js_1.AccumulatorMap();
           collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             selection.selectionSet,
             patchFields,
@@ -128,6 +136,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             selection.selectionSet,
             fields,
@@ -142,7 +151,7 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        const defer = getDeferValues(variableValues, selection);
+        const defer = getDeferValues(operation, variableValues, selection);
         if (visitedFragmentNames.has(fragName) && !defer) {
           continue;
         }
@@ -162,6 +171,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             fragment.selectionSet,
             patchFields,
@@ -177,6 +187,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             fragment.selectionSet,
             fields,
@@ -194,7 +205,7 @@ function collectFieldsImpl(
  * deferred based on the experimental flag, defer directive present and
  * not disabled by the "if" argument.
  */
-function getDeferValues(variableValues, node) {
+function getDeferValues(operation, variableValues, node) {
   const defer = (0, values_js_1.getDirectiveValues)(
     directives_js_1.GraphQLDeferDirective,
     node,
@@ -206,6 +217,11 @@ function getDeferValues(variableValues, node) {
   if (defer.if === false) {
     return;
   }
+  operation.operation !== ast_js_1.OperationTypeNode.SUBSCRIPTION ||
+    invariant(
+      false,
+      '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+    );
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
   };

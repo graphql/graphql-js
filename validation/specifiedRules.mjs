@@ -2,6 +2,8 @@
 import { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.mjs';
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
 import { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.mjs';
+// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
+import { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.mjs';
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.mjs';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
@@ -98,6 +100,7 @@ export const specifiedRules = Object.freeze([
   KnownDirectivesRule,
   UniqueDirectivesPerLocationRule,
   DeferStreamDirectiveOnRootFieldRule,
+  DeferStreamDirectiveOnValidOperationsRule,
   DeferStreamDirectiveLabelRule,
   StreamDirectiveOnListFieldRule,
   KnownArgumentNamesRule,

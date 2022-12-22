@@ -1,4 +1,6 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.mjs';
+import { invariant } from '../jsutils/invariant.mjs';
+import { OperationTypeNode } from '../language/ast.mjs';
 import { Kind } from '../language/kinds.mjs';
 import { isAbstractType } from '../type/definition.mjs';
 import {
@@ -22,7 +24,7 @@ export function collectFields(
   fragments,
   variableValues,
   runtimeType,
-  selectionSet,
+  operation,
 ) {
   const fields = new AccumulatorMap();
   const patches = [];
@@ -30,8 +32,9 @@ export function collectFields(
     schema,
     fragments,
     variableValues,
+    operation,
     runtimeType,
-    selectionSet,
+    operation.selectionSet,
     fields,
     patches,
     new Set(),
@@ -48,10 +51,12 @@ export function collectFields(
  *
  * @internal
  */
+// eslint-disable-next-line max-params
 export function collectSubfields(
   schema,
   fragments,
   variableValues,
+  operation,
   returnType,
   fieldNodes,
 ) {
@@ -68,6 +73,7 @@ export function collectSubfields(
         schema,
         fragments,
         variableValues,
+        operation,
         returnType,
         node.selectionSet,
         subFieldNodes,
@@ -83,6 +89,7 @@ function collectFieldsImpl(
   schema,
   fragments,
   variableValues,
+  operation,
   runtimeType,
   selectionSet,
   fields,
@@ -105,13 +112,14 @@ function collectFieldsImpl(
         ) {
           continue;
         }
-        const defer = getDeferValues(variableValues, selection);
+        const defer = getDeferValues(operation, variableValues, selection);
         if (defer) {
           const patchFields = new AccumulatorMap();
           collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             selection.selectionSet,
             patchFields,
@@ -127,6 +135,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             selection.selectionSet,
             fields,
@@ -141,7 +150,7 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        const defer = getDeferValues(variableValues, selection);
+        const defer = getDeferValues(operation, variableValues, selection);
         if (visitedFragmentNames.has(fragName) && !defer) {
           continue;
         }
@@ -161,6 +170,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             fragment.selectionSet,
             patchFields,
@@ -176,6 +186,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             fragment.selectionSet,
             fields,
@@ -193,7 +204,7 @@ function collectFieldsImpl(
  * deferred based on the experimental flag, defer directive present and
  * not disabled by the "if" argument.
  */
-function getDeferValues(variableValues, node) {
+function getDeferValues(operation, variableValues, node) {
   const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues);
   if (!defer) {
     return;
@@ -201,6 +212,11 @@ function getDeferValues(variableValues, node) {
   if (defer.if === false) {
     return;
   }
+  operation.operation !== OperationTypeNode.SUBSCRIPTION ||
+    invariant(
+      false,
+      '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+    );
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
   };

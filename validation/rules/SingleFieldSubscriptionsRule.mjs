@@ -30,7 +30,7 @@ export function SingleFieldSubscriptionsRule(context) {
             fragments,
             variableValues,
             subscriptionType,
-            node.selectionSet,
+            node,
           );
           if (fields.size > 1) {
             const fieldSelectionLists = [...fields.values()];

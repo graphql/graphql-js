@@ -1,7 +1,6 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.createSourceEventStream =
-  exports.experimentalSubscribeIncrementally =
   exports.subscribe =
   exports.defaultFieldResolver =
   exports.defaultTypeResolver =
@@ -29,7 +28,6 @@ const definition_js_1 = require('../type/definition.js');
 const directives_js_1 = require('../type/directives.js');
 const validate_js_1 = require('../type/validate.js');
 const collectFields_js_1 = require('./collectFields.js');
-const flattenAsyncIterable_js_1 = require('./flattenAsyncIterable.js');
 const mapAsyncIterable_js_1 = require('./mapAsyncIterable.js');
 const values_js_1 = require('./values.js');
 /* eslint-disable max-params */
@@ -46,6 +44,7 @@ const collectSubfields = (0, memoize3_js_1.memoize3)(
       exeContext.schema,
       exeContext.fragments,
       exeContext.variableValues,
+      exeContext.operation,
       returnType,
       fieldNodes,
     ),
@@ -295,7 +294,7 @@ function executeOperation(exeContext) {
     fragments,
     variableValues,
     rootType,
-    operation.selectionSet,
+    operation,
   );
   const path = undefined;
   let result;
@@ -722,6 +721,11 @@ function getStreamValues(exeContext, fieldNodes, path) {
     invariant(false, 'initialCount must be a number');
   stream.initialCount >= 0 ||
     invariant(false, 'initialCount must be a positive integer');
+  exeContext.operation.operation !== ast_js_1.OperationTypeNode.SUBSCRIPTION ||
+    invariant(
+      false,
+      '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
+    );
   return {
     initialCount: stream.initialCount,
     label: typeof stream.label === 'string' ? stream.label : undefined,
@@ -1244,78 +1248,12 @@ exports.defaultFieldResolver = defaultFieldResolver;
  *
  * This function does not support incremental delivery (`@defer` and `@stream`).
  * If an operation which would defer or stream data is executed with this
- * function, each `InitialIncrementalExecutionResult` and
- * `SubsequentIncrementalExecutionResult` in the result stream will be replaced
- * with an `ExecutionResult` with a single error stating that defer/stream is
- * not supported.  Use `experimentalSubscribeIncrementally` if you want to
- * support incremental delivery.
+ * function, a field error will be raised at the location of the `@defer` or
+ * `@stream` directive.
  *
  * Accepts an object with named arguments.
  */
 function subscribe(args) {
-  const maybePromise = experimentalSubscribeIncrementally(args);
-  if ((0, isPromise_js_1.isPromise)(maybePromise)) {
-    return maybePromise.then((resultOrIterable) =>
-      (0, isAsyncIterable_js_1.isAsyncIterable)(resultOrIterable)
-        ? (0, mapAsyncIterable_js_1.mapAsyncIterable)(
-            resultOrIterable,
-            ensureSingleExecutionResult,
-          )
-        : resultOrIterable,
-    );
-  }
-  return (0, isAsyncIterable_js_1.isAsyncIterable)(maybePromise)
-    ? (0, mapAsyncIterable_js_1.mapAsyncIterable)(
-        maybePromise,
-        ensureSingleExecutionResult,
-      )
-    : maybePromise;
-}
-exports.subscribe = subscribe;
-function ensureSingleExecutionResult(result) {
-  if ('hasNext' in result) {
-    return {
-      errors: [
-        new GraphQLError_js_1.GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS),
-      ],
-    };
-  }
-  return result;
-}
-/**
- * Implements the "Subscribe" algorithm described in the GraphQL specification,
- * including `@defer` and `@stream` as proposed in
- * https://github.com/graphql/graphql-spec/pull/742
- *
- * Returns a Promise which resolves to either an AsyncIterator (if successful)
- * or an ExecutionResult (error). The promise will be rejected if the schema or
- * other arguments to this function are invalid, or if the resolved event stream
- * is not an async iterable.
- *
- * If the client-provided arguments to this function do not result in a
- * compliant subscription, a GraphQL Response (ExecutionResult) with descriptive
- * errors and no data will be returned.
- *
- * If the source stream could not be created due to faulty subscription resolver
- * logic or underlying systems, the promise will resolve to a single
- * ExecutionResult containing `errors` and no `data`.
- *
- * If the operation succeeded, the promise resolves to an AsyncIterator, which
- * yields a stream of result representing the response stream.
- *
- * Each result may be an ExecutionResult with no `hasNext` (if executing the
- * event did not use `@defer` or `@stream`), or an
- * `InitialIncrementalExecutionResult` or `SubsequentIncrementalExecutionResult`
- * (if executing the event used `@defer` or `@stream`). In the case of
- * incremental execution results, each event produces a single
- * `InitialIncrementalExecutionResult` followed by one or more
- * `SubsequentIncrementalExecutionResult`s; all but the last have `hasNext: true`,
- * and the last has `hasNext: false`. There is no interleaving between results
- * generated from the same original event.
- *
- * Accepts an object with named arguments.
- */
-function experimentalSubscribeIncrementally(args) {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
@@ -1331,15 +1269,7 @@ function experimentalSubscribeIncrementally(args) {
   }
   return mapSourceToResponse(exeContext, resultOrStream);
 }
-exports.experimentalSubscribeIncrementally = experimentalSubscribeIncrementally;
-async function* ensureAsyncIterable(someExecutionResult) {
-  if ('initialResult' in someExecutionResult) {
-    yield someExecutionResult.initialResult;
-    yield* someExecutionResult.subsequentResults;
-  } else {
-    yield someExecutionResult;
-  }
-}
+exports.subscribe = subscribe;
 function mapSourceToResponse(exeContext, resultOrStream) {
   if (!(0, isAsyncIterable_js_1.isAsyncIterable)(resultOrStream)) {
     return resultOrStream;
@@ -1350,14 +1280,10 @@ function mapSourceToResponse(exeContext, resultOrStream) {
   // the GraphQL specification. The `execute` function provides the
   // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
   // "ExecuteQuery" algorithm, for which `execute` is also used.
-  return (0, flattenAsyncIterable_js_1.flattenAsyncIterable)(
-    (0, mapAsyncIterable_js_1.mapAsyncIterable)(
-      resultOrStream,
-      async (payload) =>
-        ensureAsyncIterable(
-          await executeImpl(buildPerEventExecutionContext(exeContext, payload)),
-        ),
-    ),
+  return (0, mapAsyncIterable_js_1.mapAsyncIterable)(
+    resultOrStream,
+    (payload) =>
+      executeImpl(buildPerEventExecutionContext(exeContext, payload)),
   );
 }
 /**
@@ -1425,7 +1351,7 @@ function executeSubscription(exeContext) {
     fragments,
     variableValues,
     rootType,
-    operation.selectionSet,
+    operation,
   );
   const firstRootField = rootFields.entries().next().value;
   const [responseName, fieldNodes] = firstRootField;

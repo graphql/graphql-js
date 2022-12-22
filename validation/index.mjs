@@ -6,6 +6,8 @@ export { specifiedRules } from './specifiedRules.mjs';
 export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.mjs';
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
 export { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.mjs';
+// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
+export { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.mjs';
 // Spec Section: "Executable Definitions"
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.mjs';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"

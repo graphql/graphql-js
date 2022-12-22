@@ -129,7 +129,8 @@ exports.printLocation =
   exports.isUnionType =
   exports.isInterfaceType =
     void 0;
-exports.NoUndefinedVariablesRule =
+exports.NoUnusedFragmentsRule =
+  exports.NoUndefinedVariablesRule =
   exports.NoFragmentCyclesRule =
   exports.LoneAnonymousOperationRule =
   exports.KnownTypeNamesRule =
@@ -143,7 +144,6 @@ exports.NoUndefinedVariablesRule =
   exports.ValidationContext =
   exports.validate =
   exports.createSourceEventStream =
-  exports.experimentalSubscribeIncrementally =
   exports.subscribe =
   exports.getDirectiveValues =
   exports.getVariableValues =
@@ -180,7 +180,8 @@ exports.NoUndefinedVariablesRule =
   exports.Lexer =
   exports.printSourceLocation =
     void 0;
-exports.stripIgnoredCharacters =
+exports.isEqualType =
+  exports.stripIgnoredCharacters =
   exports.separateOperations =
   exports.concatAST =
   exports.coerceInputValue =
@@ -229,7 +230,6 @@ exports.stripIgnoredCharacters =
   exports.PossibleFragmentSpreadsRule =
   exports.OverlappingFieldsCanBeMergedRule =
   exports.NoUnusedVariablesRule =
-  exports.NoUnusedFragmentsRule =
     void 0;
 exports.findDangerousChanges =
   exports.findBreakingChanges =
@@ -237,7 +237,6 @@ exports.findDangerousChanges =
   exports.BreakingChangeType =
   exports.doTypesOverlap =
   exports.isTypeSubTypeOf =
-  exports.isEqualType =
     void 0;
 // The GraphQL.js version info.
 var version_js_1 = require('./version.js');
@@ -1075,12 +1074,6 @@ Object.defineProperty(exports, 'subscribe', {
   enumerable: true,
   get: function () {
     return index_js_3.subscribe;
-  },
-});
-Object.defineProperty(exports, 'experimentalSubscribeIncrementally', {
-  enumerable: true,
-  get: function () {
-    return index_js_3.experimentalSubscribeIncrementally;
   },
 });
 Object.defineProperty(exports, 'createSourceEventStream', {

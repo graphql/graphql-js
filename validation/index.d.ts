@@ -4,6 +4,7 @@ export type { ValidationRule } from './ValidationContext.js';
 export { specifiedRules } from './specifiedRules.js';
 export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.js';
 export { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.js';
+export { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.js';
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.js';
 export { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule.js';
 export { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypesRule.js';

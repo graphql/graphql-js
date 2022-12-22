@@ -5,6 +5,8 @@ exports.specifiedSDLRules = exports.specifiedRules = void 0;
 const DeferStreamDirectiveLabelRule_js_1 = require('./rules/DeferStreamDirectiveLabelRule.js');
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
 const DeferStreamDirectiveOnRootFieldRule_js_1 = require('./rules/DeferStreamDirectiveOnRootFieldRule.js');
+// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
+const DeferStreamDirectiveOnValidOperationsRule_js_1 = require('./rules/DeferStreamDirectiveOnValidOperationsRule.js');
 // Spec Section: "Executable Definitions"
 const ExecutableDefinitionsRule_js_1 = require('./rules/ExecutableDefinitionsRule.js');
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
@@ -95,6 +97,7 @@ exports.specifiedRules = Object.freeze([
   KnownDirectivesRule_js_1.KnownDirectivesRule,
   UniqueDirectivesPerLocationRule_js_1.UniqueDirectivesPerLocationRule,
   DeferStreamDirectiveOnRootFieldRule_js_1.DeferStreamDirectiveOnRootFieldRule,
+  DeferStreamDirectiveOnValidOperationsRule_js_1.DeferStreamDirectiveOnValidOperationsRule,
   DeferStreamDirectiveLabelRule_js_1.DeferStreamDirectiveLabelRule,
   StreamDirectiveOnListFieldRule_js_1.StreamDirectiveOnListFieldRule,
   KnownArgumentNamesRule_js_1.KnownArgumentNamesRule,

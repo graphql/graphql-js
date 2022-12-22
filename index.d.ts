@@ -294,7 +294,6 @@ export {
   getVariableValues,
   getDirectiveValues,
   subscribe,
-  experimentalSubscribeIncrementally,
   createSourceEventStream,
 } from './execution/index.js';
 export type {

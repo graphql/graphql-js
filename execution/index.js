@@ -3,7 +3,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.getDirectiveValues =
   exports.getVariableValues =
   exports.getArgumentValues =
-  exports.experimentalSubscribeIncrementally =
   exports.subscribe =
   exports.defaultTypeResolver =
   exports.defaultFieldResolver =
@@ -61,12 +60,6 @@ Object.defineProperty(exports, 'subscribe', {
   enumerable: true,
   get: function () {
     return execute_js_1.subscribe;
-  },
-});
-Object.defineProperty(exports, 'experimentalSubscribeIncrementally', {
-  enumerable: true,
-  get: function () {
-    return execute_js_1.experimentalSubscribeIncrementally;
   },
 });
 var values_js_1 = require('./values.js');
