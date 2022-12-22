@@ -321,7 +321,6 @@ export {
   getVariableValues,
   getDirectiveValues,
   subscribe,
-  experimentalSubscribeIncrementally,
   createSourceEventStream,
 } from './execution/index.ts';
 export type {

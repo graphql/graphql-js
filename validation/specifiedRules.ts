@@ -2,6 +2,8 @@
 import { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.ts';
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
 import { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.ts';
+// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
+import { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.ts';
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.ts';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
@@ -99,6 +101,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   KnownDirectivesRule,
   UniqueDirectivesPerLocationRule,
   DeferStreamDirectiveOnRootFieldRule,
+  DeferStreamDirectiveOnValidOperationsRule,
   DeferStreamDirectiveLabelRule,
   StreamDirectiveOnListFieldRule,
   KnownArgumentNamesRule,

@@ -7,7 +7,6 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   subscribe,
-  experimentalSubscribeIncrementally,
 } from './execute.ts';
 export type {
   ExecutionArgs,

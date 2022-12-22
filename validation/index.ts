@@ -7,6 +7,8 @@ export { specifiedRules } from './specifiedRules.ts';
 export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.ts';
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
 export { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.ts';
+// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
+export { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.ts';
 // Spec Section: "Executable Definitions"
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.ts';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"

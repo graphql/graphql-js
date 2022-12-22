@@ -1,12 +1,15 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
+import { invariant } from '../jsutils/invariant.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type {
   FieldNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
+  OperationDefinitionNode,
   SelectionSetNode,
 } from '../language/ast.ts';
+import { OperationTypeNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import type { GraphQLObjectType } from '../type/definition.ts';
 import { isAbstractType } from '../type/definition.ts';
@@ -42,7 +45,7 @@ export function collectFields(
     [variable: string]: unknown;
   },
   runtimeType: GraphQLObjectType,
-  selectionSet: SelectionSetNode,
+  operation: OperationDefinitionNode,
 ): FieldsAndPatches {
   const fields = new AccumulatorMap<string, FieldNode>();
   const patches: Array<PatchFields> = [];
@@ -50,8 +53,9 @@ export function collectFields(
     schema,
     fragments,
     variableValues,
+    operation,
     runtimeType,
-    selectionSet,
+    operation.selectionSet,
     fields,
     patches,
     new Set(),
@@ -68,12 +72,14 @@ export function collectFields(
  *
  * @internal
  */
+// eslint-disable-next-line max-params
 export function collectSubfields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
   variableValues: {
     [variable: string]: unknown;
   },
+  operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldNodes: ReadonlyArray<FieldNode>,
 ): FieldsAndPatches {
@@ -90,6 +96,7 @@ export function collectSubfields(
         schema,
         fragments,
         variableValues,
+        operation,
         returnType,
         node.selectionSet,
         subFieldNodes,
@@ -107,6 +114,7 @@ function collectFieldsImpl(
   variableValues: {
     [variable: string]: unknown;
   },
+  operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
   fields: AccumulatorMap<string, FieldNode>,
@@ -129,13 +137,14 @@ function collectFieldsImpl(
         ) {
           continue;
         }
-        const defer = getDeferValues(variableValues, selection);
+        const defer = getDeferValues(operation, variableValues, selection);
         if (defer) {
           const patchFields = new AccumulatorMap<string, FieldNode>();
           collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             selection.selectionSet,
             patchFields,
@@ -151,6 +160,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             selection.selectionSet,
             fields,
@@ -165,7 +175,7 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        const defer = getDeferValues(variableValues, selection);
+        const defer = getDeferValues(operation, variableValues, selection);
         if (visitedFragmentNames.has(fragName) && !defer) {
           continue;
         }
@@ -185,6 +195,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             fragment.selectionSet,
             patchFields,
@@ -200,6 +211,7 @@ function collectFieldsImpl(
             schema,
             fragments,
             variableValues,
+            operation,
             runtimeType,
             fragment.selectionSet,
             fields,
@@ -218,6 +230,7 @@ function collectFieldsImpl(
  * not disabled by the "if" argument.
  */
 function getDeferValues(
+  operation: OperationDefinitionNode,
   variableValues: {
     [variable: string]: unknown;
   },
@@ -234,6 +247,11 @@ function getDeferValues(
   if (defer.if === false) {
     return;
   }
+  operation.operation !== OperationTypeNode.SUBSCRIPTION ||
+    invariant(
+      false,
+      '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+    );
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
   };
