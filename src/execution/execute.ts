@@ -1798,6 +1798,78 @@ function executeDeferredFragment(
   asyncPayloadRecord.addData(promiseOrData);
 }
 
+async function completedItemsFromPromisedItem(
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: Path,
+  itemPath: Path,
+  item: Promise<unknown>,
+  asyncPayloadRecord: AsyncPayloadRecord,
+): Promise<[unknown] | null> {
+  try {
+    try {
+      const resolved = await item;
+      let completedItem = completeValue(
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        itemPath,
+        resolved,
+        asyncPayloadRecord,
+      );
+      if (isPromise(completedItem)) {
+        completedItem = await completedItem;
+      }
+      return [completedItem];
+    } catch (rawError) {
+      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      const handledError = handleFieldError(
+        error,
+        itemType,
+        asyncPayloadRecord.errors,
+      );
+      filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+      return [handledError];
+    }
+  } catch (error) {
+    asyncPayloadRecord.errors.push(error);
+    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+    return null;
+  }
+}
+
+async function completedItemsFromPromisedCompletedItem(
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  path: Path,
+  itemPath: Path,
+  completedItem: Promise<unknown>,
+  asyncPayloadRecord: AsyncPayloadRecord,
+): Promise<[unknown] | null> {
+  try {
+    try {
+      return [await completedItem];
+    } catch (rawError) {
+      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      const handledError = handleFieldError(
+        error,
+        itemType,
+        asyncPayloadRecord.errors,
+      );
+      filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+      return [handledError];
+    }
+  } catch (error) {
+    asyncPayloadRecord.errors.push(error);
+    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+    return null;
+  }
+}
+
 function executeStreamField(
   path: Path,
   itemPath: Path,
@@ -1816,24 +1888,18 @@ function executeStreamField(
     exeContext,
   });
   if (isPromise(item)) {
-    const completedItems = completePromisedValue(
-      exeContext,
-      itemType,
-      fieldNodes,
-      info,
-      itemPath,
-      item,
-      asyncPayloadRecord,
-    ).then(
-      (value) => [value],
-      (error) => {
-        asyncPayloadRecord.errors.push(error);
-        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-        return null;
-      },
+    asyncPayloadRecord.addItems(
+      completedItemsFromPromisedItem(
+        exeContext,
+        itemType,
+        fieldNodes,
+        info,
+        path,
+        itemPath,
+        item,
+        asyncPayloadRecord,
+      ),
     );
-
-    asyncPayloadRecord.addItems(completedItems);
     return asyncPayloadRecord;
   }
 
@@ -1866,27 +1932,17 @@ function executeStreamField(
   }
 
   if (isPromise(completedItem)) {
-    const completedItems = completedItem
-      .then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-        const handledError = handleFieldError(
-          error,
-          itemType,
-          asyncPayloadRecord.errors,
-        );
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-        return handledError;
-      })
-      .then(
-        (value) => [value],
-        (error) => {
-          asyncPayloadRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
-        },
-      );
-
-    asyncPayloadRecord.addItems(completedItems);
+    asyncPayloadRecord.addItems(
+      completedItemsFromPromisedCompletedItem(
+        exeContext,
+        itemType,
+        fieldNodes,
+        path,
+        itemPath,
+        completedItem,
+        asyncPayloadRecord,
+      ),
+    );
     return asyncPayloadRecord;
   }
 
