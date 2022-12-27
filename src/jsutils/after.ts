@@ -15,13 +15,16 @@ export async function after<T, R = T, U = T>(
   onError?: (error: any) => U,
 ): Promise<R | U> {
   try {
-    const result =
-      onFulfilled === undefined
-        ? ((await promise) as R)
-        : onFulfilled(await promise);
+    if (onFulfilled === undefined) {
+      return (await promise) as R;
+    }
+
+    const result = onFulfilled(await promise);
+
     if (isPromise(result)) {
       return await result;
     }
+
     return result;
   } catch (error) {
     if (onError === undefined) {
