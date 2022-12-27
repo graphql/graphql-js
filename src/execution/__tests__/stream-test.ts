@@ -450,6 +450,56 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Can stream a field that returns a list of promises with nested promises', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 2) {
+          name
+          id
+        }
+      }
+    `);
+    const result = await complete(document, {
+      friendList: () =>
+        friends.map((f) =>
+          Promise.resolve({
+            name: Promise.resolve(f.name),
+            id: Promise.resolve(f.id),
+          }),
+        ),
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [
+            {
+              name: 'Luke',
+              id: '1',
+            },
+            {
+              name: 'Han',
+              id: '2',
+            },
+          ],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [
+              {
+                name: 'Leia',
+                id: '3',
+              },
+            ],
+            path: ['friendList', 2],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
   it('Handles rejections in a field that returns a list of promises before initialCount is reached', async () => {
     const document = parse(`
       query { 
