@@ -678,9 +678,6 @@ describe('Execute: stream directive', () => {
             path: ['friendList', 2],
           },
         ],
-        hasNext: true,
-      },
-      {
         hasNext: false,
       },
     ]);
@@ -720,7 +717,7 @@ describe('Execute: stream directive', () => {
         }
       }
     `);
-    const result = await completeAsync(document, 3, {
+    const result = await completeAsync(document, 2, {
       async *friendList() {
         yield await Promise.resolve(friends[0]);
         yield await Promise.resolve(friends[1]);
@@ -749,10 +746,9 @@ describe('Execute: stream directive', () => {
               path: ['friendList', 2],
             },
           ],
-          hasNext: true,
+          hasNext: false,
         },
       },
-      { done: false, value: { hasNext: false } },
       { done: true, value: undefined },
     ]);
   });
@@ -1214,9 +1210,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
         hasNext: false,
       },
     ]);
@@ -1240,25 +1233,19 @@ describe('Execute: stream directive', () => {
         } /* c8 ignore stop */,
       },
     });
-    expectJSON(result).toDeepEqual([
-      {
-        errors: [
-          {
-            message:
-              'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
-            locations: [{ line: 4, column: 11 }],
-            path: ['nestedObject', 'nonNullScalarField'],
-          },
-        ],
-        data: {
-          nestedObject: null,
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field NestedObject.nonNullScalarField.',
+          locations: [{ line: 4, column: 11 }],
+          path: ['nestedObject', 'nonNullScalarField'],
         },
-        hasNext: true,
+      ],
+      data: {
+        nestedObject: null,
       },
-      {
-        hasNext: false,
-      },
-    ]);
+    });
   });
   it('Filters payloads that are nulled by a later synchronous error', async () => {
     const document = parse(`
@@ -1399,9 +1386,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
         hasNext: false,
       },
     ]);
