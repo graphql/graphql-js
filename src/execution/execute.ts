@@ -263,6 +263,9 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
+const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
+  'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
+
 const UNEXPECTED_MULTIPLE_PAYLOADS =
   'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
 
@@ -284,9 +287,7 @@ const UNEXPECTED_MULTIPLE_PAYLOADS =
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   if (args.schema.getDirective('defer') || args.schema.getDirective('stream')) {
-    throw new Error(
-      'Use function `experimentalExecuteIncrementally` to execute operations against schemas that define the experimental @defer or @stream directives.',
-    );
+    throw new Error(UNEXPECTED_EXPERIMENTAL_DIRECTIVES);
   }
 
   const result = experimentalExecuteIncrementally(args);

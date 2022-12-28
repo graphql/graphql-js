@@ -931,7 +931,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const document = parse('query Q { a }');
 
     expect(() => execute({ schema, document })).to.throw(
-      'Use function `experimentalExecuteIncrementally` to execute operations against schemas that define the experimental @defer or @stream directives.',
+      'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.',
     );
   });
 
@@ -948,7 +948,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const document = parse('query Q { a }');
 
     expect(() => execute({ schema, document })).to.throw(
-      'Use function `experimentalExecuteIncrementally` to execute operations against schemas that define the experimental @defer or @stream directives.',
+      'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.',
     );
   });
 
