@@ -197,7 +197,7 @@ export interface ExecutionArgs {
  *
  * This function does not support incremental delivery (`@defer` and `@stream`).
  * If an operation which would defer or stream data is executed with this
- * function, it will throw or resolve to an object containing an error instead.
+ * function, it will throw or return a rejected promise.
  * Use `experimentalExecuteIncrementally` if you want to support incremental
  * delivery.
  */

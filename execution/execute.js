@@ -49,6 +49,8 @@ const collectSubfields = (0, memoize3_js_1.memoize3)(
       fieldNodes,
     ),
 );
+const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
+  'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
 const UNEXPECTED_MULTIPLE_PAYLOADS =
   'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
 /**
@@ -63,25 +65,28 @@ const UNEXPECTED_MULTIPLE_PAYLOADS =
  *
  * This function does not support incremental delivery (`@defer` and `@stream`).
  * If an operation which would defer or stream data is executed with this
- * function, it will throw or resolve to an object containing an error instead.
+ * function, it will throw or return a rejected promise.
  * Use `experimentalExecuteIncrementally` if you want to support incremental
  * delivery.
  */
 function execute(args) {
+  if (args.schema.getDirective('defer') || args.schema.getDirective('stream')) {
+    throw new Error(UNEXPECTED_EXPERIMENTAL_DIRECTIVES);
+  }
   const result = experimentalExecuteIncrementally(args);
   if (!(0, isPromise_js_1.isPromise)(result)) {
     if ('initialResult' in result) {
+      // This can happen if the operation contains @defer or @stream directives
+      // and is not validated prior to execution
       throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
     }
     return result;
   }
   return result.then((incrementalResult) => {
     if ('initialResult' in incrementalResult) {
-      return {
-        errors: [
-          new GraphQLError_js_1.GraphQLError(UNEXPECTED_MULTIPLE_PAYLOADS),
-        ],
-      };
+      // This can happen if the operation contains @defer or @stream directives
+      // and is not validated prior to execution
+      throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
     }
     return incrementalResult;
   });
