@@ -723,21 +723,14 @@ describe('Execute: defer directive', () => {
       ... @defer { hero { id } }
     }
   `;
-    expectJSON(
-      await expectPromise(
-        execute({
-          schema,
-          document: parse(doc),
-          rootValue: {},
-        }),
-      ).toResolve(),
-    ).toDeepEqual({
-      errors: [
-        {
-          message:
-            'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
-        },
-      ],
-    });
+    await expectPromise(
+      execute({
+        schema,
+        document: parse(doc),
+        rootValue: {},
+      }),
+    ).toRejectWith(
+      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
+    );
   });
 });

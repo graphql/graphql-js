@@ -18,6 +18,10 @@ import {
   GraphQLUnionType,
 } from '../../type/definition.js';
 import {
+  GraphQLDeferDirective,
+  GraphQLStreamDirective,
+} from '../../type/directives.js';
+import {
   GraphQLBoolean,
   GraphQLInt,
   GraphQLString,
@@ -912,6 +916,40 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = executeSync({ schema, document, rootValue, operationName });
     expect(result).to.deep.equal({ data: { a: 'b' } });
+  });
+
+  it('errors when using original execute with schemas including experimental @defer directive', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Q',
+        fields: {
+          a: { type: GraphQLString },
+        },
+      }),
+      directives: [GraphQLDeferDirective],
+    });
+    const document = parse('query Q { a }');
+
+    expect(() => execute({ schema, document })).to.throw(
+      'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.',
+    );
+  });
+
+  it('errors when using original execute with schemas including experimental @stream directive', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Q',
+        fields: {
+          a: { type: GraphQLString },
+        },
+      }),
+      directives: [GraphQLStreamDirective],
+    });
+    const document = parse('query Q { a }');
+
+    expect(() => execute({ schema, document })).to.throw(
+      'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.',
+    );
   });
 
   it('resolves to an error if schema does not support operation', () => {
