@@ -24,6 +24,7 @@ import type {
   FieldDefinitionNode,
   FieldNode,
   FloatValueNode,
+  FragmentArgumentDefinitionNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
@@ -90,23 +91,6 @@ export interface ParseOptions {
    * To prevent this you can set a maximum number of tokens allowed within a document.
    */
   maxTokens?: number | undefined;
-
-  /**
-   * @deprecated will be removed in the v17.0.0
-   *
-   * If enabled, the parser will understand and parse variable definitions
-   * contained in a fragment definition. They'll be represented in the
-   * `variableDefinitions` field of the FragmentDefinitionNode.
-   *
-   * The syntax is identical to normal, query-defined variables. For example:
-   *
-   * ```graphql
-   * fragment A($var: Boolean = false) on T {
-   *   ...
-   * }
-   * ```
-   */
-  allowLegacyFragmentVariables?: boolean | undefined;
 
   /**
    * EXPERIMENTAL:
@@ -550,7 +534,7 @@ export class Parser {
   /**
    * Corresponds to both FragmentSpread and InlineFragment in the spec.
    *
-   * FragmentSpread : ... FragmentName Directives?
+   * FragmentSpread : ... FragmentName Arguments? Directives?
    *
    * InlineFragment : ... TypeCondition? Directives? SelectionSet
    */
@@ -560,9 +544,18 @@ export class Parser {
 
     const hasTypeCondition = this.expectOptionalKeyword('on');
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
+      const name = this.parseFragmentName();
+      if (this.peek(TokenKind.PAREN_L)) {
+        return this.node<FragmentSpreadNode>(start, {
+          kind: Kind.FRAGMENT_SPREAD,
+          name,
+          arguments: this.parseArguments(false),
+          directives: this.parseDirectives(false),
+        });
+      }
       return this.node<FragmentSpreadNode>(start, {
         kind: Kind.FRAGMENT_SPREAD,
-        name: this.parseFragmentName(),
+        name,
         directives: this.parseDirectives(false),
       });
     }
@@ -576,29 +569,17 @@ export class Parser {
 
   /**
    * FragmentDefinition :
-   *   - fragment FragmentName on TypeCondition Directives? SelectionSet
+   *   - fragment FragmentName FragmentArgumentsDefinition? on TypeCondition Directives? SelectionSet
    *
    * TypeCondition : NamedType
    */
   parseFragmentDefinition(): FragmentDefinitionNode {
     const start = this._lexer.token;
     this.expectKeyword('fragment');
-    // Legacy support for defining variables within fragments changes
-    // the grammar of FragmentDefinition:
-    //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options.allowLegacyFragmentVariables === true) {
-      return this.node<FragmentDefinitionNode>(start, {
-        kind: Kind.FRAGMENT_DEFINITION,
-        name: this.parseFragmentName(),
-        variableDefinitions: this.parseVariableDefinitions(),
-        typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
-        directives: this.parseDirectives(false),
-        selectionSet: this.parseSelectionSet(),
-      });
-    }
     return this.node<FragmentDefinitionNode>(start, {
       kind: Kind.FRAGMENT_DEFINITION,
       name: this.parseFragmentName(),
+      arguments: this.parseFragmentArgumentDefs(),
       typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
       directives: this.parseDirectives(false),
       selectionSet: this.parseSelectionSet(),
@@ -613,6 +594,48 @@ export class Parser {
       throw this.unexpected();
     }
     return this.parseName();
+  }
+
+  /**
+   * FragmentArgumentsDefinition : ( FragmentArgumentDefinition+ )
+   */
+  parseFragmentArgumentDefs(): Array<FragmentArgumentDefinitionNode> {
+    return this.optionalMany(
+      TokenKind.PAREN_L,
+      this.parseFragmentArgumentDef,
+      TokenKind.PAREN_R,
+    );
+  }
+
+  /**
+   * FragmentArgumentDefinition :
+   *   - Description? Variable : Type DefaultValue? Directives[Const]?
+   *
+   * Note: identical to InputValueDefinition, EXCEPT Name always begins
+   * with $, so we need to parse a Variable out instead of a plain Name.
+   *
+   * Note: identical to VariableDefinition, EXCEPT we allow Description.
+   * Fragments are re-used, and their arguments may need documentation.
+   */
+  parseFragmentArgumentDef(): FragmentArgumentDefinitionNode {
+    const start = this._lexer.token;
+    const description = this.parseDescription();
+    const variable = this.parseVariable();
+    this.expectToken(TokenKind.COLON);
+    const type = this.parseTypeReference();
+    let defaultValue;
+    if (this.expectOptionalToken(TokenKind.EQUALS)) {
+      defaultValue = this.parseConstValueLiteral();
+    }
+    const directives = this.parseConstDirectives();
+    return this.node<FragmentArgumentDefinitionNode>(start, {
+      kind: Kind.FRAGMENT_ARGUMENT_DEFINITION,
+      description,
+      variable,
+      type,
+      defaultValue,
+      directives,
+    });
   }
 
   // Implements the parsing rules in the Values section.
