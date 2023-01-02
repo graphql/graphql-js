@@ -942,8 +942,6 @@ async function completePromisedValue(
       asyncPayloadRecord,
     );
     if (isPromise(completed)) {
-      // see: https://github.com/tc39/proposal-faster-promise-adoption
-      // it is faster to await a promise prior to returning it from an async function
       completed = await completed;
     }
     return completed;
