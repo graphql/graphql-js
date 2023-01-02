@@ -1246,4 +1246,63 @@ describe('Validate: Overlapping fields can be merged', () => {
       },
     ]);
   });
+
+  describe('fragment arguments must produce fields that can be merged', () => {
+    it('encounters conflict in fragments', () => {
+      expectErrors(`
+        {
+          ...WithArgs(x: 3)
+          ...WithArgs(x: 4)
+        }
+        fragment WithArgs($x: Int) on Type {
+          a(x: $x)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Spreads "WithArgs" conflict because WithArgs(x: 3) and WithArgs(x: 4) have different fragment arguments.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 4, column: 11 },
+          ],
+        },
+      ]);
+    });
+    it('encounters nested conflict in fragments', () => {
+      expectErrors(`
+        {
+          connection {
+            edges {
+              ...WithArgs(x: 3)
+            }
+          }
+          ...Connection
+        }
+
+        fragment Connection on Type {
+          connection {
+            edges {
+              ...WithArgs(x: 4)
+            }
+          }
+        }
+        fragment WithArgs($x: Int) on Type {
+          a(x: $x)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "connection" conflict because subfields "edges" conflict because child spreads "WithArgs" conflict because WithArgs(x: 3) and WithArgs(x: 4) have different fragment arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 4, column: 13 },
+            { line: 5, column: 15 },
+            { line: 12, column: 11 },
+            { line: 13, column: 13 },
+            { line: 14, column: 15 },
+          ],
+        },
+      ]);
+    });
+  });
 });

@@ -356,4 +356,112 @@ describe('Validate: Provided required arguments', () => {
       ]);
     });
   });
+
+  describe('Fragment required arguments', () => {
+    it('ignores unknown arguments', () => {
+      expectValid(`
+        {
+          ...Foo(unknownArgument: true)
+        }
+        fragment Foo on Query {
+          dog
+        }
+      `);
+    });
+
+    // Query: should this be allowed?
+    // We could differentiate between required/optional (i.e. no default value)
+    // vs. nullable/non-nullable (i.e. no !), whereas now they are conflated.
+    // So today:
+    // $x: Int!     `x:` is required and must not be null (NOT a nullable variable)
+    // $x: Int! = 3 `x:` is not required and must not be null (MAY BE a nullable variable)
+    // $x: Int      `x:` is not required and may be null
+    // $x: Int = 3  `x:` is not required and may be null
+    //
+    // It feels weird to collapse the nullable cases but not the non-nullable ones.
+    // Whereas all four feel like they ought to mean something explicitly different.
+    //
+    // Potential proposal:
+    // $x: Int!     `x:` is required and must not be null (NOT a nullable variable)
+    // $x: Int! = 3 `x:` is not required and must not be null (NOT a nullable variable)
+    // $x: Int      `x:` is required and may be null
+    // $x: Int = 3  `x:` is not required and may be null
+    //
+    // Required then is whether there's a default value,
+    // and nullable is whether there's a !
+    it('Missing nullable argument with default is allowed', () => {
+      expectValid(`
+          {
+            ...F
+            
+          }
+          fragment F($x: Int = 3) on Query {
+            foo
+          }
+        `);
+    });
+    // Above proposal: this should be an error
+    it('Missing nullable argument is allowed', () => {
+      expectValid(`
+          {
+            ...F
+            
+          }
+          fragment F($x: Int) on Query {
+            foo
+          }
+        `);
+    });
+    it('Missing non-nullable argument with default is allowed', () => {
+      expectValid(`
+          {
+            ...F
+            
+          }
+          fragment F($x: Int! = 3) on Query {
+            foo
+          }
+        `);
+    });
+    it('Missing non-nullable argument is not allowed', () => {
+      expectErrors(`
+          {
+            ...F
+            
+          }
+          fragment F($x: Int!) on Query {
+            foo
+          }
+        `).toDeepEqual([
+        {
+          message:
+            'Fragment "F" argument "x" of type "{ kind: "NonNullType", type: { kind: "NamedType", name: [Object], loc: [Object] }, loc: [Object] }" is required, but it was not provided.',
+          locations: [
+            { line: 3, column: 13 },
+            { line: 6, column: 22 },
+          ],
+        },
+      ]);
+    });
+
+    it('Supplies required variables', () => {
+      expectValid(`
+          {
+            ...F(x: 3)
+            
+          }
+          fragment F($x: Int!) on Query {
+            foo
+          }
+        `);
+    });
+
+    it('Skips missing fragments', () => {
+      expectValid(`
+          {
+            ...Missing(x: 3)
+          }
+        `);
+    });
+  });
 });
