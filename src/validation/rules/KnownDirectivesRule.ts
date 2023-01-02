@@ -86,6 +86,8 @@ function getDirectiveLocationForASTPath(
       return DirectiveLocation.INLINE_FRAGMENT;
     case Kind.FRAGMENT_DEFINITION:
       return DirectiveLocation.FRAGMENT_DEFINITION;
+    case Kind.FRAGMENT_ARGUMENT_DEFINITION:
+      return DirectiveLocation.FRAGMENT_ARGUMENT_DEFINITION;
     case Kind.VARIABLE_DEFINITION:
       return DirectiveLocation.VARIABLE_DEFINITION;
     case Kind.SCHEMA_DEFINITION:

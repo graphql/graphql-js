@@ -41,6 +41,7 @@ const schemaWithDirectives = buildSchema(`
   directive @onSubscription on SUBSCRIPTION
   directive @onField on FIELD
   directive @onFragmentDefinition on FRAGMENT_DEFINITION
+  directive @onFragmentArgumentDefinition on FRAGMENT_ARGUMENT_DEFINITION
   directive @onFragmentSpread on FRAGMENT_SPREAD
   directive @onInlineFragment on INLINE_FRAGMENT
   directive @onVariableDefinition on VARIABLE_DEFINITION
@@ -150,7 +151,9 @@ describe('Validate: Known directives', () => {
         someField @onField
       }
 
-      fragment Frag on Human @onFragmentDefinition {
+      fragment Frag(
+        $arg: Int @onFragmentArgumentDefinition
+      ) on Human @onFragmentDefinition {
         name @onField
       }
     `);
@@ -175,7 +178,7 @@ describe('Validate: Known directives', () => {
         someField @onQuery
       }
 
-      fragment Frag on Human @onQuery {
+      fragment Frag($arg: Int @onField) on Human @onQuery {
         name @onQuery
       }
     `).toDeepEqual([
@@ -220,8 +223,13 @@ describe('Validate: Known directives', () => {
         locations: [{ column: 19, line: 16 }],
       },
       {
+        message:
+          'Directive "@onField" may not be used on FRAGMENT_ARGUMENT_DEFINITION.',
+        locations: [{ column: 31, line: 19 }],
+      },
+      {
         message: 'Directive "@onQuery" may not be used on FRAGMENT_DEFINITION.',
-        locations: [{ column: 30, line: 19 }],
+        locations: [{ column: 50, line: 19 }],
       },
       {
         message: 'Directive "@onQuery" may not be used on FIELD.',
