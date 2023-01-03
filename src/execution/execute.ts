@@ -1025,7 +1025,6 @@ async function completeAsyncIteratorValue(
   iterator: AsyncIterator<unknown>,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): Promise<ReadonlyArray<unknown>> {
-  const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
   const stream = getStreamValues(exeContext, fieldNodes, path);
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
@@ -1058,6 +1057,10 @@ async function completeAsyncIteratorValue(
       // eslint-disable-next-line no-await-in-loop
       iteration = await iterator.next();
     } catch (rawError) {
+      // FIXME: add coverage for non-streamed async iterator error within a deferred payload
+      const errors =
+        /* c8 ignore start */ asyncPayloadRecord?.errors ??
+        /* c8 ignore stop */ exeContext.errors;
       addError(rawError, fieldNodes, itemType, itemPath, errors);
       completedResults.push(null);
       break;
@@ -1071,7 +1074,6 @@ async function completeAsyncIteratorValue(
       completeListItemValue(
         iteration.value,
         completedResults,
-        errors,
         exeContext,
         itemType,
         fieldNodes,
@@ -1101,7 +1103,6 @@ function completeListValue(
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   const itemType = returnType.ofType;
-  const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
 
   if (isAsyncIterable(result)) {
     const iterator = result[Symbol.asyncIterator]();
@@ -1160,7 +1161,6 @@ function completeListValue(
       completeListItemValue(
         item,
         completedResults,
-        errors,
         exeContext,
         itemType,
         fieldNodes,
@@ -1186,7 +1186,6 @@ function completeListValue(
 function completeListItemValue(
   item: unknown,
   completedResults: Array<unknown>,
-  errors: Array<GraphQLError>,
   exeContext: ExecutionContext,
   itemType: GraphQLOutputType,
   fieldNodes: ReadonlyArray<FieldNode>,
@@ -1226,6 +1225,10 @@ function completeListItemValue(
       // to take a second callback for the error case.
       completedResults.push(
         completedItem.then(undefined, (rawError) => {
+          // FIXME: add coverage for async rejection of a promise item within a deferred payload
+          const errors =
+            /* c8 ignore start */ asyncPayloadRecord?.errors ??
+            /* c8 ignore stop */ exeContext.errors;
           addError(rawError, fieldNodes, itemType, itemPath, errors);
           filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
           return null;
@@ -1237,6 +1240,10 @@ function completeListItemValue(
 
     completedResults.push(completedItem);
   } catch (rawError) {
+    // FIXME: add coverage for sync rejection of a promise item within a deferred payload
+    const errors =
+      /* c8 ignore start */ asyncPayloadRecord?.errors ??
+      /* c8 ignore stop */ exeContext.errors;
     addError(rawError, fieldNodes, itemType, itemPath, errors);
     filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
     completedResults.push(null);
