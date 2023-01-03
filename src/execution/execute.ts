@@ -1029,59 +1029,69 @@ async function completeAsyncIteratorValue(
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
   let index = 0;
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    if (
-      stream &&
-      typeof stream.initialCount === 'number' &&
-      index >= stream.initialCount
-    ) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      executeStreamIterator(
-        index,
-        iterator,
-        exeContext,
-        fieldNodes,
-        info,
-        itemType,
-        path,
-        stream.label,
-        asyncPayloadRecord,
-      );
-      break;
-    }
-
-    const itemPath = addPath(path, index, undefined);
-    let iteration;
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      iteration = await iterator.next();
-      if (iteration.done) {
+  try {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      if (
+        stream &&
+        typeof stream.initialCount === 'number' &&
+        index >= stream.initialCount
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        executeStreamIterator(
+          index,
+          iterator,
+          exeContext,
+          fieldNodes,
+          info,
+          itemType,
+          path,
+          stream.label,
+          asyncPayloadRecord,
+        );
         break;
       }
-    } catch (rawError) {
-      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
-      completedResults.push(handleFieldError(error, itemType, errors));
-      break;
-    }
 
-    if (
-      completeListItemValue(
-        iteration.value,
-        completedResults,
-        errors,
-        exeContext,
-        itemType,
-        fieldNodes,
-        info,
-        itemPath,
-        asyncPayloadRecord,
-      )
-    ) {
-      containsPromise = true;
+      const itemPath = addPath(path, index, undefined);
+      let iteration;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        iteration = await iterator.next();
+        if (iteration.done) {
+          break;
+        }
+      } catch (rawError) {
+        const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+        completedResults.push(handleFieldError(error, itemType, errors));
+        break;
+      }
+
+      if (
+        completeListItemValue(
+          iteration.value,
+          completedResults,
+          errors,
+          exeContext,
+          itemType,
+          fieldNodes,
+          info,
+          itemPath,
+          asyncPayloadRecord,
+        )
+      ) {
+        containsPromise = true;
+      }
+      index += 1;
     }
-    index += 1;
+  } catch (error) {
+    if (containsPromise) {
+      return Promise.all(completedResults).finally(() => {
+        throw error;
+      });
+    }
+    throw error;
   }
+
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
 
@@ -1129,48 +1139,71 @@ function completeListValue(
   let previousAsyncPayloadRecord = asyncPayloadRecord;
   const completedResults: Array<unknown> = [];
   let index = 0;
-  for (const item of result) {
-    // No need to modify the info object containing the path,
-    // since from here on it is not ever accessed by resolver functions.
-    const itemPath = addPath(path, index, undefined);
+  const iterator = result[Symbol.iterator]();
+  try {
+    let iteration = iterator.next();
+    while (!iteration.done) {
+      const item = iteration.value;
+      // No need to modify the info object containing the path,
+      // since from here on it is not ever accessed by resolver functions.
+      const itemPath = addPath(path, index, undefined);
 
-    if (
-      stream &&
-      typeof stream.initialCount === 'number' &&
-      index >= stream.initialCount
-    ) {
-      previousAsyncPayloadRecord = executeStreamField(
-        path,
-        itemPath,
-        item,
-        exeContext,
-        fieldNodes,
-        info,
-        itemType,
-        stream.label,
-        previousAsyncPayloadRecord,
-      );
+      if (
+        stream &&
+        typeof stream.initialCount === 'number' &&
+        index >= stream.initialCount
+      ) {
+        previousAsyncPayloadRecord = executeStreamField(
+          path,
+          itemPath,
+          item,
+          exeContext,
+          fieldNodes,
+          info,
+          itemType,
+          stream.label,
+          previousAsyncPayloadRecord,
+        );
+        index++;
+        iteration = iterator.next();
+        continue;
+      }
+
+      if (
+        completeListItemValue(
+          item,
+          completedResults,
+          errors,
+          exeContext,
+          itemType,
+          fieldNodes,
+          info,
+          itemPath,
+          asyncPayloadRecord,
+        )
+      ) {
+        containsPromise = true;
+      }
+
       index++;
-      continue;
+      iteration = iterator.next();
     }
-
-    if (
-      completeListItemValue(
-        item,
-        completedResults,
-        errors,
-        exeContext,
-        itemType,
-        fieldNodes,
-        info,
-        itemPath,
-        asyncPayloadRecord,
-      )
-    ) {
-      containsPromise = true;
+  } catch (error) {
+    let iteration = iterator.next();
+    while (!iteration.done) {
+      const item = iteration.value;
+      if (isPromise(item)) {
+        containsPromise = true;
+        completedResults.push(item);
+      }
+      iteration = iterator.next();
     }
-
-    index++;
+    if (containsPromise) {
+      return Promise.all(completedResults).finally(() => {
+        throw error;
+      });
+    }
+    throw error;
   }
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
