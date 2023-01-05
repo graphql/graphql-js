@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
@@ -1422,9 +1422,8 @@ describe('Execute: stream directive', () => {
       [Symbol.asyncIterator]: () => ({
         next: () => {
           if (requested) {
-            /* c8 ignore next 3 */
-            // Not reached, iterator should end immediately.
-            expect.fail('Not reached');
+            // Ignores further errors when filtered.
+            return Promise.reject(new Error('Oops'));
           }
           requested = true;
           const friend = friends[0];
@@ -1438,6 +1437,7 @@ describe('Execute: stream directive', () => {
         },
         return: () => {
           returned = true;
+          // Ignores errors from return.
           return Promise.reject(new Error('Oops'));
         },
       }),
