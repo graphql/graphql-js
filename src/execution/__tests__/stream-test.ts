@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
@@ -1134,7 +1135,7 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
-  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list', async () => {
+  it('Handles async errors thrown by completeValue after initialCount is reached from async generator for a non-nullable list', async () => {
     const document = parse(`
       query { 
         nonNullFriendList @stream(initialCount: 1) {
@@ -1174,9 +1175,152 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list when the async iterable does not provide a return method) ', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    let count = 0;
+    const result = await complete(document, {
+      nonNullFriendList: {
+        [Symbol.asyncIterator]: () => ({
+          next: async () => {
+            switch (count++) {
+              case 0:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[0].name },
+                });
+              case 1:
+                return Promise.resolve({
+                  done: false,
+                  value: {
+                    nonNullName: () => Promise.reject(new Error('Oops')),
+                  },
+                });
+              case 2:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[1].name },
+                });
+              // Not reached
+              /* c8 ignore next 5 */
+              case 3:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[2].name },
+                });
+            }
+          },
+        }),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
         hasNext: true,
       },
       {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list when the async iterable provides concurrent next/return methods and has a slow return ', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    let count = 0;
+    let returned = false;
+    const result = await complete(document, {
+      nonNullFriendList: {
+        [Symbol.asyncIterator]: () => ({
+          next: async () => {
+            /* c8 ignore next 3 */
+            if (returned) {
+              return Promise.resolve({ done: true });
+            }
+            switch (count++) {
+              case 0:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[0].name },
+                });
+              case 1:
+                return Promise.resolve({
+                  done: false,
+                  value: {
+                    nonNullName: () => Promise.reject(new Error('Oops')),
+                  },
+                });
+              case 2:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[1].name },
+                });
+              // Not reached
+              /* c8 ignore next 5 */
+              case 3:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[2].name },
+                });
+            }
+          },
+          return: async () => {
+            await resolveOnNextTick();
+            returned = true;
+            return { done: true };
+          },
+        }),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
         hasNext: false,
       },
     ]);
