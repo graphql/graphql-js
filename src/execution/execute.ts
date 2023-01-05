@@ -122,6 +122,7 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
+  streams: Set<StreamContext>;
 }
 
 /**
@@ -504,6 +505,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     subsequentPayloads: new Set(),
+    streams: new Set(),
     errors: [],
   };
 }
@@ -516,6 +518,7 @@ function buildPerEventExecutionContext(
     ...exeContext,
     rootValue: payload,
     subsequentPayloads: new Set(),
+    streams: new Set(),
     errors: [],
   };
 }
@@ -1036,6 +1039,11 @@ async function completeAsyncIteratorValue(
       typeof stream.initialCount === 'number' &&
       index >= stream.initialCount
     ) {
+      const streamContext: StreamContext = {
+        path: pathToArray(path),
+        iterator,
+      };
+      exeContext.streams.add(streamContext);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       executeStreamIterator(
         index,
@@ -1045,6 +1053,7 @@ async function completeAsyncIteratorValue(
         info,
         itemType,
         path,
+        streamContext,
         stream.label,
         asyncPayloadRecord,
       );
@@ -1129,6 +1138,7 @@ function completeListValue(
   let previousAsyncPayloadRecord = asyncPayloadRecord;
   const completedResults: Array<unknown> = [];
   let index = 0;
+  let streamContext: StreamContext | undefined;
   for (const item of result) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
@@ -1139,6 +1149,8 @@ function completeListValue(
       typeof stream.initialCount === 'number' &&
       index >= stream.initialCount
     ) {
+      streamContext = { path: pathToArray(path) };
+      exeContext.streams.add(streamContext);
       previousAsyncPayloadRecord = executeStreamField(
         path,
         itemPath,
@@ -1147,6 +1159,7 @@ function completeListValue(
         fieldNodes,
         info,
         itemType,
+        streamContext,
         stream.label,
         previousAsyncPayloadRecord,
       );
@@ -1171,6 +1184,10 @@ function completeListValue(
     }
 
     index++;
+  }
+
+  if (streamContext) {
+    exeContext.streams.delete(streamContext);
   }
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
@@ -1813,6 +1830,7 @@ function executeStreamField(
   fieldNodes: ReadonlyArray<FieldNode>,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
+  streamContext: StreamContext,
   label?: string,
   parentContext?: AsyncPayloadRecord,
 ): AsyncPayloadRecord {
@@ -1835,6 +1853,8 @@ function executeStreamField(
       (value) => [value],
       (error) => {
         asyncPayloadRecord.errors.push(error);
+        returnStreamIteratorIgnoringError(streamContext);
+        exeContext.streams.delete(streamContext);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
         return null;
       },
@@ -1867,6 +1887,8 @@ function executeStreamField(
     }
   } catch (error) {
     asyncPayloadRecord.errors.push(error);
+    returnStreamIteratorIgnoringError(streamContext);
+    exeContext.streams.delete(streamContext);
     filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
     asyncPayloadRecord.addItems(null);
     return asyncPayloadRecord;
@@ -1887,6 +1909,8 @@ function executeStreamField(
       .then(
         (value) => [value],
         (error) => {
+          returnStreamIteratorIgnoringError(streamContext);
+          exeContext.streams.delete(streamContext);
           asyncPayloadRecord.errors.push(error);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
           return null;
@@ -1965,6 +1989,7 @@ async function executeStreamIterator(
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
   path: Path,
+  streamContext: StreamContext,
   label?: string,
   parentContext?: AsyncPayloadRecord,
 ): Promise<void> {
@@ -1977,7 +2002,6 @@ async function executeStreamIterator(
       label,
       path: itemPath,
       parentContext: previousAsyncPayloadRecord,
-      iterator,
       exeContext,
     });
 
@@ -1995,14 +2019,10 @@ async function executeStreamIterator(
       );
     } catch (error) {
       asyncPayloadRecord.errors.push(error);
+      returnStreamIteratorIgnoringError(streamContext);
+      exeContext.streams.delete(streamContext);
       filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
       asyncPayloadRecord.addItems(null);
-      // entire stream has errored and bubbled upwards
-      if (iterator?.return) {
-        iterator.return().catch(() => {
-          // ignore errors
-        });
-      }
       return;
     }
 
@@ -2014,6 +2034,8 @@ async function executeStreamIterator(
         (value) => [value],
         (error) => {
           asyncPayloadRecord.errors.push(error);
+          returnStreamIteratorIgnoringError(streamContext);
+          exeContext.streams.delete(streamContext);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
           return null;
         },
@@ -2025,8 +2047,16 @@ async function executeStreamIterator(
     asyncPayloadRecord.addItems(completedItems);
 
     if (done) {
+      exeContext.streams.delete(streamContext);
       break;
     }
+
+    if (!exeContext.streams.has(streamContext)) {
+      // stream was filtered
+      returnStreamIteratorIgnoringError(streamContext);
+      break;
+    }
+
     previousAsyncPayloadRecord = asyncPayloadRecord;
     index++;
   }
@@ -2038,6 +2068,16 @@ function filterSubsequentPayloads(
   currentAsyncRecord: AsyncPayloadRecord | undefined,
 ): void {
   const nullPathArray = pathToArray(nullPath);
+  exeContext.streams.forEach((stream) => {
+    for (let i = 0; i < nullPathArray.length; i++) {
+      if (stream.path[i] !== nullPathArray[i]) {
+        // stream points to a path unaffected by this payload
+        return;
+      }
+    }
+    returnStreamIteratorIgnoringError(stream);
+    exeContext.streams.delete(stream);
+  });
   exeContext.subsequentPayloads.forEach((asyncRecord) => {
     if (asyncRecord === currentAsyncRecord) {
       // don't remove payload from where error originates
@@ -2049,13 +2089,13 @@ function filterSubsequentPayloads(
         return;
       }
     }
-    // asyncRecord path points to nulled error field
-    if (isStreamPayload(asyncRecord) && asyncRecord.iterator?.return) {
-      asyncRecord.iterator.return().catch(() => {
-        // ignore error
-      });
-    }
     exeContext.subsequentPayloads.delete(asyncRecord);
+  });
+}
+
+function returnStreamIteratorIgnoringError(streamContext: StreamContext): void {
+  streamContext.iterator?.return?.().catch(() => {
+    // ignore error
   });
 }
 
@@ -2133,12 +2173,9 @@ function yieldSubsequentPayloads(
 
   function returnStreamIterators() {
     const promises: Array<Promise<IteratorResult<unknown>>> = [];
-    exeContext.subsequentPayloads.forEach((asyncPayloadRecord) => {
-      if (
-        isStreamPayload(asyncPayloadRecord) &&
-        asyncPayloadRecord.iterator?.return
-      ) {
-        promises.push(asyncPayloadRecord.iterator.return());
+    exeContext.streams.forEach((stream) => {
+      if (stream.iterator?.return) {
+        promises.push(stream.iterator.return());
       }
     });
     return Promise.all(promises);
@@ -2211,6 +2248,10 @@ class DeferredFragmentRecord {
     this._resolve?.(data);
   }
 }
+interface StreamContext {
+  path: Array<string | number>;
+  iterator?: AsyncIterator<unknown> | undefined;
+}
 
 class StreamRecord {
   type: 'stream';
@@ -2220,7 +2261,6 @@ class StreamRecord {
   items: Array<unknown> | null;
   promise: Promise<void>;
   parentContext: AsyncPayloadRecord | undefined;
-  iterator: AsyncIterator<unknown> | undefined;
   isCompletedIterator?: boolean;
   isCompleted: boolean;
   _exeContext: ExecutionContext;
@@ -2228,7 +2268,6 @@ class StreamRecord {
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
-    iterator?: AsyncIterator<unknown>;
     parentContext: AsyncPayloadRecord | undefined;
     exeContext: ExecutionContext;
   }) {
@@ -2237,7 +2276,6 @@ class StreamRecord {
     this.label = opts.label;
     this.path = pathToArray(opts.path);
     this.parentContext = opts.parentContext;
-    this.iterator = opts.iterator;
     this.errors = [];
     this._exeContext = opts.exeContext;
     this._exeContext.subsequentPayloads.add(this);
