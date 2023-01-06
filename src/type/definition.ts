@@ -444,6 +444,10 @@ export type GraphQLNamedOutputType =
   | GraphQLUnionType
   | GraphQLEnumType;
 
+export function getDeprecationReason(type: GraphQLNamedType) {
+  return 'deprecationReason' in type ? type.deprecationReason : undefined;
+}
+
 export function isNamedType(type: unknown): type is GraphQLNamedType {
   return (
     isScalarType(type) ||
@@ -707,6 +711,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
+  deprecationReason: Maybe<string>;
 
   private _fields: ThunkObjMap<GraphQLField<TSource, TContext>>;
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
@@ -718,6 +723,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
+    this.deprecationReason = config.deprecationReason;
 
     this._fields = () => defineFieldMap(config);
     this._interfaces = () => defineInterfaces(config);
@@ -751,6 +757,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
+      deprecationReason: this.deprecationReason,
     };
   }
 
@@ -853,6 +860,7 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
+  deprecationReason?: Maybe<string>;
 }
 
 interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>

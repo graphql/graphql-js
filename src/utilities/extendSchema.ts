@@ -637,6 +637,7 @@ export function extendSchemaImpl(
           fields: () => buildFieldMap(allNodes),
           astNode,
           extensionASTNodes,
+          deprecationReason: getDeprecationReason(astNode),
         });
       }
       case Kind.INTERFACE_TYPE_DEFINITION: {
@@ -715,7 +716,8 @@ function getDeprecationReason(
   node:
     | EnumValueDefinitionNode
     | FieldDefinitionNode
-    | InputValueDefinitionNode,
+    | InputValueDefinitionNode
+    | ObjectTypeDefinitionNode,
 ): Maybe<string> {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   // @ts-expect-error validated by `getDirectiveValues`

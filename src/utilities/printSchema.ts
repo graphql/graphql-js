@@ -172,6 +172,7 @@ function printObject(type: GraphQLObjectType): string {
     printDescription(type) +
     `type ${type.name}` +
     printImplementedInterfaces(type) +
+    printDeprecated(type.deprecationReason) +
     printFields(type)
   );
 }

@@ -240,6 +240,7 @@ export function buildClientSchema(
       description: objectIntrospection.description,
       interfaces: () => buildImplementationsList(objectIntrospection),
       fields: () => buildFieldDefMap(objectIntrospection),
+      deprecationReason: objectIntrospection.deprecationReason,
     });
   }
 

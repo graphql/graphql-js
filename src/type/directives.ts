@@ -220,6 +220,7 @@ export const GraphQLDeprecatedDirective: GraphQLDirective =
       DirectiveLocation.ARGUMENT_DEFINITION,
       DirectiveLocation.INPUT_FIELD_DEFINITION,
       DirectiveLocation.ENUM_VALUE,
+      DirectiveLocation.OBJECT,
     ],
     args: {
       reason: {

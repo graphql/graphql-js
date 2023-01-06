@@ -634,6 +634,10 @@ describe('Schema Builder', () => {
         field4(oldArg: String @deprecated(reason: "Why not?"), arg: String): String
         field5(arg: MyInput): String
       }
+      
+      type DeprecatedObject @deprecated(reason: "It ain't") {
+        fields1: Boolean
+      }
     `;
     expect(cycleSDL(sdl)).to.equal(sdl);
 
@@ -660,6 +664,13 @@ describe('Schema Builder', () => {
     });
     expect(rootFields.field2).to.include({
       deprecationReason: 'Because I said so',
+    });
+
+    const deprecatedObject = assertObjectType(
+      schema.getType('DeprecatedObject'),
+    );
+    expect(deprecatedObject).to.include({
+      deprecationReason: "It ain't",
     });
 
     const inputFields = assertInputObjectType(
