@@ -19,6 +19,7 @@ import { locatedError } from '../error/locatedError.js';
 
 import type {
   DocumentNode,
+  FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast.js';
@@ -37,6 +38,7 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import {
+  getNamedType,
   isAbstractType,
   isLeafType,
   isListType,
@@ -122,6 +124,7 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
+  branches: WeakMap<GroupedFieldSet, Set<string>>;
 }
 
 /**
@@ -500,6 +503,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     subsequentPayloads: new Set(),
+    branches: new WeakMap(),
     errors: [],
   };
 }
@@ -512,8 +516,27 @@ function buildPerEventExecutionContext(
     ...exeContext,
     rootValue: payload,
     subsequentPayloads: new Set(),
+    branches: new WeakMap(),
     errors: [],
   };
+}
+
+function shouldBranch(
+  groupedFieldSet: GroupedFieldSet,
+  exeContext: ExecutionContext,
+  path: Path | undefined,
+): boolean {
+  const set = exeContext.branches.get(groupedFieldSet);
+  const key = pathToArray(path).join('.');
+  if (set === undefined) {
+    exeContext.branches.set(groupedFieldSet, new Set([key]));
+    return true;
+  }
+  if (!set.has(key)) {
+    set.add(key);
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -532,7 +555,7 @@ function executeOperation(
     );
   }
 
-  const { fields: groupedFieldSet, patches } = collectFields(
+  const { groupedFieldSet, newDeferDepth } = collectFields(
     schema,
     fragments,
     variableValues,
@@ -573,9 +596,18 @@ function executeOperation(
       );
   }
 
-  for (const patch of patches) {
-    const { fields: patchFields } = patch;
-    executeDeferredFragment(exeContext, rootType, rootValue, patchFields, path);
+  if (
+    newDeferDepth !== undefined &&
+    shouldBranch(groupedFieldSet, exeContext, path)
+  ) {
+    executeDeferredFragment(
+      exeContext,
+      rootType,
+      rootValue,
+      groupedFieldSet,
+      newDeferDepth,
+      path,
+    );
   }
 
   return result;
@@ -596,16 +628,27 @@ function executeFieldsSerially(
     groupedFieldSet,
     (results, [responseName, fieldGroup]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
+
+      const fieldName = fieldGroup[0].fieldNode.name.value;
+      const fieldDef = exeContext.schema.getField(parentType, fieldName);
+      if (!fieldDef) {
+        return results;
+      }
+
+      const returnType = fieldDef.type;
+
+      if (!shouldExecute(fieldGroup, returnType)) {
+        return results;
+      }
       const result = executeField(
         exeContext,
         parentType,
+        fieldDef,
+        returnType,
         sourceValue,
         fieldGroup,
         fieldPath,
       );
-      if (result === undefined) {
-        return results;
-      }
       if (isPromise(result)) {
         return result.then((resolvedResult) => {
           results[responseName] = resolvedResult;
@@ -617,6 +660,29 @@ function executeFieldsSerially(
     },
     Object.create(null),
   );
+}
+
+function shouldExecute(
+  fieldGroup: FieldGroup,
+  returnType: GraphQLOutputType,
+  deferDepth?: number | undefined,
+): boolean {
+  if (deferDepth === undefined || !isLeafType(getNamedType(returnType))) {
+    return fieldGroup.some(
+      ({ deferDepth: fieldDeferDepth }) => fieldDeferDepth === deferDepth,
+    );
+  }
+
+  let hasDepth = false;
+  for (const { deferDepth: fieldDeferDepth } of fieldGroup) {
+    if (fieldDeferDepth === undefined) {
+      return false;
+    }
+    if (fieldDeferDepth === deferDepth) {
+      hasDepth = true;
+    }
+  }
+  return hasDepth;
 }
 
 /**
@@ -637,19 +703,34 @@ function executeFields(
   try {
     for (const [responseName, fieldGroup] of groupedFieldSet) {
       const fieldPath = addPath(path, responseName, parentType.name);
-      const result = executeField(
-        exeContext,
-        parentType,
-        sourceValue,
-        fieldGroup,
-        fieldPath,
-        asyncPayloadRecord,
-      );
 
-      if (result !== undefined) {
-        results[responseName] = result;
-        if (isPromise(result)) {
-          containsPromise = true;
+      const fieldName = fieldGroup[0].fieldNode.name.value;
+      const fieldDef = exeContext.schema.getField(parentType, fieldName);
+      if (!fieldDef) {
+        continue;
+      }
+
+      const returnType = fieldDef.type;
+
+      if (
+        shouldExecute(fieldGroup, returnType, asyncPayloadRecord?.deferDepth)
+      ) {
+        const result = executeField(
+          exeContext,
+          parentType,
+          fieldDef,
+          returnType,
+          sourceValue,
+          fieldGroup,
+          fieldPath,
+          asyncPayloadRecord,
+        );
+
+        if (result !== undefined) {
+          results[responseName] = result;
+          if (isPromise(result)) {
+            containsPromise = true;
+          }
         }
       }
     }
@@ -674,6 +755,9 @@ function executeFields(
   return promiseForObject(results);
 }
 
+function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
+  return fieldGroup.map(({ fieldNode }) => fieldNode);
+}
 /**
  * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
@@ -683,19 +767,15 @@ function executeFields(
 function executeField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
+  fieldDef: GraphQLField<unknown, unknown>,
+  returnType: GraphQLOutputType,
   source: unknown,
   fieldGroup: FieldGroup,
   path: Path,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
-  const fieldName = fieldGroup[0].name.value;
-  const fieldDef = exeContext.schema.getField(parentType, fieldName);
-  if (!fieldDef) {
-    return;
-  }
 
-  const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
@@ -713,7 +793,7 @@ function executeField(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
       fieldDef,
-      fieldGroup[0],
+      fieldGroup[0].fieldNode,
       exeContext.variableValues,
     );
 
@@ -750,7 +830,11 @@ function executeField(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldGroup, pathToArray(path));
+        const error = locatedError(
+          rawError,
+          toNodes(fieldGroup),
+          pathToArray(path),
+        );
         const handledError = handleFieldError(error, returnType, errors);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
         return handledError;
@@ -758,7 +842,11 @@ function executeField(
     }
     return completed;
   } catch (rawError) {
-    const error = locatedError(rawError, fieldGroup, pathToArray(path));
+    const error = locatedError(
+      rawError,
+      toNodes(fieldGroup),
+      pathToArray(path),
+    );
     const handledError = handleFieldError(error, returnType, errors);
     filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
     return handledError;
@@ -780,7 +868,7 @@ export function buildResolveInfo(
   // information about the current execution state.
   return {
     fieldName: fieldDef.name,
-    fieldNodes: fieldGroup,
+    fieldNodes: toNodes(fieldGroup),
     returnType: fieldDef.type,
     parentType,
     path,
@@ -948,7 +1036,11 @@ async function completePromisedValue(
     return completed;
   } catch (rawError) {
     const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
-    const error = locatedError(rawError, fieldGroup, pathToArray(path));
+    const error = locatedError(
+      rawError,
+      toNodes(fieldGroup),
+      pathToArray(path),
+    );
     const handledError = handleFieldError(error, returnType, errors);
     filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
     return handledError;
@@ -978,7 +1070,7 @@ function getStreamValues(
   // safe to only check the first fieldNode for the stream directive
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
-    fieldGroup[0],
+    fieldGroup[0].fieldNode,
     exeContext.variableValues,
   );
 
@@ -1058,7 +1150,11 @@ async function completeAsyncIteratorValue(
         break;
       }
     } catch (rawError) {
-      const error = locatedError(rawError, fieldGroup, pathToArray(itemPath));
+      const error = locatedError(
+        rawError,
+        toNodes(fieldGroup),
+        pathToArray(itemPath),
+      );
       completedResults.push(handleFieldError(error, itemType, errors));
       break;
     }
@@ -1124,6 +1220,7 @@ function completeListValue(
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
+  const deferDepth = asyncPayloadRecord?.deferDepth;
   let previousAsyncPayloadRecord = asyncPayloadRecord;
   const completedResults: Array<unknown> = [];
   let index = 0;
@@ -1145,6 +1242,7 @@ function completeListValue(
         fieldGroup,
         info,
         itemType,
+        deferDepth,
         previousAsyncPayloadRecord,
       );
       index++;
@@ -1223,7 +1321,7 @@ function completeListItemValue(
         completedItem.then(undefined, (rawError) => {
           const error = locatedError(
             rawError,
-            fieldGroup,
+            toNodes(fieldGroup),
             pathToArray(itemPath),
           );
           const handledError = handleFieldError(error, itemType, errors);
@@ -1237,7 +1335,11 @@ function completeListItemValue(
 
     completedResults.push(completedItem);
   } catch (rawError) {
-    const error = locatedError(rawError, fieldGroup, pathToArray(itemPath));
+    const error = locatedError(
+      rawError,
+      toNodes(fieldGroup),
+      pathToArray(itemPath),
+    );
     const handledError = handleFieldError(error, itemType, errors);
     filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
     completedResults.push(handledError);
@@ -1331,7 +1433,7 @@ function ensureValidRuntimeType(
   if (runtimeTypeName == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
@@ -1354,21 +1456,21 @@ function ensureValidRuntimeType(
   if (runtimeType == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
@@ -1431,7 +1533,7 @@ function invalidReturnTypeError(
 ): GraphQLError {
   return new GraphQLError(
     `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
-    { nodes: fieldGroup },
+    { nodes: toNodes(fieldGroup) },
   );
 }
 
@@ -1444,7 +1546,7 @@ function collectAndExecuteSubfields(
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
-  const { fields: subFieldNodes, patches: subPatches } = collectSubfields(
+  const { groupedFieldSet, newDeferDepth } = collectSubfields(
     exeContext,
     returnType,
     fieldGroup,
@@ -1455,17 +1557,20 @@ function collectAndExecuteSubfields(
     returnType,
     result,
     path,
-    subFieldNodes,
+    groupedFieldSet,
     asyncPayloadRecord,
   );
 
-  for (const subPatch of subPatches) {
-    const { fields: subPatchFieldNodes } = subPatch;
+  if (
+    newDeferDepth !== undefined &&
+    shouldBranch(groupedFieldSet, exeContext, path)
+  ) {
     executeDeferredFragment(
       exeContext,
       returnType,
       result,
-      subPatchFieldNodes,
+      groupedFieldSet,
+      newDeferDepth,
       path,
       asyncPayloadRecord,
     );
@@ -1687,7 +1792,7 @@ function executeSubscription(
     );
   }
 
-  const { fields: groupedFieldSet } = collectFields(
+  const { groupedFieldSet } = collectFields(
     schema,
     fragments,
     variableValues,
@@ -1695,15 +1800,18 @@ function executeSubscription(
     operation,
   );
 
-  const firstRootField = groupedFieldSet.entries().next().value;
+  const firstRootField = groupedFieldSet.entries().next().value as [
+    string,
+    FieldGroup,
+  ];
   const [responseName, fieldGroup] = firstRootField;
-  const fieldName = fieldGroup[0].name.value;
+  const fieldName = fieldGroup[0].fieldNode.name.value;
   const fieldDef = schema.getField(rootType, fieldName);
 
   if (!fieldDef) {
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
@@ -1722,7 +1830,11 @@ function executeSubscription(
 
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
-    const args = getArgumentValues(fieldDef, fieldGroup[0], variableValues);
+    const args = getArgumentValues(
+      fieldDef,
+      fieldGroup[0].fieldNode,
+      variableValues,
+    );
 
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
@@ -1736,13 +1848,13 @@ function executeSubscription(
 
     if (isPromise(result)) {
       return result.then(assertEventStream).then(undefined, (error) => {
-        throw locatedError(error, fieldGroup, pathToArray(path));
+        throw locatedError(error, toNodes(fieldGroup), pathToArray(path));
       });
     }
 
     return assertEventStream(result);
   } catch (error) {
-    throw locatedError(error, fieldGroup, pathToArray(path));
+    throw locatedError(error, toNodes(fieldGroup), pathToArray(path));
   }
 }
 
@@ -1767,10 +1879,12 @@ function executeDeferredFragment(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   groupedFieldSet: GroupedFieldSet,
+  newDeferDepth: number,
   path?: Path,
   parentContext?: AsyncPayloadRecord,
 ): void {
   const asyncPayloadRecord = new DeferredFragmentRecord({
+    deferDepth: newDeferDepth,
     path,
     parentContext,
     exeContext,
@@ -1807,9 +1921,11 @@ function executeStreamField(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
+  deferDepth: number | undefined,
   parentContext?: AsyncPayloadRecord,
 ): AsyncPayloadRecord {
   const asyncPayloadRecord = new StreamRecord({
+    deferDepth,
     path: itemPath,
     parentContext,
     exeContext,
@@ -1849,7 +1965,11 @@ function executeStreamField(
         asyncPayloadRecord,
       );
     } catch (rawError) {
-      const error = locatedError(rawError, fieldGroup, pathToArray(itemPath));
+      const error = locatedError(
+        rawError,
+        toNodes(fieldGroup),
+        pathToArray(itemPath),
+      );
       completedItem = handleFieldError(
         error,
         itemType,
@@ -1867,7 +1987,11 @@ function executeStreamField(
   if (isPromise(completedItem)) {
     const completedItems = completedItem
       .then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldGroup, pathToArray(itemPath));
+        const error = locatedError(
+          rawError,
+          toNodes(fieldGroup),
+          pathToArray(itemPath),
+        );
         const handledError = handleFieldError(
           error,
           itemType,
@@ -1911,7 +2035,11 @@ async function executeStreamIteratorItem(
     }
     item = value;
   } catch (rawError) {
-    const error = locatedError(rawError, fieldGroup, pathToArray(itemPath));
+    const error = locatedError(
+      rawError,
+      toNodes(fieldGroup),
+      pathToArray(itemPath),
+    );
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
     // don't continue if iterator throws
     return { done: true, value };
@@ -1930,7 +2058,11 @@ async function executeStreamIteratorItem(
 
     if (isPromise(completedItem)) {
       completedItem = completedItem.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldGroup, pathToArray(itemPath));
+        const error = locatedError(
+          rawError,
+          toNodes(fieldGroup),
+          pathToArray(itemPath),
+        );
         const handledError = handleFieldError(
           error,
           itemType,
@@ -1942,7 +2074,11 @@ async function executeStreamIteratorItem(
     }
     return { done: false, value: completedItem };
   } catch (rawError) {
-    const error = locatedError(rawError, fieldGroup, pathToArray(itemPath));
+    const error = locatedError(
+      rawError,
+      toNodes(fieldGroup),
+      pathToArray(itemPath),
+    );
     const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
     filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
     return { done: false, value };
@@ -1960,12 +2096,14 @@ async function executeStreamIterator(
   parentContext?: AsyncPayloadRecord,
 ): Promise<void> {
   let index = initialIndex;
+  const deferDepth = parentContext?.deferDepth;
   let previousAsyncPayloadRecord = parentContext ?? undefined;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const itemPath = addPath(path, index, undefined);
     const asyncPayloadRecord = new StreamRecord({
       path: itemPath,
+      deferDepth,
       parentContext: previousAsyncPayloadRecord,
       iterator,
       exeContext,
@@ -2157,6 +2295,7 @@ class DeferredFragmentRecord {
   type: 'defer';
   errors: Array<GraphQLError>;
   path: Array<string | number>;
+  deferDepth: number | undefined;
   promise: Promise<void>;
   data: ObjMap<unknown> | null;
   parentContext: AsyncPayloadRecord | undefined;
@@ -2165,11 +2304,13 @@ class DeferredFragmentRecord {
   _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
   constructor(opts: {
     path: Path | undefined;
+    deferDepth: number | undefined;
     parentContext: AsyncPayloadRecord | undefined;
     exeContext: ExecutionContext;
   }) {
     this.type = 'defer';
     this.path = pathToArray(opts.path);
+    this.deferDepth = opts.deferDepth;
     this.parentContext = opts.parentContext;
     this.errors = [];
     this._exeContext = opts.exeContext;
@@ -2200,6 +2341,7 @@ class StreamRecord {
   type: 'stream';
   errors: Array<GraphQLError>;
   path: Array<string | number>;
+  deferDepth: number | undefined;
   items: Array<unknown> | null;
   promise: Promise<void>;
   parentContext: AsyncPayloadRecord | undefined;
@@ -2210,6 +2352,7 @@ class StreamRecord {
   _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
     path: Path | undefined;
+    deferDepth: number | undefined;
     iterator?: AsyncIterator<unknown>;
     parentContext: AsyncPayloadRecord | undefined;
     exeContext: ExecutionContext;
@@ -2217,6 +2360,7 @@ class StreamRecord {
     this.type = 'stream';
     this.items = null;
     this.path = pathToArray(opts.path);
+    this.deferDepth = opts.deferDepth;
     this.parentContext = opts.parentContext;
     this.iterator = opts.iterator;
     this.errors = [];

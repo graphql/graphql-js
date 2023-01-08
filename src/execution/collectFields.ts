@@ -26,17 +26,29 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 
 import { getDirectiveValues } from './values.js';
 
-export type FieldGroup = ReadonlyArray<FieldNode>;
+export type FieldGroup = ReadonlyArray<TaggedFieldNode>;
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
 
-export interface PatchFields {
-  fields: GroupedFieldSet;
-}
-
-export interface FieldsAndPatches {
-  fields: GroupedFieldSet;
-  patches: Array<PatchFields>;
+/**
+ * A tagged field node includes metadata necessary to determine whether a field should
+ * be executed.
+ *
+ * A field's depth is equivalent to the number of fields between the given field and
+ * the operation root. For example, root fields have a depth of 0, their sub-fields
+ * have a depth of 1, and so on. Tagging fields with their depth is necessary only to
+ * compute a field's "defer depth".
+ *
+ * A field's defer depth is the depth of the closest containing defer directive , or
+ * undefined, if the field is not contained by a deferred fragment.
+ *
+ * Because deferred fragments at a given level are merged, the defer depth may be used
+ * as a unique id to tag the fields for inclusion within a given deferred payload.
+ */
+export interface TaggedFieldNode {
+  fieldNode: FieldNode;
+  depth: number;
+  deferDepth: number | undefined;
 }
 
 /**
@@ -54,21 +66,27 @@ export function collectFields(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
-): FieldsAndPatches {
-  const fields = new AccumulatorMap<string, FieldNode>();
-  const patches: Array<PatchFields> = [];
-  collectFieldsImpl(
+): {
+  groupedFieldSet: GroupedFieldSet;
+  newDeferDepth: number | undefined;
+} {
+  const groupedFieldSet = new AccumulatorMap<string, TaggedFieldNode>();
+  const newDeferDepth = collectFieldsImpl(
     schema,
     fragments,
     variableValues,
     operation,
     runtimeType,
     operation.selectionSet,
-    fields,
-    patches,
+    groupedFieldSet,
     new Set(),
+    0,
+    undefined,
   );
-  return { fields, patches };
+  return {
+    groupedFieldSet,
+    newDeferDepth,
+  };
 }
 
 /**
@@ -89,32 +107,38 @@ export function collectSubfields(
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldGroup: FieldGroup,
-): FieldsAndPatches {
-  const subFieldNodes = new AccumulatorMap<string, FieldNode>();
+): {
+  groupedFieldSet: GroupedFieldSet;
+  newDeferDepth: number | undefined;
+} {
+  const groupedFieldSet = new AccumulatorMap<string, TaggedFieldNode>();
+  let newDeferDepth: number | undefined;
   const visitedFragmentNames = new Set<string>();
 
-  const subPatches: Array<PatchFields> = [];
-  const subFieldsAndPatches = {
-    fields: subFieldNodes,
-    patches: subPatches,
-  };
-
-  for (const node of fieldGroup) {
-    if (node.selectionSet) {
-      collectFieldsImpl(
+  for (const field of fieldGroup) {
+    if (field.fieldNode.selectionSet) {
+      const nestedNewDeferDepth = collectFieldsImpl(
         schema,
         fragments,
         variableValues,
         operation,
         returnType,
-        node.selectionSet,
-        subFieldNodes,
-        subPatches,
+        field.fieldNode.selectionSet,
+        groupedFieldSet,
         visitedFragmentNames,
+        fieldGroup[0].depth + 1,
+        field.deferDepth,
       );
+      if (nestedNewDeferDepth !== undefined) {
+        newDeferDepth = nestedNewDeferDepth;
+      }
     }
   }
-  return subFieldsAndPatches;
+
+  return {
+    groupedFieldSet,
+    newDeferDepth,
+  };
 }
 
 // eslint-disable-next-line max-params
@@ -125,17 +149,23 @@ function collectFieldsImpl(
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: AccumulatorMap<string, FieldNode>,
-  patches: Array<PatchFields>,
+  groupedFieldSet: AccumulatorMap<string, TaggedFieldNode>,
   visitedFragmentNames: Set<string>,
-): void {
+  depth: number,
+  deferDepth: number | undefined,
+): number | undefined {
+  let hasNewDefer = false;
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        fields.add(getFieldEntryKey(selection), selection);
+        groupedFieldSet.add(getFieldEntryKey(selection), {
+          fieldNode: selection,
+          depth,
+          deferDepth,
+        });
         break;
       }
       case Kind.INLINE_FRAGMENT: {
@@ -148,35 +178,21 @@ function collectFieldsImpl(
 
         const defer = isFragmentDeferred(operation, variableValues, selection);
 
-        if (defer) {
-          const patchFields = new AccumulatorMap<string, FieldNode>();
-          collectFieldsImpl(
-            schema,
-            fragments,
-            variableValues,
-            operation,
-            runtimeType,
-            selection.selectionSet,
-            patchFields,
-            patches,
-            visitedFragmentNames,
-          );
-          patches.push({
-            fields: patchFields,
-          });
-        } else {
-          collectFieldsImpl(
-            schema,
-            fragments,
-            variableValues,
-            operation,
-            runtimeType,
-            selection.selectionSet,
-            fields,
-            patches,
-            visitedFragmentNames,
-          );
-        }
+        const nestedHasNewDefer = collectFieldsImpl(
+          schema,
+          fragments,
+          variableValues,
+          operation,
+          runtimeType,
+          selection.selectionSet,
+          groupedFieldSet,
+          visitedFragmentNames,
+          depth,
+          defer ? depth : deferDepth,
+        );
+
+        hasNewDefer ||= defer || nestedHasNewDefer !== undefined;
+
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
@@ -203,45 +219,31 @@ function collectFieldsImpl(
           visitedFragmentNames.add(fragName);
         }
 
-        if (defer) {
-          const patchFields = new AccumulatorMap<string, FieldNode>();
-          collectFieldsImpl(
-            schema,
-            fragments,
-            variableValues,
-            operation,
-            runtimeType,
-            fragment.selectionSet,
-            patchFields,
-            patches,
-            visitedFragmentNames,
-          );
-          patches.push({
-            fields: patchFields,
-          });
-        } else {
-          collectFieldsImpl(
-            schema,
-            fragments,
-            variableValues,
-            operation,
-            runtimeType,
-            fragment.selectionSet,
-            fields,
-            patches,
-            visitedFragmentNames,
-          );
-        }
+        const nestedNewDeferDepth = collectFieldsImpl(
+          schema,
+          fragments,
+          variableValues,
+          operation,
+          runtimeType,
+          fragment.selectionSet,
+          groupedFieldSet,
+          visitedFragmentNames,
+          depth,
+          defer ? depth : deferDepth,
+        );
+
+        hasNewDefer ||= defer || nestedNewDeferDepth !== undefined;
+
         break;
       }
     }
   }
+  return hasNewDefer ? depth : undefined;
 }
 
 /**
- * Returns an object containing the `@defer` arguments if a field should be
- * deferred based on the experimental flag, defer directive present and
- * not disabled by the "if" argument.
+ * Returns whether a fragment should be deferred based on the presence of a
+ * defer directive and whether it is disabled by the "if" argument.
  */
 function isFragmentDeferred(
   operation: OperationDefinitionNode,

@@ -40,6 +40,66 @@ const friends = [
   { name: 'C-3PO', id: 4 },
 ];
 
+const deeperObject = new GraphQLObjectType({
+  fields: {
+    foo: { type: GraphQLString, resolve: () => 'foo' },
+    bar: { type: GraphQLString, resolve: () => 'bar' },
+    baz: { type: GraphQLString, resolve: () => 'baz' },
+    bak: { type: GraphQLString, resolve: () => 'bak' },
+  },
+  name: 'DeeperObject',
+});
+
+const nestedObject = new GraphQLObjectType({
+  fields: {
+    deeperObject: { type: deeperObject, resolve: () => ({}) },
+  },
+  name: 'NestedObject',
+});
+
+const anotherNestedObject = new GraphQLObjectType({
+  fields: {
+    deeperObject: { type: deeperObject, resolve: () => ({}) },
+  },
+  name: 'AnotherNestedObject',
+});
+
+const c = new GraphQLObjectType({
+  fields: {
+    d: { type: GraphQLString, resolve: () => 'd' },
+  },
+  name: 'c',
+});
+
+const e = new GraphQLObjectType({
+  fields: {
+    f: { type: GraphQLString, resolve: () => 'f' },
+  },
+  name: 'e',
+});
+
+const b = new GraphQLObjectType({
+  fields: {
+    c: { type: c, resolve: () => ({}) },
+    e: { type: e, resolve: () => ({}) },
+  },
+  name: 'b',
+});
+
+const a = new GraphQLObjectType({
+  fields: {
+    b: { type: b, resolve: () => ({}) },
+  },
+  name: 'a',
+});
+
+const g = new GraphQLObjectType({
+  fields: {
+    h: { type: GraphQLString, resolve: () => 'h' },
+  },
+  name: 'g',
+});
+
 const heroType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
@@ -75,6 +135,8 @@ const heroType = new GraphQLObjectType({
         yield await Promise.resolve(friends[0]);
       },
     },
+    nestedObject: { type: nestedObject, resolve: () => ({}) },
+    anotherNestedObject: { type: anotherNestedObject, resolve: () => ({}) },
   },
   name: 'Hero',
 });
@@ -87,6 +149,8 @@ const query = new GraphQLObjectType({
       type: heroType,
       resolve: () => hero,
     },
+    a: { type: a, resolve: () => ({}) },
+    g: { type: g, resolve: () => ({}) },
   },
   name: 'Query',
 });
@@ -141,7 +205,6 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              id: '1',
               name: 'Luke',
             },
             path: ['hero'],
@@ -309,13 +372,8 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
-            },
-            path: ['hero'],
-          },
-          {
-            data: {
               name: 'Luke',
+              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
             },
             path: ['hero'],
           },
@@ -351,9 +409,7 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              name: 'Luke',
-            },
+            data: {},
             path: ['hero'],
           },
         ],
@@ -388,9 +444,7 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              name: 'Luke',
-            },
+            data: {},
             path: ['hero'],
           },
         ],
@@ -423,6 +477,335 @@ describe('Execute: defer directive', () => {
       },
     ]);
   });
+
+  it('Can deduplicate multiple defers on the same object', async () => {
+    const document = parse(`
+      query {
+        hero {
+          friends {
+            ... @defer {
+              ...FriendFrag
+              ... @defer {
+                ...FriendFrag
+                ... @defer {
+                  ...FriendFrag
+                  ... @defer {
+                    ...FriendFrag
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      fragment FriendFrag on Friend {
+        id
+        name
+      }
+    `);
+    const result = await complete(document);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { friends: [{}, {}, {}] } },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          { data: { id: '2', name: 'Han' }, path: ['hero', 'friends', 0] },
+          { data: { id: '3', name: 'Leia' }, path: ['hero', 'friends', 1] },
+          { data: { id: '4', name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Can deduplicate leaf fields present in the initial payload', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nestedObject {
+            deeperObject {
+              foo
+            }
+          }
+          anotherNestedObject {
+            deeperObject {
+              foo
+            }
+          }
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                bar
+              }
+            }
+            anotherNestedObject {
+              deeperObject {
+                foo
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            nestedObject: {
+              deeperObject: {
+                foo: 'foo',
+              },
+            },
+            anotherNestedObject: {
+              deeperObject: {
+                foo: 'foo',
+              },
+            },
+          },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              nestedObject: {
+                deeperObject: {
+                  bar: 'bar',
+                },
+              },
+              anotherNestedObject: {
+                deeperObject: {},
+              },
+            },
+            path: ['hero'],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Can deduplicate initial fields with deferred fragments at multiple levels', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nestedObject {
+            deeperObject {
+              foo
+            }
+          }
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                foo
+                bar
+              }
+              ... @defer {
+                deeperObject {
+                  foo
+                  bar
+                  baz
+                  ... @defer {
+                    foo
+                    bar
+                    baz
+                    bak
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            nestedObject: {
+              deeperObject: {
+                foo: 'foo',
+              },
+            },
+          },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              bar: 'bar',
+              baz: 'baz',
+              bak: 'bak',
+            },
+            path: ['hero', 'nestedObject', 'deeperObject'],
+          },
+          {
+            data: {
+              deeperObject: {
+                bar: 'bar',
+                baz: 'baz',
+              },
+            },
+            path: ['hero', 'nestedObject'],
+          },
+          {
+            data: {
+              nestedObject: {
+                deeperObject: {
+                  bar: 'bar',
+                },
+              },
+            },
+            path: ['hero'],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Can combine multiple fields from deferred fragments from different branches occurring at the same level', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nestedObject {
+            deeperObject {
+              ... @defer {
+                foo
+              }
+            }
+          }
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                ... @defer {
+                  foo
+                  bar
+                }
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            nestedObject: {
+              deeperObject: {},
+            },
+          },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              foo: 'foo',
+              bar: 'bar',
+            },
+            path: ['hero', 'nestedObject', 'deeperObject'],
+          },
+          {
+            data: {
+              nestedObject: {
+                deeperObject: {},
+              },
+            },
+            path: ['hero'],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('can deduplicate initial fields with deferred fragments in different branches at multiple non-overlapping levels', async () => {
+    const document = parse(`
+      query {
+        a {
+          b {
+            c {
+              d
+            }
+            ... @defer {
+              e {
+                f
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            b {
+              e {
+                f
+              }
+            }
+          }
+          g {
+            h
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {
+            b: {
+              c: {
+                d: 'd',
+              },
+            },
+          },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              e: {
+                f: 'f',
+              },
+            },
+            path: ['a', 'b'],
+          },
+          {
+            data: {
+              a: {
+                b: {
+                  e: {
+                    f: 'f',
+                  },
+                },
+              },
+              g: {
+                h: 'h',
+              },
+            },
+            path: [],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
   it('Handles errors thrown in deferred fragments', async () => {
     const document = parse(`
       query HeroNameQuery {
