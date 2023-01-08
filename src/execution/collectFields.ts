@@ -31,7 +31,6 @@ export type FieldGroup = ReadonlyArray<FieldNode>;
 export type GroupedFieldSet = Map<string, FieldGroup>;
 
 export interface PatchFields {
-  label: string | undefined;
   fields: GroupedFieldSet;
 }
 
@@ -147,7 +146,7 @@ function collectFieldsImpl(
           continue;
         }
 
-        const defer = getDeferValues(operation, variableValues, selection);
+        const defer = isFragmentDeferred(operation, variableValues, selection);
 
         if (defer) {
           const patchFields = new AccumulatorMap<string, FieldNode>();
@@ -163,7 +162,6 @@ function collectFieldsImpl(
             visitedFragmentNames,
           );
           patches.push({
-            label: defer.label,
             fields: patchFields,
           });
         } else {
@@ -188,7 +186,7 @@ function collectFieldsImpl(
           continue;
         }
 
-        const defer = getDeferValues(operation, variableValues, selection);
+        const defer = isFragmentDeferred(operation, variableValues, selection);
         if (visitedFragmentNames.has(fragName) && !defer) {
           continue;
         }
@@ -219,7 +217,6 @@ function collectFieldsImpl(
             visitedFragmentNames,
           );
           patches.push({
-            label: defer.label,
             fields: patchFields,
           });
         } else {
@@ -246,19 +243,19 @@ function collectFieldsImpl(
  * deferred based on the experimental flag, defer directive present and
  * not disabled by the "if" argument.
  */
-function getDeferValues(
+function isFragmentDeferred(
   operation: OperationDefinitionNode,
   variableValues: { [variable: string]: unknown },
   node: FragmentSpreadNode | InlineFragmentNode,
-): undefined | { label: string | undefined } {
+): boolean {
   const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues);
 
   if (!defer) {
-    return;
+    return false;
   }
 
   if (defer.if === false) {
-    return;
+    return false;
   }
 
   invariant(
@@ -266,9 +263,7 @@ function getDeferValues(
     '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
   );
 
-  return {
-    label: typeof defer.label === 'string' ? defer.label : undefined,
-  };
+  return true;
 }
 
 /**

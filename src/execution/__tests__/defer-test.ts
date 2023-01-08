@@ -206,7 +206,7 @@ describe('Execute: defer directive', () => {
   it('Can defer fragments on the top level Query field', async () => {
     const document = parse(`
       query HeroNameQuery {
-        ...QueryFragment @defer(label: "DeferQuery")
+        ...QueryFragment @defer
       }
       fragment QueryFragment on Query {
         hero {
@@ -230,7 +230,6 @@ describe('Execute: defer directive', () => {
               },
             },
             path: [],
-            label: 'DeferQuery',
           },
         ],
         hasNext: false,
@@ -240,7 +239,7 @@ describe('Execute: defer directive', () => {
   it('Can defer fragments with errors on the top level Query field', async () => {
     const document = parse(`
       query HeroNameQuery {
-        ...QueryFragment @defer(label: "DeferQuery")
+        ...QueryFragment @defer
       }
       fragment QueryFragment on Query {
         hero {
@@ -271,7 +270,6 @@ describe('Execute: defer directive', () => {
               },
             ],
             path: [],
-            label: 'DeferQuery',
           },
         ],
         hasNext: false,
@@ -283,12 +281,12 @@ describe('Execute: defer directive', () => {
       query HeroNameQuery {
         hero {
           id
-          ...TopFragment @defer(label: "DeferTop")
+          ...TopFragment @defer
         }
       }
       fragment TopFragment on Hero {
         name
-        ...NestedFragment @defer(label: "DeferNested")
+        ...NestedFragment @defer
       }
       fragment NestedFragment on Hero {
         friends {
@@ -314,14 +312,12 @@ describe('Execute: defer directive', () => {
               friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
             },
             path: ['hero'],
-            label: 'DeferNested',
           },
           {
             data: {
               name: 'Luke',
             },
             path: ['hero'],
-            label: 'DeferTop',
           },
         ],
         hasNext: false,
@@ -333,7 +329,7 @@ describe('Execute: defer directive', () => {
       query HeroNameQuery {
         hero {
           id
-          ...TopFragment @defer(label: "DeferTop")
+          ...TopFragment @defer
           ...TopFragment
         }
       }
@@ -359,7 +355,6 @@ describe('Execute: defer directive', () => {
               name: 'Luke',
             },
             path: ['hero'],
-            label: 'DeferTop',
           },
         ],
         hasNext: false,
@@ -372,7 +367,7 @@ describe('Execute: defer directive', () => {
         hero {
           id
           ...TopFragment
-          ...TopFragment @defer(label: "DeferTop")
+          ...TopFragment @defer
         }
       }
       fragment TopFragment on Hero {
@@ -397,7 +392,6 @@ describe('Execute: defer directive', () => {
               name: 'Luke',
             },
             path: ['hero'],
-            label: 'DeferTop',
           },
         ],
         hasNext: false,
@@ -410,7 +404,7 @@ describe('Execute: defer directive', () => {
       query HeroNameQuery {
         hero {
           id
-          ... on Hero @defer(label: "InlineDeferred") {
+          ... on Hero @defer {
             name
           }
         }
@@ -424,9 +418,7 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          { data: { name: 'Luke' }, path: ['hero'], label: 'InlineDeferred' },
-        ],
+        incremental: [{ data: { name: 'Luke' }, path: ['hero'] }],
         hasNext: false,
       },
     ]);

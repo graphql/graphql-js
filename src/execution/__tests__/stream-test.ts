@@ -210,9 +210,7 @@ describe('Execute: stream directive', () => {
     });
   });
   it('Returns label from stream directive', async () => {
-    const document = parse(
-      '{ scalarList @stream(initialCount: 1, label: "scalar-stream") }',
-    );
+    const document = parse('{ scalarList @stream(initialCount: 1) }');
     const result = await complete(document, {
       scalarList: () => ['apple', 'banana', 'coconut'],
     });
@@ -228,7 +226,6 @@ describe('Execute: stream directive', () => {
           {
             items: ['banana'],
             path: ['scalarList', 1],
-            label: 'scalar-stream',
           },
         ],
         hasNext: true,
@@ -238,7 +235,6 @@ describe('Execute: stream directive', () => {
           {
             items: ['coconut'],
             path: ['scalarList', 2],
-            label: 'scalar-stream',
           },
         ],
         hasNext: false,
@@ -1661,8 +1657,8 @@ describe('Execute: stream directive', () => {
 
     const document = parse(`
     query { 
-      friendList @stream(initialCount: 1, label:"stream-label") {
-        ...NameFragment @defer(label: "DeferName") @defer(label: "DeferName")
+      friendList @stream(initialCount: 1) {
+        ...NameFragment @defer
         id
       }
     }
@@ -1705,12 +1701,10 @@ describe('Execute: stream directive', () => {
           {
             data: { name: 'Luke' },
             path: ['friendList', 0],
-            label: 'DeferName',
           },
           {
             items: [{ id: '2' }],
             path: ['friendList', 1],
-            label: 'stream-label',
           },
         ],
         hasNext: true,
@@ -1727,7 +1721,6 @@ describe('Execute: stream directive', () => {
           {
             data: { name: 'Han' },
             path: ['friendList', 1],
-            label: 'DeferName',
           },
         ],
         hasNext: false,
@@ -1747,8 +1740,8 @@ describe('Execute: stream directive', () => {
 
     const document = parse(`
     query { 
-      friendList @stream(initialCount: 1, label:"stream-label") {
-        ...NameFragment @defer(label: "DeferName") @defer(label: "DeferName")
+      friendList @stream(initialCount: 1) {
+        ...NameFragment @defer
         id
       }
     }
@@ -1791,12 +1784,10 @@ describe('Execute: stream directive', () => {
           {
             data: { name: 'Luke' },
             path: ['friendList', 0],
-            label: 'DeferName',
           },
           {
             items: [{ id: '2' }],
             path: ['friendList', 1],
-            label: 'stream-label',
           },
         ],
         hasNext: true,
@@ -1811,7 +1802,6 @@ describe('Execute: stream directive', () => {
           {
             data: { name: 'Han' },
             path: ['friendList', 1],
-            label: 'DeferName',
           },
         ],
         hasNext: true,

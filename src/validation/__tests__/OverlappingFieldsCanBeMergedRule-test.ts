@@ -101,35 +101,17 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('Same stream directives supported', () => {
     expectValid(`
       fragment differentDirectivesWithDifferentAliases on Dog {
-        name @stream(label: "streamLabel", initialCount: 1)
-        name @stream(label: "streamLabel", initialCount: 1)
+        name @stream(initialCount: 1)
+        name @stream(initialCount: 1)
       }
     `);
-  });
-
-  it('different stream directive label', () => {
-    expectErrors(`
-      fragment conflictingArgs on Dog {
-        name @stream(label: "streamLabel", initialCount: 1)
-        name @stream(label: "anotherLabel", initialCount: 1)
-      }
-    `).toDeepEqual([
-      {
-        message:
-          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
-        locations: [
-          { line: 3, column: 9 },
-          { line: 4, column: 9 },
-        ],
-      },
-    ]);
   });
 
   it('different stream directive initialCount', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
-        name @stream(label: "streamLabel", initialCount: 1)
-        name @stream(label: "streamLabel", initialCount: 2)
+        name @stream(initialCount: 1)
+        name @stream(initialCount: 2)
       }
     `).toDeepEqual([
       {
@@ -147,7 +129,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
         name @stream
-        name @stream(label: "streamLabel", initialCount: 1)
+        name @stream(initialCount: 1)
       }
     `).toDeepEqual([
       {
@@ -164,7 +146,7 @@ describe('Validate: Overlapping fields can be merged', () => {
   it('different stream directive second missing args', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
-        name @stream(label: "streamLabel", initialCount: 1)
+        name @stream(initialCount: 1)
         name @stream
       }
     `).toDeepEqual([

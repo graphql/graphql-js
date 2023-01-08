@@ -204,7 +204,6 @@ export interface IncrementalDeferResult<
   TExtensions = ObjMap<unknown>,
 > extends ExecutionResult<TData, TExtensions> {
   path?: ReadonlyArray<string | number>;
-  label?: string;
 }
 
 export interface FormattedIncrementalDeferResult<
@@ -212,7 +211,6 @@ export interface FormattedIncrementalDeferResult<
   TExtensions = ObjMap<unknown>,
 > extends FormattedExecutionResult<TData, TExtensions> {
   path?: ReadonlyArray<string | number>;
-  label?: string;
 }
 
 export interface IncrementalStreamResult<
@@ -222,7 +220,6 @@ export interface IncrementalStreamResult<
   errors?: ReadonlyArray<GraphQLError>;
   items?: TData | null;
   path?: ReadonlyArray<string | number>;
-  label?: string;
   extensions?: TExtensions;
 }
 
@@ -233,7 +230,6 @@ export interface FormattedIncrementalStreamResult<
   errors?: ReadonlyArray<GraphQLFormattedError>;
   items?: TData | null;
   path?: ReadonlyArray<string | number>;
-  label?: string;
   extensions?: TExtensions;
 }
 
@@ -578,15 +574,8 @@ function executeOperation(
   }
 
   for (const patch of patches) {
-    const { label, fields: patchFields } = patch;
-    executeDeferredFragment(
-      exeContext,
-      rootType,
-      rootValue,
-      patchFields,
-      label,
-      path,
-    );
+    const { fields: patchFields } = patch;
+    executeDeferredFragment(exeContext, rootType, rootValue, patchFields, path);
   }
 
   return result;
@@ -979,7 +968,6 @@ function getStreamValues(
   | undefined
   | {
       initialCount: number | undefined;
-      label: string | undefined;
     } {
   // do not stream inner lists of multi-dimensional lists
   if (typeof path.key === 'number') {
@@ -1019,7 +1007,6 @@ function getStreamValues(
 
   return {
     initialCount: stream.initialCount,
-    label: typeof stream.label === 'string' ? stream.label : undefined,
   };
 }
 
@@ -1057,7 +1044,6 @@ async function completeAsyncIteratorValue(
         info,
         itemType,
         path,
-        stream.label,
         asyncPayloadRecord,
       );
       break;
@@ -1159,7 +1145,6 @@ function completeListValue(
         fieldGroup,
         info,
         itemType,
-        stream.label,
         previousAsyncPayloadRecord,
       );
       index++;
@@ -1475,13 +1460,12 @@ function collectAndExecuteSubfields(
   );
 
   for (const subPatch of subPatches) {
-    const { label, fields: subPatchFieldNodes } = subPatch;
+    const { fields: subPatchFieldNodes } = subPatch;
     executeDeferredFragment(
       exeContext,
       returnType,
       result,
       subPatchFieldNodes,
-      label,
       path,
       asyncPayloadRecord,
     );
@@ -1783,12 +1767,10 @@ function executeDeferredFragment(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   groupedFieldSet: GroupedFieldSet,
-  label?: string,
   path?: Path,
   parentContext?: AsyncPayloadRecord,
 ): void {
   const asyncPayloadRecord = new DeferredFragmentRecord({
-    label,
     path,
     parentContext,
     exeContext,
@@ -1825,11 +1807,9 @@ function executeStreamField(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
-  label?: string,
   parentContext?: AsyncPayloadRecord,
 ): AsyncPayloadRecord {
   const asyncPayloadRecord = new StreamRecord({
-    label,
     path: itemPath,
     parentContext,
     exeContext,
@@ -1977,7 +1957,6 @@ async function executeStreamIterator(
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
   path: Path,
-  label?: string,
   parentContext?: AsyncPayloadRecord,
 ): Promise<void> {
   let index = initialIndex;
@@ -1986,7 +1965,6 @@ async function executeStreamIterator(
   while (true) {
     const itemPath = addPath(path, index, undefined);
     const asyncPayloadRecord = new StreamRecord({
-      label,
       path: itemPath,
       parentContext: previousAsyncPayloadRecord,
       iterator,
@@ -2094,9 +2072,6 @@ function getCompletedIncrementalResults(
     }
 
     incrementalResult.path = asyncPayloadRecord.path;
-    if (asyncPayloadRecord.label) {
-      incrementalResult.label = asyncPayloadRecord.label;
-    }
     if (asyncPayloadRecord.errors.length > 0) {
       incrementalResult.errors = asyncPayloadRecord.errors;
     }
@@ -2181,7 +2156,6 @@ function yieldSubsequentPayloads(
 class DeferredFragmentRecord {
   type: 'defer';
   errors: Array<GraphQLError>;
-  label: string | undefined;
   path: Array<string | number>;
   promise: Promise<void>;
   data: ObjMap<unknown> | null;
@@ -2190,13 +2164,11 @@ class DeferredFragmentRecord {
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
   constructor(opts: {
-    label: string | undefined;
     path: Path | undefined;
     parentContext: AsyncPayloadRecord | undefined;
     exeContext: ExecutionContext;
   }) {
     this.type = 'defer';
-    this.label = opts.label;
     this.path = pathToArray(opts.path);
     this.parentContext = opts.parentContext;
     this.errors = [];
@@ -2227,7 +2199,6 @@ class DeferredFragmentRecord {
 class StreamRecord {
   type: 'stream';
   errors: Array<GraphQLError>;
-  label: string | undefined;
   path: Array<string | number>;
   items: Array<unknown> | null;
   promise: Promise<void>;
@@ -2238,7 +2209,6 @@ class StreamRecord {
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
-    label: string | undefined;
     path: Path | undefined;
     iterator?: AsyncIterator<unknown>;
     parentContext: AsyncPayloadRecord | undefined;
@@ -2246,7 +2216,6 @@ class StreamRecord {
   }) {
     this.type = 'stream';
     this.items = null;
-    this.label = opts.label;
     this.path = pathToArray(opts.path);
     this.parentContext = opts.parentContext;
     this.iterator = opts.iterator;

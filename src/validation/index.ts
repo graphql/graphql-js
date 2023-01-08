@@ -6,9 +6,6 @@ export type { ValidationRule } from './ValidationContext.js';
 // All validation rules in the GraphQL Specification.
 export { specifiedRules } from './specifiedRules.js';
 
-// Spec Section: "Defer And Stream Directive Labels Are Unique"
-export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.js';
-
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
 export { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.js';
 

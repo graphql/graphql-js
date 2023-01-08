@@ -170,10 +170,6 @@ export const GraphQLDeferDirective = new GraphQLDirective({
       description: 'Deferred when true or undefined.',
       defaultValue: true,
     },
-    label: {
-      type: GraphQLString,
-      description: 'Unique name',
-    },
   },
 });
 
@@ -190,10 +186,6 @@ export const GraphQLStreamDirective = new GraphQLDirective({
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Stream when true or undefined.',
       defaultValue: true,
-    },
-    label: {
-      type: GraphQLString,
-      description: 'Unique name',
     },
     initialCount: {
       defaultValue: 0,
