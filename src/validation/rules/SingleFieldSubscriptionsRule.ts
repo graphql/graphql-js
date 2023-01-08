@@ -41,17 +41,19 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
-          const { fields } = collectFields(
+          const { groupedFieldSet } = collectFields(
             schema,
             fragments,
             variableValues,
             subscriptionType,
             node,
           );
-          if (fields.size > 1) {
-            const fieldGroups = [...fields.values()];
+          if (groupedFieldSet.size > 1) {
+            const fieldGroups = [...groupedFieldSet.values()];
             const extraFieldGroups = fieldGroups.slice(1);
-            const extraFields = extraFieldGroups.flat();
+            const extraFields = extraFieldGroups
+              .flat()
+              .map(({ fieldNode }) => fieldNode);
             context.reportError(
               new GraphQLError(
                 operationName != null
@@ -61,7 +63,8 @@ export function SingleFieldSubscriptionsRule(
               ),
             );
           }
-          for (const fieldNodes of fields.values()) {
+          for (const fieldSet of groupedFieldSet.values()) {
+            const fieldNodes = fieldSet.map(({ fieldNode }) => fieldNode);
             const fieldName = fieldNodes[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
