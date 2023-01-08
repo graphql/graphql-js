@@ -117,7 +117,7 @@ describe('Execute: synchronously when possible', () => {
     it('throws if encountering async iterable execution', () => {
       const doc = `
         query Example {
-          ...deferFrag @defer(label: "deferLabel")
+          ...deferFrag @defer
         }
         fragment deferFrag on Query {
           syncField

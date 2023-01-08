@@ -206,7 +206,7 @@ describe('Execute: Handles mutation execution ordering', () => {
     const document = parse(`
       mutation M {
         first: promiseToChangeTheNumber(newNumber: 1) {
-          ...DeferFragment @defer(label: "defer-label")
+          ...DeferFragment @defer
         },
         second: immediatelyChangeTheNumber(newNumber: 2) {
           theNumber
@@ -242,7 +242,6 @@ describe('Execute: Handles mutation execution ordering', () => {
       {
         incremental: [
           {
-            label: 'defer-label',
             path: ['first'],
             data: {
               promiseToGetTheNumber: 2,
@@ -281,7 +280,7 @@ describe('Execute: Handles mutation execution ordering', () => {
   it('Mutation with @defer is not executed serially', async () => {
     const document = parse(`
       mutation M {
-        ...MutationFragment @defer(label: "defer-label")
+        ...MutationFragment @defer
         second: immediatelyChangeTheNumber(newNumber: 2) {
           theNumber
         }
@@ -317,7 +316,6 @@ describe('Execute: Handles mutation execution ordering', () => {
       {
         incremental: [
           {
-            label: 'defer-label',
             path: [],
             data: {
               first: {
