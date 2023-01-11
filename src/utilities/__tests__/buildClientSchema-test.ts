@@ -306,7 +306,7 @@ describe('Type System: build schema from introspection', () => {
 
         """A field with a two args"""
         two(
-          """This is an list of int arg"""
+          """This is a list of int arg"""
           listArg: [Int]
 
           """This is a required arg"""
