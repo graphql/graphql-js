@@ -613,7 +613,7 @@ describe('Type System Printer', () => {
     `);
   });
 
-  it('Prints an description with only whitespace', () => {
+  it('Prints a description with only whitespace', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
       description: ' ',

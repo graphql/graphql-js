@@ -616,7 +616,7 @@ describe('Type System: List', () => {
     return expect(() => new GraphQLList(type));
   }
 
-  it('accepts an type as item type of list', () => {
+  it('accepts a type as item type of list', () => {
     expectList(ScalarType).to.not.throw();
     expectList(ObjectType).to.not.throw();
     expectList(UnionType).to.not.throw();
@@ -633,7 +633,7 @@ describe('Type System: Non-Null', () => {
     return expect(() => new GraphQLNonNull(type));
   }
 
-  it('accepts an type as nullable type of non-null', () => {
+  it('accepts a type as nullable type of non-null', () => {
     expectNonNull(ScalarType).to.not.throw();
     expectNonNull(ObjectType).to.not.throw();
     expectNonNull(UnionType).to.not.throw();

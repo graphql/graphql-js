@@ -38,7 +38,7 @@ describe('Execute: Accepts any iterable as list value', () => {
     });
   });
 
-  it('Accepts an Generator function as a List value', () => {
+  it('Accepts a Generator function as a List value', () => {
     function* listField() {
       yield 'one';
       yield 2;

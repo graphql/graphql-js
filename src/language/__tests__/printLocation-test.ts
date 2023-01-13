@@ -61,7 +61,7 @@ describe('printSourceLocation', () => {
     `);
   });
 
-  it('prints an line numbers with correct padding', () => {
+  it('prints line numbers with correct padding', () => {
     const result = printSourceLocation(
       new Source('*\n', 'Test', { line: 9, column: 1 }),
       { line: 1, column: 1 },
