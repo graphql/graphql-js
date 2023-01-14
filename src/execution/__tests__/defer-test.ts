@@ -205,6 +205,7 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
+              id: '1',
               name: 'Luke',
             },
             path: ['hero'],
@@ -409,7 +410,9 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {},
+            data: {
+              name: 'Luke',
+            },
             path: ['hero'],
           },
         ],
@@ -444,7 +447,9 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {},
+            data: {
+              name: 'Luke',
+            },
             path: ['hero'],
           },
         ],
@@ -522,7 +527,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Can deduplicate leaf fields present in the initial payload', async () => {
+  it('Does not deduplicate leaf fields present in the initial payload', async () => {
     const document = parse(`
       query {
         hero {
@@ -580,7 +585,9 @@ describe('Execute: defer directive', () => {
                 },
               },
               anotherNestedObject: {
-                deeperObject: {},
+                deeperObject: {
+                  foo: 'foo',
+                },
               },
             },
             path: ['hero'],
@@ -591,7 +598,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Can deduplicate fields with deferred fragments at multiple levels', async () => {
+  it('Does not deduplicate fields with deferred fragments at multiple levels', async () => {
     const document = parse(`
       query {
         hero {
@@ -642,6 +649,7 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
+              foo: 'foo',
               bar: 'bar',
               baz: 'baz',
               bak: 'bak',
@@ -651,6 +659,7 @@ describe('Execute: defer directive', () => {
           {
             data: {
               deeperObject: {
+                foo: 'foo',
                 bar: 'bar',
                 baz: 'baz',
               },
@@ -661,6 +670,7 @@ describe('Execute: defer directive', () => {
             data: {
               nestedObject: {
                 deeperObject: {
+                  foo: 'foo',
                   bar: 'bar',
                 },
               },
@@ -732,7 +742,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('can deduplicate fields with deferred fragments in different branches at multiple non-overlapping levels', async () => {
+  it('Can deduplicate fields with deferred fragments in different branches at multiple non-overlapping levels', async () => {
     const document = parse(`
       query {
         a {
