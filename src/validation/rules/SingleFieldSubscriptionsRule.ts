@@ -49,15 +49,15 @@ export function SingleFieldSubscriptionsRule(
             node,
           );
           if (fields.size > 1) {
-            const fieldSelectionLists = [...fields.values()];
-            const extraFieldSelectionLists = fieldSelectionLists.slice(1);
-            const extraFieldSelections = extraFieldSelectionLists.flat();
+            const fieldGroups = [...fields.values()];
+            const extraFieldGroups = fieldGroups.slice(1);
+            const extraFields = extraFieldGroups.flat();
             context.reportError(
               new GraphQLError(
                 operationName != null
                   ? `Subscription "${operationName}" must select only one top level field.`
                   : 'Anonymous Subscription must select only one top level field.',
-                { nodes: extraFieldSelections },
+                { nodes: extraFields },
               ),
             );
           }
