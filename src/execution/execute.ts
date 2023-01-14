@@ -660,7 +660,7 @@ function shouldExecute(
   fieldGroup: FieldGroup,
   deferDepth?: number | undefined,
 ): boolean {
-  return fieldGroup.some(
+  return fieldGroup.fields.some(
     ({ deferDepth: fieldDeferDepth }) => fieldDeferDepth === deferDepth,
   );
 }
@@ -724,7 +724,7 @@ function executeFields(
 }
 
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
-  return fieldGroup.map(({ fieldNode }) => fieldNode);
+  return fieldGroup.fields.map(({ fieldNode }) => fieldNode);
 }
 /**
  * Implements the "Executing fields" section of the spec
@@ -741,7 +741,7 @@ function executeField(
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
-  const fieldName = fieldGroup[0].fieldNode.name.value;
+  const fieldName = fieldGroup.fields[0].fieldNode.name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
   if (!fieldDef) {
     return;
@@ -766,7 +766,7 @@ function executeField(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
       fieldDef,
-      fieldGroup[0].fieldNode,
+      fieldGroup.fields[0].fieldNode,
       exeContext.variableValues,
     );
 
@@ -1045,7 +1045,7 @@ function getStreamValues(
   // safe to only check the first fieldNode for the stream directive
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
-    fieldGroup[0].fieldNode,
+    fieldGroup.fields[0].fieldNode,
     exeContext.variableValues,
   );
 
@@ -1778,7 +1778,7 @@ function executeSubscription(
     FieldGroup,
   ];
   const [responseName, fieldGroup] = firstRootField;
-  const fieldName = fieldGroup[0].fieldNode.name.value;
+  const fieldName = fieldGroup.fields[0].fieldNode.name.value;
   const fieldDef = schema.getField(rootType, fieldName);
 
   if (!fieldDef) {
@@ -1805,7 +1805,7 @@ function executeSubscription(
     // variables scope to fulfill any variable references.
     const args = getArgumentValues(
       fieldDef,
-      fieldGroup[0].fieldNode,
+      fieldGroup.fields[0].fieldNode,
       variableValues,
     );
 
