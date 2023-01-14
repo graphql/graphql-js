@@ -591,7 +591,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Can deduplicate initial fields with deferred fragments at multiple levels', async () => {
+  it('Can deduplicate fields with deferred fragments at multiple levels', async () => {
     const document = parse(`
       query {
         hero {
@@ -732,7 +732,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('can deduplicate initial fields with deferred fragments in different branches at multiple non-overlapping levels', async () => {
+  it('can deduplicate fields with deferred fragments in different branches at multiple non-overlapping levels', async () => {
     const document = parse(`
       query {
         a {

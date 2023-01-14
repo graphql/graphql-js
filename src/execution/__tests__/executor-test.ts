@@ -5,10 +5,12 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { inspect } from '../../jsutils/inspect.js';
+import type { Path } from '../../jsutils/Path.js';
 
 import { Kind } from '../../language/kinds.js';
 import { parse } from '../../language/parser.js';
 
+import type { GraphQLResolveInfo } from '../../type/definition.js';
 import {
   GraphQLInterfaceType,
   GraphQLList,
@@ -191,7 +193,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('provides info about current execution state', () => {
-    let resolvedInfo;
+    let resolvedInfo: GraphQLResolveInfo | undefined;
     const testType = new GraphQLObjectType({
       name: 'Test',
       fields: {
@@ -239,13 +241,18 @@ describe('Execute: Handles basic execution tasks', () => {
     const field = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
-      path: { prev: undefined, key: 'result', typename: 'Test' },
       variableValues: { var: 'abc' },
+    });
+
+    expect(resolvedInfo?.path).to.deep.include({
+      prev: undefined,
+      key: 'result',
+      typename: 'Test',
     });
   });
 
   it('populates path correctly with complex types', () => {
-    let path;
+    let path: Path | undefined;
     const someObject = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {
@@ -288,18 +295,20 @@ describe('Execute: Handles basic execution tasks', () => {
 
     executeSync({ schema, document, rootValue });
 
-    expect(path).to.deep.equal({
+    expect(path).to.deep.include({
       key: 'l2',
       typename: 'SomeObject',
-      prev: {
-        key: 0,
-        typename: undefined,
-        prev: {
-          key: 'l1',
-          typename: 'SomeQuery',
-          prev: undefined,
-        },
-      },
+    });
+
+    expect(path?.prev).to.deep.include({
+      key: 0,
+      typename: undefined,
+    });
+
+    expect(path?.prev?.prev).to.deep.include({
+      key: 'l1',
+      typename: 'SomeQuery',
+      prev: undefined,
     });
   });
 

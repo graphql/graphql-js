@@ -3,8 +3,7 @@ import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
-import type { Path } from '../jsutils/Path.js';
-import { addPath, pathToArray } from '../jsutils/Path.js';
+import { Path, pathToArray } from '../jsutils/Path.js';
 import { printPathArray } from '../jsutils/printPathArray.js';
 import { suggestionList } from '../jsutils/suggestionList.js';
 
@@ -46,6 +45,16 @@ function defaultOnError(
   }
   error.message = errorPrefix + ': ' + error.message;
   throw error;
+}
+
+function addPath(
+  path: Path | undefined,
+  key: string | number,
+  typeName: string | undefined,
+): Path {
+  return path
+    ? path.addPath(key, typeName)
+    : new Path(undefined, key, typeName);
 }
 
 function coerceInputValueImpl(

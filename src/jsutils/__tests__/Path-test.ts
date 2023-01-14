@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { addPath, pathToArray } from '../Path.js';
+import { Path, pathToArray } from '../Path.js';
 
 describe('Path', () => {
   it('can create a Path', () => {
-    const first = addPath(undefined, 1, 'First');
+    const first = new Path(undefined, 1, 'First');
 
-    expect(first).to.deep.equal({
+    expect(first).to.deep.include({
       prev: undefined,
       key: 1,
       typename: 'First',
@@ -15,10 +15,10 @@ describe('Path', () => {
   });
 
   it('can add a new key to an existing Path', () => {
-    const first = addPath(undefined, 1, 'First');
-    const second = addPath(first, 'two', 'Second');
+    const first = new Path(undefined, 1, 'First');
+    const second = first.addPath('two', 'Second');
 
-    expect(second).to.deep.equal({
+    expect(second).to.deep.include({
       prev: first,
       key: 'two',
       typename: 'Second',
@@ -26,9 +26,9 @@ describe('Path', () => {
   });
 
   it('can convert a Path to an array of its keys', () => {
-    const root = addPath(undefined, 0, 'Root');
-    const first = addPath(root, 'one', 'First');
-    const second = addPath(first, 2, 'Second');
+    const root = new Path(undefined, 0, 'Root');
+    const first = root.addPath('one', 'First');
+    const second = first.addPath(2, 'Second');
 
     const path = pathToArray(second);
     expect(path).to.deep.equal([0, 'one', 2]);
