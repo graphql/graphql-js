@@ -890,11 +890,13 @@ export type GraphQLFieldResolver<
 
 export interface GraphQLResolveInfo {
   readonly fieldName: string;
-  readonly fieldGroup: ReadonlyArray<{
-    fieldNode: FieldNode;
+  readonly fieldGroup: {
     depth: number;
-    deferDepth: number | undefined;
-  }>;
+    fields: ReadonlyArray<{
+      fieldNode: FieldNode;
+      deferDepth: number | undefined;
+    }>;
+  };
   readonly deferDepth: number | undefined;
   readonly returnType: GraphQLOutputType;
   readonly parentType: GraphQLObjectType;

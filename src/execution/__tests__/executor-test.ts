@@ -241,7 +241,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const fieldNode = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
-      fieldGroup: [{ fieldNode, depth: 0, deferDepth: undefined }],
+      fieldGroup: { depth: 0, fields: [{ fieldNode, deferDepth: undefined }] },
       deferDepth: undefined,
       variableValues: { var: 'abc' },
     });

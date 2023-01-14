@@ -1,4 +1,3 @@
-import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { invariant } from '../jsutils/invariant.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 
@@ -26,28 +25,38 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 
 import { getDirectiveValues } from './values.js';
 
-export type FieldGroup = ReadonlyArray<TaggedFieldNode>;
+/**
+ * A field group is a list of fields with the same response key.
+ *
+ * The group's depth is equivalent to the number of fields between the group and
+ * the operation root. For example, root fields have a depth of 0, their sub-fields
+ * have a depth of 1, and so on.
+ *
+ * The groups's depth is provided so that CollectField algorithm can compute the
+ * depth of an inline or named fragment with a defer directive.
+ */
+export interface FieldGroup {
+  depth: number;
+  fields: ReadonlyArray<TaggedFieldNode>;
+}
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
 
+interface MutableFieldSet {
+  depth: number;
+  fields: Array<TaggedFieldNode>;
+}
+
 /**
- * A tagged field node includes metadata necessary to determine whether a field should
- * be executed.
+ * A tagged field node includes the depth of any enclosing defer directive, or
+ * undefined, if the field is not contained within a deferred fragment.
  *
- * A field's depth is equivalent to the number of fields between the given field and
- * the operation root. For example, root fields have a depth of 0, their sub-fields
- * have a depth of 1, and so on. Tagging fields with their depth is necessary only to
- * compute a field's "defer depth".
- *
- * A field's defer depth is the depth of the closest containing defer directive , or
- * undefined, if the field is not contained by a deferred fragment.
- *
- * Because deferred fragments at a given level are merged, the defer depth may be used
- * as a unique id to tag the fields for inclusion within a given deferred payload.
+ * Because deferred fragments at a given level are merged, the defer depth for a
+ * field node may be used as a unique id to tag the fields for inclusion within a
+ * given deferred payload.
  */
 export interface TaggedFieldNode {
   fieldNode: FieldNode;
-  depth: number;
   deferDepth: number | undefined;
 }
 
@@ -70,7 +79,7 @@ export function collectFields(
   groupedFieldSet: GroupedFieldSet;
   newDeferDepth: number | undefined;
 } {
-  const groupedFieldSet = new AccumulatorMap<string, TaggedFieldNode>();
+  const groupedFieldSet = new Map<string, MutableFieldSet>();
   const newDeferDepth = collectFieldsImpl(
     schema,
     fragments,
@@ -111,11 +120,11 @@ export function collectSubfields(
   groupedFieldSet: GroupedFieldSet;
   newDeferDepth: number | undefined;
 } {
-  const groupedFieldSet = new AccumulatorMap<string, TaggedFieldNode>();
+  const groupedFieldSet = new Map<string, MutableFieldSet>();
   let newDeferDepth: number | undefined;
   const visitedFragmentNames = new Set<string>();
 
-  for (const field of fieldGroup) {
+  for (const field of fieldGroup.fields) {
     if (field.fieldNode.selectionSet) {
       const nestedNewDeferDepth = collectFieldsImpl(
         schema,
@@ -126,7 +135,7 @@ export function collectSubfields(
         field.fieldNode.selectionSet,
         groupedFieldSet,
         visitedFragmentNames,
-        fieldGroup[0].depth + 1,
+        fieldGroup.depth + 1,
         field.deferDepth,
       );
       if (nestedNewDeferDepth !== undefined) {
@@ -149,7 +158,7 @@ function collectFieldsImpl(
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  groupedFieldSet: AccumulatorMap<string, TaggedFieldNode>,
+  groupedFieldSet: Map<string, MutableFieldSet>,
   visitedFragmentNames: Set<string>,
   depth: number,
   deferDepth: number | undefined,
@@ -161,11 +170,19 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        groupedFieldSet.add(getFieldEntryKey(selection), {
-          fieldNode: selection,
-          depth,
-          deferDepth,
-        });
+        const key = getFieldEntryKey(selection);
+        const fieldSet = groupedFieldSet.get(key);
+        if (fieldSet) {
+          fieldSet.fields.push({
+            fieldNode: selection,
+            deferDepth,
+          });
+        } else {
+          groupedFieldSet.set(key, {
+            depth,
+            fields: [{ fieldNode: selection, deferDepth }],
+          });
+        }
         break;
       }
       case Kind.INLINE_FRAGMENT: {

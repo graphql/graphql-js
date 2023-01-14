@@ -52,6 +52,7 @@ export function SingleFieldSubscriptionsRule(
             const fieldGroups = [...groupedFieldSet.values()];
             const extraFieldGroups = fieldGroups.slice(1);
             const extraFields = extraFieldGroups
+              .map(({ fields }) => fields)
               .flat()
               .map(({ fieldNode }) => fieldNode);
             context.reportError(
@@ -63,8 +64,10 @@ export function SingleFieldSubscriptionsRule(
               ),
             );
           }
-          for (const fieldSet of groupedFieldSet.values()) {
-            const fieldNodes = fieldSet.map(({ fieldNode }) => fieldNode);
+          for (const fieldGroup of groupedFieldSet.values()) {
+            const fieldNodes = fieldGroup.fields.map(
+              ({ fieldNode }) => fieldNode,
+            );
             const fieldName = fieldNodes[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
