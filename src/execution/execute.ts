@@ -38,7 +38,6 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import {
-  getNamedType,
   isAbstractType,
   isLeafType,
   isListType,
@@ -631,26 +630,19 @@ function executeFieldsSerially(
     (results, [responseName, fieldGroup]) => {
       const fieldPath = exeContext.addPath(path, responseName, parentType.name);
 
-      const fieldName = fieldGroup[0].fieldNode.name.value;
-      const fieldDef = exeContext.schema.getField(parentType, fieldName);
-      if (!fieldDef) {
-        return results;
-      }
-
-      const returnType = fieldDef.type;
-
-      if (!shouldExecute(fieldGroup, returnType)) {
+      if (!shouldExecute(fieldGroup)) {
         return results;
       }
       const result = executeField(
         exeContext,
         parentType,
-        fieldDef,
-        returnType,
         sourceValue,
         fieldGroup,
         fieldPath,
       );
+      if (result === undefined) {
+        return results;
+      }
       if (isPromise(result)) {
         return result.then((resolvedResult) => {
           results[responseName] = resolvedResult;
@@ -666,25 +658,11 @@ function executeFieldsSerially(
 
 function shouldExecute(
   fieldGroup: FieldGroup,
-  returnType: GraphQLOutputType,
   deferDepth?: number | undefined,
 ): boolean {
-  if (deferDepth === undefined || !isLeafType(getNamedType(returnType))) {
-    return fieldGroup.some(
-      ({ deferDepth: fieldDeferDepth }) => fieldDeferDepth === deferDepth,
-    );
-  }
-
-  let hasDepth = false;
-  for (const { deferDepth: fieldDeferDepth } of fieldGroup) {
-    if (fieldDeferDepth === undefined) {
-      return false;
-    }
-    if (fieldDeferDepth === deferDepth) {
-      hasDepth = true;
-    }
-  }
-  return hasDepth;
+  return fieldGroup.some(
+    ({ deferDepth: fieldDeferDepth }) => fieldDeferDepth === deferDepth,
+  );
 }
 
 /**
@@ -706,22 +684,10 @@ function executeFields(
     for (const [responseName, fieldGroup] of groupedFieldSet) {
       const fieldPath = exeContext.addPath(path, responseName, parentType.name);
 
-      const fieldName = fieldGroup[0].fieldNode.name.value;
-      const fieldDef = exeContext.schema.getField(parentType, fieldName);
-      if (!fieldDef) {
-        continue;
-      }
-
-      const returnType = fieldDef.type;
-
-      if (
-        shouldExecute(fieldGroup, returnType, asyncPayloadRecord?.deferDepth)
-      ) {
+      if (shouldExecute(fieldGroup, asyncPayloadRecord?.deferDepth)) {
         const result = executeField(
           exeContext,
           parentType,
-          fieldDef,
-          returnType,
           sourceValue,
           fieldGroup,
           fieldPath,
@@ -769,15 +735,19 @@ function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
 function executeField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
-  fieldDef: GraphQLField<unknown, unknown>,
-  returnType: GraphQLOutputType,
   source: unknown,
   fieldGroup: FieldGroup,
   path: Path,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+  const fieldName = fieldGroup[0].fieldNode.name.value;
+  const fieldDef = exeContext.schema.getField(parentType, fieldName);
+  if (!fieldDef) {
+    return;
+  }
 
+  const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
@@ -786,6 +756,7 @@ function executeField(
     fieldGroup,
     parentType,
     path,
+    asyncPayloadRecord,
   );
 
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
@@ -865,12 +836,14 @@ export function buildResolveInfo(
   fieldGroup: FieldGroup,
   parentType: GraphQLObjectType,
   path: Path,
+  asyncPayloadRecord?: AsyncPayloadRecord | undefined,
 ): GraphQLResolveInfo {
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
   return {
     fieldName: fieldDef.name,
-    fieldNodes: toNodes(fieldGroup),
+    fieldGroup,
+    deferDepth: asyncPayloadRecord?.deferDepth,
     returnType: fieldDef.type,
     parentType,
     path,
@@ -1222,7 +1195,6 @@ function completeListValue(
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
-  const deferDepth = asyncPayloadRecord?.deferDepth;
   let previousAsyncPayloadRecord = asyncPayloadRecord;
   const completedResults: Array<unknown> = [];
   let index = 0;
@@ -1244,7 +1216,6 @@ function completeListValue(
         fieldGroup,
         info,
         itemType,
-        deferDepth,
         previousAsyncPayloadRecord,
       );
       index++;
@@ -1923,11 +1894,10 @@ function executeStreamField(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
-  deferDepth: number | undefined,
   parentContext?: AsyncPayloadRecord,
 ): AsyncPayloadRecord {
   const asyncPayloadRecord = new StreamRecord({
-    deferDepth,
+    deferDepth: parentContext?.deferDepth,
     path: itemPath,
     parentContext,
     exeContext,

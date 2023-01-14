@@ -215,7 +215,8 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(resolvedInfo).to.have.all.keys(
       'fieldName',
-      'fieldNodes',
+      'fieldGroup',
+      'deferDepth',
       'returnType',
       'parentType',
       'path',
@@ -238,9 +239,10 @@ describe('Execute: Handles basic execution tasks', () => {
       operation,
     });
 
-    const field = operation.selectionSet.selections[0];
+    const fieldNode = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
-      fieldNodes: [field],
+      fieldGroup: [{ fieldNode, depth: 0, deferDepth: undefined }],
+      deferDepth: undefined,
       variableValues: { var: 'abc' },
     });
 
