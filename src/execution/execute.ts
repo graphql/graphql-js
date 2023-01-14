@@ -126,6 +126,7 @@ export interface ExecutionContext {
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
   branches: WeakMap<GroupedFieldSet, Set<Path | undefined>>;
+  leaves: WeakMap<GroupedFieldSet, Set<Path | undefined>>;
 }
 
 /**
@@ -506,6 +507,7 @@ export function buildExecutionContext(
     addPath: createPathFactory(),
     subsequentPayloads: new Set(),
     branches: new WeakMap(),
+    leaves: new WeakMap(),
     errors: [],
   };
 }
@@ -520,6 +522,7 @@ function buildPerEventExecutionContext(
     addPath: createPathFactory(),
     subsequentPayloads: new Set(),
     branches: new WeakMap(),
+    leaves: new WeakMap(),
     errors: [],
   };
 }
@@ -639,7 +642,9 @@ function executeFieldsSerially(
 
       const returnType = fieldDef.type;
 
-      if (!shouldExecute(fieldGroup, returnType)) {
+      const isLeaf = isLeafType(getNamedType(returnType));
+
+      if (!shouldExecute(fieldGroup, isLeaf)) {
         return results;
       }
       const result = executeField(
@@ -666,10 +671,10 @@ function executeFieldsSerially(
 
 function shouldExecute(
   fieldGroup: FieldGroup,
-  returnType: GraphQLOutputType,
+  isLeaf: boolean,
   deferDepth?: number | undefined,
 ): boolean {
-  if (deferDepth === undefined || !isLeafType(getNamedType(returnType))) {
+  if (deferDepth === undefined || !isLeaf) {
     return fieldGroup.some(
       ({ deferDepth: fieldDeferDepth }) => fieldDeferDepth === deferDepth,
     );
@@ -702,6 +707,8 @@ function executeFields(
   const results = Object.create(null);
   let containsPromise = false;
 
+  const shouldMask = Object.create(null);
+
   try {
     for (const [responseName, fieldGroup] of groupedFieldSet) {
       const fieldPath = exeContext.addPath(path, responseName, parentType.name);
@@ -714,9 +721,27 @@ function executeFields(
 
       const returnType = fieldDef.type;
 
-      if (
-        shouldExecute(fieldGroup, returnType, asyncPayloadRecord?.deferDepth)
-      ) {
+      const isLeaf = isLeafType(getNamedType(returnType));
+
+      if (shouldExecute(fieldGroup, isLeaf, asyncPayloadRecord?.deferDepth)) {
+        if (
+          asyncPayloadRecord !== undefined &&
+          isLeafType(getNamedType(returnType))
+        ) {
+          shouldMask[responseName] = () => {
+            const set = exeContext.leaves.get(groupedFieldSet);
+            if (set === undefined) {
+              exeContext.leaves.set(groupedFieldSet, new Set([fieldPath]));
+              return false;
+            }
+            if (set.has(fieldPath)) {
+              return true;
+            }
+            set.add(fieldPath);
+            return false;
+          };
+        }
+
         const result = executeField(
           exeContext,
           parentType,
@@ -748,13 +773,27 @@ function executeFields(
 
   // If there are no promises, we can just return the object
   if (!containsPromise) {
-    return results;
+    return asyncPayloadRecord === undefined
+      ? results
+      : new Proxy(results, {
+          ownKeys: (target) =>
+            Reflect.ownKeys(target).filter((key) => !shouldMask[key]?.()),
+        });
   }
 
   // Otherwise, results is a map from field name to the result of resolving that
   // field, which is possibly a promise. Return a promise that will return this
   // same map, but with any promises replaced with the values they resolved to.
-  return promiseForObject(results);
+  const promisedResult = promiseForObject(results);
+  return asyncPayloadRecord === undefined
+    ? promisedResult
+    : promisedResult.then(
+        (resolved) =>
+          new Proxy(resolved, {
+            ownKeys: (target) =>
+              Reflect.ownKeys(target).filter((key) => !shouldMask[key]?.()),
+          }),
+      );
 }
 
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {

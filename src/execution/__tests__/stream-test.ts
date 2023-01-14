@@ -1170,9 +1170,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
         hasNext: false,
       },
     ]);
@@ -1355,9 +1352,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
         hasNext: false,
       },
     ]);

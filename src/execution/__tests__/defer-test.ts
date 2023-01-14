@@ -650,19 +650,14 @@ describe('Execute: defer directive', () => {
           },
           {
             data: {
-              deeperObject: {
-                bar: 'bar',
-                baz: 'baz',
-              },
+              deeperObject: {},
             },
             path: ['hero', 'nestedObject'],
           },
           {
             data: {
               nestedObject: {
-                deeperObject: {
-                  bar: 'bar',
-                },
+                deeperObject: {},
               },
             },
             path: ['hero'],
@@ -789,9 +784,7 @@ describe('Execute: defer directive', () => {
             data: {
               a: {
                 b: {
-                  e: {
-                    f: 'f',
-                  },
+                  e: {},
                 },
               },
               g: {
