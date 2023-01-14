@@ -5,6 +5,8 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
 import { inspect } from '../../jsutils/inspect.js';
 
+import { GraphQLError } from '../../error/GraphQLError.js';
+
 import { Kind } from '../../language/kinds.js';
 import { parse } from '../../language/parser.js';
 
@@ -29,6 +31,11 @@ import { getVariableValues } from '../values.js';
 const TestComplexScalar = new GraphQLScalarType({
   name: 'ComplexScalar',
   parseValue(value) {
+    if (value === 'ThrowAnError') {
+      throw new GraphQLError('parseValue throws', {
+        extensions: { custom: 'extension' },
+      });
+    }
     expect(value).to.equal('SerializedValue');
     return 'DeserializedValue';
   },
@@ -363,6 +370,22 @@ describe('Execute: Handles inputs', () => {
           data: {
             fieldWithObjectInput: '{ c: "foo", d: "DeserializedValue" }',
           },
+        });
+      });
+
+      it('propagates GraphQLError from parseValue', () => {
+        const params = { input: { c: 'foo', d: 'ThrowAnError' } };
+        const result = executeQuery(doc, params);
+
+        expectJSON(result).toDeepEqual({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value "ThrowAnError" at "input.d"; parseValue throws',
+              locations: [{ column: 16, line: 2 }],
+              extensions: { custom: 'extension' },
+            },
+          ],
         });
       });
 
