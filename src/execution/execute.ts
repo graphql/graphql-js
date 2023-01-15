@@ -38,6 +38,7 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import {
+  getNamedType,
   isAbstractType,
   isLeafType,
   isListType,
@@ -630,19 +631,26 @@ function executeFieldsSerially(
     (results, [responseName, fieldGroup]) => {
       const fieldPath = exeContext.addPath(path, responseName, parentType.name);
 
-      if (!shouldExecute(fieldGroup)) {
+      const fieldName = fieldGroup[0].fieldNode.name.value;
+      const fieldDef = exeContext.schema.getField(parentType, fieldName);
+      if (!fieldDef) {
+        return results;
+      }
+
+      const returnType = fieldDef.type;
+
+      if (!shouldExecute(fieldGroup, returnType)) {
         return results;
       }
       const result = executeField(
         exeContext,
         parentType,
+        fieldDef,
+        returnType,
         sourceValue,
         fieldGroup,
         fieldPath,
       );
-      if (result === undefined) {
-        return results;
-      }
       if (isPromise(result)) {
         return result.then((resolvedResult) => {
           results[responseName] = resolvedResult;
@@ -658,11 +666,25 @@ function executeFieldsSerially(
 
 function shouldExecute(
   fieldGroup: FieldGroup,
+  returnType: GraphQLOutputType,
   deferDepth?: number | undefined,
 ): boolean {
-  return fieldGroup.some(
-    ({ deferDepth: fieldDeferDepth }) => fieldDeferDepth === deferDepth,
-  );
+  if (deferDepth === undefined || !isLeafType(getNamedType(returnType))) {
+    return fieldGroup.some(
+      ({ deferDepth: fieldDeferDepth }) => fieldDeferDepth === deferDepth,
+    );
+  }
+
+  let hasDepth = false;
+  for (const { deferDepth: fieldDeferDepth } of fieldGroup) {
+    if (fieldDeferDepth === undefined) {
+      return false;
+    }
+    if (fieldDeferDepth === deferDepth) {
+      hasDepth = true;
+    }
+  }
+  return hasDepth;
 }
 
 /**
@@ -684,10 +706,22 @@ function executeFields(
     for (const [responseName, fieldGroup] of groupedFieldSet) {
       const fieldPath = exeContext.addPath(path, responseName, parentType.name);
 
-      if (shouldExecute(fieldGroup, asyncPayloadRecord?.deferDepth)) {
+      const fieldName = fieldGroup[0].fieldNode.name.value;
+      const fieldDef = exeContext.schema.getField(parentType, fieldName);
+      if (!fieldDef) {
+        continue;
+      }
+
+      const returnType = fieldDef.type;
+
+      if (
+        shouldExecute(fieldGroup, returnType, asyncPayloadRecord?.deferDepth)
+      ) {
         const result = executeField(
           exeContext,
           parentType,
+          fieldDef,
+          returnType,
           sourceValue,
           fieldGroup,
           fieldPath,
@@ -735,19 +769,15 @@ function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
 function executeField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
+  fieldDef: GraphQLField<unknown, unknown>,
+  returnType: GraphQLOutputType,
   source: unknown,
   fieldGroup: FieldGroup,
   path: Path,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
-  const fieldName = fieldGroup[0].fieldNode.name.value;
-  const fieldDef = exeContext.schema.getField(parentType, fieldName);
-  if (!fieldDef) {
-    return;
-  }
 
-  const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
