@@ -892,10 +892,7 @@ export interface GraphQLResolveInfo {
   readonly fieldName: string;
   readonly fieldGroup: {
     depth: number;
-    fields: ReadonlyArray<{
-      fieldNode: FieldNode;
-      deferDepth: number | undefined;
-    }>;
+    fields: Map<number | undefined, ReadonlyArray<FieldNode>>;
   };
   readonly deferDepth: number | undefined;
   readonly returnType: GraphQLOutputType;
