@@ -52,9 +52,8 @@ export function SingleFieldSubscriptionsRule(
             const fieldGroups = [...groupedFieldSet.values()];
             const extraFieldGroups = fieldGroups.slice(1);
             const extraFields = extraFieldGroups
-              .map(({ fields }) => fields)
-              .flat()
-              .map(({ fieldNode }) => fieldNode);
+              .map(({ fields }) => [...fields.values()].flat())
+              .flat();
             context.reportError(
               new GraphQLError(
                 operationName != null
@@ -65,9 +64,7 @@ export function SingleFieldSubscriptionsRule(
             );
           }
           for (const fieldGroup of groupedFieldSet.values()) {
-            const fieldNodes = fieldGroup.fields.map(
-              ({ fieldNode }) => fieldNode,
-            );
+            const fieldNodes = [...fieldGroup.fields.values()].flat();
             const fieldName = fieldNodes[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(

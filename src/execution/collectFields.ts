@@ -1,3 +1,4 @@
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { invariant } from '../jsutils/invariant.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 
@@ -34,30 +35,20 @@ import { getDirectiveValues } from './values.js';
  *
  * The groups's depth is provided so that CollectField algorithm can compute the
  * depth of an inline or named fragment with a defer directive.
+ *
+ * The group is organized in a map of deferDepth to fields. The deferDepth is
+ * used to uniquely identify the set of fields within a deferred payload.
  */
 export interface FieldGroup {
   depth: number;
-  fields: ReadonlyArray<TaggedFieldNode>;
+  fields: Map<number | undefined, ReadonlyArray<FieldNode>>;
 }
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
 
-interface MutableFieldSet {
+interface MutableFieldGroup {
   depth: number;
-  fields: Array<TaggedFieldNode>;
-}
-
-/**
- * A tagged field node includes the depth of any enclosing defer directive, or
- * undefined, if the field is not contained within a deferred fragment.
- *
- * Because deferred fragments at a given level are merged, the defer depth for a
- * field node may be used as a unique id to tag the fields for inclusion within a
- * given deferred payload.
- */
-export interface TaggedFieldNode {
-  fieldNode: FieldNode;
-  deferDepth: number | undefined;
+  fields: AccumulatorMap<number | undefined, FieldNode>;
 }
 
 /**
@@ -79,7 +70,7 @@ export function collectFields(
   groupedFieldSet: GroupedFieldSet;
   newDeferDepth: number | undefined;
 } {
-  const groupedFieldSet = new Map<string, MutableFieldSet>();
+  const groupedFieldSet = new Map<string, MutableFieldGroup>();
   const newDeferDepth = collectFieldsImpl(
     schema,
     fragments,
@@ -120,26 +111,28 @@ export function collectSubfields(
   groupedFieldSet: GroupedFieldSet;
   newDeferDepth: number | undefined;
 } {
-  const groupedFieldSet = new Map<string, MutableFieldSet>();
+  const groupedFieldSet = new Map<string, MutableFieldGroup>();
   let newDeferDepth: number | undefined;
   const visitedFragmentNames = new Set<string>();
 
-  for (const field of fieldGroup.fields) {
-    if (field.fieldNode.selectionSet) {
-      const nestedNewDeferDepth = collectFieldsImpl(
-        schema,
-        fragments,
-        variableValues,
-        operation,
-        returnType,
-        field.fieldNode.selectionSet,
-        groupedFieldSet,
-        visitedFragmentNames,
-        fieldGroup.depth + 1,
-        field.deferDepth,
-      );
-      if (nestedNewDeferDepth !== undefined) {
-        newDeferDepth = nestedNewDeferDepth;
+  for (const [deferDepth, fields] of fieldGroup.fields) {
+    for (const field of fields) {
+      if (field.selectionSet) {
+        const nestedNewDeferDepth = collectFieldsImpl(
+          schema,
+          fragments,
+          variableValues,
+          operation,
+          returnType,
+          field.selectionSet,
+          groupedFieldSet,
+          visitedFragmentNames,
+          fieldGroup.depth + 1,
+          deferDepth,
+        );
+        if (nestedNewDeferDepth !== undefined) {
+          newDeferDepth = nestedNewDeferDepth;
+        }
       }
     }
   }
@@ -158,7 +151,7 @@ function collectFieldsImpl(
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  groupedFieldSet: Map<string, MutableFieldSet>,
+  groupedFieldSet: Map<string, MutableFieldGroup>,
   visitedFragmentNames: Set<string>,
   depth: number,
   deferDepth: number | undefined,
@@ -171,18 +164,15 @@ function collectFieldsImpl(
           continue;
         }
         const key = getFieldEntryKey(selection);
-        const fieldSet = groupedFieldSet.get(key);
-        if (fieldSet) {
-          fieldSet.fields.push({
-            fieldNode: selection,
-            deferDepth,
-          });
-        } else {
-          groupedFieldSet.set(key, {
+        let fieldGroup = groupedFieldSet.get(key);
+        if (!fieldGroup) {
+          fieldGroup = {
             depth,
-            fields: [{ fieldNode: selection, deferDepth }],
-          });
+            fields: new AccumulatorMap<number | undefined, FieldNode>(),
+          };
+          groupedFieldSet.set(key, fieldGroup);
         }
+        fieldGroup.fields.add(deferDepth, selection);
         break;
       }
       case Kind.INLINE_FRAGMENT: {

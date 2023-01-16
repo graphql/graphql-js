@@ -230,21 +230,25 @@ describe('Execute: Handles basic execution tasks', () => {
     const operation = document.definitions[0];
     assert(operation.kind === Kind.OPERATION_DEFINITION);
 
-    expect(resolvedInfo).to.include({
+    expect(resolvedInfo).to.deep.include({
       fieldName: 'test',
       returnType: GraphQLString,
       parentType: testType,
       schema,
       rootValue,
       operation,
-    });
-
-    const fieldNode = operation.selectionSet.selections[0];
-    expect(resolvedInfo).to.deep.include({
-      fieldGroup: { depth: 0, fields: [{ fieldNode, deferDepth: undefined }] },
       deferDepth: undefined,
       variableValues: { var: 'abc' },
     });
+
+    expect(resolvedInfo?.fieldGroup).to.deep.include({
+      depth: 0,
+    });
+
+    const fieldNode = operation.selectionSet.selections[0];
+    expect(resolvedInfo?.fieldGroup.fields.get(undefined)).to.deep.equal([
+      fieldNode,
+    ]);
 
     expect(resolvedInfo?.path).to.deep.include({
       prev: undefined,
