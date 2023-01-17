@@ -636,6 +636,48 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Can stream a field from a deferred path', async () => {
+    const document = parse(`
+      query { 
+        ... @defer {
+          friendList @stream(initialCount: 2) {
+            name
+            id
+          }
+        }
+      }
+    `);
+    const result = await complete(document, { friendList: friends });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              friendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+            path: [],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ name: 'Leia', id: '3' }],
+            path: ['friendList', 2],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
   it('Negative values of initialCount throw field errors on a field that returns an async iterable', async () => {
     const document = parse(`
       query { 
