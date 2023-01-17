@@ -1087,7 +1087,7 @@ async function completeAsyncIteratorValue(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   path: Path,
-  iterator: AsyncIterator<unknown>,
+  asyncIterator: AsyncIterator<unknown>,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): Promise<ReadonlyArray<unknown>> {
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
@@ -1103,9 +1103,9 @@ async function completeAsyncIteratorValue(
       index >= stream.initialCount
     ) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      executeStreamIterator(
+      executeStreamAsyncIterator(
         index,
-        iterator,
+        asyncIterator,
         exeContext,
         fieldGroup,
         info,
@@ -1120,7 +1120,7 @@ async function completeAsyncIteratorValue(
     let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
-      iteration = await iterator.next();
+      iteration = await asyncIterator.next();
       if (iteration.done) {
         break;
       }
@@ -1989,8 +1989,8 @@ function executeStreamField(
   return asyncPayloadRecord;
 }
 
-async function executeStreamIteratorItem(
-  iterator: AsyncIterator<unknown>,
+async function executeStreamAsyncIteratorItem(
+  asyncIterator: AsyncIterator<unknown>,
   exeContext: ExecutionContext,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
@@ -2000,9 +2000,9 @@ async function executeStreamIteratorItem(
 ): Promise<IteratorResult<unknown>> {
   let item;
   try {
-    const { value, done } = await iterator.next();
+    const { value, done } = await asyncIterator.next();
     if (done) {
-      asyncPayloadRecord.setIsCompletedIterator();
+      asyncPayloadRecord.setIsCompletedAsyncIterator();
       return { done, value: undefined };
     }
     item = value;
@@ -2057,9 +2057,9 @@ async function executeStreamIteratorItem(
   }
 }
 
-async function executeStreamIterator(
+async function executeStreamAsyncIterator(
   initialIndex: number,
-  iterator: AsyncIterator<unknown>,
+  asyncIterator: AsyncIterator<unknown>,
   exeContext: ExecutionContext,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
@@ -2077,15 +2077,15 @@ async function executeStreamIterator(
       path: itemPath,
       deferDepth,
       parentContext: previousAsyncPayloadRecord,
-      iterator,
+      asyncIterator,
       exeContext,
     });
 
     let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
-      iteration = await executeStreamIteratorItem(
-        iterator,
+      iteration = await executeStreamAsyncIteratorItem(
+        asyncIterator,
         exeContext,
         fieldGroup,
         info,
@@ -2098,8 +2098,8 @@ async function executeStreamIterator(
       filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
       asyncPayloadRecord.addItems(null);
       // entire stream has errored and bubbled upwards
-      if (iterator?.return) {
-        iterator.return().catch(() => {
+      if (asyncIterator?.return) {
+        asyncIterator.return().catch(() => {
           // ignore errors
         });
       }
@@ -2150,8 +2150,8 @@ function filterSubsequentPayloads(
       }
     }
     // asyncRecord path points to nulled error field
-    if (isStreamPayload(asyncRecord) && asyncRecord.iterator?.return) {
-      asyncRecord.iterator.return().catch(() => {
+    if (isStreamPayload(asyncRecord) && asyncRecord.asyncIterator?.return) {
+      asyncRecord.asyncIterator.return().catch(() => {
         // ignore error
       });
     }
@@ -2171,7 +2171,7 @@ function getCompletedIncrementalResults(
     exeContext.subsequentPayloads.delete(asyncPayloadRecord);
     if (isStreamPayload(asyncPayloadRecord)) {
       const items = asyncPayloadRecord.items;
-      if (asyncPayloadRecord.isCompletedIterator) {
+      if (asyncPayloadRecord.isCompletedAsyncIterator) {
         // async iterable resolver just finished but there may be pending payloads
         continue;
       }
@@ -2233,9 +2233,9 @@ function yieldSubsequentPayloads(
     exeContext.subsequentPayloads.forEach((asyncPayloadRecord) => {
       if (
         isStreamPayload(asyncPayloadRecord) &&
-        asyncPayloadRecord.iterator?.return
+        asyncPayloadRecord.asyncIterator?.return
       ) {
-        promises.push(asyncPayloadRecord.iterator.return());
+        promises.push(asyncPayloadRecord.asyncIterator.return());
       }
     });
     return Promise.all(promises);
@@ -2317,15 +2317,15 @@ class StreamRecord {
   items: Array<unknown> | null;
   promise: Promise<void>;
   parentContext: AsyncPayloadRecord | undefined;
-  iterator: AsyncIterator<unknown> | undefined;
-  isCompletedIterator?: boolean;
+  asyncIterator: AsyncIterator<unknown> | undefined;
+  isCompletedAsyncIterator?: boolean;
   isCompleted: boolean;
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
     path: Path | undefined;
     deferDepth: number | undefined;
-    iterator?: AsyncIterator<unknown>;
+    asyncIterator?: AsyncIterator<unknown>;
     parentContext: AsyncPayloadRecord | undefined;
     exeContext: ExecutionContext;
   }) {
@@ -2334,7 +2334,7 @@ class StreamRecord {
     this.path = pathToArray(opts.path);
     this.deferDepth = opts.deferDepth;
     this.parentContext = opts.parentContext;
-    this.iterator = opts.iterator;
+    this.asyncIterator = opts.asyncIterator;
     this.errors = [];
     this._exeContext = opts.exeContext;
     this._exeContext.subsequentPayloads.add(this);
@@ -2359,8 +2359,8 @@ class StreamRecord {
     this._resolve?.(items);
   }
 
-  setIsCompletedIterator() {
-    this.isCompletedIterator = true;
+  setIsCompletedAsyncIterator() {
+    this.isCompletedAsyncIterator = true;
   }
 }
 
