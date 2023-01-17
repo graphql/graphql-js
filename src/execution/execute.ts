@@ -125,6 +125,7 @@ export interface ExecutionContext {
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
   branches: WeakMap<GroupedFieldSet, Set<Path | undefined>>;
+  streams: WeakMap<FieldGroup, Set<Path>>;
 }
 
 /**
@@ -505,6 +506,7 @@ export function buildExecutionContext(
     addPath: createPathFactory(),
     subsequentPayloads: new Set(),
     branches: new WeakMap(),
+    streams: new WeakMap(),
     errors: [],
   };
 }
@@ -519,6 +521,7 @@ function buildPerEventExecutionContext(
     addPath: createPathFactory(),
     subsequentPayloads: new Set(),
     branches: new WeakMap(),
+    streams: new WeakMap(),
     errors: [],
   };
 }
@@ -531,6 +534,23 @@ function shouldBranch(
   const set = exeContext.branches.get(groupedFieldSet);
   if (set === undefined) {
     exeContext.branches.set(groupedFieldSet, new Set([path]));
+    return true;
+  }
+  if (!set.has(path)) {
+    set.add(path);
+    return true;
+  }
+  return false;
+}
+
+function shouldStream(
+  fieldGroup: FieldGroup,
+  exeContext: ExecutionContext,
+  path: Path,
+): boolean {
+  const set = exeContext.streams.get(fieldGroup);
+  if (set === undefined) {
+    exeContext.streams.set(fieldGroup, new Set([path]));
     return true;
   }
   if (!set.has(path)) {
@@ -1102,17 +1122,19 @@ async function completeAsyncIteratorValue(
       typeof stream.initialCount === 'number' &&
       index >= stream.initialCount
     ) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      executeStreamAsyncIterator(
-        index,
-        asyncIterator,
-        exeContext,
-        fieldGroup,
-        info,
-        itemType,
-        path,
-        asyncPayloadRecord,
-      );
+      if (shouldStream(fieldGroup, exeContext, path)) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        executeStreamAsyncIterator(
+          index,
+          asyncIterator,
+          exeContext,
+          fieldGroup,
+          info,
+          itemType,
+          path,
+          asyncPayloadRecord,
+        );
+      }
       break;
     }
 
@@ -1208,16 +1230,18 @@ function completeListValue(
       typeof stream.initialCount === 'number' &&
       index >= stream.initialCount
     ) {
-      executeStreamIterator(
-        index,
-        iterator,
-        exeContext,
-        fieldGroup,
-        info,
-        itemType,
-        path,
-        asyncPayloadRecord,
-      );
+      if (shouldStream(fieldGroup, exeContext, path)) {
+        executeStreamIterator(
+          index,
+          iterator,
+          exeContext,
+          fieldGroup,
+          info,
+          itemType,
+          path,
+          asyncPayloadRecord,
+        );
+      }
       break;
     }
 

@@ -37,6 +37,30 @@ const friends = [
   { name: 'Leia', id: 3 },
 ];
 
+const nestedObjectType = new GraphQLObjectType({
+  name: 'NestedObject',
+  fields: {
+    scalarField: {
+      type: GraphQLString,
+    },
+    nonNullScalarField: {
+      type: new GraphQLNonNull(GraphQLString),
+    },
+    nestedFriendList: { type: new GraphQLList(friendType) },
+    deeperNestedObject: {
+      type: new GraphQLObjectType({
+        name: 'DeeperNestedObject',
+        fields: {
+          nonNullScalarField: {
+            type: new GraphQLNonNull(GraphQLString),
+          },
+          deeperNestedFriendList: { type: new GraphQLList(friendType) },
+        },
+      }),
+    },
+  },
+});
+
 const query = new GraphQLObjectType({
   fields: {
     scalarList: {
@@ -52,29 +76,10 @@ const query = new GraphQLObjectType({
       type: new GraphQLList(new GraphQLNonNull(friendType)),
     },
     nestedObject: {
-      type: new GraphQLObjectType({
-        name: 'NestedObject',
-        fields: {
-          scalarField: {
-            type: GraphQLString,
-          },
-          nonNullScalarField: {
-            type: new GraphQLNonNull(GraphQLString),
-          },
-          nestedFriendList: { type: new GraphQLList(friendType) },
-          deeperNestedObject: {
-            type: new GraphQLObjectType({
-              name: 'DeeperNestedObject',
-              fields: {
-                nonNullScalarField: {
-                  type: new GraphQLNonNull(GraphQLString),
-                },
-                deeperNestedFriendList: { type: new GraphQLList(friendType) },
-              },
-            }),
-          },
-        },
-      }),
+      type: nestedObjectType,
+    },
+    nestedList: {
+      type: new GraphQLList(nestedObjectType),
     },
   },
   name: 'Query',
@@ -672,6 +677,170 @@ describe('Execute: stream directive', () => {
           {
             items: [{ name: 'Leia', id: '3' }],
             path: ['friendList', 2],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Does not initiate multiple streams at the same path', async () => {
+    const document = parse(`
+      query { 
+        nestedList {
+          nestedFriendList @stream(initialCount: 2) {
+            name
+            id
+          }
+          ... @defer {
+            nestedFriendList @stream(initialCount: 2) {
+              name
+              id
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedList: [
+        { nestedFriendList: friends },
+        { nestedFriendList: friends },
+      ],
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nestedList: [
+            {
+              nestedFriendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+            {
+              nestedFriendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+          ],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ name: 'Leia', id: '3' }],
+            path: ['nestedList', 0, 'nestedFriendList', 2],
+          },
+          {
+            data: {
+              nestedFriendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+            path: ['nestedList', 0],
+          },
+          {
+            items: [{ name: 'Leia', id: '3' }],
+            path: ['nestedList', 1, 'nestedFriendList', 2],
+          },
+          {
+            data: {
+              nestedFriendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+            path: ['nestedList', 1],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Does not initiate multiple streams at the same path for async iterables', async () => {
+    const document = parse(`
+      query { 
+        nestedList {
+          nestedFriendList @stream(initialCount: 2) {
+            name
+            id
+          }
+          ... @defer {
+            nestedFriendList @stream(initialCount: 2) {
+              name
+              id
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedList: [
+        {
+          async *nestedFriendList() {
+            yield await Promise.resolve(friends[0]);
+            yield await Promise.resolve(friends[1]);
+            yield await Promise.resolve(friends[2]);
+          },
+        },
+        {
+          async *nestedFriendList() {
+            yield await Promise.resolve(friends[0]);
+            yield await Promise.resolve(friends[1]);
+            yield await Promise.resolve(friends[2]);
+          },
+        },
+      ],
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nestedList: [
+            {
+              nestedFriendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+            {
+              nestedFriendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+          ],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              nestedFriendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+            path: ['nestedList', 0],
+          },
+          {
+            data: {
+              nestedFriendList: [
+                { name: 'Luke', id: '1' },
+                { name: 'Han', id: '2' },
+              ],
+            },
+            path: ['nestedList', 1],
+          },
+          {
+            items: [{ name: 'Leia', id: '3' }],
+            path: ['nestedList', 0, 'nestedFriendList', 2],
+          },
+          {
+            items: [{ name: 'Leia', id: '3' }],
+            path: ['nestedList', 1, 'nestedFriendList', 2],
           },
         ],
         hasNext: false,
