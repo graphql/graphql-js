@@ -41,6 +41,7 @@ const schemaWithDirectives = buildSchema(`
   directive @onSubscription on SUBSCRIPTION
   directive @onField on FIELD
   directive @onFragmentDefinition on FRAGMENT_DEFINITION
+  directive @onFragmentVariableDefinition on VARIABLE_DEFINITION
   directive @onFragmentSpread on FRAGMENT_SPREAD
   directive @onFragmentVariableDefinition on FRAGMENT_VARIABLE_DEFINITION
   directive @onInlineFragment on INLINE_FRAGMENT
