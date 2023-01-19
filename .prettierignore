@@ -2,6 +2,7 @@
 /diff-npm-package.html
 /.eslintcache
 /.docusaurus
+/.sl
 /.stryker-tmp
 /node_modules
 /reports
