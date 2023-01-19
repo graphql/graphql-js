@@ -1,7 +1,11 @@
 const assert = require('assert');
 const { readFileSync } = require('fs');
 
-const { graphqlSync } = require('graphql');
+const {
+  experimentalExecuteIncrementally,
+  graphqlSync,
+  parse,
+} = require('graphql');
 const { buildSchema } = require('graphql/utilities');
 const { version } = require('graphql/version');
 
@@ -12,7 +16,7 @@ assert.deepStrictEqual(
 
 const schema = buildSchema('type Query { hello: String }');
 
-const result = graphqlSync({
+let result = graphqlSync({
   schema,
   source: '{ hello }',
   rootValue: { hello: 'world' },
@@ -24,3 +28,20 @@ assert.deepStrictEqual(result, {
     hello: 'world',
   },
 });
+
+const experimentalSchema = buildSchema(`
+  directive @stream(initialCount: Int!) on FIELD
+
+  type Query {
+    greetings: [String]
+  }
+`);
+
+result = experimentalExecuteIncrementally({
+  schema: experimentalSchema,
+  document: parse('{ greetings @stream(initialCount: -1) }'),
+  rootValue: { greetings: ['hi', 'hello'] },
+});
+
+assert(result.errors?.[0] !== undefined);
+assert(!result.errors[0].message.includes('is not defined'));
