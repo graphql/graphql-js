@@ -96,7 +96,7 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         onError(
           new GraphQLError(prefix + '; ' + error.message, {
             nodes: varDefNode,
-            originalError: error.originalError,
+            originalError: error,
           }),
         );
       },
