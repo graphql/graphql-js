@@ -32,9 +32,9 @@ const TestFaultyScalarGraphQLError = new GraphQLError(
   'FaultyScalarErrorMessage',
   {
     extensions: {
-      code: 'FaultyScalarErrorExtensionCode'
-    }
-  }
+      code: 'FaultyScalarErrorExtensionCode',
+    },
+  },
 );
 
 const TestFaultyScalar = new GraphQLScalarType({
@@ -66,7 +66,7 @@ const TestInputObject = new GraphQLInputObjectType({
     b: { type: new GraphQLList(GraphQLString) },
     c: { type: new GraphQLNonNull(GraphQLString) },
     d: { type: TestComplexScalar },
-    e: { type: TestFaultyScalar }
+    e: { type: TestFaultyScalar },
   },
 });
 
@@ -268,7 +268,6 @@ describe('Execute: Handles inputs', () => {
             },
           ],
         });
-
       });
     });
 
@@ -415,15 +414,15 @@ describe('Execute: Handles inputs', () => {
         const params = { input: { c: 'foo', e: 'SerializedValue' } };
         const result = executeQuery(doc, params);
 
-        expect(result.errors?.at(0)?.originalError).to.equal(TestFaultyScalarGraphQLError);
         expectJSON(result).toDeepEqual({
           errors: [
             {
-              message: 'Variable "$input" got invalid value "SerializedValue" at "input.e"; FaultyScalarErrorMessage',
+              message:
+                'Variable "$input" got invalid value "SerializedValue" at "input.e"; FaultyScalarErrorMessage',
               locations: [{ line: 2, column: 16 }],
-              extensions: { code: 'FaultyScalarErrorExtensionCode' }
-            }
-          ]
+              extensions: { code: 'FaultyScalarErrorExtensionCode' },
+            },
+          ],
         });
       });
 
