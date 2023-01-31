@@ -32,7 +32,7 @@ const TestFaultyScalarGraphQLError = new GraphQLError(
   'FaultyScalarErrorMessage',
   {
     extensions: {
-      code: 'FaultyScalarErrorMessageExtensionCode'
+      code: 'FaultyScalarErrorExtensionCode'
     }
   }
 );
@@ -421,7 +421,7 @@ describe('Execute: Handles inputs', () => {
             {
               message: 'Variable "$input" got invalid value "SerializedValue" at "input.e"; FaultyScalarErrorMessage',
               locations: [{ line: 2, column: 16 }],
-              extensions: { code: 'FaultyScalarErrorMessageExtensionCode' }
+              extensions: { code: 'FaultyScalarErrorExtensionCode' }
             }
           ]
         });
