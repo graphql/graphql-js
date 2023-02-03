@@ -107,25 +107,23 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
  *   }
  * ```
  *
- * When using this naming convention, the schema description can be omitted.
+ * When using this naming convention, the schema description can be omitted so
+ * long as these names are only used for operation types.
  */
 function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
-  const queryType = schema.getQueryType();
-  if (queryType && queryType.name !== 'Query') {
-    return false;
-  }
+  const queryOperationType = schema.getQueryType() ?? null;
+  const mutationOperationType = schema.getMutationType() ?? null;
+  const subscriptionOperationType = schema.getSubscriptionType() ?? null;
 
-  const mutationType = schema.getMutationType();
-  if (mutationType && mutationType.name !== 'Mutation') {
-    return false;
-  }
+  const queryType = schema.getType('Query') ?? null;
+  const mutationType = schema.getType('Mutation') ?? null;
+  const subscriptionType = schema.getType('Subscription') ?? null;
 
-  const subscriptionType = schema.getSubscriptionType();
-  if (subscriptionType && subscriptionType.name !== 'Subscription') {
-    return false;
-  }
-
-  return true;
+  return (
+    queryOperationType === queryType &&
+    mutationOperationType === mutationType &&
+    subscriptionOperationType === subscriptionType
+  );
 }
 
 export function printType(type: GraphQLNamedType): string {
