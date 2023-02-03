@@ -115,6 +115,15 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   const mutationOperationType = schema.getMutationType() ?? null;
   const subscriptionOperationType = schema.getSubscriptionType() ?? null;
 
+  // Special case for when there are no operation types
+  if (
+    !queryOperationType &&
+    !mutationOperationType &&
+    !subscriptionOperationType
+  ) {
+    return true;
+  }
+
   const queryType = schema.getType('Query') ?? null;
   const mutationType = schema.getType('Mutation') ?? null;
   const subscriptionType = schema.getType('Subscription') ?? null;
