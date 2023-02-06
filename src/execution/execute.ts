@@ -124,7 +124,14 @@ export interface ExecutionContext {
   root: Root;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
-  branches: WeakMap<GroupedFieldSet, Set<Path | Root>>;
+  branches: WeakSet<Path | Root>;
+  paths: WeakMap<ObjMap<unknown>, Path | Root>;
+  metaData: WeakMap<Path | Root, ObjMap<MetaData>>;
+}
+
+interface MetaData {
+  isLeaf: boolean;
+  sent: boolean;
 }
 
 /**
@@ -356,6 +363,7 @@ function executeImpl(
       return result.then(
         (data) => {
           const initialResult = buildResponse(data, exeContext.errors);
+          markValue(exeContext, initialResult.data, exeContext.root);
           if (exeContext.subsequentPayloads.size > 0) {
             return {
               initialResult: {
@@ -374,6 +382,7 @@ function executeImpl(
       );
     }
     const initialResult = buildResponse(result, exeContext.errors);
+    markValue(exeContext, initialResult.data, exeContext.root);
     if (exeContext.subsequentPayloads.size > 0) {
       return {
         initialResult: {
@@ -504,7 +513,9 @@ export function buildExecutionContext(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     root: new Root(),
     subsequentPayloads: new Set(),
-    branches: new WeakMap(),
+    branches: new WeakSet(),
+    paths: new WeakMap(),
+    metaData: new WeakMap(),
     errors: [],
   };
 }
@@ -518,23 +529,20 @@ function buildPerEventExecutionContext(
     rootValue: payload,
     root: new Root(),
     subsequentPayloads: new Set(),
-    branches: new WeakMap(),
+    branches: new WeakSet(),
+    paths: new WeakMap(),
+    metaData: new WeakMap(),
     errors: [],
   };
 }
 
 function shouldBranch(
-  groupedFieldSet: GroupedFieldSet,
   exeContext: ExecutionContext,
   path: Path | Root,
 ): boolean {
-  const set = exeContext.branches.get(groupedFieldSet);
-  if (set === undefined) {
-    exeContext.branches.set(groupedFieldSet, new Set([path]));
-    return true;
-  }
-  if (!set.has(path)) {
-    set.add(path);
+  const branches = exeContext.branches;
+  if (!branches.has(path)) {
+    branches.add(path);
     return true;
   }
   return false;
@@ -563,7 +571,7 @@ function executeOperation(
     rootType,
     operation,
   );
-  const path = new Root();
+  const path = exeContext.root;
   let result;
 
   switch (operation.operation) {
@@ -597,10 +605,7 @@ function executeOperation(
       );
   }
 
-  if (
-    newDeferDepth !== undefined &&
-    shouldBranch(groupedFieldSet, exeContext, path)
-  ) {
+  if (newDeferDepth !== undefined && shouldBranch(exeContext, path)) {
     executeDeferredFragment(
       exeContext,
       rootType,
@@ -625,10 +630,27 @@ function executeFieldsSerially(
   path: Path | Root,
   groupedFieldSet: GroupedFieldSet,
 ): PromiseOrValue<ObjMap<unknown>> {
+  const obj = Object.create(null);
+  exeContext.paths.set(obj, path);
+
+  const metaData = getMetaData(exeContext, path);
+
   return promiseReduce(
     groupedFieldSet,
     (results, [responseName, fieldGroup]) => {
       const fieldPath = path.addPath(responseName, parentType.name);
+
+      if (fieldGroup.isLeaf) {
+        metaData[responseName] = {
+          isLeaf: true,
+          sent: false,
+        };
+      } else {
+        metaData[responseName] = {
+          isLeaf: false,
+          sent: false,
+        };
+      }
 
       if (!shouldExecute(fieldGroup)) {
         return results;
@@ -652,7 +674,7 @@ function executeFieldsSerially(
       results[responseName] = result;
       return results;
     },
-    Object.create(null),
+    obj,
   );
 }
 
@@ -677,11 +699,28 @@ function executeFields(
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
+
+  exeContext.paths.set(results, path);
+
+  const metaData = getMetaData(exeContext, path);
+
   let containsPromise = false;
 
   try {
     for (const [responseName, fieldGroup] of groupedFieldSet) {
       const fieldPath = path.addPath(responseName, parentType.name);
+
+      if (fieldGroup.isLeaf) {
+        metaData[responseName] = {
+          isLeaf: true,
+          sent: false,
+        };
+      } else {
+        metaData[responseName] = {
+          isLeaf: false,
+          sent: false,
+        };
+      }
 
       if (shouldExecute(fieldGroup, asyncPayloadRecord?.deferDepth)) {
         const result = executeField(
@@ -720,6 +759,21 @@ function executeFields(
   // field, which is possibly a promise. Return a promise that will return this
   // same map, but with any promises replaced with the values they resolved to.
   return promiseForObject(results);
+}
+
+function getMetaData(
+  exeContext: ExecutionContext,
+  path: Path | Root,
+): ObjMap<MetaData> {
+  const metaData = exeContext.metaData.get(path);
+
+  if (metaData !== undefined) {
+    return metaData;
+  }
+
+  const newMetaData = Object.create(null);
+  exeContext.metaData.set(path, newMetaData);
+  return newMetaData;
 }
 
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
@@ -1539,10 +1593,7 @@ function collectAndExecuteSubfields(
     asyncPayloadRecord,
   );
 
-  if (
-    newDeferDepth !== undefined &&
-    shouldBranch(groupedFieldSet, exeContext, path)
-  ) {
+  if (newDeferDepth !== undefined && shouldBranch(exeContext, path)) {
     executeDeferredFragment(
       exeContext,
       returnType,
@@ -2148,7 +2199,7 @@ function filterSubsequentPayloads(
       return;
     }
     for (let i = 0; i < nullPathArray.length; i++) {
-      if (asyncRecord.path[i] !== nullPathArray[i]) {
+      if (asyncRecord.pathAsArray[i] !== nullPathArray[i]) {
         // asyncRecord points to a path unaffected by this payload
         return;
       }
@@ -2179,19 +2230,194 @@ function getCompletedIncrementalResults(
         // async iterable resolver just finished but there may be pending payloads
         continue;
       }
-      (incrementalResult as IncrementalStreamResult).items = items;
+      (incrementalResult as IncrementalStreamResult).items = items
+        ? maskItems(exeContext, items, asyncPayloadRecord.path)
+        : null;
     } else {
       const data = asyncPayloadRecord.data;
-      (incrementalResult as IncrementalDeferResult).data = data ?? null;
+      if (data && exeContext.paths.has(data)) {
+        (incrementalResult as IncrementalDeferResult).data = maskData(
+          exeContext,
+          data,
+          asyncPayloadRecord.path,
+        );
+      } else {
+        (incrementalResult as IncrementalDeferResult).data = data;
+      }
     }
 
-    incrementalResult.path = asyncPayloadRecord.path;
+    incrementalResult.path = asyncPayloadRecord.pathAsArray;
     if (asyncPayloadRecord.errors.length > 0) {
       incrementalResult.errors = asyncPayloadRecord.errors;
     }
     incrementalResults.push(incrementalResult);
   }
   return incrementalResults;
+}
+
+function maskData(
+  exeContext: ExecutionContext,
+  data: ObjMap<unknown>,
+  path: Path | Root,
+): ObjMap<unknown> {
+  const { hasNew, value } = maskObject(exeContext, data, path);
+
+  const metaData = exeContext.metaData.get((path as Path).prev);
+  if (metaData) {
+    metaData[(path as Path).key].sent = true;
+  }
+
+  if (hasNew) {
+    return value;
+  }
+
+  return Object.create(null);
+}
+
+function maskItems(
+  exeContext: ExecutionContext,
+  items: Array<unknown>,
+  path: Path,
+): Array<unknown> {
+  // hasNew cannot be false for newly streamed payloads
+  return maskList(exeContext, items, path.prev as Path, path.key as number)
+    .value;
+}
+
+function maskList(
+  exeContext: ExecutionContext,
+  items: Array<unknown>,
+  path: Path,
+  start: number,
+): {
+  hasNew: boolean;
+  value: Array<unknown>;
+} {
+  let pathIndex = start;
+  let hasNew = false;
+  const maskedItems: Array<unknown> = [];
+  for (let i = 0; i < items.length; i++, pathIndex++) {
+    const itemPath = path.addPath(pathIndex, undefined);
+    const maskedItem = maskValue(exeContext, items[i], itemPath);
+    if (maskedItem.hasNew) {
+      hasNew = true;
+    }
+    maskedItems.push(maskedItem.value);
+  }
+  return {
+    hasNew,
+    value: maskedItems,
+  };
+}
+
+function maskObject(
+  exeContext: ExecutionContext,
+  object: ObjMap<unknown>,
+  path: Path | Root,
+): { hasNew: boolean; value: ObjMap<unknown> } {
+  const metaData = exeContext.metaData.get(path);
+  if (metaData === undefined) {
+    return {
+      hasNew: true,
+      value: object,
+    };
+  }
+
+  const maskedData = Object.create(null);
+
+  let hasNew = false;
+  for (const [key, value] of Object.entries(object)) {
+    const fieldPath = path.addPath(key, undefined);
+
+    const fieldMetaData = metaData[key];
+
+    if (!fieldMetaData.sent) {
+      fieldMetaData.sent = true;
+      const maskedValue = maskValue(exeContext, value, fieldPath);
+      if (maskedValue.hasNew) {
+        hasNew = true;
+      }
+      maskedData[key] = maskedValue.value;
+    } else if (!fieldMetaData.isLeaf) {
+      const maskedValue = maskValue(exeContext, value, fieldPath);
+      if (maskedValue.hasNew) {
+        hasNew = true;
+        maskedData[key] = maskedValue.value;
+      }
+    }
+  }
+
+  return {
+    hasNew,
+    value: maskedData,
+  };
+}
+
+function maskValue(
+  exeContext: ExecutionContext,
+  value: unknown,
+  path: Path,
+): { hasNew: boolean; value: unknown } {
+  if (value == null) {
+    return {
+      hasNew: true,
+      value: null,
+    };
+  }
+
+  if (Array.isArray(value)) {
+    return maskList(exeContext, value, path, 0);
+  }
+
+  return maskObject(exeContext, value as ObjMap<unknown>, path);
+}
+
+function markValue(
+  exeContext: ExecutionContext,
+  value: unknown,
+  path: Path | Root,
+): void {
+  if (value == null) {
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    markList(exeContext, value, path as Path);
+    return;
+  }
+
+  return markObject(exeContext, value as ObjMap<unknown>, path);
+}
+
+function markList(
+  exeContext: ExecutionContext,
+  list: Array<unknown>,
+  path: Path,
+): void {
+  for (let i = 0; i < list.length; i++) {
+    const itemPath = path.addPath(i, undefined);
+    markValue(exeContext, list[i], itemPath);
+  }
+}
+
+function markObject(
+  exeContext: ExecutionContext,
+  object: ObjMap<unknown>,
+  path: Path | Root,
+): void {
+  const metaData = exeContext.metaData.get(path);
+  if (metaData === undefined) {
+    return;
+  }
+
+  for (const [key, value] of Object.entries(object)) {
+    const fieldPath = path.addPath(key, undefined);
+
+    const fieldMetaData = metaData[key];
+
+    fieldMetaData.sent = true;
+    markValue(exeContext, value, fieldPath);
+  }
 }
 
 function yieldSubsequentPayloads(
@@ -2270,7 +2496,8 @@ function yieldSubsequentPayloads(
 class DeferredFragmentRecord {
   type: 'defer';
   errors: Array<GraphQLError>;
-  path: Array<string | number>;
+  path: Path | Root;
+  pathAsArray: Array<string | number>;
   deferDepth: number | undefined;
   promise: Promise<void>;
   data: ObjMap<unknown> | null;
@@ -2285,7 +2512,8 @@ class DeferredFragmentRecord {
     exeContext: ExecutionContext;
   }) {
     this.type = 'defer';
-    this.path = pathToArray(opts.path);
+    this.path = opts.path;
+    this.pathAsArray = pathToArray(opts.path);
     this.deferDepth = opts.deferDepth;
     this.parentContext = opts.parentContext;
     this.errors = [];
@@ -2316,7 +2544,8 @@ class DeferredFragmentRecord {
 class StreamRecord {
   type: 'stream';
   errors: Array<GraphQLError>;
-  path: Array<string | number>;
+  path: Path;
+  pathAsArray: Array<string | number>;
   deferDepth: number | undefined;
   items: Array<unknown> | null;
   promise: Promise<void>;
@@ -2327,7 +2556,7 @@ class StreamRecord {
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
-    path: Path | Root;
+    path: Path;
     deferDepth: number | undefined;
     iterator?: AsyncIterator<unknown>;
     parentContext: AsyncPayloadRecord | undefined;
@@ -2335,7 +2564,8 @@ class StreamRecord {
   }) {
     this.type = 'stream';
     this.items = null;
-    this.path = pathToArray(opts.path);
+    this.path = opts.path;
+    this.pathAsArray = pathToArray(opts.path);
     this.deferDepth = opts.deferDepth;
     this.parentContext = opts.parentContext;
     this.iterator = opts.iterator;

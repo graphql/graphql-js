@@ -1,4 +1,5 @@
 import type { ObjMap } from './ObjMap.js';
+import type { PromiseOrValue } from './PromiseOrValue.js';
 
 /**
  * This function transforms a JS object `ObjMap<Promise<T>>` into
@@ -8,15 +9,15 @@ import type { ObjMap } from './ObjMap.js';
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
 export async function promiseForObject<T>(
-  object: ObjMap<Promise<T>>,
+  object: ObjMap<PromiseOrValue<T>>,
 ): Promise<ObjMap<T>> {
-  const keys = Object.keys(object);
   const values = Object.values(object);
-
   const resolvedValues = await Promise.all(values);
-  const resolvedObject = Object.create(null);
+
+  const keys = Object.keys(object);
   for (let i = 0; i < keys.length; ++i) {
-    resolvedObject[keys[i]] = resolvedValues[i];
+    object[keys[i]] = resolvedValues[i];
   }
-  return resolvedObject;
+
+  return object as unknown as Promise<ObjMap<T>>;
 }

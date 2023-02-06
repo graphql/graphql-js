@@ -186,7 +186,6 @@ describe('Execute: defer directive', () => {
         }
       }
       fragment NameFragment on Hero {
-        id
         name
       }
     `);
@@ -205,7 +204,6 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              id: '1',
               name: 'Luke',
             },
             path: ['hero'],
@@ -410,9 +408,7 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              name: 'Luke',
-            },
+            data: {},
             path: ['hero'],
           },
         ],
@@ -447,9 +443,7 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              name: 'Luke',
-            },
+            data: {},
             path: ['hero'],
           },
         ],
@@ -527,7 +521,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Does not deduplicate leaf fields present in the initial payload', async () => {
+  it('Can deduplicate leaf fields present in the initial payload', async () => {
     const document = parse(`
       query {
         hero {
@@ -584,11 +578,6 @@ describe('Execute: defer directive', () => {
                   bar: 'bar',
                 },
               },
-              anotherNestedObject: {
-                deeperObject: {
-                  foo: 'foo',
-                },
-              },
             },
             path: ['hero'],
           },
@@ -598,7 +587,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Does not deduplicate fields with deferred fragments at multiple levels', async () => {
+  it('Can deduplicate fields with deferred fragments at multiple levels', async () => {
     const document = parse(`
       query {
         hero {
@@ -649,7 +638,6 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              foo: 'foo',
               bar: 'bar',
               baz: 'baz',
               bak: 'bak',
@@ -657,24 +645,11 @@ describe('Execute: defer directive', () => {
             path: ['hero', 'nestedObject', 'deeperObject'],
           },
           {
-            data: {
-              deeperObject: {
-                foo: 'foo',
-                bar: 'bar',
-                baz: 'baz',
-              },
-            },
+            data: {},
             path: ['hero', 'nestedObject'],
           },
           {
-            data: {
-              nestedObject: {
-                deeperObject: {
-                  foo: 'foo',
-                  bar: 'bar',
-                },
-              },
-            },
+            data: {},
             path: ['hero'],
           },
         ],
@@ -729,11 +704,7 @@ describe('Execute: defer directive', () => {
             path: ['hero', 'nestedObject', 'deeperObject'],
           },
           {
-            data: {
-              nestedObject: {
-                deeperObject: {},
-              },
-            },
+            data: {},
             path: ['hero'],
           },
         ],
@@ -797,13 +768,6 @@ describe('Execute: defer directive', () => {
           },
           {
             data: {
-              a: {
-                b: {
-                  e: {
-                    f: 'f',
-                  },
-                },
-              },
               g: {
                 h: 'h',
               },

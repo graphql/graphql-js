@@ -14,7 +14,7 @@ import { OperationTypeNode } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 
 import type { GraphQLObjectType } from '../type/definition.js';
-import { isAbstractType } from '../type/definition.js';
+import { isAbstractType, isLeafType } from '../type/definition.js';
 import {
   GraphQLDeferDirective,
   GraphQLIncludeDirective,
@@ -42,6 +42,7 @@ import { getDirectiveValues } from './values.js';
 export interface FieldGroup {
   depth: number;
   fields: Map<number | undefined, ReadonlyArray<FieldNode>>;
+  isLeaf: boolean;
 }
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
@@ -49,6 +50,7 @@ export type GroupedFieldSet = Map<string, FieldGroup>;
 interface MutableFieldGroup {
   depth: number;
   fields: AccumulatorMap<number | undefined, FieldNode>;
+  isLeaf: boolean;
 }
 
 /**
@@ -166,9 +168,12 @@ function collectFieldsImpl(
         const key = getFieldEntryKey(selection);
         let fieldGroup = groupedFieldSet.get(key);
         if (!fieldGroup) {
+          const fieldDef = schema.getField(runtimeType, selection.name.value);
+          const isLeaf = isLeafType(fieldDef?.type);
           fieldGroup = {
             depth,
             fields: new AccumulatorMap<number | undefined, FieldNode>(),
+            isLeaf,
           };
           groupedFieldSet.set(key, fieldGroup);
         }
