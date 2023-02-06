@@ -186,7 +186,6 @@ describe('Execute: defer directive', () => {
         }
       }
       fragment NameFragment on Hero {
-        id
         name
       }
     `);
@@ -205,7 +204,6 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              id: '1',
               name: 'Luke',
             },
             path: ['hero'],
@@ -410,9 +408,7 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              name: 'Luke',
-            },
+            data: {},
             path: ['hero'],
           },
         ],
@@ -447,9 +443,7 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              name: 'Luke',
-            },
+            data: {},
             path: ['hero'],
           },
         ],
@@ -527,7 +521,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Does not deduplicate leaf fields present in the initial payload', async () => {
+  it('Can deduplicate leaf fields present in the initial payload', async () => {
     const document = parse(`
       query {
         hero {
@@ -585,9 +579,7 @@ describe('Execute: defer directive', () => {
                 },
               },
               anotherNestedObject: {
-                deeperObject: {
-                  foo: 'foo',
-                },
+                deeperObject: {},
               },
             },
             path: ['hero'],
@@ -598,7 +590,62 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Does not deduplicate fields with deferred fragments at multiple levels', async () => {
+  it('Can deduplicate leaf fields present in a parent defer payload', async () => {
+    const document = parse(`
+      query {
+        hero {
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                foo
+                ... @defer {
+                  foo
+                  bar
+                }
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              nestedObject: {
+                deeperObject: {
+                  foo: 'foo',
+                },
+              },
+            },
+            path: ['hero'],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              bar: 'bar',
+            },
+            path: ['hero', 'nestedObject', 'deeperObject'],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Does not completely deduplicate fields with deferred fragments at multiple levels', async () => {
     const document = parse(`
       query {
         hero {
@@ -649,7 +696,6 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              foo: 'foo',
               bar: 'bar',
               baz: 'baz',
               bak: 'bak',
@@ -659,7 +705,6 @@ describe('Execute: defer directive', () => {
           {
             data: {
               deeperObject: {
-                foo: 'foo',
                 bar: 'bar',
                 baz: 'baz',
               },
@@ -670,7 +715,6 @@ describe('Execute: defer directive', () => {
             data: {
               nestedObject: {
                 deeperObject: {
-                  foo: 'foo',
                   bar: 'bar',
                 },
               },

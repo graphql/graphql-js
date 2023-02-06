@@ -658,10 +658,49 @@ function executeFieldsSerially(
 
 function shouldExecute(
   fieldGroup: FieldGroup,
-  deferDepth?: number | undefined,
+  asyncPayload?: AsyncPayloadRecord | undefined,
 ): boolean {
-  const fieldGroupForDeferDepth = fieldGroup.fields.get(deferDepth);
-  return fieldGroupForDeferDepth !== undefined;
+  let deferDepth: number | undefined;
+  if (
+    asyncPayload === undefined ||
+    (deferDepth = asyncPayload.deferDepth) === undefined ||
+    !fieldGroup.isLeaf
+  ) {
+    for (const fieldDeferDepth of fieldGroup.fields.keys()) {
+      if (fieldDeferDepth === deferDepth) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  let hasDepth = false;
+  for (const fieldDeferDepth of fieldGroup.fields.keys()) {
+    if (inDeferTree(asyncPayload, fieldDeferDepth, deferDepth)) {
+      return false;
+    }
+    if (fieldDeferDepth === deferDepth) {
+      hasDepth = true;
+    }
+  }
+  return hasDepth;
+}
+
+function inDeferTree(
+  asyncPayload: AsyncPayloadRecord,
+  fieldDeferDepth: number | undefined,
+  deferDepth: number | undefined,
+): boolean {
+  const parentContext = asyncPayload.parentContext;
+  if (parentContext === undefined) {
+    return fieldDeferDepth === undefined;
+  }
+  const parentDeferDepth = parentContext.deferDepth;
+  // Stream payloads have the same deferDepth as their parent, and so should be skipped.
+  if (parentDeferDepth !== deferDepth && fieldDeferDepth === parentDeferDepth) {
+    return true;
+  }
+  return inDeferTree(parentContext, fieldDeferDepth, parentDeferDepth);
 }
 
 /**
@@ -683,7 +722,7 @@ function executeFields(
     for (const [responseName, fieldGroup] of groupedFieldSet) {
       const fieldPath = exeContext.addPath(path, responseName, parentType.name);
 
-      if (shouldExecute(fieldGroup, asyncPayloadRecord?.deferDepth)) {
+      if (shouldExecute(fieldGroup, asyncPayloadRecord)) {
         const result = executeField(
           exeContext,
           parentType,
