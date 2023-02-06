@@ -1,8 +1,3 @@
-import type {
-  IAbortController,
-  IAbortSignal,
-} from '../jsutils/AbortController.js';
-import { AbortController } from '../jsutils/AbortController.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
@@ -127,11 +122,7 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
-  abortion: Maybe<{
-    passedInAbortSignal: IAbortSignal;
-    executionAbortController: IAbortController;
-    executionAbortSignal: IAbortSignal;
-  }>;
+  executionController: ExecutionController;
 }
 
 /**
@@ -271,7 +262,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  signal?: Maybe<IAbortSignal>;
+  signal?: AbortSignal | undefined;
 }
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
@@ -348,28 +339,9 @@ export function experimentalExecuteIncrementally(
   return executeImpl(exeContext);
 }
 
-/* c8 ignore start */
-function subscribeToAbortSignal(exeContext: ExecutionContext): () => void {
-  const { abortion } = exeContext;
-  if (!abortion) {
-    return () => null;
-  }
-
-  const onAbort = () => abortion.executionAbortController.abort(abortion);
-  abortion.passedInAbortSignal.addEventListener('abort', onAbort);
-
-  return () => {
-    abortion.passedInAbortSignal.removeEventListener('abort', onAbort);
-    abortion.executionAbortController.abort();
-  };
-}
-/* c8 ignore stop */
-
 function executeImpl(
   exeContext: ExecutionContext,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  const unsubscribeFromAbortSignal = subscribeToAbortSignal(exeContext);
-
   // Return a Promise that will eventually resolve to the data described by
   // The "Response" section of the GraphQL specification.
   //
@@ -386,8 +358,6 @@ function executeImpl(
     if (isPromise(result)) {
       return result.then(
         (data) => {
-          unsubscribeFromAbortSignal();
-
           const initialResult = buildResponse(data, exeContext.errors);
           if (exeContext.subsequentPayloads.size > 0) {
             return {
@@ -398,18 +368,17 @@ function executeImpl(
               subsequentResults: yieldSubsequentPayloads(exeContext),
             };
           }
+
+          exeContext.executionController.abort();
           return initialResult;
         },
         (error) => {
-          unsubscribeFromAbortSignal();
-
+          exeContext.executionController.abort();
           exeContext.errors.push(error);
           return buildResponse(null, exeContext.errors);
         },
       );
     }
-
-    unsubscribeFromAbortSignal();
 
     const initialResult = buildResponse(result, exeContext.errors);
     if (exeContext.subsequentPayloads.size > 0) {
@@ -421,9 +390,11 @@ function executeImpl(
         subsequentResults: yieldSubsequentPayloads(exeContext),
       };
     }
+
+    exeContext.executionController.abort();
     return initialResult;
   } catch (error) {
-    unsubscribeFromAbortSignal();
+    exeContext.executionController.abort();
     exeContext.errors.push(error);
     return buildResponse(null, exeContext.errors);
   }
@@ -478,7 +449,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
-    signal: passedInAbortSignal,
+    signal,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -543,28 +514,36 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     subsequentPayloads: new Set(),
+    executionController: new ExecutionController(signal),
     errors: [],
-    abortion: getContextAbortionEntities(passedInAbortSignal),
   };
 }
 
-/* c8 ignore start */
-function getContextAbortionEntities(
-  passedInAbortSignal: Maybe<IAbortSignal>,
-): ExecutionContext['abortion'] {
-  if (!passedInAbortSignal) {
-    return null;
+class ExecutionController {
+  /** For performance reason we can't use `signal.isAborted` so we cache it here */
+  isAborted: boolean = false;
+
+  private readonly _passedInAbortSignal: AbortSignal | undefined;
+  private readonly _abortController: AbortController | undefined =
+    typeof AbortController !== 'undefined' ? new AbortController() : undefined;
+
+  constructor(signal?: AbortSignal) {
+    this._passedInAbortSignal = signal;
+    this._passedInAbortSignal?.addEventListener('abort', this._abortCB);
   }
 
-  const executionAbortController = new AbortController();
+  get signal(): AbortSignal | undefined {
+    return this._abortController?.signal;
+  }
 
-  return {
-    passedInAbortSignal,
-    executionAbortController,
-    executionAbortSignal: executionAbortController.signal,
-  };
+  abort(reason?: unknown) {
+    this._passedInAbortSignal?.removeEventListener('abort', this._abortCB);
+    this._abortController?.abort(reason);
+    this.isAborted = true;
+  }
+
+  private readonly _abortCB = (event: Event) => this.abort(event.target?.reason);
 }
-/* c8 ignore stop */
 
 function buildPerEventExecutionContext(
   exeContext: ExecutionContext,
@@ -575,6 +554,9 @@ function buildPerEventExecutionContext(
     rootValue: payload,
     subsequentPayloads: new Set(),
     errors: [],
+    executionController: new ExecutionController(
+      exeContext.executionController.signal,
+    ),
   };
 }
 
@@ -765,6 +747,10 @@ function executeField(
 
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
   try {
+    if (exeContext.executionController.isAborted) {
+      exeContext.executionController.signal?.throwIfAborted();
+    }
+
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
     // TODO: find a way to memoize, in case this field is within a List type.
@@ -846,6 +832,7 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    signal: exeContext.executionController.signal,
   };
 }
 
@@ -896,12 +883,6 @@ function completeValue(
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
-  /* c8 ignore start */
-  if (exeContext.abortion?.executionAbortSignal.aborted) {
-    throw new GraphQLError('Execution aborted.');
-  }
-  /* c8 ignore stop */
-
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
@@ -1690,6 +1671,7 @@ function mapSourceToResponse(
         // ExperimentalIncrementalExecutionResults when
         // exeContext.operation is 'subscription'.
       ) as ExecutionResult,
+    () => exeContext.executionController.abort(),
   );
 }
 
@@ -1795,6 +1777,10 @@ function executeSubscription(
   );
 
   try {
+    if (exeContext.executionController.isAborted) {
+      exeContext.executionController.signal?.throwIfAborted();
+    }
+
     // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
     // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
 
@@ -2197,6 +2183,7 @@ function yieldSubsequentPayloads(
 
     if (!hasNext) {
       isDone = true;
+      exeContext.executionController.abort();
     }
 
     return {
@@ -2228,6 +2215,7 @@ function yieldSubsequentPayloads(
     > {
       await returnStreamIterators();
       isDone = true;
+      exeContext.executionController.abort();
       return { value: undefined, done: true };
     },
     async throw(
@@ -2235,6 +2223,7 @@ function yieldSubsequentPayloads(
     ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> {
       await returnStreamIterators();
       isDone = true;
+      exeContext.executionController.abort();
       return Promise.reject(error);
     },
   };

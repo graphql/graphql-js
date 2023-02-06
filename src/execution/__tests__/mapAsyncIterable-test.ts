@@ -14,15 +14,22 @@ describe('mapAsyncIterable', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    let calledFinishedCallback = false;
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => x + x,
+      () => { calledFinishedCallback = true },
+    );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 6, done: false });
+    expect(calledFinishedCallback).to.equal(false);
     expect(await doubles.next()).to.deep.equal({
       value: undefined,
       done: true,
     });
+    expect(calledFinishedCallback).to.equal(true);
   });
 
   it('maps over async iterable', async () => {
@@ -44,15 +51,22 @@ describe('mapAsyncIterable', () => {
       },
     };
 
-    const doubles = mapAsyncIterable(iterable, (x) => x + x);
+    let calledFinishedCallback = false;
+    const doubles = mapAsyncIterable(
+      iterable,
+      (x) => x + x,
+      () => { calledFinishedCallback = true },
+    );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 6, done: false });
+    expect(calledFinishedCallback).to.equal(false);
     expect(await doubles.next()).to.deep.equal({
       value: undefined,
       done: true,
     });
+    expect(calledFinishedCallback).to.equal(true);
   });
 
   it('compatible with for-await-of', async () => {
@@ -62,12 +76,19 @@ describe('mapAsyncIterable', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    let calledFinishedCallback = false;
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => x + x,
+      () => { calledFinishedCallback = true },
+    );
 
     const result = [];
     for await (const x of doubles) {
       result.push(x);
+      expect(calledFinishedCallback).to.equal(false);
     }
+    expect(calledFinishedCallback).to.equal(true);
     expect(result).to.deep.equal([2, 4, 6]);
   });
 
@@ -78,7 +99,11 @@ describe('mapAsyncIterable', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => Promise.resolve(x + x));
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => Promise.resolve(x + x),
+      () => {},
+    );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -102,7 +127,11 @@ describe('mapAsyncIterable', () => {
       }
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => x + x,
+      () => {},
+    );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -141,7 +170,11 @@ describe('mapAsyncIterable', () => {
       },
     };
 
-    const doubles = mapAsyncIterable(iterable, (x) => x + x);
+    const doubles = mapAsyncIterable(
+      iterable,
+      (x) => x + x,
+      () => {},
+    );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -166,7 +199,11 @@ describe('mapAsyncIterable', () => {
       }
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => x + x,
+      () => {},
+    );
 
     expect(await doubles.next()).to.deep.equal({ value: 'aa', done: false });
     expect(await doubles.next()).to.deep.equal({ value: 'bb', done: false });
@@ -205,7 +242,11 @@ describe('mapAsyncIterable', () => {
       },
     };
 
-    const doubles = mapAsyncIterable(iterable, (x) => x + x);
+    const doubles = mapAsyncIterable(
+      iterable,
+      (x) => x + x,
+      () => {},
+    );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -228,7 +269,11 @@ describe('mapAsyncIterable', () => {
       }
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => x + x,
+      () => {},
+    );
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -255,7 +300,11 @@ describe('mapAsyncIterable', () => {
       throw new Error('Goodbye');
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => x + x,
+      () => {},
+    );
 
     expect(await doubles.next()).to.deep.equal({
       value: 'HelloHello',
@@ -280,7 +329,7 @@ describe('mapAsyncIterable', () => {
       }
     }
 
-    const throwOver1 = mapAsyncIterable(source(), mapper);
+    const throwOver1 = mapAsyncIterable(source(), mapper, () => {});
 
     expect(await throwOver1.next()).to.deep.equal({ value: 1, done: false });
 

@@ -4,10 +4,6 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
-import {
-  AbortController,
-  hasAbortControllerSupport,
-} from '../../jsutils/AbortController.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../../language/kinds.js';
@@ -226,6 +222,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'signal',
     );
 
     const operation = document.definitions[0];
@@ -1318,106 +1315,192 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(possibleTypes).to.deep.equal([fooObject]);
   });
 
-  if (hasAbortControllerSupport) {
-    it('stops execution and throws an error when signal is aborted', async () => {
-      const TestType: GraphQLObjectType = new GraphQLObjectType({
-        name: 'TestType',
-        fields: () => ({
-          resolveOnNextTick: {
-            type: TestType,
-            resolve: () => resolveOnNextTick({}),
-          },
-          string: {
-            type: GraphQLString,
-            args: {
-              value: { type: new GraphQLNonNull(GraphQLString) },
-            },
-            resolve: (_, { value }) => value,
-          },
-          abortExecution: {
-            type: GraphQLString,
-            resolve: () => {
-              abortController.abort();
-              return 'aborted';
-            },
-          },
-          shouldNotBeResolved: {
-            type: GraphQLString,
-            /* c8 ignore next */
-            resolve: () => 'This should not be executed!',
-          },
-        }),
-      });
+  it('stops execution and throws an error when signal is aborted', async () => {
+    // TODO: use real Event once we can finally drop node14 support
+    class MockAbortEvent implements Event {
+      cancelable = false;
+      bubbles = false;
+      composed = false;
+      currentTarget = null;
+      cancelBubble = false;
+      defaultPrevented = false;
+      isTrusted = true;
+      returnValue = false;
+      srcElement = null;
+      type = 'abort';
+      eventPhase = 0;
+      timeStamp = 0;
+      AT_TARGET = 0;
+      BUBBLING_PHASE = 0;
+      CAPTURING_PHASE = 0;
+      NONE = 0;
 
-      const schema = new GraphQLSchema({
-        query: TestType,
-      });
+      target: AbortSignal;
 
-      const document = parse(`
-        query {
-          value1: string(value: "1")
+      constructor(abortSignal: AbortSignal) {
+        this.target = abortSignal;
+      }
+
+      composedPath = () => {
+        throw new Error('Not mocked!');
+      };
+
+      initEvent = () => {
+        throw new Error('Not mocked!');
+      };
+
+      preventDefault = () => {
+        throw new Error('');
+      };
+
+      stopImmediatePropagation = () => {
+        throw new Error('');
+      };
+
+      stopPropagation = () => {
+        throw new Error('');
+      };
+    }
+
+    class MockAbortSignal implements AbortSignal {
+      aborted: boolean = false;
+      onabort: ((ev: Event) => any) | null = null;
+      reason: unknown;
+
+      throwIfAborted() {
+        if (this.aborted) {
+          throw this.reason;
+        }
+      }
+
+      addEventListener(type: string, cb: unknown) {
+        expect(type).to.equal('abort');
+        expect(this.onabort).to.equal(null);
+        expect(cb).to.be.a('function');
+        this.onabort = cb as any;
+      }
+
+      removeEventListener(type: string, cb: unknown) {
+        expect(type).to.equal('abort');
+        expect(cb).to.be.a('function');
+        this.onabort = null;
+      }
+
+      dispatchEvent(event: Event): boolean {
+        expect(this.onabort).to.be.a('function');
+        this.onabort?.(event);
+        return true;
+      }
+
+      dispatchMockAbortEvent(reason?: unknown) {
+        this.reason = reason;
+        mockAbortSignal.dispatchEvent(new MockAbortEvent(this));
+      }
+    }
+
+    const mockAbortSignal = new MockAbortSignal();
+
+    const TestType: GraphQLObjectType = new GraphQLObjectType({
+      name: 'TestType',
+      fields: () => ({
+        resolveOnNextTick: {
+          type: TestType,
+          resolve: () => resolveOnNextTick({}),
+        },
+        string: {
+          type: GraphQLString,
+          args: {
+            value: { type: new GraphQLNonNull(GraphQLString) },
+          },
+          resolve: (_, { value }) => value,
+        },
+        abortExecution: {
+          type: GraphQLString,
+          resolve: () => {
+            const abortError = new Error('Custom abort error');
+            mockAbortSignal.dispatchMockAbortEvent(abortError);
+            return 'aborted';
+          },
+        },
+        shouldNotBeResolved: {
+          type: GraphQLString,
+          /* c8 ignore next */
+          resolve: () => 'This should not be executed!',
+        },
+      }),
+    });
+
+    const schema = new GraphQLSchema({
+      query: TestType,
+    });
+
+    const document = parse(`
+      query {
+        value1: string(value: "1")
+        resolveOnNextTick {
+          value2: string(value: "2")
           resolveOnNextTick {
-            value2: string(value: "2")
-            resolveOnNextTick {
-              resolveOnNextTick {
-                shouldNotBeResolved
-              }
-              abortExecution
-            }
-          }
-          alternativeBranch: resolveOnNextTick {
-            value3: string(value: "3")
             resolveOnNextTick {
               shouldNotBeResolved
             }
+            abortExecution
           }
         }
-      `);
+        alternativeBranch: resolveOnNextTick {
+          value3: string(value: "3")
+          resolveOnNextTick {
+            shouldNotBeResolved
+          }
+        }
+      }
+    `);
 
-      const abortController = new AbortController();
-      const result = await execute({
-        schema,
-        document,
-        signal: abortController.signal,
-      });
+    const result = await execute({
+      schema,
+      document,
+      signal: mockAbortSignal,
+    });
 
-      expectJSON(result).toDeepEqual({
-        data: {
-          value1: '1',
+    expectJSON(result).toDeepEqual({
+      data: {
+        value1: '1',
+        resolveOnNextTick: {
+          value2: '2',
           resolveOnNextTick: {
-            value2: '2',
             resolveOnNextTick: {
-              abortExecution: null,
-              resolveOnNextTick: null,
+              shouldNotBeResolved: null,
             },
-          },
-          alternativeBranch: {
-            resolveOnNextTick: null,
-            value3: '3',
+            abortExecution: 'aborted',
           },
         },
-        errors: [
-          {
-            message: 'Execution aborted.',
-            path: ['resolveOnNextTick', 'resolveOnNextTick', 'abortExecution'],
-            locations: [{ line: 10, column: 15 }],
+        alternativeBranch: {
+          value3: '3',
+          resolveOnNextTick: {
+            shouldNotBeResolved: null,
           },
-          {
-            message: 'Execution aborted.',
-            path: ['alternativeBranch', 'resolveOnNextTick'],
-            locations: [{ line: 15, column: 13 }],
-          },
-          {
-            message: 'Execution aborted.',
-            path: [
-              'resolveOnNextTick',
-              'resolveOnNextTick',
-              'resolveOnNextTick',
-            ],
-            locations: [{ line: 7, column: 15 }],
-          },
-        ],
-      });
+        },
+      },
+      errors: [
+        {
+          message: 'Custom abort error',
+          path: [
+            'alternativeBranch',
+            'resolveOnNextTick',
+            'shouldNotBeResolved',
+          ],
+          locations: [{ line: 16, column: 13 }],
+        },
+        {
+          message: 'Custom abort error',
+          path: [
+            'resolveOnNextTick',
+            'resolveOnNextTick',
+            'resolveOnNextTick',
+            'shouldNotBeResolved',
+          ],
+          locations: [{ line: 8, column: 15 }],
+        },
+      ],
     });
-  }
+  });
 });

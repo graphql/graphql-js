@@ -899,6 +899,12 @@ export interface GraphQLResolveInfo {
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
   readonly variableValues: { [variable: string]: unknown };
+
+  /**
+   * Note: signal is undefined only if execution enviroment doesn't support
+   * AbortController (e.g. node14 without polyfill). 
+   */
+  readonly signal: AbortSignal | undefined;
 }
 
 /**

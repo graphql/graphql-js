@@ -1,4 +1,3 @@
-import type { IAbortSignal } from './jsutils/AbortController';
 import { isPromise } from './jsutils/isPromise.js';
 import type { Maybe } from './jsutils/Maybe.js';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
@@ -71,7 +70,7 @@ export interface GraphQLArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-  signal?: IAbortSignal;
+  signal?: AbortSignal;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
