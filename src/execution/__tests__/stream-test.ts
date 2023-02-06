@@ -527,11 +527,6 @@ describe('Execute: stream directive', () => {
               },
             ],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ name: 'Leia', id: '3' }],
             path: ['friendList', 2],
@@ -980,11 +975,6 @@ describe('Execute: stream directive', () => {
               },
             ],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ nonNullName: 'Han' }],
             path: ['friendList', 2],

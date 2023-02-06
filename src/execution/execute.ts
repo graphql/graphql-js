@@ -9,7 +9,6 @@ import { memoize3 } from '../jsutils/memoize3.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path, PathFactory } from '../jsutils/Path.js';
 import { createPathFactory, pathToArray } from '../jsutils/Path.js';
-import { promiseForObject } from '../jsutils/promiseForObject.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { promiseReduce } from '../jsutils/promiseReduce.js';
 
@@ -355,7 +354,7 @@ function executeImpl(
     if (isPromise(result)) {
       return result.then(
         (data) => {
-          const initialResult = buildResponse(data, exeContext.errors);
+          const initialResult = buildResponse(data.result, exeContext.errors);
           if (exeContext.subsequentPayloads.size > 0) {
             return {
               initialResult: {
@@ -373,7 +372,7 @@ function executeImpl(
         },
       );
     }
-    const initialResult = buildResponse(result, exeContext.errors);
+    const initialResult = buildResponse(result.result, exeContext.errors);
     if (exeContext.subsequentPayloads.size > 0) {
       return {
         initialResult: {
@@ -545,7 +544,7 @@ function shouldBranch(
  */
 function executeOperation(
   exeContext: ExecutionContext,
-): PromiseOrValue<ObjMap<unknown>> {
+): PromiseOrValue<IntermediateResult<ObjMap<unknown>>> {
   const { operation, schema, fragments, variableValues, rootValue } =
     exeContext;
   const rootType = schema.getRootType(operation.operation);
@@ -566,6 +565,10 @@ function executeOperation(
   const path = undefined;
   let result;
 
+  const willBranch =
+    newDeferDepth !== undefined &&
+    shouldBranch(groupedFieldSet, exeContext, path);
+
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
       result = executeFields(
@@ -574,6 +577,7 @@ function executeOperation(
         rootValue,
         path,
         groupedFieldSet,
+        willBranch,
       );
       break;
     case OperationTypeNode.MUTATION:
@@ -594,13 +598,11 @@ function executeOperation(
         rootValue,
         path,
         groupedFieldSet,
+        willBranch,
       );
   }
 
-  if (
-    newDeferDepth !== undefined &&
-    shouldBranch(groupedFieldSet, exeContext, path)
-  ) {
+  if (willBranch) {
     executeDeferredFragment(
       exeContext,
       rootType,
@@ -624,14 +626,14 @@ function executeFieldsSerially(
   sourceValue: unknown,
   path: Path | undefined,
   groupedFieldSet: GroupedFieldSet,
-): PromiseOrValue<ObjMap<unknown>> {
+): PromiseOrValue<IntermediateResult<ObjMap<unknown>>> {
   return promiseReduce(
     groupedFieldSet,
-    (results, [responseName, fieldGroup]) => {
+    (intermediateResult, [responseName, fieldGroup]) => {
       const fieldPath = exeContext.addPath(path, responseName, parentType.name);
 
-      if (!shouldExecute(fieldGroup)) {
-        return results;
+      if (!shouldExecute(fieldGroup, fieldGroup.isLeaf)) {
+        return intermediateResult;
       }
       const result = executeField(
         exeContext,
@@ -641,30 +643,35 @@ function executeFieldsSerially(
         fieldPath,
       );
       if (result === undefined) {
-        return results;
+        return intermediateResult;
       }
+      intermediateResult.isEmpty = true;
       if (isPromise(result)) {
         return result.then((resolvedResult) => {
-          results[responseName] = resolvedResult;
-          return results;
+          intermediateResult.result[responseName] = resolvedResult.result;
+          return intermediateResult;
         });
       }
-      results[responseName] = result;
-      return results;
+      intermediateResult.result[responseName] = result.result;
+      return intermediateResult;
     },
-    Object.create(null),
+    {
+      isEmpty: true,
+      result: Object.create(null),
+    },
   );
 }
 
 function shouldExecute(
   fieldGroup: FieldGroup,
+  isLeaf: Boolean,
   asyncPayload?: AsyncPayloadRecord | undefined,
 ): boolean {
   let deferDepth: number | undefined;
   if (
     asyncPayload === undefined ||
     (deferDepth = asyncPayload.deferDepth) === undefined ||
-    !fieldGroup.isLeaf
+    !isLeaf
   ) {
     for (const fieldDeferDepth of fieldGroup.fields.keys()) {
       if (fieldDeferDepth === deferDepth) {
@@ -713,16 +720,18 @@ function executeFields(
   sourceValue: unknown,
   path: Path | undefined,
   groupedFieldSet: GroupedFieldSet,
+  willBranch: Boolean,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): PromiseOrValue<ObjMap<unknown>> {
+): PromiseOrValue<IntermediateResult<ObjMap<unknown>>> {
   const results = Object.create(null);
   let containsPromise = false;
+  const maySkip = asyncPayloadRecord !== undefined && !willBranch;
 
   try {
     for (const [responseName, fieldGroup] of groupedFieldSet) {
       const fieldPath = exeContext.addPath(path, responseName, parentType.name);
 
-      if (shouldExecute(fieldGroup, asyncPayloadRecord)) {
+      if (shouldExecute(fieldGroup, fieldGroup.isLeaf, asyncPayloadRecord)) {
         const result = executeField(
           exeContext,
           parentType,
@@ -743,22 +752,14 @@ function executeFields(
   } catch (error) {
     if (containsPromise) {
       // Ensure that any promises returned by other fields are handled, as they may also reject.
-      return promiseForObject(results).finally(() => {
+      return promiseForObject(results, maySkip).finally(() => {
         throw error;
       });
     }
     throw error;
   }
 
-  // If there are no promises, we can just return the object
-  if (!containsPromise) {
-    return results;
-  }
-
-  // Otherwise, results is a map from field name to the result of resolving that
-  // field, which is possibly a promise. Return a promise that will return this
-  // same map, but with any promises replaced with the values they resolved to.
-  return promiseForObject(results);
+  return processMaybePromisedObject(results, containsPromise, maySkip);
 }
 
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
@@ -777,7 +778,7 @@ function executeField(
   fieldGroup: FieldGroup,
   path: Path,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): PromiseOrValue<unknown> {
+): PromiseOrValue<IntermediateResult<unknown>> | undefined {
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
   const firstField = (
     fieldGroup.fields.values().next().value as Array<FieldNode>
@@ -849,9 +850,12 @@ function executeField(
           toNodes(fieldGroup),
           pathToArray(path),
         );
-        const handledError = handleFieldError(error, returnType, errors);
+        handleFieldError(error, returnType, errors);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-        return handledError;
+        return {
+          isEmpty: false,
+          result: null,
+        };
       });
     }
     return completed;
@@ -861,9 +865,12 @@ function executeField(
       toNodes(fieldGroup),
       pathToArray(path),
     );
-    const handledError = handleFieldError(error, returnType, errors);
+    handleFieldError(error, returnType, errors);
     filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-    return handledError;
+    return {
+      isEmpty: false,
+      result: null,
+    };
   }
 }
 
@@ -942,7 +949,7 @@ function completeValue(
   path: Path,
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): PromiseOrValue<unknown> {
+): PromiseOrValue<IntermediateResult<unknown>> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
@@ -960,7 +967,7 @@ function completeValue(
       result,
       asyncPayloadRecord,
     );
-    if (completed === null) {
+    if ((completed as IntermediateResult<unknown>).result === null) {
       throw new Error(
         `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
@@ -970,7 +977,10 @@ function completeValue(
 
   // If result value is null or undefined then return null.
   if (result == null) {
-    return null;
+    return {
+      isEmpty: !shouldExecute(fieldGroup, true, asyncPayloadRecord),
+      result: null,
+    };
   }
 
   // If field type is List, complete each item in the list with the inner type
@@ -1034,7 +1044,7 @@ async function completePromisedValue(
   path: Path,
   result: Promise<unknown>,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): Promise<unknown> {
+): Promise<IntermediateResult<unknown>> {
   try {
     const resolved = await result;
     let completed = completeValue(
@@ -1057,9 +1067,12 @@ async function completePromisedValue(
       toNodes(fieldGroup),
       pathToArray(path),
     );
-    const handledError = handleFieldError(error, returnType, errors);
+    handleFieldError(error, returnType, errors);
     filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-    return handledError;
+    return {
+      isEmpty: false,
+      result: null,
+    };
   }
 }
 
@@ -1133,11 +1146,12 @@ async function completeAsyncIteratorValue(
   path: Path,
   iterator: AsyncIterator<unknown>,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): Promise<ReadonlyArray<unknown>> {
+): Promise<IntermediateResult<ReadonlyArray<unknown>>> {
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
   const stream = getStreamValues(exeContext, fieldGroup, path);
   let containsPromise = false;
-  const completedResults: Array<unknown> = [];
+  const completedResults: Array<PromiseOrValue<IntermediateResult<unknown>>> =
+    [];
   let index = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -1157,7 +1171,8 @@ async function completeAsyncIteratorValue(
         path,
         asyncPayloadRecord,
       );
-      break;
+
+      return processMaybePromisedList(completedResults, containsPromise, false);
     }
 
     const itemPath = exeContext.addPath(path, index, undefined);
@@ -1174,28 +1189,35 @@ async function completeAsyncIteratorValue(
         toNodes(fieldGroup),
         pathToArray(itemPath),
       );
-      completedResults.push(handleFieldError(error, itemType, errors));
+      handleFieldError(error, itemType, errors);
+      completedResults.push({
+        isEmpty: false,
+        result: null,
+      });
       break;
     }
 
-    if (
-      completeListItemValue(
-        iteration.value,
-        completedResults,
-        errors,
-        exeContext,
-        itemType,
-        fieldGroup,
-        info,
-        itemPath,
-        asyncPayloadRecord,
-      )
-    ) {
+    const completedItem = completeListItemValue(
+      iteration.value,
+      errors,
+      exeContext,
+      itemType,
+      fieldGroup,
+      info,
+      itemPath,
+      asyncPayloadRecord,
+    );
+
+    completedResults.push(completedItem);
+
+    if (isPromise(completedItem)) {
       containsPromise = true;
     }
-    index += 1;
+
+    index++;
   }
-  return containsPromise ? Promise.all(completedResults) : completedResults;
+
+  return processMaybePromisedList(completedResults, containsPromise, true);
 }
 
 /**
@@ -1210,7 +1232,7 @@ function completeListValue(
   path: Path,
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): PromiseOrValue<ReadonlyArray<unknown>> {
+): PromiseOrValue<IntermediateResult<ReadonlyArray<unknown>>> {
   const itemType = returnType.ofType;
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
 
@@ -1240,7 +1262,8 @@ function completeListValue(
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
   let previousAsyncPayloadRecord = asyncPayloadRecord;
-  const completedResults: Array<unknown> = [];
+  const completedResults: Array<PromiseOrValue<IntermediateResult<unknown>>> =
+    [];
   let index = 0;
   for (const item of result) {
     // No need to modify the info object containing the path,
@@ -1266,36 +1289,32 @@ function completeListValue(
       continue;
     }
 
-    if (
-      completeListItemValue(
-        item,
-        completedResults,
-        errors,
-        exeContext,
-        itemType,
-        fieldGroup,
-        info,
-        itemPath,
-        asyncPayloadRecord,
-      )
-    ) {
+    const completedItem = completeListItemValue(
+      item,
+      errors,
+      exeContext,
+      itemType,
+      fieldGroup,
+      info,
+      itemPath,
+      asyncPayloadRecord,
+    );
+    if (isPromise(completedItem)) {
       containsPromise = true;
     }
-
+    completedResults.push(completedItem);
     index++;
   }
 
-  return containsPromise ? Promise.all(completedResults) : completedResults;
+  const maySkip = previousAsyncPayloadRecord === asyncPayloadRecord;
+  return processMaybePromisedList(completedResults, containsPromise, maySkip);
 }
 
 /**
- * Complete a list item value by adding it to the completed results.
- *
- * Returns true if the value is a Promise.
+ * Complete a list item value.
  */
 function completeListItemValue(
   item: unknown,
-  completedResults: Array<unknown>,
   errors: Array<GraphQLError>,
   exeContext: ExecutionContext,
   itemType: GraphQLOutputType,
@@ -1303,21 +1322,17 @@ function completeListItemValue(
   info: GraphQLResolveInfo,
   itemPath: Path,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): boolean {
+): PromiseOrValue<IntermediateResult<unknown>> {
   if (isPromise(item)) {
-    completedResults.push(
-      completePromisedValue(
-        exeContext,
-        itemType,
-        fieldGroup,
-        info,
-        itemPath,
-        item,
-        asyncPayloadRecord,
-      ),
+    return completePromisedValue(
+      exeContext,
+      itemType,
+      fieldGroup,
+      info,
+      itemPath,
+      item,
+      asyncPayloadRecord,
     );
-
-    return true;
   }
 
   try {
@@ -1334,35 +1349,35 @@ function completeListItemValue(
     if (isPromise(completedItem)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      completedResults.push(
-        completedItem.then(undefined, (rawError) => {
-          const error = locatedError(
-            rawError,
-            toNodes(fieldGroup),
-            pathToArray(itemPath),
-          );
-          const handledError = handleFieldError(error, itemType, errors);
-          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-          return handledError;
-        }),
-      );
-
-      return true;
+      return completedItem.then(undefined, (rawError) => {
+        const error = locatedError(
+          rawError,
+          toNodes(fieldGroup),
+          pathToArray(itemPath),
+        );
+        handleFieldError(error, itemType, errors);
+        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+        return {
+          isEmpty: false,
+          result: null,
+        };
+      });
     }
 
-    completedResults.push(completedItem);
+    return completedItem;
   } catch (rawError) {
     const error = locatedError(
       rawError,
       toNodes(fieldGroup),
       pathToArray(itemPath),
     );
-    const handledError = handleFieldError(error, itemType, errors);
+    handleFieldError(error, itemType, errors);
     filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-    completedResults.push(handledError);
+    return {
+      isEmpty: false,
+      result: null,
+    };
   }
-
-  return false;
 }
 
 /**
@@ -1372,7 +1387,7 @@ function completeListItemValue(
 function completeLeafValue(
   returnType: GraphQLLeafType,
   result: unknown,
-): unknown {
+): IntermediateResult<unknown> {
   const serializedResult = returnType.serialize(result);
   if (serializedResult == null) {
     throw new Error(
@@ -1380,7 +1395,10 @@ function completeLeafValue(
         `return non-nullable value, returned: ${inspect(serializedResult)}`,
     );
   }
-  return serializedResult;
+  return {
+    isEmpty: false,
+    result: serializedResult,
+  };
 }
 
 /**
@@ -1395,7 +1413,7 @@ function completeAbstractValue(
   path: Path,
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): PromiseOrValue<ObjMap<unknown>> {
+): PromiseOrValue<IntermediateResult<ObjMap<unknown>>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
@@ -1505,7 +1523,7 @@ function completeObjectValue(
   path: Path,
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): PromiseOrValue<ObjMap<unknown>> {
+): PromiseOrValue<IntermediateResult<ObjMap<unknown>>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
@@ -1561,7 +1579,7 @@ function collectAndExecuteSubfields(
   path: Path,
   result: unknown,
   asyncPayloadRecord?: AsyncPayloadRecord,
-): PromiseOrValue<ObjMap<unknown>> {
+): PromiseOrValue<IntermediateResult<ObjMap<unknown>>> {
   // Collect sub-fields to execute to complete this value.
   const { groupedFieldSet, newDeferDepth } = collectSubfields(
     exeContext,
@@ -1569,19 +1587,21 @@ function collectAndExecuteSubfields(
     fieldGroup,
   );
 
+  const willBranch =
+    newDeferDepth !== undefined &&
+    shouldBranch(groupedFieldSet, exeContext, path);
+
   const subFields = executeFields(
     exeContext,
     returnType,
     result,
     path,
     groupedFieldSet,
+    willBranch,
     asyncPayloadRecord,
   );
 
-  if (
-    newDeferDepth !== undefined &&
-    shouldBranch(groupedFieldSet, exeContext, path)
-  ) {
+  if (willBranch) {
     executeDeferredFragment(
       exeContext,
       returnType,
@@ -1905,7 +1925,7 @@ function executeDeferredFragment(
     parentContext,
     exeContext,
   });
-  let promiseOrData;
+  let promiseOrData: PromiseOrValue<IntermediateResult<ObjMap<unknown> | null>>;
   try {
     promiseOrData = executeFields(
       exeContext,
@@ -1913,18 +1933,36 @@ function executeDeferredFragment(
       sourceValue,
       path,
       groupedFieldSet,
+      false,
       asyncPayloadRecord,
     );
 
     if (isPromise(promiseOrData)) {
-      promiseOrData = promiseOrData.then(null, (e) => {
-        asyncPayloadRecord.errors.push(e);
-        return null;
-      });
+      promiseOrData = promiseOrData.then(
+        (resolved) => {
+          if (resolved.isEmpty) {
+            exeContext.subsequentPayloads.delete(asyncPayloadRecord);
+          }
+          return resolved;
+        },
+        (e) => {
+          asyncPayloadRecord.errors.push(e);
+          return {
+            isEmpty: false,
+            result: null,
+          };
+        },
+      );
+    } else if (promiseOrData.isEmpty) {
+      exeContext.subsequentPayloads.delete(asyncPayloadRecord);
+      return;
     }
   } catch (e) {
     asyncPayloadRecord.errors.push(e);
-    promiseOrData = null;
+    promiseOrData = {
+      isEmpty: false,
+      result: null,
+    };
   }
   asyncPayloadRecord.addData(promiseOrData);
 }
@@ -1955,11 +1993,17 @@ function executeStreamField(
       item,
       asyncPayloadRecord,
     ).then(
-      (value) => [value],
+      (value) => ({
+        isEmpty: value.isEmpty,
+        result: [value.result],
+      }),
       (error) => {
         asyncPayloadRecord.errors.push(error);
         filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-        return null;
+        return {
+          isEmpty: false,
+          result: null,
+        };
       },
     );
 
@@ -1967,7 +2011,7 @@ function executeStreamField(
     return asyncPayloadRecord;
   }
 
-  let completedItem: PromiseOrValue<unknown>;
+  let completedItem: PromiseOrValue<IntermediateResult<unknown>>;
   try {
     try {
       completedItem = completeValue(
@@ -1985,17 +2029,20 @@ function executeStreamField(
         toNodes(fieldGroup),
         pathToArray(itemPath),
       );
-      completedItem = handleFieldError(
-        error,
-        itemType,
-        asyncPayloadRecord.errors,
-      );
+      handleFieldError(error, itemType, asyncPayloadRecord.errors);
       filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+      completedItem = {
+        isEmpty: false,
+        result: null,
+      };
     }
   } catch (error) {
     asyncPayloadRecord.errors.push(error);
     filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-    asyncPayloadRecord.addItems(null);
+    asyncPayloadRecord.addItems({
+      isEmpty: false,
+      result: null,
+    });
     return asyncPayloadRecord;
   }
 
@@ -2007,20 +2054,25 @@ function executeStreamField(
           toNodes(fieldGroup),
           pathToArray(itemPath),
         );
-        const handledError = handleFieldError(
-          error,
-          itemType,
-          asyncPayloadRecord.errors,
-        );
+        handleFieldError(error, itemType, asyncPayloadRecord.errors);
         filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-        return handledError;
+        return {
+          isEmpty: false,
+          result: null,
+        };
       })
       .then(
-        (value) => [value],
+        (value) => ({
+          isEmpty: value.isEmpty,
+          result: [value.result],
+        }),
         (error) => {
           asyncPayloadRecord.errors.push(error);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
+          return {
+            isEmpty: false,
+            result: null,
+          };
         },
       );
 
@@ -2028,7 +2080,10 @@ function executeStreamField(
     return asyncPayloadRecord;
   }
 
-  asyncPayloadRecord.addItems([completedItem]);
+  asyncPayloadRecord.addItems({
+    isEmpty: completedItem.isEmpty,
+    result: [completedItem.result],
+  });
   return asyncPayloadRecord;
 }
 
@@ -2040,7 +2095,7 @@ async function executeStreamIteratorItem(
   itemType: GraphQLOutputType,
   asyncPayloadRecord: StreamRecord,
   itemPath: Path,
-): Promise<IteratorResult<unknown>> {
+): Promise<IteratorResult<PromiseOrValue<IntermediateResult<unknown>>>> {
   let item;
   try {
     const { value, done } = await iterator.next();
@@ -2059,7 +2114,7 @@ async function executeStreamIteratorItem(
     // don't continue if iterator throws
     return { done: true, value };
   }
-  let completedItem;
+  let completedItem: PromiseOrValue<IntermediateResult<unknown>>;
   try {
     completedItem = completeValue(
       exeContext,
@@ -2078,13 +2133,12 @@ async function executeStreamIteratorItem(
           toNodes(fieldGroup),
           pathToArray(itemPath),
         );
-        const handledError = handleFieldError(
-          error,
-          itemType,
-          asyncPayloadRecord.errors,
-        );
+        handleFieldError(error, itemType, asyncPayloadRecord.errors);
         filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-        return handledError;
+        return {
+          isEmpty: false,
+          result: null,
+        };
       });
     }
     return { done: false, value: completedItem };
@@ -2094,9 +2148,15 @@ async function executeStreamIteratorItem(
       toNodes(fieldGroup),
       pathToArray(itemPath),
     );
-    const value = handleFieldError(error, itemType, asyncPayloadRecord.errors);
+    handleFieldError(error, itemType, asyncPayloadRecord.errors);
     filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
-    return { done: false, value };
+    return {
+      done: false,
+      value: {
+        isEmpty: false,
+        result: null,
+      },
+    };
   }
 }
 
@@ -2124,7 +2184,7 @@ async function executeStreamIterator(
       exeContext,
     });
 
-    let iteration;
+    let iteration: IteratorResult<PromiseOrValue<IntermediateResult<unknown>>>;
     try {
       // eslint-disable-next-line no-await-in-loop
       iteration = await executeStreamIteratorItem(
@@ -2139,7 +2199,10 @@ async function executeStreamIterator(
     } catch (error) {
       asyncPayloadRecord.errors.push(error);
       filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-      asyncPayloadRecord.addItems(null);
+      asyncPayloadRecord.addItems({
+        isEmpty: false,
+        result: null,
+      });
       // entire stream has errored and bubbled upwards
       if (iterator?.return) {
         iterator.return().catch(() => {
@@ -2151,25 +2214,41 @@ async function executeStreamIterator(
 
     const { done, value: completedItem } = iteration;
 
-    let completedItems: PromiseOrValue<Array<unknown> | null>;
+    if (done) {
+      asyncPayloadRecord.addItems({
+        isEmpty: false,
+        result: [null],
+      });
+      break;
+    }
+
+    let completedItems: PromiseOrValue<
+      IntermediateResult<Array<unknown> | null>
+    >;
     if (isPromise(completedItem)) {
       completedItems = completedItem.then(
-        (value) => [value],
+        (value) => ({
+          isEmpty: value.isEmpty,
+          result: [value.result],
+        }),
         (error) => {
           asyncPayloadRecord.errors.push(error);
           filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-          return null;
+          return {
+            isEmpty: false,
+            result: null,
+          };
         },
       );
     } else {
-      completedItems = [completedItem];
+      completedItems = {
+        isEmpty: completedItem.isEmpty,
+        result: [completedItem.result],
+      };
     }
 
     asyncPayloadRecord.addItems(completedItems);
 
-    if (done) {
-      break;
-    }
     previousAsyncPayloadRecord = asyncPayloadRecord;
     index++;
   }
@@ -2218,10 +2297,10 @@ function getCompletedIncrementalResults(
         // async iterable resolver just finished but there may be pending payloads
         continue;
       }
-      (incrementalResult as IncrementalStreamResult).items = items;
+      (incrementalResult as IncrementalStreamResult).items = items.result;
     } else {
       const data = asyncPayloadRecord.data;
-      (incrementalResult as IncrementalDeferResult).data = data ?? null;
+      (incrementalResult as IncrementalDeferResult).data = data.result;
     }
 
     incrementalResult.path = asyncPayloadRecord.path;
@@ -2312,11 +2391,14 @@ class DeferredFragmentRecord {
   path: Array<string | number>;
   deferDepth: number | undefined;
   promise: Promise<void>;
-  data: ObjMap<unknown> | null;
+  data: IntermediateResult<ObjMap<unknown> | null>;
   parentContext: AsyncPayloadRecord | undefined;
   isCompleted: boolean;
   _exeContext: ExecutionContext;
-  _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
+  _resolve?: (
+    arg: PromiseOrValue<IntermediateResult<ObjMap<unknown> | null>>,
+  ) => void;
+
   constructor(opts: {
     path: Path | undefined;
     deferDepth: number | undefined;
@@ -2331,18 +2413,23 @@ class DeferredFragmentRecord {
     this._exeContext = opts.exeContext;
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
-    this.data = null;
-    this.promise = new Promise<ObjMap<unknown> | null>((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((data) => {
+    this.data = {
+      isEmpty: true,
+      result: null,
+    };
+    this.promise = new Promise<IntermediateResult<ObjMap<unknown> | null>>(
+      (resolve) => {
+        this._resolve = (promiseOrValue) => {
+          resolve(promiseOrValue);
+        };
+      },
+    ).then((data) => {
       this.data = data;
       this.isCompleted = true;
     });
   }
 
-  addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
+  addData(data: PromiseOrValue<IntermediateResult<ObjMap<unknown> | null>>) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
       this._resolve?.(parentData.then(() => data));
@@ -2357,14 +2444,17 @@ class StreamRecord {
   errors: Array<GraphQLError>;
   path: Array<string | number>;
   deferDepth: number | undefined;
-  items: Array<unknown> | null;
+  items: IntermediateResult<Array<unknown> | null>;
   promise: Promise<void>;
   parentContext: AsyncPayloadRecord | undefined;
   iterator: AsyncIterator<unknown> | undefined;
   isCompletedIterator?: boolean;
   isCompleted: boolean;
   _exeContext: ExecutionContext;
-  _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
+  _resolve?: (
+    arg: PromiseOrValue<IntermediateResult<Array<unknown> | null>>,
+  ) => void;
+
   constructor(opts: {
     path: Path | undefined;
     deferDepth: number | undefined;
@@ -2373,7 +2463,6 @@ class StreamRecord {
     exeContext: ExecutionContext;
   }) {
     this.type = 'stream';
-    this.items = null;
     this.path = pathToArray(opts.path);
     this.deferDepth = opts.deferDepth;
     this.parentContext = opts.parentContext;
@@ -2382,18 +2471,23 @@ class StreamRecord {
     this._exeContext = opts.exeContext;
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
-    this.items = null;
-    this.promise = new Promise<Array<unknown> | null>((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((items) => {
+    this.items = {
+      isEmpty: true,
+      result: null,
+    };
+    this.promise = new Promise<IntermediateResult<Array<unknown> | null>>(
+      (resolve) => {
+        this._resolve = (promiseOrValue) => {
+          resolve(promiseOrValue);
+        };
+      },
+    ).then((items) => {
       this.items = items;
       this.isCompleted = true;
     });
   }
 
-  addItems(items: PromiseOrValue<Array<unknown> | null>) {
+  addItems(items: PromiseOrValue<IntermediateResult<Array<unknown> | null>>) {
     const parentData = this.parentContext?.promise;
     if (parentData) {
       this._resolve?.(parentData.then(() => items));
@@ -2413,4 +2507,134 @@ function isStreamPayload(
   asyncPayload: AsyncPayloadRecord,
 ): asyncPayload is StreamRecord {
   return asyncPayload.type === 'stream';
+}
+
+function processMaybePromisedObject(
+  object: ObjMap<PromiseOrValue<IntermediateResult<unknown>>>,
+  containsPromise: boolean,
+  maySkip: boolean,
+): PromiseOrValue<IntermediateResult<ObjMap<unknown>>> {
+  if (containsPromise) {
+    return promiseForObject(object, maySkip);
+  }
+  return processResults(object as ObjMap<IntermediateResult<unknown>>, maySkip);
+}
+
+function processResults<T>(
+  object: ObjMap<IntermediateResult<T>>,
+  maySkip: boolean,
+): IntermediateResult<ObjMap<T>> {
+  const keys = Object.keys(object);
+  const values = Object.values(object);
+  return processResultsImpl(keys, values, maySkip);
+}
+
+function processResultsImpl<T>(
+  keys: Array<string>,
+  values: Array<IntermediateResult<T>>,
+  maySkip: boolean,
+): IntermediateResult<ObjMap<T>> {
+  const processedObject: ObjMap<T> = Object.create(null);
+
+  if (maySkip) {
+    return processResultsAllowSkip(keys, values);
+  }
+
+  for (let i = 0; i < keys.length; ++i) {
+    const processedValue = values[i];
+    processedObject[keys[i]] = processedValue.result;
+  }
+
+  return {
+    isEmpty: false,
+    result: processedObject,
+  };
+}
+
+function processResultsAllowSkip<T>(
+  keys: Array<string>,
+  values: Array<IntermediateResult<T>>,
+): IntermediateResult<ObjMap<T>> {
+  const processedObject: ObjMap<T> = Object.create(null);
+
+  let isEmpty = true;
+  for (let i = 0; i < keys.length; ++i) {
+    const processedValue = values[i];
+    if (!processedValue.isEmpty) {
+      isEmpty = false;
+      processedObject[keys[i]] = processedValue.result;
+    }
+  }
+
+  return {
+    isEmpty,
+    result: processedObject,
+  };
+}
+
+async function promiseForObject<T>(
+  object: ObjMap<PromiseOrValue<IntermediateResult<T>>>,
+  maySkip: boolean,
+): Promise<IntermediateResult<ObjMap<T>>> {
+  const keys = Object.keys(object);
+  const values = Object.values(object);
+
+  const resolvedValues = await Promise.all(values);
+  return processResultsImpl(keys, resolvedValues, maySkip);
+}
+
+function processMaybePromisedList<T>(
+  list: ReadonlyArray<PromiseOrValue<IntermediateResult<T>>>,
+  containsPromise: boolean,
+  maySkip: boolean,
+): PromiseOrValue<IntermediateResult<Array<T>>> {
+  if (containsPromise) {
+    return promiseForList(list, maySkip);
+  }
+  return processList(list as ReadonlyArray<IntermediateResult<T>>, maySkip);
+}
+
+async function promiseForList<T>(
+  list: ReadonlyArray<PromiseOrValue<IntermediateResult<T>>>,
+  maySkip: boolean,
+): Promise<IntermediateResult<Array<T>>> {
+  const resolvedValues = await Promise.all(list);
+  return processList(resolvedValues, maySkip);
+}
+
+interface IntermediateResult<T> {
+  isEmpty: boolean;
+  result: T;
+}
+
+function processList<T>(
+  list: ReadonlyArray<IntermediateResult<T>>,
+  maySkip: boolean,
+): IntermediateResult<Array<T>> {
+  if (!maySkip) {
+    return {
+      isEmpty: false,
+      result: list.map((intermediateResult) => intermediateResult.result),
+    };
+  }
+
+  const processedList: Array<T> = [];
+
+  let allSkipped = true;
+  for (const item of list) {
+    processedList.push(item.result);
+    if (!item.isEmpty) {
+      allSkipped = false;
+    }
+  }
+
+  return {
+    isEmpty: allSkipped,
+    result: processedList,
+  };
+}
+
+interface IntermediateResult<T> {
+  isEmpty: boolean;
+  result: T;
 }
