@@ -5,7 +5,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { inspect } from '../../jsutils/inspect.js';
-import type { Path } from '../../jsutils/Path.js';
+import type { Path, Root } from '../../jsutils/Path.js';
 
 import { Kind } from '../../language/kinds.js';
 import { parse } from '../../language/parser.js';
@@ -251,14 +251,13 @@ describe('Execute: Handles basic execution tasks', () => {
     ]);
 
     expect(resolvedInfo?.path).to.deep.include({
-      prev: undefined,
       key: 'result',
       typename: 'Test',
     });
   });
 
   it('populates path correctly with complex types', () => {
-    let path: Path | undefined;
+    let path: Path | Root | undefined;
     const someObject = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {
@@ -306,15 +305,14 @@ describe('Execute: Handles basic execution tasks', () => {
       typename: 'SomeObject',
     });
 
-    expect(path?.prev).to.deep.include({
+    expect((path as Path).prev).to.deep.include({
       key: 0,
       typename: undefined,
     });
 
-    expect(path?.prev?.prev).to.deep.include({
+    expect(((path as Path).prev as Path).prev).to.deep.include({
       key: 'l1',
       typename: 'SomeQuery',
-      prev: undefined,
     });
   });
 

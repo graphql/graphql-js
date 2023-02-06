@@ -7,8 +7,8 @@ import { isPromise } from '../jsutils/isPromise.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import { memoize3 } from '../jsutils/memoize3.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { Path, PathFactory } from '../jsutils/Path.js';
-import { createPathFactory, pathToArray } from '../jsutils/Path.js';
+import type { Path } from '../jsutils/Path.js';
+import { pathToArray, Root } from '../jsutils/Path.js';
 import { promiseForObject } from '../jsutils/promiseForObject.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { promiseReduce } from '../jsutils/promiseReduce.js';
@@ -121,10 +121,10 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  addPath: PathFactory;
+  root: Root;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
-  branches: WeakMap<GroupedFieldSet, Set<Path | undefined>>;
+  branches: WeakMap<GroupedFieldSet, Set<Path | Root>>;
 }
 
 /**
@@ -502,7 +502,7 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    addPath: createPathFactory(),
+    root: new Root(),
     subsequentPayloads: new Set(),
     branches: new WeakMap(),
     errors: [],
@@ -516,7 +516,7 @@ function buildPerEventExecutionContext(
   return {
     ...exeContext,
     rootValue: payload,
-    addPath: createPathFactory(),
+    root: new Root(),
     subsequentPayloads: new Set(),
     branches: new WeakMap(),
     errors: [],
@@ -526,7 +526,7 @@ function buildPerEventExecutionContext(
 function shouldBranch(
   groupedFieldSet: GroupedFieldSet,
   exeContext: ExecutionContext,
-  path: Path | undefined,
+  path: Path | Root,
 ): boolean {
   const set = exeContext.branches.get(groupedFieldSet);
   if (set === undefined) {
@@ -563,7 +563,7 @@ function executeOperation(
     rootType,
     operation,
   );
-  const path = undefined;
+  const path = new Root();
   let result;
 
   switch (operation.operation) {
@@ -622,13 +622,13 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
-  path: Path | undefined,
+  path: Path | Root,
   groupedFieldSet: GroupedFieldSet,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
     groupedFieldSet,
     (results, [responseName, fieldGroup]) => {
-      const fieldPath = exeContext.addPath(path, responseName, parentType.name);
+      const fieldPath = path.addPath(responseName, parentType.name);
 
       if (!shouldExecute(fieldGroup)) {
         return results;
@@ -672,7 +672,7 @@ function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
-  path: Path | undefined,
+  path: Path | Root,
   groupedFieldSet: GroupedFieldSet,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
@@ -681,7 +681,7 @@ function executeFields(
 
   try {
     for (const [responseName, fieldGroup] of groupedFieldSet) {
-      const fieldPath = exeContext.addPath(path, responseName, parentType.name);
+      const fieldPath = path.addPath(responseName, parentType.name);
 
       if (shouldExecute(fieldGroup, asyncPayloadRecord?.deferDepth)) {
         const result = executeField(
@@ -1121,7 +1121,7 @@ async function completeAsyncIteratorValue(
       break;
     }
 
-    const itemPath = exeContext.addPath(path, index, undefined);
+    const itemPath = path.addPath(index, undefined);
     let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
@@ -1206,7 +1206,7 @@ function completeListValue(
   for (const item of result) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    const itemPath = exeContext.addPath(path, index, undefined);
+    const itemPath = path.addPath(index, undefined);
 
     if (
       stream &&
@@ -1796,7 +1796,7 @@ function executeSubscription(
     );
   }
 
-  const path = exeContext.addPath(undefined, responseName, rootType.name);
+  const path = exeContext.root.addPath(responseName, rootType.name);
   const info = buildResolveInfo(
     exeContext,
     fieldDef,
@@ -1857,7 +1857,7 @@ function executeDeferredFragment(
   sourceValue: unknown,
   groupedFieldSet: GroupedFieldSet,
   newDeferDepth: number,
-  path?: Path,
+  path: Path | Root,
   parentContext?: AsyncPayloadRecord,
 ): void {
   const asyncPayloadRecord = new DeferredFragmentRecord({
@@ -2076,7 +2076,7 @@ async function executeStreamIterator(
   let previousAsyncPayloadRecord = parentContext ?? undefined;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const itemPath = exeContext.addPath(path, index, undefined);
+    const itemPath = path.addPath(index, undefined);
     const asyncPayloadRecord = new StreamRecord({
       path: itemPath,
       deferDepth,
@@ -2279,7 +2279,7 @@ class DeferredFragmentRecord {
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
   constructor(opts: {
-    path: Path | undefined;
+    path: Path | Root;
     deferDepth: number | undefined;
     parentContext: AsyncPayloadRecord | undefined;
     exeContext: ExecutionContext;
@@ -2327,7 +2327,7 @@ class StreamRecord {
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
-    path: Path | undefined;
+    path: Path | Root;
     deferDepth: number | undefined;
     iterator?: AsyncIterator<unknown>;
     parentContext: AsyncPayloadRecord | undefined;

@@ -3,7 +3,8 @@ import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { Path, pathToArray } from '../jsutils/Path.js';
+import type { Path } from '../jsutils/Path.js';
+import { pathToArray, Root } from '../jsutils/Path.js';
 import { printPathArray } from '../jsutils/printPathArray.js';
 import { suggestionList } from '../jsutils/suggestionList.js';
 
@@ -31,7 +32,7 @@ export function coerceInputValue(
   type: GraphQLInputType,
   onError: OnErrorCB = defaultOnError,
 ): unknown {
-  return coerceInputValueImpl(inputValue, type, onError, undefined);
+  return coerceInputValueImpl(inputValue, type, onError, new Root());
 }
 
 function defaultOnError(
@@ -47,21 +48,11 @@ function defaultOnError(
   throw error;
 }
 
-function addPath(
-  path: Path | undefined,
-  key: string | number,
-  typeName: string | undefined,
-): Path {
-  return path
-    ? path.addPath(key, typeName)
-    : new Path(undefined, key, typeName);
-}
-
 function coerceInputValueImpl(
   inputValue: unknown,
   type: GraphQLInputType,
   onError: OnErrorCB,
-  path: Path | undefined,
+  path: Path | Root,
 ): unknown {
   if (isNonNullType(type)) {
     if (inputValue != null) {
@@ -86,7 +77,7 @@ function coerceInputValueImpl(
     const itemType = type.ofType;
     if (isIterableObject(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
-        const itemPath = addPath(path, index, undefined);
+        const itemPath = path.addPath(index, undefined);
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     }
@@ -130,7 +121,7 @@ function coerceInputValueImpl(
         fieldValue,
         field.type,
         onError,
-        addPath(path, field.name, type.name),
+        path.addPath(field.name, type.name),
       );
     }
 
