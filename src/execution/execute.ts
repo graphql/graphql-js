@@ -542,7 +542,12 @@ class ExecutionController {
     this.isAborted = true;
   }
 
-  private readonly _abortCB = (event: Event) => this.abort(event.target?.reason);
+  private readonly _abortCB = (event: Event) =>
+    this.abort(
+      event.target && 'reason' in event.target
+        ? event.target.reason
+        : undefined,
+    );
 }
 
 function buildPerEventExecutionContext(
