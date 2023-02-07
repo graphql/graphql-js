@@ -42,9 +42,10 @@ export function mapAsyncIterable<T, U, R = undefined>(
     },
     async return(): Promise<IteratorResult<U, R>> {
       // If iterator.return() does not exist, then type R must be undefined.
-      const result = typeof iterator.return === 'function'
-        ? await iterator.return()
-        : { value: undefined as any, done: true }
+      const result =
+        typeof iterator.return === 'function'
+          ? await iterator.return()
+          : { value: undefined as any, done: true };
       return mapResult(result);
     },
     async throw(error?: unknown) {
