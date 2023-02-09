@@ -348,7 +348,7 @@ export class Parser {
         selectionSet: this.parseSelectionSet(),
       });
     }
-    const operation = this.parseOperationType();
+    const operation = this.parseOperationKind();
     let name;
     if (this.peek(TokenKind.NAME)) {
       name = this.parseName();
@@ -364,9 +364,9 @@ export class Parser {
   }
 
   /**
-   * OperationType : one of query mutation subscription
+   * OperationKind : one of query mutation subscription
    */
-  parseOperationType(): OperationTypeNode {
+  parseOperationKind(): OperationTypeNode {
     const operationToken = this.expectToken(TokenKind.NAME);
     switch (operationToken.value) {
       case 'query':
@@ -857,7 +857,7 @@ export class Parser {
 
   /**
    * ```
-   * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
+   * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition* }
    * ```
    */
   parseSchemaDefinition(): SchemaDefinitionNode {
@@ -865,7 +865,7 @@ export class Parser {
     const description = this.parseDescription();
     this.expectKeyword('schema');
     const directives = this.parseConstDirectives();
-    const operationTypes = this.many(
+    const operationTypes = this.any(
       TokenKind.BRACE_L,
       this.parseOperationTypeDefinition,
       TokenKind.BRACE_R,
@@ -879,11 +879,11 @@ export class Parser {
   }
 
   /**
-   * OperationTypeDefinition : OperationType : NamedType
+   * OperationTypeDefinition : OperationKind : NamedType
    */
   parseOperationTypeDefinition(): OperationTypeDefinitionNode {
     const start = this._lexer.token;
-    const operation = this.parseOperationType();
+    const operation = this.parseOperationKind();
     this.expectToken(TokenKind.COLON);
     const type = this.parseNamedType();
     return this.node<OperationTypeDefinitionNode>(start, {
