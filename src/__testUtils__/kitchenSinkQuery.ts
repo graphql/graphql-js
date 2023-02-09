@@ -10,7 +10,7 @@ query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
           ...frag @onFragmentSpread
         }
       }
-      
+
       field3!
       field4?
       requiredField5: field5!

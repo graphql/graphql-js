@@ -519,17 +519,20 @@ describe('visitWithTypeInfo', () => {
   it('supports traversals of fragment arguments', () => {
     const typeInfo = new TypeInfo(testSchema);
 
-    const ast = parse(`
-      query {
-        ...Foo(x: 4)
-      }
+    const ast = parse(
+      `
+        query {
+          ...Foo(x: 4)
+        }
 
-      fragment Foo(
-        $x: ID!
-      ) on QueryRoot {
-        human(id: $x) { name }
-      }
-    `);
+        fragment Foo(
+          $x: ID!
+        ) on QueryRoot {
+          human(id: $x) { name }
+        }
+      `,
+      { experimentalFragmentArguments: true },
+    );
 
     const visited: Array<any> = [];
     visit(

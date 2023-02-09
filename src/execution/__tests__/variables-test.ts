@@ -160,7 +160,7 @@ function executeQuery(
   query: string,
   variableValues?: { [variable: string]: unknown },
 ) {
-  const document = parse(query);
+  const document = parse(query, { experimentalFragmentArguments: true });
   return executeSync({ schema, document, variableValues });
 }
 
