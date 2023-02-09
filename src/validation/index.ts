@@ -48,6 +48,9 @@ export { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule.js';
 // Spec Section: "Fragments must be used"
 export { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule.js';
 
+// Spec Section: "All Fragment Variables Used"
+export { NoUnusedFragmentVariablesRule } from './rules/NoUnusedFragmentVariablesRule.js';
+
 // Spec Section: "All Variables Used"
 export { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule.js';
 

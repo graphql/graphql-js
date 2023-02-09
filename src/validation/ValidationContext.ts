@@ -9,6 +9,7 @@ import type {
   FragmentSpreadNode,
   OperationDefinitionNode,
   SelectionSetNode,
+  VariableDefinitionNode,
   VariableNode,
 } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
@@ -26,13 +27,15 @@ import type {
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
+import type { TypeInfo } from '../utilities/TypeInfo.js';
+import { visitWithTypeInfo } from '../utilities/TypeInfo.js';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
   readonly defaultValue: Maybe<unknown>;
+  readonly fragmentVarDef: Maybe<VariableDefinitionNode>;
 }
 
 /**
@@ -199,16 +202,24 @@ export class ValidationContext extends ASTValidationContext {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages: Array<VariableUsage> = [];
-      const typeInfo = new TypeInfo(this._schema);
+      const typeInfo = this._typeInfo;
+      const localVariableDefinitions =
+        node.kind === Kind.FRAGMENT_DEFINITION
+          ? node.variableDefinitions
+          : undefined;
       visit(
         node,
         visitWithTypeInfo(typeInfo, {
           VariableDefinition: () => false,
           Variable(variable) {
+            const fragmentVarDef = localVariableDefinitions?.find(
+              (varDef) => varDef.variable.name.value === variable.name.value,
+            );
             newUsages.push({
               node: variable,
               type: typeInfo.getInputType(),
               defaultValue: typeInfo.getDefaultValue(),
+              fragmentVarDef,
             });
           },
         }),

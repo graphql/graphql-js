@@ -22,6 +22,8 @@ import {
 } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
+import { keyForFragmentSpread } from '../utilities/keyForFragmentSpread.js';
+import { substituteFragmentArguments } from '../utilities/substituteFragmentArguments.js';
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
 import { getDirectiveValues } from './values.js';
@@ -124,7 +126,7 @@ function collectFieldsImpl(
   selectionSet: SelectionSetNode,
   fields: AccumulatorMap<string, FieldNode>,
   patches: Array<PatchFields>,
-  visitedFragmentNames: Set<string>,
+  visitedFragmentKeys: Set<string>,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -156,7 +158,7 @@ function collectFieldsImpl(
             selection.selectionSet,
             patchFields,
             patches,
-            visitedFragmentNames,
+            visitedFragmentKeys,
           );
           patches.push({
             label: defer.label,
@@ -172,24 +174,24 @@ function collectFieldsImpl(
             selection.selectionSet,
             fields,
             patches,
-            visitedFragmentNames,
+            visitedFragmentKeys,
           );
         }
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
-        const fragName = selection.name.value;
+        const fragmentKey = keyForFragmentSpread(selection);
 
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
 
         const defer = getDeferValues(operation, variableValues, selection);
-        if (visitedFragmentNames.has(fragName) && !defer) {
+        if (visitedFragmentKeys.has(fragmentKey) && !defer) {
           continue;
         }
 
-        const fragment = fragments[fragName];
+        const fragment = fragments[selection.name.value];
         if (
           !fragment ||
           !doesFragmentConditionMatch(schema, fragment, runtimeType)
@@ -198,9 +200,13 @@ function collectFieldsImpl(
         }
 
         if (!defer) {
-          visitedFragmentNames.add(fragName);
+          visitedFragmentKeys.add(fragmentKey);
         }
 
+        const fragmentSelectionSet = substituteFragmentArguments(
+          fragment,
+          selection,
+        );
         if (defer) {
           const patchFields = new AccumulatorMap<string, FieldNode>();
           collectFieldsImpl(
@@ -209,10 +215,10 @@ function collectFieldsImpl(
             variableValues,
             operation,
             runtimeType,
-            fragment.selectionSet,
+            fragmentSelectionSet,
             patchFields,
             patches,
-            visitedFragmentNames,
+            visitedFragmentKeys,
           );
           patches.push({
             label: defer.label,
@@ -225,10 +231,10 @@ function collectFieldsImpl(
             variableValues,
             operation,
             runtimeType,
-            fragment.selectionSet,
+            fragmentSelectionSet,
             fields,
             patches,
-            visitedFragmentNames,
+            visitedFragmentKeys,
           );
         }
         break;
