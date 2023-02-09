@@ -2,6 +2,7 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.js';
+import { viralSDL } from '../../__testUtils__/viralSDL.js';
 
 import type { Maybe } from '../../jsutils/Maybe.js';
 
@@ -1091,5 +1092,15 @@ describe('Schema Builder', () => {
     expect(() => buildSchema(sdl, { assumeValidSDL: true })).to.throw(
       'Unknown type: "UnknownType".',
     );
+  });
+
+  it('correctly processes viral schema', () => {
+    const schema = buildSchema(viralSDL);
+    expect(schema.getQueryType()).to.contain({ name: 'Query' });
+    expect(schema.getType('Virus')).to.contain({ name: 'Virus' });
+    expect(schema.getType('Mutation')).to.contain({ name: 'Mutation' });
+    // Though the viral schema has a 'Mutation' type, it is not used for the
+    // 'mutation' operation.
+    expect(schema.getMutationType()).to.equal(undefined);
   });
 });

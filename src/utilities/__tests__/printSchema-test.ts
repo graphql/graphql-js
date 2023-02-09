@@ -2,6 +2,8 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent, dedentString } from '../../__testUtils__/dedent.js';
+import { viralSchema } from '../../__testUtils__/viralSchema.js';
+import { viralSDL } from '../../__testUtils__/viralSDL.js';
 
 import { DirectiveLocation } from '../../language/directiveLocation.js';
 
@@ -866,5 +868,9 @@ describe('Type System Printer', () => {
         INPUT_FIELD_DEFINITION
       }
     `);
+  });
+  it('prints viral schema correctly', () => {
+    const printed = printSchema(viralSchema);
+    expect(printed).to.equal(viralSDL);
   });
 });
