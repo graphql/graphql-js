@@ -22,7 +22,6 @@ export enum Kind {
   FRAGMENT_SPREAD = 'FragmentSpread',
   INLINE_FRAGMENT = 'InlineFragment',
   FRAGMENT_DEFINITION = 'FragmentDefinition',
-  FRAGMENT_ARGUMENT_DEFINITION = 'FragmentArgumentDefinition',
 
   /** Values */
   VARIABLE = 'Variable',
