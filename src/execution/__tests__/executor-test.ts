@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
+import type { IAbortSignal, IEvent } from '../../jsutils/AbortController.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../../language/kinds.js';
@@ -1317,7 +1318,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
   it('stops execution and throws an error when signal is aborted', async () => {
     // TODO: use real Event once we can finally drop node14 support
-    class MockAbortEvent implements Event {
+    class MockAbortEvent implements IEvent {
       cancelable = false;
       bubbles = false;
       composed = false;
@@ -1335,9 +1336,9 @@ describe('Execute: Handles basic execution tasks', () => {
       CAPTURING_PHASE = 0;
       NONE = 0;
 
-      target: AbortSignal;
+      target: IAbortSignal;
 
-      constructor(abortSignal: AbortSignal) {
+      constructor(abortSignal: IAbortSignal) {
         this.target = abortSignal;
       }
 
@@ -1362,9 +1363,9 @@ describe('Execute: Handles basic execution tasks', () => {
       };
     }
 
-    class MockAbortSignal implements AbortSignal {
+    class MockAbortSignal implements IAbortSignal {
       aborted: boolean = false;
-      onabort: ((ev: Event) => any) | null = null;
+      onabort: ((ev: IEvent) => any) | null = null;
       reason: unknown;
 
       throwIfAborted() {
@@ -1386,7 +1387,7 @@ describe('Execute: Handles basic execution tasks', () => {
         this.onabort = null;
       }
 
-      dispatchEvent(event: Event): boolean {
+      dispatchEvent(event: IEvent): boolean {
         expect(this.onabort).to.be.a('function');
         this.onabort?.(event);
         return true;

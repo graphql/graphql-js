@@ -1,3 +1,4 @@
+import type { IAbortSignal } from '../jsutils/AbortController.js';
 import { devAssert } from '../jsutils/devAssert.js';
 import { didYouMean } from '../jsutils/didYouMean.js';
 import { identityFunc } from '../jsutils/identityFunc.js';
@@ -904,7 +905,7 @@ export interface GraphQLResolveInfo {
    * Note: signal is undefined only if execution environment doesn't support
    * AbortController (e.g. node14 without polyfill).
    */
-  readonly signal: AbortSignal | undefined;
+  readonly signal: IAbortSignal | undefined;
 }
 
 /**

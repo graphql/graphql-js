@@ -1,3 +1,8 @@
+import type {
+  IAbortController,
+  IAbortSignal,
+  IEvent,
+} from '../jsutils/AbortController.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
@@ -262,7 +267,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  signal?: AbortSignal | undefined;
+  signal?: IAbortSignal | undefined;
 }
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
@@ -523,16 +528,18 @@ class ExecutionController {
   /** For performance reason we can't use `signal.isAborted` so we cache it here */
   isAborted: boolean = false;
 
-  private readonly _passedInAbortSignal: AbortSignal | undefined;
-  private readonly _abortController: AbortController | undefined =
-    typeof AbortController !== 'undefined' ? new AbortController() : undefined;
+  private readonly _passedInAbortSignal: IAbortSignal | undefined;
+  private readonly _abortController: IAbortController | undefined =
+    typeof AbortController !== 'undefined'
+      ? (new AbortController() as IAbortController)
+      : undefined;
 
-  constructor(signal?: AbortSignal) {
+  constructor(signal?: IAbortSignal) {
     this._passedInAbortSignal = signal;
     this._passedInAbortSignal?.addEventListener('abort', this._abortCB);
   }
 
-  get signal(): AbortSignal | undefined {
+  get signal(): IAbortSignal | undefined {
     return this._abortController?.signal;
   }
 
@@ -542,7 +549,7 @@ class ExecutionController {
     this.isAborted = true;
   }
 
-  private readonly _abortCB = (event: Event) =>
+  private readonly _abortCB = (event: IEvent) =>
     this.abort(
       event.target && 'reason' in event.target
         ? event.target.reason
