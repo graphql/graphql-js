@@ -3,10 +3,9 @@ import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 
-import { mapAsyncIterable } from '../mapAsyncIterable.js';
+import { noop } from '../../jsutils/AbortController.js';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {};
+import { mapAsyncIterable } from '../mapAsyncIterable.js';
 
 /* eslint-disable @typescript-eslint/require-await */
 describe('mapAsyncIterable', () => {

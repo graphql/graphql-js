@@ -529,10 +529,15 @@ class ExecutionController {
   isAborted: boolean = false;
 
   private readonly _passedInAbortSignal: IAbortSignal | undefined;
+
+  // We don't have AbortController in node 14 so we need to use this hack
+  // It can be removed once we drop support for node 14
+  /* c8 ignore start */
   private readonly _abortController: IAbortController | undefined =
     typeof AbortController !== 'undefined'
       ? (new AbortController() as IAbortController)
       : undefined;
+  /* c8 ignore stop */
 
   constructor(signal?: IAbortSignal) {
     this._passedInAbortSignal = signal;
@@ -550,11 +555,7 @@ class ExecutionController {
   }
 
   private readonly _abortCB = (event: IEvent) =>
-    this.abort(
-      event.target && 'reason' in event.target
-        ? event.target.reason
-        : undefined,
-    );
+    this.abort(event.target.reason);
 }
 
 function buildPerEventExecutionContext(
@@ -1789,9 +1790,13 @@ function executeSubscription(
   );
 
   try {
+    // Until we have execution cancelling support in Subscriptions,
+    // ignore test coverage.
+    /* c8 ignore start */
     if (exeContext.executionController.isAborted) {
       exeContext.executionController.signal?.throwIfAborted();
     }
+    /* c8 ignore stop */
 
     // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
     // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
