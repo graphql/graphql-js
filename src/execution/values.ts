@@ -131,7 +131,7 @@ function coerceVariableValues(
         onError(
           new GraphQLError(prefix + '; ' + error.message, {
             nodes: varDefNode,
-            originalError: error.originalError,
+            originalError: error,
           }),
         );
       },
