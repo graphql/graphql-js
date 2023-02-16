@@ -5,7 +5,6 @@ env:
   shared-node-browser: true
 reportUnusedDisableDirectives: true
 plugins:
-  - internal-rules
   - node
   - import
   - simple-import-sort
@@ -22,9 +21,9 @@ rules:
   # See './resources/eslint-internal-rules/README.md'
   ##############################################################################
 
-  internal-rules/only-ascii: error
-  internal-rules/no-dir-import: error
-  internal-rules/require-to-string-tag: off
+  only-ascii: error
+  no-dir-import: error
+  require-to-string-tag: off
 
   ##############################################################################
   # `eslint-plugin-node` rule list based on `v11.1.x`
@@ -658,10 +657,10 @@ overrides:
       '@typescript-eslint/type-annotation-spacing': off
   - files: 'src/**'
     rules:
-      internal-rules/require-to-string-tag: error
+      require-to-string-tag: error
   - files: 'src/**/__*__/**'
     rules:
-      internal-rules/require-to-string-tag: off
+      require-to-string-tag: off
       node/no-unpublished-import: [error, { allowModules: ['chai', 'mocha'] }]
       import/no-deprecated: off
       import/no-restricted-paths: off
@@ -700,7 +699,7 @@ overrides:
     env:
       node: true
     rules:
-      internal-rules/only-ascii: [error, { allowEmoji: true }]
+      only-ascii: [error, { allowEmoji: true }]
       node/no-unpublished-import: off
       node/no-sync: off
       import/no-namespace: off
