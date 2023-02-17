@@ -30,6 +30,13 @@ assert.deepStrictEqual(result, {
   },
 });
 
+/**
+ * The below test triggers a call `invariant` method during execution (by
+ * passing a negative number to the `initialCount` parameter on the `@stream`
+ * directive). This ensures that the `inlineInvariant` method called by our
+ * build script works correctly.
+ **/
+
 const experimentalSchema = buildSchema(`
   directive @stream(initialCount: Int!) on FIELD
 
