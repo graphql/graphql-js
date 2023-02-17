@@ -58,7 +58,7 @@ function KnownDirectivesRule(context) {
 exports.KnownDirectivesRule = KnownDirectivesRule;
 function getDirectiveLocationForASTPath(ancestors) {
   const appliedTo = ancestors[ancestors.length - 1];
-  'kind' in appliedTo || invariant(false);
+  'kind' in appliedTo || (0, invariant_js_1.invariant)(false);
   switch (appliedTo.kind) {
     case kinds_js_1.Kind.OPERATION_DEFINITION:
       return getDirectiveLocationForOperation(appliedTo.operation);
@@ -99,7 +99,7 @@ function getDirectiveLocationForASTPath(ancestors) {
       return directiveLocation_js_1.DirectiveLocation.INPUT_OBJECT;
     case kinds_js_1.Kind.INPUT_VALUE_DEFINITION: {
       const parentNode = ancestors[ancestors.length - 3];
-      'kind' in parentNode || invariant(false);
+      'kind' in parentNode || (0, invariant_js_1.invariant)(false);
       return parentNode.kind === kinds_js_1.Kind.INPUT_OBJECT_TYPE_DEFINITION
         ? directiveLocation_js_1.DirectiveLocation.INPUT_FIELD_DEFINITION
         : directiveLocation_js_1.DirectiveLocation.ARGUMENT_DEFINITION;
@@ -108,7 +108,7 @@ function getDirectiveLocationForASTPath(ancestors) {
     /* c8 ignore next 2 */
     default:
       false ||
-        invariant(
+        (0, invariant_js_1.invariant)(
           false,
           'Unexpected kind: ' + (0, inspect_js_1.inspect)(appliedTo.kind),
         );

@@ -106,7 +106,10 @@ function typeToExtKind(type) {
   /* c8 ignore next 3 */
   // Not reachable. All possible types have been considered
   false ||
-    invariant(false, 'Unexpected type: ' + (0, inspect_js_1.inspect)(type));
+    (0, invariant_js_1.invariant)(
+      false,
+      'Unexpected type: ' + (0, inspect_js_1.inspect)(type),
+    );
 }
 function extensionKindToTypeName(kind) {
   switch (kind) {
@@ -126,6 +129,9 @@ function extensionKindToTypeName(kind) {
     /* c8 ignore next 2 */
     default:
       false ||
-        invariant(false, 'Unexpected kind: ' + (0, inspect_js_1.inspect)(kind));
+        (0, invariant_js_1.invariant)(
+          false,
+          'Unexpected kind: ' + (0, inspect_js_1.inspect)(kind),
+        );
   }
 }

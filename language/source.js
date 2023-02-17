@@ -20,12 +20,12 @@ class Source {
     this.name = name;
     this.locationOffset = locationOffset;
     this.locationOffset.line > 0 ||
-      devAssert(
+      (0, devAssert_js_1.devAssert)(
         false,
         'line in locationOffset is 1-indexed and must be positive.',
       );
     this.locationOffset.column > 0 ||
-      devAssert(
+      (0, devAssert_js_1.devAssert)(
         false,
         'column in locationOffset is 1-indexed and must be positive.',
       );

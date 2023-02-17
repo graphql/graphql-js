@@ -26,7 +26,8 @@ function introspectionFromSchema(schema, options) {
     (0, getIntrospectionQuery_js_1.getIntrospectionQuery)(optionsWithDefaults),
   );
   const result = (0, execute_js_1.executeSync)({ schema, document });
-  (result.errors == null && result.data != null) || invariant(false);
+  (result.errors == null && result.data != null) ||
+    (0, invariant_js_1.invariant)(false);
   return result.data;
 }
 exports.introspectionFromSchema = introspectionFromSchema;

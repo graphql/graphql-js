@@ -22,7 +22,7 @@ function UniqueInputFieldNamesRule(context) {
       },
       leave() {
         const prevKnownNames = knownNameStack.pop();
-        prevKnownNames != null || invariant(false);
+        prevKnownNames != null || (0, invariant_js_1.invariant)(false);
         knownNames = prevKnownNames;
       },
     },

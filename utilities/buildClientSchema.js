@@ -29,7 +29,7 @@ function buildClientSchema(introspection, options) {
   // as an untyped value from the server, so we will do an additional check here.
   ((0, isObjectLike_js_1.isObjectLike)(introspection) &&
     (0, isObjectLike_js_1.isObjectLike)(introspection.__schema)) ||
-    devAssert(
+    (0, devAssert_js_1.devAssert)(
       false,
       `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${(0,
       inspect_js_1.inspect)(introspection)}.`,

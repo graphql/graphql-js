@@ -441,11 +441,14 @@ function typeKindName(type) {
   /* c8 ignore next 3 */
   // Not reachable, all possible types have been considered.
   false ||
-    invariant(false, 'Unexpected type: ' + (0, inspect_js_1.inspect)(type));
+    (0, invariant_js_1.invariant)(
+      false,
+      'Unexpected type: ' + (0, inspect_js_1.inspect)(type),
+    );
 }
 function stringifyValue(value, type) {
   const ast = (0, astFromValue_js_1.astFromValue)(value, type);
-  ast != null || invariant(false);
+  ast != null || (0, invariant_js_1.invariant)(false);
   return (0, printer_js_1.print)((0, sortValueNode_js_1.sortValueNode)(ast));
 }
 function diff(oldArray, newArray) {

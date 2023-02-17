@@ -74,7 +74,7 @@ function visit(root, visitor, visitorKeys = ast_js_1.QueryDocumentKeys) {
     let result;
     if (!Array.isArray(node)) {
       (0, ast_js_1.isNode)(node) ||
-        devAssert(
+        (0, devAssert_js_1.devAssert)(
           false,
           `Invalid AST Node: ${(0, inspect_js_1.inspect)(node)}.`,
         );

@@ -11,7 +11,7 @@ function getLocation(source, position) {
   let lastLineStart = 0;
   let line = 1;
   for (const match of source.body.matchAll(LineRegExp)) {
-    typeof match.index === 'number' || invariant(false);
+    typeof match.index === 'number' || (0, invariant_js_1.invariant)(false);
     if (match.index >= position) {
       break;
     }

@@ -233,7 +233,7 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
         /* c8 ignore next 3 */
         // Not reachable, all possible types have been considered)
         false ||
-          invariant(
+          (0, invariant_js_1.invariant)(
             false,
             `Unexpected type: "${(0, inspect_js_1.inspect)(type)}".`,
           );

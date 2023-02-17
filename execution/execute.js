@@ -655,7 +655,7 @@ function completeValue(
   /* c8 ignore next 6 */
   // Not reachable, all possible output types have been considered.
   false ||
-    invariant(
+    (0, invariant_js_1.invariant)(
       false,
       'Cannot complete value of unexpected output type: ' +
         (0, inspect_js_1.inspect)(returnType),
@@ -721,11 +721,14 @@ function getStreamValues(exeContext, fieldNodes, path) {
     return;
   }
   typeof stream.initialCount === 'number' ||
-    invariant(false, 'initialCount must be a number');
+    (0, invariant_js_1.invariant)(false, 'initialCount must be a number');
   stream.initialCount >= 0 ||
-    invariant(false, 'initialCount must be a positive integer');
+    (0, invariant_js_1.invariant)(
+      false,
+      'initialCount must be a positive integer',
+    );
   exeContext.operation.operation !== ast_js_1.OperationTypeNode.SUBSCRIPTION ||
-    invariant(
+    (0, invariant_js_1.invariant)(
       false,
       '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
     );

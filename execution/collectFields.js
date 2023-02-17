@@ -218,7 +218,7 @@ function getDeferValues(operation, variableValues, node) {
     return;
   }
   operation.operation !== ast_js_1.OperationTypeNode.SUBSCRIPTION ||
-    invariant(
+    (0, invariant_js_1.invariant)(
       false,
       '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
     );

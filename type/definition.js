@@ -483,7 +483,7 @@ class GraphQLScalarType {
     if (config.parseLiteral) {
       (typeof config.parseValue === 'function' &&
         typeof config.parseLiteral === 'function') ||
-        devAssert(
+        (0, devAssert_js_1.devAssert)(
           false,
           `${this.name} must provide both "parseValue" and "parseLiteral" functions.`,
         );
@@ -1006,7 +1006,7 @@ function defineInputFieldMap(config) {
   const fieldMap = resolveObjMapThunk(config.fields);
   return (0, mapValue_js_1.mapValue)(fieldMap, (fieldConfig, fieldName) => {
     !('resolve' in fieldConfig) ||
-      devAssert(
+      (0, devAssert_js_1.devAssert)(
         false,
         `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
       );

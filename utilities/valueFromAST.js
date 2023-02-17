@@ -130,7 +130,7 @@ function valueFromAST(valueNode, type, variables) {
   /* c8 ignore next 3 */
   // Not reachable, all possible input types have been considered.
   false ||
-    invariant(
+    (0, invariant_js_1.invariant)(
       false,
       'Unexpected input type: ' + (0, inspect_js_1.inspect)(type),
     );
