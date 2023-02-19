@@ -753,6 +753,7 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({ data: { second: 'b' } });
   });
 
+  /* c8 ignore start */
   it('provides error if no operation is provided', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -770,6 +771,7 @@ describe('Execute: Handles basic execution tasks', () => {
       errors: [{ message: 'Must provide an operation.' }],
     });
   });
+  /* c8 ignore stop */
 
   it('errors if no op name is provided with multiple operations', () => {
     const schema = new GraphQLSchema({
