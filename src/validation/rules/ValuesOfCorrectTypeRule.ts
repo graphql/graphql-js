@@ -16,7 +16,7 @@ import { Kind } from '../../language/kinds.js';
 import { print } from '../../language/printer.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { GraphQLInputObjectType } from '../../type/definition';
+import type { GraphQLInputObjectType } from '../../type/definition.js';
 import {
   getNamedType,
   getNullableType,

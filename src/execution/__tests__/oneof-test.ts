@@ -1,13 +1,13 @@
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import type { ExecutionResult } from '../execute';
-import { execute } from '../execute';
+import type { ExecutionResult } from '../execute.js';
+import { execute } from '../execute.js';
 
 const schema = buildSchema(`
   type Query {
