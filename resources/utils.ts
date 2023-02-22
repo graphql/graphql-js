@@ -1,47 +1,142 @@
-import * as assert from 'node:assert';
-import * as childProcess from 'node:child_process';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import assert from 'node:assert';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-import * as prettier from 'prettier';
+import prettier from 'prettier';
+import ts from 'typescript';
 
-export function exec(command: string, options?: { cwd: string }): void {
-  childProcess.execSync(command, options);
+export function localRepoPath(...paths: ReadonlyArray<string>): string {
+  const repoDir = new URL('..', import.meta.url).pathname;
+  return path.join(repoDir, ...paths);
 }
 
-export function execOutput(command: string, options?: { cwd: string }): string {
-  const output = childProcess.execSync(command, {
+interface MakeTmpDirReturn {
+  tmpDirPath: (...paths: ReadonlyArray<string>) => string;
+}
+
+export function makeTmpDir(name: string): MakeTmpDirReturn {
+  const tmpDir = path.join(os.tmpdir(), name);
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.mkdirSync(tmpDir);
+
+  return {
+    tmpDirPath: (...paths) => path.join(tmpDir, ...paths),
+  };
+}
+
+interface NPMOptions extends SpawnOptions {
+  quiet?: boolean;
+}
+
+export function npm(options?: NPMOptions) {
+  const globalOptions = options?.quiet === true ? ['--quiet'] : [];
+  return {
+    run(...args: ReadonlyArray<string>): void {
+      spawn('npm', [...globalOptions, 'run', ...args], options);
+    },
+    install(...args: ReadonlyArray<string>): void {
+      spawn('npm', [...globalOptions, 'install', ...args], options);
+    },
+    ci(...args: ReadonlyArray<string>): void {
+      spawn('npm', [...globalOptions, 'ci', ...args], options);
+    },
+    exec(...args: ReadonlyArray<string>): void {
+      spawn('npm', [...globalOptions, 'exec', ...args], options);
+    },
+    pack(...args: ReadonlyArray<string>): string {
+      return spawnOutput('npm', [...globalOptions, 'pack', ...args], options);
+    },
+    diff(...args: ReadonlyArray<string>): string {
+      return spawnOutput('npm', [...globalOptions, 'diff', ...args], options);
+    },
+  };
+}
+
+interface GITOptions extends SpawnOptions {
+  quiet?: boolean;
+}
+
+export function git(options?: GITOptions) {
+  const cmdOptions = options?.quiet === true ? ['--quiet'] : [];
+  return {
+    clone(...args: ReadonlyArray<string>): void {
+      spawn('git', ['clone', ...cmdOptions, ...args], options);
+    },
+    checkout(...args: ReadonlyArray<string>): void {
+      spawn('git', ['checkout', ...cmdOptions, ...args], options);
+    },
+    revParse(...args: ReadonlyArray<string>): string {
+      return spawnOutput('git', ['rev-parse', ...cmdOptions, ...args], options);
+    },
+    revList(...args: ReadonlyArray<string>): Array<string> {
+      const allArgs = ['rev-list', ...cmdOptions, ...args];
+      const result = spawnOutput('git', allArgs, options);
+      return result === '' ? [] : result.split('\n');
+    },
+    catFile(...args: ReadonlyArray<string>): string {
+      return spawnOutput('git', ['cat-file', ...cmdOptions, ...args], options);
+    },
+    log(...args: ReadonlyArray<string>): string {
+      return spawnOutput('git', ['log', ...cmdOptions, ...args], options);
+    },
+  };
+}
+
+interface SpawnOptions {
+  cwd?: string;
+  env?: typeof process.env;
+}
+
+function spawnOutput(
+  command: string,
+  args: ReadonlyArray<string>,
+  options?: SpawnOptions,
+): string {
+  const result = childProcess.spawnSync(command, args, {
     maxBuffer: 10 * 1024 * 1024, // 10MB
     stdio: ['inherit', 'pipe', 'inherit'],
     encoding: 'utf-8',
     ...options,
   });
-  assert(output, `Missing output from "${command}"`);
-  return output?.trimEnd();
+
+  if (result.status !== 0) {
+    throw new Error(`Command failed: ${command} ${args.join(' ')}`);
+  }
+
+  return result.stdout.toString().trimEnd();
 }
 
-export function readdirRecursive(
-  dirPath: string,
-  opts: { ignoreDir?: RegExp } = {},
-): Array<string> {
-  const { ignoreDir } = opts;
-  const result = [];
-  for (const dirent of fs.readdirSync(dirPath, { withFileTypes: true })) {
-    const name = dirent.name;
-    if (!dirent.isDirectory()) {
-      result.push(dirent.name);
-      continue;
-    }
-
-    if (ignoreDir?.test(name)) {
-      continue;
-    }
-    const list = readdirRecursive(path.join(dirPath, name), opts).map((f) =>
-      path.join(name, f),
-    );
-    result.push(...list);
+function spawn(
+  command: string,
+  args: ReadonlyArray<string>,
+  options?: SpawnOptions,
+): void {
+  const result = childProcess.spawnSync(command, args, {
+    stdio: 'inherit',
+    ...options,
+  });
+  if (result.status !== 0) {
+    throw new Error(`Command failed: ${command} ${args.join(' ')}`);
   }
-  return result.map((filepath) => './' + filepath);
+}
+
+function* readdirRecursive(dirPath: string): Generator<{
+  name: string;
+  filepath: string;
+  stats: fs.Stats;
+}> {
+  for (const name of fs.readdirSync(dirPath)) {
+    const filepath = path.join(dirPath, name);
+    const stats = fs.lstatSync(filepath);
+
+    if (stats.isDirectory()) {
+      yield* readdirRecursive(filepath);
+    } else {
+      yield { name, filepath, stats };
+    }
+  }
 }
 
 export function showDirStats(dirPath: string): void {
@@ -50,18 +145,14 @@ export function showDirStats(dirPath: string): void {
   } = {};
   let totalSize = 0;
 
-  for (const filepath of readdirRecursive(dirPath)) {
-    const name = filepath.split(path.sep).at(-1);
-    assert(name != null);
-    const [base, ...splitExt] = name.split('.');
-    const ext = splitExt.join('.');
+  for (const { name, filepath, stats } of readdirRecursive(dirPath)) {
+    const ext = name.split('.').slice(1).join('.');
+    const filetype = ext ? '*.' + ext : name;
 
-    const filetype = ext ? '*.' + ext : base;
-    fileTypes[filetype] = fileTypes[filetype] || { filepaths: [], size: 0 };
+    fileTypes[filetype] ??= { filepaths: [], size: 0 };
 
-    const { size } = fs.lstatSync(path.join(dirPath, filepath));
-    totalSize += size;
-    fileTypes[filetype].size += size;
+    totalSize += stats.size;
+    fileTypes[filetype].size += stats.size;
     fileTypes[filetype].filepaths.push(filepath);
   }
 
@@ -72,7 +163,8 @@ export function showDirStats(dirPath: string): void {
     if (numFiles > 1) {
       stats.push([filetype + ' x' + numFiles, typeStats.size]);
     } else {
-      stats.push([typeStats.filepaths[0], typeStats.size]);
+      const relativePath = path.relative(dirPath, typeStats.filepaths[0]);
+      stats.push([relativePath, typeStats.size]);
     }
   }
   stats.sort((a, b) => b[1] - a[1]);
@@ -98,15 +190,17 @@ export function showDirStats(dirPath: string): void {
 }
 
 const prettierConfig = JSON.parse(
-  fs.readFileSync(require.resolve('../.prettierrc'), 'utf-8'),
+  fs.readFileSync(localRepoPath('.prettierrc'), 'utf-8'),
 );
 
 export function writeGeneratedFile(filepath: string, body: string): void {
   const formatted = prettier.format(body, { filepath, ...prettierConfig });
+  fs.mkdirSync(path.dirname(filepath), { recursive: true });
   fs.writeFileSync(filepath, formatted);
 }
 
 interface PackageJSON {
+  description: string;
   version: string;
   private?: boolean;
   repository?: { url?: string };
@@ -116,11 +210,44 @@ interface PackageJSON {
   types?: string;
   typesVersions: { [ranges: string]: { [path: string]: Array<string> } };
   devDependencies?: { [name: string]: string };
-  publishConfig?: { tag?: string };
+  publishConfig: { tag: string };
+
+  // TODO: remove after we drop CJS support
+  main?: string;
+  module?: string;
 }
 
-export function readPackageJSON(): PackageJSON {
-  return JSON.parse(
-    fs.readFileSync(require.resolve('../package.json'), 'utf-8'),
+export function readPackageJSON(
+  dirPath: string = localRepoPath(),
+): PackageJSON {
+  const filepath = path.join(dirPath, 'package.json');
+  return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+}
+
+export function readTSConfig(overrides?: any): ts.CompilerOptions {
+  const tsConfigPath = localRepoPath('tsconfig.json');
+
+  const { config: tsConfig, error: tsConfigError } =
+    ts.parseConfigFileTextToJson(
+      tsConfigPath,
+      fs.readFileSync(tsConfigPath, 'utf-8'),
+    );
+  assert(tsConfigError === undefined, 'Fail to parse config: ' + tsConfigError);
+  assert(
+    tsConfig.compilerOptions,
+    '"tsconfig.json" should have `compilerOptions`',
   );
+
+  const { options: tsOptions, errors: tsOptionsErrors } =
+    ts.convertCompilerOptionsFromJson(
+      { ...tsConfig.compilerOptions, ...overrides },
+      process.cwd(),
+    );
+
+  assert(
+    tsOptionsErrors.length === 0,
+    'Fail to parse options: ' + tsOptionsErrors,
+  );
+
+  return tsOptions;
 }

@@ -1,8 +1,10 @@
-import * as assert from 'node:assert';
-import * as cp from 'node:child_process';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
+import assert from 'node:assert';
+import cp from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import url from 'node:url';
+
+import { git, localRepoPath, makeTmpDir, npm } from './utils.js';
 
 const NS_PER_SEC = 1e9;
 const LOCAL = 'local';
@@ -12,27 +14,14 @@ const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 const minSamples = 5;
 
-async function runBenchmarks() {
+function runBenchmarks() {
   // Get the revisions and make things happen!
   const { benchmarks, revisions } = getArguments(process.argv.slice(2));
   const benchmarkProjects = prepareBenchmarkProjects(revisions);
 
   for (const benchmark of benchmarks) {
-    await runBenchmark(benchmark, benchmarkProjects);
+    runBenchmark(benchmark, benchmarkProjects);
   }
-}
-
-function localDir(...paths: ReadonlyArray<string>) {
-  return path.join(__dirname, '..', ...paths);
-}
-
-function exec(command: string, options = {}) {
-  const result = cp.execSync(command, {
-    encoding: 'utf-8',
-    stdio: ['inherit', 'pipe', 'inherit'],
-    ...options,
-  });
-  return result?.trimEnd();
 }
 
 interface BenchmarkProject {
@@ -45,20 +34,15 @@ interface BenchmarkProject {
 function prepareBenchmarkProjects(
   revisionList: ReadonlyArray<string>,
 ): Array<BenchmarkProject> {
-  const tmpDir = path.join(os.tmpdir(), 'graphql-js-benchmark');
-  fs.rmSync(tmpDir, { recursive: true, force: true });
-  fs.mkdirSync(tmpDir);
-
-  const setupDir = path.join(tmpDir, 'setup');
-  fs.mkdirSync(setupDir);
+  const { tmpDirPath } = makeTmpDir('graphql-js-benchmark');
 
   return revisionList.map((revision) => {
     console.log(`🍳  Preparing ${revision}...`);
-    const projectPath = path.join(setupDir, revision);
+    const projectPath = tmpDirPath('setup', revision);
     fs.rmSync(projectPath, { recursive: true, force: true });
-    fs.mkdirSync(projectPath);
+    fs.mkdirSync(projectPath, { recursive: true });
 
-    fs.cpSync(localDir('benchmark'), path.join(projectPath, 'benchmark'), {
+    fs.cpSync(localRepoPath('benchmark'), path.join(projectPath, 'benchmark'), {
       recursive: true,
     });
 
@@ -73,53 +57,70 @@ function prepareBenchmarkProjects(
       path.join(projectPath, 'package.json'),
       JSON.stringify(packageJSON, null, 2),
     );
-    exec('npm --quiet install --ignore-scripts ', { cwd: projectPath });
+    npm({ cwd: projectPath, quiet: true }).install('--ignore-scripts');
 
     return { revision, projectPath };
   });
 
   function prepareNPMPackage(revision: string) {
     if (revision === LOCAL) {
-      const repoDir = localDir();
-      const archivePath = path.join(tmpDir, 'graphql-local.tgz');
+      const repoDir = localRepoPath();
+      const archivePath = tmpDirPath('graphql-local.tgz');
       fs.renameSync(buildNPMArchive(repoDir), archivePath);
       return archivePath;
     }
 
     // Returns the complete git hash for a given git revision reference.
-    const hash = exec(`git rev-parse "${revision}"`);
+    const hash = git().revParse(revision);
 
-    const archivePath = path.join(tmpDir, `graphql-${hash}.tgz`);
+    const archivePath = tmpDirPath(`graphql-${hash}.tgz`);
     if (fs.existsSync(archivePath)) {
       return archivePath;
     }
 
-    const repoDir = path.join(tmpDir, hash);
+    const repoDir = tmpDirPath(hash);
     fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
-    exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
-    exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
+    git({ quiet: true }).clone(localRepoPath(), repoDir);
+    git({ cwd: repoDir, quiet: true }).checkout('--detach', hash);
+    npm({ cwd: repoDir, quiet: true }).ci('--ignore-scripts');
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
     fs.rmSync(repoDir, { recursive: true });
     return archivePath;
   }
 
   function buildNPMArchive(repoDir: string) {
-    exec('npm --quiet run build:npm', { cwd: repoDir });
+    npm({ cwd: repoDir, quiet: true }).run('build:npm');
 
     const distDir = path.join(repoDir, 'npmDist');
-    const archiveName = exec(`npm --quiet pack ${distDir}`, { cwd: repoDir });
+    const archiveName = npm({ cwd: repoDir, quiet: true }).pack(distDir);
     return path.join(repoDir, archiveName);
   }
 }
 
-async function collectSamples(modulePath: string) {
+function collectSamples(modulePath: string) {
+  let numOfConsequentlyRejectedSamples = 0;
   const samples = [];
 
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
   while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
-    const sample = await sampleModule(modulePath);
+    const sample = sampleModule(modulePath);
+
+    if (sample.involuntaryContextSwitches > 0) {
+      numOfConsequentlyRejectedSamples++;
+      if (numOfConsequentlyRejectedSamples === 5) {
+        console.error(
+          yellow(
+            '  Five or more consequent runs beings rejected because of context switching.\n' +
+              '  Measurement can take a significantly longer time and its correctness can also be impacted.',
+          ),
+        );
+      }
+      continue;
+    }
+    numOfConsequentlyRejectedSamples = 0;
+
     assert(sample.clocked > 0);
     assert(sample.memUsed > 0);
     samples.push(sample);
@@ -131,11 +132,11 @@ async function collectSamples(modulePath: string) {
 // See http://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.
 // prettier-ignore
 const tTable: { [v: number]: number } = {
-  '1':  12.706, '2':  4.303, '3':  3.182, '4':  2.776, '5':  2.571, '6':  2.447,
-  '7':  2.365,  '8':  2.306, '9':  2.262, '10': 2.228, '11': 2.201, '12': 2.179,
-  '13': 2.16,   '14': 2.145, '15': 2.131, '16': 2.12,  '17': 2.11,  '18': 2.101,
-  '19': 2.093,  '20': 2.086, '21': 2.08,  '22': 2.074, '23': 2.069, '24': 2.064,
-  '25': 2.06,   '26': 2.056, '27': 2.052, '28': 2.048, '29': 2.045, '30': 2.042,
+  1:  12.706, 2:  4.303, 3:  3.182, 4:  2.776, 5:  2.571, 6:  2.447,
+  7:  2.365,  8:  2.306, 9:  2.262, 10: 2.228, 11: 2.201, 12: 2.179,
+  13: 2.16,   14: 2.145, 15: 2.131, 16: 2.12,  17: 2.11,  18: 2.101,
+  19: 2.093,  20: 2.086, 21: 2.08,  22: 2.074, 23: 2.069, 24: 2.064,
+  25: 2.06,   26: 2.056, 27: 2.052, 28: 2.048, 29: 2.045, 30: 2.042,
 };
 const tTableInfinity = 1.96;
 
@@ -265,7 +266,7 @@ function maxBy<T>(array: ReadonlyArray<T>, fn: (obj: T) => number) {
 }
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
-async function runBenchmark(
+function runBenchmark(
   benchmark: string,
   benchmarkProjects: ReadonlyArray<BenchmarkProject>,
 ) {
@@ -275,17 +276,17 @@ async function runBenchmark(
     const modulePath = path.join(projectPath, benchmark);
 
     if (i === 0) {
-      const { name } = await sampleModule(modulePath);
+      const { name } = sampleModule(modulePath);
       console.log('⏱   ' + name);
     }
 
     try {
-      const samples = await collectSamples(modulePath);
+      const samples = collectSamples(modulePath);
 
       results.push(computeStats(revision, samples));
       process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
     } catch (error) {
-      console.log('  ' + revision + ': ' + red(String(error)));
+      console.log('  ' + revision + ': ' + red(error.message));
     }
   }
   console.log('\n');
@@ -321,7 +322,7 @@ function getArguments(argv: ReadonlyArray<string>) {
 
 function findAllBenchmarks() {
   return fs
-    .readdirSync(localDir('benchmark'), { withFileTypes: true })
+    .readdirSync(localRepoPath('benchmark'), { withFileTypes: true })
     .filter((dirent) => dirent.isFile())
     .map((dirent) => dirent.name)
     .filter((name) => name.endsWith('-benchmark.js'))
@@ -356,71 +357,76 @@ interface BenchmarkSample {
   name: string;
   clocked: number;
   memUsed: number;
+  involuntaryContextSwitches: number;
 }
 
-function sampleModule(modulePath: string): Promise<BenchmarkSample> {
+function sampleModule(modulePath: string): BenchmarkSample {
+  // To support Windows we need to use URL instead of path
+  const moduleURL = url.pathToFileURL(modulePath);
+
   const sampleCode = `
-    import assert from 'node:assert';
+    import fs from 'node:fs';
 
-    assert(global.gc);
-    assert(process.send);
+    import { benchmark } from '${moduleURL}';
 
-    import { benchmark } from '${modulePath}';
+    // warm up, it looks like 7 is a magic number to reliably trigger JIT
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
+    await benchmark.measure();
 
-    clock(7, benchmark.measure); // warm up
-    global.gc();
-    process.nextTick(() => {
-      const memBaseline = process.memoryUsage().heapUsed;
-      const clocked = clock(benchmark.count, benchmark.measure);
-      process.send({
-        name: benchmark.name,
-        clocked: clocked / benchmark.count,
-        memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
-      });
-    });
+    const memBaseline = process.memoryUsage().heapUsed;
 
-    // Clocks the time taken to execute a test per cycle (secs).
-    function clock(count, fn) {
-      const start = process.hrtime.bigint();
-      for (let i = 0; i < count; ++i) {
-        fn();
-      }
-      return Number(process.hrtime.bigint() - start);
+    const resourcesStart = process.resourceUsage();
+    const startTime = process.hrtime.bigint();
+    for (let i = 0; i < benchmark.count; ++i) {
+      await benchmark.measure();
     }
+    const timeDiff = Number(process.hrtime.bigint() - startTime);
+    const resourcesEnd = process.resourceUsage();
+
+    const result = {
+      name: benchmark.name,
+      clocked: timeDiff / benchmark.count,
+      memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
+      involuntaryContextSwitches:
+        resourcesEnd.involuntaryContextSwitches - resourcesStart.involuntaryContextSwitches,
+    };
+    fs.writeFileSync(3, JSON.stringify(result));
   `;
 
-  return new Promise((resolve, reject) => {
-    const child = cp.spawn(
-      process.execPath,
-      [
-        '--no-concurrent-sweeping',
-        '--predictable',
-        '--expose-gc',
-        '--input-type=module',
-        '--eval',
-        sampleCode,
-      ],
-      {
-        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-        env: { NODE_ENV: 'production' },
-      },
-    );
+  const result = cp.spawnSync(
+    process.execPath,
+    [
+      // V8 flags
+      '--predictable',
+      '--no-concurrent-sweeping',
+      '--no-scavenge-task',
+      '--min-semi-space-size=1024', // 1GB
+      '--max-semi-space-size=1024', // 1GB
+      '--trace-gc', // no gc calls should happen during benchmark, so trace them
 
-    let message: any;
-    let error: any;
+      // Node.js flags
+      '--input-type=module',
+      '--eval',
+      sampleCode,
+    ],
+    {
+      stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
+      env: { NODE_ENV: 'production' },
+    },
+  );
 
-    child.on('message', (msg) => (message = msg));
-    child.on('error', (e) => (error = e));
-    child.on('close', () => {
-      if (message) {
-        return resolve(message);
-      }
-      reject(error || new Error('Spawn process closed without error'));
-    });
-  });
+  if (result.status !== 0) {
+    throw new Error(`Benchmark failed with "${result.status}" status.`);
+  }
+
+  const resultStr = result.output[3]?.toString();
+  assert(resultStr != null);
+  return JSON.parse(resultStr);
 }
 
-runBenchmarks().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+runBenchmarks();

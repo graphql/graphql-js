@@ -1,18 +1,18 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
 import {
   GraphQLInterfaceType,
   GraphQLList,
   GraphQLObjectType,
   GraphQLUnionType,
-} from '../../type/definition';
-import { GraphQLBoolean, GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+} from '../../type/definition.js';
+import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { executeSync } from '../execute';
+import { executeSync } from '../execute.js';
 
 class Dog {
   name: string;
@@ -44,8 +44,8 @@ class Cat {
 
 class Person {
   name: string;
-  pets?: ReadonlyArray<Dog | Cat>;
-  friends?: ReadonlyArray<Dog | Cat | Person>;
+  pets: ReadonlyArray<Dog | Cat> | undefined;
+  friends: ReadonlyArray<Dog | Cat | Person> | undefined;
 
   constructor(
     name: string,

@@ -1,8 +1,8 @@
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
-import { keyMap } from '../jsutils/keyMap';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { keyMap } from '../jsutils/keyMap.js';
 
-import { print } from '../language/printer';
+import { print } from '../language/printer.js';
 
 import type {
   GraphQLEnumType,
@@ -14,7 +14,7 @@ import type {
   GraphQLObjectType,
   GraphQLType,
   GraphQLUnionType,
-} from '../type/definition';
+} from '../type/definition.js';
 import {
   isEnumType,
   isInputObjectType,
@@ -27,12 +27,12 @@ import {
   isRequiredInputField,
   isScalarType,
   isUnionType,
-} from '../type/definition';
-import { isSpecifiedScalarType } from '../type/scalars';
-import type { GraphQLSchema } from '../type/schema';
+} from '../type/definition.js';
+import { isSpecifiedScalarType } from '../type/scalars.js';
+import type { GraphQLSchema } from '../type/schema.js';
 
-import { astFromValue } from './astFromValue';
-import { sortValueNode } from './sortValueNode';
+import { astFromValue } from './astFromValue.js';
+import { sortValueNode } from './sortValueNode.js';
 
 export enum BreakingChangeType {
   TYPE_REMOVED = 'TYPE_REMOVED',

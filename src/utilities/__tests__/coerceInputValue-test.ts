@@ -1,17 +1,17 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { GraphQLInputType } from '../../type/definition';
+import type { GraphQLInputType } from '../../type/definition.js';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
-} from '../../type/definition';
-import { GraphQLInt } from '../../type/scalars';
+} from '../../type/definition.js';
+import { GraphQLInt } from '../../type/scalars.js';
 
-import { coerceInputValue } from '../coerceInputValue';
+import { coerceInputValue } from '../coerceInputValue.js';
 
 interface CoerceResult {
   value: unknown;
@@ -118,7 +118,7 @@ describe('coerceInputValue', () => {
       ]);
     });
 
-    it('returns an error for undefined result', () => {
+    it('returns a thrown error', () => {
       const inputValue = { error: 'Some error message' };
       const result = coerceValue(inputValue, TestScalar);
       expectErrors(result).to.deep.equal([

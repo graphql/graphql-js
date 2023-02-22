@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { DirectiveLocation } from '../../language/directiveLocation';
+import { DirectiveLocation } from '../../language/directiveLocation.js';
 
 import type {
   GraphQLArgument,
   GraphQLInputField,
   GraphQLInputType,
-} from '../definition';
+} from '../definition.js';
 import {
   assertAbstractType,
   assertCompositeType,
@@ -55,7 +55,7 @@ import {
   isType,
   isUnionType,
   isWrappingType,
-} from '../definition';
+} from '../definition.js';
 import {
   assertDirective,
   GraphQLDeprecatedDirective,
@@ -64,7 +64,7 @@ import {
   GraphQLSkipDirective,
   isDirective,
   isSpecifiedDirective,
-} from '../directives';
+} from '../directives.js';
 import {
   GraphQLBoolean,
   GraphQLFloat,
@@ -72,7 +72,8 @@ import {
   GraphQLInt,
   GraphQLString,
   isSpecifiedScalarType,
-} from '../scalars';
+} from '../scalars.js';
+import { assertSchema, GraphQLSchema, isSchema } from '../schema.js';
 
 const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
 const InterfaceType = new GraphQLInterfaceType({
@@ -699,6 +700,34 @@ describe('Directive predicates', () => {
 
     it('returns false for custom directive', () => {
       expect(isSpecifiedDirective(Directive)).to.equal(false);
+    });
+  });
+});
+
+describe('Schema predicates', () => {
+  const schema = new GraphQLSchema({});
+
+  describe('isSchema/assertSchema', () => {
+    it('returns true for schema', () => {
+      expect(isSchema(schema)).to.equal(true);
+      expect(() => assertSchema(schema)).to.not.throw();
+    });
+
+    it('returns false for schema class (rather than instance)', () => {
+      expect(isSchema(GraphQLSchema)).to.equal(false);
+      expect(() => assertSchema(GraphQLSchema)).to.throw();
+    });
+
+    it('returns false for non-schema', () => {
+      expect(isSchema(EnumType)).to.equal(false);
+      expect(() => assertSchema(EnumType)).to.throw();
+      expect(isSchema(ScalarType)).to.equal(false);
+      expect(() => assertSchema(ScalarType)).to.throw();
+    });
+
+    it('returns false for random garbage', () => {
+      expect(isSchema({ what: 'is this' })).to.equal(false);
+      expect(() => assertSchema({ what: 'is this' })).to.throw();
     });
   });
 });

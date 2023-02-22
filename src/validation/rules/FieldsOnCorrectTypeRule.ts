@@ -1,25 +1,25 @@
-import { didYouMean } from '../../jsutils/didYouMean';
-import { naturalCompare } from '../../jsutils/naturalCompare';
-import { suggestionList } from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { naturalCompare } from '../../jsutils/naturalCompare.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { FieldNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { FieldNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
 import type {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLOutputType,
-} from '../../type/definition';
+} from '../../type/definition.js';
 import {
   isAbstractType,
   isInterfaceType,
   isObjectType,
-} from '../../type/definition';
-import type { GraphQLSchema } from '../../type/schema';
+} from '../../type/definition.js';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Fields on correct type
@@ -82,8 +82,7 @@ function getSuggestedTypeNames(
     return [];
   }
 
-  const suggestedTypes: Set<GraphQLObjectType | GraphQLInterfaceType> =
-    new Set();
+  const suggestedTypes = new Set<GraphQLObjectType | GraphQLInterfaceType>();
   const usageCount = Object.create(null);
   for (const possibleType of schema.getPossibleTypes(type)) {
     if (!possibleType.getFields()[fieldName]) {

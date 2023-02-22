@@ -1,17 +1,17 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
-import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
+import { dedent } from '../../__testUtils__/dedent.js';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
 
-import type { Maybe } from '../../jsutils/Maybe';
+import type { Maybe } from '../../jsutils/Maybe.js';
 
-import { Lexer } from '../../language/lexer';
-import { parse } from '../../language/parser';
-import { Source } from '../../language/source';
+import { Lexer } from '../../language/lexer.js';
+import { parse } from '../../language/parser.js';
+import { Source } from '../../language/source.js';
 
-import { stripIgnoredCharacters } from '../stripIgnoredCharacters';
+import { stripIgnoredCharacters } from '../stripIgnoredCharacters.js';
 
 function lexValue(str: string): Maybe<string> {
   const lexer = new Lexer(new Source(str));
@@ -208,8 +208,14 @@ describe('stripIgnoredCharacters', () => {
     const strippedQuery = stripIgnoredCharacters(kitchenSinkQuery);
     expect(stripIgnoredCharacters(strippedQuery)).to.equal(strippedQuery);
 
-    const queryAST = parse(kitchenSinkQuery, { noLocation: true });
-    const strippedAST = parse(strippedQuery, { noLocation: true });
+    const queryAST = parse(kitchenSinkQuery, {
+      noLocation: true,
+      experimentalClientControlledNullability: true,
+    });
+    const strippedAST = parse(strippedQuery, {
+      noLocation: true,
+      experimentalClientControlledNullability: true,
+    });
     expect(strippedAST).to.deep.equal(queryAST);
   });
 

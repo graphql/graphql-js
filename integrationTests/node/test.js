@@ -7,14 +7,19 @@ const graphqlPackageJSON = JSON.parse(
 
 const nodeVersions = graphqlPackageJSON.engines.node
   .split(' || ')
-  .map((version) => version.replace(/^(\^|>=)/, ''))
+  .map((version) => version.replace('^', '').replace('>=', ''))
   .sort((a, b) => b.localeCompare(a));
 
 for (const version of nodeVersions) {
   console.log(`Testing on node@${version} ...`);
 
   childProcess.execSync(
-    `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node ./index.js`,
+    `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node ./index.cjs`,
+    { stdio: 'inherit' },
+  );
+
+  childProcess.execSync(
+    `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node ./index.mjs`,
     { stdio: 'inherit' },
   );
 }

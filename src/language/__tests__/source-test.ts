@@ -1,23 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { Source } from '../source';
+import { Source } from '../source.js';
 
 describe('Source', () => {
-  it('asserts that a body was provided', () => {
-    // @ts-expect-error
-    expect(() => new Source()).to.throw(
-      'Body must be a string. Received: undefined.',
-    );
-  });
-
-  it('asserts that a valid body was provided', () => {
-    // @ts-expect-error
-    expect(() => new Source({})).to.throw(
-      'Body must be a string. Received: {}.',
-    );
-  });
-
   it('can be Object.toStringified', () => {
     const source = new Source('');
 

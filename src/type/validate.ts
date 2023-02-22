@@ -1,10 +1,10 @@
-import { AccumulatorMap } from '../jsutils/AccumulatorMap';
-import { capitalize } from '../jsutils/capitalize';
-import { andList } from '../jsutils/formatList';
-import { inspect } from '../jsutils/inspect';
-import type { Maybe } from '../jsutils/Maybe';
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
+import { capitalize } from '../jsutils/capitalize.js';
+import { andList } from '../jsutils/formatList.js';
+import { inspect } from '../jsutils/inspect.js';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
   ASTNode,
@@ -16,10 +16,10 @@ import type {
   ObjectTypeExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
-} from '../language/ast';
-import { OperationTypeNode } from '../language/ast';
+} from '../language/ast.js';
+import { OperationTypeNode } from '../language/ast.js';
 
-import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators';
+import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.js';
 
 import type {
   GraphQLEnumType,
@@ -28,7 +28,7 @@ import type {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
-} from './definition';
+} from './definition.js';
 import {
   isEnumType,
   isInputObjectType,
@@ -41,11 +41,11 @@ import {
   isRequiredArgument,
   isRequiredInputField,
   isUnionType,
-} from './definition';
-import { GraphQLDeprecatedDirective, isDirective } from './directives';
-import { isIntrospectionType } from './introspection';
-import type { GraphQLSchema } from './schema';
-import { assertSchema } from './schema';
+} from './definition.js';
+import { GraphQLDeprecatedDirective, isDirective } from './directives.js';
+import { isIntrospectionType } from './introspection.js';
+import type { GraphQLSchema } from './schema.js';
+import { assertSchema } from './schema.js';
 
 /**
  * Implements the "Type Validation" sub-sections of the specification's
@@ -144,7 +144,7 @@ function validateRootTypes(context: SchemaValidationContext): void {
     }
   }
 
-  for (const [rootType, operationTypes] of rootTypesMap.entries()) {
+  for (const [rootType, operationTypes] of rootTypesMap) {
     if (operationTypes.length > 1) {
       const operationList = andList(operationTypes);
       context.reportError(
@@ -326,7 +326,7 @@ function validateInterfaces(
   context: SchemaValidationContext,
   type: GraphQLObjectType | GraphQLInterfaceType,
 ): void {
-  const ifaceTypeNames = Object.create(null);
+  const ifaceTypeNames = new Set<string>();
   for (const iface of type.getInterfaces()) {
     if (!isInterfaceType(iface)) {
       context.reportError(
@@ -345,7 +345,7 @@ function validateInterfaces(
       continue;
     }
 
-    if (ifaceTypeNames[iface.name]) {
+    if (ifaceTypeNames.has(iface.name)) {
       context.reportError(
         `Type ${type.name} can only implement ${iface.name} once.`,
         getAllImplementsInterfaceNodes(type, iface),
@@ -353,7 +353,7 @@ function validateInterfaces(
       continue;
     }
 
-    ifaceTypeNames[iface.name] = true;
+    ifaceTypeNames.add(iface.name);
 
     validateTypeImplementsAncestors(context, type, iface);
     validateTypeImplementsInterface(context, type, iface);
@@ -470,16 +470,16 @@ function validateUnionMembers(
     );
   }
 
-  const includedTypeNames = Object.create(null);
+  const includedTypeNames = new Set<string>();
   for (const memberType of memberTypes) {
-    if (includedTypeNames[memberType.name]) {
+    if (includedTypeNames.has(memberType.name)) {
       context.reportError(
         `Union type ${union.name} can only include type ${memberType.name} once.`,
         getUnionMemberTypeNodes(union, memberType.name),
       );
       continue;
     }
-    includedTypeNames[memberType.name] = true;
+    includedTypeNames.add(memberType.name);
     if (!isObjectType(memberType)) {
       context.reportError(
         `Union type ${union.name} can only include Object types, ` +
@@ -575,7 +575,7 @@ function createInputObjectCircularRefsValidator(
   // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
   // Tracks already visited types to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
-  const visitedTypes = Object.create(null);
+  const visitedTypes = new Set<GraphQLInputObjectType>();
 
   // Array of types nodes used to produce meaningful errors
   const fieldPath: Array<GraphQLInputField> = [];
@@ -589,11 +589,11 @@ function createInputObjectCircularRefsValidator(
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
   function detectCycleRecursive(inputObj: GraphQLInputObjectType): void {
-    if (visitedTypes[inputObj.name]) {
+    if (visitedTypes.has(inputObj)) {
       return;
     }
 
-    visitedTypes[inputObj.name] = true;
+    visitedTypes.add(inputObj);
     fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
 
     const fields = Object.values(inputObj.getFields());
@@ -642,7 +642,7 @@ function getAllImplementsInterfaceNodes(
 function getUnionMemberTypeNodes(
   union: GraphQLUnionType,
   typeName: string,
-): Maybe<ReadonlyArray<NamedTypeNode>> {
+): ReadonlyArray<NamedTypeNode> {
   const { astNode, extensionASTNodes } = union;
   const nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode> =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
@@ -654,7 +654,9 @@ function getUnionMemberTypeNodes(
 }
 
 function getDeprecatedDirectiveNode(
-  definitionNode: Maybe<{ readonly directives?: ReadonlyArray<DirectiveNode> }>,
+  definitionNode: Maybe<{
+    readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
+  }>,
 ): Maybe<DirectiveNode> {
   return definitionNode?.directives?.find(
     (node) => node.name.value === GraphQLDeprecatedDirective.name,

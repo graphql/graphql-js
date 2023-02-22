@@ -1,19 +1,19 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { GraphQLObjectType } from '../../type/definition';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { validate } from '../../validation/validate';
+import { validate } from '../../validation/validate.js';
 
-import { graphqlSync } from '../../graphql';
+import { graphqlSync } from '../../graphql.js';
 
-import { execute, executeSync } from '../execute';
+import { execute, executeSync } from '../execute.js';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({
@@ -105,6 +105,24 @@ describe('Execute: synchronously when possible', () => {
 
     it('throws if encountering async execution', () => {
       const doc = 'query Example { syncField, asyncField }';
+      expect(() => {
+        executeSync({
+          schema,
+          document: parse(doc),
+          rootValue: 'rootValue',
+        });
+      }).to.throw('GraphQL execution failed to complete synchronously.');
+    });
+
+    it('throws if encountering async iterable execution', () => {
+      const doc = `
+        query Example {
+          ...deferFrag @defer(label: "deferLabel")
+        }
+        fragment deferFrag on Query {
+          syncField
+        }
+      `;
       expect(() => {
         executeSync({
           schema,

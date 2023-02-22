@@ -1,17 +1,19 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { Kind } from '../../language/kinds';
-import { parse } from '../../language/parser';
+import { GraphQLError } from '../../error/GraphQLError.js';
+
+import { Kind } from '../../language/kinds.js';
+import { parse } from '../../language/parser.js';
 
 import type {
   GraphQLArgumentConfig,
   GraphQLFieldConfig,
-} from '../../type/definition';
+} from '../../type/definition.js';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -19,12 +21,31 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
-} from '../../type/definition';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+} from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { executeSync } from '../execute';
-import { getVariableValues } from '../values';
+import { executeSync } from '../execute.js';
+import { getVariableValues } from '../values.js';
+
+const TestFaultyScalarGraphQLError = new GraphQLError(
+  'FaultyScalarErrorMessage',
+  {
+    extensions: {
+      code: 'FaultyScalarErrorExtensionCode',
+    },
+  },
+);
+
+const TestFaultyScalar = new GraphQLScalarType({
+  name: 'FaultyScalar',
+  parseValue() {
+    throw TestFaultyScalarGraphQLError;
+  },
+  parseLiteral() {
+    throw TestFaultyScalarGraphQLError;
+  },
+});
 
 const TestComplexScalar = new GraphQLScalarType({
   name: 'ComplexScalar',
@@ -45,6 +66,7 @@ const TestInputObject = new GraphQLInputObjectType({
     b: { type: new GraphQLList(GraphQLString) },
     c: { type: new GraphQLNonNull(GraphQLString) },
     d: { type: TestComplexScalar },
+    e: { type: TestFaultyScalar },
   },
 });
 
@@ -225,6 +247,28 @@ describe('Execute: Handles inputs', () => {
           },
         });
       });
+
+      it('errors on faulty scalar type input', () => {
+        const result = executeQuery(`
+          {
+            fieldWithObjectInput(input: {c: "foo", e: "bar"})
+          }
+        `);
+
+        expectJSON(result).toDeepEqual({
+          data: {
+            fieldWithObjectInput: null,
+          },
+          errors: [
+            {
+              message:
+                'Argument "input" has invalid value { c: "foo", e: "bar" }.',
+              path: ['fieldWithObjectInput'],
+              locations: [{ line: 3, column: 41 }],
+            },
+          ],
+        });
+      });
     });
 
     describe('using variables', () => {
@@ -363,6 +407,22 @@ describe('Execute: Handles inputs', () => {
           data: {
             fieldWithObjectInput: '{ c: "foo", d: "DeserializedValue" }',
           },
+        });
+      });
+
+      it('errors on faulty scalar type input', () => {
+        const params = { input: { c: 'foo', e: 'SerializedValue' } };
+        const result = executeQuery(doc, params);
+
+        expectJSON(result).toDeepEqual({
+          errors: [
+            {
+              message:
+                'Variable "$input" got invalid value "SerializedValue" at "input.e"; FaultyScalarErrorMessage',
+              locations: [{ line: 2, column: 16 }],
+              extensions: { code: 'FaultyScalarErrorExtensionCode' },
+            },
+          ],
         });
       });
 

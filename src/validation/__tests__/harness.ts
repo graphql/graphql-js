@@ -1,15 +1,18 @@
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import type { Maybe } from '../../jsutils/Maybe';
+import type { Maybe } from '../../jsutils/Maybe.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { validate, validateSDL } from '../validate';
-import type { SDLValidationRule, ValidationRule } from '../ValidationContext';
+import { validate, validateSDL } from '../validate.js';
+import type {
+  SDLValidationRule,
+  ValidationRule,
+} from '../ValidationContext.js';
 
 export const testSchema: GraphQLSchema = buildSchema(`
   interface Mammal {
@@ -58,7 +61,7 @@ export const testSchema: GraphQLSchema = buildSchema(`
   type Human {
     name(surname: Boolean): String
     pets: [Pet]
-    relatives: [Human]
+    relatives: [Human]!
   }
 
   enum FurColor {

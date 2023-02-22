@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import { GraphQLObjectType } from '../../type/definition';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { buildClientSchema } from '../buildClientSchema';
-import type { IntrospectionQuery } from '../getIntrospectionQuery';
-import { introspectionFromSchema } from '../introspectionFromSchema';
-import { printSchema } from '../printSchema';
+import { buildClientSchema } from '../buildClientSchema.js';
+import type { IntrospectionQuery } from '../getIntrospectionQuery.js';
+import { introspectionFromSchema } from '../introspectionFromSchema.js';
+import { printSchema } from '../printSchema.js';
 
 function introspectionToSDL(introspection: IntrospectionQuery): string {
   return printSchema(buildClientSchema(introspection));

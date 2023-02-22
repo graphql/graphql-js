@@ -1,12 +1,12 @@
-import { invariant } from '../../jsutils/invariant';
-import type { ObjMap } from '../../jsutils/ObjMap';
+import { invariant } from '../../jsutils/invariant.js';
+import type { ObjMap } from '../../jsutils/ObjMap.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { NameNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { NameNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique input field names

@@ -6,15 +6,36 @@
     "benchmark/benchmark.ts"
   ],
   "compilerOptions": {
-    "lib": ["es2020"],
+    "lib": [
+      "es2020",
+      "dom" // Workaround for missing web-compatible globals in `@types/node`
+    ],
     "target": "es2020",
-    "module": "commonjs",
+    "module": "es2022",
     "moduleResolution": "node",
-    "strict": true,
-    "useUnknownInCatchVariables": false,
     "noEmit": true,
     "isolatedModules": true,
     "importsNotUsedAsValues": "error",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+
+    // Type Checking
+    // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
+    "strict": true,
+    "useUnknownInCatchVariables": false, // FIXME part of 'strict' but is temporary disabled
+    // All checks that are not part of "strict"
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": false, // TODO consider
+    "noImplicitOverride": true,
+    "noImplicitReturns": false, // TODO consider
+    "noPropertyAccessFromIndexSignature": false, // TODO consider
+    "noUncheckedIndexedAccess": false, // FIXME
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "ts-node": {
+    "esm": true
   }
 }

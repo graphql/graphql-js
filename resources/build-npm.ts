@@ -1,75 +1,33 @@
-import * as assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
-import { addExtensionToImportPaths } from './add-extension-to-import-paths';
-import { inlineInvariant } from './inline-invariant';
+import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
+import { inlineInvariant } from './inline-invariant.js';
 import {
-  readdirRecursive,
   readPackageJSON,
+  readTSConfig,
   showDirStats,
   writeGeneratedFile,
-} from './utils';
+} from './utils.js';
 
-fs.rmSync('./npmDist', { recursive: true, force: true });
-fs.mkdirSync('./npmDist');
-
-// Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
-const tsConfig = JSON.parse(
-  fs.readFileSync(require.resolve('../tsconfig.json'), 'utf-8'),
-);
-assert(
-  tsConfig.compilerOptions,
-  '"tsconfig.json" should have `compilerOptions`',
-);
-
-const { options: tsOptions, errors: tsOptionsErrors } =
-  ts.convertCompilerOptionsFromJson(
-    {
-      ...tsConfig.compilerOptions,
-      module: 'es2020',
-      noEmit: false,
-      declaration: true,
-      declarationDir: './npmDist',
-      outDir: './npmDist',
-    },
-    process.cwd(),
-  );
-
-assert(
-  tsOptionsErrors.length === 0,
-  'Fail to parse options: ' + tsOptionsErrors,
-);
-
-const tsHost = ts.createCompilerHost(tsOptions);
-tsHost.writeFile = (filepath, body) => {
-  fs.mkdirSync(path.dirname(filepath), { recursive: true });
-  writeGeneratedFile(filepath, body);
-};
-
-const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
-const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
-  after: [addExtensionToImportPaths({ extension: '.js' }), inlineInvariant],
-});
-assert(
-  !tsResult.emitSkipped,
-  'Fail to generate `*.d.ts` files, please run `npm run check`',
-);
-
-fs.copyFileSync('./LICENSE', './npmDist/LICENSE');
-fs.copyFileSync('./README.md', './npmDist/README.md');
-
-// Should be done as the last step so only valid packages can be published
-writeGeneratedFile(
-  './npmDist/package.json',
-  JSON.stringify(buildPackageJSON()),
-);
-
+console.log('\n./npmDist');
+buildPackage('./npmDist', false);
 showDirStats('./npmDist');
 
-function buildPackageJSON() {
+console.log('\n./npmEsmDist');
+buildPackage('./npmEsmDist', true);
+showDirStats('./npmEsmDist');
+
+function buildPackage(outDir: string, isESMOnly: boolean): void {
+  fs.rmSync(outDir, { recursive: true, force: true });
+  fs.mkdirSync(outDir);
+
+  fs.copyFileSync('./LICENSE', `./${outDir}/LICENSE`);
+  fs.copyFileSync('./README.md', `./${outDir}/README.md`);
+
   const packageJSON = readPackageJSON();
 
   delete packageJSON.private;
@@ -85,7 +43,7 @@ function buildPackageJSON() {
   // TODO: revisit once TS implements https://github.com/microsoft/TypeScript/issues/32166
   const notSupportedTSVersionFile = 'NotSupportedTSVersion.d.ts';
   fs.writeFileSync(
-    path.join('./npmDist', notSupportedTSVersionFile),
+    path.join(outDir, notSupportedTSVersionFile),
     // Provoke syntax error to show this message
     `"Package 'graphql' support only TS versions that are ${supportedTSVersions[0]}".`,
   );
@@ -94,20 +52,6 @@ function buildPackageJSON() {
     ...packageJSON.typesVersions,
     '*': { '*': [notSupportedTSVersionFile] },
   };
-
-  packageJSON.type = 'module';
-  packageJSON.exports = {};
-
-  for (const filepath of readdirRecursive('./src', { ignoreDir: /^__.*__$/ })) {
-    if (path.basename(filepath) === 'index.ts') {
-      const key = path.dirname(filepath);
-      packageJSON.exports[key] = filepath.replace(/\.ts$/, '.js');
-    }
-  }
-
-  // Temporary workaround to allow "internal" imports, no grantees provided
-  packageJSON.exports['./*.js'] = './*.js';
-  packageJSON.exports['./*'] = './*.js';
 
   // TODO: move to integration tests
   const publishTag = packageJSON.publishConfig?.tag;
@@ -137,5 +81,73 @@ function buildPackageJSON() {
     );
   }
 
-  return packageJSON;
+  if (isESMOnly) {
+    packageJSON.exports = {};
+
+    const { emittedTSFiles } = emitTSFiles({
+      outDir,
+      module: 'es2020',
+      extension: '.js',
+    });
+
+    for (const filepath of emittedTSFiles) {
+      if (path.basename(filepath) === 'index.js') {
+        const relativePath = './' + path.relative('./npmEsmDist', filepath);
+        packageJSON.exports[path.dirname(relativePath)] = relativePath;
+      }
+    }
+
+    // Temporary workaround to allow "internal" imports, no grantees provided
+    packageJSON.exports['./*.js'] = './*.js';
+    packageJSON.exports['./*'] = './*.js';
+
+    packageJSON.publishConfig.tag += '-esm';
+    packageJSON.version += '+esm';
+  } else {
+    delete packageJSON.type;
+    packageJSON.main = 'index';
+    packageJSON.module = 'index.mjs';
+    emitTSFiles({ outDir, module: 'commonjs', extension: '.js' });
+    emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
+  }
+
+  // Should be done as the last step so only valid packages can be published
+  writeGeneratedFile(`./${outDir}/package.json`, JSON.stringify(packageJSON));
+}
+
+// Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
+function emitTSFiles(options: {
+  outDir: string;
+  module: string;
+  extension: string;
+}): {
+  emittedTSFiles: ReadonlyArray<string>;
+} {
+  const { outDir, module, extension } = options;
+  const tsOptions = readTSConfig({
+    module,
+    noEmit: false,
+    declaration: true,
+    declarationDir: outDir,
+    outDir,
+    listEmittedFiles: true,
+  });
+
+  const tsHost = ts.createCompilerHost(tsOptions);
+  tsHost.writeFile = (filepath, body) =>
+    writeGeneratedFile(filepath.replace(/.js$/, extension), body);
+
+  const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
+  const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
+    after: [changeExtensionInImportPaths({ extension }), inlineInvariant],
+  });
+  assert(
+    !tsResult.emitSkipped,
+    'Fail to generate `*.d.ts` files, please run `npm run check`',
+  );
+
+  assert(tsResult.emittedFiles != null);
+  return {
+    emittedTSFiles: tsResult.emittedFiles.sort((a, b) => a.localeCompare(b)),
+  };
 }

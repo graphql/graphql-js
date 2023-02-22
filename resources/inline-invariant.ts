@@ -1,4 +1,4 @@
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 /**
  * Eliminates function call to `invariant` if the condition is met.
@@ -32,11 +32,10 @@ export function inlineInvariant(context: ts.TransformationContext) {
           return factory.createBinaryExpression(
             factory.createParenthesizedExpression(condition),
             ts.SyntaxKind.BarBarToken,
-            factory.createCallExpression(
-              factory.createIdentifier(funcName),
-              undefined,
-              [factory.createFalse(), ...otherArgs],
-            ),
+            factory.createCallExpression(expression, undefined, [
+              factory.createFalse(),
+              ...otherArgs,
+            ]),
           );
         }
       }

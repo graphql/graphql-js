@@ -5,30 +5,28 @@ ignorePaths:
   # Excluded from spelling check
   - cspell.yml
   - package.json
-  - package-lock.json
-  - tsconfig.json
   - benchmark/github-schema.graphql
   - benchmark/github-schema.json
 overrides:
   - filename: '**/docs-old/APIReference-*.md'
     ignoreRegExpList: ['/href="[^"]*"/']
+    words:
+      - sublinks
+      - instanceof
   - filename: 'website/**'
     dictionaries:
       - fullstack
+      - html
     words:
       - clsx
       - infima
-      - noopener
-      - noreferrer
-      - xlink
 
+validateDirectives: true
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
 
 words:
   - graphiql
-  - sublinks
-  - instanceof
 
   # Different names used inside tests
   - Skywalker
@@ -38,7 +36,6 @@ words:
   - Artoo
   - Threepio
   - Odie
-  - Odie's
   - Damerau
   - Alderaan
   - Tatooine

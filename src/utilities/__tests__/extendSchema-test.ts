@@ -1,13 +1,13 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import type { Maybe } from '../../jsutils/Maybe';
+import type { Maybe } from '../../jsutils/Maybe.js';
 
-import type { ASTNode } from '../../language/ast';
-import { parse } from '../../language/parser';
-import { print } from '../../language/printer';
+import type { ASTNode } from '../../language/ast.js';
+import { parse } from '../../language/parser.js';
+import { print } from '../../language/printer.js';
 
 import {
   assertEnumType,
@@ -16,24 +16,24 @@ import {
   assertObjectType,
   assertScalarType,
   assertUnionType,
-} from '../../type/definition';
-import { assertDirective } from '../../type/directives';
+} from '../../type/definition.js';
+import { assertDirective, specifiedDirectives } from '../../type/directives.js';
 import {
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLID,
   GraphQLInt,
   GraphQLString,
-} from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
-import { validateSchema } from '../../type/validate';
+} from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
+import { validateSchema } from '../../type/validate.js';
 
-import { graphqlSync } from '../../graphql';
+import { graphqlSync } from '../../graphql.js';
 
-import { buildSchema } from '../buildASTSchema';
-import { concatAST } from '../concatAST';
-import { extendSchema } from '../extendSchema';
-import { printSchema } from '../printSchema';
+import { buildSchema } from '../buildASTSchema.js';
+import { concatAST } from '../concatAST.js';
+import { extendSchema } from '../extendSchema.js';
+import { printSchema } from '../printSchema.js';
 
 function expectExtensionASTNodes(obj: {
   readonly extensionASTNodes: ReadonlyArray<ASTNode>;
@@ -83,6 +83,45 @@ describe('extendSchema', () => {
     expect(result).to.deep.equal({
       data: { newField: '123' },
     });
+  });
+
+  it('Do not modify built-in types and directives', () => {
+    const schema = buildSchema(`
+      type Query {
+        str: String
+        int: Int
+        float: Float
+        id: ID
+        bool: Boolean
+      }
+    `);
+
+    const extensionSDL = dedent`
+      extend type Query {
+        foo: String
+      }
+    `;
+    const extendedSchema = extendSchema(schema, parse(extensionSDL));
+
+    // Built-ins are used
+    expect(extendedSchema.getType('Int')).to.equal(GraphQLInt);
+    expect(extendedSchema.getType('Float')).to.equal(GraphQLFloat);
+    expect(extendedSchema.getType('String')).to.equal(GraphQLString);
+    expect(extendedSchema.getType('Boolean')).to.equal(GraphQLBoolean);
+    expect(extendedSchema.getType('ID')).to.equal(GraphQLID);
+
+    expect(extendedSchema.getDirectives()).to.have.members(specifiedDirectives);
+  });
+
+  it('preserves original schema config', () => {
+    const description = 'A schema description';
+    const extensions = Object.freeze({ foo: 'bar' });
+    const schema = new GraphQLSchema({ description, extensions });
+
+    const extendedSchema = extendSchema(schema, parse('scalar Bar'));
+
+    expect(extendedSchema.description).to.equal(description);
+    expect(extendedSchema.extensions).to.deep.equal(extensions);
   });
 
   it('extends objects by adding new fields', () => {
@@ -1136,20 +1175,6 @@ describe('extendSchema', () => {
     `);
     expect(() => extendSchema(schema, ast, { assumeValidSDL: true })).to.throw(
       'Unknown type: "UnknownType".',
-    );
-  });
-
-  it('Rejects invalid AST', () => {
-    const schema = new GraphQLSchema({});
-
-    // @ts-expect-error (Second argument expects DocumentNode)
-    expect(() => extendSchema(schema, null)).to.throw(
-      'Must provide valid Document AST',
-    );
-
-    // @ts-expect-error
-    expect(() => extendSchema(schema, {})).to.throw(
-      'Must provide valid Document AST',
     );
   });
 

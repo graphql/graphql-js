@@ -1,15 +1,15 @@
-import { groupBy } from '../../jsutils/groupBy';
+import { groupBy } from '../../jsutils/groupBy.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
   FieldDefinitionNode,
   InputValueDefinitionNode,
   NameNode,
-} from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+} from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique argument definition names
@@ -36,7 +36,7 @@ export function UniqueArgumentDefinitionNamesRule(
 
   function checkArgUniquenessPerField(typeNode: {
     readonly name: NameNode;
-    readonly fields?: ReadonlyArray<FieldDefinitionNode>;
+    readonly fields?: ReadonlyArray<FieldDefinitionNode> | undefined;
   }) {
     const typeName = typeNode.name.value;
 

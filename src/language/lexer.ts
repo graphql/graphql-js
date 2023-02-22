@@ -1,10 +1,10 @@
-import { syntaxError } from '../error/syntaxError';
+import { syntaxError } from '../error/syntaxError.js';
 
-import { Token } from './ast';
-import { dedentBlockStringLines } from './blockString';
-import { isDigit, isNameContinue, isNameStart } from './characterClasses';
-import type { Source } from './source';
-import { TokenKind } from './tokenKind';
+import { Token } from './ast.js';
+import { dedentBlockStringLines } from './blockString.js';
+import { isDigit, isNameContinue, isNameStart } from './characterClasses.js';
+import type { Source } from './source.js';
+import { TokenKind } from './tokenKind.js';
 
 /**
  * Given a Source object, creates a Lexer for that source.
@@ -91,6 +91,7 @@ export class Lexer {
 export function isPunctuatorTokenKind(kind: TokenKind): boolean {
   return (
     kind === TokenKind.BANG ||
+    kind === TokenKind.QUESTION_MARK ||
     kind === TokenKind.DOLLAR ||
     kind === TokenKind.AMP ||
     kind === TokenKind.PAREN_L ||
@@ -281,6 +282,13 @@ function readNextToken(lexer: Lexer, start: number): Token {
         return createToken(lexer, TokenKind.PIPE, position, position + 1);
       case 0x007d: // }
         return createToken(lexer, TokenKind.BRACE_R, position, position + 1);
+      case 0x003f: // ?
+        return createToken(
+          lexer,
+          TokenKind.QUESTION_MARK,
+          position,
+          position + 1,
+        );
       // StringValue
       case 0x0022: // "
         if (

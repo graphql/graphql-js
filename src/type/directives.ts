@@ -1,24 +1,22 @@
-import { devAssert } from '../jsutils/devAssert';
-import { inspect } from '../jsutils/inspect';
-import { instanceOf } from '../jsutils/instanceOf';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import type { Maybe } from '../jsutils/Maybe';
-import { toObjMap } from '../jsutils/toObjMap';
+import { inspect } from '../jsutils/inspect.js';
+import { instanceOf } from '../jsutils/instanceOf.js';
+import type { Maybe } from '../jsutils/Maybe.js';
+import { toObjMap } from '../jsutils/toObjMap.js';
 
-import type { DirectiveDefinitionNode } from '../language/ast';
-import { DirectiveLocation } from '../language/directiveLocation';
+import type { DirectiveDefinitionNode } from '../language/ast.js';
+import { DirectiveLocation } from '../language/directiveLocation.js';
 
-import { assertName } from './assertName';
+import { assertName } from './assertName.js';
 import type {
   GraphQLArgument,
   GraphQLFieldConfigArgumentMap,
-} from './definition';
+} from './definition.js';
 import {
   argsToArgsConfig,
   defineArguments,
   GraphQLNonNull,
-} from './definition';
-import { GraphQLBoolean, GraphQLString } from './scalars';
+} from './definition.js';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
 
 /**
  * Test if the given value is a GraphQL directive.
@@ -70,17 +68,7 @@ export class GraphQLDirective {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
 
-    devAssert(
-      Array.isArray(config.locations),
-      `@${config.name} locations must be an Array.`,
-    );
-
     const args = config.args ?? {};
-    devAssert(
-      isObjectLike(args) && !Array.isArray(args),
-      `@${config.name} args must be an object with argument names as keys.`,
-    );
-
     this.args = defineArguments(args);
   }
 
@@ -161,6 +149,56 @@ export const GraphQLSkipDirective: GraphQLDirective = new GraphQLDirective({
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Skipped when true.',
+    },
+  },
+});
+
+/**
+ * Used to conditionally defer fragments.
+ */
+export const GraphQLDeferDirective = new GraphQLDirective({
+  name: 'defer',
+  description:
+    'Directs the executor to defer this fragment when the `if` argument is true or undefined.',
+  locations: [
+    DirectiveLocation.FRAGMENT_SPREAD,
+    DirectiveLocation.INLINE_FRAGMENT,
+  ],
+  args: {
+    if: {
+      type: new GraphQLNonNull(GraphQLBoolean),
+      description: 'Deferred when true or undefined.',
+      defaultValue: true,
+    },
+    label: {
+      type: GraphQLString,
+      description: 'Unique name',
+    },
+  },
+});
+
+/**
+ * Used to conditionally stream list fields.
+ */
+export const GraphQLStreamDirective = new GraphQLDirective({
+  name: 'stream',
+  description:
+    'Directs the executor to stream plural fields when the `if` argument is true or undefined.',
+  locations: [DirectiveLocation.FIELD],
+  args: {
+    if: {
+      type: new GraphQLNonNull(GraphQLBoolean),
+      description: 'Stream when true or undefined.',
+      defaultValue: true,
+    },
+    label: {
+      type: GraphQLString,
+      description: 'Unique name',
+    },
+    initialCount: {
+      defaultValue: 0,
+      type: GraphQLInt,
+      description: 'Number of items to return immediately',
     },
   },
 });

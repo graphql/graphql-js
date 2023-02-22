@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha';
 
-import { ScalarLeafsRule } from '../rules/ScalarLeafsRule';
+import { ScalarLeafsRule } from '../rules/ScalarLeafsRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(ScalarLeafsRule, queryStr);

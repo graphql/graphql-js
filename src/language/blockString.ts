@@ -1,4 +1,4 @@
-import { isWhiteSpace } from './characterClasses';
+import { isWhiteSpace } from './characterClasses.js';
 
 /**
  * Produces the value of a block string from its parsed raw value, similar to
@@ -23,7 +23,7 @@ export function dedentBlockStringLines(
       continue; // skip empty lines
     }
 
-    firstNonEmptyLine = firstNonEmptyLine ?? i;
+    firstNonEmptyLine ??= i;
     lastNonEmptyLine = i;
 
     if (i !== 0 && indent < commonIndent) {

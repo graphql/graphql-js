@@ -1,27 +1,22 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { DirectiveNode } from '../../language/ast';
-import { parse } from '../../language/parser';
+import type { DirectiveNode } from '../../language/ast.js';
+import { parse } from '../../language/parser.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
-import { TypeInfo } from '../../utilities/TypeInfo';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { TypeInfo } from '../../utilities/TypeInfo.js';
 
-import { validate } from '../validate';
-import type { ValidationContext } from '../ValidationContext';
+import { validate } from '../validate.js';
+import type { ValidationContext } from '../ValidationContext.js';
 
-import { testSchema } from './harness';
+import { testSchema } from './harness.js';
 
 describe('Validate: Supports full validation', () => {
-  it('rejects invalid documents', () => {
-    // @ts-expect-error (expects a DocumentNode as a second parameter)
-    expect(() => validate(testSchema, null)).to.throw('Must provide document.');
-  });
-
   it('validates queries', () => {
     const doc = parse(`
       query {

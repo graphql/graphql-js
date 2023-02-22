@@ -1,20 +1,20 @@
-import { inspect } from '../../jsutils/inspect';
-import { invariant } from '../../jsutils/invariant';
+import { inspect } from '../../jsutils/inspect.js';
+import { invariant } from '../../jsutils/invariant.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTNode } from '../../language/ast';
-import { OperationTypeNode } from '../../language/ast';
-import { DirectiveLocation } from '../../language/directiveLocation';
-import { Kind } from '../../language/kinds';
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTNode } from '../../language/ast.js';
+import { OperationTypeNode } from '../../language/ast.js';
+import { DirectiveLocation } from '../../language/directiveLocation.js';
+import { Kind } from '../../language/kinds.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { specifiedDirectives } from '../../type/directives';
+import { specifiedDirectives } from '../../type/directives.js';
 
 import type {
   SDLValidationContext,
   ValidationContext,
-} from '../ValidationContext';
+} from '../ValidationContext.js';
 
 /**
  * Known directives

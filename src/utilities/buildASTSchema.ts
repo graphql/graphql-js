@@ -1,18 +1,15 @@
-import { devAssert } from '../jsutils/devAssert';
+import type { DocumentNode } from '../language/ast.js';
+import type { ParseOptions } from '../language/parser.js';
+import { parse } from '../language/parser.js';
+import type { Source } from '../language/source.js';
 
-import type { DocumentNode } from '../language/ast';
-import { Kind } from '../language/kinds';
-import type { ParseOptions } from '../language/parser';
-import { parse } from '../language/parser';
-import type { Source } from '../language/source';
+import { specifiedDirectives } from '../type/directives.js';
+import type { GraphQLSchemaValidationOptions } from '../type/schema.js';
+import { GraphQLSchema } from '../type/schema.js';
 
-import { specifiedDirectives } from '../type/directives';
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
-import { GraphQLSchema } from '../type/schema';
+import { assertValidSDL } from '../validation/validate.js';
 
-import { assertValidSDL } from '../validation/validate';
-
-import { extendSchemaImpl } from './extendSchema';
+import { extendSchemaImpl } from './extendSchema.js';
 
 export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**
@@ -20,7 +17,7 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
    *
    * Default: false
    */
-  assumeValidSDL?: boolean;
+  assumeValidSDL?: boolean | undefined;
 }
 
 /**
@@ -37,11 +34,6 @@ export function buildASTSchema(
   documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema {
-  devAssert(
-    documentAST != null && documentAST.kind === Kind.DOCUMENT,
-    'Must provide valid Document AST.',
-  );
-
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDL(documentAST);
   }

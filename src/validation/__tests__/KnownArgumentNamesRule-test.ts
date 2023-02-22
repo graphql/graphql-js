@@ -1,15 +1,18 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import {
   KnownArgumentNamesOnDirectivesRule,
   KnownArgumentNamesRule,
-} from '../rules/KnownArgumentNamesRule';
+} from '../rules/KnownArgumentNamesRule.js';
 
-import { expectSDLValidationErrors, expectValidationErrors } from './harness';
+import {
+  expectSDLValidationErrors,
+  expectValidationErrors,
+} from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(KnownArgumentNamesRule, queryStr);

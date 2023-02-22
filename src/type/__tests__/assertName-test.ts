@@ -1,16 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { assertEnumValueName, assertName } from '../assertName';
+import { assertEnumValueName, assertName } from '../assertName.js';
 
 describe('assertName', () => {
   it('passthrough valid name', () => {
     expect(assertName('_ValidName123')).to.equal('_ValidName123');
-  });
-
-  it('throws for non-strings', () => {
-    // @ts-expect-error
-    expect(() => assertName({})).to.throw('Expected name to be a string.');
   });
 
   it('throws on empty strings', () => {

@@ -1,20 +1,20 @@
-import { didYouMean } from '../../jsutils/didYouMean';
-import { inspect } from '../../jsutils/inspect';
-import { keyMap } from '../../jsutils/keyMap';
-import type { ObjMap } from '../../jsutils/ObjMap';
-import { suggestionList } from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { inspect } from '../../jsutils/inspect.js';
+import { keyMap } from '../../jsutils/keyMap.js';
+import type { ObjMap } from '../../jsutils/ObjMap.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
   ObjectFieldNode,
   ObjectValueNode,
   ValueNode,
   VariableDefinitionNode,
-} from '../../language/ast';
-import { Kind } from '../../language/kinds';
-import { print } from '../../language/printer';
-import type { ASTVisitor } from '../../language/visitor';
+} from '../../language/ast.js';
+import { Kind } from '../../language/kinds.js';
+import { print } from '../../language/printer.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
 import type { GraphQLInputObjectType } from '../../type/definition';
 import {
@@ -25,9 +25,9 @@ import {
   isListType,
   isNonNullType,
   isRequiredInputField,
-} from '../../type/definition';
+} from '../../type/definition.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Value literals of correct type

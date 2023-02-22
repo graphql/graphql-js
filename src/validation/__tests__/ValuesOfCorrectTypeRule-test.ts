@@ -1,23 +1,23 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule';
-import { validate } from '../validate';
+import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule.js';
+import { validate } from '../validate.js';
 
 import {
   expectValidationErrors,
   expectValidationErrorsWithSchema,
-} from './harness';
+} from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(ValuesOfCorrectTypeRule, queryStr);

@@ -1,13 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { ASTNode } from '../ast';
-import { Kind } from '../kinds';
-import { parseValue } from '../parser';
+import type { ASTNode } from '../ast.js';
+import { Kind } from '../kinds.js';
+import { parseValue } from '../parser.js';
 import {
   isConstValueNode,
   isDefinitionNode,
   isExecutableDefinitionNode,
+  isNullabilityAssertionNode,
   isSelectionNode,
   isTypeDefinitionNode,
   isTypeExtensionNode,
@@ -15,7 +16,7 @@ import {
   isTypeSystemDefinitionNode,
   isTypeSystemExtensionNode,
   isValueNode,
-} from '../predicates';
+} from '../predicates.js';
 
 function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
   return Object.values(Kind).filter(
@@ -59,6 +60,14 @@ describe('AST node predicates', () => {
       'Field',
       'FragmentSpread',
       'InlineFragment',
+    ]);
+  });
+
+  it('isNullabilityAssertionNode', () => {
+    expect(filterNodes(isNullabilityAssertionNode)).to.deep.equal([
+      'ListNullabilityOperator',
+      'NonNullAssertion',
+      'ErrorBoundary',
     ]);
   });
 

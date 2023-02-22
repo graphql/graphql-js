@@ -21,10 +21,14 @@ env:
     * `@github-actions run-benchmark` - Run benchmark comparing base and merge commits for this PR
     * `@github-actions publish-pr-on-npm` - Build package from this PR and publish it on NPM
     </details>
+permissions: {}
 jobs:
   hello-message:
     if: github.event_name == 'workflow_run'
     runs-on: ubuntu-latest
+    permissions:
+      actions: read # to download event.json
+      pull-requests: write # to add comment to pull request
     steps:
       - name: Download event.json
         run: gh run download "$WORKFLOW_ID" --repo "$REPO" --name event.json
@@ -34,13 +38,13 @@ jobs:
           WORKFLOW_ID: ${{github.event.workflow_run.id}}
 
       - name: Add comment on PR
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
-            const fs = require('fs');
+            const fs = require('node:fs');
 
             const event = JSON.parse(fs.readFileSync('./event.json', 'utf8'));
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               ...context.repo,
               issue_number: event.pull_request.number,
               body:
@@ -54,21 +58,23 @@ jobs:
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '@github-actions ')
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # to add comment to pull request
     outputs:
       cmd: ${{ steps.parse-cmd.outputs.cmd }}
-      pullRequestJSON: ${{ steps.parse-cmd.outputs.pullRequestJSON }}
+      pull_request_json: ${{ steps.parse-cmd.outputs.pull_request_json }}
     steps:
-      - uses: actions/github-script@v5
+      - uses: actions/github-script@v6
         with:
           script: |
-            github.rest.reactions.createForIssueComment({
+            await github.rest.reactions.createForIssueComment({
               ...context.repo,
               comment_id: context.payload.comment.id,
               content: 'eyes',
             });
 
       - id: parse-cmd
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             const comment = context.payload.comment.body;
@@ -76,23 +82,28 @@ jobs:
 
             const { url } = context.payload.issue.pull_request;
             const { data } = await github.request(url);
-            core.setOutput('pullRequestJSON', JSON.stringify(data, null, 2));
+            core.setOutput('pull_request_json', JSON.stringify(data, null, 2));
 
   cmd-publish-pr-on-npm:
     needs: [accept-cmd]
     if: needs.accept-cmd.outputs.cmd == 'publish-pr-on-npm'
+    permissions:
+      contents: read # for actions/checkout
     uses: ./.github/workflows/cmd-publish-pr-on-npm.yml
     with:
-      pullRequestJSON: ${{ needs.accept-cmd.outputs.pullRequestJSON }}
+      pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
     secrets:
-      NPM_CANARY_PR_PUBLISH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
+      npm_canary_pr_publish_token: ${{ secrets.npm_canary_pr_publish_token }}
 
   cmd-run-benchmark:
     needs: [accept-cmd]
     if: needs.accept-cmd.outputs.cmd == 'run-benchmark'
+    permissions:
+      contents: read # for actions/checkout
+      actions: read # to list workflow runs
     uses: ./.github/workflows/cmd-run-benchmark.yml
     with:
-      pullRequestJSON: ${{ needs.accept-cmd.outputs.pullRequestJSON }}
+      pull_request_json: ${{ needs.accept-cmd.outputs.pull_request_json }}
 
   respond-to-cmd:
     needs:
@@ -101,16 +112,18 @@ jobs:
       - cmd-run-benchmark
     if: needs.accept-cmd.result != 'skipped' && always()
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # to add comment to pull request
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: replyMessage
 
       - if: failure()
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
-            const fs = require('fs');
+            const fs = require('node:fs');
 
             const needs = JSON.parse(process.env.NEEDS);
 
@@ -125,16 +138,16 @@ jobs:
               ? 'Unknown command 😕\n\n' + process.env.SUPPORTED_COMMANDS
               : `Something went wrong, [please check log](${process.env.RUN_URL}).`;
 
-            fs.writeFileSync('./replyMessage.txt', replyMessage, 'utf-8');
+            fs.writeFileSync('./replyMessage.txt', replyMessage);
         env:
           NEEDS: ${{ toJSON(needs) }}
           RUN_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
 
       - if: always()
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
-            const fs = require('fs');
+            const fs = require('node:fs');
 
             const replyMessage = fs.readFileSync('./replyMessage.txt', 'utf-8');
             const { issue, comment, sender } = context.payload;
@@ -144,14 +157,14 @@ jobs:
               .map((line) => '> ' + line)
               .join('\n');
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               ...context.repo,
               issue_number: issue.number,
               body: quoteRequest + `\n\n@${sender.login} ` + replyMessage,
             });
 
             // `github.rest` doesn't have this method :( so use graphql instead
-            github.graphql(`
+            await github.graphql(`
               mutation ($subjectId: ID!) {
                 minimizeComment(input: { subjectId: $subjectId, classifier: RESOLVED})
                   { __typename }

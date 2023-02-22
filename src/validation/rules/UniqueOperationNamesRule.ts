@@ -1,8 +1,8 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique operation names

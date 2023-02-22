@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule';
+import { OverlappingFieldsCanBeMergedRule } from '../rules/OverlappingFieldsCanBeMergedRule.js';
 
 import {
   expectValidationErrors,
   expectValidationErrorsWithSchema,
-} from './harness';
+} from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(OverlappingFieldsCanBeMergedRule, queryStr);
@@ -94,6 +94,114 @@ describe('Validate: Overlapping fields can be merged', () => {
       fragment differentDirectivesWithDifferentAliases on Dog {
         name @include(if: true)
         name @include(if: false)
+      }
+    `);
+  });
+
+  it('Same stream directives supported', () => {
+    expectValid(`
+      fragment differentDirectivesWithDifferentAliases on Dog {
+        name @stream(label: "streamLabel", initialCount: 1)
+        name @stream(label: "streamLabel", initialCount: 1)
+      }
+    `);
+  });
+
+  it('different stream directive label', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        name @stream(label: "streamLabel", initialCount: 1)
+        name @stream(label: "anotherLabel", initialCount: 1)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('different stream directive initialCount', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        name @stream(label: "streamLabel", initialCount: 1)
+        name @stream(label: "streamLabel", initialCount: 2)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('different stream directive first missing args', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        name @stream
+        name @stream(label: "streamLabel", initialCount: 1)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('different stream directive second missing args', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        name @stream(label: "streamLabel", initialCount: 1)
+        name @stream
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('mix of stream and no stream', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        name @stream
+        name
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('different stream directive both missing args', () => {
+    expectValid(`
+      fragment conflictingArgs on Dog {
+        name @stream
+        name @stream
       }
     `);
   });

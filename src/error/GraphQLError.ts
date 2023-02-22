@@ -1,11 +1,14 @@
-import { isObjectLike } from '../jsutils/isObjectLike';
-import type { Maybe } from '../jsutils/Maybe';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import type { ASTNode, Location } from '../language/ast';
-import type { SourceLocation } from '../language/location';
-import { getLocation } from '../language/location';
-import { printLocation, printSourceLocation } from '../language/printLocation';
-import type { Source } from '../language/source';
+import type { ASTNode, Location } from '../language/ast.js';
+import type { SourceLocation } from '../language/location.js';
+import { getLocation } from '../language/location.js';
+import {
+  printLocation,
+  printSourceLocation,
+} from '../language/printLocation.js';
+import type { Source } from '../language/source.js';
 
 /**
  * Custom extensions
@@ -21,7 +24,7 @@ export interface GraphQLErrorExtensions {
 }
 
 export interface GraphQLErrorOptions {
-  nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
+  nodes?: ReadonlyArray<ASTNode> | ASTNode | null | undefined;
   source?: Maybe<Source>;
   positions?: Maybe<ReadonlyArray<number>>;
   path?: Maybe<ReadonlyArray<string | number>>;
@@ -160,7 +163,7 @@ export class GraphQLError extends Error {
     return 'GraphQLError';
   }
 
-  toString(): string {
+  override toString(): string {
     let output = this.message;
 
     if (this.nodes) {

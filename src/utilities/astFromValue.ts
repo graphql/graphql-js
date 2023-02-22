@@ -1,21 +1,21 @@
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
-import { isIterableObject } from '../jsutils/isIterableObject';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import type { Maybe } from '../jsutils/Maybe';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import type { ObjectFieldNode, ValueNode } from '../language/ast';
-import { Kind } from '../language/kinds';
+import type { ObjectFieldNode, ValueNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
-import type { GraphQLInputType } from '../type/definition';
+import type { GraphQLInputType } from '../type/definition.js';
 import {
   isEnumType,
   isInputObjectType,
   isLeafType,
   isListType,
   isNonNullType,
-} from '../type/definition';
-import { GraphQLID } from '../type/scalars';
+} from '../type/definition.js';
+import { GraphQLID } from '../type/scalars.js';
 
 /**
  * Produces a GraphQL Value AST given a JavaScript object.

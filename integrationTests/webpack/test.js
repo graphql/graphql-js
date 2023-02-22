@@ -1,12 +1,20 @@
 import assert from 'assert';
 
-// eslint-disable-next-line import/no-unresolved, node/no-missing-import
-import mainCJS from './dist/main.cjs';
+import cjs from './dist/main-cjs.cjs';
+import mjs from './dist/main-mjs.cjs';
 
-assert.deepStrictEqual(mainCJS.result, {
+assert.deepStrictEqual(cjs.result, {
   data: {
     __proto__: null,
     hello: 'world',
   },
 });
+
+assert.deepStrictEqual(mjs.result, {
+  data: {
+    __proto__: null,
+    hello: 'world',
+  },
+});
+
 console.log('Test script: Got correct result from Webpack bundle!');

@@ -5,7 +5,7 @@ import {
   dedentBlockStringLines,
   isPrintableAsBlockString,
   printBlockString,
-} from '../blockString';
+} from '../blockString.js';
 
 function joinLines(...args: ReadonlyArray<string>) {
   return args.join('\n');

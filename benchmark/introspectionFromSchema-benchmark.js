@@ -10,7 +10,7 @@ const document = parse(getIntrospectionQuery());
 
 export const benchmark = {
   name: 'Execute Introspection Query',
-  count: 30,
+  count: 20,
   measure() {
     executeSync({ schema, document });
   },

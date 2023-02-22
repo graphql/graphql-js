@@ -1,9 +1,9 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { TypeDefinitionNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { TypeDefinitionNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique type names

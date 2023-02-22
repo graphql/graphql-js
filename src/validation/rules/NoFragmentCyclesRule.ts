@@ -1,14 +1,14 @@
-import type { ObjMap } from '../../jsutils/ObjMap';
+import type { ObjMap } from '../../jsutils/ObjMap.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
   FragmentDefinitionNode,
   FragmentSpreadNode,
-} from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+} from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * No fragment cycles
@@ -23,7 +23,7 @@ export function NoFragmentCyclesRule(
 ): ASTVisitor {
   // Tracks already visited fragments to maintain O(N) and to ensure that cycles
   // are not redundantly reported.
-  const visitedFrags: ObjMap<boolean> = Object.create(null);
+  const visitedFrags = new Set<string>();
 
   // Array of AST nodes used to produce meaningful errors
   const spreadPath: Array<FragmentSpreadNode> = [];
@@ -43,12 +43,12 @@ export function NoFragmentCyclesRule(
   // It does not terminate when a cycle was found but continues to explore
   // the graph to find all possible cycles.
   function detectCycleRecursive(fragment: FragmentDefinitionNode): void {
-    if (visitedFrags[fragment.name.value]) {
+    if (visitedFrags.has(fragment.name.value)) {
       return;
     }
 
     const fragmentName = fragment.name.value;
-    visitedFrags[fragmentName] = true;
+    visitedFrags.add(fragmentName);
 
     const spreadNodes = context.getFragmentSpreads(fragment.selectionSet);
     if (spreadNodes.length === 0) {

@@ -1,16 +1,16 @@
-import { devAssert } from '../jsutils/devAssert';
-import { inspect } from '../jsutils/inspect';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import { keyValMap } from '../jsutils/keyValMap';
+import { devAssert } from '../jsutils/devAssert.js';
+import { inspect } from '../jsutils/inspect.js';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { keyValMap } from '../jsutils/keyValMap.js';
 
-import { parseValue } from '../language/parser';
+import { parseValue } from '../language/parser.js';
 
 import type {
   GraphQLFieldConfig,
   GraphQLFieldConfigMap,
   GraphQLNamedType,
   GraphQLType,
-} from '../type/definition';
+} from '../type/definition.js';
 import {
   assertInterfaceType,
   assertNullableType,
@@ -25,12 +25,12 @@ import {
   GraphQLUnionType,
   isInputType,
   isOutputType,
-} from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
-import { introspectionTypes, TypeKind } from '../type/introspection';
-import { specifiedScalarTypes } from '../type/scalars';
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
-import { GraphQLSchema } from '../type/schema';
+} from '../type/definition.js';
+import { GraphQLDirective } from '../type/directives.js';
+import { introspectionTypes, TypeKind } from '../type/introspection.js';
+import { specifiedScalarTypes } from '../type/scalars.js';
+import type { GraphQLSchemaValidationOptions } from '../type/schema.js';
+import { GraphQLSchema } from '../type/schema.js';
 
 import type {
   IntrospectionDirective,
@@ -46,8 +46,8 @@ import type {
   IntrospectionType,
   IntrospectionTypeRef,
   IntrospectionUnionType,
-} from './getIntrospectionQuery';
-import { valueFromAST } from './valueFromAST';
+} from './getIntrospectionQuery.js';
+import { valueFromAST } from './valueFromAST.js';
 
 /**
  * Build a GraphQLSchema for use by client tools.
@@ -65,6 +65,8 @@ export function buildClientSchema(
   introspection: IntrospectionQuery,
   options?: GraphQLSchemaValidationOptions,
 ): GraphQLSchema {
+  // Even though the `introspection` argument is typed, in most cases it's received
+  // as an untyped value from the server, so we will do an additional check here.
   devAssert(
     isObjectLike(introspection) && isObjectLike(introspection.__schema),
     `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${inspect(

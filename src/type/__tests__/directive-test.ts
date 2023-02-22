@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { DirectiveLocation } from '../../language/directiveLocation';
+import { DirectiveLocation } from '../../language/directiveLocation.js';
 
-import { GraphQLDirective } from '../directives';
-import { GraphQLInt, GraphQLString } from '../scalars';
+import { GraphQLDirective } from '../directives.js';
+import { GraphQLInt, GraphQLString } from '../scalars.js';
 
 describe('Type System: Directive', () => {
   it('defines a directive with no args', () => {
@@ -96,18 +96,6 @@ describe('Type System: Directive', () => {
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
-  it('rejects a directive with incorrectly typed args', () => {
-    expect(
-      () =>
-        new GraphQLDirective({
-          name: 'Foo',
-          locations: [DirectiveLocation.QUERY],
-          // @ts-expect-error
-          args: [],
-        }),
-    ).to.throw('@Foo args must be an object with argument names as keys.');
-  });
-
   it('rejects a directive with incorrectly named arg', () => {
     expect(
       () =>
@@ -119,19 +107,5 @@ describe('Type System: Directive', () => {
           },
         }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
-  });
-
-  it('rejects a directive with undefined locations', () => {
-    // @ts-expect-error
-    expect(() => new GraphQLDirective({ name: 'Foo' })).to.throw(
-      '@Foo locations must be an Array.',
-    );
-  });
-
-  it('rejects a directive with incorrectly typed locations', () => {
-    // @ts-expect-error
-    expect(() => new GraphQLDirective({ name: 'Foo', locations: {} })).to.throw(
-      '@Foo locations must be an Array.',
-    );
   });
 });

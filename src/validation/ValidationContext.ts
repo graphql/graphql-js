@@ -1,7 +1,7 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 
-import type { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
   DocumentNode,
@@ -10,10 +10,10 @@ import type {
   OperationDefinitionNode,
   SelectionSetNode,
   VariableNode,
-} from '../language/ast';
-import { Kind } from '../language/kinds';
-import type { ASTVisitor } from '../language/visitor';
-import { visit } from '../language/visitor';
+} from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
+import type { ASTVisitor } from '../language/visitor.js';
+import { visit } from '../language/visitor.js';
 
 import type {
   GraphQLArgument,
@@ -22,11 +22,11 @@ import type {
   GraphQLField,
   GraphQLInputType,
   GraphQLOutputType,
-} from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
-import type { GraphQLSchema } from '../type/schema';
+} from '../type/definition.js';
+import type { GraphQLDirective } from '../type/directives.js';
+import type { GraphQLSchema } from '../type/schema.js';
 
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
@@ -114,14 +114,14 @@ export class ASTValidationContext {
     let fragments = this._recursivelyReferencedFragments.get(operation);
     if (!fragments) {
       fragments = [];
-      const collectedNames = Object.create(null);
+      const collectedNames = new Set<string>();
       const nodesToVisit: Array<SelectionSetNode> = [operation.selectionSet];
       let node: SelectionSetNode | undefined;
       while ((node = nodesToVisit.pop())) {
         for (const spread of this.getFragmentSpreads(node)) {
           const fragName = spread.name.value;
-          if (collectedNames[fragName] !== true) {
-            collectedNames[fragName] = true;
+          if (!collectedNames.has(fragName)) {
+            collectedNames.add(fragName);
             const fragment = this.getFragment(fragName);
             if (fragment) {
               fragments.push(fragment);

@@ -1,10 +1,10 @@
-import type { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import type { ASTNode } from './ast';
-import { printBlockString } from './blockString';
-import { printString } from './printString';
-import type { ASTReducer } from './visitor';
-import { visit } from './visitor';
+import type { ASTNode } from './ast.js';
+import { printBlockString } from './blockString.js';
+import { printString } from './printString.js';
+import type { ASTReducer } from './visitor.js';
+import { visit } from './visitor.js';
 
 /**
  * Converts an AST into a string, using one set of reasonable
@@ -55,19 +55,52 @@ const printDocASTReducer: ASTReducer<string> = {
   SelectionSet: { leave: ({ selections }) => block(selections) },
 
   Field: {
-    leave({ alias, name, arguments: args, directives, selectionSet }) {
-      const prefix = wrap('', alias, ': ') + name;
+    leave({
+      alias,
+      name,
+      arguments: args,
+      nullabilityAssertion,
+      directives,
+      selectionSet,
+    }) {
+      const prefix = join([wrap('', alias, ': '), name], '');
       let argsLine = prefix + wrap('(', join(args, ', '), ')');
 
       if (argsLine.length > MAX_LINE_LENGTH) {
         argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
       }
 
-      return join([argsLine, join(directives, ' '), selectionSet], ' ');
+      return join([
+        argsLine,
+        // Note: Client Controlled Nullability is experimental and may be
+        // changed or removed in the future.
+        nullabilityAssertion,
+        wrap(' ', join(directives, ' ')),
+        wrap(' ', selectionSet),
+      ]);
+    },
+  },
+  Argument: { leave: ({ name, value }) => name + ': ' + value },
+
+  // Nullability Modifiers
+
+  ListNullabilityOperator: {
+    leave({ nullabilityAssertion }) {
+      return join(['[', nullabilityAssertion, ']']);
     },
   },
 
-  Argument: { leave: ({ name, value }) => name + ': ' + value },
+  NonNullAssertion: {
+    leave({ nullabilityAssertion }) {
+      return join([nullabilityAssertion, '!']);
+    },
+  },
+
+  ErrorBoundary: {
+    leave({ nullabilityAssertion }) {
+      return join([nullabilityAssertion, '?']);
+    },
+  },
 
   // Fragments
 

@@ -1,23 +1,23 @@
-import { didYouMean } from '../../jsutils/didYouMean';
-import { suggestionList } from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTNode } from '../../language/ast';
+import type { ASTNode } from '../../language/ast.js';
 import {
   isTypeDefinitionNode,
   isTypeSystemDefinitionNode,
   isTypeSystemExtensionNode,
-} from '../../language/predicates';
-import type { ASTVisitor } from '../../language/visitor';
+} from '../../language/predicates.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { introspectionTypes } from '../../type/introspection';
-import { specifiedScalarTypes } from '../../type/scalars';
+import { introspectionTypes } from '../../type/introspection.js';
+import { specifiedScalarTypes } from '../../type/scalars.js';
 
 import type {
   SDLValidationContext,
   ValidationContext,
-} from '../ValidationContext';
+} from '../ValidationContext.js';
 
 /**
  * Known type names
@@ -30,34 +30,27 @@ import type {
 export function KnownTypeNamesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const schema = context.getSchema();
-  const existingTypesMap = schema ? schema.getTypeMap() : Object.create(null);
+  const { definitions } = context.getDocument();
+  const existingTypesMap = context.getSchema()?.getTypeMap() ?? {};
 
-  const definedTypes = Object.create(null);
-  for (const def of context.getDocument().definitions) {
-    if (isTypeDefinitionNode(def)) {
-      definedTypes[def.name.value] = true;
-    }
-  }
-
-  const typeNames = [
+  const typeNames = new Set([
     ...Object.keys(existingTypesMap),
-    ...Object.keys(definedTypes),
-  ];
+    ...definitions.filter(isTypeDefinitionNode).map((def) => def.name.value),
+  ]);
 
   return {
     NamedType(node, _1, parent, _2, ancestors) {
       const typeName = node.name.value;
-      if (!existingTypesMap[typeName] && !definedTypes[typeName]) {
+      if (!typeNames.has(typeName)) {
         const definitionNode = ancestors[2] ?? parent;
         const isSDL = definitionNode != null && isSDLNode(definitionNode);
-        if (isSDL && standardTypeNames.includes(typeName)) {
+        if (isSDL && standardTypeNames.has(typeName)) {
           return;
         }
 
         const suggestedTypes = suggestionList(
           typeName,
-          isSDL ? standardTypeNames.concat(typeNames) : typeNames,
+          isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames],
         );
         context.reportError(
           new GraphQLError(
@@ -70,8 +63,8 @@ export function KnownTypeNamesRule(
   };
 }
 
-const standardTypeNames = [...specifiedScalarTypes, ...introspectionTypes].map(
-  (type) => type.name,
+const standardTypeNames = new Set<string>(
+  [...specifiedScalarTypes, ...introspectionTypes].map((type) => type.name),
 );
 
 function isSDLNode(value: ASTNode | ReadonlyArray<ASTNode>): boolean {

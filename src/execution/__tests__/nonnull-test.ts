@@ -1,18 +1,20 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { parse } from '../../language/parser';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
-import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
+import { parse } from '../../language/parser.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import type { ExecutionResult } from '../execute';
-import { execute, executeSync } from '../execute';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
+
+import type { ExecutionResult } from '../execute.js';
+import { execute, executeSync } from '../execute.js';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');
@@ -109,7 +111,7 @@ const schema = buildSchema(`
 function executeQuery(
   query: string,
   rootValue: unknown,
-): ExecutionResult | Promise<ExecutionResult> {
+): PromiseOrValue<ExecutionResult> {
   return execute({ schema, document: parse(query), rootValue });
 }
 
@@ -258,6 +260,16 @@ describe('Execute: handles non-nullable types', () => {
             locations: [{ line: 6, column: 22 }],
           },
           {
+            message: promiseError.message,
+            path: ['syncNest', 'promise'],
+            locations: [{ line: 5, column: 11 }],
+          },
+          {
+            message: promiseError.message,
+            path: ['syncNest', 'syncNest', 'promise'],
+            locations: [{ line: 6, column: 27 }],
+          },
+          {
             message: syncError.message,
             path: ['syncNest', 'promiseNest', 'sync'],
             locations: [{ line: 7, column: 25 }],
@@ -274,21 +286,6 @@ describe('Execute: handles non-nullable types', () => {
           },
           {
             message: promiseError.message,
-            path: ['syncNest', 'promise'],
-            locations: [{ line: 5, column: 11 }],
-          },
-          {
-            message: promiseError.message,
-            path: ['syncNest', 'syncNest', 'promise'],
-            locations: [{ line: 6, column: 27 }],
-          },
-          {
-            message: syncError.message,
-            path: ['promiseNest', 'promiseNest', 'sync'],
-            locations: [{ line: 13, column: 25 }],
-          },
-          {
-            message: promiseError.message,
             path: ['syncNest', 'promiseNest', 'promise'],
             locations: [{ line: 7, column: 30 }],
           },
@@ -301,6 +298,11 @@ describe('Execute: handles non-nullable types', () => {
             message: promiseError.message,
             path: ['promiseNest', 'syncNest', 'promise'],
             locations: [{ line: 12, column: 27 }],
+          },
+          {
+            message: syncError.message,
+            path: ['promiseNest', 'promiseNest', 'sync'],
+            locations: [{ line: 13, column: 25 }],
           },
           {
             message: promiseError.message,

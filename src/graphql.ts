@@ -1,21 +1,21 @@
-import { isPromise } from './jsutils/isPromise';
-import type { Maybe } from './jsutils/Maybe';
-import type { PromiseOrValue } from './jsutils/PromiseOrValue';
+import { isPromise } from './jsutils/isPromise.js';
+import type { Maybe } from './jsutils/Maybe.js';
+import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
 
-import { parse } from './language/parser';
-import type { Source } from './language/source';
+import { parse } from './language/parser.js';
+import type { Source } from './language/source.js';
 
 import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
-} from './type/definition';
-import type { GraphQLSchema } from './type/schema';
-import { validateSchema } from './type/validate';
+} from './type/definition.js';
+import type { GraphQLSchema } from './type/schema.js';
+import { validateSchema } from './type/validate.js';
 
-import { validate } from './validation/validate';
+import { validate } from './validation/validate.js';
 
-import type { ExecutionResult } from './execution/execute';
-import { execute } from './execution/execute';
+import type { ExecutionResult } from './execution/execute.js';
+import { execute } from './execution/execute.js';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -25,6 +25,8 @@ import { execute } from './execution/execute';
  * More sophisticated GraphQL servers, such as those which persist queries,
  * may wish to separate the validation and execution phases to a static time
  * tooling step, and a server runtime step.
+ *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
  *
  * Accepts either an object with named arguments, or individual arguments:
  *

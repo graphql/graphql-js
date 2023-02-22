@@ -1,36 +1,41 @@
-import { devAssert } from '../jsutils/devAssert';
-import { inspect } from '../jsutils/inspect';
-import { instanceOf } from '../jsutils/instanceOf';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import type { Maybe } from '../jsutils/Maybe';
-import type { ObjMap } from '../jsutils/ObjMap';
-import { toObjMap } from '../jsutils/toObjMap';
+import { inspect } from '../jsutils/inspect.js';
+import { instanceOf } from '../jsutils/instanceOf.js';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
+import { toObjMap } from '../jsutils/toObjMap.js';
 
-import type { GraphQLError } from '../error/GraphQLError';
+import type { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
   SchemaDefinitionNode,
   SchemaExtensionNode,
-} from '../language/ast';
-import { OperationTypeNode } from '../language/ast';
+} from '../language/ast.js';
+import { OperationTypeNode } from '../language/ast.js';
 
 import type {
   GraphQLAbstractType,
+  GraphQLCompositeType,
+  GraphQLField,
   GraphQLInterfaceType,
   GraphQLNamedType,
   GraphQLObjectType,
   GraphQLType,
-} from './definition';
+} from './definition.js';
 import {
   getNamedType,
   isInputObjectType,
   isInterfaceType,
   isObjectType,
   isUnionType,
-} from './definition';
-import type { GraphQLDirective } from './directives';
-import { isDirective, specifiedDirectives } from './directives';
-import { __Schema } from './introspection';
+} from './definition.js';
+import type { GraphQLDirective } from './directives.js';
+import { isDirective, specifiedDirectives } from './directives.js';
+import {
+  __Schema,
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from './introspection.js';
 
 /**
  * Test if the given value is a GraphQL schema.
@@ -141,7 +146,11 @@ export class GraphQLSchema {
   private _subscriptionType: Maybe<GraphQLObjectType>;
   private _directives: ReadonlyArray<GraphQLDirective>;
   private _typeMap: TypeMap;
-  private _subTypeMap: ObjMap<ObjMap<boolean>>;
+  private _subTypeMap: Map<
+    GraphQLAbstractType,
+    Set<GraphQLObjectType | GraphQLInterfaceType>
+  >;
+
   private _implementationsMap: ObjMap<{
     objects: Array<GraphQLObjectType>;
     interfaces: Array<GraphQLInterfaceType>;
@@ -151,18 +160,6 @@ export class GraphQLSchema {
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
     this.__validationErrors = config.assumeValid === true ? [] : undefined;
-
-    // Check for common mistakes during construction to produce early errors.
-    devAssert(isObjectLike(config), 'Must provide configuration object.');
-    devAssert(
-      !config.types || Array.isArray(config.types),
-      `"types" must be Array if provided but got: ${inspect(config.types)}.`,
-    );
-    devAssert(
-      !config.directives || Array.isArray(config.directives),
-      '"directives" must be Array if provided but got: ' +
-        `${inspect(config.directives)}.`,
-    );
 
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);
@@ -177,7 +174,7 @@ export class GraphQLSchema {
 
     // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
-    const allReferencedTypes: Set<GraphQLNamedType> = new Set(config.types);
+    const allReferencedTypes = new Set<GraphQLNamedType>(config.types);
     if (config.types != null) {
       for (const type of config.types) {
         // When we ready to process this type, we remove it from "collected" types
@@ -209,7 +206,7 @@ export class GraphQLSchema {
 
     // Storing the resulting map for reference by the schema.
     this._typeMap = Object.create(null);
-    this._subTypeMap = Object.create(null);
+    this._subTypeMap = new Map();
     // Keep track of all implementations by interface name.
     this._implementationsMap = Object.create(null);
 
@@ -219,10 +216,6 @@ export class GraphQLSchema {
       }
 
       const typeName = namedType.name;
-      devAssert(
-        typeName != null,
-        'One of the provided types for building the Schema is missing a name.',
-      );
       if (this._typeMap[typeName] !== undefined) {
         throw new Error(
           `Schema must contain uniquely named types but contains multiple types named "${typeName}".`,
@@ -319,27 +312,21 @@ export class GraphQLSchema {
     abstractType: GraphQLAbstractType,
     maybeSubType: GraphQLObjectType | GraphQLInterfaceType,
   ): boolean {
-    let map = this._subTypeMap[abstractType.name];
-    if (map === undefined) {
-      map = Object.create(null);
-
+    let set = this._subTypeMap.get(abstractType);
+    if (set === undefined) {
       if (isUnionType(abstractType)) {
-        for (const type of abstractType.getTypes()) {
-          map[type.name] = true;
-        }
+        set = new Set<GraphQLObjectType>(abstractType.getTypes());
       } else {
         const implementations = this.getImplementations(abstractType);
-        for (const type of implementations.objects) {
-          map[type.name] = true;
-        }
-        for (const type of implementations.interfaces) {
-          map[type.name] = true;
-        }
+        set = new Set<GraphQLObjectType | GraphQLInterfaceType>([
+          ...implementations.objects,
+          ...implementations.interfaces,
+        ]);
       }
 
-      this._subTypeMap[abstractType.name] = map;
+      this._subTypeMap.set(abstractType, set);
     }
-    return map[maybeSubType.name] !== undefined;
+    return set.has(maybeSubType);
   }
 
   getDirectives(): ReadonlyArray<GraphQLDirective> {
@@ -348,6 +335,42 @@ export class GraphQLSchema {
 
   getDirective(name: string): Maybe<GraphQLDirective> {
     return this.getDirectives().find((directive) => directive.name === name);
+  }
+
+  /**
+   * This method looks up the field on the given type definition.
+   * It has special casing for the three introspection fields, `__schema`,
+   * `__type` and `__typename`.
+   *
+   * `__typename` is special because it can always be queried as a field, even
+   * in situations where no other fields are allowed, like on a Union.
+   *
+   * `__schema` and `__type` could get automatically added to the query type,
+   * but that would require mutating type definitions, which would cause issues.
+   */
+  getField(
+    parentType: GraphQLCompositeType,
+    fieldName: string,
+  ): GraphQLField<unknown, unknown> | undefined {
+    switch (fieldName) {
+      case SchemaMetaFieldDef.name:
+        return this.getQueryType() === parentType
+          ? SchemaMetaFieldDef
+          : undefined;
+      case TypeMetaFieldDef.name:
+        return this.getQueryType() === parentType
+          ? TypeMetaFieldDef
+          : undefined;
+      case TypeNameMetaFieldDef.name:
+        return TypeNameMetaFieldDef;
+    }
+
+    // this function is part "hot" path inside executor and check presence
+    // of 'getFields' is faster than to use `!isUnionType`
+    if ('getFields' in parentType) {
+      return parentType.getFields()[fieldName];
+    }
+    return undefined;
   }
 
   toConfig(): GraphQLSchemaNormalizedConfig {
@@ -376,7 +399,7 @@ export interface GraphQLSchemaValidationOptions {
    *
    * Default: false
    */
-  assumeValid?: boolean;
+  assumeValid?: boolean | undefined;
 }
 
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
