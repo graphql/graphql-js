@@ -17,7 +17,7 @@ export function dedentBlockStringLines(lines) {
     if (indent === line.length) {
       continue; // skip empty lines
     }
-    firstNonEmptyLine ?? (firstNonEmptyLine = i);
+    firstNonEmptyLine ??= i;
     lastNonEmptyLine = i;
     if (i !== 0 && indent < commonIndent) {
       commonIndent = indent;
@@ -77,10 +77,10 @@ export function isPrintableAsBlockString(value) {
         break;
       case 9: //   \t
       case 32: //  <space>
-        hasIndent || (hasIndent = isEmptyLine);
+        hasIndent ||= isEmptyLine;
         break;
       default:
-        hasCommonIndent && (hasCommonIndent = hasIndent);
+        hasCommonIndent &&= hasIndent;
         isEmptyLine = false;
     }
   }

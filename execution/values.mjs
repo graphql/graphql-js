@@ -59,7 +59,7 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
       );
       continue;
     }
-    if (!hasOwnProperty(inputs, varName)) {
+    if (!Object.hasOwn(inputs, varName)) {
       if (varDefNode.defaultValue) {
         coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
       } else if (isNonNullType(varType)) {
@@ -140,7 +140,7 @@ export function getArgumentValues(def, node, variableValues) {
       const variableName = valueNode.name.value;
       if (
         variableValues == null ||
-        !hasOwnProperty(variableValues, variableName)
+        !Object.hasOwn(variableValues, variableName)
       ) {
         if (argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
@@ -194,7 +194,4 @@ export function getDirectiveValues(directiveDef, node, variableValues) {
   if (directiveNode) {
     return getArgumentValues(directiveDef, directiveNode, variableValues);
   }
-}
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
 }

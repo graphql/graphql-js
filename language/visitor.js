@@ -141,7 +141,7 @@ function visitInParallel(visitors) {
     const leaveList = new Array(visitors.length).fill(undefined);
     for (let i = 0; i < visitors.length; ++i) {
       const { enter, leave } = getEnterLeaveForKind(visitors[i], kind);
-      hasVisitor || (hasVisitor = enter != null || leave != null);
+      hasVisitor ||= enter != null || leave != null;
       enterList[i] = enter;
       leaveList[i] = leave;
     }

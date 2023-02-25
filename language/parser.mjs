@@ -1151,7 +1151,7 @@ export class Parser {
   parseDirectiveLocation() {
     const start = this._lexer.token;
     const name = this.parseName();
-    if (Object.prototype.hasOwnProperty.call(DirectiveLocation, name.value)) {
+    if (Object.hasOwn(DirectiveLocation, name.value)) {
       return name;
     }
     throw this.unexpected(start);
