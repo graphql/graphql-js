@@ -145,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version_to_setup: [14, 16, 18]
+        node_version_to_setup: [16, 18, 19]
     permissions:
       contents: read # for actions/checkout
     steps:

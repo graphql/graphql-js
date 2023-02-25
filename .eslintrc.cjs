@@ -390,7 +390,7 @@ module.exports = {
     'prefer-exponentiation-operator': 'error',
     'prefer-named-capture-group': 'off', // TODO: needs a better support in TS, see https://github.com/microsoft/TypeScript/issues/32098
     'prefer-numeric-literals': 'error',
-    'prefer-object-has-own': 'off', // TODO: requires Node.js v16.9.0
+    'prefer-object-has-own': 'error',
     'prefer-object-spread': 'error',
     'prefer-promise-reject-errors': 'error',
     'prefer-regex-literals': 'error',
