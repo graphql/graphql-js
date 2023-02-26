@@ -310,7 +310,7 @@ function wrap(start, maybeString, end = '') {
     : '';
 }
 function indent(str) {
-  return wrap('  ', str.replace(/\n/g, '\n  '));
+  return wrap('  ', str.replaceAll('\n', '\n  '));
 }
 function hasMultilineItems(maybeArray) {
   // FIXME: https://github.com/graphql/graphql-js/issues/2203

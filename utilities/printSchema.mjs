@@ -256,5 +256,5 @@ function printDescription(def, indentation = '', firstInBlock = true) {
   });
   const prefix =
     indentation && !firstInBlock ? '\n' + indentation : indentation;
-  return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
+  return prefix + blockString.replaceAll('\n', '\n' + indentation) + '\n';
 }

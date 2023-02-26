@@ -100,7 +100,7 @@ export function isPrintableAsBlockString(value) {
  * @internal
  */
 export function printBlockString(value, options) {
-  const escapedValue = value.replace(/"""/g, '\\"""');
+  const escapedValue = value.replaceAll('"""', '\\"""');
   // Expand a block string's raw value into independent lines.
   const lines = escapedValue.split(/\r\n|[\n\r]/g);
   const isSingleLine = lines.length === 1;
