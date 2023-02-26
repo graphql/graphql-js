@@ -1,6 +1,9 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { VariableDefinitionNode } from '../../language/ast.js';
+import type {
+  FragmentArgumentDefinitionNode,
+  VariableDefinitionNode,
+} from '../../language/ast.js';
 import { print } from '../../language/printer.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
@@ -21,21 +24,25 @@ import type { ValidationContext } from '../ValidationContext.js';
 export function VariablesAreInputTypesRule(
   context: ValidationContext,
 ): ASTVisitor {
+  const validateNode = (
+    node: VariableDefinitionNode | FragmentArgumentDefinitionNode,
+  ) => {
+    const type = typeFromAST(context.getSchema(), node.type);
+
+    if (type !== undefined && !isInputType(type)) {
+      const variableName = node.variable.name.value;
+      const typeName = print(node.type);
+
+      context.reportError(
+        new GraphQLError(
+          `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
+          { nodes: node.type },
+        ),
+      );
+    }
+  };
   return {
-    VariableDefinition(node: VariableDefinitionNode) {
-      const type = typeFromAST(context.getSchema(), node.type);
-
-      if (type !== undefined && !isInputType(type)) {
-        const variableName = node.variable.name.value;
-        const typeName = print(node.type);
-
-        context.reportError(
-          new GraphQLError(
-            `Variable "$${variableName}" cannot be non-input type "${typeName}".`,
-            { nodes: node.type },
-          ),
-        );
-      }
-    },
+    VariableDefinition: validateNode,
+    FragmentArgumentDefinition: validateNode,
   };
 }

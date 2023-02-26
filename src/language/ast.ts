@@ -149,6 +149,7 @@ export type ASTNode =
   | FragmentSpreadNode
   | InlineFragmentNode
   | FragmentDefinitionNode
+  | FragmentArgumentDefinitionNode
   | IntValueNode
   | FloatValueNode
   | StringValueNode
@@ -227,15 +228,21 @@ export const QueryDocumentKeys: {
   NonNullAssertion: ['nullabilityAssertion'],
   ErrorBoundary: ['nullabilityAssertion'],
 
-  FragmentSpread: ['name', 'directives'],
+  FragmentSpread: ['name', 'arguments', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
     'name',
-    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
-    'variableDefinitions',
+    'arguments',
     'typeCondition',
     'directives',
     'selectionSet',
+  ],
+  FragmentArgumentDefinition: [
+    'description',
+    'variable',
+    'type',
+    'defaultValue',
+    'directives',
   ],
 
   IntValue: [],
@@ -428,6 +435,7 @@ export interface FragmentSpreadNode {
   readonly kind: Kind.FRAGMENT_SPREAD;
   readonly loc?: Location | undefined;
   readonly name: NameNode;
+  readonly arguments?: ReadonlyArray<ArgumentNode> | undefined;
   readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
 }
 
@@ -443,13 +451,22 @@ export interface FragmentDefinitionNode {
   readonly kind: Kind.FRAGMENT_DEFINITION;
   readonly loc?: Location | undefined;
   readonly name: NameNode;
-  /** @deprecated variableDefinitions will be removed in v17.0.0 */
-  readonly variableDefinitions?:
-    | ReadonlyArray<VariableDefinitionNode>
+  readonly arguments?:
+    | ReadonlyArray<FragmentArgumentDefinitionNode>
     | undefined;
   readonly typeCondition: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
   readonly selectionSet: SelectionSetNode;
+}
+
+export interface FragmentArgumentDefinitionNode {
+  readonly kind: Kind.FRAGMENT_ARGUMENT_DEFINITION;
+  readonly loc?: Location | undefined;
+  readonly description?: StringValueNode | undefined;
+  readonly variable: VariableNode;
+  readonly type: TypeNode;
+  readonly defaultValue?: ConstValueNode | undefined;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
 }
 
 /** Values */

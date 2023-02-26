@@ -17,7 +17,10 @@ export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
     OperationDefinition(operation) {
       const usages = context.getRecursiveVariableUsages(operation);
       const variableNameUsed = new Set<string>(
-        usages.map(({ node }) => node.name.value),
+        usages
+          // Skip variables used as fragment arguments
+          .filter(({ fragmentArgDef }) => !fragmentArgDef)
+          .map(({ node }) => node.name.value),
       );
 
       // FIXME: https://github.com/graphql/graphql-js/issues/2203

@@ -105,8 +105,15 @@ const printDocASTReducer: ASTReducer<string> = {
   // Fragments
 
   FragmentSpread: {
-    leave: ({ name, directives }) =>
-      '...' + name + wrap(' ', join(directives, ' ')),
+    leave: ({ name, arguments: args, directives }) => {
+      const prefix = '...' + name;
+      let argsLine = prefix + wrap('(', join(args, ', '), ')');
+
+      if (argsLine.length > MAX_LINE_LENGTH) {
+        argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+      }
+      return argsLine + wrap(' ', join(directives, ' '));
+    },
   },
 
   InlineFragment: {
@@ -126,15 +133,28 @@ const printDocASTReducer: ASTReducer<string> = {
     leave: ({
       name,
       typeCondition,
-      variableDefinitions,
+      arguments: args,
       directives,
       selectionSet,
     }) =>
       // Note: fragment variable definitions are experimental and may be changed
       // or removed in the future.
-      `fragment ${name}${wrap('(', join(variableDefinitions, ', '), ')')} ` +
+      `fragment ${name}${wrap('(', join(args, ', '), ')')} ` +
       `on ${typeCondition} ${wrap('', join(directives, ' '), ' ')}` +
       selectionSet,
+  },
+
+  FragmentArgumentDefinition: {
+    leave: ({ description, variable, type, defaultValue, directives }) =>
+      wrap('', description, '\n') +
+      join(
+        [
+          variable + ': ' + type,
+          wrap('= ', defaultValue),
+          join(directives, ' '),
+        ],
+        ' ',
+      ),
   },
 
   // Value
