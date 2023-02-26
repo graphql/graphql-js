@@ -12,7 +12,7 @@ export function dedentString(string: string): string {
     indent += char;
   }
 
-  return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
+  return trimmedStr.replaceAll(RegExp('^' + indent, 'mg'), ''); // remove indent
 }
 
 /**
