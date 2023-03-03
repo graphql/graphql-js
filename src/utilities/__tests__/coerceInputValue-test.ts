@@ -395,14 +395,46 @@ describe('coerceInputValue', () => {
       expectValue(result).to.deep.equal(null);
     });
 
-    it('returns nested lists for nested non-list values', () => {
+    it('returns error for nested non-list values', () => {
       const result = coerceValue([1, 2, 3], TestNestedList);
-      expectValue(result).to.deep.equal([[1], [2], [3]]);
+      expectErrors(result).to.deep.equal([
+        {
+          error: 'Expected type "[Int]" to be a list.',
+          path: [0],
+          value: 1,
+        },
+        {
+          error: 'Expected type "[Int]" to be a list.',
+          path: [1],
+          value: 2,
+        },
+        {
+          error: 'Expected type "[Int]" to be a list.',
+          path: [2],
+          value: 3,
+        },
+      ]);
+    });
+
+    it('returns errors for null values', () => {
+      const result = coerceValue([42, [null], null], TestNestedList);
+      expectErrors(result).to.deep.equal([
+        {
+          error: 'Expected type "[Int]" to be a list.',
+          path: [0],
+          value: 42,
+        },
+        {
+          error: 'Expected type "[Int]" to be a list.',
+          path: [2],
+          value: null,
+        },
+      ]);
     });
 
     it('returns nested null for nested null values', () => {
-      const result = coerceValue([42, [null], null], TestNestedList);
-      expectValue(result).to.deep.equal([[42], [null], null]);
+      const result = coerceValue([[null], [null]], TestNestedList);
+      expectValue(result).to.deep.equal([[null], [null]]);
     });
   });
 
