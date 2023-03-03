@@ -76,8 +76,21 @@ function coerceInputValueImpl(
   if (isListType(type)) {
     const itemType = type.ofType;
     if (isIterableObject(inputValue)) {
+      const isNestedList = Boolean(
+        isListType(itemType) && Array.from(inputValue).length > 1,
+      );
       return Array.from(inputValue, (itemValue, index) => {
         const itemPath = addPath(path, index, undefined);
+        if (isNestedList && !isIterableObject(itemValue)) {
+          // Input values should be iterable for nested list type with multiple values
+          onError(
+            pathToArray(itemPath),
+            itemValue,
+            new GraphQLError(
+              `Expected type "${inspect(itemType)}" to be a list.`,
+            ),
+          );
+        }
         return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
       });
     }
