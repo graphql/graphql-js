@@ -849,6 +849,11 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
+                  name: 'FRAGMENT_VARIABLE_DEFINITION',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
                   name: 'SCHEMA',
                   isDeprecated: false,
                   deprecationReason: null,
