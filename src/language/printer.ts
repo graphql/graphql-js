@@ -148,8 +148,22 @@ const printDocASTReducer: ASTReducer<string> = {
   BooleanValue: { leave: ({ value }) => (value ? 'true' : 'false') },
   NullValue: { leave: () => 'null' },
   EnumValue: { leave: ({ value }) => value },
-  ListValue: { leave: ({ values }) => '[' + join(values, ', ') + ']' },
-  ObjectValue: { leave: ({ fields }) => '{ ' + join(fields, ', ') + ' }' },
+  ListValue: {
+    leave: ({ values }) => {
+      if (values.reduce((t, v) => t + v.length + 2, 0) > MAX_LINE_LENGTH) {
+        return '[\n' + indent(join(values, ',\n')) + '\n]';
+      }
+      return '[' + join(values, ', ') + ']';
+    },
+  },
+  ObjectValue: {
+    leave: ({ fields }) => {
+      if (fields.reduce((t, f) => t + f.length + 2, 0) > MAX_LINE_LENGTH) {
+        return '{\n' + indent(join(fields, ',\n')) + '\n}';
+      }
+      return '{ ' + join(fields, ', ') + ' }';
+    },
+  },
   ObjectField: { leave: ({ name, value }) => name + ': ' + value },
 
   // Directive

@@ -110,6 +110,64 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('puts large object values on multiple lines if line is long (> 80 chars)', () => {
+    const printed = print(
+      parse(
+        '{trip(obj:{wheelchair:false,smallObj:{a: 1},largeObj:{wheelchair:false,smallObj:{a: 1},arriveBy:false,includePlannedCancellations:true,transitDistanceReluctance:2000,anotherLongFieldName:"Lots and lots and lots and lots of text"},arriveBy:false,includePlannedCancellations:true,transitDistanceReluctance:2000,anotherLongFieldName:"Lots and lots and lots and lots of text"}){dateTime}}',
+      ),
+    );
+
+    expect(printed).to.equal(dedent`
+      {
+        trip(
+          obj: {
+            wheelchair: false,
+            smallObj: { a: 1 },
+            largeObj: {
+              wheelchair: false,
+              smallObj: { a: 1 },
+              arriveBy: false,
+              includePlannedCancellations: true,
+              transitDistanceReluctance: 2000,
+              anotherLongFieldName: "Lots and lots and lots and lots of text"
+            },
+            arriveBy: false,
+            includePlannedCancellations: true,
+            transitDistanceReluctance: 2000,
+            anotherLongFieldName: "Lots and lots and lots and lots of text"
+          }
+        ) {
+          dateTime
+        }
+      }
+    `);
+  });
+
+  it('puts large list values on multiple lines if line is long (> 80 chars)', () => {
+    const printed = print(
+      parse(
+        '{trip(list:[["small array", "small", "small"], ["Lots and lots and lots and lots of text", "Lots and lots and lots and lots of text", "Lots and lots and lots and lots of text"]]){dateTime}}',
+      ),
+    );
+
+    expect(printed).to.equal(dedent`
+      {
+        trip(
+          list: [
+            ["small array", "small", "small"],
+            [
+              "Lots and lots and lots and lots of text",
+              "Lots and lots and lots and lots of text",
+              "Lots and lots and lots and lots of text"
+            ]
+          ]
+        ) {
+          dateTime
+        }
+      }
+    `);
+  });
+
   it('Legacy: prints fragment with variable directives', () => {
     const queryASTWithVariableDirective = parse(
       'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
