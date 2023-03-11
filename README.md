@@ -48,7 +48,7 @@ import {
   GraphQLString,
 } from 'graphql';
 
-var schema = new GraphQLSchema({
+const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'RootQueryType',
     fields: {
@@ -70,7 +70,7 @@ or an array of promises. A more complex example is included in the top-level [te
 Then, serve the result of a query against that type schema.
 
 ```js
-var source = '{ hello }';
+const source = '{ hello }';
 
 graphql({ schema, source }).then((result) => {
   // Prints
@@ -86,7 +86,7 @@ first ensure the query is syntactically and semantically valid before executing
 it, reporting errors otherwise.
 
 ```js
-var source = '{ BoyHowdy }';
+const source = '{ BoyHowdy }';
 
 graphql({ schema, source }).then((result) => {
   // Prints
