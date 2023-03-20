@@ -505,7 +505,7 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('n', () => {
+  it('properly visits the kitchen sink query', () => {
     const ast = parse(kitchenSinkQuery, {
       experimentalClientControlledNullability: true,
     });
