@@ -500,7 +500,7 @@ describe('extendSchema', () => {
 
     const newField = query.getFields().newField;
     expectASTNode(newField).to.equal('newField(testArg: TestInput): TestEnum');
-    expectASTNode(newField.args[0]).to.equal('testArg: TestInput');
+    expectASTNode(newField?.args[0]).to.equal('testArg: TestInput');
     expectASTNode(query.getFields().oneMoreNewField).to.equal(
       'oneMoreNewField: TestUnion',
     );

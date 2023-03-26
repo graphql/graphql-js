@@ -7,6 +7,16 @@ import { mapAsyncIterable } from '../mapAsyncIterable.js';
 
 /* eslint-disable @typescript-eslint/require-await */
 describe('mapAsyncIterable', () => {
+  const doubler = (x: number | undefined) => {
+    /* c8 ignore start */
+    if (x === undefined) {
+      throw new Error('Unexpected undefined in iterator');
+    }
+    /* c8 ignore stop */
+
+    return x + x;
+  };
+
   it('maps over async generator', async () => {
     async function* source() {
       yield 1;
@@ -14,7 +24,7 @@ describe('mapAsyncIterable', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    const doubles = mapAsyncIterable(source(), doubler);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -34,9 +44,9 @@ describe('mapAsyncIterable', () => {
       },
 
       next(): Promise<IteratorResult<number, void>> {
-        if (items.length > 0) {
-          const value = items[0];
-          items.shift();
+        const value = items.shift();
+
+        if (value) {
           return Promise.resolve({ done: false, value });
         }
 
@@ -44,7 +54,7 @@ describe('mapAsyncIterable', () => {
       },
     };
 
-    const doubles = mapAsyncIterable(iterable, (x) => x + x);
+    const doubles = mapAsyncIterable(iterable, doubler);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -62,7 +72,7 @@ describe('mapAsyncIterable', () => {
       yield 3;
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    const doubles = mapAsyncIterable(source(), doubler);
 
     const result = [];
     for await (const x of doubles) {
@@ -102,7 +112,7 @@ describe('mapAsyncIterable', () => {
       }
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    const doubles = mapAsyncIterable(source(), doubler);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -141,7 +151,7 @@ describe('mapAsyncIterable', () => {
       },
     };
 
-    const doubles = mapAsyncIterable(iterable, (x) => x + x);
+    const doubles = mapAsyncIterable(iterable, doubler);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -205,7 +215,7 @@ describe('mapAsyncIterable', () => {
       },
     };
 
-    const doubles = mapAsyncIterable(iterable, (x) => x + x);
+    const doubles = mapAsyncIterable(iterable, doubler);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
@@ -228,7 +238,7 @@ describe('mapAsyncIterable', () => {
       }
     }
 
-    const doubles = mapAsyncIterable(source(), (x) => x + x);
+    const doubles = mapAsyncIterable(source(), doubler);
 
     expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });

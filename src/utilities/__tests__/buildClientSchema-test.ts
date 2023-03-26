@@ -765,8 +765,8 @@ describe('Type System: build schema from introspection', () => {
       );
 
       assert(queryTypeIntrospection?.kind === 'OBJECT');
-      const argType = queryTypeIntrospection.fields[0].args[0].type;
-      assert(argType.kind === 'SCALAR');
+      const argType = queryTypeIntrospection.fields[0]?.args[0]?.type;
+      assert(argType?.kind === 'SCALAR');
 
       expect(argType).to.have.property('name', 'String');
       // @ts-expect-error
@@ -784,8 +784,8 @@ describe('Type System: build schema from introspection', () => {
       );
 
       assert(queryTypeIntrospection?.kind === 'OBJECT');
-      const fieldType = queryTypeIntrospection.fields[0].type;
-      assert(fieldType.kind === 'SCALAR');
+      const fieldType = queryTypeIntrospection.fields[0]?.type;
+      assert(fieldType?.kind === 'SCALAR');
 
       expect(fieldType).to.have.property('name', 'String');
       // @ts-expect-error

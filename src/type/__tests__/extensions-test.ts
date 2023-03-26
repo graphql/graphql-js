@@ -62,17 +62,17 @@ describe('Type System: Extensions', () => {
 
       expect(someObject.extensions).to.deep.equal({});
       const someField = someObject.getFields().someField;
-      expect(someField.extensions).to.deep.equal({});
-      const someArg = someField.args[0];
-      expect(someArg.extensions).to.deep.equal({});
+      expect(someField?.extensions).to.deep.equal({});
+      const someArg = someField?.args[0];
+      expect(someArg?.extensions).to.deep.equal({});
 
       const config = someObject.toConfig();
       expect(config.extensions).to.deep.equal({});
       const someFieldConfig = config.fields.someField;
-      expect(someFieldConfig.extensions).to.deep.equal({});
-      assert(someFieldConfig.args != null);
+      expect(someFieldConfig?.extensions).to.deep.equal({});
+      assert(someFieldConfig?.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
-      expect(someArgConfig.extensions).to.deep.equal({});
+      expect(someArgConfig?.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -99,17 +99,17 @@ describe('Type System: Extensions', () => {
 
       expectObjMap(someObject.extensions).to.deep.equal(objectExtensions);
       const someField = someObject.getFields().someField;
-      expectObjMap(someField.extensions).to.deep.equal(fieldExtensions);
-      const someArg = someField.args[0];
-      expectObjMap(someArg.extensions).to.deep.equal(argExtensions);
+      expectObjMap(someField?.extensions).to.deep.equal(fieldExtensions);
+      const someArg = someField?.args[0];
+      expectObjMap(someArg?.extensions).to.deep.equal(argExtensions);
 
       const config = someObject.toConfig();
       expectObjMap(config.extensions).to.deep.equal(objectExtensions);
       const someFieldConfig = config.fields.someField;
-      expectObjMap(someFieldConfig.extensions).to.deep.equal(fieldExtensions);
-      assert(someFieldConfig.args != null);
+      expectObjMap(someFieldConfig?.extensions).to.deep.equal(fieldExtensions);
+      assert(someFieldConfig?.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
-      expectObjMap(someArgConfig.extensions).to.deep.equal(argExtensions);
+      expectObjMap(someArgConfig?.extensions).to.deep.equal(argExtensions);
     });
   });
 
@@ -131,17 +131,17 @@ describe('Type System: Extensions', () => {
 
       expect(someInterface.extensions).to.deep.equal({});
       const someField = someInterface.getFields().someField;
-      expect(someField.extensions).to.deep.equal({});
-      const someArg = someField.args[0];
-      expect(someArg.extensions).to.deep.equal({});
+      expect(someField?.extensions).to.deep.equal({});
+      const someArg = someField?.args[0];
+      expect(someArg?.extensions).to.deep.equal({});
 
       const config = someInterface.toConfig();
       expect(config.extensions).to.deep.equal({});
       const someFieldConfig = config.fields.someField;
-      expect(someFieldConfig.extensions).to.deep.equal({});
-      assert(someFieldConfig.args != null);
+      expect(someFieldConfig?.extensions).to.deep.equal({});
+      assert(someFieldConfig?.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
-      expect(someArgConfig.extensions).to.deep.equal({});
+      expect(someArgConfig?.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -170,17 +170,17 @@ describe('Type System: Extensions', () => {
 
       expectObjMap(someInterface.extensions).to.deep.equal(interfaceExtensions);
       const someField = someInterface.getFields().someField;
-      expectObjMap(someField.extensions).to.deep.equal(fieldExtensions);
-      const someArg = someField.args[0];
-      expectObjMap(someArg.extensions).to.deep.equal(argExtensions);
+      expectObjMap(someField?.extensions).to.deep.equal(fieldExtensions);
+      const someArg = someField?.args[0];
+      expectObjMap(someArg?.extensions).to.deep.equal(argExtensions);
 
       const config = someInterface.toConfig();
       expectObjMap(config.extensions).to.deep.equal(interfaceExtensions);
       const someFieldConfig = config.fields.someField;
-      expectObjMap(someFieldConfig.extensions).to.deep.equal(fieldExtensions);
-      assert(someFieldConfig.args != null);
+      expectObjMap(someFieldConfig?.extensions).to.deep.equal(fieldExtensions);
+      assert(someFieldConfig?.args != null);
       const someArgConfig = someFieldConfig.args.someArg;
-      expectObjMap(someArgConfig.extensions).to.deep.equal(argExtensions);
+      expectObjMap(someArgConfig?.extensions).to.deep.equal(argExtensions);
     });
   });
 
@@ -224,12 +224,12 @@ describe('Type System: Extensions', () => {
 
       expect(someEnum.extensions).to.deep.equal({});
       const someValue = someEnum.getValues()[0];
-      expect(someValue.extensions).to.deep.equal({});
+      expect(someValue?.extensions).to.deep.equal({});
 
       const config = someEnum.toConfig();
       expect(config.extensions).to.deep.equal({});
       const someValueConfig = config.values.SOME_VALUE;
-      expect(someValueConfig.extensions).to.deep.equal({});
+      expect(someValueConfig?.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -248,12 +248,12 @@ describe('Type System: Extensions', () => {
 
       expectObjMap(someEnum.extensions).to.deep.equal(enumExtensions);
       const someValue = someEnum.getValues()[0];
-      expectObjMap(someValue.extensions).to.deep.equal(valueExtensions);
+      expectObjMap(someValue?.extensions).to.deep.equal(valueExtensions);
 
       const config = someEnum.toConfig();
       expectObjMap(config.extensions).to.deep.equal(enumExtensions);
       const someValueConfig = config.values.SOME_VALUE;
-      expectObjMap(someValueConfig.extensions).to.deep.equal(valueExtensions);
+      expectObjMap(someValueConfig?.extensions).to.deep.equal(valueExtensions);
     });
   });
 
@@ -270,12 +270,12 @@ describe('Type System: Extensions', () => {
 
       expect(someInputObject.extensions).to.deep.equal({});
       const someInputField = someInputObject.getFields().someInputField;
-      expect(someInputField.extensions).to.deep.equal({});
+      expect(someInputField?.extensions).to.deep.equal({});
 
       const config = someInputObject.toConfig();
       expect(config.extensions).to.deep.equal({});
       const someInputFieldConfig = config.fields.someInputField;
-      expect(someInputFieldConfig.extensions).to.deep.equal({});
+      expect(someInputFieldConfig?.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -301,14 +301,14 @@ describe('Type System: Extensions', () => {
         inputObjectExtensions,
       );
       const someInputField = someInputObject.getFields().someInputField;
-      expectObjMap(someInputField.extensions).to.deep.equal(
+      expectObjMap(someInputField?.extensions).to.deep.equal(
         inputFieldExtensions,
       );
 
       const config = someInputObject.toConfig();
       expectObjMap(config.extensions).to.deep.equal(inputObjectExtensions);
       const someInputFieldConfig = config.fields.someInputField;
-      expectObjMap(someInputFieldConfig.extensions).to.deep.equal(
+      expectObjMap(someInputFieldConfig?.extensions).to.deep.equal(
         inputFieldExtensions,
       );
     });
@@ -328,12 +328,12 @@ describe('Type System: Extensions', () => {
 
       expect(someDirective.extensions).to.deep.equal({});
       const someArg = someDirective.args[0];
-      expect(someArg.extensions).to.deep.equal({});
+      expect(someArg?.extensions).to.deep.equal({});
 
       const config = someDirective.toConfig();
       expect(config.extensions).to.deep.equal({});
       const someArgConfig = config.args.someArg;
-      expect(someArgConfig.extensions).to.deep.equal({});
+      expect(someArgConfig?.extensions).to.deep.equal({});
     });
 
     it('with extensions', () => {
@@ -356,12 +356,12 @@ describe('Type System: Extensions', () => {
 
       expectObjMap(someDirective.extensions).to.deep.equal(directiveExtensions);
       const someArg = someDirective.args[0];
-      expectObjMap(someArg.extensions).to.deep.equal(argExtensions);
+      expectObjMap(someArg?.extensions).to.deep.equal(argExtensions);
 
       const config = someDirective.toConfig();
       expectObjMap(config.extensions).to.deep.equal(directiveExtensions);
       const someArgConfig = config.args.someArg;
-      expectObjMap(someArgConfig.extensions).to.deep.equal(argExtensions);
+      expectObjMap(someArgConfig?.extensions).to.deep.equal(argExtensions);
     });
   });
 

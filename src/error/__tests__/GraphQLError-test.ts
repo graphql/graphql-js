@@ -16,7 +16,7 @@ const source = new Source(dedent`
 `);
 const ast = parse(source);
 const operationNode = ast.definitions[0];
-assert(operationNode.kind === Kind.OPERATION_DEFINITION);
+assert(operationNode?.kind === Kind.OPERATION_DEFINITION);
 const fieldNode = operationNode.selectionSet.selections[0];
 assert(fieldNode != null);
 
@@ -247,8 +247,9 @@ describe('toString', () => {
       ),
     );
     const opA = docA.definitions[0];
-    assert(opA.kind === Kind.OBJECT_TYPE_DEFINITION && opA.fields != null);
+    assert(opA?.kind === Kind.OBJECT_TYPE_DEFINITION && opA.fields != null);
     const fieldA = opA.fields[0];
+    assert(fieldA);
 
     const docB = parse(
       new Source(
@@ -261,8 +262,9 @@ describe('toString', () => {
       ),
     );
     const opB = docB.definitions[0];
-    assert(opB.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields != null);
+    assert(opB?.kind === Kind.OBJECT_TYPE_DEFINITION && opB.fields != null);
     const fieldB = opB.fields[0];
+    assert(fieldB);
 
     const error = new GraphQLError('Example error with two nodes', {
       nodes: [fieldA.type, fieldB.type],
