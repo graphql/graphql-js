@@ -149,11 +149,12 @@ export function showDirStats(dirPath: string): void {
     const ext = name.split('.').slice(1).join('.');
     const filetype = ext ? '*.' + ext : name;
 
-    fileTypes[filetype] ??= { filepaths: [], size: 0 };
+    const dirStats = fileTypes[filetype] ?? { filepaths: [], size: 0 };
+    fileTypes[filetype] = dirStats;
 
     totalSize += stats.size;
-    fileTypes[filetype].size += stats.size;
-    fileTypes[filetype].filepaths.push(filepath);
+    dirStats.size += stats.size;
+    dirStats.filepaths.push(filepath);
   }
 
   const stats: Array<[string, number]> = [];
@@ -163,13 +164,14 @@ export function showDirStats(dirPath: string): void {
     if (numFiles > 1) {
       stats.push([filetype + ' x' + numFiles, typeStats.size]);
     } else {
+      assert(typeStats.filepaths[0]);
       const relativePath = path.relative(dirPath, typeStats.filepaths[0]);
       stats.push([relativePath, typeStats.size]);
     }
   }
   stats.sort((a, b) => b[1] - a[1]);
 
-  const prettyStats = stats.map(([type, size]) => [
+  const prettyStats = stats.map<[string, string]>(([type, size]) => [
     type,
     (size / 1024).toFixed(2) + ' KB',
   ]);

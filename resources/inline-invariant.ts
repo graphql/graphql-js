@@ -1,3 +1,5 @@
+import assert from 'node:assert';
+
 import ts from 'typescript';
 
 /**
@@ -28,6 +30,8 @@ export function inlineInvariant(context: ts.TransformationContext) {
         const funcName = expression.escapedText;
         if (funcName === 'invariant' || funcName === 'devAssert') {
           const [condition, ...otherArgs] = args;
+
+          assert(condition);
 
           return factory.createBinaryExpression(
             factory.createParenthesizedExpression(condition),

@@ -270,9 +270,9 @@ function runBenchmark(
   benchmark: string,
   benchmarkProjects: ReadonlyArray<BenchmarkProject>,
 ) {
-  const results = [];
-  for (let i = 0; i < benchmarkProjects.length; ++i) {
-    const { revision, projectPath } = benchmarkProjects[i];
+  const results: Array<BenchmarkComputedStats> = [];
+
+  benchmarkProjects.forEach(({ revision, projectPath }, i) => {
     const modulePath = path.join(projectPath, benchmark);
 
     if (i === 0) {
@@ -288,7 +288,8 @@ function runBenchmark(
     } catch (error) {
       console.log('  ' + revision + ': ' + red(error.message));
     }
-  }
+  });
+
   console.log('\n');
 
   beautifyBenchmark(results);

@@ -69,6 +69,7 @@ function buildPackage(outDir: string, isESMOnly: boolean): void {
     const splittedTag = preReleaseTag.split('.');
     // Note: `experimental-*` take precedence over `alpha`, `beta` or `rc`.
     const versionTag = splittedTag[2] ?? splittedTag[0];
+    assert(versionTag);
     assert(
       ['alpha', 'beta', 'rc'].includes(versionTag) ||
         versionTag.startsWith('experimental-'),
