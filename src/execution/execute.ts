@@ -688,7 +688,12 @@ function executeField(
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<unknown> {
   const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
-  const fieldName = fieldNodes[0].name.value;
+  const firstFieldNode = fieldNodes[0];
+  invariant(firstFieldNode !== undefined);
+
+  const fieldName = fieldNodes[0]?.name.value;
+  invariant(fieldName !== undefined);
+
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
   if (!fieldDef) {
     return;
@@ -712,7 +717,7 @@ function executeField(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
       fieldDef,
-      fieldNodes[0],
+      firstFieldNode,
       exeContext.variableValues,
     );
 
@@ -974,11 +979,14 @@ function getStreamValues(
     return;
   }
 
+  const firstFieldNode = fieldNodes[0];
+  invariant(firstFieldNode !== undefined);
+
   // validation only allows equivalent streams on multiple fields, so it is
   // safe to only check the first fieldNode for the stream directive
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
-    fieldNodes[0],
+    firstFieldNode,
     exeContext.variableValues,
   );
 
@@ -1497,16 +1505,19 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
 
     // Otherwise, test each possible type.
     const possibleTypes = info.schema.getPossibleTypes(abstractType);
-    const promisedIsTypeOfResults = [];
+    const promisedIsTypeOfResults: Array<Promise<[string, boolean]>> = [];
 
-    for (let i = 0; i < possibleTypes.length; i++) {
-      const type = possibleTypes[i];
+    let type: GraphQLObjectType;
 
+    for (type of possibleTypes) {
       if (type.isTypeOf) {
         const isTypeOfResult = type.isTypeOf(value, contextValue, info);
 
         if (isPromise(isTypeOfResult)) {
-          promisedIsTypeOfResults[i] = isTypeOfResult;
+          const possibleTypeName = type.name;
+          promisedIsTypeOfResults.push(
+            isTypeOfResult.then((result) => [possibleTypeName, result]),
+          );
         } else if (isTypeOfResult) {
           return type.name;
         }
@@ -1514,10 +1525,11 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
     }
 
     if (promisedIsTypeOfResults.length) {
+      // QUESTION: Can this be faster if Promise.any or Promise.race is used instead?
       return Promise.all(promisedIsTypeOfResults).then((isTypeOfResults) => {
-        for (let i = 0; i < isTypeOfResults.length; i++) {
-          if (isTypeOfResults[i]) {
-            return possibleTypes[i].name;
+        for (const [name, result] of isTypeOfResults) {
+          if (result) {
+            return name;
           }
         }
       });

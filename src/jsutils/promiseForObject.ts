@@ -1,3 +1,4 @@
+import { invariant } from './invariant.js';
 import type { ObjMap } from './ObjMap.js';
 
 /**
@@ -15,8 +16,12 @@ export async function promiseForObject<T>(
 
   const resolvedValues = await Promise.all(values);
   const resolvedObject = Object.create(null);
+
   for (let i = 0; i < keys.length; ++i) {
-    resolvedObject[keys[i]] = resolvedValues[i];
+    const key = keys[i];
+    invariant(key !== undefined);
+
+    resolvedObject[key] = resolvedValues[i];
   }
   return resolvedObject;
 }

@@ -1,3 +1,4 @@
+import { invariant } from './invariant.js';
 import { naturalCompare } from './naturalCompare.js';
 
 /**
@@ -93,19 +94,34 @@ class LexicalDistance {
       const upRow = rows[(i - 1) % 3];
       const currentRow = rows[i % 3];
 
+      invariant(upRow !== undefined);
+      invariant(currentRow !== undefined);
+
       let smallestCell = (currentRow[0] = i);
       for (let j = 1; j <= bLength; j++) {
         const cost = a[i - 1] === b[j - 1] ? 0 : 1;
 
+        const deleteTarget = upRow[j];
+        const currentRowTarget = currentRow[j - 1];
+        const substituteTarget = upRow[j - 1];
+
+        invariant(deleteTarget !== undefined);
+        invariant(currentRowTarget !== undefined);
+        invariant(substituteTarget !== undefined);
+
         let currentCell = Math.min(
-          upRow[j] + 1, // delete
-          currentRow[j - 1] + 1, // insert
-          upRow[j - 1] + cost, // substitute
+          deleteTarget + 1, // delete
+          currentRowTarget + 1, // insert
+          substituteTarget + cost, // substitute
         );
 
         if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
           // transposition
-          const doubleDiagonalCell = rows[(i - 2) % 3][j - 2];
+          const targetedRow = rows[(i - 2) % 3];
+          invariant(targetedRow !== undefined);
+          const doubleDiagonalCell = targetedRow[j - 2];
+          invariant(doubleDiagonalCell !== undefined);
+
           currentCell = Math.min(currentCell, doubleDiagonalCell + 1);
         }
 
@@ -122,8 +138,15 @@ class LexicalDistance {
       }
     }
 
-    const distance = rows[aLength % 3][bLength];
-    return distance <= threshold ? distance : undefined;
+    const targetedRow = rows[aLength % 3];
+
+    invariant(targetedRow !== undefined);
+
+    const distance = targetedRow[bLength];
+
+    return distance !== undefined && distance <= threshold
+      ? distance
+      : undefined;
   }
 }
 

@@ -319,12 +319,12 @@ export function visitInParallel(
     const enterList = new Array(visitors.length).fill(undefined);
     const leaveList = new Array(visitors.length).fill(undefined);
 
-    for (let i = 0; i < visitors.length; ++i) {
-      const { enter, leave } = getEnterLeaveForKind(visitors[i], kind);
+    visitors.forEach((visitor, i) => {
+      const { enter, leave } = getEnterLeaveForKind(visitor, kind);
       hasVisitor ||= enter != null || leave != null;
       enterList[i] = enter;
       leaveList[i] = leave;
-    }
+    });
 
     if (!hasVisitor) {
       continue;

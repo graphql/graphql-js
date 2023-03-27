@@ -15,13 +15,14 @@ export function andList(items: ReadonlyArray<string>): string {
 }
 
 function formatList(conjunction: string, items: ReadonlyArray<string>): string {
-  invariant(items.length !== 0);
+  const firstItem = items[0];
+  invariant(firstItem !== undefined);
 
   switch (items.length) {
     case 1:
-      return items[0];
+      return firstItem;
     case 2:
-      return items[0] + ' ' + conjunction + ' ' + items[1];
+      return firstItem + ' ' + conjunction + ' ' + items[1];
   }
 
   const allButLast = items.slice(0, -1);

@@ -64,10 +64,11 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
       if (isInputObjectType(inputObjectDef)) {
         const inputFieldDef = inputObjectDef.getFields()[node.name.value];
         const deprecationReason = inputFieldDef?.deprecationReason;
-        if (deprecationReason != null) {
+        if (inputFieldDef && deprecationReason != null) {
+          const { name } = inputFieldDef;
           context.reportError(
             new GraphQLError(
-              `The input field ${inputObjectDef.name}.${inputFieldDef.name} is deprecated. ${deprecationReason}`,
+              `The input field ${inputObjectDef.name}.${name} is deprecated. ${deprecationReason}`,
               { nodes: node },
             ),
           );

@@ -30,7 +30,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": false, // TODO consider
     "noPropertyAccessFromIndexSignature": false, // TODO consider
-    "noUncheckedIndexedAccess": false, // FIXME
+    "noUncheckedIndexedAccess": true, // FIXME
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "allowSyntheticDefaultImports": true
