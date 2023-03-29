@@ -57,8 +57,9 @@ function KnownDirectivesRule(context) {
 }
 exports.KnownDirectivesRule = KnownDirectivesRule;
 function getDirectiveLocationForASTPath(ancestors) {
-  const appliedTo = ancestors[ancestors.length - 1];
-  'kind' in appliedTo || (0, invariant_js_1.invariant)(false);
+  const appliedTo = ancestors.at(-1);
+  (appliedTo != null && 'kind' in appliedTo) ||
+    (0, invariant_js_1.invariant)(false);
   switch (appliedTo.kind) {
     case kinds_js_1.Kind.OPERATION_DEFINITION:
       return getDirectiveLocationForOperation(appliedTo.operation);
@@ -98,8 +99,9 @@ function getDirectiveLocationForASTPath(ancestors) {
     case kinds_js_1.Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return directiveLocation_js_1.DirectiveLocation.INPUT_OBJECT;
     case kinds_js_1.Kind.INPUT_VALUE_DEFINITION: {
-      const parentNode = ancestors[ancestors.length - 3];
-      'kind' in parentNode || (0, invariant_js_1.invariant)(false);
+      const parentNode = ancestors.at(-3);
+      (parentNode != null && 'kind' in parentNode) ||
+        (0, invariant_js_1.invariant)(false);
       return parentNode.kind === kinds_js_1.Kind.INPUT_OBJECT_TYPE_DEFINITION
         ? directiveLocation_js_1.DirectiveLocation.INPUT_FIELD_DEFINITION
         : directiveLocation_js_1.DirectiveLocation.ARGUMENT_DEFINITION;

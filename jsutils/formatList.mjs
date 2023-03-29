@@ -20,6 +20,6 @@ function formatList(conjunction, items) {
       return items[0] + ' ' + conjunction + ' ' + items[1];
   }
   const allButLast = items.slice(0, -1);
-  const lastItem = items[items.length - 1];
+  const lastItem = items.at(-1);
   return allButLast.join(', ') + ', ' + conjunction + ' ' + lastItem;
 }
