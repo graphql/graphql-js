@@ -276,7 +276,7 @@ export function visit(
   } while (stack !== undefined);
   if (edits.length !== 0) {
     // New root
-    return edits[edits.length - 1][1];
+    return edits.at(-1)[1];
   }
   return root;
 }
