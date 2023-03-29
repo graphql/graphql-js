@@ -72,8 +72,8 @@ export function KnownDirectivesRule(
 function getDirectiveLocationForASTPath(
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ): DirectiveLocation | undefined {
-  const appliedTo = ancestors[ancestors.length - 1];
-  invariant('kind' in appliedTo);
+  const appliedTo = ancestors.at(-1);
+  invariant(appliedTo != null && 'kind' in appliedTo);
 
   switch (appliedTo.kind) {
     case Kind.OPERATION_DEFINITION:
@@ -114,8 +114,8 @@ function getDirectiveLocationForASTPath(
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return DirectiveLocation.INPUT_OBJECT;
     case Kind.INPUT_VALUE_DEFINITION: {
-      const parentNode = ancestors[ancestors.length - 3];
-      invariant('kind' in parentNode);
+      const parentNode = ancestors.at(-3);
+      invariant(parentNode != null && 'kind' in parentNode);
       return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION
         ? DirectiveLocation.INPUT_FIELD_DEFINITION
         : DirectiveLocation.ARGUMENT_DEFINITION;
