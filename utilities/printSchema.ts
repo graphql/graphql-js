@@ -71,7 +71,7 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
   }
   // Only print a schema definition if there is a description or if it should
   // not be omitted because of having default type names.
-  if (schema.description || !hasDefaultRootOperationTypes(schema)) {
+  if (schema.description != null || !hasDefaultRootOperationTypes(schema)) {
     return (
       printDescription(schema) +
       'schema {\n' +
@@ -209,7 +209,7 @@ function printArgs(
     return '';
   }
   // If every arg does not have a description, print them on one line.
-  if (args.every((arg) => !arg.description)) {
+  if (args.every((arg) => arg.description == null)) {
     return '(' + args.map(printInputValue).join(', ') + ')';
   }
   return (
