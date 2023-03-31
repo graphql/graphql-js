@@ -1,5 +1,6 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
 
+import type { NameNode } from '../../language/ast.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
 import type { SDLValidationContext } from '../ValidationContext.js';
@@ -12,7 +13,7 @@ import type { SDLValidationContext } from '../ValidationContext.js';
 export function UniqueDirectiveNamesRule(
   context: SDLValidationContext,
 ): ASTVisitor {
-  const knownDirectiveNames = Object.create(null);
+  const knownDirectiveNames = new Map<string, NameNode>();
   const schema = context.getSchema();
 
   return {
@@ -29,15 +30,16 @@ export function UniqueDirectiveNamesRule(
         return;
       }
 
-      if (knownDirectiveNames[directiveName]) {
+      const knownName = knownDirectiveNames.get(directiveName);
+      if (knownName) {
         context.reportError(
           new GraphQLError(
             `There can be only one directive named "@${directiveName}".`,
-            { nodes: [knownDirectiveNames[directiveName], node.name] },
+            { nodes: [knownName, node.name] },
           ),
         );
       } else {
-        knownDirectiveNames[directiveName] = node.name;
+        knownDirectiveNames.set(directiveName, node.name);
       }
 
       return false;

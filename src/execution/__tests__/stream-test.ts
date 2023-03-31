@@ -1839,7 +1839,7 @@ describe('Execute: stream directive', () => {
       [Symbol.asyncIterator]: () => ({
         next: () => {
           const friend = friends[index++];
-          if (!friend) {
+          if (friend == null) {
             return Promise.resolve({ done: true, value: undefined });
           }
           return Promise.resolve({ done: false, value: friend });
@@ -1898,7 +1898,7 @@ describe('Execute: stream directive', () => {
       [Symbol.asyncIterator]: () => ({
         next: () => {
           const friend = friends[index++];
-          if (!friend) {
+          if (friend == null) {
             return Promise.resolve({ done: true, value: undefined });
           }
           return Promise.resolve({ done: false, value: friend });
@@ -1954,7 +1954,7 @@ describe('Execute: stream directive', () => {
       [Symbol.asyncIterator]: () => ({
         next: () => {
           const friend = friends[index++];
-          if (!friend) {
+          if (friend == null) {
             return Promise.resolve({ done: true, value: undefined });
           }
           return Promise.resolve({ done: false, value: friend });

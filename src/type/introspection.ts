@@ -112,7 +112,7 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
           },
         },
         resolve(field, { includeDeprecated }) {
-          return includeDeprecated
+          return includeDeprecated === true
             ? field.args
             : field.args.filter((arg) => arg.deprecationReason == null);
         },
@@ -266,7 +266,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         resolve(type, { includeDeprecated }) {
           if (isObjectType(type) || isInterfaceType(type)) {
             const fields = Object.values(type.getFields());
-            return includeDeprecated
+            return includeDeprecated === true
               ? fields
               : fields.filter((field) => field.deprecationReason == null);
           }
@@ -296,7 +296,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         resolve(type, { includeDeprecated }) {
           if (isEnumType(type)) {
             const values = type.getValues();
-            return includeDeprecated
+            return includeDeprecated === true
               ? values
               : values.filter((field) => field.deprecationReason == null);
           }
@@ -313,7 +313,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         resolve(type, { includeDeprecated }) {
           if (isInputObjectType(type)) {
             const values = Object.values(type.getFields());
-            return includeDeprecated
+            return includeDeprecated === true
               ? values
               : values.filter((field) => field.deprecationReason == null);
           }
@@ -351,7 +351,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
           },
         },
         resolve(field, { includeDeprecated }) {
-          return includeDeprecated
+          return includeDeprecated === true
             ? field.args
             : field.args.filter((arg) => arg.deprecationReason == null);
         },

@@ -33,7 +33,7 @@ const labelsConfig: { [label: string]: { section: string; fold?: boolean } } = {
 };
 const { GH_TOKEN } = process.env;
 
-if (!GH_TOKEN) {
+if (GH_TOKEN == null) {
   console.error('Must provide GH_TOKEN as environment variable!');
   process.exit(1);
 }
@@ -88,7 +88,7 @@ async function genChangeLog(): Promise<string> {
     }
 
     const label = labels[0];
-    if (!labelsConfig[label]) {
+    if (labelsConfig[label] != null) {
       throw new Error(`Unknown label: ${label}. See ${pr.url}`);
     }
     byLabel[label] ??= [];
@@ -99,7 +99,7 @@ async function genChangeLog(): Promise<string> {
   let changelog = `## ${tag ?? 'Unreleased'} (${date})\n`;
   for (const [label, config] of Object.entries(labelsConfig)) {
     const prs = byLabel[label];
-    if (prs) {
+    if (prs != null) {
       const shouldFold = config.fold && prs.length > 1;
 
       changelog += `\n#### ${config.section}\n`;
@@ -149,7 +149,7 @@ async function graphqlRequest(query: string) {
   }
 
   const json = await response.json();
-  if (json.errors) {
+  if (json.errors != null) {
     throw new Error('Errors: ' + JSON.stringify(json.errors, null, 2));
   }
   return json.data;
