@@ -8,10 +8,8 @@ export function mapValue<T, V>(
   map: ReadOnlyObjMap<T>,
   fn: (value: T, key: string) => V,
 ): ObjMap<V> {
-  const result = Object.create(null);
-
-  for (const key of Object.keys(map)) {
-    result[key] = fn(map[key], key);
-  }
-  return result;
+  return Object.entries(map).reduce((accumulator, [key, value]) => {
+    accumulator[key] = fn(value, key);
+    return accumulator;
+  }, Object.create(null));
 }

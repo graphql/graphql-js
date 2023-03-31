@@ -1,3 +1,5 @@
+import { invariant } from '../../jsutils/invariant.js';
+
 import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type { DirectiveNode } from '../../language/ast.js';
@@ -49,6 +51,8 @@ export function DeferStreamDirectiveOnValidOperationsRule(
     },
     Directive(node, _key, _parent, _path, ancestors) {
       const definitionNode = ancestors[2];
+
+      invariant(definitionNode !== undefined);
 
       if (
         'kind' in definitionNode &&

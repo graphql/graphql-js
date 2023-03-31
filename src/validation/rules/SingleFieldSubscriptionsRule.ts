@@ -62,8 +62,8 @@ export function SingleFieldSubscriptionsRule(
             );
           }
           for (const fieldNodes of fields.values()) {
-            const fieldName = fieldNodes[0].name.value;
-            if (fieldName.startsWith('__')) {
+            const fieldName = fieldNodes[0]?.name.value;
+            if (fieldName?.startsWith('__')) {
               context.reportError(
                 new GraphQLError(
                   operationName != null

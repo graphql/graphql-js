@@ -1074,7 +1074,7 @@ describe('Execute: Handles inputs', () => {
     `);
 
     const operation = doc.definitions[0];
-    assert(operation.kind === Kind.OPERATION_DEFINITION);
+    assert(operation?.kind === Kind.OPERATION_DEFINITION);
     const { variableDefinitions } = operation;
     assert(variableDefinitions != null);
 

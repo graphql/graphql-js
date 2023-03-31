@@ -295,7 +295,7 @@ describe('Validate: Fields on correct type', () => {
         FieldsOnCorrectTypeRule,
       ]);
       expect(errors.length).to.equal(1);
-      return expect(errors[0].message);
+      return expect(errors[0]?.message);
     }
 
     it('Works with no suggestions', () => {

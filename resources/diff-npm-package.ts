@@ -24,6 +24,9 @@ if (args.length < 2) {
   );
 }
 
+assert(fromRevision);
+assert(toRevision);
+
 console.log(`📦 Building NPM package for ${fromRevision}...`);
 const fromPackage = prepareNPMPackage(fromRevision);
 

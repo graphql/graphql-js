@@ -40,11 +40,11 @@ export class SimplePubSub<T> {
           return Promise.resolve({ value: undefined, done: true });
         }
 
-        if (pushQueue.length > 0) {
-          const value = pushQueue[0];
-          pushQueue.shift();
+        const value = pushQueue.shift();
+        if (value !== undefined) {
           return Promise.resolve({ value, done: false });
         }
+
         return new Promise((resolve) => pullQueue.push(resolve));
       },
       return(): Promise<IteratorResult<R, void>> {

@@ -1,4 +1,5 @@
 import { inspect } from '../../jsutils/inspect.js';
+import { invariant } from '../../jsutils/invariant.js';
 import type { Maybe } from '../../jsutils/Maybe.js';
 import type { ObjMap } from '../../jsutils/ObjMap.js';
 
@@ -199,6 +200,9 @@ function findConflictsWithinSelectionSet(
     // (B) Then collect conflicts between these fields and those represented by
     // each spread fragment name found.
     for (let i = 0; i < fragmentNames.length; i++) {
+      const firstFragment = fragmentNames[i];
+      invariant(firstFragment !== undefined);
+
       collectConflictsBetweenFieldsAndFragment(
         context,
         conflicts,
@@ -206,21 +210,25 @@ function findConflictsWithinSelectionSet(
         comparedFragmentPairs,
         false,
         fieldMap,
-        fragmentNames[i],
+        firstFragment,
       );
       // (C) Then compare this fragment with all other fragments found in this
       // selection set to collect conflicts between fragments spread together.
       // This compares each item in the list of fragment names to every other
       // item in that same list (except for itself).
+
       for (let j = i + 1; j < fragmentNames.length; j++) {
+        const secondFragment = fragmentNames[j];
+        invariant(secondFragment !== undefined);
+
         collectConflictsBetweenFragments(
           context,
           conflicts,
           cachedFieldsAndFragmentNames,
           comparedFragmentPairs,
           false,
-          fragmentNames[i],
-          fragmentNames[j],
+          firstFragment,
+          secondFragment,
         );
       }
     }
@@ -491,15 +499,21 @@ function collectConflictsWithin(
     // be compared.
     if (fields.length > 1) {
       for (let i = 0; i < fields.length; i++) {
+        const firstField = fields[i];
+        invariant(firstField !== undefined);
+
         for (let j = i + 1; j < fields.length; j++) {
+          const secondField = fields[j];
+          invariant(secondField !== undefined);
+
           const conflict = findConflict(
             context,
             cachedFieldsAndFragmentNames,
             comparedFragmentPairs,
             false, // within one collection is never mutually exclusive
             responseName,
-            fields[i],
-            fields[j],
+            firstField,
+            secondField,
           );
           if (conflict) {
             conflicts.push(conflict);
@@ -784,10 +798,10 @@ function _collectFieldsAndFragmentNames(
         const responseName = selection.alias
           ? selection.alias.value
           : fieldName;
-        if (!nodeAndDefs[responseName]) {
-          nodeAndDefs[responseName] = [];
-        }
-        nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
+
+        const nodeAndDefsTarget = nodeAndDefs[responseName] ?? [];
+        nodeAndDefs[responseName] = nodeAndDefsTarget;
+        nodeAndDefsTarget.push([parentType, selection, fieldDef]);
         break;
       }
       case Kind.FRAGMENT_SPREAD:

@@ -465,11 +465,11 @@ describe('visitWithTypeInfo', () => {
 
     const ast = parse('{ name, pets { name } }');
     const operationNode = ast.definitions[0];
-    assert(operationNode.kind === 'OperationDefinition');
+    assert(operationNode?.kind === 'OperationDefinition');
 
     const visited: Array<any> = [];
     visit(
-      operationNode.selectionSet,
+      operationNode?.selectionSet,
       visitWithTypeInfo(typeInfo, {
         enter(node) {
           const parentType = typeInfo.getParentType();

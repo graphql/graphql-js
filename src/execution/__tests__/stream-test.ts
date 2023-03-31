@@ -871,7 +871,7 @@ describe('Execute: stream directive', () => {
       }
     `);
     const result = await complete(document, {
-      scalarList: () => [friends[0].name, {}],
+      scalarList: () => [friends[0]?.name, {}],
     });
     expectJSON(result).toDeepEqual([
       {
@@ -908,11 +908,11 @@ describe('Execute: stream directive', () => {
     `);
     const result = await complete(document, {
       friendList: () => [
-        Promise.resolve({ nonNullName: friends[0].name }),
+        Promise.resolve({ nonNullName: friends[0]?.name }),
         Promise.resolve({
           nonNullName: () => Promise.reject(new Error('Oops')),
         }),
-        Promise.resolve({ nonNullName: friends[1].name }),
+        Promise.resolve({ nonNullName: friends[1]?.name }),
       ],
     });
     expectJSON(result).toDeepEqual([
@@ -959,9 +959,9 @@ describe('Execute: stream directive', () => {
     `);
     const result = await complete(document, {
       friendList: () => [
-        { nonNullName: Promise.resolve(friends[0].name) },
+        { nonNullName: Promise.resolve(friends[0]?.name) },
         { nonNullName: Promise.reject(new Error('Oops')) },
-        { nonNullName: Promise.resolve(friends[1].name) },
+        { nonNullName: Promise.resolve(friends[1]?.name) },
       ],
     });
     expectJSON(result).toDeepEqual([
@@ -1008,11 +1008,11 @@ describe('Execute: stream directive', () => {
     `);
     const result = await complete(document, {
       nonNullFriendList: () => [
-        Promise.resolve({ nonNullName: friends[0].name }),
+        Promise.resolve({ nonNullName: friends[0]?.name }),
         Promise.resolve({
           nonNullName: () => Promise.reject(new Error('Oops')),
         }),
-        Promise.resolve({ nonNullName: friends[1].name }),
+        Promise.resolve({ nonNullName: friends[1]?.name }),
       ],
     });
     expectJSON(result).toDeepEqual([
@@ -1050,9 +1050,9 @@ describe('Execute: stream directive', () => {
     `);
     const result = await complete(document, {
       nonNullFriendList: () => [
-        { nonNullName: Promise.resolve(friends[0].name) },
+        { nonNullName: Promise.resolve(friends[0]?.name) },
         { nonNullName: Promise.reject(new Error('Oops')) },
-        { nonNullName: Promise.resolve(friends[1].name) },
+        { nonNullName: Promise.resolve(friends[1]?.name) },
       ],
     });
     expectJSON(result).toDeepEqual([
@@ -1090,11 +1090,11 @@ describe('Execute: stream directive', () => {
     `);
     const result = await complete(document, {
       async *friendList() {
-        yield await Promise.resolve({ nonNullName: friends[0].name });
+        yield await Promise.resolve({ nonNullName: friends[0]?.name });
         yield await Promise.resolve({
           nonNullName: () => Promise.reject(new Error('Oops')),
         });
-        yield await Promise.resolve({ nonNullName: friends[1].name });
+        yield await Promise.resolve({ nonNullName: friends[1]?.name });
       },
     });
     expectJSON(result).toDeepEqual([
@@ -1144,12 +1144,12 @@ describe('Execute: stream directive', () => {
     `);
     const result = await complete(document, {
       async *nonNullFriendList() {
-        yield await Promise.resolve({ nonNullName: friends[0].name });
+        yield await Promise.resolve({ nonNullName: friends[0]?.name });
         yield await Promise.resolve({
           nonNullName: () => Promise.reject(new Error('Oops')),
         });
         yield await Promise.resolve({
-          nonNullName: friends[1].name,
+          nonNullName: friends[1]?.name,
         }); /* c8 ignore start */
       } /* c8 ignore stop */,
     });
@@ -1380,7 +1380,7 @@ describe('Execute: stream directive', () => {
     const result = await complete(document, {
       async *friendList() {
         yield await Promise.resolve({
-          name: friends[0].name,
+          name: friends[0]?.name,
           nonNullName: () => Promise.resolve(null),
         });
       },
@@ -1430,7 +1430,7 @@ describe('Execute: stream directive', () => {
           return Promise.resolve({
             done: false,
             value: {
-              name: friend.name,
+              name: friend?.name,
               nonNullName: null,
             },
           });
@@ -1528,8 +1528,8 @@ describe('Execute: stream directive', () => {
         yield await Promise.resolve(friends[0]);
         yield await Promise.resolve(friends[1]);
         yield await Promise.resolve({
-          id: friends[2].id,
-          name: () => Promise.resolve(friends[2].name),
+          id: friends[2]?.id,
+          name: () => Promise.resolve(friends[2]?.name),
         });
       },
     });
@@ -1678,7 +1678,7 @@ describe('Execute: stream directive', () => {
         async *friendList() {
           yield await Promise.resolve(friends[0]);
           yield await Promise.resolve({
-            id: friends[1].id,
+            id: friends[1]?.id,
             name: () => slowFieldPromise,
           });
           await iterableCompletionPromise;
@@ -1764,7 +1764,7 @@ describe('Execute: stream directive', () => {
         async *friendList() {
           yield await Promise.resolve(friends[0]);
           yield await Promise.resolve({
-            id: friends[1].id,
+            id: friends[1]?.id,
             name: () => slowFieldPromise,
           });
           await iterableCompletionPromise;

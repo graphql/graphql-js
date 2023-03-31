@@ -1,3 +1,5 @@
+import assert from 'node:assert';
+
 import { git, readPackageJSON } from './utils.js';
 
 const packageJSON = readPackageJSON();
@@ -88,11 +90,13 @@ async function genChangeLog(): Promise<string> {
     }
 
     const label = labels[0];
+    assert(label);
     if (!labelsConfig[label]) {
       throw new Error(`Unknown label: ${label}. See ${pr.url}`);
     }
-    byLabel[label] ??= [];
-    byLabel[label].push(pr);
+    const prByLabel = byLabel[label] ?? [];
+    byLabel[label] = prByLabel;
+    prByLabel.push(pr);
     committersByLogin[pr.author.login] = pr.author;
   }
 
@@ -285,7 +289,11 @@ function commitInfoToPR(commit: CommitInfo): number {
     );
   }
 
-  return associatedPRs[0].number;
+  const pr = associatedPRs[0];
+
+  assert(pr);
+
+  return pr.number;
 }
 
 async function getPRsInfo(

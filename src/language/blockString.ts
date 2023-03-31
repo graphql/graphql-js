@@ -15,12 +15,11 @@ export function dedentBlockStringLines(
   let firstNonEmptyLine = null;
   let lastNonEmptyLine = -1;
 
-  for (let i = 0; i < lines.length; ++i) {
-    const line = lines[i];
+  lines.forEach((line, i) => {
     const indent = leadingWhitespace(line);
 
     if (indent === line.length) {
-      continue; // skip empty lines
+      return; // skip empty lines
     }
 
     firstNonEmptyLine ??= i;
@@ -29,7 +28,7 @@ export function dedentBlockStringLines(
     if (i !== 0 && indent < commonIndent) {
       commonIndent = indent;
     }
-  }
+  });
 
   return (
     lines

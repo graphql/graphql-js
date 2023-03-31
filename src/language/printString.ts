@@ -1,3 +1,5 @@
+import { invariant } from '../jsutils/invariant.js';
+
 /**
  * Prints a string as a GraphQL StringValue literal. Replaces control characters
  * and excluded characters (" U+0022 and \\ U+005C) with escape sequences.
@@ -10,7 +12,15 @@ export function printString(str: string): string {
 const escapedRegExp = /[\x00-\x1f\x22\x5c\x7f-\x9f]/g;
 
 function escapedReplacer(str: string): string {
-  return escapeSequences[str.charCodeAt(0)];
+  const firstCharacter = str.charCodeAt(0);
+
+  invariant(firstCharacter !== undefined);
+
+  const replacer = escapeSequences[firstCharacter];
+
+  invariant(replacer !== undefined);
+
+  return replacer;
 }
 
 // prettier-ignore

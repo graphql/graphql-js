@@ -166,8 +166,11 @@ function sortObjMap<T, R>(
   sortValueFn: (value: T) => R,
 ): ObjMap<R> {
   const sortedMap = Object.create(null);
-  for (const key of Object.keys(map).sort(naturalCompare)) {
-    sortedMap[key] = sortValueFn(map[key]);
+
+  for (const [key, value] of Object.entries(map).sort(
+    ([firstKey], [secondKey]) => naturalCompare(firstKey, secondKey),
+  )) {
+    sortedMap[key] = sortValueFn(value);
   }
   return sortedMap;
 }

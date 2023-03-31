@@ -1,3 +1,5 @@
+import { invariant } from '../jsutils/invariant.js';
+
 import type { Location } from './ast.js';
 import type { SourceLocation } from './location.js';
 import { getLocation } from './location.js';
@@ -35,7 +37,7 @@ export function printSourceLocation(
   const locationLine = lines[lineIndex];
 
   // Special case for minified documents
-  if (locationLine.length > 120) {
+  if (locationLine !== undefined && locationLine.length > 120) {
     const subLineIndex = Math.floor(columnNum / 80);
     const subLineColumnNum = columnNum % 80;
     const subLines: Array<string> = [];
@@ -43,27 +45,45 @@ export function printSourceLocation(
       subLines.push(locationLine.slice(i, i + 80));
     }
 
+    const firstSubLine = subLines[0];
+    const nextSubLines = subLines.slice(1, subLineIndex + 1);
+    const nextSubLine = subLines[subLineIndex + 1];
+
+    invariant(firstSubLine !== undefined);
+    // invariant(nextSubLine !== undefined);
+
     return (
       locationStr +
       printPrefixedLines([
-        [`${lineNum} |`, subLines[0]],
-        ...subLines
-          .slice(1, subLineIndex + 1)
-          .map((subLine) => ['|', subLine] as const),
+        [`${lineNum} |`, firstSubLine],
+        ...nextSubLines.map<[string, string]>((subLine) => ['|', subLine]),
         ['|', '^'.padStart(subLineColumnNum)],
-        ['|', subLines[subLineIndex + 1]],
+        // TODO: This assertion can be removed if the above invariant is comment in.
+        ['|', nextSubLine as string],
       ])
     );
   }
+
+  const previousLine = lines[lineIndex - 1];
+  const nextLine = lines[lineIndex + 1];
+
+  // TODO: With the way the types are set up, we should be able to
+  // comment these in, but doing so breaks tests.
+  //
+  // invariant(previousLine !== undefined);
+  // invariant(nextLine !== undefined);
+  invariant(locationLine !== undefined);
 
   return (
     locationStr +
     printPrefixedLines([
       // Lines specified like this: ["prefix", "string"],
-      [`${lineNum - 1} |`, lines[lineIndex - 1]],
+      // TODO: This assertion can be removed if the above invariant is comment in.
+      [`${lineNum - 1} |`, previousLine as string],
       [`${lineNum} |`, locationLine],
       ['|', '^'.padStart(columnNum)],
-      [`${lineNum + 1} |`, lines[lineIndex + 1]],
+      // TODO: This assertion can be removed if the above invariant is comment in.
+      [`${lineNum + 1} |`, nextLine as string],
     ])
   );
 }

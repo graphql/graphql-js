@@ -333,7 +333,7 @@ describe('Schema Builder', () => {
 
     const definition = parse(sdl).definitions[0];
     expect(
-      definition.kind === 'InterfaceTypeDefinition' && definition.interfaces,
+      definition?.kind === 'InterfaceTypeDefinition' && definition.interfaces,
     ).to.deep.equal([], 'The interfaces property must be an empty array.');
 
     expect(cycleSDL(sdl)).to.equal(sdl);
@@ -682,12 +682,12 @@ describe('Schema Builder', () => {
       deprecationReason: 'Use newInput',
     });
 
-    const field3OldArg = rootFields.field3.args[0];
+    const field3OldArg = rootFields.field3?.args[0];
     expect(field3OldArg).to.include({
       deprecationReason: 'No longer supported',
     });
 
-    const field4OldArg = rootFields.field4.args[0];
+    const field4OldArg = rootFields.field4?.args[0];
     expect(field4OldArg).to.include({
       deprecationReason: 'Why not?',
     });
@@ -981,7 +981,7 @@ describe('Schema Builder', () => {
     expectASTNode(testField).to.equal(
       'testField(testArg: TestInput): TestUnion',
     );
-    expectASTNode(testField.args[0]).to.equal('testArg: TestInput');
+    expectASTNode(testField?.args[0]).to.equal('testArg: TestInput');
     expectASTNode(testInput.getFields().testInputField).to.equal(
       'testInputField: TestEnum',
     );

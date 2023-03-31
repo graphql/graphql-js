@@ -36,11 +36,12 @@ export function UniqueInputFieldNamesRule(
     },
     ObjectField(node) {
       const fieldName = node.name.value;
-      if (knownNames[fieldName]) {
+      const target = knownNames[fieldName];
+      if (target) {
         context.reportError(
           new GraphQLError(
             `There can be only one input field named "${fieldName}".`,
-            { nodes: [knownNames[fieldName], node.name] },
+            { nodes: [target, node.name] },
           ),
         );
       } else {
