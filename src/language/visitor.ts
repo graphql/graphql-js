@@ -234,7 +234,7 @@ export function visit(
       edits = stack.edits;
       inArray = stack.inArray;
       stack = stack.prev;
-    } else if (parent) {
+    } else if (parent != null) {
       key = inArray ? index : keys[index];
       node = parent[key];
       if (node === null || node === undefined) {
@@ -287,7 +287,7 @@ export function visit(
       keys = inArray ? node : (visitorKeys as any)[node.kind] ?? [];
       index = -1;
       edits = [];
-      if (parent) {
+      if (parent != null) {
         ancestors.push(parent);
       }
       parent = node;

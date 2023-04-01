@@ -605,7 +605,10 @@ module.exports = {
         '@typescript-eslint/restrict-plus-operands': 'off', // TODO: temporarily disabled
         '@typescript-eslint/restrict-template-expressions': 'off', // TODO: temporarily disabled
         '@typescript-eslint/sort-type-union-intersection-members': 'off', // TODO: consider
-        '@typescript-eslint/strict-boolean-expressions': 'off', // TODO: consider
+        '@typescript-eslint/strict-boolean-expressions': [
+          'error',
+          { allowNullableBoolean: true }, // TODO: consider removing
+        ],
         '@typescript-eslint/switch-exhaustiveness-check': 'error',
         '@typescript-eslint/triple-slash-reference': 'error',
         '@typescript-eslint/typedef': 'off',
