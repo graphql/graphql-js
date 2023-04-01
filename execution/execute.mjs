@@ -1661,7 +1661,7 @@ function getCompletedIncrementalResults(exeContext) {
       incrementalResult.data = data ?? null;
     }
     incrementalResult.path = asyncPayloadRecord.path;
-    if (asyncPayloadRecord.label) {
+    if (asyncPayloadRecord.label != null) {
       incrementalResult.label = asyncPayloadRecord.label;
     }
     if (asyncPayloadRecord.errors.length > 0) {

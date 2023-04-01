@@ -11,7 +11,7 @@ function didYouMean(firstArg, secondArg) {
     return '';
   }
   let message = ' Did you mean ';
-  if (subMessage) {
+  if (subMessage != null) {
     message += subMessage + ' ';
   }
   const suggestionList = (0, formatList_js_1.orList)(

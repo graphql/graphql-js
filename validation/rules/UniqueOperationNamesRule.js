@@ -10,25 +10,21 @@ const GraphQLError_js_1 = require('../../error/GraphQLError.js');
  * See https://spec.graphql.org/draft/#sec-Operation-Name-Uniqueness
  */
 function UniqueOperationNamesRule(context) {
-  const knownOperationNames = Object.create(null);
+  const knownOperationNames = new Map();
   return {
     OperationDefinition(node) {
       const operationName = node.name;
-      if (operationName) {
-        if (knownOperationNames[operationName.value]) {
+      if (operationName != null) {
+        const knownOperationName = knownOperationNames.get(operationName.value);
+        if (knownOperationName != null) {
           context.reportError(
             new GraphQLError_js_1.GraphQLError(
               `There can be only one operation named "${operationName.value}".`,
-              {
-                nodes: [
-                  knownOperationNames[operationName.value],
-                  operationName,
-                ],
-              },
+              { nodes: [knownOperationName, operationName] },
             ),
           );
         } else {
-          knownOperationNames[operationName.value] = operationName;
+          knownOperationNames.set(operationName.value, operationName);
         }
       }
       return false;

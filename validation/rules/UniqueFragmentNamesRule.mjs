@@ -7,20 +7,21 @@ import { GraphQLError } from '../../error/GraphQLError.mjs';
  * See https://spec.graphql.org/draft/#sec-Fragment-Name-Uniqueness
  */
 export function UniqueFragmentNamesRule(context) {
-  const knownFragmentNames = Object.create(null);
+  const knownFragmentNames = new Map();
   return {
     OperationDefinition: () => false,
     FragmentDefinition(node) {
       const fragmentName = node.name.value;
-      if (knownFragmentNames[fragmentName]) {
+      const knownFragmentName = knownFragmentNames.get(fragmentName);
+      if (knownFragmentName != null) {
         context.reportError(
           new GraphQLError(
             `There can be only one fragment named "${fragmentName}".`,
-            { nodes: [knownFragmentNames[fragmentName], node.name] },
+            { nodes: [knownFragmentName, node.name] },
           ),
         );
       } else {
-        knownFragmentNames[fragmentName] = node.name;
+        knownFragmentNames.set(fragmentName, node.name);
       }
       return false;
     },

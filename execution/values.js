@@ -5,7 +5,6 @@ exports.getDirectiveValues =
   exports.getVariableValues =
     void 0;
 const inspect_js_1 = require('../jsutils/inspect.js');
-const keyMap_js_1 = require('../jsutils/keyMap.js');
 const printPathArray_js_1 = require('../jsutils/printPathArray.js');
 const GraphQLError_js_1 = require('../error/GraphQLError.js');
 const kinds_js_1 = require('../language/kinds.js');
@@ -130,15 +129,12 @@ function getArgumentValues(def, node, variableValues) {
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
   const argumentNodes = node.arguments ?? [];
-  const argNodeMap = (0, keyMap_js_1.keyMap)(
-    argumentNodes,
-    (arg) => arg.name.value,
-  );
+  const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
   for (const argDef of def.args) {
     const name = argDef.name;
     const argType = argDef.type;
-    const argumentNode = argNodeMap[name];
-    if (!argumentNode) {
+    const argumentNode = argNodeMap.get(name);
+    if (argumentNode == null) {
       if (argDef.defaultValue !== undefined) {
         coercedValues[name] = argDef.defaultValue;
       } else if ((0, definition_js_1.isNonNullType)(argType)) {

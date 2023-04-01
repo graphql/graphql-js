@@ -9,7 +9,7 @@ const GraphQLError_js_1 = require('../../error/GraphQLError.js');
  */
 function UniqueOperationTypesRule(context) {
   const schema = context.getSchema();
-  const definedOperationTypes = Object.create(null);
+  const definedOperationTypes = new Map();
   const existingOperationTypes = schema
     ? {
         query: schema.getQueryType(),
@@ -27,7 +27,7 @@ function UniqueOperationTypesRule(context) {
     const operationTypesNodes = node.operationTypes ?? [];
     for (const operationType of operationTypesNodes) {
       const operation = operationType.operation;
-      const alreadyDefinedOperationType = definedOperationTypes[operation];
+      const alreadyDefinedOperationType = definedOperationTypes.get(operation);
       if (existingOperationTypes[operation]) {
         context.reportError(
           new GraphQLError_js_1.GraphQLError(
@@ -43,7 +43,7 @@ function UniqueOperationTypesRule(context) {
           ),
         );
       } else {
-        definedOperationTypes[operation] = operationType;
+        definedOperationTypes.set(operation, operationType);
       }
     }
     return false;

@@ -5,7 +5,7 @@ import { GraphQLError } from '../../error/GraphQLError.mjs';
  * A GraphQL document is only valid if all defined types have unique names.
  */
 export function UniqueTypeNamesRule(context) {
-  const knownTypeNames = Object.create(null);
+  const knownTypeNames = new Map();
   const schema = context.getSchema();
   return {
     ScalarTypeDefinition: checkTypeName,
@@ -26,14 +26,15 @@ export function UniqueTypeNamesRule(context) {
       );
       return;
     }
-    if (knownTypeNames[typeName]) {
+    const knownNameNode = knownTypeNames.get(typeName);
+    if (knownNameNode != null) {
       context.reportError(
         new GraphQLError(`There can be only one type named "${typeName}".`, {
-          nodes: [knownTypeNames[typeName], node.name],
+          nodes: [knownNameNode, node.name],
         }),
       );
     } else {
-      knownTypeNames[typeName] = node.name;
+      knownTypeNames.set(typeName, node.name);
     }
     return false;
   }

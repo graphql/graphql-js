@@ -8,7 +8,7 @@ const GraphQLError_js_1 = require('../../error/GraphQLError.js');
  * A GraphQL document is only valid if all defined directives have unique names.
  */
 function UniqueDirectiveNamesRule(context) {
-  const knownDirectiveNames = Object.create(null);
+  const knownDirectiveNames = new Map();
   const schema = context.getSchema();
   return {
     DirectiveDefinition(node) {
@@ -22,15 +22,16 @@ function UniqueDirectiveNamesRule(context) {
         );
         return;
       }
-      if (knownDirectiveNames[directiveName]) {
+      const knownName = knownDirectiveNames.get(directiveName);
+      if (knownName) {
         context.reportError(
           new GraphQLError_js_1.GraphQLError(
             `There can be only one directive named "@${directiveName}".`,
-            { nodes: [knownDirectiveNames[directiveName], node.name] },
+            { nodes: [knownName, node.name] },
           ),
         );
       } else {
-        knownDirectiveNames[directiveName] = node.name;
+        knownDirectiveNames.set(directiveName, node.name);
       }
       return false;
     },

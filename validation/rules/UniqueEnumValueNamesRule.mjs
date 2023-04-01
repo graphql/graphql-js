@@ -8,20 +8,21 @@ import { isEnumType } from '../../type/definition.mjs';
 export function UniqueEnumValueNamesRule(context) {
   const schema = context.getSchema();
   const existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
-  const knownValueNames = Object.create(null);
+  const knownValueNames = new Map();
   return {
     EnumTypeDefinition: checkValueUniqueness,
     EnumTypeExtension: checkValueUniqueness,
   };
   function checkValueUniqueness(node) {
     const typeName = node.name.value;
-    if (!knownValueNames[typeName]) {
-      knownValueNames[typeName] = Object.create(null);
+    let valueNames = knownValueNames.get(typeName);
+    if (valueNames == null) {
+      valueNames = new Map();
+      knownValueNames.set(typeName, valueNames);
     }
     // FIXME: https://github.com/graphql/graphql-js/issues/2203
     /* c8 ignore next */
     const valueNodes = node.values ?? [];
-    const valueNames = knownValueNames[typeName];
     for (const valueDef of valueNodes) {
       const valueName = valueDef.name.value;
       const existingType = existingTypeMap[typeName];
@@ -32,15 +33,18 @@ export function UniqueEnumValueNamesRule(context) {
             { nodes: valueDef.name },
           ),
         );
-      } else if (valueNames[valueName]) {
+        continue;
+      }
+      const knownValueName = valueNames.get(valueName);
+      if (knownValueName != null) {
         context.reportError(
           new GraphQLError(
             `Enum value "${typeName}.${valueName}" can only be defined once.`,
-            { nodes: [valueNames[valueName], valueDef.name] },
+            { nodes: [knownValueName, valueDef.name] },
           ),
         );
       } else {
-        valueNames[valueName] = valueDef.name;
+        valueNames.set(valueName, valueDef.name);
       }
     }
     return false;

@@ -3,7 +3,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.ValuesOfCorrectTypeRule = void 0;
 const didYouMean_js_1 = require('../../jsutils/didYouMean.js');
 const inspect_js_1 = require('../../jsutils/inspect.js');
-const keyMap_js_1 = require('../../jsutils/keyMap.js');
 const suggestionList_js_1 = require('../../jsutils/suggestionList.js');
 const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 const printer_js_1 = require('../../language/printer.js');
@@ -36,12 +35,11 @@ function ValuesOfCorrectTypeRule(context) {
         return false; // Don't traverse further.
       }
       // Ensure every required field exists.
-      const fieldNodeMap = (0, keyMap_js_1.keyMap)(
-        node.fields,
-        (field) => field.name.value,
+      const fieldNodeMap = new Map(
+        node.fields.map((field) => [field.name.value, field]),
       );
       for (const fieldDef of Object.values(type.getFields())) {
-        const fieldNode = fieldNodeMap[fieldDef.name];
+        const fieldNode = fieldNodeMap.get(fieldDef.name);
         if (!fieldNode && (0, definition_js_1.isRequiredInputField)(fieldDef)) {
           const typeStr = (0, inspect_js_1.inspect)(fieldDef.type);
           context.reportError(

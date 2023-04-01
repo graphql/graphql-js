@@ -16,10 +16,10 @@ const definition_js_1 = require('../../type/definition.js');
  */
 function PossibleTypeExtensionsRule(context) {
   const schema = context.getSchema();
-  const definedTypes = Object.create(null);
+  const definedTypes = new Map();
   for (const def of context.getDocument().definitions) {
     if ((0, predicates_js_1.isTypeDefinitionNode)(def)) {
-      definedTypes[def.name.value] = def;
+      definedTypes.set(def.name.value, def);
     }
   }
   return {
@@ -32,15 +32,15 @@ function PossibleTypeExtensionsRule(context) {
   };
   function checkExtension(node) {
     const typeName = node.name.value;
-    const defNode = definedTypes[typeName];
+    const defNode = definedTypes.get(typeName);
     const existingType = schema?.getType(typeName);
     let expectedKind;
-    if (defNode) {
+    if (defNode != null) {
       expectedKind = defKindToExtKind[defNode.kind];
     } else if (existingType) {
       expectedKind = typeToExtKind(existingType);
     }
-    if (expectedKind) {
+    if (expectedKind != null) {
       if (expectedKind !== node.kind) {
         const kindStr = extensionKindToTypeName(node.kind);
         context.reportError(
@@ -53,10 +53,10 @@ function PossibleTypeExtensionsRule(context) {
         );
       }
     } else {
-      const allTypeNames = Object.keys({
-        ...definedTypes,
-        ...schema?.getTypeMap(),
-      });
+      const allTypeNames = [
+        ...definedTypes.keys(),
+        ...Object.keys(schema?.getTypeMap() ?? {}),
+      ];
       const suggestedTypes = (0, suggestionList_js_1.suggestionList)(
         typeName,
         allTypeNames,

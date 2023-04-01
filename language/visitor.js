@@ -63,7 +63,7 @@ function visit(root, visitor, visitorKeys = ast_js_1.QueryDocumentKeys) {
       edits = stack.edits;
       inArray = stack.inArray;
       stack = stack.prev;
-    } else if (parent) {
+    } else if (parent != null) {
       key = inArray ? index : keys[index];
       node = parent[key];
       if (node === null || node === undefined) {
@@ -113,7 +113,7 @@ function visit(root, visitor, visitorKeys = ast_js_1.QueryDocumentKeys) {
       keys = inArray ? node : visitorKeys[node.kind] ?? [];
       index = -1;
       edits = [];
-      if (parent) {
+      if (parent != null) {
         ancestors.push(parent);
       }
       parent = node;

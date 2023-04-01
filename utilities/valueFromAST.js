@@ -3,7 +3,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.valueFromAST = void 0;
 const inspect_js_1 = require('../jsutils/inspect.js');
 const invariant_js_1 = require('../jsutils/invariant.js');
-const keyMap_js_1 = require('../jsutils/keyMap.js');
 const kinds_js_1 = require('../language/kinds.js');
 const definition_js_1 = require('../type/definition.js');
 /**
@@ -90,13 +89,12 @@ function valueFromAST(valueNode, type, variables) {
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
-    const fieldNodes = (0, keyMap_js_1.keyMap)(
-      valueNode.fields,
-      (field) => field.name.value,
+    const fieldNodes = new Map(
+      valueNode.fields.map((field) => [field.name.value, field]),
     );
     for (const field of Object.values(type.getFields())) {
-      const fieldNode = fieldNodes[field.name];
-      if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
+      const fieldNode = fieldNodes.get(field.name);
+      if (fieldNode == null || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if ((0, definition_js_1.isNonNullType)(field.type)) {

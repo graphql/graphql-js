@@ -164,7 +164,7 @@ export class TypeInfo {
         let inputField;
         if (isInputObjectType(objectType)) {
           inputField = objectType.getFields()[node.name.value];
-          if (inputField) {
+          if (inputField != null) {
             inputFieldType = inputField.type;
           }
         }

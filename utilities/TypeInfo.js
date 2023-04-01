@@ -177,7 +177,7 @@ class TypeInfo {
         let inputField;
         if ((0, definition_js_1.isInputObjectType)(objectType)) {
           inputField = objectType.getFields()[node.name.value];
-          if (inputField) {
+          if (inputField != null) {
             inputFieldType = inputField.type;
           }
         }

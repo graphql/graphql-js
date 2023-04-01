@@ -6,7 +6,7 @@ import { GraphQLError } from '../../error/GraphQLError.mjs';
  */
 export function UniqueOperationTypesRule(context) {
   const schema = context.getSchema();
-  const definedOperationTypes = Object.create(null);
+  const definedOperationTypes = new Map();
   const existingOperationTypes = schema
     ? {
         query: schema.getQueryType(),
@@ -24,7 +24,7 @@ export function UniqueOperationTypesRule(context) {
     const operationTypesNodes = node.operationTypes ?? [];
     for (const operationType of operationTypesNodes) {
       const operation = operationType.operation;
-      const alreadyDefinedOperationType = definedOperationTypes[operation];
+      const alreadyDefinedOperationType = definedOperationTypes.get(operation);
       if (existingOperationTypes[operation]) {
         context.reportError(
           new GraphQLError(
@@ -40,7 +40,7 @@ export function UniqueOperationTypesRule(context) {
           ),
         );
       } else {
-        definedOperationTypes[operation] = operationType;
+        definedOperationTypes.set(operation, operationType);
       }
     }
     return false;

@@ -108,7 +108,7 @@ exports.__Directive = new definition_js_1.GraphQLObjectType({
         },
       },
       resolve(field, { includeDeprecated }) {
-        return includeDeprecated
+        return includeDeprecated === true
           ? field.args
           : field.args.filter((arg) => arg.deprecationReason == null);
       },
@@ -271,7 +271,7 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
           (0, definition_js_1.isInterfaceType)(type)
         ) {
           const fields = Object.values(type.getFields());
-          return includeDeprecated
+          return includeDeprecated === true
             ? fields
             : fields.filter((field) => field.deprecationReason == null);
         }
@@ -313,7 +313,7 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
       resolve(type, { includeDeprecated }) {
         if ((0, definition_js_1.isEnumType)(type)) {
           const values = type.getValues();
-          return includeDeprecated
+          return includeDeprecated === true
             ? values
             : values.filter((field) => field.deprecationReason == null);
         }
@@ -332,7 +332,7 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
       resolve(type, { includeDeprecated }) {
         if ((0, definition_js_1.isInputObjectType)(type)) {
           const values = Object.values(type.getFields());
-          return includeDeprecated
+          return includeDeprecated === true
             ? values
             : values.filter((field) => field.deprecationReason == null);
         }
@@ -370,7 +370,7 @@ exports.__Field = new definition_js_1.GraphQLObjectType({
         },
       },
       resolve(field, { includeDeprecated }) {
-        return includeDeprecated
+        return includeDeprecated === true
           ? field.args
           : field.args.filter((arg) => arg.deprecationReason == null);
       },

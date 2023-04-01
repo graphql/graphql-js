@@ -12,17 +12,17 @@ import { typeFromAST } from '../../utilities/typeFromAST.mjs';
  * See https://spec.graphql.org/draft/#sec-All-Variable-Usages-are-Allowed
  */
 export function VariablesInAllowedPositionRule(context) {
-  let varDefMap = Object.create(null);
+  let varDefMap;
   return {
     OperationDefinition: {
       enter() {
-        varDefMap = Object.create(null);
+        varDefMap = new Map();
       },
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
         for (const { node, type, defaultValue } of usages) {
           const varName = node.name.value;
-          const varDef = varDefMap[varName];
+          const varDef = varDefMap.get(varName);
           if (varDef && type) {
             // A var type is allowed if it is the same or more strict (e.g. is
             // a subtype of) than the expected type. It can be more strict if
@@ -55,7 +55,7 @@ export function VariablesInAllowedPositionRule(context) {
       },
     },
     VariableDefinition(node) {
-      varDefMap[node.variable.name.value] = node;
+      varDefMap.set(node.variable.name.value, node);
     },
   };
 }

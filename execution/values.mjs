@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect.mjs';
-import { keyMap } from '../jsutils/keyMap.mjs';
 import { printPathArray } from '../jsutils/printPathArray.mjs';
 import { GraphQLError } from '../error/GraphQLError.mjs';
 import { Kind } from '../language/kinds.mjs';
@@ -117,12 +116,12 @@ export function getArgumentValues(def, node, variableValues) {
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
   const argumentNodes = node.arguments ?? [];
-  const argNodeMap = keyMap(argumentNodes, (arg) => arg.name.value);
+  const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
   for (const argDef of def.args) {
     const name = argDef.name;
     const argType = argDef.type;
-    const argumentNode = argNodeMap[name];
-    if (!argumentNode) {
+    const argumentNode = argNodeMap.get(name);
+    if (argumentNode == null) {
       if (argDef.defaultValue !== undefined) {
         coercedValues[name] = argDef.defaultValue;
       } else if (isNonNullType(argType)) {

@@ -3,7 +3,6 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.ProvidedRequiredArgumentsOnDirectivesRule =
   exports.ProvidedRequiredArgumentsRule = void 0;
 const inspect_js_1 = require('../../jsutils/inspect.js');
-const keyMap_js_1 = require('../../jsutils/keyMap.js');
 const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 const kinds_js_1 = require('../../language/kinds.js');
 const printer_js_1 = require('../../language/printer.js');
@@ -54,14 +53,18 @@ exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
  * @internal
  */
 function ProvidedRequiredArgumentsOnDirectivesRule(context) {
-  const requiredArgsMap = Object.create(null);
+  const requiredArgsMap = new Map();
   const schema = context.getSchema();
   const definedDirectives =
     schema?.getDirectives() ?? directives_js_1.specifiedDirectives;
   for (const directive of definedDirectives) {
-    requiredArgsMap[directive.name] = (0, keyMap_js_1.keyMap)(
-      directive.args.filter(definition_js_1.isRequiredArgument),
-      (arg) => arg.name,
+    requiredArgsMap.set(
+      directive.name,
+      new Map(
+        directive.args
+          .filter(definition_js_1.isRequiredArgument)
+          .map((arg) => [arg.name, arg]),
+      ),
     );
   }
   const astDefinitions = context.getDocument().definitions;
@@ -70,9 +73,13 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       /* c8 ignore next */
       const argNodes = def.arguments ?? [];
-      requiredArgsMap[def.name.value] = (0, keyMap_js_1.keyMap)(
-        argNodes.filter(isRequiredArgumentNode),
-        (arg) => arg.name.value,
+      requiredArgsMap.set(
+        def.name.value,
+        new Map(
+          argNodes
+            .filter(isRequiredArgumentNode)
+            .map((arg) => [arg.name.value, arg]),
+        ),
       );
     }
   }
@@ -81,13 +88,13 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
       // Validate on leave to allow for deeper errors to appear first.
       leave(directiveNode) {
         const directiveName = directiveNode.name.value;
-        const requiredArgs = requiredArgsMap[directiveName];
-        if (requiredArgs) {
+        const requiredArgs = requiredArgsMap.get(directiveName);
+        if (requiredArgs != null) {
           // FIXME: https://github.com/graphql/graphql-js/issues/2203
           /* c8 ignore next */
           const argNodes = directiveNode.arguments ?? [];
           const argNodeMap = new Set(argNodes.map((arg) => arg.name.value));
-          for (const [argName, argDef] of Object.entries(requiredArgs)) {
+          for (const [argName, argDef] of requiredArgs.entries()) {
             if (!argNodeMap.has(argName)) {
               const argType = (0, definition_js_1.isType)(argDef.type)
                 ? (0, inspect_js_1.inspect)(argDef.type)

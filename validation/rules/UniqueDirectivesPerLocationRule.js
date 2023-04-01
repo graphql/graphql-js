@@ -14,22 +14,22 @@ const directives_js_1 = require('../../type/directives.js');
  * See https://spec.graphql.org/draft/#sec-Directives-Are-Unique-Per-Location
  */
 function UniqueDirectivesPerLocationRule(context) {
-  const uniqueDirectiveMap = Object.create(null);
+  const uniqueDirectiveMap = new Map();
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
     : directives_js_1.specifiedDirectives;
   for (const directive of definedDirectives) {
-    uniqueDirectiveMap[directive.name] = !directive.isRepeatable;
+    uniqueDirectiveMap.set(directive.name, !directive.isRepeatable);
   }
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
     if (def.kind === kinds_js_1.Kind.DIRECTIVE_DEFINITION) {
-      uniqueDirectiveMap[def.name.value] = !def.repeatable;
+      uniqueDirectiveMap.set(def.name.value, !def.repeatable);
     }
   }
-  const schemaDirectives = Object.create(null);
-  const typeDirectivesMap = Object.create(null);
+  const schemaDirectives = new Map();
+  const typeDirectivesMap = new Map();
   return {
     // Many different AST nodes may contain directives. Rather than listing
     // them all, just listen for entering any node, and check to see if it
@@ -49,25 +49,27 @@ function UniqueDirectivesPerLocationRule(context) {
         (0, predicates_js_1.isTypeExtensionNode)(node)
       ) {
         const typeName = node.name.value;
-        seenDirectives = typeDirectivesMap[typeName];
+        seenDirectives = typeDirectivesMap.get(typeName);
         if (seenDirectives === undefined) {
-          typeDirectivesMap[typeName] = seenDirectives = Object.create(null);
+          seenDirectives = new Map();
+          typeDirectivesMap.set(typeName, seenDirectives);
         }
       } else {
-        seenDirectives = Object.create(null);
+        seenDirectives = new Map();
       }
       for (const directive of node.directives) {
         const directiveName = directive.name.value;
-        if (uniqueDirectiveMap[directiveName]) {
-          if (seenDirectives[directiveName]) {
+        if (uniqueDirectiveMap.get(directiveName) === true) {
+          const seenDirective = seenDirectives.get(directiveName);
+          if (seenDirective != null) {
             context.reportError(
               new GraphQLError_js_1.GraphQLError(
                 `The directive "@${directiveName}" can only be used once at this location.`,
-                { nodes: [seenDirectives[directiveName], directive] },
+                { nodes: [seenDirective, directive] },
               ),
             );
           } else {
-            seenDirectives[directiveName] = directive;
+            seenDirectives.set(directiveName, directive);
           }
         }
       }

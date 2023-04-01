@@ -60,14 +60,14 @@ function getSuggestedTypeNames(schema, type, fieldName) {
   const suggestedTypes = new Set();
   const usageCount = Object.create(null);
   for (const possibleType of schema.getPossibleTypes(type)) {
-    if (!possibleType.getFields()[fieldName]) {
+    if (possibleType.getFields()[fieldName] == null) {
       continue;
     }
     // This object type defines this field.
     suggestedTypes.add(possibleType);
     usageCount[possibleType.name] = 1;
     for (const possibleInterface of possibleType.getInterfaces()) {
-      if (!possibleInterface.getFields()[fieldName]) {
+      if (possibleInterface.getFields()[fieldName] == null) {
         continue;
       }
       // This interface type defines this field.
