@@ -22,7 +22,7 @@ export function UniqueFieldDefinitionNamesRule(
 ): ASTVisitor {
   const schema = context.getSchema();
   const existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
-  const knownFieldNames = Object.create(null);
+  const knownFieldNames = new Map<string, Map<string, NameNode>>();
   return {
     InputObjectTypeDefinition: checkFieldUniqueness,
     InputObjectTypeExtension: checkFieldUniqueness,
@@ -38,13 +38,14 @@ export function UniqueFieldDefinitionNamesRule(
       | undefined;
   }) {
     const typeName = node.name.value;
-    if (!knownFieldNames[typeName]) {
-      knownFieldNames[typeName] = Object.create(null);
+    let fieldNames = knownFieldNames.get(typeName);
+    if (fieldNames == null) {
+      fieldNames = new Map();
+      knownFieldNames.set(typeName, fieldNames);
     }
     // FIXME: https://github.com/graphql/graphql-js/issues/2203
     /* c8 ignore next */
     const fieldNodes = node.fields ?? [];
-    const fieldNames = knownFieldNames[typeName];
     for (const fieldDef of fieldNodes) {
       const fieldName = fieldDef.name.value;
       if (hasField(existingTypeMap[typeName], fieldName)) {
@@ -54,15 +55,18 @@ export function UniqueFieldDefinitionNamesRule(
             { nodes: fieldDef.name },
           ),
         );
-      } else if (fieldNames[fieldName]) {
+        continue;
+      }
+      const knownFieldName = fieldNames.get(fieldName);
+      if (knownFieldName != null) {
         context.reportError(
           new GraphQLError(
             `Field "${typeName}.${fieldName}" can only be defined once.`,
-            { nodes: [fieldNames[fieldName], fieldDef.name] },
+            { nodes: [knownFieldName, fieldDef.name] },
           ),
         );
       } else {
-        fieldNames[fieldName] = fieldDef.name;
+        fieldNames.set(fieldName, fieldDef.name);
       }
     }
     return false;

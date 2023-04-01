@@ -328,7 +328,7 @@ function validateTypeImplementsInterface(
     const fieldName = ifaceField.name;
     const typeField = typeFieldMap[fieldName];
     // Assert interface field exists on type.
-    if (!typeField) {
+    if (typeField == null) {
       context.reportError(
         `Interface field ${iface.name}.${fieldName} expected but ${type.name} does not provide it.`,
         [ifaceField.astNode, type.astNode, ...type.extensionASTNodes],

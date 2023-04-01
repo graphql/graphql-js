@@ -46,13 +46,16 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 export function KnownArgumentNamesOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const directiveArgs = Object.create(null);
+  const directiveArgs = new Map<string, ReadonlyArray<string>>();
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    directiveArgs[directive.name] = directive.args.map((arg) => arg.name);
+    directiveArgs.set(
+      directive.name,
+      directive.args.map((arg) => arg.name),
+    );
   }
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
@@ -60,14 +63,17 @@ export function KnownArgumentNamesOnDirectivesRule(
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       /* c8 ignore next */
       const argsNodes = def.arguments ?? [];
-      directiveArgs[def.name.value] = argsNodes.map((arg) => arg.name.value);
+      directiveArgs.set(
+        def.name.value,
+        argsNodes.map((arg) => arg.name.value),
+      );
     }
   }
   return {
     Directive(directiveNode) {
       const directiveName = directiveNode.name.value;
-      const knownArgs = directiveArgs[directiveName];
-      if (directiveNode.arguments && knownArgs) {
+      const knownArgs = directiveArgs.get(directiveName);
+      if (directiveNode.arguments != null && knownArgs != null) {
         for (const argNode of directiveNode.arguments) {
           const argName = argNode.name.value;
           if (!knownArgs.includes(argName)) {

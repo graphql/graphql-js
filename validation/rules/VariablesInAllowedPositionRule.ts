@@ -1,7 +1,7 @@
 import { inspect } from '../../jsutils/inspect.ts';
 import type { Maybe } from '../../jsutils/Maybe.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { ValueNode } from '../../language/ast.ts';
+import type { ValueNode, VariableDefinitionNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { GraphQLType } from '../../type/definition.ts';
@@ -20,17 +20,17 @@ import type { ValidationContext } from '../ValidationContext.ts';
 export function VariablesInAllowedPositionRule(
   context: ValidationContext,
 ): ASTVisitor {
-  let varDefMap = Object.create(null);
+  let varDefMap: Map<string, VariableDefinitionNode>;
   return {
     OperationDefinition: {
       enter() {
-        varDefMap = Object.create(null);
+        varDefMap = new Map();
       },
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
         for (const { node, type, defaultValue } of usages) {
           const varName = node.name.value;
-          const varDef = varDefMap[varName];
+          const varDef = varDefMap.get(varName);
           if (varDef && type) {
             // A var type is allowed if it is the same or more strict (e.g. is
             // a subtype of) than the expected type. It can be more strict if
@@ -63,7 +63,7 @@ export function VariablesInAllowedPositionRule(
       },
     },
     VariableDefinition(node) {
-      varDefMap[node.variable.name.value] = node;
+      varDefMap.set(node.variable.name.value, node);
     },
   };
 }

@@ -124,13 +124,13 @@ export class GraphQLError extends Error {
     // Include (non-enumerable) stack trace.
     /* c8 ignore start */
     // FIXME: https://github.com/graphql/graphql-js/issues/2317
-    if (originalError?.stack) {
+    if (originalError?.stack != null) {
       Object.defineProperty(this, 'stack', {
         value: originalError.stack,
         writable: true,
         configurable: true,
       });
-    } else if (Error.captureStackTrace) {
+    } else if (Error.captureStackTrace != null) {
       Error.captureStackTrace(this, GraphQLError);
     } else {
       Object.defineProperty(this, 'stack', {

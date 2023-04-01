@@ -113,7 +113,7 @@ function coerceInputValueImpl(
     }
     // Ensure every provided field is defined.
     for (const fieldName of Object.keys(inputValue)) {
-      if (!fieldDefs[fieldName]) {
+      if (fieldDefs[fieldName] == null) {
         const suggestions = suggestionList(
           fieldName,
           Object.keys(type.getFields()),

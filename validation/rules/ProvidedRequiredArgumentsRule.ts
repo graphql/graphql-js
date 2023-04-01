@@ -1,6 +1,4 @@
 import { inspect } from '../../jsutils/inspect.ts';
-import { keyMap } from '../../jsutils/keyMap.ts';
-import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { InputValueDefinitionNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
@@ -58,15 +56,18 @@ export function ProvidedRequiredArgumentsRule(
 export function ProvidedRequiredArgumentsOnDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const requiredArgsMap: ObjMap<
-    ObjMap<GraphQLArgument | InputValueDefinitionNode>
-  > = Object.create(null);
+  const requiredArgsMap = new Map<
+    string,
+    Map<string, GraphQLArgument | InputValueDefinitionNode>
+  >();
   const schema = context.getSchema();
   const definedDirectives = schema?.getDirectives() ?? specifiedDirectives;
   for (const directive of definedDirectives) {
-    requiredArgsMap[directive.name] = keyMap(
-      directive.args.filter(isRequiredArgument),
-      (arg) => arg.name,
+    requiredArgsMap.set(
+      directive.name,
+      new Map(
+        directive.args.filter(isRequiredArgument).map((arg) => [arg.name, arg]),
+      ),
     );
   }
   const astDefinitions = context.getDocument().definitions;
@@ -75,9 +76,13 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       /* c8 ignore next */
       const argNodes = def.arguments ?? [];
-      requiredArgsMap[def.name.value] = keyMap(
-        argNodes.filter(isRequiredArgumentNode),
-        (arg) => arg.name.value,
+      requiredArgsMap.set(
+        def.name.value,
+        new Map(
+          argNodes
+            .filter(isRequiredArgumentNode)
+            .map((arg) => [arg.name.value, arg]),
+        ),
       );
     }
   }
@@ -86,13 +91,13 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
       // Validate on leave to allow for deeper errors to appear first.
       leave(directiveNode) {
         const directiveName = directiveNode.name.value;
-        const requiredArgs = requiredArgsMap[directiveName];
-        if (requiredArgs) {
+        const requiredArgs = requiredArgsMap.get(directiveName);
+        if (requiredArgs != null) {
           // FIXME: https://github.com/graphql/graphql-js/issues/2203
           /* c8 ignore next */
           const argNodes = directiveNode.arguments ?? [];
           const argNodeMap = new Set(argNodes.map((arg) => arg.name.value));
-          for (const [argName, argDef] of Object.entries(requiredArgs)) {
+          for (const [argName, argDef] of requiredArgs.entries()) {
             if (!argNodeMap.has(argName)) {
               const argType = isType(argDef.type)
                 ? inspect(argDef.type)

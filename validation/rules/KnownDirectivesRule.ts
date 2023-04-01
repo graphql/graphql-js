@@ -22,32 +22,35 @@ import type {
 export function KnownDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const locationsMap = Object.create(null);
+  const locationsMap = new Map<string, ReadonlyArray<string>>();
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    locationsMap[directive.name] = directive.locations;
+    locationsMap.set(directive.name, directive.locations);
   }
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      locationsMap[def.name.value] = def.locations.map((name) => name.value);
+      locationsMap.set(
+        def.name.value,
+        def.locations.map((name) => name.value),
+      );
     }
   }
   return {
     Directive(node, _key, _parent, _path, ancestors) {
       const name = node.name.value;
-      const locations = locationsMap[name];
-      if (!locations) {
+      const locations = locationsMap.get(name);
+      if (locations == null) {
         context.reportError(
           new GraphQLError(`Unknown directive "@${name}".`, { nodes: node }),
         );
         return;
       }
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
-      if (candidateLocation && !locations.includes(candidateLocation)) {
+      if (candidateLocation != null && !locations.includes(candidateLocation)) {
         context.reportError(
           new GraphQLError(
             `Directive "@${name}" may not be used on ${candidateLocation}.`,

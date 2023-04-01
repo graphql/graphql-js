@@ -1,10 +1,12 @@
 import { didYouMean } from '../../jsutils/didYouMean.ts';
 import { inspect } from '../../jsutils/inspect.ts';
 import { invariant } from '../../jsutils/invariant.ts';
-import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { suggestionList } from '../../jsutils/suggestionList.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type { DefinitionNode, TypeExtensionNode } from '../../language/ast.ts';
+import type {
+  TypeDefinitionNode,
+  TypeExtensionNode,
+} from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { isTypeDefinitionNode } from '../../language/predicates.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
@@ -27,10 +29,10 @@ export function PossibleTypeExtensionsRule(
   context: SDLValidationContext,
 ): ASTVisitor {
   const schema = context.getSchema();
-  const definedTypes: ObjMap<DefinitionNode> = Object.create(null);
+  const definedTypes = new Map<string, TypeDefinitionNode>();
   for (const def of context.getDocument().definitions) {
     if (isTypeDefinitionNode(def)) {
-      definedTypes[def.name.value] = def;
+      definedTypes.set(def.name.value, def);
     }
   }
   return {
@@ -43,15 +45,15 @@ export function PossibleTypeExtensionsRule(
   };
   function checkExtension(node: TypeExtensionNode): void {
     const typeName = node.name.value;
-    const defNode = definedTypes[typeName];
+    const defNode = definedTypes.get(typeName);
     const existingType = schema?.getType(typeName);
     let expectedKind: Kind | undefined;
-    if (defNode) {
+    if (defNode != null) {
       expectedKind = defKindToExtKind[defNode.kind];
     } else if (existingType) {
       expectedKind = typeToExtKind(existingType);
     }
-    if (expectedKind) {
+    if (expectedKind != null) {
       if (expectedKind !== node.kind) {
         const kindStr = extensionKindToTypeName(node.kind);
         context.reportError(
@@ -61,10 +63,10 @@ export function PossibleTypeExtensionsRule(
         );
       }
     } else {
-      const allTypeNames = Object.keys({
-        ...definedTypes,
-        ...schema?.getTypeMap(),
-      });
+      const allTypeNames = [
+        ...definedTypes.keys(),
+        ...Object.keys(schema?.getTypeMap() ?? {}),
+      ];
       const suggestedTypes = suggestionList(typeName, allTypeNames);
       context.reportError(
         new GraphQLError(
@@ -76,14 +78,14 @@ export function PossibleTypeExtensionsRule(
     }
   }
 }
-const defKindToExtKind: ObjMap<Kind> = {
+const defKindToExtKind = {
   [Kind.SCALAR_TYPE_DEFINITION]: Kind.SCALAR_TYPE_EXTENSION,
   [Kind.OBJECT_TYPE_DEFINITION]: Kind.OBJECT_TYPE_EXTENSION,
   [Kind.INTERFACE_TYPE_DEFINITION]: Kind.INTERFACE_TYPE_EXTENSION,
   [Kind.UNION_TYPE_DEFINITION]: Kind.UNION_TYPE_EXTENSION,
   [Kind.ENUM_TYPE_DEFINITION]: Kind.ENUM_TYPE_EXTENSION,
   [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
-};
+} as const;
 function typeToExtKind(type: GraphQLNamedType): Kind {
   if (isScalarType(type)) {
     return Kind.SCALAR_TYPE_EXTENSION;
