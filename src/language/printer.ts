@@ -143,7 +143,6 @@ const printDocASTReducer: ASTReducer<string> = {
   FloatValue: { leave: ({ value }) => value },
   StringValue: {
     leave: ({ value, block: isBlockString }) =>
-      // @ts-expect-error FIXME: it's a problem with ASTReducer, will be fixed in separate PR
       isBlockString === true ? printBlockString(value) : printString(value),
   },
   BooleanValue: { leave: ({ value }) => (value ? 'true' : 'false') },
