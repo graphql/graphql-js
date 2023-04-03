@@ -1550,22 +1550,15 @@ function defineInputFieldMap(
   config: Readonly<GraphQLInputObjectTypeConfig>,
 ): GraphQLInputFieldMap {
   const fieldMap = resolveObjMapThunk(config.fields);
-  return mapValue(fieldMap, (fieldConfig, fieldName) => {
-    devAssert(
-      !('resolve' in fieldConfig),
-      `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
-    );
-
-    return {
-      name: assertName(fieldName),
-      description: fieldConfig.description,
-      type: fieldConfig.type,
-      defaultValue: fieldConfig.defaultValue,
-      deprecationReason: fieldConfig.deprecationReason,
-      extensions: toObjMap(fieldConfig.extensions),
-      astNode: fieldConfig.astNode,
-    };
-  });
+  return mapValue(fieldMap, (fieldConfig, fieldName) => ({
+    name: assertName(fieldName),
+    description: fieldConfig.description,
+    type: fieldConfig.type,
+    defaultValue: fieldConfig.defaultValue,
+    deprecationReason: fieldConfig.deprecationReason,
+    extensions: toObjMap(fieldConfig.extensions),
+    astNode: fieldConfig.astNode,
+  }));
 }
 
 export interface GraphQLInputObjectTypeConfig {
