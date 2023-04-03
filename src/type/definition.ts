@@ -719,8 +719,10 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
-    this._fields = () => defineFieldMap(config);
-    this._interfaces = () => defineInterfaces(config);
+    // prettier-ignore
+    // FIXME: blocked by https://github.com/prettier/prettier/issues/14625
+    this._fields = (defineFieldMap<TSource, TContext>).bind(undefined, config);
+    this._interfaces = defineInterfaces.bind(undefined, config);
   }
 
   get [Symbol.toStringTag]() {
