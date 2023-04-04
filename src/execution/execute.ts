@@ -47,7 +47,7 @@ import { GraphQLStreamDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import { assertValidSchema } from '../type/validate.js';
 
-import type { FieldGroup } from './collectFields.js';
+import type { FieldGroup, GroupedFieldSet } from './collectFields.js';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
@@ -589,7 +589,7 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
-  fields: Map<string, FieldGroup>,
+  fields: GroupedFieldSet,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
     fields,
@@ -627,7 +627,7 @@ function executeFields(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
-  fields: Map<string, FieldGroup>,
+  fields: GroupedFieldSet,
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
@@ -1770,7 +1770,7 @@ function executeDeferredFragment(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
-  fields: Map<string, FieldGroup>,
+  fields: GroupedFieldSet,
   label?: string,
   path?: Path,
   parentContext?: AsyncPayloadRecord,
