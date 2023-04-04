@@ -28,13 +28,15 @@ import { getDirectiveValues } from './values.js';
 
 export type FieldGroup = ReadonlyArray<FieldNode>;
 
+export type GroupedFieldSet = Map<string, FieldGroup>;
+
 export interface PatchFields {
   label: string | undefined;
-  fields: Map<string, FieldGroup>;
+  fields: GroupedFieldSet;
 }
 
 export interface FieldsAndPatches {
-  fields: Map<string, FieldGroup>;
+  fields: GroupedFieldSet;
   patches: Array<PatchFields>;
 }
 
