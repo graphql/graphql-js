@@ -407,7 +407,7 @@ export declare class GraphQLObjectType<TSource = any, TContext = any> {
   toJSON(): string;
 }
 export declare function defineArguments(
-  config: GraphQLFieldConfigArgumentMap,
+  args: GraphQLFieldConfigArgumentMap,
 ): ReadonlyArray<GraphQLArgument>;
 /**
  * @internal

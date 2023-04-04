@@ -418,8 +418,8 @@ export class GraphQLObjectType {
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     // prettier-ignore
     // FIXME: blocked by https://github.com/prettier/prettier/issues/14625
-    this._fields = (defineFieldMap).bind(undefined, config);
-    this._interfaces = defineInterfaces.bind(undefined, config);
+    this._fields = (defineFieldMap).bind(undefined, config.fields);
+    this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLObjectType';
@@ -455,11 +455,11 @@ export class GraphQLObjectType {
     return this.toString();
   }
 }
-function defineInterfaces(config) {
-  return resolveReadonlyArrayThunk(config.interfaces ?? []);
+function defineInterfaces(interfaces) {
+  return resolveReadonlyArrayThunk(interfaces ?? []);
 }
-function defineFieldMap(config) {
-  const fieldMap = resolveObjMapThunk(config.fields);
+function defineFieldMap(fields) {
+  const fieldMap = resolveObjMapThunk(fields);
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     const argsConfig = fieldConfig.args ?? {};
     return {
@@ -475,8 +475,8 @@ function defineFieldMap(config) {
     };
   });
 }
-export function defineArguments(config) {
-  return Object.entries(config).map(([argName, argConfig]) => ({
+export function defineArguments(args) {
+  return Object.entries(args).map(([argName, argConfig]) => ({
     name: assertName(argName),
     description: argConfig.description,
     type: argConfig.type,
@@ -545,8 +545,8 @@ export class GraphQLInterfaceType {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._fields = defineFieldMap.bind(undefined, config);
-    this._interfaces = defineInterfaces.bind(undefined, config);
+    this._fields = defineFieldMap.bind(undefined, config.fields);
+    this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLInterfaceType';
@@ -614,7 +614,7 @@ export class GraphQLUnionType {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._types = defineTypes.bind(undefined, config);
+    this._types = defineTypes.bind(undefined, config.types);
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLUnionType';
@@ -643,8 +643,8 @@ export class GraphQLUnionType {
     return this.toString();
   }
 }
-function defineTypes(config) {
-  return resolveReadonlyArrayThunk(config.types);
+function defineTypes(types) {
+  return resolveReadonlyArrayThunk(types);
 }
 /**
  * Enum Type Definition
@@ -808,7 +808,7 @@ export class GraphQLInputObjectType {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._fields = defineInputFieldMap.bind(undefined, config);
+    this._fields = defineInputFieldMap.bind(undefined, config.fields);
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLInputObjectType';
@@ -844,8 +844,8 @@ export class GraphQLInputObjectType {
     return this.toString();
   }
 }
-function defineInputFieldMap(config) {
-  const fieldMap = resolveObjMapThunk(config.fields);
+function defineInputFieldMap(fields) {
+  const fieldMap = resolveObjMapThunk(fields);
   return mapValue(fieldMap, (fieldConfig, fieldName) => ({
     name: assertName(fieldName),
     description: fieldConfig.description,
