@@ -635,8 +635,8 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     // prettier-ignore
     // FIXME: blocked by https://github.com/prettier/prettier/issues/14625
-    this._fields = (defineFieldMap<TSource, TContext>).bind(undefined, config);
-    this._interfaces = defineInterfaces.bind(undefined, config);
+    this._fields = (defineFieldMap<TSource, TContext>).bind(undefined, config.fields);
+    this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLObjectType';
@@ -673,19 +673,14 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
   }
 }
 function defineInterfaces(
-  config: Readonly<
-    GraphQLObjectTypeConfig<any, any> | GraphQLInterfaceTypeConfig<any, any>
-  >,
+  interfaces: Maybe<ThunkReadonlyArray<GraphQLInterfaceType>>,
 ): ReadonlyArray<GraphQLInterfaceType> {
-  return resolveReadonlyArrayThunk(config.interfaces ?? []);
+  return resolveReadonlyArrayThunk(interfaces ?? []);
 }
 function defineFieldMap<TSource, TContext>(
-  config: Readonly<
-    | GraphQLObjectTypeConfig<TSource, TContext>
-    | GraphQLInterfaceTypeConfig<TSource, TContext>
-  >,
+  fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>,
 ): GraphQLFieldMap<TSource, TContext> {
-  const fieldMap = resolveObjMapThunk(config.fields);
+  const fieldMap = resolveObjMapThunk(fields);
   return mapValue(fieldMap, (fieldConfig, fieldName) => {
     const argsConfig = fieldConfig.args ?? {};
     return {
@@ -702,9 +697,9 @@ function defineFieldMap<TSource, TContext>(
   });
 }
 export function defineArguments(
-  config: GraphQLFieldConfigArgumentMap,
+  args: GraphQLFieldConfigArgumentMap,
 ): ReadonlyArray<GraphQLArgument> {
-  return Object.entries(config).map(([argName, argConfig]) => ({
+  return Object.entries(args).map(([argName, argConfig]) => ({
     name: assertName(argName),
     description: argConfig.description,
     type: argConfig.type,
@@ -924,8 +919,8 @@ export class GraphQLInterfaceType {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._fields = defineFieldMap.bind(undefined, config);
-    this._interfaces = defineInterfaces.bind(undefined, config);
+    this._fields = defineFieldMap.bind(undefined, config.fields);
+    this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLInterfaceType';
@@ -1034,7 +1029,7 @@ export class GraphQLUnionType {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._types = defineTypes.bind(undefined, config);
+    this._types = defineTypes.bind(undefined, config.types);
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLUnionType';
@@ -1064,9 +1059,9 @@ export class GraphQLUnionType {
   }
 }
 function defineTypes(
-  config: Readonly<GraphQLUnionTypeConfig<unknown, unknown>>,
+  types: ThunkReadonlyArray<GraphQLObjectType>,
 ): ReadonlyArray<GraphQLObjectType> {
-  return resolveReadonlyArrayThunk(config.types);
+  return resolveReadonlyArrayThunk(types);
 }
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
   name: string;
@@ -1335,7 +1330,7 @@ export class GraphQLInputObjectType {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._fields = defineInputFieldMap.bind(undefined, config);
+    this._fields = defineInputFieldMap.bind(undefined, config.fields);
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLInputObjectType';
@@ -1372,9 +1367,9 @@ export class GraphQLInputObjectType {
   }
 }
 function defineInputFieldMap(
-  config: Readonly<GraphQLInputObjectTypeConfig>,
+  fields: ThunkObjMap<GraphQLInputFieldConfig>,
 ): GraphQLInputFieldMap {
-  const fieldMap = resolveObjMapThunk(config.fields);
+  const fieldMap = resolveObjMapThunk(fields);
   return mapValue(fieldMap, (fieldConfig, fieldName) => ({
     name: assertName(fieldName),
     description: fieldConfig.description,
