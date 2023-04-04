@@ -32,11 +32,11 @@ export type GroupedFieldSet = Map<string, FieldGroup>;
 
 export interface PatchFields {
   label: string | undefined;
-  fields: GroupedFieldSet;
+  groupedFieldSet: GroupedFieldSet;
 }
 
 export interface FieldsAndPatches {
-  fields: GroupedFieldSet;
+  groupedFieldSet: GroupedFieldSet;
   patches: Array<PatchFields>;
 }
 
@@ -56,7 +56,7 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
 ): FieldsAndPatches {
-  const fields = new AccumulatorMap<string, FieldNode>();
+  const groupedFieldSet = new AccumulatorMap<string, FieldNode>();
   const patches: Array<PatchFields> = [];
   collectFieldsImpl(
     schema,
@@ -65,11 +65,11 @@ export function collectFields(
     operation,
     runtimeType,
     operation.selectionSet,
-    fields,
+    groupedFieldSet,
     patches,
     new Set(),
   );
-  return { fields, patches };
+  return { groupedFieldSet, patches };
 }
 
 /**
@@ -91,12 +91,12 @@ export function collectSubfields(
   returnType: GraphQLObjectType,
   fieldGroup: FieldGroup,
 ): FieldsAndPatches {
-  const subFieldNodes = new AccumulatorMap<string, FieldNode>();
+  const subGroupedFieldSet = new AccumulatorMap<string, FieldNode>();
   const visitedFragmentNames = new Set<string>();
 
   const subPatches: Array<PatchFields> = [];
   const subFieldsAndPatches = {
-    fields: subFieldNodes,
+    groupedFieldSet: subGroupedFieldSet,
     patches: subPatches,
   };
 
@@ -109,7 +109,7 @@ export function collectSubfields(
         operation,
         returnType,
         node.selectionSet,
-        subFieldNodes,
+        subGroupedFieldSet,
         subPatches,
         visitedFragmentNames,
       );
@@ -126,7 +126,7 @@ function collectFieldsImpl(
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: AccumulatorMap<string, FieldNode>,
+  groupedFieldSet: AccumulatorMap<string, FieldNode>,
   patches: Array<PatchFields>,
   visitedFragmentNames: Set<string>,
 ): void {
@@ -136,7 +136,7 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        fields.add(getFieldEntryKey(selection), selection);
+        groupedFieldSet.add(getFieldEntryKey(selection), selection);
         break;
       }
       case Kind.INLINE_FRAGMENT: {
@@ -164,7 +164,7 @@ function collectFieldsImpl(
           );
           patches.push({
             label: defer.label,
-            fields: patchFields,
+            groupedFieldSet: patchFields,
           });
         } else {
           collectFieldsImpl(
@@ -174,7 +174,7 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             selection.selectionSet,
-            fields,
+            groupedFieldSet,
             patches,
             visitedFragmentNames,
           );
@@ -220,7 +220,7 @@ function collectFieldsImpl(
           );
           patches.push({
             label: defer.label,
-            fields: patchFields,
+            groupedFieldSet: patchFields,
           });
         } else {
           collectFieldsImpl(
@@ -230,7 +230,7 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             fragment.selectionSet,
-            fields,
+            groupedFieldSet,
             patches,
             visitedFragmentNames,
           );

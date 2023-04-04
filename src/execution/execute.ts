@@ -536,7 +536,7 @@ function executeOperation(
     );
   }
 
-  const { fields: rootFields, patches } = collectFields(
+  const { groupedFieldSet, patches } = collectFields(
     schema,
     fragments,
     variableValues,
@@ -548,7 +548,13 @@ function executeOperation(
 
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
-      result = executeFields(exeContext, rootType, rootValue, path, rootFields);
+      result = executeFields(
+        exeContext,
+        rootType,
+        rootValue,
+        path,
+        groupedFieldSet,
+      );
       break;
     case OperationTypeNode.MUTATION:
       result = executeFieldsSerially(
@@ -556,22 +562,28 @@ function executeOperation(
         rootType,
         rootValue,
         path,
-        rootFields,
+        groupedFieldSet,
       );
       break;
     case OperationTypeNode.SUBSCRIPTION:
       // TODO: deprecate `subscribe` and move all logic here
       // Temporary solution until we finish merging execute and subscribe together
-      result = executeFields(exeContext, rootType, rootValue, path, rootFields);
+      result = executeFields(
+        exeContext,
+        rootType,
+        rootValue,
+        path,
+        groupedFieldSet,
+      );
   }
 
   for (const patch of patches) {
-    const { label, fields: patchFields } = patch;
+    const { label, groupedFieldSet: patchGroupedFieldSet } = patch;
     executeDeferredFragment(
       exeContext,
       rootType,
       rootValue,
-      patchFields,
+      patchGroupedFieldSet,
       label,
       path,
     );
@@ -1447,28 +1459,25 @@ function collectAndExecuteSubfields(
   asyncPayloadRecord?: AsyncPayloadRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
-  const { fields: subFieldNodes, patches: subPatches } = collectSubfields(
-    exeContext,
-    returnType,
-    fieldGroup,
-  );
+  const { groupedFieldSet: subGroupedFieldSet, patches: subPatches } =
+    collectSubfields(exeContext, returnType, fieldGroup);
 
   const subFields = executeFields(
     exeContext,
     returnType,
     result,
     path,
-    subFieldNodes,
+    subGroupedFieldSet,
     asyncPayloadRecord,
   );
 
   for (const subPatch of subPatches) {
-    const { label, fields: subPatchFieldNodes } = subPatch;
+    const { label, groupedFieldSet: subPatchGroupedFieldSet } = subPatch;
     executeDeferredFragment(
       exeContext,
       returnType,
       result,
-      subPatchFieldNodes,
+      subPatchGroupedFieldSet,
       label,
       path,
       asyncPayloadRecord,
@@ -1691,7 +1700,7 @@ function executeSubscription(
     );
   }
 
-  const { fields: rootFields } = collectFields(
+  const { groupedFieldSet } = collectFields(
     schema,
     fragments,
     variableValues,
@@ -1699,7 +1708,7 @@ function executeSubscription(
     operation,
   );
 
-  const firstRootField = rootFields.entries().next().value;
+  const firstRootField = groupedFieldSet.entries().next().value;
   const [responseName, fieldGroup] = firstRootField;
   const fieldName = fieldGroup[0].name.value;
   const fieldDef = schema.getField(rootType, fieldName);
