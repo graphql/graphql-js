@@ -1017,18 +1017,18 @@ export interface GraphQLInterfaceTypeExtensions {
  * });
  * ```
  */
-export class GraphQLInterfaceType {
+export class GraphQLInterfaceType<TSource = any, TContext = any> {
   name: string;
   description: Maybe<string>;
-  resolveType: Maybe<GraphQLTypeResolver<any, any>>;
+  resolveType: Maybe<GraphQLTypeResolver<TSource, TContext>>;
   extensions: Readonly<GraphQLInterfaceTypeExtensions>;
   astNode: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
 
-  private _fields: ThunkObjMap<GraphQLField<any, any>>;
+  private _fields: ThunkObjMap<GraphQLField<TSource, TContext>>;
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
-  constructor(config: Readonly<GraphQLInterfaceTypeConfig<any, any>>) {
+  constructor(config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>) {
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1036,7 +1036,9 @@ export class GraphQLInterfaceType {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
-    this._fields = defineFieldMap.bind(undefined, config.fields);
+    // prettier-ignore
+    // FIXME: blocked by https://github.com/prettier/prettier/issues/14625
+    this._fields = (defineFieldMap<TSource, TContext>).bind(undefined, config.fields);
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
 
@@ -1044,7 +1046,7 @@ export class GraphQLInterfaceType {
     return 'GraphQLInterfaceType';
   }
 
-  getFields(): GraphQLFieldMap<any, any> {
+  getFields(): GraphQLFieldMap<TSource, TContext> {
     if (typeof this._fields === 'function') {
       this._fields = this._fields();
     }
@@ -1058,7 +1060,7 @@ export class GraphQLInterfaceType {
     return this._interfaces;
   }
 
-  toConfig(): GraphQLInterfaceTypeNormalizedConfig {
+  toConfig(): GraphQLInterfaceTypeNormalizedConfig<TSource, TContext> {
     return {
       name: this.name,
       description: this.description,
@@ -1096,10 +1098,10 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 }
 
-export interface GraphQLInterfaceTypeNormalizedConfig
+export interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
   extends GraphQLInterfaceTypeConfig<any, any> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
-  fields: GraphQLFieldConfigMap<any, any>;
+  fields: GraphQLFieldConfigMap<TSource, TContext>;
   extensions: Readonly<GraphQLInterfaceTypeExtensions>;
   extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
 }

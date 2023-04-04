@@ -357,11 +357,11 @@ describe('Execute: Handles execution of abstract types', () => {
   });
 
   it('resolveType can throw', async () => {
-    const PetType = new GraphQLInterfaceType({
+    const PetType = new GraphQLInterfaceType<Dog | Cat, Context>({
       name: 'Pet',
       resolveType(_source, context) {
         const error = new Error('We are testing this error');
-        if (context.async === true) {
+        if (context.async) {
           return Promise.reject(error);
         }
         throw error;
