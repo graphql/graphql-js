@@ -1006,22 +1006,15 @@ class GraphQLInputObjectType {
 exports.GraphQLInputObjectType = GraphQLInputObjectType;
 function defineInputFieldMap(config) {
   const fieldMap = resolveObjMapThunk(config.fields);
-  return (0, mapValue_js_1.mapValue)(fieldMap, (fieldConfig, fieldName) => {
-    !('resolve' in fieldConfig) ||
-      (0, devAssert_js_1.devAssert)(
-        false,
-        `${config.name}.${fieldName} field has a resolve property, but Input Types cannot define resolvers.`,
-      );
-    return {
-      name: (0, assertName_js_1.assertName)(fieldName),
-      description: fieldConfig.description,
-      type: fieldConfig.type,
-      defaultValue: fieldConfig.defaultValue,
-      deprecationReason: fieldConfig.deprecationReason,
-      extensions: (0, toObjMap_js_1.toObjMap)(fieldConfig.extensions),
-      astNode: fieldConfig.astNode,
-    };
-  });
+  return (0, mapValue_js_1.mapValue)(fieldMap, (fieldConfig, fieldName) => ({
+    name: (0, assertName_js_1.assertName)(fieldName),
+    description: fieldConfig.description,
+    type: fieldConfig.type,
+    defaultValue: fieldConfig.defaultValue,
+    deprecationReason: fieldConfig.deprecationReason,
+    extensions: (0, toObjMap_js_1.toObjMap)(fieldConfig.extensions),
+    astNode: fieldConfig.astNode,
+  }));
 }
 function isRequiredInputField(field) {
   return isNonNullType(field.type) && field.defaultValue === undefined;
