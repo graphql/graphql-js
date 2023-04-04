@@ -1070,7 +1070,7 @@ async function completeAsyncIteratorValue(
       index >= stream.initialCount
     ) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      executeStreamIterator(
+      executeStreamAsyncIterator(
         index,
         iterator,
         exeContext,
@@ -1947,7 +1947,7 @@ function executeStreamField(
   return asyncPayloadRecord;
 }
 
-async function executeStreamIteratorItem(
+async function executeStreamAsyncIteratorItem(
   iterator: AsyncIterator<unknown>,
   exeContext: ExecutionContext,
   fieldGroup: FieldGroup,
@@ -2017,7 +2017,7 @@ async function executeStreamIteratorItem(
   }
 }
 
-async function executeStreamIterator(
+async function executeStreamAsyncIterator(
   initialIndex: number,
   iterator: AsyncIterator<unknown>,
   exeContext: ExecutionContext,
@@ -2044,7 +2044,7 @@ async function executeStreamIterator(
     let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
-      iteration = await executeStreamIteratorItem(
+      iteration = await executeStreamAsyncIteratorItem(
         iterator,
         exeContext,
         fieldGroup,
