@@ -61,15 +61,15 @@ export function SingleFieldSubscriptionsRule(
               ),
             );
           }
-          for (const fieldNodes of fields.values()) {
-            const fieldName = fieldNodes[0].name.value;
+          for (const fieldGroup of fields.values()) {
+            const fieldName = fieldGroup[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
                 new GraphQLError(
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  { nodes: fieldNodes },
+                  { nodes: fieldGroup },
                 ),
               );
             }
