@@ -26,13 +26,15 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 
 import { getDirectiveValues } from './values.js';
 
+export type FieldGroup = ReadonlyArray<FieldNode>;
+
 export interface PatchFields {
   label: string | undefined;
-  fields: Map<string, ReadonlyArray<FieldNode>>;
+  fields: Map<string, FieldGroup>;
 }
 
 export interface FieldsAndPatches {
-  fields: Map<string, ReadonlyArray<FieldNode>>;
+  fields: Map<string, FieldGroup>;
   patches: Array<PatchFields>;
 }
 
@@ -85,7 +87,7 @@ export function collectSubfields(
   variableValues: { [variable: string]: unknown },
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldNodes: FieldGroup,
 ): FieldsAndPatches {
   const subFieldNodes = new AccumulatorMap<string, FieldNode>();
   const visitedFragmentNames = new Set<string>();
