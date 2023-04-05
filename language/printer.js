@@ -129,8 +129,21 @@ const printDocASTReducer = {
   BooleanValue: { leave: ({ value }) => (value ? 'true' : 'false') },
   NullValue: { leave: () => 'null' },
   EnumValue: { leave: ({ value }) => value },
-  ListValue: { leave: ({ values }) => '[' + join(values, ', ') + ']' },
-  ObjectValue: { leave: ({ fields }) => '{ ' + join(fields, ', ') + ' }' },
+  ListValue: {
+    leave: ({ values }) => {
+      const valuesLine = '[' + join(values, ', ') + ']';
+      if (valuesLine.length > MAX_LINE_LENGTH) {
+        return '[\n' + indent(join(values, '\n')) + '\n]';
+      }
+      return valuesLine;
+    },
+  },
+  ObjectValue: {
+    leave: ({ fields }) => {
+      const fieldsLine = '{ ' + join(fields, ', ') + ' }';
+      return fieldsLine.length > MAX_LINE_LENGTH ? block(fields) : fieldsLine;
+    },
+  },
   ObjectField: { leave: ({ name, value }) => name + ': ' + value },
   // Directive
   Directive: {
