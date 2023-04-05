@@ -121,19 +121,19 @@ describe('Printer: Query document', () => {
       {
         trip(
           obj: {
-            wheelchair: false,
-            smallObj: { a: 1 },
+            wheelchair: false
+            smallObj: { a: 1 }
             largeObj: {
-              wheelchair: false,
-              smallObj: { a: 1 },
-              arriveBy: false,
-              includePlannedCancellations: true,
-              transitDistanceReluctance: 2000,
+              wheelchair: false
+              smallObj: { a: 1 }
+              arriveBy: false
+              includePlannedCancellations: true
+              transitDistanceReluctance: 2000
               anotherLongFieldName: "Lots and lots and lots and lots of text"
-            },
-            arriveBy: false,
-            includePlannedCancellations: true,
-            transitDistanceReluctance: 2000,
+            }
+            arriveBy: false
+            includePlannedCancellations: true
+            transitDistanceReluctance: 2000
             anotherLongFieldName: "Lots and lots and lots and lots of text"
           }
         ) {
@@ -154,10 +154,10 @@ describe('Printer: Query document', () => {
       {
         trip(
           list: [
-            ["small array", "small", "small"],
+            ["small array", "small", "small"]
             [
-              "Lots and lots and lots and lots of text",
-              "Lots and lots and lots and lots of text",
+              "Lots and lots and lots and lots of text"
+              "Lots and lots and lots and lots of text"
               "Lots and lots and lots and lots of text"
             ]
           ]

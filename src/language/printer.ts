@@ -150,18 +150,18 @@ const printDocASTReducer: ASTReducer<string> = {
   EnumValue: { leave: ({ value }) => value },
   ListValue: {
     leave: ({ values }) => {
-      if (values.reduce((t, v) => t + v.length + 2, 0) > MAX_LINE_LENGTH) {
-        return '[\n' + indent(join(values, ',\n')) + '\n]';
+      const valuesLine = '[' + join(values, ', ') + ']';
+
+      if (valuesLine.length > MAX_LINE_LENGTH) {
+        return '[\n' + indent(join(values, '\n')) + '\n]';
       }
-      return '[' + join(values, ', ') + ']';
+      return valuesLine;
     },
   },
   ObjectValue: {
     leave: ({ fields }) => {
-      if (fields.reduce((t, f) => t + f.length + 2, 0) > MAX_LINE_LENGTH) {
-        return '{\n' + indent(join(fields, ',\n')) + '\n}';
-      }
-      return '{ ' + join(fields, ', ') + ' }';
+      const fieldsLine = '{ ' + join(fields, ', ') + ' }';
+      return fieldsLine.length > MAX_LINE_LENGTH ? block(fields) : fieldsLine;
     },
   },
   ObjectField: { leave: ({ name, value }) => name + ': ' + value },
