@@ -694,7 +694,9 @@ class GraphQLInterfaceType {
     this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._fields = defineFieldMap.bind(undefined, config.fields);
+    // prettier-ignore
+    // FIXME: blocked by https://github.com/prettier/prettier/issues/14625
+    this._fields = (defineFieldMap).bind(undefined, config.fields);
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
   get [Symbol.toStringTag]() {
