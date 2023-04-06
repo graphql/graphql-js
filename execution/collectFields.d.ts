@@ -6,12 +6,14 @@ import type {
 } from '../language/ast.js';
 import type { GraphQLObjectType } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
+export type FieldGroup = ReadonlyArray<FieldNode>;
+export type GroupedFieldSet = Map<string, FieldGroup>;
 export interface PatchFields {
   label: string | undefined;
-  fields: Map<string, ReadonlyArray<FieldNode>>;
+  groupedFieldSet: GroupedFieldSet;
 }
 export interface FieldsAndPatches {
-  fields: Map<string, ReadonlyArray<FieldNode>>;
+  groupedFieldSet: GroupedFieldSet;
   patches: Array<PatchFields>;
 }
 /**
@@ -50,5 +52,5 @@ export declare function collectSubfields(
   },
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldGroup: FieldGroup,
 ): FieldsAndPatches;

@@ -25,7 +25,7 @@ function collectFields(
   runtimeType,
   operation,
 ) {
-  const fields = new AccumulatorMap_js_1.AccumulatorMap();
+  const groupedFieldSet = new AccumulatorMap_js_1.AccumulatorMap();
   const patches = [];
   collectFieldsImpl(
     schema,
@@ -34,11 +34,11 @@ function collectFields(
     operation,
     runtimeType,
     operation.selectionSet,
-    fields,
+    groupedFieldSet,
     patches,
     new Set(),
   );
-  return { fields, patches };
+  return { groupedFieldSet, patches };
 }
 exports.collectFields = collectFields;
 /**
@@ -58,16 +58,16 @@ function collectSubfields(
   variableValues,
   operation,
   returnType,
-  fieldNodes,
+  fieldGroup,
 ) {
-  const subFieldNodes = new AccumulatorMap_js_1.AccumulatorMap();
+  const subGroupedFieldSet = new AccumulatorMap_js_1.AccumulatorMap();
   const visitedFragmentNames = new Set();
   const subPatches = [];
   const subFieldsAndPatches = {
-    fields: subFieldNodes,
+    groupedFieldSet: subGroupedFieldSet,
     patches: subPatches,
   };
-  for (const node of fieldNodes) {
+  for (const node of fieldGroup) {
     if (node.selectionSet) {
       collectFieldsImpl(
         schema,
@@ -76,7 +76,7 @@ function collectSubfields(
         operation,
         returnType,
         node.selectionSet,
-        subFieldNodes,
+        subGroupedFieldSet,
         subPatches,
         visitedFragmentNames,
       );
@@ -93,7 +93,7 @@ function collectFieldsImpl(
   operation,
   runtimeType,
   selectionSet,
-  fields,
+  groupedFieldSet,
   patches,
   visitedFragmentNames,
 ) {
@@ -103,7 +103,7 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        fields.add(getFieldEntryKey(selection), selection);
+        groupedFieldSet.add(getFieldEntryKey(selection), selection);
         break;
       }
       case kinds_js_1.Kind.INLINE_FRAGMENT: {
@@ -129,7 +129,7 @@ function collectFieldsImpl(
           );
           patches.push({
             label: defer.label,
-            fields: patchFields,
+            groupedFieldSet: patchFields,
           });
         } else {
           collectFieldsImpl(
@@ -139,7 +139,7 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             selection.selectionSet,
-            fields,
+            groupedFieldSet,
             patches,
             visitedFragmentNames,
           );
@@ -180,7 +180,7 @@ function collectFieldsImpl(
           );
           patches.push({
             label: defer.label,
-            fields: patchFields,
+            groupedFieldSet: patchFields,
           });
         } else {
           collectFieldsImpl(
@@ -190,7 +190,7 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             fragment.selectionSet,
-            fields,
+            groupedFieldSet,
             patches,
             visitedFragmentNames,
           );

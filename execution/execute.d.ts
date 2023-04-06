@@ -6,7 +6,6 @@ import type { GraphQLFormattedError } from '../error/GraphQLError.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import type {
   DocumentNode,
-  FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast.js';
@@ -18,6 +17,7 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
+import type { FieldGroup } from './collectFields.js';
 /**
  * Terminology
  *
@@ -244,7 +244,7 @@ export declare function buildExecutionContext(
 export declare function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<unknown, unknown>,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldGroup: FieldGroup,
   parentType: GraphQLObjectType,
   path: Path,
 ): GraphQLResolveInfo;
