@@ -88,7 +88,7 @@ async function genChangeLog(): Promise<string> {
     }
 
     const label = labels[0];
-    if (labelsConfig[label] != null) {
+    if (labelsConfig[label] == null) {
       throw new Error(`Unknown label: ${label}. See ${pr.url}`);
     }
     byLabel[label] ??= [];
