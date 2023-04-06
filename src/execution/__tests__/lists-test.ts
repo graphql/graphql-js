@@ -89,7 +89,17 @@ describe('Execute: Accepts async iterables as list value', () => {
 
   function completeObjectList(
     resolve: GraphQLFieldResolver<{ index: number }, unknown>,
+    nonNullable = false,
   ): PromiseOrValue<ExecutionResult> {
+    const ObjectWrapperType = new GraphQLObjectType({
+      name: 'ObjectWrapper',
+      fields: {
+        index: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve,
+        },
+      },
+    });
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -101,15 +111,9 @@ describe('Execute: Accepts async iterables as list value', () => {
               yield await Promise.resolve({ index: 2 });
             },
             type: new GraphQLList(
-              new GraphQLObjectType({
-                name: 'ObjectWrapper',
-                fields: {
-                  index: {
-                    type: new GraphQLNonNull(GraphQLString),
-                    resolve,
-                  },
-                },
-              }),
+              nonNullable
+                ? new GraphQLNonNull(ObjectWrapperType)
+                : ObjectWrapperType,
             ),
           },
         },
@@ -216,6 +220,27 @@ describe('Execute: Accepts async iterables as list value', () => {
       ],
     });
   });
+
+  it('Handles mixture of synchronous and asynchronous errors from `completeValue` in AsyncIterables', async () => {
+    expectJSON(
+      await completeObjectList(({ index }) => {
+        if (index === 0) {
+          return Promise.reject(new Error('bad'));
+        }
+        throw new Error('also bad');
+      }, true),
+    ).toDeepEqual({
+      data: { listField: null },
+      errors: [
+        {
+          message: 'also bad',
+          locations: [{ line: 1, column: 15 }],
+          path: ['listField', 1, 'index'],
+        },
+      ],
+    });
+  });
+
   it('Handles nulls yielded by async generator', async () => {
     async function* listField() {
       yield await Promise.resolve(1);
@@ -265,6 +290,11 @@ describe('Execute: Handles list nullability', () => {
       expectJSON(await executeQuery(promisify(listOfPromises))).toDeepEqual(
         result,
       );
+
+      // Test mix of synchronous and non-synchronous values
+      const [first, ...rest] = listField;
+      const listOfSomePromises = [first, ...rest.map(promisify)];
+      expectJSON(await executeQuery(listOfSomePromises)).toDeepEqual(result);
     }
     return result;
 
@@ -311,6 +341,32 @@ describe('Execute: Handles list nullability', () => {
     });
     expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
       data: { listField: [1, null, 2] },
+    });
+    expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
+      data: { listField: null },
+      errors,
+    });
+    expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
+      data: null,
+      errors,
+    });
+  });
+
+  it('Contains multiple nulls', async () => {
+    const listField = [null, null, 2];
+    const errors = [
+      {
+        message: 'Cannot return null for non-nullable field Query.listField.',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField', 0],
+      },
+    ];
+
+    expect(await complete({ listField, as: '[Int]' })).to.deep.equal({
+      data: { listField: [null, null, 2] },
+    });
+    expect(await complete({ listField, as: '[Int]!' })).to.deep.equal({
+      data: { listField: [null, null, 2] },
     });
     expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
       data: { listField: null },
@@ -373,6 +429,39 @@ describe('Execute: Handles list nullability', () => {
     expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
       data: null,
       errors,
+    });
+  });
+
+  it('Contains multiple errors', async () => {
+    const listField = [new Error('bad'), new Error('also bad'), 2];
+
+    const firstError = {
+      message: 'bad',
+      locations: [{ line: 1, column: 3 }],
+      path: ['listField', 0],
+    };
+
+    const secondError = {
+      message: 'also bad',
+      locations: [{ line: 1, column: 3 }],
+      path: ['listField', 1],
+    };
+
+    expectJSON(await complete({ listField, as: '[Int]' })).toDeepEqual({
+      data: { listField: [null, null, 2] },
+      errors: [firstError, secondError],
+    });
+    expectJSON(await complete({ listField, as: '[Int]!' })).toDeepEqual({
+      data: { listField: [null, null, 2] },
+      errors: [firstError, secondError],
+    });
+    expectJSON(await complete({ listField, as: '[Int!]' })).toDeepEqual({
+      data: { listField: null },
+      errors: [firstError],
+    });
+    expectJSON(await complete({ listField, as: '[Int!]!' })).toDeepEqual({
+      data: null,
+      errors: [firstError],
     });
   });
 
