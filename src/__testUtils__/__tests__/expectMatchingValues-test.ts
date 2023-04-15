@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectEqualPromisesOrValues } from '../expectEqualPromisesOrValues.js';
+import { expectMatchingValues } from '../expectMatchingValues.js';
 
 describe('expectMatchingValues', () => {
   it('throws when given unequal values', () => {
-    expect(() => expectEqualPromisesOrValues([{}, {}, { test: 'test' }])).throw(
+    expect(() => expectMatchingValues([{}, {}, { test: 'test' }])).throw(
       "expected { test: 'test' } to deeply equal {}",
     );
   });
@@ -13,7 +13,7 @@ describe('expectMatchingValues', () => {
   it('does not throw when given equal values', () => {
     const testValue = { test: 'test' };
     expect(() =>
-      expectEqualPromisesOrValues([testValue, testValue, testValue]),
+      expectMatchingValues([testValue, testValue, testValue]),
     ).not.to.throw();
   });
 });
