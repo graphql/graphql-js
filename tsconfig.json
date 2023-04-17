@@ -15,7 +15,7 @@
     "moduleResolution": "node",
     "noEmit": true,
     "isolatedModules": true,
-    "importsNotUsedAsValues": "error",
+    "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
 
     // Type Checking

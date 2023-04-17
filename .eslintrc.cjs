@@ -182,7 +182,7 @@ module.exports = {
     'simple-import-sort/exports': 'off', // TODO: error
 
     //////////////////////////////////////////////////////////////////////////////
-    // ESLint builtin rules list based on `v8.34.x`
+    // ESLint builtin rules list based on `v8.38.x`
     //////////////////////////////////////////////////////////////////////////////
 
     // Possible Errors
@@ -502,7 +502,7 @@ module.exports = {
         'tsdoc/syntax': 'error',
 
         //////////////////////////////////////////////////////////////////////////
-        // `@typescript-eslint/eslint-plugin` rule list based on `v5.53.x`
+        // `@typescript-eslint/eslint-plugin` rule list based on `v5.58.x`
         //////////////////////////////////////////////////////////////////////////
 
         // Supported Rules
@@ -536,6 +536,7 @@ module.exports = {
         '@typescript-eslint/no-confusing-non-null-assertion': 'error',
         '@typescript-eslint/no-confusing-void-expression': 'off', // TODO: enable with ignoreArrowShorthand
         '@typescript-eslint/no-duplicate-enum-values': 'error',
+        '@typescript-eslint/no-duplicate-type-constituents': 'error',
         '@typescript-eslint/no-dynamic-delete': 'off',
         '@typescript-eslint/no-empty-interface': 'error',
         '@typescript-eslint/no-explicit-any': 'off', // TODO: error
@@ -572,6 +573,7 @@ module.exports = {
         '@typescript-eslint/no-unsafe-assignment': 'off', // TODO: consider
         '@typescript-eslint/no-unsafe-call': 'off', // TODO: consider
         '@typescript-eslint/no-unsafe-declaration-merging': 'error',
+        '@typescript-eslint/no-unsafe-enum-comparison': 'off', // TODO: error
         '@typescript-eslint/no-unsafe-member-access': 'off', // TODO: consider
         '@typescript-eslint/no-unsafe-return': 'off', // TODO: consider
         '@typescript-eslint/no-useless-empty-export': 'error',
@@ -630,8 +632,10 @@ module.exports = {
         'no-useless-constructor': 'off',
         'require-await': 'off',
         'no-return-await': 'off',
+
         '@typescript-eslint/default-param-last': 'error',
         '@typescript-eslint/dot-notation': 'error',
+        '@typescript-eslint/lines-around-comment': 'off',
         '@typescript-eslint/lines-between-class-members': [
           'error',
           'always',
