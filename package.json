@@ -75,7 +75,7 @@
     "docusaurus-plugin-typedoc-api": "2.5.1",
     "eslint": "8.34.0",
     "eslint-plugin-import": "2.27.5",
-    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-n": "15.7.0",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-simple-import-sort": "10.0.0",
