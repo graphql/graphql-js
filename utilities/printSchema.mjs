@@ -213,7 +213,7 @@ function printInputValue(arg) {
   }
   return argDecl + printDeprecated(arg.deprecationReason);
 }
-function printDirective(directive) {
+export function printDirective(directive) {
   return (
     printDescription(directive) +
     'directive @' +

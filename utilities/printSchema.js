@@ -1,6 +1,7 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.printType =
+exports.printDirective =
+  exports.printType =
   exports.printIntrospectionSchema =
   exports.printSchema =
     void 0;
@@ -237,6 +238,7 @@ function printDirective(directive) {
     directive.locations.join(' | ')
   );
 }
+exports.printDirective = printDirective;
 function printDeprecated(reason) {
   if (reason == null) {
     return '';

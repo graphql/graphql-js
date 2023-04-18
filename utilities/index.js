@@ -18,6 +18,7 @@ exports.findDangerousChanges =
   exports.valueFromAST =
   exports.typeFromAST =
   exports.printIntrospectionSchema =
+  exports.printDirective =
   exports.printType =
   exports.printSchema =
   exports.lexicographicSortSchema =
@@ -103,6 +104,12 @@ Object.defineProperty(exports, 'printType', {
   enumerable: true,
   get: function () {
     return printSchema_js_1.printType;
+  },
+});
+Object.defineProperty(exports, 'printDirective', {
+  enumerable: true,
+  get: function () {
+    return printSchema_js_1.printDirective;
   },
 });
 Object.defineProperty(exports, 'printIntrospectionSchema', {

@@ -16,6 +16,7 @@ export { lexicographicSortSchema } from './lexicographicSortSchema.mjs';
 export {
   printSchema,
   printType,
+  printDirective,
   printIntrospectionSchema,
 } from './printSchema.mjs';
 // Create a GraphQLType from a GraphQL language AST.

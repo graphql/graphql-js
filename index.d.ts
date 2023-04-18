@@ -371,6 +371,7 @@ export {
   lexicographicSortSchema,
   printSchema,
   printType,
+  printDirective,
   printIntrospectionSchema,
   typeFromAST,
   valueFromAST,

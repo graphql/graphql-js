@@ -180,8 +180,7 @@ exports.NoUnusedFragmentsRule =
   exports.Lexer =
   exports.printSourceLocation =
     void 0;
-exports.isEqualType =
-  exports.stripIgnoredCharacters =
+exports.stripIgnoredCharacters =
   exports.separateOperations =
   exports.concatAST =
   exports.coerceInputValue =
@@ -192,6 +191,7 @@ exports.isEqualType =
   exports.valueFromAST =
   exports.typeFromAST =
   exports.printIntrospectionSchema =
+  exports.printDirective =
   exports.printType =
   exports.printSchema =
   exports.lexicographicSortSchema =
@@ -237,6 +237,7 @@ exports.findDangerousChanges =
   exports.BreakingChangeType =
   exports.doTypesOverlap =
   exports.isTypeSubTypeOf =
+  exports.isEqualType =
     void 0;
 // The GraphQL.js version info.
 var version_js_1 = require('./version.js');
@@ -1413,6 +1414,13 @@ Object.defineProperty(exports, 'printType', {
   enumerable: true,
   get: function () {
     return index_js_6.printType;
+  },
+});
+// Print a GraphQLDirective to GraphQL Schema language.
+Object.defineProperty(exports, 'printDirective', {
+  enumerable: true,
+  get: function () {
+    return index_js_6.printDirective;
   },
 });
 // Prints the built-in introspection schema in the Schema Language format.
