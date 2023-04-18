@@ -41,6 +41,7 @@ export { lexicographicSortSchema } from './lexicographicSortSchema.ts';
 export {
   printSchema,
   printType,
+  printDirective,
   printIntrospectionSchema,
 } from './printSchema.ts';
 // Create a GraphQLType from a GraphQL language AST.
