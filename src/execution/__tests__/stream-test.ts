@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
@@ -1134,7 +1135,7 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
-  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list', async () => {
+  it('Handles async errors thrown by completeValue after initialCount is reached from async generator for a non-nullable list', async () => {
     const document = parse(`
       query { 
         nonNullFriendList @stream(initialCount: 1) {
@@ -1554,6 +1555,78 @@ describe('Execute: stream directive', () => {
           {
             items: [{ id: '3', name: 'Leia' }],
             path: ['friendList', 2],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles overlapping deferred and non-deferred streams', async () => {
+    const document = parse(`
+      query {
+        nestedObject {
+          nestedFriendList @stream(initialCount: 0) {
+            id
+          }
+        }
+        nestedObject {
+          ... @defer {
+            nestedFriendList @stream(initialCount: 0) {
+              id
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedObject: {
+        async *nestedFriendList() {
+          yield await Promise.resolve(friends[0]);
+          yield await Promise.resolve(friends[1]);
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nestedObject: {
+            nestedFriendList: [],
+          },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ id: '1' }],
+            path: ['nestedObject', 'nestedFriendList', 0],
+          },
+          {
+            data: {
+              nestedFriendList: [],
+            },
+            path: ['nestedObject'],
+          },
+          {
+            items: [{ id: '1', name: 'Luke' }],
+            path: ['nestedObject', 'nestedFriendList', 0],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ id: '2' }],
+            path: ['nestedObject', 'nestedFriendList', 1],
+          },
+          {
+            items: [{ id: '2', name: 'Han' }],
+            path: ['nestedObject', 'nestedFriendList', 1],
           },
         ],
         hasNext: true,
