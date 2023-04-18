@@ -7,11 +7,8 @@ module.exports = {
     'shared-node-browser': true,
   },
   reportUnusedDisableDirectives: true,
-  plugins: ['node', 'import', 'simple-import-sort'],
+  plugins: ['n', 'import', 'simple-import-sort'],
   settings: {
-    node: {
-      tryExtensions: ['.js', '.ts', '.jsx', '.json', '.node', '.d.ts'],
-    },
     // eslint-plugin-import tries to parse all imported files included huge ones (e.g. 'typescript')
     // that leads to very poor perfomance so to fix that we disable all checks on external files.
     'import/ignore': '/node_modules/',
@@ -26,57 +23,54 @@ module.exports = {
     'require-to-string-tag': 'off',
 
     //////////////////////////////////////////////////////////////////////////////
-    // `eslint-plugin-node` rule list based on `v11.1.x`
+    // `eslint-plugin-n` rule list based on `v15.7.x`
     //////////////////////////////////////////////////////////////////////////////
 
     // Possible Errors
-    // https://github.com/mysticatea/eslint-plugin-node#possible-errors
-    'node/handle-callback-err': ['error', 'error'],
-    'node/no-callback-literal': 'error',
-    'node/no-exports-assign': 'error',
-    'node/no-extraneous-import': 'error',
-    'node/no-extraneous-require': 'error',
-    'node/no-missing-import': 'off', // TODO: Blocked by https://github.com/mysticatea/eslint-plugin-node/issues/248
-    'node/no-missing-require': 'error',
-    'node/no-new-require': 'error',
-    'node/no-path-concat': 'error',
-    'node/no-process-exit': 'off',
-    'node/no-unpublished-bin': 'error',
-    'node/no-unpublished-import': 'error',
-    'node/no-unpublished-require': 'error',
-    'node/no-unsupported-features/es-builtins': 'error',
-    'node/no-unsupported-features/es-syntax': [
-      'error',
-      { ignores: ['modules'] },
-    ],
-    'node/no-unsupported-features/node-builtins': 'error',
-    'node/process-exit-as-throw': 'error',
-    'node/shebang': 'error',
+    // https://github.com/eslint-community/eslint-plugin-n#possible-errors
+    'n/handle-callback-err': ['error', 'error'],
+    'n/no-callback-literal': 'error',
+    'n/no-exports-assign': 'error',
+    'n/no-extraneous-import': 'error',
+    'n/no-extraneous-require': 'error',
+    'n/no-missing-import': 'error',
+    'n/no-missing-require': 'error',
+    'n/no-new-require': 'error',
+    'n/no-path-concat': 'error',
+    'n/no-process-exit': 'off',
+    'n/no-unpublished-bin': 'error',
+    'n/no-unpublished-import': 'error',
+    'n/no-unpublished-require': 'error',
+    'n/no-unsupported-features/es-builtins': 'error',
+    'n/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
+    'n/no-unsupported-features/node-builtins': 'error',
+    'n/process-exit-as-throw': 'error',
+    'n/shebang': 'error',
 
     // Best Practices
-    // https://github.com/mysticatea/eslint-plugin-node#best-practices
-    'node/no-deprecated-api': 'error',
+    // https://github.com/eslint-community/eslint-plugin-n#best-practices
+    'n/no-deprecated-api': 'error',
 
     // Stylistic Issues
-    // https://github.com/mysticatea/eslint-plugin-node#stylistic-issues
-    'node/callback-return': 'error',
-    'node/exports-style': 'off', // TODO: consider
-    'node/file-extension-in-import': 'off', // TODO: consider
-    'node/global-require': 'error',
-    'node/no-mixed-requires': 'error',
-    'node/no-process-env': 'off',
-    'node/no-restricted-import': 'off',
-    'node/no-restricted-require': 'off',
-    'node/no-sync': 'error',
-    'node/prefer-global/buffer': 'error',
-    'node/prefer-global/console': 'error',
-    'node/prefer-global/process': 'error',
-    'node/prefer-global/text-decoder': 'error',
-    'node/prefer-global/text-encoder': 'error',
-    'node/prefer-global/url-search-params': 'error',
-    'node/prefer-global/url': 'error',
-    'node/prefer-promises/dns': 'off',
-    'node/prefer-promises/fs': 'off',
+    // https://github.com/eslint-community/eslint-plugin-n#stylistic-issues
+    'n/callback-return': 'error',
+    'n/exports-style': 'off', // TODO: consider
+    'n/file-extension-in-import': 'error',
+    'n/global-require': 'error',
+    'n/no-mixed-requires': 'error',
+    'n/no-process-env': 'off',
+    'n/no-restricted-import': 'off',
+    'n/no-restricted-require': 'off',
+    'n/no-sync': 'error',
+    'n/prefer-global/buffer': 'error',
+    'n/prefer-global/console': 'error',
+    'n/prefer-global/process': 'error',
+    'n/prefer-global/text-decoder': 'error',
+    'n/prefer-global/text-encoder': 'error',
+    'n/prefer-global/url-search-params': 'error',
+    'n/prefer-global/url': 'error',
+    'n/prefer-promises/dns': 'off',
+    'n/prefer-promises/fs': 'off',
 
     //////////////////////////////////////////////////////////////////////////////
     // `eslint-plugin-import` rule list based on `v2.27.x`
@@ -705,7 +699,7 @@ module.exports = {
       files: 'src/**/__*__/**',
       rules: {
         'require-to-string-tag': 'off',
-        'node/no-unpublished-import': [
+        'n/no-unpublished-import': [
           'error',
           { allowModules: ['chai', 'mocha'] },
         ],
@@ -723,8 +717,8 @@ module.exports = {
         node: true,
       },
       rules: {
-        'node/no-sync': 'off',
-        'node/no-unpublished-import': ['error', { allowModules: ['mocha'] }],
+        'n/no-sync': 'off',
+        'n/no-unpublished-import': ['error', { allowModules: ['mocha'] }],
         'import/no-extraneous-dependencies': [
           'error',
           { devDependencies: true },
@@ -742,9 +736,10 @@ module.exports = {
         node: true,
       },
       rules: {
-        'node/no-sync': 'off',
+        'n/no-sync': 'off',
         'import/no-nodejs-modules': 'off',
         'no-console': 'off',
+        'n/no-missing-import': ['error', { allowModules: ['graphql'] }],
       },
     },
     {
@@ -756,8 +751,9 @@ module.exports = {
         node: true,
       },
       rules: {
-        'node/no-sync': 'off',
-        'node/no-extraneous-import': ['error', { allowModules: ['graphql'] }],
+        'n/no-sync': 'off',
+        'n/no-missing-import': ['error', { allowModules: ['graphql'] }],
+        'n/no-extraneous-import': ['error', { allowModules: ['graphql'] }],
         'import/no-unresolved': 'off',
         'import/no-namespace': 'off',
         'import/no-nodejs-modules': 'off',
@@ -771,8 +767,8 @@ module.exports = {
       },
       rules: {
         'only-ascii': ['error', { allowEmoji: true }],
-        'node/no-unpublished-import': 'off',
-        'node/no-sync': 'off',
+        'n/no-unpublished-import': 'off',
+        'n/no-sync': 'off',
         'import/no-namespace': 'off',
         'import/no-extraneous-dependencies': [
           'error',
@@ -800,7 +796,7 @@ module.exports = {
         },
       },
       rules: {
-        'node/no-unpublished-import': 'off',
+        'n/no-unpublished-import': 'off',
         'import/no-default-export': 'off',
       },
     },
@@ -818,12 +814,13 @@ module.exports = {
       },
       rules: {
         'no-restricted-exports': 'off',
-        'node/no-unpublished-require': 'off',
+        'n/no-unpublished-require': 'off',
         'import/no-default-export': 'off',
         'import/no-commonjs': 'off',
         'import/no-nodejs-modules': 'off',
         'import/no-extraneous-dependencies': 'off',
         // Ignore docusarus related webpack aliases
+        'n/no-missing-import': 'off',
         'import/no-unresolved': [
           'error',
           { ignore: ['^@theme', '^@docusaurus', '^@generated'] },
