@@ -890,7 +890,8 @@ export interface GraphQLResolveInfo {
   readonly fieldNodes: ReadonlyArray<FieldNode>;
   readonly returnType: GraphQLOutputType;
   readonly parentType: GraphQLObjectType;
-  readonly path: Path;
+  // TODO: we are now using path for significant internals, so we have to figure out how much to expose
+  readonly path: Path<unknown>;
   readonly schema: GraphQLSchema;
   readonly fragments: ObjMap<FragmentDefinitionNode>;
   readonly rootValue: unknown;

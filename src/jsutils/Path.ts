@@ -1,27 +1,27 @@
 import type { Maybe } from './Maybe.js';
 
-export interface Path {
-  readonly prev: Path | undefined;
+export interface Path<T = undefined> {
+  readonly prev: Path<T> | undefined;
   readonly key: string | number;
-  readonly typename: string | undefined;
+  readonly info: T;
 }
 
 /**
  * Given a Path and a key, return a new Path containing the new key.
  */
-export function addPath(
-  prev: Readonly<Path> | undefined,
+export function addPath<T>(
+  prev: Readonly<Path<T>> | undefined,
   key: string | number,
-  typename: string | undefined,
-): Path {
-  return { prev, key, typename };
+  info: T,
+): Path<T> {
+  return { prev, key, info };
 }
 
 /**
  * Given a Path, return an Array of the path keys.
  */
 export function pathToArray(
-  path: Maybe<Readonly<Path>>,
+  path: Maybe<Readonly<Path<unknown>>>,
 ): Array<string | number> {
   const flattened = [];
   let curr = path;

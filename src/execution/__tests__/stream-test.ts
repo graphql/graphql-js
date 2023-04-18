@@ -1182,6 +1182,158 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list when the async iterable does not provide a return method) ', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    let count = 0;
+    const result = await complete(document, {
+      nonNullFriendList: {
+        [Symbol.asyncIterator]: () => ({
+          next: async () => {
+            switch (count++) {
+              case 0:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[0].name },
+                });
+              case 1:
+                return Promise.resolve({
+                  done: false,
+                  value: {
+                    nonNullName: () => Promise.reject(new Error('Oops')),
+                  },
+                });
+              case 2:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[1].name },
+                });
+              // Not reached
+              /* c8 ignore next 5 */
+              case 3:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[2].name },
+                });
+            }
+          },
+        }),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list when the async iterable provides concurrent next/return methods and has a slow return ', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    let count = 0;
+    let returned = false;
+    const result = await complete(document, {
+      nonNullFriendList: {
+        [Symbol.asyncIterator]: () => ({
+          next: async () => {
+            /* c8 ignore next 3 */
+            if (returned) {
+              return Promise.resolve({ done: true });
+            }
+            switch (count++) {
+              case 0:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[0].name },
+                });
+              case 1:
+                return Promise.resolve({
+                  done: false,
+                  value: {
+                    nonNullName: () => Promise.reject(new Error('Oops')),
+                  },
+                });
+              case 2:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[1].name },
+                });
+              // Not reached
+              /* c8 ignore next 5 */
+              case 3:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[2].name },
+                });
+            }
+          },
+          return: async () => {
+            await resolveOnNextTick();
+            returned = true;
+            return { done: true };
+          },
+        }),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
   it('Filters payloads that are nulled', async () => {
     const document = parse(`
       query { 
@@ -1360,9 +1512,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
         hasNext: false,
       },
     ]);
@@ -1422,10 +1571,11 @@ describe('Execute: stream directive', () => {
     const iterable = {
       [Symbol.asyncIterator]: () => ({
         next: () => {
+          /* c8 ignore start */
           if (requested) {
-            // Ignores further errors when filtered.
+            // stream is filtered, next is not called, and so this is not reached.
             return Promise.reject(new Error('Oops'));
-          }
+          } /* c8 ignore stop */
           requested = true;
           const friend = friends[0];
           return Promise.resolve({
@@ -1602,10 +1752,6 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [{ id: '1' }],
-            path: ['nestedObject', 'nestedFriendList', 0],
-          },
-          {
             data: {
               nestedFriendList: [],
             },
@@ -1620,10 +1766,6 @@ describe('Execute: stream directive', () => {
       },
       {
         incremental: [
-          {
-            items: [{ id: '2' }],
-            path: ['nestedObject', 'nestedFriendList', 1],
-          },
           {
             items: [{ id: '2', name: 'Han' }],
             path: ['nestedObject', 'nestedFriendList', 1],

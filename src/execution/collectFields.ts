@@ -19,6 +19,7 @@ import {
   GraphQLDeferDirective,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
+  GraphQLStreamDirective,
 } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
@@ -26,18 +27,40 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 
 import { getDirectiveValues } from './values.js';
 
-export type FieldGroup = ReadonlyArray<FieldNode>;
+export interface DeferUsage {
+  label: string | undefined;
+}
+
+// initialCount is validated during field execution
+export interface PreValidatedStreamUsage {
+  label: string | undefined;
+  initialCount: unknown;
+}
+
+export interface FieldGroup {
+  parentType: GraphQLObjectType;
+  fieldName: string;
+  fields: Map<DeferUsage | undefined, ReadonlyArray<FieldNode>>;
+  inInitialResult: boolean;
+  shouldInitiateDefer: boolean;
+  streamUsage: PreValidatedStreamUsage | undefined;
+}
+interface MutableFieldGroup extends FieldGroup {
+  fields: AccumulatorMap<DeferUsage | undefined, FieldNode>;
+}
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
 
-export interface PatchFields {
-  label: string | undefined;
+type MutableGroupedFieldSet = Map<string, MutableFieldGroup>;
+
+export interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
+  deferUsages: Map<string | undefined, DeferUsage>;
 }
 
-export interface FieldsAndPatches {
-  groupedFieldSet: GroupedFieldSet;
-  patches: Array<PatchFields>;
+interface MutableCollectFieldsResult {
+  groupedFieldSet: MutableGroupedFieldSet;
+  deferUsages: Map<string | undefined, DeferUsage>;
 }
 
 /**
@@ -55,9 +78,15 @@ export function collectFields(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
-): FieldsAndPatches {
-  const groupedFieldSet = new AccumulatorMap<string, FieldNode>();
-  const patches: Array<PatchFields> = [];
+): CollectFieldsResult {
+  const groupedFieldSet = new Map<string, MutableFieldGroup>();
+  const deferUsages = new Map<string | undefined, DeferUsage>();
+
+  const collectFieldsResult = {
+    groupedFieldSet,
+    deferUsages,
+  };
+
   collectFieldsImpl(
     schema,
     fragments,
@@ -65,11 +94,11 @@ export function collectFields(
     operation,
     runtimeType,
     operation.selectionSet,
-    groupedFieldSet,
-    patches,
+    collectFieldsResult,
     new Set(),
   );
-  return { groupedFieldSet, patches };
+
+  return collectFieldsResult;
 }
 
 /**
@@ -90,32 +119,34 @@ export function collectSubfields(
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldGroup: FieldGroup,
-): FieldsAndPatches {
-  const subGroupedFieldSet = new AccumulatorMap<string, FieldNode>();
+): CollectFieldsResult {
+  const subGroupedFieldSet = new Map<string, MutableFieldGroup>();
+  const deferUsages = new Map<string | undefined, DeferUsage>();
+  const collectSubfieldsResult = {
+    groupedFieldSet: subGroupedFieldSet,
+    deferUsages,
+  };
   const visitedFragmentNames = new Set<string>();
 
-  const subPatches: Array<PatchFields> = [];
-  const subFieldsAndPatches = {
-    groupedFieldSet: subGroupedFieldSet,
-    patches: subPatches,
-  };
-
-  for (const node of fieldGroup) {
-    if (node.selectionSet) {
-      collectFieldsImpl(
-        schema,
-        fragments,
-        variableValues,
-        operation,
-        returnType,
-        node.selectionSet,
-        subGroupedFieldSet,
-        subPatches,
-        visitedFragmentNames,
-      );
+  for (const [deferUsage, fieldNodes] of fieldGroup.fields) {
+    for (const node of fieldNodes) {
+      if (node.selectionSet) {
+        collectFieldsImpl(
+          schema,
+          fragments,
+          variableValues,
+          operation,
+          returnType,
+          node.selectionSet,
+          collectSubfieldsResult,
+          visitedFragmentNames,
+          deferUsage,
+        );
+      }
     }
   }
-  return subFieldsAndPatches;
+
+  return collectSubfieldsResult;
 }
 
 // eslint-disable-next-line max-params
@@ -126,17 +157,55 @@ function collectFieldsImpl(
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  groupedFieldSet: AccumulatorMap<string, FieldNode>,
-  patches: Array<PatchFields>,
+  collectFieldsResult: MutableCollectFieldsResult,
   visitedFragmentNames: Set<string>,
+  parentDeferUsage?: DeferUsage | undefined,
+  newDeferUsage?: DeferUsage | undefined,
 ): void {
+  const { groupedFieldSet } = collectFieldsResult;
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        groupedFieldSet.add(getFieldEntryKey(selection), selection);
+        const key = getFieldEntryKey(selection);
+        const fieldGroup = groupedFieldSet.get(key);
+        if (fieldGroup) {
+          fieldGroup.fields.add(newDeferUsage ?? parentDeferUsage, selection);
+          if (newDeferUsage === undefined) {
+            if (parentDeferUsage === undefined) {
+              fieldGroup.inInitialResult = true;
+            }
+            fieldGroup.shouldInitiateDefer = false;
+          }
+        } else {
+          const stream = getStreamValues(variableValues, selection);
+
+          const fields = new AccumulatorMap<
+            DeferUsage | undefined,
+            FieldNode
+          >();
+          fields.add(newDeferUsage ?? parentDeferUsage, selection);
+
+          let inInitialResult = false;
+          let shouldInitiateDefer = true;
+          if (newDeferUsage === undefined) {
+            if (parentDeferUsage === undefined) {
+              inInitialResult = true;
+            }
+            shouldInitiateDefer = false;
+          }
+
+          groupedFieldSet.set(key, {
+            parentType: runtimeType,
+            fieldName: selection.name.value,
+            fields,
+            inInitialResult,
+            shouldInitiateDefer,
+            streamUsage: stream,
+          });
+        }
         break;
       }
       case Kind.INLINE_FRAGMENT: {
@@ -149,8 +218,7 @@ function collectFieldsImpl(
 
         const defer = getDeferValues(operation, variableValues, selection);
 
-        if (defer) {
-          const patchFields = new AccumulatorMap<string, FieldNode>();
+        if (!defer) {
           collectFieldsImpl(
             schema,
             fragments,
@@ -158,27 +226,26 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             selection.selectionSet,
-            patchFields,
-            patches,
+            collectFieldsResult,
             visitedFragmentNames,
+            parentDeferUsage,
+            newDeferUsage,
           );
-          patches.push({
-            label: defer.label,
-            groupedFieldSet: patchFields,
-          });
-        } else {
-          collectFieldsImpl(
-            schema,
-            fragments,
-            variableValues,
-            operation,
-            runtimeType,
-            selection.selectionSet,
-            groupedFieldSet,
-            patches,
-            visitedFragmentNames,
-          );
+          break;
         }
+
+        collectDeferredFragmentFields(
+          schema,
+          fragments,
+          variableValues,
+          operation,
+          runtimeType,
+          selection.selectionSet,
+          collectFieldsResult,
+          visitedFragmentNames,
+          defer,
+          parentDeferUsage,
+        );
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
@@ -203,42 +270,84 @@ function collectFieldsImpl(
 
         if (!defer) {
           visitedFragmentNames.add(fragName);
+          collectFieldsImpl(
+            schema,
+            fragments,
+            variableValues,
+            operation,
+            runtimeType,
+            fragment.selectionSet,
+            collectFieldsResult,
+            visitedFragmentNames,
+            parentDeferUsage,
+            newDeferUsage,
+          );
+          break;
         }
 
-        if (defer) {
-          const patchFields = new AccumulatorMap<string, FieldNode>();
-          collectFieldsImpl(
-            schema,
-            fragments,
-            variableValues,
-            operation,
-            runtimeType,
-            fragment.selectionSet,
-            patchFields,
-            patches,
-            visitedFragmentNames,
-          );
-          patches.push({
-            label: defer.label,
-            groupedFieldSet: patchFields,
-          });
-        } else {
-          collectFieldsImpl(
-            schema,
-            fragments,
-            variableValues,
-            operation,
-            runtimeType,
-            fragment.selectionSet,
-            groupedFieldSet,
-            patches,
-            visitedFragmentNames,
-          );
-        }
+        collectDeferredFragmentFields(
+          schema,
+          fragments,
+          variableValues,
+          operation,
+          runtimeType,
+          fragment.selectionSet,
+          collectFieldsResult,
+          visitedFragmentNames,
+          defer,
+          parentDeferUsage,
+        );
         break;
       }
     }
   }
+}
+
+// eslint-disable-next-line max-params
+function collectDeferredFragmentFields(
+  schema: GraphQLSchema,
+  fragments: ObjMap<FragmentDefinitionNode>,
+  variableValues: { [variable: string]: unknown },
+  operation: OperationDefinitionNode,
+  runtimeType: GraphQLObjectType,
+  selectionSet: SelectionSetNode,
+  collectFieldsResult: MutableCollectFieldsResult,
+  visitedFragmentNames: Set<string>,
+  defer: { label: string | undefined },
+  parentDeferUsage?: DeferUsage | undefined,
+): void {
+  const deferUsages = collectFieldsResult.deferUsages;
+  const existingNewDefer = deferUsages.get(defer.label);
+  if (existingNewDefer !== undefined) {
+    collectFieldsImpl(
+      schema,
+      fragments,
+      variableValues,
+      operation,
+      runtimeType,
+      selectionSet,
+      collectFieldsResult,
+      visitedFragmentNames,
+      parentDeferUsage,
+      existingNewDefer,
+    );
+    return;
+  }
+
+  const newDefer = { ...defer };
+  deferUsages.set(defer.label, newDefer);
+  collectFieldsImpl(
+    schema,
+    fragments,
+    variableValues,
+    operation,
+    runtimeType,
+    selectionSet,
+    collectFieldsResult,
+    visitedFragmentNames,
+    parentDeferUsage,
+    newDefer,
+  );
 }
 
 /**
@@ -268,6 +377,45 @@ function getDeferValues(
 
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
+  };
+}
+
+/**
+ * Returns an object containing the `@stream` arguments if a field should be
+ * streamed based on the experimental flag, stream directive present and
+ * not disabled by the "if" argument.
+ *
+ * We validate `initialCount` argument later so as to use the correct path
+ * if an error occurs.
+ */
+function getStreamValues(
+  variableValues: { [variable: string]: unknown },
+  node: FieldNode,
+):
+  | undefined
+  | {
+      initialCount: unknown;
+      label: string | undefined;
+    } {
+  // validation only allows equivalent streams on multiple fields, so it is
+  // safe to only check the first fieldNode for the stream directive
+  const stream = getDirectiveValues(
+    GraphQLStreamDirective,
+    node,
+    variableValues,
+  );
+
+  if (!stream) {
+    return;
+  }
+
+  if (stream.if === false) {
+    return;
+  }
+
+  return {
+    initialCount: stream.initialCount,
+    label: typeof stream.label === 'string' ? stream.label : undefined,
   };
 }
 

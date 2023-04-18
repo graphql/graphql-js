@@ -1,3 +1,4 @@
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
@@ -19,6 +20,7 @@ import { locatedError } from '../error/locatedError.js';
 
 import type {
   DocumentNode,
+  FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast.js';
@@ -41,23 +43,24 @@ import {
   isLeafType,
   isListType,
   isNonNullType,
+  isNullableType,
   isObjectType,
 } from '../type/definition.js';
-import { GraphQLStreamDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import { assertValidSchema } from '../type/validate.js';
 
-import type { FieldGroup, GroupedFieldSet } from './collectFields.js';
+import type {
+  DeferUsage,
+  FieldGroup,
+  GroupedFieldSet,
+  PreValidatedStreamUsage,
+} from './collectFields.js';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
-import {
-  getArgumentValues,
-  getDirectiveValues,
-  getVariableValues,
-} from './values.js';
+import { getArgumentValues, getVariableValues } from './values.js';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -122,6 +125,7 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
   subsequentPayloads: Set<AsyncPayloadRecord>;
+  streams: Set<StreamContext>;
 }
 
 /**
@@ -263,11 +267,20 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
+export interface ValidatedStreamUsage extends PreValidatedStreamUsage {
+  initialCount: number;
+  // for memoization of the streamed field's FieldGroup
+  _fieldGroup?: FieldGroup | undefined;
+}
+
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
 
 const UNEXPECTED_MULTIPLE_PAYLOADS =
   'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
+
+const OBJECT_VALUE = Object.create(null);
+const ARRAY_VALUE: Array<undefined> = [];
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -504,6 +517,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     subsequentPayloads: new Set(),
+    streams: new Set(),
     errors: [],
   };
 }
@@ -515,7 +529,7 @@ function buildPerEventExecutionContext(
   return {
     ...exeContext,
     rootValue: payload,
-    subsequentPayloads: new Set(),
+    // no need to override subsequentPayloads/streams as incremental delivery is not enabled for subscriptions
     errors: [],
   };
 }
@@ -536,7 +550,7 @@ function executeOperation(
     );
   }
 
-  const { groupedFieldSet, patches } = collectFields(
+  const collectFieldsResult = collectFields(
     schema,
     fragments,
     variableValues,
@@ -546,6 +560,20 @@ function executeOperation(
   const path = undefined;
   let result;
 
+  const { groupedFieldSet, deferUsages } = collectFieldsResult;
+
+  const deferredFragmentRecords: Array<DeferredFragmentRecord> = [];
+  const newDefers = new Map<DeferUsage, DeferredFragmentRecord>();
+  for (const deferUsage of deferUsages.values()) {
+    const deferredFragmentRecord = new DeferredFragmentRecord({
+      deferUsage,
+      path,
+      exeContext,
+    });
+    deferredFragmentRecords.push(deferredFragmentRecord);
+    newDefers.set(deferUsage, deferredFragmentRecord);
+  }
+
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
       result = executeFields(
@@ -554,6 +582,7 @@ function executeOperation(
         rootValue,
         path,
         groupedFieldSet,
+        newDefers,
       );
       break;
     case OperationTypeNode.MUTATION:
@@ -563,6 +592,7 @@ function executeOperation(
         rootValue,
         path,
         groupedFieldSet,
+        newDefers,
       );
       break;
     case OperationTypeNode.SUBSCRIPTION:
@@ -574,19 +604,12 @@ function executeOperation(
         rootValue,
         path,
         groupedFieldSet,
+        newDefers,
       );
   }
 
-  for (const patch of patches) {
-    const { label, groupedFieldSet: patchGroupedFieldSet } = patch;
-    executeDeferredFragment(
-      exeContext,
-      rootType,
-      rootValue,
-      patchGroupedFieldSet,
-      label,
-      path,
-    );
+  for (const deferredFragmentRecord of deferredFragmentRecords) {
+    deferredFragmentRecord.completeIfReady();
   }
 
   return result;
@@ -600,29 +623,61 @@ function executeFieldsSerially(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
-  path: Path | undefined,
-  fields: GroupedFieldSet,
+  path: Path<FieldGroup> | undefined,
+  groupedFieldSet: GroupedFieldSet,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
-    fields,
+    groupedFieldSet,
     (results, [responseName, fieldGroup]) => {
-      const fieldPath = addPath(path, responseName, parentType.name);
+      const fieldPath = addPath(path, responseName, fieldGroup);
+
+      const fieldDef = exeContext.schema.getField(
+        parentType,
+        fieldGroup.fieldName,
+      );
+      if (!fieldDef) {
+        return results;
+      }
+
+      addPendingDeferredField(fieldGroup, fieldPath, deferMap);
+
+      if (fieldGroup.shouldInitiateDefer) {
+        executeDeferredField(
+          exeContext,
+          parentType,
+          sourceValue,
+          fieldGroup,
+          fieldDef,
+          fieldPath,
+          deferMap,
+        );
+        return results;
+      }
+
       const result = executeField(
         exeContext,
         parentType,
         sourceValue,
         fieldGroup,
+        fieldDef,
         fieldPath,
+        deferMap,
       );
-      if (result === undefined) {
+
+      // TODO: add test for this case
+      /* c8 ignore next 3 */
+      if (!fieldGroup.inInitialResult) {
         return results;
       }
+
       if (isPromise(result)) {
         return result.then((resolvedResult) => {
           results[responseName] = resolvedResult;
           return results;
         });
       }
+
       results[responseName] = result;
       return results;
     },
@@ -638,26 +693,75 @@ function executeFields(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
-  path: Path | undefined,
-  fields: GroupedFieldSet,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  path: Path<FieldGroup> | undefined,
+  groupedFieldSet: GroupedFieldSet,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord?: StreamRecord | undefined,
+  parentRecords?: Array<AsyncPayloadRecord> | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
+  const contextByFieldGroup = new Map<
+    string,
+    {
+      fieldGroup: FieldGroup;
+      fieldPath: Path<FieldGroup>;
+      fieldDef: GraphQLField<unknown, unknown>;
+    }
+  >();
+
+  for (const [responseName, fieldGroup] of groupedFieldSet) {
+    const fieldPath = addPath(path, responseName, fieldGroup);
+    const fieldDef = exeContext.schema.getField(
+      parentType,
+      fieldGroup.fieldName,
+    );
+    if (!fieldDef) {
+      continue;
+    }
+
+    const fieldGroupContext = {
+      fieldGroup,
+      fieldPath,
+      fieldDef,
+    };
+    contextByFieldGroup.set(responseName, fieldGroupContext);
+    addPendingDeferredField(fieldGroup, fieldPath, deferMap);
+  }
+
   const results = Object.create(null);
   let containsPromise = false;
 
   try {
-    for (const [responseName, fieldGroup] of fields) {
-      const fieldPath = addPath(path, responseName, parentType.name);
+    for (const [responseName, context] of contextByFieldGroup) {
+      const { fieldGroup, fieldPath, fieldDef } = context;
+
+      if (fieldGroup.shouldInitiateDefer) {
+        executeDeferredField(
+          exeContext,
+          parentType,
+          sourceValue,
+          fieldGroup,
+          fieldDef,
+          fieldPath,
+          deferMap,
+          streamRecord,
+          parentRecords,
+        );
+        continue;
+      }
+
       const result = executeField(
         exeContext,
         parentType,
         sourceValue,
         fieldGroup,
+        fieldDef,
         fieldPath,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
+        parentRecords,
       );
 
-      if (result !== undefined) {
+      if (fieldGroup.inInitialResult) {
         results[responseName] = result;
         if (isPromise(result)) {
           containsPromise = true;
@@ -685,6 +789,38 @@ function executeFields(
   return promiseForObject(results);
 }
 
+function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
+  return Array.from(fieldGroup.fields.values()).flat();
+}
+
+function executeDeferredField(
+  exeContext: ExecutionContext,
+  parentType: GraphQLObjectType,
+  source: unknown,
+  fieldGroup: FieldGroup,
+  fieldDef: GraphQLField<unknown, unknown>,
+  path: Path<FieldGroup>,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord?: StreamRecord | undefined,
+  parentRecords?: Array<AsyncPayloadRecord> | undefined,
+): void {
+  // executeField only throws with a field in the initial result
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  Promise.resolve().then(() =>
+    executeField(
+      exeContext,
+      parentType,
+      source,
+      fieldGroup,
+      fieldDef,
+      path,
+      deferMap,
+      streamRecord,
+      parentRecords,
+    ),
+  );
+}
+
 /**
  * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
@@ -696,15 +832,12 @@ function executeField(
   parentType: GraphQLObjectType,
   source: unknown,
   fieldGroup: FieldGroup,
-  path: Path,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  fieldDef: GraphQLField<unknown, unknown>,
+  path: Path<FieldGroup>,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord?: StreamRecord | undefined,
+  parentRecords?: Array<AsyncPayloadRecord> | undefined,
 ): PromiseOrValue<unknown> {
-  const fieldName = fieldGroup[0].name.value;
-  const fieldDef = exeContext.schema.getField(parentType, fieldName);
-  if (!fieldDef) {
-    return;
-  }
-
   const returnType = fieldDef.type;
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
@@ -723,7 +856,7 @@ function executeField(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
       fieldDef,
-      fieldGroup[0],
+      toNodes(fieldGroup)[0],
       exeContext.variableValues,
     );
 
@@ -742,7 +875,9 @@ function executeField(
         info,
         path,
         result,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
+        parentRecords,
       );
     }
 
@@ -753,7 +888,9 @@ function executeField(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      parentRecords,
     );
 
     if (isPromise(completed)) {
@@ -766,9 +903,10 @@ function executeField(
           returnType,
           fieldGroup,
           path,
-          asyncPayloadRecord,
+          deferMap,
+          streamRecord,
         );
-        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+        filterSubsequentPayloads(exeContext, path, parentRecords);
         return null;
       });
     }
@@ -780,9 +918,10 @@ function executeField(
       returnType,
       fieldGroup,
       path,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
     );
-    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, path, parentRecords);
     return null;
   }
 }
@@ -796,13 +935,13 @@ export function buildResolveInfo(
   fieldDef: GraphQLField<unknown, unknown>,
   fieldGroup: FieldGroup,
   parentType: GraphQLObjectType,
-  path: Path,
+  path: Path<FieldGroup>,
 ): GraphQLResolveInfo {
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
   return {
     fieldName: fieldDef.name,
-    fieldNodes: fieldGroup,
+    fieldNodes: toNodes(fieldGroup),
     returnType: fieldDef.type,
     parentType,
     path,
@@ -819,10 +958,17 @@ function handleFieldError(
   exeContext: ExecutionContext,
   returnType: GraphQLOutputType,
   fieldGroup: FieldGroup,
-  path: Path,
-  asyncPayloadRecord?: AsyncPayloadRecord | undefined,
+  path: Path<FieldGroup>,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
 ): void {
-  const error = locatedError(rawError, fieldGroup, pathToArray(path));
+  const error = locatedError(rawError, toNodes(fieldGroup), pathToArray(path));
+
+  addDeferredError(exeContext, error, fieldGroup, path, deferMap);
+
+  if (!fieldGroup.inInitialResult) {
+    return;
+  }
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
@@ -830,11 +976,102 @@ function handleFieldError(
     throw error;
   }
 
-  const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+  const errors = streamRecord?.errors ?? exeContext.errors;
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   errors.push(error);
+}
+
+function getNullableParent(
+  exeContext: ExecutionContext,
+  path: Path<FieldGroup>,
+): Path<FieldGroup> | undefined {
+  let depth = 0;
+  let fieldPath: Path<FieldGroup> = path;
+
+  while (typeof fieldPath.key === 'number') {
+    invariant(fieldPath.prev !== undefined);
+    fieldPath = fieldPath.prev;
+    depth++;
+  }
+
+  const fieldGroup = fieldPath.info;
+
+  const type = fieldGroup.parentType;
+  const returnType = type.getFields()[fieldGroup.fieldName].type;
+
+  if (depth > 0) {
+    const nullable: Array<boolean> = [];
+    let outerType = returnType as GraphQLList<GraphQLOutputType>;
+    for (let i = 0; i < depth; i++) {
+      const innerType = outerType.ofType;
+      nullable.unshift(isNullableType(innerType));
+      outerType = innerType as GraphQLList<GraphQLOutputType>;
+    }
+    let maybeNullablePath = fieldPath;
+    for (let i = 0; i < depth; i++) {
+      if (nullable[i]) {
+        return maybeNullablePath;
+      }
+      // safe as above
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      maybeNullablePath = maybeNullablePath.prev!;
+    }
+  }
+
+  if (isNullableType(returnType)) {
+    return fieldPath;
+  }
+
+  const parentPath = fieldPath.prev;
+
+  if (parentPath === undefined) {
+    return undefined;
+  }
+
+  return getNullableParent(exeContext, parentPath);
+}
+
+function addDeferredError(
+  exeContext: ExecutionContext,
+  error: GraphQLError,
+  fieldGroup: FieldGroup,
+  path: Path<FieldGroup>,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+): void {
+  const nullablePath = getNullableParent(exeContext, path);
+  const nullablePathAsArray = pathToArray(nullablePath);
+
+  const deferredFragmentRecords: Array<DeferredFragmentRecord> = [];
+  const filterPaths = new Set<Path<FieldGroup> | undefined>();
+
+  for (const [deferUsage] of fieldGroup.fields) {
+    if (deferUsage !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const deferredFragmentRecord = deferMap.get(deferUsage)!;
+      deferredFragmentRecords.push(deferredFragmentRecord);
+
+      if (
+        nullablePathAsArray.length <= deferredFragmentRecord.pathAsArray.length
+      ) {
+        filterPaths.add(deferredFragmentRecord.path);
+        deferredFragmentRecord.data = null;
+        deferredFragmentRecord.errors.push(error);
+        deferredFragmentRecord.complete();
+      } else {
+        filterPaths.add(nullablePath);
+        // nullablePath cannot be undefined if it is longer than a deferredFragmentRecord path
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        deferredFragmentRecord.addError(nullablePath!, error);
+        deferredFragmentRecord.completeIfReady();
+      }
+    }
+  }
+
+  for (const filterPath of filterPaths) {
+    filterSubsequentPayloads(exeContext, filterPath, deferredFragmentRecords);
+  }
 }
 
 /**
@@ -860,40 +1097,37 @@ function handleFieldError(
  */
 function completeValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
+  maybeReturnType: GraphQLOutputType,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
-  path: Path,
+  path: Path<FieldGroup>,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
+  parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): PromiseOrValue<unknown> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
   }
 
-  // If field type is NonNull, complete for inner type, and throw field error
-  // if result is null.
-  if (isNonNullType(returnType)) {
-    const completed = completeValue(
-      exeContext,
-      returnType.ofType,
-      fieldGroup,
-      info,
-      path,
-      result,
-      asyncPayloadRecord,
-    );
-    if (completed === null) {
+  const returnType = isNonNullType(maybeReturnType)
+    ? maybeReturnType.ofType
+    : maybeReturnType;
+
+  // If result value is null or undefined then return null.
+  if (result === null) {
+    if (returnType !== maybeReturnType) {
+      removePendingDeferredField(fieldGroup, path, deferMap);
       throw new Error(
         `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
     }
-    return completed;
+    reportDeferredValue(null, fieldGroup, path, deferMap);
+    return null;
   }
 
-  // If result value is null or undefined then return null.
-  if (result == null) {
+  if (result === undefined) {
     return null;
   }
 
@@ -906,14 +1140,18 @@ function completeValue(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      parentRecords,
     );
   }
 
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
   if (isLeafType(returnType)) {
-    return completeLeafValue(returnType, result);
+    const completed = completeLeafValue(returnType, result);
+    reportDeferredValue(completed, fieldGroup, path, deferMap);
+    return completed;
   }
 
   // If field type is an abstract type, Interface or Union, determine the
@@ -926,7 +1164,9 @@ function completeValue(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      parentRecords,
     );
   }
 
@@ -939,7 +1179,9 @@ function completeValue(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      parentRecords,
     );
   }
   /* c8 ignore next 6 */
@@ -950,14 +1192,59 @@ function completeValue(
   );
 }
 
+function addPendingDeferredField(
+  fieldGroup: FieldGroup,
+  path: Path<FieldGroup>,
+  deferMap: Map<DeferUsage | undefined, DeferredFragmentRecord>,
+): void {
+  for (const [deferUsage] of fieldGroup.fields) {
+    if (deferUsage !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const deferredFragmentRecord = deferMap.get(deferUsage)!;
+      deferredFragmentRecord.addPendingField(path);
+    }
+  }
+}
+
+function removePendingDeferredField(
+  fieldGroup: FieldGroup,
+  path: Path<FieldGroup>,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+): void {
+  for (const [deferUsage] of fieldGroup.fields) {
+    if (deferUsage) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const deferredFragmentRecord = deferMap.get(deferUsage)!;
+      deferredFragmentRecord.removePendingField(path);
+    }
+  }
+}
+
+function reportDeferredValue(
+  result: unknown,
+  fieldGroup: FieldGroup,
+  path: Path<FieldGroup>,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+): void {
+  for (const [deferUsage] of fieldGroup.fields) {
+    if (deferUsage !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const deferredFragmentRecord = deferMap.get(deferUsage)!;
+      deferredFragmentRecord.reportDeferredValue(path, result);
+    }
+  }
+}
+
 async function completePromisedValue(
   exeContext: ExecutionContext,
   returnType: GraphQLOutputType,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
-  path: Path,
+  path: Path<FieldGroup>,
   result: Promise<unknown>,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
+  parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): Promise<unknown> {
   try {
     const resolved = await result;
@@ -968,7 +1255,9 @@ async function completePromisedValue(
       info,
       path,
       resolved,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      parentRecords,
     );
     if (isPromise(completed)) {
       completed = await completed;
@@ -981,58 +1270,38 @@ async function completePromisedValue(
       returnType,
       fieldGroup,
       path,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
     );
-    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, path, parentRecords);
     return null;
   }
 }
 
 /**
- * Returns an object containing the `@stream` arguments if a field should be
- * streamed based on the experimental flag, stream directive present and
- * not disabled by the "if" argument.
+ * Returns an object containing the validated `@stream` arguments.
  */
-function getStreamValues(
+function getValidatedStreamUsage(
   exeContext: ExecutionContext,
   fieldGroup: FieldGroup,
-  path: Path,
-):
-  | undefined
-  | {
-      initialCount: number | undefined;
-      label: string | undefined;
-    } {
+  path: Path<FieldGroup>,
+): ValidatedStreamUsage | undefined {
   // do not stream inner lists of multi-dimensional lists
   if (typeof path.key === 'number') {
     return;
   }
 
-  // validation only allows equivalent streams on multiple fields, so it is
-  // safe to only check the first fieldNode for the stream directive
-  const stream = getDirectiveValues(
-    GraphQLStreamDirective,
-    fieldGroup[0],
-    exeContext.variableValues,
-  );
+  const streamUsage = fieldGroup.streamUsage;
 
-  if (!stream) {
+  if (!streamUsage) {
     return;
   }
 
-  if (stream.if === false) {
-    return;
-  }
+  const { label, initialCount } = streamUsage;
 
-  invariant(
-    typeof stream.initialCount === 'number',
-    'initialCount must be a number',
-  );
+  invariant(typeof initialCount === 'number', 'initialCount must be a number');
 
-  invariant(
-    stream.initialCount >= 0,
-    'initialCount must be a positive integer',
-  );
+  invariant(initialCount >= 0, 'initialCount must be a positive integer');
 
   invariant(
     exeContext.operation.operation !== OperationTypeNode.SUBSCRIPTION,
@@ -1040,8 +1309,8 @@ function getStreamValues(
   );
 
   return {
-    initialCount: stream.initialCount,
-    label: typeof stream.label === 'string' ? stream.label : undefined,
+    label: typeof label === 'string' ? label : undefined,
+    initialCount,
   };
 }
 
@@ -1054,42 +1323,49 @@ async function completeAsyncIteratorValue(
   itemType: GraphQLOutputType,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
-  path: Path,
+  path: Path<FieldGroup>,
   iterator: AsyncIterator<unknown>,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
+  parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): Promise<ReadonlyArray<unknown>> {
-  const stream = getStreamValues(exeContext, fieldGroup, path);
+  const streamUsage = getValidatedStreamUsage(exeContext, fieldGroup, path);
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
   let index = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (
-      stream &&
-      typeof stream.initialCount === 'number' &&
-      index >= stream.initialCount
-    ) {
+    if (streamUsage && index >= streamUsage.initialCount) {
+      const streamContext: StreamContext = {
+        label: streamUsage.label,
+        path: pathToArray(path),
+        iterator,
+      };
+      exeContext.streams.add(streamContext);
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       executeStreamAsyncIterator(
         index,
         iterator,
         exeContext,
-        fieldGroup,
+        getStreamedFieldGroup(fieldGroup, streamUsage),
         info,
         itemType,
         path,
-        stream.label,
-        asyncPayloadRecord,
+        streamContext,
+        deferMap,
+        parentRecords,
       );
       break;
     }
 
-    const itemPath = addPath(path, index, undefined);
+    const itemPath = addPath(path, index, fieldGroup);
     let iteration;
+    addPendingDeferredField(fieldGroup, itemPath, deferMap);
     try {
       // eslint-disable-next-line no-await-in-loop
       iteration = await iterator.next();
       if (iteration.done) {
+        removePendingDeferredField(fieldGroup, itemPath, deferMap);
         break;
       }
     } catch (rawError) {
@@ -1099,7 +1375,8 @@ async function completeAsyncIteratorValue(
         itemType,
         fieldGroup,
         itemPath,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
       );
       completedResults.push(null);
       break;
@@ -1114,14 +1391,42 @@ async function completeAsyncIteratorValue(
         fieldGroup,
         info,
         itemPath,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
+        parentRecords,
       )
     ) {
       containsPromise = true;
     }
     index += 1;
   }
+
+  reportDeferredValue(ARRAY_VALUE, fieldGroup, path, deferMap);
+
   return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+
+function getStreamedFieldGroup(
+  fieldGroup: FieldGroup,
+  streamUsage: ValidatedStreamUsage,
+): FieldGroup {
+  // TODO: add test for this case
+  /* c8 ignore next 3 */
+  if (streamUsage._fieldGroup) {
+    return streamUsage._fieldGroup;
+  }
+  const streamFields = new AccumulatorMap<DeferUsage | undefined, FieldNode>();
+  for (const [, fieldNodes] of fieldGroup.fields) {
+    for (const node of fieldNodes) {
+      streamFields.add(undefined, node);
+    }
+  }
+  const streamedFieldGroup: FieldGroup = {
+    ...fieldGroup,
+    fields: streamFields,
+  };
+  streamUsage._fieldGroup = streamedFieldGroup;
+  return streamedFieldGroup;
 }
 
 /**
@@ -1133,9 +1438,11 @@ function completeListValue(
   returnType: GraphQLList<GraphQLOutputType>,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
-  path: Path,
+  path: Path<FieldGroup>,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
+  parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   const itemType = returnType.ofType;
 
@@ -1149,7 +1456,9 @@ function completeListValue(
       info,
       path,
       iterator,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      parentRecords,
     );
   }
 
@@ -1159,39 +1468,44 @@ function completeListValue(
     );
   }
 
-  const stream = getStreamValues(exeContext, fieldGroup, path);
+  const streamUsage = getValidatedStreamUsage(exeContext, fieldGroup, path);
 
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
-  let previousAsyncPayloadRecord = asyncPayloadRecord;
+  let currentParents = parentRecords;
   const completedResults: Array<unknown> = [];
   let index = 0;
+  let streamContext: StreamContext | undefined;
   for (const item of result) {
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    const itemPath = addPath(path, index, undefined);
+    const itemPath = addPath(path, index, fieldGroup);
 
-    if (
-      stream &&
-      typeof stream.initialCount === 'number' &&
-      index >= stream.initialCount
-    ) {
-      previousAsyncPayloadRecord = executeStreamField(
+    if (streamUsage && index >= streamUsage.initialCount) {
+      if (streamContext === undefined) {
+        streamContext = {
+          label: streamUsage.label,
+          path: pathToArray(path),
+        };
+      }
+      currentParents = executeStreamField(
         path,
         itemPath,
         item,
         exeContext,
-        fieldGroup,
+        getStreamedFieldGroup(fieldGroup, streamUsage),
         info,
         itemType,
-        stream.label,
-        previousAsyncPayloadRecord,
+        streamContext,
+        deferMap,
+        currentParents,
       );
       index++;
       continue;
     }
 
+    addPendingDeferredField(fieldGroup, itemPath, deferMap);
     if (
       completeListItemValue(
         item,
@@ -1201,7 +1515,9 @@ function completeListValue(
         fieldGroup,
         info,
         itemPath,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
+        parentRecords,
       )
     ) {
       containsPromise = true;
@@ -1209,6 +1525,8 @@ function completeListValue(
 
     index++;
   }
+
+  reportDeferredValue(ARRAY_VALUE, fieldGroup, path, deferMap);
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
@@ -1225,8 +1543,10 @@ function completeListItemValue(
   itemType: GraphQLOutputType,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
-  itemPath: Path,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  itemPath: Path<FieldGroup>,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
+  parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): boolean {
   if (isPromise(item)) {
     completedResults.push(
@@ -1237,7 +1557,9 @@ function completeListItemValue(
         info,
         itemPath,
         item,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
+        parentRecords,
       ),
     );
 
@@ -1252,7 +1574,9 @@ function completeListItemValue(
       info,
       itemPath,
       item,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      parentRecords,
     );
 
     if (isPromise(completedItem)) {
@@ -1266,9 +1590,10 @@ function completeListItemValue(
             itemType,
             fieldGroup,
             itemPath,
-            asyncPayloadRecord,
+            deferMap,
+            streamRecord,
           );
-          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+          filterSubsequentPayloads(exeContext, itemPath, parentRecords);
           return null;
         }),
       );
@@ -1284,9 +1609,10 @@ function completeListItemValue(
       itemType,
       fieldGroup,
       itemPath,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
     );
-    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, itemPath, parentRecords);
     completedResults.push(null);
   }
 
@@ -1320,9 +1646,11 @@ function completeAbstractValue(
   returnType: GraphQLAbstractType,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
-  path: Path,
+  path: Path<FieldGroup>,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
+  parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
@@ -1344,7 +1672,9 @@ function completeAbstractValue(
         info,
         path,
         result,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
+        parentRecords,
       ),
     );
   }
@@ -1363,7 +1693,9 @@ function completeAbstractValue(
     info,
     path,
     result,
-    asyncPayloadRecord,
+    deferMap,
+    streamRecord,
+    parentRecords,
   );
 }
 
@@ -1378,7 +1710,7 @@ function ensureValidRuntimeType(
   if (runtimeTypeName == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
@@ -1401,21 +1733,21 @@ function ensureValidRuntimeType(
   if (runtimeType == null) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
       `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new GraphQLError(
       `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
@@ -1430,9 +1762,11 @@ function completeObjectValue(
   returnType: GraphQLObjectType,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
-  path: Path,
+  path: Path<FieldGroup>,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
+  parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
@@ -1451,7 +1785,9 @@ function completeObjectValue(
           fieldGroup,
           path,
           result,
-          asyncPayloadRecord,
+          deferMap,
+          streamRecord,
+          parentRecords,
         );
       });
     }
@@ -1467,7 +1803,9 @@ function completeObjectValue(
     fieldGroup,
     path,
     result,
-    asyncPayloadRecord,
+    deferMap,
+    streamRecord,
+    parentRecords,
   );
 }
 
@@ -1478,7 +1816,7 @@ function invalidReturnTypeError(
 ): GraphQLError {
   return new GraphQLError(
     `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
-    { nodes: fieldGroup },
+    { nodes: toNodes(fieldGroup) },
   );
 }
 
@@ -1486,13 +1824,40 @@ function collectAndExecuteSubfields(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
   fieldGroup: FieldGroup,
-  path: Path,
+  path: Path<FieldGroup>,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  streamRecord: StreamRecord | undefined,
+  parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
+  let newParentRecords: Array<AsyncPayloadRecord> | undefined = [];
+  for (const [deferUsage] of fieldGroup.fields) {
+    if (deferUsage) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const deferredFragmentRecord = deferMap.get(deferUsage)!;
+      newParentRecords.push(deferredFragmentRecord);
+    } else {
+      newParentRecords = parentRecords;
+      break;
+    }
+  }
+
   // Collect sub-fields to execute to complete this value.
-  const { groupedFieldSet: subGroupedFieldSet, patches: subPatches } =
+  const { groupedFieldSet: subGroupedFieldSet, deferUsages: subDeferUsages } =
     collectSubfields(exeContext, returnType, fieldGroup);
+
+  const deferredFragmentRecords: Array<DeferredFragmentRecord> = [];
+  const newDefers = new Map<DeferUsage, DeferredFragmentRecord>(deferMap);
+  for (const deferUsage of subDeferUsages.values()) {
+    const deferredFragmentRecord = new DeferredFragmentRecord({
+      deferUsage,
+      path,
+      parents: newParentRecords,
+      exeContext,
+    });
+    deferredFragmentRecords.push(deferredFragmentRecord);
+    newDefers.set(deferUsage, deferredFragmentRecord);
+  }
 
   const subFields = executeFields(
     exeContext,
@@ -1500,20 +1865,15 @@ function collectAndExecuteSubfields(
     result,
     path,
     subGroupedFieldSet,
-    asyncPayloadRecord,
+    newDefers,
+    streamRecord,
+    newParentRecords,
   );
 
-  for (const subPatch of subPatches) {
-    const { label, groupedFieldSet: subPatchGroupedFieldSet } = subPatch;
-    executeDeferredFragment(
-      exeContext,
-      returnType,
-      result,
-      subPatchGroupedFieldSet,
-      label,
-      path,
-      asyncPayloadRecord,
-    );
+  reportDeferredValue(OBJECT_VALUE, fieldGroup, path, deferMap);
+
+  for (const deferredFragmentRecord of deferredFragmentRecords) {
+    deferredFragmentRecord.completeIfReady();
   }
 
   return subFields;
@@ -1742,17 +2102,17 @@ function executeSubscription(
 
   const firstRootField = groupedFieldSet.entries().next().value;
   const [responseName, fieldGroup] = firstRootField;
-  const fieldName = fieldGroup[0].name.value;
+  const fieldName = fieldGroup.fieldName;
   const fieldDef = schema.getField(rootType, fieldName);
 
   if (!fieldDef) {
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
-      { nodes: fieldGroup },
+      { nodes: toNodes(fieldGroup) },
     );
   }
 
-  const path = addPath(undefined, responseName, rootType.name);
+  const path = addPath(undefined, responseName, fieldGroup);
   const info = buildResolveInfo(
     exeContext,
     fieldDef,
@@ -1767,7 +2127,11 @@ function executeSubscription(
 
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
-    const args = getArgumentValues(fieldDef, fieldGroup[0], variableValues);
+    const args = getArgumentValues(
+      fieldDef,
+      toNodes(fieldGroup)[0],
+      variableValues,
+    );
 
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
@@ -1781,13 +2145,13 @@ function executeSubscription(
 
     if (isPromise(result)) {
       return result.then(assertEventStream).then(undefined, (error) => {
-        throw locatedError(error, fieldGroup, pathToArray(path));
+        throw locatedError(error, toNodes(fieldGroup), pathToArray(path));
       });
     }
 
     return assertEventStream(result);
   } catch (error) {
-    throw locatedError(error, fieldGroup, pathToArray(path));
+    throw locatedError(error, toNodes(fieldGroup), pathToArray(path));
   }
 }
 
@@ -1807,62 +2171,25 @@ function assertEventStream(result: unknown): AsyncIterable<unknown> {
   return result;
 }
 
-function executeDeferredFragment(
-  exeContext: ExecutionContext,
-  parentType: GraphQLObjectType,
-  sourceValue: unknown,
-  fields: GroupedFieldSet,
-  label?: string,
-  path?: Path,
-  parentContext?: AsyncPayloadRecord,
-): void {
-  const asyncPayloadRecord = new DeferredFragmentRecord({
-    label,
-    path,
-    parentContext,
-    exeContext,
-  });
-  let promiseOrData;
-  try {
-    promiseOrData = executeFields(
-      exeContext,
-      parentType,
-      sourceValue,
-      path,
-      fields,
-      asyncPayloadRecord,
-    );
-
-    if (isPromise(promiseOrData)) {
-      promiseOrData = promiseOrData.then(null, (e) => {
-        asyncPayloadRecord.errors.push(e);
-        return null;
-      });
-    }
-  } catch (e) {
-    asyncPayloadRecord.errors.push(e);
-    promiseOrData = null;
-  }
-  asyncPayloadRecord.addData(promiseOrData);
-}
-
 function executeStreamField(
-  path: Path,
-  itemPath: Path,
+  path: Path<FieldGroup>,
+  itemPath: Path<FieldGroup>,
   item: PromiseOrValue<unknown>,
   exeContext: ExecutionContext,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
-  label?: string,
-  parentContext?: AsyncPayloadRecord,
-): AsyncPayloadRecord {
-  const asyncPayloadRecord = new StreamRecord({
-    label,
+  streamContext: StreamContext,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  parents?: Array<AsyncPayloadRecord> | undefined,
+): Array<StreamRecord> {
+  const streamRecord = new StreamRecord({
+    streamContext,
     path: itemPath,
-    parentContext,
+    parents,
     exeContext,
   });
+  const currentParents = [streamRecord];
   if (isPromise(item)) {
     const completedItems = completePromisedValue(
       exeContext,
@@ -1871,18 +2198,20 @@ function executeStreamField(
       info,
       itemPath,
       item,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      currentParents,
     ).then(
       (value) => [value],
       (error) => {
-        asyncPayloadRecord.errors.push(error);
-        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+        streamRecord.errors.push(error);
+        filterSubsequentPayloads(exeContext, path, currentParents);
         return null;
       },
     );
 
-    asyncPayloadRecord.addItems(completedItems);
-    return asyncPayloadRecord;
+    streamRecord.addItems(completedItems);
+    return currentParents;
   }
 
   let completedItem: PromiseOrValue<unknown>;
@@ -1895,7 +2224,9 @@ function executeStreamField(
         info,
         itemPath,
         item,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
+        currentParents,
       );
     } catch (rawError) {
       handleFieldError(
@@ -1904,16 +2235,17 @@ function executeStreamField(
         itemType,
         fieldGroup,
         itemPath,
-        asyncPayloadRecord,
+        deferMap,
+        streamRecord,
       );
       completedItem = null;
-      filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+      filterSubsequentPayloads(exeContext, itemPath, currentParents);
     }
   } catch (error) {
-    asyncPayloadRecord.errors.push(error);
-    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-    asyncPayloadRecord.addItems(null);
-    return asyncPayloadRecord;
+    streamRecord.errors.push(error);
+    filterSubsequentPayloads(exeContext, path, currentParents);
+    streamRecord.addItems(null);
+    return currentParents;
   }
 
   if (isPromise(completedItem)) {
@@ -1925,26 +2257,27 @@ function executeStreamField(
           itemType,
           fieldGroup,
           itemPath,
-          asyncPayloadRecord,
+          deferMap,
+          streamRecord,
         );
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+        filterSubsequentPayloads(exeContext, itemPath, currentParents);
         return null;
       })
       .then(
         (value) => [value],
         (error) => {
-          asyncPayloadRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+          streamRecord.errors.push(error);
+          filterSubsequentPayloads(exeContext, path, currentParents);
           return null;
         },
       );
 
-    asyncPayloadRecord.addItems(completedItems);
-    return asyncPayloadRecord;
+    streamRecord.addItems(completedItems);
+    return currentParents;
   }
 
-  asyncPayloadRecord.addItems([completedItem]);
-  return asyncPayloadRecord;
+  streamRecord.addItems([completedItem]);
+  return currentParents;
 }
 
 async function executeStreamAsyncIteratorItem(
@@ -1953,17 +2286,19 @@ async function executeStreamAsyncIteratorItem(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
-  asyncPayloadRecord: StreamRecord,
-  itemPath: Path,
+  streamRecord: StreamRecord,
+  itemPath: Path<FieldGroup>,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  parentRecords: Array<AsyncPayloadRecord>,
 ): Promise<IteratorResult<unknown>> {
   let item;
   try {
-    const { value, done } = await iterator.next();
-    if (done) {
-      asyncPayloadRecord.setIsCompletedIterator();
-      return { done, value: undefined };
+    const iteration = await iterator.next();
+    if (!exeContext.streams.has(streamRecord.streamContext) || iteration.done) {
+      streamRecord.setIsCompletedIterator();
+      return { done: true, value: undefined };
     }
-    item = value;
+    item = iteration.value;
   } catch (rawError) {
     handleFieldError(
       rawError,
@@ -1971,7 +2306,8 @@ async function executeStreamAsyncIteratorItem(
       itemType,
       fieldGroup,
       itemPath,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
     );
     // don't continue if iterator throws
     return { done: true, value: null };
@@ -1985,7 +2321,9 @@ async function executeStreamAsyncIteratorItem(
       info,
       itemPath,
       item,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
+      parentRecords,
     );
 
     if (isPromise(completedItem)) {
@@ -1996,9 +2334,10 @@ async function executeStreamAsyncIteratorItem(
           itemType,
           fieldGroup,
           itemPath,
-          asyncPayloadRecord,
+          deferMap,
+          streamRecord,
         );
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+        filterSubsequentPayloads(exeContext, itemPath, parentRecords);
         return null;
       });
     }
@@ -2010,9 +2349,10 @@ async function executeStreamAsyncIteratorItem(
       itemType,
       fieldGroup,
       itemPath,
-      asyncPayloadRecord,
+      deferMap,
+      streamRecord,
     );
-    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, itemPath, parentRecords);
     return { done: false, value: null };
   }
 }
@@ -2024,22 +2364,23 @@ async function executeStreamAsyncIterator(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
-  path: Path,
-  label?: string,
-  parentContext?: AsyncPayloadRecord,
+  path: Path<FieldGroup>,
+  streamContext: StreamContext,
+  deferMap: Map<DeferUsage, DeferredFragmentRecord>,
+  parents?: Array<AsyncPayloadRecord> | undefined,
 ): Promise<void> {
   let index = initialIndex;
-  let previousAsyncPayloadRecord = parentContext ?? undefined;
+  let currentParents = parents;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const itemPath = addPath(path, index, undefined);
-    const asyncPayloadRecord = new StreamRecord({
-      label,
+    const itemPath = addPath(path, index, fieldGroup);
+    const streamRecord = new StreamRecord({
+      streamContext,
       path: itemPath,
-      parentContext: previousAsyncPayloadRecord,
-      iterator,
+      parents: currentParents,
       exeContext,
     });
+    currentParents = [streamRecord];
 
     let iteration;
     try {
@@ -2050,13 +2391,15 @@ async function executeStreamAsyncIterator(
         fieldGroup,
         info,
         itemType,
-        asyncPayloadRecord,
+        streamRecord,
         itemPath,
+        deferMap,
+        currentParents,
       );
     } catch (error) {
-      asyncPayloadRecord.errors.push(error);
-      filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-      asyncPayloadRecord.addItems(null);
+      streamRecord.errors.push(error);
+      filterSubsequentPayloads(exeContext, path, currentParents);
+      streamRecord.addItems(null);
       // entire stream has errored and bubbled upwards
       if (iterator?.return) {
         iterator.return().catch(() => {
@@ -2073,8 +2416,8 @@ async function executeStreamAsyncIterator(
       completedItems = completedItem.then(
         (value) => [value],
         (error) => {
-          asyncPayloadRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+          streamRecord.errors.push(error);
+          filterSubsequentPayloads(exeContext, path, [streamRecord]);
           return null;
         },
       );
@@ -2082,40 +2425,48 @@ async function executeStreamAsyncIterator(
       completedItems = [completedItem];
     }
 
-    asyncPayloadRecord.addItems(completedItems);
+    streamRecord.addItems(completedItems);
 
     if (done) {
       break;
     }
-    previousAsyncPayloadRecord = asyncPayloadRecord;
     index++;
   }
 }
 
 function filterSubsequentPayloads(
   exeContext: ExecutionContext,
-  nullPath: Path,
-  currentAsyncRecord: AsyncPayloadRecord | undefined,
+  nullPath: Path<FieldGroup> | undefined,
+  currentAsyncRecords: Array<AsyncPayloadRecord> | undefined,
 ): void {
   const nullPathArray = pathToArray(nullPath);
+  const streams = new Set<StreamContext>();
   exeContext.subsequentPayloads.forEach((asyncRecord) => {
-    if (asyncRecord === currentAsyncRecord) {
+    if (currentAsyncRecords?.includes(asyncRecord)) {
       // don't remove payload from where error originates
       return;
     }
     for (let i = 0; i < nullPathArray.length; i++) {
-      if (asyncRecord.path[i] !== nullPathArray[i]) {
+      if (asyncRecord.pathAsArray[i] !== nullPathArray[i]) {
         // asyncRecord points to a path unaffected by this payload
         return;
       }
     }
     // asyncRecord path points to nulled error field
-    if (isStreamPayload(asyncRecord) && asyncRecord.iterator?.return) {
-      asyncRecord.iterator.return().catch(() => {
-        // ignore error
-      });
+    if (isStreamPayload(asyncRecord)) {
+      streams.add(asyncRecord.streamContext);
     }
     exeContext.subsequentPayloads.delete(asyncRecord);
+  });
+  streams.forEach((stream) => {
+    returnStreamIteratorIgnoringError(stream);
+    exeContext.streams.delete(stream);
+  });
+}
+
+function returnStreamIteratorIgnoringError(streamContext: StreamContext): void {
+  streamContext.iterator?.return?.().catch(() => {
+    // ignore error
   });
 }
 
@@ -2135,16 +2486,20 @@ function getCompletedIncrementalResults(
         // async iterable resolver just finished but there may be pending payloads
         continue;
       }
-      (incrementalResult as IncrementalStreamResult).items = items;
+      (incrementalResult as IncrementalStreamResult).items = items ?? null;
+      if (asyncPayloadRecord.streamContext.label !== undefined) {
+        incrementalResult.label = asyncPayloadRecord.streamContext.label;
+      }
     } else {
       const data = asyncPayloadRecord.data;
       (incrementalResult as IncrementalDeferResult).data = data ?? null;
+      if (asyncPayloadRecord.deferUsage.label !== undefined) {
+        incrementalResult.label = asyncPayloadRecord.deferUsage.label;
+      }
     }
 
-    incrementalResult.path = asyncPayloadRecord.path;
-    if (asyncPayloadRecord.label != null) {
-      incrementalResult.label = asyncPayloadRecord.label;
-    }
+    incrementalResult.path = asyncPayloadRecord.pathAsArray;
+
     if (asyncPayloadRecord.errors.length > 0) {
       incrementalResult.errors = asyncPayloadRecord.errors;
     }
@@ -2193,12 +2548,9 @@ function yieldSubsequentPayloads(
 
   function returnStreamIterators() {
     const promises: Array<Promise<IteratorResult<unknown>>> = [];
-    exeContext.subsequentPayloads.forEach((asyncPayloadRecord) => {
-      if (
-        isStreamPayload(asyncPayloadRecord) &&
-        asyncPayloadRecord.iterator?.return
-      ) {
-        promises.push(asyncPayloadRecord.iterator.return());
+    exeContext.streams.forEach((streamContext) => {
+      if (streamContext.iterator?.return) {
+        promises.push(streamContext.iterator.return());
       }
     });
     return Promise.all(promises);
@@ -2212,15 +2564,15 @@ function yieldSubsequentPayloads(
     async return(): Promise<
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > {
-      await returnStreamIterators();
       isDone = true;
+      await returnStreamIterators();
       return { value: undefined, done: true };
     },
     async throw(
       error?: unknown,
     ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> {
-      await returnStreamIterators();
       isDone = true;
+      await returnStreamIterators();
       return Promise.reject(error);
     },
   };
@@ -2229,29 +2581,36 @@ function yieldSubsequentPayloads(
 class DeferredFragmentRecord {
   type: 'defer';
   errors: Array<GraphQLError>;
-  label: string | undefined;
-  path: Array<string | number>;
+  deferUsage: DeferUsage;
+  path: Path<FieldGroup> | undefined;
+  pathAsArray: Array<string | number>;
   promise: Promise<void>;
   data: ObjMap<unknown> | null;
-  parentContext: AsyncPayloadRecord | undefined;
+  parents: Array<AsyncPayloadRecord> | undefined;
   isCompleted: boolean;
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
+  _pending: Set<Path<FieldGroup>>;
+  _results: Map<Path<FieldGroup> | undefined, Map<Path<FieldGroup>, unknown>>;
+
   constructor(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    parentContext: AsyncPayloadRecord | undefined;
+    deferUsage: DeferUsage;
+    path: Path<FieldGroup> | undefined;
+    parents?: Array<AsyncPayloadRecord> | undefined;
     exeContext: ExecutionContext;
   }) {
     this.type = 'defer';
-    this.label = opts.label;
-    this.path = pathToArray(opts.path);
-    this.parentContext = opts.parentContext;
+    this.deferUsage = opts.deferUsage;
+    this.path = opts.path;
+    this.pathAsArray = pathToArray(opts.path);
+    this.parents = opts.parents;
     this.errors = [];
     this._exeContext = opts.exeContext;
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
-    this.data = null;
+    this.data = Object.create(null);
+    this._pending = new Set();
+    this._results = new Map();
     this.promise = new Promise<ObjMap<unknown> | null>((resolve) => {
       this._resolve = (promiseOrValue) => {
         resolve(promiseOrValue);
@@ -2262,47 +2621,136 @@ class DeferredFragmentRecord {
     });
   }
 
-  addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
-    const parentData = this.parentContext?.promise;
-    if (parentData) {
-      this._resolve?.(parentData.then(() => data));
+  addPendingField(path: Path<FieldGroup>) {
+    this._pending.add(path);
+    let siblings = this._results.get(path.prev);
+    if (siblings === undefined) {
+      siblings = new Map<Path<FieldGroup>, unknown>();
+      this._results.set(path.prev, siblings);
+    }
+    siblings.set(path, undefined);
+  }
+
+  removePendingField(path: Path<FieldGroup>) {
+    this._pending.delete(path);
+    this._results.delete(path);
+    const siblings = this._results.get(path.prev);
+    if (siblings !== undefined) {
+      siblings.delete(path);
+    }
+  }
+
+  reportDeferredValue(path: Path<FieldGroup>, result: unknown) {
+    this._pending.delete(path);
+    const siblings = this._results.get(path.prev);
+    if (siblings !== undefined) {
+      const existingValue = siblings.get(path);
+      // if a null has already bubbled, do not overwrite
+      if (existingValue === undefined) {
+        siblings.set(path, result);
+      }
+    }
+    this.completeIfReady();
+  }
+
+  completeIfReady() {
+    if (this._pending.size === 0) {
+      this.complete();
+    }
+  }
+
+  complete(): void {
+    this._buildData(this.data, this._results.get(this.path));
+
+    if (this.parents !== undefined) {
+      const parentPromises = this.parents.map((parent) => parent.promise);
+      this._resolve?.(Promise.any(parentPromises).then(() => this.data));
       return;
     }
-    this._resolve?.(data);
+    this._resolve?.(this.data);
   }
+
+  addError(path: Path<FieldGroup>, error: GraphQLError): void {
+    this.errors.push(error);
+    this.removePendingTree(path);
+    const siblings = this._results.get(path.prev);
+    if (siblings !== undefined) {
+      // overwrite current value to support null bubbling
+      siblings.set(path, null);
+    }
+  }
+
+  removePendingTree(path: Path<FieldGroup>) {
+    const children = this._results.get(path);
+    if (children !== undefined) {
+      for (const [childPath] of children) {
+        this.removePendingTree(childPath);
+      }
+    }
+    this.removePendingField(path);
+  }
+
+  _buildData(
+    parent: any,
+    children: Map<Path<FieldGroup>, unknown> | undefined,
+  ): void {
+    if (children === undefined) {
+      return;
+    }
+    for (const [childPath, value] of children) {
+      const key = childPath.key;
+      switch (value) {
+        case null:
+          parent[key] = null;
+          break;
+        case OBJECT_VALUE:
+          parent[key] = Object.create(null);
+          this._buildData(parent[key], this._results.get(childPath));
+          break;
+        case ARRAY_VALUE:
+          parent[key] = [];
+          this._buildData(parent[key], this._results.get(childPath));
+          break;
+        default:
+          parent[key] = value;
+      }
+    }
+  }
+}
+
+interface StreamContext {
+  label: string | undefined;
+  path: Array<string | number>;
+  iterator?: AsyncIterator<unknown> | undefined;
 }
 
 class StreamRecord {
   type: 'stream';
   errors: Array<GraphQLError>;
-  label: string | undefined;
-  path: Array<string | number>;
+  streamContext: StreamContext;
+  pathAsArray: Array<string | number>;
   items: Array<unknown> | null;
   promise: Promise<void>;
-  parentContext: AsyncPayloadRecord | undefined;
-  iterator: AsyncIterator<unknown> | undefined;
+  parents: Array<AsyncPayloadRecord> | undefined;
   isCompletedIterator?: boolean;
   isCompleted: boolean;
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    iterator?: AsyncIterator<unknown>;
-    parentContext: AsyncPayloadRecord | undefined;
+    streamContext: StreamContext;
+    path: Path<FieldGroup> | undefined;
+    parents: Array<AsyncPayloadRecord> | undefined;
     exeContext: ExecutionContext;
   }) {
     this.type = 'stream';
-    this.items = null;
-    this.label = opts.label;
-    this.path = pathToArray(opts.path);
-    this.parentContext = opts.parentContext;
-    this.iterator = opts.iterator;
+    this.streamContext = opts.streamContext;
+    this.pathAsArray = pathToArray(opts.path);
+    this.parents = opts.parents;
     this.errors = [];
     this._exeContext = opts.exeContext;
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
-    this.items = null;
+    this.items = [];
     this.promise = new Promise<Array<unknown> | null>((resolve) => {
       this._resolve = (promiseOrValue) => {
         resolve(promiseOrValue);
@@ -2314,9 +2762,9 @@ class StreamRecord {
   }
 
   addItems(items: PromiseOrValue<Array<unknown> | null>) {
-    const parentData = this.parentContext?.promise;
-    if (parentData) {
-      this._resolve?.(parentData.then(() => items));
+    if (this.parents !== undefined) {
+      const parentPromises = this.parents.map((parent) => parent.promise);
+      this._resolve?.(Promise.any(parentPromises).then(() => items));
       return;
     }
     this._resolve?.(items);

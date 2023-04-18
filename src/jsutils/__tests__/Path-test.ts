@@ -7,22 +7,14 @@ describe('Path', () => {
   it('can create a Path', () => {
     const first = addPath(undefined, 1, 'First');
 
-    expect(first).to.deep.equal({
-      prev: undefined,
-      key: 1,
-      typename: 'First',
-    });
+    expect(first).to.deep.equal({ prev: undefined, key: 1, info: 'First' });
   });
 
   it('can add a new key to an existing Path', () => {
     const first = addPath(undefined, 1, 'First');
     const second = addPath(first, 'two', 'Second');
 
-    expect(second).to.deep.equal({
-      prev: first,
-      key: 'two',
-      typename: 'Second',
-    });
+    expect(second).to.deep.equal({ prev: first, key: 'two', info: 'Second' });
   });
 
   it('can convert a Path to an array of its keys', () => {
