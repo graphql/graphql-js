@@ -264,7 +264,7 @@ function printInputValue(arg: GraphQLInputField): string {
   return argDecl + printDeprecated(arg.deprecationReason);
 }
 
-function printDirective(directive: GraphQLDirective): string {
+export function printDirective(directive: GraphQLDirective): string {
   return (
     printDescription(directive) +
     'directive @' +
