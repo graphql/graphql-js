@@ -91,7 +91,6 @@ describe('Execute: defer directive', () => {
         }
       }
       fragment NameFragment on Hero {
-        id
         name
       }
     `);
@@ -110,7 +109,6 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              id: '1',
               name: 'Luke',
             },
             path: ['hero'],
@@ -258,12 +256,11 @@ describe('Execute: defer directive', () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
-          id
           ...TopFragment @defer(label: "DeferTop")
         }
       }
       fragment TopFragment on Hero {
-        name
+        id
         ...NestedFragment @defer(label: "DeferNested")
       }
       fragment NestedFragment on Hero {
@@ -277,9 +274,7 @@ describe('Execute: defer directive', () => {
     expectJSON(result).toDeepEqual([
       {
         data: {
-          hero: {
-            id: '1',
-          },
+          hero: {},
         },
         hasNext: true,
       },
@@ -294,7 +289,7 @@ describe('Execute: defer directive', () => {
           },
           {
             data: {
-              name: 'Luke',
+              id: '1',
             },
             path: ['hero'],
             label: 'DeferTop',
@@ -308,7 +303,6 @@ describe('Execute: defer directive', () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
-          id
           ...TopFragment @defer(label: "DeferTop")
           ...TopFragment
         }
@@ -322,7 +316,6 @@ describe('Execute: defer directive', () => {
       {
         data: {
           hero: {
-            id: '1',
             name: 'Luke',
           },
         },
@@ -346,7 +339,6 @@ describe('Execute: defer directive', () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
-          id
           ...TopFragment
           ...TopFragment @defer(label: "DeferTop")
         }
@@ -360,7 +352,6 @@ describe('Execute: defer directive', () => {
       {
         data: {
           hero: {
-            id: '1',
             name: 'Luke',
           },
         },
