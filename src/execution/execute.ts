@@ -46,6 +46,7 @@ import {
   isNullableType,
   isObjectType,
 } from '../type/definition.js';
+import { GraphQLStreamDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import { assertValidSchema } from '../type/validate.js';
 
@@ -53,14 +54,17 @@ import type {
   DeferUsage,
   FieldGroup,
   GroupedFieldSet,
-  PreValidatedStreamUsage,
 } from './collectFields.js';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
-import { getArgumentValues, getVariableValues } from './values.js';
+import {
+  getArgumentValues,
+  getDirectiveValues,
+  getVariableValues,
+} from './values.js';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -267,10 +271,17 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
 }
 
-export interface ValidatedStreamUsage extends PreValidatedStreamUsage {
+export interface StreamUsage {
+  label: string | undefined;
   initialCount: number;
-  // for memoization of the streamed field's FieldGroup
-  _fieldGroup?: FieldGroup | undefined;
+  fieldGroup: FieldGroup;
+}
+
+declare module './collectFields.js' {
+  export interface FieldGroup {
+    // for memoization
+    _streamUsage?: StreamUsage | undefined;
+  }
 }
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
@@ -1279,41 +1290,78 @@ async function completePromisedValue(
 }
 
 /**
- * Returns an object containing the validated `@stream` arguments.
+ * Returns an object containing info for streaming if a field should be
+ * streamed based on the experimental flag, stream directive present and
+ * not disabled by the "if" argument.
  */
-function getValidatedStreamUsage(
+function getStreamUsage(
   exeContext: ExecutionContext,
   fieldGroup: FieldGroup,
   path: Path<FieldGroup>,
-): ValidatedStreamUsage | undefined {
+): StreamUsage | undefined {
   // do not stream inner lists of multi-dimensional lists
   if (typeof path.key === 'number') {
     return;
   }
 
-  const streamUsage = fieldGroup.streamUsage;
+  // TODO: add test for this case (a streamed list nested under a list).
+  /* c8 ignore next 3 */
+  if (fieldGroup._streamUsage !== undefined) {
+    return fieldGroup._streamUsage;
+  }
 
-  if (!streamUsage) {
+  // validation only allows equivalent streams on multiple fields, so it is
+  // safe to only check the first fieldNode for the stream directive
+  const stream = getDirectiveValues(
+    GraphQLStreamDirective,
+    toNodes(fieldGroup)[0],
+    exeContext.variableValues,
+  );
+
+  if (!stream) {
     return;
   }
 
-  const { label, initialCount } = streamUsage;
+  if (stream.if === false) {
+    return;
+  }
 
-  invariant(typeof initialCount === 'number', 'initialCount must be a number');
+  invariant(
+    typeof stream.initialCount === 'number',
+    'initialCount must be a number',
+  );
 
-  invariant(initialCount >= 0, 'initialCount must be a positive integer');
+  invariant(
+    stream.initialCount >= 0,
+    'initialCount must be a positive integer',
+  );
 
   invariant(
     exeContext.operation.operation !== OperationTypeNode.SUBSCRIPTION,
     '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
   );
 
-  return {
-    label: typeof label === 'string' ? label : undefined,
-    initialCount,
+  const streamFields = new AccumulatorMap<DeferUsage | undefined, FieldNode>();
+  for (const [, fieldNodes] of fieldGroup.fields) {
+    for (const node of fieldNodes) {
+      streamFields.add(undefined, node);
+    }
+  }
+  const streamedFieldGroup: FieldGroup = {
+    ...fieldGroup,
+    fields: streamFields,
   };
-}
 
+  const streamUsage = {
+    initialCount: stream.initialCount,
+    label: typeof stream.label === 'string' ? stream.label : undefined,
+    fieldGroup: streamedFieldGroup,
+  };
+
+  fieldGroup._streamUsage = streamUsage;
+
+  return streamUsage;
+}
 /**
  * Complete a async iterator value by completing the result and calling
  * recursively until all the results are completed.
@@ -1329,7 +1377,7 @@ async function completeAsyncIteratorValue(
   streamRecord: StreamRecord | undefined,
   parentRecords: Array<AsyncPayloadRecord> | undefined,
 ): Promise<ReadonlyArray<unknown>> {
-  const streamUsage = getValidatedStreamUsage(exeContext, fieldGroup, path);
+  const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
   let index = 0;
@@ -1347,7 +1395,7 @@ async function completeAsyncIteratorValue(
         index,
         iterator,
         exeContext,
-        getStreamedFieldGroup(fieldGroup, streamUsage),
+        streamUsage.fieldGroup,
         info,
         itemType,
         path,
@@ -1406,29 +1454,6 @@ async function completeAsyncIteratorValue(
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
 
-function getStreamedFieldGroup(
-  fieldGroup: FieldGroup,
-  streamUsage: ValidatedStreamUsage,
-): FieldGroup {
-  // TODO: add test for this case
-  /* c8 ignore next 3 */
-  if (streamUsage._fieldGroup) {
-    return streamUsage._fieldGroup;
-  }
-  const streamFields = new AccumulatorMap<DeferUsage | undefined, FieldNode>();
-  for (const [, fieldNodes] of fieldGroup.fields) {
-    for (const node of fieldNodes) {
-      streamFields.add(undefined, node);
-    }
-  }
-  const streamedFieldGroup: FieldGroup = {
-    ...fieldGroup,
-    fields: streamFields,
-  };
-  streamUsage._fieldGroup = streamedFieldGroup;
-  return streamedFieldGroup;
-}
-
 /**
  * Complete a list value by completing each item in the list with the
  * inner type
@@ -1468,7 +1493,7 @@ function completeListValue(
     );
   }
 
-  const streamUsage = getValidatedStreamUsage(exeContext, fieldGroup, path);
+  const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
 
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
@@ -1494,7 +1519,7 @@ function completeListValue(
         itemPath,
         item,
         exeContext,
-        getStreamedFieldGroup(fieldGroup, streamUsage),
+        streamUsage.fieldGroup,
         info,
         itemType,
         streamContext,

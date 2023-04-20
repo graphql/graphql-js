@@ -19,7 +19,6 @@ import {
   GraphQLDeferDirective,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
-  GraphQLStreamDirective,
 } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
@@ -31,19 +30,12 @@ export interface DeferUsage {
   label: string | undefined;
 }
 
-// initialCount is validated during field execution
-export interface PreValidatedStreamUsage {
-  label: string | undefined;
-  initialCount: unknown;
-}
-
 export interface FieldGroup {
   parentType: GraphQLObjectType;
   fieldName: string;
   fields: Map<DeferUsage | undefined, ReadonlyArray<FieldNode>>;
   inInitialResult: boolean;
   shouldInitiateDefer: boolean;
-  streamUsage: PreValidatedStreamUsage | undefined;
 }
 interface MutableFieldGroup extends FieldGroup {
   fields: AccumulatorMap<DeferUsage | undefined, FieldNode>;
@@ -180,8 +172,6 @@ function collectFieldsImpl(
             fieldGroup.shouldInitiateDefer = false;
           }
         } else {
-          const stream = getStreamValues(variableValues, selection);
-
           const fields = new AccumulatorMap<
             DeferUsage | undefined,
             FieldNode
@@ -203,7 +193,6 @@ function collectFieldsImpl(
             fields,
             inInitialResult,
             shouldInitiateDefer,
-            streamUsage: stream,
           });
         }
         break;
@@ -377,45 +366,6 @@ function getDeferValues(
 
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
-  };
-}
-
-/**
- * Returns an object containing the `@stream` arguments if a field should be
- * streamed based on the experimental flag, stream directive present and
- * not disabled by the "if" argument.
- *
- * We validate `initialCount` argument later so as to use the correct path
- * if an error occurs.
- */
-function getStreamValues(
-  variableValues: { [variable: string]: unknown },
-  node: FieldNode,
-):
-  | undefined
-  | {
-      initialCount: unknown;
-      label: string | undefined;
-    } {
-  // validation only allows equivalent streams on multiple fields, so it is
-  // safe to only check the first fieldNode for the stream directive
-  const stream = getDirectiveValues(
-    GraphQLStreamDirective,
-    node,
-    variableValues,
-  );
-
-  if (!stream) {
-    return;
-  }
-
-  if (stream.if === false) {
-    return;
-  }
-
-  return {
-    initialCount: stream.initialCount,
-    label: typeof stream.label === 'string' ? stream.label : undefined,
   };
 }
 
