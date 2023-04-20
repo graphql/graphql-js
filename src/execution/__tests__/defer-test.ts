@@ -1082,7 +1082,7 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
-  it('Preserves error boundaries', async () => {
+  it('Preserves error boundaries, null first', async () => {
     const document = parse(`
       query {
         ... @defer {
@@ -1143,6 +1143,75 @@ describe('Execute: defer directive', () => {
                 },
               },
             },
+            path: ['a'],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Preserves error boundaries, value first', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            b {
+              c {
+                d
+              }
+            }
+          }
+        }
+        a {
+          ... @defer {
+            someField
+            b {
+              c {
+                nonNullErrorField
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {},
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              a: {
+                b: {
+                  c: {
+                    d: 'd',
+                  },
+                },
+              },
+            },
+            path: [],
+          },
+          {
+            data: {
+              b: {
+                c: null,
+              },
+              someField: 'someField',
+            },
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
+                locations: [{ line: 17, column: 17 }],
+                path: ['a', 'b', 'c', 'nonNullErrorField'],
+              },
+            ],
             path: ['a'],
           },
         ],
