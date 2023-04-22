@@ -47,12 +47,7 @@ type MutableGroupedFieldSet = Map<string, MutableFieldGroup>;
 
 export interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
-  deferUsages: Map<string | undefined, DeferUsage>;
-}
-
-interface MutableCollectFieldsResult {
-  groupedFieldSet: MutableGroupedFieldSet;
-  deferUsages: Map<string | undefined, DeferUsage>;
+  deferUsages: ReadonlyArray<DeferUsage>;
 }
 
 /**
@@ -74,11 +69,6 @@ export function collectFields(
   const groupedFieldSet = new Map<string, MutableFieldGroup>();
   const deferUsages = new Map<string | undefined, DeferUsage>();
 
-  const collectFieldsResult = {
-    groupedFieldSet,
-    deferUsages,
-  };
-
   collectFieldsImpl(
     schema,
     fragments,
@@ -86,11 +76,15 @@ export function collectFields(
     operation,
     runtimeType,
     operation.selectionSet,
-    collectFieldsResult,
+    groupedFieldSet,
+    deferUsages,
     new Set(),
   );
 
-  return collectFieldsResult;
+  return {
+    groupedFieldSet,
+    deferUsages: Array.from(deferUsages.values()),
+  };
 }
 
 /**
@@ -114,10 +108,6 @@ export function collectSubfields(
 ): CollectFieldsResult {
   const subGroupedFieldSet = new Map<string, MutableFieldGroup>();
   const deferUsages = new Map<string | undefined, DeferUsage>();
-  const collectSubfieldsResult = {
-    groupedFieldSet: subGroupedFieldSet,
-    deferUsages,
-  };
   const visitedFragmentNames = new Set<string>();
 
   for (const [deferUsage, fieldNodes] of fieldGroup.fields) {
@@ -130,7 +120,8 @@ export function collectSubfields(
           operation,
           returnType,
           node.selectionSet,
-          collectSubfieldsResult,
+          subGroupedFieldSet,
+          deferUsages,
           visitedFragmentNames,
           deferUsage,
         );
@@ -138,7 +129,10 @@ export function collectSubfields(
     }
   }
 
-  return collectSubfieldsResult;
+  return {
+    groupedFieldSet: subGroupedFieldSet,
+    deferUsages: Array.from(deferUsages.values()),
+  };
 }
 
 // eslint-disable-next-line max-params
@@ -149,12 +143,12 @@ function collectFieldsImpl(
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  collectFieldsResult: MutableCollectFieldsResult,
+  groupedFieldSet: MutableGroupedFieldSet,
+  deferUsages: Map<string | undefined, DeferUsage>,
   visitedFragmentNames: Set<string>,
   parentDeferUsage?: DeferUsage | undefined,
   newDeferUsage?: DeferUsage | undefined,
 ): void {
-  const { groupedFieldSet } = collectFieldsResult;
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
@@ -215,7 +209,8 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             selection.selectionSet,
-            collectFieldsResult,
+            groupedFieldSet,
+            deferUsages,
             visitedFragmentNames,
             parentDeferUsage,
             newDeferUsage,
@@ -230,7 +225,8 @@ function collectFieldsImpl(
           operation,
           runtimeType,
           selection.selectionSet,
-          collectFieldsResult,
+          groupedFieldSet,
+          deferUsages,
           visitedFragmentNames,
           defer,
           parentDeferUsage,
@@ -266,7 +262,8 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             fragment.selectionSet,
-            collectFieldsResult,
+            groupedFieldSet,
+            deferUsages,
             visitedFragmentNames,
             parentDeferUsage,
             newDeferUsage,
@@ -281,7 +278,8 @@ function collectFieldsImpl(
           operation,
           runtimeType,
           fragment.selectionSet,
-          collectFieldsResult,
+          groupedFieldSet,
+          deferUsages,
           visitedFragmentNames,
           defer,
           parentDeferUsage,
@@ -300,12 +298,12 @@ function collectDeferredFragmentFields(
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  collectFieldsResult: MutableCollectFieldsResult,
+  groupedFieldSet: MutableGroupedFieldSet,
+  deferUsages: Map<string | undefined, DeferUsage>,
   visitedFragmentNames: Set<string>,
   defer: { label: string | undefined },
   parentDeferUsage?: DeferUsage | undefined,
 ): void {
-  const deferUsages = collectFieldsResult.deferUsages;
   const existingNewDefer = deferUsages.get(defer.label);
   if (existingNewDefer !== undefined) {
     collectFieldsImpl(
@@ -315,7 +313,8 @@ function collectDeferredFragmentFields(
       operation,
       runtimeType,
       selectionSet,
-      collectFieldsResult,
+      groupedFieldSet,
+      deferUsages,
       visitedFragmentNames,
       parentDeferUsage,
       existingNewDefer,
@@ -332,7 +331,8 @@ function collectDeferredFragmentFields(
     operation,
     runtimeType,
     selectionSet,
-    collectFieldsResult,
+    groupedFieldSet,
+    deferUsages,
     visitedFragmentNames,
     parentDeferUsage,
     newDefer,

@@ -575,7 +575,7 @@ function executeOperation(
 
   const deferredFragmentRecords: Array<DeferredFragmentRecord> = [];
   const newDefers = new Map<DeferUsage, DeferredFragmentRecord>();
-  for (const deferUsage of deferUsages.values()) {
+  for (const deferUsage of deferUsages) {
     const deferredFragmentRecord = new DeferredFragmentRecord({
       deferUsage,
       path,
@@ -1873,7 +1873,7 @@ function collectAndExecuteSubfields(
 
   const deferredFragmentRecords: Array<DeferredFragmentRecord> = [];
   const newDefers = new Map<DeferUsage, DeferredFragmentRecord>(deferMap);
-  for (const deferUsage of subDeferUsages.values()) {
+  for (const deferUsage of subDeferUsages) {
     const deferredFragmentRecord = new DeferredFragmentRecord({
       deferUsage,
       path,
