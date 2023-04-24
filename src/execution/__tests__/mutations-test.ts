@@ -242,13 +242,13 @@ describe('Execute: Handles mutation execution ordering', () => {
       {
         incremental: [
           {
-            label: 'defer-label',
             path: ['first'],
             data: {
               promiseToGetTheNumber: 2,
             },
           },
         ],
+        completed: [{ path: ['first'], label: 'defer-label' }],
         hasNext: false,
       },
     ]);
@@ -317,7 +317,6 @@ describe('Execute: Handles mutation execution ordering', () => {
       {
         incremental: [
           {
-            label: 'defer-label',
             path: [],
             data: {
               first: {
@@ -326,6 +325,7 @@ describe('Execute: Handles mutation execution ordering', () => {
             },
           },
         ],
+        completed: [{ path: [], label: 'defer-label' }],
         hasNext: false,
       },
     ]);
