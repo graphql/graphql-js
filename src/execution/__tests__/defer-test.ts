@@ -187,6 +187,7 @@ describe('Execute: defer directive', () => {
             path: ['hero'],
           },
         ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
@@ -239,6 +240,7 @@ describe('Execute: defer directive', () => {
             path: ['hero'],
           },
         ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
@@ -270,9 +272,9 @@ describe('Execute: defer directive', () => {
               },
             },
             path: [],
-            label: 'DeferQuery',
           },
         ],
+        completed: [{ path: [], label: 'DeferQuery' }],
         hasNext: false,
       },
     ]);
@@ -318,9 +320,9 @@ describe('Execute: defer directive', () => {
               },
             ],
             path: [],
-            label: 'DeferQuery',
           },
         ],
+        completed: [{ path: [], label: 'DeferQuery' }],
         hasNext: false,
       },
     ]);
@@ -355,18 +357,20 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
-            },
-            path: ['hero'],
-            label: 'DeferNested',
-          },
-          {
-            data: {
               id: '1',
             },
             path: ['hero'],
-            label: 'DeferTop',
           },
+          {
+            data: {
+              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+            },
+            path: ['hero'],
+          },
+        ],
+        completed: [
+          { path: ['hero'], label: 'DeferTop' },
+          { path: ['hero'], label: 'DeferNested' },
         ],
         hasNext: false,
       },
@@ -395,15 +399,7 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: {
-              name: 'Luke',
-            },
-            path: ['hero'],
-            label: 'DeferTop',
-          },
-        ],
+        completed: [{ path: ['hero'], label: 'DeferTop' }],
         hasNext: false,
       },
     ]);
@@ -431,15 +427,7 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: {
-              name: 'Luke',
-            },
-            path: ['hero'],
-            label: 'DeferTop',
-          },
-        ],
+        completed: [{ path: ['hero'], label: 'DeferTop' }],
         hasNext: false,
       },
     ]);
@@ -464,15 +452,14 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          { data: { name: 'Luke' }, path: ['hero'], label: 'InlineDeferred' },
-        ],
+        incremental: [{ data: { name: 'Luke' }, path: ['hero'] }],
+        completed: [{ path: ['hero'], label: 'InlineDeferred' }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Emits empty defer fragments', async () => {
+  it('Does not emit empty defer fragments', async () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
@@ -494,12 +481,7 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: {},
-            path: ['hero'],
-          },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
@@ -533,15 +515,17 @@ describe('Execute: defer directive', () => {
               id: '1',
             },
             path: ['hero'],
-            label: 'DeferID',
           },
           {
             data: {
               name: 'Luke',
             },
             path: ['hero'],
-            label: 'DeferName',
           },
+        ],
+        completed: [
+          { path: ['hero'], label: 'DeferID' },
+          { path: ['hero'], label: 'DeferName' },
         ],
         hasNext: false,
       },
@@ -572,23 +556,71 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              hero: {
-                id: '1',
-              },
-            },
+            data: { hero: {} },
             path: [],
-            label: 'DeferID',
           },
           {
-            data: {
-              hero: {
-                name: 'Luke',
-              },
-            },
-            path: [],
-            label: 'DeferName',
+            data: { id: '1' },
+            path: ['hero'],
           },
+          {
+            data: { name: 'Luke' },
+            path: ['hero'],
+          },
+        ],
+        completed: [
+          { path: [], label: 'DeferID' },
+          { path: [], label: 'DeferName' },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Separately emits defer fragments with different labels with varying subfields that return promises', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer(label: "DeferID") {
+          hero {
+            id
+          }
+        }
+        ... @defer(label: "DeferName") {
+          hero {
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        id: () => Promise.resolve('1'),
+        name: () => Promise.resolve('Luke'),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { hero: {} },
+            path: [],
+          },
+          {
+            data: { id: '1' },
+            path: ['hero'],
+          },
+          {
+            data: { name: 'Luke' },
+            path: ['hero'],
+          },
+        ],
+        completed: [
+          { path: [], label: 'DeferID' },
+          { path: [], label: 'DeferName' },
         ],
         hasNext: false,
       },
@@ -625,17 +657,17 @@ describe('Execute: defer directive', () => {
               id: '1',
             },
             path: ['hero'],
-            label: 'DeferID',
           },
           {
             data: {
-              hero: {
-                name: 'Luke',
-              },
+              name: 'Luke',
             },
-            path: [],
-            label: 'DeferName',
+            path: ['hero'],
           },
+        ],
+        completed: [
+          { path: ['hero'], label: 'DeferID' },
+          { path: [], label: 'DeferName' },
         ],
         hasNext: false,
       },
@@ -670,9 +702,9 @@ describe('Execute: defer directive', () => {
               },
             },
             path: [],
-            label: 'DeferName',
           },
         ],
+        completed: [{ path: [], label: 'DeferName' }],
         hasNext: true,
       },
       {
@@ -682,15 +714,15 @@ describe('Execute: defer directive', () => {
               id: '1',
             },
             path: ['hero'],
-            label: 'DeferID',
           },
         ],
+        completed: [{ path: ['hero'], label: 'DeferID' }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate multiple defers on the same object', async () => {
+  it('Can deduplicate multiple defers on the same object', async () => {
     const document = parse(`
       query {
         hero {
@@ -725,25 +757,30 @@ describe('Execute: defer directive', () => {
       },
       {
         incremental: [
-          { data: {}, path: ['hero', 'friends', 0] },
-          { data: {}, path: ['hero', 'friends', 0] },
-          { data: {}, path: ['hero', 'friends', 0] },
           { data: { id: '2', name: 'Han' }, path: ['hero', 'friends', 0] },
-          { data: {}, path: ['hero', 'friends', 1] },
-          { data: {}, path: ['hero', 'friends', 1] },
-          { data: {}, path: ['hero', 'friends', 1] },
           { data: { id: '3', name: 'Leia' }, path: ['hero', 'friends', 1] },
-          { data: {}, path: ['hero', 'friends', 2] },
-          { data: {}, path: ['hero', 'friends', 2] },
-          { data: {}, path: ['hero', 'friends', 2] },
           { data: { id: '4', name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+        ],
+        completed: [
+          { path: ['hero', 'friends', 0] },
+          { path: ['hero', 'friends', 0] },
+          { path: ['hero', 'friends', 0] },
+          { path: ['hero', 'friends', 1] },
+          { path: ['hero', 'friends', 1] },
+          { path: ['hero', 'friends', 1] },
+          { path: ['hero', 'friends', 2] },
+          { path: ['hero', 'friends', 2] },
+          { path: ['hero', 'friends', 2] },
+          { path: ['hero', 'friends', 0] },
+          { path: ['hero', 'friends', 1] },
+          { path: ['hero', 'friends', 2] },
         ],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate fields present in the initial payload', async () => {
+  it('Deduplicates fields present in the initial payload', async () => {
     const document = parse(`
       query {
         hero {
@@ -799,27 +836,17 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              nestedObject: {
-                deeperObject: {
-                  bar: 'bar',
-                },
-              },
-              anotherNestedObject: {
-                deeperObject: {
-                  foo: 'foo',
-                },
-              },
-            },
-            path: ['hero'],
+            data: { bar: 'bar' },
+            path: ['hero', 'nestedObject', 'deeperObject'],
           },
         ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate fields present in a parent defer payload', async () => {
+  it('Deduplicates fields present in a parent defer payload', async () => {
     const document = parse(`
       query {
         hero {
@@ -852,32 +879,31 @@ describe('Execute: defer directive', () => {
           {
             data: {
               nestedObject: {
-                deeperObject: {
-                  foo: 'foo',
-                },
+                deeperObject: { foo: 'foo' },
               },
             },
             path: ['hero'],
           },
         ],
+        completed: [{ path: ['hero'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             data: {
-              foo: 'foo',
               bar: 'bar',
             },
             path: ['hero', 'nestedObject', 'deeperObject'],
           },
         ],
+        completed: [{ path: ['hero', 'nestedObject', 'deeperObject'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate fields with deferred fragments at multiple levels', async () => {
+  it('Deduplicates fields with deferred fragments at multiple levels', async () => {
     const document = parse(`
       query {
         hero {
@@ -933,52 +959,37 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              nestedObject: {
-                deeperObject: {
-                  foo: 'foo',
-                  bar: 'bar',
-                },
-              },
-            },
-            path: ['hero'],
-          },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            data: {
-              deeperObject: {
-                foo: 'foo',
-                bar: 'bar',
-                baz: 'baz',
-              },
-            },
-            path: ['hero', 'nestedObject'],
-          },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            data: {
-              foo: 'foo',
-              bar: 'bar',
-              baz: 'baz',
-              bak: 'bak',
-            },
+            data: { bar: 'bar' },
             path: ['hero', 'nestedObject', 'deeperObject'],
           },
         ],
+        completed: [{ path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { baz: 'baz' },
+            path: ['hero', 'nestedObject', 'deeperObject'],
+          },
+        ],
+        hasNext: true,
+        completed: [{ path: ['hero', 'nestedObject'] }],
+      },
+      {
+        incremental: [
+          {
+            data: { bak: 'bak' },
+            path: ['hero', 'nestedObject', 'deeperObject'],
+          },
+        ],
+        completed: [{ path: ['hero', 'nestedObject', 'deeperObject'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not combine multiple fields from deferred fragments from different branches occurring at the same level', async () => {
+  it('Deduplicates multiple fields from deferred fragments from different branches occurring at the same level', async () => {
     const document = parse(`
       query {
         hero {
@@ -1024,14 +1035,10 @@ describe('Execute: defer directive', () => {
             },
             path: ['hero', 'nestedObject', 'deeperObject'],
           },
-          {
-            data: {
-              nestedObject: {
-                deeperObject: {},
-              },
-            },
-            path: ['hero'],
-          },
+        ],
+        completed: [
+          { path: ['hero'] },
+          { path: ['hero', 'nestedObject', 'deeperObject'] },
         ],
         hasNext: true,
       },
@@ -1039,18 +1046,18 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: {
-              foo: 'foo',
               bar: 'bar',
             },
             path: ['hero', 'nestedObject', 'deeperObject'],
           },
         ],
+        completed: [{ path: ['hero', 'nestedObject', 'deeperObject'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate fields with deferred fragments in different branches at multiple non-overlapping levels', async () => {
+  it('Deduplicate fields with deferred fragments in different branches at multiple non-overlapping levels', async () => {
     const document = parse(`
       query {
         a {
@@ -1104,35 +1111,21 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              e: {
-                f: 'f',
-              },
-            },
+            data: { e: { f: 'f' } },
             path: ['a', 'b'],
           },
           {
-            data: {
-              a: {
-                b: {
-                  e: {
-                    f: 'f',
-                  },
-                },
-              },
-              g: {
-                h: 'h',
-              },
-            },
+            data: { g: { h: 'h' } },
             path: [],
           },
         ],
+        completed: [{ path: ['a', 'b'] }, { path: [] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Preserves error boundaries, null first', async () => {
+  it('Nulls cross defer boundaries, null first', async () => {
     const document = parse(`
       query {
         ... @defer {
@@ -1169,24 +1162,17 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              b: {
-                c: {
-                  d: 'd',
-                },
-              },
-            },
+            data: { b: { c: {} } },
             path: ['a'],
           },
           {
-            data: {
-              a: {
-                b: {
-                  c: null,
-                },
-                someField: 'someField',
-              },
-            },
+            data: { d: 'd' },
+            path: ['a', 'b', 'c'],
+          },
+        ],
+        completed: [
+          {
+            path: [],
             errors: [
               {
                 message:
@@ -1195,15 +1181,15 @@ describe('Execute: defer directive', () => {
                 path: ['a', 'b', 'c', 'nonNullErrorField'],
               },
             ],
-            path: [],
           },
+          { path: ['a'] },
         ],
         hasNext: false,
       },
     ]);
   });
 
-  it('Preserves error boundaries, value first', async () => {
+  it('Nulls cross defer boundaries, value first', async () => {
     const document = parse(`
       query {
         ... @defer {
@@ -1243,12 +1229,17 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              b: {
-                c: null,
-              },
-              someField: 'someField',
-            },
+            data: { b: { c: {} } },
+            path: ['a'],
+          },
+          {
+            data: { d: 'd' },
+            path: ['a', 'b', 'c'],
+          },
+        ],
+        completed: [
+          {
+            path: ['a'],
             errors: [
               {
                 message:
@@ -1257,27 +1248,15 @@ describe('Execute: defer directive', () => {
                 path: ['a', 'b', 'c', 'nonNullErrorField'],
               },
             ],
-            path: ['a'],
           },
-          {
-            data: {
-              a: {
-                b: {
-                  c: {
-                    d: 'd',
-                  },
-                },
-              },
-            },
-            path: [],
-          },
+          { path: [] },
         ],
         hasNext: false,
       },
     ]);
   });
 
-  it('Correctly handle a slow null', async () => {
+  it('filters a payload with a null that cannot be merged', async () => {
     const document = parse(`
       query {
         ... @defer {
@@ -1325,29 +1304,21 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              b: {
-                c: {
-                  d: 'd',
-                },
-              },
-            },
+            data: { b: { c: {} } },
             path: ['a'],
           },
+          {
+            data: { d: 'd' },
+            path: ['a', 'b', 'c'],
+          },
         ],
+        completed: [{ path: ['a'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            data: {
-              a: {
-                b: {
-                  c: null,
-                },
-                someField: 'someField',
-              },
-            },
+            path: [],
             errors: [
               {
                 message:
@@ -1356,7 +1327,6 @@ describe('Execute: defer directive', () => {
                 path: ['a', 'b', 'c', 'nonNullErrorField'],
               },
             ],
-            path: [],
           },
         ],
         hasNext: false,
@@ -1383,35 +1353,19 @@ describe('Execute: defer directive', () => {
         nonNullName: () => null,
       },
     });
-    expectJSON(result).toDeepEqual([
-      {
-        data: {
-          hero: null,
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: null,
+      },
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field Hero.nonNullName.',
+          locations: [{ line: 4, column: 11 }],
+          path: ['hero', 'nonNullName'],
         },
-        errors: [
-          {
-            message:
-              'Cannot return null for non-nullable field Hero.nonNullName.',
-            locations: [{ line: 4, column: 11 }],
-            path: ['hero', 'nonNullName'],
-          },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            data: {
-              hero: {
-                name: 'Luke',
-              },
-            },
-            path: [],
-          },
-        ],
-        hasNext: false,
-      },
-    ]);
+      ],
+    });
   });
 
   it('Cancels deferred fields when deferred result exhibits null bubbling', async () => {
@@ -1453,12 +1407,13 @@ describe('Execute: defer directive', () => {
             path: [],
           },
         ],
+        completed: [{ path: [] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate list fields', async () => {
+  it('Deduplicates list fields', async () => {
     const document = parse(`
       query {
         hero {
@@ -1484,20 +1439,13 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: {
-              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
-            },
-            path: ['hero'],
-          },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate async iterable list fields', async () => {
+  it('Deduplicates async iterable list fields', async () => {
     const document = parse(`
       query {
         hero {
@@ -1526,18 +1474,13 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: { friends: [{ name: 'Han' }] },
-            path: ['hero'],
-          },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate empty async iterable list fields', async () => {
+  it('Deduplicates empty async iterable list fields', async () => {
     const document = parse(`
       query {
         hero {
@@ -1567,12 +1510,7 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: { friends: [] },
-            path: ['hero'],
-          },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
@@ -1606,18 +1544,25 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: {
-              friends: [{ id: '2' }, { id: '3' }, { id: '4' }],
-            },
-            path: ['hero'],
+            data: { id: '2' },
+            path: ['hero', 'friends', 0],
+          },
+          {
+            data: { id: '3' },
+            path: ['hero', 'friends', 1],
+          },
+          {
+            data: { id: '4' },
+            path: ['hero', 'friends', 2],
           },
         ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate list fields that return empty lists', async () => {
+  it('Deduplicates list fields that return empty lists', async () => {
     const document = parse(`
       query {
         hero {
@@ -1644,18 +1589,13 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: { friends: [] },
-            path: ['hero'],
-          },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate null object fields', async () => {
+  it('Deduplicates null object fields', async () => {
     const document = parse(`
       query {
         hero {
@@ -1682,18 +1622,13 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: { nestedObject: null },
-            path: ['hero'],
-          },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
   });
 
-  it('Does not deduplicate promise object fields', async () => {
+  it('Deduplicates promise object fields', async () => {
     const document = parse(`
       query {
         hero {
@@ -1719,12 +1654,7 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: { nestedObject: { name: 'foo' } },
-            path: ['hero'],
-          },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
@@ -1769,6 +1699,7 @@ describe('Execute: defer directive', () => {
             ],
           },
         ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
@@ -1797,9 +1728,8 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            data: null,
             path: ['hero'],
             errors: [
               {
@@ -1876,9 +1806,8 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            data: null,
             path: ['hero'],
             errors: [
               {
@@ -1935,6 +1864,7 @@ describe('Execute: defer directive', () => {
             path: ['hero'],
           },
         ],
+        completed: [{ path: ['hero'] }],
         hasNext: true,
       },
       {
@@ -1942,6 +1872,11 @@ describe('Execute: defer directive', () => {
           { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
           { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
           { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+        ],
+        completed: [
+          { path: ['hero', 'friends', 0] },
+          { path: ['hero', 'friends', 1] },
+          { path: ['hero', 'friends', 2] },
         ],
         hasNext: false,
       },
@@ -1983,6 +1918,7 @@ describe('Execute: defer directive', () => {
             path: ['hero'],
           },
         ],
+        completed: [{ path: ['hero'] }],
         hasNext: true,
       },
       {
@@ -1990,6 +1926,11 @@ describe('Execute: defer directive', () => {
           { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
           { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
           { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+        ],
+        completed: [
+          { path: ['hero', 'friends', 0] },
+          { path: ['hero', 'friends', 1] },
+          { path: ['hero', 'friends', 2] },
         ],
         hasNext: false,
       },
