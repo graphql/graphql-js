@@ -640,7 +640,7 @@ function executeFields(
   sourceValue: unknown,
   path: Path | undefined,
   fields: GroupedFieldSet,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord?: AsyncPayloadRecord | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
   let containsPromise = false;
@@ -697,7 +697,7 @@ function executeField(
   source: unknown,
   fieldGroup: FieldGroup,
   path: Path,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord?: AsyncPayloadRecord | undefined,
 ): PromiseOrValue<unknown> {
   const fieldName = fieldGroup[0].name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
@@ -820,7 +820,7 @@ function handleFieldError(
   returnType: GraphQLOutputType,
   fieldGroup: FieldGroup,
   path: Path,
-  asyncPayloadRecord?: AsyncPayloadRecord | undefined,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): void {
   const error = locatedError(rawError, fieldGroup, pathToArray(path));
 
@@ -865,7 +865,7 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): PromiseOrValue<unknown> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
@@ -957,7 +957,7 @@ async function completePromisedValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: Promise<unknown>,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): Promise<unknown> {
   try {
     const resolved = await result;
@@ -1056,7 +1056,7 @@ async function completeAsyncIteratorValue(
   info: GraphQLResolveInfo,
   path: Path,
   iterator: AsyncIterator<unknown>,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): Promise<ReadonlyArray<unknown>> {
   const stream = getStreamValues(exeContext, fieldGroup, path);
   let containsPromise = false;
@@ -1135,7 +1135,7 @@ function completeListValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   const itemType = returnType.ofType;
 
@@ -1226,7 +1226,7 @@ function completeListItemValue(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemPath: Path,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): boolean {
   if (isPromise(item)) {
     completedResults.push(
@@ -1322,7 +1322,7 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
@@ -1432,7 +1432,7 @@ function completeObjectValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
@@ -1488,7 +1488,7 @@ function collectAndExecuteSubfields(
   fieldGroup: FieldGroup,
   path: Path,
   result: unknown,
-  asyncPayloadRecord?: AsyncPayloadRecord,
+  asyncPayloadRecord: AsyncPayloadRecord | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
   const { groupedFieldSet: subGroupedFieldSet, patches: subPatches } =
