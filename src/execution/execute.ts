@@ -601,10 +601,10 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
-  fields: GroupedFieldSet,
+  groupedFieldSet: GroupedFieldSet,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
-    fields,
+    groupedFieldSet,
     (results, [responseName, fieldGroup]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = executeField(
