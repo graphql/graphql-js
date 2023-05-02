@@ -12,7 +12,7 @@ function expectValid(queryStr: string) {
   expectErrors(queryStr).toDeepEqual([]);
 }
 
-describe('Validate: Defer/Stream directive on root field', () => {
+describe('Validate: Defer/Stream directive labels', () => {
   it('Defer fragments with no label', () => {
     expectValid(`
       {
