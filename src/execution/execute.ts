@@ -1857,7 +1857,7 @@ function executeStreamField(
   label?: string,
   parentContext?: AsyncPayloadRecord,
 ): AsyncPayloadRecord {
-  const asyncPayloadRecord = new StreamRecord({
+  const asyncPayloadRecord = new StreamItemsRecord({
     label,
     path: itemPath,
     parentContext,
@@ -1953,7 +1953,7 @@ async function executeStreamAsyncIteratorItem(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
-  asyncPayloadRecord: StreamRecord,
+  asyncPayloadRecord: StreamItemsRecord,
   itemPath: Path,
 ): Promise<IteratorResult<unknown>> {
   let item;
@@ -2033,7 +2033,7 @@ async function executeStreamAsyncIterator(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const itemPath = addPath(path, index, undefined);
-    const asyncPayloadRecord = new StreamRecord({
+    const asyncPayloadRecord = new StreamItemsRecord({
       label,
       path: itemPath,
       parentContext: previousAsyncPayloadRecord,
@@ -2110,7 +2110,7 @@ function filterSubsequentPayloads(
       }
     }
     // asyncRecord path points to nulled error field
-    if (isStreamPayload(asyncRecord) && asyncRecord.asyncIterator?.return) {
+    if (isStreamItemsRecord(asyncRecord) && asyncRecord.asyncIterator?.return) {
       asyncRecord.asyncIterator.return().catch(() => {
         // ignore error
       });
@@ -2129,7 +2129,7 @@ function getCompletedIncrementalResults(
       continue;
     }
     exeContext.subsequentPayloads.delete(asyncPayloadRecord);
-    if (isStreamPayload(asyncPayloadRecord)) {
+    if (isStreamItemsRecord(asyncPayloadRecord)) {
       const items = asyncPayloadRecord.items;
       if (asyncPayloadRecord.isCompletedAsyncIterator) {
         // async iterable resolver just finished but there may be pending payloads
@@ -2195,7 +2195,7 @@ function yieldSubsequentPayloads(
     const promises: Array<Promise<IteratorResult<unknown>>> = [];
     exeContext.subsequentPayloads.forEach((asyncPayloadRecord) => {
       if (
-        isStreamPayload(asyncPayloadRecord) &&
+        isStreamItemsRecord(asyncPayloadRecord) &&
         asyncPayloadRecord.asyncIterator?.return
       ) {
         promises.push(asyncPayloadRecord.asyncIterator.return());
@@ -2272,7 +2272,7 @@ class DeferredFragmentRecord {
   }
 }
 
-class StreamRecord {
+class StreamItemsRecord {
   type: 'stream';
   errors: Array<GraphQLError>;
   label: string | undefined;
@@ -2327,10 +2327,10 @@ class StreamRecord {
   }
 }
 
-type AsyncPayloadRecord = DeferredFragmentRecord | StreamRecord;
+type AsyncPayloadRecord = DeferredFragmentRecord | StreamItemsRecord;
 
-function isStreamPayload(
+function isStreamItemsRecord(
   asyncPayload: AsyncPayloadRecord,
-): asyncPayload is StreamRecord {
+): asyncPayload is StreamItemsRecord {
   return asyncPayload.type === 'stream';
 }
