@@ -355,10 +355,10 @@ function executeFieldsSerially(
   parentType,
   sourceValue,
   path,
-  fields,
+  groupedFieldSet,
 ) {
   return (0, promiseReduce_js_1.promiseReduce)(
-    fields,
+    groupedFieldSet,
     (results, [responseName, fieldGroup]) => {
       const fieldPath = (0, Path_js_1.addPath)(
         path,
@@ -397,7 +397,7 @@ function executeFields(
   sourceValue,
   path,
   fields,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   const results = Object.create(null);
   let containsPromise = false;
@@ -414,7 +414,7 @@ function executeFields(
         sourceValue,
         fieldGroup,
         fieldPath,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       );
       if (result !== undefined) {
         results[responseName] = result;
@@ -455,7 +455,7 @@ function executeField(
   source,
   fieldGroup,
   path,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   const fieldName = fieldGroup[0].name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
@@ -494,7 +494,7 @@ function executeField(
         info,
         path,
         result,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       );
     }
     const completed = completeValue(
@@ -504,7 +504,7 @@ function executeField(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
     if ((0, isPromise_js_1.isPromise)(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
@@ -516,9 +516,9 @@ function executeField(
           returnType,
           fieldGroup,
           path,
-          asyncPayloadRecord,
+          incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+        filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
         return null;
       });
     }
@@ -530,9 +530,9 @@ function executeField(
       returnType,
       fieldGroup,
       path,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
     return null;
   }
 }
@@ -563,7 +563,7 @@ function handleFieldError(
   returnType,
   fieldGroup,
   path,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   const error = (0, locatedError_js_1.locatedError)(
     rawError,
@@ -575,7 +575,7 @@ function handleFieldError(
   if ((0, definition_js_1.isNonNullType)(returnType)) {
     throw error;
   }
-  const errors = asyncPayloadRecord?.errors ?? exeContext.errors;
+  const errors = incrementalDataRecord?.errors ?? exeContext.errors;
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   errors.push(error);
@@ -608,7 +608,7 @@ function completeValue(
   info,
   path,
   result,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
@@ -624,7 +624,7 @@ function completeValue(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
     if (completed === null) {
       throw new Error(
@@ -646,7 +646,7 @@ function completeValue(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
   }
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
@@ -664,7 +664,7 @@ function completeValue(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
   }
   // If field type is Object, execute and complete all sub-selections.
@@ -676,7 +676,7 @@ function completeValue(
       info,
       path,
       result,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
   }
   /* c8 ignore next 6 */
@@ -695,7 +695,7 @@ async function completePromisedValue(
   info,
   path,
   result,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   try {
     const resolved = await result;
@@ -706,7 +706,7 @@ async function completePromisedValue(
       info,
       path,
       resolved,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
     if ((0, isPromise_js_1.isPromise)(completed)) {
       completed = await completed;
@@ -719,9 +719,9 @@ async function completePromisedValue(
       returnType,
       fieldGroup,
       path,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
     return null;
   }
 }
@@ -775,8 +775,8 @@ async function completeAsyncIteratorValue(
   fieldGroup,
   info,
   path,
-  iterator,
-  asyncPayloadRecord,
+  asyncIterator,
+  incrementalDataRecord,
 ) {
   const stream = getStreamValues(exeContext, fieldGroup, path);
   let containsPromise = false;
@@ -792,14 +792,14 @@ async function completeAsyncIteratorValue(
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       executeStreamAsyncIterator(
         index,
-        iterator,
+        asyncIterator,
         exeContext,
         fieldGroup,
         info,
         itemType,
         path,
         stream.label,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       );
       break;
     }
@@ -807,7 +807,7 @@ async function completeAsyncIteratorValue(
     let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
-      iteration = await iterator.next();
+      iteration = await asyncIterator.next();
       if (iteration.done) {
         break;
       }
@@ -818,7 +818,7 @@ async function completeAsyncIteratorValue(
         itemType,
         fieldGroup,
         itemPath,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       );
       completedResults.push(null);
       break;
@@ -832,7 +832,7 @@ async function completeAsyncIteratorValue(
         fieldGroup,
         info,
         itemPath,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       )
     ) {
       containsPromise = true;
@@ -852,19 +852,19 @@ function completeListValue(
   info,
   path,
   result,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   const itemType = returnType.ofType;
   if ((0, isAsyncIterable_js_1.isAsyncIterable)(result)) {
-    const iterator = result[Symbol.asyncIterator]();
+    const asyncIterator = result[Symbol.asyncIterator]();
     return completeAsyncIteratorValue(
       exeContext,
       itemType,
       fieldGroup,
       info,
       path,
-      iterator,
-      asyncPayloadRecord,
+      asyncIterator,
+      incrementalDataRecord,
     );
   }
   if (!(0, isIterableObject_js_1.isIterableObject)(result)) {
@@ -876,7 +876,7 @@ function completeListValue(
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
-  let previousAsyncPayloadRecord = asyncPayloadRecord;
+  let previousIncrementalDataRecord = incrementalDataRecord;
   const completedResults = [];
   let index = 0;
   for (const item of result) {
@@ -888,7 +888,7 @@ function completeListValue(
       typeof stream.initialCount === 'number' &&
       index >= stream.initialCount
     ) {
-      previousAsyncPayloadRecord = executeStreamField(
+      previousIncrementalDataRecord = executeStreamField(
         path,
         itemPath,
         item,
@@ -897,7 +897,7 @@ function completeListValue(
         info,
         itemType,
         stream.label,
-        previousAsyncPayloadRecord,
+        previousIncrementalDataRecord,
       );
       index++;
       continue;
@@ -911,7 +911,7 @@ function completeListValue(
         fieldGroup,
         info,
         itemPath,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       )
     ) {
       containsPromise = true;
@@ -933,7 +933,7 @@ function completeListItemValue(
   fieldGroup,
   info,
   itemPath,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   if ((0, isPromise_js_1.isPromise)(item)) {
     completedResults.push(
@@ -944,7 +944,7 @@ function completeListItemValue(
         info,
         itemPath,
         item,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       ),
     );
     return true;
@@ -957,7 +957,7 @@ function completeListItemValue(
       info,
       itemPath,
       item,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
     if ((0, isPromise_js_1.isPromise)(completedItem)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
@@ -970,9 +970,9 @@ function completeListItemValue(
             itemType,
             fieldGroup,
             itemPath,
-            asyncPayloadRecord,
+            incrementalDataRecord,
           );
-          filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+          filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
           return null;
         }),
       );
@@ -986,9 +986,9 @@ function completeListItemValue(
       itemType,
       fieldGroup,
       itemPath,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
     completedResults.push(null);
   }
   return false;
@@ -1021,7 +1021,7 @@ function completeAbstractValue(
   info,
   path,
   result,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
@@ -1042,7 +1042,7 @@ function completeAbstractValue(
         info,
         path,
         result,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       ),
     );
   }
@@ -1060,7 +1060,7 @@ function completeAbstractValue(
     info,
     path,
     result,
-    asyncPayloadRecord,
+    incrementalDataRecord,
   );
 }
 function ensureValidRuntimeType(
@@ -1122,7 +1122,7 @@ function completeObjectValue(
   info,
   path,
   result,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
@@ -1140,7 +1140,7 @@ function completeObjectValue(
           fieldGroup,
           path,
           result,
-          asyncPayloadRecord,
+          incrementalDataRecord,
         );
       });
     }
@@ -1154,7 +1154,7 @@ function completeObjectValue(
     fieldGroup,
     path,
     result,
-    asyncPayloadRecord,
+    incrementalDataRecord,
   );
 }
 function invalidReturnTypeError(returnType, result, fieldGroup) {
@@ -1170,7 +1170,7 @@ function collectAndExecuteSubfields(
   fieldGroup,
   path,
   result,
-  asyncPayloadRecord,
+  incrementalDataRecord,
 ) {
   // Collect sub-fields to execute to complete this value.
   const { groupedFieldSet: subGroupedFieldSet, patches: subPatches } =
@@ -1181,7 +1181,7 @@ function collectAndExecuteSubfields(
     result,
     path,
     subGroupedFieldSet,
-    asyncPayloadRecord,
+    incrementalDataRecord,
   );
   for (const subPatch of subPatches) {
     const { label, groupedFieldSet: subPatchGroupedFieldSet } = subPatch;
@@ -1192,7 +1192,7 @@ function collectAndExecuteSubfields(
       subPatchGroupedFieldSet,
       label,
       path,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
   }
   return subFields;
@@ -1462,7 +1462,7 @@ function executeDeferredFragment(
   path,
   parentContext,
 ) {
-  const asyncPayloadRecord = new DeferredFragmentRecord({
+  const incrementalDataRecord = new DeferredFragmentRecord({
     label,
     path,
     parentContext,
@@ -1476,19 +1476,19 @@ function executeDeferredFragment(
       sourceValue,
       path,
       fields,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
     if ((0, isPromise_js_1.isPromise)(promiseOrData)) {
       promiseOrData = promiseOrData.then(null, (e) => {
-        asyncPayloadRecord.errors.push(e);
+        incrementalDataRecord.errors.push(e);
         return null;
       });
     }
   } catch (e) {
-    asyncPayloadRecord.errors.push(e);
+    incrementalDataRecord.errors.push(e);
     promiseOrData = null;
   }
-  asyncPayloadRecord.addData(promiseOrData);
+  incrementalDataRecord.addData(promiseOrData);
 }
 function executeStreamField(
   path,
@@ -1501,7 +1501,7 @@ function executeStreamField(
   label,
   parentContext,
 ) {
-  const asyncPayloadRecord = new StreamRecord({
+  const incrementalDataRecord = new StreamItemsRecord({
     label,
     path: itemPath,
     parentContext,
@@ -1515,17 +1515,17 @@ function executeStreamField(
       info,
       itemPath,
       item,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     ).then(
       (value) => [value],
       (error) => {
-        asyncPayloadRecord.errors.push(error);
-        filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+        incrementalDataRecord.errors.push(error);
+        filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
         return null;
       },
     );
-    asyncPayloadRecord.addItems(completedItems);
-    return asyncPayloadRecord;
+    incrementalDataRecord.addItems(completedItems);
+    return incrementalDataRecord;
   }
   let completedItem;
   try {
@@ -1537,7 +1537,7 @@ function executeStreamField(
         info,
         itemPath,
         item,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       );
     } catch (rawError) {
       handleFieldError(
@@ -1546,16 +1546,16 @@ function executeStreamField(
         itemType,
         fieldGroup,
         itemPath,
-        asyncPayloadRecord,
+        incrementalDataRecord,
       );
       completedItem = null;
-      filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+      filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
     }
   } catch (error) {
-    asyncPayloadRecord.errors.push(error);
-    filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-    asyncPayloadRecord.addItems(null);
-    return asyncPayloadRecord;
+    incrementalDataRecord.errors.push(error);
+    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+    incrementalDataRecord.addItems(null);
+    return incrementalDataRecord;
   }
   if ((0, isPromise_js_1.isPromise)(completedItem)) {
     const completedItems = completedItem
@@ -1566,39 +1566,39 @@ function executeStreamField(
           itemType,
           fieldGroup,
           itemPath,
-          asyncPayloadRecord,
+          incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+        filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
         return null;
       })
       .then(
         (value) => [value],
         (error) => {
-          asyncPayloadRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+          incrementalDataRecord.errors.push(error);
+          filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
           return null;
         },
       );
-    asyncPayloadRecord.addItems(completedItems);
-    return asyncPayloadRecord;
+    incrementalDataRecord.addItems(completedItems);
+    return incrementalDataRecord;
   }
-  asyncPayloadRecord.addItems([completedItem]);
-  return asyncPayloadRecord;
+  incrementalDataRecord.addItems([completedItem]);
+  return incrementalDataRecord;
 }
 async function executeStreamAsyncIteratorItem(
-  iterator,
+  asyncIterator,
   exeContext,
   fieldGroup,
   info,
   itemType,
-  asyncPayloadRecord,
+  incrementalDataRecord,
   itemPath,
 ) {
   let item;
   try {
-    const { value, done } = await iterator.next();
+    const { value, done } = await asyncIterator.next();
     if (done) {
-      asyncPayloadRecord.setIsCompletedIterator();
+      incrementalDataRecord.setIsCompletedAsyncIterator();
       return { done, value: undefined };
     }
     item = value;
@@ -1609,9 +1609,9 @@ async function executeStreamAsyncIteratorItem(
       itemType,
       fieldGroup,
       itemPath,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
-    // don't continue if iterator throws
+    // don't continue if async iterator throws
     return { done: true, value: null };
   }
   let completedItem;
@@ -1623,7 +1623,7 @@ async function executeStreamAsyncIteratorItem(
       info,
       itemPath,
       item,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
     if ((0, isPromise_js_1.isPromise)(completedItem)) {
       completedItem = completedItem.then(undefined, (rawError) => {
@@ -1633,9 +1633,9 @@ async function executeStreamAsyncIteratorItem(
           itemType,
           fieldGroup,
           itemPath,
-          asyncPayloadRecord,
+          incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+        filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
         return null;
       });
     }
@@ -1647,15 +1647,15 @@ async function executeStreamAsyncIteratorItem(
       itemType,
       fieldGroup,
       itemPath,
-      asyncPayloadRecord,
+      incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, itemPath, asyncPayloadRecord);
+    filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
     return { done: false, value: null };
   }
 }
 async function executeStreamAsyncIterator(
   initialIndex,
-  iterator,
+  asyncIterator,
   exeContext,
   fieldGroup,
   info,
@@ -1665,36 +1665,36 @@ async function executeStreamAsyncIterator(
   parentContext,
 ) {
   let index = initialIndex;
-  let previousAsyncPayloadRecord = parentContext ?? undefined;
+  let previousIncrementalDataRecord = parentContext ?? undefined;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
-    const asyncPayloadRecord = new StreamRecord({
+    const incrementalDataRecord = new StreamItemsRecord({
       label,
       path: itemPath,
-      parentContext: previousAsyncPayloadRecord,
-      iterator,
+      parentContext: previousIncrementalDataRecord,
+      asyncIterator,
       exeContext,
     });
     let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
       iteration = await executeStreamAsyncIteratorItem(
-        iterator,
+        asyncIterator,
         exeContext,
         fieldGroup,
         info,
         itemType,
-        asyncPayloadRecord,
+        incrementalDataRecord,
         itemPath,
       );
     } catch (error) {
-      asyncPayloadRecord.errors.push(error);
-      filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
-      asyncPayloadRecord.addItems(null);
+      incrementalDataRecord.errors.push(error);
+      filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+      incrementalDataRecord.addItems(null);
       // entire stream has errored and bubbled upwards
-      if (iterator?.return) {
-        iterator.return().catch(() => {
+      if (asyncIterator?.return) {
+        asyncIterator.return().catch(() => {
           // ignore errors
         });
       }
@@ -1706,69 +1706,76 @@ async function executeStreamAsyncIterator(
       completedItems = completedItem.then(
         (value) => [value],
         (error) => {
-          asyncPayloadRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, asyncPayloadRecord);
+          incrementalDataRecord.errors.push(error);
+          filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
           return null;
         },
       );
     } else {
       completedItems = [completedItem];
     }
-    asyncPayloadRecord.addItems(completedItems);
+    incrementalDataRecord.addItems(completedItems);
     if (done) {
       break;
     }
-    previousAsyncPayloadRecord = asyncPayloadRecord;
+    previousIncrementalDataRecord = incrementalDataRecord;
     index++;
   }
 }
-function filterSubsequentPayloads(exeContext, nullPath, currentAsyncRecord) {
+function filterSubsequentPayloads(
+  exeContext,
+  nullPath,
+  currentIncrementalDataRecord,
+) {
   const nullPathArray = (0, Path_js_1.pathToArray)(nullPath);
-  exeContext.subsequentPayloads.forEach((asyncRecord) => {
-    if (asyncRecord === currentAsyncRecord) {
+  exeContext.subsequentPayloads.forEach((incrementalDataRecord) => {
+    if (incrementalDataRecord === currentIncrementalDataRecord) {
       // don't remove payload from where error originates
       return;
     }
     for (let i = 0; i < nullPathArray.length; i++) {
-      if (asyncRecord.path[i] !== nullPathArray[i]) {
-        // asyncRecord points to a path unaffected by this payload
+      if (incrementalDataRecord.path[i] !== nullPathArray[i]) {
+        // incrementalDataRecord points to a path unaffected by this payload
         return;
       }
     }
-    // asyncRecord path points to nulled error field
-    if (isStreamPayload(asyncRecord) && asyncRecord.iterator?.return) {
-      asyncRecord.iterator.return().catch(() => {
+    // incrementalDataRecord path points to nulled error field
+    if (
+      isStreamItemsRecord(incrementalDataRecord) &&
+      incrementalDataRecord.asyncIterator?.return
+    ) {
+      incrementalDataRecord.asyncIterator.return().catch(() => {
         // ignore error
       });
     }
-    exeContext.subsequentPayloads.delete(asyncRecord);
+    exeContext.subsequentPayloads.delete(incrementalDataRecord);
   });
 }
 function getCompletedIncrementalResults(exeContext) {
   const incrementalResults = [];
-  for (const asyncPayloadRecord of exeContext.subsequentPayloads) {
+  for (const incrementalDataRecord of exeContext.subsequentPayloads) {
     const incrementalResult = {};
-    if (!asyncPayloadRecord.isCompleted) {
+    if (!incrementalDataRecord.isCompleted) {
       continue;
     }
-    exeContext.subsequentPayloads.delete(asyncPayloadRecord);
-    if (isStreamPayload(asyncPayloadRecord)) {
-      const items = asyncPayloadRecord.items;
-      if (asyncPayloadRecord.isCompletedIterator) {
+    exeContext.subsequentPayloads.delete(incrementalDataRecord);
+    if (isStreamItemsRecord(incrementalDataRecord)) {
+      const items = incrementalDataRecord.items;
+      if (incrementalDataRecord.isCompletedAsyncIterator) {
         // async iterable resolver just finished but there may be pending payloads
         continue;
       }
       incrementalResult.items = items;
     } else {
-      const data = asyncPayloadRecord.data;
+      const data = incrementalDataRecord.data;
       incrementalResult.data = data ?? null;
     }
-    incrementalResult.path = asyncPayloadRecord.path;
-    if (asyncPayloadRecord.label != null) {
-      incrementalResult.label = asyncPayloadRecord.label;
+    incrementalResult.path = incrementalDataRecord.path;
+    if (incrementalDataRecord.label != null) {
+      incrementalResult.label = incrementalDataRecord.label;
     }
-    if (asyncPayloadRecord.errors.length > 0) {
-      incrementalResult.errors = asyncPayloadRecord.errors;
+    if (incrementalDataRecord.errors.length > 0) {
+      incrementalResult.errors = incrementalDataRecord.errors;
     }
     incrementalResults.push(incrementalResult);
   }
@@ -1802,12 +1809,12 @@ function yieldSubsequentPayloads(exeContext) {
   }
   function returnStreamIterators() {
     const promises = [];
-    exeContext.subsequentPayloads.forEach((asyncPayloadRecord) => {
+    exeContext.subsequentPayloads.forEach((incrementalDataRecord) => {
       if (
-        isStreamPayload(asyncPayloadRecord) &&
-        asyncPayloadRecord.iterator?.return
+        isStreamItemsRecord(incrementalDataRecord) &&
+        incrementalDataRecord.asyncIterator?.return
       ) {
-        promises.push(asyncPayloadRecord.iterator.return());
+        promises.push(incrementalDataRecord.asyncIterator.return());
       }
     });
     return Promise.all(promises);
@@ -1858,14 +1865,14 @@ class DeferredFragmentRecord {
     this._resolve?.(data);
   }
 }
-class StreamRecord {
+class StreamItemsRecord {
   constructor(opts) {
     this.type = 'stream';
     this.items = null;
     this.label = opts.label;
     this.path = (0, Path_js_1.pathToArray)(opts.path);
     this.parentContext = opts.parentContext;
-    this.iterator = opts.iterator;
+    this.asyncIterator = opts.asyncIterator;
     this.errors = [];
     this._exeContext = opts.exeContext;
     this._exeContext.subsequentPayloads.add(this);
@@ -1888,10 +1895,10 @@ class StreamRecord {
     }
     this._resolve?.(items);
   }
-  setIsCompletedIterator() {
-    this.isCompletedIterator = true;
+  setIsCompletedAsyncIterator() {
+    this.isCompletedAsyncIterator = true;
   }
 }
-function isStreamPayload(asyncPayload) {
-  return asyncPayload.type === 'stream';
+function isStreamItemsRecord(incrementalDataRecord) {
+  return incrementalDataRecord.type === 'stream';
 }

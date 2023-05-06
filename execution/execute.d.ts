@@ -56,7 +56,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  subsequentPayloads: Set<AsyncPayloadRecord>;
+  subsequentPayloads: Set<IncrementalDataRecord>;
 }
 /**
  * The result of GraphQL execution.
@@ -338,40 +338,40 @@ declare class DeferredFragmentRecord {
   path: Array<string | number>;
   promise: Promise<void>;
   data: ObjMap<unknown> | null;
-  parentContext: AsyncPayloadRecord | undefined;
+  parentContext: IncrementalDataRecord | undefined;
   isCompleted: boolean;
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
-    parentContext: AsyncPayloadRecord | undefined;
+    parentContext: IncrementalDataRecord | undefined;
     exeContext: ExecutionContext;
   });
   addData(data: PromiseOrValue<ObjMap<unknown> | null>): void;
 }
-declare class StreamRecord {
+declare class StreamItemsRecord {
   type: 'stream';
   errors: Array<GraphQLError>;
   label: string | undefined;
   path: Array<string | number>;
   items: Array<unknown> | null;
   promise: Promise<void>;
-  parentContext: AsyncPayloadRecord | undefined;
-  iterator: AsyncIterator<unknown> | undefined;
-  isCompletedIterator?: boolean;
+  parentContext: IncrementalDataRecord | undefined;
+  asyncIterator: AsyncIterator<unknown> | undefined;
+  isCompletedAsyncIterator?: boolean;
   isCompleted: boolean;
   _exeContext: ExecutionContext;
   _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
-    iterator?: AsyncIterator<unknown>;
-    parentContext: AsyncPayloadRecord | undefined;
+    asyncIterator?: AsyncIterator<unknown>;
+    parentContext: IncrementalDataRecord | undefined;
     exeContext: ExecutionContext;
   });
   addItems(items: PromiseOrValue<Array<unknown> | null>): void;
-  setIsCompletedIterator(): void;
+  setIsCompletedAsyncIterator(): void;
 }
-type AsyncPayloadRecord = DeferredFragmentRecord | StreamRecord;
+type IncrementalDataRecord = DeferredFragmentRecord | StreamItemsRecord;
 export {};
