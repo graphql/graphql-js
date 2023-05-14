@@ -146,11 +146,10 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
-        incremental: [{ items: ['banana'], path: ['scalarList'] }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['coconut'], path: ['scalarList'] }],
+        incremental: [
+          { items: ['banana'], path: ['scalarList'] },
+          { items: ['coconut'], path: ['scalarList'] },
+        ],
         completed: [{ path: ['scalarList'] }],
         hasNext: false,
       },
@@ -170,15 +169,11 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
-        incremental: [{ items: ['apple'], path: ['scalarList'] }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['banana'], path: ['scalarList'] }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['coconut'], path: ['scalarList'] }],
+        incremental: [
+          { items: ['apple'], path: ['scalarList'] },
+          { items: ['banana'], path: ['scalarList'] },
+          { items: ['coconut'], path: ['scalarList'] },
+        ],
         completed: [{ path: ['scalarList'] }],
         hasNext: false,
       },
@@ -228,11 +223,6 @@ describe('Execute: stream directive', () => {
             items: ['banana'],
             path: ['scalarList'],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: ['coconut'],
             path: ['scalarList'],
@@ -297,11 +287,6 @@ describe('Execute: stream directive', () => {
             items: [['banana', 'banana', 'banana']],
             path: ['scalarListList'],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [['coconut', 'coconut', 'coconut']],
             path: ['scalarListList'],
@@ -384,20 +369,10 @@ describe('Execute: stream directive', () => {
             items: [{ name: 'Luke', id: '1' }],
             path: ['friendList'],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ name: 'Han', id: '2' }],
             path: ['friendList'],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ name: 'Leia', id: '3' }],
             path: ['friendList'],
@@ -542,11 +517,6 @@ describe('Execute: stream directive', () => {
               },
             ],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ name: 'Leia', id: '3' }],
             path: ['friendList'],
@@ -961,11 +931,6 @@ describe('Execute: stream directive', () => {
               },
             ],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ nonNullName: 'Han' }],
             path: ['friendList'],
@@ -1012,11 +977,6 @@ describe('Execute: stream directive', () => {
               },
             ],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ nonNullName: 'Han' }],
             path: ['friendList'],
@@ -1147,11 +1107,6 @@ describe('Execute: stream directive', () => {
               },
             ],
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ nonNullName: 'Han' }],
             path: ['friendList'],
@@ -1475,11 +1430,10 @@ describe('Execute: stream directive', () => {
             path: ['nestedObject', 'nestedFriendList'],
           },
         ],
-        completed: [{ path: ['otherNestedObject'] }],
-        hasNext: true,
-      },
-      {
-        completed: [{ path: ['nestedObject', 'nestedFriendList'] }],
+        completed: [
+          { path: ['otherNestedObject'] },
+          { path: ['nestedObject', 'nestedFriendList'] },
+        ],
         hasNext: false,
       },
     ]);
@@ -1585,9 +1539,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
         completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
@@ -1739,9 +1690,6 @@ describe('Execute: stream directive', () => {
             path: ['friendList'],
           },
         ],
-        hasNext: true,
-      },
-      {
         completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
@@ -1792,17 +1740,12 @@ describe('Execute: stream directive', () => {
             items: [{ id: '1', name: 'Luke' }],
             path: ['nestedObject', 'nestedFriendList'],
           },
-        ],
-        completed: [{ path: ['nestedObject'] }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [{ id: '2', name: 'Han' }],
             path: ['nestedObject', 'nestedFriendList'],
           },
         ],
+        completed: [{ path: ['nestedObject'] }],
         hasNext: true,
       },
       {
@@ -1863,6 +1806,10 @@ describe('Execute: stream directive', () => {
             data: { scalarField: 'slow', nestedFriendList: [] },
             path: ['nestedObject'],
           },
+          {
+            items: [{ name: 'Luke' }],
+            path: ['nestedObject', 'nestedFriendList'],
+          },
         ],
         completed: [{ path: ['nestedObject'] }],
         hasNext: true,
@@ -1874,7 +1821,7 @@ describe('Execute: stream directive', () => {
       value: {
         incremental: [
           {
-            items: [{ name: 'Luke' }],
+            items: [{ name: 'Han' }],
             path: ['nestedObject', 'nestedFriendList'],
           },
         ],
@@ -1885,26 +1832,13 @@ describe('Execute: stream directive', () => {
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
       value: {
-        incremental: [
-          {
-            items: [{ name: 'Han' }],
-            path: ['nestedObject', 'nestedFriendList'],
-          },
-        ],
-        hasNext: true,
-      },
-      done: false,
-    });
-    const result5 = await iterator.next();
-    expectJSON(result5).toDeepEqual({
-      value: {
         completed: [{ path: ['nestedObject', 'nestedFriendList'] }],
         hasNext: false,
       },
       done: false,
     });
-    const result6 = await iterator.next();
-    expectJSON(result6).toDeepEqual({
+    const result5 = await iterator.next();
+    expectJSON(result5).toDeepEqual({
       value: undefined,
       done: true,
     });

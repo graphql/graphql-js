@@ -162,6 +162,12 @@ export interface FormattedCompletedResult {
   errors?: ReadonlyArray<GraphQLError>;
 }
 
+interface IncrementalAggregate {
+  newPendingSources: Set<DeferredFragmentRecord | StreamRecord>;
+  incrementalResults: Array<IncrementalResult>;
+  completedResults: Array<CompletedResult>;
+}
+
 /**
  * This class is used to publish incremental results to the client, enabling semi-concurrent
  * execution while preserving result order.
@@ -399,20 +405,28 @@ export class IncrementalPublisher {
           return { value: undefined, done: true };
         }
 
-        for (const item of this._released) {
-          this._pending.delete(item);
-        }
-        const released = this._released;
-        this._released = new Set();
+        if (this._released.size > 0) {
+          let aggregate = this._incrementalInitializer();
+          do {
+            for (const item of this._released) {
+              this._pending.delete(item);
+            }
+            const released = this._released;
+            this._released = new Set();
 
-        const result = this._getIncrementalResult(released);
+            aggregate = this._incrementalReducer(aggregate, released);
+          } while (this._released.size > 0);
 
-        if (this._pending.size === 0) {
-          isDone = true;
-        }
+          const hasNext = this._pending.size > 0;
 
-        if (result !== undefined) {
-          return { value: result, done: false };
+          if (!hasNext) {
+            isDone = true;
+          }
+
+          return {
+            value: this._incrementalFinalizer(aggregate),
+            done: false,
+          };
         }
 
         // eslint-disable-next-line no-await-in-loop
@@ -494,37 +508,20 @@ export class IncrementalPublisher {
     this._trigger();
   }
 
-  private _getIncrementalResult(
-    completedRecords: ReadonlySet<SubsequentResultRecord>,
-  ): SubsequentIncrementalExecutionResult | undefined {
-    const { pending, incremental, completed } =
-      this._processPending(completedRecords);
-
-    const hasNext = this._pending.size > 0;
-    if (incremental.length === 0 && completed.length === 0 && hasNext) {
-      return undefined;
-    }
-
-    const result: SubsequentIncrementalExecutionResult = { hasNext };
-    if (pending.length) {
-      result.pending = pending;
-    }
-    if (incremental.length) {
-      result.incremental = incremental;
-    }
-    if (completed.length) {
-      result.completed = completed;
-    }
-
-    return result;
+  private _incrementalInitializer(): IncrementalAggregate {
+    return {
+      newPendingSources: new Set<DeferredFragmentRecord | StreamRecord>(),
+      incrementalResults: [],
+      completedResults: [],
+    };
   }
 
-  private _processPending(
+  private _incrementalReducer(
+    aggregate: IncrementalAggregate,
     completedRecords: ReadonlySet<SubsequentResultRecord>,
-  ): IncrementalUpdate {
-    const newPendingSources = new Set<DeferredFragmentRecord | StreamRecord>();
-    const incrementalResults: Array<IncrementalResult> = [];
-    const completedResults: Array<CompletedResult> = [];
+  ): IncrementalAggregate {
+    const { newPendingSources, incrementalResults, completedResults } =
+      aggregate;
     for (const subsequentResultRecord of completedRecords) {
       for (const child of subsequentResultRecord.children) {
         if (child.filtered) {
@@ -585,11 +582,30 @@ export class IncrementalPublisher {
       }
     }
 
-    return {
-      pending: this.pendingSourcesToResults(newPendingSources),
-      incremental: incrementalResults,
-      completed: completedResults,
+    return aggregate;
+  }
+
+  private _incrementalFinalizer(
+    aggregate: IncrementalAggregate,
+  ): SubsequentIncrementalExecutionResult {
+    const { newPendingSources, incrementalResults, completedResults } =
+      aggregate;
+    const pendingResults = this.pendingSourcesToResults(newPendingSources);
+
+    const result: SubsequentIncrementalExecutionResult = {
+      hasNext: this._pending.size > 0,
     };
+    if (pendingResults.length) {
+      result.pending = pendingResults;
+    }
+    if (incrementalResults.length) {
+      result.incremental = incrementalResults;
+    }
+    if (completedResults.length) {
+      result.completed = completedResults;
+    }
+
+    return result;
   }
 
   private _completedRecordToResult(
