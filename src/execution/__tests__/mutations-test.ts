@@ -237,6 +237,7 @@ describe('Execute: Handles mutation execution ordering', () => {
           first: {},
           second: { theNumber: 2 },
         },
+        pending: [{ path: ['first'], label: 'defer-label' }],
         hasNext: true,
       },
       {
@@ -312,6 +313,7 @@ describe('Execute: Handles mutation execution ordering', () => {
         data: {
           second: { theNumber: 2 },
         },
+        pending: [{ path: [], label: 'defer-label' }],
         hasNext: true,
       },
       {
