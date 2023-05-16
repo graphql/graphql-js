@@ -383,13 +383,13 @@ function executeFields(
   parentType,
   sourceValue,
   path,
-  fields,
+  groupedFieldSet,
   incrementalDataRecord,
 ) {
   const results = Object.create(null);
   let containsPromise = false;
   try {
-    for (const [responseName, fieldGroup] of fields) {
+    for (const [responseName, fieldGroup] of groupedFieldSet) {
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = executeField(
         exeContext,
