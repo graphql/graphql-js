@@ -1555,10 +1555,10 @@ describe('Introspection', () => {
 
     const source = `
       {
-        a: __type(name: "SomeInputObject") {
+        oneOfInputObject: __type(name: "SomeInputObject") {
           isOneOf
         }
-        b: __type(name: "AnotherInputObject") {
+        inputObject: __type(name: "AnotherInputObject") {
           isOneOf
         }
       }
@@ -1566,10 +1566,10 @@ describe('Introspection', () => {
 
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
-        a: {
+        oneOfInputObject: {
           isOneOf: true,
         },
-        b: {
+        inputObject: {
           isOneOf: false,
         },
       },
@@ -1578,37 +1578,37 @@ describe('Introspection', () => {
 
   it('returns null for oneOf for other types', () => {
     const schema = buildSchema(`
-      type A implements I {
-        a: String
+      type SomeObject implements SomeInterface {
+        fieldA: String
       }
-      enum E {
-        A
+      enum SomeEnum {
+        SomeObject
       }
-      interface I {
-        a: String
+      interface SomeInterface {
+        fieldA: String
       }
-      union U = A
+      union SomeUnion = SomeObject
       type Query {
-        someField(e: E): U
-        anotherField(e: E): I
+        someField(enum: SomeEnum): SomeUnion
+        anotherField(enum: SomeEnum): SomeInterface
       }
     `);
 
     const source = `
       {
-        a: __type(name: "A") {
+        object: __type(name: "SomeObject") {
           isOneOf
         }
-        e: __type(name: "E") {
+        enum: __type(name: "SomeEnum") {
           isOneOf
         }
-        i: __type(name: "I") {
+        interface: __type(name: "SomeInterface") {
           isOneOf
         }
-        o: __type(name: "String") {
+        scalar: __type(name: "String") {
           isOneOf
         }
-        u: __type(name: "U") {
+        union: __type(name: "SomeUnion") {
           isOneOf
         }
       }
@@ -1616,21 +1616,11 @@ describe('Introspection', () => {
 
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
-        a: {
-          isOneOf: null,
-        },
-        e: {
-          isOneOf: null,
-        },
-        i: {
-          isOneOf: null,
-        },
-        o: {
-          isOneOf: null,
-        },
-        u: {
-          isOneOf: null,
-        },
+        object: { isOneOf: null },
+        enum: { isOneOf: null },
+        interface: { isOneOf: null },
+        scalar: { isOneOf: null },
+        union: { isOneOf: null },
       },
     });
   });

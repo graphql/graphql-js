@@ -292,7 +292,8 @@ describe('coerceInputValue', () => {
       const result = coerceValue({ foo: 123, bar: null }, TestInputObject);
       expectErrors(result).to.deep.equal([
         {
-          error: 'Exactly one key must be specified.',
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
           path: [],
           value: { foo: 123, bar: null },
         },
@@ -335,7 +336,8 @@ describe('coerceInputValue', () => {
           value: 'def',
         },
         {
-          error: 'Exactly one key must be specified.',
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
           path: [],
           value: { foo: 'abc', bar: 'def' },
         },
@@ -367,7 +369,8 @@ describe('coerceInputValue', () => {
           value: { bart: 123 },
         },
         {
-          error: 'Exactly one key must be specified.',
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
           path: [],
           value: { bart: 123 },
         },

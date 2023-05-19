@@ -149,7 +149,9 @@ function coerceInputValueImpl(
         onError(
           pathToArray(path),
           inputValue,
-          new GraphQLError('Exactly one key must be specified.'),
+          new GraphQLError(
+            `Exactly one key must be specified for OneOf type "${type.name}".`,
+          ),
         );
       }
 

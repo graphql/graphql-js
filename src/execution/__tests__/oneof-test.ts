@@ -23,10 +23,6 @@ const schema = buildSchema(`
     a: String
     b: Int
   }
-
-  schema {
-    query: Query
-  }
 `);
 
 function executeQuery(
@@ -85,6 +81,8 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 23, line: 3 }],
             message:
+              // This type of error would be caught at validation-time
+              // hence the vague error message here.
               'Argument "input" of non-null type "TestInputObject!" must not be null.',
             path: ['test'],
           },
@@ -154,7 +152,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" got invalid value { a: "abc", b: 123 }; Exactly one key must be specified.',
+              'Variable "$input" got invalid value { a: "abc", b: 123 }; Exactly one key must be specified for OneOf type "TestInputObject".',
           },
         ],
       });
@@ -178,7 +176,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" got invalid value { a: "abc", b: null }; Exactly one key must be specified.',
+              'Variable "$input" got invalid value { a: "abc", b: null }; Exactly one key must be specified for OneOf type "TestInputObject".',
           },
         ],
       });
