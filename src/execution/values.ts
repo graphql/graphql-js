@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect.js';
-import { keyMap } from '../jsutils/keyMap.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import { printPathArray } from '../jsutils/printPathArray.js';
@@ -92,7 +91,7 @@ function coerceVariableValues(
       continue;
     }
 
-    if (!hasOwnProperty(inputs, varName)) {
+    if (!Object.hasOwn(inputs, varName)) {
       if (varDefNode.defaultValue) {
         coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
       } else if (isNonNullType(varType)) {
@@ -159,14 +158,14 @@ export function getArgumentValues(
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
   const argumentNodes = node.arguments ?? [];
-  const argNodeMap = keyMap(argumentNodes, (arg) => arg.name.value);
+  const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
 
   for (const argDef of def.args) {
     const name = argDef.name;
     const argType = argDef.type;
-    const argumentNode = argNodeMap[name];
+    const argumentNode = argNodeMap.get(name);
 
-    if (!argumentNode) {
+    if (argumentNode == null) {
       if (argDef.defaultValue !== undefined) {
         coercedValues[name] = argDef.defaultValue;
       } else if (isNonNullType(argType)) {
@@ -186,7 +185,7 @@ export function getArgumentValues(
       const variableName = valueNode.name.value;
       if (
         variableValues == null ||
-        !hasOwnProperty(variableValues, variableName)
+        !Object.hasOwn(variableValues, variableName)
       ) {
         if (argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
@@ -248,8 +247,4 @@ export function getDirectiveValues(
   if (directiveNode) {
     return getArgumentValues(directiveDef, directiveNode, variableValues);
   }
-}
-
-function hasOwnProperty(obj: unknown, prop: string): boolean {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
 }

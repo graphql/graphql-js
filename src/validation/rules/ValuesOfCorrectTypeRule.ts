@@ -67,9 +67,11 @@ export function ValuesOfCorrectTypeRule(
         return false; // Don't traverse further.
       }
       // Ensure every required field exists.
-      const fieldNodeMap = keyMap(node.fields, (field) => field.name.value);
+      const fieldNodeMap = new Map(
+        node.fields.map((field) => [field.name.value, field]),
+      );
       for (const fieldDef of Object.values(type.getFields())) {
-        const fieldNode = fieldNodeMap[fieldDef.name];
+        const fieldNode = fieldNodeMap.get(fieldDef.name);
         if (!fieldNode && isRequiredInputField(fieldDef)) {
           const typeStr = inspect(fieldDef.type);
           context.reportError(

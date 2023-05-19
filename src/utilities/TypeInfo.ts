@@ -88,39 +88,27 @@ export class TypeInfo {
   }
 
   getType(): Maybe<GraphQLOutputType> {
-    if (this._typeStack.length > 0) {
-      return this._typeStack[this._typeStack.length - 1];
-    }
+    return this._typeStack.at(-1);
   }
 
   getParentType(): Maybe<GraphQLCompositeType> {
-    if (this._parentTypeStack.length > 0) {
-      return this._parentTypeStack[this._parentTypeStack.length - 1];
-    }
+    return this._parentTypeStack.at(-1);
   }
 
   getInputType(): Maybe<GraphQLInputType> {
-    if (this._inputTypeStack.length > 0) {
-      return this._inputTypeStack[this._inputTypeStack.length - 1];
-    }
+    return this._inputTypeStack.at(-1);
   }
 
   getParentInputType(): Maybe<GraphQLInputType> {
-    if (this._inputTypeStack.length > 1) {
-      return this._inputTypeStack[this._inputTypeStack.length - 2];
-    }
+    return this._inputTypeStack.at(-2);
   }
 
   getFieldDef(): Maybe<GraphQLField<unknown, unknown>> {
-    if (this._fieldDefStack.length > 0) {
-      return this._fieldDefStack[this._fieldDefStack.length - 1];
-    }
+    return this._fieldDefStack.at(-1);
   }
 
   getDefaultValue(): Maybe<unknown> {
-    if (this._defaultValueStack.length > 0) {
-      return this._defaultValueStack[this._defaultValueStack.length - 1];
-    }
+    return this._defaultValueStack.at(-1);
   }
 
   getDirective(): Maybe<GraphQLDirective> {
@@ -220,7 +208,7 @@ export class TypeInfo {
         let inputField: GraphQLInputField | undefined;
         if (isInputObjectType(objectType)) {
           inputField = objectType.getFields()[node.name.value];
-          if (inputField) {
+          if (inputField != null) {
             inputFieldType = inputField.type;
           }
         }

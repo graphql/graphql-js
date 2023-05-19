@@ -17,7 +17,7 @@ export function inlineInvariant(context: ts.TransformationContext) {
   return visitSourceFile;
 
   function visitSourceFile(sourceFile: ts.SourceFile) {
-    return ts.visitNode(sourceFile, visitNode);
+    return ts.visitNode(sourceFile, visitNode, ts.isSourceFile);
   }
 
   function visitNode(node: ts.Node): ts.Node {

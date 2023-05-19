@@ -1,5 +1,6 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
 
+import type { DirectiveNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
@@ -18,7 +19,7 @@ import type { ValidationContext } from '../ValidationContext.js';
 export function DeferStreamDirectiveLabelRule(
   context: ValidationContext,
 ): ASTVisitor {
-  const knownLabels = Object.create(null);
+  const knownLabels = new Map<string, DirectiveNode>();
   return {
     Directive(node) {
       if (
@@ -39,15 +40,19 @@ export function DeferStreamDirectiveLabelRule(
               { nodes: node },
             ),
           );
-        } else if (knownLabels[labelValue.value]) {
+          return;
+        }
+
+        const knownLabel = knownLabels.get(labelValue.value);
+        if (knownLabel != null) {
           context.reportError(
             new GraphQLError(
               'Defer/Stream directive label argument must be unique.',
-              { nodes: [knownLabels[labelValue.value], node] },
+              { nodes: [knownLabel, node] },
             ),
           );
         } else {
-          knownLabels[labelValue.value] = node;
+          knownLabels.set(labelValue.value, node);
         }
       }
     },

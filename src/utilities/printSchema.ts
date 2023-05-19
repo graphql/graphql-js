@@ -82,7 +82,7 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
 
   // Only print a schema definition if there is a description or if it should
   // not be omitted because of having default type names.
-  if (schema.description || !hasDefaultRootOperationTypes(schema)) {
+  if (schema.description != null || !hasDefaultRootOperationTypes(schema)) {
     return (
       printDescription(schema) +
       'schema {\n' +
@@ -234,7 +234,7 @@ function printArgs(
   }
 
   // If every arg does not have a description, print them on one line.
-  if (args.every((arg) => !arg.description)) {
+  if (args.every((arg) => arg.description == null)) {
     return '(' + args.map(printInputValue).join(', ') + ')';
   }
 
@@ -264,7 +264,7 @@ function printInputValue(arg: GraphQLInputField): string {
   return argDecl + printDeprecated(arg.deprecationReason);
 }
 
-function printDirective(directive: GraphQLDirective): string {
+export function printDirective(directive: GraphQLDirective): string {
   return (
     printDescription(directive) +
     'directive @' +
@@ -317,5 +317,5 @@ function printDescription(
   const prefix =
     indentation && !firstInBlock ? '\n' + indentation : indentation;
 
-  return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
+  return prefix + blockString.replaceAll('\n', '\n' + indentation) + '\n';
 }

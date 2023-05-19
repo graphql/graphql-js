@@ -1,6 +1,7 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
+  OperationTypeDefinitionNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
 } from '../../language/ast.js';
@@ -17,7 +18,7 @@ export function UniqueOperationTypesRule(
   context: SDLValidationContext,
 ): ASTVisitor {
   const schema = context.getSchema();
-  const definedOperationTypes = Object.create(null);
+  const definedOperationTypes = new Map<string, OperationTypeDefinitionNode>();
   const existingOperationTypes = schema
     ? {
         query: schema.getQueryType(),
@@ -40,7 +41,7 @@ export function UniqueOperationTypesRule(
 
     for (const operationType of operationTypesNodes) {
       const operation = operationType.operation;
-      const alreadyDefinedOperationType = definedOperationTypes[operation];
+      const alreadyDefinedOperationType = definedOperationTypes.get(operation);
 
       if (existingOperationTypes[operation]) {
         context.reportError(
@@ -57,7 +58,7 @@ export function UniqueOperationTypesRule(
           ),
         );
       } else {
-        definedOperationTypes[operation] = operationType;
+        definedOperationTypes.set(operation, operationType);
       }
     }
 

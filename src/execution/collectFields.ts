@@ -26,13 +26,17 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 
 import { getDirectiveValues } from './values.js';
 
+export type FieldGroup = ReadonlyArray<FieldNode>;
+
+export type GroupedFieldSet = Map<string, FieldGroup>;
+
 export interface PatchFields {
   label: string | undefined;
-  fields: Map<string, ReadonlyArray<FieldNode>>;
+  groupedFieldSet: GroupedFieldSet;
 }
 
 export interface FieldsAndPatches {
-  fields: Map<string, ReadonlyArray<FieldNode>>;
+  groupedFieldSet: GroupedFieldSet;
   patches: Array<PatchFields>;
 }
 
@@ -52,7 +56,7 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
 ): FieldsAndPatches {
-  const fields = new AccumulatorMap<string, FieldNode>();
+  const groupedFieldSet = new AccumulatorMap<string, FieldNode>();
   const patches: Array<PatchFields> = [];
   collectFieldsImpl(
     schema,
@@ -61,11 +65,11 @@ export function collectFields(
     operation,
     runtimeType,
     operation.selectionSet,
-    fields,
+    groupedFieldSet,
     patches,
     new Set(),
   );
-  return { fields, patches };
+  return { groupedFieldSet, patches };
 }
 
 /**
@@ -85,18 +89,18 @@ export function collectSubfields(
   variableValues: { [variable: string]: unknown },
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldGroup: FieldGroup,
 ): FieldsAndPatches {
-  const subFieldNodes = new AccumulatorMap<string, FieldNode>();
+  const subGroupedFieldSet = new AccumulatorMap<string, FieldNode>();
   const visitedFragmentNames = new Set<string>();
 
   const subPatches: Array<PatchFields> = [];
   const subFieldsAndPatches = {
-    fields: subFieldNodes,
+    groupedFieldSet: subGroupedFieldSet,
     patches: subPatches,
   };
 
-  for (const node of fieldNodes) {
+  for (const node of fieldGroup) {
     if (node.selectionSet) {
       collectFieldsImpl(
         schema,
@@ -105,7 +109,7 @@ export function collectSubfields(
         operation,
         returnType,
         node.selectionSet,
-        subFieldNodes,
+        subGroupedFieldSet,
         subPatches,
         visitedFragmentNames,
       );
@@ -122,7 +126,7 @@ function collectFieldsImpl(
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: AccumulatorMap<string, FieldNode>,
+  groupedFieldSet: AccumulatorMap<string, FieldNode>,
   patches: Array<PatchFields>,
   visitedFragmentNames: Set<string>,
 ): void {
@@ -132,7 +136,7 @@ function collectFieldsImpl(
         if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
-        fields.add(getFieldEntryKey(selection), selection);
+        groupedFieldSet.add(getFieldEntryKey(selection), selection);
         break;
       }
       case Kind.INLINE_FRAGMENT: {
@@ -160,7 +164,7 @@ function collectFieldsImpl(
           );
           patches.push({
             label: defer.label,
-            fields: patchFields,
+            groupedFieldSet: patchFields,
           });
         } else {
           collectFieldsImpl(
@@ -170,7 +174,7 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             selection.selectionSet,
-            fields,
+            groupedFieldSet,
             patches,
             visitedFragmentNames,
           );
@@ -191,7 +195,7 @@ function collectFieldsImpl(
 
         const fragment = fragments[fragName];
         if (
-          !fragment ||
+          fragment == null ||
           !doesFragmentConditionMatch(schema, fragment, runtimeType)
         ) {
           continue;
@@ -216,7 +220,7 @@ function collectFieldsImpl(
           );
           patches.push({
             label: defer.label,
-            fields: patchFields,
+            groupedFieldSet: patchFields,
           });
         } else {
           collectFieldsImpl(
@@ -226,7 +230,7 @@ function collectFieldsImpl(
             operation,
             runtimeType,
             fragment.selectionSet,
-            fields,
+            groupedFieldSet,
             patches,
             visitedFragmentNames,
           );

@@ -1,6 +1,5 @@
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
-import { keyMap } from '../jsutils/keyMap.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 
@@ -108,10 +107,12 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
-    const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
+    const fieldNodes = new Map(
+      valueNode.fields.map((field) => [field.name.value, field]),
+    );
     for (const field of Object.values(type.getFields())) {
-      const fieldNode = fieldNodes[field.name];
-      if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
+      const fieldNode = fieldNodes.get(field.name);
+      if (fieldNode == null || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {

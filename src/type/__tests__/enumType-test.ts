@@ -71,12 +71,12 @@ const QueryType = new GraphQLObjectType({
         provideBadValue: { type: GraphQLBoolean },
       },
       resolve(_source, { fromEnum, provideGoodValue, provideBadValue }) {
-        if (provideGoodValue) {
+        if (provideGoodValue === true) {
           // Note: this is one of the references of the internal values which
           // ComplexEnum allows.
           return Complex2;
         }
-        if (provideBadValue) {
+        if (provideBadValue === true) {
           // Note: similar shape, but not the same *reference*
           // as Complex2 above. Enum internal values require === equality.
           return { someRandomValue: 123 };
