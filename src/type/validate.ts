@@ -561,7 +561,7 @@ function validateOneOfInputObjectField(
     );
   }
 
-  if (field.defaultValue) {
+  if (field.defaultValue !== undefined) {
     context.reportError(
       `OneOf input field ${type.name}.${field.name} cannot have a default value.`,
       field.astNode,

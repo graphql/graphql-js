@@ -1,7 +1,5 @@
 import { didYouMean } from '../../jsutils/didYouMean.js';
 import { inspect } from '../../jsutils/inspect.js';
-import { keyMap } from '../../jsutils/keyMap.js';
-import type { ObjMap } from '../../jsutils/ObjMap.js';
 import { suggestionList } from '../../jsutils/suggestionList.js';
 
 import { GraphQLError } from '../../error/GraphQLError.js';
@@ -186,10 +184,10 @@ function validateOneOfInputObject(
   context: ValidationContext,
   node: ObjectValueNode,
   type: GraphQLInputObjectType,
-  fieldNodeMap: ObjMap<ObjectFieldNode>,
+  fieldNodeMap: Map<string, ObjectFieldNode>,
   variableDefinitions: { [key: string]: VariableDefinitionNode },
 ): void {
-  const keys = Object.keys(fieldNodeMap);
+  const keys = Array.from(fieldNodeMap.keys());
   const isNotExactlyOneField = keys.length !== 1;
 
   if (isNotExactlyOneField) {
@@ -202,9 +200,9 @@ function validateOneOfInputObject(
     return;
   }
 
-  const value = fieldNodeMap[keys[0]].value;
-  const isNullLiteral = value.kind === Kind.NULL;
-  const isVariable = value.kind === Kind.VARIABLE;
+  const value = fieldNodeMap.get(keys[0])?.value;
+  const isNullLiteral = !value || value.kind === Kind.NULL;
+  const isVariable = value?.kind === Kind.VARIABLE;
 
   if (isNullLiteral) {
     context.reportError(
