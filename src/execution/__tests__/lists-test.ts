@@ -141,12 +141,12 @@ describe('Execute: Accepts async iterables as list value', () => {
     }
 
     expectJSON(await complete({ listField })).toDeepEqual({
-      data: { listField: ['two', '4', null] },
+      data: { listField: null },
       errors: [
         {
           message: 'bad',
           locations: [{ line: 1, column: 3 }],
-          path: ['listField', 2],
+          path: ['listField'],
         },
       ],
     });

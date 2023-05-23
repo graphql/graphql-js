@@ -731,11 +731,11 @@ describe('Execute: stream directive', () => {
         {
           message: 'bad',
           locations: [{ line: 3, column: 9 }],
-          path: ['friendList', 1],
+          path: ['friendList'],
         },
       ],
       data: {
-        friendList: [{ name: 'Luke', id: '1' }, null],
+        friendList: null,
       },
     });
   });
@@ -764,13 +764,13 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [null],
+            items: null,
             path: ['friendList', 1],
             errors: [
               {
                 message: 'bad',
                 locations: [{ line: 3, column: 9 }],
-                path: ['friendList', 1],
+                path: ['friendList'],
               },
             ],
           },
