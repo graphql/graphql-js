@@ -1008,16 +1008,7 @@ async function completeAsyncIteratorValue(
         break;
       }
     } catch (rawError) {
-      handleFieldError(
-        rawError,
-        exeContext,
-        itemType,
-        fieldGroup,
-        itemPath,
-        incrementalDataRecord,
-      );
-      completedResults.push(null);
-      break;
+      throw locatedError(rawError, fieldGroup, pathToArray(path));
     }
     if (
       completeListItemValue(
@@ -1785,6 +1776,7 @@ async function executeStreamAsyncIteratorItem(
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
   incrementalDataRecord: StreamItemsRecord,
+  path: Path,
   itemPath: Path,
 ): Promise<IteratorResult<unknown>> {
   let item;
@@ -1796,16 +1788,7 @@ async function executeStreamAsyncIteratorItem(
     }
     item = value;
   } catch (rawError) {
-    handleFieldError(
-      rawError,
-      exeContext,
-      itemType,
-      fieldGroup,
-      itemPath,
-      incrementalDataRecord,
-    );
-    // don't continue if async iterator throws
-    return { done: true, value: null };
+    throw locatedError(rawError, fieldGroup, pathToArray(path));
   }
   let completedItem;
   try {
@@ -1879,6 +1862,7 @@ async function executeStreamAsyncIterator(
         info,
         itemType,
         incrementalDataRecord,
+        path,
         itemPath,
       );
     } catch (error) {
