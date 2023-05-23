@@ -812,16 +812,11 @@ async function completeAsyncIteratorValue(
         break;
       }
     } catch (rawError) {
-      handleFieldError(
+      throw (0, locatedError_js_1.locatedError)(
         rawError,
-        exeContext,
-        itemType,
         fieldGroup,
-        itemPath,
-        incrementalDataRecord,
+        (0, Path_js_1.pathToArray)(path),
       );
-      completedResults.push(null);
-      break;
     }
     if (
       completeListItemValue(
@@ -1592,6 +1587,7 @@ async function executeStreamAsyncIteratorItem(
   info,
   itemType,
   incrementalDataRecord,
+  path,
   itemPath,
 ) {
   let item;
@@ -1603,16 +1599,11 @@ async function executeStreamAsyncIteratorItem(
     }
     item = value;
   } catch (rawError) {
-    handleFieldError(
+    throw (0, locatedError_js_1.locatedError)(
       rawError,
-      exeContext,
-      itemType,
       fieldGroup,
-      itemPath,
-      incrementalDataRecord,
+      (0, Path_js_1.pathToArray)(path),
     );
-    // don't continue if async iterator throws
-    return { done: true, value: null };
   }
   let completedItem;
   try {
@@ -1686,6 +1677,7 @@ async function executeStreamAsyncIterator(
         info,
         itemType,
         incrementalDataRecord,
+        path,
         itemPath,
       );
     } catch (error) {
