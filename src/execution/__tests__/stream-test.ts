@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import type { DocumentNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
@@ -127,14 +128,6 @@ async function completeAsync(
     promises.push(iterator.next());
   }
   return Promise.all(promises);
-}
-
-function createResolvablePromise<T>(): [Promise<T>, (value?: T) => void] {
-  let resolveFn;
-  const promise = new Promise<T>((resolve) => {
-    resolveFn = resolve;
-  });
-  return [promise, resolveFn as unknown as (value?: T) => void];
 }
 
 describe('Execute: stream directive', () => {
@@ -1564,7 +1557,8 @@ describe('Execute: stream directive', () => {
     ]);
   });
   it('Returns payloads in correct order when parent deferred fragment resolves slower than stream', async () => {
-    const [slowFieldPromise, resolveSlowField] = createResolvablePromise();
+    const { promise: slowFieldPromise, resolve: resolveSlowField } =
+      promiseWithResolvers();
     const document = parse(`
       query { 
         nestedObject {
@@ -1655,9 +1649,12 @@ describe('Execute: stream directive', () => {
     });
   });
   it('Can @defer fields that are resolved after async iterable is complete', async () => {
-    const [slowFieldPromise, resolveSlowField] = createResolvablePromise();
-    const [iterableCompletionPromise, resolveIterableCompletion] =
-      createResolvablePromise();
+    const { promise: slowFieldPromise, resolve: resolveSlowField } =
+      promiseWithResolvers();
+    const {
+      promise: iterableCompletionPromise,
+      resolve: resolveIterableCompletion,
+    } = promiseWithResolvers();
 
     const document = parse(`
     query { 
@@ -1697,7 +1694,7 @@ describe('Execute: stream directive', () => {
     });
 
     const result2Promise = iterator.next();
-    resolveIterableCompletion();
+    resolveIterableCompletion(null);
     const result2 = await result2Promise;
     expectJSON(result2).toDeepEqual({
       value: {
@@ -1741,9 +1738,12 @@ describe('Execute: stream directive', () => {
     });
   });
   it('Can @defer fields that are resolved before async iterable is complete', async () => {
-    const [slowFieldPromise, resolveSlowField] = createResolvablePromise();
-    const [iterableCompletionPromise, resolveIterableCompletion] =
-      createResolvablePromise();
+    const { promise: slowFieldPromise, resolve: resolveSlowField } =
+      promiseWithResolvers();
+    const {
+      promise: iterableCompletionPromise,
+      resolve: resolveIterableCompletion,
+    } = promiseWithResolvers();
 
     const document = parse(`
     query { 
@@ -1819,7 +1819,7 @@ describe('Execute: stream directive', () => {
       done: false,
     });
     const result4Promise = iterator.next();
-    resolveIterableCompletion();
+    resolveIterableCompletion(null);
     const result4 = await result4Promise;
     expectJSON(result4).toDeepEqual({
       value: { hasNext: false },
