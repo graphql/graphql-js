@@ -12,7 +12,6 @@ import { addPath, pathToArray } from '../jsutils/Path.js';
 import { promiseForObject } from '../jsutils/promiseForObject.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { promiseReduce } from '../jsutils/promiseReduce.js';
-import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
 import type { GraphQLFormattedError } from '../error/GraphQLError.js';
 import { GraphQLError } from '../error/GraphQLError.js';
@@ -53,6 +52,18 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
+import type {
+  FormattedIncrementalResult,
+  IncrementalDataRecord,
+  IncrementalResult,
+  SubsequentIncrementalExecutionResult,
+} from './IncrementalPublisher.js';
+import {
+  DeferredFragmentRecord,
+  filterSubsequentPayloads,
+  StreamItemsRecord,
+  yieldSubsequentPayloads,
+} from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import {
   getArgumentValues,
@@ -182,76 +193,6 @@ export interface FormattedInitialIncrementalExecutionResult<
   extensions?: TExtensions;
 }
 
-export interface SubsequentIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  hasNext: boolean;
-  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
-  extensions?: TExtensions;
-}
-
-export interface FormattedSubsequentIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  hasNext: boolean;
-  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
-  extensions?: TExtensions;
-}
-
-export interface IncrementalDeferResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends ExecutionResult<TData, TExtensions> {
-  path?: ReadonlyArray<string | number>;
-  label?: string;
-}
-
-export interface FormattedIncrementalDeferResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends FormattedExecutionResult<TData, TExtensions> {
-  path?: ReadonlyArray<string | number>;
-  label?: string;
-}
-
-export interface IncrementalStreamResult<
-  TData = Array<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  items?: TData | null;
-  path?: ReadonlyArray<string | number>;
-  label?: string;
-  extensions?: TExtensions;
-}
-
-export interface FormattedIncrementalStreamResult<
-  TData = Array<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  items?: TData | null;
-  path?: ReadonlyArray<string | number>;
-  label?: string;
-  extensions?: TExtensions;
-}
-
-export type IncrementalResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> =
-  | IncrementalDeferResult<TData, TExtensions>
-  | IncrementalStreamResult<TData, TExtensions>;
-
-export type FormattedIncrementalResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> =
-  | FormattedIncrementalDeferResult<TData, TExtensions>
-  | FormattedIncrementalStreamResult<TData, TExtensions>;
-
 export interface ExecutionArgs {
   schema: GraphQLSchema;
   document: DocumentNode;
@@ -364,7 +305,9 @@ function executeImpl(
                 ...initialResult,
                 hasNext: true,
               },
-              subsequentResults: yieldSubsequentPayloads(exeContext),
+              subsequentResults: yieldSubsequentPayloads(
+                exeContext.subsequentPayloads,
+              ),
             };
           }
           return initialResult;
@@ -382,7 +325,9 @@ function executeImpl(
           ...initialResult,
           hasNext: true,
         },
-        subsequentResults: yieldSubsequentPayloads(exeContext),
+        subsequentResults: yieldSubsequentPayloads(
+          exeContext.subsequentPayloads,
+        ),
       };
     }
     return initialResult;
@@ -769,7 +714,11 @@ function executeField(
           path,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+        filterSubsequentPayloads(
+          exeContext.subsequentPayloads,
+          path,
+          incrementalDataRecord,
+        );
         return null;
       });
     }
@@ -783,7 +732,11 @@ function executeField(
       path,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+    filterSubsequentPayloads(
+      exeContext.subsequentPayloads,
+      path,
+      incrementalDataRecord,
+    );
     return null;
   }
 }
@@ -984,7 +937,11 @@ async function completePromisedValue(
       path,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+    filterSubsequentPayloads(
+      exeContext.subsequentPayloads,
+      path,
+      incrementalDataRecord,
+    );
     return null;
   }
 }
@@ -1260,7 +1217,11 @@ function completeListItemValue(
             itemPath,
             incrementalDataRecord,
           );
-          filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+          filterSubsequentPayloads(
+            exeContext.subsequentPayloads,
+            itemPath,
+            incrementalDataRecord,
+          );
           return null;
         }),
       );
@@ -1278,7 +1239,11 @@ function completeListItemValue(
       itemPath,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+    filterSubsequentPayloads(
+      exeContext.subsequentPayloads,
+      itemPath,
+      incrementalDataRecord,
+    );
     completedResults.push(null);
   }
 
@@ -1812,7 +1777,7 @@ function executeDeferredFragment(
     label,
     path,
     parentContext,
-    exeContext,
+    subsequentPayloads: exeContext.subsequentPayloads,
   });
   let promiseOrData;
   try {
@@ -1853,7 +1818,7 @@ function executeStreamField(
     label,
     path: itemPath,
     parentContext,
-    exeContext,
+    subsequentPayloads: exeContext.subsequentPayloads,
   });
   if (isPromise(item)) {
     const completedItems = completePromisedValue(
@@ -1868,7 +1833,11 @@ function executeStreamField(
       (value) => [value],
       (error) => {
         incrementalDataRecord.errors.push(error);
-        filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+        filterSubsequentPayloads(
+          exeContext.subsequentPayloads,
+          path,
+          incrementalDataRecord,
+        );
         return null;
       },
     );
@@ -1899,11 +1868,19 @@ function executeStreamField(
         incrementalDataRecord,
       );
       completedItem = null;
-      filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+      filterSubsequentPayloads(
+        exeContext.subsequentPayloads,
+        itemPath,
+        incrementalDataRecord,
+      );
     }
   } catch (error) {
     incrementalDataRecord.errors.push(error);
-    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+    filterSubsequentPayloads(
+      exeContext.subsequentPayloads,
+      path,
+      incrementalDataRecord,
+    );
     incrementalDataRecord.addItems(null);
     return incrementalDataRecord;
   }
@@ -1919,14 +1896,22 @@ function executeStreamField(
           itemPath,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+        filterSubsequentPayloads(
+          exeContext.subsequentPayloads,
+          itemPath,
+          incrementalDataRecord,
+        );
         return null;
       })
       .then(
         (value) => [value],
         (error) => {
           incrementalDataRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+          filterSubsequentPayloads(
+            exeContext.subsequentPayloads,
+            path,
+            incrementalDataRecord,
+          );
           return null;
         },
       );
@@ -1982,7 +1967,11 @@ async function executeStreamAsyncIteratorItem(
           itemPath,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+        filterSubsequentPayloads(
+          exeContext.subsequentPayloads,
+          itemPath,
+          incrementalDataRecord,
+        );
         return null;
       });
     }
@@ -1996,7 +1985,11 @@ async function executeStreamAsyncIteratorItem(
       itemPath,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+    filterSubsequentPayloads(
+      exeContext.subsequentPayloads,
+      itemPath,
+      incrementalDataRecord,
+    );
     return { done: false, value: null };
   }
 }
@@ -2022,7 +2015,7 @@ async function executeStreamAsyncIterator(
       path: itemPath,
       parentContext: previousIncrementalDataRecord,
       asyncIterator,
-      exeContext,
+      subsequentPayloads: exeContext.subsequentPayloads,
     });
 
     let iteration;
@@ -2040,7 +2033,11 @@ async function executeStreamAsyncIterator(
       );
     } catch (error) {
       incrementalDataRecord.errors.push(error);
-      filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+      filterSubsequentPayloads(
+        exeContext.subsequentPayloads,
+        path,
+        incrementalDataRecord,
+      );
       incrementalDataRecord.addItems(null);
       // entire stream has errored and bubbled upwards
       if (asyncIterator?.return) {
@@ -2059,7 +2056,11 @@ async function executeStreamAsyncIterator(
         (value) => [value],
         (error) => {
           incrementalDataRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+          filterSubsequentPayloads(
+            exeContext.subsequentPayloads,
+            path,
+            incrementalDataRecord,
+          );
           return null;
         },
       );
@@ -2075,246 +2076,4 @@ async function executeStreamAsyncIterator(
     previousIncrementalDataRecord = incrementalDataRecord;
     index++;
   }
-}
-
-function filterSubsequentPayloads(
-  exeContext: ExecutionContext,
-  nullPath: Path,
-  currentIncrementalDataRecord: IncrementalDataRecord | undefined,
-): void {
-  const nullPathArray = pathToArray(nullPath);
-  exeContext.subsequentPayloads.forEach((incrementalDataRecord) => {
-    if (incrementalDataRecord === currentIncrementalDataRecord) {
-      // don't remove payload from where error originates
-      return;
-    }
-    for (let i = 0; i < nullPathArray.length; i++) {
-      if (incrementalDataRecord.path[i] !== nullPathArray[i]) {
-        // incrementalDataRecord points to a path unaffected by this payload
-        return;
-      }
-    }
-    // incrementalDataRecord path points to nulled error field
-    if (
-      isStreamItemsRecord(incrementalDataRecord) &&
-      incrementalDataRecord.asyncIterator?.return
-    ) {
-      incrementalDataRecord.asyncIterator.return().catch(() => {
-        // ignore error
-      });
-    }
-    exeContext.subsequentPayloads.delete(incrementalDataRecord);
-  });
-}
-
-function getCompletedIncrementalResults(
-  exeContext: ExecutionContext,
-): Array<IncrementalResult> {
-  const incrementalResults: Array<IncrementalResult> = [];
-  for (const incrementalDataRecord of exeContext.subsequentPayloads) {
-    const incrementalResult: IncrementalResult = {};
-    if (!incrementalDataRecord.isCompleted) {
-      continue;
-    }
-    exeContext.subsequentPayloads.delete(incrementalDataRecord);
-    if (isStreamItemsRecord(incrementalDataRecord)) {
-      const items = incrementalDataRecord.items;
-      if (incrementalDataRecord.isCompletedAsyncIterator) {
-        // async iterable resolver just finished but there may be pending payloads
-        continue;
-      }
-      (incrementalResult as IncrementalStreamResult).items = items;
-    } else {
-      const data = incrementalDataRecord.data;
-      (incrementalResult as IncrementalDeferResult).data = data ?? null;
-    }
-
-    incrementalResult.path = incrementalDataRecord.path;
-    if (incrementalDataRecord.label != null) {
-      incrementalResult.label = incrementalDataRecord.label;
-    }
-    if (incrementalDataRecord.errors.length > 0) {
-      incrementalResult.errors = incrementalDataRecord.errors;
-    }
-    incrementalResults.push(incrementalResult);
-  }
-  return incrementalResults;
-}
-
-function yieldSubsequentPayloads(
-  exeContext: ExecutionContext,
-): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void> {
-  let isDone = false;
-
-  async function next(): Promise<
-    IteratorResult<SubsequentIncrementalExecutionResult, void>
-  > {
-    if (isDone) {
-      return { value: undefined, done: true };
-    }
-
-    await Promise.race(
-      Array.from(exeContext.subsequentPayloads).map((p) => p.promise),
-    );
-
-    if (isDone) {
-      // a different call to next has exhausted all payloads
-      return { value: undefined, done: true };
-    }
-
-    const incremental = getCompletedIncrementalResults(exeContext);
-    const hasNext = exeContext.subsequentPayloads.size > 0;
-
-    if (!incremental.length && hasNext) {
-      return next();
-    }
-
-    if (!hasNext) {
-      isDone = true;
-    }
-
-    return {
-      value: incremental.length ? { incremental, hasNext } : { hasNext },
-      done: false,
-    };
-  }
-
-  function returnStreamIterators() {
-    const promises: Array<Promise<IteratorResult<unknown>>> = [];
-    exeContext.subsequentPayloads.forEach((incrementalDataRecord) => {
-      if (
-        isStreamItemsRecord(incrementalDataRecord) &&
-        incrementalDataRecord.asyncIterator?.return
-      ) {
-        promises.push(incrementalDataRecord.asyncIterator.return());
-      }
-    });
-    return Promise.all(promises);
-  }
-
-  return {
-    [Symbol.asyncIterator]() {
-      return this;
-    },
-    next,
-    async return(): Promise<
-      IteratorResult<SubsequentIncrementalExecutionResult, void>
-    > {
-      await returnStreamIterators();
-      isDone = true;
-      return { value: undefined, done: true };
-    },
-    async throw(
-      error?: unknown,
-    ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> {
-      await returnStreamIterators();
-      isDone = true;
-      return Promise.reject(error);
-    },
-  };
-}
-
-class DeferredFragmentRecord {
-  type: 'defer';
-  errors: Array<GraphQLError>;
-  label: string | undefined;
-  path: Array<string | number>;
-  promise: Promise<void>;
-  data: ObjMap<unknown> | null;
-  parentContext: IncrementalDataRecord | undefined;
-  isCompleted: boolean;
-  _exeContext: ExecutionContext;
-  _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
-  constructor(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    parentContext: IncrementalDataRecord | undefined;
-    exeContext: ExecutionContext;
-  }) {
-    this.type = 'defer';
-    this.label = opts.label;
-    this.path = pathToArray(opts.path);
-    this.parentContext = opts.parentContext;
-    this.errors = [];
-    this._exeContext = opts.exeContext;
-    this._exeContext.subsequentPayloads.add(this);
-    this.isCompleted = false;
-    this.data = null;
-    const { promise, resolve } = promiseWithResolvers<ObjMap<unknown> | null>();
-    this._resolve = resolve;
-    this.promise = promise.then((data) => {
-      this.data = data;
-      this.isCompleted = true;
-    });
-  }
-
-  addData(data: PromiseOrValue<ObjMap<unknown> | null>) {
-    const parentData = this.parentContext?.promise;
-    if (parentData) {
-      this._resolve?.(parentData.then(() => data));
-      return;
-    }
-    this._resolve?.(data);
-  }
-}
-
-class StreamItemsRecord {
-  type: 'stream';
-  errors: Array<GraphQLError>;
-  label: string | undefined;
-  path: Array<string | number>;
-  items: Array<unknown> | null;
-  promise: Promise<void>;
-  parentContext: IncrementalDataRecord | undefined;
-  asyncIterator: AsyncIterator<unknown> | undefined;
-  isCompletedAsyncIterator?: boolean;
-  isCompleted: boolean;
-  _exeContext: ExecutionContext;
-  _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
-  constructor(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    asyncIterator?: AsyncIterator<unknown>;
-    parentContext: IncrementalDataRecord | undefined;
-    exeContext: ExecutionContext;
-  }) {
-    this.type = 'stream';
-    this.items = null;
-    this.label = opts.label;
-    this.path = pathToArray(opts.path);
-    this.parentContext = opts.parentContext;
-    this.asyncIterator = opts.asyncIterator;
-    this.errors = [];
-    this._exeContext = opts.exeContext;
-    this._exeContext.subsequentPayloads.add(this);
-    this.isCompleted = false;
-    this.items = null;
-    const { promise, resolve } = promiseWithResolvers<Array<unknown> | null>();
-    this._resolve = resolve;
-    this.promise = promise.then((items) => {
-      this.items = items;
-      this.isCompleted = true;
-    });
-  }
-
-  addItems(items: PromiseOrValue<Array<unknown> | null>) {
-    const parentData = this.parentContext?.promise;
-    if (parentData) {
-      this._resolve?.(parentData.then(() => items));
-      return;
-    }
-    this._resolve?.(items);
-  }
-
-  setIsCompletedAsyncIterator() {
-    this.isCompletedAsyncIterator = true;
-  }
-}
-
-type IncrementalDataRecord = DeferredFragmentRecord | StreamItemsRecord;
-
-function isStreamItemsRecord(
-  incrementalDataRecord: IncrementalDataRecord,
-): incrementalDataRecord is StreamItemsRecord {
-  return incrementalDataRecord.type === 'stream';
 }

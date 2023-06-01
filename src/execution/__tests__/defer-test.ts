@@ -16,11 +16,9 @@ import {
 import { GraphQLID, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import type {
-  InitialIncrementalExecutionResult,
-  SubsequentIncrementalExecutionResult,
-} from '../execute.js';
+import type { InitialIncrementalExecutionResult } from '../execute.js';
 import { execute, experimentalExecuteIncrementally } from '../execute.js';
+import type { SubsequentIncrementalExecutionResult } from '../IncrementalPublisher.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
