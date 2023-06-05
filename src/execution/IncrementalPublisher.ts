@@ -85,70 +85,6 @@ export type FormattedIncrementalResult<
   | FormattedIncrementalDeferResult<TData, TExtensions>
   | FormattedIncrementalStreamResult<TData, TExtensions>;
 
-export function filterSubsequentPayloads(
-  subsequentPayloads: Set<IncrementalDataRecord>,
-  nullPath: Path,
-  currentIncrementalDataRecord: IncrementalDataRecord | undefined,
-): void {
-  const nullPathArray = pathToArray(nullPath);
-  subsequentPayloads.forEach((incrementalDataRecord) => {
-    if (incrementalDataRecord === currentIncrementalDataRecord) {
-      // don't remove payload from where error originates
-      return;
-    }
-    for (let i = 0; i < nullPathArray.length; i++) {
-      if (incrementalDataRecord.path[i] !== nullPathArray[i]) {
-        // incrementalDataRecord points to a path unaffected by this payload
-        return;
-      }
-    }
-    // incrementalDataRecord path points to nulled error field
-    if (
-      isStreamItemsRecord(incrementalDataRecord) &&
-      incrementalDataRecord.asyncIterator?.return
-    ) {
-      incrementalDataRecord.asyncIterator.return().catch(() => {
-        // ignore error
-      });
-    }
-    subsequentPayloads.delete(incrementalDataRecord);
-  });
-}
-
-function getCompletedIncrementalResults(
-  subsequentPayloads: Set<IncrementalDataRecord>,
-): Array<IncrementalResult> {
-  const incrementalResults: Array<IncrementalResult> = [];
-  for (const incrementalDataRecord of subsequentPayloads) {
-    const incrementalResult: IncrementalResult = {};
-    if (!incrementalDataRecord.isCompleted) {
-      continue;
-    }
-    subsequentPayloads.delete(incrementalDataRecord);
-    if (isStreamItemsRecord(incrementalDataRecord)) {
-      const items = incrementalDataRecord.items;
-      if (incrementalDataRecord.isCompletedAsyncIterator) {
-        // async iterable resolver just finished but there may be pending payloads
-        continue;
-      }
-      (incrementalResult as IncrementalStreamResult).items = items;
-    } else {
-      const data = incrementalDataRecord.data;
-      (incrementalResult as IncrementalDeferResult).data = data ?? null;
-    }
-
-    incrementalResult.path = incrementalDataRecord.path;
-    if (incrementalDataRecord.label != null) {
-      incrementalResult.label = incrementalDataRecord.label;
-    }
-    if (incrementalDataRecord.errors.length > 0) {
-      incrementalResult.errors = incrementalDataRecord.errors;
-    }
-    incrementalResults.push(incrementalResult);
-  }
-  return incrementalResults;
-}
-
 export function yieldSubsequentPayloads(
   subsequentPayloads: Set<IncrementalDataRecord>,
 ): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void> {
@@ -218,6 +154,70 @@ export function yieldSubsequentPayloads(
       return Promise.reject(error);
     },
   };
+}
+
+function getCompletedIncrementalResults(
+  subsequentPayloads: Set<IncrementalDataRecord>,
+): Array<IncrementalResult> {
+  const incrementalResults: Array<IncrementalResult> = [];
+  for (const incrementalDataRecord of subsequentPayloads) {
+    const incrementalResult: IncrementalResult = {};
+    if (!incrementalDataRecord.isCompleted) {
+      continue;
+    }
+    subsequentPayloads.delete(incrementalDataRecord);
+    if (isStreamItemsRecord(incrementalDataRecord)) {
+      const items = incrementalDataRecord.items;
+      if (incrementalDataRecord.isCompletedAsyncIterator) {
+        // async iterable resolver just finished but there may be pending payloads
+        continue;
+      }
+      (incrementalResult as IncrementalStreamResult).items = items;
+    } else {
+      const data = incrementalDataRecord.data;
+      (incrementalResult as IncrementalDeferResult).data = data ?? null;
+    }
+
+    incrementalResult.path = incrementalDataRecord.path;
+    if (incrementalDataRecord.label != null) {
+      incrementalResult.label = incrementalDataRecord.label;
+    }
+    if (incrementalDataRecord.errors.length > 0) {
+      incrementalResult.errors = incrementalDataRecord.errors;
+    }
+    incrementalResults.push(incrementalResult);
+  }
+  return incrementalResults;
+}
+
+export function filterSubsequentPayloads(
+  subsequentPayloads: Set<IncrementalDataRecord>,
+  nullPath: Path,
+  currentIncrementalDataRecord: IncrementalDataRecord | undefined,
+): void {
+  const nullPathArray = pathToArray(nullPath);
+  subsequentPayloads.forEach((incrementalDataRecord) => {
+    if (incrementalDataRecord === currentIncrementalDataRecord) {
+      // don't remove payload from where error originates
+      return;
+    }
+    for (let i = 0; i < nullPathArray.length; i++) {
+      if (incrementalDataRecord.path[i] !== nullPathArray[i]) {
+        // incrementalDataRecord points to a path unaffected by this payload
+        return;
+      }
+    }
+    // incrementalDataRecord path points to nulled error field
+    if (
+      isStreamItemsRecord(incrementalDataRecord) &&
+      incrementalDataRecord.asyncIterator?.return
+    ) {
+      incrementalDataRecord.asyncIterator.return().catch(() => {
+        // ignore error
+      });
+    }
+    subsequentPayloads.delete(incrementalDataRecord);
+  });
 }
 
 /** @internal */
