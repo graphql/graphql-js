@@ -20,6 +20,7 @@ const memoize3_js_1 = require('../jsutils/memoize3.js');
 const Path_js_1 = require('../jsutils/Path.js');
 const promiseForObject_js_1 = require('../jsutils/promiseForObject.js');
 const promiseReduce_js_1 = require('../jsutils/promiseReduce.js');
+const promiseWithResolvers_js_1 = require('../jsutils/promiseWithResolvers.js');
 const GraphQLError_js_1 = require('../error/GraphQLError.js');
 const locatedError_js_1 = require('../error/locatedError.js');
 const ast_js_1 = require('../language/ast.js');
@@ -1839,11 +1840,10 @@ class DeferredFragmentRecord {
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
     this.data = null;
-    this.promise = new Promise((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((data) => {
+    const { promise, resolve } = (0,
+    promiseWithResolvers_js_1.promiseWithResolvers)();
+    this._resolve = resolve;
+    this.promise = promise.then((data) => {
       this.data = data;
       this.isCompleted = true;
     });
@@ -1870,11 +1870,10 @@ class StreamItemsRecord {
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
     this.items = null;
-    this.promise = new Promise((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((items) => {
+    const { promise, resolve } = (0,
+    promiseWithResolvers_js_1.promiseWithResolvers)();
+    this._resolve = resolve;
+    this.promise = promise.then((items) => {
       this.items = items;
       this.isCompleted = true;
     });

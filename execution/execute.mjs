@@ -8,6 +8,7 @@ import { memoize3 } from '../jsutils/memoize3.mjs';
 import { addPath, pathToArray } from '../jsutils/Path.mjs';
 import { promiseForObject } from '../jsutils/promiseForObject.mjs';
 import { promiseReduce } from '../jsutils/promiseReduce.mjs';
+import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.mjs';
 import { GraphQLError } from '../error/GraphQLError.mjs';
 import { locatedError } from '../error/locatedError.mjs';
 import { OperationTypeNode } from '../language/ast.mjs';
@@ -1790,11 +1791,9 @@ class DeferredFragmentRecord {
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
     this.data = null;
-    this.promise = new Promise((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((data) => {
+    const { promise, resolve } = promiseWithResolvers();
+    this._resolve = resolve;
+    this.promise = promise.then((data) => {
       this.data = data;
       this.isCompleted = true;
     });
@@ -1821,11 +1820,9 @@ class StreamItemsRecord {
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
     this.items = null;
-    this.promise = new Promise((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((items) => {
+    const { promise, resolve } = promiseWithResolvers();
+    this._resolve = resolve;
+    this.promise = promise.then((items) => {
       this.items = items;
       this.isCompleted = true;
     });
