@@ -12,6 +12,7 @@ import { addPath, pathToArray } from '../jsutils/Path.ts';
 import { promiseForObject } from '../jsutils/promiseForObject.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import { promiseReduce } from '../jsutils/promiseReduce.ts';
+import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.ts';
 import type { GraphQLFormattedError } from '../error/GraphQLError.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
@@ -2049,11 +2050,9 @@ class DeferredFragmentRecord {
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
     this.data = null;
-    this.promise = new Promise<ObjMap<unknown> | null>((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((data) => {
+    const { promise, resolve } = promiseWithResolvers<ObjMap<unknown> | null>();
+    this._resolve = resolve;
+    this.promise = promise.then((data) => {
       this.data = data;
       this.isCompleted = true;
     });
@@ -2098,11 +2097,9 @@ class StreamItemsRecord {
     this._exeContext.subsequentPayloads.add(this);
     this.isCompleted = false;
     this.items = null;
-    this.promise = new Promise<Array<unknown> | null>((resolve) => {
-      this._resolve = (promiseOrValue) => {
-        resolve(promiseOrValue);
-      };
-    }).then((items) => {
+    const { promise, resolve } = promiseWithResolvers<Array<unknown> | null>();
+    this._resolve = resolve;
+    this.promise = promise.then((items) => {
       this.items = items;
       this.isCompleted = true;
     });
