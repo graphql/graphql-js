@@ -20,7 +20,6 @@ const memoize3_js_1 = require('../jsutils/memoize3.js');
 const Path_js_1 = require('../jsutils/Path.js');
 const promiseForObject_js_1 = require('../jsutils/promiseForObject.js');
 const promiseReduce_js_1 = require('../jsutils/promiseReduce.js');
-const promiseWithResolvers_js_1 = require('../jsutils/promiseWithResolvers.js');
 const GraphQLError_js_1 = require('../error/GraphQLError.js');
 const locatedError_js_1 = require('../error/locatedError.js');
 const ast_js_1 = require('../language/ast.js');
@@ -29,6 +28,7 @@ const definition_js_1 = require('../type/definition.js');
 const directives_js_1 = require('../type/directives.js');
 const validate_js_1 = require('../type/validate.js');
 const collectFields_js_1 = require('./collectFields.js');
+const IncrementalPublisher_js_1 = require('./IncrementalPublisher.js');
 const mapAsyncIterable_js_1 = require('./mapAsyncIterable.js');
 const values_js_1 = require('./values.js');
 /* eslint-disable max-params */
@@ -140,7 +140,10 @@ function executeImpl(exeContext) {
                 ...initialResult,
                 hasNext: true,
               },
-              subsequentResults: yieldSubsequentPayloads(exeContext),
+              subsequentResults: (0,
+              IncrementalPublisher_js_1.yieldSubsequentPayloads)(
+                exeContext.subsequentPayloads,
+              ),
             };
           }
           return initialResult;
@@ -158,7 +161,10 @@ function executeImpl(exeContext) {
           ...initialResult,
           hasNext: true,
         },
-        subsequentResults: yieldSubsequentPayloads(exeContext),
+        subsequentResults: (0,
+        IncrementalPublisher_js_1.yieldSubsequentPayloads)(
+          exeContext.subsequentPayloads,
+        ),
       };
     }
     return initialResult;
@@ -519,7 +525,11 @@ function executeField(
           path,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+        (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+          exeContext.subsequentPayloads,
+          path,
+          incrementalDataRecord,
+        );
         return null;
       });
     }
@@ -533,7 +543,11 @@ function executeField(
       path,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+    (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+      exeContext.subsequentPayloads,
+      path,
+      incrementalDataRecord,
+    );
     return null;
   }
 }
@@ -722,7 +736,11 @@ async function completePromisedValue(
       path,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+    (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+      exeContext.subsequentPayloads,
+      path,
+      incrementalDataRecord,
+    );
     return null;
   }
 }
@@ -968,7 +986,11 @@ function completeListItemValue(
             itemPath,
             incrementalDataRecord,
           );
-          filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+          (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+            exeContext.subsequentPayloads,
+            itemPath,
+            incrementalDataRecord,
+          );
           return null;
         }),
       );
@@ -984,7 +1006,11 @@ function completeListItemValue(
       itemPath,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+    (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+      exeContext.subsequentPayloads,
+      itemPath,
+      incrementalDataRecord,
+    );
     completedResults.push(null);
   }
   return false;
@@ -1458,12 +1484,13 @@ function executeDeferredFragment(
   path,
   parentContext,
 ) {
-  const incrementalDataRecord = new DeferredFragmentRecord({
-    label,
-    path,
-    parentContext,
-    exeContext,
-  });
+  const incrementalDataRecord =
+    new IncrementalPublisher_js_1.DeferredFragmentRecord({
+      label,
+      path,
+      parentContext,
+      subsequentPayloads: exeContext.subsequentPayloads,
+    });
   let promiseOrData;
   try {
     promiseOrData = executeFields(
@@ -1497,12 +1524,14 @@ function executeStreamField(
   label,
   parentContext,
 ) {
-  const incrementalDataRecord = new StreamItemsRecord({
-    label,
-    path: itemPath,
-    parentContext,
-    exeContext,
-  });
+  const incrementalDataRecord = new IncrementalPublisher_js_1.StreamItemsRecord(
+    {
+      label,
+      path: itemPath,
+      parentContext,
+      subsequentPayloads: exeContext.subsequentPayloads,
+    },
+  );
   if ((0, isPromise_js_1.isPromise)(item)) {
     const completedItems = completePromisedValue(
       exeContext,
@@ -1516,7 +1545,11 @@ function executeStreamField(
       (value) => [value],
       (error) => {
         incrementalDataRecord.errors.push(error);
-        filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+        (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+          exeContext.subsequentPayloads,
+          path,
+          incrementalDataRecord,
+        );
         return null;
       },
     );
@@ -1545,11 +1578,19 @@ function executeStreamField(
         incrementalDataRecord,
       );
       completedItem = null;
-      filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+      (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+        exeContext.subsequentPayloads,
+        itemPath,
+        incrementalDataRecord,
+      );
     }
   } catch (error) {
     incrementalDataRecord.errors.push(error);
-    filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+    (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+      exeContext.subsequentPayloads,
+      path,
+      incrementalDataRecord,
+    );
     incrementalDataRecord.addItems(null);
     return incrementalDataRecord;
   }
@@ -1564,14 +1605,22 @@ function executeStreamField(
           itemPath,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+        (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+          exeContext.subsequentPayloads,
+          itemPath,
+          incrementalDataRecord,
+        );
         return null;
       })
       .then(
         (value) => [value],
         (error) => {
           incrementalDataRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+          (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+            exeContext.subsequentPayloads,
+            path,
+            incrementalDataRecord,
+          );
           return null;
         },
       );
@@ -1627,7 +1676,11 @@ async function executeStreamAsyncIteratorItem(
           itemPath,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+        (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+          exeContext.subsequentPayloads,
+          itemPath,
+          incrementalDataRecord,
+        );
         return null;
       });
     }
@@ -1641,7 +1694,11 @@ async function executeStreamAsyncIteratorItem(
       itemPath,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(exeContext, itemPath, incrementalDataRecord);
+    (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+      exeContext.subsequentPayloads,
+      itemPath,
+      incrementalDataRecord,
+    );
     return { done: false, value: null };
   }
 }
@@ -1661,13 +1718,14 @@ async function executeStreamAsyncIterator(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
-    const incrementalDataRecord = new StreamItemsRecord({
-      label,
-      path: itemPath,
-      parentContext: previousIncrementalDataRecord,
-      asyncIterator,
-      exeContext,
-    });
+    const incrementalDataRecord =
+      new IncrementalPublisher_js_1.StreamItemsRecord({
+        label,
+        path: itemPath,
+        parentContext: previousIncrementalDataRecord,
+        asyncIterator,
+        subsequentPayloads: exeContext.subsequentPayloads,
+      });
     let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
@@ -1683,7 +1741,11 @@ async function executeStreamAsyncIterator(
       );
     } catch (error) {
       incrementalDataRecord.errors.push(error);
-      filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+      (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+        exeContext.subsequentPayloads,
+        path,
+        incrementalDataRecord,
+      );
       incrementalDataRecord.addItems(null);
       // entire stream has errored and bubbled upwards
       if (asyncIterator?.return) {
@@ -1700,7 +1762,11 @@ async function executeStreamAsyncIterator(
         (value) => [value],
         (error) => {
           incrementalDataRecord.errors.push(error);
-          filterSubsequentPayloads(exeContext, path, incrementalDataRecord);
+          (0, IncrementalPublisher_js_1.filterSubsequentPayloads)(
+            exeContext.subsequentPayloads,
+            path,
+            incrementalDataRecord,
+          );
           return null;
         },
       );
@@ -1714,182 +1780,4 @@ async function executeStreamAsyncIterator(
     previousIncrementalDataRecord = incrementalDataRecord;
     index++;
   }
-}
-function filterSubsequentPayloads(
-  exeContext,
-  nullPath,
-  currentIncrementalDataRecord,
-) {
-  const nullPathArray = (0, Path_js_1.pathToArray)(nullPath);
-  exeContext.subsequentPayloads.forEach((incrementalDataRecord) => {
-    if (incrementalDataRecord === currentIncrementalDataRecord) {
-      // don't remove payload from where error originates
-      return;
-    }
-    for (let i = 0; i < nullPathArray.length; i++) {
-      if (incrementalDataRecord.path[i] !== nullPathArray[i]) {
-        // incrementalDataRecord points to a path unaffected by this payload
-        return;
-      }
-    }
-    // incrementalDataRecord path points to nulled error field
-    if (
-      isStreamItemsRecord(incrementalDataRecord) &&
-      incrementalDataRecord.asyncIterator?.return
-    ) {
-      incrementalDataRecord.asyncIterator.return().catch(() => {
-        // ignore error
-      });
-    }
-    exeContext.subsequentPayloads.delete(incrementalDataRecord);
-  });
-}
-function getCompletedIncrementalResults(exeContext) {
-  const incrementalResults = [];
-  for (const incrementalDataRecord of exeContext.subsequentPayloads) {
-    const incrementalResult = {};
-    if (!incrementalDataRecord.isCompleted) {
-      continue;
-    }
-    exeContext.subsequentPayloads.delete(incrementalDataRecord);
-    if (isStreamItemsRecord(incrementalDataRecord)) {
-      const items = incrementalDataRecord.items;
-      if (incrementalDataRecord.isCompletedAsyncIterator) {
-        // async iterable resolver just finished but there may be pending payloads
-        continue;
-      }
-      incrementalResult.items = items;
-    } else {
-      const data = incrementalDataRecord.data;
-      incrementalResult.data = data ?? null;
-    }
-    incrementalResult.path = incrementalDataRecord.path;
-    if (incrementalDataRecord.label != null) {
-      incrementalResult.label = incrementalDataRecord.label;
-    }
-    if (incrementalDataRecord.errors.length > 0) {
-      incrementalResult.errors = incrementalDataRecord.errors;
-    }
-    incrementalResults.push(incrementalResult);
-  }
-  return incrementalResults;
-}
-function yieldSubsequentPayloads(exeContext) {
-  let isDone = false;
-  async function next() {
-    if (isDone) {
-      return { value: undefined, done: true };
-    }
-    await Promise.race(
-      Array.from(exeContext.subsequentPayloads).map((p) => p.promise),
-    );
-    if (isDone) {
-      // a different call to next has exhausted all payloads
-      return { value: undefined, done: true };
-    }
-    const incremental = getCompletedIncrementalResults(exeContext);
-    const hasNext = exeContext.subsequentPayloads.size > 0;
-    if (!incremental.length && hasNext) {
-      return next();
-    }
-    if (!hasNext) {
-      isDone = true;
-    }
-    return {
-      value: incremental.length ? { incremental, hasNext } : { hasNext },
-      done: false,
-    };
-  }
-  function returnStreamIterators() {
-    const promises = [];
-    exeContext.subsequentPayloads.forEach((incrementalDataRecord) => {
-      if (
-        isStreamItemsRecord(incrementalDataRecord) &&
-        incrementalDataRecord.asyncIterator?.return
-      ) {
-        promises.push(incrementalDataRecord.asyncIterator.return());
-      }
-    });
-    return Promise.all(promises);
-  }
-  return {
-    [Symbol.asyncIterator]() {
-      return this;
-    },
-    next,
-    async return() {
-      await returnStreamIterators();
-      isDone = true;
-      return { value: undefined, done: true };
-    },
-    async throw(error) {
-      await returnStreamIterators();
-      isDone = true;
-      return Promise.reject(error);
-    },
-  };
-}
-class DeferredFragmentRecord {
-  constructor(opts) {
-    this.type = 'defer';
-    this.label = opts.label;
-    this.path = (0, Path_js_1.pathToArray)(opts.path);
-    this.parentContext = opts.parentContext;
-    this.errors = [];
-    this._exeContext = opts.exeContext;
-    this._exeContext.subsequentPayloads.add(this);
-    this.isCompleted = false;
-    this.data = null;
-    const { promise, resolve } = (0,
-    promiseWithResolvers_js_1.promiseWithResolvers)();
-    this._resolve = resolve;
-    this.promise = promise.then((data) => {
-      this.data = data;
-      this.isCompleted = true;
-    });
-  }
-  addData(data) {
-    const parentData = this.parentContext?.promise;
-    if (parentData) {
-      this._resolve?.(parentData.then(() => data));
-      return;
-    }
-    this._resolve?.(data);
-  }
-}
-class StreamItemsRecord {
-  constructor(opts) {
-    this.type = 'stream';
-    this.items = null;
-    this.label = opts.label;
-    this.path = (0, Path_js_1.pathToArray)(opts.path);
-    this.parentContext = opts.parentContext;
-    this.asyncIterator = opts.asyncIterator;
-    this.errors = [];
-    this._exeContext = opts.exeContext;
-    this._exeContext.subsequentPayloads.add(this);
-    this.isCompleted = false;
-    this.items = null;
-    const { promise, resolve } = (0,
-    promiseWithResolvers_js_1.promiseWithResolvers)();
-    this._resolve = resolve;
-    this.promise = promise.then((items) => {
-      this.items = items;
-      this.isCompleted = true;
-    });
-  }
-  addItems(items) {
-    const parentData = this.parentContext?.promise;
-    if (parentData) {
-      this._resolve?.(parentData.then(() => items));
-      return;
-    }
-    this._resolve?.(items);
-  }
-  setIsCompletedAsyncIterator() {
-    this.isCompletedAsyncIterator = true;
-  }
-}
-function isStreamItemsRecord(incrementalDataRecord) {
-  return incrementalDataRecord.type === 'stream';
 }
