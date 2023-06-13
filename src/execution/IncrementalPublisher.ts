@@ -88,7 +88,7 @@ export type FormattedIncrementalResult<
  * This class is used to publish incremental results to the client, enabling semi-concurrent
  * execution while preserving result order.
  *
- * The internal publishing state is manages as follows:
+ * The internal publishing state is managed as follows:
  *
  * '_released': the set of Incremental Data records that are ready to be sent to the client,
  * i.e. their parents have completed and they have also completed.
@@ -97,7 +97,7 @@ export type FormattedIncrementalResult<
  * parents have completed so that they can no longer be filtered. This includes all Incremental
  * Data records in `released`, as well as Incremental Data records that have not yet completed.
  *
- * `initialResult`: a record containing the state of the initial result, as follows:
+ * `_initialResult`: a record containing the state of the initial result, as follows:
  * `isCompleted`: indicates whether the initial result has completed.
  * `children`: the set of Incremental Data records that can be be published when the initial
  * result is completed.
