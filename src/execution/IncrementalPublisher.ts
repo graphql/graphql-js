@@ -615,12 +615,16 @@ export class IncrementalPublisher {
       }
 
       this._introduce(subsequentResultRecord);
+      subsequentResultRecord.publish();
       return;
     }
 
     if (subsequentResultRecord._pending.size === 0) {
       this._push(subsequentResultRecord);
     } else {
+      for (const deferredGroupedFieldSetRecord of subsequentResultRecord.deferredGroupedFieldSetRecords) {
+        deferredGroupedFieldSetRecord.publish();
+      }
       this._introduce(subsequentResultRecord);
     }
   }
@@ -701,33 +705,56 @@ function isStreamItemsRecord(
 export class InitialResultRecord {
   errors: Array<GraphQLError>;
   children: Set<SubsequentResultRecord>;
+  priority: number;
+  deferPriority: number;
+  published: true;
   constructor() {
     this.errors = [];
     this.children = new Set();
+    this.priority = 0;
+    this.deferPriority = 0;
+    this.published = true;
   }
 }
 
 /** @internal */
 export class DeferredGroupedFieldSetRecord {
   path: ReadonlyArray<string | number>;
+  priority: number;
+  deferPriority: number;
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   groupedFieldSet: GroupedFieldSet;
   shouldInitiateDefer: boolean;
   errors: Array<GraphQLError>;
   data: ObjMap<unknown> | undefined;
+  published: true | Promise<void>;
+  publish: () => void;
   sent: boolean;
 
   constructor(opts: {
     path: Path | undefined;
+    priority: number;
+    deferPriority: number;
     deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
     groupedFieldSet: GroupedFieldSet;
     shouldInitiateDefer: boolean;
   }) {
     this.path = pathToArray(opts.path);
+    this.priority = opts.priority;
+    this.deferPriority = opts.deferPriority;
     this.deferredFragmentRecords = opts.deferredFragmentRecords;
     this.groupedFieldSet = opts.groupedFieldSet;
     this.shouldInitiateDefer = opts.shouldInitiateDefer;
     this.errors = [];
+    // promiseWithResolvers uses void only as a generic type parameter
+    // see: https://typescript-eslint.io/rules/no-invalid-void-type/
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    const { promise: published, resolve } = promiseWithResolvers<void>();
+    this.published = published;
+    this.publish = () => {
+      resolve();
+      this.published = true;
+    };
     this.sent = false;
   }
 }
@@ -778,21 +805,42 @@ export class StreamItemsRecord {
   errors: Array<GraphQLError>;
   streamRecord: StreamRecord;
   path: ReadonlyArray<string | number>;
+  priority: number;
+  deferPriority: number;
   items: Array<unknown>;
   children: Set<SubsequentResultRecord>;
   isFinalRecord?: boolean;
   isCompletedAsyncIterator?: boolean;
   isCompleted: boolean;
   filtered: boolean;
+  published: true | Promise<void>;
+  publish: () => void;
+  sent: boolean;
 
-  constructor(opts: { streamRecord: StreamRecord; path: Path | undefined }) {
+  constructor(opts: {
+    streamRecord: StreamRecord;
+    path: Path | undefined;
+    priority: number;
+  }) {
     this.streamRecord = opts.streamRecord;
     this.path = pathToArray(opts.path);
+    this.priority = opts.priority;
+    this.deferPriority = 0;
     this.children = new Set();
     this.errors = [];
     this.isCompleted = false;
     this.filtered = false;
     this.items = [];
+    // promiseWithResolvers uses void only as a generic type parameter
+    // see: https://typescript-eslint.io/rules/no-invalid-void-type/
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    const { promise: published, resolve } = promiseWithResolvers<void>();
+    this.published = published;
+    this.publish = () => {
+      resolve();
+      this.published = true;
+    };
+    this.sent = false;
   }
 }
 

@@ -15,7 +15,12 @@ import type {
 import { OperationTypeNode } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 
-import type { GraphQLObjectType } from '../type/definition.js';
+import type {
+  DeferUsage,
+  FieldDetails,
+  GraphQLObjectType,
+  Target,
+} from '../type/definition.js';
 import { isAbstractType } from '../type/definition.js';
 import {
   GraphQLDeferDirective,
@@ -28,23 +33,12 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 
 import { getDirectiveValues } from './values.js';
 
-export interface DeferUsage {
-  label: string | undefined;
-  ancestors: ReadonlyArray<Target>;
-}
-
 export const NON_DEFERRED_TARGET_SET = new OrderedSet<Target>([
   undefined,
 ]).freeze();
 
-export type Target = DeferUsage | undefined;
 export type TargetSet = ReadonlyOrderedSet<Target>;
 export type DeferUsageSet = ReadonlyOrderedSet<DeferUsage>;
-
-export interface FieldDetails {
-  node: FieldNode;
-  target: Target;
-}
 
 export interface FieldGroup {
   fields: ReadonlyArray<FieldDetails>;
@@ -213,12 +207,19 @@ function collectFieldsImpl(
         let target: Target;
         if (!defer) {
           target = newTarget;
+        } else if (parentTarget === undefined) {
+          target = {
+            ...defer,
+            ancestors: [parentTarget],
+            deferPriority: 1,
+          };
+          newDeferUsages.push(target);
         } else {
-          const ancestors =
-            parentTarget === undefined
-              ? [parentTarget]
-              : [parentTarget, ...parentTarget.ancestors];
-          target = { ...defer, ancestors };
+          target = {
+            ...defer,
+            ancestors: [parentTarget, ...parentTarget.ancestors],
+            deferPriority: parentTarget.deferPriority + 1,
+          };
           newDeferUsages.push(target);
         }
 
@@ -255,12 +256,19 @@ function collectFieldsImpl(
         if (!defer) {
           visitedFragmentNames.add(fragName);
           target = newTarget;
+        } else if (parentTarget === undefined) {
+          target = {
+            ...defer,
+            ancestors: [parentTarget],
+            deferPriority: 1,
+          };
+          newDeferUsages.push(target);
         } else {
-          const ancestors =
-            parentTarget === undefined
-              ? [parentTarget]
-              : [parentTarget, ...parentTarget.ancestors];
-          target = { ...defer, ancestors };
+          target = {
+            ...defer,
+            ancestors: [parentTarget, ...parentTarget.ancestors],
+            deferPriority: parentTarget.deferPriority + 1,
+          };
           newDeferUsages.push(target);
         }
 
