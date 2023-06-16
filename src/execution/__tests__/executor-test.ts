@@ -9,6 +9,7 @@ import { inspect } from '../../jsutils/inspect.js';
 import { Kind } from '../../language/kinds.js';
 import { parse } from '../../language/parser.js';
 
+import type { GraphQLResolveInfo } from '../../type/definition.js';
 import {
   GraphQLInterfaceType,
   GraphQLList,
@@ -191,7 +192,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('provides info about current execution state', () => {
-    let resolvedInfo;
+    let resolvedInfo: GraphQLResolveInfo | undefined;
     const testType = new GraphQLObjectType({
       name: 'Test',
       fields: {
@@ -213,7 +214,7 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(resolvedInfo).to.have.all.keys(
       'fieldName',
-      'fieldNodes',
+      'fieldDetails',
       'returnType',
       'parentType',
       'path',
@@ -222,6 +223,9 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'priority',
+      'deferPriority',
+      'published',
     );
 
     const operation = document.definitions[0];
@@ -234,13 +238,23 @@ describe('Execute: Handles basic execution tasks', () => {
       schema,
       rootValue,
       operation,
+      priority: 0,
+      deferPriority: 0,
+      published: true,
     });
 
-    const field = operation.selectionSet.selections[0];
     expect(resolvedInfo).to.deep.include({
-      fieldNodes: [field],
       path: { prev: undefined, key: 'result', typename: 'Test' },
       variableValues: { var: 'abc' },
+    });
+
+    const fieldDetails = resolvedInfo?.fieldDetails;
+    assert(fieldDetails !== undefined);
+
+    const field = operation.selectionSet.selections[0];
+    expect(fieldDetails[0]).to.deep.include({
+      node: field,
+      target: undefined,
     });
   });
 
