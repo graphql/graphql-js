@@ -34,7 +34,7 @@ import { isIntrospectionType } from '../type/introspection.js';
 import { isSpecifiedScalarType } from '../type/scalars.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import { astFromValue } from './astFromValue.js';
+import { valueToLiteral } from './valueToLiteral.js';
 
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
@@ -256,10 +256,13 @@ function printArgs(
 }
 
 function printInputValue(arg: GraphQLInputField): string {
-  const defaultAST = astFromValue(arg.defaultValue, arg.type);
   let argDecl = arg.name + ': ' + String(arg.type);
-  if (defaultAST) {
-    argDecl += ` = ${print(defaultAST)}`;
+  if (arg.defaultValue) {
+    const literal =
+      arg.defaultValue.literal ??
+      valueToLiteral(arg.defaultValue.value, arg.type);
+    invariant(literal != null, 'Invalid default value');
+    argDecl += ` = ${print(literal)}`;
   }
   return argDecl + printDeprecated(arg.deprecationReason);
 }
