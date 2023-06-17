@@ -25,12 +25,7 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.mjs';
-import {
-  DeferredFragmentRecord,
-  filterSubsequentPayloads,
-  StreamItemsRecord,
-  yieldSubsequentPayloads,
-} from './IncrementalPublisher.mjs';
+import { IncrementalPublisher } from './IncrementalPublisher.mjs';
 import { mapAsyncIterable } from './mapAsyncIterable.mjs';
 import {
   getArgumentValues,
@@ -131,47 +126,46 @@ function executeImpl(exeContext) {
   // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
+  const { incrementalPublisher, errors } = exeContext;
   try {
     const result = executeOperation(exeContext);
     if (isPromise(result)) {
       return result.then(
         (data) => {
-          const initialResult = buildResponse(data, exeContext.errors);
-          if (exeContext.subsequentPayloads.size > 0) {
+          const initialResult = buildResponse(data, errors);
+          incrementalPublisher.publishInitial();
+          if (incrementalPublisher.hasNext()) {
             return {
               initialResult: {
                 ...initialResult,
                 hasNext: true,
               },
-              subsequentResults: yieldSubsequentPayloads(
-                exeContext.subsequentPayloads,
-              ),
+              subsequentResults: incrementalPublisher.subscribe(),
             };
           }
           return initialResult;
         },
         (error) => {
-          exeContext.errors.push(error);
-          return buildResponse(null, exeContext.errors);
+          errors.push(error);
+          return buildResponse(null, errors);
         },
       );
     }
-    const initialResult = buildResponse(result, exeContext.errors);
-    if (exeContext.subsequentPayloads.size > 0) {
+    const initialResult = buildResponse(result, errors);
+    incrementalPublisher.publishInitial();
+    if (incrementalPublisher.hasNext()) {
       return {
         initialResult: {
           ...initialResult,
           hasNext: true,
         },
-        subsequentResults: yieldSubsequentPayloads(
-          exeContext.subsequentPayloads,
-        ),
+        subsequentResults: incrementalPublisher.subscribe(),
       };
     }
     return initialResult;
   } catch (error) {
-    exeContext.errors.push(error);
-    return buildResponse(null, exeContext.errors);
+    errors.push(error);
+    return buildResponse(null, errors);
   }
 }
 /**
@@ -270,7 +264,7 @@ export function buildExecutionContext(args) {
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    subsequentPayloads: new Set(),
+    incrementalPublisher: new IncrementalPublisher(),
     errors: [],
   };
 }
@@ -278,7 +272,7 @@ function buildPerEventExecutionContext(exeContext, payload) {
   return {
     ...exeContext,
     rootValue: payload,
-    subsequentPayloads: new Set(),
+    // no need to update incrementalPublisher, incremental delivery is not supported for subscriptions
     errors: [],
   };
 }
@@ -509,11 +503,7 @@ function executeField(
           path,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(
-          exeContext.subsequentPayloads,
-          path,
-          incrementalDataRecord,
-        );
+        exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
         return null;
       });
     }
@@ -527,11 +517,7 @@ function executeField(
       path,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(
-      exeContext.subsequentPayloads,
-      path,
-      incrementalDataRecord,
-    );
+    exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
     return null;
   }
 }
@@ -720,11 +706,7 @@ async function completePromisedValue(
       path,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(
-      exeContext.subsequentPayloads,
-      path,
-      incrementalDataRecord,
-    );
+    exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
     return null;
   }
 }
@@ -963,8 +945,7 @@ function completeListItemValue(
             itemPath,
             incrementalDataRecord,
           );
-          filterSubsequentPayloads(
-            exeContext.subsequentPayloads,
+          exeContext.incrementalPublisher.filter(
             itemPath,
             incrementalDataRecord,
           );
@@ -983,11 +964,7 @@ function completeListItemValue(
       itemPath,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(
-      exeContext.subsequentPayloads,
-      itemPath,
-      incrementalDataRecord,
-    );
+    exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
     completedResults.push(null);
   }
   return false;
@@ -1442,12 +1419,13 @@ function executeDeferredFragment(
   path,
   parentContext,
 ) {
-  const incrementalDataRecord = new DeferredFragmentRecord({
-    label,
-    path,
-    parentContext,
-    subsequentPayloads: exeContext.subsequentPayloads,
-  });
+  const incrementalPublisher = exeContext.incrementalPublisher;
+  const incrementalDataRecord =
+    incrementalPublisher.prepareNewDeferredFragmentRecord({
+      label,
+      path,
+      parentContext,
+    });
   let promiseOrData;
   try {
     promiseOrData = executeFields(
@@ -1459,16 +1437,33 @@ function executeDeferredFragment(
       incrementalDataRecord,
     );
     if (isPromise(promiseOrData)) {
-      promiseOrData = promiseOrData.then(null, (e) => {
-        incrementalDataRecord.errors.push(e);
-        return null;
-      });
+      promiseOrData = promiseOrData.then(
+        (resolved) =>
+          incrementalPublisher.completeDeferredFragmentRecord(
+            incrementalDataRecord,
+            resolved,
+          ),
+        (e) => {
+          incrementalPublisher.addFieldError(incrementalDataRecord, e);
+          incrementalPublisher.completeDeferredFragmentRecord(
+            incrementalDataRecord,
+            null,
+          );
+        },
+      );
+    } else {
+      incrementalPublisher.completeDeferredFragmentRecord(
+        incrementalDataRecord,
+        promiseOrData,
+      );
     }
   } catch (e) {
-    incrementalDataRecord.errors.push(e);
-    promiseOrData = null;
+    incrementalPublisher.addFieldError(incrementalDataRecord, e);
+    incrementalPublisher.completeDeferredFragmentRecord(
+      incrementalDataRecord,
+      null,
+    );
   }
-  incrementalDataRecord.addData(promiseOrData);
 }
 function executeStreamField(
   path,
@@ -1481,14 +1476,15 @@ function executeStreamField(
   label,
   parentContext,
 ) {
-  const incrementalDataRecord = new StreamItemsRecord({
-    label,
-    path: itemPath,
-    parentContext,
-    subsequentPayloads: exeContext.subsequentPayloads,
-  });
+  const incrementalPublisher = exeContext.incrementalPublisher;
+  const incrementalDataRecord =
+    incrementalPublisher.prepareNewStreamItemsRecord({
+      label,
+      path: itemPath,
+      parentContext,
+    });
   if (isPromise(item)) {
-    const completedItems = completePromisedValue(
+    completePromisedValue(
       exeContext,
       itemType,
       fieldGroup,
@@ -1497,18 +1493,20 @@ function executeStreamField(
       item,
       incrementalDataRecord,
     ).then(
-      (value) => [value],
+      (value) =>
+        incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+          value,
+        ]),
       (error) => {
-        incrementalDataRecord.errors.push(error);
-        filterSubsequentPayloads(
-          exeContext.subsequentPayloads,
-          path,
+        incrementalPublisher.addFieldError(incrementalDataRecord, error);
+        incrementalPublisher.filter(path, incrementalDataRecord);
+        incrementalPublisher.completeStreamItemsRecord(
           incrementalDataRecord,
+          null,
         );
         return null;
       },
     );
-    incrementalDataRecord.addItems(completedItems);
     return incrementalDataRecord;
   }
   let completedItem;
@@ -1533,24 +1531,16 @@ function executeStreamField(
         incrementalDataRecord,
       );
       completedItem = null;
-      filterSubsequentPayloads(
-        exeContext.subsequentPayloads,
-        itemPath,
-        incrementalDataRecord,
-      );
+      exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
     }
   } catch (error) {
-    incrementalDataRecord.errors.push(error);
-    filterSubsequentPayloads(
-      exeContext.subsequentPayloads,
-      path,
-      incrementalDataRecord,
-    );
-    incrementalDataRecord.addItems(null);
+    incrementalPublisher.addFieldError(incrementalDataRecord, error);
+    incrementalPublisher.filter(path, incrementalDataRecord);
+    incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, null);
     return incrementalDataRecord;
   }
   if (isPromise(completedItem)) {
-    const completedItems = completedItem
+    completedItem
       .then(undefined, (rawError) => {
         handleFieldError(
           rawError,
@@ -1560,29 +1550,29 @@ function executeStreamField(
           itemPath,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(
-          exeContext.subsequentPayloads,
-          itemPath,
-          incrementalDataRecord,
-        );
+        exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
         return null;
       })
       .then(
-        (value) => [value],
-        (error) => {
-          incrementalDataRecord.errors.push(error);
-          filterSubsequentPayloads(
-            exeContext.subsequentPayloads,
-            path,
+        (value) =>
+          incrementalPublisher.completeStreamItemsRecord(
             incrementalDataRecord,
+            [value],
+          ),
+        (error) => {
+          incrementalPublisher.addFieldError(incrementalDataRecord, error);
+          incrementalPublisher.filter(path, incrementalDataRecord);
+          incrementalPublisher.completeStreamItemsRecord(
+            incrementalDataRecord,
+            null,
           );
-          return null;
         },
       );
-    incrementalDataRecord.addItems(completedItems);
     return incrementalDataRecord;
   }
-  incrementalDataRecord.addItems([completedItem]);
+  incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+    completedItem,
+  ]);
   return incrementalDataRecord;
 }
 async function executeStreamAsyncIteratorItem(
@@ -1599,8 +1589,10 @@ async function executeStreamAsyncIteratorItem(
   try {
     const { value, done } = await asyncIterator.next();
     if (done) {
-      incrementalDataRecord.setIsCompletedAsyncIterator();
-      return { done, value: undefined };
+      exeContext.incrementalPublisher.setIsCompletedAsyncIterator(
+        incrementalDataRecord,
+      );
+      return { done: true, value: undefined };
     }
     item = value;
   } catch (rawError) {
@@ -1627,11 +1619,7 @@ async function executeStreamAsyncIteratorItem(
           itemPath,
           incrementalDataRecord,
         );
-        filterSubsequentPayloads(
-          exeContext.subsequentPayloads,
-          itemPath,
-          incrementalDataRecord,
-        );
+        exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
         return null;
       });
     }
@@ -1645,11 +1633,7 @@ async function executeStreamAsyncIteratorItem(
       itemPath,
       incrementalDataRecord,
     );
-    filterSubsequentPayloads(
-      exeContext.subsequentPayloads,
-      itemPath,
-      incrementalDataRecord,
-    );
+    exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
     return { done: false, value: null };
   }
 }
@@ -1664,18 +1648,19 @@ async function executeStreamAsyncIterator(
   label,
   parentContext,
 ) {
+  const incrementalPublisher = exeContext.incrementalPublisher;
   let index = initialIndex;
   let previousIncrementalDataRecord = parentContext ?? undefined;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const itemPath = addPath(path, index, undefined);
-    const incrementalDataRecord = new StreamItemsRecord({
-      label,
-      path: itemPath,
-      parentContext: previousIncrementalDataRecord,
-      asyncIterator,
-      subsequentPayloads: exeContext.subsequentPayloads,
-    });
+    const incrementalDataRecord =
+      incrementalPublisher.prepareNewStreamItemsRecord({
+        label,
+        path: itemPath,
+        parentContext: previousIncrementalDataRecord,
+        asyncIterator,
+      });
     let iteration;
     try {
       // eslint-disable-next-line no-await-in-loop
@@ -1690,13 +1675,12 @@ async function executeStreamAsyncIterator(
         itemPath,
       );
     } catch (error) {
-      incrementalDataRecord.errors.push(error);
-      filterSubsequentPayloads(
-        exeContext.subsequentPayloads,
-        path,
+      incrementalPublisher.addFieldError(incrementalDataRecord, error);
+      incrementalPublisher.filter(path, incrementalDataRecord);
+      incrementalPublisher.completeStreamItemsRecord(
         incrementalDataRecord,
+        null,
       );
-      incrementalDataRecord.addItems(null);
       // entire stream has errored and bubbled upwards
       if (asyncIterator?.return) {
         asyncIterator.return().catch(() => {
@@ -1706,24 +1690,27 @@ async function executeStreamAsyncIterator(
       return;
     }
     const { done, value: completedItem } = iteration;
-    let completedItems;
     if (isPromise(completedItem)) {
-      completedItems = completedItem.then(
-        (value) => [value],
-        (error) => {
-          incrementalDataRecord.errors.push(error);
-          filterSubsequentPayloads(
-            exeContext.subsequentPayloads,
-            path,
+      completedItem.then(
+        (value) =>
+          incrementalPublisher.completeStreamItemsRecord(
             incrementalDataRecord,
+            [value],
+          ),
+        (error) => {
+          incrementalPublisher.addFieldError(incrementalDataRecord, error);
+          incrementalPublisher.filter(path, incrementalDataRecord);
+          incrementalPublisher.completeStreamItemsRecord(
+            incrementalDataRecord,
+            null,
           );
-          return null;
         },
       );
     } else {
-      completedItems = [completedItem];
+      incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+        completedItem,
+      ]);
     }
-    incrementalDataRecord.addItems(completedItems);
     if (done) {
       break;
     }

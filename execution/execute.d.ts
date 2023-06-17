@@ -20,10 +20,10 @@ import type { GraphQLSchema } from '../type/schema.js';
 import type { FieldGroup } from './collectFields.js';
 import type {
   FormattedIncrementalResult,
-  IncrementalDataRecord,
   IncrementalResult,
   SubsequentIncrementalExecutionResult,
 } from './IncrementalPublisher.js';
+import { IncrementalPublisher } from './IncrementalPublisher.js';
 /**
  * Terminology
  *
@@ -62,7 +62,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  subsequentPayloads: Set<IncrementalDataRecord>;
+  incrementalPublisher: IncrementalPublisher;
 }
 /**
  * The result of GraphQL execution.

@@ -1,6 +1,5 @@
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import type {
   GraphQLError,
   GraphQLFormattedError,
@@ -73,56 +72,109 @@ export type FormattedIncrementalResult<
 > =
   | FormattedIncrementalDeferResult<TData, TExtensions>
   | FormattedIncrementalStreamResult<TData, TExtensions>;
-export declare function yieldSubsequentPayloads(
-  subsequentPayloads: Set<IncrementalDataRecord>,
-): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void>;
-export declare function filterSubsequentPayloads(
-  subsequentPayloads: Set<IncrementalDataRecord>,
-  nullPath: Path,
-  currentIncrementalDataRecord: IncrementalDataRecord | undefined,
-): void;
+/**
+ * This class is used to publish incremental results to the client, enabling semi-concurrent
+ * execution while preserving result order.
+ *
+ * The internal publishing state is managed as follows:
+ *
+ * '_released': the set of Incremental Data records that are ready to be sent to the client,
+ * i.e. their parents have completed and they have also completed.
+ *
+ * `_pending`: the set of Incremental Data records that are definitely pending, i.e. their
+ * parents have completed so that they can no longer be filtered. This includes all Incremental
+ * Data records in `released`, as well as Incremental Data records that have not yet completed.
+ *
+ * `_initialResult`: a record containing the state of the initial result, as follows:
+ * `isCompleted`: indicates whether the initial result has completed.
+ * `children`: the set of Incremental Data records that can be be published when the initial
+ * result is completed.
+ *
+ * Each Incremental Data record also contains similar metadata, i.e. these records also contain
+ * similar `isCompleted` and `children` properties.
+ *
+ * @internal
+ */
+export declare class IncrementalPublisher {
+  private _initialResult;
+  private _released;
+  private _pending;
+  private _signalled;
+  private _resolve;
+  constructor();
+  hasNext(): boolean;
+  subscribe(): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void>;
+  prepareNewDeferredFragmentRecord(opts: {
+    label: string | undefined;
+    path: Path | undefined;
+    parentContext: IncrementalDataRecord | undefined;
+  }): DeferredFragmentRecord;
+  prepareNewStreamItemsRecord(opts: {
+    label: string | undefined;
+    path: Path | undefined;
+    asyncIterator?: AsyncIterator<unknown>;
+    parentContext: IncrementalDataRecord | undefined;
+  }): StreamItemsRecord;
+  completeDeferredFragmentRecord(
+    deferredFragmentRecord: DeferredFragmentRecord,
+    data: ObjMap<unknown> | null,
+  ): void;
+  completeStreamItemsRecord(
+    streamItemsRecord: StreamItemsRecord,
+    items: Array<unknown> | null,
+  ): void;
+  setIsCompletedAsyncIterator(streamItemsRecord: StreamItemsRecord): void;
+  addFieldError(
+    incrementalDataRecord: IncrementalDataRecord,
+    error: GraphQLError,
+  ): void;
+  publishInitial(): void;
+  filter(
+    nullPath: Path,
+    erroringIncrementalDataRecord: IncrementalDataRecord | undefined,
+  ): void;
+  private _trigger;
+  private _reset;
+  private _introduce;
+  private _release;
+  private _push;
+  private _delete;
+  private _getIncrementalResult;
+  private _publish;
+  private _getDescendants;
+  private _matchesPath;
+}
 /** @internal */
 export declare class DeferredFragmentRecord {
-  type: 'defer';
   errors: Array<GraphQLError>;
   label: string | undefined;
   path: Array<string | number>;
-  promise: Promise<void>;
   data: ObjMap<unknown> | null;
   parentContext: IncrementalDataRecord | undefined;
+  children: Set<IncrementalDataRecord>;
   isCompleted: boolean;
-  _subsequentPayloads: Set<IncrementalDataRecord>;
-  _resolve?: (arg: PromiseOrValue<ObjMap<unknown> | null>) => void;
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
     parentContext: IncrementalDataRecord | undefined;
-    subsequentPayloads: Set<IncrementalDataRecord>;
   });
-  addData(data: PromiseOrValue<ObjMap<unknown> | null>): void;
 }
 /** @internal */
 export declare class StreamItemsRecord {
-  type: 'stream';
   errors: Array<GraphQLError>;
   label: string | undefined;
   path: Array<string | number>;
   items: Array<unknown> | null;
-  promise: Promise<void>;
   parentContext: IncrementalDataRecord | undefined;
+  children: Set<IncrementalDataRecord>;
   asyncIterator: AsyncIterator<unknown> | undefined;
   isCompletedAsyncIterator?: boolean;
   isCompleted: boolean;
-  _subsequentPayloads: Set<IncrementalDataRecord>;
-  _resolve?: (arg: PromiseOrValue<Array<unknown> | null>) => void;
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
     asyncIterator?: AsyncIterator<unknown>;
     parentContext: IncrementalDataRecord | undefined;
-    subsequentPayloads: Set<IncrementalDataRecord>;
   });
-  addItems(items: PromiseOrValue<Array<unknown> | null>): void;
-  setIsCompletedAsyncIterator(): void;
 }
 export type IncrementalDataRecord = DeferredFragmentRecord | StreamItemsRecord;
