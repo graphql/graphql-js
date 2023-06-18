@@ -787,7 +787,7 @@ describe('Type System Printer', () => {
         Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).
         """
         reason: String = "No longer supported"
-      ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+      ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE | OBJECT
 
       """Exposes a URL that specifies the behavior of this scalar."""
       directive @specifiedBy(
@@ -802,7 +802,7 @@ describe('Type System Printer', () => {
         description: String
 
         """A list of all types supported by this server."""
-        types: [__Type!]!
+        types(includeDeprecated: Boolean = false): [__Type!]!
 
         """The type that query operations will be rooted at."""
         queryType: __Type!
@@ -833,10 +833,12 @@ describe('Type System Printer', () => {
         specifiedByURL: String
         fields(includeDeprecated: Boolean = false): [__Field!]
         interfaces: [__Type!]
-        possibleTypes: [__Type!]
+        possibleTypes(includeDeprecated: Boolean = false): [__Type!]
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
         inputFields(includeDeprecated: Boolean = false): [__InputValue!]
         ofType: __Type
+        isDeprecated: Boolean
+        deprecationReason: String
       }
 
       """An enum describing what kind of type a given \`__Type\` is."""

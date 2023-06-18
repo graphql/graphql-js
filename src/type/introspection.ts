@@ -15,6 +15,7 @@ import type {
   GraphQLType,
 } from './definition.js';
 import {
+  getDeprecationReason,
   GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
@@ -46,8 +47,14 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
       types: {
         description: 'A list of all types supported by this server.',
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__Type))),
-        resolve(schema) {
-          return Object.values(schema.getTypeMap());
+        args: {
+          includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
+        },
+        resolve(schema, { includeDeprecated }) {
+          const types = Object.values(schema.getTypeMap());
+          return includeDeprecated
+            ? types
+            : types.filter((type) => getDeprecationReason(type) == null);
         },
       },
       queryType: {
@@ -282,9 +289,15 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       },
       possibleTypes: {
         type: new GraphQLList(new GraphQLNonNull(__Type)),
-        resolve(type, _args, _context, { schema }) {
+        args: {
+          includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
+        },
+        resolve(type, { includeDeprecated }, _context, { schema }) {
           if (isAbstractType(type)) {
-            return schema.getPossibleTypes(type);
+            const possibleTypes = schema.getPossibleTypes(type);
+            return includeDeprecated
+              ? possibleTypes
+              : possibleTypes.filter((t) => t.deprecationReason == null);
           }
         },
       },
@@ -322,6 +335,18 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       ofType: {
         type: __Type,
         resolve: (type) => ('ofType' in type ? type.ofType : undefined),
+      },
+      isDeprecated: {
+        type: GraphQLBoolean,
+        resolve: (type) =>
+          'deprecationReason' in type
+            ? type.deprecationReason != null
+            : undefined,
+      },
+      deprecationReason: {
+        type: GraphQLString,
+        resolve: (type) =>
+          'deprecationReason' in type ? type.deprecationReason : undefined,
       },
     } as GraphQLFieldConfigMap<GraphQLType, unknown>),
 });

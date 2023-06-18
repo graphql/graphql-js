@@ -186,6 +186,20 @@ describe('Type System: Objects', () => {
     });
   });
 
+  it('defines a deprecated object type', () => {
+    const DeprecatedType = new GraphQLObjectType({
+      name: 'foo',
+      fields: {
+        bar: {
+          type: ScalarType,
+        },
+      },
+      deprecationReason: 'A terrible reason',
+    });
+
+    expect(DeprecatedType.deprecationReason).to.equal('A terrible reason');
+  });
+
   it('accepts an Object type with a field function', () => {
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
