@@ -61,6 +61,7 @@ import type {
 } from './IncrementalPublisher.js';
 import { IncrementalPublisher } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
+import type { VariableValues } from './values.js';
 import {
   getArgumentValues,
   getDirectiveValues,
@@ -124,7 +125,7 @@ export interface ExecutionContext {
   rootValue: unknown;
   contextValue: unknown;
   operation: OperationDefinitionNode;
-  variableValues: { [variable: string]: unknown };
+  variableValues: VariableValues;
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
@@ -423,15 +424,15 @@ export function buildExecutionContext(
   /* c8 ignore next */
   const variableDefinitions = operation.variableDefinitions ?? [];
 
-  const coercedVariableValues = getVariableValues(
+  const variableValuesOrErrors = getVariableValues(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
     { maxErrors: 50 },
   );
 
-  if (coercedVariableValues.errors) {
-    return coercedVariableValues.errors;
+  if (variableValuesOrErrors.errors) {
+    return variableValuesOrErrors.errors;
   }
 
   return {
@@ -440,7 +441,7 @@ export function buildExecutionContext(
     rootValue,
     contextValue,
     operation,
-    variableValues: coercedVariableValues.coerced,
+    variableValues: variableValuesOrErrors.variableValues,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
@@ -751,7 +752,7 @@ export function buildResolveInfo(
     fragments: exeContext.fragments,
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
-    variableValues: exeContext.variableValues,
+    variableValues: exeContext.variableValues.coerced,
   };
 }
 

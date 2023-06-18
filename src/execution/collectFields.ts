@@ -24,6 +24,7 @@ import type { GraphQLSchema } from '../type/schema.js';
 
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
+import type { VariableValues } from './values.js';
 import { getDirectiveValues } from './values.js';
 
 export type FieldGroup = ReadonlyArray<FieldNode>;
@@ -52,7 +53,7 @@ export interface FieldsAndPatches {
 export function collectFields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
 ): FieldsAndPatches {
@@ -86,7 +87,7 @@ export function collectFields(
 export function collectSubfields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldGroup: FieldGroup,
@@ -122,7 +123,7 @@ export function collectSubfields(
 function collectFieldsImpl(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDefinitionNode>,
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   operation: OperationDefinitionNode,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
@@ -248,7 +249,7 @@ function collectFieldsImpl(
  */
 function getDeferValues(
   operation: OperationDefinitionNode,
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   node: FragmentSpreadNode | InlineFragmentNode,
 ): undefined | { label: string | undefined } {
   const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues);
@@ -276,7 +277,7 @@ function getDeferValues(
  * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
-  variableValues: { [variable: string]: unknown },
+  variableValues: VariableValues,
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
 ): boolean {
   const skip = getDirectiveValues(GraphQLSkipDirective, node, variableValues);

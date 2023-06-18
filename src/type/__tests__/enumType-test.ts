@@ -266,7 +266,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Variable "$color" got invalid value 2; Enum "Color" cannot represent non-string value: 2.',
+            'Variable "$color" has invalid value: Enum "Color" cannot represent non-string value: 2.',
           locations: [{ line: 1, column: 8 }],
         },
       ],
@@ -343,24 +343,28 @@ describe('Type System: Enum Values', () => {
 
   it('presents a getValues() API for complex enums', () => {
     const values = ComplexEnum.getValues();
-    expect(values).to.have.deep.ordered.members([
-      {
-        name: 'ONE',
-        description: undefined,
-        value: Complex1,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'TWO',
-        description: undefined,
-        value: Complex2,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-    ]);
+
+    expect(values).to.have.lengthOf(2);
+
+    expect(values[0]).to.deep.include({
+      coordinate: 'Complex.ONE',
+      name: 'ONE',
+      description: undefined,
+      value: Complex1,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[1]).to.deep.include({
+      coordinate: 'Complex.TWO',
+      name: 'TWO',
+      description: undefined,
+      value: Complex2,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('presents a getValue() API for complex enums', () => {
