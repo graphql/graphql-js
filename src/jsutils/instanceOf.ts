@@ -9,7 +9,7 @@ import { inspect } from './inspect';
 export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
-  globalThis.process?.env.NODE_ENV === 'production'
+  globalThis.process && globalThis.process.env.NODE_ENV === 'production'
     ? function instanceOf(value: unknown, constructor: Constructor): boolean {
         return value instanceof constructor;
       }
