@@ -1,3 +1,4 @@
+/** @type {import('eslint').Linter.Config} */
 module.exports = {
   parserOptions: {
     sourceType: 'script',
@@ -347,7 +348,15 @@ module.exports = {
     'no-restricted-globals': 'off',
     'no-restricted-imports': 'off',
     'no-restricted-properties': 'off',
-    'no-restricted-syntax': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector:
+          'MemberExpression[object.name="globalThis"][property.name="process"]',
+        message:
+          "Never use `process` with `globalThis` because bundlers incorrectly replace it and doesn't tree shake unused code",
+      },
+    ],
     'no-return-assign': 'error',
     'no-return-await': 'error',
     'no-script-url': 'error',
@@ -494,6 +503,8 @@ module.exports = {
       plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc'],
       extends: ['plugin:import/typescript'],
       rules: {
+        // https://typescript-eslint.io/linting/troubleshooting/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
+        'no-undef': 'off',
         //////////////////////////////////////////////////////////////////////////
         // `eslint-plugin-tsdoc` rule list based on `v0.2.x`
         // https://github.com/microsoft/tsdoc/tree/master/eslint-plugin
