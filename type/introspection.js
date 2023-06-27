@@ -342,6 +342,14 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
       type: exports.__Type,
       resolve: (type) => ('ofType' in type ? type.ofType : undefined),
     },
+    isOneOf: {
+      type: scalars_js_1.GraphQLBoolean,
+      resolve: (type) => {
+        if ((0, definition_js_1.isInputObjectType)(type)) {
+          return type.isOneOf;
+        }
+      },
+    },
   }),
 });
 exports.__Field = new definition_js_1.GraphQLObjectType({

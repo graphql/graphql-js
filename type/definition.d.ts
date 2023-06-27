@@ -821,6 +821,7 @@ export declare class GraphQLInputObjectType {
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
   astNode: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
+  isOneOf: boolean;
   private _fields;
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>);
   get [Symbol.toStringTag](): string;
@@ -836,6 +837,7 @@ export interface GraphQLInputObjectTypeConfig {
   extensions?: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
   astNode?: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
+  isOneOf?: boolean;
 }
 interface GraphQLInputObjectTypeNormalizedConfig
   extends GraphQLInputObjectTypeConfig {

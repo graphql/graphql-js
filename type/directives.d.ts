@@ -85,6 +85,10 @@ export declare const GraphQLDeprecatedDirective: GraphQLDirective;
  */
 export declare const GraphQLSpecifiedByDirective: GraphQLDirective;
 /**
+ * Used to declare an Input Object as a OneOf Input Objects.
+ */
+export declare const GraphQLOneOfDirective: GraphQLDirective;
+/**
  * The full list of specified directives.
  */
 export declare const specifiedDirectives: ReadonlyArray<GraphQLDirective>;

@@ -117,6 +117,7 @@ export {
   GraphQLStreamDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
+  GraphQLOneOfDirective,
   DEFAULT_DEPRECATION_REASON,
 } from './directives.js';
 export type {

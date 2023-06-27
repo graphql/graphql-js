@@ -79,6 +79,7 @@ exports.assertEnumValueName =
   exports.specifiedScalarTypes =
   exports.isSpecifiedScalarType =
   exports.DEFAULT_DEPRECATION_REASON =
+  exports.GraphQLOneOfDirective =
   exports.GraphQLSpecifiedByDirective =
   exports.GraphQLDeprecatedDirective =
   exports.GraphQLStreamDirective =
@@ -477,6 +478,12 @@ Object.defineProperty(exports, 'GraphQLSpecifiedByDirective', {
   enumerable: true,
   get: function () {
     return directives_js_1.GraphQLSpecifiedByDirective;
+  },
+});
+Object.defineProperty(exports, 'GraphQLOneOfDirective', {
+  enumerable: true,
+  get: function () {
+    return directives_js_1.GraphQLOneOfDirective;
   },
 });
 // Constant Deprecation Reason

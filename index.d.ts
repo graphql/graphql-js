@@ -56,6 +56,7 @@ export {
   GraphQLStreamDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
+  GraphQLOneOfDirective,
   TypeKind,
   DEFAULT_DEPRECATION_REASON,
   introspectionTypes,

@@ -429,6 +429,23 @@ function validateInputFields(context, inputObj) {
         [getDeprecatedDirectiveNode(field.astNode), field.astNode?.type],
       );
     }
+    if (inputObj.isOneOf) {
+      validateOneOfInputObjectField(inputObj, field, context);
+    }
+  }
+}
+function validateOneOfInputObjectField(type, field, context) {
+  if ((0, definition_js_1.isNonNullType)(field.type)) {
+    context.reportError(
+      `OneOf input field ${type.name}.${field.name} must be nullable.`,
+      field.astNode?.type,
+    );
+  }
+  if (field.defaultValue !== undefined) {
+    context.reportError(
+      `OneOf input field ${type.name}.${field.name} cannot have a default value.`,
+      field.astNode,
+    );
   }
 }
 function createInputObjectCircularRefsValidator(context) {

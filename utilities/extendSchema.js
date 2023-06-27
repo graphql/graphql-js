@@ -514,6 +514,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
           fields: () => buildInputFieldMap(allNodes),
           astNode,
           extensionASTNodes,
+          isOneOf: isOneOf(astNode),
         });
       }
     }
@@ -549,4 +550,15 @@ function getSpecifiedByURL(node) {
   );
   // @ts-expect-error validated by `getDirectiveValues`
   return specifiedBy?.url;
+}
+/**
+ * Given an input object node, returns if the node should be OneOf.
+ */
+function isOneOf(node) {
+  return Boolean(
+    (0, values_js_1.getDirectiveValues)(
+      directives_js_1.GraphQLOneOfDirective,
+      node,
+    ),
+  );
 }

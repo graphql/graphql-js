@@ -25,6 +25,7 @@ import {
 import {
   GraphQLDeprecatedDirective,
   GraphQLDirective,
+  GraphQLOneOfDirective,
   GraphQLSpecifiedByDirective,
   isSpecifiedDirective,
 } from '../type/directives.mjs';
@@ -525,6 +526,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
           fields: () => buildInputFieldMap(allNodes),
           astNode,
           extensionASTNodes,
+          isOneOf: isOneOf(astNode),
         });
       }
     }
@@ -550,4 +552,10 @@ function getSpecifiedByURL(node) {
   const specifiedBy = getDirectiveValues(GraphQLSpecifiedByDirective, node);
   // @ts-expect-error validated by `getDirectiveValues`
   return specifiedBy?.url;
+}
+/**
+ * Given an input object node, returns if the node should be OneOf.
+ */
+function isOneOf(node) {
+  return Boolean(getDirectiveValues(GraphQLOneOfDirective, node));
 }

@@ -969,6 +969,7 @@ class GraphQLInputObjectType {
     this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
+    this.isOneOf = config.isOneOf ?? false;
     this._fields = defineInputFieldMap.bind(undefined, config.fields);
   }
   get [Symbol.toStringTag]() {
@@ -996,6 +997,7 @@ class GraphQLInputObjectType {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
+      isOneOf: this.isOneOf,
     };
   }
   toString() {

@@ -5,6 +5,7 @@ const didYouMean_js_1 = require('../../jsutils/didYouMean.js');
 const inspect_js_1 = require('../../jsutils/inspect.js');
 const suggestionList_js_1 = require('../../jsutils/suggestionList.js');
 const GraphQLError_js_1 = require('../../error/GraphQLError.js');
+const kinds_js_1 = require('../../language/kinds.js');
 const printer_js_1 = require('../../language/printer.js');
 const definition_js_1 = require('../../type/definition.js');
 /**
@@ -16,7 +17,16 @@ const definition_js_1 = require('../../type/definition.js');
  * See https://spec.graphql.org/draft/#sec-Values-of-Correct-Type
  */
 function ValuesOfCorrectTypeRule(context) {
+  let variableDefinitions = {};
   return {
+    OperationDefinition: {
+      enter() {
+        variableDefinitions = {};
+      },
+    },
+    VariableDefinition(definition) {
+      variableDefinitions[definition.variable.name.value] = definition;
+    },
     ListValue(node) {
       // Note: TypeInfo will traverse into a list's item type, so look to the
       // parent input type to check if it is a list.
@@ -49,6 +59,15 @@ function ValuesOfCorrectTypeRule(context) {
             ),
           );
         }
+      }
+      if (type.isOneOf) {
+        validateOneOfInputObject(
+          context,
+          node,
+          type,
+          fieldNodeMap,
+          variableDefinitions,
+        );
       }
     },
     ObjectField(node) {
@@ -140,6 +159,53 @@ function isValidValueNode(context, node) {
             node,
           )}; ` + error.message,
           { nodes: node, originalError: error },
+        ),
+      );
+    }
+  }
+}
+function validateOneOfInputObject(
+  context,
+  node,
+  type,
+  fieldNodeMap,
+  variableDefinitions,
+) {
+  const keys = Array.from(fieldNodeMap.keys());
+  const isNotExactlyOneField = keys.length !== 1;
+  if (isNotExactlyOneField) {
+    context.reportError(
+      new GraphQLError_js_1.GraphQLError(
+        `OneOf Input Object "${type.name}" must specify exactly one key.`,
+        { nodes: [node] },
+      ),
+    );
+    return;
+  }
+  const value = fieldNodeMap.get(keys[0])?.value;
+  const isNullLiteral = !value || value.kind === kinds_js_1.Kind.NULL;
+  const isVariable = value?.kind === kinds_js_1.Kind.VARIABLE;
+  if (isNullLiteral) {
+    context.reportError(
+      new GraphQLError_js_1.GraphQLError(
+        `Field "${type.name}.${keys[0]}" must be non-null.`,
+        {
+          nodes: [node],
+        },
+      ),
+    );
+    return;
+  }
+  if (isVariable) {
+    const variableName = value.name.value;
+    const definition = variableDefinitions[variableName];
+    const isNullableVariable =
+      definition.type.kind !== kinds_js_1.Kind.NON_NULL_TYPE;
+    if (isNullableVariable) {
+      context.reportError(
+        new GraphQLError_js_1.GraphQLError(
+          `Variable "${variableName}" must be non-nullable to be used for OneOf Input Object "${type.name}".`,
+          { nodes: [node] },
         ),
       );
     }

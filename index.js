@@ -27,8 +27,7 @@
  * @packageDocumentation
  */
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.isObjectType =
-  exports.isScalarType =
+exports.isScalarType =
   exports.isType =
   exports.isDirective =
   exports.isSchema =
@@ -46,6 +45,7 @@ exports.isObjectType =
   exports.introspectionTypes =
   exports.DEFAULT_DEPRECATION_REASON =
   exports.TypeKind =
+  exports.GraphQLOneOfDirective =
   exports.GraphQLSpecifiedByDirective =
   exports.GraphQLDeprecatedDirective =
   exports.GraphQLStreamDirective =
@@ -78,8 +78,7 @@ exports.isObjectType =
   exports.versionInfo =
   exports.version =
     void 0;
-exports.printLocation =
-  exports.getLocation =
+exports.getLocation =
   exports.OperationTypeNode =
   exports.Location =
   exports.Source =
@@ -128,9 +127,9 @@ exports.printLocation =
   exports.isEnumType =
   exports.isUnionType =
   exports.isInterfaceType =
+  exports.isObjectType =
     void 0;
-exports.NoUnusedFragmentsRule =
-  exports.NoUndefinedVariablesRule =
+exports.NoUndefinedVariablesRule =
   exports.NoFragmentCyclesRule =
   exports.LoneAnonymousOperationRule =
   exports.KnownTypeNamesRule =
@@ -179,9 +178,9 @@ exports.NoUnusedFragmentsRule =
   exports.TokenKind =
   exports.Lexer =
   exports.printSourceLocation =
+  exports.printLocation =
     void 0;
-exports.stripIgnoredCharacters =
-  exports.separateOperations =
+exports.separateOperations =
   exports.concatAST =
   exports.coerceInputValue =
   exports.visitWithTypeInfo =
@@ -230,6 +229,7 @@ exports.stripIgnoredCharacters =
   exports.PossibleFragmentSpreadsRule =
   exports.OverlappingFieldsCanBeMergedRule =
   exports.NoUnusedVariablesRule =
+  exports.NoUnusedFragmentsRule =
     void 0;
 exports.findDangerousChanges =
   exports.findBreakingChanges =
@@ -238,6 +238,7 @@ exports.findDangerousChanges =
   exports.doTypesOverlap =
   exports.isTypeSubTypeOf =
   exports.isEqualType =
+  exports.stripIgnoredCharacters =
     void 0;
 // The GraphQL.js version info.
 var version_js_1 = require('./version.js');
@@ -432,6 +433,12 @@ Object.defineProperty(exports, 'GraphQLSpecifiedByDirective', {
   enumerable: true,
   get: function () {
     return index_js_1.GraphQLSpecifiedByDirective;
+  },
+});
+Object.defineProperty(exports, 'GraphQLOneOfDirective', {
+  enumerable: true,
+  get: function () {
+    return index_js_1.GraphQLOneOfDirective;
   },
 });
 // "Enum" of Type Kinds

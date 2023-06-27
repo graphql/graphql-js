@@ -108,6 +108,15 @@ function valueFromAST(valueNode, type, variables) {
       }
       coercedObj[field.name] = fieldValue;
     }
+    if (type.isOneOf) {
+      const keys = Object.keys(coercedObj);
+      if (keys.length !== 1) {
+        return; // Invalid: not exactly one key, intentionally return no value.
+      }
+      if (coercedObj[keys[0]] === null) {
+        return; // Invalid: value not non-null, intentionally return no value.
+      }
+    }
     return coercedObj;
   }
   if ((0, definition_js_1.isLeafType)(type)) {

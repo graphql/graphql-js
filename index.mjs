@@ -61,6 +61,7 @@ export {
   GraphQLStreamDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
+  GraphQLOneOfDirective,
   // "Enum" of Type Kinds
   TypeKind,
   // Constant Deprecation Reason

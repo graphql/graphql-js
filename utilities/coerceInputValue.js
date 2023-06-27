@@ -113,6 +113,29 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         );
       }
     }
+    if (type.isOneOf) {
+      const keys = Object.keys(coercedValue);
+      if (keys.length !== 1) {
+        onError(
+          (0, Path_js_1.pathToArray)(path),
+          inputValue,
+          new GraphQLError_js_1.GraphQLError(
+            `Exactly one key must be specified for OneOf type "${type.name}".`,
+          ),
+        );
+      }
+      const key = keys[0];
+      const value = coercedValue[key];
+      if (value === null) {
+        onError(
+          (0, Path_js_1.pathToArray)(path).concat(key),
+          value,
+          new GraphQLError_js_1.GraphQLError(
+            `Field "${key}" must be non-null.`,
+          ),
+        );
+      }
+    }
     return coercedValue;
   }
   if ((0, definition_js_1.isLeafType)(type)) {
