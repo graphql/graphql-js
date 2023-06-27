@@ -672,6 +672,9 @@ describe('Type System Printer', () => {
         url: String!
       ) on SCALAR
 
+      """Indicates an Input Object is a OneOf Input Object."""
+      directive @oneOf on INPUT_OBJECT
+
       """
       A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       """
@@ -714,6 +717,7 @@ describe('Type System Printer', () => {
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
         inputFields(includeDeprecated: Boolean = false): [__InputValue!]
         ofType: __Type
+        isOneOf: Boolean
       }
 
       """An enum describing what kind of type a given \`__Type\` is."""
