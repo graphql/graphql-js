@@ -352,9 +352,9 @@ module.exports = {
       'error',
       {
         selector:
-          'MemberExpression[object.name="globalThis"][property.name="process"]',
+          'MemberExpression[property.name="env"] > .object[object.name="globalThis"][property.name="process"]',
         message:
-          "Never use `process` with `globalThis` because bundlers incorrectly replace it and doesn't tree shake unused code",
+          "Never use `process.env` with `globalThis` because bundlers incorrectly replace it and doesn't tree shake unused code",
       },
     ],
     'no-return-assign': 'error',

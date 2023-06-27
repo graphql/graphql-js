@@ -8,7 +8,7 @@ import { inspect } from './inspect.js';
  */
 export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
   /* c8 ignore next 6 */
-  typeof process !== 'undefined' && process.env.NODE_ENV === 'production'
+  globalThis.process !== undefined && process.env.NODE_ENV === 'production'
     ? function instanceOf(value: unknown, constructor: Constructor): boolean {
         return value instanceof constructor;
       }
