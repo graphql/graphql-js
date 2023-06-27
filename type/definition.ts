@@ -1325,6 +1325,7 @@ export class GraphQLInputObjectType {
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
   astNode: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
+  isOneOf: boolean;
   private _fields: ThunkObjMap<GraphQLInputField>;
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
     this.name = assertName(config.name);
@@ -1332,6 +1333,7 @@ export class GraphQLInputObjectType {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
+    this.isOneOf = config.isOneOf ?? false;
     this._fields = defineInputFieldMap.bind(undefined, config.fields);
   }
   get [Symbol.toStringTag]() {
@@ -1359,6 +1361,7 @@ export class GraphQLInputObjectType {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
+      isOneOf: this.isOneOf,
     };
   }
   toString(): string {
@@ -1389,6 +1392,7 @@ export interface GraphQLInputObjectTypeConfig {
   extensions?: Maybe<Readonly<GraphQLInputObjectTypeExtensions>>;
   astNode?: Maybe<InputObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
+  isOneOf?: boolean;
 }
 interface GraphQLInputObjectTypeNormalizedConfig
   extends GraphQLInputObjectTypeConfig {

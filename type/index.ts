@@ -133,6 +133,7 @@ export {
   GraphQLStreamDirective,
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
+  GraphQLOneOfDirective,
   // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
 } from './directives.ts';
