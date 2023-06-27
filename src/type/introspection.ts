@@ -323,6 +323,14 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         type: __Type,
         resolve: (type) => ('ofType' in type ? type.ofType : undefined),
       },
+      isOneOf: {
+        type: GraphQLBoolean,
+        resolve: (type) => {
+          if (isInputObjectType(type)) {
+            return type.isOneOf;
+          }
+        },
+      },
     } as GraphQLFieldConfigMap<GraphQLType, unknown>),
 });
 
