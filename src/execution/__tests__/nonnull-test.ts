@@ -13,8 +13,8 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import type { ExecutionResult } from '../execute.js';
 import { execute, executeSync } from '../execute.js';
+import type { ExecutionResult } from '../IncrementalPublisher.js';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');

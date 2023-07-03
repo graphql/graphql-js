@@ -6,8 +6,8 @@ import { parse } from '../../language/parser.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import type { ExecutionResult } from '../execute.js';
 import { execute } from '../execute.js';
+import type { ExecutionResult } from '../IncrementalPublisher.js';
 
 const schema = buildSchema(`
   type Query {
