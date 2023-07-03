@@ -276,6 +276,9 @@ export class IncrementalPublisher {
 
   publishInitial() {
     for (const child of this._initialResult.children) {
+      if (child.filtered) {
+        continue;
+      }
       this._publish(child);
     }
   }
@@ -299,11 +302,7 @@ export class IncrementalPublisher {
       }
 
       this._delete(child);
-      const parent =
-        child.parentContext === undefined
-          ? this._initialResult
-          : child.parentContext;
-      parent.children.delete(child);
+      child.filtered = true;
 
       if (isStreamItemsRecord(child)) {
         if (child.asyncIterator !== undefined) {
@@ -364,6 +363,9 @@ export class IncrementalPublisher {
     for (const incrementalDataRecord of completedRecords) {
       const incrementalResult: IncrementalResult = {};
       for (const child of incrementalDataRecord.children) {
+        if (child.filtered) {
+          continue;
+        }
         this._publish(child);
       }
       if (isStreamItemsRecord(incrementalDataRecord)) {
@@ -435,20 +437,16 @@ export class DeferredFragmentRecord {
   label: string | undefined;
   path: Array<string | number>;
   data: ObjMap<unknown> | null;
-  parentContext: IncrementalDataRecord | undefined;
   children: Set<IncrementalDataRecord>;
   isCompleted: boolean;
-  constructor(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    parentContext: IncrementalDataRecord | undefined;
-  }) {
+  filtered: boolean;
+  constructor(opts: { label: string | undefined; path: Path | undefined }) {
     this.label = opts.label;
     this.path = pathToArray(opts.path);
-    this.parentContext = opts.parentContext;
     this.errors = [];
     this.children = new Set();
     this.isCompleted = false;
+    this.filtered = false;
     this.data = null;
   }
 }
@@ -459,25 +457,24 @@ export class StreamItemsRecord {
   label: string | undefined;
   path: Array<string | number>;
   items: Array<unknown> | null;
-  parentContext: IncrementalDataRecord | undefined;
   children: Set<IncrementalDataRecord>;
   asyncIterator: AsyncIterator<unknown> | undefined;
   isCompletedAsyncIterator?: boolean;
   isCompleted: boolean;
+  filtered: boolean;
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
     asyncIterator?: AsyncIterator<unknown>;
-    parentContext: IncrementalDataRecord | undefined;
   }) {
     this.items = null;
     this.label = opts.label;
     this.path = pathToArray(opts.path);
-    this.parentContext = opts.parentContext;
     this.asyncIterator = opts.asyncIterator;
     this.errors = [];
     this.children = new Set();
     this.isCompleted = false;
+    this.filtered = false;
     this.items = null;
   }
 }
