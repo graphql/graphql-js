@@ -285,7 +285,6 @@ export class IncrementalPublisher {
         continue;
       }
 
-      this._delete(child);
       child.filtered = true;
 
       if (isStreamItemsRecord(child)) {
@@ -330,12 +329,6 @@ export class IncrementalPublisher {
   private _push(item: SubsequentDataRecord): void {
     this._released.add(item);
     this._pending.add(item);
-    this._trigger();
-  }
-
-  private _delete(item: SubsequentDataRecord) {
-    this._released.delete(item);
-    this._pending.delete(item);
     this._trigger();
   }
 
