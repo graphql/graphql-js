@@ -85,18 +85,9 @@ export type FormattedIncrementalResult<
  * parents have completed so that they can no longer be filtered. This includes all Incremental
  * Data records in `released`, as well as Incremental Data records that have not yet completed.
  *
- * `_initialResult`: a record containing the state of the initial result, as follows:
- * `isCompleted`: indicates whether the initial result has completed.
- * `children`: the set of Incremental Data records that can be be published when the initial
- * result is completed.
- *
- * Each Incremental Data record also contains similar metadata, i.e. these records also contain
- * similar `isCompleted` and `children` properties.
- *
  * @internal
  */
 export declare class IncrementalPublisher {
-  private _initialResult;
   private _released;
   private _pending;
   private _signalled;
@@ -104,16 +95,17 @@ export declare class IncrementalPublisher {
   constructor();
   hasNext(): boolean;
   subscribe(): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void>;
+  prepareInitialResultRecord(): InitialResultRecord;
   prepareNewDeferredFragmentRecord(opts: {
     label: string | undefined;
     path: Path | undefined;
-    parentContext: IncrementalDataRecord | undefined;
+    parentContext: IncrementalDataRecord;
   }): DeferredFragmentRecord;
   prepareNewStreamItemsRecord(opts: {
     label: string | undefined;
     path: Path | undefined;
     asyncIterator?: AsyncIterator<unknown>;
-    parentContext: IncrementalDataRecord | undefined;
+    parentContext: IncrementalDataRecord;
   }): StreamItemsRecord;
   completeDeferredFragmentRecord(
     deferredFragmentRecord: DeferredFragmentRecord,
@@ -128,21 +120,27 @@ export declare class IncrementalPublisher {
     incrementalDataRecord: IncrementalDataRecord,
     error: GraphQLError,
   ): void;
-  publishInitial(): void;
+  publishInitial(initialResult: InitialResultRecord): void;
+  getInitialErrors(
+    initialResult: InitialResultRecord,
+  ): ReadonlyArray<GraphQLError>;
   filter(
     nullPath: Path,
-    erroringIncrementalDataRecord: IncrementalDataRecord | undefined,
+    erroringIncrementalDataRecord: IncrementalDataRecord,
   ): void;
   private _trigger;
   private _reset;
   private _introduce;
   private _release;
   private _push;
-  private _delete;
   private _getIncrementalResult;
   private _publish;
   private _getDescendants;
   private _matchesPath;
+}
+export interface InitialResultRecord {
+  errors: Array<GraphQLError>;
+  children: Set<SubsequentDataRecord>;
 }
 /** @internal */
 export declare class DeferredFragmentRecord {
@@ -150,14 +148,10 @@ export declare class DeferredFragmentRecord {
   label: string | undefined;
   path: Array<string | number>;
   data: ObjMap<unknown> | null;
-  parentContext: IncrementalDataRecord | undefined;
-  children: Set<IncrementalDataRecord>;
+  children: Set<SubsequentDataRecord>;
   isCompleted: boolean;
-  constructor(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    parentContext: IncrementalDataRecord | undefined;
-  });
+  filtered: boolean;
+  constructor(opts: { label: string | undefined; path: Path | undefined });
 }
 /** @internal */
 export declare class StreamItemsRecord {
@@ -165,16 +159,16 @@ export declare class StreamItemsRecord {
   label: string | undefined;
   path: Array<string | number>;
   items: Array<unknown> | null;
-  parentContext: IncrementalDataRecord | undefined;
-  children: Set<IncrementalDataRecord>;
+  children: Set<SubsequentDataRecord>;
   asyncIterator: AsyncIterator<unknown> | undefined;
   isCompletedAsyncIterator?: boolean;
   isCompleted: boolean;
+  filtered: boolean;
   constructor(opts: {
     label: string | undefined;
     path: Path | undefined;
     asyncIterator?: AsyncIterator<unknown>;
-    parentContext: IncrementalDataRecord | undefined;
   });
 }
-export type IncrementalDataRecord = DeferredFragmentRecord | StreamItemsRecord;
+export type SubsequentDataRecord = DeferredFragmentRecord | StreamItemsRecord;
+export type IncrementalDataRecord = InitialResultRecord | SubsequentDataRecord;

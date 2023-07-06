@@ -126,14 +126,17 @@ function executeImpl(exeContext) {
   // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
-  const { incrementalPublisher, errors } = exeContext;
+  const incrementalPublisher = exeContext.incrementalPublisher;
+  const initialResultRecord = incrementalPublisher.prepareInitialResultRecord();
   try {
-    const result = executeOperation(exeContext);
+    const result = executeOperation(exeContext, initialResultRecord);
     if (isPromise(result)) {
       return result.then(
         (data) => {
+          const errors =
+            incrementalPublisher.getInitialErrors(initialResultRecord);
           const initialResult = buildResponse(data, errors);
-          incrementalPublisher.publishInitial();
+          incrementalPublisher.publishInitial(initialResultRecord);
           if (incrementalPublisher.hasNext()) {
             return {
               initialResult: {
@@ -146,13 +149,15 @@ function executeImpl(exeContext) {
           return initialResult;
         },
         (error) => {
-          errors.push(error);
+          incrementalPublisher.addFieldError(initialResultRecord, error);
+          const errors =
+            incrementalPublisher.getInitialErrors(initialResultRecord);
           return buildResponse(null, errors);
         },
       );
     }
-    const initialResult = buildResponse(result, errors);
-    incrementalPublisher.publishInitial();
+    const initialResult = buildResponse(result, initialResultRecord.errors);
+    incrementalPublisher.publishInitial(initialResultRecord);
     if (incrementalPublisher.hasNext()) {
       return {
         initialResult: {
@@ -164,7 +169,8 @@ function executeImpl(exeContext) {
     }
     return initialResult;
   } catch (error) {
-    errors.push(error);
+    incrementalPublisher.addFieldError(initialResultRecord, error);
+    const errors = incrementalPublisher.getInitialErrors(initialResultRecord);
     return buildResponse(null, errors);
   }
 }
@@ -265,21 +271,18 @@ export function buildExecutionContext(args) {
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     incrementalPublisher: new IncrementalPublisher(),
-    errors: [],
   };
 }
 function buildPerEventExecutionContext(exeContext, payload) {
   return {
     ...exeContext,
     rootValue: payload,
-    // no need to update incrementalPublisher, incremental delivery is not supported for subscriptions
-    errors: [],
   };
 }
 /**
  * Implements the "Executing operations" section of the spec.
  */
-function executeOperation(exeContext) {
+function executeOperation(exeContext, initialResultRecord) {
   const { operation, schema, fragments, variableValues, rootValue } =
     exeContext;
   const rootType = schema.getRootType(operation.operation);
@@ -306,6 +309,7 @@ function executeOperation(exeContext) {
         rootValue,
         path,
         groupedFieldSet,
+        initialResultRecord,
       );
       break;
     case OperationTypeNode.MUTATION:
@@ -315,6 +319,7 @@ function executeOperation(exeContext) {
         rootValue,
         path,
         groupedFieldSet,
+        initialResultRecord,
       );
       break;
     case OperationTypeNode.SUBSCRIPTION:
@@ -326,6 +331,7 @@ function executeOperation(exeContext) {
         rootValue,
         path,
         groupedFieldSet,
+        initialResultRecord,
       );
   }
   for (const patch of patches) {
@@ -335,6 +341,7 @@ function executeOperation(exeContext) {
       rootType,
       rootValue,
       patchGroupedFieldSet,
+      initialResultRecord,
       label,
       path,
     );
@@ -351,6 +358,7 @@ function executeFieldsSerially(
   sourceValue,
   path,
   groupedFieldSet,
+  incrementalDataRecord,
 ) {
   return promiseReduce(
     groupedFieldSet,
@@ -362,6 +370,7 @@ function executeFieldsSerially(
         sourceValue,
         fieldGroup,
         fieldPath,
+        incrementalDataRecord,
       );
       if (result === undefined) {
         return results;
@@ -561,10 +570,9 @@ function handleFieldError(
   if (isNonNullType(returnType)) {
     throw error;
   }
-  const errors = incrementalDataRecord?.errors ?? exeContext.errors;
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
-  errors.push(error);
+  exeContext.incrementalPublisher.addFieldError(incrementalDataRecord, error);
 }
 /**
  * Implements the instructions for completeValue as defined in the
@@ -780,8 +788,8 @@ async function completeAsyncIteratorValue(
         info,
         itemType,
         path,
-        stream.label,
         incrementalDataRecord,
+        stream.label,
       );
       break;
     }
@@ -869,8 +877,8 @@ function completeListValue(
         fieldGroup,
         info,
         itemType,
-        stream.label,
         previousIncrementalDataRecord,
+        stream.label,
       );
       index++;
       continue;
@@ -1161,9 +1169,9 @@ function collectAndExecuteSubfields(
       returnType,
       result,
       subPatchGroupedFieldSet,
+      incrementalDataRecord,
       label,
       path,
-      incrementalDataRecord,
     );
   }
   return subFields;
@@ -1415,9 +1423,9 @@ function executeDeferredFragment(
   parentType,
   sourceValue,
   fields,
+  parentContext,
   label,
   path,
-  parentContext,
 ) {
   const incrementalPublisher = exeContext.incrementalPublisher;
   const incrementalDataRecord =
@@ -1473,8 +1481,8 @@ function executeStreamField(
   fieldGroup,
   info,
   itemType,
-  label,
   parentContext,
+  label,
 ) {
   const incrementalPublisher = exeContext.incrementalPublisher;
   const incrementalDataRecord =
@@ -1645,12 +1653,12 @@ async function executeStreamAsyncIterator(
   info,
   itemType,
   path,
-  label,
   parentContext,
+  label,
 ) {
   const incrementalPublisher = exeContext.incrementalPublisher;
   let index = initialIndex;
-  let previousIncrementalDataRecord = parentContext ?? undefined;
+  let previousIncrementalDataRecord = parentContext;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const itemPath = addPath(path, index, undefined);

@@ -19,22 +19,10 @@ const promiseWithResolvers_js_1 = require('../jsutils/promiseWithResolvers.js');
  * parents have completed so that they can no longer be filtered. This includes all Incremental
  * Data records in `released`, as well as Incremental Data records that have not yet completed.
  *
- * `_initialResult`: a record containing the state of the initial result, as follows:
- * `isCompleted`: indicates whether the initial result has completed.
- * `children`: the set of Incremental Data records that can be be published when the initial
- * result is completed.
- *
- * Each Incremental Data record also contains similar metadata, i.e. these records also contain
- * similar `isCompleted` and `children` properties.
- *
  * @internal
  */
 class IncrementalPublisher {
   constructor() {
-    this._initialResult = {
-      children: new Set(),
-      isCompleted: false,
-    };
     this._released = new Set();
     this._pending = new Set();
     this._reset();
@@ -97,24 +85,22 @@ class IncrementalPublisher {
       throw: _throw,
     };
   }
+  prepareInitialResultRecord() {
+    return {
+      errors: [],
+      children: new Set(),
+    };
+  }
   prepareNewDeferredFragmentRecord(opts) {
     const deferredFragmentRecord = new DeferredFragmentRecord(opts);
     const parentContext = opts.parentContext;
-    if (parentContext) {
-      parentContext.children.add(deferredFragmentRecord);
-    } else {
-      this._initialResult.children.add(deferredFragmentRecord);
-    }
+    parentContext.children.add(deferredFragmentRecord);
     return deferredFragmentRecord;
   }
   prepareNewStreamItemsRecord(opts) {
     const streamItemsRecord = new StreamItemsRecord(opts);
     const parentContext = opts.parentContext;
-    if (parentContext) {
-      parentContext.children.add(streamItemsRecord);
-    } else {
-      this._initialResult.children.add(streamItemsRecord);
-    }
+    parentContext.children.add(streamItemsRecord);
     return streamItemsRecord;
   }
   completeDeferredFragmentRecord(deferredFragmentRecord, data) {
@@ -133,28 +119,28 @@ class IncrementalPublisher {
   addFieldError(incrementalDataRecord, error) {
     incrementalDataRecord.errors.push(error);
   }
-  publishInitial() {
-    for (const child of this._initialResult.children) {
+  publishInitial(initialResult) {
+    for (const child of initialResult.children) {
+      if (child.filtered) {
+        continue;
+      }
       this._publish(child);
     }
+  }
+  getInitialErrors(initialResult) {
+    return initialResult.errors;
   }
   filter(nullPath, erroringIncrementalDataRecord) {
     const nullPathArray = (0, Path_js_1.pathToArray)(nullPath);
     const asyncIterators = new Set();
-    const children =
-      erroringIncrementalDataRecord === undefined
-        ? this._initialResult.children
-        : erroringIncrementalDataRecord.children;
-    for (const child of this._getDescendants(children)) {
+    const descendants = this._getDescendants(
+      erroringIncrementalDataRecord.children,
+    );
+    for (const child of descendants) {
       if (!this._matchesPath(child.path, nullPathArray)) {
         continue;
       }
-      this._delete(child);
-      const parent =
-        child.parentContext === undefined
-          ? this._initialResult
-          : child.parentContext;
-      parent.children.delete(child);
+      child.filtered = true;
       if (isStreamItemsRecord(child)) {
         if (child.asyncIterator !== undefined) {
           asyncIterators.add(child.asyncIterator);
@@ -194,17 +180,15 @@ class IncrementalPublisher {
     this._pending.add(item);
     this._trigger();
   }
-  _delete(item) {
-    this._released.delete(item);
-    this._pending.delete(item);
-    this._trigger();
-  }
   _getIncrementalResult(completedRecords) {
     const incrementalResults = [];
     let encounteredCompletedAsyncIterator = false;
     for (const incrementalDataRecord of completedRecords) {
       const incrementalResult = {};
       for (const child of incrementalDataRecord.children) {
+        if (child.filtered) {
+          continue;
+        }
         this._publish(child);
       }
       if (isStreamItemsRecord(incrementalDataRecord)) {
@@ -234,11 +218,11 @@ class IncrementalPublisher {
       ? { hasNext: false }
       : undefined;
   }
-  _publish(incrementalDataRecord) {
-    if (incrementalDataRecord.isCompleted) {
-      this._push(incrementalDataRecord);
+  _publish(subsequentResultRecord) {
+    if (subsequentResultRecord.isCompleted) {
+      this._push(subsequentResultRecord);
     } else {
-      this._introduce(incrementalDataRecord);
+      this._introduce(subsequentResultRecord);
     }
   }
   _getDescendants(children, descendants = new Set()) {
@@ -264,10 +248,10 @@ class DeferredFragmentRecord {
   constructor(opts) {
     this.label = opts.label;
     this.path = (0, Path_js_1.pathToArray)(opts.path);
-    this.parentContext = opts.parentContext;
     this.errors = [];
     this.children = new Set();
     this.isCompleted = false;
+    this.filtered = false;
     this.data = null;
   }
 }
@@ -278,15 +262,15 @@ class StreamItemsRecord {
     this.items = null;
     this.label = opts.label;
     this.path = (0, Path_js_1.pathToArray)(opts.path);
-    this.parentContext = opts.parentContext;
     this.asyncIterator = opts.asyncIterator;
     this.errors = [];
     this.children = new Set();
     this.isCompleted = false;
+    this.filtered = false;
     this.items = null;
   }
 }
 exports.StreamItemsRecord = StreamItemsRecord;
-function isStreamItemsRecord(incrementalDataRecord) {
-  return incrementalDataRecord instanceof StreamItemsRecord;
+function isStreamItemsRecord(subsequentResultRecord) {
+  return subsequentResultRecord instanceof StreamItemsRecord;
 }
