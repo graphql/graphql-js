@@ -2087,12 +2087,12 @@ describe('Execute: defer directive', () => {
       {
         incremental: [
           {
-            data: { name: 'slow', friends: [{}, {}, {}] },
+            data: {
+              name: 'slow',
+              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+            },
             path: ['hero'],
           },
-          { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
-          { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
-          { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
         ],
         completed: [
           { path: ['hero'] },

@@ -162,10 +162,18 @@ export interface FormattedCompletedResult {
   errors?: ReadonlyArray<GraphQLError>;
 }
 
+interface IncrementalStreamTarget {
+  errors?: Array<GraphQLError>;
+  items: Array<unknown>;
+}
+
 interface IncrementalAggregate {
   newPendingSources: Set<DeferredFragmentRecord | StreamRecord>;
   incrementalResults: Array<IncrementalResult>;
   completedResults: Array<CompletedResult>;
+  deferParents: Map<DeferredFragmentRecord, SubsequentDataRecord>;
+  initialStreams: Map<StreamRecord, SubsequentDataRecord>;
+  streamTargets: Map<StreamRecord, IncrementalStreamTarget>;
 }
 
 /**
@@ -199,12 +207,17 @@ export class IncrementalPublisher {
 
   reportNewDeferFragmentRecord(
     deferredFragmentRecord: DeferredFragmentRecord,
+    parentIncrementalDataRecord:
+      | InitialResultRecord
+      | DeferredGroupedFieldSetRecord
+      | StreamItemsRecord,
     parentIncrementalResultRecord:
       | InitialResultRecord
       | DeferredFragmentRecord
       | StreamItemsRecord,
   ): void {
     parentIncrementalResultRecord.children.add(deferredFragmentRecord);
+    parentIncrementalDataRecord.childDefers.add(deferredFragmentRecord);
   }
 
   reportNewDeferredGroupedFieldSetRecord(
@@ -225,9 +238,21 @@ export class IncrementalPublisher {
     if (isDeferredGroupedFieldSetRecord(parentIncrementalDataRecord)) {
       for (const parent of parentIncrementalDataRecord.deferredFragmentRecords) {
         parent.children.add(streamItemsRecord);
+        parentIncrementalDataRecord.childStreams.add(
+          streamItemsRecord.streamRecord,
+        );
       }
+    } else if (isStreamItemsRecord(parentIncrementalDataRecord)) {
+      const streamRecord = streamItemsRecord.streamRecord;
+      if (streamRecord !== parentIncrementalDataRecord.streamRecord) {
+        parentIncrementalDataRecord.childStreams.add(streamRecord);
+      }
+      parentIncrementalDataRecord.children.add(streamItemsRecord);
     } else {
       parentIncrementalDataRecord.children.add(streamItemsRecord);
+      parentIncrementalDataRecord.childStreams.add(
+        streamItemsRecord.streamRecord,
+      );
     }
   }
 
@@ -235,7 +260,14 @@ export class IncrementalPublisher {
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
     data: ObjMap<unknown>,
   ): void {
-    deferredGroupedFieldSetRecord.data = data;
+    deferredGroupedFieldSetRecord.result = {
+      data,
+      path: deferredGroupedFieldSetRecord.path,
+    };
+    const errors = deferredGroupedFieldSetRecord.errors;
+    if (errors.length > 0) {
+      deferredGroupedFieldSetRecord.result.errors = errors;
+    }
     for (const deferredFragmentRecord of deferredGroupedFieldSetRecord.deferredFragmentRecords) {
       deferredFragmentRecord._pending.delete(deferredGroupedFieldSetRecord);
       if (deferredFragmentRecord._pending.size === 0) {
@@ -264,7 +296,14 @@ export class IncrementalPublisher {
     streamItemsRecord: StreamItemsRecord,
     items: Array<unknown>,
   ) {
-    streamItemsRecord.items = items;
+    streamItemsRecord.result = {
+      items,
+      path: streamItemsRecord.streamRecord.path,
+    };
+    const errors = streamItemsRecord.errors;
+    if (errors.length > 0) {
+      streamItemsRecord.result.errors = errors;
+    }
     streamItemsRecord.isCompleted = true;
     this._release(streamItemsRecord);
   }
@@ -513,6 +552,9 @@ export class IncrementalPublisher {
       newPendingSources: new Set<DeferredFragmentRecord | StreamRecord>(),
       incrementalResults: [],
       completedResults: [],
+      deferParents: new Map(),
+      initialStreams: new Map(),
+      streamTargets: new Map(),
     };
   }
 
@@ -520,8 +562,13 @@ export class IncrementalPublisher {
     aggregate: IncrementalAggregate,
     completedRecords: ReadonlySet<SubsequentResultRecord>,
   ): IncrementalAggregate {
-    const { newPendingSources, incrementalResults, completedResults } =
-      aggregate;
+    const {
+      newPendingSources,
+      incrementalResults,
+      completedResults,
+      deferParents,
+      initialStreams,
+    } = aggregate;
     for (const subsequentResultRecord of completedRecords) {
       for (const child of subsequentResultRecord.children) {
         if (child.filtered) {
@@ -549,14 +596,59 @@ export class IncrementalPublisher {
         if (subsequentResultRecord.streamRecord.errors.length > 0) {
           continue;
         }
-        const incrementalResult: IncrementalStreamResult = {
-          items: subsequentResultRecord.items,
-          path: subsequentResultRecord.streamRecord.path,
-        };
-        if (subsequentResultRecord.errors.length > 0) {
-          incrementalResult.errors = subsequentResultRecord.errors;
+        this._updateTargets(subsequentResultRecord, aggregate);
+        const streamRecord = subsequentResultRecord.streamRecord;
+        const initialStream = initialStreams.get(streamRecord);
+        if (initialStream === undefined) {
+          initialStreams.set(streamRecord, subsequentResultRecord);
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          incrementalResults.push(subsequentResultRecord.result!);
+        } else if (isStreamItemsRecord(initialStream)) {
+          if (initialStream.streamRecord === streamRecord) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const items = subsequentResultRecord.result!.items;
+            if (items.length > 0) {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              initialStream.result!.items.push(...items);
+            }
+            this._updateTargetErrors(
+              initialStream,
+              subsequentResultRecord.errors,
+            );
+          } else {
+            const target = this._findTargetFromStreamPath(
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              initialStream.result!.items,
+              initialStream.path,
+              streamRecord.path,
+            ) as Array<unknown>;
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const items = subsequentResultRecord.result!.items;
+            if (items.length > 0) {
+              target.push(...items);
+            }
+            this._updateTargetErrors(
+              initialStream,
+              subsequentResultRecord.errors,
+            );
+          }
+        } else {
+          const target = this._findTarget(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            initialStream.result!.data,
+            initialStream.path,
+            streamRecord.path,
+          ) as Array<unknown>;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const items = subsequentResultRecord.result!.items;
+          if (items.length > 0) {
+            target.push(...items);
+          }
+          this._updateTargetErrors(
+            initialStream,
+            subsequentResultRecord.errors,
+          );
         }
-        incrementalResults.push(incrementalResult);
       } else {
         newPendingSources.delete(subsequentResultRecord);
         completedResults.push(
@@ -565,24 +657,126 @@ export class IncrementalPublisher {
         if (subsequentResultRecord.errors.length > 0) {
           continue;
         }
+        const parent = deferParents.get(subsequentResultRecord);
         for (const deferredGroupedFieldSetRecord of subsequentResultRecord.deferredGroupedFieldSetRecords) {
           if (!deferredGroupedFieldSetRecord.sent) {
+            this._updateTargets(deferredGroupedFieldSetRecord, aggregate);
             deferredGroupedFieldSetRecord.sent = true;
-            const incrementalResult: IncrementalDeferResult = {
+            if (parent === undefined) {
+              const incrementalResult: IncrementalDeferResult = {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                data: deferredGroupedFieldSetRecord.result!.data,
+                path: deferredGroupedFieldSetRecord.path,
+              };
+              if (deferredGroupedFieldSetRecord.errors.length > 0) {
+                incrementalResult.errors = deferredGroupedFieldSetRecord.errors;
+              }
+              incrementalResults.push(incrementalResult);
+            } else {
+              const deferredFragmentTarget = isStreamItemsRecord(parent)
+                ? this._findTargetFromStreamPath(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    parent.result!.items,
+                    parent.path,
+                    deferredGroupedFieldSetRecord.path,
+                  )
+                : this._findTarget(
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    parent.result!.data,
+                    parent.path,
+                    deferredGroupedFieldSetRecord.path,
+                  );
+
+              const deferredGroupedFieldSetTarget = this._findTarget(
+                deferredFragmentTarget,
+                subsequentResultRecord.path,
+                deferredGroupedFieldSetRecord.path,
+              );
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              data: deferredGroupedFieldSetRecord.data!,
-              path: deferredGroupedFieldSetRecord.path,
-            };
-            if (deferredGroupedFieldSetRecord.errors.length > 0) {
-              incrementalResult.errors = deferredGroupedFieldSetRecord.errors;
+              const data = deferredGroupedFieldSetRecord.result!.data;
+              for (const key of Object.keys(data)) {
+                (deferredGroupedFieldSetTarget as ObjMap<unknown>)[key] =
+                  data[key];
+              }
+              this._updateTargetErrors(
+                parent,
+                deferredGroupedFieldSetRecord.errors,
+              );
             }
-            incrementalResults.push(incrementalResult);
           }
         }
       }
     }
 
     return aggregate;
+  }
+
+  private _updateTargets(
+    subsequentDataRecord: SubsequentDataRecord,
+    aggregate: IncrementalAggregate,
+  ): void {
+    const { childDefers, childStreams } = subsequentDataRecord;
+    const { deferParents, initialStreams } = aggregate;
+    for (const childDefer of childDefers) {
+      deferParents.set(childDefer, subsequentDataRecord);
+    }
+    for (const childStream of childStreams) {
+      initialStreams.set(childStream, subsequentDataRecord);
+    }
+  }
+
+  private _findTarget(
+    data: ObjMap<unknown> | Array<unknown>,
+    dataPath: ReadonlyArray<string | number>,
+    targetPath: ReadonlyArray<string | number>,
+  ): ObjMap<unknown> | Array<unknown> {
+    let i = 0;
+    while (i < dataPath.length) {
+      i++;
+    }
+    let dataOrItems = data;
+    while (i < targetPath.length) {
+      const key = targetPath[i++];
+      const value = (dataOrItems as ObjMap<unknown>)[key as string];
+      dataOrItems = value as ObjMap<unknown>;
+    }
+    return dataOrItems;
+  }
+
+  private _findTargetFromStreamPath(
+    data: ObjMap<unknown> | Array<unknown>,
+    dataPath: ReadonlyArray<string | number>,
+    targetPath: ReadonlyArray<string | number>,
+  ): ObjMap<unknown> | Array<unknown> {
+    const pathToStream = [...dataPath];
+    const start = pathToStream.pop() as number;
+    let i = 0;
+    while (i < pathToStream.length) {
+      i++;
+    }
+    const adjustedIndex = (targetPath[i++] as number) - start;
+    let dataOrItems = (data as Array<unknown>)[adjustedIndex];
+    while (i < targetPath.length) {
+      const key = targetPath[i++];
+      const value = (dataOrItems as ObjMap<unknown>)[key as string];
+      dataOrItems = value as ObjMap<unknown>;
+    }
+    return dataOrItems as ObjMap<unknown> | Array<unknown>;
+  }
+
+  private _updateTargetErrors(
+    subsequentDataRecord: SubsequentDataRecord,
+    errors: ReadonlyArray<GraphQLError>,
+  ): void {
+    for (const error of errors) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const result = subsequentDataRecord.result!;
+      if (result.errors === undefined) {
+        result.errors = [error];
+      } else {
+        result.errors.push(error);
+      }
+    }
   }
 
   private _incrementalFinalizer(
@@ -722,12 +916,16 @@ export class InitialResultRecord {
   errors: Array<GraphQLError>;
   children: Set<SubsequentResultRecord>;
   priority: number;
+  childDefers: Set<DeferredFragmentRecord>;
+  childStreams: Set<StreamRecord>;
   deferPriority: number;
   published: true;
   constructor() {
     this.errors = [];
     this.children = new Set();
     this.priority = 0;
+    this.childDefers = new Set();
+    this.childStreams = new Set();
     this.deferPriority = 0;
     this.published = true;
   }
@@ -739,10 +937,19 @@ export class DeferredGroupedFieldSetRecord {
   priority: number;
   deferPriority: number;
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+  childDefers: Set<DeferredFragmentRecord>;
+  childStreams: Set<StreamRecord>;
   groupedFieldSet: GroupedFieldSet;
   shouldInitiateDefer: boolean;
   errors: Array<GraphQLError>;
-  data: ObjMap<unknown> | undefined;
+  result:
+    | {
+        errors?: Array<GraphQLError>;
+        data: ObjMap<unknown>;
+        path: ReadonlyArray<string | number>;
+      }
+    | undefined;
+
   published: true | Promise<void>;
   publish: () => void;
   sent: boolean;
@@ -759,6 +966,8 @@ export class DeferredGroupedFieldSetRecord {
     this.priority = opts.priority;
     this.deferPriority = opts.deferPriority;
     this.deferredFragmentRecords = opts.deferredFragmentRecords;
+    this.childDefers = new Set();
+    this.childStreams = new Set();
     this.groupedFieldSet = opts.groupedFieldSet;
     this.shouldInitiateDefer = opts.shouldInitiateDefer;
     this.errors = [];
@@ -819,12 +1028,21 @@ export class StreamRecord {
 /** @internal */
 export class StreamItemsRecord {
   errors: Array<GraphQLError>;
+  result:
+    | {
+        errors?: Array<GraphQLError>;
+        items: Array<unknown>;
+        path: ReadonlyArray<string | number>;
+      }
+    | undefined;
+
   streamRecord: StreamRecord;
   path: ReadonlyArray<string | number>;
   priority: number;
   deferPriority: number;
-  items: Array<unknown>;
   children: Set<SubsequentResultRecord>;
+  childDefers: Set<DeferredFragmentRecord>;
+  childStreams: Set<StreamRecord>;
   isFinalRecord?: boolean;
   isCompletedAsyncIterator?: boolean;
   isCompleted: boolean;
@@ -843,10 +1061,11 @@ export class StreamItemsRecord {
     this.priority = opts.priority;
     this.deferPriority = 0;
     this.children = new Set();
+    this.childDefers = new Set();
+    this.childStreams = new Set();
     this.errors = [];
     this.isCompleted = false;
     this.filtered = false;
-    this.items = [];
     // promiseWithResolvers uses void only as a generic type parameter
     // see: https://typescript-eslint.io/rules/no-invalid-void-type/
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -860,9 +1079,8 @@ export class StreamItemsRecord {
   }
 }
 
-export type IncrementalDataRecord =
-  | InitialResultRecord
-  | DeferredGroupedFieldSetRecord
-  | StreamItemsRecord;
+export type IncrementalDataRecord = InitialResultRecord | SubsequentDataRecord;
+
+type SubsequentDataRecord = DeferredGroupedFieldSetRecord | StreamItemsRecord;
 
 type SubsequentResultRecord = DeferredFragmentRecord | StreamItemsRecord;

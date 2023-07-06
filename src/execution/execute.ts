@@ -1475,6 +1475,7 @@ function addNewDeferredFragments(
 
       incrementalPublisher.reportNewDeferFragmentRecord(
         deferredFragmentRecord,
+        incrementalDataRecord,
         parent,
       );
 
