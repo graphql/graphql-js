@@ -56,7 +56,9 @@ import type {
   FormattedIncrementalResult,
   IncrementalDataRecord,
   IncrementalResult,
+  InitialResultRecord,
   StreamItemsRecord,
+  SubsequentDataRecord,
   SubsequentIncrementalExecutionResult,
 } from './IncrementalPublisher.js';
 import { IncrementalPublisher } from './IncrementalPublisher.js';
@@ -128,7 +130,6 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  errors: Array<GraphQLError>;
   incrementalPublisher: IncrementalPublisher;
 }
 
@@ -289,14 +290,17 @@ function executeImpl(
   // Errors from sub-fields of a NonNull type may propagate to the top level,
   // at which point we still log the error and null the parent field, which
   // in this case is the entire response.
-  const { incrementalPublisher, errors } = exeContext;
+  const incrementalPublisher = exeContext.incrementalPublisher;
+  const initialResultRecord = incrementalPublisher.prepareInitialResultRecord();
   try {
-    const result = executeOperation(exeContext);
+    const result = executeOperation(exeContext, initialResultRecord);
     if (isPromise(result)) {
       return result.then(
         (data) => {
+          const errors =
+            incrementalPublisher.getInitialErrors(initialResultRecord);
           const initialResult = buildResponse(data, errors);
-          incrementalPublisher.publishInitial();
+          incrementalPublisher.publishInitial(initialResultRecord);
           if (incrementalPublisher.hasNext()) {
             return {
               initialResult: {
@@ -309,13 +313,15 @@ function executeImpl(
           return initialResult;
         },
         (error) => {
-          errors.push(error);
+          incrementalPublisher.addFieldError(initialResultRecord, error);
+          const errors =
+            incrementalPublisher.getInitialErrors(initialResultRecord);
           return buildResponse(null, errors);
         },
       );
     }
-    const initialResult = buildResponse(result, errors);
-    incrementalPublisher.publishInitial();
+    const initialResult = buildResponse(result, initialResultRecord.errors);
+    incrementalPublisher.publishInitial(initialResultRecord);
     if (incrementalPublisher.hasNext()) {
       return {
         initialResult: {
@@ -327,7 +333,8 @@ function executeImpl(
     }
     return initialResult;
   } catch (error) {
-    errors.push(error);
+    incrementalPublisher.addFieldError(initialResultRecord, error);
+    const errors = incrementalPublisher.getInitialErrors(initialResultRecord);
     return buildResponse(null, errors);
   }
 }
@@ -445,7 +452,6 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     incrementalPublisher: new IncrementalPublisher(),
-    errors: [],
   };
 }
 
@@ -456,8 +462,6 @@ function buildPerEventExecutionContext(
   return {
     ...exeContext,
     rootValue: payload,
-    // no need to update incrementalPublisher, incremental delivery is not supported for subscriptions
-    errors: [],
   };
 }
 
@@ -466,6 +470,7 @@ function buildPerEventExecutionContext(
  */
 function executeOperation(
   exeContext: ExecutionContext,
+  initialResultRecord: InitialResultRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   const { operation, schema, fragments, variableValues, rootValue } =
     exeContext;
@@ -495,6 +500,7 @@ function executeOperation(
         rootValue,
         path,
         groupedFieldSet,
+        initialResultRecord,
       );
       break;
     case OperationTypeNode.MUTATION:
@@ -504,6 +510,7 @@ function executeOperation(
         rootValue,
         path,
         groupedFieldSet,
+        initialResultRecord,
       );
       break;
     case OperationTypeNode.SUBSCRIPTION:
@@ -515,6 +522,7 @@ function executeOperation(
         rootValue,
         path,
         groupedFieldSet,
+        initialResultRecord,
       );
   }
 
@@ -525,6 +533,7 @@ function executeOperation(
       rootType,
       rootValue,
       patchGroupedFieldSet,
+      initialResultRecord,
       label,
       path,
     );
@@ -543,6 +552,7 @@ function executeFieldsSerially(
   sourceValue: unknown,
   path: Path | undefined,
   groupedFieldSet: GroupedFieldSet,
+  incrementalDataRecord: InitialResultRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
     groupedFieldSet,
@@ -554,6 +564,7 @@ function executeFieldsSerially(
         sourceValue,
         fieldGroup,
         fieldPath,
+        incrementalDataRecord,
       );
       if (result === undefined) {
         return results;
@@ -581,7 +592,7 @@ function executeFields(
   sourceValue: unknown,
   path: Path | undefined,
   groupedFieldSet: GroupedFieldSet,
-  incrementalDataRecord?: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
   let containsPromise = false;
@@ -638,7 +649,7 @@ function executeField(
   source: unknown,
   fieldGroup: FieldGroup,
   path: Path,
-  incrementalDataRecord?: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<unknown> {
   const fieldName = fieldGroup[0].name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
@@ -761,7 +772,7 @@ function handleFieldError(
   returnType: GraphQLOutputType,
   fieldGroup: FieldGroup,
   path: Path,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): void {
   const error = locatedError(rawError, fieldGroup, pathToArray(path));
 
@@ -771,11 +782,9 @@ function handleFieldError(
     throw error;
   }
 
-  const errors = incrementalDataRecord?.errors ?? exeContext.errors;
-
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
-  errors.push(error);
+  exeContext.incrementalPublisher.addFieldError(incrementalDataRecord, error);
 }
 
 /**
@@ -806,7 +815,7 @@ function completeValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<unknown> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
@@ -898,7 +907,7 @@ async function completePromisedValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: Promise<unknown>,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): Promise<unknown> {
   try {
     const resolved = await result;
@@ -997,7 +1006,7 @@ async function completeAsyncIteratorValue(
   info: GraphQLResolveInfo,
   path: Path,
   asyncIterator: AsyncIterator<unknown>,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): Promise<ReadonlyArray<unknown>> {
   const stream = getStreamValues(exeContext, fieldGroup, path);
   let containsPromise = false;
@@ -1019,8 +1028,8 @@ async function completeAsyncIteratorValue(
         info,
         itemType,
         path,
-        stream.label,
         incrementalDataRecord,
+        stream.label,
       );
       break;
     }
@@ -1067,7 +1076,7 @@ function completeListValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   const itemType = returnType.ofType;
 
@@ -1117,8 +1126,8 @@ function completeListValue(
         fieldGroup,
         info,
         itemType,
-        stream.label,
         previousIncrementalDataRecord,
+        stream.label,
       );
       index++;
       continue;
@@ -1158,7 +1167,7 @@ function completeListItemValue(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemPath: Path,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): boolean {
   if (isPromise(item)) {
     completedResults.push(
@@ -1257,7 +1266,7 @@ function completeAbstractValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
@@ -1367,7 +1376,7 @@ function completeObjectValue(
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
@@ -1423,7 +1432,7 @@ function collectAndExecuteSubfields(
   fieldGroup: FieldGroup,
   path: Path,
   result: unknown,
-  incrementalDataRecord: IncrementalDataRecord | undefined,
+  incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
   const { groupedFieldSet: subGroupedFieldSet, patches: subPatches } =
@@ -1445,9 +1454,9 @@ function collectAndExecuteSubfields(
       returnType,
       result,
       subPatchGroupedFieldSet,
+      incrementalDataRecord,
       label,
       path,
-      incrementalDataRecord,
     );
   }
 
@@ -1747,9 +1756,9 @@ function executeDeferredFragment(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   fields: GroupedFieldSet,
+  parentContext: IncrementalDataRecord,
   label?: string,
   path?: Path,
-  parentContext?: IncrementalDataRecord,
 ): void {
   const incrementalPublisher = exeContext.incrementalPublisher;
   const incrementalDataRecord =
@@ -1808,9 +1817,9 @@ function executeStreamField(
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
+  parentContext: IncrementalDataRecord,
   label?: string,
-  parentContext?: IncrementalDataRecord,
-): IncrementalDataRecord {
+): SubsequentDataRecord {
   const incrementalPublisher = exeContext.incrementalPublisher;
   const incrementalDataRecord =
     incrementalPublisher.prepareNewStreamItemsRecord({
@@ -1990,12 +1999,12 @@ async function executeStreamAsyncIterator(
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
   path: Path,
+  parentContext: IncrementalDataRecord,
   label?: string,
-  parentContext?: IncrementalDataRecord,
 ): Promise<void> {
   const incrementalPublisher = exeContext.incrementalPublisher;
   let index = initialIndex;
-  let previousIncrementalDataRecord = parentContext ?? undefined;
+  let previousIncrementalDataRecord = parentContext;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const itemPath = addPath(path, index, undefined);
