@@ -1191,11 +1191,7 @@ describe('Execute: defer directive', () => {
             path: ['hero', 'nestedObject', 'deeperObject'],
           },
         ],
-        completed: [
-          { path: ['hero'] },
-          { path: ['hero', 'nestedObject'] },
-          { path: ['hero', 'nestedObject', 'deeperObject'] },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);
@@ -1260,7 +1256,6 @@ describe('Execute: defer directive', () => {
         ],
         completed: [
           { path: ['hero'] },
-          { path: ['hero', 'nestedObject', 'deeperObject'] },
           { path: ['hero', 'nestedObject', 'deeperObject'] },
         ],
         hasNext: false,
@@ -2094,12 +2089,7 @@ describe('Execute: defer directive', () => {
             path: ['hero'],
           },
         ],
-        completed: [
-          { path: ['hero'] },
-          { path: ['hero', 'friends', 0] },
-          { path: ['hero', 'friends', 1] },
-          { path: ['hero', 'friends', 2] },
-        ],
+        completed: [{ path: ['hero'] }],
         hasNext: false,
       },
     ]);

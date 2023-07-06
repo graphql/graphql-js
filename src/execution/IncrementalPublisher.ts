@@ -584,10 +584,15 @@ export class IncrementalPublisher {
       }
       if (isStreamItemsRecord(subsequentResultRecord)) {
         if (subsequentResultRecord.isFinalRecord) {
-          newPendingSources.delete(subsequentResultRecord.streamRecord);
-          completedResults.push(
-            this._completedRecordToResult(subsequentResultRecord.streamRecord),
-          );
+          if (newPendingSources.has(subsequentResultRecord.streamRecord)) {
+            newPendingSources.delete(subsequentResultRecord.streamRecord);
+          } else {
+            completedResults.push(
+              this._completedRecordToResult(
+                subsequentResultRecord.streamRecord,
+              ),
+            );
+          }
         }
         if (subsequentResultRecord.isCompletedAsyncIterator) {
           // async iterable resolver just finished but there may be pending payloads
@@ -650,10 +655,13 @@ export class IncrementalPublisher {
           );
         }
       } else {
-        newPendingSources.delete(subsequentResultRecord);
-        completedResults.push(
-          this._completedRecordToResult(subsequentResultRecord),
-        );
+        if (newPendingSources.has(subsequentResultRecord)) {
+          newPendingSources.delete(subsequentResultRecord);
+        } else {
+          completedResults.push(
+            this._completedRecordToResult(subsequentResultRecord),
+          );
+        }
         if (subsequentResultRecord.errors.length > 0) {
           continue;
         }

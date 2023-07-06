@@ -355,8 +355,6 @@ describe('Execute: stream directive', () => {
         completed: [
           { path: ['friendList'] },
           { path: ['friendList', 0, 'appearsIn'] },
-          { path: ['friendList', 1, 'appearsIn'] },
-          { path: ['friendList', 2, 'appearsIn'] },
         ],
         hasNext: false,
       },
@@ -404,15 +402,7 @@ describe('Execute: stream directive', () => {
             path: ['friendList', 0],
           },
         ],
-        completed: [
-          { path: ['friendList', 0] },
-          { path: ['friendList'] },
-          { path: ['friendList', 1] },
-          { path: ['friendList', 2] },
-          { path: ['friendList', 0, 'appearsIn'] },
-          { path: ['friendList', 1, 'appearsIn'] },
-          { path: ['friendList', 2, 'appearsIn'] },
-        ],
+        completed: [{ path: ['friendList', 0] }, { path: ['friendList'] }],
         hasNext: false,
       },
     ]);
