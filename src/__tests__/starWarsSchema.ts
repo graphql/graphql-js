@@ -134,6 +134,8 @@ const characterInterface: GraphQLInterfaceType = new GraphQLInterfaceType({
         return humanType.name;
       case 'Droid':
         return droidType.name;
+      default:
+        return humanType.name;
     }
   },
 });
