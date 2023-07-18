@@ -796,7 +796,7 @@ describe('Type System Printer', () => {
       ) on SCALAR
 
       """
-      Indicates that exactly one field must be supplied and that field must not be \`null\`.
+      Indicates that exactly one field must be supplied and not \`null\`.
       """
       directive @oneOf on INPUT_OBJECT
 
