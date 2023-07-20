@@ -253,7 +253,7 @@ export const GraphQLSpecifiedByDirective: GraphQLDirective =
 export const GraphQLOneOfDirective: GraphQLDirective = new GraphQLDirective({
   name: 'oneOf',
   description:
-    'Indicates that exactly one field must be supplied and not `null`.',
+    'Indicates exactly one field must be supplied and this field must not be `null`.',
   locations: [DirectiveLocation.INPUT_OBJECT],
   args: {},
 });
