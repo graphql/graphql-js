@@ -1,6 +1,5 @@
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
-import { keyValMap } from '../jsutils/keyValMap.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import { naturalCompare } from '../jsutils/naturalCompare.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
@@ -40,15 +39,16 @@ import { GraphQLSchema } from '../type/schema.js';
  */
 export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   const schemaConfig = schema.toConfig();
-  const typeMap = keyValMap(
-    sortByName(schemaConfig.types),
-    (type) => type.name,
-    sortNamedType,
+  const typeMap = new Map<string, GraphQLNamedType>(
+    sortByName(schemaConfig.types).map((type) => [
+      type.name,
+      sortNamedType(type),
+    ]),
   );
 
   return new GraphQLSchema({
     ...schemaConfig,
-    types: Object.values(typeMap),
+    types: Array.from(typeMap.values()),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
     mutation: replaceMaybeType(schemaConfig.mutation),
@@ -68,7 +68,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
-    return typeMap[type.name] as T;
+    return typeMap.get(type.name) as T;
   }
 
   function replaceMaybeType<T extends GraphQLNamedType>(
