@@ -1,6 +1,5 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
-import { keyValMap } from '../jsutils/keyValMap.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import { naturalCompare } from '../jsutils/naturalCompare.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
@@ -38,14 +37,15 @@ import { GraphQLSchema } from '../type/schema.ts';
  */
 export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   const schemaConfig = schema.toConfig();
-  const typeMap = keyValMap(
-    sortByName(schemaConfig.types),
-    (type) => type.name,
-    sortNamedType,
+  const typeMap = new Map<string, GraphQLNamedType>(
+    sortByName(schemaConfig.types).map((type) => [
+      type.name,
+      sortNamedType(type),
+    ]),
   );
   return new GraphQLSchema({
     ...schemaConfig,
-    types: Object.values(typeMap),
+    types: Array.from(typeMap.values()),
     directives: sortByName(schemaConfig.directives).map(sortDirective),
     query: replaceMaybeType(schemaConfig.query),
     mutation: replaceMaybeType(schemaConfig.mutation),
@@ -63,7 +63,7 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     return replaceNamedType<GraphQLNamedType>(type);
   }
   function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
-    return typeMap[type.name] as T;
+    return typeMap.get(type.name) as T;
   }
   function replaceMaybeType<T extends GraphQLNamedType>(
     maybeType: Maybe<T>,

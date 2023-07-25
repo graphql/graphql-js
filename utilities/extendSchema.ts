@@ -1,7 +1,6 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
-import { keyMap } from '../jsutils/keyMap.ts';
 import { mapValue } from '../jsutils/mapValue.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import type {
@@ -199,13 +198,12 @@ export function extendSchemaImpl(
   if (!isSchemaChanged) {
     return schemaConfig;
   }
-  const typeMap = Object.create(null);
-  for (const existingType of schemaConfig.types) {
-    typeMap[existingType.name] = extendNamedType(existingType);
-  }
+  const typeMap = new Map<string, GraphQLNamedType>(
+    schemaConfig.types.map((type) => [type.name, extendNamedType(type)]),
+  );
   for (const typeNode of typeDefs) {
     const name = typeNode.name.value;
-    typeMap[name] = stdTypeMap[name] ?? buildType(typeNode);
+    typeMap.set(name, stdTypeMap.get(name) ?? buildType(typeNode));
   }
   const operationTypes = {
     // Get the extended root operation types.
@@ -221,7 +219,7 @@ export function extendSchemaImpl(
   return {
     description: schemaDef?.description?.value ?? schemaConfig.description,
     ...operationTypes,
-    types: Object.values(typeMap),
+    types: Array.from(typeMap.values()),
     directives: [
       ...schemaConfig.directives.map(replaceDirective),
       ...directiveDefs.map(buildDirective),
@@ -249,7 +247,7 @@ export function extendSchemaImpl(
     // Note: While this could make early assertions to get the correctly
     // typed values, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    return typeMap[type.name];
+    return typeMap.get(type.name) as T;
   }
   function replaceDirective(directive: GraphQLDirective): GraphQLDirective {
     if (isSpecifiedDirective(directive)) {
@@ -416,7 +414,7 @@ export function extendSchemaImpl(
   }
   function getNamedType(node: NamedTypeNode): GraphQLNamedType {
     const name = node.name.value;
-    const type = stdTypeMap[name] ?? typeMap[name];
+    const type = stdTypeMap.get(name) ?? typeMap.get(name);
     if (type === undefined) {
       throw new Error(`Unknown type: "${name}".`);
     }
@@ -635,9 +633,11 @@ export function extendSchemaImpl(
     }
   }
 }
-const stdTypeMap = keyMap(
-  [...specifiedScalarTypes, ...introspectionTypes],
-  (type) => type.name,
+const stdTypeMap = new Map(
+  [...specifiedScalarTypes, ...introspectionTypes].map((type) => [
+    type.name,
+    type,
+  ]),
 );
 /**
  * Given a field or enum value node, returns the string value for the
