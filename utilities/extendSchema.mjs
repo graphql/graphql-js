@@ -1,7 +1,6 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.mjs';
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
-import { keyMap } from '../jsutils/keyMap.mjs';
 import { mapValue } from '../jsutils/mapValue.mjs';
 import { Kind } from '../language/kinds.mjs';
 import {
@@ -132,13 +131,12 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   if (!isSchemaChanged) {
     return schemaConfig;
   }
-  const typeMap = Object.create(null);
-  for (const existingType of schemaConfig.types) {
-    typeMap[existingType.name] = extendNamedType(existingType);
-  }
+  const typeMap = new Map(
+    schemaConfig.types.map((type) => [type.name, extendNamedType(type)]),
+  );
   for (const typeNode of typeDefs) {
     const name = typeNode.name.value;
-    typeMap[name] = stdTypeMap[name] ?? buildType(typeNode);
+    typeMap.set(name, stdTypeMap.get(name) ?? buildType(typeNode));
   }
   const operationTypes = {
     // Get the extended root operation types.
@@ -154,7 +152,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   return {
     description: schemaDef?.description?.value ?? schemaConfig.description,
     ...operationTypes,
-    types: Object.values(typeMap),
+    types: Array.from(typeMap.values()),
     directives: [
       ...schemaConfig.directives.map(replaceDirective),
       ...directiveDefs.map(buildDirective),
@@ -182,7 +180,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     // Note: While this could make early assertions to get the correctly
     // typed values, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    return typeMap[type.name];
+    return typeMap.get(type.name);
   }
   function replaceDirective(directive) {
     if (isSpecifiedDirective(directive)) {
@@ -337,7 +335,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
   function getNamedType(node) {
     const name = node.name.value;
-    const type = stdTypeMap[name] ?? typeMap[name];
+    const type = stdTypeMap.get(name) ?? typeMap.get(name);
     if (type === undefined) {
       throw new Error(`Unknown type: "${name}".`);
     }
@@ -532,9 +530,11 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     }
   }
 }
-const stdTypeMap = keyMap(
-  [...specifiedScalarTypes, ...introspectionTypes],
-  (type) => type.name,
+const stdTypeMap = new Map(
+  [...specifiedScalarTypes, ...introspectionTypes].map((type) => [
+    type.name,
+    type,
+  ]),
 );
 /**
  * Given a field or enum value node, returns the string value for the

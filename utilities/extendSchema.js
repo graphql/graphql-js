@@ -4,7 +4,6 @@ exports.extendSchemaImpl = exports.extendSchema = void 0;
 const AccumulatorMap_js_1 = require('../jsutils/AccumulatorMap.js');
 const inspect_js_1 = require('../jsutils/inspect.js');
 const invariant_js_1 = require('../jsutils/invariant.js');
-const keyMap_js_1 = require('../jsutils/keyMap.js');
 const mapValue_js_1 = require('../jsutils/mapValue.js');
 const kinds_js_1 = require('../language/kinds.js');
 const definition_js_1 = require('../type/definition.js');
@@ -107,13 +106,12 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   if (!isSchemaChanged) {
     return schemaConfig;
   }
-  const typeMap = Object.create(null);
-  for (const existingType of schemaConfig.types) {
-    typeMap[existingType.name] = extendNamedType(existingType);
-  }
+  const typeMap = new Map(
+    schemaConfig.types.map((type) => [type.name, extendNamedType(type)]),
+  );
   for (const typeNode of typeDefs) {
     const name = typeNode.name.value;
-    typeMap[name] = stdTypeMap[name] ?? buildType(typeNode);
+    typeMap.set(name, stdTypeMap.get(name) ?? buildType(typeNode));
   }
   const operationTypes = {
     // Get the extended root operation types.
@@ -129,7 +127,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   return {
     description: schemaDef?.description?.value ?? schemaConfig.description,
     ...operationTypes,
-    types: Object.values(typeMap),
+    types: Array.from(typeMap.values()),
     directives: [
       ...schemaConfig.directives.map(replaceDirective),
       ...directiveDefs.map(buildDirective),
@@ -157,7 +155,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
     // Note: While this could make early assertions to get the correctly
     // typed values, that would throw immediately while type system
     // validation with validateSchema() will produce more actionable results.
-    return typeMap[type.name];
+    return typeMap.get(type.name);
   }
   function replaceDirective(directive) {
     if ((0, directives_js_1.isSpecifiedDirective)(directive)) {
@@ -319,7 +317,7 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
   function getNamedType(node) {
     const name = node.name.value;
-    const type = stdTypeMap[name] ?? typeMap[name];
+    const type = stdTypeMap.get(name) ?? typeMap.get(name);
     if (type === undefined) {
       throw new Error(`Unknown type: "${name}".`);
     }
@@ -521,12 +519,11 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
   }
 }
 exports.extendSchemaImpl = extendSchemaImpl;
-const stdTypeMap = (0, keyMap_js_1.keyMap)(
+const stdTypeMap = new Map(
   [
     ...scalars_js_1.specifiedScalarTypes,
     ...introspection_js_1.introspectionTypes,
-  ],
-  (type) => type.name,
+  ].map((type) => [type.name, type]),
 );
 /**
  * Given a field or enum value node, returns the string value for the
