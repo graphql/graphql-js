@@ -1049,6 +1049,88 @@ describe('Validate: Overlapping fields can be merged', () => {
       );
     });
 
+    it('allows non-conflicting overlapping required statuses', () => {
+      expectValidationErrorsWithSchema(
+        schema,
+        OverlappingFieldsCanBeMergedRule,
+        `
+          {
+            someBox {
+              ... on IntBox {
+                scalar: unrelatedField!
+              }
+              ... on StringBox {
+                scalar!
+              }
+            }
+          }
+        `,
+        {
+          experimentalClientControlledNullability: true,
+        },
+      );
+    });
+
+    it('disallows conflicting overlapping required statuses', () => {
+      expectValidationErrorsWithSchema(
+        schema,
+        OverlappingFieldsCanBeMergedRule,
+        `
+          {
+            someBox {
+              ... on IntBox {
+                scalar: unrelatedField!
+              }
+              ... on StringBox {
+                scalar
+              }
+            }
+          }
+        `,
+        {
+          experimentalClientControlledNullability: true,
+        },
+      ).toDeepEqual([
+        {
+          message:
+            'Fields "scalar" conflict because they have conflicting nullability designators "!" and "". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
+        },
+      ]);
+
+      expectValidationErrorsWithSchema(
+        schema,
+        OverlappingFieldsCanBeMergedRule,
+        `
+          {
+            someBox {
+              ... on IntBox {
+                scalar: unrelatedField
+              }
+              ... on StringBox {
+                scalar!
+              }
+            }
+          }
+        `,
+        {
+          experimentalClientControlledNullability: true,
+        },
+      ).toDeepEqual([
+        {
+          message:
+            'Fields "scalar" conflict because they have conflicting nullability designators "" and "!". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
+        },
+      ]);
+    });
+
     it('same wrapped scalar return types', () => {
       expectValidWithSchema(
         schema,

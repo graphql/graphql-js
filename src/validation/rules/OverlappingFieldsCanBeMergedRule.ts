@@ -616,17 +616,40 @@ function findConflict(
   const type1 = def1?.type;
   const type2 = def2?.type;
 
-  if (type1 && type2 && doTypesConflict(type1, type2)) {
-    return [
-      [
-        responseName,
-        `they return conflicting types "${inspect(type1)}" and "${inspect(
-          type2,
-        )}"`,
-      ],
-      [node1],
-      [node2],
-    ];
+  if (type1 && type2) {
+    // Two fields have different types
+    if (doTypesConflict(type1, type2)) {
+      return [
+        [
+          responseName,
+          `they return conflicting types "${inspect(type1)}" and "${inspect(
+            type2,
+          )}"`,
+        ],
+        [node1],
+        [node2],
+      ];
+    }
+
+    // Two fields have different required operators
+    if (node1.nullabilityAssertion !== node2.nullabilityAssertion) {
+      return [
+        [
+          responseName,
+          `they have conflicting nullability designators "${
+            node1.nullabilityAssertion === undefined
+              ? ''
+              : print(node1.nullabilityAssertion)
+          }" and "${
+            node2.nullabilityAssertion === undefined
+              ? ''
+              : print(node2.nullabilityAssertion)
+          }"`,
+        ],
+        [node1],
+        [node2],
+      ];
+    }
   }
 
   // Collect and compare sub-fields. Use the same "visited fragment names" list
