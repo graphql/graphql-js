@@ -12,7 +12,6 @@ query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
       }
       
       field3!
-      field4?
       requiredField5: field5!
       requiredSelectionSet(first: 10)! @directive {
         field
@@ -21,9 +20,6 @@ query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
       unsetListItemsRequiredList: listField[]!
       requiredListItemsUnsetList: listField[!]
       requiredListItemsRequiredList: listField[!]!
-      unsetListItemsOptionalList: listField[]?
-      optionalListItemsUnsetList: listField[?]
-      optionalListItemsOptionalList: listField[?]?
       multidimensionalList: listField[[[!]!]!]!
     }
     ... @skip(unless: $foo) {

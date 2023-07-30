@@ -182,7 +182,6 @@ export type ASTNode =
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
   | NonNullAssertionNode
-  | ErrorBoundaryNode
   | ListNullabilityOperatorNode;
 
 /**
@@ -225,7 +224,6 @@ export const QueryDocumentKeys: {
   // or removed in the future.
   ListNullabilityOperator: ['nullabilityAssertion'],
   NonNullAssertion: ['nullabilityAssertion'],
-  ErrorBoundary: ['nullabilityAssertion'],
 
   FragmentSpread: ['name', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
@@ -387,7 +385,6 @@ export interface FieldNode {
 
 export type NullabilityAssertionNode =
   | NonNullAssertionNode
-  | ErrorBoundaryNode
   | ListNullabilityOperatorNode;
 
 export interface ListNullabilityOperatorNode {
@@ -398,12 +395,6 @@ export interface ListNullabilityOperatorNode {
 
 export interface NonNullAssertionNode {
   readonly kind: Kind.NON_NULL_ASSERTION;
-  readonly loc?: Location | undefined;
-  readonly nullabilityAssertion?: ListNullabilityOperatorNode | undefined;
-}
-
-export interface ErrorBoundaryNode {
-  readonly kind: Kind.ERROR_BOUNDARY;
   readonly loc?: Location | undefined;
   readonly nullabilityAssertion?: ListNullabilityOperatorNode | undefined;
 }

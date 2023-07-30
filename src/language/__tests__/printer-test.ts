@@ -226,7 +226,6 @@ describe('Printer: Query document', () => {
               }
             }
             field3!
-            field4?
             requiredField5: field5!
             requiredSelectionSet(first: 10)! @directive {
               field
@@ -234,9 +233,6 @@ describe('Printer: Query document', () => {
             unsetListItemsRequiredList: listField[]!
             requiredListItemsUnsetList: listField[!]
             requiredListItemsRequiredList: listField[!]!
-            unsetListItemsOptionalList: listField[]?
-            optionalListItemsUnsetList: listField[?]
-            optionalListItemsOptionalList: listField[?]?
             multidimensionalList: listField[[[!]!]!]!
           }
           ... @skip(unless: $foo) {

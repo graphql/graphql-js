@@ -266,7 +266,6 @@ export type {
   ArgumentNode,
   NullabilityAssertionNode,
   NonNullAssertionNode,
-  ErrorBoundaryNode,
   ListNullabilityOperatorNode,
   ConstArgumentNode,
   FragmentSpreadNode,

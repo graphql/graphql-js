@@ -44,8 +44,7 @@ export function isNullabilityAssertionNode(
 ): node is NullabilityAssertionNode {
   return (
     node.kind === Kind.LIST_NULLABILITY_OPERATOR ||
-    node.kind === Kind.NON_NULL_ASSERTION ||
-    node.kind === Kind.ERROR_BOUNDARY
+    node.kind === Kind.NON_NULL_ASSERTION
   );
 }
 

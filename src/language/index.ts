@@ -41,7 +41,6 @@ export type {
   FieldNode,
   NullabilityAssertionNode,
   NonNullAssertionNode,
-  ErrorBoundaryNode,
   ListNullabilityOperatorNode,
   ArgumentNode,
   ConstArgumentNode,

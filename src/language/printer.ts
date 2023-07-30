@@ -96,12 +96,6 @@ const printDocASTReducer: ASTReducer<string> = {
     },
   },
 
-  ErrorBoundary: {
-    leave({ nullabilityAssertion }) {
-      return join([nullabilityAssertion, '?']);
-    },
-  },
-
   // Fragments
 
   FragmentSpread: {

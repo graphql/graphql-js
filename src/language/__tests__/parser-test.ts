@@ -257,57 +257,21 @@ describe('Parser', () => {
     );
   });
 
-  it('parses optional field', () => {
-    expect(() => parseCCN('{ optionalField? }')).to.not.throw();
-  });
-
-  it('does not parse field with multiple designators', () => {
-    expect(() => parseCCN('{ optionalField?! }')).to.throw(
-      'Syntax Error: Expected Name, found "!".',
-    );
-
-    expect(() => parseCCN('{ optionalField!? }')).to.throw(
-      'Syntax Error: Expected Name, found "?".',
-    );
-  });
-
   it('parses required with alias', () => {
     expect(() => parseCCN('{ requiredField: field! }')).to.not.throw();
-  });
-
-  it('parses optional with alias', () => {
-    expect(() => parseCCN('{ requiredField: field? }')).to.not.throw();
   });
 
   it('does not parse aliased field with bang on left of colon', () => {
     expect(() => parseCCN('{ requiredField!: field }')).to.throw();
   });
 
-  it('does not parse aliased field with question mark on left of colon', () => {
-    expect(() => parseCCN('{ requiredField?: field }')).to.throw();
-  });
-
   it('does not parse aliased field with bang on left and right of colon', () => {
     expect(() => parseCCN('{ requiredField!: field! }')).to.throw();
-  });
-
-  it('does not parse aliased field with question mark on left and right of colon', () => {
-    expect(() => parseCCN('{ requiredField?: field? }')).to.throw();
-  });
-
-  it('does not parse designator on query', () => {
-    expect(() => parseCCN('query? { field }')).to.throw();
   });
 
   it('parses required within fragment', () => {
     expect(() =>
       parseCCN('fragment MyFragment on Query { field! }'),
-    ).to.not.throw();
-  });
-
-  it('parses optional within fragment', () => {
-    expect(() =>
-      parseCCN('fragment MyFragment on Query { field? }'),
     ).to.not.throw();
   });
 
@@ -321,23 +285,6 @@ describe('Parser', () => {
         loc: { start: 7, end: 10 },
         nullabilityAssertion: {
           kind: Kind.NON_NULL_ASSERTION,
-          loc: { start: 8, end: 9 },
-          nullabilityAssertion: undefined,
-        },
-      },
-    );
-  });
-
-  it('parses field with optional list elements', () => {
-    const result = parseCCN('{ field[?] }');
-
-    expectJSON(result).toDeepNestedProperty(
-      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
-      {
-        kind: Kind.LIST_NULLABILITY_OPERATOR,
-        loc: { start: 7, end: 10 },
-        nullabilityAssertion: {
-          kind: Kind.ERROR_BOUNDARY,
           loc: { start: 8, end: 9 },
           nullabilityAssertion: undefined,
         },
@@ -362,25 +309,8 @@ describe('Parser', () => {
     );
   });
 
-  it('parses field with optional list', () => {
-    const result = parseCCN('{ field[]? }');
-
-    expectJSON(result).toDeepNestedProperty(
-      'definitions[0].selectionSet.selections[0].nullabilityAssertion',
-      {
-        kind: Kind.ERROR_BOUNDARY,
-        loc: { start: 7, end: 10 },
-        nullabilityAssertion: {
-          kind: Kind.LIST_NULLABILITY_OPERATOR,
-          loc: { start: 7, end: 9 },
-          nullabilityAssertion: undefined,
-        },
-      },
-    );
-  });
-
   it('parses multidimensional field with mixed list elements', () => {
-    const result = parseCCN('{ field[[[?]!]]! }');
+    const result = parseCCN('{ field[[[!]!]]! }');
 
     expectJSON(result).toDeepNestedProperty(
       'definitions[0].selectionSet.selections[0].nullabilityAssertion',
@@ -400,7 +330,7 @@ describe('Parser', () => {
                 kind: Kind.LIST_NULLABILITY_OPERATOR,
                 loc: { start: 9, end: 12 },
                 nullabilityAssertion: {
-                  kind: Kind.ERROR_BOUNDARY,
+                  kind: Kind.NON_NULL_ASSERTION,
                   loc: { start: 10, end: 11 },
                   nullabilityAssertion: undefined,
                 },
@@ -437,10 +367,6 @@ describe('Parser', () => {
 
     expect(() => parseCCN('{ field[!!] }')).to.throw(
       'Syntax Error: Expected "]", found "!".',
-    );
-
-    expect(() => parseCCN('{ field[]?! }')).to.throw(
-      'Syntax Error: Expected Name, found "!".',
     );
   });
 

@@ -6,7 +6,6 @@ export enum TokenKind {
   SOF = '<SOF>',
   EOF = '<EOF>',
   BANG = '!',
-  QUESTION_MARK = '?',
   DOLLAR = '$',
   AMP = '&',
   PAREN_L = '(',
