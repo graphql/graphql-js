@@ -19,7 +19,9 @@ import { locatedError } from '../error/locatedError.js';
 
 import type {
   DocumentNode,
+  FieldNode,
   FragmentDefinitionNode,
+  NullabilityAssertionNode,
   OperationDefinitionNode,
 } from '../language/ast.js';
 import { OperationTypeNode } from '../language/ast.js';
@@ -37,6 +39,8 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import {
+  getNullableType,
+  GraphQLNonNull,
   isAbstractType,
   isLeafType,
   isListType,
@@ -653,11 +657,13 @@ function executeField(
 ): PromiseOrValue<unknown> {
   const fieldName = fieldGroup[0].name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
+  const nullabilityAssertion = fieldGroup[0].nullabilityAssertion;
+
   if (!fieldDef) {
     return;
   }
 
-  const returnType = fieldDef.type;
+  const returnType = simpleTypeTransfer(fieldDef.type, nullabilityAssertion);
   const resolveFn = fieldDef.resolve ?? exeContext.fieldResolver;
 
   const info = buildResolveInfo(
@@ -900,6 +906,17 @@ function completeValue(
   );
 }
 
+function simpleTypeTransfer(
+  type: GraphQLOutputType,
+  nullabilityNode?: NullabilityAssertionNode,
+): GraphQLOutputType {
+  if (nullabilityNode?.kind === Kind.NON_NULL_ASSERTION) {
+    return new GraphQLNonNull(getNullableType(type));
+  }
+
+  return type;
+}
+
 async function completePromisedValue(
   exeContext: ExecutionContext,
   returnType: GraphQLOutputType,
@@ -1078,7 +1095,43 @@ function completeListValue(
   result: unknown,
   incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
-  const itemType = returnType.ofType;
+  const currentNode = fieldGroup[0];
+
+  if (!isIterableObject(result)) {
+    throw new GraphQLError(
+      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
+    );
+  }
+
+  let nullabilityAssertion;
+  if (
+    currentNode.nullabilityAssertion?.kind === Kind.LIST_NULLABILITY_OPERATOR
+  ) {
+    nullabilityAssertion =
+      currentNode.nullabilityAssertion?.nullabilityAssertion;
+  } else if (
+    currentNode.nullabilityAssertion?.nullabilityAssertion?.kind ===
+    Kind.LIST_NULLABILITY_OPERATOR
+  ) {
+    nullabilityAssertion =
+      currentNode.nullabilityAssertion.nullabilityAssertion
+        .nullabilityAssertion;
+  }
+
+  const newFieldNode: FieldNode = {
+    kind: currentNode.kind,
+    loc: currentNode.loc,
+    alias: currentNode.alias,
+    name: currentNode.name,
+    arguments: currentNode.arguments,
+    nullabilityAssertion,
+    directives: currentNode.directives,
+    selectionSet: currentNode.selectionSet,
+  };
+
+  const newFieldGroup = [newFieldNode].concat(fieldGroup.slice(1));
+
+  const itemType = simpleTypeTransfer(returnType.ofType, nullabilityAssertion);
 
   if (isAsyncIterable(result)) {
     const asyncIterator = result[Symbol.asyncIterator]();
@@ -1086,17 +1139,11 @@ function completeListValue(
     return completeAsyncIteratorValue(
       exeContext,
       itemType,
-      fieldGroup,
+      newFieldGroup,
       info,
       path,
       asyncIterator,
       incrementalDataRecord,
-    );
-  }
-
-  if (!isIterableObject(result)) {
-    throw new GraphQLError(
-      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
     );
   }
 
@@ -1123,7 +1170,7 @@ function completeListValue(
         itemPath,
         item,
         exeContext,
-        fieldGroup,
+        newFieldGroup,
         info,
         itemType,
         previousIncrementalDataRecord,
@@ -1139,7 +1186,7 @@ function completeListValue(
         completedResults,
         exeContext,
         itemType,
-        fieldGroup,
+        newFieldGroup,
         info,
         itemPath,
         incrementalDataRecord,
