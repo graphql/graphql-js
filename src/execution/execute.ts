@@ -1097,12 +1097,6 @@ function completeListValue(
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   const currentNode = fieldGroup[0];
 
-  if (!isIterableObject(result)) {
-    throw new GraphQLError(
-      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
-    );
-  }
-
   let nullabilityAssertion;
   if (
     currentNode.nullabilityAssertion?.kind === Kind.LIST_NULLABILITY_OPERATOR
@@ -1144,6 +1138,12 @@ function completeListValue(
       path,
       asyncIterator,
       incrementalDataRecord,
+    );
+  }
+
+  if (!isIterableObject(result)) {
+    throw new GraphQLError(
+      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
     );
   }
 

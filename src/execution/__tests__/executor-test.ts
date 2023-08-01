@@ -1545,7 +1545,9 @@ describe('Execute: Handles basic execution tasks', () => {
 
       expectJSON(nonNullInFragmentResult).toDeepEqual({
         data: {
-          food: null,
+          food: {
+            location: null,
+          },
         },
         errors: [
           {
@@ -1577,7 +1579,9 @@ describe('Execute: Handles basic execution tasks', () => {
       });
 
       expectJSON(nonNullInFragmentResult).toDeepEqual({
-        data: null,
+        data: {
+          food: null,
+        },
         errors: [
           {
             locations: [{ column: 13, line: 5 }],
@@ -1621,33 +1625,53 @@ describe('Execute: Handles basic execution tasks', () => {
       });
     });
 
-    it('lists with incorrect depth fail to execute', () => {
+    it('null within lists', () => {
       const document = `
       query {
         lists {
-          list[[!]]
+          twoDList[[!]]
         }
       }
-      `;
-
-      const listsQuery = parse(document, {
+    `;
+      const aliasedNullAndNonNull = parse(document, {
         experimentalClientControlledNullability: true,
       });
-      const listsQueryResult = executeSync({
+      const aliasedNullAndNonNullResult = executeSync({
         schema,
-        document: listsQuery,
+        document: aliasedNullAndNonNull,
       });
 
-      expectJSON(listsQueryResult).toDeepEqual({
-        data: { lists: null },
+      expectJSON(aliasedNullAndNonNullResult).toDeepEqual({
+        data: { lists: { twoDList: [null, [1, 2, 3]] } },
         errors: [
           {
             locations: [{ column: 11, line: 4 }],
             message:
-              'Syntax Error: Something is wrong with the nullability designator. Is the correct list depth being used?',
-            path: ['lists', 'list'],
+              'Cannot return null for non-nullable field Lists.twoDList.',
+            path: ['lists', 'twoDList', 0, 0],
           },
         ],
+      });
+    });
+
+    it('required list', () => {
+      const document = `
+      query {
+        lists {
+          list[]!
+        }
+      }
+    `;
+      const aliasedNullAndNonNull = parse(document, {
+        experimentalClientControlledNullability: true,
+      });
+      const aliasedNullAndNonNullResult = executeSync({
+        schema,
+        document: aliasedNullAndNonNull,
+      });
+
+      expectJSON(aliasedNullAndNonNullResult).toDeepEqual({
+        data: { lists: { list: [null, 1, 2, null] } },
       });
     });
   });
