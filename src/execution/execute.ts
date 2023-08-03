@@ -31,6 +31,7 @@ import type {
   GraphQLFieldResolver,
   GraphQLLeafType,
   GraphQLList,
+  GraphQLNullableOutputType,
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLResolveInfo,
@@ -822,36 +823,28 @@ function completeValue(
     throw result;
   }
 
-  // If field type is NonNull, complete for inner type, and throw field error
-  // if result is null.
+  let nullableType: GraphQLNullableOutputType;
   if (isNonNullType(returnType)) {
-    const completed = completeValue(
-      exeContext,
-      returnType.ofType,
-      fieldGroup,
-      info,
-      path,
-      result,
-      incrementalDataRecord,
-    );
-    if (completed === null) {
+    // If result value is null or undefined then throw an error.
+    if (result == null) {
       throw new Error(
         `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
     }
-    return completed;
-  }
-
-  // If result value is null or undefined then return null.
-  if (result == null) {
-    return null;
+    nullableType = returnType.ofType;
+  } else {
+    // If result value is null or undefined then return null.
+    if (result == null) {
+      return null;
+    }
+    nullableType = returnType;
   }
 
   // If field type is List, complete each item in the list with the inner type
-  if (isListType(returnType)) {
+  if (isListType(nullableType)) {
     return completeListValue(
       exeContext,
-      returnType,
+      nullableType,
       fieldGroup,
       info,
       path,
@@ -862,16 +855,16 @@ function completeValue(
 
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
-  if (isLeafType(returnType)) {
-    return completeLeafValue(returnType, result);
+  if (isLeafType(nullableType)) {
+    return completeLeafValue(nullableType, result);
   }
 
   // If field type is an abstract type, Interface or Union, determine the
   // runtime Object type and complete for that type.
-  if (isAbstractType(returnType)) {
+  if (isAbstractType(nullableType)) {
     return completeAbstractValue(
       exeContext,
-      returnType,
+      nullableType,
       fieldGroup,
       info,
       path,
@@ -881,10 +874,10 @@ function completeValue(
   }
 
   // If field type is Object, execute and complete all sub-selections.
-  if (isObjectType(returnType)) {
+  if (isObjectType(nullableType)) {
     return completeObjectValue(
       exeContext,
-      returnType,
+      nullableType,
       fieldGroup,
       info,
       path,
@@ -896,7 +889,7 @@ function completeValue(
   // Not reachable, all possible output types have been considered.
   invariant(
     false,
-    'Cannot complete value of unexpected output type: ' + inspect(returnType),
+    'Cannot complete value of unexpected output type: ' + inspect(nullableType),
   );
 }
 
