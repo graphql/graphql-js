@@ -2,7 +2,7 @@
 title: graphql/validation
 layout: ../_core/GraphQLJSLayout
 category: API Reference
-permalink: /graphql-js/validation/
+permalink: /graphql-js/src/validation/
 sublinks: specifiedRules,validate
 ---
 

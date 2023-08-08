@@ -2,7 +2,7 @@
 title: graphql/execution
 layout: ../_core/GraphQLJSLayout
 category: API Reference
-permalink: /graphql-js/execution/
+permalink: /graphql-js/src/execution/
 sublinks: execute
 next: /graphql-js/language/
 ---

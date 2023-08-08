@@ -2,7 +2,7 @@
 title: graphql/type
 layout: ../_core/GraphQLJSLayout
 category: API Reference
-permalink: /graphql-js/type/
+permalink: /graphql-js/src/type/
 sublinks: getNamedType,getNullableType,GraphQLBoolean,GraphQLEnumType,GraphQLFloat,GraphQLID,GraphQLInputObjectType,GraphQLInt,GraphQLInterfaceType,GraphQLList,GraphQLNonNull,GraphQLObjectType,GraphQLScalarType,GraphQLSchema,GraphQLString,GraphQLUnionType,isAbstractType,isCompositeType,isInputType,isLeafType,isOutputType
 next: /graphql-js/utilities/
 ---

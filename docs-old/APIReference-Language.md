@@ -2,7 +2,7 @@
 title: graphql/language
 layout: ../_core/GraphQLJSLayout
 category: API Reference
-permalink: /graphql-js/language/
+permalink: /graphql-js/src/language/
 sublinks: BREAK,getLocation,Kind,lex,parse,parseValue,printSource,visit
 next: /graphql-js/type/
 ---

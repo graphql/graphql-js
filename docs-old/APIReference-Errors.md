@@ -2,7 +2,7 @@
 title: graphql/error
 layout: ../_core/GraphQLJSLayout
 category: API Reference
-permalink: /graphql-js/error/
+permalink: /graphql-js/src/error/
 sublinks: formatError,GraphQLError,locatedError,syntaxError
 next: /graphql-js/execution/
 ---
