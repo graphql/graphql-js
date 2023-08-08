@@ -151,6 +151,35 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Can stream a list field that returns an async iterable', async () => {
+    const document = parse('{ scalarList @stream(initialCount: 1) }');
+    const result = await complete(document, {
+      async *scalarList() {
+        yield await Promise.resolve('apple');
+        yield await Promise.resolve('banana');
+        yield await Promise.resolve('coconut');
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          scalarList: ['apple'],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [{ items: ['banana'], path: ['scalarList', 1] }],
+        hasNext: true,
+      },
+      {
+        incremental: [{ items: ['coconut'], path: ['scalarList', 2] }],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
   it('Can use default value of initialCount', async () => {
     const document = parse('{ scalarList @stream }');
     const result = await complete(document, {
@@ -536,7 +565,7 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
-  it('Can stream a field that returns an async iterable', async () => {
+  it('Can stream an object field that returns an async iterable', async () => {
     const document = parse(`
       query { 
         friendList @stream {
@@ -766,6 +795,71 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles null returned in list items after initialCount is reached', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          name
+        }
+      }
+    `);
+    const result = await complete(document, {
+      friendList: () => [friends[0], null],
+    });
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ name: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 1],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles null returned in async iterable list items after initialCount is reached', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          name
+        }
+      }
+    `);
+    const result = await complete(document, {
+      async *friendList() {
+        yield await Promise.resolve(friends[0]);
+        yield await Promise.resolve(null);
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ name: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 1],
+          },
+        ],
+        hasNext: true,
+      },
+      {
         hasNext: false,
       },
     ]);

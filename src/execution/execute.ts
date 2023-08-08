@@ -641,8 +641,9 @@ function executeFields(
 /**
  * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
- * calling its resolve function, then calls completeValue to complete promises,
- * serialize scalars, or execute the sub-selection-set for objects.
+ * calling its resolve function, checks for promises, and then serializes leaf
+ * values or calls completeNonLeafValue to execute the sub-selection-set for
+ * objects and/or complete lists as necessary.
  */
 function executeField(
   exeContext: ExecutionContext,
@@ -699,9 +700,32 @@ function executeField(
       );
     }
 
-    const completed = completeValue(
+    if (result instanceof Error) {
+      throw result;
+    }
+
+    let nullableType: GraphQLNullableOutputType;
+    if (isNonNullType(returnType)) {
+      if (result == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        );
+      }
+      nullableType = returnType.ofType;
+    } else {
+      if (result == null) {
+        return null;
+      }
+      nullableType = returnType;
+    }
+
+    if (isLeafType(nullableType)) {
+      return completeLeafValue(nullableType, result);
+    }
+
+    const completed = completeNonLeafValue(
       exeContext,
-      returnType,
+      nullableType,
       fieldGroup,
       info,
       path,
@@ -789,19 +813,11 @@ function handleFieldError(
 }
 
 /**
- * Implements the instructions for completeValue as defined in the
+ * Implements the instructions for completing non-leaf values as defined in the
  * "Value Completion" section of the spec.
- *
- * If the field type is Non-Null, then this recursively completes the value
- * for the inner type. It throws a field error if that completion returns null,
- * as per the "Nullability" section of the spec.
  *
  * If the field type is a List, then this recursively completes the value
  * for the inner type on each item in the list.
- *
- * If the field type is a Scalar or Enum, ensures the completed value is a legal
- * value of the type by calling the `serialize` method of GraphQL type
- * definition.
  *
  * If the field is an abstract type, determine the runtime type of the value
  * and then complete based on that type
@@ -809,37 +825,15 @@ function handleFieldError(
  * Otherwise, the field type expects a sub-selection set, and will complete the
  * value by executing all sub-selections.
  */
-function completeValue(
+function completeNonLeafValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
+  nullableType: GraphQLNullableOutputType,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
   incrementalDataRecord: IncrementalDataRecord,
 ): PromiseOrValue<unknown> {
-  // If result is an Error, throw a located error.
-  if (result instanceof Error) {
-    throw result;
-  }
-
-  let nullableType: GraphQLNullableOutputType;
-  if (isNonNullType(returnType)) {
-    // If result value is null or undefined then throw an error.
-    if (result == null) {
-      throw new Error(
-        `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
-      );
-    }
-    nullableType = returnType.ofType;
-  } else {
-    // If result value is null or undefined then return null.
-    if (result == null) {
-      return null;
-    }
-    nullableType = returnType;
-  }
-
   // If field type is List, complete each item in the list with the inner type
   if (isListType(nullableType)) {
     return completeListValue(
@@ -851,12 +845,6 @@ function completeValue(
       result,
       incrementalDataRecord,
     );
-  }
-
-  // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
-  // returning null if serialization is not possible.
-  if (isLeafType(nullableType)) {
-    return completeLeafValue(nullableType, result);
   }
 
   // If field type is an abstract type, Interface or Union, determine the
@@ -904,9 +892,33 @@ async function completePromisedValue(
 ): Promise<unknown> {
   try {
     const resolved = await result;
-    let completed = completeValue(
+
+    if (resolved instanceof Error) {
+      throw resolved;
+    }
+
+    let nullableType: GraphQLNullableOutputType;
+    if (isNonNullType(returnType)) {
+      if (resolved == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        );
+      }
+      nullableType = returnType.ofType;
+    } else {
+      if (resolved == null) {
+        return null;
+      }
+      nullableType = returnType;
+    }
+
+    if (isLeafType(nullableType)) {
+      return completeLeafValue(nullableType, resolved);
+    }
+
+    let completed = completeNonLeafValue(
       exeContext,
-      returnType,
+      nullableType,
       fieldGroup,
       info,
       path,
@@ -1179,9 +1191,34 @@ function completeListItemValue(
   }
 
   try {
-    const completedItem = completeValue(
+    if (item instanceof Error) {
+      throw item;
+    }
+
+    let nullableType: GraphQLNullableOutputType;
+    if (isNonNullType(itemType)) {
+      if (item == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        );
+      }
+      nullableType = itemType.ofType;
+    } else {
+      if (item == null) {
+        completedResults.push(null);
+        return false;
+      }
+      nullableType = itemType;
+    }
+
+    if (isLeafType(nullableType)) {
+      completedResults.push(completeLeafValue(nullableType, item));
+      return false;
+    }
+
+    const completedItem = completeNonLeafValue(
       exeContext,
-      itemType,
+      nullableType,
       fieldGroup,
       info,
       itemPath,
@@ -1852,9 +1889,35 @@ function executeStreamField(
   let completedItem: PromiseOrValue<unknown>;
   try {
     try {
-      completedItem = completeValue(
+      let nullableType: GraphQLNullableOutputType;
+      if (isNonNullType(itemType)) {
+        if (item == null) {
+          throw new Error(
+            `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+          );
+        }
+        nullableType = itemType.ofType;
+      } else {
+        if (item == null) {
+          incrementalPublisher.completeStreamItemsRecord(
+            incrementalDataRecord,
+            [null],
+          );
+          return incrementalDataRecord;
+        }
+        nullableType = itemType;
+      }
+
+      if (isLeafType(nullableType)) {
+        incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+          completeLeafValue(nullableType, item),
+        ]);
+        return incrementalDataRecord;
+      }
+
+      completedItem = completeNonLeafValue(
         exeContext,
-        itemType,
+        nullableType,
         fieldGroup,
         info,
         itemPath,
@@ -1945,9 +2008,28 @@ async function executeStreamAsyncIteratorItem(
   }
   let completedItem;
   try {
-    completedItem = completeValue(
+    let nullableType: GraphQLNullableOutputType;
+    if (isNonNullType(itemType)) {
+      if (item == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        );
+      }
+      nullableType = itemType.ofType;
+    } else {
+      if (item == null) {
+        return { done: false, value: null };
+      }
+      nullableType = itemType;
+    }
+
+    if (isLeafType(nullableType)) {
+      return { done: false, value: completeLeafValue(nullableType, item) };
+    }
+
+    completedItem = completeNonLeafValue(
       exeContext,
-      itemType,
+      nullableType,
       fieldGroup,
       info,
       itemPath,
