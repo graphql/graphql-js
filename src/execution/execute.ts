@@ -670,6 +670,8 @@ function executeField(
     path,
   );
 
+  let result;
+  let nullableType: GraphQLNullableOutputType;
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
   try {
     // Build a JS object of arguments from the field.arguments AST, using the
@@ -686,7 +688,7 @@ function executeField(
     // used to represent an authenticated user, or request-specific caches.
     const contextValue = exeContext.contextValue;
 
-    const result = resolveFn(source, args, contextValue, info);
+    result = resolveFn(source, args, contextValue, info);
 
     if (isPromise(result)) {
       return completePromisedValue(
@@ -704,7 +706,6 @@ function executeField(
       throw result;
     }
 
-    let nullableType: GraphQLNullableOutputType;
     if (isNonNullType(returnType)) {
       if (result == null) {
         throw new Error(
@@ -722,34 +723,6 @@ function executeField(
     if (isLeafType(nullableType)) {
       return completeLeafValue(nullableType, result);
     }
-
-    const completed = completeNonLeafValue(
-      exeContext,
-      nullableType,
-      fieldGroup,
-      info,
-      path,
-      result,
-      incrementalDataRecord,
-    );
-
-    if (isPromise(completed)) {
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      return completed.then(undefined, (rawError) => {
-        handleFieldError(
-          rawError,
-          exeContext,
-          returnType,
-          fieldGroup,
-          path,
-          incrementalDataRecord,
-        );
-        exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
-        return null;
-      });
-    }
-    return completed;
   } catch (rawError) {
     handleFieldError(
       rawError,
@@ -762,6 +735,48 @@ function executeField(
     exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
     return null;
   }
+
+  let completed;
+  try {
+    completed = completeNonLeafValue(
+      exeContext,
+      nullableType,
+      fieldGroup,
+      info,
+      path,
+      result,
+      incrementalDataRecord,
+    );
+  } catch (rawError) {
+    handleFieldError(
+      rawError,
+      exeContext,
+      returnType,
+      fieldGroup,
+      path,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
+    return null;
+  }
+
+  if (isPromise(completed)) {
+    // Note: we don't rely on a `catch` method, but we do expect "thenable"
+    // to take a second callback for the error case.
+    return completed.then(undefined, (rawError) => {
+      handleFieldError(
+        rawError,
+        exeContext,
+        returnType,
+        fieldGroup,
+        path,
+        incrementalDataRecord,
+      );
+      exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
+      return null;
+    });
+  }
+  return completed;
 }
 
 /**
@@ -890,14 +905,15 @@ async function completePromisedValue(
   result: Promise<unknown>,
   incrementalDataRecord: IncrementalDataRecord,
 ): Promise<unknown> {
+  let resolved;
+  let nullableType: GraphQLNullableOutputType;
   try {
-    const resolved = await result;
+    resolved = await result;
 
     if (resolved instanceof Error) {
       throw resolved;
     }
 
-    let nullableType: GraphQLNullableOutputType;
     if (isNonNullType(returnType)) {
       if (resolved == null) {
         throw new Error(
@@ -915,7 +931,20 @@ async function completePromisedValue(
     if (isLeafType(nullableType)) {
       return completeLeafValue(nullableType, resolved);
     }
+  } catch (rawError) {
+    handleFieldError(
+      rawError,
+      exeContext,
+      returnType,
+      fieldGroup,
+      path,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
+    return null;
+  }
 
+  try {
     let completed = completeNonLeafValue(
       exeContext,
       nullableType,
@@ -1190,12 +1219,12 @@ function completeListItemValue(
     return true;
   }
 
+  let nullableType: GraphQLNullableOutputType;
   try {
     if (item instanceof Error) {
       throw item;
     }
 
-    let nullableType: GraphQLNullableOutputType;
     if (isNonNullType(itemType)) {
       if (item == null) {
         throw new Error(
@@ -1215,42 +1244,6 @@ function completeListItemValue(
       completedResults.push(completeLeafValue(nullableType, item));
       return false;
     }
-
-    const completedItem = completeNonLeafValue(
-      exeContext,
-      nullableType,
-      fieldGroup,
-      info,
-      itemPath,
-      item,
-      incrementalDataRecord,
-    );
-
-    if (isPromise(completedItem)) {
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      completedResults.push(
-        completedItem.then(undefined, (rawError) => {
-          handleFieldError(
-            rawError,
-            exeContext,
-            itemType,
-            fieldGroup,
-            itemPath,
-            incrementalDataRecord,
-          );
-          exeContext.incrementalPublisher.filter(
-            itemPath,
-            incrementalDataRecord,
-          );
-          return null;
-        }),
-      );
-
-      return true;
-    }
-
-    completedResults.push(completedItem);
   } catch (rawError) {
     handleFieldError(
       rawError,
@@ -1262,7 +1255,56 @@ function completeListItemValue(
     );
     exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
     completedResults.push(null);
+    return false;
   }
+
+  let completedItem;
+  try {
+    completedItem = completeNonLeafValue(
+      exeContext,
+      nullableType,
+      fieldGroup,
+      info,
+      itemPath,
+      item,
+      incrementalDataRecord,
+    );
+  } catch (rawError) {
+    handleFieldError(
+      rawError,
+      exeContext,
+      itemType,
+      fieldGroup,
+      itemPath,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+    completedResults.push(null);
+    return false;
+  }
+
+  if (isPromise(completedItem)) {
+    // Note: we don't rely on a `catch` method, but we do expect "thenable"
+    // to take a second callback for the error case.
+    completedResults.push(
+      completedItem.then(undefined, (rawError) => {
+        handleFieldError(
+          rawError,
+          exeContext,
+          itemType,
+          fieldGroup,
+          itemPath,
+          incrementalDataRecord,
+        );
+        exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+        return null;
+      }),
+    );
+
+    return true;
+  }
+
+  completedResults.push(completedItem);
 
   return false;
 }
@@ -1888,8 +1930,12 @@ function executeStreamField(
 
   let completedItem: PromiseOrValue<unknown>;
   try {
+    let nullableType: GraphQLNullableOutputType;
     try {
-      let nullableType: GraphQLNullableOutputType;
+      if (item instanceof Error) {
+        throw item;
+      }
+
       if (isNonNullType(itemType)) {
         if (item == null) {
           throw new Error(
@@ -1914,7 +1960,23 @@ function executeStreamField(
         ]);
         return incrementalDataRecord;
       }
+    } catch (rawError) {
+      handleFieldError(
+        rawError,
+        exeContext,
+        itemType,
+        fieldGroup,
+        itemPath,
+        incrementalDataRecord,
+      );
+      exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+      incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+        null,
+      ]);
+      return incrementalDataRecord;
+    }
 
+    try {
       completedItem = completeNonLeafValue(
         exeContext,
         nullableType,
@@ -1933,8 +1995,11 @@ function executeStreamField(
         itemPath,
         incrementalDataRecord,
       );
-      completedItem = null;
       exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+      incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+        null,
+      ]);
+      return incrementalDataRecord;
     }
   } catch (error) {
     incrementalPublisher.addFieldError(incrementalDataRecord, error);
@@ -2006,9 +2071,13 @@ async function executeStreamAsyncIteratorItem(
   } catch (rawError) {
     throw locatedError(rawError, fieldGroup, pathToArray(path));
   }
-  let completedItem;
+
+  let nullableType: GraphQLNullableOutputType;
   try {
-    let nullableType: GraphQLNullableOutputType;
+    if (item instanceof Error) {
+      throw item;
+    }
+
     if (isNonNullType(itemType)) {
       if (item == null) {
         throw new Error(
@@ -2026,32 +2095,6 @@ async function executeStreamAsyncIteratorItem(
     if (isLeafType(nullableType)) {
       return { done: false, value: completeLeafValue(nullableType, item) };
     }
-
-    completedItem = completeNonLeafValue(
-      exeContext,
-      nullableType,
-      fieldGroup,
-      info,
-      itemPath,
-      item,
-      incrementalDataRecord,
-    );
-
-    if (isPromise(completedItem)) {
-      completedItem = completedItem.then(undefined, (rawError) => {
-        handleFieldError(
-          rawError,
-          exeContext,
-          itemType,
-          fieldGroup,
-          itemPath,
-          incrementalDataRecord,
-        );
-        exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
-        return null;
-      });
-    }
-    return { done: false, value: completedItem };
   } catch (rawError) {
     handleFieldError(
       rawError,
@@ -2064,6 +2107,46 @@ async function executeStreamAsyncIteratorItem(
     exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
     return { done: false, value: null };
   }
+
+  let completedItem;
+  try {
+    completedItem = completeNonLeafValue(
+      exeContext,
+      nullableType,
+      fieldGroup,
+      info,
+      itemPath,
+      item,
+      incrementalDataRecord,
+    );
+  } catch (rawError) {
+    handleFieldError(
+      rawError,
+      exeContext,
+      itemType,
+      fieldGroup,
+      itemPath,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+    return { done: false, value: null };
+  }
+
+  if (isPromise(completedItem)) {
+    completedItem = completedItem.then(undefined, (rawError) => {
+      handleFieldError(
+        rawError,
+        exeContext,
+        itemType,
+        fieldGroup,
+        itemPath,
+        incrementalDataRecord,
+      );
+      exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+      return null;
+    });
+  }
+  return { done: false, value: completedItem };
 }
 
 async function executeStreamAsyncIterator(
