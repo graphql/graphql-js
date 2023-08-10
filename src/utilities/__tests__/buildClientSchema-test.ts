@@ -877,10 +877,10 @@ describe('Type System: build schema from introspection', () => {
   });
 
   describe('very deep decorators are not supported', () => {
-    it('fails on very deep (> 7 levels) lists', () => {
+    it('fails on very deep (> 8 levels) lists', () => {
       const schema = buildSchema(`
         type Query {
-          foo: [[[[[[[[String]]]]]]]]
+          foo: [[[[[[[[[[String]]]]]]]]]]
         }
       `);
 
@@ -890,10 +890,10 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
-    it('fails on a very deep (> 7 levels) non-null', () => {
+    it('fails on a very deep (> 8 levels) non-null', () => {
       const schema = buildSchema(`
         type Query {
-          foo: [[[[String!]!]!]!]
+          foo: [[[[[String!]!]!]!]!]
         }
       `);
 
@@ -903,11 +903,11 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
-    it('succeeds on deep (<= 7 levels) types', () => {
-      // e.g., fully non-null 3D matrix
+    it('succeeds on deep (<= 8 levels) types', () => {
+      // e.g., fully non-null 4D matrix
       const sdl = dedent`
         type Query {
-          foo: [[[String!]!]!]!
+          foo: [[[[String!]!]!]!]!
         }
       `;
 
