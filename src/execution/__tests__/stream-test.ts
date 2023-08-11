@@ -1160,6 +1160,45 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Handles nested errors thrown by completeValue after initialCount is reached for a non-nullable list', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nonNullFriendList: () => [
+        { nonNullName: friends[0].name },
+        { nonNullName: new Error('Oops') },
+      ],
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
   it('Handles nested errors thrown by completeValue after initialCount is reached from async iterable', async () => {
     const document = parse(`
       query { 
@@ -1210,6 +1249,47 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles nested errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    const result = await complete(document, {
+      async *nonNullFriendList() {
+        yield await Promise.resolve({ nonNullName: friends[0].name });
+        yield await Promise.resolve({
+          nonNullName: () => new Error('Oops'),
+        }); /* c8 ignore start */
+      } /* c8 ignore stop */,
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
         hasNext: false,
       },
     ]);
