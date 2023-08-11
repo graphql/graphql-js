@@ -24,8 +24,7 @@ module.exports = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.cjs'),
-          editUrl:
-            'https://github.com/graphql/graphql-js/edit/main/website/docs/',
+          editUrl: 'https://github.com/graphql/graphql-js/edit/main/website/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
