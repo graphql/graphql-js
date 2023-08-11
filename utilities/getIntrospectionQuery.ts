@@ -142,6 +142,14 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
                   ofType {
                     kind
                     name
+                    ofType {
+                      kind
+                      name
+                      ofType {
+                        kind
+                        name
+                      }
+                    }
                   }
                 }
               }
