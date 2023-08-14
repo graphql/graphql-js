@@ -35,7 +35,7 @@ let root = {
 };
 
 // Run the GraphQL query '{ hello }' and print out the response
-graphql({schema, source: '{ hello }', rootValue: root}).then((response) => {
+graphql({ schema, source: '{ hello }', rootValue: root }).then((response) => {
   console.log(JSON.stringify(response, null, 2));
 });
 ```
