@@ -2,7 +2,6 @@ import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
-import type { GraphQLFormattedError } from '../error/GraphQLError.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import type {
   DocumentNode,
@@ -19,9 +18,8 @@ import type {
 import type { GraphQLSchema } from '../type/schema.js';
 import type { FieldGroup } from './collectFields.js';
 import type {
-  FormattedIncrementalResult,
-  IncrementalResult,
-  SubsequentIncrementalExecutionResult,
+  ExecutionResult,
+  ExperimentalIncrementalExecutionResults,
 } from './IncrementalPublisher.js';
 import { IncrementalPublisher } from './IncrementalPublisher.js';
 /**
@@ -62,58 +60,6 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   incrementalPublisher: IncrementalPublisher;
-}
-/**
- * The result of GraphQL execution.
- *
- *   - `errors` is included when any errors occurred as a non-empty array.
- *   - `data` is the result of a successful execution of the query.
- *   - `hasNext` is true if a future payload is expected.
- *   - `extensions` is reserved for adding non-standard properties.
- *   - `incremental` is a list of the results from defer/stream directives.
- */
-export interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
-export interface FormattedExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
-export interface ExperimentalIncrementalExecutionResults<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
-  subsequentResults: AsyncGenerator<
-    SubsequentIncrementalExecutionResult<TData, TExtensions>,
-    void,
-    void
-  >;
-}
-export interface InitialIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends ExecutionResult<TData, TExtensions> {
-  hasNext: boolean;
-  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
-  extensions?: TExtensions;
-}
-export interface FormattedInitialIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends FormattedExecutionResult<TData, TExtensions> {
-  hasNext: boolean;
-  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
-  extensions?: TExtensions;
 }
 export interface ExecutionArgs {
   schema: GraphQLSchema;

@@ -4,6 +4,58 @@ import type {
   GraphQLError,
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
+/**
+ * The result of GraphQL execution.
+ *
+ *   - `errors` is included when any errors occurred as a non-empty array.
+ *   - `data` is the result of a successful execution of the query.
+ *   - `hasNext` is true if a future payload is expected.
+ *   - `extensions` is reserved for adding non-standard properties.
+ *   - `incremental` is a list of the results from defer/stream directives.
+ */
+export interface ExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: TData | null;
+  extensions?: TExtensions;
+}
+export interface FormattedExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+  data?: TData | null;
+  extensions?: TExtensions;
+}
+export interface ExperimentalIncrementalExecutionResults<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
+  subsequentResults: AsyncGenerator<
+    SubsequentIncrementalExecutionResult<TData, TExtensions>,
+    void,
+    void
+  >;
+}
+export interface InitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends ExecutionResult<TData, TExtensions> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
+}
+export interface FormattedInitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends FormattedExecutionResult<TData, TExtensions> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
+}
 export interface SubsequentIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
@@ -93,8 +145,6 @@ export declare class IncrementalPublisher {
   private _signalled;
   private _resolve;
   constructor();
-  hasNext(): boolean;
-  subscribe(): AsyncGenerator<SubsequentIncrementalExecutionResult, void, void>;
   prepareInitialResultRecord(): InitialResultRecord;
   prepareNewDeferredFragmentRecord(opts: {
     label: string | undefined;
@@ -120,14 +170,19 @@ export declare class IncrementalPublisher {
     incrementalDataRecord: IncrementalDataRecord,
     error: GraphQLError,
   ): void;
-  publishInitial(initialResult: InitialResultRecord): void;
-  getInitialErrors(
-    initialResult: InitialResultRecord,
-  ): ReadonlyArray<GraphQLError>;
+  buildDataResponse(
+    initialResultRecord: InitialResultRecord,
+    data: ObjMap<unknown> | null,
+  ): ExecutionResult | ExperimentalIncrementalExecutionResults;
+  buildErrorResponse(
+    initialResultRecord: InitialResultRecord,
+    error: GraphQLError,
+  ): ExecutionResult;
   filter(
     nullPath: Path,
     erroringIncrementalDataRecord: IncrementalDataRecord,
   ): void;
+  private _subscribe;
   private _trigger;
   private _reset;
   private _introduce;

@@ -131,49 +131,18 @@ function executeImpl(exeContext) {
   const incrementalPublisher = exeContext.incrementalPublisher;
   const initialResultRecord = incrementalPublisher.prepareInitialResultRecord();
   try {
-    const result = executeOperation(exeContext, initialResultRecord);
-    if ((0, isPromise_js_1.isPromise)(result)) {
-      return result.then(
-        (data) => {
-          const errors =
-            incrementalPublisher.getInitialErrors(initialResultRecord);
-          const initialResult = buildResponse(data, errors);
-          incrementalPublisher.publishInitial(initialResultRecord);
-          if (incrementalPublisher.hasNext()) {
-            return {
-              initialResult: {
-                ...initialResult,
-                hasNext: true,
-              },
-              subsequentResults: incrementalPublisher.subscribe(),
-            };
-          }
-          return initialResult;
-        },
-        (error) => {
-          incrementalPublisher.addFieldError(initialResultRecord, error);
-          const errors =
-            incrementalPublisher.getInitialErrors(initialResultRecord);
-          return buildResponse(null, errors);
-        },
+    const data = executeOperation(exeContext, initialResultRecord);
+    if ((0, isPromise_js_1.isPromise)(data)) {
+      return data.then(
+        (resolved) =>
+          incrementalPublisher.buildDataResponse(initialResultRecord, resolved),
+        (error) =>
+          incrementalPublisher.buildErrorResponse(initialResultRecord, error),
       );
     }
-    const initialResult = buildResponse(result, initialResultRecord.errors);
-    incrementalPublisher.publishInitial(initialResultRecord);
-    if (incrementalPublisher.hasNext()) {
-      return {
-        initialResult: {
-          ...initialResult,
-          hasNext: true,
-        },
-        subsequentResults: incrementalPublisher.subscribe(),
-      };
-    }
-    return initialResult;
+    return incrementalPublisher.buildDataResponse(initialResultRecord, data);
   } catch (error) {
-    incrementalPublisher.addFieldError(initialResultRecord, error);
-    const errors = incrementalPublisher.getInitialErrors(initialResultRecord);
-    return buildResponse(null, errors);
+    return incrementalPublisher.buildErrorResponse(initialResultRecord, error);
   }
 }
 /**
@@ -190,13 +159,6 @@ function executeSync(args) {
   return result;
 }
 exports.executeSync = executeSync;
-/**
- * Given a completed execution context and data, build the `{ errors, data }`
- * response defined by the "Response" section of the GraphQL specification.
- */
-function buildResponse(data, errors) {
-  return errors.length === 0 ? { data } : { errors, data };
-}
 /**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
