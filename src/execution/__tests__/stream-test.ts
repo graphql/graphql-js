@@ -1,7 +1,8 @@
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
@@ -10,6 +11,7 @@ import type { DocumentNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
 
 import {
+  GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -23,19 +25,35 @@ import type {
   SubsequentIncrementalExecutionResult,
 } from '../IncrementalPublisher.js';
 
+const episodeEnum = new GraphQLEnumType({
+  name: 'Episode',
+  values: {
+    NEW_HOPE: {
+      value: 4,
+    },
+    EMPIRE: {
+      value: 5,
+    },
+    JEDI: {
+      value: 6,
+    },
+  },
+});
+
 const friendType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
     nonNullName: { type: new GraphQLNonNull(GraphQLString) },
+    appearsIn: { type: new GraphQLList(episodeEnum) },
   },
   name: 'Friend',
 });
 
 const friends = [
-  { name: 'Luke', id: 1 },
-  { name: 'Han', id: 2 },
-  { name: 'Leia', id: 3 },
+  { name: 'Luke', id: 1, appearsIn: [4, 5, 6] },
+  { name: 'Han', id: 2, appearsIn: [4, 5, 6] },
+  { name: 'Leia', id: 3, appearsIn: [4, 5, 6] },
 ];
 
 const query = new GraphQLObjectType({
@@ -141,14 +159,12 @@ describe('Execute: stream directive', () => {
         data: {
           scalarList: ['apple'],
         },
+        pending: [{ path: ['scalarList'] }],
         hasNext: true,
       },
       {
-        incremental: [{ items: ['banana'], path: ['scalarList', 1] }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['coconut'], path: ['scalarList', 2] }],
+        incremental: [{ items: ['banana', 'coconut'], path: ['scalarList'] }],
+        completed: [{ path: ['scalarList'] }],
         hasNext: false,
       },
     ]);
@@ -163,18 +179,14 @@ describe('Execute: stream directive', () => {
         data: {
           scalarList: [],
         },
+        pending: [{ path: ['scalarList'] }],
         hasNext: true,
       },
       {
-        incremental: [{ items: ['apple'], path: ['scalarList', 0] }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['banana'], path: ['scalarList', 1] }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['coconut'], path: ['scalarList', 2] }],
+        incremental: [
+          { items: ['apple', 'banana', 'coconut'], path: ['scalarList'] },
+        ],
+        completed: [{ path: ['scalarList'] }],
         hasNext: false,
       },
     ]);
@@ -214,26 +226,17 @@ describe('Execute: stream directive', () => {
         data: {
           scalarList: ['apple'],
         },
+        pending: [{ path: ['scalarList'], label: 'scalar-stream' }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: ['banana'],
-            path: ['scalarList', 1],
-            label: 'scalar-stream',
+            items: ['banana', 'coconut'],
+            path: ['scalarList'],
           },
         ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: ['coconut'],
-            path: ['scalarList', 2],
-            label: 'scalar-stream',
-          },
-        ],
+        completed: [{ path: ['scalarList'], label: 'scalar-stream' }],
         hasNext: false,
       },
     ]);
@@ -259,10 +262,12 @@ describe('Execute: stream directive', () => {
     expectJSON(result).toDeepEqual([
       {
         data: { scalarList: ['apple', 'banana'] },
+        pending: [{ path: ['scalarList'] }],
         hasNext: true,
       },
       {
-        incremental: [{ items: ['coconut'], path: ['scalarList', 2] }],
+        incremental: [{ items: ['coconut'], path: ['scalarList'] }],
+        completed: [{ path: ['scalarList'] }],
         hasNext: false,
       },
     ]);
@@ -281,24 +286,123 @@ describe('Execute: stream directive', () => {
         data: {
           scalarListList: [['apple', 'apple', 'apple']],
         },
+        pending: [{ path: ['scalarListList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [['banana', 'banana', 'banana']],
-            path: ['scalarListList', 1],
+            items: [
+              ['banana', 'banana', 'banana'],
+              ['coconut', 'coconut', 'coconut'],
+            ],
+            path: ['scalarListList'],
           },
+        ],
+        completed: [{ path: ['scalarListList'] }],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Can nest stream directives', async () => {
+    const document = parse(`
+      query {
+        friendList @stream(initialCount: 1) {
+          name
+          appearsIn @stream(initialCount: 1)
+        }
+      }
+    `);
+    const result = await complete(document, {
+      friendList: () => friends.map((f) => Promise.resolve(f)),
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [
+            {
+              name: 'Luke',
+              appearsIn: ['NEW_HOPE'],
+            },
+          ],
+        },
+        pending: [
+          { path: ['friendList'] },
+          { path: ['friendList', 0, 'appearsIn'] },
         ],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [['coconut', 'coconut', 'coconut']],
-            path: ['scalarListList', 2],
+            items: [
+              {
+                name: 'Han',
+                appearsIn: ['NEW_HOPE', 'EMPIRE', 'JEDI'],
+              },
+              {
+                name: 'Leia',
+                appearsIn: ['NEW_HOPE', 'EMPIRE', 'JEDI'],
+              },
+            ],
+            path: ['friendList'],
+          },
+          {
+            items: ['EMPIRE', 'JEDI'],
+            path: ['friendList', 0, 'appearsIn'],
           },
         ],
+        completed: [
+          { path: ['friendList'] },
+          { path: ['friendList', 0, 'appearsIn'] },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Can nest stream directives under defer', async () => {
+    const document = parse(`
+      query {
+        friendList @stream(initialCount: 1) {
+          ... @defer {
+            name
+            appearsIn @stream(initialCount: 1)
+          }  
+        }
+      }
+    `);
+    const result = await complete(document, {
+      friendList: () => friends.map((f) => Promise.resolve(f)),
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{}],
+        },
+        pending: [{ path: ['friendList'] }, { path: ['friendList', 0] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [
+              {
+                name: 'Han',
+                appearsIn: ['NEW_HOPE', 'EMPIRE', 'JEDI'],
+              },
+              {
+                name: 'Leia',
+                appearsIn: ['NEW_HOPE', 'EMPIRE', 'JEDI'],
+              },
+            ],
+            path: ['friendList'],
+          },
+          {
+            data: { name: 'Luke', appearsIn: ['NEW_HOPE', 'EMPIRE', 'JEDI'] },
+            path: ['friendList', 0],
+          },
+        ],
+        completed: [{ path: ['friendList', 0] }, { path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -329,6 +433,7 @@ describe('Execute: stream directive', () => {
             },
           ],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
@@ -340,9 +445,10 @@ describe('Execute: stream directive', () => {
                 id: '3',
               },
             ],
-            path: ['friendList', 2],
+            path: ['friendList'],
           },
         ],
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -364,33 +470,21 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [{ name: 'Luke', id: '1' }],
-            path: ['friendList', 0],
+            items: [
+              { name: 'Luke', id: '1' },
+              { name: 'Han', id: '2' },
+              { name: 'Leia', id: '3' },
+            ],
+            path: ['friendList'],
           },
         ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ name: 'Han', id: '2' }],
-            path: ['friendList', 1],
-          },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ name: 'Leia', id: '3' }],
-            path: ['friendList', 2],
-          },
-        ],
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -425,6 +519,7 @@ describe('Execute: stream directive', () => {
             },
           ],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
@@ -436,9 +531,10 @@ describe('Execute: stream directive', () => {
                 id: '3',
               },
             ],
-            path: ['friendList', 2],
+            path: ['friendList'],
           },
         ],
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -473,15 +569,17 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [{ name: 'Luke', id: '1' }, null],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [{ name: 'Leia', id: '3' }],
-            path: ['friendList', 2],
+            path: ['friendList'],
           },
         ],
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -489,7 +587,7 @@ describe('Execute: stream directive', () => {
   it('Handles rejections in a field that returns a list of promises after initialCount is reached', async () => {
     const document = parse(`
       query { 
-        friendList @stream(initialCount: 1) {
+        friendList @stream {
           name
           id
         }
@@ -507,15 +605,16 @@ describe('Execute: stream directive', () => {
     expectJSON(result).toDeepEqual([
       {
         data: {
-          friendList: [{ name: 'Luke', id: '1' }],
+          friendList: [],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [null],
-            path: ['friendList', 1],
+            items: [{ name: 'Luke', id: '1' }, null, { name: 'Leia', id: '3' }],
+            path: ['friendList'],
             errors: [
               {
                 message: 'bad',
@@ -525,15 +624,57 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
+        completed: [{ path: ['friendList'] }],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles multiple rejections in a field that returns a list of promises after initialCount is reached', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          name
+          id
+        }
+      }
+    `);
+    const result = await complete(document, {
+      friendList: () =>
+        friends.map((f, i) => {
+          if (i >= 1) {
+            return Promise.reject(new Error('bad'));
+          }
+          return Promise.resolve(f);
+        }),
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ name: 'Luke', id: '1' }],
+        },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [{ name: 'Leia', id: '3' }],
-            path: ['friendList', 2],
+            items: [null, null],
+            path: ['friendList'],
+            errors: [
+              {
+                message: 'bad',
+                locations: [{ line: 3, column: 9 }],
+                path: ['friendList', 1],
+              },
+              {
+                message: 'bad',
+                locations: [{ line: 3, column: 9 }],
+                path: ['friendList', 2],
+              },
+            ],
           },
         ],
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -559,13 +700,14 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [{ name: 'Luke', id: '1' }],
-            path: ['friendList', 0],
+            path: ['friendList'],
           },
         ],
         hasNext: true,
@@ -574,7 +716,7 @@ describe('Execute: stream directive', () => {
         incremental: [
           {
             items: [{ name: 'Han', id: '2' }],
-            path: ['friendList', 1],
+            path: ['friendList'],
           },
         ],
         hasNext: true,
@@ -583,12 +725,13 @@ describe('Execute: stream directive', () => {
         incremental: [
           {
             items: [{ name: 'Leia', id: '3' }],
-            path: ['friendList', 2],
+            path: ['friendList'],
           },
         ],
         hasNext: true,
       },
       {
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -617,18 +760,20 @@ describe('Execute: stream directive', () => {
             { name: 'Han', id: '2' },
           ],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [{ name: 'Leia', id: '3' }],
-            path: ['friendList', 2],
+            path: ['friendList'],
           },
         ],
         hasNext: true,
       },
       {
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -685,6 +830,7 @@ describe('Execute: stream directive', () => {
               { name: 'Han', id: '2' },
             ],
           },
+          pending: [{ path: ['friendList'] }],
           hasNext: true,
         },
       },
@@ -694,13 +840,19 @@ describe('Execute: stream directive', () => {
           incremental: [
             {
               items: [{ name: 'Leia', id: '3' }],
-              path: ['friendList', 2],
+              path: ['friendList'],
             },
           ],
           hasNext: true,
         },
       },
-      { done: false, value: { hasNext: false } },
+      {
+        done: false,
+        value: {
+          completed: [{ path: ['friendList'] }],
+          hasNext: false,
+        },
+      },
       { done: true, value: undefined },
     ]);
   });
@@ -752,13 +904,13 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [{ name: 'Luke', id: '1' }],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            items: null,
-            path: ['friendList', 1],
+            path: ['friendList'],
             errors: [
               {
                 message: 'bad',
@@ -789,13 +941,13 @@ describe('Execute: stream directive', () => {
         data: {
           nonNullFriendList: [{ name: 'Luke' }],
         },
+        pending: [{ path: ['nonNullFriendList'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            items: null,
-            path: ['nonNullFriendList', 1],
+            path: ['nonNullFriendList'],
             errors: [
               {
                 message:
@@ -836,13 +988,13 @@ describe('Execute: stream directive', () => {
         data: {
           nonNullFriendList: [{ name: 'Luke' }],
         },
+        pending: [{ path: ['nonNullFriendList'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            items: null,
-            path: ['nonNullFriendList', 1],
+            path: ['nonNullFriendList'],
             errors: [
               {
                 message:
@@ -871,13 +1023,14 @@ describe('Execute: stream directive', () => {
         data: {
           scalarList: ['Luke'],
         },
+        pending: [{ path: ['scalarList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [null],
-            path: ['scalarList', 1],
+            path: ['scalarList'],
             errors: [
               {
                 message: 'String cannot represent value: {}',
@@ -887,6 +1040,7 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
+        completed: [{ path: ['scalarList'] }],
         hasNext: false,
       },
     ]);
@@ -913,13 +1067,14 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [{ nonNullName: 'Luke' }],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [null],
-            path: ['friendList', 1],
+            items: [null, { nonNullName: 'Han' }],
+            path: ['friendList'],
             errors: [
               {
                 message: 'Oops',
@@ -929,15 +1084,7 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ nonNullName: 'Han' }],
-            path: ['friendList', 2],
-          },
-        ],
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -962,13 +1109,14 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [{ nonNullName: 'Luke' }],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [null],
-            path: ['friendList', 1],
+            items: [null, { nonNullName: 'Han' }],
+            path: ['friendList'],
             errors: [
               {
                 message: 'Oops',
@@ -978,15 +1126,7 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ nonNullName: 'Han' }],
-            path: ['friendList', 2],
-          },
-        ],
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -1013,13 +1153,13 @@ describe('Execute: stream directive', () => {
         data: {
           nonNullFriendList: [{ nonNullName: 'Luke' }],
         },
+        pending: [{ path: ['nonNullFriendList'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            items: null,
-            path: ['nonNullFriendList', 1],
+            path: ['nonNullFriendList'],
             errors: [
               {
                 message: 'Oops',
@@ -1053,13 +1193,13 @@ describe('Execute: stream directive', () => {
         data: {
           nonNullFriendList: [{ nonNullName: 'Luke' }],
         },
+        pending: [{ path: ['nonNullFriendList'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            items: null,
-            path: ['nonNullFriendList', 1],
+            path: ['nonNullFriendList'],
             errors: [
               {
                 message: 'Oops',
@@ -1095,13 +1235,14 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [{ nonNullName: 'Luke' }],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [null],
-            path: ['friendList', 1],
+            items: [null, { nonNullName: 'Han' }],
+            path: ['friendList'],
             errors: [
               {
                 message: 'Oops',
@@ -1114,15 +1255,7 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            items: [{ nonNullName: 'Han' }],
-            path: ['friendList', 2],
-          },
-        ],
-        hasNext: true,
-      },
-      {
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -1151,13 +1284,13 @@ describe('Execute: stream directive', () => {
         data: {
           nonNullFriendList: [{ nonNullName: 'Luke' }],
         },
+        pending: [{ path: ['nonNullFriendList'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            items: null,
-            path: ['nonNullFriendList', 1],
+            path: ['nonNullFriendList'],
             errors: [
               {
                 message: 'Oops',
@@ -1170,6 +1303,153 @@ describe('Execute: stream directive', () => {
         hasNext: false,
       },
     ]);
+  });
+  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list when the async iterable does not provide a return method) ', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    let count = 0;
+    const result = await complete(document, {
+      nonNullFriendList: {
+        [Symbol.asyncIterator]: () => ({
+          next: async () => {
+            switch (count++) {
+              case 0:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[0].name },
+                });
+              case 1:
+                return Promise.resolve({
+                  done: false,
+                  value: {
+                    nonNullName: () => Promise.reject(new Error('Oops')),
+                  },
+                });
+              case 2:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[1].name },
+                });
+              // Not reached
+              /* c8 ignore next 5 */
+              case 3:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[2].name },
+                });
+            }
+          },
+        }),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        pending: [{ path: ['nonNullFriendList'] }],
+        hasNext: true,
+      },
+      {
+        completed: [
+          {
+            path: ['nonNullFriendList'],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles async errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list when the async iterable provides concurrent next/return methods and has a slow return ', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    let count = 0;
+    let returned = false;
+    const result = await complete(document, {
+      nonNullFriendList: {
+        [Symbol.asyncIterator]: () => ({
+          next: async () => {
+            /* c8 ignore next 3 */
+            if (returned) {
+              return Promise.resolve({ done: true });
+            }
+            switch (count++) {
+              case 0:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[0].name },
+                });
+              case 1:
+                return Promise.resolve({
+                  done: false,
+                  value: {
+                    nonNullName: () => Promise.reject(new Error('Oops')),
+                  },
+                });
+              case 2:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[1].name },
+                });
+              // Not reached
+              /* c8 ignore next 5 */
+              case 3:
+                return Promise.resolve({
+                  done: false,
+                  value: { nonNullName: friends[2].name },
+                });
+            }
+          },
+          return: async () => {
+            await resolveOnNextTick();
+            returned = true;
+            return { done: true };
+          },
+        }),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        pending: [{ path: ['nonNullFriendList'] }],
+        hasNext: true,
+      },
+      {
+        completed: [
+          {
+            path: ['nonNullFriendList'],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+    expect(returned).to.equal(true);
   });
   it('Filters payloads that are nulled', async () => {
     const document = parse(`
@@ -1266,6 +1546,10 @@ describe('Execute: stream directive', () => {
           otherNestedObject: {},
           nestedObject: { nestedFriendList: [] },
         },
+        pending: [
+          { path: ['otherNestedObject'] },
+          { path: ['nestedObject', 'nestedFriendList'] },
+        ],
         hasNext: true,
       },
       {
@@ -1283,12 +1567,13 @@ describe('Execute: stream directive', () => {
           },
           {
             items: [{ name: 'Luke' }],
-            path: ['nestedObject', 'nestedFriendList', 0],
+            path: ['nestedObject', 'nestedFriendList'],
           },
         ],
-        hasNext: true,
-      },
-      {
+        completed: [
+          { path: ['otherNestedObject'] },
+          { path: ['nestedObject', 'nestedFriendList'] },
+        ],
         hasNext: false,
       },
     ]);
@@ -1323,6 +1608,7 @@ describe('Execute: stream directive', () => {
         data: {
           nestedObject: {},
         },
+        pending: [{ path: ['nestedObject'] }],
         hasNext: true,
       },
       {
@@ -1346,6 +1632,7 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
+        completed: [{ path: ['nestedObject'] }],
         hasNext: false,
       },
     ]);
@@ -1374,13 +1661,14 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [null],
-            path: ['friendList', 0],
+            path: ['friendList'],
             errors: [
               {
                 message:
@@ -1391,9 +1679,7 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -1405,10 +1691,11 @@ describe('Execute: stream directive', () => {
     const iterable = {
       [Symbol.asyncIterator]: () => ({
         next: () => {
+          /* c8 ignore start */
           if (requested) {
-            // Ignores further errors when filtered.
+            // stream is filtered, next is not called, and so this is not reached.
             return Promise.reject(new Error('Oops'));
-          }
+          } /* c8 ignore stop */
           requested = true;
           const friend = friends[0];
           return Promise.resolve({
@@ -1462,6 +1749,7 @@ describe('Execute: stream directive', () => {
       data: {
         nestedObject: {},
       },
+      pending: [{ path: ['nestedObject'] }],
       hasNext: true,
     });
 
@@ -1489,6 +1777,7 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
+        completed: [{ path: ['nestedObject'] }],
         hasNext: false,
       },
     });
@@ -1522,13 +1811,14 @@ describe('Execute: stream directive', () => {
         data: {
           friendList: [{ id: '1', name: 'Luke' }],
         },
+        pending: [{ path: ['friendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [{ id: '2', name: 'Han' }],
-            path: ['friendList', 1],
+            path: ['friendList'],
           },
         ],
         hasNext: true,
@@ -1537,12 +1827,10 @@ describe('Execute: stream directive', () => {
         incremental: [
           {
             items: [{ id: '3', name: 'Leia' }],
-            path: ['friendList', 2],
+            path: ['friendList'],
           },
         ],
-        hasNext: true,
-      },
-      {
+        completed: [{ path: ['friendList'] }],
         hasNext: false,
       },
     ]);
@@ -1580,46 +1868,27 @@ describe('Execute: stream directive', () => {
             nestedFriendList: [],
           },
         },
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ id: '1' }],
-            path: ['nestedObject', 'nestedFriendList', 0],
-          },
-          {
-            data: {
-              nestedFriendList: [],
-            },
-            path: ['nestedObject'],
-          },
+        pending: [
+          { path: ['nestedObject'] },
+          { path: ['nestedObject', 'nestedFriendList'] },
         ],
         hasNext: true,
       },
       {
         incremental: [
           {
-            items: [{ id: '2' }],
-            path: ['nestedObject', 'nestedFriendList', 1],
-          },
-          {
-            items: [{ id: '1', name: 'Luke' }],
-            path: ['nestedObject', 'nestedFriendList', 0],
+            items: [
+              { id: '1', name: 'Luke' },
+              { id: '2', name: 'Han' },
+            ],
+            path: ['nestedObject', 'nestedFriendList'],
           },
         ],
+        completed: [{ path: ['nestedObject'] }],
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            items: [{ id: '2', name: 'Han' }],
-            path: ['nestedObject', 'nestedFriendList', 1],
-          },
-        ],
-        hasNext: true,
-      },
-      {
+        completed: [{ path: ['nestedObject', 'nestedFriendList'] }],
         hasNext: false,
       },
     ]);
@@ -1661,6 +1930,7 @@ describe('Execute: stream directive', () => {
       data: {
         nestedObject: {},
       },
+      pending: [{ path: ['nestedObject'] }],
       hasNext: true,
     });
 
@@ -1669,12 +1939,14 @@ describe('Execute: stream directive', () => {
     const result2 = await result2Promise;
     expectJSON(result2).toDeepEqual({
       value: {
+        pending: [{ path: ['nestedObject', 'nestedFriendList'] }],
         incremental: [
           {
-            data: { scalarField: 'slow', nestedFriendList: [] },
+            data: { scalarField: 'slow', nestedFriendList: [{ name: 'Luke' }] },
             path: ['nestedObject'],
           },
         ],
+        completed: [{ path: ['nestedObject'] }],
         hasNext: true,
       },
       done: false,
@@ -1684,8 +1956,8 @@ describe('Execute: stream directive', () => {
       value: {
         incremental: [
           {
-            items: [{ name: 'Luke' }],
-            path: ['nestedObject', 'nestedFriendList', 0],
+            items: [{ name: 'Han' }],
+            path: ['nestedObject', 'nestedFriendList'],
           },
         ],
         hasNext: true,
@@ -1695,23 +1967,13 @@ describe('Execute: stream directive', () => {
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
       value: {
-        incremental: [
-          {
-            items: [{ name: 'Han' }],
-            path: ['nestedObject', 'nestedFriendList', 1],
-          },
-        ],
-        hasNext: true,
+        completed: [{ path: ['nestedObject', 'nestedFriendList'] }],
+        hasNext: false,
       },
       done: false,
     });
     const result5 = await iterator.next();
     expectJSON(result5).toDeepEqual({
-      value: { hasNext: false },
-      done: false,
-    });
-    const result6 = await iterator.next();
-    expectJSON(result6).toDeepEqual({
       value: undefined,
       done: true,
     });
@@ -1758,6 +2020,10 @@ describe('Execute: stream directive', () => {
       data: {
         friendList: [{ id: '1' }],
       },
+      pending: [
+        { path: ['friendList', 0], label: 'DeferName' },
+        { path: ['friendList'], label: 'stream-label' },
+      ],
       hasNext: true,
     });
 
@@ -1766,18 +2032,18 @@ describe('Execute: stream directive', () => {
     const result2 = await result2Promise;
     expectJSON(result2).toDeepEqual({
       value: {
+        pending: [{ path: ['friendList', 1], label: 'DeferName' }],
         incremental: [
           {
             data: { name: 'Luke' },
             path: ['friendList', 0],
-            label: 'DeferName',
           },
           {
             items: [{ id: '2' }],
-            path: ['friendList', 1],
-            label: 'stream-label',
+            path: ['friendList'],
           },
         ],
+        completed: [{ path: ['friendList', 0], label: 'DeferName' }],
         hasNext: true,
       },
       done: false,
@@ -1788,19 +2054,27 @@ describe('Execute: stream directive', () => {
     const result3 = await result3Promise;
     expectJSON(result3).toDeepEqual({
       value: {
-        incremental: [
-          {
-            data: { name: 'Han' },
-            path: ['friendList', 1],
-            label: 'DeferName',
-          },
-        ],
-        hasNext: false,
+        completed: [{ path: ['friendList'], label: 'stream-label' }],
+        hasNext: true,
       },
       done: false,
     });
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
+      value: {
+        incremental: [
+          {
+            data: { name: 'Han' },
+            path: ['friendList', 1],
+          },
+        ],
+        completed: [{ path: ['friendList', 1], label: 'DeferName' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+    const result5 = await iterator.next();
+    expectJSON(result5).toDeepEqual({
       value: undefined,
       done: true,
     });
@@ -1847,6 +2121,10 @@ describe('Execute: stream directive', () => {
       data: {
         friendList: [{ id: '1' }],
       },
+      pending: [
+        { path: ['friendList', 0], label: 'DeferName' },
+        { path: ['friendList'], label: 'stream-label' },
+      ],
       hasNext: true,
     });
 
@@ -1855,18 +2133,18 @@ describe('Execute: stream directive', () => {
     const result2 = await result2Promise;
     expectJSON(result2).toDeepEqual({
       value: {
+        pending: [{ path: ['friendList', 1], label: 'DeferName' }],
         incremental: [
           {
             data: { name: 'Luke' },
             path: ['friendList', 0],
-            label: 'DeferName',
           },
           {
             items: [{ id: '2' }],
-            path: ['friendList', 1],
-            label: 'stream-label',
+            path: ['friendList'],
           },
         ],
+        completed: [{ path: ['friendList', 0], label: 'DeferName' }],
         hasNext: true,
       },
       done: false,
@@ -1879,9 +2157,9 @@ describe('Execute: stream directive', () => {
           {
             data: { name: 'Han' },
             path: ['friendList', 1],
-            label: 'DeferName',
           },
         ],
+        completed: [{ path: ['friendList', 1], label: 'DeferName' }],
         hasNext: true,
       },
       done: false,
@@ -1890,7 +2168,10 @@ describe('Execute: stream directive', () => {
     resolveIterableCompletion(null);
     const result4 = await result4Promise;
     expectJSON(result4).toDeepEqual({
-      value: { hasNext: false },
+      value: {
+        completed: [{ path: ['friendList'], label: 'stream-label' }],
+        hasNext: false,
+      },
       done: false,
     });
 
@@ -1948,6 +2229,7 @@ describe('Execute: stream directive', () => {
           },
         ],
       },
+      pending: [{ path: ['friendList', 0] }, { path: ['friendList'] }],
       hasNext: true,
     });
     const returnPromise = iterator.return();
@@ -2003,6 +2285,7 @@ describe('Execute: stream directive', () => {
           },
         ],
       },
+      pending: [{ path: ['friendList'] }],
       hasNext: true,
     });
 
@@ -2062,6 +2345,7 @@ describe('Execute: stream directive', () => {
           },
         ],
       },
+      pending: [{ path: ['friendList', 0] }, { path: ['friendList'] }],
       hasNext: true,
     });
 
