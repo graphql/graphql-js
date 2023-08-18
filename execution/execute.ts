@@ -12,7 +12,6 @@ import { addPath, pathToArray } from '../jsutils/Path.ts';
 import { promiseForObject } from '../jsutils/promiseForObject.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import { promiseReduce } from '../jsutils/promiseReduce.ts';
-import type { GraphQLFormattedError } from '../error/GraphQLError.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import { locatedError } from '../error/locatedError.ts';
 import type {
@@ -49,13 +48,12 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields.ts';
 import type {
-  FormattedIncrementalResult,
+  ExecutionResult,
+  ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
-  IncrementalResult,
   InitialResultRecord,
   StreamItemsRecord,
   SubsequentDataRecord,
-  SubsequentIncrementalExecutionResult,
 } from './IncrementalPublisher.ts';
 import { IncrementalPublisher } from './IncrementalPublisher.ts';
 import { mapAsyncIterable } from './mapAsyncIterable.ts';
@@ -125,58 +123,6 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   incrementalPublisher: IncrementalPublisher;
-}
-/**
- * The result of GraphQL execution.
- *
- *   - `errors` is included when any errors occurred as a non-empty array.
- *   - `data` is the result of a successful execution of the query.
- *   - `hasNext` is true if a future payload is expected.
- *   - `extensions` is reserved for adding non-standard properties.
- *   - `incremental` is a list of the results from defer/stream directives.
- */
-export interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
-export interface FormattedExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
-export interface ExperimentalIncrementalExecutionResults<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
-  subsequentResults: AsyncGenerator<
-    SubsequentIncrementalExecutionResult<TData, TExtensions>,
-    void,
-    void
-  >;
-}
-export interface InitialIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends ExecutionResult<TData, TExtensions> {
-  hasNext: boolean;
-  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
-  extensions?: TExtensions;
-}
-export interface FormattedInitialIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends FormattedExecutionResult<TData, TExtensions> {
-  hasNext: boolean;
-  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
-  extensions?: TExtensions;
 }
 export interface ExecutionArgs {
   schema: GraphQLSchema;
@@ -274,49 +220,18 @@ function executeImpl(
   const incrementalPublisher = exeContext.incrementalPublisher;
   const initialResultRecord = incrementalPublisher.prepareInitialResultRecord();
   try {
-    const result = executeOperation(exeContext, initialResultRecord);
-    if (isPromise(result)) {
-      return result.then(
-        (data) => {
-          const errors =
-            incrementalPublisher.getInitialErrors(initialResultRecord);
-          const initialResult = buildResponse(data, errors);
-          incrementalPublisher.publishInitial(initialResultRecord);
-          if (incrementalPublisher.hasNext()) {
-            return {
-              initialResult: {
-                ...initialResult,
-                hasNext: true,
-              },
-              subsequentResults: incrementalPublisher.subscribe(),
-            };
-          }
-          return initialResult;
-        },
-        (error) => {
-          incrementalPublisher.addFieldError(initialResultRecord, error);
-          const errors =
-            incrementalPublisher.getInitialErrors(initialResultRecord);
-          return buildResponse(null, errors);
-        },
+    const data = executeOperation(exeContext, initialResultRecord);
+    if (isPromise(data)) {
+      return data.then(
+        (resolved) =>
+          incrementalPublisher.buildDataResponse(initialResultRecord, resolved),
+        (error) =>
+          incrementalPublisher.buildErrorResponse(initialResultRecord, error),
       );
     }
-    const initialResult = buildResponse(result, initialResultRecord.errors);
-    incrementalPublisher.publishInitial(initialResultRecord);
-    if (incrementalPublisher.hasNext()) {
-      return {
-        initialResult: {
-          ...initialResult,
-          hasNext: true,
-        },
-        subsequentResults: incrementalPublisher.subscribe(),
-      };
-    }
-    return initialResult;
+    return incrementalPublisher.buildDataResponse(initialResultRecord, data);
   } catch (error) {
-    incrementalPublisher.addFieldError(initialResultRecord, error);
-    const errors = incrementalPublisher.getInitialErrors(initialResultRecord);
-    return buildResponse(null, errors);
+    return incrementalPublisher.buildErrorResponse(initialResultRecord, error);
   }
 }
 /**
@@ -331,16 +246,6 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
   return result;
-}
-/**
- * Given a completed execution context and data, build the `{ errors, data }`
- * response defined by the "Response" section of the GraphQL specification.
- */
-function buildResponse(
-  data: ObjMap<unknown> | null,
-  errors: ReadonlyArray<GraphQLError>,
-): ExecutionResult {
-  return errors.length === 0 ? { data } : { errors, data };
 }
 /**
  * Constructs a ExecutionContext object from the arguments passed to
