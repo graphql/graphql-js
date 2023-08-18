@@ -8,6 +8,63 @@ import type {
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
 
+/**
+ * The result of GraphQL execution.
+ *
+ *   - `errors` is included when any errors occurred as a non-empty array.
+ *   - `data` is the result of a successful execution of the query.
+ *   - `hasNext` is true if a future payload is expected.
+ *   - `extensions` is reserved for adding non-standard properties.
+ *   - `incremental` is a list of the results from defer/stream directives.
+ */
+export interface ExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: TData | null;
+  extensions?: TExtensions;
+}
+
+export interface FormattedExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+  data?: TData | null;
+  extensions?: TExtensions;
+}
+
+export interface ExperimentalIncrementalExecutionResults<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
+  subsequentResults: AsyncGenerator<
+    SubsequentIncrementalExecutionResult<TData, TExtensions>,
+    void,
+    void
+  >;
+}
+
+export interface InitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends ExecutionResult<TData, TExtensions> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
+}
+
+export interface FormattedInitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends FormattedExecutionResult<TData, TExtensions> {
+  hasNext: boolean;
+  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
+  extensions?: TExtensions;
+}
+
 export interface SubsequentIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
@@ -113,86 +170,6 @@ export class IncrementalPublisher {
     this._reset();
   }
 
-  hasNext(): boolean {
-    return this._pending.size > 0;
-  }
-
-  subscribe(): AsyncGenerator<
-    SubsequentIncrementalExecutionResult,
-    void,
-    void
-  > {
-    let isDone = false;
-
-    const _next = async (): Promise<
-      IteratorResult<SubsequentIncrementalExecutionResult, void>
-    > => {
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        if (isDone) {
-          return { value: undefined, done: true };
-        }
-
-        for (const item of this._released) {
-          this._pending.delete(item);
-        }
-        const released = this._released;
-        this._released = new Set();
-
-        const result = this._getIncrementalResult(released);
-
-        if (!this.hasNext()) {
-          isDone = true;
-        }
-
-        if (result !== undefined) {
-          return { value: result, done: false };
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        await this._signalled;
-      }
-    };
-
-    const returnStreamIterators = async (): Promise<void> => {
-      const promises: Array<Promise<IteratorResult<unknown>>> = [];
-      this._pending.forEach((incrementalDataRecord) => {
-        if (
-          isStreamItemsRecord(incrementalDataRecord) &&
-          incrementalDataRecord.asyncIterator?.return
-        ) {
-          promises.push(incrementalDataRecord.asyncIterator.return());
-        }
-      });
-      await Promise.all(promises);
-    };
-
-    const _return = async (): Promise<
-      IteratorResult<SubsequentIncrementalExecutionResult, void>
-    > => {
-      isDone = true;
-      await returnStreamIterators();
-      return { value: undefined, done: true };
-    };
-
-    const _throw = async (
-      error?: unknown,
-    ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> => {
-      isDone = true;
-      await returnStreamIterators();
-      return Promise.reject(error);
-    };
-
-    return {
-      [Symbol.asyncIterator]() {
-        return this;
-      },
-      next: _next,
-      return: _return,
-      throw: _throw,
-    };
-  }
-
   prepareInitialResultRecord(): InitialResultRecord {
     return {
       errors: [],
@@ -256,19 +233,38 @@ export class IncrementalPublisher {
     incrementalDataRecord.errors.push(error);
   }
 
-  publishInitial(initialResult: InitialResultRecord) {
-    for (const child of initialResult.children) {
+  buildDataResponse(
+    initialResultRecord: InitialResultRecord,
+    data: ObjMap<unknown> | null,
+  ): ExecutionResult | ExperimentalIncrementalExecutionResults {
+    for (const child of initialResultRecord.children) {
       if (child.filtered) {
         continue;
       }
       this._publish(child);
     }
+
+    const errors = initialResultRecord.errors;
+    const initialResult = errors.length === 0 ? { data } : { errors, data };
+    if (this._pending.size > 0) {
+      return {
+        initialResult: {
+          ...initialResult,
+          hasNext: true,
+        },
+        subsequentResults: this._subscribe(),
+      };
+    }
+    return initialResult;
   }
 
-  getInitialErrors(
-    initialResult: InitialResultRecord,
-  ): ReadonlyArray<GraphQLError> {
-    return initialResult.errors;
+  buildErrorResponse(
+    initialResultRecord: InitialResultRecord,
+    error: GraphQLError,
+  ): ExecutionResult {
+    const errors = initialResultRecord.errors;
+    errors.push(error);
+    return { data: null, errors };
   }
 
   filter(nullPath: Path, erroringIncrementalDataRecord: IncrementalDataRecord) {
@@ -299,6 +295,82 @@ export class IncrementalPublisher {
         // ignore error
       });
     });
+  }
+
+  private _subscribe(): AsyncGenerator<
+    SubsequentIncrementalExecutionResult,
+    void,
+    void
+  > {
+    let isDone = false;
+
+    const _next = async (): Promise<
+      IteratorResult<SubsequentIncrementalExecutionResult, void>
+    > => {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        if (isDone) {
+          return { value: undefined, done: true };
+        }
+
+        for (const item of this._released) {
+          this._pending.delete(item);
+        }
+        const released = this._released;
+        this._released = new Set();
+
+        const result = this._getIncrementalResult(released);
+
+        if (this._pending.size === 0) {
+          isDone = true;
+        }
+
+        if (result !== undefined) {
+          return { value: result, done: false };
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        await this._signalled;
+      }
+    };
+
+    const returnStreamIterators = async (): Promise<void> => {
+      const promises: Array<Promise<IteratorResult<unknown>>> = [];
+      this._pending.forEach((incrementalDataRecord) => {
+        if (
+          isStreamItemsRecord(incrementalDataRecord) &&
+          incrementalDataRecord.asyncIterator?.return
+        ) {
+          promises.push(incrementalDataRecord.asyncIterator.return());
+        }
+      });
+      await Promise.all(promises);
+    };
+
+    const _return = async (): Promise<
+      IteratorResult<SubsequentIncrementalExecutionResult, void>
+    > => {
+      isDone = true;
+      await returnStreamIterators();
+      return { value: undefined, done: true };
+    };
+
+    const _throw = async (
+      error?: unknown,
+    ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> => {
+      isDone = true;
+      await returnStreamIterators();
+      return Promise.reject(error);
+    };
+
+    return {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next: _next,
+      return: _return,
+      throw: _throw,
+    };
   }
 
   private _trigger() {
@@ -368,9 +440,10 @@ export class IncrementalPublisher {
       incrementalResults.push(incrementalResult);
     }
 
+    const hasNext = this._pending.size > 0;
     return incrementalResults.length
-      ? { incremental: incrementalResults, hasNext: this.hasNext() }
-      : encounteredCompletedAsyncIterator && !this.hasNext()
+      ? { incremental: incrementalResults, hasNext }
+      : encounteredCompletedAsyncIterator && !hasNext
       ? { hasNext: false }
       : undefined;
   }
