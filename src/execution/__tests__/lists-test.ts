@@ -18,8 +18,8 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import type { ExecutionResult } from '../execute.js';
 import { execute, executeSync } from '../execute.js';
+import type { ExecutionResult } from '../IncrementalPublisher.js';
 
 describe('Execute: Accepts any iterable as list value', () => {
   function complete(rootValue: unknown) {

@@ -10,20 +10,18 @@ export {
   subscribe,
 } from './execute.js';
 
+export type { ExecutionArgs } from './execute.js';
+
 export type {
-  ExecutionArgs,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,
-  FormattedExecutionResult,
-  FormattedInitialIncrementalExecutionResult,
-} from './execute.js';
-
-export type {
   SubsequentIncrementalExecutionResult,
   IncrementalDeferResult,
   IncrementalStreamResult,
   IncrementalResult,
+  FormattedExecutionResult,
+  FormattedInitialIncrementalExecutionResult,
   FormattedSubsequentIncrementalExecutionResult,
   FormattedIncrementalDeferResult,
   FormattedIncrementalStreamResult,
