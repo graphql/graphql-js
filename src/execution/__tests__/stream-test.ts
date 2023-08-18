@@ -153,6 +153,35 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Can stream a list field that returns an async iterable', async () => {
+    const document = parse('{ scalarList @stream(initialCount: 1) }');
+    const result = await complete(document, {
+      async *scalarList() {
+        yield await Promise.resolve('apple');
+        yield await Promise.resolve('banana');
+        yield await Promise.resolve('coconut');
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          scalarList: ['apple'],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [{ items: ['banana'], path: ['scalarList', 1] }],
+        hasNext: true,
+      },
+      {
+        incremental: [{ items: ['coconut'], path: ['scalarList', 2] }],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
   it('Can use default value of initialCount', async () => {
     const document = parse('{ scalarList @stream }');
     const result = await complete(document, {
@@ -538,7 +567,7 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
-  it('Can stream a field that returns an async iterable', async () => {
+  it('Can stream an object field that returns an async iterable', async () => {
     const document = parse(`
       query { 
         friendList @stream {
@@ -772,6 +801,114 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Handles error returned in async iterable after initialCount is reached', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          name
+          id
+        }
+      }
+    `);
+    const result = await complete(document, {
+      async *friendList() {
+        yield await Promise.resolve(friends[0]);
+        yield await Promise.resolve(new Error('bad'));
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ name: 'Luke', id: '1' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 1],
+            errors: [
+              {
+                message: 'bad',
+                locations: [{ line: 3, column: 9 }],
+                path: ['friendList', 1],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles null returned in list items after initialCount is reached', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          name
+        }
+      }
+    `);
+    const result = await complete(document, {
+      friendList: () => [friends[0], null],
+    });
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ name: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 1],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles null returned in async iterable list items after initialCount is reached', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          name
+        }
+      }
+    `);
+    const result = await complete(document, {
+      async *friendList() {
+        yield await Promise.resolve(friends[0]);
+        yield await Promise.resolve(null);
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ name: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 1],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
   it('Handles null returned in non-null list items after initialCount is reached', async () => {
     const document = parse(`
       query { 
@@ -857,7 +994,7 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
-  it('Handles errors thrown by completeValue after initialCount is reached', async () => {
+  it('Handles errors thrown by leaf value completion after initialCount is reached', async () => {
     const document = parse(`
       query { 
         scalarList @stream(initialCount: 1)
@@ -891,7 +1028,41 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
-  it('Handles async errors thrown by completeValue after initialCount is reached', async () => {
+  it('Handles errors returned by leaf value completion after initialCount is reached', async () => {
+    const document = parse(`
+      query { 
+        scalarList @stream(initialCount: 1)
+      }
+    `);
+    const result = await complete(document, {
+      scalarList: () => [friends[0].name, new Error('Oops')],
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          scalarList: ['Luke'],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['scalarList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 3, column: 9 }],
+                path: ['scalarList', 1],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles async errors thrown by leaf value completion after initialCount is reached', async () => {
     const document = parse(`
       query { 
         friendList @stream(initialCount: 1) {
@@ -936,6 +1107,189 @@ describe('Execute: stream directive', () => {
           {
             items: [{ nonNullName: 'Han' }],
             path: ['friendList', 2],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles nested errors thrown by completeValue after initialCount is reached', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    const result = await complete(document, {
+      friendList: () => [
+        { nonNullName: friends[0].name },
+        { nonNullName: new Error('Oops') },
+        { nonNullName: friends[1].name },
+      ],
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['friendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ nonNullName: 'Han' }],
+            path: ['friendList', 2],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles nested errors thrown by completeValue after initialCount is reached for a non-nullable list', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nonNullFriendList: () => [
+        { nonNullName: friends[0].name },
+        { nonNullName: new Error('Oops') },
+      ],
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles nested errors thrown by completeValue after initialCount is reached from async iterable', async () => {
+    const document = parse(`
+      query { 
+        friendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    const result = await complete(document, {
+      async *friendList() {
+        yield await Promise.resolve({ nonNullName: friends[0].name });
+        yield await Promise.resolve({
+          nonNullName: () => new Error('Oops'),
+        });
+        yield await Promise.resolve({ nonNullName: friends[1].name });
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          friendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            path: ['friendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['friendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ nonNullName: 'Han' }],
+            path: ['friendList', 2],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles nested errors thrown by completeValue after initialCount is reached from async iterable for a non-nullable list', async () => {
+    const document = parse(`
+      query { 
+        nonNullFriendList @stream(initialCount: 1) {
+          nonNullName
+        }
+      }
+    `);
+    const result = await complete(document, {
+      async *nonNullFriendList() {
+        yield await Promise.resolve({ nonNullName: friends[0].name });
+        yield await Promise.resolve({
+          nonNullName: () => new Error('Oops'),
+        }); /* c8 ignore start */
+      } /* c8 ignore stop */,
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ nonNullName: 'Luke' }],
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: null,
+            path: ['nonNullFriendList', 1],
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 4, column: 11 }],
+                path: ['nonNullFriendList', 1, 'nonNullName'],
+              },
+            ],
           },
         ],
         hasNext: false,

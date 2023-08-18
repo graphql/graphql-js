@@ -1,3 +1,4 @@
+import { addAbortListener } from '../jsutils/addAbortListener.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
@@ -30,6 +31,7 @@ import type {
   GraphQLFieldResolver,
   GraphQLLeafType,
   GraphQLList,
+  GraphQLNullableOutputType,
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLResolveInfo,
@@ -129,6 +131,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   incrementalPublisher: IncrementalPublisher;
+  abortSignal: AbortSignal | undefined;
 }
 
 export interface ExecutionArgs {
@@ -141,6 +144,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  abortSignal?: AbortSignal;
 }
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
@@ -287,6 +291,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    abortSignal,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -351,6 +356,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     incrementalPublisher: new IncrementalPublisher(),
+    abortSignal,
   };
 }
 
@@ -371,8 +377,14 @@ function executeOperation(
   exeContext: ExecutionContext,
   initialResultRecord: InitialResultRecord,
 ): PromiseOrValue<ObjMap<unknown>> {
-  const { operation, schema, fragments, variableValues, rootValue } =
-    exeContext;
+  const {
+    operation,
+    schema,
+    fragments,
+    variableValues,
+    rootValue,
+    abortSignal,
+  } = exeContext;
   const rootType = schema.getRootType(operation.operation);
   if (rootType == null) {
     throw new GraphQLError(
@@ -400,6 +412,7 @@ function executeOperation(
         path,
         groupedFieldSet,
         initialResultRecord,
+        abortSignal,
       );
       break;
     case OperationTypeNode.MUTATION:
@@ -410,6 +423,7 @@ function executeOperation(
         path,
         groupedFieldSet,
         initialResultRecord,
+        abortSignal,
       );
       break;
     case OperationTypeNode.SUBSCRIPTION:
@@ -422,6 +436,7 @@ function executeOperation(
         path,
         groupedFieldSet,
         initialResultRecord,
+        abortSignal,
       );
   }
 
@@ -433,6 +448,7 @@ function executeOperation(
       rootValue,
       patchGroupedFieldSet,
       initialResultRecord,
+      abortSignal,
       label,
       path,
     );
@@ -452,6 +468,7 @@ function executeFieldsSerially(
   path: Path | undefined,
   groupedFieldSet: GroupedFieldSet,
   incrementalDataRecord: InitialResultRecord,
+  abortSignal: AbortSignal | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
     groupedFieldSet,
@@ -464,6 +481,7 @@ function executeFieldsSerially(
         fieldGroup,
         fieldPath,
         incrementalDataRecord,
+        abortSignal,
       );
       if (result === undefined) {
         return results;
@@ -492,6 +510,7 @@ function executeFields(
   path: Path | undefined,
   groupedFieldSet: GroupedFieldSet,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal | undefined,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
   let containsPromise = false;
@@ -506,6 +525,7 @@ function executeFields(
         fieldGroup,
         fieldPath,
         incrementalDataRecord,
+        abortSignal,
       );
 
       if (result !== undefined) {
@@ -539,8 +559,9 @@ function executeFields(
 /**
  * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
- * calling its resolve function, then calls completeValue to complete promises,
- * serialize scalars, or execute the sub-selection-set for objects.
+ * calling its resolve function, checks for promises, and then serializes leaf
+ * values or calls completeNonLeafValue to execute the sub-selection-set for
+ * objects and/or complete lists as necessary.
  */
 function executeField(
   exeContext: ExecutionContext,
@@ -549,6 +570,7 @@ function executeField(
   fieldGroup: FieldGroup,
   path: Path,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal | undefined,
 ): PromiseOrValue<unknown> {
   const fieldName = fieldGroup[0].name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
@@ -567,6 +589,8 @@ function executeField(
     path,
   );
 
+  let result;
+  let nullableType: GraphQLNullableOutputType;
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
   try {
     // Build a JS object of arguments from the field.arguments AST, using the
@@ -583,7 +607,11 @@ function executeField(
     // used to represent an authenticated user, or request-specific caches.
     const contextValue = exeContext.contextValue;
 
-    const result = resolveFn(source, args, contextValue, info);
+    if (abortSignal?.aborted) {
+      abortSignal.throwIfAborted();
+    }
+
+    result = resolveFn(source, args, contextValue, info, abortSignal);
 
     if (isPromise(result)) {
       return completePromisedValue(
@@ -594,36 +622,31 @@ function executeField(
         path,
         result,
         incrementalDataRecord,
+        abortSignal,
       );
     }
 
-    const completed = completeValue(
-      exeContext,
-      returnType,
-      fieldGroup,
-      info,
-      path,
-      result,
-      incrementalDataRecord,
-    );
-
-    if (isPromise(completed)) {
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      return completed.then(undefined, (rawError) => {
-        handleFieldError(
-          rawError,
-          exeContext,
-          returnType,
-          fieldGroup,
-          path,
-          incrementalDataRecord,
-        );
-        exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
-        return null;
-      });
+    if (result instanceof Error) {
+      throw result;
     }
-    return completed;
+
+    if (isNonNullType(returnType)) {
+      if (result == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        );
+      }
+      nullableType = returnType.ofType;
+    } else {
+      if (result == null) {
+        return null;
+      }
+      nullableType = returnType;
+    }
+
+    if (isLeafType(nullableType)) {
+      return completeLeafValue(nullableType, result);
+    }
   } catch (rawError) {
     handleFieldError(
       rawError,
@@ -636,6 +659,68 @@ function executeField(
     exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
     return null;
   }
+
+  const abortController = new AbortController();
+  let removeAbortListener: (() => void) | undefined;
+  if (abortSignal !== undefined) {
+    removeAbortListener = addAbortListener(abortSignal, () =>
+      abortController.abort(),
+    );
+  }
+  let completed;
+  try {
+    completed = completeNonLeafValue(
+      exeContext,
+      nullableType,
+      fieldGroup,
+      info,
+      path,
+      result,
+      incrementalDataRecord,
+      abortController.signal,
+    );
+  } catch (rawError) {
+    removeAbortListener?.();
+    abortController.abort();
+    handleFieldError(
+      rawError,
+      exeContext,
+      returnType,
+      fieldGroup,
+      path,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
+    return null;
+  }
+
+  if (isPromise(completed)) {
+    // Note: we don't rely on a `catch` method, but we do expect "thenable"
+    // to take a second callback for the error case.
+    return completed.then(
+      (resolved) => {
+        removeAbortListener?.();
+        return resolved;
+      },
+      (rawError) => {
+        removeAbortListener?.();
+        abortController.abort();
+        handleFieldError(
+          rawError,
+          exeContext,
+          returnType,
+          fieldGroup,
+          path,
+          incrementalDataRecord,
+        );
+        exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
+        return null;
+      },
+    );
+  }
+
+  removeAbortListener?.();
+  return completed;
 }
 
 /**
@@ -687,19 +772,11 @@ function handleFieldError(
 }
 
 /**
- * Implements the instructions for completeValue as defined in the
+ * Implements the instructions for completing non-leaf values as defined in the
  * "Value Completion" section of the spec.
- *
- * If the field type is Non-Null, then this recursively completes the value
- * for the inner type. It throws a field error if that completion returns null,
- * as per the "Nullability" section of the spec.
  *
  * If the field type is a List, then this recursively completes the value
  * for the inner type on each item in the list.
- *
- * If the field type is a Scalar or Enum, ensures the completed value is a legal
- * value of the type by calling the `serialize` method of GraphQL type
- * definition.
  *
  * If the field is an abstract type, determine the runtime type of the value
  * and then complete based on that type
@@ -707,95 +784,63 @@ function handleFieldError(
  * Otherwise, the field type expects a sub-selection set, and will complete the
  * value by executing all sub-selections.
  */
-function completeValue(
+function completeNonLeafValue(
   exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
+  nullableType: GraphQLNullableOutputType,
   fieldGroup: FieldGroup,
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal,
 ): PromiseOrValue<unknown> {
-  // If result is an Error, throw a located error.
-  if (result instanceof Error) {
-    throw result;
-  }
-
-  // If field type is NonNull, complete for inner type, and throw field error
-  // if result is null.
-  if (isNonNullType(returnType)) {
-    const completed = completeValue(
-      exeContext,
-      returnType.ofType,
-      fieldGroup,
-      info,
-      path,
-      result,
-      incrementalDataRecord,
-    );
-    if (completed === null) {
-      throw new Error(
-        `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
-      );
-    }
-    return completed;
-  }
-
-  // If result value is null or undefined then return null.
-  if (result == null) {
-    return null;
-  }
-
   // If field type is List, complete each item in the list with the inner type
-  if (isListType(returnType)) {
+  if (isListType(nullableType)) {
     return completeListValue(
       exeContext,
-      returnType,
+      nullableType,
       fieldGroup,
       info,
       path,
       result,
       incrementalDataRecord,
+      abortSignal,
     );
-  }
-
-  // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
-  // returning null if serialization is not possible.
-  if (isLeafType(returnType)) {
-    return completeLeafValue(returnType, result);
   }
 
   // If field type is an abstract type, Interface or Union, determine the
   // runtime Object type and complete for that type.
-  if (isAbstractType(returnType)) {
+  if (isAbstractType(nullableType)) {
     return completeAbstractValue(
       exeContext,
-      returnType,
+      nullableType,
       fieldGroup,
       info,
       path,
       result,
       incrementalDataRecord,
+      abortSignal,
     );
   }
 
   // If field type is Object, execute and complete all sub-selections.
-  if (isObjectType(returnType)) {
+  if (isObjectType(nullableType)) {
     return completeObjectValue(
       exeContext,
-      returnType,
+      nullableType,
       fieldGroup,
       info,
       path,
       result,
       incrementalDataRecord,
+      abortSignal,
     );
   }
   /* c8 ignore next 6 */
   // Not reachable, all possible output types have been considered.
   invariant(
     false,
-    'Cannot complete value of unexpected output type: ' + inspect(returnType),
+    'Cannot complete value of unexpected output type: ' + inspect(nullableType),
   );
 }
 
@@ -807,23 +852,73 @@ async function completePromisedValue(
   path: Path,
   result: Promise<unknown>,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal | undefined,
 ): Promise<unknown> {
+  let resolved;
+  let nullableType: GraphQLNullableOutputType;
   try {
-    const resolved = await result;
-    let completed = completeValue(
+    resolved = await result;
+
+    if (resolved instanceof Error) {
+      throw resolved;
+    }
+
+    if (isNonNullType(returnType)) {
+      if (resolved == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        );
+      }
+      nullableType = returnType.ofType;
+    } else {
+      if (resolved == null) {
+        return null;
+      }
+      nullableType = returnType;
+    }
+
+    if (isLeafType(nullableType)) {
+      return completeLeafValue(nullableType, resolved);
+    }
+  } catch (rawError) {
+    handleFieldError(
+      rawError,
       exeContext,
       returnType,
+      fieldGroup,
+      path,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(path, incrementalDataRecord);
+    return null;
+  }
+
+  const abortController = new AbortController();
+  let removeAbortListener: (() => void) | undefined;
+  if (abortSignal !== undefined) {
+    removeAbortListener = addAbortListener(abortSignal, () =>
+      abortController.abort(),
+    );
+  }
+  try {
+    let completed = completeNonLeafValue(
+      exeContext,
+      nullableType,
       fieldGroup,
       info,
       path,
       resolved,
       incrementalDataRecord,
+      abortController.signal,
     );
     if (isPromise(completed)) {
       completed = await completed;
     }
+    removeAbortListener?.();
     return completed;
   } catch (rawError) {
+    removeAbortListener?.();
+    abortController.abort();
     handleFieldError(
       rawError,
       exeContext,
@@ -906,6 +1001,7 @@ async function completeAsyncIteratorValue(
   path: Path,
   asyncIterator: AsyncIterator<unknown>,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal,
 ): Promise<ReadonlyArray<unknown>> {
   const stream = getStreamValues(exeContext, fieldGroup, path);
   let containsPromise = false;
@@ -928,6 +1024,7 @@ async function completeAsyncIteratorValue(
         itemType,
         path,
         incrementalDataRecord,
+        abortSignal,
         stream.label,
       );
       break;
@@ -955,6 +1052,7 @@ async function completeAsyncIteratorValue(
         info,
         itemPath,
         incrementalDataRecord,
+        abortSignal,
       )
     ) {
       containsPromise = true;
@@ -976,6 +1074,7 @@ function completeListValue(
   path: Path,
   result: unknown,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   const itemType = returnType.ofType;
 
@@ -990,6 +1089,7 @@ function completeListValue(
       path,
       asyncIterator,
       incrementalDataRecord,
+      abortSignal,
     );
   }
 
@@ -1026,6 +1126,7 @@ function completeListValue(
         info,
         itemType,
         previousIncrementalDataRecord,
+        abortSignal,
         stream.label,
       );
       index++;
@@ -1042,6 +1143,7 @@ function completeListValue(
         info,
         itemPath,
         incrementalDataRecord,
+        abortSignal,
       )
     ) {
       containsPromise = true;
@@ -1067,6 +1169,7 @@ function completeListItemValue(
   info: GraphQLResolveInfo,
   itemPath: Path,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal,
 ): boolean {
   if (isPromise(item)) {
     completedResults.push(
@@ -1078,28 +1181,96 @@ function completeListItemValue(
         itemPath,
         item,
         incrementalDataRecord,
+        abortSignal,
       ),
     );
 
     return true;
   }
 
+  let nullableType: GraphQLNullableOutputType;
   try {
-    const completedItem = completeValue(
+    if (item instanceof Error) {
+      throw item;
+    }
+
+    if (isNonNullType(itemType)) {
+      if (item == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        );
+      }
+      nullableType = itemType.ofType;
+    } else {
+      if (item == null) {
+        completedResults.push(null);
+        return false;
+      }
+      nullableType = itemType;
+    }
+
+    if (isLeafType(nullableType)) {
+      completedResults.push(completeLeafValue(nullableType, item));
+      return false;
+    }
+  } catch (rawError) {
+    handleFieldError(
+      rawError,
       exeContext,
       itemType,
+      fieldGroup,
+      itemPath,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+    completedResults.push(null);
+    return false;
+  }
+
+  const abortController = new AbortController();
+  const removeAbortListener = addAbortListener(abortSignal, () =>
+    abortController.abort(),
+  );
+  let completedItem;
+  try {
+    completedItem = completeNonLeafValue(
+      exeContext,
+      nullableType,
       fieldGroup,
       info,
       itemPath,
       item,
       incrementalDataRecord,
+      abortController.signal,
     );
+  } catch (rawError) {
+    removeAbortListener();
+    abortController.abort();
+    handleFieldError(
+      rawError,
+      exeContext,
+      itemType,
+      fieldGroup,
+      itemPath,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+    completedResults.push(null);
+    return false;
+  }
 
-    if (isPromise(completedItem)) {
-      // Note: we don't rely on a `catch` method, but we do expect "thenable"
-      // to take a second callback for the error case.
-      completedResults.push(
-        completedItem.then(undefined, (rawError) => {
+  if (isPromise(completedItem)) {
+    // Note: we don't rely on a `catch` method, but we do expect "thenable"
+    // to take a second callback for the error case.
+    completedResults.push(
+      completedItem.then(
+        (resolved) => {
+          removeAbortListener();
+          return resolved;
+        },
+        (rawError) => {
+          removeAbortListener();
+          abortController.abort();
           handleFieldError(
             rawError,
             exeContext,
@@ -1113,25 +1284,15 @@ function completeListItemValue(
             incrementalDataRecord,
           );
           return null;
-        }),
-      );
-
-      return true;
-    }
-
-    completedResults.push(completedItem);
-  } catch (rawError) {
-    handleFieldError(
-      rawError,
-      exeContext,
-      itemType,
-      fieldGroup,
-      itemPath,
-      incrementalDataRecord,
+        },
+      ),
     );
-    exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
-    completedResults.push(null);
+
+    return true;
   }
+
+  removeAbortListener();
+  completedResults.push(completedItem);
 
   return false;
 }
@@ -1166,6 +1327,7 @@ function completeAbstractValue(
   path: Path,
   result: unknown,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal,
 ): PromiseOrValue<ObjMap<unknown>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
@@ -1188,6 +1350,7 @@ function completeAbstractValue(
         path,
         result,
         incrementalDataRecord,
+        abortSignal,
       ),
     );
   }
@@ -1207,6 +1370,7 @@ function completeAbstractValue(
     path,
     result,
     incrementalDataRecord,
+    abortSignal,
   );
 }
 
@@ -1276,6 +1440,7 @@ function completeObjectValue(
   path: Path,
   result: unknown,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal,
 ): PromiseOrValue<ObjMap<unknown>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
@@ -1295,6 +1460,7 @@ function completeObjectValue(
           path,
           result,
           incrementalDataRecord,
+          abortSignal,
         );
       });
     }
@@ -1311,6 +1477,7 @@ function completeObjectValue(
     path,
     result,
     incrementalDataRecord,
+    abortSignal,
   );
 }
 
@@ -1332,6 +1499,7 @@ function collectAndExecuteSubfields(
   path: Path,
   result: unknown,
   incrementalDataRecord: IncrementalDataRecord,
+  abortSignal: AbortSignal,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
   const { groupedFieldSet: subGroupedFieldSet, patches: subPatches } =
@@ -1344,6 +1512,7 @@ function collectAndExecuteSubfields(
     path,
     subGroupedFieldSet,
     incrementalDataRecord,
+    abortSignal,
   );
 
   for (const subPatch of subPatches) {
@@ -1354,6 +1523,7 @@ function collectAndExecuteSubfields(
       result,
       subPatchGroupedFieldSet,
       incrementalDataRecord,
+      abortSignal,
       label,
       path,
     );
@@ -1564,8 +1734,14 @@ function createSourceEventStreamImpl(
 function executeSubscription(
   exeContext: ExecutionContext,
 ): PromiseOrValue<AsyncIterable<unknown>> {
-  const { schema, fragments, operation, variableValues, rootValue } =
-    exeContext;
+  const {
+    schema,
+    fragments,
+    operation,
+    variableValues,
+    rootValue,
+    abortSignal,
+  } = exeContext;
 
   const rootType = schema.getSubscriptionType();
   if (rootType == null) {
@@ -1620,7 +1796,7 @@ function executeSubscription(
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
     const resolveFn = fieldDef.subscribe ?? exeContext.subscribeFieldResolver;
-    const result = resolveFn(rootValue, args, contextValue, info);
+    const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
 
     if (isPromise(result)) {
       return result.then(assertEventStream).then(undefined, (error) => {
@@ -1656,6 +1832,7 @@ function executeDeferredFragment(
   sourceValue: unknown,
   fields: GroupedFieldSet,
   parentContext: IncrementalDataRecord,
+  abortSignal: AbortSignal | undefined,
   label?: string,
   path?: Path,
 ): void {
@@ -1676,6 +1853,7 @@ function executeDeferredFragment(
       path,
       fields,
       incrementalDataRecord,
+      abortSignal,
     );
 
     if (isPromise(promiseOrData)) {
@@ -1717,6 +1895,7 @@ function executeStreamField(
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
   parentContext: IncrementalDataRecord,
+  abortSignal: AbortSignal,
   label?: string,
 ): SubsequentDataRecord {
   const incrementalPublisher = exeContext.incrementalPublisher;
@@ -1736,6 +1915,7 @@ function executeStreamField(
       itemPath,
       item,
       incrementalDataRecord,
+      abortSignal,
     ).then(
       (value) =>
         incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
@@ -1756,17 +1936,37 @@ function executeStreamField(
   }
 
   let completedItem: PromiseOrValue<unknown>;
+  let nullableType: GraphQLNullableOutputType;
   try {
     try {
-      completedItem = completeValue(
-        exeContext,
-        itemType,
-        fieldGroup,
-        info,
-        itemPath,
-        item,
-        incrementalDataRecord,
-      );
+      if (item instanceof Error) {
+        throw item;
+      }
+
+      if (isNonNullType(itemType)) {
+        if (item == null) {
+          throw new Error(
+            `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+          );
+        }
+        nullableType = itemType.ofType;
+      } else {
+        if (item == null) {
+          incrementalPublisher.completeStreamItemsRecord(
+            incrementalDataRecord,
+            [null],
+          );
+          return incrementalDataRecord;
+        }
+        nullableType = itemType;
+      }
+
+      if (isLeafType(nullableType)) {
+        incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+          completeLeafValue(nullableType, item),
+        ]);
+        return incrementalDataRecord;
+      }
     } catch (rawError) {
       handleFieldError(
         rawError,
@@ -1776,8 +1976,51 @@ function executeStreamField(
         itemPath,
         incrementalDataRecord,
       );
-      completedItem = null;
       exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+      incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+        null,
+      ]);
+      return incrementalDataRecord;
+    }
+  } catch (error) {
+    incrementalPublisher.addFieldError(incrementalDataRecord, error);
+    incrementalPublisher.filter(path, incrementalDataRecord);
+    incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, null);
+    return incrementalDataRecord;
+  }
+
+  const abortController = new AbortController();
+  const removeAbortListener = addAbortListener(abortSignal, () =>
+    abortController.abort(),
+  );
+  try {
+    try {
+      completedItem = completeNonLeafValue(
+        exeContext,
+        nullableType,
+        fieldGroup,
+        info,
+        itemPath,
+        item,
+        incrementalDataRecord,
+        abortController.signal,
+      );
+    } catch (rawError) {
+      removeAbortListener();
+      abortController.abort();
+      handleFieldError(
+        rawError,
+        exeContext,
+        itemType,
+        fieldGroup,
+        itemPath,
+        incrementalDataRecord,
+      );
+      exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+      incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
+        null,
+      ]);
+      return incrementalDataRecord;
     }
   } catch (error) {
     incrementalPublisher.addFieldError(incrementalDataRecord, error);
@@ -1788,18 +2031,29 @@ function executeStreamField(
 
   if (isPromise(completedItem)) {
     completedItem
-      .then(undefined, (rawError) => {
-        handleFieldError(
-          rawError,
-          exeContext,
-          itemType,
-          fieldGroup,
-          itemPath,
-          incrementalDataRecord,
-        );
-        exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
-        return null;
-      })
+      .then(
+        (resolvedItem) => {
+          removeAbortListener();
+          return resolvedItem;
+        },
+        (rawError) => {
+          removeAbortListener();
+          abortController.abort();
+          handleFieldError(
+            rawError,
+            exeContext,
+            itemType,
+            fieldGroup,
+            itemPath,
+            incrementalDataRecord,
+          );
+          exeContext.incrementalPublisher.filter(
+            itemPath,
+            incrementalDataRecord,
+          );
+          return null;
+        },
+      )
       .then(
         (value) =>
           incrementalPublisher.completeStreamItemsRecord(
@@ -1819,6 +2073,7 @@ function executeStreamField(
     return incrementalDataRecord;
   }
 
+  removeAbortListener();
   incrementalPublisher.completeStreamItemsRecord(incrementalDataRecord, [
     completedItem,
   ]);
@@ -1834,6 +2089,7 @@ async function executeStreamAsyncIteratorItem(
   incrementalDataRecord: StreamItemsRecord,
   path: Path,
   itemPath: Path,
+  abortSignal: AbortSignal,
 ): Promise<IteratorResult<unknown>> {
   let item;
   try {
@@ -1849,33 +2105,30 @@ async function executeStreamAsyncIteratorItem(
   } catch (rawError) {
     throw locatedError(rawError, fieldGroup, pathToArray(path));
   }
-  let completedItem;
-  try {
-    completedItem = completeValue(
-      exeContext,
-      itemType,
-      fieldGroup,
-      info,
-      itemPath,
-      item,
-      incrementalDataRecord,
-    );
 
-    if (isPromise(completedItem)) {
-      completedItem = completedItem.then(undefined, (rawError) => {
-        handleFieldError(
-          rawError,
-          exeContext,
-          itemType,
-          fieldGroup,
-          itemPath,
-          incrementalDataRecord,
-        );
-        exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
-        return null;
-      });
+  let nullableType: GraphQLNullableOutputType;
+  try {
+    if (item instanceof Error) {
+      throw item;
     }
-    return { done: false, value: completedItem };
+
+    if (isNonNullType(itemType)) {
+      if (item == null) {
+        throw new Error(
+          `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        );
+      }
+      nullableType = itemType.ofType;
+    } else {
+      if (item == null) {
+        return { done: false, value: null };
+      }
+      nullableType = itemType;
+    }
+
+    if (isLeafType(nullableType)) {
+      return { done: false, value: completeLeafValue(nullableType, item) };
+    }
   } catch (rawError) {
     handleFieldError(
       rawError,
@@ -1888,6 +2141,62 @@ async function executeStreamAsyncIteratorItem(
     exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
     return { done: false, value: null };
   }
+
+  const abortController = new AbortController();
+  const removeAbortListener = addAbortListener(abortSignal, () =>
+    abortController.abort(),
+  );
+  let completedItem;
+  try {
+    completedItem = completeNonLeafValue(
+      exeContext,
+      nullableType,
+      fieldGroup,
+      info,
+      itemPath,
+      item,
+      incrementalDataRecord,
+      abortController.signal,
+    );
+  } catch (rawError) {
+    removeAbortListener();
+    abortController.abort();
+    handleFieldError(
+      rawError,
+      exeContext,
+      itemType,
+      fieldGroup,
+      itemPath,
+      incrementalDataRecord,
+    );
+    exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+    return { done: false, value: null };
+  }
+
+  if (isPromise(completedItem)) {
+    completedItem = completedItem.then(
+      (resolvedItem) => {
+        removeAbortListener();
+        return resolvedItem;
+      },
+      (rawError) => {
+        removeAbortListener();
+        abortController.abort();
+        handleFieldError(
+          rawError,
+          exeContext,
+          itemType,
+          fieldGroup,
+          itemPath,
+          incrementalDataRecord,
+        );
+        exeContext.incrementalPublisher.filter(itemPath, incrementalDataRecord);
+        return null;
+      },
+    );
+  }
+  removeAbortListener();
+  return { done: false, value: completedItem };
 }
 
 async function executeStreamAsyncIterator(
@@ -1899,6 +2208,7 @@ async function executeStreamAsyncIterator(
   itemType: GraphQLOutputType,
   path: Path,
   parentContext: IncrementalDataRecord,
+  abortSignal: AbortSignal,
   label?: string,
 ): Promise<void> {
   const incrementalPublisher = exeContext.incrementalPublisher;
@@ -1927,6 +2237,7 @@ async function executeStreamAsyncIterator(
         incrementalDataRecord,
         path,
         itemPath,
+        abortSignal,
       );
     } catch (error) {
       incrementalPublisher.addFieldError(incrementalDataRecord, error);

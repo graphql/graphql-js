@@ -635,6 +635,299 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(isAsyncResolverFinished).to.equal(true);
   });
 
+  it('exits early on early abort', () => {
+    let isExecuted = false;
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          field: {
+            type: GraphQLString,
+            /* c8 ignore next 3 */
+            resolve() {
+              isExecuted = true;
+            },
+          },
+        },
+      }),
+    });
+
+    const document = parse(`
+      {
+        field
+      }
+    `);
+
+    const abortController = new AbortController();
+    abortController.abort();
+
+    const result = execute({
+      schema,
+      document,
+      abortSignal: abortController.signal,
+    });
+
+    expect(isExecuted).to.equal(false);
+    expectJSON(result).toDeepEqual({
+      data: { field: null },
+      errors: [
+        {
+          message: 'This operation was aborted',
+          locations: [{ line: 3, column: 9 }],
+          path: ['field'],
+        },
+      ],
+    });
+  });
+
+  it('exits early on abort mid-execution', async () => {
+    let isExecuted = false;
+
+    const asyncObjectType = new GraphQLObjectType({
+      name: 'AsyncObject',
+      fields: {
+        field: {
+          type: GraphQLString,
+          /* c8 ignore next 3 */
+          resolve() {
+            isExecuted = true;
+          },
+        },
+      },
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          asyncObject: {
+            type: asyncObjectType,
+            async resolve() {
+              await resolveOnNextTick();
+              return {};
+            },
+          },
+        },
+      }),
+    });
+
+    const document = parse(`
+      {
+        asyncObject {
+          field
+        }
+      }
+    `);
+
+    const abortController = new AbortController();
+
+    const result = execute({
+      schema,
+      document,
+      abortSignal: abortController.signal,
+    });
+
+    abortController.abort();
+
+    expect(isExecuted).to.equal(false);
+    expectJSON(await result).toDeepEqual({
+      data: { asyncObject: { field: null } },
+      errors: [
+        {
+          message: 'This operation was aborted',
+          locations: [{ line: 4, column: 11 }],
+          path: ['asyncObject', 'field'],
+        },
+      ],
+    });
+    expect(isExecuted).to.equal(false);
+  });
+
+  it('exits early on abort mid-resolver', async () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          asyncField: {
+            type: GraphQLString,
+            async resolve(_parent, _args, _context, _info, abortSignal) {
+              await resolveOnNextTick();
+              abortSignal?.throwIfAborted();
+            },
+          },
+        },
+      }),
+    });
+
+    const document = parse(`
+      {
+        asyncField
+      }
+    `);
+
+    const abortController = new AbortController();
+
+    const result = execute({
+      schema,
+      document,
+      abortSignal: abortController.signal,
+    });
+
+    abortController.abort();
+
+    expectJSON(await result).toDeepEqual({
+      data: { asyncField: null },
+      errors: [
+        {
+          message: 'This operation was aborted',
+          locations: [{ line: 3, column: 9 }],
+          path: ['asyncField'],
+        },
+      ],
+    });
+  });
+
+  it('exits early on abort mid-nested resolver', async () => {
+    const syncObjectType = new GraphQLObjectType({
+      name: 'SyncObject',
+      fields: {
+        asyncField: {
+          type: GraphQLString,
+          async resolve(_parent, _args, _context, _info, abortSignal) {
+            await resolveOnNextTick();
+            abortSignal?.throwIfAborted();
+          },
+        },
+      },
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          syncObject: {
+            type: syncObjectType,
+            resolve() {
+              return {};
+            },
+          },
+        },
+      }),
+    });
+
+    const document = parse(`
+      {
+        syncObject {
+          asyncField
+        }
+      }
+    `);
+
+    const abortController = new AbortController();
+
+    const result = execute({
+      schema,
+      document,
+      abortSignal: abortController.signal,
+    });
+
+    abortController.abort();
+
+    expectJSON(await result).toDeepEqual({
+      data: { syncObject: { asyncField: null } },
+      errors: [
+        {
+          message: 'This operation was aborted',
+          locations: [{ line: 4, column: 11 }],
+          path: ['syncObject', 'asyncField'],
+        },
+      ],
+    });
+  });
+
+  it('exits early on error', async () => {
+    const objectType = new GraphQLObjectType({
+      name: 'Object',
+      fields: {
+        nonNullNestedAsyncField: {
+          type: new GraphQLNonNull(GraphQLString),
+          async resolve() {
+            await resolveOnNextTick();
+            throw new Error('Oops');
+          },
+        },
+        nestedAsyncField: {
+          type: GraphQLString,
+          async resolve(_parent, _args, _context, _info, abortSignal) {
+            await resolveOnNextTick();
+            abortSignal?.throwIfAborted();
+          },
+        },
+      },
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          object: {
+            type: objectType,
+            resolve() {
+              return {};
+            },
+          },
+          asyncField: {
+            type: GraphQLString,
+            async resolve() {
+              await resolveOnNextTick();
+              return 'asyncValue';
+            },
+          },
+        },
+      }),
+    });
+
+    const document = parse(`
+      {
+        object {
+          nonNullNestedAsyncField
+          nestedAsyncField
+        }
+        asyncField
+      }
+    `);
+
+    const abortController = new AbortController();
+
+    const result = execute({
+      schema,
+      document,
+      abortSignal: abortController.signal,
+    });
+
+    abortController.abort();
+
+    expectJSON(await result).toDeepEqual({
+      data: {
+        object: null,
+        asyncField: 'asyncValue',
+      },
+      errors: [
+        {
+          message: 'This operation was aborted',
+          locations: [{ line: 5, column: 11 }],
+          path: ['object', 'nestedAsyncField'],
+        },
+        {
+          message: 'Oops',
+          locations: [{ line: 4, column: 11 }],
+          path: ['object', 'nonNullNestedAsyncField'],
+        },
+      ],
+    });
+  });
+
   it('Full response path is included for non-nullable fields', () => {
     const A: GraphQLObjectType = new GraphQLObjectType({
       name: 'A',
