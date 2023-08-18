@@ -39,25 +39,25 @@ const friends = [
 
 const deeperObject = new GraphQLObjectType({
   fields: {
-    foo: { type: GraphQLString, resolve: () => 'foo' },
-    bar: { type: GraphQLString, resolve: () => 'bar' },
-    baz: { type: GraphQLString, resolve: () => 'baz' },
-    bak: { type: GraphQLString, resolve: () => 'bak' },
+    foo: { type: GraphQLString },
+    bar: { type: GraphQLString },
+    baz: { type: GraphQLString },
+    bak: { type: GraphQLString },
   },
   name: 'DeeperObject',
 });
 
 const nestedObject = new GraphQLObjectType({
   fields: {
-    deeperObject: { type: deeperObject, resolve: () => ({}) },
-    name: { type: GraphQLString, resolve: () => 'foo' },
+    deeperObject: { type: deeperObject },
+    name: { type: GraphQLString },
   },
   name: 'NestedObject',
 });
 
 const anotherNestedObject = new GraphQLObjectType({
   fields: {
-    deeperObject: { type: deeperObject, resolve: () => ({}) },
+    deeperObject: { type: deeperObject },
   },
   name: 'AnotherNestedObject',
 });
@@ -72,48 +72,38 @@ const hero = {
 
 const c = new GraphQLObjectType({
   fields: {
-    d: { type: GraphQLString, resolve: () => 'd' },
-    nonNullErrorField: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: () => null,
-    },
-    slowNonNullErrorField: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: async () => {
-        await resolveOnNextTick();
-        return null;
-      },
-    },
+    d: { type: GraphQLString },
+    nonNullErrorField: { type: new GraphQLNonNull(GraphQLString) },
   },
   name: 'c',
 });
 
 const e = new GraphQLObjectType({
   fields: {
-    f: { type: GraphQLString, resolve: () => 'f' },
+    f: { type: GraphQLString },
   },
   name: 'e',
 });
 
 const b = new GraphQLObjectType({
   fields: {
-    c: { type: c, resolve: () => ({}) },
-    e: { type: e, resolve: () => ({}) },
+    c: { type: c },
+    e: { type: e },
   },
   name: 'b',
 });
 
 const a = new GraphQLObjectType({
   fields: {
-    b: { type: b, resolve: () => ({}) },
-    someField: { type: GraphQLString, resolve: () => 'someField' },
+    b: { type: b },
+    someField: { type: GraphQLString },
   },
   name: 'a',
 });
 
 const g = new GraphQLObjectType({
   fields: {
-    h: { type: GraphQLString, resolve: () => 'h' },
+    h: { type: GraphQLString },
   },
   name: 'g',
 });
@@ -137,8 +127,8 @@ const query = new GraphQLObjectType({
     hero: {
       type: heroType,
     },
-    a: { type: a, resolve: () => ({}) },
-    g: { type: g, resolve: () => ({}) },
+    a: { type: a },
+    g: { type: g },
   },
   name: 'Query',
 });
@@ -782,7 +772,12 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        nestedObject: { deeperObject: { foo: 'foo', bar: 'bar' } },
+        anotherNestedObject: { deeperObject: { foo: 'foo' } },
+      },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -842,7 +837,9 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: { nestedObject: { deeperObject: { foo: 'foo', bar: 'bar' } } },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -913,7 +910,13 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        nestedObject: {
+          deeperObject: { foo: 'foo', bar: 'bar', baz: 'baz', bak: 'bak' },
+        },
+      },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -999,7 +1002,9 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: { nestedObject: { deeperObject: { foo: 'foo', bar: 'bar' } } },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1074,7 +1079,15 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      a: {
+        b: {
+          c: { d: 'd' },
+          e: { f: 'f' },
+        },
+      },
+      g: { h: 'h' },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1143,7 +1156,9 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      a: { b: { c: { d: 'd' } }, someField: 'someField' },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1212,7 +1227,12 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      a: {
+        b: { c: { d: 'd' }, nonNullErrorFIeld: null },
+        someField: 'someField',
+      },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1265,7 +1285,7 @@ describe('Execute: defer directive', () => {
             someField
             b {
               c {
-                slowNonNullErrorField
+                nonNullErrorField
               }
             }
           }
@@ -1281,7 +1301,20 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      a: {
+        b: {
+          c: {
+            d: 'd',
+            nonNullErrorField: async () => {
+              await resolveOnNextTick();
+              return null;
+            },
+          },
+        },
+        someField: 'someField',
+      },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1318,9 +1351,9 @@ describe('Execute: defer directive', () => {
             errors: [
               {
                 message:
-                  'Cannot return null for non-nullable field c.slowNonNullErrorField.',
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 8, column: 17 }],
-                path: ['a', 'b', 'c', 'slowNonNullErrorField'],
+                path: ['a', 'b', 'c', 'nonNullErrorField'],
               },
             ],
             path: [],
@@ -1677,8 +1710,7 @@ describe('Execute: defer directive', () => {
     `);
     const result = await complete(document, {
       hero: {
-        ...hero,
-        nestedObject: () => Promise.resolve({}),
+        nestedObject: () => Promise.resolve({ name: 'foo' }),
       },
     });
     expectJSON(result).toDeepEqual([
