@@ -1,8 +1,8 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
-import { getBySet } from '../jsutils/getBySet.js';
 import { invariant } from '../jsutils/invariant.js';
-import { isSameSet } from '../jsutils/isSameSet.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { ReadonlyOrderedSet } from '../jsutils/OrderedSet.js';
+import { OrderedSet } from '../jsutils/OrderedSet.js';
 
 import type {
   FieldNode,
@@ -33,11 +33,13 @@ export interface DeferUsage {
   ancestors: ReadonlyArray<Target>;
 }
 
-export const NON_DEFERRED_TARGET_SET: TargetSet = new Set<Target>([undefined]);
+export const NON_DEFERRED_TARGET_SET = new OrderedSet<Target>([
+  undefined,
+]).freeze();
 
 export type Target = DeferUsage | undefined;
-export type TargetSet = ReadonlySet<Target>;
-export type DeferUsageSet = ReadonlySet<DeferUsage>;
+export type TargetSet = ReadonlyOrderedSet<Target>;
+export type DeferUsageSet = ReadonlyOrderedSet<DeferUsage>;
 
 export interface FieldDetails {
   node: FieldNode;
@@ -430,13 +432,13 @@ function getTargetSetDetails(
       }
     }
 
-    const maskingTargets: TargetSet = new Set<Target>(maskingTargetList);
-    if (isSameSet(maskingTargets, parentTargets)) {
+    const maskingTargets = new OrderedSet(maskingTargetList).freeze();
+    if (maskingTargets === parentTargets) {
       parentTargetKeys.add(responseKey);
       continue;
     }
 
-    let targetSetDetails = getBySet(targetSetDetailsMap, maskingTargets);
+    let targetSetDetails = targetSetDetailsMap.get(maskingTargets);
     if (targetSetDetails === undefined) {
       targetSetDetails = {
         keys: new Set(),
