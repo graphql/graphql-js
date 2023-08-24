@@ -1,6 +1,9 @@
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import { Kind } from '../../language/kinds.mjs';
 import { collectFields } from '../../execution/collectFields.mjs';
+function toNodes(fieldGroup) {
+  return fieldGroup.fields.map((fieldDetails) => fieldDetails.node);
+}
 /**
  * Subscriptions must only include a non-introspection field.
  *
@@ -33,9 +36,11 @@ export function SingleFieldSubscriptionsRule(context) {
             node,
           );
           if (groupedFieldSet.size > 1) {
-            const fieldSelectionLists = [...groupedFieldSet.values()];
-            const extraFieldSelectionLists = fieldSelectionLists.slice(1);
-            const extraFieldSelections = extraFieldSelectionLists.flat();
+            const fieldGroups = [...groupedFieldSet.values()];
+            const extraFieldGroups = fieldGroups.slice(1);
+            const extraFieldSelections = extraFieldGroups.flatMap(
+              (fieldGroup) => toNodes(fieldGroup),
+            );
             context.reportError(
               new GraphQLError(
                 operationName != null
@@ -46,14 +51,14 @@ export function SingleFieldSubscriptionsRule(context) {
             );
           }
           for (const fieldGroup of groupedFieldSet.values()) {
-            const fieldName = fieldGroup[0].name.value;
+            const fieldName = toNodes(fieldGroup)[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
                 new GraphQLError(
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  { nodes: fieldGroup },
+                  { nodes: toNodes(fieldGroup) },
                 ),
               );
             }

@@ -4,6 +4,11 @@ import type {
   GraphQLError,
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
+import type { GroupedFieldSet } from './collectFields.js';
+interface IncrementalUpdate<TData = unknown, TExtensions = ObjMap<unknown>> {
+  incremental: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  completed: ReadonlyArray<CompletedResult>;
+}
 /**
  * The result of GraphQL execution.
  *
@@ -30,7 +35,7 @@ export interface FormattedExecutionResult<
   extensions?: TExtensions;
 }
 export interface ExperimentalIncrementalExecutionResults<
-  TData = ObjMap<unknown>,
+  TData = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
@@ -44,32 +49,32 @@ export interface InitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > extends ExecutionResult<TData, TExtensions> {
-  hasNext: boolean;
-  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  data: TData;
+  hasNext: true;
   extensions?: TExtensions;
 }
 export interface FormattedInitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
 > extends FormattedExecutionResult<TData, TExtensions> {
+  data: TData;
   hasNext: boolean;
-  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
   extensions?: TExtensions;
 }
 export interface SubsequentIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
+  TData = unknown,
   TExtensions = ObjMap<unknown>,
-> {
+> extends Partial<IncrementalUpdate<TData, TExtensions>> {
   hasNext: boolean;
-  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
   extensions?: TExtensions;
 }
 export interface FormattedSubsequentIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
+  TData = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   hasNext: boolean;
   incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
+  completed?: ReadonlyArray<FormattedCompletedResult>;
   extensions?: TExtensions;
 }
 export interface IncrementalDeferResult<
@@ -77,9 +82,8 @@ export interface IncrementalDeferResult<
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
+  data: TData;
   path?: ReadonlyArray<string | number>;
-  label?: string;
   extensions?: TExtensions;
 }
 export interface FormattedIncrementalDeferResult<
@@ -87,9 +91,8 @@ export interface FormattedIncrementalDeferResult<
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
-  data?: TData | null;
+  data: TData;
   path?: ReadonlyArray<string | number>;
-  label?: string;
   extensions?: TExtensions;
 }
 export interface IncrementalStreamResult<
@@ -97,9 +100,8 @@ export interface IncrementalStreamResult<
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLError>;
-  items?: TData | null;
+  items: TData;
   path?: ReadonlyArray<string | number>;
-  label?: string;
   extensions?: TExtensions;
 }
 export interface FormattedIncrementalStreamResult<
@@ -107,35 +109,41 @@ export interface FormattedIncrementalStreamResult<
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
-  items?: TData | null;
+  items: TData;
   path?: ReadonlyArray<string | number>;
-  label?: string;
   extensions?: TExtensions;
 }
-export type IncrementalResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> =
+export type IncrementalResult<TData = unknown, TExtensions = ObjMap<unknown>> =
   | IncrementalDeferResult<TData, TExtensions>
   | IncrementalStreamResult<TData, TExtensions>;
 export type FormattedIncrementalResult<
-  TData = ObjMap<unknown>,
+  TData = unknown,
   TExtensions = ObjMap<unknown>,
 > =
   | FormattedIncrementalDeferResult<TData, TExtensions>
   | FormattedIncrementalStreamResult<TData, TExtensions>;
+export interface CompletedResult {
+  path: ReadonlyArray<string | number>;
+  label?: string;
+  errors?: ReadonlyArray<GraphQLError>;
+}
+export interface FormattedCompletedResult {
+  path: ReadonlyArray<string | number>;
+  label?: string;
+  errors?: ReadonlyArray<GraphQLError>;
+}
 /**
  * This class is used to publish incremental results to the client, enabling semi-concurrent
  * execution while preserving result order.
  *
  * The internal publishing state is managed as follows:
  *
- * '_released': the set of Incremental Data records that are ready to be sent to the client,
+ * '_released': the set of Subsequent Result records that are ready to be sent to the client,
  * i.e. their parents have completed and they have also completed.
  *
- * `_pending`: the set of Incremental Data records that are definitely pending, i.e. their
- * parents have completed so that they can no longer be filtered. This includes all Incremental
- * Data records in `released`, as well as Incremental Data records that have not yet completed.
+ * `_pending`: the set of Subsequent Result records that are definitely pending, i.e. their
+ * parents have completed so that they can no longer be filtered. This includes all Subsequent
+ * Result records in `released`, as well as the records that have not yet completed.
  *
  * @internal
  */
@@ -145,26 +153,40 @@ export declare class IncrementalPublisher {
   private _signalled;
   private _resolve;
   constructor();
-  prepareInitialResultRecord(): InitialResultRecord;
-  prepareNewDeferredFragmentRecord(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    parentContext: IncrementalDataRecord;
-  }): DeferredFragmentRecord;
-  prepareNewStreamItemsRecord(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    asyncIterator?: AsyncIterator<unknown>;
-    parentContext: IncrementalDataRecord;
-  }): StreamItemsRecord;
+  reportNewDeferFragmentRecord(
+    deferredFragmentRecord: DeferredFragmentRecord,
+    parentIncrementalResultRecord:
+      | InitialResultRecord
+      | DeferredFragmentRecord
+      | StreamItemsRecord,
+  ): void;
+  reportNewDeferredGroupedFieldSetRecord(
+    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+  ): void;
+  reportNewStreamItemsRecord(
+    streamItemsRecord: StreamItemsRecord,
+    parentIncrementalDataRecord: IncrementalDataRecord,
+  ): void;
+  completeDeferredGroupedFieldSet(
+    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+    data: ObjMap<unknown>,
+  ): void;
+  markErroredDeferredGroupedFieldSet(
+    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+    error: GraphQLError,
+  ): void;
   completeDeferredFragmentRecord(
     deferredFragmentRecord: DeferredFragmentRecord,
-    data: ObjMap<unknown> | null,
   ): void;
   completeStreamItemsRecord(
     streamItemsRecord: StreamItemsRecord,
-    items: Array<unknown> | null,
+    items: Array<unknown>,
   ): void;
+  markErroredStreamItemsRecord(
+    streamItemsRecord: StreamItemsRecord,
+    error: GraphQLError,
+  ): void;
+  setIsFinalRecord(streamItemsRecord: StreamItemsRecord): void;
   setIsCompletedAsyncIterator(streamItemsRecord: StreamItemsRecord): void;
   addFieldError(
     incrementalDataRecord: IncrementalDataRecord,
@@ -179,7 +201,7 @@ export declare class IncrementalPublisher {
     error: GraphQLError,
   ): ExecutionResult;
   filter(
-    nullPath: Path,
+    nullPath: Path | undefined,
     erroringIncrementalDataRecord: IncrementalDataRecord,
   ): void;
   private _subscribe;
@@ -189,41 +211,75 @@ export declare class IncrementalPublisher {
   private _release;
   private _push;
   private _getIncrementalResult;
+  private _processPending;
+  private _completedRecordToResult;
   private _publish;
+  private _getChildren;
   private _getDescendants;
+  private _nullsChildSubsequentResultRecord;
   private _matchesPath;
 }
-export interface InitialResultRecord {
+/** @internal */
+export declare class InitialResultRecord {
   errors: Array<GraphQLError>;
-  children: Set<SubsequentDataRecord>;
+  children: Set<SubsequentResultRecord>;
+  constructor();
+}
+/** @internal */
+export declare class DeferredGroupedFieldSetRecord {
+  path: ReadonlyArray<string | number>;
+  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+  groupedFieldSet: GroupedFieldSet;
+  shouldInitiateDefer: boolean;
+  errors: Array<GraphQLError>;
+  data: ObjMap<unknown> | undefined;
+  sent: boolean;
+  constructor(opts: {
+    path: Path | undefined;
+    deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+    groupedFieldSet: GroupedFieldSet;
+    shouldInitiateDefer: boolean;
+  });
 }
 /** @internal */
 export declare class DeferredFragmentRecord {
-  errors: Array<GraphQLError>;
+  path: ReadonlyArray<string | number>;
   label: string | undefined;
-  path: Array<string | number>;
-  data: ObjMap<unknown> | null;
-  children: Set<SubsequentDataRecord>;
-  isCompleted: boolean;
+  children: Set<SubsequentResultRecord>;
+  deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
+  errors: Array<GraphQLError>;
   filtered: boolean;
-  constructor(opts: { label: string | undefined; path: Path | undefined });
+  _pending: Set<DeferredGroupedFieldSetRecord>;
+  constructor(opts: { path: Path | undefined; label: string | undefined });
+}
+/** @internal */
+export declare class StreamRecord {
+  label: string | undefined;
+  path: ReadonlyArray<string | number>;
+  errors: Array<GraphQLError>;
+  earlyReturn?: (() => Promise<unknown>) | undefined;
+  constructor(opts: {
+    label: string | undefined;
+    path: Path;
+    earlyReturn?: (() => Promise<unknown>) | undefined;
+  });
 }
 /** @internal */
 export declare class StreamItemsRecord {
   errors: Array<GraphQLError>;
-  label: string | undefined;
-  path: Array<string | number>;
-  items: Array<unknown> | null;
-  children: Set<SubsequentDataRecord>;
-  asyncIterator: AsyncIterator<unknown> | undefined;
+  streamRecord: StreamRecord;
+  path: ReadonlyArray<string | number>;
+  items: Array<unknown>;
+  children: Set<SubsequentResultRecord>;
+  isFinalRecord?: boolean;
   isCompletedAsyncIterator?: boolean;
   isCompleted: boolean;
   filtered: boolean;
-  constructor(opts: {
-    label: string | undefined;
-    path: Path | undefined;
-    asyncIterator?: AsyncIterator<unknown>;
-  });
+  constructor(opts: { streamRecord: StreamRecord; path: Path | undefined });
 }
-export type SubsequentDataRecord = DeferredFragmentRecord | StreamItemsRecord;
-export type IncrementalDataRecord = InitialResultRecord | SubsequentDataRecord;
+export type IncrementalDataRecord =
+  | InitialResultRecord
+  | DeferredGroupedFieldSetRecord
+  | StreamItemsRecord;
+type SubsequentResultRecord = DeferredFragmentRecord | StreamItemsRecord;
+export {};

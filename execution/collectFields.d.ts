@@ -6,15 +6,31 @@ import type {
 } from '../language/ast.js';
 import type { GraphQLObjectType } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
-export type FieldGroup = ReadonlyArray<FieldNode>;
-export type GroupedFieldSet = Map<string, FieldGroup>;
-export interface PatchFields {
+export interface DeferUsage {
   label: string | undefined;
-  groupedFieldSet: GroupedFieldSet;
+  ancestors: ReadonlyArray<Target>;
 }
-export interface FieldsAndPatches {
+export declare const NON_DEFERRED_TARGET_SET: TargetSet;
+export type Target = DeferUsage | undefined;
+export type TargetSet = ReadonlySet<Target>;
+export type DeferUsageSet = ReadonlySet<DeferUsage>;
+export interface FieldDetails {
+  node: FieldNode;
+  target: Target;
+}
+export interface FieldGroup {
+  fields: ReadonlyArray<FieldDetails>;
+  targets: TargetSet;
+}
+export type GroupedFieldSet = Map<string, FieldGroup>;
+export interface GroupedFieldSetDetails {
   groupedFieldSet: GroupedFieldSet;
-  patches: Array<PatchFields>;
+  shouldInitiateDefer: boolean;
+}
+export interface CollectFieldsResult {
+  groupedFieldSet: GroupedFieldSet;
+  newGroupedFieldSetDetails: Map<DeferUsageSet, GroupedFieldSetDetails>;
+  newDeferUsages: ReadonlyArray<DeferUsage>;
 }
 /**
  * Given a selectionSet, collects all of the fields and returns them.
@@ -33,7 +49,7 @@ export declare function collectFields(
   },
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
-): FieldsAndPatches;
+): CollectFieldsResult;
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
  * in fields, and returns them at the end.
@@ -53,4 +69,4 @@ export declare function collectSubfields(
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldGroup: FieldGroup,
-): FieldsAndPatches;
+): CollectFieldsResult;
