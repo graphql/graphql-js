@@ -4,11 +4,12 @@ import type { Maybe } from '../../jsutils/Maybe.js';
 import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
+  ArgumentNode,
   DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
-  ObjectValueNode,
   SelectionSetNode,
+  ValueNode,
 } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import { print } from '../../language/printer.js';
@@ -592,7 +593,7 @@ function findConflict(
     }
 
     // Two field calls must have the same arguments.
-    if (stringifyArguments(node1) !== stringifyArguments(node2)) {
+    if (!sameArguments(node1.arguments, node2.arguments)) {
       return [
         [responseName, 'they have differing arguments'],
         [node1],
@@ -649,19 +650,26 @@ function findConflict(
   }
 }
 
-function stringifyArguments(fieldNode: FieldNode | DirectiveNode): string {
-  // FIXME https://github.com/graphql/graphql-js/issues/2203
-  const args = /* c8 ignore next */ fieldNode.arguments ?? [];
+function sameArguments(
+  arguments1: ReadonlyArray<ArgumentNode> = [],
+  arguments2: ReadonlyArray<ArgumentNode> = [],
+): boolean {
+  if (arguments1?.length !== arguments2?.length) {
+    return false;
+  }
+  return arguments1.every((argument1) => {
+    const argument2 = arguments2.find(
+      (argument) => argument.name.value === argument1.name.value,
+    );
+    if (!argument2) {
+      return false;
+    }
+    return stringifyValue(argument1.value) === stringifyValue(argument2.value);
+  });
+}
 
-  const inputObjectWithArgs: ObjectValueNode = {
-    kind: Kind.OBJECT,
-    fields: args.map((argNode) => ({
-      kind: Kind.OBJECT_FIELD,
-      name: argNode.name,
-      value: argNode.value,
-    })),
-  };
-  return print(sortValueNode(inputObjectWithArgs));
+function stringifyValue(value: ValueNode): string {
+  return print(sortValueNode(value));
 }
 
 function getStreamDirective(
@@ -681,7 +689,7 @@ function sameStreams(
     return true;
   } else if (stream1 && stream2) {
     // check if both fields have equivalent streams
-    return stringifyArguments(stream1) === stringifyArguments(stream2);
+    return sameArguments(stream1.arguments, stream2.arguments);
   }
   // fields have a mix of stream and no stream
   return false;
