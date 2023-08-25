@@ -95,10 +95,19 @@ export class IncrementalPublisher {
     }
     const errors = initialResultRecord.errors;
     const initialResult = errors.length === 0 ? { data } : { errors, data };
-    if (this._pending.size > 0) {
+    const pending = this._pending;
+    if (pending.size > 0) {
+      const pendingSources = new Set();
+      for (const subsequentResultRecord of pending) {
+        const pendingSource = isStreamItemsRecord(subsequentResultRecord)
+          ? subsequentResultRecord.streamRecord
+          : subsequentResultRecord;
+        pendingSources.add(pendingSource);
+      }
       return {
         initialResult: {
           ...initialResult,
+          pending: this._pendingSourcesToResults(pendingSources),
           hasNext: true,
         },
         subsequentResults: this._subscribe(),
@@ -130,6 +139,20 @@ export class IncrementalPublisher {
         // ignore error
       });
     });
+  }
+  _pendingSourcesToResults(pendingSources) {
+    const pendingResults = [];
+    for (const pendingSource of pendingSources) {
+      pendingSource.pendingSent = true;
+      const pendingResult = {
+        path: pendingSource.path,
+      };
+      if (pendingSource.label !== undefined) {
+        pendingResult.label = pendingSource.label;
+      }
+      pendingResults.push(pendingResult);
+    }
+    return pendingResults;
   }
   _subscribe() {
     let isDone = false;
@@ -217,12 +240,16 @@ export class IncrementalPublisher {
     this._trigger();
   }
   _getIncrementalResult(completedRecords) {
-    const { incremental, completed } = this._processPending(completedRecords);
+    const { pending, incremental, completed } =
+      this._processPending(completedRecords);
     const hasNext = this._pending.size > 0;
     if (incremental.length === 0 && completed.length === 0 && hasNext) {
       return undefined;
     }
     const result = { hasNext };
+    if (pending.length) {
+      result.pending = pending;
+    }
     if (incremental.length) {
       result.incremental = incremental;
     }
@@ -232,6 +259,7 @@ export class IncrementalPublisher {
     return result;
   }
   _processPending(completedRecords) {
+    const newPendingSources = new Set();
     const incrementalResults = [];
     const completedResults = [];
     for (const subsequentResultRecord of completedRecords) {
@@ -239,10 +267,17 @@ export class IncrementalPublisher {
         if (child.filtered) {
           continue;
         }
+        const pendingSource = isStreamItemsRecord(child)
+          ? child.streamRecord
+          : child;
+        if (!pendingSource.pendingSent) {
+          newPendingSources.add(pendingSource);
+        }
         this._publish(child);
       }
       if (isStreamItemsRecord(subsequentResultRecord)) {
         if (subsequentResultRecord.isFinalRecord) {
+          newPendingSources.delete(subsequentResultRecord.streamRecord);
           completedResults.push(
             this._completedRecordToResult(subsequentResultRecord.streamRecord),
           );
@@ -263,6 +298,7 @@ export class IncrementalPublisher {
         }
         incrementalResults.push(incrementalResult);
       } else {
+        newPendingSources.delete(subsequentResultRecord);
         completedResults.push(
           this._completedRecordToResult(subsequentResultRecord),
         );
@@ -286,6 +322,7 @@ export class IncrementalPublisher {
       }
     }
     return {
+      pending: this._pendingSourcesToResults(newPendingSources),
       incremental: incrementalResults,
       completed: completedResults,
     };

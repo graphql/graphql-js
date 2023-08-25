@@ -6,6 +6,7 @@ import type {
 } from '../error/GraphQLError.js';
 import type { GroupedFieldSet } from './collectFields.js';
 interface IncrementalUpdate<TData = unknown, TExtensions = ObjMap<unknown>> {
+  pending: ReadonlyArray<PendingResult>;
   incremental: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
   completed: ReadonlyArray<CompletedResult>;
 }
@@ -50,6 +51,7 @@ export interface InitialIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > extends ExecutionResult<TData, TExtensions> {
   data: TData;
+  pending: ReadonlyArray<PendingResult>;
   hasNext: true;
   extensions?: TExtensions;
 }
@@ -58,6 +60,7 @@ export interface FormattedInitialIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > extends FormattedExecutionResult<TData, TExtensions> {
   data: TData;
+  pending: ReadonlyArray<PendingResult>;
   hasNext: boolean;
   extensions?: TExtensions;
 }
@@ -73,6 +76,7 @@ export interface FormattedSubsequentIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > {
   hasNext: boolean;
+  pending?: ReadonlyArray<PendingResult>;
   incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
   completed?: ReadonlyArray<FormattedCompletedResult>;
   extensions?: TExtensions;
@@ -122,6 +126,10 @@ export type FormattedIncrementalResult<
 > =
   | FormattedIncrementalDeferResult<TData, TExtensions>
   | FormattedIncrementalStreamResult<TData, TExtensions>;
+export interface PendingResult {
+  path: ReadonlyArray<string | number>;
+  label?: string;
+}
 export interface CompletedResult {
   path: ReadonlyArray<string | number>;
   label?: string;
@@ -204,6 +212,7 @@ export declare class IncrementalPublisher {
     nullPath: Path | undefined,
     erroringIncrementalDataRecord: IncrementalDataRecord,
   ): void;
+  private _pendingSourcesToResults;
   private _subscribe;
   private _trigger;
   private _reset;
@@ -249,6 +258,7 @@ export declare class DeferredFragmentRecord {
   deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
   errors: Array<GraphQLError>;
   filtered: boolean;
+  pendingSent?: boolean;
   _pending: Set<DeferredGroupedFieldSetRecord>;
   constructor(opts: { path: Path | undefined; label: string | undefined });
 }
@@ -258,6 +268,7 @@ export declare class StreamRecord {
   path: ReadonlyArray<string | number>;
   errors: Array<GraphQLError>;
   earlyReturn?: (() => Promise<unknown>) | undefined;
+  pendingSent?: boolean;
   constructor(opts: {
     label: string | undefined;
     path: Path;
