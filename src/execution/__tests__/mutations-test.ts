@@ -237,7 +237,7 @@ describe('Execute: Handles mutation execution ordering', () => {
           first: {},
           second: { theNumber: 2 },
         },
-        pending: [{ path: ['first'], label: 'defer-label' }],
+        pending: [{ id: '0', path: ['first'], label: 'defer-label' }],
         hasNext: true,
       },
       {
@@ -249,7 +249,7 @@ describe('Execute: Handles mutation execution ordering', () => {
             },
           },
         ],
-        completed: [{ path: ['first'], label: 'defer-label' }],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -313,7 +313,7 @@ describe('Execute: Handles mutation execution ordering', () => {
         data: {
           second: { theNumber: 2 },
         },
-        pending: [{ path: [], label: 'defer-label' }],
+        pending: [{ id: '0', path: [], label: 'defer-label' }],
         hasNext: true,
       },
       {
@@ -327,7 +327,7 @@ describe('Execute: Handles mutation execution ordering', () => {
             },
           },
         ],
-        completed: [{ path: [], label: 'defer-label' }],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
