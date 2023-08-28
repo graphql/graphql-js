@@ -289,7 +289,7 @@ export declare class StreamItemsRecord {
   errors: Array<GraphQLError>;
   streamRecord: StreamRecord;
   path: ReadonlyArray<string | number>;
-  items: Array<unknown>;
+  items: Array<unknown> | undefined;
   children: Set<SubsequentResultRecord>;
   isFinalRecord?: boolean;
   isCompletedAsyncIterator?: boolean;

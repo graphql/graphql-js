@@ -297,6 +297,8 @@ export class IncrementalPublisher {
           continue;
         }
         const incrementalResult = {
+          // safe because `items` is always defined when the record is completed
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           items: subsequentResultRecord.items,
           // safe because `id` is defined once the stream has been released as pending
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -353,6 +355,7 @@ export class IncrementalPublisher {
     );
     const id = recordWithLongestPath.id;
     const incrementalDeferResult = {
+      // safe because `data``is always defined when the record is completed
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       data: data,
       // safe because `id` is defined once the fragment has been released as pending
@@ -487,6 +490,5 @@ export class StreamItemsRecord {
     this.errors = [];
     this.isCompleted = false;
     this.filtered = false;
-    this.items = [];
   }
 }
