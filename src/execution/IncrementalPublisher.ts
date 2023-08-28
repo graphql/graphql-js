@@ -565,7 +565,9 @@ export class IncrementalPublisher {
           continue;
         }
         const incrementalResult: IncrementalStreamResult = {
-          items: subsequentResultRecord.items,
+          // safe because `items` is always defined when the record is completed
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          items: subsequentResultRecord.items!,
           // safe because `id` is defined once the stream has been released as pending
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           id: subsequentResultRecord.streamRecord.id!,
@@ -624,6 +626,7 @@ export class IncrementalPublisher {
     );
     const id = recordWithLongestPath.id;
     const incrementalDeferResult: IncrementalDeferResult = {
+      // safe because `data``is always defined when the record is completed
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       data: data!,
       // safe because `id` is defined once the fragment has been released as pending
@@ -825,7 +828,7 @@ export class StreamItemsRecord {
   errors: Array<GraphQLError>;
   streamRecord: StreamRecord;
   path: ReadonlyArray<string | number>;
-  items: Array<unknown>;
+  items: Array<unknown> | undefined;
   children: Set<SubsequentResultRecord>;
   isFinalRecord?: boolean;
   isCompletedAsyncIterator?: boolean;
@@ -839,7 +842,6 @@ export class StreamItemsRecord {
     this.errors = [];
     this.isCompleted = false;
     this.filtered = false;
-    this.items = [];
   }
 }
 
