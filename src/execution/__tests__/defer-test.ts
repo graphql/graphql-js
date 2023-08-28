@@ -185,7 +185,7 @@ describe('Execute: defer directive', () => {
             data: {
               name: 'Luke',
             },
-            path: ['hero'],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -239,7 +239,7 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { name: 'Luke' },
-            path: ['hero'],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -274,7 +274,7 @@ describe('Execute: defer directive', () => {
                 id: '1',
               },
             },
-            path: [],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -323,7 +323,7 @@ describe('Execute: defer directive', () => {
                 path: ['hero', 'name'],
               },
             ],
-            path: [],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -367,13 +367,13 @@ describe('Execute: defer directive', () => {
             data: {
               id: '1',
             },
-            path: ['hero'],
+            id: '0',
           },
           {
             data: {
               friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
             },
-            path: ['hero'],
+            id: '1',
           },
         ],
         completed: [{ id: '0' }, { id: '1' }],
@@ -460,7 +460,7 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        incremental: [{ data: { name: 'Luke' }, path: ['hero'] }],
+        incremental: [{ data: { name: 'Luke' }, id: '0' }],
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -527,13 +527,13 @@ describe('Execute: defer directive', () => {
             data: {
               id: '1',
             },
-            path: ['hero'],
+            id: '0',
           },
           {
             data: {
               name: 'Luke',
             },
-            path: ['hero'],
+            id: '1',
           },
         ],
         completed: [{ id: '0' }, { id: '1' }],
@@ -571,15 +571,17 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { hero: {} },
-            path: [],
+            id: '0',
           },
           {
             data: { id: '1' },
-            path: ['hero'],
+            id: '0',
+            subPath: ['hero'],
           },
           {
             data: { name: 'Luke' },
-            path: ['hero'],
+            id: '1',
+            subPath: ['hero'],
           },
         ],
         completed: [{ id: '0' }, { id: '1' }],
@@ -622,15 +624,17 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { hero: {} },
-            path: [],
+            id: '0',
           },
           {
             data: { id: '1' },
-            path: ['hero'],
+            id: '0',
+            subPath: ['hero'],
           },
           {
             data: { name: 'Luke' },
-            path: ['hero'],
+            id: '1',
+            subPath: ['hero'],
           },
         ],
         completed: [{ id: '0' }, { id: '1' }],
@@ -672,13 +676,14 @@ describe('Execute: defer directive', () => {
             data: {
               id: '1',
             },
-            path: ['hero'],
+            id: '1',
           },
           {
             data: {
               name: 'Luke',
             },
-            path: ['hero'],
+            id: '0',
+            subPath: ['hero'],
           },
         ],
         completed: [{ id: '1' }, { id: '0' }],
@@ -716,7 +721,7 @@ describe('Execute: defer directive', () => {
                 name: 'Luke',
               },
             },
-            path: [],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -728,7 +733,7 @@ describe('Execute: defer directive', () => {
             data: {
               id: '1',
             },
-            path: ['hero'],
+            id: '1',
           },
         ],
         completed: [{ id: '1' }],
@@ -786,9 +791,9 @@ describe('Execute: defer directive', () => {
       },
       {
         incremental: [
-          { data: { id: '2', name: 'Han' }, path: ['hero', 'friends', 0] },
-          { data: { id: '3', name: 'Leia' }, path: ['hero', 'friends', 1] },
-          { data: { id: '4', name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+          { data: { id: '2', name: 'Han' }, id: '0' },
+          { data: { id: '3', name: 'Leia' }, id: '4' },
+          { data: { id: '4', name: 'C-3PO' }, id: '8' },
         ],
         completed: [
           { id: '1' },
@@ -867,7 +872,8 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { bar: 'bar' },
-            path: ['hero', 'nestedObject', 'deeperObject'],
+            id: '0',
+            subPath: ['nestedObject', 'deeperObject'],
           },
         ],
         completed: [{ id: '0' }],
@@ -914,7 +920,7 @@ describe('Execute: defer directive', () => {
                 deeperObject: { foo: 'foo' },
               },
             },
-            path: ['hero'],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -926,7 +932,7 @@ describe('Execute: defer directive', () => {
             data: {
               bar: 'bar',
             },
-            path: ['hero', 'nestedObject', 'deeperObject'],
+            id: '1',
           },
         ],
         completed: [{ id: '1' }],
@@ -994,7 +1000,8 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { bar: 'bar' },
-            path: ['hero', 'nestedObject', 'deeperObject'],
+            id: '0',
+            subPath: ['nestedObject', 'deeperObject'],
           },
         ],
         completed: [{ id: '0' }],
@@ -1005,7 +1012,8 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { baz: 'baz' },
-            path: ['hero', 'nestedObject', 'deeperObject'],
+            id: '1',
+            subPath: ['deeperObject'],
           },
         ],
         hasNext: true,
@@ -1015,7 +1023,7 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { bak: 'bak' },
-            path: ['hero', 'nestedObject', 'deeperObject'],
+            id: '2',
           },
         ],
         completed: [{ id: '2' }],
@@ -1073,7 +1081,7 @@ describe('Execute: defer directive', () => {
             data: {
               foo: 'foo',
             },
-            path: ['hero', 'nestedObject', 'deeperObject'],
+            id: '1',
           },
         ],
         completed: [{ id: '0' }, { id: '1' }],
@@ -1085,7 +1093,7 @@ describe('Execute: defer directive', () => {
             data: {
               bar: 'bar',
             },
-            path: ['hero', 'nestedObject', 'deeperObject'],
+            id: '2',
           },
         ],
         completed: [{ id: '2' }],
@@ -1153,11 +1161,11 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { e: { f: 'f' } },
-            path: ['a', 'b'],
+            id: '1',
           },
           {
             data: { g: { h: 'h' } },
-            path: [],
+            id: '0',
           },
         ],
         completed: [{ id: '1' }, { id: '0' }],
@@ -1208,11 +1216,12 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { b: { c: {} } },
-            path: ['a'],
+            id: '1',
           },
           {
             data: { d: 'd' },
-            path: ['a', 'b', 'c'],
+            id: '1',
+            subPath: ['b', 'c'],
           },
         ],
         completed: [
@@ -1279,11 +1288,12 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { b: { c: {} } },
-            path: ['a'],
+            id: '1',
           },
           {
             data: { d: 'd' },
-            path: ['a', 'b', 'c'],
+            id: '0',
+            subPath: ['a', 'b', 'c'],
           },
         ],
         completed: [
@@ -1358,11 +1368,12 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { b: { c: {} } },
-            path: ['a'],
+            id: '1',
           },
           {
             data: { d: 'd' },
-            path: ['a', 'b', 'c'],
+            id: '1',
+            subPath: ['b', 'c'],
           },
         ],
         completed: [{ id: '1' }],
@@ -1458,7 +1469,7 @@ describe('Execute: defer directive', () => {
                 path: ['hero', 'nonNullName'],
               },
             ],
-            path: [],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -1603,15 +1614,18 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { id: '2' },
-            path: ['hero', 'friends', 0],
+            id: '0',
+            subPath: ['friends', 0],
           },
           {
             data: { id: '3' },
-            path: ['hero', 'friends', 1],
+            id: '0',
+            subPath: ['friends', 1],
           },
           {
             data: { id: '4' },
-            path: ['hero', 'friends', 2],
+            id: '0',
+            subPath: ['friends', 2],
           },
         ],
         completed: [{ id: '0' }],
@@ -1751,7 +1765,7 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { name: null },
-            path: ['hero'],
+            id: '0',
             errors: [
               {
                 message: 'bad',
@@ -1931,7 +1945,7 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { name: 'slow', friends: [{}, {}, {}] },
-            path: ['hero'],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -1939,9 +1953,9 @@ describe('Execute: defer directive', () => {
       },
       {
         incremental: [
-          { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
-          { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
-          { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+          { data: { name: 'Han' }, id: '1' },
+          { data: { name: 'Leia' }, id: '2' },
+          { data: { name: 'C-3PO' }, id: '3' },
         ],
         completed: [{ id: '1' }, { id: '2' }, { id: '3' }],
         hasNext: false,
@@ -1987,7 +2001,7 @@ describe('Execute: defer directive', () => {
               name: 'Luke',
               friends: [{}, {}, {}],
             },
-            path: ['hero'],
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -1995,9 +2009,9 @@ describe('Execute: defer directive', () => {
       },
       {
         incremental: [
-          { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
-          { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
-          { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+          { data: { name: 'Han' }, id: '1' },
+          { data: { name: 'Leia' }, id: '2' },
+          { data: { name: 'C-3PO' }, id: '3' },
         ],
         completed: [{ id: '1' }, { id: '2' }, { id: '3' }],
         hasNext: false,

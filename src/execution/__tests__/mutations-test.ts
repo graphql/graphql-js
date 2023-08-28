@@ -243,7 +243,7 @@ describe('Execute: Handles mutation execution ordering', () => {
       {
         incremental: [
           {
-            path: ['first'],
+            id: '0',
             data: {
               promiseToGetTheNumber: 2,
             },
@@ -319,7 +319,7 @@ describe('Execute: Handles mutation execution ordering', () => {
       {
         incremental: [
           {
-            path: [],
+            id: '0',
             data: {
               first: {
                 theNumber: 1,

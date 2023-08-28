@@ -566,7 +566,8 @@ export class IncrementalPublisher {
         }
         const incrementalResult: IncrementalStreamResult = {
           items: subsequentResultRecord.items,
-          path: subsequentResultRecord.streamRecord.path,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          id: subsequentResultRecord.streamRecord.id!,
         };
         if (subsequentResultRecord.errors.length > 0) {
           incrementalResult.errors = subsequentResultRecord.errors;
@@ -583,11 +584,8 @@ export class IncrementalPublisher {
         for (const deferredGroupedFieldSetRecord of subsequentResultRecord.deferredGroupedFieldSetRecords) {
           if (!deferredGroupedFieldSetRecord.sent) {
             deferredGroupedFieldSetRecord.sent = true;
-            const incrementalResult: IncrementalDeferResult = {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              data: deferredGroupedFieldSetRecord.data!,
-              path: deferredGroupedFieldSetRecord.path,
-            };
+            const incrementalResult: IncrementalDeferResult =
+              this._getIncrementalDeferResult(deferredGroupedFieldSetRecord);
             if (deferredGroupedFieldSetRecord.errors.length > 0) {
               incrementalResult.errors = deferredGroupedFieldSetRecord.errors;
             }
@@ -602,6 +600,40 @@ export class IncrementalPublisher {
       incremental: incrementalResults,
       completed: completedResults,
     };
+  }
+
+  private _getIncrementalDeferResult(
+    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+  ): IncrementalDeferResult {
+    const { data, deferredFragmentRecords } = deferredGroupedFieldSetRecord;
+    let maxLength = deferredFragmentRecords[0].path.length;
+    let maxIndex = 0;
+    for (let i = 1; i < deferredFragmentRecords.length; i++) {
+      const deferredFragmentRecord = deferredFragmentRecords[i];
+      const length = deferredFragmentRecord.path.length;
+      if (length > maxLength) {
+        maxLength = length;
+        maxIndex = i;
+      }
+    }
+    const recordWithLongestPath = deferredFragmentRecords[maxIndex];
+    const longestPath = recordWithLongestPath.path;
+    const subPath = deferredGroupedFieldSetRecord.path.slice(
+      longestPath.length,
+    );
+    const id = recordWithLongestPath.id;
+    const incrementalDeferResult: IncrementalDeferResult = {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      data: data!,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      id: id!,
+    };
+
+    if (subPath.length > 0) {
+      incrementalDeferResult.subPath = subPath;
+    }
+
+    return incrementalDeferResult;
   }
 
   private _completedRecordToResult(
