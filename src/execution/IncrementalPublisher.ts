@@ -566,6 +566,7 @@ export class IncrementalPublisher {
         }
         const incrementalResult: IncrementalStreamResult = {
           items: subsequentResultRecord.items,
+          // safe because `id` is defined once the stream has been released as pending
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           id: subsequentResultRecord.streamRecord.id!,
         };
@@ -625,6 +626,7 @@ export class IncrementalPublisher {
     const incrementalDeferResult: IncrementalDeferResult = {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       data: data!,
+      // safe because `id` is defined once the fragment has been released as pending
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       id: id!,
     };
@@ -640,6 +642,7 @@ export class IncrementalPublisher {
     completedRecord: DeferredFragmentRecord | StreamRecord,
   ): CompletedResult {
     const result: CompletedResult = {
+      // safe because `id` is defined once the stream has been released as pending
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       id: completedRecord.id!,
     };
