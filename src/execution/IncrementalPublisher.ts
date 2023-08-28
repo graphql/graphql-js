@@ -100,7 +100,8 @@ export interface IncrementalDeferResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   data: TData;
-  path: ReadonlyArray<string | number>;
+  id: string;
+  subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 
@@ -110,7 +111,8 @@ export interface FormattedIncrementalDeferResult<
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   data: TData;
-  path: ReadonlyArray<string | number>;
+  id: string;
+  subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 
@@ -120,7 +122,8 @@ export interface IncrementalStreamResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   items: TData;
-  path: ReadonlyArray<string | number>;
+  id: string;
+  subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 
@@ -130,7 +133,8 @@ export interface FormattedIncrementalStreamResult<
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   items: TData;
-  path: ReadonlyArray<string | number>;
+  id: string;
+  subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 
@@ -146,13 +150,13 @@ export type FormattedIncrementalResult<
   | FormattedIncrementalStreamResult<TData, TExtensions>;
 
 export interface PendingResult {
+  id: string;
   path: ReadonlyArray<string | number>;
   label?: string;
 }
 
 export interface CompletedResult {
-  path: ReadonlyArray<string | number>;
-  label?: string;
+  id: string;
   errors?: ReadonlyArray<GraphQLError>;
 }
 
@@ -178,6 +182,7 @@ export interface FormattedCompletedResult {
  * @internal
  */
 export class IncrementalPublisher {
+  private _nextId = 0;
   private _released: Set<SubsequentResultRecord>;
   private _pending: Set<SubsequentResultRecord>;
 
@@ -372,7 +377,10 @@ export class IncrementalPublisher {
     const pendingResults: Array<PendingResult> = [];
     for (const pendingSource of pendingSources) {
       pendingSource.pendingSent = true;
+      const id = this._getNextId();
+      pendingSource.id = id;
       const pendingResult: PendingResult = {
+        id,
         path: pendingSource.path,
       };
       if (pendingSource.label !== undefined) {
@@ -381,6 +389,10 @@ export class IncrementalPublisher {
       pendingResults.push(pendingResult);
     }
     return pendingResults;
+  }
+
+  private _getNextId(): string {
+    return String(this._nextId++);
   }
 
   private _subscribe(): AsyncGenerator<
@@ -554,7 +566,9 @@ export class IncrementalPublisher {
         }
         const incrementalResult: IncrementalStreamResult = {
           items: subsequentResultRecord.items,
-          path: subsequentResultRecord.streamRecord.path,
+          // safe because `id` is defined once the stream has been released as pending
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          id: subsequentResultRecord.streamRecord.id!,
         };
         if (subsequentResultRecord.errors.length > 0) {
           incrementalResult.errors = subsequentResultRecord.errors;
@@ -571,11 +585,8 @@ export class IncrementalPublisher {
         for (const deferredGroupedFieldSetRecord of subsequentResultRecord.deferredGroupedFieldSetRecords) {
           if (!deferredGroupedFieldSetRecord.sent) {
             deferredGroupedFieldSetRecord.sent = true;
-            const incrementalResult: IncrementalDeferResult = {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              data: deferredGroupedFieldSetRecord.data!,
-              path: deferredGroupedFieldSetRecord.path,
-            };
+            const incrementalResult: IncrementalDeferResult =
+              this._getIncrementalDeferResult(deferredGroupedFieldSetRecord);
             if (deferredGroupedFieldSetRecord.errors.length > 0) {
               incrementalResult.errors = deferredGroupedFieldSetRecord.errors;
             }
@@ -592,15 +603,49 @@ export class IncrementalPublisher {
     };
   }
 
+  private _getIncrementalDeferResult(
+    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+  ): IncrementalDeferResult {
+    const { data, deferredFragmentRecords } = deferredGroupedFieldSetRecord;
+    let maxLength = deferredFragmentRecords[0].path.length;
+    let maxIndex = 0;
+    for (let i = 1; i < deferredFragmentRecords.length; i++) {
+      const deferredFragmentRecord = deferredFragmentRecords[i];
+      const length = deferredFragmentRecord.path.length;
+      if (length > maxLength) {
+        maxLength = length;
+        maxIndex = i;
+      }
+    }
+    const recordWithLongestPath = deferredFragmentRecords[maxIndex];
+    const longestPath = recordWithLongestPath.path;
+    const subPath = deferredGroupedFieldSetRecord.path.slice(
+      longestPath.length,
+    );
+    const id = recordWithLongestPath.id;
+    const incrementalDeferResult: IncrementalDeferResult = {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      data: data!,
+      // safe because `id` is defined once the fragment has been released as pending
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      id: id!,
+    };
+
+    if (subPath.length > 0) {
+      incrementalDeferResult.subPath = subPath;
+    }
+
+    return incrementalDeferResult;
+  }
+
   private _completedRecordToResult(
     completedRecord: DeferredFragmentRecord | StreamRecord,
   ): CompletedResult {
     const result: CompletedResult = {
-      path: completedRecord.path,
+      // safe because `id` is defined once the stream has been released as pending
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      id: completedRecord.id!,
     };
-    if (completedRecord.label !== undefined) {
-      result.label = completedRecord.label;
-    }
     if (completedRecord.errors.length > 0) {
       result.errors = completedRecord.errors;
     }
@@ -736,6 +781,7 @@ export class DeferredGroupedFieldSetRecord {
 export class DeferredFragmentRecord {
   path: ReadonlyArray<string | number>;
   label: string | undefined;
+  id: string | undefined;
   children: Set<SubsequentResultRecord>;
   deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
   errors: Array<GraphQLError>;
@@ -758,6 +804,7 @@ export class DeferredFragmentRecord {
 export class StreamRecord {
   label: string | undefined;
   path: ReadonlyArray<string | number>;
+  id: string | undefined;
   errors: Array<GraphQLError>;
   earlyReturn?: (() => Promise<unknown>) | undefined;
   pendingSent?: boolean;
