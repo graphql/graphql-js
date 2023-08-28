@@ -87,7 +87,7 @@ export interface IncrementalDeferResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   data: TData;
-  path?: ReadonlyArray<string | number>;
+  path: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 export interface FormattedIncrementalDeferResult<
@@ -96,7 +96,7 @@ export interface FormattedIncrementalDeferResult<
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   data: TData;
-  path?: ReadonlyArray<string | number>;
+  path: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 export interface IncrementalStreamResult<
@@ -105,7 +105,7 @@ export interface IncrementalStreamResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   items: TData;
-  path?: ReadonlyArray<string | number>;
+  path: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 export interface FormattedIncrementalStreamResult<
@@ -114,7 +114,7 @@ export interface FormattedIncrementalStreamResult<
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   items: TData;
-  path?: ReadonlyArray<string | number>;
+  path: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 export type IncrementalResult<TData = unknown, TExtensions = ObjMap<unknown>> =
