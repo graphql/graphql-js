@@ -87,7 +87,8 @@ export interface IncrementalDeferResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   data: TData;
-  path: ReadonlyArray<string | number>;
+  id: string;
+  subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 export interface FormattedIncrementalDeferResult<
@@ -96,7 +97,8 @@ export interface FormattedIncrementalDeferResult<
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   data: TData;
-  path: ReadonlyArray<string | number>;
+  id: string;
+  subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 export interface IncrementalStreamResult<
@@ -105,7 +107,8 @@ export interface IncrementalStreamResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   items: TData;
-  path: ReadonlyArray<string | number>;
+  id: string;
+  subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 export interface FormattedIncrementalStreamResult<
@@ -114,7 +117,8 @@ export interface FormattedIncrementalStreamResult<
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
   items: TData;
-  path: ReadonlyArray<string | number>;
+  id: string;
+  subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 export type IncrementalResult<TData = unknown, TExtensions = ObjMap<unknown>> =
@@ -127,12 +131,12 @@ export type FormattedIncrementalResult<
   | FormattedIncrementalDeferResult<TData, TExtensions>
   | FormattedIncrementalStreamResult<TData, TExtensions>;
 export interface PendingResult {
+  id: string;
   path: ReadonlyArray<string | number>;
   label?: string;
 }
 export interface CompletedResult {
-  path: ReadonlyArray<string | number>;
-  label?: string;
+  id: string;
   errors?: ReadonlyArray<GraphQLError>;
 }
 export interface FormattedCompletedResult {
@@ -156,6 +160,7 @@ export interface FormattedCompletedResult {
  * @internal
  */
 export declare class IncrementalPublisher {
+  private _nextId;
   private _released;
   private _pending;
   private _signalled;
@@ -213,6 +218,7 @@ export declare class IncrementalPublisher {
     erroringIncrementalDataRecord: IncrementalDataRecord,
   ): void;
   private _pendingSourcesToResults;
+  private _getNextId;
   private _subscribe;
   private _trigger;
   private _reset;
@@ -221,6 +227,7 @@ export declare class IncrementalPublisher {
   private _push;
   private _getIncrementalResult;
   private _processPending;
+  private _getIncrementalDeferResult;
   private _completedRecordToResult;
   private _publish;
   private _getChildren;
@@ -254,6 +261,7 @@ export declare class DeferredGroupedFieldSetRecord {
 export declare class DeferredFragmentRecord {
   path: ReadonlyArray<string | number>;
   label: string | undefined;
+  id: string | undefined;
   children: Set<SubsequentResultRecord>;
   deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
   errors: Array<GraphQLError>;
@@ -266,6 +274,7 @@ export declare class DeferredFragmentRecord {
 export declare class StreamRecord {
   label: string | undefined;
   path: ReadonlyArray<string | number>;
+  id: string | undefined;
   errors: Array<GraphQLError>;
   earlyReturn?: (() => Promise<unknown>) | undefined;
   pendingSent?: boolean;
