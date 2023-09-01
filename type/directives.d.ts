@@ -85,7 +85,7 @@ export declare const GraphQLDeprecatedDirective: GraphQLDirective;
  */
 export declare const GraphQLSpecifiedByDirective: GraphQLDirective;
 /**
- * Used to declare an Input Object as a OneOf Input Objects.
+ * Used to indicate an Input Object is a OneOf Input Object.
  */
 export declare const GraphQLOneOfDirective: GraphQLDirective;
 /**
