@@ -795,7 +795,9 @@ describe('Type System Printer', () => {
         url: String!
       ) on SCALAR
 
-      """Indicates an Input Object is a OneOf Input Object."""
+      """
+      Indicates exactly one field must be supplied and this field must not be \`null\`.
+      """
       directive @oneOf on INPUT_OBJECT
 
       """
