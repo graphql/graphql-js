@@ -1,18 +1,13 @@
 import { graphqlSync } from 'graphql/graphql.js';
 import { buildSchema } from 'graphql/utilities/buildASTSchema.js';
 
-import { bigSchemaSDL } from './fixtures.js';
-
-const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
-const query = `{ ${'__typename '.repeat(2000)}}`;
+const schema = buildSchema('type Query { hello: String! }');
+const source = `{ ${'hello '.repeat(250)}}`;
 
 export const benchmark = {
   name: 'Many repeated fields',
-  count: 50,
+  count: 5,
   measure() {
-    graphqlSync({
-      schema,
-      source: query,
-    });
+    graphqlSync({ schema, source });
   },
 };
