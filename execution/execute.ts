@@ -1313,6 +1313,23 @@ function invalidReturnTypeError(
     { nodes: toNodes(fieldGroup) },
   );
 }
+/**
+ * Instantiates new DeferredFragmentRecords for the given path within an
+ * incremental data record, returning an updated map of DeferUsage
+ * objects to DeferredFragmentRecords.
+ *
+ * Note: As defer directives may be used with operations returning lists,
+ * a DeferUsage object may correspond to many DeferredFragmentRecords.
+ *
+ * DeferredFragmentRecord creation includes the following steps:
+ * 1. The new DeferredFragmentRecord is instantiated at the given path.
+ * 2. The parent result record is calculated from the given incremental data
+ * record.
+ * 3. The IncrementalPublisher is notified that a new DeferredFragmentRecord
+ * with the calculated parent has been added; the record will be released only
+ * after the parent has completed.
+ *
+ */
 function addNewDeferredFragments(
   incrementalPublisher: IncrementalPublisher,
   newDeferUsages: ReadonlyArray<DeferUsage>,
@@ -1320,30 +1337,40 @@ function addNewDeferredFragments(
   deferMap?: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
   path?: Path | undefined,
 ): ReadonlyMap<DeferUsage, DeferredFragmentRecord> {
-  let newDeferMap;
   if (newDeferUsages.length === 0) {
-    newDeferMap = deferMap ?? new Map<DeferUsage, DeferredFragmentRecord>();
-  } else {
-    newDeferMap =
-      deferMap === undefined
-        ? new Map<DeferUsage, DeferredFragmentRecord>()
-        : new Map<DeferUsage, DeferredFragmentRecord>(deferMap);
-    for (const deferUsage of newDeferUsages) {
-      const parentDeferUsage = deferUsage.ancestors[0];
-      const parent =
-        parentDeferUsage === undefined
-          ? (incrementalDataRecord as InitialResultRecord | StreamItemsRecord)
-          : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
-      const deferredFragmentRecord = new DeferredFragmentRecord({
-        path,
-        label: deferUsage.label,
-      });
-      incrementalPublisher.reportNewDeferFragmentRecord(
-        deferredFragmentRecord,
-        parent,
-      );
-      newDeferMap.set(deferUsage, deferredFragmentRecord);
-    }
+    // Given no DeferUsages, return the existing map, creating one if necessary.
+    return deferMap ?? new Map<DeferUsage, DeferredFragmentRecord>();
+  }
+  // Create a copy of the old map.
+  const newDeferMap =
+    deferMap === undefined
+      ? new Map<DeferUsage, DeferredFragmentRecord>()
+      : new Map<DeferUsage, DeferredFragmentRecord>(deferMap);
+  // For each new deferUsage object:
+  for (const newDeferUsage of newDeferUsages) {
+    // DeferUsage objects track their parent targets; the immediate parent is always the first member of this list.
+    const parentTarget = newDeferUsage.ancestors[0];
+    // If the parent target is defined, the parent target is a DeferUsage object and
+    // the parent result record is the DeferredFragmentRecord corresponding to that DeferUsage.
+    // If the parent target is not defined, the parent result record is either:
+    //  - the InitialResultRecord, or
+    //  - a StreamItemsRecord, as `@defer` may be nested under `@stream`.
+    const parent =
+      parentTarget === undefined
+        ? (incrementalDataRecord as InitialResultRecord | StreamItemsRecord)
+        : deferredFragmentRecordFromDeferUsage(parentTarget, newDeferMap);
+    // Instantiate the new record.
+    const deferredFragmentRecord = new DeferredFragmentRecord({
+      path,
+      label: newDeferUsage.label,
+    });
+    // Report the new record to the Incremental Publisher.
+    incrementalPublisher.reportNewDeferFragmentRecord(
+      deferredFragmentRecord,
+      parent,
+    );
+    // Update the map.
+    newDeferMap.set(newDeferUsage, deferredFragmentRecord);
   }
   return newDeferMap;
 }
