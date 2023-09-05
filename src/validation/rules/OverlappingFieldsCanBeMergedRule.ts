@@ -4,7 +4,6 @@ import type { Maybe } from '../../jsutils/Maybe.js';
 import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
-  ArgumentNode,
   DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
@@ -593,7 +592,7 @@ function findConflict(
     }
 
     // Two field calls must have the same arguments.
-    if (!sameArguments(node1.arguments, node2.arguments)) {
+    if (!sameArguments(node1, node2)) {
       return [
         [responseName, 'they have differing arguments'],
         [node1],
@@ -651,24 +650,36 @@ function findConflict(
 }
 
 function sameArguments(
-  arguments1: ReadonlyArray<ArgumentNode> = [],
-  arguments2: ReadonlyArray<ArgumentNode> = [],
+  node1: FieldNode | DirectiveNode,
+  node2: FieldNode | DirectiveNode,
 ): boolean {
-  if (arguments1?.length !== arguments2?.length) {
+  const args1 = node1.arguments;
+  const args2 = node2.arguments;
+
+  if (args1 === undefined || args1.length === 0) {
+    return args2 === undefined || args2.length === 0;
+  }
+  if (args2 === undefined || args2.length === 0) {
     return false;
   }
-  return arguments1.every((argument1) => {
-    const argument2 = arguments2.find(
-      (argument) => argument.name.value === argument1.name.value,
-    );
-    if (!argument2) {
+
+  if (args1.length !== args2.length) {
+    return false;
+  }
+
+  const values2 = new Map(args2.map(({ name, value }) => [name.value, value]));
+  return args1.every((arg1) => {
+    const value1 = arg1.value;
+    const value2 = values2.get(arg1.name.value);
+    if (value2 === undefined) {
       return false;
     }
-    return stringifyValue(argument1.value) === stringifyValue(argument2.value);
+
+    return stringifyValue(value1) === stringifyValue(value2);
   });
 }
 
-function stringifyValue(value: ValueNode): string {
+function stringifyValue(value: ValueNode): string | null {
   return print(sortValueNode(value));
 }
 
@@ -689,7 +700,7 @@ function sameStreams(
     return true;
   } else if (stream1 && stream2) {
     // check if both fields have equivalent streams
-    return sameArguments(stream1.arguments, stream2.arguments);
+    return sameArguments(stream1, stream2);
   }
   // fields have a mix of stream and no stream
   return false;

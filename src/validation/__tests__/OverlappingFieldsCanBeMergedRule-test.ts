@@ -179,6 +179,24 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('different stream directive extra argument', () => {
+    expectErrors(`
+      fragment conflictingArgs on Dog {
+        name @stream(label: "streamLabel", initialCount: 1)
+        name @stream(label: "streamLabel", initialCount: 1, extraArg: true)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('mix of stream and no stream', () => {
     expectErrors(`
       fragment conflictingArgs on Dog {
