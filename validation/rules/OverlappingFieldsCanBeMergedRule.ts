@@ -5,8 +5,8 @@ import type {
   DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
-  ObjectValueNode,
   SelectionSetNode,
+  ValueNode,
 } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import { print } from '../../language/printer.ts';
@@ -551,7 +551,7 @@ function findConflict(
       ];
     }
     // Two field calls must have the same arguments.
-    if (stringifyArguments(node1) !== stringifyArguments(node2)) {
+    if (!sameArguments(node1, node2)) {
       return [
         [responseName, 'they have differing arguments'],
         [node1],
@@ -603,18 +603,33 @@ function findConflict(
     return subfieldConflicts(conflicts, responseName, node1, node2);
   }
 }
-function stringifyArguments(fieldNode: FieldNode | DirectiveNode): string {
-  // FIXME https://github.com/graphql/graphql-js/issues/2203
-  const args = /* c8 ignore next */ fieldNode.arguments ?? [];
-  const inputObjectWithArgs: ObjectValueNode = {
-    kind: Kind.OBJECT,
-    fields: args.map((argNode) => ({
-      kind: Kind.OBJECT_FIELD,
-      name: argNode.name,
-      value: argNode.value,
-    })),
-  };
-  return print(sortValueNode(inputObjectWithArgs));
+function sameArguments(
+  node1: FieldNode | DirectiveNode,
+  node2: FieldNode | DirectiveNode,
+): boolean {
+  const args1 = node1.arguments;
+  const args2 = node2.arguments;
+  if (args1 === undefined || args1.length === 0) {
+    return args2 === undefined || args2.length === 0;
+  }
+  if (args2 === undefined || args2.length === 0) {
+    return false;
+  }
+  if (args1.length !== args2.length) {
+    return false;
+  }
+  const values2 = new Map(args2.map(({ name, value }) => [name.value, value]));
+  return args1.every((arg1) => {
+    const value1 = arg1.value;
+    const value2 = values2.get(arg1.name.value);
+    if (value2 === undefined) {
+      return false;
+    }
+    return stringifyValue(value1) === stringifyValue(value2);
+  });
+}
+function stringifyValue(value: ValueNode): string | null {
+  return print(sortValueNode(value));
 }
 function getStreamDirective(
   directives: ReadonlyArray<DirectiveNode>,
@@ -632,7 +647,7 @@ function sameStreams(
     return true;
   } else if (stream1 && stream2) {
     // check if both fields have equivalent streams
-    return stringifyArguments(stream1) === stringifyArguments(stream2);
+    return sameArguments(stream1, stream2);
   }
   // fields have a mix of stream and no stream
   return false;
