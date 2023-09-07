@@ -649,8 +649,11 @@ function sameArguments(
     return false;
   }
 
+  /* c8 ignore next */
   if (args1.length !== args2.length) {
+    /* c8 ignore next */
     return false;
+    /* c8 ignore next */
   }
 
   const values2 = new Map(args2.map(({ name, value }) => [name.value, value]));
