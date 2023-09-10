@@ -204,7 +204,12 @@ function printInputObject(type: GraphQLInputObjectType): string {
   const fields = Object.values(type.getFields()).map(
     (f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f),
   );
-  return printDescription(type) + `input ${type.name}` + printBlock(fields);
+  return (
+    printDescription(type) +
+    `input ${type.name}` +
+    printOneOf(type.isOneOf) +
+    printBlock(fields)
+  );
 }
 
 function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
@@ -285,6 +290,14 @@ function printDeprecated(reason: Maybe<string>): string {
     return ` @deprecated(reason: ${astValue})`;
   }
   return ' @deprecated';
+}
+
+function printOneOf(isOneOf: boolean): string {
+  if (!isOneOf) {
+    return '';
+  }
+
+  return ' @oneOf';
 }
 
 function printSpecifiedByURL(scalar: GraphQLScalarType): string {
