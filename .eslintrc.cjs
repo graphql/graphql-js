@@ -347,7 +347,14 @@ module.exports = {
     'no-restricted-globals': 'off',
     'no-restricted-imports': 'off',
     'no-restricted-properties': 'off',
-    'no-restricted-syntax': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'TemplateElement[value.raw=/ \\n/]',
+        message:
+          'String literals should not contain trailing spaces. If needed for tests please disable locally using eslint comment',
+      },
+    ],
     'no-return-assign': 'error',
     'no-return-await': 'error',
     'no-script-url': 'error',

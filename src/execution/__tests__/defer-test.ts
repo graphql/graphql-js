@@ -2025,7 +2025,7 @@ describe('Execute: defer directive', () => {
       hero {
         friends {
           nonNullName
-          ...NameFragment @defer 
+          ...NameFragment @defer
         }
       }
     }
