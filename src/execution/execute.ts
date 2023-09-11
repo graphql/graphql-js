@@ -26,6 +26,7 @@ import { OperationTypeNode } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 
 import type {
+  DeferUsage,
   GraphQLAbstractType,
   GraphQLField,
   GraphQLFieldResolver,
@@ -48,7 +49,6 @@ import type { GraphQLSchema } from '../type/schema.js';
 import { assertValidSchema } from '../type/validate.js';
 
 import type {
-  DeferUsage,
   DeferUsageSet,
   FieldGroup,
   GroupedFieldSet,
@@ -419,6 +419,7 @@ function executeOperation(
   const newDeferredGroupedFieldSetRecords = addNewDeferredGroupedFieldSets(
     incrementalPublisher,
     newGroupedFieldSetDetails,
+    initialResultRecord,
     newDeferMap,
     path,
   );
@@ -606,6 +607,7 @@ function executeField(
     fieldGroup,
     parentType,
     path,
+    incrementalDataRecord,
   );
 
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
@@ -691,12 +693,31 @@ export function buildResolveInfo(
   fieldGroup: FieldGroup,
   parentType: GraphQLObjectType,
   path: Path,
+  incrementalDataRecord?: IncrementalDataRecord | undefined,
 ): GraphQLResolveInfo {
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
+  if (incrementalDataRecord === undefined) {
+    return {
+      fieldName: fieldDef.name,
+      fieldDetails: fieldGroup.fields,
+      returnType: fieldDef.type,
+      parentType,
+      path,
+      schema: exeContext.schema,
+      fragments: exeContext.fragments,
+      rootValue: exeContext.rootValue,
+      operation: exeContext.operation,
+      variableValues: exeContext.variableValues,
+      priority: 0,
+      deferPriority: 0,
+      published: true,
+    };
+  }
+
   return {
     fieldName: fieldDef.name,
-    fieldNodes: toNodes(fieldGroup),
+    fieldDetails: fieldGroup.fields,
     returnType: fieldDef.type,
     parentType,
     path,
@@ -705,6 +726,12 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    priority: incrementalDataRecord.priority,
+    deferPriority: incrementalDataRecord.deferPriority,
+    published:
+      incrementalDataRecord.published === true
+        ? true
+        : incrementalDataRecord.published,
   };
 }
 
@@ -1498,6 +1525,7 @@ function deferredFragmentRecordFromDeferUsage(
 function addNewDeferredGroupedFieldSets(
   incrementalPublisher: IncrementalPublisher,
   newGroupedFieldSetDetails: Map<DeferUsageSet, GroupedFieldSetDetails>,
+  incrementalDataRecord: IncrementalDataRecord,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
   path?: Path | undefined,
 ): ReadonlyArray<DeferredGroupedFieldSetRecord> {
@@ -1512,12 +1540,23 @@ function addNewDeferredGroupedFieldSets(
       newGroupedFieldSetDeferUsages,
       deferMap,
     );
-    const deferredGroupedFieldSetRecord = new DeferredGroupedFieldSetRecord({
-      path,
-      deferredFragmentRecords,
-      groupedFieldSet,
-      shouldInitiateDefer,
-    });
+    const deferredGroupedFieldSetRecord = shouldInitiateDefer
+      ? new DeferredGroupedFieldSetRecord({
+          path,
+          priority: incrementalDataRecord.priority + 1,
+          deferPriority: incrementalDataRecord.deferPriority + 1,
+          deferredFragmentRecords,
+          groupedFieldSet,
+          shouldInitiateDefer: true,
+        })
+      : new DeferredGroupedFieldSetRecord({
+          path,
+          priority: incrementalDataRecord.priority,
+          deferPriority: incrementalDataRecord.deferPriority,
+          deferredFragmentRecords,
+          groupedFieldSet,
+          shouldInitiateDefer: false,
+        });
     incrementalPublisher.reportNewDeferredGroupedFieldSetRecord(
       deferredGroupedFieldSetRecord,
     );
@@ -1562,6 +1601,7 @@ function collectAndExecuteSubfields(
   const newDeferredGroupedFieldSetRecords = addNewDeferredGroupedFieldSets(
     incrementalPublisher,
     newGroupedFieldSetDetails,
+    incrementalDataRecord,
     newDeferMap,
     path,
   );
@@ -1980,6 +2020,7 @@ function executeStreamField(
   const streamItemsRecord = new StreamItemsRecord({
     streamRecord,
     path: itemPath,
+    priority: incrementalDataRecord.priority + 1,
   });
   incrementalPublisher.reportNewStreamItemsRecord(
     streamItemsRecord,
@@ -2172,6 +2213,7 @@ async function executeStreamAsyncIterator(
     const streamItemsRecord = new StreamItemsRecord({
       streamRecord,
       path: itemPath,
+      priority: incrementalDataRecord.priority + 1,
     });
     incrementalPublisher.reportNewStreamItemsRecord(
       streamItemsRecord,

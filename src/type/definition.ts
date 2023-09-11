@@ -885,9 +885,22 @@ export type GraphQLFieldResolver<
   info: GraphQLResolveInfo,
 ) => TResult;
 
+export interface DeferUsage {
+  label: string | undefined;
+  ancestors: ReadonlyArray<Target>;
+  deferPriority: number;
+}
+
+export type Target = DeferUsage | undefined;
+
+export interface FieldDetails {
+  node: FieldNode;
+  target: Target;
+}
+
 export interface GraphQLResolveInfo {
   readonly fieldName: string;
-  readonly fieldNodes: ReadonlyArray<FieldNode>;
+  readonly fieldDetails: ReadonlyArray<FieldDetails>;
   readonly returnType: GraphQLOutputType;
   readonly parentType: GraphQLObjectType;
   readonly path: Path;
@@ -896,6 +909,9 @@ export interface GraphQLResolveInfo {
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
   readonly variableValues: { [variable: string]: unknown };
+  readonly priority: number;
+  readonly deferPriority: number;
+  readonly published: true | Promise<void>;
 }
 
 /**

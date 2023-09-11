@@ -1,13 +1,17 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
+import { isPromise } from '../../jsutils/isPromise.js';
+
 import type { DocumentNode } from '../../language/ast.js';
+import { Kind } from '../../language/kinds.js';
 import { parse } from '../../language/parser.js';
 
+import type { FieldDetails } from '../../type/definition.js';
 import {
   GraphQLList,
   GraphQLNonNull,
@@ -215,6 +219,174 @@ describe('Execute: defer directive', () => {
         },
       },
     });
+  });
+  it('Can provides correct info about deferred execution state when resolver could defer', async () => {
+    let fieldDetails: ReadonlyArray<FieldDetails> | undefined;
+    let deferPriority;
+    let published;
+    let resumed;
+
+    const SomeType = new GraphQLObjectType({
+      name: 'SomeType',
+      fields: {
+        someField: {
+          type: GraphQLString,
+          resolve: () => Promise.resolve('someField'),
+        },
+        deferredField: {
+          type: GraphQLString,
+          resolve: async (_parent, _args, _context, info) => {
+            fieldDetails = info.fieldDetails;
+            deferPriority = info.deferPriority;
+            published = info.published;
+            await published;
+            resumed = true;
+          },
+        },
+      },
+    });
+
+    const someSchema = new GraphQLSchema({ query: SomeType });
+
+    const document = parse(`
+      query {
+        someField
+        ... @defer {
+          deferredField
+        }
+      }
+    `);
+
+    const operation = document.definitions[0];
+    assert(operation.kind === Kind.OPERATION_DEFINITION);
+    const fragment = operation.selectionSet.selections[1];
+    assert(fragment.kind === Kind.INLINE_FRAGMENT);
+    const field = fragment.selectionSet.selections[0];
+
+    const result = experimentalExecuteIncrementally({
+      schema: someSchema,
+      document,
+    });
+
+    expect(fieldDetails).to.equal(undefined);
+    expect(deferPriority).to.equal(undefined);
+    expect(published).to.equal(undefined);
+    expect(resumed).to.equal(undefined);
+
+    const initialPayload = await result;
+    assert('initialResult' in initialPayload);
+    const iterator = initialPayload.subsequentResults[Symbol.asyncIterator]();
+    await iterator.next();
+
+    assert(fieldDetails !== undefined);
+    expect(fieldDetails[0].node).to.equal(field);
+    expect(fieldDetails[0].target?.deferPriority).to.equal(1);
+    expect(deferPriority).to.equal(1);
+    expect(isPromise(published)).to.equal(true);
+    expect(resumed).to.equal(true);
+  });
+  it('Can provides correct info about deferred execution state when deferred field is masked by non-deferred field', async () => {
+    let fieldDetails: ReadonlyArray<FieldDetails> | undefined;
+    let deferPriority;
+    let published;
+
+    const SomeType = new GraphQLObjectType({
+      name: 'SomeType',
+      fields: {
+        someField: {
+          type: GraphQLString,
+          resolve: (_parent, _args, _context, info) => {
+            fieldDetails = info.fieldDetails;
+            deferPriority = info.deferPriority;
+            published = info.published;
+            return 'someField';
+          },
+        },
+      },
+    });
+
+    const someSchema = new GraphQLSchema({ query: SomeType });
+
+    const document = parse(`
+      query {
+        someField
+        ... @defer {
+          someField
+        }
+      }
+    `);
+
+    const operation = document.definitions[0];
+    assert(operation.kind === Kind.OPERATION_DEFINITION);
+    const node1 = operation.selectionSet.selections[0];
+    const fragment = operation.selectionSet.selections[1];
+    assert(fragment.kind === Kind.INLINE_FRAGMENT);
+    const node2 = fragment.selectionSet.selections[0];
+
+    const result = experimentalExecuteIncrementally({
+      schema: someSchema,
+      document,
+    });
+
+    const initialPayload = await result;
+    assert('initialResult' in initialPayload);
+    expect(initialPayload.initialResult).to.deep.equal({
+      data: {
+        someField: 'someField',
+      },
+      pending: [{ id: '0', path: [] }],
+      hasNext: true,
+    });
+
+    assert(fieldDetails !== undefined);
+    expect(fieldDetails[0].node).to.equal(node1);
+    expect(fieldDetails[0].target).to.equal(undefined);
+    expect(fieldDetails[1].node).to.equal(node2);
+    expect(fieldDetails[1].target?.deferPriority).to.equal(1);
+    expect(deferPriority).to.equal(0);
+    expect(published).to.equal(true);
+  });
+  it('Can provides correct info about deferred execution state when resolver need not defer', async () => {
+    let deferPriority;
+    let published;
+    const SomeType = new GraphQLObjectType({
+      name: 'SomeType',
+      fields: {
+        deferredField: {
+          type: GraphQLString,
+          resolve: (_parent, _args, _context, info) => {
+            deferPriority = info.deferPriority;
+            published = info.published;
+          },
+        },
+      },
+    });
+
+    const someSchema = new GraphQLSchema({ query: SomeType });
+
+    const document = parse(`
+      query {
+        ... @defer {
+          deferredField
+        }
+      }
+    `);
+
+    const result = experimentalExecuteIncrementally({
+      schema: someSchema,
+      document,
+    });
+
+    expect(deferPriority).to.equal(undefined);
+    expect(published).to.equal(undefined);
+
+    const initialPayload = await result;
+    assert('initialResult' in initialPayload);
+    const iterator = initialPayload.subsequentResults[Symbol.asyncIterator]();
+    await iterator.next();
+
+    expect(deferPriority).to.equal(1);
+    expect(published).to.equal(true);
   });
   it('Does not disable defer with null if argument', async () => {
     const document = parse(`
