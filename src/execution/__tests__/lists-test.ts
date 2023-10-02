@@ -18,8 +18,8 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import type { ExecutionResult } from '../execute.js';
 import { execute, executeSync } from '../execute.js';
+import type { ExecutionResult } from '../IncrementalPublisher.js';
 
 describe('Execute: Accepts any iterable as list value', () => {
   function complete(rootValue: unknown) {
@@ -141,12 +141,12 @@ describe('Execute: Accepts async iterables as list value', () => {
     }
 
     expectJSON(await complete({ listField })).toDeepEqual({
-      data: { listField: ['two', '4', null] },
+      data: { listField: null },
       errors: [
         {
           message: 'bad',
           locations: [{ line: 1, column: 3 }],
-          path: ['listField', 2],
+          path: ['listField'],
         },
       ],
     });

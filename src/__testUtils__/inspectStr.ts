@@ -9,6 +9,6 @@ export function inspectStr(str: Maybe<string>): string {
   }
   return JSON.stringify(str)
     .replace(/^"|"$/g, '`')
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, '\\');
+    .replaceAll('\\"', '"')
+    .replaceAll('\\\\', '\\');
 }

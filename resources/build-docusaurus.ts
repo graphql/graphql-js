@@ -14,7 +14,6 @@ fs.writeFileSync(tmpDirPath('package.json'), JSON.stringify(packageJSON));
 
 copyToTmpDir('package-lock.json');
 copyToTmpDir('tsconfig.json');
-copyToTmpDir('resources/eslint-internal-rules');
 copyToTmpDir('src');
 copyToTmpDir('website');
 

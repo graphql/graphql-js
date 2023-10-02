@@ -372,6 +372,17 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'isOneOf',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'Boolean',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               inputFields: null,
               interfaces: [],
@@ -989,6 +1000,12 @@ describe('Introspection', () => {
                 },
               ],
             },
+            {
+              name: 'oneOf',
+              isRepeatable: false,
+              locations: ['INPUT_OBJECT'],
+              args: [],
+            },
           ],
         },
       },
@@ -1515,6 +1532,95 @@ describe('Introspection', () => {
           falseFields: [{ name: 'nonDeprecated' }],
           omittedFields: [{ name: 'nonDeprecated' }],
         },
+      },
+    });
+  });
+
+  it('identifies oneOf for input objects', () => {
+    const schema = buildSchema(`
+      input SomeInputObject @oneOf {
+        a: String
+      }
+
+      input AnotherInputObject {
+        a: String
+        b: String
+      }
+
+      type Query {
+        someField(someArg: SomeInputObject): String
+        anotherField(anotherArg: AnotherInputObject): String
+      }
+    `);
+
+    const source = `
+      {
+        oneOfInputObject: __type(name: "SomeInputObject") {
+          isOneOf
+        }
+        inputObject: __type(name: "AnotherInputObject") {
+          isOneOf
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        oneOfInputObject: {
+          isOneOf: true,
+        },
+        inputObject: {
+          isOneOf: false,
+        },
+      },
+    });
+  });
+
+  it('returns null for oneOf for other types', () => {
+    const schema = buildSchema(`
+      type SomeObject implements SomeInterface {
+        fieldA: String
+      }
+      enum SomeEnum {
+        SomeObject
+      }
+      interface SomeInterface {
+        fieldA: String
+      }
+      union SomeUnion = SomeObject
+      type Query {
+        someField(enum: SomeEnum): SomeUnion
+        anotherField(enum: SomeEnum): SomeInterface
+      }
+    `);
+
+    const source = `
+      {
+        object: __type(name: "SomeObject") {
+          isOneOf
+        }
+        enum: __type(name: "SomeEnum") {
+          isOneOf
+        }
+        interface: __type(name: "SomeInterface") {
+          isOneOf
+        }
+        scalar: __type(name: "String") {
+          isOneOf
+        }
+        union: __type(name: "SomeUnion") {
+          isOneOf
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        object: { isOneOf: null },
+        enum: { isOneOf: null },
+        interface: { isOneOf: null },
+        scalar: { isOneOf: null },
+        union: { isOneOf: null },
       },
     });
   });

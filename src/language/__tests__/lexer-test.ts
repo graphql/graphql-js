@@ -1134,7 +1134,7 @@ describe('Lexer', () => {
     for (let tok: Token | null = startToken; tok; tok = tok.next) {
       if (tokens.length) {
         // Tokens are double-linked, prev should point to last seen token.
-        expect(tok.prev).to.equal(tokens[tokens.length - 1]);
+        expect(tok.prev).to.equal(tokens.at(-1));
       }
       tokens.push(tok);
     }

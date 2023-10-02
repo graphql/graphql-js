@@ -20,8 +20,9 @@ import {
 } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import type { ExecutionArgs, ExecutionResult } from '../execute.js';
+import type { ExecutionArgs } from '../execute.js';
 import { createSourceEventStream, subscribe } from '../execute.js';
+import type { ExecutionResult } from '../IncrementalPublisher.js';
 
 import { SimplePubSub } from './simplePubSub.js';
 

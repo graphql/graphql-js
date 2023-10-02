@@ -127,7 +127,7 @@ function coerceInputValueImpl(
 
     // Ensure every provided field is defined.
     for (const fieldName of Object.keys(inputValue)) {
-      if (!fieldDefs[fieldName]) {
+      if (fieldDefs[fieldName] == null) {
         const suggestions = suggestionList(
           fieldName,
           Object.keys(type.getFields()),
@@ -142,6 +142,30 @@ function coerceInputValueImpl(
         );
       }
     }
+
+    if (type.isOneOf) {
+      const keys = Object.keys(coercedValue);
+      if (keys.length !== 1) {
+        onError(
+          pathToArray(path),
+          inputValue,
+          new GraphQLError(
+            `Exactly one key must be specified for OneOf type "${type.name}".`,
+          ),
+        );
+      }
+
+      const key = keys[0];
+      const value = coercedValue[key];
+      if (value === null) {
+        onError(
+          pathToArray(path).concat(key),
+          value,
+          new GraphQLError(`Field "${key}" must be non-null.`),
+        );
+      }
+    }
+
     return coercedValue;
   }
 

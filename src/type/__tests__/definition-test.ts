@@ -566,34 +566,6 @@ describe('Type System: Input Objects', () => {
     });
   });
 
-  describe('Input Object fields must not have resolvers', () => {
-    it('rejects an Input Object type with resolvers', () => {
-      const inputObjType = new GraphQLInputObjectType({
-        name: 'SomeInputObject',
-        fields: {
-          // @ts-expect-error (Input fields cannot have resolvers)
-          f: { type: ScalarType, resolve: dummyFunc },
-        },
-      });
-      expect(() => inputObjType.getFields()).to.throw(
-        'SomeInputObject.f field has a resolve property, but Input Types cannot define resolvers.',
-      );
-    });
-
-    it('rejects an Input Object type with resolver constant', () => {
-      const inputObjType = new GraphQLInputObjectType({
-        name: 'SomeInputObject',
-        fields: {
-          // @ts-expect-error (Input fields cannot have resolvers)
-          f: { type: ScalarType, resolve: {} },
-        },
-      });
-      expect(() => inputObjType.getFields()).to.throw(
-        'SomeInputObject.f field has a resolve property, but Input Types cannot define resolvers.',
-      );
-    });
-  });
-
   it('Deprecation reason is preserved on fields', () => {
     const inputObjType = new GraphQLInputObjectType({
       name: 'SomeInputObject',

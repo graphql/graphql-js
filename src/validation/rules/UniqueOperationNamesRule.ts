@@ -1,5 +1,6 @@
 import { GraphQLError } from '../../error/GraphQLError.js';
 
+import type { NameNode } from '../../language/ast.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
 import type { ASTValidationContext } from '../ValidationContext.js';
@@ -14,25 +15,21 @@ import type { ASTValidationContext } from '../ValidationContext.js';
 export function UniqueOperationNamesRule(
   context: ASTValidationContext,
 ): ASTVisitor {
-  const knownOperationNames = Object.create(null);
+  const knownOperationNames = new Map<string, NameNode>();
   return {
     OperationDefinition(node) {
       const operationName = node.name;
-      if (operationName) {
-        if (knownOperationNames[operationName.value]) {
+      if (operationName != null) {
+        const knownOperationName = knownOperationNames.get(operationName.value);
+        if (knownOperationName != null) {
           context.reportError(
             new GraphQLError(
               `There can be only one operation named "${operationName.value}".`,
-              {
-                nodes: [
-                  knownOperationNames[operationName.value],
-                  operationName,
-                ],
-              },
+              { nodes: [knownOperationName, operationName] },
             ),
           );
         } else {
-          knownOperationNames[operationName.value] = operationName;
+          knownOperationNames.set(operationName.value, operationName);
         }
       }
       return false;

@@ -17,7 +17,7 @@ export function inlineInvariant(context: ts.TransformationContext) {
   return visitSourceFile;
 
   function visitSourceFile(sourceFile: ts.SourceFile) {
-    return ts.visitNode(sourceFile, visitNode);
+    return ts.visitNode(sourceFile, visitNode, ts.isSourceFile);
   }
 
   function visitNode(node: ts.Node): ts.Node {
@@ -32,11 +32,10 @@ export function inlineInvariant(context: ts.TransformationContext) {
           return factory.createBinaryExpression(
             factory.createParenthesizedExpression(condition),
             ts.SyntaxKind.BarBarToken,
-            factory.createCallExpression(
-              factory.createIdentifier(funcName),
-              undefined,
-              [factory.createFalse(), ...otherArgs],
-            ),
+            factory.createCallExpression(expression, undefined, [
+              factory.createFalse(),
+              ...otherArgs,
+            ]),
           );
         }
       }

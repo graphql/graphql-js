@@ -1,7 +1,9 @@
 import assert from 'assert';
 
+/* eslint-disable n/no-missing-import */
 import cjs from './dist/main-cjs.cjs';
 import mjs from './dist/main-mjs.cjs';
+/* eslint-enable n/no-missing-import */
 
 assert.deepStrictEqual(cjs.result, {
   data: {

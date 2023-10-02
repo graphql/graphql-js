@@ -29,7 +29,7 @@ export function changeExtensionInImportPaths(config: { extension: string }) {
     return visitSourceFile;
 
     function visitSourceFile(sourceFile: ts.SourceFile) {
-      return ts.visitNode(sourceFile, visitNode);
+      return ts.visitNode(sourceFile, visitNode, ts.isSourceFile);
     }
 
     function visitNode(node: ts.Node): ts.Node {
@@ -40,7 +40,6 @@ export function changeExtensionInImportPaths(config: { extension: string }) {
         if (ts.isImportDeclaration(node)) {
           return factory.updateImportDeclaration(
             node,
-            node.decorators,
             node.modifiers,
             node.importClause,
             factory.createStringLiteral(newSource),
@@ -50,7 +49,6 @@ export function changeExtensionInImportPaths(config: { extension: string }) {
         if (ts.isExportDeclaration(node)) {
           return factory.updateExportDeclaration(
             node,
-            node.decorators,
             node.modifiers,
             node.isTypeOnly,
             node.exportClause,

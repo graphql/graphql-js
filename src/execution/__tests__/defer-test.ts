@@ -16,20 +16,17 @@ import {
 import { GraphQLID, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
+import { execute, experimentalExecuteIncrementally } from '../execute.js';
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../execute.js';
-import { execute, experimentalExecuteIncrementally } from '../execute.js';
+} from '../IncrementalPublisher.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
-    promiseNonNullErrorField: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: () => Promise.resolve(null),
-    },
+    nonNullName: { type: new GraphQLNonNull(GraphQLString) },
   },
   name: 'Friend',
 });
@@ -40,64 +37,109 @@ const friends = [
   { name: 'C-3PO', id: 4 },
 ];
 
+const deeperObject = new GraphQLObjectType({
+  fields: {
+    foo: { type: GraphQLString },
+    bar: { type: GraphQLString },
+    baz: { type: GraphQLString },
+    bak: { type: GraphQLString },
+  },
+  name: 'DeeperObject',
+});
+
+const nestedObject = new GraphQLObjectType({
+  fields: {
+    deeperObject: { type: deeperObject },
+    name: { type: GraphQLString },
+  },
+  name: 'NestedObject',
+});
+
+const anotherNestedObject = new GraphQLObjectType({
+  fields: {
+    deeperObject: { type: deeperObject },
+  },
+  name: 'AnotherNestedObject',
+});
+
+const hero = {
+  name: 'Luke',
+  id: 1,
+  friends,
+  nestedObject,
+  anotherNestedObject,
+};
+
+const c = new GraphQLObjectType({
+  fields: {
+    d: { type: GraphQLString },
+    nonNullErrorField: { type: new GraphQLNonNull(GraphQLString) },
+  },
+  name: 'c',
+});
+
+const e = new GraphQLObjectType({
+  fields: {
+    f: { type: GraphQLString },
+  },
+  name: 'e',
+});
+
+const b = new GraphQLObjectType({
+  fields: {
+    c: { type: c },
+    e: { type: e },
+  },
+  name: 'b',
+});
+
+const a = new GraphQLObjectType({
+  fields: {
+    b: { type: b },
+    someField: { type: GraphQLString },
+  },
+  name: 'a',
+});
+
+const g = new GraphQLObjectType({
+  fields: {
+    h: { type: GraphQLString },
+  },
+  name: 'g',
+});
+
 const heroType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
-    slowField: {
-      type: GraphQLString,
-      resolve: async () => {
-        await resolveOnNextTick();
-        return 'slow';
-      },
-    },
-    errorField: {
-      type: GraphQLString,
-      resolve: () => {
-        throw new Error('bad');
-      },
-    },
-    nonNullErrorField: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: () => null,
-    },
-    promiseNonNullErrorField: {
-      type: new GraphQLNonNull(GraphQLString),
-      resolve: () => Promise.resolve(null),
-    },
+    nonNullName: { type: new GraphQLNonNull(GraphQLString) },
     friends: {
       type: new GraphQLList(friendType),
-      resolve: () => friends,
     },
-    asyncFriends: {
-      type: new GraphQLList(friendType),
-      async *resolve() {
-        yield await Promise.resolve(friends[0]);
-      },
-    },
+    nestedObject: { type: nestedObject },
+    anotherNestedObject: { type: anotherNestedObject },
   },
   name: 'Hero',
 });
-
-const hero = { name: 'Luke', id: 1 };
 
 const query = new GraphQLObjectType({
   fields: {
     hero: {
       type: heroType,
-      resolve: () => hero,
     },
+    a: { type: a },
+    g: { type: g },
   },
   name: 'Query',
 });
 
 const schema = new GraphQLSchema({ query });
 
-async function complete(document: DocumentNode) {
+async function complete(document: DocumentNode, rootValue: unknown = { hero }) {
   const result = await experimentalExecuteIncrementally({
     schema,
     document,
-    rootValue: {},
+    rootValue,
   });
 
   if ('initialResult' in result) {
@@ -122,7 +164,6 @@ describe('Execute: defer directive', () => {
         }
       }
       fragment NameFragment on Hero {
-        id
         name
       }
     `);
@@ -135,18 +176,19 @@ describe('Execute: defer directive', () => {
             id: '1',
           },
         },
+        pending: [{ id: '0', path: ['hero'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             data: {
-              id: '1',
               name: 'Luke',
             },
-            path: ['hero'],
+            id: '0',
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -190,15 +232,17 @@ describe('Execute: defer directive', () => {
     expectJSON(result).toDeepEqual([
       {
         data: { hero: { id: '1' } },
+        pending: [{ id: '0', path: ['hero'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             data: { name: 'Luke' },
-            path: ['hero'],
+            id: '0',
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -219,6 +263,7 @@ describe('Execute: defer directive', () => {
     expectJSON(result).toDeepEqual([
       {
         data: {},
+        pending: [{ id: '0', path: [], label: 'DeferQuery' }],
         hasNext: true,
       },
       {
@@ -229,10 +274,10 @@ describe('Execute: defer directive', () => {
                 id: '1',
               },
             },
-            path: [],
-            label: 'DeferQuery',
+            id: '0',
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -244,15 +289,23 @@ describe('Execute: defer directive', () => {
       }
       fragment QueryFragment on Query {
         hero {
-          errorField
+          name
         }
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        name: () => {
+          throw new Error('bad');
+        },
+      },
+    });
 
     expectJSON(result).toDeepEqual([
       {
         data: {},
+        pending: [{ id: '0', path: [], label: 'DeferQuery' }],
         hasNext: true,
       },
       {
@@ -260,20 +313,20 @@ describe('Execute: defer directive', () => {
           {
             data: {
               hero: {
-                errorField: null,
+                name: null,
               },
             },
             errors: [
               {
                 message: 'bad',
                 locations: [{ line: 7, column: 11 }],
-                path: ['hero', 'errorField'],
+                path: ['hero', 'name'],
               },
             ],
-            path: [],
-            label: 'DeferQuery',
+            id: '0',
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -282,12 +335,11 @@ describe('Execute: defer directive', () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
-          id
           ...TopFragment @defer(label: "DeferTop")
         }
       }
       fragment TopFragment on Hero {
-        name
+        id
         ...NestedFragment @defer(label: "DeferNested")
       }
       fragment NestedFragment on Hero {
@@ -301,29 +353,30 @@ describe('Execute: defer directive', () => {
     expectJSON(result).toDeepEqual([
       {
         data: {
-          hero: {
-            id: '1',
-          },
+          hero: {},
         },
+        pending: [
+          { id: '0', path: ['hero'], label: 'DeferTop' },
+          { id: '1', path: ['hero'], label: 'DeferNested' },
+        ],
         hasNext: true,
       },
       {
         incremental: [
           {
             data: {
-              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+              id: '1',
             },
-            path: ['hero'],
-            label: 'DeferNested',
+            id: '0',
           },
           {
             data: {
-              name: 'Luke',
+              friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
             },
-            path: ['hero'],
-            label: 'DeferTop',
+            id: '1',
           },
         ],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -332,7 +385,6 @@ describe('Execute: defer directive', () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
-          id
           ...TopFragment @defer(label: "DeferTop")
           ...TopFragment
         }
@@ -346,22 +398,14 @@ describe('Execute: defer directive', () => {
       {
         data: {
           hero: {
-            id: '1',
             name: 'Luke',
           },
         },
+        pending: [{ id: '0', path: ['hero'], label: 'DeferTop' }],
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: {
-              name: 'Luke',
-            },
-            path: ['hero'],
-            label: 'DeferTop',
-          },
-        ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -370,7 +414,6 @@ describe('Execute: defer directive', () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
-          id
           ...TopFragment
           ...TopFragment @defer(label: "DeferTop")
         }
@@ -384,22 +427,14 @@ describe('Execute: defer directive', () => {
       {
         data: {
           hero: {
-            id: '1',
             name: 'Luke',
           },
         },
+        pending: [{ id: '0', path: ['hero'], label: 'DeferTop' }],
         hasNext: true,
       },
       {
-        incremental: [
-          {
-            data: {
-              name: 'Luke',
-            },
-            path: ['hero'],
-            label: 'DeferTop',
-          },
-        ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -421,16 +456,1285 @@ describe('Execute: defer directive', () => {
     expectJSON(result).toDeepEqual([
       {
         data: { hero: { id: '1' } },
+        pending: [{ id: '0', path: ['hero'], label: 'InlineDeferred' }],
+        hasNext: true,
+      },
+      {
+        incremental: [{ data: { name: 'Luke' }, id: '0' }],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Does not emit empty defer fragments', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ... @defer {
+            name @skip(if: true)
+          }
+        }
+      }
+      fragment TopFragment on Hero {
+        name
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Can separately emit defer fragments with different labels with varying fields', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ... @defer(label: "DeferID") {
+            id
+          }
+          ... @defer(label: "DeferName") {
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        pending: [
+          { id: '0', path: ['hero'], label: 'DeferID' },
+          { id: '1', path: ['hero'], label: 'DeferName' },
+        ],
         hasNext: true,
       },
       {
         incremental: [
-          { data: { name: 'Luke' }, path: ['hero'], label: 'InlineDeferred' },
+          {
+            data: {
+              id: '1',
+            },
+            id: '0',
+          },
+          {
+            data: {
+              name: 'Luke',
+            },
+            id: '1',
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Separately emits defer fragments with different labels with varying subfields', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer(label: "DeferID") {
+          hero {
+            id
+          }
+        }
+        ... @defer(label: "DeferName") {
+          hero {
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [], label: 'DeferID' },
+          { id: '1', path: [], label: 'DeferName' },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { hero: {} },
+            id: '0',
+          },
+          {
+            data: { id: '1' },
+            id: '0',
+            subPath: ['hero'],
+          },
+          {
+            data: { name: 'Luke' },
+            id: '1',
+            subPath: ['hero'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Separately emits defer fragments with different labels with varying subfields that return promises', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer(label: "DeferID") {
+          hero {
+            id
+          }
+        }
+        ... @defer(label: "DeferName") {
+          hero {
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        id: () => Promise.resolve('1'),
+        name: () => Promise.resolve('Luke'),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [], label: 'DeferID' },
+          { id: '1', path: [], label: 'DeferName' },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { hero: {} },
+            id: '0',
+          },
+          {
+            data: { id: '1' },
+            id: '0',
+            subPath: ['hero'],
+          },
+          {
+            data: { name: 'Luke' },
+            id: '1',
+            subPath: ['hero'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Separately emits defer fragments with varying subfields of same priorities but different level of defers', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ... @defer(label: "DeferID") {
+            id
+          }
+        }
+        ... @defer(label: "DeferName") {
+          hero {
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        pending: [
+          { id: '0', path: [], label: 'DeferName' },
+          { id: '1', path: ['hero'], label: 'DeferID' },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              id: '1',
+            },
+            id: '1',
+          },
+          {
+            data: {
+              name: 'Luke',
+            },
+            id: '0',
+            subPath: ['hero'],
+          },
+        ],
+        completed: [{ id: '1' }, { id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Separately emits nested defer fragments with varying subfields of same priorities but different level of defers', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer(label: "DeferName") {
+          hero {
+            name
+            ... @defer(label: "DeferID") {
+              id
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [{ id: '0', path: [], label: 'DeferName' }],
+        hasNext: true,
+      },
+      {
+        pending: [{ id: '1', path: ['hero'], label: 'DeferID' }],
+        incremental: [
+          {
+            data: {
+              hero: {
+                name: 'Luke',
+              },
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              id: '1',
+            },
+            id: '1',
+          },
+        ],
+        completed: [{ id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Can deduplicate multiple defers on the same object', async () => {
+    const document = parse(`
+      query {
+        hero {
+          friends {
+            ... @defer {
+              ...FriendFrag
+              ... @defer {
+                ...FriendFrag
+                ... @defer {
+                  ...FriendFrag
+                  ... @defer {
+                    ...FriendFrag
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      fragment FriendFrag on Friend {
+        id
+        name
+      }
+    `);
+    const result = await complete(document);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { friends: [{}, {}, {}] } },
+        pending: [
+          { id: '0', path: ['hero', 'friends', 0] },
+          { id: '1', path: ['hero', 'friends', 0] },
+          { id: '2', path: ['hero', 'friends', 0] },
+          { id: '3', path: ['hero', 'friends', 0] },
+          { id: '4', path: ['hero', 'friends', 1] },
+          { id: '5', path: ['hero', 'friends', 1] },
+          { id: '6', path: ['hero', 'friends', 1] },
+          { id: '7', path: ['hero', 'friends', 1] },
+          { id: '8', path: ['hero', 'friends', 2] },
+          { id: '9', path: ['hero', 'friends', 2] },
+          { id: '10', path: ['hero', 'friends', 2] },
+          { id: '11', path: ['hero', 'friends', 2] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          { data: { id: '2', name: 'Han' }, id: '0' },
+          { data: { id: '3', name: 'Leia' }, id: '4' },
+          { data: { id: '4', name: 'C-3PO' }, id: '8' },
+        ],
+        completed: [
+          { id: '1' },
+          { id: '2' },
+          { id: '3' },
+          { id: '5' },
+          { id: '6' },
+          { id: '7' },
+          { id: '9' },
+          { id: '10' },
+          { id: '11' },
+          { id: '0' },
+          { id: '4' },
+          { id: '8' },
         ],
         hasNext: false,
       },
     ]);
   });
+
+  it('Deduplicates fields present in the initial payload', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nestedObject {
+            deeperObject {
+              foo
+            }
+          }
+          anotherNestedObject {
+            deeperObject {
+              foo
+            }
+          }
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                bar
+              }
+            }
+            anotherNestedObject {
+              deeperObject {
+                foo
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        nestedObject: { deeperObject: { foo: 'foo', bar: 'bar' } },
+        anotherNestedObject: { deeperObject: { foo: 'foo' } },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            nestedObject: {
+              deeperObject: {
+                foo: 'foo',
+              },
+            },
+            anotherNestedObject: {
+              deeperObject: {
+                foo: 'foo',
+              },
+            },
+          },
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { bar: 'bar' },
+            id: '0',
+            subPath: ['nestedObject', 'deeperObject'],
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates fields present in a parent defer payload', async () => {
+    const document = parse(`
+      query {
+        hero {
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                foo
+                ... @defer {
+                  foo
+                  bar
+                }
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: { nestedObject: { deeperObject: { foo: 'foo', bar: 'bar' } } },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        pending: [{ id: '1', path: ['hero', 'nestedObject', 'deeperObject'] }],
+        incremental: [
+          {
+            data: {
+              nestedObject: {
+                deeperObject: { foo: 'foo' },
+              },
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              bar: 'bar',
+            },
+            id: '1',
+          },
+        ],
+        completed: [{ id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates fields with deferred fragments at multiple levels', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nestedObject {
+            deeperObject {
+              foo
+            }
+          }
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                foo
+                bar
+              }
+              ... @defer {
+                deeperObject {
+                  foo
+                  bar
+                  baz
+                  ... @defer {
+                    foo
+                    bar
+                    baz
+                    bak
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        nestedObject: {
+          deeperObject: { foo: 'foo', bar: 'bar', baz: 'baz', bak: 'bak' },
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            nestedObject: {
+              deeperObject: {
+                foo: 'foo',
+              },
+            },
+          },
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        pending: [{ id: '1', path: ['hero', 'nestedObject'] }],
+        incremental: [
+          {
+            data: { bar: 'bar' },
+            id: '0',
+            subPath: ['nestedObject', 'deeperObject'],
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: true,
+      },
+      {
+        pending: [{ id: '2', path: ['hero', 'nestedObject', 'deeperObject'] }],
+        incremental: [
+          {
+            data: { baz: 'baz' },
+            id: '1',
+            subPath: ['deeperObject'],
+          },
+        ],
+        hasNext: true,
+        completed: [{ id: '1' }],
+      },
+      {
+        incremental: [
+          {
+            data: { bak: 'bak' },
+            id: '2',
+          },
+        ],
+        completed: [{ id: '2' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates multiple fields from deferred fragments from different branches occurring at the same level', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nestedObject {
+            deeperObject {
+              ... @defer {
+                foo
+              }
+            }
+          }
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                ... @defer {
+                  foo
+                  bar
+                }
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: { nestedObject: { deeperObject: { foo: 'foo', bar: 'bar' } } },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            nestedObject: {
+              deeperObject: {},
+            },
+          },
+        },
+        pending: [
+          { id: '0', path: ['hero'] },
+          { id: '1', path: ['hero', 'nestedObject', 'deeperObject'] },
+        ],
+        hasNext: true,
+      },
+      {
+        pending: [{ id: '2', path: ['hero', 'nestedObject', 'deeperObject'] }],
+        incremental: [
+          {
+            data: {
+              foo: 'foo',
+            },
+            id: '1',
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              bar: 'bar',
+            },
+            id: '2',
+          },
+        ],
+        completed: [{ id: '2' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicate fields with deferred fragments in different branches at multiple non-overlapping levels', async () => {
+    const document = parse(`
+      query {
+        a {
+          b {
+            c {
+              d
+            }
+            ... @defer {
+              e {
+                f
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            b {
+              e {
+                f
+              }
+            }
+          }
+          g {
+            h
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: {
+        b: {
+          c: { d: 'd' },
+          e: { f: 'f' },
+        },
+      },
+      g: { h: 'h' },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {
+            b: {
+              c: {
+                d: 'd',
+              },
+            },
+          },
+        },
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: ['a', 'b'] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { e: { f: 'f' } },
+            id: '1',
+          },
+          {
+            data: { g: { h: 'h' } },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '1' }, { id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Nulls cross defer boundaries, null first', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            someField
+            b {
+              c {
+                nonNullErrorField
+              }
+            }
+          }
+        }
+        a {
+          ... @defer {
+            b {
+              c {
+                d
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: { b: { c: { d: 'd' } }, someField: 'someField' },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {},
+        },
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: ['a'] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { b: { c: {} } },
+            id: '1',
+          },
+          {
+            data: { d: 'd' },
+            id: '1',
+            subPath: ['b', 'c'],
+          },
+        ],
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
+                locations: [{ line: 8, column: 17 }],
+                path: ['a', 'b', 'c', 'nonNullErrorField'],
+              },
+            ],
+          },
+          { id: '1' },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Nulls cross defer boundaries, value first', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            b {
+              c {
+                d
+              }
+            }
+          }
+        }
+        a {
+          ... @defer {
+            someField
+            b {
+              c {
+                nonNullErrorField
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: {
+        b: { c: { d: 'd' }, nonNullErrorFIeld: null },
+        someField: 'someField',
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {},
+        },
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: ['a'] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { b: { c: {} } },
+            id: '1',
+          },
+          {
+            data: { d: 'd' },
+            id: '0',
+            subPath: ['a', 'b', 'c'],
+          },
+        ],
+        completed: [
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
+                locations: [{ line: 17, column: 17 }],
+                path: ['a', 'b', 'c', 'nonNullErrorField'],
+              },
+            ],
+          },
+          { id: '0' },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('filters a payload with a null that cannot be merged', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            someField
+            b {
+              c {
+                nonNullErrorField
+              }
+            }
+          }
+        }
+        a {
+          ... @defer {
+            b {
+              c {
+                d
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: {
+        b: {
+          c: {
+            d: 'd',
+            nonNullErrorField: async () => {
+              await resolveOnNextTick();
+              return null;
+            },
+          },
+        },
+        someField: 'someField',
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {},
+        },
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: ['a'] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { b: { c: {} } },
+            id: '1',
+          },
+          {
+            data: { d: 'd' },
+            id: '1',
+            subPath: ['b', 'c'],
+          },
+        ],
+        completed: [{ id: '1' }],
+        hasNext: true,
+      },
+      {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
+                locations: [{ line: 8, column: 17 }],
+                path: ['a', 'b', 'c', 'nonNullErrorField'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Cancels deferred fields when initial result exhibits null bubbling', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nonNullName
+        }
+        ... @defer {
+          hero {
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        nonNullName: () => null,
+      },
+    });
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: null,
+      },
+      errors: [
+        {
+          message:
+            'Cannot return null for non-nullable field Hero.nonNullName.',
+          locations: [{ line: 4, column: 11 }],
+          path: ['hero', 'nonNullName'],
+        },
+      ],
+    });
+  });
+
+  it('Cancels deferred fields when deferred result exhibits null bubbling', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          hero {
+            nonNullName
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        nonNullName: () => null,
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [{ id: '0', path: [] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              hero: null,
+            },
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [{ line: 5, column: 13 }],
+                path: ['hero', 'nonNullName'],
+              },
+            ],
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates list fields', async () => {
+    const document = parse(`
+      query {
+        hero {
+          friends {
+            name
+          }
+          ... @defer {
+            friends {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+          },
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates async iterable list fields', async () => {
+    const document = parse(`
+      query {
+        hero {
+          friends {
+            name
+          }
+          ... @defer {
+            friends {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        friends: async function* resolve() {
+          yield await Promise.resolve(friends[0]);
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { friends: [{ name: 'Han' }] } },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates empty async iterable list fields', async () => {
+    const document = parse(`
+      query {
+        hero {
+          friends {
+            name
+          }
+          ... @defer {
+            friends {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        // eslint-disable-next-line require-yield
+        friends: async function* resolve() {
+          await resolveOnNextTick();
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { friends: [] } },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Does not deduplicate list fields with non-overlapping fields', async () => {
+    const document = parse(`
+      query {
+        hero {
+          friends {
+            name
+          }
+          ... @defer {
+            friends {
+              id
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
+          },
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { id: '2' },
+            id: '0',
+            subPath: ['friends', 0],
+          },
+          {
+            data: { id: '3' },
+            id: '0',
+            subPath: ['friends', 1],
+          },
+          {
+            data: { id: '4' },
+            id: '0',
+            subPath: ['friends', 2],
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates list fields that return empty lists', async () => {
+    const document = parse(`
+      query {
+        hero {
+          friends {
+            name
+          }
+          ... @defer {
+            friends {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        friends: () => [],
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { friends: [] } },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates null object fields', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nestedObject {
+            name
+          }
+          ... @defer {
+            nestedObject {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        nestedObject: () => null,
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { nestedObject: null } },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Deduplicates promise object fields', async () => {
+    const document = parse(`
+      query {
+        hero {
+          nestedObject {
+            name
+          }
+          ... @defer {
+            nestedObject {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        nestedObject: () => Promise.resolve({ name: 'foo' }),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { nestedObject: { name: 'foo' } } },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
   it('Handles errors thrown in deferred fragments', async () => {
     const document = parse(`
       query HeroNameQuery {
@@ -440,29 +1744,38 @@ describe('Execute: defer directive', () => {
         }
       }
       fragment NameFragment on Hero {
-        errorField
+        name
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        name: () => {
+          throw new Error('bad');
+        },
+      },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: { hero: { id: '1' } },
+        pending: [{ id: '0', path: ['hero'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
-            data: { errorField: null },
-            path: ['hero'],
+            data: { name: null },
+            id: '0',
             errors: [
               {
                 message: 'bad',
                 locations: [{ line: 9, column: 9 }],
-                path: ['hero', 'errorField'],
+                path: ['hero', 'name'],
               },
             ],
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -476,26 +1789,31 @@ describe('Execute: defer directive', () => {
         }
       }
       fragment NameFragment on Hero {
-        nonNullErrorField
+        nonNullName
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        nonNullName: () => null,
+      },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: { hero: { id: '1' } },
+        pending: [{ id: '0', path: ['hero'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            data: null,
-            path: ['hero'],
+            id: '0',
             errors: [
               {
                 message:
-                  'Cannot return null for non-nullable field Hero.nonNullErrorField.',
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
                 locations: [{ line: 9, column: 9 }],
-                path: ['hero', 'nonNullErrorField'],
+                path: ['hero', 'nonNullName'],
               },
             ],
           },
@@ -508,7 +1826,7 @@ describe('Execute: defer directive', () => {
     const document = parse(`
       query HeroNameQuery {
         hero {
-          nonNullErrorField
+          nonNullName
           ...NameFragment @defer
         }
       }
@@ -516,19 +1834,24 @@ describe('Execute: defer directive', () => {
         id
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        nonNullName: () => null,
+      },
+    });
     expectJSON(result).toDeepEqual({
       errors: [
         {
           message:
-            'Cannot return null for non-nullable field Hero.nonNullErrorField.',
+            'Cannot return null for non-nullable field Hero.nonNullName.',
           locations: [
             {
               line: 4,
               column: 11,
             },
           ],
-          path: ['hero', 'nonNullErrorField'],
+          path: ['hero', 'nonNullName'],
         },
       ],
       data: {
@@ -545,26 +1868,31 @@ describe('Execute: defer directive', () => {
         }
       }
       fragment NameFragment on Hero {
-        promiseNonNullErrorField
+        nonNullName
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        nonNullName: () => Promise.resolve(null),
+      },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: { hero: { id: '1' } },
+        pending: [{ id: '0', path: ['hero'] }],
         hasNext: true,
       },
       {
-        incremental: [
+        completed: [
           {
-            data: null,
-            path: ['hero'],
+            id: '0',
             errors: [
               {
                 message:
-                  'Cannot return null for non-nullable field Hero.promiseNonNullErrorField.',
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
                 locations: [{ line: 9, column: 9 }],
-                path: ['hero', 'promiseNonNullErrorField'],
+                path: ['hero', 'nonNullName'],
               },
             ],
           },
@@ -582,7 +1910,7 @@ describe('Execute: defer directive', () => {
         }
       }
       fragment NameFragment on Hero {
-        slowField
+        name
         friends {
           ...NestedFragment @defer
         }
@@ -591,29 +1919,45 @@ describe('Execute: defer directive', () => {
         name
       }
     `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        name: async () => {
+          await resolveOnNextTick();
+          return 'slow';
+        },
+      },
+    });
     expectJSON(result).toDeepEqual([
       {
         data: {
           hero: { id: '1' },
         },
+        pending: [{ id: '0', path: ['hero'] }],
         hasNext: true,
       },
       {
+        pending: [
+          { id: '1', path: ['hero', 'friends', 0] },
+          { id: '2', path: ['hero', 'friends', 1] },
+          { id: '3', path: ['hero', 'friends', 2] },
+        ],
         incremental: [
           {
-            data: { slowField: 'slow', friends: [{}, {}, {}] },
-            path: ['hero'],
+            data: { name: 'slow', friends: [{}, {}, {}] },
+            id: '0',
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: true,
       },
       {
         incremental: [
-          { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
-          { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
-          { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+          { data: { name: 'Han' }, id: '1' },
+          { data: { name: 'Leia' }, id: '2' },
+          { data: { name: 'C-3PO' }, id: '3' },
         ],
+        completed: [{ id: '1' }, { id: '2' }, { id: '3' }],
         hasNext: false,
       },
     ]);
@@ -642,26 +1986,34 @@ describe('Execute: defer directive', () => {
         data: {
           hero: { id: '1' },
         },
+        pending: [{ id: '0', path: ['hero'] }],
         hasNext: true,
       },
       {
+        pending: [
+          { id: '1', path: ['hero', 'friends', 0] },
+          { id: '2', path: ['hero', 'friends', 1] },
+          { id: '3', path: ['hero', 'friends', 2] },
+        ],
         incremental: [
           {
             data: {
               name: 'Luke',
               friends: [{}, {}, {}],
             },
-            path: ['hero'],
+            id: '0',
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: true,
       },
       {
         incremental: [
-          { data: { name: 'Han' }, path: ['hero', 'friends', 0] },
-          { data: { name: 'Leia' }, path: ['hero', 'friends', 1] },
-          { data: { name: 'C-3PO' }, path: ['hero', 'friends', 2] },
+          { data: { name: 'Han' }, id: '1' },
+          { data: { name: 'Leia' }, id: '2' },
+          { data: { name: 'C-3PO' }, id: '3' },
         ],
+        completed: [{ id: '1' }, { id: '2' }, { id: '3' }],
         hasNext: false,
       },
     ]);
@@ -671,9 +2023,9 @@ describe('Execute: defer directive', () => {
     const document = parse(`
     query {
       hero {
-        asyncFriends {
-          promiseNonNullErrorField
-          ...NameFragment @defer 
+        friends {
+          nonNullName
+          ...NameFragment @defer
         }
       }
     }
@@ -681,19 +2033,29 @@ describe('Execute: defer directive', () => {
       name
     }
   `);
-    const result = await complete(document);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        async *friends() {
+          yield await Promise.resolve({
+            ...friends[0],
+            nonNullName: () => Promise.resolve(null),
+          });
+        },
+      },
+    });
     expectJSON(result).toDeepEqual({
       data: {
         hero: {
-          asyncFriends: [null],
+          friends: [null],
         },
       },
       errors: [
         {
           message:
-            'Cannot return null for non-nullable field Friend.promiseNonNullErrorField.',
+            'Cannot return null for non-nullable field Friend.nonNullName.',
           locations: [{ line: 5, column: 11 }],
-          path: ['hero', 'asyncFriends', 0, 'promiseNonNullErrorField'],
+          path: ['hero', 'friends', 0, 'nonNullName'],
         },
       ],
     });
@@ -719,7 +2081,7 @@ describe('Execute: defer directive', () => {
   it('original execute function resolves to error if anything is deferred and something else is async', async () => {
     const doc = `
     query Deferred {
-      hero { slowField }
+      hero { name }
       ... @defer { hero { id } }
     }
   `;
@@ -727,7 +2089,15 @@ describe('Execute: defer directive', () => {
       execute({
         schema,
         document: parse(doc),
-        rootValue: {},
+        rootValue: {
+          hero: {
+            ...hero,
+            name: async () => {
+              await resolveOnNextTick();
+              return 'slow';
+            },
+          },
+        },
       }),
     ).toRejectWith(
       'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',

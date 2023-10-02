@@ -25,6 +25,6 @@ function formatList(conjunction: string, items: ReadonlyArray<string>): string {
   }
 
   const allButLast = items.slice(0, -1);
-  const lastItem = items[items.length - 1];
+  const lastItem = items.at(-1);
   return allButLast.join(', ') + ', ' + conjunction + ' ' + lastItem;
 }

@@ -601,16 +601,133 @@ describe('Type System Printer', () => {
     `);
   });
 
-  it('Prints an empty description', () => {
-    const schema = buildSingleFieldSchema({
-      type: GraphQLString,
+  it('Prints an empty descriptions', () => {
+    const args = {
+      someArg: { description: '', type: GraphQLString },
+      anotherArg: { description: '', type: GraphQLString },
+    };
+
+    const fields = {
+      someField: { description: '', type: GraphQLString, args },
+      anotherField: { description: '', type: GraphQLString, args },
+    };
+
+    const queryType = new GraphQLObjectType({
+      name: 'Query',
+      description: '',
+      fields,
+    });
+
+    const scalarType = new GraphQLScalarType({
+      name: 'SomeScalar',
       description: '',
     });
 
+    const interfaceType = new GraphQLInterfaceType({
+      name: 'SomeInterface',
+      description: '',
+      fields,
+    });
+
+    const unionType = new GraphQLUnionType({
+      name: 'SomeUnion',
+      description: '',
+      types: [queryType],
+    });
+
+    const enumType = new GraphQLEnumType({
+      name: 'SomeEnum',
+      description: '',
+      values: {
+        SOME_VALUE: { description: '' },
+        ANOTHER_VALUE: { description: '' },
+      },
+    });
+
+    const someDirective = new GraphQLDirective({
+      name: 'someDirective',
+      description: '',
+      args,
+      locations: [DirectiveLocation.QUERY],
+    });
+
+    const schema = new GraphQLSchema({
+      description: '',
+      query: queryType,
+      types: [scalarType, interfaceType, unionType, enumType],
+      directives: [someDirective],
+    });
+
     expectPrintedSchema(schema).to.equal(dedent`
+      """"""
+      schema {
+        query: Query
+      }
+
+      """"""
+      directive @someDirective(
+        """"""
+        someArg: String
+
+        """"""
+        anotherArg: String
+      ) on QUERY
+
+      """"""
+      scalar SomeScalar
+
+      """"""
+      interface SomeInterface {
+        """"""
+        someField(
+          """"""
+          someArg: String
+
+          """"""
+          anotherArg: String
+        ): String
+
+        """"""
+        anotherField(
+          """"""
+          someArg: String
+
+          """"""
+          anotherArg: String
+        ): String
+      }
+
+      """"""
+      union SomeUnion = Query
+
+      """"""
       type Query {
         """"""
-        singleField: String
+        someField(
+          """"""
+          someArg: String
+
+          """"""
+          anotherArg: String
+        ): String
+
+        """"""
+        anotherField(
+          """"""
+          someArg: String
+
+          """"""
+          anotherArg: String
+        ): String
+      }
+
+      """"""
+      enum SomeEnum {
+        """"""
+        SOME_VALUE
+
+        """"""
+        ANOTHER_VALUE
       }
     `);
   });
@@ -679,6 +796,11 @@ describe('Type System Printer', () => {
       ) on SCALAR
 
       """
+      Indicates exactly one field must be supplied and this field must not be \`null\`.
+      """
+      directive @oneOf on INPUT_OBJECT
+
+      """
       A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       """
       type __Schema {
@@ -720,6 +842,7 @@ describe('Type System Printer', () => {
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
         inputFields(includeDeprecated: Boolean = false): [__InputValue!]
         ofType: __Type
+        isOneOf: Boolean
       }
 
       """An enum describing what kind of type a given \`__Type\` is."""

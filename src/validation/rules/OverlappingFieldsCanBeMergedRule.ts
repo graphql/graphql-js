@@ -1,6 +1,5 @@
 import { inspect } from '../../jsutils/inspect.js';
 import type { Maybe } from '../../jsutils/Maybe.js';
-import type { ObjMap } from '../../jsutils/ObjMap.js';
 
 import { GraphQLError } from '../../error/GraphQLError.js';
 
@@ -8,8 +7,8 @@ import type {
   DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
-  ObjectValueNode,
   SelectionSetNode,
+  ValueNode,
 } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import { print } from '../../language/printer.js';
@@ -107,7 +106,7 @@ type NodeAndDef = [
   Maybe<GraphQLField<unknown, unknown>>,
 ];
 // Map of array of those.
-type NodeAndDefCollection = ObjMap<Array<NodeAndDef>>;
+type NodeAndDefCollection = Map<string, Array<NodeAndDef>>;
 type FragmentNames = ReadonlyArray<string>;
 type FieldsAndFragmentNames = readonly [NodeAndDefCollection, FragmentNames];
 
@@ -485,7 +484,7 @@ function collectConflictsWithin(
   // name and the value at that key is a list of all fields which provide that
   // response name. For every response name, if there are multiple fields, they
   // must be compared to find a potential conflict.
-  for (const [responseName, fields] of Object.entries(fieldMap)) {
+  for (const [responseName, fields] of fieldMap.entries()) {
     // This compares every field in the list to every other field in this list
     // (except to itself). If the list only has one item, nothing needs to
     // be compared.
@@ -529,9 +528,9 @@ function collectConflictsBetween(
   // response name. For any response name which appears in both provided field
   // maps, each field from the first field map must be compared to every field
   // in the second field map to find potential conflicts.
-  for (const [responseName, fields1] of Object.entries(fieldMap1)) {
-    const fields2 = fieldMap2[responseName];
-    if (fields2) {
+  for (const [responseName, fields1] of fieldMap1.entries()) {
+    const fields2 = fieldMap2.get(responseName);
+    if (fields2 != null) {
       for (const field1 of fields1) {
         for (const field2 of fields2) {
           const conflict = findConflict(
@@ -593,7 +592,7 @@ function findConflict(
     }
 
     // Two field calls must have the same arguments.
-    if (stringifyArguments(node1) !== stringifyArguments(node2)) {
+    if (!sameArguments(node1, node2)) {
       return [
         [responseName, 'they have differing arguments'],
         [node1],
@@ -650,19 +649,38 @@ function findConflict(
   }
 }
 
-function stringifyArguments(fieldNode: FieldNode | DirectiveNode): string {
-  // FIXME https://github.com/graphql/graphql-js/issues/2203
-  const args = /* c8 ignore next */ fieldNode.arguments ?? [];
+function sameArguments(
+  node1: FieldNode | DirectiveNode,
+  node2: FieldNode | DirectiveNode,
+): boolean {
+  const args1 = node1.arguments;
+  const args2 = node2.arguments;
 
-  const inputObjectWithArgs: ObjectValueNode = {
-    kind: Kind.OBJECT,
-    fields: args.map((argNode) => ({
-      kind: Kind.OBJECT_FIELD,
-      name: argNode.name,
-      value: argNode.value,
-    })),
-  };
-  return print(sortValueNode(inputObjectWithArgs));
+  if (args1 === undefined || args1.length === 0) {
+    return args2 === undefined || args2.length === 0;
+  }
+  if (args2 === undefined || args2.length === 0) {
+    return false;
+  }
+
+  if (args1.length !== args2.length) {
+    return false;
+  }
+
+  const values2 = new Map(args2.map(({ name, value }) => [name.value, value]));
+  return args1.every((arg1) => {
+    const value1 = arg1.value;
+    const value2 = values2.get(arg1.name.value);
+    if (value2 === undefined) {
+      return false;
+    }
+
+    return stringifyValue(value1) === stringifyValue(value2);
+  });
+}
+
+function stringifyValue(value: ValueNode): string | null {
+  return print(sortValueNode(value));
 }
 
 function getStreamDirective(
@@ -682,7 +700,7 @@ function sameStreams(
     return true;
   } else if (stream1 && stream2) {
     // check if both fields have equivalent streams
-    return stringifyArguments(stream1) === stringifyArguments(stream2);
+    return sameArguments(stream1, stream2);
   }
   // fields have a mix of stream and no stream
   return false;
@@ -730,7 +748,7 @@ function getFieldsAndFragmentNames(
   if (cached) {
     return cached;
   }
-  const nodeAndDefs: NodeAndDefCollection = Object.create(null);
+  const nodeAndDefs: NodeAndDefCollection = new Map();
   const fragmentNames = new Set<string>();
   _collectFieldsAndFragmentNames(
     context,
@@ -784,10 +802,13 @@ function _collectFieldsAndFragmentNames(
         const responseName = selection.alias
           ? selection.alias.value
           : fieldName;
-        if (!nodeAndDefs[responseName]) {
-          nodeAndDefs[responseName] = [];
+
+        let nodeAndDefsList = nodeAndDefs.get(responseName);
+        if (nodeAndDefsList == null) {
+          nodeAndDefsList = [];
+          nodeAndDefs.set(responseName, nodeAndDefsList);
         }
-        nodeAndDefs[responseName].push([parentType, selection, fieldDef]);
+        nodeAndDefsList.push([parentType, selection, fieldDef]);
         break;
       }
       case Kind.FRAGMENT_SPREAD:

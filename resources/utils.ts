@@ -3,12 +3,14 @@ import childProcess from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import url from 'node:url';
 
 import prettier from 'prettier';
 import ts from 'typescript';
 
 export function localRepoPath(...paths: ReadonlyArray<string>): string {
-  const repoDir = new URL('..', import.meta.url).pathname;
+  const resourcesDir = path.dirname(url.fileURLToPath(import.meta.url));
+  const repoDir = path.join(resourcesDir, '..');
   return path.join(repoDir, ...paths);
 }
 

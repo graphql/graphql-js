@@ -32,7 +32,7 @@ function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   expect(parent).to.have.property(key);
 
   expect(path).to.be.an.instanceof(Array);
-  expect(path[path.length - 1]).to.equal(key);
+  expect(path.at(-1)).to.equal(key);
 
   expect(ancestors).to.be.an.instanceof(Array);
   expect(ancestors.length).to.equal(path.length - 1);
@@ -505,7 +505,7 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('n', () => {
+  it('properly visits the kitchen sink query', () => {
     const ast = parse(kitchenSinkQuery, {
       experimentalClientControlledNullability: true,
     });
