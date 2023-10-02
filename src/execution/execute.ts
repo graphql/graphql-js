@@ -262,28 +262,15 @@ function executeImpl(
     const data = executeOperation(exeContext, initialResultRecord);
     if (isPromise(data)) {
       return data.then(
-        (resolved) => {
-          exeContext.executionController.abort();
-          return incrementalPublisher.buildDataResponse(
-            initialResultRecord,
-            resolved,
-          );
-        },
-        (error) => {
-          exeContext.executionController.abort();
-          return incrementalPublisher.buildErrorResponse(
-            initialResultRecord,
-            error,
-          );
-        },
+        (resolved) =>
+          incrementalPublisher.buildDataResponse(initialResultRecord, resolved),
+        (error) =>
+          incrementalPublisher.buildErrorResponse(initialResultRecord, error),
       );
     }
 
-    exeContext.executionController.abort();
     return incrementalPublisher.buildDataResponse(initialResultRecord, data);
   } catch (error) {
-    exeContext.executionController.abort();
-
     return incrementalPublisher.buildErrorResponse(initialResultRecord, error);
   }
 }
