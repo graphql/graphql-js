@@ -264,11 +264,17 @@ function executeImpl(
       return data.then(
         (resolved) => {
           exeContext.executionController.abort();
-          return incrementalPublisher.buildDataResponse(initialResultRecord, resolved)
+          return incrementalPublisher.buildDataResponse(
+            initialResultRecord,
+            resolved,
+          );
         },
         (error) => {
           exeContext.executionController.abort();
-          return incrementalPublisher.buildErrorResponse(initialResultRecord, error)
+          return incrementalPublisher.buildErrorResponse(
+            initialResultRecord,
+            error,
+          );
         },
       );
     }
