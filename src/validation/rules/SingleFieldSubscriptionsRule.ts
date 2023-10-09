@@ -11,7 +11,10 @@ import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
 import type { FieldGroup } from '../../execution/collectFields.js';
-import { collectFields } from '../../execution/collectFields.js';
+import {
+  collectFields,
+  VALIDATION_PHASE_EMPTY_VARIABLES,
+} from '../../execution/collectFields.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
@@ -23,7 +26,8 @@ function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
  * Subscriptions must only include a non-introspection field.
  *
  * A GraphQL subscription is valid only if it contains a single root field and
- * that root field is not an introspection field.
+ * that root field is not an introspection field. `@skip` and `@include`
+ * directives are forbidden.
  *
  * See https://spec.graphql.org/draft/#sec-Single-root-field
  */
@@ -37,9 +41,7 @@ export function SingleFieldSubscriptionsRule(
         const subscriptionType = schema.getSubscriptionType();
         if (subscriptionType) {
           const operationName = node.name ? node.name.value : null;
-          const variableValues: {
-            [variable: string]: any;
-          } = Object.create(null);
+          const variableValues = VALIDATION_PHASE_EMPTY_VARIABLES;
           const document = context.getDocument();
           const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
           for (const definition of document.definitions) {
@@ -47,13 +49,25 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
-          const { groupedFieldSet } = collectFields(
-            schema,
-            fragments,
-            variableValues,
-            subscriptionType,
-            node,
-          );
+          const { groupedFieldSet, forbiddenDirectiveInstances } =
+            collectFields(
+              schema,
+              fragments,
+              variableValues,
+              subscriptionType,
+              node,
+            );
+          if (forbiddenDirectiveInstances.length > 0) {
+            context.reportError(
+              new GraphQLError(
+                operationName != null
+                  ? `Subscription "${operationName}" must not use \`@skip\` or \`@include\` directives in the top level selection.`
+                  : 'Anonymous Subscription must not use `@skip` or `@include` directives in the top level selection.',
+                { nodes: forbiddenDirectiveInstances },
+              ),
+            );
+            return;
+          }
           if (groupedFieldSet.size > 1) {
             const fieldGroups = [...groupedFieldSet.values()];
             const extraFieldGroups = fieldGroups.slice(1);
