@@ -10,13 +10,15 @@ import type {
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { FieldGroup } from '../../execution/collectFields.js';
+import type { FieldDetail } from '../../execution/collectFields.js';
 import { collectFields } from '../../execution/collectFields.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
-function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
-  return fieldGroup.fields.map((fieldDetails) => fieldDetails.node);
+function toNodes(
+  fieldDetails: ReadonlyArray<FieldDetail>,
+): ReadonlyArray<FieldNode> {
+  return fieldDetails.map((fieldDetail) => fieldDetail.node);
 }
 
 /**
@@ -47,7 +49,7 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
-          const { groupedFieldSet } = collectFields(
+          const groupedFieldSet = collectFields(
             schema,
             fragments,
             variableValues,
@@ -55,9 +57,9 @@ export function SingleFieldSubscriptionsRule(
             node,
           );
           if (groupedFieldSet.size > 1) {
-            const fieldGroups = [...groupedFieldSet.values()];
-            const extraFieldGroups = fieldGroups.slice(1);
-            const extraFieldSelections = extraFieldGroups.flatMap(
+            const fieldSelectionLists = [...groupedFieldSet.values()];
+            const extraFieldSelectionLists = fieldSelectionLists.slice(1);
+            const extraFieldSelections = extraFieldSelectionLists.flatMap(
               (fieldGroup) => toNodes(fieldGroup),
             );
             context.reportError(

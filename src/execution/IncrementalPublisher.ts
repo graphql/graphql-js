@@ -8,7 +8,7 @@ import type {
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
 
-import type { GroupedFieldSet } from './collectFields.js';
+import type { DeferUsage, GroupedFieldSet } from './collectFields.js';
 
 interface IncrementalUpdate<TData = unknown, TExtensions = ObjMap<unknown>> {
   pending: ReadonlyArray<PendingResult>;
@@ -786,6 +786,7 @@ export class DeferredGroupedFieldSetRecord {
 /** @internal */
 export class DeferredFragmentRecord {
   path: ReadonlyArray<string | number>;
+  deferUsage: DeferUsage;
   label: string | undefined;
   id: string | undefined;
   children: Set<SubsequentResultRecord>;
@@ -795,9 +796,10 @@ export class DeferredFragmentRecord {
   pendingSent?: boolean;
   _pending: Set<DeferredGroupedFieldSetRecord>;
 
-  constructor(opts: { path: Path | undefined; label: string | undefined }) {
+  constructor(opts: { path: Path | undefined; deferUsage: DeferUsage }) {
     this.path = pathToArray(opts.path);
-    this.label = opts.label;
+    this.label = opts.deferUsage.label;
+    this.deferUsage = opts.deferUsage;
     this.children = new Set();
     this.filtered = false;
     this.deferredGroupedFieldSetRecords = new Set();
