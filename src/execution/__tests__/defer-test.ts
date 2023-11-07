@@ -394,21 +394,13 @@ describe('Execute: defer directive', () => {
       }
     `);
     const result = await complete(document);
-    expectJSON(result).toDeepEqual([
-      {
-        data: {
-          hero: {
-            name: 'Luke',
-          },
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: {
+          name: 'Luke',
         },
-        pending: [{ id: '0', path: ['hero'], label: 'DeferTop' }],
-        hasNext: true,
       },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    });
   });
   it('Can defer a fragment that is also not deferred, non-deferred fragment is first', async () => {
     const document = parse(`
@@ -423,21 +415,13 @@ describe('Execute: defer directive', () => {
       }
     `);
     const result = await complete(document);
-    expectJSON(result).toDeepEqual([
-      {
-        data: {
-          hero: {
-            name: 'Luke',
-          },
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: {
+          name: 'Luke',
         },
-        pending: [{ id: '0', path: ['hero'], label: 'DeferTop' }],
-        hasNext: true,
       },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    });
   });
 
   it('Can defer an inline fragment', async () => {
@@ -481,19 +465,11 @@ describe('Execute: defer directive', () => {
       }
     `);
     const result = await complete(document);
-    expectJSON(result).toDeepEqual([
-      {
-        data: {
-          hero: {},
-        },
-        pending: [{ id: '0', path: ['hero'] }],
-        hasNext: true,
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: {},
       },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    });
   });
 
   it('Can separately emit defer fragments with different labels with varying fields', async () => {
@@ -775,40 +751,18 @@ describe('Execute: defer directive', () => {
         data: { hero: { friends: [{}, {}, {}] } },
         pending: [
           { id: '0', path: ['hero', 'friends', 0] },
-          { id: '1', path: ['hero', 'friends', 0] },
-          { id: '2', path: ['hero', 'friends', 0] },
-          { id: '3', path: ['hero', 'friends', 0] },
-          { id: '4', path: ['hero', 'friends', 1] },
-          { id: '5', path: ['hero', 'friends', 1] },
-          { id: '6', path: ['hero', 'friends', 1] },
-          { id: '7', path: ['hero', 'friends', 1] },
-          { id: '8', path: ['hero', 'friends', 2] },
-          { id: '9', path: ['hero', 'friends', 2] },
-          { id: '10', path: ['hero', 'friends', 2] },
-          { id: '11', path: ['hero', 'friends', 2] },
+          { id: '1', path: ['hero', 'friends', 1] },
+          { id: '2', path: ['hero', 'friends', 2] },
         ],
         hasNext: true,
       },
       {
         incremental: [
           { data: { id: '2', name: 'Han' }, id: '0' },
-          { data: { id: '3', name: 'Leia' }, id: '4' },
-          { data: { id: '4', name: 'C-3PO' }, id: '8' },
+          { data: { id: '3', name: 'Leia' }, id: '1' },
+          { data: { id: '4', name: 'C-3PO' }, id: '2' },
         ],
-        completed: [
-          { id: '1' },
-          { id: '2' },
-          { id: '3' },
-          { id: '5' },
-          { id: '6' },
-          { id: '7' },
-          { id: '9' },
-          { id: '10' },
-          { id: '11' },
-          { id: '0' },
-          { id: '4' },
-          { id: '8' },
-        ],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }],
         hasNext: false,
       },
     ]);
@@ -1494,21 +1448,13 @@ describe('Execute: defer directive', () => {
       }
     `);
     const result = await complete(document);
-    expectJSON(result).toDeepEqual([
-      {
-        data: {
-          hero: {
-            friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
-          },
+    expectJSON(result).toDeepEqual({
+      data: {
+        hero: {
+          friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
         },
-        pending: [{ id: '0', path: ['hero'] }],
-        hasNext: true,
       },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    });
   });
 
   it('Deduplicates async iterable list fields', async () => {
@@ -1534,17 +1480,9 @@ describe('Execute: defer directive', () => {
         },
       },
     });
-    expectJSON(result).toDeepEqual([
-      {
-        data: { hero: { friends: [{ name: 'Han' }] } },
-        pending: [{ id: '0', path: ['hero'] }],
-        hasNext: true,
-      },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    expectJSON(result).toDeepEqual({
+      data: { hero: { friends: [{ name: 'Han' }] } },
+    });
   });
 
   it('Deduplicates empty async iterable list fields', async () => {
@@ -1571,17 +1509,9 @@ describe('Execute: defer directive', () => {
         },
       },
     });
-    expectJSON(result).toDeepEqual([
-      {
-        data: { hero: { friends: [] } },
-        pending: [{ id: '0', path: ['hero'] }],
-        hasNext: true,
-      },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    expectJSON(result).toDeepEqual({
+      data: { hero: { friends: [] } },
+    });
   });
 
   it('Does not deduplicate list fields with non-overlapping fields', async () => {
@@ -1655,17 +1585,9 @@ describe('Execute: defer directive', () => {
         friends: () => [],
       },
     });
-    expectJSON(result).toDeepEqual([
-      {
-        data: { hero: { friends: [] } },
-        pending: [{ id: '0', path: ['hero'] }],
-        hasNext: true,
-      },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    expectJSON(result).toDeepEqual({
+      data: { hero: { friends: [] } },
+    });
   });
 
   it('Deduplicates null object fields', async () => {
@@ -1689,17 +1611,9 @@ describe('Execute: defer directive', () => {
         nestedObject: () => null,
       },
     });
-    expectJSON(result).toDeepEqual([
-      {
-        data: { hero: { nestedObject: null } },
-        pending: [{ id: '0', path: ['hero'] }],
-        hasNext: true,
-      },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    expectJSON(result).toDeepEqual({
+      data: { hero: { nestedObject: null } },
+    });
   });
 
   it('Deduplicates promise object fields', async () => {
@@ -1722,17 +1636,9 @@ describe('Execute: defer directive', () => {
         nestedObject: () => Promise.resolve({ name: 'foo' }),
       },
     });
-    expectJSON(result).toDeepEqual([
-      {
-        data: { hero: { nestedObject: { name: 'foo' } } },
-        pending: [{ id: '0', path: ['hero'] }],
-        hasNext: true,
-      },
-      {
-        completed: [{ id: '0' }],
-        hasNext: false,
-      },
-    ]);
+    expectJSON(result).toDeepEqual({
+      data: { hero: { nestedObject: { name: 'foo' } } },
+    });
   });
 
   it('Handles errors thrown in deferred fragments', async () => {

@@ -1780,33 +1780,29 @@ describe('Execute: stream directive', () => {
             nestedFriendList: [],
           },
         },
-        pending: [
-          { id: '0', path: ['nestedObject'] },
-          { id: '1', path: ['nestedObject', 'nestedFriendList'] },
-        ],
+        pending: [{ id: '0', path: ['nestedObject', 'nestedFriendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [{ id: '1', name: 'Luke' }],
-            id: '1',
+            id: '0',
           },
         ],
-        completed: [{ id: '0' }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [{ id: '2', name: 'Han' }],
-            id: '1',
+            id: '0',
           },
         ],
         hasNext: true,
       },
       {
-        completed: [{ id: '1' }],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
