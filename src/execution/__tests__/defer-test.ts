@@ -1478,6 +1478,64 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
+  it('Cancels deferred fields when overlapping deferred results exhibits null bubbling', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          hero {
+            nonNullName
+            id
+          }
+        }
+        ... @defer {
+          hero {
+            nonNullName
+            name
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        nonNullName: Promise.resolve(null),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: [] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              hero: null,
+            },
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Hero.nonNullName.',
+                locations: [
+                  { line: 5, column: 13 },
+                  { line: 11, column: 13 },
+                ],
+                path: ['hero', 'nonNullName'],
+              },
+            ],
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
   it('Deduplicates list fields', async () => {
     const document = parse(`
       query {

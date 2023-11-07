@@ -51,14 +51,10 @@ export interface FieldGroup {
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
 
-export interface GroupedFieldSetDetails {
-  groupedFieldSet: GroupedFieldSet;
-  shouldInitiateDefer: boolean;
-}
-
 export interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
-  newGroupedFieldSetDetails: Map<DeferUsageSet, GroupedFieldSetDetails>;
+  supplementalGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
+  newDeferredGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
   newDeferUsages: ReadonlyArray<DeferUsage>;
 }
 
@@ -358,7 +354,8 @@ function buildGroupedFieldSets(
   parentTargets = NON_DEFERRED_TARGET_SET,
 ): {
   groupedFieldSet: GroupedFieldSet;
-  newGroupedFieldSetDetails: Map<DeferUsageSet, GroupedFieldSetDetails>;
+  supplementalGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
+  newDeferredGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
 } {
   const { parentTargetKeys, targetSetDetailsMap } = getTargetSetDetails(
     targetsByKey,
@@ -375,10 +372,11 @@ function buildGroupedFieldSets(
         )
       : new Map();
 
-  const newGroupedFieldSetDetails = new Map<
+  const supplementalGroupedFieldSets = new Map<
     DeferUsageSet,
-    GroupedFieldSetDetails
+    GroupedFieldSet
   >();
+  const newDeferredGroupedFieldSets = new Map<DeferUsageSet, GroupedFieldSet>();
 
   for (const [maskingTargets, targetSetDetails] of targetSetDetailsMap) {
     const { keys, shouldInitiateDefer } = targetSetDetails;
@@ -391,16 +389,16 @@ function buildGroupedFieldSets(
     );
 
     // All TargetSets that causes new grouped field sets consist only of DeferUsages
-    // and have shouldInitiateDefer defined
-    newGroupedFieldSetDetails.set(maskingTargets as DeferUsageSet, {
-      groupedFieldSet: newGroupedFieldSet,
-      shouldInitiateDefer,
-    });
+    (shouldInitiateDefer
+      ? newDeferredGroupedFieldSets
+      : supplementalGroupedFieldSets
+    ).set(maskingTargets as DeferUsageSet, newGroupedFieldSet);
   }
 
   return {
     groupedFieldSet,
-    newGroupedFieldSetDetails,
+    supplementalGroupedFieldSets,
+    newDeferredGroupedFieldSets,
   };
 }
 
