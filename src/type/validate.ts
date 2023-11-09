@@ -433,6 +433,21 @@ function validateTypeImplementsInterface(
         );
       }
     }
+
+    // Asserts that field is not deprecated unless interface field is
+    if (
+      ifaceField.deprecationReason == null &&
+      typeField.deprecationReason != null
+    ) {
+      context.reportError(
+        `Interface field ${iface.name}.${fieldName} is not deprecated, so ` +
+          `implementation field ${type.name}.${fieldName} must not be deprecated.`,
+        [
+          getDeprecatedDirectiveNode(typeField.astNode),
+          typeField.astNode?.type,
+        ],
+      );
+    }
   }
 }
 
