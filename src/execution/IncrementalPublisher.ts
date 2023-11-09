@@ -1,3 +1,4 @@
+import { invariant } from '../jsutils/invariant.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import { pathToArray } from '../jsutils/Path.js';
@@ -609,29 +610,25 @@ export class IncrementalPublisher {
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   ): IncrementalDeferResult {
     const { data, deferredFragmentRecords } = deferredGroupedFieldSetRecord;
-    let maxLength = deferredFragmentRecords[0].path.length;
-    let maxIndex = 0;
-    for (let i = 1; i < deferredFragmentRecords.length; i++) {
-      const deferredFragmentRecord = deferredFragmentRecords[i];
+    let maxLength;
+    let id;
+    for (const deferredFragmentRecord of deferredFragmentRecords) {
+      if (deferredFragmentRecord.id === undefined) {
+        continue;
+      }
       const length = deferredFragmentRecord.path.length;
-      if (length > maxLength) {
+      if (maxLength === undefined || length > maxLength) {
         maxLength = length;
-        maxIndex = i;
+        id = deferredFragmentRecord.id;
       }
     }
-    const recordWithLongestPath = deferredFragmentRecords[maxIndex];
-    const longestPath = recordWithLongestPath.path;
-    const subPath = deferredGroupedFieldSetRecord.path.slice(
-      longestPath.length,
-    );
-    const id = recordWithLongestPath.id;
+    invariant(id != null, 'No id for deferred incremental result');
+    const subPath = deferredGroupedFieldSetRecord.path.slice(maxLength);
     const incrementalDeferResult: IncrementalDeferResult = {
       // safe because `data``is always defined when the record is completed
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       data: data!,
-      // safe because `id` is defined once the fragment has been released as pending
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      id: id!,
+      id,
     };
 
     if (subPath.length > 0) {
