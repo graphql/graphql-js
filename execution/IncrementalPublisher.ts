@@ -540,29 +540,29 @@ export class IncrementalPublisher {
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   ): IncrementalDeferResult {
     const { data, deferredFragmentRecords } = deferredGroupedFieldSetRecord;
-    let maxLength = deferredFragmentRecords[0].path.length;
-    let maxIndex = 0;
-    for (let i = 1; i < deferredFragmentRecords.length; i++) {
-      const deferredFragmentRecord = deferredFragmentRecords[i];
+    let maxLength: number | undefined;
+    let idWithLongestPath: string | undefined;
+    for (const deferredFragmentRecord of deferredFragmentRecords) {
+      const id = deferredFragmentRecord.id;
+      if (id === undefined) {
+        continue;
+      }
       const length = deferredFragmentRecord.path.length;
-      if (length > maxLength) {
+      if (maxLength === undefined || length > maxLength) {
         maxLength = length;
-        maxIndex = i;
+        idWithLongestPath = id;
       }
     }
-    const recordWithLongestPath = deferredFragmentRecords[maxIndex];
-    const longestPath = recordWithLongestPath.path;
-    const subPath = deferredGroupedFieldSetRecord.path.slice(
-      longestPath.length,
-    );
-    const id = recordWithLongestPath.id;
+    const subPath = deferredGroupedFieldSetRecord.path.slice(maxLength);
     const incrementalDeferResult: IncrementalDeferResult = {
       // safe because `data``is always defined when the record is completed
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       data: data!,
-      // safe because `id` is defined once the fragment has been released as pending
+      // safe because `id` is always defined once the fragment has been released
+      // as pending and at least one fragment has been completed, so must have been
+      // released as pending
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      id: id!,
+      id: idWithLongestPath!,
     };
     if (subPath.length > 0) {
       incrementalDeferResult.subPath = subPath;
@@ -591,10 +591,13 @@ export class IncrementalPublisher {
       this._introduce(subsequentResultRecord);
       return;
     }
-    if (subsequentResultRecord._pending.size === 0) {
-      this._push(subsequentResultRecord);
-    } else {
+    if (subsequentResultRecord._pending.size > 0) {
       this._introduce(subsequentResultRecord);
+    } else if (
+      subsequentResultRecord.deferredGroupedFieldSetRecords.size > 0 ||
+      subsequentResultRecord.children.size > 0
+    ) {
+      this._push(subsequentResultRecord);
     }
   }
   private _getChildren(
