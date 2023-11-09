@@ -610,23 +610,19 @@ export class IncrementalPublisher {
   ): IncrementalDeferResult {
     const { data, deferredFragmentRecords } = deferredGroupedFieldSetRecord;
     let maxLength: number | undefined;
-    let recordWithLongestPath: DeferredFragmentRecord | undefined;
+    let idWithLongestPath: string | undefined;
     for (const deferredFragmentRecord of deferredFragmentRecords) {
-      if (deferredFragmentRecord.id === undefined) {
+      const id = deferredFragmentRecord.id;
+      if (id === undefined) {
         continue;
       }
       const length = deferredFragmentRecord.path.length;
       if (maxLength === undefined || length > maxLength) {
         maxLength = length;
-        recordWithLongestPath = deferredFragmentRecord;
+        idWithLongestPath = id;
       }
     }
     const subPath = deferredGroupedFieldSetRecord.path.slice(maxLength);
-    // safe because `id` is always defined once the fragment has been released
-    // as pending and at least one fragment has been completed, so must have been
-    // released as pending
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const id = recordWithLongestPath!.id;
     const incrementalDeferResult: IncrementalDeferResult = {
       // safe because `data``is always defined when the record is completed
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -635,7 +631,7 @@ export class IncrementalPublisher {
       // as pending and at least one fragment has been completed, so must have been
       // released as pending
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      id: id!,
+      id: idWithLongestPath!,
     };
 
     if (subPath.length > 0) {
