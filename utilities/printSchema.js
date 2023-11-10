@@ -174,7 +174,12 @@ function printInputObject(type) {
   const fields = Object.values(type.getFields()).map(
     (f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f),
   );
-  return printDescription(type) + `input ${type.name}` + printBlock(fields);
+  return (
+    printDescription(type) +
+    `input ${type.name}` +
+    (type.isOneOf ? ' @oneOf' : '') +
+    printBlock(fields)
+  );
 }
 function printFields(type) {
   const fields = Object.values(type.getFields()).map(
