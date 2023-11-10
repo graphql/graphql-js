@@ -183,7 +183,12 @@ function printInputObject(type: GraphQLInputObjectType): string {
   const fields = Object.values(type.getFields()).map(
     (f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f),
   );
-  return printDescription(type) + `input ${type.name}` + printBlock(fields);
+  return (
+    printDescription(type) +
+    `input ${type.name}` +
+    (type.isOneOf ? ' @oneOf' : '') +
+    printBlock(fields)
+  );
 }
 function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
   const fields = Object.values(type.getFields()).map(
