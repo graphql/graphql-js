@@ -503,6 +503,23 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Print Input Type with @oneOf directive', () => {
+    const InputType = new GraphQLInputObjectType({
+      name: 'InputType',
+      isOneOf: true,
+      fields: {
+        int: { type: GraphQLInt },
+      },
+    });
+
+    const schema = new GraphQLSchema({ types: [InputType] });
+    expectPrintedSchema(schema).to.equal(dedent`
+      input InputType @oneOf {
+        int: Int
+      }
+    `);
+  });
+
   it('Custom Scalar', () => {
     const OddType = new GraphQLScalarType({ name: 'Odd' });
 
