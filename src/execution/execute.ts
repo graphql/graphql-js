@@ -1454,8 +1454,7 @@ function addNewDeferredFragments(
 
   // For each new deferUsage object:
   for (const newDeferUsage of newDeferUsages) {
-    // DeferUsage objects track their parent targets; the immediate parent is always the first member of this list.
-    const parentTarget = newDeferUsage.ancestors[0];
+    const parentTarget = newDeferUsage.parent;
 
     // If the parent target is defined, the parent target is a DeferUsage object and
     // the parent result record is the DeferredFragmentRecord corresponding to that DeferUsage.
