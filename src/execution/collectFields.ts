@@ -5,6 +5,7 @@ import { isSameSet } from '../jsutils/isSameSet.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 
 import type {
+  DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
@@ -26,7 +27,7 @@ import type { GraphQLSchema } from '../type/schema.js';
 
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
-import { getDirectiveValues } from './values.js';
+import { getArgumentValues, getDirectiveValues } from './values.js';
 
 export interface DeferUsage {
   label: string | undefined;
@@ -60,6 +61,7 @@ export interface CollectFieldsResult {
   groupedFieldSet: GroupedFieldSet;
   newGroupedFieldSetDetails: Map<DeferUsageSet, GroupedFieldSetDetails>;
   newDeferUsages: ReadonlyArray<DeferUsage>;
+  forbiddenDirectiveInstances: ReadonlyArray<DirectiveNode>;
 }
 
 interface CollectFieldsContext {
@@ -72,6 +74,7 @@ interface CollectFieldsContext {
   fieldsByTarget: Map<Target, AccumulatorMap<string, FieldNode>>;
   newDeferUsages: Array<DeferUsage>;
   visitedFragmentNames: Set<string>;
+  forbiddenDirectiveInstances: Array<DirectiveNode>;
 }
 
 /**
@@ -100,6 +103,7 @@ export function collectFields(
     targetsByKey: new Map(),
     newDeferUsages: [],
     visitedFragmentNames: new Set(),
+    forbiddenDirectiveInstances: [],
   };
 
   collectFieldsImpl(context, operation.selectionSet);
@@ -107,8 +111,19 @@ export function collectFields(
   return {
     ...buildGroupedFieldSets(context.targetsByKey, context.fieldsByTarget),
     newDeferUsages: context.newDeferUsages,
+    forbiddenDirectiveInstances: context.forbiddenDirectiveInstances,
   };
 }
+
+/**
+ * This variable is the empty variables used during the validation phase (where
+ * no variables exist) for field collection; if a `@skip` or `@include`
+ * directive is ever seen when `variableValues` is set to this, it should
+ * throw.
+ */
+export const VALIDATION_PHASE_EMPTY_VARIABLES: {
+  [variable: string]: any;
+} = Object.freeze(Object.create(null));
 
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
@@ -139,6 +154,7 @@ export function collectSubfields(
     targetsByKey: new Map(),
     newDeferUsages: [],
     visitedFragmentNames: new Set(),
+    forbiddenDirectiveInstances: [],
   };
 
   for (const fieldDetails of fieldGroup.fields) {
@@ -155,6 +171,7 @@ export function collectSubfields(
       fieldGroup.targets,
     ),
     newDeferUsages: context.newDeferUsages,
+    forbiddenDirectiveInstances: context.forbiddenDirectiveInstances,
   };
 }
 
@@ -179,7 +196,7 @@ function collectFieldsImpl(
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
-        if (!shouldIncludeNode(variableValues, selection)) {
+        if (!shouldIncludeNode(context, variableValues, selection)) {
           continue;
         }
         const key = getFieldEntryKey(selection);
@@ -200,7 +217,7 @@ function collectFieldsImpl(
       }
       case Kind.INLINE_FRAGMENT: {
         if (
-          !shouldIncludeNode(variableValues, selection) ||
+          !shouldIncludeNode(context, variableValues, selection) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
           continue;
@@ -232,7 +249,7 @@ function collectFieldsImpl(
       case Kind.FRAGMENT_SPREAD: {
         const fragName = selection.name.value;
 
-        if (!shouldIncludeNode(variableValues, selection)) {
+        if (!shouldIncludeNode(context, variableValues, selection)) {
           continue;
         }
 
@@ -304,19 +321,44 @@ function getDeferValues(
  * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
+  context: CollectFieldsContext,
   variableValues: { [variable: string]: unknown },
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
 ): boolean {
-  const skip = getDirectiveValues(GraphQLSkipDirective, node, variableValues);
+  const skipDirectiveNode = node.directives?.find(
+    (directive) => directive.name.value === GraphQLSkipDirective.name,
+  );
+  if (
+    skipDirectiveNode &&
+    variableValues === VALIDATION_PHASE_EMPTY_VARIABLES
+  ) {
+    context.forbiddenDirectiveInstances.push(skipDirectiveNode);
+    return false;
+  }
+  const skip = skipDirectiveNode
+    ? getArgumentValues(GraphQLSkipDirective, skipDirectiveNode, variableValues)
+    : undefined;
   if (skip?.if === true) {
     return false;
   }
 
-  const include = getDirectiveValues(
-    GraphQLIncludeDirective,
-    node,
-    variableValues,
+  const includeDirectiveNode = node.directives?.find(
+    (directive) => directive.name.value === GraphQLIncludeDirective.name,
   );
+  if (
+    includeDirectiveNode &&
+    variableValues === VALIDATION_PHASE_EMPTY_VARIABLES
+  ) {
+    context.forbiddenDirectiveInstances.push(includeDirectiveNode);
+    return false;
+  }
+  const include = includeDirectiveNode
+    ? getArgumentValues(
+        GraphQLIncludeDirective,
+        includeDirectiveNode,
+        variableValues,
+      )
+    : undefined;
   if (include?.if === false) {
     return false;
   }
