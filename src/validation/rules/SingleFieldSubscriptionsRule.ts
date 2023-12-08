@@ -10,13 +10,15 @@ import type {
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { FieldGroup } from '../../execution/collectFields.js';
+import type { FieldDetails } from '../../execution/collectFields.js';
 import { collectFields } from '../../execution/collectFields.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
-function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
-  return fieldGroup.fields.map((fieldDetails) => fieldDetails.node);
+function toNodes(
+  fieldDetailsList: ReadonlyArray<FieldDetails>,
+): ReadonlyArray<FieldNode> {
+  return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
 }
 
 /**
@@ -47,15 +49,15 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
-          const { groupedFieldSet } = collectFields(
+          const fields = collectFields(
             schema,
             fragments,
             variableValues,
             subscriptionType,
             node,
           );
-          if (groupedFieldSet.size > 1) {
-            const fieldGroups = [...groupedFieldSet.values()];
+          if (fields.size > 1) {
+            const fieldGroups = [...fields.values()];
             const extraFieldGroups = fieldGroups.slice(1);
             const extraFieldSelections = extraFieldGroups.flatMap(
               (fieldGroup) => toNodes(fieldGroup),
@@ -69,7 +71,7 @@ export function SingleFieldSubscriptionsRule(
               ),
             );
           }
-          for (const fieldGroup of groupedFieldSet.values()) {
+          for (const fieldGroup of fields.values()) {
             const fieldName = toNodes(fieldGroup)[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
