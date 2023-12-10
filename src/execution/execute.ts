@@ -42,6 +42,8 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
+  isOutputType,
+  isRefType,
 } from '../type/definition.js';
 import { GraphQLStreamDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
@@ -839,11 +841,56 @@ function completeValue(
       deferMap,
     );
   }
+
+  // If field is a ref, get the original type and complete all sub-selections
+  if (isRefType(returnType)) {
+    return completeRefValue(
+      exeContext,
+      returnType,
+      fieldGroup,
+      info,
+      path,
+      result,
+      incrementalDataRecord,
+      deferMap
+    );
+  }
+
   /* c8 ignore next 6 */
   // Not reachable, all possible output types have been considered.
   invariant(
     false,
     'Cannot complete value of unexpected output type: ' + inspect(returnType),
+  );
+}
+
+function completeRefValue(
+  exeContext: ExecutionContext,
+  returnType: string,
+  fieldNodes: FieldGroup,
+  info: GraphQLResolveInfo,
+  path: Path,
+  result: unknown,
+  incrementalDataRecord: IncrementalDataRecord,
+  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
+) {
+  const type = exeContext.schema.getType(returnType);
+  
+  if (type == null || !isOutputType(type)) {
+    throw new Error(
+      `"${returnType}" is not a valid type`,
+    );
+  }
+
+  return completeValue(
+    exeContext,
+    type,
+    fieldNodes,
+    info,
+    path,
+    result,
+    incrementalDataRecord,
+    deferMap
   );
 }
 

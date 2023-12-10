@@ -494,4 +494,60 @@ describe('Star Wars Query Tests', () => {
       });
     });
   });
+
+  describe('Using types with Ref types', () => {
+    it('Allows us to query jedi enemies', async () => {
+      const source = `
+        query FetchJediEnemies {
+          jedi(id: "3000") {
+            enemies {
+              id
+              darkSidePower
+            }
+          }
+        }
+      `;
+
+      const result = await graphql({ schema, source });
+      expect(result).to.deep.equal({
+        data: {
+          jedi: {
+            enemies: [
+              {
+                id: '4000',
+                darkSidePower: 'Force Choke',
+              },
+            ],
+          },
+        },
+      });
+    });
+
+    it('Allows us to query sith enemies', async () => {
+      const source = `
+        query FetchSithEnemies {
+          sith(id: "4000") {
+            enemies {
+              id
+              lightsaberColor
+            }
+          }
+        }
+      `;
+
+      const result = await graphql({ schema, source });
+      expect(result).to.deep.equal({
+        data: {
+          sith: {
+            enemies: [
+              {
+                id: '3000',
+                lightsaberColor: 'Blue',
+              },
+            ],
+          },
+        },
+      });
+    });
+  });
 });

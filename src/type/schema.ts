@@ -26,6 +26,7 @@ import {
   isInputObjectType,
   isInterfaceType,
   isObjectType,
+  isRefType,
   isUnionType,
 } from './definition.js';
 import type { GraphQLDirective } from './directives.js';
@@ -212,6 +213,10 @@ export class GraphQLSchema {
 
     for (const namedType of allReferencedTypes) {
       if (namedType == null) {
+        continue;
+      }
+
+      if (isRefType(namedType)) {
         continue;
       }
 

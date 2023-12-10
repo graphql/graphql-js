@@ -27,6 +27,22 @@ export interface Droid {
   primaryFunction: string;
 }
 
+export interface Jedi {
+  type: 'Jedi';
+  id: string;
+  human: string;
+  lightsaberColor: string;
+  enemies: ReadonlyArray<string>;
+}
+
+export interface Sith {
+  type: 'Sith';
+  id: string;
+  human: string;
+  darkSidePower: string;
+  enemies: ReadonlyArray<string>;
+}
+
 /**
  * This defines a basic set of data for our Star Wars Schema.
  *
@@ -109,6 +125,30 @@ const droidData: { [id: string]: Droid } = {
   [artoo.id]: artoo,
 };
 
+const jediLuke: Jedi = {
+  type: 'Jedi',
+  id: '3000',
+  human: '1000',
+  lightsaberColor: 'Blue',
+  enemies: ['4000'],
+};
+
+const jediData: { [id: string]: Jedi } = {
+  [jediLuke.id]: jediLuke,
+};
+
+const sithVader: Sith = {
+  type: 'Sith',
+  id: '4000',
+  human: '1001',
+  darkSidePower: 'Force Choke',
+  enemies: ['3000'],
+};
+
+const sithData: { [id: string]: Sith } = {
+  [sithVader.id]: sithVader,
+};
+
 /**
  * Helper function to get a character by ID.
  */
@@ -151,4 +191,25 @@ export function getHuman(id: string): Human | null {
  */
 export function getDroid(id: string): Droid | null {
   return droidData[id];
+}
+
+/**
+ * Allows us to query for the jedi with the given id
+ */
+export function getJedi(id: string): Jedi | null {
+  return jediData[id];
+}
+
+/**
+ * Allows us to query for the enimies.
+ */
+export function getEnemies(character: Jedi | Sith): Array<Jedi | Sith | null> {
+  return character.enemies.map((id) => getJedi(id) ?? getSith(id));
+}
+
+/**
+ * Allows us to query for the sith with the given id
+ */
+export function getSith(id: string): Sith | null {
+  return sithData[id];
 }

@@ -60,7 +60,8 @@ export function isType(type: unknown): type is GraphQLType {
     isEnumType(type) ||
     isInputObjectType(type) ||
     isListType(type) ||
-    isNonNullType(type)
+    isNonNullType(type) ||
+    isRefType(type)
   );
 }
 
@@ -233,7 +234,8 @@ export function isOutputType(type: unknown): type is GraphQLOutputType {
     isInterfaceType(type) ||
     isUnionType(type) ||
     isEnumType(type) ||
-    (isWrappingType(type) && isOutputType(type.ofType))
+    (isWrappingType(type) && isOutputType(type.ofType)) ||
+    isRefType(type)
   );
 }
 
@@ -442,7 +444,8 @@ export type GraphQLNamedOutputType =
   | GraphQLObjectType
   | GraphQLInterfaceType
   | GraphQLUnionType
-  | GraphQLEnumType;
+  | GraphQLEnumType
+  | string;
 
 export function isNamedType(type: unknown): type is GraphQLNamedType {
   return (
@@ -479,6 +482,10 @@ export function getNamedType(
     }
     return unwrappedType;
   }
+}
+
+export function isRefType(type: unknown): type is string {
+  return typeof type === 'string';
 }
 
 /**
