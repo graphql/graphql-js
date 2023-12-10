@@ -1,12 +1,7 @@
 import { getBySet } from '../jsutils/getBySet.js';
 import { isSameSet } from '../jsutils/isSameSet.js';
 
-import type { FieldDetails } from './collectFields.js';
-
-export interface DeferUsage {
-  label: string | undefined;
-  ancestors: ReadonlyArray<Target>;
-}
+import type { DeferUsage, FieldDetails } from './collectFields.js';
 
 export const NON_DEFERRED_TARGET_SET: TargetSet = new Set<Target>([undefined]);
 
