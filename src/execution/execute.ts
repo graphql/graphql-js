@@ -101,8 +101,8 @@ const buildSubFieldPlan = memoize3(
     );
     return buildFieldPlan(
       subFields,
-      fieldGroup.targets,
-      fieldGroup.knownTargets,
+      fieldGroup.deferUsages,
+      fieldGroup.knownDeferUsages,
     );
   },
 );
@@ -1464,17 +1464,15 @@ function addNewDeferredFragments(
 
   // For each new deferUsage object:
   for (const newDeferUsage of newDeferUsages) {
-    const parentTarget = newDeferUsage.parentDeferUsage;
+    const parentDeferUsage = newDeferUsage.parentDeferUsage;
 
-    // If the parent target is defined, the parent target is a DeferUsage object and
-    // the parent result record is the DeferredFragmentRecord corresponding to that DeferUsage.
-    // If the parent target is not defined, the parent result record is either:
+    // If the parent defer usage is not defined, the parent result record is either:
     //  - the InitialResultRecord, or
     //  - a StreamItemsRecord, as `@defer` may be nested under `@stream`.
     const parent =
-      parentTarget === undefined
+      parentDeferUsage === undefined
         ? (incrementalDataRecord as InitialResultRecord | StreamItemsRecord)
-        : deferredFragmentRecordFromDeferUsage(parentTarget, newDeferMap);
+        : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
 
     // Instantiate the new record.
     const deferredFragmentRecord = new DeferredFragmentRecord({

@@ -3,16 +3,12 @@ import { isSameSet } from '../jsutils/isSameSet.js';
 
 import type { DeferUsage, FieldDetails } from './collectFields.js';
 
-export const NON_DEFERRED_TARGET_SET: TargetSet = new Set<Target>([undefined]);
-
-export type Target = DeferUsage | undefined;
-export type TargetSet = ReadonlySet<Target>;
 export type DeferUsageSet = ReadonlySet<DeferUsage>;
 
 export interface FieldGroup {
   fields: ReadonlyArray<FieldDetails>;
-  targets?: TargetSet | undefined;
-  knownTargets?: TargetSet | undefined;
+  deferUsages?: DeferUsageSet | undefined;
+  knownDeferUsages?: DeferUsageSet | undefined;
 }
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
@@ -24,19 +20,23 @@ export interface NewGroupedFieldSetDetails {
 
 export function buildFieldPlan(
   fields: Map<string, ReadonlyArray<FieldDetails>>,
-  parentTargets = NON_DEFERRED_TARGET_SET,
-  knownTargets = NON_DEFERRED_TARGET_SET,
+  parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
+  knownDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
 ): {
   groupedFieldSet: GroupedFieldSet;
   newGroupedFieldSetDetailsMap: Map<DeferUsageSet, NewGroupedFieldSetDetails>;
   newDeferUsages: ReadonlyArray<DeferUsage>;
 } {
   const newDeferUsages: Set<DeferUsage> = new Set<DeferUsage>();
-  const newKnownTargets = new Set<Target>(knownTargets);
+  const newKnownDeferUsages = new Set<DeferUsage>(knownDeferUsages);
 
   const groupedFieldSet = new Map<
     string,
-    { fields: Array<FieldDetails>; targets: TargetSet; knownTargets: TargetSet }
+    {
+      fields: Array<FieldDetails>;
+      deferUsages: DeferUsageSet;
+      knownDeferUsages: DeferUsageSet;
+    }
   >();
 
   const newGroupedFieldSetDetailsMap = new Map<
@@ -46,8 +46,8 @@ export function buildFieldPlan(
         string,
         {
           fields: Array<FieldDetails>;
-          targets: TargetSet;
-          knownTargets: TargetSet;
+          deferUsages: DeferUsageSet;
+          knownDeferUsages: DeferUsageSet;
         }
       >;
       shouldInitiateDefer: boolean;
@@ -56,41 +56,50 @@ export function buildFieldPlan(
 
   const map = new Map<
     string,
-    { targetSet: TargetSet; fieldDetailsList: ReadonlyArray<FieldDetails> }
-  >();
-  for (const [responseKey, fieldDetailsList] of fields) {
-    const targetSet = new Set<Target>();
-    for (const fieldDetails of fieldDetailsList) {
-      const target = fieldDetails.deferUsage;
-      targetSet.add(target);
-      if (!knownTargets.has(target)) {
-        // all targets that are not known must be defined
-        newDeferUsages.add(target as DeferUsage);
-      }
-      newKnownTargets.add(target);
+    {
+      deferUsageSet: DeferUsageSet;
+      fieldDetailsList: ReadonlyArray<FieldDetails>;
     }
-    map.set(responseKey, { targetSet, fieldDetailsList });
+  >();
+
+  for (const [responseKey, fieldDetailsList] of fields) {
+    const deferUsageSet = new Set<DeferUsage>();
+    let inOriginalResult = false;
+    for (const fieldDetails of fieldDetailsList) {
+      const deferUsage = fieldDetails.deferUsage;
+      if (deferUsage === undefined) {
+        inOriginalResult = true;
+        continue;
+      }
+      deferUsageSet.add(deferUsage);
+      if (!knownDeferUsages.has(deferUsage)) {
+        newDeferUsages.add(deferUsage);
+        newKnownDeferUsages.add(deferUsage);
+      }
+    }
+    if (inOriginalResult) {
+      deferUsageSet.clear();
+    } else {
+      deferUsageSet.forEach((deferUsage) => {
+        const ancestors = getAncestors(deferUsage);
+        for (const ancestor of ancestors) {
+          if (deferUsageSet.has(ancestor)) {
+            deferUsageSet.delete(deferUsage);
+          }
+        }
+      });
+    }
+    map.set(responseKey, { deferUsageSet, fieldDetailsList });
   }
 
-  for (const [responseKey, { targetSet, fieldDetailsList }] of map) {
-    const maskingTargetList: Array<Target> = [];
-    for (const target of targetSet) {
-      if (
-        target === undefined ||
-        getAncestors(target).every((ancestor) => !targetSet.has(ancestor))
-      ) {
-        maskingTargetList.push(target);
-      }
-    }
-
-    const maskingTargets: TargetSet = new Set<Target>(maskingTargetList);
-    if (isSameSet(maskingTargets, parentTargets)) {
+  for (const [responseKey, { deferUsageSet, fieldDetailsList }] of map) {
+    if (isSameSet(deferUsageSet, parentDeferUsages)) {
       let fieldGroup = groupedFieldSet.get(responseKey);
       if (fieldGroup === undefined) {
         fieldGroup = {
           fields: [],
-          targets: maskingTargets,
-          knownTargets: newKnownTargets,
+          deferUsages: deferUsageSet,
+          knownDeferUsages: newKnownDeferUsages,
         };
         groupedFieldSet.set(responseKey, fieldGroup);
       }
@@ -100,7 +109,7 @@ export function buildFieldPlan(
 
     let newGroupedFieldSetDetails = getBySet(
       newGroupedFieldSetDetailsMap,
-      maskingTargets,
+      deferUsageSet,
     );
     let newGroupedFieldSet;
     if (newGroupedFieldSetDetails === undefined) {
@@ -108,20 +117,19 @@ export function buildFieldPlan(
         string,
         {
           fields: Array<FieldDetails>;
-          targets: TargetSet;
-          knownTargets: TargetSet;
+          deferUsages: DeferUsageSet;
+          knownDeferUsages: DeferUsageSet;
         }
       >();
 
       newGroupedFieldSetDetails = {
         groupedFieldSet: newGroupedFieldSet,
-        shouldInitiateDefer: maskingTargetList.some(
-          (deferUsage) => !parentTargets.has(deferUsage),
+        shouldInitiateDefer: Array.from(deferUsageSet).some(
+          (deferUsage) => !parentDeferUsages.has(deferUsage),
         ),
       };
       newGroupedFieldSetDetailsMap.set(
-        // all new grouped field sets must not contain the initial result as a target
-        maskingTargets as DeferUsageSet,
+        deferUsageSet,
         newGroupedFieldSetDetails,
       );
     } else {
@@ -131,8 +139,8 @@ export function buildFieldPlan(
     if (fieldGroup === undefined) {
       fieldGroup = {
         fields: [],
-        targets: maskingTargets,
-        knownTargets: newKnownTargets,
+        deferUsages: deferUsageSet,
+        knownDeferUsages: newKnownDeferUsages,
       };
       newGroupedFieldSet.set(responseKey, fieldGroup);
     }
@@ -146,14 +154,12 @@ export function buildFieldPlan(
   };
 }
 
-function getAncestors(
-  deferUsage: DeferUsage,
-): ReadonlyArray<DeferUsage | undefined> {
+function getAncestors(deferUsage: DeferUsage): ReadonlyArray<DeferUsage> {
+  const ancestors: Array<DeferUsage> = [];
   let parentDeferUsage: DeferUsage | undefined = deferUsage.parentDeferUsage;
-  const ancestors: Array<DeferUsage | undefined> = [parentDeferUsage];
   while (parentDeferUsage !== undefined) {
-    parentDeferUsage = parentDeferUsage.parentDeferUsage;
     ancestors.unshift(parentDeferUsage);
+    parentDeferUsage = parentDeferUsage.parentDeferUsage;
   }
   return ancestors;
 }
