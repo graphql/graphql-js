@@ -77,7 +77,7 @@ export function buildFieldPlan(
     for (const target of targetSet) {
       if (
         target === undefined ||
-        target.ancestors.every((ancestor) => !targetSet.has(ancestor))
+        getAncestors(target).every((ancestor) => !targetSet.has(ancestor))
       ) {
         maskingTargetList.push(target);
       }
@@ -144,4 +144,16 @@ export function buildFieldPlan(
     newGroupedFieldSetDetailsMap,
     newDeferUsages: Array.from(newDeferUsages),
   };
+}
+
+function getAncestors(
+  deferUsage: DeferUsage,
+): ReadonlyArray<DeferUsage | undefined> {
+  let parentDeferUsage: DeferUsage | undefined = deferUsage.parentDeferUsage;
+  const ancestors: Array<DeferUsage | undefined> = [parentDeferUsage];
+  while (parentDeferUsage !== undefined) {
+    parentDeferUsage = parentDeferUsage.parentDeferUsage;
+    ancestors.unshift(parentDeferUsage);
+  }
+  return ancestors;
 }

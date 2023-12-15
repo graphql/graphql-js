@@ -28,7 +28,7 @@ import { getDirectiveValues } from './values.js';
 
 export interface DeferUsage {
   label: string | undefined;
-  ancestors: ReadonlyArray<DeferUsage | undefined>;
+  parentDeferUsage: DeferUsage | undefined;
 }
 
 export interface FieldDetails {
@@ -242,10 +242,7 @@ function getDeferUsage(
 
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
-    ancestors:
-      parentDeferUsage === undefined
-        ? [undefined]
-        : [parentDeferUsage, ...parentDeferUsage.ancestors],
+    parentDeferUsage,
   };
 }
 
