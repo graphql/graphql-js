@@ -6,7 +6,7 @@ import type {
   GraphQLError,
   GraphQLFormattedError,
 } from '../error/GraphQLError.ts';
-import type { GroupedFieldSet } from './collectFields.ts';
+import type { GroupedFieldSet } from './buildFieldPlan.ts';
 interface IncrementalUpdate<TData = unknown, TExtensions = ObjMap<unknown>> {
   pending: ReadonlyArray<PendingResult>;
   incremental: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
