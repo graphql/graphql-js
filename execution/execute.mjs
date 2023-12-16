@@ -21,11 +21,8 @@ import {
 } from '../type/definition.mjs';
 import { GraphQLStreamDirective } from '../type/directives.mjs';
 import { assertValidSchema } from '../type/validate.mjs';
-import {
-  collectFields,
-  collectSubfields as _collectSubfields,
-  NON_DEFERRED_TARGET_SET,
-} from './collectFields.mjs';
+import { buildFieldPlan } from './buildFieldPlan.mjs';
+import { collectFields, collectSubfields } from './collectFields.mjs';
 import {
   DeferredFragmentRecord,
   DeferredGroupedFieldSetRecord,
@@ -44,20 +41,25 @@ import {
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 /**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * A memoized function for building subfield plans with regard to the return
+ * type. Memoizing ensures the subfield plans are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
  */
-const collectSubfields = memoize3((exeContext, returnType, fieldGroup) =>
-  _collectSubfields(
+const buildSubFieldPlan = memoize3((exeContext, returnType, fieldGroup) => {
+  const subFields = collectSubfields(
     exeContext.schema,
     exeContext.fragments,
     exeContext.variableValues,
     exeContext.operation,
     returnType,
-    fieldGroup,
-  ),
-);
+    fieldGroup.fields,
+  );
+  return buildFieldPlan(
+    subFields,
+    fieldGroup.deferUsages,
+    fieldGroup.knownDeferUsages,
+  );
+});
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
 const UNEXPECTED_MULTIPLE_PAYLOADS =
@@ -268,8 +270,15 @@ function executeOperation(exeContext, initialResultRecord) {
       { nodes: operation },
     );
   }
-  const { groupedFieldSet, newGroupedFieldSetDetails, newDeferUsages } =
-    collectFields(schema, fragments, variableValues, rootType, operation);
+  const fields = collectFields(
+    schema,
+    fragments,
+    variableValues,
+    rootType,
+    operation,
+  );
+  const { groupedFieldSet, newGroupedFieldSetDetailsMap, newDeferUsages } =
+    buildFieldPlan(fields);
   const newDeferMap = addNewDeferredFragments(
     incrementalPublisher,
     newDeferUsages,
@@ -278,7 +287,7 @@ function executeOperation(exeContext, initialResultRecord) {
   const path = undefined;
   const newDeferredGroupedFieldSetRecords = addNewDeferredGroupedFieldSets(
     incrementalPublisher,
-    newGroupedFieldSetDetails,
+    newGroupedFieldSetDetailsMap,
     newDeferMap,
     path,
   );
@@ -450,7 +459,7 @@ function executeField(
   const info = buildResolveInfo(
     exeContext,
     fieldDef,
-    fieldGroup,
+    toNodes(fieldGroup),
     parentType,
     path,
   );
@@ -528,7 +537,7 @@ function executeField(
 export function buildResolveInfo(
   exeContext,
   fieldDef,
-  fieldGroup,
+  fieldNodes,
   parentType,
   path,
 ) {
@@ -536,7 +545,7 @@ export function buildResolveInfo(
   // information about the current execution state.
   return {
     fieldName: fieldDef.name,
-    fieldNodes: toNodes(fieldGroup),
+    fieldNodes,
     returnType: fieldDef.type,
     parentType,
     path,
@@ -756,9 +765,8 @@ function getStreamUsage(exeContext, fieldGroup, path) {
   const streamedFieldGroup = {
     fields: fieldGroup.fields.map((fieldDetails) => ({
       node: fieldDetails.node,
-      target: undefined,
+      deferUsage: undefined,
     })),
-    targets: NON_DEFERRED_TARGET_SET,
   };
   const streamUsage = {
     initialCount: stream.initialCount,
@@ -1210,17 +1218,14 @@ function addNewDeferredFragments(
   const newDeferMap = deferMap === undefined ? new Map() : new Map(deferMap);
   // For each new deferUsage object:
   for (const newDeferUsage of newDeferUsages) {
-    // DeferUsage objects track their parent targets; the immediate parent is always the first member of this list.
-    const parentTarget = newDeferUsage.ancestors[0];
-    // If the parent target is defined, the parent target is a DeferUsage object and
-    // the parent result record is the DeferredFragmentRecord corresponding to that DeferUsage.
-    // If the parent target is not defined, the parent result record is either:
+    const parentDeferUsage = newDeferUsage.parentDeferUsage;
+    // If the parent defer usage is not defined, the parent result record is either:
     //  - the InitialResultRecord, or
     //  - a StreamItemsRecord, as `@defer` may be nested under `@stream`.
     const parent =
-      parentTarget === undefined
+      parentDeferUsage === undefined
         ? incrementalDataRecord
-        : deferredFragmentRecordFromDeferUsage(parentTarget, newDeferMap);
+        : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
     // Instantiate the new record.
     const deferredFragmentRecord = new DeferredFragmentRecord({
       path,
@@ -1242,17 +1247,17 @@ function deferredFragmentRecordFromDeferUsage(deferUsage, deferMap) {
 }
 function addNewDeferredGroupedFieldSets(
   incrementalPublisher,
-  newGroupedFieldSetDetails,
+  newGroupedFieldSetDetailsMap,
   deferMap,
   path,
 ) {
   const newDeferredGroupedFieldSetRecords = [];
   for (const [
-    newGroupedFieldSetDeferUsages,
+    deferUsageSet,
     { groupedFieldSet, shouldInitiateDefer },
-  ] of newGroupedFieldSetDetails) {
+  ] of newGroupedFieldSetDetailsMap) {
     const deferredFragmentRecords = getDeferredFragmentRecords(
-      newGroupedFieldSetDeferUsages,
+      deferUsageSet,
       deferMap,
     );
     const deferredGroupedFieldSetRecord = new DeferredGroupedFieldSetRecord({
@@ -1283,8 +1288,8 @@ function collectAndExecuteSubfields(
   deferMap,
 ) {
   // Collect sub-fields to execute to complete this value.
-  const { groupedFieldSet, newGroupedFieldSetDetails, newDeferUsages } =
-    collectSubfields(exeContext, returnType, fieldGroup);
+  const { groupedFieldSet, newGroupedFieldSetDetailsMap, newDeferUsages } =
+    buildSubFieldPlan(exeContext, returnType, fieldGroup);
   const incrementalPublisher = exeContext.incrementalPublisher;
   const newDeferMap = addNewDeferredFragments(
     incrementalPublisher,
@@ -1295,7 +1300,7 @@ function collectAndExecuteSubfields(
   );
   const newDeferredGroupedFieldSetRecords = addNewDeferredGroupedFieldSets(
     incrementalPublisher,
-    newGroupedFieldSetDetails,
+    newGroupedFieldSetDetailsMap,
     newDeferMap,
     path,
   );
@@ -1498,28 +1503,29 @@ function executeSubscription(exeContext) {
       { nodes: operation },
     );
   }
-  const { groupedFieldSet } = collectFields(
+  const fields = collectFields(
     schema,
     fragments,
     variableValues,
     rootType,
     operation,
   );
-  const firstRootField = groupedFieldSet.entries().next().value;
-  const [responseName, fieldGroup] = firstRootField;
-  const fieldName = fieldGroup.fields[0].node.name.value;
+  const firstRootField = fields.entries().next().value;
+  const [responseName, fieldDetailsList] = firstRootField;
+  const fieldName = fieldDetailsList[0].node.name.value;
   const fieldDef = schema.getField(rootType, fieldName);
+  const fieldNodes = fieldDetailsList.map((fieldDetails) => fieldDetails.node);
   if (!fieldDef) {
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
-      { nodes: toNodes(fieldGroup) },
+      { nodes: fieldNodes },
     );
   }
   const path = addPath(undefined, responseName, rootType.name);
   const info = buildResolveInfo(
     exeContext,
     fieldDef,
-    fieldGroup,
+    fieldNodes,
     rootType,
     path,
   );
@@ -1528,11 +1534,7 @@ function executeSubscription(exeContext) {
     // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
-    const args = getArgumentValues(
-      fieldDef,
-      fieldGroup.fields[0].node,
-      variableValues,
-    );
+    const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
@@ -1543,12 +1545,12 @@ function executeSubscription(exeContext) {
     const result = resolveFn(rootValue, args, contextValue, info);
     if (isPromise(result)) {
       return result.then(assertEventStream).then(undefined, (error) => {
-        throw locatedError(error, toNodes(fieldGroup), pathToArray(path));
+        throw locatedError(error, fieldNodes, pathToArray(path));
       });
     }
     return assertEventStream(result);
   } catch (error) {
-    throw locatedError(error, toNodes(fieldGroup), pathToArray(path));
+    throw locatedError(error, fieldNodes, pathToArray(path));
   }
 }
 function assertEventStream(result) {

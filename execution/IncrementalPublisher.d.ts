@@ -4,7 +4,7 @@ import type {
   GraphQLError,
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
-import type { GroupedFieldSet } from './collectFields.js';
+import type { GroupedFieldSet } from './buildFieldPlan.js';
 interface IncrementalUpdate<TData = unknown, TExtensions = ObjMap<unknown>> {
   pending: ReadonlyArray<PendingResult>;
   incremental: ReadonlyArray<IncrementalResult<TData, TExtensions>>;

@@ -1,8 +1,8 @@
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import { Kind } from '../../language/kinds.mjs';
 import { collectFields } from '../../execution/collectFields.mjs';
-function toNodes(fieldGroup) {
-  return fieldGroup.fields.map((fieldDetails) => fieldDetails.node);
+function toNodes(fieldDetailsList) {
+  return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
 }
 /**
  * Subscriptions must only include a non-introspection field.
@@ -28,15 +28,15 @@ export function SingleFieldSubscriptionsRule(context) {
               fragments[definition.name.value] = definition;
             }
           }
-          const { groupedFieldSet } = collectFields(
+          const fields = collectFields(
             schema,
             fragments,
             variableValues,
             subscriptionType,
             node,
           );
-          if (groupedFieldSet.size > 1) {
-            const fieldGroups = [...groupedFieldSet.values()];
+          if (fields.size > 1) {
+            const fieldGroups = [...fields.values()];
             const extraFieldGroups = fieldGroups.slice(1);
             const extraFieldSelections = extraFieldGroups.flatMap(
               (fieldGroup) => toNodes(fieldGroup),
@@ -50,7 +50,7 @@ export function SingleFieldSubscriptionsRule(context) {
               ),
             );
           }
-          for (const fieldGroup of groupedFieldSet.values()) {
+          for (const fieldGroup of fields.values()) {
             const fieldName = toNodes(fieldGroup)[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(

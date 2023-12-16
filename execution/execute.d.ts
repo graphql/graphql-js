@@ -5,6 +5,7 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import type {
   DocumentNode,
+  FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast.js';
@@ -16,7 +17,7 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
-import type { FieldGroup } from './collectFields.js';
+import type { FieldGroup } from './buildFieldPlan.js';
 import type {
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
@@ -138,7 +139,7 @@ export declare function buildExecutionContext(
 export declare function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<unknown, unknown>,
-  fieldGroup: FieldGroup,
+  fieldNodes: ReadonlyArray<FieldNode>,
   parentType: GraphQLObjectType,
   path: Path,
 ): GraphQLResolveInfo;
