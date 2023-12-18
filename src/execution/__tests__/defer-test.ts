@@ -598,6 +598,8 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
+        // TODO: this extra pending is a bug to be fixed by https://github.com/graphql/graphql-js/pull/3993
+        pending: [{ id: '2', path: ['hero'] }],
         incremental: [
           {
             data: { hero: {} },
