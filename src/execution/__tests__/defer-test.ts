@@ -64,6 +64,7 @@ const anotherNestedObject = new GraphQLObjectType({
 
 const hero = {
   name: 'Luke',
+  lastName: 'SkyWalker',
   id: 1,
   friends,
   nestedObject,
@@ -112,6 +113,7 @@ const heroType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
+    lastName: { type: GraphQLString },
     nonNullName: { type: new GraphQLNonNull(GraphQLString) },
     friends: {
       type: new GraphQLList(friendType),
@@ -556,6 +558,58 @@ describe('Execute: defer directive', () => {
           },
           {
             data: { name: 'Luke' },
+            id: '1',
+            subPath: ['hero'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Separately emits defer fragments with different labels with varying subfields with superimposed masked defer', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer(label: "DeferID") {
+          hero {
+            id
+          }
+        }
+        ... @defer(label: "DeferName") {
+          hero {
+            name
+            lastName
+            ... @defer {
+              lastName
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [], label: 'DeferID' },
+          { id: '1', path: [], label: 'DeferName' },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { hero: {} },
+            id: '0',
+          },
+          {
+            data: { id: '1' },
+            id: '0',
+            subPath: ['hero'],
+          },
+          {
+            data: { name: 'Luke', lastName: 'SkyWalker' },
             id: '1',
             subPath: ['hero'],
           },
