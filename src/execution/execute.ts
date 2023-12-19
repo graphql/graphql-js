@@ -426,13 +426,6 @@ function executeOperation(
 
   const path = undefined;
 
-  const newDeferredGroupedFieldSetRecords = addNewDeferredGroupedFieldSets(
-    incrementalPublisher,
-    newGroupedFieldSetDetailsMap,
-    newDeferMap,
-    path,
-  );
-
   let result;
   switch (operation.operation) {
     case OperationTypeNode.QUERY:
@@ -476,7 +469,7 @@ function executeOperation(
     rootType,
     rootValue,
     path,
-    newDeferredGroupedFieldSetRecords,
+    newGroupedFieldSetDetailsMap,
     newDeferMap,
   );
 
@@ -1501,36 +1494,28 @@ function deferredFragmentRecordFromDeferUsage(
   return deferMap.get(deferUsage)!;
 }
 
-function addNewDeferredGroupedFieldSets(
+function addNewDeferredGroupedFieldSet(
   incrementalPublisher: IncrementalPublisher,
-  newGroupedFieldSetDetailsMap: Map<DeferUsageSet, NewGroupedFieldSetDetails>,
+  deferUsageSet: DeferUsageSet,
+  groupedFieldSet: GroupedFieldSet,
+  shouldInitiateDefer: boolean,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
   path?: Path | undefined,
-): ReadonlyArray<DeferredGroupedFieldSetRecord> {
-  const newDeferredGroupedFieldSetRecords: Array<DeferredGroupedFieldSetRecord> =
-    [];
-
-  for (const [
+): DeferredGroupedFieldSetRecord {
+  const deferredFragmentRecords = getDeferredFragmentRecords(
     deferUsageSet,
-    { groupedFieldSet, shouldInitiateDefer },
-  ] of newGroupedFieldSetDetailsMap) {
-    const deferredFragmentRecords = getDeferredFragmentRecords(
-      deferUsageSet,
-      deferMap,
-    );
-    const deferredGroupedFieldSetRecord = new DeferredGroupedFieldSetRecord({
-      path,
-      deferredFragmentRecords,
-      groupedFieldSet,
-      shouldInitiateDefer,
-    });
-    incrementalPublisher.reportNewDeferredGroupedFieldSetRecord(
-      deferredGroupedFieldSetRecord,
-    );
-    newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
-  }
-
-  return newDeferredGroupedFieldSetRecords;
+    deferMap,
+  );
+  const deferredGroupedFieldSetRecord = new DeferredGroupedFieldSetRecord({
+    path,
+    deferredFragmentRecords,
+    groupedFieldSet,
+    shouldInitiateDefer,
+  });
+  incrementalPublisher.reportNewDeferredGroupedFieldSetRecord(
+    deferredGroupedFieldSetRecord,
+  );
+  return deferredGroupedFieldSetRecord;
 }
 
 function getDeferredFragmentRecords(
@@ -1565,13 +1550,6 @@ function collectAndExecuteSubfields(
     path,
   );
 
-  const newDeferredGroupedFieldSetRecords = addNewDeferredGroupedFieldSets(
-    incrementalPublisher,
-    newGroupedFieldSetDetailsMap,
-    newDeferMap,
-    path,
-  );
-
   const subFields = executeFields(
     exeContext,
     returnType,
@@ -1587,7 +1565,7 @@ function collectAndExecuteSubfields(
     returnType,
     result,
     path,
-    newDeferredGroupedFieldSetRecords,
+    newGroupedFieldSetDetailsMap,
     newDeferMap,
   );
 
@@ -1891,11 +1869,23 @@ function executeDeferredGroupedFieldSets(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
-  newDeferredGroupedFieldSetRecords: ReadonlyArray<DeferredGroupedFieldSetRecord>,
+  newGroupedFieldSetDetailsMap: Map<DeferUsageSet, NewGroupedFieldSetDetails>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
 ): void {
-  for (const deferredGroupedFieldSetRecord of newDeferredGroupedFieldSetRecords) {
-    if (deferredGroupedFieldSetRecord.shouldInitiateDefer) {
+  for (const [
+    deferUsageSet,
+    { groupedFieldSet, shouldInitiateDefer },
+  ] of newGroupedFieldSetDetailsMap) {
+    const deferredGroupedFieldSetRecord = addNewDeferredGroupedFieldSet(
+      exeContext.incrementalPublisher,
+      deferUsageSet,
+      groupedFieldSet,
+      shouldInitiateDefer,
+      deferMap,
+      path,
+    );
+
+    if (shouldInitiateDefer) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       Promise.resolve().then(() =>
         executeDeferredGroupedFieldSet(
