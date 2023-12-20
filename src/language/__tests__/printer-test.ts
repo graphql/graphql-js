@@ -199,14 +199,12 @@ describe('Printer: Query document', () => {
   it('prints kitchen sink without altering ast', () => {
     const ast = parse(kitchenSinkQuery, {
       noLocation: true,
-      experimentalClientControlledNullability: true,
     });
 
     const astBeforePrintCall = JSON.stringify(ast);
     const printed = print(ast);
     const printedAST = parse(printed, {
       noLocation: true,
-      experimentalClientControlledNullability: true,
     });
 
     expect(printedAST).to.deep.equal(ast);
