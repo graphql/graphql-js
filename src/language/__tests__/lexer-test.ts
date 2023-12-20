@@ -944,13 +944,6 @@ describe('Lexer', () => {
       value: undefined,
     });
 
-    expect(lexOne('?')).to.contain({
-      kind: TokenKind.QUESTION_MARK,
-      start: 0,
-      end: 1,
-      value: undefined,
-    });
-
     expect(lexOne('$')).to.contain({
       kind: TokenKind.DOLLAR,
       start: 0,
@@ -1196,7 +1189,6 @@ describe('isPunctuatorTokenKind', () => {
 
   it('returns true for punctuator tokens', () => {
     expect(isPunctuatorToken('!')).to.equal(true);
-    expect(isPunctuatorToken('?')).to.equal(true);
     expect(isPunctuatorToken('$')).to.equal(true);
     expect(isPunctuatorToken('&')).to.equal(true);
     expect(isPunctuatorToken('(')).to.equal(true);

@@ -14,11 +14,6 @@ enum Kind {
   ARGUMENT = 'Argument',
   FRAGMENT_ARGUMENT = 'FragmentArgument',
 
-  /** Nullability Modifiers */
-  LIST_NULLABILITY_OPERATOR = 'ListNullabilityOperator',
-  NON_NULL_ASSERTION = 'NonNullAssertion',
-  ERROR_BOUNDARY = 'ErrorBoundary',
-
   /** Fragments */
   FRAGMENT_SPREAD = 'FragmentSpread',
   INLINE_FRAGMENT = 'InlineFragment',
