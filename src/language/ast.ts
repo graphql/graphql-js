@@ -207,13 +207,7 @@ export const QueryDocumentKeys: {
   VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
   Variable: ['name'],
   SelectionSet: ['selections'],
-  Field: [
-    'alias',
-    'name',
-    'arguments',
-    'directives',
-    'selectionSet',
-  ],
+  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
   Argument: ['name', 'value'],
 
   FragmentSpread: ['name', 'directives'],

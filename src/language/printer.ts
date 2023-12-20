@@ -55,13 +55,7 @@ const printDocASTReducer: ASTReducer<string> = {
   SelectionSet: { leave: ({ selections }) => block(selections) },
 
   Field: {
-    leave({
-      alias,
-      name,
-      arguments: args,
-      directives,
-      selectionSet,
-    }) {
+    leave({ alias, name, arguments: args, directives, selectionSet }) {
       const prefix = join([wrap('', alias, ': '), name], '');
       let argsLine = prefix + wrap('(', join(args, ', '), ')');
 
