@@ -91,7 +91,7 @@ const buildSubFieldPlan = memoize3(
     returnType: GraphQLObjectType,
     fieldGroup: FieldGroup,
   ) => {
-    const subFields = collectSubfields(
+    const { fields: subFields, newDeferUsages } = collectSubfields(
       exeContext.schema,
       exeContext.fragments,
       exeContext.variableValues,
@@ -99,11 +99,10 @@ const buildSubFieldPlan = memoize3(
       returnType,
       fieldGroup.fields,
     );
-    return buildFieldPlan(
-      subFields,
-      fieldGroup.deferUsages,
-      fieldGroup.knownDeferUsages,
-    );
+    return {
+      ...buildFieldPlan(subFields, fieldGroup.deferUsages),
+      newDeferUsages,
+    };
   },
 );
 
@@ -408,14 +407,14 @@ function executeOperation(
     );
   }
 
-  const fields = collectFields(
+  const { fields, newDeferUsages } = collectFields(
     schema,
     fragments,
     variableValues,
     rootType,
     operation,
   );
-  const { groupedFieldSet, newGroupedFieldSetDetailsMap, newDeferUsages } =
+  const { groupedFieldSet, newGroupedFieldSetDetailsMap } =
     buildFieldPlan(fields);
 
   const newDeferMap = addNewDeferredFragments(
@@ -1807,7 +1806,7 @@ function executeSubscription(
     );
   }
 
-  const fields = collectFields(
+  const { fields } = collectFields(
     schema,
     fragments,
     variableValues,
