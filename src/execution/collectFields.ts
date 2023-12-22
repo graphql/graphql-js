@@ -28,7 +28,6 @@ import { getDirectiveValues } from './values.js';
 
 export interface DeferUsage {
   label: string | undefined;
-  parentDeferUsage: DeferUsage | undefined;
 }
 
 export interface FieldDetails {
@@ -159,7 +158,6 @@ function collectFieldsImpl(
           operation,
           variableValues,
           selection,
-          parentDeferUsage,
         );
 
         collectFieldsImpl(
@@ -179,7 +177,6 @@ function collectFieldsImpl(
           operation,
           variableValues,
           selection,
-          parentDeferUsage,
         );
 
         if (
@@ -223,7 +220,6 @@ function getDeferUsage(
   operation: OperationDefinitionNode,
   variableValues: { [variable: string]: unknown },
   node: FragmentSpreadNode | InlineFragmentNode,
-  parentDeferUsage: DeferUsage | undefined,
 ): DeferUsage | undefined {
   const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues);
 
@@ -242,7 +238,6 @@ function getDeferUsage(
 
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
-    parentDeferUsage,
   };
 }
 

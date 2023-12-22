@@ -196,14 +196,11 @@ export class IncrementalPublisher {
     this._reset();
   }
 
-  reportNewDeferFragmentRecord(
-    deferredFragmentRecord: DeferredFragmentRecord,
-    parentIncrementalResultRecord:
-      | InitialResultRecord
-      | DeferredFragmentRecord
-      | StreamItemsRecord,
+  reportNewSubsequentResultRecord(
+    subsequentResultRecord: SubsequentResultRecord,
+    parentIncrementalDataRecord: IncrementalDataRecord,
   ): void {
-    parentIncrementalResultRecord.children.add(deferredFragmentRecord);
+    parentIncrementalDataRecord.children.add(subsequentResultRecord);
   }
 
   reportNewDeferredGroupedFieldSetRecord(
@@ -214,19 +211,6 @@ export class IncrementalPublisher {
       deferredFragmentRecord.deferredGroupedFieldSetRecords.add(
         deferredGroupedFieldSetRecord,
       );
-    }
-  }
-
-  reportNewStreamItemsRecord(
-    streamItemsRecord: StreamItemsRecord,
-    parentIncrementalDataRecord: IncrementalDataRecord,
-  ): void {
-    if (isDeferredGroupedFieldSetRecord(parentIncrementalDataRecord)) {
-      for (const parent of parentIncrementalDataRecord.deferredFragmentRecords) {
-        parent.children.add(streamItemsRecord);
-      }
-    } else {
-      parentIncrementalDataRecord.children.add(streamItemsRecord);
     }
   }
 
@@ -349,8 +333,9 @@ export class IncrementalPublisher {
 
     const streams = new Set<StreamRecord>();
 
-    const children = this._getChildren(erroringIncrementalDataRecord);
-    const descendants = this._getDescendants(children);
+    const descendants = this._getDescendants(
+      erroringIncrementalDataRecord.children,
+    );
 
     for (const child of descendants) {
       if (!this._nullsChildSubsequentResultRecord(child, nullPathArray)) {
@@ -538,19 +523,19 @@ export class IncrementalPublisher {
     const incrementalResults: Array<IncrementalResult> = [];
     const completedResults: Array<CompletedResult> = [];
     for (const subsequentResultRecord of completedRecords) {
-      for (const child of subsequentResultRecord.children) {
-        if (child.filtered) {
-          continue;
-        }
-        const pendingSource = isStreamItemsRecord(child)
-          ? child.streamRecord
-          : child;
-        if (!pendingSource.pendingSent) {
-          newPendingSources.add(pendingSource);
-        }
-        this._publish(child);
-      }
       if (isStreamItemsRecord(subsequentResultRecord)) {
+        for (const child of subsequentResultRecord.children) {
+          if (child.filtered) {
+            continue;
+          }
+          const pendingSource = isStreamItemsRecord(child)
+            ? child.streamRecord
+            : child;
+          if (!pendingSource.pendingSent) {
+            newPendingSources.add(pendingSource);
+          }
+          this._publish(child);
+        }
         if (subsequentResultRecord.isFinalRecord) {
           newPendingSources.delete(subsequentResultRecord.streamRecord);
           completedResults.push(
@@ -585,6 +570,18 @@ export class IncrementalPublisher {
           continue;
         }
         for (const deferredGroupedFieldSetRecord of subsequentResultRecord.deferredGroupedFieldSetRecords) {
+          for (const child of deferredGroupedFieldSetRecord.children) {
+            if (child.filtered) {
+              continue;
+            }
+            const pendingSource = isStreamItemsRecord(child)
+              ? child.streamRecord
+              : child;
+            if (!pendingSource.pendingSent) {
+              newPendingSources.add(pendingSource);
+            }
+            this._publish(child);
+          }
           if (!deferredGroupedFieldSetRecord.sent) {
             deferredGroupedFieldSetRecord.sent = true;
             const incrementalResult: IncrementalDeferResult =
@@ -613,6 +610,8 @@ export class IncrementalPublisher {
     let idWithLongestPath: string | undefined;
     for (const deferredFragmentRecord of deferredFragmentRecords) {
       const id = deferredFragmentRecord.id;
+      // TODO add test
+      /* c8 ignore next 3 */
       if (id === undefined) {
         continue;
       }
@@ -668,30 +667,9 @@ export class IncrementalPublisher {
 
     if (subsequentResultRecord._pending.size > 0) {
       this._introduce(subsequentResultRecord);
-    } else if (
-      subsequentResultRecord.deferredGroupedFieldSetRecords.size > 0 ||
-      subsequentResultRecord.children.size > 0
-    ) {
+    } else if (subsequentResultRecord.deferredGroupedFieldSetRecords.size > 0) {
       this._push(subsequentResultRecord);
     }
-  }
-
-  private _getChildren(
-    erroringIncrementalDataRecord: IncrementalDataRecord,
-  ): ReadonlySet<SubsequentResultRecord> {
-    const children = new Set<SubsequentResultRecord>();
-    if (isDeferredGroupedFieldSetRecord(erroringIncrementalDataRecord)) {
-      for (const erroringIncrementalResultRecord of erroringIncrementalDataRecord.deferredFragmentRecords) {
-        for (const child of erroringIncrementalResultRecord.children) {
-          children.add(child);
-        }
-      }
-    } else {
-      for (const child of erroringIncrementalDataRecord.children) {
-        children.add(child);
-      }
-    }
-    return children;
   }
 
   private _getDescendants(
@@ -700,7 +678,16 @@ export class IncrementalPublisher {
   ): ReadonlySet<SubsequentResultRecord> {
     for (const child of children) {
       descendants.add(child);
-      this._getDescendants(child.children, descendants);
+      if (isStreamItemsRecord(child)) {
+        this._getDescendants(child.children, descendants);
+      } else {
+        for (const deferredGroupedFieldSetRecord of child.deferredGroupedFieldSetRecords) {
+          this._getDescendants(
+            deferredGroupedFieldSetRecord.children,
+            descendants,
+          );
+        }
+      }
     }
     return descendants;
   }
@@ -736,12 +723,6 @@ export class IncrementalPublisher {
   }
 }
 
-function isDeferredGroupedFieldSetRecord(
-  incrementalDataRecord: unknown,
-): incrementalDataRecord is DeferredGroupedFieldSetRecord {
-  return incrementalDataRecord instanceof DeferredGroupedFieldSetRecord;
-}
-
 function isStreamItemsRecord(
   subsequentResultRecord: unknown,
 ): subsequentResultRecord is StreamItemsRecord {
@@ -764,6 +745,7 @@ export class DeferredGroupedFieldSetRecord {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   groupedFieldSet: GroupedFieldSet;
   shouldInitiateDefer: boolean;
+  children: Set<SubsequentResultRecord>;
   errors: Array<GraphQLError>;
   data: ObjMap<unknown> | undefined;
   sent: boolean;
@@ -778,6 +760,7 @@ export class DeferredGroupedFieldSetRecord {
     this.deferredFragmentRecords = opts.deferredFragmentRecords;
     this.groupedFieldSet = opts.groupedFieldSet;
     this.shouldInitiateDefer = opts.shouldInitiateDefer;
+    this.children = new Set();
     this.errors = [];
     this.sent = false;
   }
@@ -788,7 +771,6 @@ export class DeferredFragmentRecord {
   path: ReadonlyArray<string | number>;
   label: string | undefined;
   id: string | undefined;
-  children: Set<SubsequentResultRecord>;
   deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
   errors: Array<GraphQLError>;
   filtered: boolean;
@@ -798,7 +780,6 @@ export class DeferredFragmentRecord {
   constructor(opts: { path: Path | undefined; label: string | undefined }) {
     this.path = pathToArray(opts.path);
     this.label = opts.label;
-    this.children = new Set();
     this.filtered = false;
     this.deferredGroupedFieldSetRecords = new Set();
     this.errors = [];

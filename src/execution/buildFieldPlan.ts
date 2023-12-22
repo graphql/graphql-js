@@ -65,11 +65,14 @@ export function buildFieldPlan(
   for (const [responseKey, fieldDetailsList] of fields) {
     const deferUsageSet = new Set<DeferUsage>();
     let inOriginalResult = false;
+    let inParentResult = false;
     for (const fieldDetails of fieldDetailsList) {
       const deferUsage = fieldDetails.deferUsage;
       if (deferUsage === undefined) {
         inOriginalResult = true;
         continue;
+      } else if (parentDeferUsages.has(deferUsage)) {
+        inParentResult = true;
       }
       deferUsageSet.add(deferUsage);
       if (!knownDeferUsages.has(deferUsage)) {
@@ -79,13 +82,10 @@ export function buildFieldPlan(
     }
     if (inOriginalResult) {
       deferUsageSet.clear();
-    } else {
+    } else if (inParentResult) {
       deferUsageSet.forEach((deferUsage) => {
-        const ancestors = getAncestors(deferUsage);
-        for (const ancestor of ancestors) {
-          if (deferUsageSet.has(ancestor)) {
-            deferUsageSet.delete(deferUsage);
-          }
+        if (!parentDeferUsages.has(deferUsage)) {
+          deferUsageSet.delete(deferUsage);
         }
       });
     }
@@ -152,14 +152,4 @@ export function buildFieldPlan(
     newGroupedFieldSetDetailsMap,
     newDeferUsages: Array.from(newDeferUsages),
   };
-}
-
-function getAncestors(deferUsage: DeferUsage): ReadonlyArray<DeferUsage> {
-  const ancestors: Array<DeferUsage> = [];
-  let parentDeferUsage: DeferUsage | undefined = deferUsage.parentDeferUsage;
-  while (parentDeferUsage !== undefined) {
-    ancestors.unshift(parentDeferUsage);
-    parentDeferUsage = parentDeferUsage.parentDeferUsage;
-  }
-  return ancestors;
 }

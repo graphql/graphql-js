@@ -946,41 +946,29 @@ describe('Execute: defer directive', () => {
             },
           },
         },
-        pending: [{ id: '0', path: ['hero'] }],
+        pending: [
+          { id: '0', path: ['hero'] },
+          { id: '1', path: ['hero', 'nestedObject'] },
+          { id: '2', path: ['hero', 'nestedObject', 'deeperObject'] },
+        ],
         hasNext: true,
       },
       {
-        pending: [{ id: '1', path: ['hero', 'nestedObject'] }],
         incremental: [
           {
             data: { bar: 'bar' },
-            id: '0',
-            subPath: ['nestedObject', 'deeperObject'],
+            id: '2',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        pending: [{ id: '2', path: ['hero', 'nestedObject', 'deeperObject'] }],
-        incremental: [
           {
             data: { baz: 'baz' },
-            id: '1',
-            subPath: ['deeperObject'],
+            id: '2',
           },
-        ],
-        hasNext: true,
-        completed: [{ id: '1' }],
-      },
-      {
-        incremental: [
           {
             data: { bak: 'bak' },
             id: '2',
           },
         ],
-        completed: [{ id: '2' }],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }],
         hasNext: false,
       },
     ]);
@@ -1023,34 +1011,27 @@ describe('Execute: defer directive', () => {
           },
         },
         pending: [
-          { id: '0', path: ['hero'] },
+          { id: '0', path: ['hero', 'nestedObject', 'deeperObject'] },
           { id: '1', path: ['hero', 'nestedObject', 'deeperObject'] },
         ],
         hasNext: true,
       },
       {
-        pending: [{ id: '2', path: ['hero', 'nestedObject', 'deeperObject'] }],
         incremental: [
           {
             data: {
               foo: 'foo',
             },
-            id: '1',
+            id: '0',
           },
-        ],
-        completed: [{ id: '0' }, { id: '1' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             data: {
               bar: 'bar',
             },
-            id: '2',
+            id: '1',
           },
         ],
-        completed: [{ id: '2' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);

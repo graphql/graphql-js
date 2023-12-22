@@ -1464,16 +1464,6 @@ function addNewDeferredFragments(
 
   // For each new deferUsage object:
   for (const newDeferUsage of newDeferUsages) {
-    const parentDeferUsage = newDeferUsage.parentDeferUsage;
-
-    // If the parent defer usage is not defined, the parent result record is either:
-    //  - the InitialResultRecord, or
-    //  - a StreamItemsRecord, as `@defer` may be nested under `@stream`.
-    const parent =
-      parentDeferUsage === undefined
-        ? (incrementalDataRecord as InitialResultRecord | StreamItemsRecord)
-        : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
-
     // Instantiate the new record.
     const deferredFragmentRecord = new DeferredFragmentRecord({
       path,
@@ -1481,9 +1471,9 @@ function addNewDeferredFragments(
     });
 
     // Report the new record to the Incremental Publisher.
-    incrementalPublisher.reportNewDeferFragmentRecord(
+    incrementalPublisher.reportNewSubsequentResultRecord(
       deferredFragmentRecord,
-      parent,
+      incrementalDataRecord,
     );
 
     // Update the map.
@@ -1984,7 +1974,7 @@ function executeStreamField(
     streamRecord,
     path: itemPath,
   });
-  incrementalPublisher.reportNewStreamItemsRecord(
+  incrementalPublisher.reportNewSubsequentResultRecord(
     streamItemsRecord,
     incrementalDataRecord,
   );
@@ -2176,7 +2166,7 @@ async function executeStreamAsyncIterator(
       streamRecord,
       path: itemPath,
     });
-    incrementalPublisher.reportNewStreamItemsRecord(
+    incrementalPublisher.reportNewSubsequentResultRecord(
       streamItemsRecord,
       currentIncrementalDataRecord,
     );
