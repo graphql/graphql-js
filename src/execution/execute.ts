@@ -1781,16 +1781,46 @@ export function createSourceEventStream(
 function createSourceEventStreamImpl(
   exeContext: ExecutionContext,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  try {
-    const eventStream = executeSubscription(exeContext);
-    if (isPromise(eventStream)) {
-      return eventStream.then(undefined, (error) => ({ errors: [error] }));
-    }
+try {
 
-    return eventStream;
-  } catch (error) {
-    return { errors: [error] };
+  const eventStream = executeSubscription(exeContext);
+
+  if (isPromise(eventStream)) {
+    // Handle promise errors
+    return eventStream.then(
+      data => ({ data }), 
+      error => ({ errors: [error] })
+    );
   }
+
+  const wrappedStream = {
+    async *[Symbol.asyncIterator]() {
+      try {
+        yield* eventStream;
+      } catch (error) {
+        yield { errors: [error] };
+      }
+    }
+  };
+
+  return wrappedStream;
+
+} catch (error) {
+  // Handle sync errors
+  return { errors: [error] }; 
+}
+
+function resolve(payload) {
+  if (payload.errors) {
+    throw payload.errors[0]; 
+  } else {
+    return payload.data;
+  }
+}
+
+const stream = executeSubscription();
+mapAsyncIterable(stream, resolve); 
+
 }
 
 function executeSubscription(
