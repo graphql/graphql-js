@@ -665,14 +665,25 @@ function completeValue(
 
   // If field type is List, complete each item in the list with the inner type
   if (isListType(returnType)) {
-    return completeListValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
+    if (isListType(returnType)) {
+      return exeContext.operation.name?.value === 'IntrospectionQuery'
+        ? completeListValue(
+            exeContext,
+            returnType,
+            fieldNodes,
+            info,
+            path,
+            result,
+          )
+        : completeListValueChunked(
+            exeContext,
+            returnType,
+            fieldNodes,
+            info,
+            path,
+            result,
+          );
+    }
   }
 
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
@@ -782,6 +793,106 @@ function completeListValue(
       return handleFieldError(error, itemType, exeContext);
     }
   });
+
+  return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+
+const MAX_EVENTLOOP_BLOCK_TIME_IN_MS = 50;
+
+const waitForNextEventCycle = () =>
+  new Promise((resolve) => setImmediate(resolve));
+
+/**
+ * Complete a list value by completing each item in the list with the
+ * inner type
+ */
+async function completeListValueChunked(
+  exeContext: ExecutionContext,
+  returnType: GraphQLList<GraphQLOutputType>,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  info: GraphQLResolveInfo,
+  path: Path,
+  result: unknown,
+): Promise<ReadonlyArray<unknown>> {
+  if (!isIterableObject(result)) {
+    throw new GraphQLError(
+      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
+    );
+  }
+
+  // This is specified as a simple map, however we're optimizing the path
+  // where the list contains no Promises by avoiding creating another Promise.
+  const itemType = returnType.ofType;
+  let containsPromise = false;
+  const completedResults = [];
+  const startTime = new Date().getTime();
+
+  for (const [index, item] of Array.from(result).entries()) {
+    // No need to modify the info object containing the path,
+    // since from here on it is not ever accessed by resolver functions.
+    const itemPath = addPath(path, index, undefined);
+
+    const is20thElement = index % 20 === 0 && index > 0;
+    const currentTime = new Date().getTime();
+    const deltaFromStartTime = currentTime - startTime;
+
+    if (is20thElement && deltaFromStartTime > MAX_EVENTLOOP_BLOCK_TIME_IN_MS) {
+      console.warn(
+        'GraphQLExecutor::EventLoopBlock - Exceeded max execution time per cycle',
+        {
+          operationName: exeContext.operation.name?.value ?? 'Unknown',
+          resolverName: info.fieldName ?? 'Unknown',
+        },
+      );
+      await waitForNextEventCycle();
+    }
+
+    try {
+      let completedItem;
+      if (isPromise(item)) {
+        completedItem = item.then((resolved) =>
+          completeValue(
+            exeContext,
+            itemType,
+            fieldNodes,
+            info,
+            itemPath,
+            resolved,
+          ),
+        );
+      } else {
+        completedItem = completeValue(
+          exeContext,
+          itemType,
+          fieldNodes,
+          info,
+          itemPath,
+          item,
+        );
+      }
+
+      if (isPromise(completedItem)) {
+        containsPromise = true;
+        // Note: we don't rely on a `catch` method, but we do expect "thenable"
+        // to take a second callback for the error case.
+        completedResults.push(
+          completedItem.then(undefined, (rawError) => {
+            const error = locatedError(
+              rawError,
+              fieldNodes,
+              pathToArray(itemPath),
+            );
+            return handleFieldError(error, itemType, exeContext);
+          }),
+        );
+        continue;
+      }
+      completedResults.push(completedItem);
+    } catch (rawError) {
+      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      completedResults.push(handleFieldError(error, itemType, exeContext));
+    }
+  }
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
 }
