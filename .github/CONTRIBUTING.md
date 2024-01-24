@@ -77,12 +77,12 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 ## Review Process
 
 - Pull requests are required to pass all tests and checks before they can be merged.
-- Pull requests should be reviewed by _at least two_ members of the [`@graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team before they can be merged.
-- If a reviewer hasn't responded in 48 hours, feel free to ping them `@graphql-js-reviewers`.
+- Pull requests should be reviewed by _at least two_ members of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team before they can be merged.
+- If a reviewer hasn't responded in 48 hours, feel free to ping them `@graphql/graphql-js-reviewers`.
 
 ## Merge Process
 
-Once a pull request has been approved by 2 reviewers from [`@graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team, we must wait 2 weeks before merging the pull request, this allows for other reviewers to give feedback without rushing any merges. Pull request can be merged by a member of the [`@graphql-js-reviewers-write`](https://github.com/orgs/graphql/teams/graphql-js-reviewers-write) team.
+Once a pull request has been approved by 2 reviewers from [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team, we must wait 2 weeks before merging the pull request, this allows for other reviewers to give feedback without rushing any merges. Pull request can be merged by a member of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers-write) team.
 
 ## Release on NPM
 
