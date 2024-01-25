@@ -301,25 +301,20 @@ export class IncrementalPublisher {
     initialResultRecord: InitialResultRecord,
     data: ObjMap<unknown> | null,
   ): ExecutionResult | ExperimentalIncrementalExecutionResults {
+    const pendingSources = new Set<DeferredFragmentRecord | StreamRecord>();
     for (const child of initialResultRecord.children) {
       if (child.filtered) {
         continue;
       }
-      this._publish(child);
+      const maybePendingSource = this._publish(child);
+      if (maybePendingSource) {
+        pendingSources.add(maybePendingSource);
+      }
     }
 
     const errors = initialResultRecord.errors;
     const initialResult = errors.length === 0 ? { data } : { errors, data };
-    const pending = this._pending;
-    if (pending.size > 0) {
-      const pendingSources = new Set<DeferredFragmentRecord | StreamRecord>();
-      for (const subsequentResultRecord of pending) {
-        const pendingSource = isStreamItemsRecord(subsequentResultRecord)
-          ? subsequentResultRecord.streamRecord
-          : subsequentResultRecord;
-        pendingSources.add(pendingSource);
-      }
-
+    if (pendingSources.size > 0) {
       return {
         initialResult: {
           ...initialResult,
@@ -542,13 +537,10 @@ export class IncrementalPublisher {
         if (child.filtered) {
           continue;
         }
-        const pendingSource = isStreamItemsRecord(child)
-          ? child.streamRecord
-          : child;
-        if (!pendingSource.pendingSent) {
-          newPendingSources.add(pendingSource);
+        const maybePendingSource = this._publish(child);
+        if (maybePendingSource) {
+          newPendingSources.add(maybePendingSource);
         }
-        this._publish(child);
       }
       if (isStreamItemsRecord(subsequentResultRecord)) {
         if (subsequentResultRecord.isFinalRecord) {
@@ -655,14 +647,20 @@ export class IncrementalPublisher {
     return result;
   }
 
-  private _publish(subsequentResultRecord: SubsequentResultRecord): void {
+  private _publish(
+    subsequentResultRecord: SubsequentResultRecord,
+  ): DeferredFragmentRecord | StreamRecord | undefined {
     if (isStreamItemsRecord(subsequentResultRecord)) {
       if (subsequentResultRecord.isCompleted) {
         this._push(subsequentResultRecord);
-        return;
+      } else {
+        this._introduce(subsequentResultRecord);
       }
 
-      this._introduce(subsequentResultRecord);
+      const stream = subsequentResultRecord.streamRecord;
+      if (!stream.pendingSent) {
+        return stream;
+      }
       return;
     }
 
@@ -673,6 +671,12 @@ export class IncrementalPublisher {
       subsequentResultRecord.children.size > 0
     ) {
       this._push(subsequentResultRecord);
+    } else {
+      return;
+    }
+
+    if (!subsequentResultRecord.pendingSent) {
+      return subsequentResultRecord;
     }
   }
 

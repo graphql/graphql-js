@@ -64,6 +64,7 @@ const anotherNestedObject = new GraphQLObjectType({
 
 const hero = {
   name: 'Luke',
+  lastName: 'SkyWalker',
   id: 1,
   friends,
   nestedObject,
@@ -112,6 +113,7 @@ const heroType = new GraphQLObjectType({
   fields: {
     id: { type: GraphQLID },
     name: { type: GraphQLString },
+    lastName: { type: GraphQLString },
     nonNullName: { type: new GraphQLNonNull(GraphQLString) },
     friends: {
       type: new GraphQLList(friendType),
@@ -154,6 +156,65 @@ async function complete(document: DocumentNode, rootValue: unknown = { hero }) {
   return result;
 }
 
+function getCountingHero() {
+  let stopped = false;
+  let count = 0;
+  const counts = new Map<string, number>();
+  function increment() {
+    if (stopped) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    Promise.resolve().then(() => {
+      count++;
+      increment();
+    });
+  }
+  increment();
+  const countingHero = {
+    stop: () => {
+      stopped = true;
+    },
+    counts,
+    hero: () => {
+      counts.set('hero', count);
+      return {
+        id: () => {
+          counts.set('id', count);
+          return hero.id;
+        },
+        name: () => {
+          counts.set('name', count);
+          return hero.name;
+        },
+        lastName: () => {
+          counts.set('lastName', count);
+          return hero.lastName;
+        },
+        nestedObject: () => {
+          counts.set('nestedObject', count);
+          return {
+            deeperObject: () => {
+              counts.set('deeperObject', count);
+              return {
+                foo: () => {
+                  counts.set('foo', count);
+                  return 'foo';
+                },
+                bar: () => {
+                  counts.set('bar', count);
+                  return 'bar';
+                },
+              };
+            },
+          };
+        },
+      };
+    },
+  };
+  return countingHero;
+}
+
 describe('Execute: defer directive', () => {
   it('Can defer fragments containing scalar types', async () => {
     const document = parse(`
@@ -167,7 +228,8 @@ describe('Execute: defer directive', () => {
         name
       }
     `);
-    const result = await complete(document);
+    const countingHero = getCountingHero();
+    const result = await complete(document, { hero: countingHero.hero });
 
     expectJSON(result).toDeepEqual([
       {
@@ -192,6 +254,11 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+
+    countingHero.stop();
+    expect(countingHero.counts.get('hero')).to.equal(0);
+    expect(countingHero.counts.get('id')).to.equal(0);
+    expect(countingHero.counts.get('name')).to.equal(1);
   });
   it('Can disable defer using if argument', async () => {
     const document = parse(`
@@ -485,7 +552,8 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const countingHero = getCountingHero();
+    const result = await complete(document, { hero: countingHero.hero });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -516,6 +584,11 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+
+    countingHero.stop();
+    expect(countingHero.counts.get('hero')).to.equal(0);
+    expect(countingHero.counts.get('id')).to.equal(1);
+    expect(countingHero.counts.get('name')).to.equal(1);
   });
 
   it('Separately emits defer fragments with different labels with varying subfields', async () => {
@@ -533,7 +606,8 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const countingHero = getCountingHero();
+    const result = await complete(document, { hero: countingHero.hero });
     expectJSON(result).toDeepEqual([
       {
         data: {},
@@ -564,6 +638,70 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+
+    countingHero.stop();
+    expect(countingHero.counts.get('hero')).to.equal(1);
+    expect(countingHero.counts.get('id')).to.equal(1);
+    expect(countingHero.counts.get('name')).to.equal(1);
+  });
+
+  it('Separately emits defer fragments with different labels with varying subfields with superimposed masked defer', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer(label: "DeferID") {
+          hero {
+            id
+          }
+        }
+        ... @defer(label: "DeferName") {
+          hero {
+            name
+            lastName
+            ... @defer {
+              lastName
+            }
+          }
+        }
+      }
+    `);
+    const countingHero = getCountingHero();
+    const result = await complete(document, { hero: countingHero.hero });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [], label: 'DeferID' },
+          { id: '1', path: [], label: 'DeferName' },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { hero: {} },
+            id: '0',
+          },
+          {
+            data: { id: '1' },
+            id: '0',
+            subPath: ['hero'],
+          },
+          {
+            data: { name: 'Luke', lastName: 'SkyWalker' },
+            id: '1',
+            subPath: ['hero'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+
+    countingHero.stop();
+    expect(countingHero.counts.get('hero')).to.equal(1);
+    expect(countingHero.counts.get('id')).to.equal(1);
+    expect(countingHero.counts.get('name')).to.equal(1);
+    expect(countingHero.counts.get('lastName')).to.equal(1);
   });
 
   it('Separately emits defer fragments with different labels with varying subfields that return promises', async () => {
@@ -634,7 +772,8 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const countingHero = getCountingHero();
+    const result = await complete(document, { hero: countingHero.hero });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -666,6 +805,11 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+
+    countingHero.stop();
+    expect(countingHero.counts.get('hero')).to.equal(0);
+    expect(countingHero.counts.get('id')).to.equal(1);
+    expect(countingHero.counts.get('name')).to.equal(1);
   });
 
   it('Separately emits nested defer fragments with varying subfields of same priorities but different level of defers', async () => {
@@ -681,7 +825,8 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document);
+    const countingHero = getCountingHero();
+    const result = await complete(document, { hero: countingHero.hero });
     expectJSON(result).toDeepEqual([
       {
         data: {},
@@ -716,6 +861,11 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+
+    countingHero.stop();
+    expect(countingHero.counts.get('hero')).to.equal(1);
+    expect(countingHero.counts.get('name')).to.equal(1);
+    expect(countingHero.counts.get('id')).to.equal(2);
   });
 
   it('Can deduplicate multiple defers on the same object', async () => {
@@ -854,9 +1004,8 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document, {
-      hero: { nestedObject: { deeperObject: { foo: 'foo', bar: 'bar' } } },
-    });
+    const countingHero = getCountingHero();
+    const result = await complete(document, { hero: countingHero.hero });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -893,6 +1042,81 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+
+    countingHero.stop();
+    expect(countingHero.counts.get('hero')).to.equal(0);
+    expect(countingHero.counts.get('nestedObject')).to.equal(1);
+    expect(countingHero.counts.get('deeperObject')).to.equal(1);
+    expect(countingHero.counts.get('foo')).to.equal(1);
+    expect(countingHero.counts.get('bar')).to.equal(2);
+  });
+
+  it('Deduplicates subfields present in a parent defer payload', async () => {
+    const document = parse(`
+      query {
+        hero {
+          ... @defer {
+            nestedObject {
+              deeperObject {
+                foo
+              }
+              ... @defer {
+                deeperObject {
+                  foo
+                  bar
+                }
+              }
+            }
+          }
+        }
+      }
+    `);
+    const countingHero = getCountingHero();
+    const result = await complete(document, { hero: countingHero.hero });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        pending: [{ id: '1', path: ['hero', 'nestedObject'] }],
+        incremental: [
+          {
+            data: {
+              nestedObject: {
+                deeperObject: { foo: 'foo' },
+              },
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              bar: 'bar',
+            },
+            id: '1',
+            subPath: ['deeperObject'],
+          },
+        ],
+        completed: [{ id: '1' }],
+        hasNext: false,
+      },
+    ]);
+
+    countingHero.stop();
+    expect(countingHero.counts.get('hero')).to.equal(0);
+    expect(countingHero.counts.get('nestedObject')).to.equal(1);
+    expect(countingHero.counts.get('deeperObject')).to.equal(1);
+    expect(countingHero.counts.get('foo')).to.equal(1);
+    expect(countingHero.counts.get('bar')).to.equal(2);
   });
 
   it('Deduplicates fields with deferred fragments at multiple levels', async () => {
