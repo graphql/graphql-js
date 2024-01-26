@@ -455,10 +455,10 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('Legacy: visits variables defined in fragments', () => {
+  it('visits arguments defined on fragments', () => {
     const ast = parse('fragment a($v: Boolean = false) on t { f }', {
       noLocation: true,
-      allowLegacyFragmentVariables: true,
+      experimentalFragmentArguments: true,
     });
     const visited: Array<any> = [];
 
@@ -499,6 +499,50 @@ describe('Visitor', () => {
       ['enter', 'Name', 'f'],
       ['leave', 'Name', 'f'],
       ['leave', 'Field', undefined],
+      ['leave', 'SelectionSet', undefined],
+      ['leave', 'FragmentDefinition', undefined],
+      ['leave', 'Document', undefined],
+    ]);
+  });
+
+  it('visits arguments on fragment spreads', () => {
+    const ast = parse('fragment a on t { ...s(v: false) }', {
+      noLocation: true,
+      experimentalFragmentArguments: true,
+    });
+    const visited: Array<any> = [];
+
+    visit(ast, {
+      enter(node) {
+        checkVisitorFnArgs(ast, arguments);
+        visited.push(['enter', node.kind, getValue(node)]);
+      },
+      leave(node) {
+        checkVisitorFnArgs(ast, arguments);
+        visited.push(['leave', node.kind, getValue(node)]);
+      },
+    });
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', undefined],
+      ['enter', 'FragmentDefinition', undefined],
+      ['enter', 'Name', 'a'],
+      ['leave', 'Name', 'a'],
+      ['enter', 'NamedType', undefined],
+      ['enter', 'Name', 't'],
+      ['leave', 'Name', 't'],
+      ['leave', 'NamedType', undefined],
+      ['enter', 'SelectionSet', undefined],
+      ['enter', 'FragmentSpread', undefined],
+      ['enter', 'Name', 's'],
+      ['leave', 'Name', 's'],
+      ['enter', 'Argument', { kind: 'BooleanValue', value: false }],
+      ['enter', 'Name', 'v'],
+      ['leave', 'Name', 'v'],
+      ['enter', 'BooleanValue', false],
+      ['leave', 'BooleanValue', false],
+      ['leave', 'Argument', { kind: 'BooleanValue', value: false }],
+      ['leave', 'FragmentSpread', undefined],
       ['leave', 'SelectionSet', undefined],
       ['leave', 'FragmentDefinition', undefined],
       ['leave', 'Document', undefined],

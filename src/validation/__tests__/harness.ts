@@ -129,7 +129,7 @@ export function expectValidationErrorsWithSchema(
   rule: ValidationRule,
   queryStr: string,
 ): any {
-  const doc = parse(queryStr);
+  const doc = parse(queryStr, { experimentalFragmentArguments: true });
   const errors = validate(schema, doc, [rule]);
   return expectJSON(errors);
 }

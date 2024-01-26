@@ -227,7 +227,7 @@ export const QueryDocumentKeys: {
   NonNullAssertion: ['nullabilityAssertion'],
   ErrorBoundary: ['nullabilityAssertion'],
 
-  FragmentSpread: ['name', 'directives'],
+  FragmentSpread: ['name', 'arguments', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
     'name',
@@ -428,6 +428,7 @@ export interface FragmentSpreadNode {
   readonly kind: Kind.FRAGMENT_SPREAD;
   readonly loc?: Location | undefined;
   readonly name: NameNode;
+  readonly arguments?: ReadonlyArray<ArgumentNode> | undefined;
   readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
 }
 
@@ -443,7 +444,6 @@ export interface FragmentDefinitionNode {
   readonly kind: Kind.FRAGMENT_DEFINITION;
   readonly loc?: Location | undefined;
   readonly name: NameNode;
-  /** @deprecated variableDefinitions will be removed in v17.0.0 */
   readonly variableDefinitions?:
     | ReadonlyArray<VariableDefinitionNode>
     | undefined;
