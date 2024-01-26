@@ -971,8 +971,11 @@ describe('Type System Printer', () => {
         """Location adjacent to an inline fragment."""
         INLINE_FRAGMENT
 
-        """Location adjacent to a variable definition."""
+        """Location adjacent to an operation variable definition."""
         VARIABLE_DEFINITION
+
+        """Location adjacent to a fragment variable definition."""
+        FRAGMENT_VARIABLE_DEFINITION
 
         """Location adjacent to a schema definition."""
         SCHEMA
