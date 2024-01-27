@@ -24,7 +24,7 @@ import type { GraphQLSchema } from '../type/schema.js';
 
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
-import { getDirectiveValues } from './values.js';
+import { getArgumentValuesFromSpread, getDirectiveValues } from './values.js';
 
 export interface DeferUsage {
   label: string | undefined;
@@ -34,6 +34,7 @@ export interface DeferUsage {
 export interface FieldDetails {
   node: FieldNode;
   deferUsage: DeferUsage | undefined;
+  fragmentVariableValues?: ObjMap<unknown> | undefined;
 }
 
 export type FieldGroup = ReadonlyArray<FieldDetails>;
@@ -43,10 +44,11 @@ export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
 interface CollectFieldsContext {
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDefinitionNode>;
-  variableValues: { [variable: string]: unknown };
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
+  localVariableValues: { [variable: string]: unknown } | undefined;
+  variableValues: { [variable: string]: unknown };
 }
 
 /**
@@ -73,9 +75,10 @@ export function collectFields(
   const context: CollectFieldsContext = {
     schema,
     fragments,
-    variableValues,
     runtimeType,
+    variableValues,
     operation,
+    localVariableValues: undefined,
     visitedFragmentNames: new Set(),
   };
 
@@ -113,8 +116,9 @@ export function collectSubfields(
   const context: CollectFieldsContext = {
     schema,
     fragments,
-    variableValues,
     runtimeType: returnType,
+    localVariableValues: undefined,
+    variableValues,
     operation,
     visitedFragmentNames: new Set(),
   };
@@ -150,8 +154,9 @@ function collectFieldsImpl(
   const {
     schema,
     fragments,
-    variableValues,
     runtimeType,
+    variableValues,
+    localVariableValues,
     operation,
     visitedFragmentNames,
   } = context;
@@ -159,12 +164,14 @@ function collectFieldsImpl(
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
-        if (!shouldIncludeNode(variableValues, selection)) {
+        const vars = localVariableValues ?? variableValues;
+        if (!shouldIncludeNode(vars, selection)) {
           continue;
         }
         groupedFieldSet.add(getFieldEntryKey(selection), {
           node: selection,
           deferUsage,
+          fragmentVariableValues: localVariableValues ?? undefined,
         });
         break;
       }
@@ -205,7 +212,7 @@ function collectFieldsImpl(
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
-        const fragName = selection.name.value;
+        const fragmentName = selection.name.value;
 
         const newDeferUsage = getDeferUsage(
           operation,
@@ -216,21 +223,41 @@ function collectFieldsImpl(
 
         if (
           !newDeferUsage &&
-          (visitedFragmentNames.has(fragName) ||
+          (visitedFragmentNames.has(fragmentName) ||
             !shouldIncludeNode(variableValues, selection))
         ) {
           continue;
         }
 
-        const fragment = fragments[fragName];
+        const fragment = fragments[fragmentName];
         if (
           fragment == null ||
           !doesFragmentConditionMatch(schema, fragment, runtimeType)
         ) {
           continue;
         }
+
+        // We need to introduce a concept of shadowing:
+        //
+        // - when a fragment defines a variable that is in the parent scope but not given
+        //   in the fragment-spread we need to look at this variable as undefined and check
+        //   whether the definition has a defaultValue, if not remove it from the variableValues.
+        // - when a fragment does not define a variable we need to copy it over from the parent
+        //   scope as that variable can still get used in spreads later on in the selectionSet.
+        // - when a value is passed in through the fragment-spread we need to copy over the key-value
+        //   into our variable-values.
+        context.localVariableValues = fragment.variableDefinitions
+          ? getArgumentValuesFromSpread(
+              selection,
+              schema,
+              fragment.variableDefinitions,
+              variableValues,
+              context.localVariableValues,
+            )
+          : undefined;
+
         if (!newDeferUsage) {
-          visitedFragmentNames.add(fragName);
+          visitedFragmentNames.add(fragmentName);
           collectFieldsImpl(
             context,
             fragment.selectionSet,
@@ -248,6 +275,8 @@ function collectFieldsImpl(
             newDeferUsage,
           );
         }
+        context.localVariableValues = undefined;
+
         break;
       }
     }
