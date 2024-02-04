@@ -1,4 +1,7 @@
+import { checkForMultiplePackageInstances } from './checkForMultiplePackageInstances.js';
 import { inspect } from './inspect.js';
+
+checkForMultiplePackageInstances();
 
 /**
  * A replacement for instanceof which includes an error warning when multi-realm

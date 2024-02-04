@@ -3,7 +3,7 @@
   "description": "graphql-js should be compatible with Webpack",
   "type": "module",
   "scripts": {
-    "test": "webpack && node test.js"
+    "test": "webpack && node test.js && node test-esm.js"
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz",
