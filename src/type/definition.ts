@@ -1430,6 +1430,7 @@ export interface GraphQLEnumTypeConfig {
 }
 
 interface GraphQLEnumTypeNormalizedConfig extends GraphQLEnumTypeConfig {
+  values: ObjMap<GraphQLEnumValueConfig /* <T> */>;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
   extensionASTNodes: ReadonlyArray<EnumTypeExtensionNode>;
 }
