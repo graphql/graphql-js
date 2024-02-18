@@ -635,6 +635,57 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(isAsyncResolverFinished).to.equal(true);
   });
 
+  it('handles async bubbling errors combined with non-bubbling errors', async () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          asyncNonNullError: {
+            type: new GraphQLNonNull(GraphQLString),
+            async resolve() {
+              await resolveOnNextTick();
+              return null;
+            },
+          },
+          asyncError: {
+            type: GraphQLString,
+            async resolve() {
+              await resolveOnNextTick();
+              throw new Error('Oops');
+            },
+          },
+        },
+      }),
+    });
+
+    // Order is important here, as the nullable error should resolve first
+    const document = parse(`
+      {
+        asyncError
+        asyncNonNullError
+      }
+    `);
+
+    const result = execute({ schema, document });
+
+    expectJSON(await result).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message: 'Oops',
+          locations: [{ line: 3, column: 9 }],
+          path: ['asyncError'],
+        },
+        {
+          message:
+            'Cannot return null for non-nullable field Query.asyncNonNullError.',
+          locations: [{ line: 4, column: 9 }],
+          path: ['asyncNonNullError'],
+        },
+      ],
+    });
+  });
+
   it('Full response path is included for non-nullable fields', () => {
     const A: GraphQLObjectType = new GraphQLObjectType({
       name: 'A',

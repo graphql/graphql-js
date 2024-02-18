@@ -1,63 +1,39 @@
 import { getBySet } from '../jsutils/getBySet.js';
 import { isSameSet } from '../jsutils/isSameSet.js';
 
-import type { DeferUsage, FieldDetails } from './collectFields.js';
+import type {
+  DeferUsage,
+  FieldGroup,
+  GroupedFieldSet,
+} from './collectFields.js';
 
 export type DeferUsageSet = ReadonlySet<DeferUsage>;
 
-export interface FieldGroup {
-  fields: ReadonlyArray<FieldDetails>;
-  deferUsages?: DeferUsageSet | undefined;
-}
-
-export type GroupedFieldSet = Map<string, FieldGroup>;
-
-export interface NewGroupedFieldSetDetails {
+export interface FieldPlan {
   groupedFieldSet: GroupedFieldSet;
-  shouldInitiateDefer: boolean;
+  newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
 }
 
 export function buildFieldPlan(
-  fields: Map<string, ReadonlyArray<FieldDetails>>,
+  originalGroupedFieldSet: GroupedFieldSet,
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
-): {
-  groupedFieldSet: GroupedFieldSet;
-  newGroupedFieldSetDetailsMap: Map<DeferUsageSet, NewGroupedFieldSetDetails>;
-} {
-  const groupedFieldSet = new Map<
-    string,
-    {
-      fields: Array<FieldDetails>;
-      deferUsages: DeferUsageSet;
-    }
-  >();
+): FieldPlan {
+  const groupedFieldSet = new Map<string, FieldGroup>();
 
-  const newGroupedFieldSetDetailsMap = new Map<
-    DeferUsageSet,
-    {
-      groupedFieldSet: Map<
-        string,
-        {
-          fields: Array<FieldDetails>;
-          deferUsages: DeferUsageSet;
-        }
-      >;
-      shouldInitiateDefer: boolean;
-    }
-  >();
+  const newGroupedFieldSets = new Map<DeferUsageSet, Map<string, FieldGroup>>();
 
   const map = new Map<
     string,
     {
       deferUsageSet: DeferUsageSet;
-      fieldDetailsList: ReadonlyArray<FieldDetails>;
+      fieldGroup: FieldGroup;
     }
   >();
 
-  for (const [responseKey, fieldDetailsList] of fields) {
+  for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
     const deferUsageSet = new Set<DeferUsage>();
     let inOriginalResult = false;
-    for (const fieldDetails of fieldDetailsList) {
+    for (const fieldDetails of fieldGroup) {
       const deferUsage = fieldDetails.deferUsage;
       if (deferUsage === undefined) {
         inOriginalResult = true;
@@ -77,65 +53,26 @@ export function buildFieldPlan(
         }
       });
     }
-    map.set(responseKey, { deferUsageSet, fieldDetailsList });
+    map.set(responseKey, { deferUsageSet, fieldGroup });
   }
 
-  for (const [responseKey, { deferUsageSet, fieldDetailsList }] of map) {
+  for (const [responseKey, { deferUsageSet, fieldGroup }] of map) {
     if (isSameSet(deferUsageSet, parentDeferUsages)) {
-      let fieldGroup = groupedFieldSet.get(responseKey);
-      if (fieldGroup === undefined) {
-        fieldGroup = {
-          fields: [],
-          deferUsages: deferUsageSet,
-        };
-        groupedFieldSet.set(responseKey, fieldGroup);
-      }
-      fieldGroup.fields.push(...fieldDetailsList);
+      groupedFieldSet.set(responseKey, fieldGroup);
       continue;
     }
 
-    let newGroupedFieldSetDetails = getBySet(
-      newGroupedFieldSetDetailsMap,
-      deferUsageSet,
-    );
-    let newGroupedFieldSet;
-    if (newGroupedFieldSetDetails === undefined) {
-      newGroupedFieldSet = new Map<
-        string,
-        {
-          fields: Array<FieldDetails>;
-          deferUsages: DeferUsageSet;
-          knownDeferUsages: DeferUsageSet;
-        }
-      >();
-
-      newGroupedFieldSetDetails = {
-        groupedFieldSet: newGroupedFieldSet,
-        shouldInitiateDefer: Array.from(deferUsageSet).some(
-          (deferUsage) => !parentDeferUsages.has(deferUsage),
-        ),
-      };
-      newGroupedFieldSetDetailsMap.set(
-        deferUsageSet,
-        newGroupedFieldSetDetails,
-      );
-    } else {
-      newGroupedFieldSet = newGroupedFieldSetDetails.groupedFieldSet;
+    let newGroupedFieldSet = getBySet(newGroupedFieldSets, deferUsageSet);
+    if (newGroupedFieldSet === undefined) {
+      newGroupedFieldSet = new Map();
+      newGroupedFieldSets.set(deferUsageSet, newGroupedFieldSet);
     }
-    let fieldGroup = newGroupedFieldSet.get(responseKey);
-    if (fieldGroup === undefined) {
-      fieldGroup = {
-        fields: [],
-        deferUsages: deferUsageSet,
-      };
-      newGroupedFieldSet.set(responseKey, fieldGroup);
-    }
-    fieldGroup.fields.push(...fieldDetailsList);
+    newGroupedFieldSet.set(responseKey, fieldGroup);
   }
 
   return {
     groupedFieldSet,
-    newGroupedFieldSetDetailsMap,
+    newGroupedFieldSets,
   };
 }
 
