@@ -259,6 +259,7 @@ describe('Execute: handles non-nullable types', () => {
             path: ['syncNest', 'syncNest', 'sync'],
             locations: [{ line: 6, column: 22 }],
           },
+
           {
             message: promiseError.message,
             path: ['syncNest', 'promise'],
@@ -284,6 +285,7 @@ describe('Execute: handles non-nullable types', () => {
             path: ['promiseNest', 'syncNest', 'sync'],
             locations: [{ line: 12, column: 22 }],
           },
+
           {
             message: promiseError.message,
             path: ['syncNest', 'promiseNest', 'promise'],
