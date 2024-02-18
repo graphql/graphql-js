@@ -6,10 +6,13 @@ export function memoize3<
   A2 extends object,
   A3 extends object,
   R,
->(fn: (a1: A1, a2: A2, a3: A3) => R): (a1: A1, a2: A2, a3: A3) => R {
+  T extends Array<unknown>,
+>(
+  fn: (a1: A1, a2: A2, a3: A3, ...rest: T) => R,
+): (a1: A1, a2: A2, a3: A3, ...rest: T) => R {
   let cache0: WeakMap<A1, WeakMap<A2, WeakMap<A3, R>>>;
 
-  return function memoized(a1, a2, a3) {
+  return function memoized(a1, a2, a3, ...rest) {
     if (cache0 === undefined) {
       cache0 = new WeakMap();
     }
@@ -28,7 +31,7 @@ export function memoize3<
 
     let fnResult = cache2.get(a3);
     if (fnResult === undefined) {
-      fnResult = fn(a1, a2, a3);
+      fnResult = fn(a1, a2, a3, ...rest);
       cache2.set(a3, fnResult);
     }
 

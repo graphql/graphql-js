@@ -8,7 +8,8 @@ import type {
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
 
-import type { GroupedFieldSet } from './buildFieldPlan.js';
+import type { DeferUsageSet } from './buildFieldPlan.js';
+import type { GroupedFieldSet } from './collectFields.js';
 
 interface IncrementalUpdate<TData = unknown, TExtensions = ObjMap<unknown>> {
   pending: ReadonlyArray<PendingResult>;
@@ -739,7 +740,7 @@ export class IncrementalPublisher {
   }
 }
 
-function isDeferredGroupedFieldSetRecord(
+export function isDeferredGroupedFieldSetRecord(
   incrementalDataRecord: unknown,
 ): incrementalDataRecord is DeferredGroupedFieldSetRecord {
   return incrementalDataRecord instanceof DeferredGroupedFieldSetRecord;
@@ -764,6 +765,7 @@ export class InitialResultRecord {
 /** @internal */
 export class DeferredGroupedFieldSetRecord {
   path: ReadonlyArray<string | number>;
+  deferUsageSet: DeferUsageSet;
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   groupedFieldSet: GroupedFieldSet;
   shouldInitiateDefer: boolean;
@@ -773,11 +775,13 @@ export class DeferredGroupedFieldSetRecord {
 
   constructor(opts: {
     path: Path | undefined;
+    deferUsageSet: DeferUsageSet;
     deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
     groupedFieldSet: GroupedFieldSet;
     shouldInitiateDefer: boolean;
   }) {
     this.path = pathToArray(opts.path);
+    this.deferUsageSet = opts.deferUsageSet;
     this.deferredFragmentRecords = opts.deferredFragmentRecords;
     this.groupedFieldSet = opts.groupedFieldSet;
     this.shouldInitiateDefer = opts.shouldInitiateDefer;

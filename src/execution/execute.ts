@@ -49,12 +49,14 @@ import { assertValidSchema } from '../type/validate.js';
 
 import type {
   DeferUsageSet,
-  FieldGroup,
-  GroupedFieldSet,
   NewGroupedFieldSetDetails,
 } from './buildFieldPlan.js';
 import { buildFieldPlan } from './buildFieldPlan.js';
-import type { DeferUsage, FieldDetails } from './collectFields.js';
+import type {
+  DeferUsage,
+  FieldGroup,
+  GroupedFieldSet,
+} from './collectFields.js';
 import { collectFields, collectSubfields } from './collectFields.js';
 import type {
   ExecutionResult,
@@ -66,6 +68,7 @@ import {
   DeferredGroupedFieldSetRecord,
   IncrementalPublisher,
   InitialResultRecord,
+  isDeferredGroupedFieldSetRecord,
   StreamItemsRecord,
   StreamRecord,
 } from './IncrementalPublisher.js';
@@ -90,17 +93,19 @@ const buildSubFieldPlan = memoize3(
     exeContext: ExecutionContext,
     returnType: GraphQLObjectType,
     fieldGroup: FieldGroup,
+    deferUsages: DeferUsageSet | undefined,
   ) => {
-    const { fields: subFields, newDeferUsages } = collectSubfields(
-      exeContext.schema,
-      exeContext.fragments,
-      exeContext.variableValues,
-      exeContext.operation,
-      returnType,
-      fieldGroup.fields,
-    );
+    const { groupedFieldSet: subGroupedFieldSet, newDeferUsages } =
+      collectSubfields(
+        exeContext.schema,
+        exeContext.fragments,
+        exeContext.variableValues,
+        exeContext.operation,
+        returnType,
+        fieldGroup,
+      );
     return {
-      ...buildFieldPlan(subFields, fieldGroup.deferUsages),
+      ...buildFieldPlan(subGroupedFieldSet, deferUsages),
       newDeferUsages,
     };
   },
@@ -407,15 +412,11 @@ function executeOperation(
     );
   }
 
-  const { fields, newDeferUsages } = collectFields(
-    schema,
-    fragments,
-    variableValues,
-    rootType,
-    operation,
+  const { groupedFieldSet: originalGroupedFieldSet, newDeferUsages } =
+    collectFields(schema, fragments, variableValues, rootType, operation);
+  const { groupedFieldSet, newGroupedFieldSetDetailsMap } = buildFieldPlan(
+    originalGroupedFieldSet,
   );
-  const { groupedFieldSet, newGroupedFieldSetDetailsMap } =
-    buildFieldPlan(fields);
 
   const newDeferMap = addNewDeferredFragments(
     incrementalPublisher,
@@ -582,7 +583,7 @@ function executeFields(
 }
 
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
-  return fieldGroup.fields.map((fieldDetails) => fieldDetails.node);
+  return fieldGroup.map((fieldDetails) => fieldDetails.node);
 }
 
 /**
@@ -600,7 +601,7 @@ function executeField(
   incrementalDataRecord: IncrementalDataRecord,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
 ): PromiseOrValue<unknown> {
-  const fieldName = fieldGroup.fields[0].node.name.value;
+  const fieldName = fieldGroup[0].node.name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
   if (!fieldDef) {
     return;
@@ -624,7 +625,7 @@ function executeField(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
       fieldDef,
-      fieldGroup.fields[0].node,
+      fieldGroup[0].node,
       exeContext.variableValues,
     );
 
@@ -925,7 +926,7 @@ function getStreamUsage(
   // safe to only check the first fieldNode for the stream directive
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
-    fieldGroup.fields[0].node,
+    fieldGroup[0].node,
     exeContext.variableValues,
   );
 
@@ -952,17 +953,15 @@ function getStreamUsage(
     '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
   );
 
-  const streamedFieldGroup: FieldGroup = {
-    fields: fieldGroup.fields.map((fieldDetails) => ({
-      node: fieldDetails.node,
-      deferUsage: undefined,
-    })),
-  };
+  const streamedReadonlyArray: FieldGroup = fieldGroup.map((fieldDetails) => ({
+    node: fieldDetails.node,
+    deferUsage: undefined,
+  }));
 
   const streamUsage = {
     initialCount: stream.initialCount,
     label: typeof stream.label === 'string' ? stream.label : undefined,
-    fieldGroup: streamedFieldGroup,
+    fieldGroup: streamedReadonlyArray,
   };
 
   (fieldGroup as unknown as { _streamUsage: StreamUsage })._streamUsage =
@@ -1519,6 +1518,7 @@ function addNewDeferredGroupedFieldSets(
     );
     const deferredGroupedFieldSetRecord = new DeferredGroupedFieldSetRecord({
       path,
+      deferUsageSet,
       deferredFragmentRecords,
       groupedFieldSet,
       shouldInitiateDefer,
@@ -1551,8 +1551,11 @@ function collectAndExecuteSubfields(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
+  const deferUsageSet = isDeferredGroupedFieldSetRecord(incrementalDataRecord)
+    ? incrementalDataRecord.deferUsageSet
+    : undefined;
   const { groupedFieldSet, newGroupedFieldSetDetailsMap, newDeferUsages } =
-    buildSubFieldPlan(exeContext, returnType, fieldGroup);
+    buildSubFieldPlan(exeContext, returnType, fieldGroup, deferUsageSet);
 
   const incrementalPublisher = exeContext.incrementalPublisher;
 
@@ -1806,7 +1809,7 @@ function executeSubscription(
     );
   }
 
-  const { fields } = collectFields(
+  const { groupedFieldSet } = collectFields(
     schema,
     fragments,
     variableValues,
@@ -1814,15 +1817,15 @@ function executeSubscription(
     operation,
   );
 
-  const firstRootField = fields.entries().next().value as [
+  const firstRootField = groupedFieldSet.entries().next().value as [
     string,
-    ReadonlyArray<FieldDetails>,
+    FieldGroup,
   ];
-  const [responseName, fieldDetailsList] = firstRootField;
-  const fieldName = fieldDetailsList[0].node.name.value;
+  const [responseName, fieldGroup] = firstRootField;
+  const fieldName = fieldGroup[0].node.name.value;
   const fieldDef = schema.getField(rootType, fieldName);
 
-  const fieldNodes = fieldDetailsList.map((fieldDetails) => fieldDetails.node);
+  const fieldNodes = fieldGroup.map((fieldDetails) => fieldDetails.node);
   if (!fieldDef) {
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
