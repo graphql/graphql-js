@@ -138,7 +138,8 @@ export function expectValidationErrorsWithSchema(
 
 export function expectValidationErrors(
   rule: ValidationRule,
-  queryStr: string, options?: ParseOptions | undefined,
+  queryStr: string,
+  options?: ParseOptions | undefined,
 ): any {
   return expectValidationErrorsWithSchema(testSchema, rule, queryStr, options);
 }
