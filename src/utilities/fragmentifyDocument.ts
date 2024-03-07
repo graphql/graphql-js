@@ -25,11 +25,11 @@ interface InlineFragmentToFragmentSpreadResult {
  * Traverse a DocumentNode searching for inline fragments, created fragment definitions for those
  * and replace the inline fragment with fragment spreads.
  * The algorithm consists on:
- *  1. Traverse the AST.
- *  2. Search for InlineFragment nodes in SelectionSet nodes.
- *  3. Create a FragmentDefinition of the SelectionSet of that InlineFragments.
- *  4. Append that FragmentDefinition to the document AST.
- *  5. replace the InlineFragment in the SelectionSet with a FragmentSpread.
+ * 1. Traverse the AST.
+ * 2. Search for InlineFragment nodes in SelectionSet nodes.
+ * 3. Create a FragmentDefinition of the SelectionSet of that InlineFragments.
+ * 4. Append that FragmentDefinition to the document AST.
+ * 5. replace the InlineFragment in the SelectionSet with a FragmentSpread.
  */
 export function fragmentifyDocument(
   document: DocumentNode,
@@ -62,7 +62,7 @@ export function fragmentifyDocument(
   const inlineFragmentToFragmentSpread = (
     inlineFragment: InlineFragmentNode
   ): InlineFragmentToFragmentSpreadResult | undefined => {
-    // we are only interested in inline fragments with TypeCondition
+    // We are only interested in inline fragments with TypeCondition
     // example: ...on User { }
     // Constrain #1
     // inline fragments without TypeCondition: ...friendFields 
