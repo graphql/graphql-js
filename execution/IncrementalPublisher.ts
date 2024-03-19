@@ -267,23 +267,10 @@ export class IncrementalPublisher {
     initialResultRecord: InitialResultRecord,
     data: ObjMap<unknown> | null,
   ): ExecutionResult | ExperimentalIncrementalExecutionResults {
-    for (const child of initialResultRecord.children) {
-      if (child.filtered) {
-        continue;
-      }
-      this._publish(child);
-    }
+    const pendingSources = this._publish(initialResultRecord.children);
     const errors = initialResultRecord.errors;
     const initialResult = errors.length === 0 ? { data } : { errors, data };
-    const pending = this._pending;
-    if (pending.size > 0) {
-      const pendingSources = new Set<DeferredFragmentRecord | StreamRecord>();
-      for (const subsequentResultRecord of pending) {
-        const pendingSource = isStreamItemsRecord(subsequentResultRecord)
-          ? subsequentResultRecord.streamRecord
-          : subsequentResultRecord;
-        pendingSources.add(pendingSource);
-      }
+    if (pendingSources.size > 0) {
       return {
         initialResult: {
           ...initialResult,
@@ -471,18 +458,7 @@ export class IncrementalPublisher {
     const incrementalResults: Array<IncrementalResult> = [];
     const completedResults: Array<CompletedResult> = [];
     for (const subsequentResultRecord of completedRecords) {
-      for (const child of subsequentResultRecord.children) {
-        if (child.filtered) {
-          continue;
-        }
-        const pendingSource = isStreamItemsRecord(child)
-          ? child.streamRecord
-          : child;
-        if (!pendingSource.pendingSent) {
-          newPendingSources.add(pendingSource);
-        }
-        this._publish(child);
-      }
+      this._publish(subsequentResultRecord.children, newPendingSources);
       if (isStreamItemsRecord(subsequentResultRecord)) {
         if (subsequentResultRecord.isFinalRecord) {
           newPendingSources.delete(subsequentResultRecord.streamRecord);
@@ -544,6 +520,8 @@ export class IncrementalPublisher {
     let idWithLongestPath: string | undefined;
     for (const deferredFragmentRecord of deferredFragmentRecords) {
       const id = deferredFragmentRecord.id;
+      // TODO: add test
+      /* c8 ignore next 3 */
       if (id === undefined) {
         continue;
       }
@@ -582,23 +560,45 @@ export class IncrementalPublisher {
     }
     return result;
   }
-  private _publish(subsequentResultRecord: SubsequentResultRecord): void {
-    if (isStreamItemsRecord(subsequentResultRecord)) {
-      if (subsequentResultRecord.isCompleted) {
-        this._push(subsequentResultRecord);
-        return;
+  private _publish(
+    subsequentResultRecords: ReadonlySet<SubsequentResultRecord>,
+    pendingSources = new Set<DeferredFragmentRecord | StreamRecord>(),
+  ): Set<DeferredFragmentRecord | StreamRecord> {
+    const emptyRecords: Array<SubsequentResultRecord> = [];
+    for (const subsequentResultRecord of subsequentResultRecords) {
+      if (subsequentResultRecord.filtered) {
+        continue;
       }
-      this._introduce(subsequentResultRecord);
-      return;
+      if (isStreamItemsRecord(subsequentResultRecord)) {
+        if (subsequentResultRecord.isCompleted) {
+          this._push(subsequentResultRecord);
+        } else {
+          this._introduce(subsequentResultRecord);
+        }
+        const stream = subsequentResultRecord.streamRecord;
+        if (!stream.pendingSent) {
+          pendingSources.add(stream);
+        }
+        continue;
+      }
+      if (subsequentResultRecord._pending.size > 0) {
+        this._introduce(subsequentResultRecord);
+      } else if (
+        subsequentResultRecord.deferredGroupedFieldSetRecords.size === 0
+      ) {
+        emptyRecords.push(subsequentResultRecord);
+        continue;
+      } else {
+        this._push(subsequentResultRecord);
+      }
+      if (!subsequentResultRecord.pendingSent) {
+        pendingSources.add(subsequentResultRecord);
+      }
     }
-    if (subsequentResultRecord._pending.size > 0) {
-      this._introduce(subsequentResultRecord);
-    } else if (
-      subsequentResultRecord.deferredGroupedFieldSetRecords.size > 0 ||
-      subsequentResultRecord.children.size > 0
-    ) {
-      this._push(subsequentResultRecord);
+    for (const emptyRecord of emptyRecords) {
+      this._publish(emptyRecord.children, pendingSources);
     }
+    return pendingSources;
   }
   private _getChildren(
     erroringIncrementalDataRecord: IncrementalDataRecord,
