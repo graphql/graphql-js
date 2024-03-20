@@ -40,12 +40,17 @@ export {
   // Definitions
   GraphQLSchema,
   GraphQLDirective,
+  GraphQLSchemaElement,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
+  GraphQLInputField,
   GraphQLList,
   GraphQLNonNull,
   // Standard GraphQL Scalars
@@ -161,23 +166,19 @@ export type {
   GraphQLSchemaExtensions,
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
-  GraphQLArgument,
   GraphQLArgumentConfig,
   GraphQLArgumentExtensions,
   GraphQLEnumTypeConfig,
   GraphQLEnumTypeExtensions,
-  GraphQLEnumValue,
   GraphQLEnumValueConfig,
   GraphQLEnumValueConfigMap,
   GraphQLEnumValueExtensions,
-  GraphQLField,
   GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldExtensions,
   GraphQLFieldMap,
   GraphQLFieldResolver,
-  GraphQLInputField,
   GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
   GraphQLInputFieldExtensions,
@@ -219,6 +220,7 @@ export {
   parseValue,
   parseConstValue,
   parseType,
+  parseSchemaCoordinate,
   // Print
   print,
   // Visit
@@ -240,6 +242,7 @@ export {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
+  isSchemaCoordinateNode,
 } from './language/index.js';
 
 export type {
@@ -315,6 +318,7 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  SchemaCoordinateNode,
 } from './language/index.js';
 
 // Execute GraphQL queries.
@@ -436,8 +440,6 @@ export {
   printIntrospectionSchema,
   // Create a GraphQLType from a GraphQL language AST.
   typeFromAST,
-  // Create a JavaScript value from a GraphQL language AST with a Type.
-  valueFromAST,
   // Create a JavaScript value from a GraphQL language AST without a Type.
   valueFromASTUntyped,
   // Create a GraphQL language AST from a JavaScript value.
@@ -447,6 +449,8 @@ export {
   visitWithTypeInfo,
   // Coerces a JavaScript value to a GraphQL type, or produces errors.
   coerceInputValue,
+  // Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
+  coerceInputLiteral,
   // Concatenates multiple AST together.
   concatAST,
   // Separates an AST into an AST per Operation.
@@ -462,6 +466,8 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  resolveSchemaCoordinate,
+  resolveASTSchemaCoordinate,
 } from './utilities/index.js';
 
 export type {
@@ -491,4 +497,5 @@ export type {
   BreakingChange,
   DangerousChange,
   TypedQueryDocumentNode,
+  ResolvedSchemaElement,
 } from './utilities/index.js';
