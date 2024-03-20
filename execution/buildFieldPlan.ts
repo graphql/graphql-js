@@ -5,7 +5,6 @@ export type DeferUsageSet = ReadonlySet<DeferUsage>;
 export interface FieldGroup {
   fields: ReadonlyArray<FieldDetails>;
   deferUsages?: DeferUsageSet | undefined;
-  knownDeferUsages?: DeferUsageSet | undefined;
 }
 export type GroupedFieldSet = Map<string, FieldGroup>;
 export interface NewGroupedFieldSetDetails {
@@ -15,20 +14,15 @@ export interface NewGroupedFieldSetDetails {
 export function buildFieldPlan(
   fields: Map<string, ReadonlyArray<FieldDetails>>,
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
-  knownDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
 ): {
   groupedFieldSet: GroupedFieldSet;
   newGroupedFieldSetDetailsMap: Map<DeferUsageSet, NewGroupedFieldSetDetails>;
-  newDeferUsages: ReadonlyArray<DeferUsage>;
 } {
-  const newDeferUsages: Set<DeferUsage> = new Set<DeferUsage>();
-  const newKnownDeferUsages = new Set<DeferUsage>(knownDeferUsages);
   const groupedFieldSet = new Map<
     string,
     {
       fields: Array<FieldDetails>;
       deferUsages: DeferUsageSet;
-      knownDeferUsages: DeferUsageSet;
     }
   >();
   const newGroupedFieldSetDetailsMap = new Map<
@@ -39,7 +33,6 @@ export function buildFieldPlan(
         {
           fields: Array<FieldDetails>;
           deferUsages: DeferUsageSet;
-          knownDeferUsages: DeferUsageSet;
         }
       >;
       shouldInitiateDefer: boolean;
@@ -62,10 +55,6 @@ export function buildFieldPlan(
         continue;
       }
       deferUsageSet.add(deferUsage);
-      if (!knownDeferUsages.has(deferUsage)) {
-        newDeferUsages.add(deferUsage);
-        newKnownDeferUsages.add(deferUsage);
-      }
     }
     if (inOriginalResult) {
       deferUsageSet.clear();
@@ -88,7 +77,6 @@ export function buildFieldPlan(
         fieldGroup = {
           fields: [],
           deferUsages: deferUsageSet,
-          knownDeferUsages: newKnownDeferUsages,
         };
         groupedFieldSet.set(responseKey, fieldGroup);
       }
@@ -127,7 +115,6 @@ export function buildFieldPlan(
       fieldGroup = {
         fields: [],
         deferUsages: deferUsageSet,
-        knownDeferUsages: newKnownDeferUsages,
       };
       newGroupedFieldSet.set(responseKey, fieldGroup);
     }
@@ -136,7 +123,6 @@ export function buildFieldPlan(
   return {
     groupedFieldSet,
     newGroupedFieldSetDetailsMap,
-    newDeferUsages: Array.from(newDeferUsages),
   };
 }
 function getAncestors(deferUsage: DeferUsage): ReadonlyArray<DeferUsage> {
