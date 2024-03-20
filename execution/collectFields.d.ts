@@ -31,7 +31,10 @@ export declare function collectFields(
   },
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
-): Map<string, ReadonlyArray<FieldDetails>>;
+): {
+  fields: Map<string, ReadonlyArray<FieldDetails>>;
+  newDeferUsages: ReadonlyArray<DeferUsage>;
+};
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
  * in fields, and returns them at the end.
@@ -51,4 +54,7 @@ export declare function collectSubfields(
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldDetails: ReadonlyArray<FieldDetails>,
-): Map<string, ReadonlyArray<FieldDetails>>;
+): {
+  fields: Map<string, ReadonlyArray<FieldDetails>>;
+  newDeferUsages: ReadonlyArray<DeferUsage>;
+};

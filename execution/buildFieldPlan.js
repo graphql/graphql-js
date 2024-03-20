@@ -3,13 +3,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.buildFieldPlan = void 0;
 const getBySet_js_1 = require('../jsutils/getBySet.js');
 const isSameSet_js_1 = require('../jsutils/isSameSet.js');
-function buildFieldPlan(
-  fields,
-  parentDeferUsages = new Set(),
-  knownDeferUsages = new Set(),
-) {
-  const newDeferUsages = new Set();
-  const newKnownDeferUsages = new Set(knownDeferUsages);
+function buildFieldPlan(fields, parentDeferUsages = new Set()) {
   const groupedFieldSet = new Map();
   const newGroupedFieldSetDetailsMap = new Map();
   const map = new Map();
@@ -23,10 +17,6 @@ function buildFieldPlan(
         continue;
       }
       deferUsageSet.add(deferUsage);
-      if (!knownDeferUsages.has(deferUsage)) {
-        newDeferUsages.add(deferUsage);
-        newKnownDeferUsages.add(deferUsage);
-      }
     }
     if (inOriginalResult) {
       deferUsageSet.clear();
@@ -49,7 +39,6 @@ function buildFieldPlan(
         fieldGroup = {
           fields: [],
           deferUsages: deferUsageSet,
-          knownDeferUsages: newKnownDeferUsages,
         };
         groupedFieldSet.set(responseKey, fieldGroup);
       }
@@ -81,7 +70,6 @@ function buildFieldPlan(
       fieldGroup = {
         fields: [],
         deferUsages: deferUsageSet,
-        knownDeferUsages: newKnownDeferUsages,
       };
       newGroupedFieldSet.set(responseKey, fieldGroup);
     }
@@ -90,7 +78,6 @@ function buildFieldPlan(
   return {
     groupedFieldSet,
     newGroupedFieldSetDetailsMap,
-    newDeferUsages: Array.from(newDeferUsages),
   };
 }
 exports.buildFieldPlan = buildFieldPlan;

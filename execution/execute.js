@@ -42,7 +42,8 @@ const values_js_1 = require('./values.js');
  */
 const buildSubFieldPlan = (0, memoize3_js_1.memoize3)(
   (exeContext, returnType, fieldGroup) => {
-    const subFields = (0, collectFields_js_1.collectSubfields)(
+    const { fields: subFields, newDeferUsages } = (0,
+    collectFields_js_1.collectSubfields)(
       exeContext.schema,
       exeContext.fragments,
       exeContext.variableValues,
@@ -50,11 +51,13 @@ const buildSubFieldPlan = (0, memoize3_js_1.memoize3)(
       returnType,
       fieldGroup.fields,
     );
-    return (0, buildFieldPlan_js_1.buildFieldPlan)(
-      subFields,
-      fieldGroup.deferUsages,
-      fieldGroup.knownDeferUsages,
-    );
+    return {
+      ...(0, buildFieldPlan_js_1.buildFieldPlan)(
+        subFields,
+        fieldGroup.deferUsages,
+      ),
+      newDeferUsages,
+    };
   },
 );
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
@@ -277,14 +280,14 @@ function executeOperation(exeContext, initialResultRecord) {
       { nodes: operation },
     );
   }
-  const fields = (0, collectFields_js_1.collectFields)(
+  const { fields, newDeferUsages } = (0, collectFields_js_1.collectFields)(
     schema,
     fragments,
     variableValues,
     rootType,
     operation,
   );
-  const { groupedFieldSet, newGroupedFieldSetDetailsMap, newDeferUsages } = (0,
+  const { groupedFieldSet, newGroupedFieldSetDetailsMap } = (0,
   buildFieldPlan_js_1.buildFieldPlan)(fields);
   const newDeferMap = addNewDeferredFragments(
     incrementalPublisher,
@@ -1539,7 +1542,7 @@ function executeSubscription(exeContext) {
       { nodes: operation },
     );
   }
-  const fields = (0, collectFields_js_1.collectFields)(
+  const { fields } = (0, collectFields_js_1.collectFields)(
     schema,
     fragments,
     variableValues,

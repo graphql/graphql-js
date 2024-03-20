@@ -46,7 +46,7 @@ import {
  * saves overhead when resolving lists of values.
  */
 const buildSubFieldPlan = memoize3((exeContext, returnType, fieldGroup) => {
-  const subFields = collectSubfields(
+  const { fields: subFields, newDeferUsages } = collectSubfields(
     exeContext.schema,
     exeContext.fragments,
     exeContext.variableValues,
@@ -54,11 +54,10 @@ const buildSubFieldPlan = memoize3((exeContext, returnType, fieldGroup) => {
     returnType,
     fieldGroup.fields,
   );
-  return buildFieldPlan(
-    subFields,
-    fieldGroup.deferUsages,
-    fieldGroup.knownDeferUsages,
-  );
+  return {
+    ...buildFieldPlan(subFields, fieldGroup.deferUsages),
+    newDeferUsages,
+  };
 });
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
@@ -270,14 +269,14 @@ function executeOperation(exeContext, initialResultRecord) {
       { nodes: operation },
     );
   }
-  const fields = collectFields(
+  const { fields, newDeferUsages } = collectFields(
     schema,
     fragments,
     variableValues,
     rootType,
     operation,
   );
-  const { groupedFieldSet, newGroupedFieldSetDetailsMap, newDeferUsages } =
+  const { groupedFieldSet, newGroupedFieldSetDetailsMap } =
     buildFieldPlan(fields);
   const newDeferMap = addNewDeferredFragments(
     incrementalPublisher,
@@ -1503,7 +1502,7 @@ function executeSubscription(exeContext) {
       { nodes: operation },
     );
   }
-  const fields = collectFields(
+  const { fields } = collectFields(
     schema,
     fragments,
     variableValues,

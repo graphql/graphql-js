@@ -27,6 +27,7 @@ export function collectFields(
   operation,
 ) {
   const groupedFieldSet = new AccumulatorMap();
+  const newDeferUsages = [];
   const context = {
     schema,
     fragments,
@@ -35,8 +36,13 @@ export function collectFields(
     operation,
     visitedFragmentNames: new Set(),
   };
-  collectFieldsImpl(context, operation.selectionSet, groupedFieldSet);
-  return groupedFieldSet;
+  collectFieldsImpl(
+    context,
+    operation.selectionSet,
+    groupedFieldSet,
+    newDeferUsages,
+  );
+  return { fields: groupedFieldSet, newDeferUsages };
 }
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
@@ -66,6 +72,7 @@ export function collectSubfields(
     visitedFragmentNames: new Set(),
   };
   const subGroupedFieldSet = new AccumulatorMap();
+  const newDeferUsages = [];
   for (const fieldDetail of fieldDetails) {
     const node = fieldDetail.node;
     if (node.selectionSet) {
@@ -73,17 +80,21 @@ export function collectSubfields(
         context,
         node.selectionSet,
         subGroupedFieldSet,
+        newDeferUsages,
         fieldDetail.deferUsage,
       );
     }
   }
-  return subGroupedFieldSet;
+  return {
+    fields: subGroupedFieldSet,
+    newDeferUsages,
+  };
 }
 function collectFieldsImpl(
   context,
   selectionSet,
   groupedFieldSet,
-  parentDeferUsage,
+  newDeferUsages,
   deferUsage,
 ) {
   const {
@@ -102,7 +113,7 @@ function collectFieldsImpl(
         }
         groupedFieldSet.add(getFieldEntryKey(selection), {
           node: selection,
-          deferUsage: deferUsage ?? parentDeferUsage,
+          deferUsage,
         });
         break;
       }
@@ -117,15 +128,26 @@ function collectFieldsImpl(
           operation,
           variableValues,
           selection,
-          parentDeferUsage,
+          deferUsage,
         );
-        collectFieldsImpl(
-          context,
-          selection.selectionSet,
-          groupedFieldSet,
-          parentDeferUsage,
-          newDeferUsage ?? deferUsage,
-        );
+        if (!newDeferUsage) {
+          collectFieldsImpl(
+            context,
+            selection.selectionSet,
+            groupedFieldSet,
+            newDeferUsages,
+            deferUsage,
+          );
+        } else {
+          newDeferUsages.push(newDeferUsage);
+          collectFieldsImpl(
+            context,
+            selection.selectionSet,
+            groupedFieldSet,
+            newDeferUsages,
+            newDeferUsage,
+          );
+        }
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
@@ -134,7 +156,7 @@ function collectFieldsImpl(
           operation,
           variableValues,
           selection,
-          parentDeferUsage,
+          deferUsage,
         );
         if (
           !newDeferUsage &&
@@ -152,14 +174,23 @@ function collectFieldsImpl(
         }
         if (!newDeferUsage) {
           visitedFragmentNames.add(fragName);
+          collectFieldsImpl(
+            context,
+            fragment.selectionSet,
+            groupedFieldSet,
+            newDeferUsages,
+            deferUsage,
+          );
+        } else {
+          newDeferUsages.push(newDeferUsage);
+          collectFieldsImpl(
+            context,
+            fragment.selectionSet,
+            groupedFieldSet,
+            newDeferUsages,
+            newDeferUsage,
+          );
         }
-        collectFieldsImpl(
-          context,
-          fragment.selectionSet,
-          groupedFieldSet,
-          parentDeferUsage,
-          newDeferUsage ?? deferUsage,
-        );
         break;
       }
     }

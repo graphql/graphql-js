@@ -31,7 +31,7 @@ function SingleFieldSubscriptionsRule(context) {
               fragments[definition.name.value] = definition;
             }
           }
-          const fields = (0, collectFields_js_1.collectFields)(
+          const { fields } = (0, collectFields_js_1.collectFields)(
             schema,
             fragments,
             variableValues,
