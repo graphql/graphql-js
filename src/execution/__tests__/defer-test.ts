@@ -355,13 +355,11 @@ describe('Execute: defer directive', () => {
         data: {
           hero: {},
         },
-        pending: [
-          { id: '0', path: ['hero'], label: 'DeferTop' },
-          { id: '1', path: ['hero'], label: 'DeferNested' },
-        ],
+        pending: [{ id: '0', path: ['hero'], label: 'DeferTop' }],
         hasNext: true,
       },
       {
+        pending: [{ id: '1', path: ['hero'], label: 'DeferNested' }],
         incremental: [
           {
             data: {
@@ -369,6 +367,12 @@ describe('Execute: defer directive', () => {
             },
             id: '0',
           },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
           {
             data: {
               friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
@@ -376,7 +380,7 @@ describe('Execute: defer directive', () => {
             id: '1',
           },
         ],
-        completed: [{ id: '0' }, { id: '1' }],
+        completed: [{ id: '1' }],
         hasNext: false,
       },
     ]);
@@ -470,6 +474,35 @@ describe('Execute: defer directive', () => {
         hero: {},
       },
     });
+  });
+
+  it('Emits children of empty defer fragments', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ... @defer {
+            ... @defer {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [{ data: { name: 'Luke' }, id: '0' }],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
   });
 
   it('Can separately emit defer fragments with different labels with varying fields', async () => {
