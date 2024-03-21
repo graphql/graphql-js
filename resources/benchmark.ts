@@ -404,7 +404,7 @@ function sampleModule(modulePath: string): BenchmarkSample {
       // V8 flags
       '--predictable',
       '--no-concurrent-sweeping',
-      '--no-scavenge-task',
+      '--no-minor-gc-task',
       '--min-semi-space-size=1024', // 1GB
       '--max-semi-space-size=1024', // 1GB
       '--trace-gc', // no gc calls should happen during benchmark, so trace them
