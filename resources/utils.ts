@@ -34,24 +34,40 @@ interface NPMOptions extends SpawnOptions {
 
 export function npm(options?: NPMOptions) {
   const globalOptions = options?.quiet === true ? ['--quiet'] : [];
+
+  // `npm` points to an executable shell script; so it doesn't require a shell per se.
+  // On Windows `shell: true` is required or `npm` will be picked rather than `npm.cmd`.
+  // This could alternatively be handled by manually selecting `npm.cmd` on Windows.
+  // See: https://github.com/nodejs/node/issues/3675 and in particular
+  // https://github.com/nodejs/node/issues/3675#issuecomment-308963807.
+  const npmOptions = { shell: true, ...options };
+
   return {
     run(...args: ReadonlyArray<string>): void {
-      spawn('npm', [...globalOptions, 'run', ...args], options);
+      spawn('npm', [...globalOptions, 'run', ...args], npmOptions);
     },
     install(...args: ReadonlyArray<string>): void {
-      spawn('npm', [...globalOptions, 'install', ...args], options);
+      spawn('npm', [...globalOptions, 'install', ...args], npmOptions);
     },
     ci(...args: ReadonlyArray<string>): void {
-      spawn('npm', [...globalOptions, 'ci', ...args], options);
+      spawn('npm', [...globalOptions, 'ci', ...args], npmOptions);
     },
     exec(...args: ReadonlyArray<string>): void {
-      spawn('npm', [...globalOptions, 'exec', ...args], options);
+      spawn('npm', [...globalOptions, 'exec', ...args], npmOptions);
     },
     pack(...args: ReadonlyArray<string>): string {
-      return spawnOutput('npm', [...globalOptions, 'pack', ...args], options);
+      return spawnOutput(
+        'npm',
+        [...globalOptions, 'pack', ...args],
+        npmOptions,
+      );
     },
     diff(...args: ReadonlyArray<string>): string {
-      return spawnOutput('npm', [...globalOptions, 'diff', ...args], options);
+      return spawnOutput(
+        'npm',
+        [...globalOptions, 'diff', ...args],
+        npmOptions,
+      );
     },
   };
 }
@@ -89,6 +105,7 @@ export function git(options?: GITOptions) {
 interface SpawnOptions {
   cwd?: string;
   env?: typeof process.env;
+  shell?: boolean;
 }
 
 function spawnOutput(
