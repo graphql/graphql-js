@@ -11,6 +11,7 @@ import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../kinds.js';
+import type { ParseOptions } from '../parser.js';
 import { parse, parseConstValue, parseType, parseValue } from '../parser.js';
 import { Source } from '../source.js';
 import { TokenKind } from '../tokenKind.js';
@@ -19,8 +20,8 @@ function parseCCN(source: string) {
   return parse(source, { experimentalClientControlledNullability: true });
 }
 
-function expectSyntaxError(text: string) {
-  return expectToThrowJSON(() => parse(text));
+function expectSyntaxError(text: string, options?: ParseOptions | undefined) {
+  return expectToThrowJSON(() => parse(text, options));
 }
 
 describe('Parser', () => {
@@ -72,6 +73,13 @@ describe('Parser', () => {
     expectSyntaxError('{ ""').to.deep.include({
       message: 'Syntax Error: Expected Name, found String "".',
       locations: [{ line: 1, column: 3 }],
+    });
+
+    expectSyntaxError('{ ""', {
+      experimentalParseStringLiteralAliases: true,
+    }).to.deep.include({
+      message: 'Syntax Error: Expected ":", found <EOF>.',
+      locations: [{ line: 1, column: 5 }],
     });
   });
 
