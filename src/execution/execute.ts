@@ -62,8 +62,8 @@ import type {
   DeferredGroupedFieldSetResult,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
-  Future,
   IncrementalContext,
+  IncrementalDataRecord,
   StreamItemsResult,
 } from './IncrementalPublisher.js';
 import {
@@ -160,7 +160,7 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors?: Map<Path | undefined, GraphQLError> | undefined;
   cancellableStreams?: Set<StreamRecord> | undefined;
-  futures?: Array<Future>;
+  incrementalDataRecords?: Array<IncrementalDataRecord>;
 }
 
 export interface ExecutionArgs {
@@ -319,7 +319,10 @@ function executeImpl(
             newDeferMap,
           );
 
-        addFutures(exeContext, newDeferredGroupedFieldSetRecords);
+        addIncrementalDataRecords(
+          exeContext,
+          newDeferredGroupedFieldSetRecords,
+        );
       }
     }
 
@@ -338,28 +341,16 @@ function executeImpl(
   }
 }
 
-function addFutures(
+function addIncrementalDataRecords(
   context: ExecutionContext | IncrementalContext,
-  newFutures: ReadonlyArray<Future>,
+  newIncrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
 ): void {
-  const futures = context.futures;
-  if (futures === undefined) {
-    context.futures = [...newFutures];
+  const incrementalDataRecords = context.incrementalDataRecords;
+  if (incrementalDataRecords === undefined) {
+    context.incrementalDataRecords = [...newIncrementalDataRecords];
     return;
   }
-  futures.push(...newFutures);
-}
-
-function addFuture(
-  context: ExecutionContext | IncrementalContext,
-  newFuture: Future,
-): void {
-  const futures = context.futures;
-  if (futures === undefined) {
-    context.futures = [newFuture];
-    return;
-  }
-  futures.push(newFuture);
+  incrementalDataRecords.push(...newIncrementalDataRecords);
 }
 
 function withError(
@@ -373,18 +364,27 @@ function buildDataResponse(
   exeContext: ExecutionContext,
   data: ObjMap<unknown>,
 ): ExecutionResult | ExperimentalIncrementalExecutionResults {
-  const { errors, futures } = exeContext;
-  if (futures === undefined) {
+  const { errors, incrementalDataRecords } = exeContext;
+  if (incrementalDataRecords === undefined) {
     return buildSingleResult(data, errors);
   }
 
   if (errors === undefined) {
-    return buildIncrementalResponse(exeContext, data, undefined, futures);
+    return buildIncrementalResponse(
+      exeContext,
+      data,
+      undefined,
+      incrementalDataRecords,
+    );
   }
 
-  const filteredFutures = filterFutures(undefined, errors, futures);
+  const filteredIncrementalDataRecords = filterIncrementalDataRecords(
+    undefined,
+    errors,
+    incrementalDataRecords,
+  );
 
-  if (filteredFutures.length === 0) {
+  if (filteredIncrementalDataRecords.length === 0) {
     return buildSingleResult(data, errors);
   }
 
@@ -392,7 +392,7 @@ function buildDataResponse(
     exeContext,
     data,
     Array.from(errors.values()),
-    filteredFutures,
+    filteredIncrementalDataRecords,
   );
 }
 
@@ -405,16 +405,18 @@ function buildSingleResult(
     : { data };
 }
 
-function filterFutures(
+function filterIncrementalDataRecords(
   initialPath: Path | undefined,
   errors: ReadonlyMap<Path | undefined, GraphQLError>,
-  futures: ReadonlyArray<Future>,
-): ReadonlyArray<Future> {
-  const filteredFutures: Array<Future> = [];
-  for (const future of futures) {
-    let currentPath: Path | undefined = isDeferredGroupedFieldSetRecord(future)
-      ? future.path
-      : future.streamRecord.path;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
+): ReadonlyArray<IncrementalDataRecord> {
+  const filteredIncrementalDataRecords: Array<IncrementalDataRecord> = [];
+  for (const incrementalDataRecord of incrementalDataRecords) {
+    let currentPath: Path | undefined = isDeferredGroupedFieldSetRecord(
+      incrementalDataRecord,
+    )
+      ? incrementalDataRecord.path
+      : incrementalDataRecord.streamRecord.path;
 
     if (errors.has(currentPath)) {
       continue;
@@ -437,11 +439,11 @@ function filterFutures(
     }
 
     if (!filtered) {
-      filteredFutures.push(future);
+      filteredIncrementalDataRecords.push(incrementalDataRecord);
     }
   }
 
-  return filteredFutures;
+  return filteredIncrementalDataRecords;
 }
 
 /**
@@ -689,7 +691,7 @@ function executeFields(
     throw error;
   }
 
-  // If there are no promises, we can just return the object and any futures
+  // If there are no promises, we can just return the object and any incrementalDataRecords
   if (!containsPromise) {
     return results;
   }
@@ -1140,7 +1142,7 @@ async function completeAsyncIteratorValue(
       );
 
       const context = incrementalContext ?? exeContext;
-      addFuture(context, firstStreamItems);
+      addIncrementalDataRecord(context, firstStreamItems);
       break;
     }
 
@@ -1175,6 +1177,18 @@ async function completeAsyncIteratorValue(
   }
 
   return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+
+function addIncrementalDataRecord(
+  context: ExecutionContext | IncrementalContext,
+  newIncrementalDataRecord: IncrementalDataRecord,
+): void {
+  const incrementalDataRecords = context.incrementalDataRecords;
+  if (incrementalDataRecords === undefined) {
+    context.incrementalDataRecords = [newIncrementalDataRecord];
+    return;
+  }
+  incrementalDataRecords.push(newIncrementalDataRecord);
 }
 
 /**
@@ -1251,7 +1265,7 @@ function completeListValue(
       );
 
       const context = incrementalContext ?? exeContext;
-      addFuture(context, firstStreamItems);
+      addIncrementalDataRecord(context, firstStreamItems);
       break;
     }
 
@@ -1664,7 +1678,7 @@ function collectAndExecuteSubfields(
       );
 
       const context = incrementalContext ?? exeContext;
-      addFutures(context, newDeferredGroupedFieldSetRecords);
+      addIncrementalDataRecords(context, newDeferredGroupedFieldSetRecords);
     }
     return subFields;
   }
@@ -1701,7 +1715,7 @@ function collectAndExecuteSubfields(
     );
 
     const context = incrementalContext ?? exeContext;
-    addFutures(context, newDeferredGroupedFieldSetRecords);
+    addIncrementalDataRecords(context, newDeferredGroupedFieldSetRecords);
   }
   return subFields;
 }
@@ -2100,8 +2114,8 @@ function buildDeferredGroupedFieldSetResult(
   path: Path | undefined,
   data: ObjMap<unknown>,
 ): DeferredGroupedFieldSetResult {
-  const { errors, futures } = incrementalContext;
-  if (futures === undefined) {
+  const { errors, incrementalDataRecords } = incrementalContext;
+  if (incrementalDataRecords === undefined) {
     return {
       deferredFragmentRecords,
       path: pathToArray(path),
@@ -2119,7 +2133,7 @@ function buildDeferredGroupedFieldSetResult(
       deferredFragmentRecords,
       path: pathToArray(path),
       result: { data },
-      futures,
+      incrementalDataRecords,
     };
   }
 
@@ -2127,7 +2141,11 @@ function buildDeferredGroupedFieldSetResult(
     deferredFragmentRecords,
     path: pathToArray(path),
     result: { data, errors: [...errors.values()] },
-    futures: filterFutures(path, errors, futures),
+    incrementalDataRecords: filterIncrementalDataRecords(
+      path,
+      errors,
+      incrementalDataRecords,
+    ),
   };
 }
 
@@ -2412,8 +2430,8 @@ function buildStreamItemsResult(
   streamRecord: StreamRecord,
   completedItem: unknown,
 ): StreamItemsResult {
-  const { errors, futures } = incrementalContext;
-  if (futures === undefined) {
+  const { errors, incrementalDataRecords } = incrementalContext;
+  if (incrementalDataRecords === undefined) {
     return {
       streamRecord,
       result:
@@ -2430,7 +2448,7 @@ function buildStreamItemsResult(
     return {
       streamRecord,
       result: { items: [completedItem] },
-      futures,
+      incrementalDataRecords,
     };
   }
 
@@ -2441,6 +2459,10 @@ function buildStreamItemsResult(
       items: [completedItem],
       errors: [...errors.values()],
     },
-    futures: filterFutures(path, errors, futures),
+    incrementalDataRecords: filterIncrementalDataRecords(
+      path,
+      errors,
+      incrementalDataRecords,
+    ),
   };
 }
