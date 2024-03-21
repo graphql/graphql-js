@@ -520,7 +520,7 @@ class IncrementalPublisher {
       );
     }
 
-    if (deferredGroupedFieldSetResult.incrementalDataRecords) {
+    if (deferredGroupedFieldSetResult.incrementalDataRecords.length > 0) {
       this._addIncrementalDataRecords(
         deferredGroupedFieldSetResult.incrementalDataRecords,
       );
@@ -616,7 +616,7 @@ class IncrementalPublisher {
 
       this._incremental.push(incrementalEntry);
 
-      if (streamItemsResult.incrementalDataRecords) {
+      if (streamItemsResult.incrementalDataRecords.length > 0) {
         this._addIncrementalDataRecords(
           streamItemsResult.incrementalDataRecords,
         );
@@ -658,13 +658,13 @@ class IncrementalPublisher {
   }
 }
 
-export function isDeferredFragmentRecord(
+function isDeferredFragmentRecord(
   subsequentResultRecord: SubsequentResultRecord,
 ): subsequentResultRecord is DeferredFragmentRecord {
   return subsequentResultRecord instanceof DeferredFragmentRecord;
 }
 
-export function isDeferredGroupedFieldSetRecord(
+function isDeferredGroupedFieldSetRecord(
   incrementalDataRecord: IncrementalDataRecord,
 ): incrementalDataRecord is DeferredGroupedFieldSetRecord {
   return incrementalDataRecord instanceof DeferredGroupedFieldSetRecord;
@@ -673,8 +673,7 @@ export function isDeferredGroupedFieldSetRecord(
 export interface IncrementalContext {
   deferUsageSet: DeferUsageSet | undefined;
   path: Path | undefined;
-  errors?: Map<Path | undefined, GraphQLError> | undefined;
-  incrementalDataRecords?: Array<IncrementalDataRecord> | undefined;
+  errors?: Array<GraphQLError> | undefined;
 }
 
 export type DeferredGroupedFieldSetResult =
@@ -691,7 +690,7 @@ interface ReconcilableDeferredGroupedFieldSetResult {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   path: Array<string | number>;
   result: BareDeferredGroupedFieldSetResult;
-  incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
   sent?: true | undefined;
 }
 
@@ -796,7 +795,7 @@ interface NonReconcilableStreamItemsResult {
 interface NonTerminatingStreamItemsResult {
   streamRecord: StreamRecord;
   result: BareStreamItemsResult;
-  incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
 }
 
 interface TerminatingStreamItemsResult {
@@ -860,7 +859,7 @@ export class StreamItemsRecord {
           ...result,
           incrementalDataRecords: [
             this.nextStreamItems,
-            ...(result.incrementalDataRecords ?? []),
+            ...result.incrementalDataRecords,
           ],
         }
       : result;

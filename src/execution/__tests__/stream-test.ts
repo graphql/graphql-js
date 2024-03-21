@@ -2096,23 +2096,14 @@ describe('Execute: stream directive', () => {
             id: '2',
           },
         ],
-        completed: [{ id: '2' }],
-        hasNext: true,
+        completed: [{ id: '2' }, { id: '1' }],
+        hasNext: false,
       },
       done: false,
     });
 
     const result5 = await iterator.next();
     expectJSON(result5).toDeepEqual({
-      value: {
-        completed: [{ id: '1' }],
-        hasNext: false,
-      },
-      done: false,
-    });
-
-    const result6 = await iterator.next();
-    expectJSON(result6).toDeepEqual({
       value: undefined,
       done: true,
     });
