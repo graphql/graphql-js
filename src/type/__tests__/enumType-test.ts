@@ -31,6 +31,14 @@ const ComplexEnum = new GraphQLEnumType({
   },
 });
 
+const ThunkValuesEnum = new GraphQLEnumType({
+  name: 'ThunkValues',
+  values: () => ({
+    A: { value: 'a' },
+    B: { value: 'b' },
+  }),
+});
+
 const QueryType = new GraphQLObjectType({
   name: 'Query',
   fields: {
@@ -81,6 +89,15 @@ const QueryType = new GraphQLObjectType({
           // as Complex2 above. Enum internal values require === equality.
           return { someRandomValue: 123 };
         }
+        return fromEnum;
+      },
+    },
+    thunkValuesString: {
+      type: GraphQLString,
+      args: {
+        fromEnum: { type: ThunkValuesEnum },
+      },
+      resolve(_source, { fromEnum }) {
         return fromEnum;
       },
     },
@@ -397,6 +414,14 @@ describe('Type System: Enum Values', () => {
           path: ['bad'],
         },
       ],
+    });
+  });
+
+  it('may have values specified via a callback', () => {
+    const result = executeQuery('{ thunkValuesString(fromEnum: B) }');
+
+    expect(result).to.deep.equal({
+      data: { thunkValuesString: 'b' },
     });
   });
 
