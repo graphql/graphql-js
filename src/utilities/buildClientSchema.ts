@@ -292,7 +292,9 @@ export function buildClientSchema(
         (valueIntrospection) => valueIntrospection.name,
         (valueIntrospection) => ({
           description: valueIntrospection.description,
-          deprecationReason: valueIntrospection.deprecationReason,
+          deprecationReason: valueIntrospection.isDeprecated
+            ? valueIntrospection.deprecationReason
+            : undefined,
         }),
       ),
     });
@@ -350,7 +352,9 @@ export function buildClientSchema(
 
     return {
       description: fieldIntrospection.description,
-      deprecationReason: fieldIntrospection.deprecationReason,
+      deprecationReason: fieldIntrospection.isDeprecated
+        ? fieldIntrospection.deprecationReason
+        : undefined,
       type,
       args: buildInputValueDefMap(fieldIntrospection.args),
     };
@@ -383,7 +387,9 @@ export function buildClientSchema(
       description: inputValueIntrospection.description,
       type,
       defaultValue,
-      deprecationReason: inputValueIntrospection.deprecationReason,
+      deprecationReason: inputValueIntrospection.isDeprecated
+        ? inputValueIntrospection.deprecationReason
+        : undefined,
     };
   }
 

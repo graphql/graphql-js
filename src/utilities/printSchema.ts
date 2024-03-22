@@ -282,11 +282,15 @@ export function printDirective(directive: GraphQLDirective): string {
 }
 
 function printDeprecated(reason: Maybe<string>): string {
-  if (reason == null) {
+  if (reason === undefined) {
     return '';
   }
   if (reason !== DEFAULT_DEPRECATION_REASON) {
-    const astValue = print({ kind: Kind.STRING, value: reason });
+    const astValue = print(
+      reason === null
+        ? { kind: Kind.NULL }
+        : { kind: Kind.STRING, value: reason },
+    );
     return ` @deprecated(reason: ${astValue})`;
   }
   return ' @deprecated';
