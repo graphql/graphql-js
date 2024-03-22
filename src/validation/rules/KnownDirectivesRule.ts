@@ -89,8 +89,13 @@ function getDirectiveLocationForASTPath(
       return DirectiveLocation.INLINE_FRAGMENT;
     case Kind.FRAGMENT_DEFINITION:
       return DirectiveLocation.FRAGMENT_DEFINITION;
-    case Kind.VARIABLE_DEFINITION:
-      return DirectiveLocation.VARIABLE_DEFINITION;
+    case Kind.VARIABLE_DEFINITION: {
+      const parentNode = ancestors[ancestors.length - 3];
+      invariant('kind' in parentNode);
+      return parentNode.kind === Kind.OPERATION_DEFINITION
+        ? DirectiveLocation.VARIABLE_DEFINITION
+        : DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION;
+    }
     case Kind.SCHEMA_DEFINITION:
     case Kind.SCHEMA_EXTENSION:
       return DirectiveLocation.SCHEMA;
