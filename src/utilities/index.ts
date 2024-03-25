@@ -56,9 +56,6 @@ export {
 // Create a GraphQLType from a GraphQL language AST.
 export { typeFromAST } from './typeFromAST.js';
 
-// Create a JavaScript value from a GraphQL language AST with a type.
-export { valueFromAST } from './valueFromAST.js';
-
 // Create a JavaScript value from a GraphQL language AST without a type.
 export { valueFromASTUntyped } from './valueFromASTUntyped.js';
 
@@ -68,8 +65,18 @@ export { astFromValue } from './astFromValue.js';
 // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
 export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';
 
-// Coerces a JavaScript value to a GraphQL type, or produces errors.
-export { coerceInputValue } from './coerceInputValue.js';
+// Converts a value to a const value by replacing variables.
+export { replaceVariables } from './replaceVariables.js';
+
+// Create a GraphQL literal (AST) from a JavaScript input value.
+export { valueToLiteral } from './valueToLiteral.js';
+
+export {
+  // Coerces a JavaScript value to a GraphQL type, or produces errors.
+  coerceInputValue,
+  // Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
+  coerceInputLiteral,
+} from './coerceInputValue.js';
 
 // Concatenates multiple AST together.
 export { concatAST } from './concatAST.js';
@@ -98,3 +105,10 @@ export type { BreakingChange, DangerousChange } from './findBreakingChanges.js';
 
 // Wrapper type that contains DocumentNode and types that can be deduced from it.
 export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.js';
+
+// Schema coordinates
+export {
+  resolveSchemaCoordinate,
+  resolveASTSchemaCoordinate,
+} from './resolveSchemaCoordinate.js';
+export type { ResolvedSchemaElement } from './resolveSchemaCoordinate.js';
