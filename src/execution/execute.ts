@@ -11,7 +11,6 @@ import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { promiseReduce } from '../jsutils/promiseReduce.js';
-import { resolveAfterAll } from '../jsutils/resolveAfterAll.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
 import { locatedError } from '../error/locatedError.js';
@@ -630,7 +629,7 @@ function executeFields(
   // Otherwise, results is a map from field name to the result of resolving that
   // field, which is possibly a promise. Return a promise that will return this
   // same map, but with any promises replaced with the values they resolved to.
-  return resolveAfterAll(acc, promises);
+  return Promise.all(promises).then(() => acc);
 }
 
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
@@ -1105,7 +1104,7 @@ async function completeAsyncIteratorValue(
     index += 1;
   }
 
-  return promises.length > 0 ? resolveAfterAll(acc, promises) : acc;
+  return promises.length > 0 ? Promise.all(promises).then(() => acc) : acc;
 }
 
 /**
@@ -1208,7 +1207,7 @@ function completeListValue(
     iteration = iterator.next();
   }
 
-  return promises.length > 0 ? resolveAfterAll(acc, promises) : acc;
+  return promises.length > 0 ? Promise.all(promises).then(() => acc) : acc;
 }
 
 /**
