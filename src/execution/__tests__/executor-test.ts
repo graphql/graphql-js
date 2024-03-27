@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
+import type { IAbortSignal, IEvent } from '../../jsutils/AbortController.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../../language/kinds.js';
@@ -222,6 +223,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'signal',
     );
 
     const operation = document.definitions[0];
@@ -1317,4 +1319,197 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(result).to.deep.equal({ data: { foo: { bar: 'bar' } } });
     expect(possibleTypes).to.deep.equal([fooObject]);
   });
+
+  /* c8 ignore start */
+  if (typeof AbortController !== 'undefined') {
+    it('stops execution and throws an error when signal is aborted', async () => {
+      // TODO: use real Event once we can finally drop node14 support
+      class MockAbortEvent implements IEvent {
+        cancelable = false;
+        bubbles = false;
+        composed = false;
+        currentTarget = null;
+        cancelBubble = false;
+        defaultPrevented = false;
+        isTrusted = true;
+        returnValue = false;
+        srcElement = null;
+        type = 'abort';
+        eventPhase = 0;
+        timeStamp = 0;
+        AT_TARGET = 0;
+        BUBBLING_PHASE = 0;
+        CAPTURING_PHASE = 0;
+        NONE = 0;
+
+        target: IAbortSignal;
+
+        constructor(abortSignal: IAbortSignal) {
+          this.target = abortSignal;
+        }
+
+        composedPath = () => {
+          throw new Error('Not mocked!');
+        };
+
+        initEvent = () => {
+          throw new Error('Not mocked!');
+        };
+
+        preventDefault = () => {
+          throw new Error('');
+        };
+
+        stopImmediatePropagation = () => {
+          throw new Error('');
+        };
+
+        stopPropagation = () => {
+          throw new Error('');
+        };
+      }
+
+      class MockAbortSignal implements IAbortSignal {
+        aborted: boolean = false;
+        onabort: ((ev: IEvent) => any) | null = null;
+        reason: unknown;
+
+        throwIfAborted() {
+          if (this.aborted) {
+            throw this.reason;
+          }
+        }
+
+        addEventListener(type: string, cb: unknown) {
+          expect(type).to.equal('abort');
+          expect(this.onabort).to.equal(null);
+          expect(cb).to.be.a('function');
+          this.onabort = cb as any;
+        }
+
+        removeEventListener(type: string, cb: unknown) {
+          expect(type).to.equal('abort');
+          expect(cb).to.be.a('function');
+          this.onabort = null;
+        }
+
+        dispatchEvent(event: IEvent): boolean {
+          expect(this.onabort).to.be.a('function');
+          this.onabort?.(event);
+          return true;
+        }
+
+        dispatchMockAbortEvent(reason?: unknown) {
+          this.reason = reason;
+          mockAbortSignal.dispatchEvent(new MockAbortEvent(this));
+        }
+      }
+
+      const mockAbortSignal = new MockAbortSignal();
+
+      const TestType: GraphQLObjectType = new GraphQLObjectType({
+        name: 'TestType',
+        fields: () => ({
+          resolveOnNextTick: {
+            type: TestType,
+            resolve: () => resolveOnNextTick({}),
+          },
+          string: {
+            type: GraphQLString,
+            args: {
+              value: { type: new GraphQLNonNull(GraphQLString) },
+            },
+            resolve: (_, { value }) => value,
+          },
+          abortExecution: {
+            type: GraphQLString,
+            resolve: () => {
+              const abortError = new Error('Custom abort error');
+              mockAbortSignal.dispatchMockAbortEvent(abortError);
+              return 'aborted';
+            },
+          },
+          shouldNotBeResolved: {
+            type: GraphQLString,
+            /* c8 ignore next */
+            resolve: () => 'This should not be executed!',
+          },
+        }),
+      });
+
+      const schema = new GraphQLSchema({
+        query: TestType,
+      });
+
+      const document = parse(`
+      query {
+        value1: string(value: "1")
+        resolveOnNextTick {
+          value2: string(value: "2")
+          resolveOnNextTick {
+            resolveOnNextTick {
+              shouldNotBeResolved
+            }
+            abortExecution
+          }
+        }
+        alternativeBranch: resolveOnNextTick {
+          value3: string(value: "3")
+          resolveOnNextTick {
+            shouldNotBeResolved
+          }
+        }
+      }
+    `);
+
+      const result = await execute({
+        schema,
+        document,
+        signal: mockAbortSignal,
+      });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          value1: '1',
+          resolveOnNextTick: {
+            value2: '2',
+            resolveOnNextTick: {
+              resolveOnNextTick: {
+                shouldNotBeResolved: null,
+              },
+              abortExecution: 'aborted',
+            },
+          },
+          alternativeBranch: {
+            value3: '3',
+            resolveOnNextTick: {
+              shouldNotBeResolved: null,
+            },
+          },
+        },
+        errors: [
+          {
+            message: 'Custom abort error',
+            path: [
+              'alternativeBranch',
+              'resolveOnNextTick',
+              'shouldNotBeResolved',
+            ],
+            locations: [{ line: 16, column: 13 }],
+          },
+          {
+            message: 'Custom abort error',
+            path: [
+              'resolveOnNextTick',
+              'resolveOnNextTick',
+              'resolveOnNextTick',
+              'shouldNotBeResolved',
+            ],
+            locations: [{ line: 8, column: 15 }],
+          },
+        ],
+      });
+    });
+  }
+  /* c8 ignore stop */
 });

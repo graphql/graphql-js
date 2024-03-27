@@ -1,3 +1,4 @@
+import type { IAbortSignal } from './jsutils/AbortController.js';
 import { isPromise } from './jsutils/isPromise.js';
 import type { Maybe } from './jsutils/Maybe.js';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
@@ -57,6 +58,9 @@ import type { ExecutionResult } from './execution/IncrementalPublisher.js';
  *    A type resolver function to use when none is provided by the schema.
  *    If not provided, the default type resolver is used (which looks for a
  *    `__typename` field or alternatively calls the `isTypeOf` method).
+ * signal:
+ *    An AbortSignal that can be used to abort the execution of the query.
+ *    If the signal is aborted, the execution will stop and an abort error will be thrown.
  */
 export interface GraphQLArgs {
   schema: GraphQLSchema;
@@ -67,6 +71,7 @@ export interface GraphQLArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  signal?: IAbortSignal;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -101,6 +106,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    signal,
   } = args;
 
   // Validate Schema
@@ -133,5 +139,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    signal,
   });
 }

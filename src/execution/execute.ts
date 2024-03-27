@@ -1,3 +1,8 @@
+import type {
+  IAbortController,
+  IAbortSignal,
+  IEvent,
+} from '../jsutils/AbortController.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
@@ -143,6 +148,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   incrementalPublisher: IncrementalPublisher;
+  executionController: ExecutionController;
 }
 
 export interface ExecutionArgs {
@@ -155,6 +161,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  signal?: IAbortSignal | undefined;
 }
 
 export interface StreamUsage {
@@ -263,6 +270,7 @@ function executeImpl(
           incrementalPublisher.buildErrorResponse(initialResultRecord, error),
       );
     }
+
     return incrementalPublisher.buildDataResponse(initialResultRecord, data);
   } catch (error) {
     return incrementalPublisher.buildErrorResponse(initialResultRecord, error);
@@ -307,6 +315,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    signal,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -371,7 +380,42 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     incrementalPublisher: new IncrementalPublisher(),
+    executionController: new ExecutionController(signal),
   };
+}
+
+class ExecutionController {
+  /** For performance reason we can't use `signal.isAborted` so we cache it here */
+  isAborted: boolean = false;
+
+  private readonly _passedInAbortSignal: IAbortSignal | undefined;
+
+  // We don't have AbortController in node 14 so we need to use this hack
+  // It can be removed once we drop support for node 14
+  /* c8 ignore start */
+  private readonly _abortController: IAbortController | undefined =
+    typeof AbortController !== 'undefined'
+      ? (new AbortController() as IAbortController)
+      : undefined;
+  /* c8 ignore stop */
+
+  constructor(signal?: IAbortSignal) {
+    this._passedInAbortSignal = signal;
+    this._passedInAbortSignal?.addEventListener('abort', this._abortCB);
+  }
+
+  get signal(): IAbortSignal | undefined {
+    return this._abortController?.signal;
+  }
+
+  abort(reason?: unknown) {
+    this._passedInAbortSignal?.removeEventListener('abort', this._abortCB);
+    this._abortController?.abort(reason);
+    this.isAborted = true;
+  }
+
+  private readonly _abortCB = (event: IEvent) =>
+    this.abort(event.target.reason);
 }
 
 function buildPerEventExecutionContext(
@@ -381,6 +425,9 @@ function buildPerEventExecutionContext(
   return {
     ...exeContext,
     rootValue: payload,
+    executionController: new ExecutionController(
+      exeContext.executionController.signal,
+    ),
   };
 }
 
@@ -619,6 +666,10 @@ function executeField(
 
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
   try {
+    if (exeContext.executionController.isAborted) {
+      exeContext.executionController.signal?.throwIfAborted();
+    }
+
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
     // TODO: find a way to memoize, in case this field is within a List type.
@@ -714,6 +765,7 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    signal: exeContext.executionController.signal,
   };
 }
 
@@ -1688,6 +1740,16 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
+  // Until we have execution cancelling support in Subscriptions,
+  // throw an error if client provides abort signal.
+  /* c8 ignore start */
+  if (args.signal) {
+    return {
+      errors: [new GraphQLError('Subscriptions do not support abort signals.')],
+    };
+  }
+  /* c8 ignore stop */
+
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const exeContext = buildExecutionContext(args);
@@ -1731,6 +1793,7 @@ function mapSourceToResponse(
         // ExperimentalIncrementalExecutionResults when
         // exeContext.operation is 'subscription'.
       ) as ExecutionResult,
+    () => exeContext.executionController.abort(),
   );
 }
 
@@ -1840,6 +1903,14 @@ function executeSubscription(
   );
 
   try {
+    // Until we have execution cancelling support in Subscriptions,
+    // ignore test coverage.
+    /* c8 ignore start */
+    if (exeContext.executionController.isAborted) {
+      exeContext.executionController.signal?.throwIfAborted();
+    }
+    /* c8 ignore stop */
+
     // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
     // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
 
