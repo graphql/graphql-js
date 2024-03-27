@@ -36,6 +36,10 @@ export interface FieldDetails {
   deferUsage: DeferUsage | undefined;
 }
 
+export type FieldGroup = ReadonlyArray<FieldDetails>;
+
+export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
+
 interface CollectFieldsContext {
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDefinitionNode>;
@@ -61,7 +65,7 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
 ): {
-  fields: Map<string, ReadonlyArray<FieldDetails>>;
+  groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
 } {
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
@@ -81,7 +85,7 @@ export function collectFields(
     groupedFieldSet,
     newDeferUsages,
   );
-  return { fields: groupedFieldSet, newDeferUsages };
+  return { groupedFieldSet, newDeferUsages };
 }
 
 /**
@@ -101,9 +105,9 @@ export function collectSubfields(
   variableValues: { [variable: string]: unknown },
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
-  fieldDetails: ReadonlyArray<FieldDetails>,
+  fieldGroup: FieldGroup,
 ): {
-  fields: Map<string, ReadonlyArray<FieldDetails>>;
+  groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
 } {
   const context: CollectFieldsContext = {
@@ -117,7 +121,7 @@ export function collectSubfields(
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
 
-  for (const fieldDetail of fieldDetails) {
+  for (const fieldDetail of fieldGroup) {
     const node = fieldDetail.node;
     if (node.selectionSet) {
       collectFieldsImpl(
@@ -131,7 +135,7 @@ export function collectSubfields(
   }
 
   return {
-    fields: subGroupedFieldSet,
+    groupedFieldSet: subGroupedFieldSet,
     newDeferUsages,
   };
 }
