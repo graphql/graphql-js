@@ -1104,13 +1104,68 @@ async function completeAsyncIteratorValue(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): Promise<ReadonlyArray<unknown>> {
-  const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
   let index = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (streamUsage && index >= streamUsage.initialCount) {
+    const itemPath = addPath(path, index, undefined);
+    let iteration;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      iteration = await asyncIterator.next();
+    } catch (rawError) {
+      throw locatedError(rawError, toNodes(fieldGroup), pathToArray(path));
+    }
+
+    if (iteration.done) {
+      break;
+    }
+
+    if (
+      completeListItemValue(
+        iteration.value,
+        completedResults,
+        exeContext,
+        itemType,
+        fieldGroup,
+        info,
+        itemPath,
+        incrementalContext,
+        deferMap,
+      )
+    ) {
+      containsPromise = true;
+    }
+
+    index++;
+  }
+
+  return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+
+/**
+ * Complete a async iterator value by completing the result and calling
+ * recursively until all the results are completed.
+ */
+async function completeAsyncIteratorValueWithPossibleStream(
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldGroup: FieldGroup,
+  info: GraphQLResolveInfo,
+  path: Path,
+  asyncIterator: AsyncIterator<unknown>,
+  streamUsage: StreamUsage,
+  incrementalContext: IncrementalContext | undefined,
+  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
+): Promise<ReadonlyArray<unknown>> {
+  let containsPromise = false;
+  const completedResults: Array<unknown> = [];
+  let index = 0;
+  const initialCount = streamUsage.initialCount;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    if (index >= initialCount) {
       const streamRecord = new StreamRecord({
         label: streamUsage.label,
         path,
@@ -1151,11 +1206,14 @@ async function completeAsyncIteratorValue(
     try {
       // eslint-disable-next-line no-await-in-loop
       iteration = await asyncIterator.next();
-      if (iteration.done) {
-        break;
-      }
     } catch (rawError) {
       throw locatedError(rawError, toNodes(fieldGroup), pathToArray(path));
+    }
+
+    // TODO: add test case for stream returning done before initialCount
+    /* c8 ignore next 3 */
+    if (iteration.done) {
+      break;
     }
 
     if (
@@ -1169,14 +1227,17 @@ async function completeAsyncIteratorValue(
         itemPath,
         incrementalContext,
         deferMap,
-      )
+      ) /* c8 ignore start */
     ) {
+      // TODO: add test case for asyncIterator that yields promises
       containsPromise = true;
-    }
-    index += 1;
+    } /* c8 ignore stop */
+    index++;
   }
 
-  return containsPromise ? Promise.all(completedResults) : completedResults;
+  return containsPromise
+    ? /* c8 ignore start */ Promise.all(completedResults)
+    : /* c8 ignore stop */ completedResults;
 }
 
 function addIncrementalDataRecord(
@@ -1206,17 +1267,32 @@ function completeListValue(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<ReadonlyArray<unknown>> {
   const itemType = returnType.ofType;
+  const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
 
   if (isAsyncIterable(result)) {
     const asyncIterator = result[Symbol.asyncIterator]();
 
-    return completeAsyncIteratorValue(
+    if (streamUsage === undefined) {
+      return completeAsyncIteratorValue(
+        exeContext,
+        itemType,
+        fieldGroup,
+        info,
+        path,
+        asyncIterator,
+        incrementalContext,
+        deferMap,
+      );
+    }
+
+    return completeAsyncIteratorValueWithPossibleStream(
       exeContext,
       itemType,
       fieldGroup,
       info,
       path,
       asyncIterator,
+      streamUsage,
       incrementalContext,
       deferMap,
     );
@@ -1228,19 +1304,97 @@ function completeListValue(
     );
   }
 
-  const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
+  if (streamUsage === undefined) {
+    return completeIterableValue(
+      exeContext,
+      itemType,
+      fieldGroup,
+      info,
+      path,
+      result,
+      incrementalContext,
+      deferMap,
+    );
+  }
 
+  return completeIterableValueWithPossibleStream(
+    exeContext,
+    itemType,
+    fieldGroup,
+    info,
+    path,
+    result,
+    streamUsage,
+    incrementalContext,
+    deferMap,
+  );
+}
+
+function completeIterableValue(
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldGroup: FieldGroup,
+  info: GraphQLResolveInfo,
+  path: Path,
+  items: Iterable<unknown>,
+  incrementalContext: IncrementalContext | undefined,
+  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
+): PromiseOrValue<ReadonlyArray<unknown>> {
+  let index = 0;
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
+  for (const item of items) {
+    // No need to modify the info object containing the path,
+    // since from here on it is not ever accessed by resolver functions.
+    const itemPath = addPath(path, index, undefined);
+
+    if (
+      completeListItemValue(
+        item,
+        completedResults,
+        exeContext,
+        itemType,
+        fieldGroup,
+        info,
+        itemPath,
+        incrementalContext,
+        deferMap,
+      )
+    ) {
+      containsPromise = true;
+    }
+
+    index++;
+  }
+
+  return containsPromise ? Promise.all(completedResults) : completedResults;
+}
+
+function completeIterableValueWithPossibleStream(
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldGroup: FieldGroup,
+  info: GraphQLResolveInfo,
+  path: Path,
+  items: Iterable<unknown>,
+  streamUsage: StreamUsage,
+  incrementalContext: IncrementalContext | undefined,
+  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
+): PromiseOrValue<ReadonlyArray<unknown>> {
   let index = 0;
-  const iterator = result[Symbol.iterator]();
+  // This is specified as a simple map, however we're optimizing the path
+  // where the list contains no Promises by avoiding creating another Promise.
+  let containsPromise = false;
+  const completedResults: Array<unknown> = [];
+  const initialCount = streamUsage.initialCount;
+  const iterator = items[Symbol.iterator]();
   let iteration = iterator.next();
   while (!iteration.done) {
     const item = iteration.value;
 
-    if (streamUsage && index >= streamUsage.initialCount) {
+    if (index >= initialCount) {
       const streamRecord = new StreamRecord({
         label: streamUsage.label,
         path,
