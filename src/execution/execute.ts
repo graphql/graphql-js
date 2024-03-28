@@ -757,16 +757,30 @@ function executeField(
     const result = resolveFn(source, args, contextValue, info);
 
     if (isPromise(result)) {
-      return completePromisedValue(
-        exeContext,
-        returnType,
-        fieldGroup,
-        info,
-        path,
-        result,
-        incrementalContext,
-        deferMap,
-      );
+      return result
+        .then((resolved) =>
+          completeValue(
+            exeContext,
+            returnType,
+            fieldGroup,
+            info,
+            path,
+            resolved,
+            incrementalContext,
+            deferMap,
+          ),
+        )
+        .then(undefined, (rawError) => {
+          handleFieldError(
+            rawError,
+            exeContext,
+            returnType,
+            fieldGroup,
+            path,
+            incrementalContext,
+          );
+          return null;
+        });
     }
 
     const completed = completeValue(
@@ -979,45 +993,6 @@ function completeValue(
     false,
     'Cannot complete value of unexpected output type: ' + inspect(returnType),
   );
-}
-
-async function completePromisedValue(
-  exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
-  fieldGroup: FieldGroup,
-  info: GraphQLResolveInfo,
-  path: Path,
-  result: Promise<unknown>,
-  incrementalContext: IncrementalContext | undefined,
-  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): Promise<unknown> {
-  try {
-    const resolved = await result;
-    let completed = completeValue(
-      exeContext,
-      returnType,
-      fieldGroup,
-      info,
-      path,
-      resolved,
-      incrementalContext,
-      deferMap,
-    );
-    if (isPromise(completed)) {
-      completed = await completed;
-    }
-    return completed;
-  } catch (rawError) {
-    handleFieldError(
-      rawError,
-      exeContext,
-      returnType,
-      fieldGroup,
-      path,
-      incrementalContext,
-    );
-    return null;
-  }
 }
 
 /**
@@ -1469,16 +1444,30 @@ function completeListItemValue(
 ): boolean {
   if (isPromise(item)) {
     completedResults.push(
-      completePromisedValue(
-        exeContext,
-        itemType,
-        fieldGroup,
-        info,
-        itemPath,
-        item,
-        incrementalContext,
-        deferMap,
-      ),
+      item
+        .then((resolved) =>
+          completeValue(
+            exeContext,
+            itemType,
+            fieldGroup,
+            info,
+            itemPath,
+            resolved,
+            incrementalContext,
+            deferMap,
+          ),
+        )
+        .then(undefined, (rawError) => {
+          handleFieldError(
+            rawError,
+            exeContext,
+            itemType,
+            fieldGroup,
+            itemPath,
+            incrementalContext,
+          );
+          return null;
+        }),
     );
 
     return true;
@@ -2492,24 +2481,43 @@ function completeStreamItems(
   itemType: GraphQLOutputType,
 ): PromiseOrValue<StreamItemsResult> {
   if (isPromise(item)) {
-    return completePromisedValue(
-      exeContext,
-      itemType,
-      fieldGroup,
-      info,
-      itemPath,
-      item,
-      incrementalContext,
-      new Map(),
-    ).then(
-      (resolvedItem) =>
-        buildStreamItemsResult(incrementalContext, streamRecord, resolvedItem),
-      (error) => ({
-        streamRecord,
-        result: null,
-        errors: withError(incrementalContext.errors, error),
-      }),
-    );
+    return item
+      .then((resolved) =>
+        completeValue(
+          exeContext,
+          itemType,
+          fieldGroup,
+          info,
+          itemPath,
+          resolved,
+          incrementalContext,
+          new Map(),
+        ),
+      )
+      .then(undefined, (rawError) => {
+        handleFieldError(
+          rawError,
+          exeContext,
+          itemType,
+          fieldGroup,
+          itemPath,
+          incrementalContext,
+        );
+        return null;
+      })
+      .then(
+        (resolvedItem) =>
+          buildStreamItemsResult(
+            incrementalContext,
+            streamRecord,
+            resolvedItem,
+          ),
+        (error) => ({
+          streamRecord,
+          result: null,
+          errors: withError(incrementalContext.errors, error),
+        }),
+      );
   }
 
   let completedItem;
