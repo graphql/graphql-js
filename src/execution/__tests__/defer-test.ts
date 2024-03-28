@@ -367,12 +367,6 @@ describe('Execute: defer directive', () => {
             },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             data: {
               friends: [{ name: 'Han' }, { name: 'Leia' }, { name: 'C-3PO' }],
@@ -380,7 +374,7 @@ describe('Execute: defer directive', () => {
             id: '1',
           },
         ],
-        completed: [{ id: '1' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -674,8 +668,8 @@ describe('Execute: defer directive', () => {
           hero: {},
         },
         pending: [
-          { id: '0', path: [], label: 'DeferName' },
-          { id: '1', path: ['hero'], label: 'DeferID' },
+          { id: '0', path: ['hero'], label: 'DeferID' },
+          { id: '1', path: [], label: 'DeferName' },
         ],
         hasNext: true,
       },
@@ -685,17 +679,17 @@ describe('Execute: defer directive', () => {
             data: {
               id: '1',
             },
-            id: '1',
+            id: '0',
           },
           {
             data: {
               name: 'Luke',
             },
-            id: '0',
+            id: '1',
             subPath: ['hero'],
           },
         ],
-        completed: [{ id: '1' }, { id: '0' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -983,37 +977,27 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        pending: [{ id: '1', path: ['hero', 'nestedObject'] }],
+        pending: [
+          { id: '1', path: ['hero', 'nestedObject'] },
+          { id: '2', path: ['hero', 'nestedObject', 'deeperObject'] },
+        ],
         incremental: [
           {
             data: { bar: 'bar' },
             id: '0',
             subPath: ['nestedObject', 'deeperObject'],
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        pending: [{ id: '2', path: ['hero', 'nestedObject', 'deeperObject'] }],
-        incremental: [
           {
             data: { baz: 'baz' },
             id: '1',
             subPath: ['deeperObject'],
           },
-        ],
-        hasNext: true,
-        completed: [{ id: '1' }],
-      },
-      {
-        incremental: [
           {
             data: { bak: 'bak' },
             id: '2',
           },
         ],
-        completed: [{ id: '2' }],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }],
         hasNext: false,
       },
     ]);
@@ -1132,8 +1116,8 @@ describe('Execute: defer directive', () => {
           },
         },
         pending: [
-          { id: '0', path: [] },
-          { id: '1', path: ['a', 'b'] },
+          { id: '0', path: ['a', 'b'] },
+          { id: '1', path: [] },
         ],
         hasNext: true,
       },
@@ -1141,14 +1125,14 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { e: { f: 'f' } },
-            id: '1',
+            id: '0',
           },
           {
             data: { g: { h: 'h' } },
-            id: '0',
+            id: '1',
           },
         ],
-        completed: [{ id: '1' }, { id: '0' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -1277,6 +1261,7 @@ describe('Execute: defer directive', () => {
           },
         ],
         completed: [
+          { id: '0' },
           {
             id: '1',
             errors: [
@@ -1288,7 +1273,6 @@ describe('Execute: defer directive', () => {
               },
             ],
           },
-          { id: '0' },
         ],
         hasNext: false,
       },
