@@ -140,8 +140,8 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  errors: Array<GraphQLError>;
-  cancellableStreams: Set<StreamRecord>;
+  errors: Array<GraphQLError> | undefined;
+  cancellableStreams: Set<StreamRecord> | undefined;
 }
 
 export interface ExecutionArgs {
@@ -162,7 +162,7 @@ export interface StreamUsage {
   fieldGroup: FieldGroup;
 }
 
-type GraphQLResult<T> = [T, ReadonlyArray<IncrementalDataRecord>];
+type GraphQLResult<T> = [T, ReadonlyArray<IncrementalDataRecord> | undefined];
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
@@ -324,20 +324,20 @@ function executeImpl(
 }
 
 function withError(
-  errors: Array<GraphQLError>,
+  errors: Array<GraphQLError> | undefined,
   error: GraphQLError,
 ): ReadonlyArray<GraphQLError> {
-  return errors.length === 0 ? [error] : [...errors, error];
+  return errors === undefined ? [error] : [...errors, error];
 }
 
 function buildDataResponse(
   exeContext: ExecutionContext,
   data: ObjMap<unknown>,
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined,
 ): ExecutionResult | ExperimentalIncrementalExecutionResults {
   const { errors } = exeContext;
-  if (incrementalDataRecords.length === 0) {
-    return errors.length > 0 ? { errors, data } : { data };
+  if (incrementalDataRecords === undefined) {
+    return errors !== undefined ? { errors, data } : { data };
   }
 
   return buildIncrementalResponse(
@@ -449,8 +449,8 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    errors: [],
-    cancellableStreams: new Set(),
+    errors: undefined,
+    cancellableStreams: undefined,
   };
 }
 
@@ -461,7 +461,7 @@ function buildPerEventExecutionContext(
   return {
     ...exeContext,
     rootValue: payload,
-    errors: [],
+    errors: undefined,
   };
 }
 
@@ -547,16 +547,16 @@ function executeFieldsSerially(
       appendNewIncrementalDataRecords(acc, result[1]);
       return acc;
     },
-    [Object.create(null), []] as GraphQLResult<ObjMap<unknown>>,
+    [Object.create(null), undefined] as GraphQLResult<ObjMap<unknown>>,
   );
 }
 
 function appendNewIncrementalDataRecords(
   acc: GraphQLResult<unknown>,
-  newRecords: ReadonlyArray<IncrementalDataRecord>,
+  newRecords: ReadonlyArray<IncrementalDataRecord> | undefined,
 ): void {
-  if (newRecords.length > 0) {
-    acc[1] = acc[1].length === 0 ? newRecords : [...acc[1], ...newRecords];
+  if (newRecords !== undefined) {
+    acc[1] = acc[1] === undefined ? newRecords : [...acc[1], ...newRecords];
   }
 }
 
@@ -573,7 +573,7 @@ function executeFields(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
-  const acc: GraphQLResult<ObjMap<unknown>> = [Object.create(null), []];
+  const acc: GraphQLResult<ObjMap<unknown>> = [Object.create(null), undefined];
   const promises: Array<Promise<void>> = [];
 
   try {
@@ -715,7 +715,7 @@ function executeField(
           path,
           incrementalContext,
         );
-        return [null, []];
+        return [null, undefined];
       });
     }
     return completed;
@@ -728,7 +728,7 @@ function executeField(
       path,
       incrementalContext,
     );
-    return [null, []];
+    return [null, undefined];
   }
 }
 
@@ -777,7 +777,13 @@ function handleFieldError(
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
-  (incrementalContext ?? exeContext).errors.push(error);
+  const context = incrementalContext ?? exeContext;
+  let errors = context.errors;
+  if (errors === undefined) {
+    errors = [];
+    context.errors = errors;
+  }
+  errors.push(error);
 }
 
 /**
@@ -839,7 +845,7 @@ function completeValue(
 
   // If result value is null or undefined then return null.
   if (result == null) {
-    return [null, []];
+    return [null, undefined];
   }
 
   // If field type is List, complete each item in the list with the inner type
@@ -859,7 +865,7 @@ function completeValue(
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
   if (isLeafType(returnType)) {
-    return [completeLeafValue(returnType, result), []];
+    return [completeLeafValue(returnType, result), undefined];
   }
 
   // If field type is an abstract type, Interface or Union, determine the
@@ -934,7 +940,7 @@ async function completePromisedValue(
       path,
       incrementalContext,
     );
-    return [null, []];
+    return [null, undefined];
   }
 }
 
@@ -1024,7 +1030,7 @@ async function completeAsyncIteratorValue(
 ): Promise<GraphQLResult<ReadonlyArray<unknown>>> {
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
-  const acc: GraphQLResult<Array<unknown>> = [completedResults, []];
+  const acc: GraphQLResult<Array<unknown>> = [completedResults, undefined];
   let index = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -1101,7 +1107,7 @@ async function completeAsyncIteratorValueWithPossibleStream(
 ): Promise<GraphQLResult<ReadonlyArray<unknown>>> {
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
-  const acc: GraphQLResult<Array<unknown>> = [completedResults, []];
+  const acc: GraphQLResult<Array<unknown>> = [completedResults, undefined];
   let index = 0;
   const initialCount = streamUsage.initialCount;
   // eslint-disable-next-line no-constant-condition
@@ -1113,6 +1119,9 @@ async function completeAsyncIteratorValueWithPossibleStream(
         earlyReturn: asyncIterator.return?.bind(asyncIterator),
       });
 
+      if (exeContext.cancellableStreams === undefined) {
+        exeContext.cancellableStreams = new Set();
+      }
       exeContext.cancellableStreams.add(streamRecord);
 
       const firstStreamItems = firstAsyncStreamItems(
@@ -1294,7 +1303,7 @@ function completeIterableValue(
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
-  const acc: GraphQLResult<Array<unknown>> = [completedResults, []];
+  const acc: GraphQLResult<Array<unknown>> = [completedResults, undefined];
   let index = 0;
   for (const item of items) {
     // No need to modify the info object containing the path,
@@ -1355,7 +1364,7 @@ function completeIterableValueWithPossibleStream(
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
-  const acc: GraphQLResult<Array<unknown>> = [completedResults, []];
+  const acc: GraphQLResult<Array<unknown>> = [completedResults, undefined];
   let index = 0;
   const initialCount = streamUsage.initialCount;
   const iterator = items[Symbol.iterator]();
@@ -2326,7 +2335,7 @@ function buildDeferredGroupedFieldSetResult(
     deferredFragmentRecords,
     path: pathToArray(path),
     result:
-      errors.length === 0 ? { data: result[0] } : { data: result[0], errors },
+      errors === undefined ? { data: result[0] } : { data: result[0], errors },
     incrementalDataRecords: result[1],
   };
 }
@@ -2542,7 +2551,7 @@ function completeStreamItems(
           itemPath,
           incrementalContext,
         );
-        return [null, []] as GraphQLResult<unknown>;
+        return [null, undefined] as GraphQLResult<unknown>;
       })
       .then(
         (resolvedItem) =>
@@ -2581,7 +2590,7 @@ function completeStreamItems(
         itemPath,
         incrementalContext,
       );
-      result = [null, []];
+      result = [null, undefined];
     }
   } catch (error) {
     return {
@@ -2602,7 +2611,7 @@ function completeStreamItems(
           itemPath,
           incrementalContext,
         );
-        return [null, []] as GraphQLResult<unknown>;
+        return [null, undefined] as GraphQLResult<unknown>;
       })
       .then(
         (resolvedItem) =>
@@ -2631,7 +2640,7 @@ function buildStreamItemsResult(
   return {
     streamRecord,
     result:
-      errors.length === 0
+      errors === undefined
         ? { items: [result[0]] }
         : {
             items: [result[0]],

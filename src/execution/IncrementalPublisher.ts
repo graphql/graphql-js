@@ -174,7 +174,7 @@ export interface FormattedCompletedResult {
 export function buildIncrementalResponse(
   context: IncrementalPublisherContext,
   result: ObjMap<unknown>,
-  errors: ReadonlyArray<GraphQLError>,
+  errors: ReadonlyArray<GraphQLError> | undefined,
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
 ): ExperimentalIncrementalExecutionResults {
   const incrementalPublisher = new IncrementalPublisher(context);
@@ -186,7 +186,7 @@ export function buildIncrementalResponse(
 }
 
 interface IncrementalPublisherContext {
-  cancellableStreams: Set<StreamRecord>;
+  cancellableStreams?: Set<StreamRecord> | undefined;
 }
 
 /**
@@ -220,7 +220,7 @@ class IncrementalPublisher {
 
   buildResponse(
     data: ObjMap<unknown>,
-    errors: ReadonlyArray<GraphQLError>,
+    errors: ReadonlyArray<GraphQLError> | undefined,
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ExperimentalIncrementalExecutionResults {
     this._addIncrementalDataRecords(incrementalDataRecords);
@@ -229,7 +229,7 @@ class IncrementalPublisher {
     const pending = this._pendingSourcesToResults();
 
     const initialResult: InitialIncrementalExecutionResult =
-      errors.length === 0
+      errors === undefined
         ? { data, pending, hasNext: true }
         : { errors, data, pending, hasNext: true };
 
@@ -441,8 +441,12 @@ class IncrementalPublisher {
     };
 
     const returnStreamIterators = async (): Promise<void> => {
+      const cancellableStreams = this._context.cancellableStreams;
+      if (cancellableStreams === undefined) {
+        return;
+      }
       const promises: Array<Promise<unknown>> = [];
-      for (const streamRecord of this._context.cancellableStreams) {
+      for (const streamRecord of cancellableStreams) {
         if (streamRecord.earlyReturn !== undefined) {
           promises.push(streamRecord.earlyReturn());
         }
@@ -516,7 +520,7 @@ class IncrementalPublisher {
       );
     }
 
-    if (deferredGroupedFieldSetResult.incrementalDataRecords.length > 0) {
+    if (deferredGroupedFieldSetResult.incrementalDataRecords !== undefined) {
       this._addIncrementalDataRecords(
         deferredGroupedFieldSetResult.incrementalDataRecords,
       );
@@ -586,14 +590,20 @@ class IncrementalPublisher {
     if (streamItemsResult.result === undefined) {
       this._completed.push({ id });
       this._pending.delete(streamRecord);
-      this._context.cancellableStreams.delete(streamRecord);
+      const cancellableStreams = this._context.cancellableStreams;
+      if (cancellableStreams !== undefined) {
+        cancellableStreams.delete(streamRecord);
+      }
     } else if (streamItemsResult.result === null) {
       this._completed.push({
         id,
         errors: streamItemsResult.errors,
       });
       this._pending.delete(streamRecord);
-      this._context.cancellableStreams.delete(streamRecord);
+      const cancellableStreams = this._context.cancellableStreams;
+      if (cancellableStreams !== undefined) {
+        cancellableStreams.delete(streamRecord);
+      }
       streamRecord.earlyReturn?.().catch(() => {
         /* c8 ignore next 1 */
         // ignore error
@@ -606,7 +616,7 @@ class IncrementalPublisher {
 
       this._incremental.push(incrementalEntry);
 
-      if (streamItemsResult.incrementalDataRecords.length > 0) {
+      if (streamItemsResult.incrementalDataRecords !== undefined) {
         this._addIncrementalDataRecords(
           streamItemsResult.incrementalDataRecords,
         );
@@ -663,7 +673,7 @@ function isDeferredGroupedFieldSetRecord(
 export interface IncrementalContext {
   deferUsageSet: DeferUsageSet | undefined;
   path: Path | undefined;
-  errors: Array<GraphQLError>;
+  errors?: Array<GraphQLError> | undefined;
 }
 
 export type DeferredGroupedFieldSetResult =
@@ -680,7 +690,7 @@ interface ReconcilableDeferredGroupedFieldSetResult {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   path: Array<string | number>;
   result: BareDeferredGroupedFieldSetResult;
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   sent?: true | undefined;
 }
 
@@ -718,7 +728,6 @@ export class DeferredGroupedFieldSetRecord {
     const incrementalContext: IncrementalContext = {
       deferUsageSet,
       path,
-      errors: [],
     };
 
     for (const deferredFragmentRecord of deferredFragmentRecords) {
@@ -786,7 +795,7 @@ interface NonReconcilableStreamItemsResult {
 interface NonTerminatingStreamItemsResult {
   streamRecord: StreamRecord;
   result: BareStreamItemsResult;
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
 }
 
 interface TerminatingStreamItemsResult {
@@ -826,7 +835,6 @@ export class StreamItemsRecord {
     const incrementalContext: IncrementalContext = {
       deferUsageSet: undefined,
       path: itemPath,
-      errors: [],
     };
 
     this._result = executor(incrementalContext);
@@ -850,7 +858,7 @@ export class StreamItemsRecord {
       ? {
           ...result,
           incrementalDataRecords:
-            result.incrementalDataRecords.length === 0
+            result.incrementalDataRecords === undefined
               ? [this.nextStreamItems]
               : [this.nextStreamItems, ...result.incrementalDataRecords],
         }
