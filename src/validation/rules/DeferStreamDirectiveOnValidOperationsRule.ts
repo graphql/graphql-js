@@ -70,7 +70,7 @@ export function DeferStreamDirectiveOnValidOperationsRule(
           if (!ifArgumentCanBeFalse(node)) {
             context.reportError(
               new GraphQLError(
-                'Stream directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+                'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
                 { nodes: node },
               ),
             );

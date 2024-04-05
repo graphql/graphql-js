@@ -241,7 +241,7 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
     `).toDeepEqual([
       {
         message:
-          'Stream directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+          'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
         locations: [{ line: 4, column: 20 }],
       },
     ]);
@@ -259,7 +259,7 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
     `).toDeepEqual([
       {
         message:
-          'Stream directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+          'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
         locations: [{ line: 8, column: 18 }],
       },
     ]);
@@ -301,7 +301,7 @@ describe('Validate: Defer/Stream directive on valid operations', () => {
     `).toDeepEqual([
       {
         message:
-          'Stream directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+          'Stream directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
         locations: [{ line: 15, column: 18 }],
       },
     ]);
