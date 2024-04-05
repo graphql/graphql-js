@@ -123,37 +123,95 @@ function experimentalExecuteIncrementally(args) {
   if (!('schema' in exeContext)) {
     return { errors: exeContext };
   }
-  return executeImpl(exeContext);
+  return executeOperation(exeContext);
 }
 exports.experimentalExecuteIncrementally = experimentalExecuteIncrementally;
-function executeImpl(exeContext) {
-  // Return a Promise that will eventually resolve to the data described by
-  // The "Response" section of the GraphQL specification.
-  //
-  // If errors are encountered while executing a GraphQL field, only that
-  // field and its descendants will be omitted, and sibling fields will still
-  // be executed. An execution which encounters errors will still result in a
-  // resolved Promise.
-  //
-  // Errors from sub-fields of a NonNull type may propagate to the top level,
-  // at which point we still log the error and null the parent field, which
-  // in this case is the entire response.
-  const incrementalPublisher = exeContext.incrementalPublisher;
+/**
+ * Implements the "Executing operations" section of the spec.
+ *
+ * Returns a Promise that will eventually resolve to the data described by
+ * The "Response" section of the GraphQL specification.
+ *
+ * If errors are encountered while executing a GraphQL field, only that
+ * field and its descendants will be omitted, and sibling fields will still
+ * be executed. An execution which encounters errors will still result in a
+ * resolved Promise.
+ *
+ * Errors from sub-fields of a NonNull type may propagate to the top level,
+ * at which point we still log the error and null the parent field, which
+ * in this case is the entire response.
+ */
+function executeOperation(exeContext) {
   const initialResultRecord =
     new IncrementalPublisher_js_1.InitialResultRecord();
   try {
-    const data = executeOperation(exeContext, initialResultRecord);
-    if ((0, isPromise_js_1.isPromise)(data)) {
-      return data.then(
+    const {
+      operation,
+      schema,
+      fragments,
+      variableValues,
+      rootValue,
+      incrementalPublisher,
+    } = exeContext;
+    const rootType = schema.getRootType(operation.operation);
+    if (rootType == null) {
+      throw new GraphQLError_js_1.GraphQLError(
+        `Schema is not configured to execute ${operation.operation} operation.`,
+        { nodes: operation },
+      );
+    }
+    const { fields, newDeferUsages } = (0, collectFields_js_1.collectFields)(
+      schema,
+      fragments,
+      variableValues,
+      rootType,
+      operation,
+    );
+    const { groupedFieldSet, newGroupedFieldSetDetailsMap } = (0,
+    buildFieldPlan_js_1.buildFieldPlan)(fields);
+    const newDeferMap = addNewDeferredFragments(
+      incrementalPublisher,
+      newDeferUsages,
+      initialResultRecord,
+    );
+    const path = undefined;
+    const newDeferredGroupedFieldSetRecords = addNewDeferredGroupedFieldSets(
+      incrementalPublisher,
+      newGroupedFieldSetDetailsMap,
+      newDeferMap,
+      path,
+    );
+    const result = executeRootGroupedFieldSet(
+      exeContext,
+      operation.operation,
+      rootType,
+      rootValue,
+      groupedFieldSet,
+      initialResultRecord,
+      newDeferMap,
+    );
+    executeDeferredGroupedFieldSets(
+      exeContext,
+      rootType,
+      rootValue,
+      path,
+      newDeferredGroupedFieldSetRecords,
+      newDeferMap,
+    );
+    if ((0, isPromise_js_1.isPromise)(result)) {
+      return result.then(
         (resolved) =>
           incrementalPublisher.buildDataResponse(initialResultRecord, resolved),
         (error) =>
           incrementalPublisher.buildErrorResponse(initialResultRecord, error),
       );
     }
-    return incrementalPublisher.buildDataResponse(initialResultRecord, data);
+    return incrementalPublisher.buildDataResponse(initialResultRecord, result);
   } catch (error) {
-    return incrementalPublisher.buildErrorResponse(initialResultRecord, error);
+    return exeContext.incrementalPublisher.buildErrorResponse(
+      initialResultRecord,
+      error,
+    );
   }
 }
 /**
@@ -261,92 +319,49 @@ function buildPerEventExecutionContext(exeContext, payload) {
     rootValue: payload,
   };
 }
-/**
- * Implements the "Executing operations" section of the spec.
- */
-function executeOperation(exeContext, initialResultRecord) {
-  const {
-    operation,
-    schema,
-    fragments,
-    variableValues,
-    rootValue,
-    incrementalPublisher,
-  } = exeContext;
-  const rootType = schema.getRootType(operation.operation);
-  if (rootType == null) {
-    throw new GraphQLError_js_1.GraphQLError(
-      `Schema is not configured to execute ${operation.operation} operation.`,
-      { nodes: operation },
-    );
-  }
-  const { fields, newDeferUsages } = (0, collectFields_js_1.collectFields)(
-    schema,
-    fragments,
-    variableValues,
-    rootType,
-    operation,
-  );
-  const { groupedFieldSet, newGroupedFieldSetDetailsMap } = (0,
-  buildFieldPlan_js_1.buildFieldPlan)(fields);
-  const newDeferMap = addNewDeferredFragments(
-    incrementalPublisher,
-    newDeferUsages,
-    initialResultRecord,
-  );
-  const path = undefined;
-  const newDeferredGroupedFieldSetRecords = addNewDeferredGroupedFieldSets(
-    incrementalPublisher,
-    newGroupedFieldSetDetailsMap,
-    newDeferMap,
-    path,
-  );
-  let result;
-  switch (operation.operation) {
+function executeRootGroupedFieldSet(
+  exeContext,
+  operation,
+  rootType,
+  rootValue,
+  groupedFieldSet,
+  initialResultRecord,
+  newDeferMap,
+) {
+  switch (operation) {
     case ast_js_1.OperationTypeNode.QUERY:
-      result = executeFields(
+      return executeFields(
         exeContext,
         rootType,
         rootValue,
-        path,
+        undefined,
         groupedFieldSet,
         initialResultRecord,
         newDeferMap,
       );
-      break;
     case ast_js_1.OperationTypeNode.MUTATION:
-      result = executeFieldsSerially(
+      return executeFieldsSerially(
         exeContext,
         rootType,
         rootValue,
-        path,
+        undefined,
         groupedFieldSet,
         initialResultRecord,
         newDeferMap,
       );
-      break;
     case ast_js_1.OperationTypeNode.SUBSCRIPTION:
       // TODO: deprecate `subscribe` and move all logic here
       // Temporary solution until we finish merging execute and subscribe together
-      result = executeFields(
+      return executeFields(
         exeContext,
         rootType,
         rootValue,
-        path,
+        undefined,
         groupedFieldSet,
         initialResultRecord,
         newDeferMap,
       );
   }
-  executeDeferredGroupedFieldSets(
-    exeContext,
-    rootType,
-    rootValue,
-    path,
-    newDeferredGroupedFieldSetRecords,
-    newDeferMap,
-  );
-  return result;
 }
 /**
  * Implements the "Executing selection sets" section of the spec
@@ -1479,7 +1494,7 @@ function mapSourceToResponse(exeContext, resultOrStream) {
   return (0, mapAsyncIterable_js_1.mapAsyncIterable)(
     resultOrStream,
     (payload) =>
-      executeImpl(buildPerEventExecutionContext(exeContext, payload)),
+      executeOperation(buildPerEventExecutionContext(exeContext, payload)),
   );
 }
 /**
