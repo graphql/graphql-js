@@ -664,7 +664,7 @@ function isDeferredFragmentRecord(
   return 'parent' in subsequentResultRecord;
 }
 
-function isDeferredGroupedFieldSetRecord(
+export function isDeferredGroupedFieldSetRecord(
   incrementalDataRecord: IncrementalDataRecord,
 ): incrementalDataRecord is DeferredGroupedFieldSetRecord {
   return 'deferredFragmentRecords' in incrementalDataRecord;
@@ -703,6 +703,7 @@ function isNonReconcilableDeferredGroupedFieldSetResult(
 }
 
 export interface DeferredGroupedFieldSetRecord {
+  path: Path | undefined;
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   result: PromiseOrValue<DeferredGroupedFieldSetResult>;
 }
