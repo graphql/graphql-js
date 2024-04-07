@@ -1134,27 +1134,9 @@ async function completeAsyncIteratorValue(
       break;
     }
 
-    const item = iteration.value;
-    // TODO: add tests for stream backed by asyncIterator that returns a promise
-    /* c8 ignore start */
-    if (isPromise(item)) {
-      completedResults.push(
-        completePromisedListItemValue(
-          item,
-          exeContext,
-          itemType,
-          fieldGroup,
-          info,
-          itemPath,
-          incrementalContext,
-          deferMap,
-        ),
-      );
-      containsPromise = true;
-    } else if (
-      /* c8 ignore stop */
+    if (
       completeListItemValue(
-        item,
+        iteration.value,
         completedResults,
         exeContext,
         itemType,
@@ -1248,24 +1230,7 @@ async function completeAsyncIteratorValueWithPossibleStream(
     }
 
     const item = iteration.value;
-    // TODO: add tests for stream backed by asyncIterator that returns a promise
-    /* c8 ignore start */
-    if (isPromise(item)) {
-      completedResults.push(
-        completePromisedListItemValue(
-          item,
-          exeContext,
-          itemType,
-          fieldGroup,
-          info,
-          itemPath,
-          incrementalContext,
-          deferMap,
-        ),
-      );
-      containsPromise = true;
-    } else if (
-      /* c8 ignore stop */
+    if (
       completeListItemValue(
         item,
         completedResults,
@@ -1389,21 +1354,7 @@ function completeIterableValue(
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
 
-    if (isPromise(item)) {
-      completedResults.push(
-        completePromisedListItemValue(
-          item,
-          exeContext,
-          itemType,
-          fieldGroup,
-          info,
-          itemPath,
-          incrementalContext,
-          deferMap,
-        ),
-      );
-      containsPromise = true;
-    } else if (
+    if (
       completeListItemValue(
         item,
         completedResults,
@@ -1472,21 +1423,7 @@ function completeIterableValueWithPossibleStream(
     // since from here on it is not ever accessed by resolver functions.
     const itemPath = addPath(path, index, undefined);
 
-    if (isPromise(item)) {
-      completedResults.push(
-        completePromisedListItemValue(
-          item,
-          exeContext,
-          itemType,
-          fieldGroup,
-          info,
-          itemPath,
-          incrementalContext,
-          deferMap,
-        ),
-      );
-      containsPromise = true;
-    } else if (
+    if (
       completeListItemValue(
         item,
         completedResults,
@@ -1525,6 +1462,22 @@ function completeListItemValue(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): boolean {
+  if (isPromise(item)) {
+    completedResults.push(
+      completePromisedValue(
+        exeContext,
+        itemType,
+        fieldGroup,
+        info,
+        itemPath,
+        item,
+        incrementalContext,
+        deferMap,
+      ),
+    );
+    return true;
+  }
+
   try {
     const completedItem = completeValue(
       exeContext,
@@ -1569,45 +1522,6 @@ function completeListItemValue(
     completedResults.push(null);
   }
   return false;
-}
-
-async function completePromisedListItemValue(
-  item: unknown,
-  exeContext: ExecutionContext,
-  itemType: GraphQLOutputType,
-  fieldGroup: FieldGroup,
-  info: GraphQLResolveInfo,
-  itemPath: Path,
-  incrementalContext: IncrementalContext | undefined,
-  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): Promise<unknown> {
-  try {
-    const resolved = await item;
-    let completed = completeValue(
-      exeContext,
-      itemType,
-      fieldGroup,
-      info,
-      itemPath,
-      resolved,
-      incrementalContext,
-      deferMap,
-    );
-    if (isPromise(completed)) {
-      completed = await completed;
-    }
-    return completed;
-  } catch (rawError) {
-    handleFieldError(
-      rawError,
-      exeContext,
-      itemType,
-      fieldGroup,
-      itemPath,
-      incrementalContext,
-    );
-    return null;
-  }
 }
 
 /**
