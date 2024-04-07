@@ -763,15 +763,33 @@ function executeField(
     const result = resolveFn(source, args, contextValue, info);
 
     if (isPromise(result)) {
-      return completePromisedValue(
-        exeContext,
-        returnType,
-        fieldGroup,
-        info,
-        path,
-        result,
-        incrementalContext,
-        deferMap,
+      return (
+        result
+          .then((resolved) =>
+            completeValue(
+              exeContext,
+              returnType,
+              fieldGroup,
+              info,
+              path,
+              resolved,
+              incrementalContext,
+              deferMap,
+            ),
+          )
+          // Note: we don't rely on a `catch` method, but we do expect "thenable"
+          // to take a second callback for the error case.
+          .then(undefined, (rawError) => {
+            handleFieldError(
+              rawError,
+              exeContext,
+              returnType,
+              fieldGroup,
+              path,
+              incrementalContext,
+            );
+            return null;
+          })
       );
     }
 
@@ -985,46 +1003,6 @@ function completeValue(
     false,
     'Cannot complete value of unexpected output type: ' + inspect(returnType),
   );
-}
-
-async function completePromisedValue(
-  exeContext: ExecutionContext,
-  returnType: GraphQLOutputType,
-  fieldGroup: FieldGroup,
-  info: GraphQLResolveInfo,
-  path: Path,
-  result: Promise<unknown>,
-  incrementalContext: IncrementalContext | undefined,
-  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): Promise<unknown> {
-  try {
-    const resolved = await result;
-    let completed = completeValue(
-      exeContext,
-      returnType,
-      fieldGroup,
-      info,
-      path,
-      resolved,
-      incrementalContext,
-      deferMap,
-    );
-
-    if (isPromise(completed)) {
-      completed = await completed;
-    }
-    return completed;
-  } catch (rawError) {
-    handleFieldError(
-      rawError,
-      exeContext,
-      returnType,
-      fieldGroup,
-      path,
-      incrementalContext,
-    );
-    return null;
-  }
 }
 
 /**
@@ -1464,16 +1442,32 @@ function completeListItemValue(
 ): boolean {
   if (isPromise(item)) {
     completedResults.push(
-      completePromisedValue(
-        exeContext,
-        itemType,
-        fieldGroup,
-        info,
-        itemPath,
-        item,
-        incrementalContext,
-        deferMap,
-      ),
+      item
+        .then((resolved) =>
+          completeValue(
+            exeContext,
+            itemType,
+            fieldGroup,
+            info,
+            itemPath,
+            resolved,
+            incrementalContext,
+            deferMap,
+          ),
+        )
+        // Note: we don't rely on a `catch` method, but we do expect "thenable"
+        // to take a second callback for the error case.
+        .then(undefined, (rawError) => {
+          handleFieldError(
+            rawError,
+            exeContext,
+            itemType,
+            fieldGroup,
+            itemPath,
+            incrementalContext,
+          );
+          return null;
+        }),
     );
     return true;
   }
@@ -2510,23 +2504,42 @@ function completeStreamItems(
   itemType: GraphQLOutputType,
 ): PromiseOrValue<StreamItemsResult> {
   if (isPromise(item)) {
-    return completePromisedValue(
-      exeContext,
-      itemType,
-      fieldGroup,
-      info,
-      itemPath,
-      item,
-      incrementalContext,
-      new Map(),
-    ).then(
-      (resolvedItem) =>
-        buildStreamItemsResult(incrementalContext, streamRecord, resolvedItem),
-      (error) => ({
-        streamRecord,
-        errors: withError(incrementalContext.errors, error),
-      }),
-    );
+    return item
+      .then((resolved) =>
+        completeValue(
+          exeContext,
+          itemType,
+          fieldGroup,
+          info,
+          itemPath,
+          resolved,
+          incrementalContext,
+          new Map(),
+        ),
+      )
+      .then(undefined, (rawError) => {
+        handleFieldError(
+          rawError,
+          exeContext,
+          itemType,
+          fieldGroup,
+          itemPath,
+          incrementalContext,
+        );
+        return null;
+      })
+      .then(
+        (resolvedItem) =>
+          buildStreamItemsResult(
+            incrementalContext,
+            streamRecord,
+            resolvedItem,
+          ),
+        (error) => ({
+          streamRecord,
+          errors: withError(incrementalContext.errors, error),
+        }),
+      );
   }
 
   let completedItem;
