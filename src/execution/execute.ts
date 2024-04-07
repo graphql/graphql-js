@@ -1188,6 +1188,28 @@ function completeListValue(
     );
   }
 
+  return completeIterableValue(
+    exeContext,
+    itemType,
+    fieldGroup,
+    info,
+    path,
+    result,
+    incrementalContext,
+    deferMap,
+  );
+}
+
+function completeIterableValue(
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldGroup: FieldGroup,
+  info: GraphQLResolveInfo,
+  path: Path,
+  items: Iterable<unknown>,
+  incrementalContext: IncrementalContext | undefined,
+  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
+): PromiseOrValue<GraphQLWrappedResult<ReadonlyArray<unknown>>> {
   // This is specified as a simple map, however we're optimizing the path
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
@@ -1198,7 +1220,7 @@ function completeListValue(
   ];
   let index = 0;
   const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
-  const iterator = result[Symbol.iterator]();
+  const iterator = items[Symbol.iterator]();
   let iteration = iterator.next();
   while (!iteration.done) {
     const item = iteration.value;
