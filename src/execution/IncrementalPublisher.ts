@@ -707,6 +707,13 @@ export class DeferredGroupedFieldSetRecord {
       deferredFragmentRecord.deferredGroupedFieldSetRecords.push(this);
     }
 
+    // If any of the deferred fragments for this deferred grouped field set
+    // have an id, then they have been released to the client as pending
+    // and it is safe to execute the deferred grouped field set synchronously.
+
+    // This can occur, for example, when deferred fragments have overlapping
+    // fields, and a new deferred grouped field set has been created for the
+    // non-overlapping fields.
     this.result = deferredFragmentRecords.some(
       (deferredFragmentRecord) => deferredFragmentRecord.id !== undefined,
     )
