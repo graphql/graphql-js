@@ -517,11 +517,9 @@ class IncrementalPublisher {
       );
     }
 
-    if (deferredGroupedFieldSetResult.incrementalDataRecords.length > 0) {
-      this._addIncrementalDataRecords(
-        deferredGroupedFieldSetResult.incrementalDataRecords,
-      );
-    }
+    this._addIncrementalDataRecords(
+      deferredGroupedFieldSetResult.incrementalDataRecords,
+    );
 
     for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
       const id = deferredFragmentRecord.id;
