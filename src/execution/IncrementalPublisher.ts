@@ -281,6 +281,9 @@ class IncrementalPublisher {
   ): void {
     const parent = deferredFragmentRecord.parent;
     if (parent === undefined) {
+      // Below is equivalent and slightly faster version of:
+      //   if (this._pending.has(deferredFragmentRecord)) { ... }
+      // as all released deferredFragmentRecords have ids.
       if (deferredFragmentRecord.id !== undefined) {
         return;
       }
