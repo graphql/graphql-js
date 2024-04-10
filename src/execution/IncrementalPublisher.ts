@@ -10,8 +10,6 @@ import type {
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
 
-import type { DeferUsageSet } from './buildFieldPlan.js';
-
 /**
  * The result of GraphQL execution.
  *
@@ -660,12 +658,6 @@ function isDeferredGroupedFieldSetRecord(
   return incrementalDataRecord instanceof DeferredGroupedFieldSetRecord;
 }
 
-export interface IncrementalContext {
-  deferUsageSet: DeferUsageSet | undefined;
-  path: Path | undefined;
-  errors: Array<GraphQLError>;
-}
-
 export type DeferredGroupedFieldSetResult =
   | ReconcilableDeferredGroupedFieldSetResult
   | NonReconcilableDeferredGroupedFieldSetResult;
@@ -699,27 +691,17 @@ export function isNonReconcilableDeferredGroupedFieldSetResult(
 
 /** @internal */
 export class DeferredGroupedFieldSetRecord {
-  path: Path | undefined;
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   result: PromiseOrValue<DeferredGroupedFieldSetResult>;
 
   constructor(opts: {
-    path: Path | undefined;
-    deferUsageSet: DeferUsageSet;
     deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
     executor: (
-      incrementalContext: IncrementalContext,
+      errors: Array<GraphQLError>,
     ) => PromiseOrValue<DeferredGroupedFieldSetResult>;
   }) {
-    const { path, deferUsageSet, deferredFragmentRecords, executor } = opts;
-    this.path = path;
+    const { deferredFragmentRecords, executor } = opts;
     this.deferredFragmentRecords = deferredFragmentRecords;
-
-    const incrementalContext: IncrementalContext = {
-      deferUsageSet,
-      path,
-      errors: [],
-    };
 
     for (const deferredFragmentRecord of deferredFragmentRecords) {
       deferredFragmentRecord.deferredGroupedFieldSetRecords.push(this);
@@ -728,8 +710,8 @@ export class DeferredGroupedFieldSetRecord {
     this.result = deferredFragmentRecords.some(
       (deferredFragmentRecord) => deferredFragmentRecord.id !== undefined,
     )
-      ? executor(incrementalContext)
-      : Promise.resolve().then(() => executor(incrementalContext));
+      ? executor([])
+      : Promise.resolve().then(() => executor([]));
   }
 }
 
@@ -816,20 +798,14 @@ export class StreamItemsRecord {
 
   constructor(opts: {
     streamRecord: StreamRecord;
-    itemPath?: Path | undefined;
     executor: (
-      incrementalContext: IncrementalContext,
+      errors: Array<GraphQLError>,
     ) => PromiseOrValue<StreamItemsResult>;
   }) {
-    const { streamRecord, itemPath, executor } = opts;
+    const { streamRecord, executor } = opts;
     this.streamRecord = streamRecord;
-    const incrementalContext: IncrementalContext = {
-      deferUsageSet: undefined,
-      path: itemPath,
-      errors: [],
-    };
 
-    this._result = executor(incrementalContext);
+    this._result = executor([]);
   }
 
   getResult(): PromiseOrValue<StreamItemsResult> {
