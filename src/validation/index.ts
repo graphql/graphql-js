@@ -96,6 +96,8 @@ export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.j
 // Spec Section: "All Variable Usages Are Allowed"
 export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.js';
 
+export { MaxIntrospectionFieldsDepthRule } from './rules/MaxIntrospectionFieldsDepthRule.js';
+
 // SDL-specific validation rules
 export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js';
 export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.js';
