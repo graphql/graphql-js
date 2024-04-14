@@ -1043,13 +1043,13 @@ async function completeAsyncIteratorValue(
         index,
         toNodes(fieldGroup),
         asyncIterator,
-        (currentItemPath, currentItem, currentIncrementalContext) =>
+        (currentItemPath, currentItem) =>
           completeStreamItems(
             streamRecord,
             currentItemPath,
             currentItem,
             exeContext,
-            currentIncrementalContext,
+            [],
             streamUsage.fieldGroup,
             info,
             itemType,
@@ -1186,13 +1186,13 @@ function completeListValue(
         item,
         index,
         iterator,
-        (currentItemPath, currentItem, currentIncrementalContext) =>
+        (currentItemPath, currentItem) =>
           completeStreamItems(
             streamRecord,
             currentItemPath,
             currentItem,
             exeContext,
-            currentIncrementalContext,
+            [],
             streamUsage.fieldGroup,
             info,
             itemType,
@@ -1909,7 +1909,7 @@ function executeDeferredGroupedFieldSets(
 
     const deferredGroupedFieldSetRecord = new DeferredGroupedFieldSetRecord({
       deferredFragmentRecords,
-      executor: (errors) =>
+      executor: () =>
         executeDeferredGroupedFieldSet(
           deferredFragmentRecords,
           exeContext,
@@ -1917,7 +1917,7 @@ function executeDeferredGroupedFieldSets(
           sourceValue,
           path,
           groupedFieldSet,
-          errors,
+          [],
           deferMap,
         ),
     });
@@ -2016,7 +2016,6 @@ function firstSyncStreamItems(
   executor: (
     itemPath: Path,
     item: PromiseOrValue<unknown>,
-    errors: Array<GraphQLError>,
   ) => PromiseOrValue<StreamItemsResult>,
 ): StreamItemsRecord {
   const path = streamRecord.path;
@@ -2024,9 +2023,9 @@ function firstSyncStreamItems(
 
   const firstStreamItems = new StreamItemsRecord({
     streamRecord,
-    executor: (errors) =>
+    executor: () =>
       Promise.resolve().then(() => {
-        const firstResult = executor(initialPath, initialItem, errors);
+        const firstResult = executor(initialPath, initialItem);
         let currentIndex = initialIndex;
         let currentStreamItems = firstStreamItems;
         let iteration = iterator.next();
@@ -2038,8 +2037,7 @@ function firstSyncStreamItems(
 
           const nextStreamItems = new StreamItemsRecord({
             streamRecord,
-            executor: (nextIncrementalContext) =>
-              executor(currentPath, item, nextIncrementalContext),
+            executor: () => executor(currentPath, item),
           });
 
           currentStreamItems.nextStreamItems = nextStreamItems;
@@ -2067,19 +2065,17 @@ function firstAsyncStreamItems(
   executor: (
     itemPath: Path,
     item: PromiseOrValue<unknown>,
-    errors: Array<GraphQLError>,
   ) => PromiseOrValue<StreamItemsResult>,
 ): StreamItemsRecord {
   const firstStreamItems: StreamItemsRecord = new StreamItemsRecord({
     streamRecord,
-    executor: (errors) =>
+    executor: () =>
       Promise.resolve().then(() =>
         getNextAsyncStreamItemsResult(
           streamRecord,
           firstStreamItems,
           path,
           initialIndex,
-          errors,
           nodes,
           asyncIterator,
           executor,
@@ -2094,13 +2090,11 @@ async function getNextAsyncStreamItemsResult(
   initialStreamItemsRecord: StreamItemsRecord,
   path: Path,
   index: number,
-  errors: Array<GraphQLError>,
   nodes: ReadonlyArray<FieldNode>,
   asyncIterator: AsyncIterator<unknown>,
   executor: (
     itemPath: Path,
     item: PromiseOrValue<unknown>,
-    errors: Array<GraphQLError>,
   ) => PromiseOrValue<StreamItemsResult>,
 ): Promise<StreamItemsResult> {
   let iteration;
@@ -2120,7 +2114,7 @@ async function getNextAsyncStreamItemsResult(
 
   const itemPath = addPath(path, index, undefined);
 
-  const result = executor(itemPath, iteration.value, errors);
+  const result = executor(itemPath, iteration.value);
 
   const nextStreamItems: StreamItemsRecord = nextAsyncStreamItems(
     streamRecord,
@@ -2144,19 +2138,17 @@ function nextAsyncStreamItems(
   executor: (
     itemPath: Path,
     item: PromiseOrValue<unknown>,
-    errors: Array<GraphQLError>,
   ) => PromiseOrValue<StreamItemsResult>,
 ): StreamItemsRecord {
   const nextStreamItems: StreamItemsRecord = new StreamItemsRecord({
     streamRecord,
-    executor: (errors) =>
+    executor: () =>
       Promise.resolve().then(() =>
         getNextAsyncStreamItemsResult(
           streamRecord,
           nextStreamItems,
           path,
           initialIndex + 1,
-          errors,
           nodes,
           asyncIterator,
           executor,

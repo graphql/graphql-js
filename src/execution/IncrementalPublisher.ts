@@ -697,9 +697,7 @@ export class DeferredGroupedFieldSetRecord {
 
   constructor(opts: {
     deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
-    executor: (
-      errors: Array<GraphQLError>,
-    ) => PromiseOrValue<DeferredGroupedFieldSetResult>;
+    executor: () => PromiseOrValue<DeferredGroupedFieldSetResult>;
   }) {
     const { deferredFragmentRecords, executor } = opts;
     this.deferredFragmentRecords = deferredFragmentRecords;
@@ -718,8 +716,8 @@ export class DeferredGroupedFieldSetRecord {
     this.result = deferredFragmentRecords.some(
       (deferredFragmentRecord) => deferredFragmentRecord.id !== undefined,
     )
-      ? executor([])
-      : Promise.resolve().then(() => executor([]));
+      ? executor()
+      : Promise.resolve().then(executor);
   }
 }
 
@@ -806,14 +804,12 @@ export class StreamItemsRecord {
 
   constructor(opts: {
     streamRecord: StreamRecord;
-    executor: (
-      errors: Array<GraphQLError>,
-    ) => PromiseOrValue<StreamItemsResult>;
+    executor: () => PromiseOrValue<StreamItemsResult>;
   }) {
     const { streamRecord, executor } = opts;
     this.streamRecord = streamRecord;
 
-    this._result = executor([]);
+    this._result = executor();
   }
 
   getResult(): PromiseOrValue<StreamItemsResult> {
