@@ -264,7 +264,7 @@ class IncrementalPublisher {
         this._newPending.add(streamRecord);
       }
 
-      const result = incrementalDataRecord.getResult();
+      const result = incrementalDataRecord.result;
       if (isPromise(result)) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         result.then((resolved) => {
@@ -800,7 +800,7 @@ export class StreamItemsRecord {
   streamRecord: StreamRecord;
   nextStreamItems: StreamItemsRecord | undefined;
 
-  private _result: PromiseOrValue<StreamItemsResult>;
+  result: PromiseOrValue<StreamItemsResult>;
 
   constructor(opts: {
     streamRecord: StreamRecord;
@@ -809,32 +809,7 @@ export class StreamItemsRecord {
     const { streamRecord, executor } = opts;
     this.streamRecord = streamRecord;
 
-    this._result = executor();
-  }
-
-  getResult(): PromiseOrValue<StreamItemsResult> {
-    if (isPromise(this._result)) {
-      return this._result.then((resolved) =>
-        this._prependNextStreamItems(resolved),
-      );
-    }
-
-    return this._prependNextStreamItems(this._result);
-  }
-
-  private _prependNextStreamItems(
-    result: StreamItemsResult,
-  ): StreamItemsResult {
-    return isNonTerminatingStreamItemsResult(result) &&
-      this.nextStreamItems !== undefined
-      ? {
-          ...result,
-          incrementalDataRecords:
-            result.incrementalDataRecords.length === 0
-              ? [this.nextStreamItems]
-              : [this.nextStreamItems, ...result.incrementalDataRecords],
-        }
-      : result;
+    this.result = executor();
   }
 }
 

@@ -66,6 +66,7 @@ import {
   buildIncrementalResponse,
   DeferredFragmentRecord,
   DeferredGroupedFieldSetRecord,
+  isNonTerminatingStreamItemsResult,
   StreamItemsRecord,
   StreamRecord,
 } from './IncrementalPublisher.js';
@@ -2025,35 +2026,73 @@ function firstSyncStreamItems(
     streamRecord,
     executor: () =>
       Promise.resolve().then(() => {
-        const firstResult = executor(initialPath, initialItem);
+        const results: Array<PromiseOrValue<StreamItemsResult>> = [
+          executor(initialPath, initialItem),
+        ];
         let currentIndex = initialIndex;
-        let currentStreamItems = firstStreamItems;
         let iteration = iterator.next();
         while (!iteration.done) {
           const item = iteration.value;
           currentIndex++;
-
           const currentPath = addPath(path, currentIndex, undefined);
-
-          const nextStreamItems = new StreamItemsRecord({
-            streamRecord,
-            executor: () => executor(currentPath, item),
-          });
-
-          currentStreamItems.nextStreamItems = nextStreamItems;
-          currentStreamItems = nextStreamItems;
+          results.push(executor(currentPath, item));
           iteration = iterator.next();
         }
 
-        currentStreamItems.nextStreamItems = new StreamItemsRecord({
-          streamRecord,
-          executor: () => ({ streamRecord }),
-        });
+        let i = results.length - 1;
+        let currentResult = prependNextStreamItems(
+          results[i],
+          new StreamItemsRecord({
+            streamRecord,
+            executor: () => ({ streamRecord }),
+          }),
+        );
 
-        return firstResult;
+        while (i > 0) {
+          const index = i--;
+          currentResult = prependNextStreamItems(
+            results[index - 1],
+            new StreamItemsRecord({
+              streamRecord,
+              // safe as this function is executed immediately
+              // eslint-disable-next-line @typescript-eslint/no-loop-func
+              executor: () => currentResult,
+            }),
+          );
+        }
+
+        return currentResult;
       }),
   });
   return firstStreamItems;
+}
+
+function prependNextStreamItems(
+  result: PromiseOrValue<StreamItemsResult>,
+  nextStreamItems: StreamItemsRecord,
+): PromiseOrValue<StreamItemsResult> {
+  if (isPromise(result)) {
+    return result.then((resolved) =>
+      isNonTerminatingStreamItemsResult(resolved)
+        ? {
+            ...resolved,
+            incrementalDataRecords: [
+              nextStreamItems,
+              ...resolved.incrementalDataRecords,
+            ],
+          }
+        : resolved,
+    );
+  }
+  return isNonTerminatingStreamItemsResult(result)
+    ? {
+        ...result,
+        incrementalDataRecords: [
+          nextStreamItems,
+          ...result.incrementalDataRecords,
+        ],
+      }
+    : result;
 }
 
 function firstAsyncStreamItems(
@@ -2073,7 +2112,6 @@ function firstAsyncStreamItems(
       Promise.resolve().then(() =>
         getNextAsyncStreamItemsResult(
           streamRecord,
-          firstStreamItems,
           path,
           initialIndex,
           nodes,
@@ -2087,7 +2125,6 @@ function firstAsyncStreamItems(
 
 async function getNextAsyncStreamItemsResult(
   streamRecord: StreamRecord,
-  initialStreamItemsRecord: StreamItemsRecord,
   path: Path,
   index: number,
   nodes: ReadonlyArray<FieldNode>,
@@ -2124,9 +2161,8 @@ async function getNextAsyncStreamItemsResult(
     asyncIterator,
     executor,
   );
-  initialStreamItemsRecord.nextStreamItems = nextStreamItems;
 
-  return result;
+  return prependNextStreamItems(result, nextStreamItems);
 }
 
 function nextAsyncStreamItems(
@@ -2146,7 +2182,6 @@ function nextAsyncStreamItems(
       Promise.resolve().then(() =>
         getNextAsyncStreamItemsResult(
           streamRecord,
-          nextStreamItems,
           path,
           initialIndex + 1,
           nodes,
