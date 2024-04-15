@@ -2093,17 +2093,16 @@ function prependNextStreamItems(
 ): PromiseOrValue<StreamItemsResult> {
   if (isPromise(result)) {
     return result.then((resolved) =>
-      isNonTerminatingStreamItemsResult(resolved)
-        ? {
-            ...resolved,
-            incrementalDataRecords: [
-              nextStreamItems,
-              ...resolved.incrementalDataRecords,
-            ],
-          }
-        : resolved,
+      prependNextResolvedStreamItems(resolved, nextStreamItems),
     );
   }
+  return prependNextResolvedStreamItems(result, nextStreamItems);
+}
+
+function prependNextResolvedStreamItems(
+  result: StreamItemsResult,
+  nextStreamItems: StreamItemsRecord,
+): StreamItemsResult {
   return isNonTerminatingStreamItemsResult(result)
     ? {
         ...result,
