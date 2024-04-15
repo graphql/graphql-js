@@ -563,9 +563,7 @@ class IncrementalPublisher {
       for (const child of deferredFragmentRecord.children) {
         this._newPending.add(child);
         for (const childResult of child.results) {
-          if (!isPromise(childResult)) {
-            this._completedResultQueue.push(childResult);
-          }
+          this._completedResultQueue.push(childResult);
         }
       }
     }
