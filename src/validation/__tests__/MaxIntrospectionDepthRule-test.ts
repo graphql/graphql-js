@@ -31,6 +31,24 @@ describe('Validate: Max introspection depth rule', () => {
     );
   });
 
+  it('3 flat fields introspection query', () => {
+    expectValid(`
+    {
+      __type(name: "Query") {
+        trueFields: fields(includeDeprecated: true) {
+          name
+        }
+        falseFields: fields(includeDeprecated: false) {
+          name
+        }
+        omittedFields: fields {
+          name
+        }
+      }
+    }
+    `);
+  });
+
   it('3 fields depth introspection query', () => {
     expectErrors(`
     {
@@ -41,11 +59,7 @@ describe('Validate: Max introspection depth rule', () => {
               fields {
                 type {
                   fields {
-                    type {
-                      fields {
-                        name
-                      }
-                    }
+                    name
                   }
                 }
               }
