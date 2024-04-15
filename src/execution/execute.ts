@@ -296,6 +296,7 @@ function executeOperation(
       rootType,
       rootValue,
       undefined,
+      undefined,
       newGroupedFieldSets,
       newDeferMap,
     );
@@ -1589,6 +1590,7 @@ function collectAndExecuteSubfields(
     returnType,
     result,
     path,
+    fieldGroup.deferUsages,
     newGroupedFieldSets,
     newDeferMap,
   );
@@ -1896,6 +1898,7 @@ function executeDeferredGroupedFieldSets(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
+  parentDeferUsages: DeferUsageSet | undefined,
   newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
 ): ReadonlyArray<DeferredGroupedFieldSetRecord> {
@@ -1922,7 +1925,7 @@ function executeDeferredGroupedFieldSets(
 
     const deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord = {
       deferredFragmentRecords,
-      result: shouldDefer(deferredFragmentRecords)
+      result: shouldDefer(parentDeferUsages, deferUsageSet)
         ? Promise.resolve().then(executor)
         : executor(),
     };
@@ -1934,17 +1937,18 @@ function executeDeferredGroupedFieldSets(
 }
 
 function shouldDefer(
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
+  parentDeferUsages: undefined | DeferUsageSet,
+  deferUsages: DeferUsageSet,
 ): boolean {
-  // If any of the deferred fragments for this deferred grouped field set
-  // have an id, then they have been released to the client as pending
-  // and it is safe to execute the deferred grouped field set synchronously.
-
-  // This can occur, for example, when deferred fragments have overlapping
-  // fields, and a new deferred grouped field set has been created for the
-  // non-overlapping fields.
-  return deferredFragmentRecords.every(
-    (deferredFragmentRecord) => deferredFragmentRecord.id === undefined,
+  // If we have a new child defer usage, defer.
+  // Otherwise, this defer usage was already deferred when it was initially
+  // encountered, and is now in the midst of executing early, so the new
+  // deferred grouped fields set can be executed immediately.
+  return (
+    parentDeferUsages === undefined ||
+    !Array.from(deferUsages).every((deferUsage) =>
+      parentDeferUsages.has(deferUsage),
+    )
   );
 }
 
