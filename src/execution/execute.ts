@@ -56,19 +56,19 @@ import { buildFieldPlan } from './buildFieldPlan.js';
 import type { DeferUsage, FieldDetails } from './collectFields.js';
 import { collectFields, collectSubfields } from './collectFields.js';
 import type {
+  DeferredGroupedFieldSetRecord,
   DeferredGroupedFieldSetResult,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
+  StreamItemsRecord,
   StreamItemsResult,
+  StreamRecord,
 } from './IncrementalPublisher.js';
 import {
   buildIncrementalResponse,
   DeferredFragmentRecord,
-  DeferredGroupedFieldSetRecord,
   isNonTerminatingStreamItemsResult,
-  StreamItemsRecord,
-  StreamRecord,
 } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import {
@@ -1030,11 +1030,11 @@ async function completeAsyncIteratorValue(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
-      const streamRecord = new StreamRecord({
+      const streamRecord: StreamRecord = {
         label: streamUsage.label,
         path,
         earlyReturn: asyncIterator.return?.bind(asyncIterator),
-      });
+      };
 
       exeContext.cancellableStreams.add(streamRecord);
 
@@ -1177,10 +1177,10 @@ function completeListValue(
     const item = iteration.value;
 
     if (streamUsage && index >= streamUsage.initialCount) {
-      const streamRecord = new StreamRecord({
+      const streamRecord: StreamRecord = {
         label: streamUsage.label,
         path,
-      });
+      };
 
       const firstStreamItems = firstSyncStreamItems(
         streamRecord,
@@ -1908,25 +1908,44 @@ function executeDeferredGroupedFieldSets(
       deferMap,
     );
 
-    const deferredGroupedFieldSetRecord = new DeferredGroupedFieldSetRecord({
+    const executor = () =>
+      executeDeferredGroupedFieldSet(
+        deferredFragmentRecords,
+        exeContext,
+        parentType,
+        sourceValue,
+        path,
+        groupedFieldSet,
+        [],
+        deferMap,
+      );
+
+    const deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord = {
       deferredFragmentRecords,
-      executor: () =>
-        executeDeferredGroupedFieldSet(
-          deferredFragmentRecords,
-          exeContext,
-          parentType,
-          sourceValue,
-          path,
-          groupedFieldSet,
-          [],
-          deferMap,
-        ),
-    });
+      result: shouldDefer(deferredFragmentRecords)
+        ? Promise.resolve().then(executor)
+        : executor(),
+    };
 
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }
 
   return newDeferredGroupedFieldSetRecords;
+}
+
+function shouldDefer(
+  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
+): boolean {
+  // If any of the deferred fragments for this deferred grouped field set
+  // have an id, then they have been released to the client as pending
+  // and it is safe to execute the deferred grouped field set synchronously.
+
+  // This can occur, for example, when deferred fragments have overlapping
+  // fields, and a new deferred grouped field set has been created for the
+  // non-overlapping fields.
+  return deferredFragmentRecords.every(
+    (deferredFragmentRecord) => deferredFragmentRecord.id === undefined,
+  );
 }
 
 function executeDeferredGroupedFieldSet(
@@ -2022,48 +2041,38 @@ function firstSyncStreamItems(
   const path = streamRecord.path;
   const initialPath = addPath(path, initialIndex, undefined);
 
-  const firstStreamItems = new StreamItemsRecord({
+  const firstStreamItems: StreamItemsRecord = {
     streamRecord,
-    executor: () =>
-      Promise.resolve().then(() => {
-        const results: Array<PromiseOrValue<StreamItemsResult>> = [
-          executor(initialPath, initialItem),
-        ];
-        let currentIndex = initialIndex;
-        let iteration = iterator.next();
-        while (!iteration.done) {
-          const item = iteration.value;
-          currentIndex++;
-          const currentPath = addPath(path, currentIndex, undefined);
-          results.push(executor(currentPath, item));
-          iteration = iterator.next();
-        }
+    result: Promise.resolve().then(() => {
+      const results: Array<PromiseOrValue<StreamItemsResult>> = [
+        executor(initialPath, initialItem),
+      ];
+      let currentIndex = initialIndex;
+      let iteration = iterator.next();
+      while (!iteration.done) {
+        const item = iteration.value;
+        currentIndex++;
+        const currentPath = addPath(path, currentIndex, undefined);
+        results.push(executor(currentPath, item));
+        iteration = iterator.next();
+      }
 
-        let i = results.length - 1;
-        let currentResult = prependNextStreamItems(
-          results[i],
-          new StreamItemsRecord({
-            streamRecord,
-            executor: () => ({ streamRecord }),
-          }),
-        );
+      currentIndex = results.length - 1;
+      let currentResult = prependNextStreamItems(results[currentIndex], {
+        streamRecord,
+        result: { streamRecord },
+      });
 
-        while (i > 0) {
-          const index = i--;
-          currentResult = prependNextStreamItems(
-            results[index - 1],
-            new StreamItemsRecord({
-              streamRecord,
-              // safe as this function is executed immediately
-              // eslint-disable-next-line @typescript-eslint/no-loop-func
-              executor: () => currentResult,
-            }),
-          );
-        }
+      while (currentIndex-- > 0) {
+        currentResult = prependNextStreamItems(results[currentIndex], {
+          streamRecord,
+          result: currentResult,
+        });
+      }
 
-        return currentResult;
-      }),
-  });
+      return currentResult;
+    }),
+  };
   return firstStreamItems;
 }
 
@@ -2106,20 +2115,19 @@ function firstAsyncStreamItems(
     item: PromiseOrValue<unknown>,
   ) => PromiseOrValue<StreamItemsResult>,
 ): StreamItemsRecord {
-  const firstStreamItems: StreamItemsRecord = new StreamItemsRecord({
+  const firstStreamItems: StreamItemsRecord = {
     streamRecord,
-    executor: () =>
-      Promise.resolve().then(() =>
-        getNextAsyncStreamItemsResult(
-          streamRecord,
-          path,
-          initialIndex,
-          nodes,
-          asyncIterator,
-          executor,
-        ),
+    result: Promise.resolve().then(() =>
+      getNextAsyncStreamItemsResult(
+        streamRecord,
+        path,
+        initialIndex,
+        nodes,
+        asyncIterator,
+        executor,
       ),
-  });
+    ),
+  };
   return firstStreamItems;
 }
 
@@ -2176,20 +2184,19 @@ function nextAsyncStreamItems(
     item: PromiseOrValue<unknown>,
   ) => PromiseOrValue<StreamItemsResult>,
 ): StreamItemsRecord {
-  const nextStreamItems: StreamItemsRecord = new StreamItemsRecord({
+  const nextStreamItems: StreamItemsRecord = {
     streamRecord,
-    executor: () =>
-      Promise.resolve().then(() =>
-        getNextAsyncStreamItemsResult(
-          streamRecord,
-          path,
-          initialIndex + 1,
-          nodes,
-          asyncIterator,
-          executor,
-        ),
+    result: Promise.resolve().then(() =>
+      getNextAsyncStreamItemsResult(
+        streamRecord,
+        path,
+        initialIndex + 1,
+        nodes,
+        asyncIterator,
+        executor,
       ),
-  });
+    ),
+  };
   return nextStreamItems;
 }
 

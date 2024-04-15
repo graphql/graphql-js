@@ -243,6 +243,8 @@ class IncrementalPublisher {
     for (const incrementalDataRecord of incrementalDataRecords) {
       if (isDeferredGroupedFieldSetRecord(incrementalDataRecord)) {
         for (const deferredFragmentRecord of incrementalDataRecord.deferredFragmentRecords) {
+          deferredFragmentRecord.expectedReconcilableResults++;
+
           this._addDeferredFragmentRecord(deferredFragmentRecord);
         }
 
@@ -306,7 +308,7 @@ class IncrementalPublisher {
     this._newPending = new Set();
     for (const node of maybeEmptyNewPending) {
       if (isDeferredFragmentRecord(node)) {
-        if (node.deferredGroupedFieldSetRecords.length > 0) {
+        if (node.expectedReconcilableResults) {
           this._newPending.add(node);
           continue;
         }
@@ -322,7 +324,7 @@ class IncrementalPublisher {
   private _addNonEmptyNewPending(
     deferredFragmentRecord: DeferredFragmentRecord,
   ): void {
-    if (deferredFragmentRecord.deferredGroupedFieldSetRecords.length > 0) {
+    if (deferredFragmentRecord.expectedReconcilableResults) {
       this._newPending.add(deferredFragmentRecord);
       return;
     }
@@ -532,7 +534,7 @@ class IncrementalPublisher {
       }
       const fragmentResults = deferredFragmentRecord.reconcilableResults;
       if (
-        deferredFragmentRecord.deferredGroupedFieldSetRecords.length !==
+        deferredFragmentRecord.expectedReconcilableResults !==
         fragmentResults.length
       ) {
         continue;
@@ -650,13 +652,13 @@ class IncrementalPublisher {
 function isDeferredFragmentRecord(
   subsequentResultRecord: SubsequentResultRecord,
 ): subsequentResultRecord is DeferredFragmentRecord {
-  return subsequentResultRecord instanceof DeferredFragmentRecord;
+  return 'parent' in subsequentResultRecord;
 }
 
 function isDeferredGroupedFieldSetRecord(
   incrementalDataRecord: IncrementalDataRecord,
 ): incrementalDataRecord is DeferredGroupedFieldSetRecord {
-  return incrementalDataRecord instanceof DeferredGroupedFieldSetRecord;
+  return 'deferredFragmentRecords' in incrementalDataRecord;
 }
 
 export type DeferredGroupedFieldSetResult =
@@ -690,47 +692,27 @@ export function isNonReconcilableDeferredGroupedFieldSetResult(
   return deferredGroupedFieldSetResult.result === null;
 }
 
-/** @internal */
-export class DeferredGroupedFieldSetRecord {
+export interface DeferredGroupedFieldSetRecord {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   result: PromiseOrValue<DeferredGroupedFieldSetResult>;
+}
 
-  constructor(opts: {
-    deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
-    executor: () => PromiseOrValue<DeferredGroupedFieldSetResult>;
-  }) {
-    const { deferredFragmentRecords, executor } = opts;
-    this.deferredFragmentRecords = deferredFragmentRecords;
-
-    for (const deferredFragmentRecord of deferredFragmentRecords) {
-      deferredFragmentRecord.deferredGroupedFieldSetRecords.push(this);
-    }
-
-    // If any of the deferred fragments for this deferred grouped field set
-    // have an id, then they have been released to the client as pending
-    // and it is safe to execute the deferred grouped field set synchronously.
-
-    // This can occur, for example, when deferred fragments have overlapping
-    // fields, and a new deferred grouped field set has been created for the
-    // non-overlapping fields.
-    this.result = deferredFragmentRecords.some(
-      (deferredFragmentRecord) => deferredFragmentRecord.id !== undefined,
-    )
-      ? executor()
-      : Promise.resolve().then(executor);
-  }
+interface SubsequentResultRecord {
+  path: Path | undefined;
+  label: string | undefined;
+  id?: string | undefined;
 }
 
 /** @internal */
-export class DeferredFragmentRecord {
+export class DeferredFragmentRecord implements SubsequentResultRecord {
   path: Path | undefined;
   label: string | undefined;
-  deferredGroupedFieldSetRecords: Array<DeferredGroupedFieldSetRecord>;
+  id?: string | undefined;
+  parent: DeferredFragmentRecord | undefined;
+  expectedReconcilableResults: number;
   results: Array<DeferredGroupedFieldSetResult>;
   reconcilableResults: Array<ReconcilableDeferredGroupedFieldSetResult>;
-  parent: DeferredFragmentRecord | undefined;
   children: Set<DeferredFragmentRecord>;
-  id?: string | undefined;
 
   constructor(opts: {
     path: Path | undefined;
@@ -739,30 +721,16 @@ export class DeferredFragmentRecord {
   }) {
     this.path = opts.path;
     this.label = opts.label;
-    this.deferredGroupedFieldSetRecords = [];
+    this.parent = opts.parent;
+    this.expectedReconcilableResults = 0;
     this.results = [];
     this.reconcilableResults = [];
-    this.parent = opts.parent;
     this.children = new Set();
   }
 }
 
-/** @internal */
-export class StreamRecord {
-  label: string | undefined;
-  path: Path;
-  earlyReturn: (() => Promise<unknown>) | undefined;
-  id?: string | undefined;
-  constructor(opts: {
-    label: string | undefined;
-    path: Path;
-    earlyReturn?: (() => Promise<unknown>) | undefined;
-  }) {
-    const { label, path, earlyReturn } = opts;
-    this.label = label;
-    this.path = path;
-    this.earlyReturn = earlyReturn;
-  }
+export interface StreamRecord extends SubsequentResultRecord {
+  earlyReturn?: (() => Promise<unknown>) | undefined;
 }
 
 interface NonReconcilableStreamItemsResult {
@@ -795,22 +763,9 @@ export function isNonTerminatingStreamItemsResult(
   return streamItemsResult.result != null;
 }
 
-/** @internal */
-export class StreamItemsRecord {
+export interface StreamItemsRecord {
   streamRecord: StreamRecord;
-  nextStreamItems: StreamItemsRecord | undefined;
-
   result: PromiseOrValue<StreamItemsResult>;
-
-  constructor(opts: {
-    streamRecord: StreamRecord;
-    executor: () => PromiseOrValue<StreamItemsResult>;
-  }) {
-    const { streamRecord, executor } = opts;
-    this.streamRecord = streamRecord;
-
-    this.result = executor();
-  }
 }
 
 export type IncrementalDataRecord =
@@ -820,5 +775,3 @@ export type IncrementalDataRecord =
 export type IncrementalDataRecordResult =
   | DeferredGroupedFieldSetResult
   | StreamItemsResult;
-
-type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
