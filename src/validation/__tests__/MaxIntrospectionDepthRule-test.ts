@@ -49,7 +49,7 @@ describe('Validate: Max introspection depth rule', () => {
     `);
   });
 
-  it('3 fields depth introspection query', () => {
+  it('4 fields depth introspection query', () => {
     expectErrors(`
     {
       __schema {
@@ -59,9 +59,41 @@ describe('Validate: Max introspection depth rule', () => {
               fields {
                 type {
                   fields {
-                    name
+                    type {
+                      fields {
+                        name
+                      }
+                    }
                   }
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+      },
+    ]);
+  });
+
+  it('1 fields deep with 3 fields introspection query', () => {
+    expectErrors(`
+    {
+      __schema {
+        types {
+          fields {
+            type {
+              oneFields: fields {
+                name
+              }
+              twoFields: fields {
+                name
+              }
+              threeFields: fields {
+                name
               }
             }
           }

@@ -22,7 +22,7 @@ export function MaxIntrospectionDepthRule(
       if (
         field.name.value === 'fields' &&
         typeInfo.getParentType() === __Type &&
-        ++count >= MAX_TYPE_FIELDS_COUNT
+        ++count > MAX_TYPE_FIELDS_COUNT
       ) {
         context.reportError(
           new GraphQLError('Maximum introspection depth exceeded'),
