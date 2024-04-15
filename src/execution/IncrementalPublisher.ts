@@ -584,11 +584,7 @@ class IncrementalPublisher {
     if (id === undefined) {
       return;
     }
-    if (streamItemsResult.result === undefined) {
-      this._completed.push({ id });
-      this._pending.delete(streamRecord);
-      this._context.cancellableStreams.delete(streamRecord);
-    } else if (streamItemsResult.result === null) {
+    if (streamItemsResult.errors !== undefined) {
       this._completed.push({
         id,
         errors: streamItemsResult.errors,
@@ -599,6 +595,10 @@ class IncrementalPublisher {
         /* c8 ignore next 1 */
         // ignore error
       });
+    } else if (streamItemsResult.result === undefined) {
+      this._completed.push({ id });
+      this._pending.delete(streamRecord);
+      this._context.cancellableStreams.delete(streamRecord);
     } else {
       const incrementalEntry: IncrementalStreamResult = {
         id,
@@ -677,19 +677,20 @@ interface ReconcilableDeferredGroupedFieldSetResult {
   result: BareDeferredGroupedFieldSetResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
   sent?: true | undefined;
+  errors?: never;
 }
 
 interface NonReconcilableDeferredGroupedFieldSetResult {
-  result: null;
   errors: ReadonlyArray<GraphQLError>;
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   path: Array<string | number>;
+  result?: never;
 }
 
 export function isNonReconcilableDeferredGroupedFieldSetResult(
   deferredGroupedFieldSetResult: DeferredGroupedFieldSetResult,
 ): deferredGroupedFieldSetResult is NonReconcilableDeferredGroupedFieldSetResult {
-  return deferredGroupedFieldSetResult.result === null;
+  return deferredGroupedFieldSetResult.errors !== undefined;
 }
 
 export interface DeferredGroupedFieldSetRecord {
@@ -735,14 +736,15 @@ export interface StreamRecord extends SubsequentResultRecord {
 
 interface NonReconcilableStreamItemsResult {
   streamRecord: StreamRecord;
-  result: null;
   errors: ReadonlyArray<GraphQLError>;
+  result?: never;
 }
 
 interface NonTerminatingStreamItemsResult {
   streamRecord: StreamRecord;
   result: BareStreamItemsResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
+  errors?: never;
 }
 
 interface TerminatingStreamItemsResult {
@@ -760,7 +762,7 @@ export type StreamItemsResult =
 export function isNonTerminatingStreamItemsResult(
   streamItemsResult: StreamItemsResult,
 ): streamItemsResult is NonTerminatingStreamItemsResult {
-  return streamItemsResult.result != null;
+  return streamItemsResult.result !== undefined;
 }
 
 export interface StreamItemsRecord {

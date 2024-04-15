@@ -1977,7 +1977,6 @@ function executeDeferredGroupedFieldSet(
     return {
       deferredFragmentRecords,
       path: pathToArray(path),
-      result: null,
       errors: withError(errors, error),
     };
   }
@@ -1994,7 +1993,6 @@ function executeDeferredGroupedFieldSet(
       (error) => ({
         deferredFragmentRecords,
         path: pathToArray(path),
-        result: null,
         errors: withError(errors, error),
       }),
     );
@@ -2152,7 +2150,6 @@ async function getNextAsyncStreamItemsResult(
   } catch (error) {
     return {
       streamRecord,
-      result: null,
       errors: [locatedError(error, nodes, pathToArray(path))],
     };
   }
@@ -2229,7 +2226,6 @@ function completeStreamItems(
         buildStreamItemsResult(errors, streamRecord, resolvedItem),
       (error) => ({
         streamRecord,
-        result: null,
         errors: withError(errors, error),
       }),
     );
@@ -2255,7 +2251,6 @@ function completeStreamItems(
   } catch (error) {
     return {
       streamRecord,
-      result: null,
       errors: withError(errors, error),
     };
   }
@@ -2271,7 +2266,6 @@ function completeStreamItems(
           buildStreamItemsResult(errors, streamRecord, resolvedItem),
         (error) => ({
           streamRecord,
-          result: null,
           errors: withError(errors, error),
         }),
       );
