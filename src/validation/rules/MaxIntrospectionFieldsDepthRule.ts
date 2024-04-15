@@ -31,9 +31,7 @@ export function MaxIntrospectionFieldsDepthRule(
     }
 
     if (count >= MAX_INTROSPECTION_FIELDS_DEPTH) {
-      throw new GraphQLError(
-        'Maximum introspection depth of "fields" exceeded',
-      );
+      throw new GraphQLError('Maximum introspection depth exceeded');
     }
 
     return count;

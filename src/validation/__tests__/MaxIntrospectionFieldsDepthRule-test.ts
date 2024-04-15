@@ -52,7 +52,7 @@ describe('Validate: Max introspection "fields" depth rule', () => {
     }
     `).toDeepEqual([
       {
-        message: 'Maximum introspection depth of "fields" exceeded',
+        message: 'Maximum introspection depth exceeded',
       },
     ]);
   });
@@ -340,7 +340,7 @@ describe('Validate: Max introspection "fields" depth rule', () => {
     }
     `).toDeepEqual([
       {
-        message: 'Maximum introspection depth of "fields" exceeded',
+        message: 'Maximum introspection depth exceeded',
       },
     ]);
   });
