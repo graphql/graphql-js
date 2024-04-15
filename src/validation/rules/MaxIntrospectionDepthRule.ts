@@ -11,18 +11,28 @@ const MAX_INTROSPECTION_FIELDS_DEPTH = 3;
 export function MaxIntrospectionDepthRule(
   context: ASTValidationContext,
 ): ASTVisitor {
-  function countDepth(node: ASTNode, count = 0) {
+  /**
+   * Counts the "fields" recursively and returns `true` if the
+   * limit has been reached; otherwise, returns the count.
+   */
+  function countDepth(node: ASTNode): number | true {
+    let count = 0;
+
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragment = context.getFragment(node.name.value);
       if (!fragment) {
         throw new Error(`Fragment ${node.name.value} not found`);
       }
-      return countDepth(fragment, count);
+      return countDepth(fragment);
     }
 
     if ('selectionSet' in node && node.selectionSet) {
       for (const child of node.selectionSet.selections) {
-        count = countDepth(child, count);
+        const countOrReached = countDepth(child);
+        if (countOrReached === true) {
+          return true;
+        }
+        count += countOrReached;
       }
     }
 
@@ -31,7 +41,7 @@ export function MaxIntrospectionDepthRule(
     }
 
     if (count >= MAX_INTROSPECTION_FIELDS_DEPTH) {
-      throw new GraphQLError('Maximum introspection depth exceeded');
+      return true;
     }
 
     return count;
@@ -40,14 +50,11 @@ export function MaxIntrospectionDepthRule(
   return {
     Field(field) {
       if (field.name.value === '__schema' || field.name.value === '__type ') {
-        try {
-          countDepth(field);
-        } catch (err) {
-          if (err instanceof GraphQLError) {
-            context.reportError(err);
-          } else {
-            throw err;
-          }
+        const reached = countDepth(field);
+        if (reached === true) {
+          context.reportError(
+            new GraphQLError('Maximum introspection depth exceeded'),
+          );
         }
       }
     },
