@@ -12,11 +12,6 @@ export interface FieldGroup {
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
 
-export interface NewGroupedFieldSetDetails {
-  groupedFieldSet: GroupedFieldSet;
-  shouldInitiateDefer: boolean;
-}
-
 export function buildFieldPlan(
   fields: Map<string, ReadonlyArray<FieldDetails>>,
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
