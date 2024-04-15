@@ -7,19 +7,15 @@ import { __Type } from '../../type/introspection.js';
 
 import { TypeInfo, visitWithTypeInfo } from '../../utilities/TypeInfo.js';
 
-import type { SDLValidationContext } from '../ValidationContext.js';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /** Maximum number of "__Type.fields" appearances during introspection. */
 const MAX_TYPE_FIELDS_COUNT = 3;
 
 export function MaxIntrospectionDepthRule(
-  context: SDLValidationContext,
+  context: ValidationContext,
 ): ASTVisitor {
-  const schema = context.getSchema();
-  if (!schema) {
-    throw new Error('Max introspection depth rule must have a schema');
-  }
-  const typeInfo = new TypeInfo(schema);
+  const typeInfo = new TypeInfo(context.getSchema());
   let count = 0;
   return visitWithTypeInfo(typeInfo, {
     Field(field) {
