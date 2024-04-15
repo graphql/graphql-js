@@ -22,7 +22,7 @@ export function MaxIntrospectionDepthRule(
   const typeInfo = new TypeInfo(schema);
   let count = 0;
   return visitWithTypeInfo(typeInfo, {
-    Field(field, _key) {
+    Field(field) {
       if (
         field.name.value === 'fields' &&
         typeInfo.getParentType() === __Type &&
