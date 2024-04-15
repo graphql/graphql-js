@@ -2,19 +2,19 @@ import { describe, it } from 'mocha';
 
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.js';
 
-import { MaxIntrospectionDepthRule } from '../rules/MaxIntrospectionDepthRule.js';
+import { MaxIntrospectionNodesRule } from '../rules/MaxIntrospectionNodesRule.js';
 
 import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
-  return expectValidationErrors(MaxIntrospectionDepthRule, queryStr);
+  return expectValidationErrors(MaxIntrospectionNodesRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
   expectErrors(queryStr).toDeepEqual([]);
 }
 
-describe('Validate: Max introspection depth rule', () => {
+describe('Validate: Max introspection nodes rule', () => {
   it('default introspection query', () => {
     expectValid(getIntrospectionQuery());
   });
@@ -49,7 +49,7 @@ describe('Validate: Max introspection depth rule', () => {
     `);
   });
 
-  it('4 fields depth introspection query', () => {
+  it('4 fields nodes introspection query', () => {
     expectErrors(`
     {
       __schema {
@@ -74,7 +74,7 @@ describe('Validate: Max introspection depth rule', () => {
     }
     `).toDeepEqual([
       {
-        message: 'Maximum introspection depth exceeded',
+        message: 'Maximum introspection nodes exceeded',
       },
     ]);
   });
@@ -102,7 +102,7 @@ describe('Validate: Max introspection depth rule', () => {
     }
     `).toDeepEqual([
       {
-        message: 'Maximum introspection depth exceeded',
+        message: 'Maximum introspection nodes exceeded',
       },
     ]);
   });
@@ -390,7 +390,7 @@ describe('Validate: Max introspection depth rule', () => {
     }
     `).toDeepEqual([
       {
-        message: 'Maximum introspection depth exceeded',
+        message: 'Maximum introspection nodes exceeded',
       },
     ]);
   });

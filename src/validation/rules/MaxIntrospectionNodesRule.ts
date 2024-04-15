@@ -12,7 +12,7 @@ import type { ValidationContext } from '../ValidationContext.js';
 /** Maximum number of "__Type.fields" appearances during introspection. */
 const MAX_TYPE_FIELDS_COUNT = 3;
 
-export function MaxIntrospectionDepthRule(
+export function MaxIntrospectionNodesRule(
   context: ValidationContext,
 ): ASTVisitor {
   const typeInfo = new TypeInfo(context.getSchema());
@@ -25,7 +25,7 @@ export function MaxIntrospectionDepthRule(
         ++count > MAX_TYPE_FIELDS_COUNT
       ) {
         context.reportError(
-          new GraphQLError('Maximum introspection depth exceeded'),
+          new GraphQLError('Maximum introspection nodes exceeded'),
         );
         return BREAK;
       }
