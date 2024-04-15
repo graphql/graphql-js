@@ -184,7 +184,7 @@ export function buildIncrementalResponse(
 }
 
 interface IncrementalPublisherContext {
-  cancellableStreams: Set<StreamRecord>;
+  cancellableStreams: Set<CancellableStreamRecord>;
 }
 
 /**
@@ -586,15 +586,19 @@ class IncrementalPublisher {
         errors: streamItemsResult.errors,
       });
       this._pending.delete(streamRecord);
-      this._context.cancellableStreams.delete(streamRecord);
-      streamRecord.earlyReturn?.().catch(() => {
-        /* c8 ignore next 1 */
-        // ignore error
-      });
+      if (isCancellableStreamRecord(streamRecord)) {
+        this._context.cancellableStreams.delete(streamRecord);
+        streamRecord.earlyReturn().catch(() => {
+          /* c8 ignore next 1 */
+          // ignore error
+        });
+      }
     } else if (streamItemsResult.result === undefined) {
       this._completed.push({ id });
       this._pending.delete(streamRecord);
-      this._context.cancellableStreams.delete(streamRecord);
+      if (isCancellableStreamRecord(streamRecord)) {
+        this._context.cancellableStreams.delete(streamRecord);
+      }
     } else {
       const incrementalEntry: IncrementalStreamResult = {
         id,
@@ -694,7 +698,7 @@ export interface DeferredGroupedFieldSetRecord {
   result: PromiseOrValue<DeferredGroupedFieldSetResult>;
 }
 
-interface SubsequentResultRecord {
+export interface SubsequentResultRecord {
   path: Path | undefined;
   label: string | undefined;
   id?: string | undefined;
@@ -726,25 +730,31 @@ export class DeferredFragmentRecord implements SubsequentResultRecord {
   }
 }
 
-export interface StreamRecord extends SubsequentResultRecord {
-  earlyReturn?: (() => Promise<unknown>) | undefined;
+export interface CancellableStreamRecord extends SubsequentResultRecord {
+  earlyReturn: () => Promise<unknown>;
+}
+
+function isCancellableStreamRecord(
+  subsequentResultRecord: SubsequentResultRecord,
+): subsequentResultRecord is CancellableStreamRecord {
+  return 'earlyReturn' in subsequentResultRecord;
 }
 
 interface NonReconcilableStreamItemsResult {
-  streamRecord: StreamRecord;
+  streamRecord: SubsequentResultRecord;
   errors: ReadonlyArray<GraphQLError>;
   result?: never;
 }
 
 interface NonTerminatingStreamItemsResult {
-  streamRecord: StreamRecord;
+  streamRecord: SubsequentResultRecord;
   result: BareStreamItemsResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
   errors?: never;
 }
 
 interface TerminatingStreamItemsResult {
-  streamRecord: StreamRecord;
+  streamRecord: SubsequentResultRecord;
   result?: never;
   incrementalDataRecords?: never;
   errors?: never;
@@ -762,7 +772,7 @@ export function isNonTerminatingStreamItemsResult(
 }
 
 export interface StreamItemsRecord {
-  streamRecord: StreamRecord;
+  streamRecord: SubsequentResultRecord;
   result: PromiseOrValue<StreamItemsResult>;
 }
 

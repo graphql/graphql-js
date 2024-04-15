@@ -56,6 +56,7 @@ import { buildFieldPlan } from './buildFieldPlan.js';
 import type { DeferUsage, FieldDetails } from './collectFields.js';
 import { collectFields, collectSubfields } from './collectFields.js';
 import type {
+  CancellableStreamRecord,
   DeferredGroupedFieldSetRecord,
   DeferredGroupedFieldSetResult,
   ExecutionResult,
@@ -63,7 +64,7 @@ import type {
   IncrementalDataRecord,
   StreamItemsRecord,
   StreamItemsResult,
-  StreamRecord,
+  SubsequentResultRecord,
 } from './IncrementalPublisher.js';
 import {
   buildIncrementalResponse,
@@ -143,7 +144,7 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  cancellableStreams: Set<StreamRecord>;
+  cancellableStreams: Set<CancellableStreamRecord>;
 }
 
 export interface ExecutionArgs {
@@ -1031,13 +1032,21 @@ async function completeAsyncIteratorValue(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
-      const streamRecord: StreamRecord = {
-        label: streamUsage.label,
-        path,
-        earlyReturn: asyncIterator.return?.bind(asyncIterator),
-      };
-
-      exeContext.cancellableStreams.add(streamRecord);
+      const returnFn = asyncIterator.return;
+      let streamRecord;
+      if (returnFn === undefined) {
+        streamRecord = {
+          label: streamUsage.label,
+          path,
+        } as SubsequentResultRecord;
+      } else {
+        streamRecord = {
+          label: streamUsage.label,
+          path,
+          earlyReturn: returnFn.bind(asyncIterator),
+        } as CancellableStreamRecord;
+        exeContext.cancellableStreams.add(streamRecord);
+      }
 
       const firstStreamItems = firstAsyncStreamItems(
         streamRecord,
@@ -1178,7 +1187,7 @@ function completeListValue(
     const item = iteration.value;
 
     if (streamUsage && index >= streamUsage.initialCount) {
-      const streamRecord: StreamRecord = {
+      const streamRecord: SubsequentResultRecord = {
         label: streamUsage.label,
         path,
       };
@@ -2031,7 +2040,7 @@ function getDeferredFragmentRecords(
 }
 
 function firstSyncStreamItems(
-  streamRecord: StreamRecord,
+  streamRecord: SubsequentResultRecord,
   initialItem: PromiseOrValue<unknown>,
   initialIndex: number,
   iterator: Iterator<unknown>,
@@ -2107,7 +2116,7 @@ function prependNextStreamItems(
 }
 
 function firstAsyncStreamItems(
-  streamRecord: StreamRecord,
+  streamRecord: SubsequentResultRecord,
   path: Path,
   initialIndex: number,
   nodes: ReadonlyArray<FieldNode>,
@@ -2134,7 +2143,7 @@ function firstAsyncStreamItems(
 }
 
 async function getNextAsyncStreamItemsResult(
-  streamRecord: StreamRecord,
+  streamRecord: SubsequentResultRecord,
   path: Path,
   index: number,
   nodes: ReadonlyArray<FieldNode>,
@@ -2175,7 +2184,7 @@ async function getNextAsyncStreamItemsResult(
 }
 
 function nextAsyncStreamItems(
-  streamRecord: StreamRecord,
+  streamRecord: SubsequentResultRecord,
   path: Path,
   initialIndex: number,
   nodes: ReadonlyArray<FieldNode>,
@@ -2202,7 +2211,7 @@ function nextAsyncStreamItems(
 }
 
 function completeStreamItems(
-  streamRecord: StreamRecord,
+  streamRecord: SubsequentResultRecord,
   itemPath: Path,
   item: unknown,
   exeContext: ExecutionContext,
@@ -2276,7 +2285,7 @@ function completeStreamItems(
 
 function buildStreamItemsResult(
   errors: ReadonlyArray<GraphQLError>,
-  streamRecord: StreamRecord,
+  streamRecord: SubsequentResultRecord,
   result: GraphQLResult<unknown>,
 ): StreamItemsResult {
   return {
