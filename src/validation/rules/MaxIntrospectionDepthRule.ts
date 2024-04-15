@@ -8,7 +8,7 @@ import type { ASTValidationContext } from '../ValidationContext.js';
 
 const MAX_INTROSPECTION_FIELDS_DEPTH = 3;
 
-export function MaxIntrospectionFieldsDepthRule(
+export function MaxIntrospectionDepthRule(
   context: ASTValidationContext,
 ): ASTVisitor {
   function countDepth(node: ASTNode, count = 0) {

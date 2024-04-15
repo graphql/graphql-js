@@ -2,19 +2,19 @@ import { describe, it } from 'mocha';
 
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.js';
 
-import { MaxIntrospectionFieldsDepthRule } from '../rules/MaxIntrospectionFieldsDepthRule.js';
+import { MaxIntrospectionDepthRule } from '../rules/MaxIntrospectionDepthRule.js';
 
 import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
-  return expectValidationErrors(MaxIntrospectionFieldsDepthRule, queryStr);
+  return expectValidationErrors(MaxIntrospectionDepthRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
   expectErrors(queryStr).toDeepEqual([]);
 }
 
-describe('Validate: Max introspection "fields" depth rule', () => {
+describe('Validate: Max introspection depth rule', () => {
   it('default introspection query', () => {
     expectValid(getIntrospectionQuery());
   });
