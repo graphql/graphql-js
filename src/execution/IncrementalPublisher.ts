@@ -665,7 +665,7 @@ export type DeferredGroupedFieldSetResult =
   | ReconcilableDeferredGroupedFieldSetResult
   | NonReconcilableDeferredGroupedFieldSetResult;
 
-export function isDeferredGroupedFieldSetResult(
+function isDeferredGroupedFieldSetResult(
   subsequentResult: DeferredGroupedFieldSetResult | StreamItemsResult,
 ): subsequentResult is DeferredGroupedFieldSetResult {
   return 'deferredFragmentRecords' in subsequentResult;
@@ -687,7 +687,7 @@ interface NonReconcilableDeferredGroupedFieldSetResult {
   result?: never;
 }
 
-export function isNonReconcilableDeferredGroupedFieldSetResult(
+function isNonReconcilableDeferredGroupedFieldSetResult(
   deferredGroupedFieldSetResult: DeferredGroupedFieldSetResult,
 ): deferredGroupedFieldSetResult is NonReconcilableDeferredGroupedFieldSetResult {
   return deferredGroupedFieldSetResult.errors !== undefined;
