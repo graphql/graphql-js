@@ -6,12 +6,19 @@ import { MaxIntrospectionNodesRule } from '../rules/MaxIntrospectionNodesRule.js
 
 import { expectValidationErrors } from './harness.js';
 
-function expectErrors(queryStr: string) {
-  return expectValidationErrors(MaxIntrospectionNodesRule, queryStr);
+function expectInvalid(queryStr: string) {
+  return expectValidationErrors(
+    MaxIntrospectionNodesRule,
+    queryStr,
+  ).toDeepEqual([
+    {
+      message: 'Maximum introspection nodes exceeded',
+    },
+  ]);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).toDeepEqual([]);
+  expectValidationErrors(MaxIntrospectionNodesRule, queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Max introspection nodes rule', () => {
@@ -50,7 +57,7 @@ describe('Validate: Max introspection nodes rule', () => {
   });
 
   it('4 fields deep introspection query', () => {
-    expectErrors(`
+    expectInvalid(`
     {
       __schema {
         types {
@@ -72,15 +79,11 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `).toDeepEqual([
-      {
-        message: 'Maximum introspection nodes exceeded',
-      },
-    ]);
+    `);
   });
 
   it('1 fields deep with 3 fields introspection query', () => {
-    expectErrors(`
+    expectInvalid(`
     {
       __schema {
         types {
@@ -100,15 +103,11 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `).toDeepEqual([
-      {
-        message: 'Maximum introspection nodes exceeded',
-      },
-    ]);
+    `);
   });
 
   it('malicious introspection query', () => {
-    expectErrors(`
+    expectInvalid(`
     query test {
       __schema {
         types {
@@ -388,10 +387,6 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `).toDeepEqual([
-      {
-        message: 'Maximum introspection nodes exceeded',
-      },
-    ]);
+    `);
   });
 });
