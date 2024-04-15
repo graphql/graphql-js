@@ -41,7 +41,7 @@ export function MaxIntrospectionFieldsDepthRule(
 
   return {
     Field(field) {
-      if (field.name.value === '__schema') {
+      if (field.name.value === '__schema' || field.name.value === '__type ') {
         try {
           countDepth(field);
         } catch (err) {
