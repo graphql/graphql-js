@@ -49,7 +49,7 @@ describe('Validate: Max introspection nodes rule', () => {
     `);
   });
 
-  it('4 fields nodes introspection query', () => {
+  it('4 fields deep introspection query', () => {
     expectErrors(`
     {
       __schema {
