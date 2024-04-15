@@ -41,7 +41,11 @@ describe('Validate: Max introspection depth rule', () => {
               fields {
                 type {
                   fields {
-                    name
+                    type {
+                      fields {
+                        name
+                      }
+                    }
                   }
                 }
               }

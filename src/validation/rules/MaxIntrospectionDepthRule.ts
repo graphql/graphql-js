@@ -10,7 +10,7 @@ import { TypeInfo, visitWithTypeInfo } from '../../utilities/TypeInfo.js';
 import type { ValidationContext } from '../ValidationContext.js';
 
 /** Maximum number of "__Type.fields" appearances during introspection. */
-const MAX_TYPE_FIELDS_COUNT = 3;
+const MAX_TYPE_FIELDS_COUNT = 4;
 
 export function MaxIntrospectionDepthRule(
   context: ValidationContext,
