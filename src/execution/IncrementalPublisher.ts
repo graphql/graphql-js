@@ -532,25 +532,25 @@ class IncrementalPublisher {
       if (id === undefined) {
         continue;
       }
-      const fragmentResults = deferredFragmentRecord.reconcilableResults;
+      const reconcilableResults = deferredFragmentRecord.reconcilableResults;
       if (
         deferredFragmentRecord.expectedReconcilableResults !==
-        fragmentResults.length
+        reconcilableResults.length
       ) {
         continue;
       }
-      for (const fragmentResult of fragmentResults) {
-        if (fragmentResult.sent) {
+      for (const reconcilableResult of reconcilableResults) {
+        if (reconcilableResult.sent) {
           continue;
         }
-        fragmentResult.sent = true;
+        reconcilableResult.sent = true;
         const { bestId, subPath } = this._getBestIdAndSubPath(
           id,
           deferredFragmentRecord,
-          fragmentResult,
+          reconcilableResult,
         );
         const incrementalEntry: IncrementalDeferResult = {
-          ...fragmentResult.result,
+          ...reconcilableResult.result,
           id: bestId,
         };
         if (subPath !== undefined) {
