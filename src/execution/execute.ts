@@ -1033,7 +1033,7 @@ async function completeAsyncIteratorValue(
   while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
       const returnFn = asyncIterator.return;
-      let streamRecord;
+      let streamRecord: SubsequentResultRecord | CancellableStreamRecord;
       if (returnFn === undefined) {
         streamRecord = {
           label: streamUsage.label,
@@ -1044,7 +1044,7 @@ async function completeAsyncIteratorValue(
           label: streamUsage.label,
           path,
           earlyReturn: returnFn.bind(asyncIterator),
-        } as CancellableStreamRecord;
+        };
         exeContext.cancellableStreams.add(streamRecord);
       }
 
