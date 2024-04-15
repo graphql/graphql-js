@@ -17,7 +17,7 @@ export function MaxIntrospectionFieldsDepthRule(
       if (!fragment) {
         throw new Error(`Fragment ${node.name.value} not found`);
       }
-      count = countDepth(fragment, count);
+      return countDepth(fragment, count);
     }
 
     if ('selectionSet' in node && node.selectionSet) {
