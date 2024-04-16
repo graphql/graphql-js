@@ -165,7 +165,7 @@ export interface StreamUsage {
   fieldGroup: FieldGroup;
 }
 
-type GraphQLResult<T> = [T, ReadonlyArray<IncrementalDataRecord>];
+type GraphQLResult<T> = [T, Array<IncrementalDataRecord>];
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
@@ -328,25 +328,13 @@ function withNewDeferredGroupedFieldSets(
 ): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
   if (isPromise(result)) {
     return result.then((resolved) => {
-      appendNewIncrementalDataRecords(
-        resolved,
-        newDeferredGroupedFieldSetRecords,
-      );
+      resolved[1].push(...newDeferredGroupedFieldSetRecords);
       return resolved;
     });
   }
 
-  appendNewIncrementalDataRecords(result, newDeferredGroupedFieldSetRecords);
+  result[1].push(...newDeferredGroupedFieldSetRecords);
   return result;
-}
-
-function appendNewIncrementalDataRecords(
-  acc: GraphQLResult<unknown>,
-  newRecords: ReadonlyArray<IncrementalDataRecord>,
-): void {
-  if (newRecords.length > 0) {
-    acc[1] = acc[1].length === 0 ? newRecords : [...acc[1], ...newRecords];
-  }
 }
 
 function withError(
@@ -566,12 +554,12 @@ function executeFieldsSerially(
       if (isPromise(result)) {
         return result.then((resolved) => {
           acc[0][responseName] = resolved[0];
-          appendNewIncrementalDataRecords(acc, resolved[1]);
+          acc[1].push(...resolved[1]);
           return acc;
         });
       }
       acc[0][responseName] = result[0];
-      appendNewIncrementalDataRecords(acc, result[1]);
+      acc[1].push(...result[1]);
       return acc;
     },
     [Object.create(null), []] as GraphQLResult<ObjMap<unknown>>,
@@ -611,13 +599,13 @@ function executeFields(
       if (result !== undefined) {
         if (isPromise(result)) {
           results[responseName] = result.then((resolved) => {
-            appendNewIncrementalDataRecords(acc, resolved[1]);
+            acc[1].push(...resolved[1]);
             return resolved[0];
           });
           containsPromise = true;
         } else {
           results[responseName] = result[0];
-          appendNewIncrementalDataRecords(acc, result[1]);
+          acc[1].push(...result[1]);
         }
       }
     }
@@ -1067,7 +1055,7 @@ async function completeAsyncIteratorValue(
           ),
       );
 
-      appendNewIncrementalDataRecords(acc, [firstStreamItems]);
+      acc[1].push(firstStreamItems);
       break;
     }
 
@@ -1101,7 +1089,7 @@ async function completeAsyncIteratorValue(
           errors,
           deferMap,
         ).then((resolved) => {
-          appendNewIncrementalDataRecords(acc, resolved[1]);
+          acc[1].push(...resolved[1]);
           return resolved[0];
         }),
       );
@@ -1210,7 +1198,7 @@ function completeListValue(
           ),
       );
 
-      appendNewIncrementalDataRecords(acc, [firstStreamItems]);
+      acc[1].push(firstStreamItems);
       break;
     }
 
@@ -1230,7 +1218,7 @@ function completeListValue(
           errors,
           deferMap,
         ).then((resolved) => {
-          appendNewIncrementalDataRecords(acc, resolved[1]);
+          acc[1].push(...resolved[1]);
           return resolved[0];
         }),
       );
@@ -1296,7 +1284,7 @@ function completeListItemValue(
       completedResults.push(
         completedItem.then(
           (resolved) => {
-            appendNewIncrementalDataRecords(parent, resolved[1]);
+            parent[1].push(...resolved[1]);
             return resolved[0];
           },
           (rawError) => {
@@ -1309,7 +1297,7 @@ function completeListItemValue(
     }
 
     completedResults.push(completedItem[0]);
-    appendNewIncrementalDataRecords(parent, completedItem[1]);
+    parent[1].push(...completedItem[1]);
   } catch (rawError) {
     handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
     completedResults.push(null);
