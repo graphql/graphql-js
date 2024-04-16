@@ -740,17 +740,17 @@ function isCancellableStreamRecord(
   return 'earlyReturn' in subsequentResultRecord;
 }
 
-interface NonReconcilableStreamItemsResult {
-  streamRecord: SubsequentResultRecord;
-  errors: ReadonlyArray<GraphQLError>;
-  result?: never;
-}
-
-interface NonTerminatingStreamItemsResult {
+interface ReconcilableStreamItemsResult {
   streamRecord: SubsequentResultRecord;
   result: BareStreamItemsResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
   errors?: never;
+}
+
+export function isReconcilableStreamItemsResult(
+  streamItemsResult: StreamItemsResult,
+): streamItemsResult is ReconcilableStreamItemsResult {
+  return streamItemsResult.result !== undefined;
 }
 
 interface TerminatingStreamItemsResult {
@@ -760,16 +760,16 @@ interface TerminatingStreamItemsResult {
   errors?: never;
 }
 
-export type StreamItemsResult =
-  | NonReconcilableStreamItemsResult
-  | NonTerminatingStreamItemsResult
-  | TerminatingStreamItemsResult;
-
-export function isNonTerminatingStreamItemsResult(
-  streamItemsResult: StreamItemsResult,
-): streamItemsResult is NonTerminatingStreamItemsResult {
-  return streamItemsResult.result !== undefined;
+interface NonReconcilableStreamItemsResult {
+  streamRecord: SubsequentResultRecord;
+  errors: ReadonlyArray<GraphQLError>;
+  result?: never;
 }
+
+export type StreamItemsResult =
+  | ReconcilableStreamItemsResult
+  | TerminatingStreamItemsResult
+  | NonReconcilableStreamItemsResult;
 
 export interface StreamItemsRecord {
   streamRecord: SubsequentResultRecord;

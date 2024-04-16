@@ -69,7 +69,7 @@ import type {
 import {
   buildIncrementalResponse,
   DeferredFragmentRecord,
-  isNonTerminatingStreamItemsResult,
+  isReconcilableStreamItemsResult,
 } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import {
@@ -2103,7 +2103,7 @@ function prependNextResolvedStreamItems(
   result: StreamItemsResult,
   nextStreamItems: StreamItemsRecord,
 ): StreamItemsResult {
-  return isNonTerminatingStreamItemsResult(result)
+  return isReconcilableStreamItemsResult(result)
     ? {
         ...result,
         incrementalDataRecords: [
