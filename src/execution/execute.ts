@@ -165,7 +165,7 @@ export interface StreamUsage {
   fieldGroup: FieldGroup;
 }
 
-type GraphQLResult<T> = [T, Array<IncrementalDataRecord>];
+type GraphQLWrappedResult<T> = [T, Array<IncrementalDataRecord>];
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
@@ -282,7 +282,7 @@ function executeOperation(
 
     const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
 
-    let acc = executeRootGroupedFieldSet(
+    let graphqlWrappedResult = executeRootGroupedFieldSet(
       exeContext,
       operation.operation,
       rootType,
@@ -302,12 +302,12 @@ function executeOperation(
       newDeferMap,
     );
 
-    acc = withNewDeferredGroupedFieldSets(
-      acc,
+    graphqlWrappedResult = withNewDeferredGroupedFieldSets(
+      graphqlWrappedResult,
       newDeferredGroupedFieldSetRecords,
     );
-    if (isPromise(acc)) {
-      return acc.then(
+    if (isPromise(graphqlWrappedResult)) {
+      return graphqlWrappedResult.then(
         (resolved) =>
           buildDataResponse(exeContext, resolved[0], errors, resolved[1]),
         (error) => ({
@@ -316,16 +316,21 @@ function executeOperation(
         }),
       );
     }
-    return buildDataResponse(exeContext, acc[0], errors, acc[1]);
+    return buildDataResponse(
+      exeContext,
+      graphqlWrappedResult[0],
+      errors,
+      graphqlWrappedResult[1],
+    );
   } catch (error) {
     return { data: null, errors: withError(errors, error) };
   }
 }
 
 function withNewDeferredGroupedFieldSets(
-  result: PromiseOrValue<GraphQLResult<ObjMap<unknown>>>,
+  result: PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>>,
   newDeferredGroupedFieldSetRecords: ReadonlyArray<DeferredGroupedFieldSetRecord>,
-): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
+): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   if (isPromise(result)) {
     return result.then((resolved) => {
       resolved[1].push(...newDeferredGroupedFieldSetRecords);
@@ -485,7 +490,7 @@ function executeRootGroupedFieldSet(
   groupedFieldSet: GroupedFieldSet,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
+): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   switch (operation) {
     case OperationTypeNode.QUERY:
       return executeFields(
@@ -534,10 +539,10 @@ function executeFieldsSerially(
   groupedFieldSet: GroupedFieldSet,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
+): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   return promiseReduce(
     groupedFieldSet,
-    (acc, [responseName, fieldGroup]) => {
+    (graphqlWrappedResult, [responseName, fieldGroup]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = executeField(
         exeContext,
@@ -549,20 +554,20 @@ function executeFieldsSerially(
         deferMap,
       );
       if (result === undefined) {
-        return acc;
+        return graphqlWrappedResult;
       }
       if (isPromise(result)) {
         return result.then((resolved) => {
-          acc[0][responseName] = resolved[0];
-          acc[1].push(...resolved[1]);
-          return acc;
+          graphqlWrappedResult[0][responseName] = resolved[0];
+          graphqlWrappedResult[1].push(...resolved[1]);
+          return graphqlWrappedResult;
         });
       }
-      acc[0][responseName] = result[0];
-      acc[1].push(...result[1]);
-      return acc;
+      graphqlWrappedResult[0][responseName] = result[0];
+      graphqlWrappedResult[1].push(...result[1]);
+      return graphqlWrappedResult;
     },
-    [Object.create(null), []] as GraphQLResult<ObjMap<unknown>>,
+    [Object.create(null), []] as GraphQLWrappedResult<ObjMap<unknown>>,
   );
 }
 
@@ -578,9 +583,12 @@ function executeFields(
   groupedFieldSet: GroupedFieldSet,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
+): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   const results = Object.create(null);
-  const acc: GraphQLResult<ObjMap<unknown>> = [results, []];
+  const graphqlWrappedResult: GraphQLWrappedResult<ObjMap<unknown>> = [
+    results,
+    [],
+  ];
   let containsPromise = false;
 
   try {
@@ -599,13 +607,13 @@ function executeFields(
       if (result !== undefined) {
         if (isPromise(result)) {
           results[responseName] = result.then((resolved) => {
-            acc[1].push(...resolved[1]);
+            graphqlWrappedResult[1].push(...resolved[1]);
             return resolved[0];
           });
           containsPromise = true;
         } else {
           results[responseName] = result[0];
-          acc[1].push(...result[1]);
+          graphqlWrappedResult[1].push(...result[1]);
         }
       }
     }
@@ -623,13 +631,16 @@ function executeFields(
 
   // If there are no promises, we can just return the object and any incrementalDataRecords
   if (!containsPromise) {
-    return acc;
+    return graphqlWrappedResult;
   }
 
   // Otherwise, results is a map from field name to the result of resolving that
   // field, which is possibly a promise. Return a promise that will return this
   // same map, but with any promises replaced with the values they resolved to.
-  return promiseForObject(results, (resolved) => [resolved, acc[1]]);
+  return promiseForObject(results, (resolved) => [
+    resolved,
+    graphqlWrappedResult[1],
+  ]);
 }
 
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
@@ -650,7 +661,7 @@ function executeField(
   path: Path,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<unknown>> | undefined {
+): PromiseOrValue<GraphQLWrappedResult<unknown>> | undefined {
   const fieldName = fieldGroup.fields[0].node.name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
   if (!fieldDef) {
@@ -802,7 +813,7 @@ function completeValue(
   result: unknown,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<unknown>> {
+): PromiseOrValue<GraphQLWrappedResult<unknown>> {
   // If result is an Error, throw a located error.
   if (result instanceof Error) {
     throw result;
@@ -821,7 +832,7 @@ function completeValue(
       errors,
       deferMap,
     );
-    if ((completed as GraphQLResult<unknown>)[0] === null) {
+    if ((completed as GraphQLWrappedResult<unknown>)[0] === null) {
       throw new Error(
         `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
@@ -899,7 +910,7 @@ async function completePromisedValue(
   result: Promise<unknown>,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): Promise<GraphQLResult<unknown>> {
+): Promise<GraphQLWrappedResult<unknown>> {
   try {
     const resolved = await result;
     let completed = completeValue(
@@ -1011,10 +1022,13 @@ async function completeAsyncIteratorValue(
   asyncIterator: AsyncIterator<unknown>,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): Promise<GraphQLResult<ReadonlyArray<unknown>>> {
+): Promise<GraphQLWrappedResult<ReadonlyArray<unknown>>> {
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
-  const acc: GraphQLResult<Array<unknown>> = [completedResults, []];
+  const graphqlWrappedResult: GraphQLWrappedResult<Array<unknown>> = [
+    completedResults,
+    [],
+  ];
   let index = 0;
   const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
   // eslint-disable-next-line no-constant-condition
@@ -1055,7 +1069,7 @@ async function completeAsyncIteratorValue(
           ),
       );
 
-      acc[1].push(firstStreamItems);
+      graphqlWrappedResult[1].push(firstStreamItems);
       break;
     }
 
@@ -1089,7 +1103,7 @@ async function completeAsyncIteratorValue(
           errors,
           deferMap,
         ).then((resolved) => {
-          acc[1].push(...resolved[1]);
+          graphqlWrappedResult[1].push(...resolved[1]);
           return resolved[0];
         }),
       );
@@ -1099,7 +1113,7 @@ async function completeAsyncIteratorValue(
       completeListItemValue(
         item,
         completedResults,
-        acc,
+        graphqlWrappedResult,
         exeContext,
         itemType,
         fieldGroup,
@@ -1120,9 +1134,9 @@ async function completeAsyncIteratorValue(
   return containsPromise
     ? /* c8 ignore start */ Promise.all(completedResults).then((resolved) => [
         resolved,
-        acc[1],
+        graphqlWrappedResult[1],
       ])
-    : /* c8 ignore stop */ acc;
+    : /* c8 ignore stop */ graphqlWrappedResult;
 }
 
 /**
@@ -1138,7 +1152,7 @@ function completeListValue(
   result: unknown,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<ReadonlyArray<unknown>>> {
+): PromiseOrValue<GraphQLWrappedResult<ReadonlyArray<unknown>>> {
   const itemType = returnType.ofType;
 
   if (isAsyncIterable(result)) {
@@ -1166,7 +1180,10 @@ function completeListValue(
   // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
-  const acc: GraphQLResult<Array<unknown>> = [completedResults, []];
+  const graphqlWrappedResult: GraphQLWrappedResult<Array<unknown>> = [
+    completedResults,
+    [],
+  ];
   let index = 0;
   const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
   const iterator = result[Symbol.iterator]();
@@ -1198,7 +1215,7 @@ function completeListValue(
           ),
       );
 
-      acc[1].push(firstStreamItems);
+      graphqlWrappedResult[1].push(firstStreamItems);
       break;
     }
 
@@ -1218,7 +1235,7 @@ function completeListValue(
           errors,
           deferMap,
         ).then((resolved) => {
-          acc[1].push(...resolved[1]);
+          graphqlWrappedResult[1].push(...resolved[1]);
           return resolved[0];
         }),
       );
@@ -1227,7 +1244,7 @@ function completeListValue(
       completeListItemValue(
         item,
         completedResults,
-        acc,
+        graphqlWrappedResult,
         exeContext,
         itemType,
         fieldGroup,
@@ -1245,8 +1262,11 @@ function completeListValue(
   }
 
   return containsPromise
-    ? Promise.all(completedResults).then((resolved) => [resolved, acc[1]])
-    : acc;
+    ? Promise.all(completedResults).then((resolved) => [
+        resolved,
+        graphqlWrappedResult[1],
+      ])
+    : graphqlWrappedResult;
 }
 
 /**
@@ -1257,7 +1277,7 @@ function completeListValue(
 function completeListItemValue(
   item: unknown,
   completedResults: Array<unknown>,
-  parent: GraphQLResult<Array<unknown>>,
+  parent: GraphQLWrappedResult<Array<unknown>>,
   exeContext: ExecutionContext,
   itemType: GraphQLOutputType,
   fieldGroup: FieldGroup,
@@ -1336,7 +1356,7 @@ function completeAbstractValue(
   result: unknown,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
+): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
@@ -1449,7 +1469,7 @@ function completeObjectValue(
   result: unknown,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
+): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
@@ -1561,7 +1581,7 @@ function collectAndExecuteSubfields(
   result: unknown,
   errors: Array<GraphQLError>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-): PromiseOrValue<GraphQLResult<ObjMap<unknown>>> {
+): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   // Collect sub-fields to execute to complete this value.
   const { groupedFieldSet, newGroupedFieldSets, newDeferUsages } =
     buildSubFieldPlan(exeContext, returnType, fieldGroup);
@@ -2007,7 +2027,7 @@ function buildDeferredGroupedFieldSetResult(
   errors: ReadonlyArray<GraphQLError>,
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
   path: Path | undefined,
-  result: GraphQLResult<ObjMap<unknown>>,
+  result: GraphQLWrappedResult<ObjMap<unknown>>,
 ): DeferredGroupedFieldSetResult {
   return {
     deferredFragmentRecords,
@@ -2234,7 +2254,7 @@ function completeStreamItems(
     );
   }
 
-  let result: PromiseOrValue<GraphQLResult<unknown>>;
+  let result: PromiseOrValue<GraphQLWrappedResult<unknown>>;
   try {
     try {
       result = completeValue(
@@ -2262,7 +2282,7 @@ function completeStreamItems(
     return result
       .then(undefined, (rawError) => {
         handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
-        return [null, []] as GraphQLResult<unknown>;
+        return [null, []] as GraphQLWrappedResult<unknown>;
       })
       .then(
         (resolvedItem) =>
@@ -2280,7 +2300,7 @@ function completeStreamItems(
 function buildStreamItemsResult(
   errors: ReadonlyArray<GraphQLError>,
   streamRecord: SubsequentResultRecord,
-  result: GraphQLResult<unknown>,
+  result: GraphQLWrappedResult<unknown>,
 ): StreamItemsResult {
   return {
     streamRecord,
