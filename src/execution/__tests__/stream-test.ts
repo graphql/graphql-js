@@ -796,7 +796,7 @@ describe('Execute: stream directive', () => {
       }
     `);
     const result = await complete(document, {
-      nonNullFriendList: () => [friends[0], null],
+      nonNullFriendList: () => [friends[0], null, friends[1]],
     });
 
     expectJSON(result).toDeepEqual([

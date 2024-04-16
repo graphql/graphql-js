@@ -2055,24 +2055,31 @@ function firstSyncStreamItems(
   const firstStreamItems: StreamItemsRecord = {
     streamRecord,
     result: Promise.resolve().then(() => {
-      const results: Array<PromiseOrValue<StreamItemsResult>> = [
-        executor(initialPath, initialItem),
-      ];
+      let result = executor(initialPath, initialItem);
+      const results = [result];
       let currentIndex = initialIndex;
       let iteration = iterator.next();
+      let erroredSynchronously = false;
       while (!iteration.done) {
+        if (!isPromise(result) && !isReconcilableStreamItemsResult(result)) {
+          erroredSynchronously = true;
+          break;
+        }
         const item = iteration.value;
         currentIndex++;
         const currentPath = addPath(path, currentIndex, undefined);
-        results.push(executor(currentPath, item));
+        result = executor(currentPath, item);
+        results.push(result);
         iteration = iterator.next();
       }
 
       currentIndex = results.length - 1;
-      let currentResult = prependNextStreamItems(results[currentIndex], {
-        streamRecord,
-        result: { streamRecord },
-      });
+      let currentResult = erroredSynchronously
+        ? results[currentIndex]
+        : prependNextStreamItems(results[currentIndex], {
+            streamRecord,
+            result: { streamRecord },
+          });
 
       while (currentIndex-- > 0) {
         currentResult = prependNextStreamItems(results[currentIndex], {
