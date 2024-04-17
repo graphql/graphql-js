@@ -2223,17 +2223,15 @@ function nextAsyncStreamItems(
 ): StreamItemsRecord {
   const nextStreamItems: StreamItemsRecord = {
     streamRecord,
-    result: Promise.resolve().then(() =>
-      getNextAsyncStreamItemsResult(
-        streamRecord,
-        path,
-        initialIndex + 1,
-        asyncIterator,
-        exeContext,
-        fieldGroup,
-        info,
-        itemType,
-      ),
+    result: getNextAsyncStreamItemsResult(
+      streamRecord,
+      path,
+      initialIndex + 1,
+      asyncIterator,
+      exeContext,
+      fieldGroup,
+      info,
+      itemType,
     ),
   };
   return nextStreamItems;
