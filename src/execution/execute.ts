@@ -2085,6 +2085,8 @@ function firstSyncStreamItems(
       }
 
       currentIndex = results.length - 1;
+      // If a non-reconcilable stream items result was encountered, then the stream terminates in error.
+      // Otherwise, add a stream terminator.
       let currentResult = erroredSynchronously
         ? results[currentIndex]
         : prependNextStreamItems(results[currentIndex], {
