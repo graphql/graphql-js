@@ -2144,17 +2144,15 @@ function firstAsyncStreamItems(
 ): StreamItemsRecord {
   const firstStreamItems: StreamItemsRecord = {
     streamRecord,
-    result: Promise.resolve().then(() =>
-      getNextAsyncStreamItemsResult(
-        streamRecord,
-        path,
-        initialIndex,
-        asyncIterator,
-        exeContext,
-        fieldGroup,
-        info,
-        itemType,
-      ),
+    result: getNextAsyncStreamItemsResult(
+      streamRecord,
+      path,
+      initialIndex,
+      asyncIterator,
+      exeContext,
+      fieldGroup,
+      info,
+      itemType,
     ),
   };
   return firstStreamItems;
