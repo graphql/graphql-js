@@ -2195,36 +2195,12 @@ async function getNextAsyncStreamItemsResult(
     itemType,
   );
 
-  const nextStreamItems: StreamItemsRecord = nextAsyncStreamItems(
-    streamRecord,
-    path,
-    index,
-    asyncIterator,
-    exeContext,
-    fieldGroup,
-    info,
-    itemType,
-  );
-
-  return prependNextStreamItems(result, nextStreamItems);
-}
-
-function nextAsyncStreamItems(
-  streamRecord: SubsequentResultRecord,
-  path: Path,
-  initialIndex: number,
-  asyncIterator: AsyncIterator<unknown>,
-  exeContext: ExecutionContext,
-  fieldGroup: FieldGroup,
-  info: GraphQLResolveInfo,
-  itemType: GraphQLOutputType,
-): StreamItemsRecord {
   const nextStreamItems: StreamItemsRecord = {
     streamRecord,
     result: getNextAsyncStreamItemsResult(
       streamRecord,
       path,
-      initialIndex + 1,
+      index,
       asyncIterator,
       exeContext,
       fieldGroup,
@@ -2232,7 +2208,8 @@ function nextAsyncStreamItems(
       itemType,
     ),
   };
-  return nextStreamItems;
+
+  return prependNextStreamItems(result, nextStreamItems);
 }
 
 function completeStreamItems(
