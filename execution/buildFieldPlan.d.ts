@@ -5,14 +5,10 @@ export interface FieldGroup {
   deferUsages?: DeferUsageSet | undefined;
 }
 export type GroupedFieldSet = Map<string, FieldGroup>;
-export interface NewGroupedFieldSetDetails {
-  groupedFieldSet: GroupedFieldSet;
-  shouldInitiateDefer: boolean;
-}
 export declare function buildFieldPlan(
   fields: Map<string, ReadonlyArray<FieldDetails>>,
   parentDeferUsages?: DeferUsageSet,
 ): {
   groupedFieldSet: GroupedFieldSet;
-  newGroupedFieldSetDetailsMap: Map<DeferUsageSet, NewGroupedFieldSetDetails>;
+  newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
 };

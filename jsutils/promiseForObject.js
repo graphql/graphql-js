@@ -8,7 +8,7 @@ exports.promiseForObject = void 0;
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
-async function promiseForObject(object) {
+async function promiseForObject(object, callback) {
   const keys = Object.keys(object);
   const values = Object.values(object);
   const resolvedValues = await Promise.all(values);
@@ -16,6 +16,6 @@ async function promiseForObject(object) {
   for (let i = 0; i < keys.length; ++i) {
     resolvedObject[keys[i]] = resolvedValues[i];
   }
-  return resolvedObject;
+  return callback(resolvedObject);
 }
 exports.promiseForObject = promiseForObject;

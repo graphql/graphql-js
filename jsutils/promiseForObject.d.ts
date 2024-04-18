@@ -6,6 +6,7 @@ import type { ObjMap } from './ObjMap.js';
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
-export declare function promiseForObject<T>(
+export declare function promiseForObject<T, U>(
   object: ObjMap<Promise<T>>,
-): Promise<ObjMap<T>>;
+  callback: (object: ObjMap<T>) => U,
+): Promise<U>;

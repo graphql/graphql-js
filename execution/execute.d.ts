@@ -19,10 +19,10 @@ import type {
 import type { GraphQLSchema } from '../type/schema.js';
 import type { FieldGroup } from './buildFieldPlan.js';
 import type {
+  CancellableStreamRecord,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
 } from './IncrementalPublisher.js';
-import { IncrementalPublisher } from './IncrementalPublisher.js';
 /**
  * Terminology
  *
@@ -60,7 +60,7 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  incrementalPublisher: IncrementalPublisher;
+  cancellableStreams: Set<CancellableStreamRecord>;
 }
 export interface ExecutionArgs {
   schema: GraphQLSchema;

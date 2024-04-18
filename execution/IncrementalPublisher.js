@@ -1,157 +1,168 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.StreamItemsRecord =
-  exports.StreamRecord =
+exports.isReconcilableStreamItemsResult =
   exports.DeferredFragmentRecord =
-  exports.DeferredGroupedFieldSetRecord =
-  exports.InitialResultRecord =
-  exports.IncrementalPublisher =
+  exports.buildIncrementalResponse =
     void 0;
+const isPromise_js_1 = require('../jsutils/isPromise.js');
 const Path_js_1 = require('../jsutils/Path.js');
 const promiseWithResolvers_js_1 = require('../jsutils/promiseWithResolvers.js');
+function buildIncrementalResponse(
+  context,
+  result,
+  errors,
+  incrementalDataRecords,
+) {
+  const incrementalPublisher = new IncrementalPublisher(context);
+  return incrementalPublisher.buildResponse(
+    result,
+    errors,
+    incrementalDataRecords,
+  );
+}
+exports.buildIncrementalResponse = buildIncrementalResponse;
 /**
  * This class is used to publish incremental results to the client, enabling semi-concurrent
  * execution while preserving result order.
  *
- * The internal publishing state is managed as follows:
- *
- * '_released': the set of Subsequent Result records that are ready to be sent to the client,
- * i.e. their parents have completed and they have also completed.
- *
- * `_pending`: the set of Subsequent Result records that are definitely pending, i.e. their
- * parents have completed so that they can no longer be filtered. This includes all Subsequent
- * Result records in `released`, as well as the records that have not yet completed.
- *
  * @internal
  */
 class IncrementalPublisher {
-  constructor() {
+  constructor(context) {
+    this._context = context;
     this._nextId = 0;
-    this._released = new Set();
     this._pending = new Set();
+    this._completedResultQueue = [];
+    this._newPending = new Set();
+    this._incremental = [];
+    this._completed = [];
     this._reset();
   }
-  reportNewDeferFragmentRecord(
-    deferredFragmentRecord,
-    parentIncrementalResultRecord,
-  ) {
-    parentIncrementalResultRecord.children.add(deferredFragmentRecord);
+  buildResponse(data, errors, incrementalDataRecords) {
+    this._addIncrementalDataRecords(incrementalDataRecords);
+    this._pruneEmpty();
+    const pending = this._pendingSourcesToResults();
+    const initialResult =
+      errors.length === 0
+        ? { data, pending, hasNext: true }
+        : { errors, data, pending, hasNext: true };
+    return {
+      initialResult,
+      subsequentResults: this._subscribe(),
+    };
   }
-  reportNewDeferredGroupedFieldSetRecord(deferredGroupedFieldSetRecord) {
-    for (const deferredFragmentRecord of deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-      deferredFragmentRecord._pending.add(deferredGroupedFieldSetRecord);
-      deferredFragmentRecord.deferredGroupedFieldSetRecords.add(
-        deferredGroupedFieldSetRecord,
-      );
-    }
-  }
-  reportNewStreamItemsRecord(streamItemsRecord, parentIncrementalDataRecord) {
-    if (isDeferredGroupedFieldSetRecord(parentIncrementalDataRecord)) {
-      for (const parent of parentIncrementalDataRecord.deferredFragmentRecords) {
-        parent.children.add(streamItemsRecord);
-      }
-    } else {
-      parentIncrementalDataRecord.children.add(streamItemsRecord);
-    }
-  }
-  completeDeferredGroupedFieldSet(deferredGroupedFieldSetRecord, data) {
-    deferredGroupedFieldSetRecord.data = data;
-    for (const deferredFragmentRecord of deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-      deferredFragmentRecord._pending.delete(deferredGroupedFieldSetRecord);
-      if (deferredFragmentRecord._pending.size === 0) {
-        this.completeDeferredFragmentRecord(deferredFragmentRecord);
-      }
-    }
-  }
-  markErroredDeferredGroupedFieldSet(deferredGroupedFieldSetRecord, error) {
-    for (const deferredFragmentRecord of deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-      deferredFragmentRecord.errors.push(error);
-      this.completeDeferredFragmentRecord(deferredFragmentRecord);
-    }
-  }
-  completeDeferredFragmentRecord(deferredFragmentRecord) {
-    this._release(deferredFragmentRecord);
-  }
-  completeStreamItemsRecord(streamItemsRecord, items) {
-    streamItemsRecord.items = items;
-    streamItemsRecord.isCompleted = true;
-    this._release(streamItemsRecord);
-  }
-  markErroredStreamItemsRecord(streamItemsRecord, error) {
-    streamItemsRecord.streamRecord.errors.push(error);
-    this.setIsFinalRecord(streamItemsRecord);
-    streamItemsRecord.isCompleted = true;
-    streamItemsRecord.streamRecord.earlyReturn?.().catch(() => {
-      // ignore error
-    });
-    this._release(streamItemsRecord);
-  }
-  setIsFinalRecord(streamItemsRecord) {
-    streamItemsRecord.isFinalRecord = true;
-  }
-  setIsCompletedAsyncIterator(streamItemsRecord) {
-    streamItemsRecord.isCompletedAsyncIterator = true;
-    this.setIsFinalRecord(streamItemsRecord);
-  }
-  addFieldError(incrementalDataRecord, error) {
-    incrementalDataRecord.errors.push(error);
-  }
-  buildDataResponse(initialResultRecord, data) {
-    const pendingSources = this._publish(initialResultRecord.children);
-    const errors = initialResultRecord.errors;
-    const initialResult = errors.length === 0 ? { data } : { errors, data };
-    if (pendingSources.size > 0) {
-      return {
-        initialResult: {
-          ...initialResult,
-          pending: this._pendingSourcesToResults(pendingSources),
-          hasNext: true,
-        },
-        subsequentResults: this._subscribe(),
-      };
-    }
-    return initialResult;
-  }
-  buildErrorResponse(initialResultRecord, error) {
-    const errors = initialResultRecord.errors;
-    errors.push(error);
-    return { data: null, errors };
-  }
-  filter(nullPath, erroringIncrementalDataRecord) {
-    const nullPathArray = (0, Path_js_1.pathToArray)(nullPath);
-    const streams = new Set();
-    const children = this._getChildren(erroringIncrementalDataRecord);
-    const descendants = this._getDescendants(children);
-    for (const child of descendants) {
-      if (!this._nullsChildSubsequentResultRecord(child, nullPathArray)) {
+  _addIncrementalDataRecords(incrementalDataRecords) {
+    for (const incrementalDataRecord of incrementalDataRecords) {
+      if (isDeferredGroupedFieldSetRecord(incrementalDataRecord)) {
+        for (const deferredFragmentRecord of incrementalDataRecord.deferredFragmentRecords) {
+          deferredFragmentRecord.expectedReconcilableResults++;
+          this._addDeferredFragmentRecord(deferredFragmentRecord);
+        }
+        const result = incrementalDataRecord.result;
+        if ((0, isPromise_js_1.isPromise)(result)) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          result.then((resolved) => {
+            this._enqueueCompletedDeferredGroupedFieldSet(resolved);
+          });
+        } else {
+          this._enqueueCompletedDeferredGroupedFieldSet(result);
+        }
         continue;
       }
-      child.filtered = true;
-      if (isStreamItemsRecord(child)) {
-        streams.add(child.streamRecord);
+      const streamRecord = incrementalDataRecord.streamRecord;
+      if (streamRecord.id === undefined) {
+        this._newPending.add(streamRecord);
+      }
+      const result = incrementalDataRecord.result;
+      if ((0, isPromise_js_1.isPromise)(result)) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        result.then((resolved) => {
+          this._enqueueCompletedStreamItems(resolved);
+        });
+      } else {
+        this._enqueueCompletedStreamItems(result);
       }
     }
-    streams.forEach((stream) => {
-      stream.earlyReturn?.().catch(() => {
-        // ignore error
-      });
-    });
   }
-  _pendingSourcesToResults(pendingSources) {
+  _addDeferredFragmentRecord(deferredFragmentRecord) {
+    const parent = deferredFragmentRecord.parent;
+    if (parent === undefined) {
+      // Below is equivalent and slightly faster version of:
+      //   if (this._pending.has(deferredFragmentRecord)) { ... }
+      // as all released deferredFragmentRecords have ids.
+      if (deferredFragmentRecord.id !== undefined) {
+        return;
+      }
+      this._newPending.add(deferredFragmentRecord);
+      return;
+    }
+    if (parent.children.has(deferredFragmentRecord)) {
+      return;
+    }
+    parent.children.add(deferredFragmentRecord);
+    this._addDeferredFragmentRecord(parent);
+  }
+  _pruneEmpty() {
+    const maybeEmptyNewPending = this._newPending;
+    this._newPending = new Set();
+    for (const node of maybeEmptyNewPending) {
+      if (isDeferredFragmentRecord(node)) {
+        if (node.expectedReconcilableResults) {
+          this._newPending.add(node);
+          continue;
+        }
+        for (const child of node.children) {
+          this._addNonEmptyNewPending(child);
+        }
+      } else {
+        this._newPending.add(node);
+      }
+    }
+  }
+  _addNonEmptyNewPending(deferredFragmentRecord) {
+    if (deferredFragmentRecord.expectedReconcilableResults) {
+      this._newPending.add(deferredFragmentRecord);
+      return;
+    }
+    /* c8 ignore next 5 */
+    // TODO: add test case for this, if when skipping an empty deferred fragment, the empty fragment has nested children.
+    for (const child of deferredFragmentRecord.children) {
+      this._addNonEmptyNewPending(child);
+    }
+  }
+  _enqueueCompletedDeferredGroupedFieldSet(result) {
+    let hasPendingParent = false;
+    for (const deferredFragmentRecord of result.deferredFragmentRecords) {
+      if (deferredFragmentRecord.id !== undefined) {
+        hasPendingParent = true;
+      }
+      deferredFragmentRecord.results.push(result);
+    }
+    if (hasPendingParent) {
+      this._completedResultQueue.push(result);
+      this._trigger();
+    }
+  }
+  _enqueueCompletedStreamItems(result) {
+    this._completedResultQueue.push(result);
+    this._trigger();
+  }
+  _pendingSourcesToResults() {
     const pendingResults = [];
-    for (const pendingSource of pendingSources) {
-      pendingSource.pendingSent = true;
-      const id = this._getNextId();
+    for (const pendingSource of this._newPending) {
+      const id = String(this._getNextId());
+      this._pending.add(pendingSource);
       pendingSource.id = id;
       const pendingResult = {
         id,
-        path: pendingSource.path,
+        path: (0, Path_js_1.pathToArray)(pendingSource.path),
       };
       if (pendingSource.label !== undefined) {
         pendingResult.label = pendingSource.label;
       }
       pendingResults.push(pendingResult);
     }
+    this._newPending.clear();
     return pendingResults;
   }
   _getNextId() {
@@ -160,41 +171,54 @@ class IncrementalPublisher {
   _subscribe() {
     let isDone = false;
     const _next = async () => {
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        if (isDone) {
-          return { value: undefined, done: true };
+      while (!isDone) {
+        let pending = [];
+        let completedResult;
+        while (
+          (completedResult = this._completedResultQueue.shift()) !== undefined
+        ) {
+          if (isDeferredGroupedFieldSetResult(completedResult)) {
+            this._handleCompletedDeferredGroupedFieldSet(completedResult);
+          } else {
+            this._handleCompletedStreamItems(completedResult);
+          }
+          pending = [...pending, ...this._pendingSourcesToResults()];
         }
-        for (const item of this._released) {
-          this._pending.delete(item);
-        }
-        const released = this._released;
-        this._released = new Set();
-        const result = this._getIncrementalResult(released);
-        if (this._pending.size === 0) {
-          isDone = true;
-        }
-        if (result !== undefined) {
-          return { value: result, done: false };
+        if (this._incremental.length > 0 || this._completed.length > 0) {
+          const hasNext = this._pending.size > 0;
+          if (!hasNext) {
+            isDone = true;
+          }
+          const subsequentIncrementalExecutionResult = { hasNext };
+          if (pending.length > 0) {
+            subsequentIncrementalExecutionResult.pending = pending;
+          }
+          if (this._incremental.length > 0) {
+            subsequentIncrementalExecutionResult.incremental =
+              this._incremental;
+          }
+          if (this._completed.length > 0) {
+            subsequentIncrementalExecutionResult.completed = this._completed;
+          }
+          this._incremental = [];
+          this._completed = [];
+          return { value: subsequentIncrementalExecutionResult, done: false };
         }
         // eslint-disable-next-line no-await-in-loop
         await this._signalled;
       }
+      await returnStreamIterators().catch(() => {
+        // ignore errors
+      });
+      return { value: undefined, done: true };
     };
     const returnStreamIterators = async () => {
-      const streams = new Set();
-      const descendants = this._getDescendants(this._pending);
-      for (const subsequentResultRecord of descendants) {
-        if (isStreamItemsRecord(subsequentResultRecord)) {
-          streams.add(subsequentResultRecord.streamRecord);
-        }
-      }
       const promises = [];
-      streams.forEach((streamRecord) => {
-        if (streamRecord.earlyReturn) {
+      for (const streamRecord of this._context.cancellableStreams) {
+        if (streamRecord.earlyReturn !== undefined) {
           promises.push(streamRecord.earlyReturn());
         }
-      });
+      }
       await Promise.all(promises);
     };
     const _return = async () => {
@@ -229,282 +253,184 @@ class IncrementalPublisher {
     this._resolve = resolve;
     this._signalled = signalled;
   }
-  _introduce(item) {
-    this._pending.add(item);
-  }
-  _release(item) {
-    if (this._pending.has(item)) {
-      this._released.add(item);
-      this._trigger();
-    }
-  }
-  _push(item) {
-    this._released.add(item);
-    this._pending.add(item);
-    this._trigger();
-  }
-  _getIncrementalResult(completedRecords) {
-    const { pending, incremental, completed } =
-      this._processPending(completedRecords);
-    const hasNext = this._pending.size > 0;
-    if (incremental.length === 0 && completed.length === 0 && hasNext) {
-      return undefined;
-    }
-    const result = { hasNext };
-    if (pending.length) {
-      result.pending = pending;
-    }
-    if (incremental.length) {
-      result.incremental = incremental;
-    }
-    if (completed.length) {
-      result.completed = completed;
-    }
-    return result;
-  }
-  _processPending(completedRecords) {
-    const newPendingSources = new Set();
-    const incrementalResults = [];
-    const completedResults = [];
-    for (const subsequentResultRecord of completedRecords) {
-      this._publish(subsequentResultRecord.children, newPendingSources);
-      if (isStreamItemsRecord(subsequentResultRecord)) {
-        if (subsequentResultRecord.isFinalRecord) {
-          newPendingSources.delete(subsequentResultRecord.streamRecord);
-          completedResults.push(
-            this._completedRecordToResult(subsequentResultRecord.streamRecord),
-          );
-        }
-        if (subsequentResultRecord.isCompletedAsyncIterator) {
-          // async iterable resolver just finished but there may be pending payloads
-          continue;
-        }
-        if (subsequentResultRecord.streamRecord.errors.length > 0) {
-          continue;
-        }
-        const incrementalResult = {
-          // safe because `items` is always defined when the record is completed
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          items: subsequentResultRecord.items,
-          // safe because `id` is defined once the stream has been released as pending
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          id: subsequentResultRecord.streamRecord.id,
-        };
-        if (subsequentResultRecord.errors.length > 0) {
-          incrementalResult.errors = subsequentResultRecord.errors;
-        }
-        incrementalResults.push(incrementalResult);
-      } else {
-        newPendingSources.delete(subsequentResultRecord);
-        completedResults.push(
-          this._completedRecordToResult(subsequentResultRecord),
-        );
-        if (subsequentResultRecord.errors.length > 0) {
-          continue;
-        }
-        for (const deferredGroupedFieldSetRecord of subsequentResultRecord.deferredGroupedFieldSetRecords) {
-          if (!deferredGroupedFieldSetRecord.sent) {
-            deferredGroupedFieldSetRecord.sent = true;
-            const incrementalResult = this._getIncrementalDeferResult(
-              deferredGroupedFieldSetRecord,
-            );
-            if (deferredGroupedFieldSetRecord.errors.length > 0) {
-              incrementalResult.errors = deferredGroupedFieldSetRecord.errors;
-            }
-            incrementalResults.push(incrementalResult);
-          }
+  _handleCompletedDeferredGroupedFieldSet(deferredGroupedFieldSetResult) {
+    if (
+      isNonReconcilableDeferredGroupedFieldSetResult(
+        deferredGroupedFieldSetResult,
+      )
+    ) {
+      for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
+        const id = deferredFragmentRecord.id;
+        if (id !== undefined) {
+          this._completed.push({
+            id,
+            errors: deferredGroupedFieldSetResult.errors,
+          });
+          this._pending.delete(deferredFragmentRecord);
         }
       }
+      return;
     }
-    return {
-      pending: this._pendingSourcesToResults(newPendingSources),
-      incremental: incrementalResults,
-      completed: completedResults,
-    };
-  }
-  _getIncrementalDeferResult(deferredGroupedFieldSetRecord) {
-    const { data, deferredFragmentRecords } = deferredGroupedFieldSetRecord;
-    let maxLength;
-    let idWithLongestPath;
-    for (const deferredFragmentRecord of deferredFragmentRecords) {
+    for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
+      deferredFragmentRecord.reconcilableResults.push(
+        deferredGroupedFieldSetResult,
+      );
+    }
+    this._addIncrementalDataRecords(
+      deferredGroupedFieldSetResult.incrementalDataRecords,
+    );
+    for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
       const id = deferredFragmentRecord.id;
-      // TODO: add test
+      // TODO: add test case for this.
+      // Presumably, this can occur if an error causes a fragment to be completed early,
+      // while an asynchronous deferred grouped field set result is enqueued.
       /* c8 ignore next 3 */
       if (id === undefined) {
         continue;
       }
-      const length = deferredFragmentRecord.path.length;
-      if (maxLength === undefined || length > maxLength) {
-        maxLength = length;
-        idWithLongestPath = id;
-      }
-    }
-    const subPath = deferredGroupedFieldSetRecord.path.slice(maxLength);
-    const incrementalDeferResult = {
-      // safe because `data``is always defined when the record is completed
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      data: data,
-      // safe because `id` is always defined once the fragment has been released
-      // as pending and at least one fragment has been completed, so must have been
-      // released as pending
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      id: idWithLongestPath,
-    };
-    if (subPath.length > 0) {
-      incrementalDeferResult.subPath = subPath;
-    }
-    return incrementalDeferResult;
-  }
-  _completedRecordToResult(completedRecord) {
-    const result = {
-      // safe because `id` is defined once the stream has been released as pending
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      id: completedRecord.id,
-    };
-    if (completedRecord.errors.length > 0) {
-      result.errors = completedRecord.errors;
-    }
-    return result;
-  }
-  _publish(subsequentResultRecords, pendingSources = new Set()) {
-    const emptyRecords = [];
-    for (const subsequentResultRecord of subsequentResultRecords) {
-      if (subsequentResultRecord.filtered) {
-        continue;
-      }
-      if (isStreamItemsRecord(subsequentResultRecord)) {
-        if (subsequentResultRecord.isCompleted) {
-          this._push(subsequentResultRecord);
-        } else {
-          this._introduce(subsequentResultRecord);
-        }
-        const stream = subsequentResultRecord.streamRecord;
-        if (!stream.pendingSent) {
-          pendingSources.add(stream);
-        }
-        continue;
-      }
-      if (subsequentResultRecord._pending.size > 0) {
-        this._introduce(subsequentResultRecord);
-      } else if (
-        subsequentResultRecord.deferredGroupedFieldSetRecords.size === 0
+      const reconcilableResults = deferredFragmentRecord.reconcilableResults;
+      if (
+        deferredFragmentRecord.expectedReconcilableResults !==
+        reconcilableResults.length
       ) {
-        emptyRecords.push(subsequentResultRecord);
         continue;
-      } else {
-        this._push(subsequentResultRecord);
       }
-      if (!subsequentResultRecord.pendingSent) {
-        pendingSources.add(subsequentResultRecord);
-      }
-    }
-    for (const emptyRecord of emptyRecords) {
-      this._publish(emptyRecord.children, pendingSources);
-    }
-    return pendingSources;
-  }
-  _getChildren(erroringIncrementalDataRecord) {
-    const children = new Set();
-    if (isDeferredGroupedFieldSetRecord(erroringIncrementalDataRecord)) {
-      for (const erroringIncrementalResultRecord of erroringIncrementalDataRecord.deferredFragmentRecords) {
-        for (const child of erroringIncrementalResultRecord.children) {
-          children.add(child);
+      for (const reconcilableResult of reconcilableResults) {
+        if (reconcilableResult.sent) {
+          continue;
         }
+        reconcilableResult.sent = true;
+        const { bestId, subPath } = this._getBestIdAndSubPath(
+          id,
+          deferredFragmentRecord,
+          reconcilableResult,
+        );
+        const incrementalEntry = {
+          ...reconcilableResult.result,
+          id: bestId,
+        };
+        if (subPath !== undefined) {
+          incrementalEntry.subPath = subPath;
+        }
+        this._incremental.push(incrementalEntry);
+      }
+      this._completed.push({ id });
+      this._pending.delete(deferredFragmentRecord);
+      for (const child of deferredFragmentRecord.children) {
+        this._newPending.add(child);
+        this._completedResultQueue.push(...child.results);
+      }
+    }
+    this._pruneEmpty();
+  }
+  _handleCompletedStreamItems(streamItemsResult) {
+    const streamRecord = streamItemsResult.streamRecord;
+    const id = streamRecord.id;
+    // TODO: Consider adding invariant or non-null assertion, as this should never happen. Since the stream is converted into a linked list
+    // for ordering purposes, if an entry errors, additional entries will not be processed.
+    /* c8 ignore next 3 */
+    if (id === undefined) {
+      return;
+    }
+    if (streamItemsResult.errors !== undefined) {
+      this._completed.push({
+        id,
+        errors: streamItemsResult.errors,
+      });
+      this._pending.delete(streamRecord);
+      if (isCancellableStreamRecord(streamRecord)) {
+        this._context.cancellableStreams.delete(streamRecord);
+        streamRecord.earlyReturn().catch(() => {
+          /* c8 ignore next 1 */
+          // ignore error
+        });
+      }
+    } else if (streamItemsResult.result === undefined) {
+      this._completed.push({ id });
+      this._pending.delete(streamRecord);
+      if (isCancellableStreamRecord(streamRecord)) {
+        this._context.cancellableStreams.delete(streamRecord);
       }
     } else {
-      for (const child of erroringIncrementalDataRecord.children) {
-        children.add(child);
+      const incrementalEntry = {
+        id,
+        ...streamItemsResult.result,
+      };
+      this._incremental.push(incrementalEntry);
+      if (streamItemsResult.incrementalDataRecords.length > 0) {
+        this._addIncrementalDataRecords(
+          streamItemsResult.incrementalDataRecords,
+        );
+        this._pruneEmpty();
       }
     }
-    return children;
   }
-  _getDescendants(children, descendants = new Set()) {
-    for (const child of children) {
-      descendants.add(child);
-      this._getDescendants(child.children, descendants);
-    }
-    return descendants;
-  }
-  _nullsChildSubsequentResultRecord(subsequentResultRecord, nullPath) {
-    const incrementalDataRecords = isStreamItemsRecord(subsequentResultRecord)
-      ? [subsequentResultRecord]
-      : subsequentResultRecord.deferredGroupedFieldSetRecords;
-    for (const incrementalDataRecord of incrementalDataRecords) {
-      if (this._matchesPath(incrementalDataRecord.path, nullPath)) {
-        return true;
+  _getBestIdAndSubPath(
+    initialId,
+    initialDeferredFragmentRecord,
+    deferredGroupedFieldSetResult,
+  ) {
+    let maxLength = (0, Path_js_1.pathToArray)(
+      initialDeferredFragmentRecord.path,
+    ).length;
+    let bestId = initialId;
+    for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
+      if (deferredFragmentRecord === initialDeferredFragmentRecord) {
+        continue;
+      }
+      const id = deferredFragmentRecord.id;
+      // TODO: add test case for when an fragment has not been released, but might be processed for the shortest path.
+      /* c8 ignore next 3 */
+      if (id === undefined) {
+        continue;
+      }
+      const fragmentPath = (0, Path_js_1.pathToArray)(
+        deferredFragmentRecord.path,
+      );
+      const length = fragmentPath.length;
+      if (length > maxLength) {
+        maxLength = length;
+        bestId = id;
       }
     }
-    return false;
-  }
-  _matchesPath(testPath, basePath) {
-    for (let i = 0; i < basePath.length; i++) {
-      if (basePath[i] !== testPath[i]) {
-        // testPath points to a path unaffected at basePath
-        return false;
-      }
-    }
-    return true;
+    const subPath = deferredGroupedFieldSetResult.path.slice(maxLength);
+    return {
+      bestId,
+      subPath: subPath.length > 0 ? subPath : undefined,
+    };
   }
 }
-exports.IncrementalPublisher = IncrementalPublisher;
+function isDeferredFragmentRecord(subsequentResultRecord) {
+  return 'parent' in subsequentResultRecord;
+}
 function isDeferredGroupedFieldSetRecord(incrementalDataRecord) {
-  return incrementalDataRecord instanceof DeferredGroupedFieldSetRecord;
+  return 'deferredFragmentRecords' in incrementalDataRecord;
 }
-function isStreamItemsRecord(subsequentResultRecord) {
-  return subsequentResultRecord instanceof StreamItemsRecord;
+function isDeferredGroupedFieldSetResult(subsequentResult) {
+  return 'deferredFragmentRecords' in subsequentResult;
 }
-/** @internal */
-class InitialResultRecord {
-  constructor() {
-    this.errors = [];
-    this.children = new Set();
-  }
+function isNonReconcilableDeferredGroupedFieldSetResult(
+  deferredGroupedFieldSetResult,
+) {
+  return deferredGroupedFieldSetResult.errors !== undefined;
 }
-exports.InitialResultRecord = InitialResultRecord;
-/** @internal */
-class DeferredGroupedFieldSetRecord {
-  constructor(opts) {
-    this.path = (0, Path_js_1.pathToArray)(opts.path);
-    this.deferredFragmentRecords = opts.deferredFragmentRecords;
-    this.groupedFieldSet = opts.groupedFieldSet;
-    this.shouldInitiateDefer = opts.shouldInitiateDefer;
-    this.errors = [];
-    this.sent = false;
-  }
-}
-exports.DeferredGroupedFieldSetRecord = DeferredGroupedFieldSetRecord;
 /** @internal */
 class DeferredFragmentRecord {
   constructor(opts) {
-    this.path = (0, Path_js_1.pathToArray)(opts.path);
+    this.path = opts.path;
     this.label = opts.label;
+    this.parent = opts.parent;
+    this.expectedReconcilableResults = 0;
+    this.results = [];
+    this.reconcilableResults = [];
     this.children = new Set();
-    this.filtered = false;
-    this.deferredGroupedFieldSetRecords = new Set();
-    this.errors = [];
-    this._pending = new Set();
   }
 }
 exports.DeferredFragmentRecord = DeferredFragmentRecord;
-/** @internal */
-class StreamRecord {
-  constructor(opts) {
-    this.label = opts.label;
-    this.path = (0, Path_js_1.pathToArray)(opts.path);
-    this.errors = [];
-    this.earlyReturn = opts.earlyReturn;
-  }
+function isCancellableStreamRecord(subsequentResultRecord) {
+  return 'earlyReturn' in subsequentResultRecord;
 }
-exports.StreamRecord = StreamRecord;
-/** @internal */
-class StreamItemsRecord {
-  constructor(opts) {
-    this.streamRecord = opts.streamRecord;
-    this.path = (0, Path_js_1.pathToArray)(opts.path);
-    this.children = new Set();
-    this.errors = [];
-    this.isCompleted = false;
-    this.filtered = false;
-  }
+function isReconcilableStreamItemsResult(streamItemsResult) {
+  return streamItemsResult.result !== undefined;
 }
-exports.StreamItemsRecord = StreamItemsRecord;
+exports.isReconcilableStreamItemsResult = isReconcilableStreamItemsResult;

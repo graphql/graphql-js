@@ -5,7 +5,7 @@ const getBySet_js_1 = require('../jsutils/getBySet.js');
 const isSameSet_js_1 = require('../jsutils/isSameSet.js');
 function buildFieldPlan(fields, parentDeferUsages = new Set()) {
   const groupedFieldSet = new Map();
-  const newGroupedFieldSetDetailsMap = new Map();
+  const newGroupedFieldSets = new Map();
   const map = new Map();
   for (const [responseKey, fieldDetailsList] of fields) {
     const deferUsageSet = new Set();
@@ -45,25 +45,13 @@ function buildFieldPlan(fields, parentDeferUsages = new Set()) {
       fieldGroup.fields.push(...fieldDetailsList);
       continue;
     }
-    let newGroupedFieldSetDetails = (0, getBySet_js_1.getBySet)(
-      newGroupedFieldSetDetailsMap,
+    let newGroupedFieldSet = (0, getBySet_js_1.getBySet)(
+      newGroupedFieldSets,
       deferUsageSet,
     );
-    let newGroupedFieldSet;
-    if (newGroupedFieldSetDetails === undefined) {
+    if (newGroupedFieldSet === undefined) {
       newGroupedFieldSet = new Map();
-      newGroupedFieldSetDetails = {
-        groupedFieldSet: newGroupedFieldSet,
-        shouldInitiateDefer: Array.from(deferUsageSet).some(
-          (deferUsage) => !parentDeferUsages.has(deferUsage),
-        ),
-      };
-      newGroupedFieldSetDetailsMap.set(
-        deferUsageSet,
-        newGroupedFieldSetDetails,
-      );
-    } else {
-      newGroupedFieldSet = newGroupedFieldSetDetails.groupedFieldSet;
+      newGroupedFieldSets.set(deferUsageSet, newGroupedFieldSet);
     }
     let fieldGroup = newGroupedFieldSet.get(responseKey);
     if (fieldGroup === undefined) {
@@ -77,7 +65,7 @@ function buildFieldPlan(fields, parentDeferUsages = new Set()) {
   }
   return {
     groupedFieldSet,
-    newGroupedFieldSetDetailsMap,
+    newGroupedFieldSets,
   };
 }
 exports.buildFieldPlan = buildFieldPlan;
