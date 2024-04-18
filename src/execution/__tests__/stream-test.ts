@@ -146,11 +146,10 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
-        incremental: [{ items: ['banana'], id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['coconut'], id: '0' }],
+        incremental: [
+          { items: ['banana'], id: '0' },
+          { items: ['coconut'], id: '0' },
+        ],
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -170,15 +169,11 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
-        incremental: [{ items: ['apple'], id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['banana'], id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [{ items: ['coconut'], id: '0' }],
+        incremental: [
+          { items: ['apple'], id: '0' },
+          { items: ['banana'], id: '0' },
+          { items: ['coconut'], id: '0' },
+        ],
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -228,11 +223,6 @@ describe('Execute: stream directive', () => {
             items: ['banana'],
             id: '0',
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: ['coconut'],
             id: '0',
@@ -297,11 +287,6 @@ describe('Execute: stream directive', () => {
             items: [['banana', 'banana', 'banana']],
             id: '0',
           },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             items: [['coconut', 'coconut', 'coconut']],
             id: '0',
@@ -811,7 +796,7 @@ describe('Execute: stream directive', () => {
       }
     `);
     const result = await complete(document, {
-      nonNullFriendList: () => [friends[0], null],
+      nonNullFriendList: () => [friends[0], null, friends[1]],
     });
 
     expectJSON(result).toDeepEqual([
@@ -1954,9 +1939,7 @@ describe('Execute: stream directive', () => {
       hasNext: true,
     });
 
-    const result2Promise = iterator.next();
-    resolveIterableCompletion(null);
-    const result2 = await result2Promise;
+    const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
       value: {
         pending: [{ id: '2', path: ['friendList', 1], label: 'DeferName' }],
@@ -1977,7 +1960,7 @@ describe('Execute: stream directive', () => {
     });
 
     const result3Promise = iterator.next();
-    resolveSlowField('Han');
+    resolveIterableCompletion(null);
     const result3 = await result3Promise;
     expectJSON(result3).toDeepEqual({
       value: {
@@ -1986,7 +1969,9 @@ describe('Execute: stream directive', () => {
       },
       done: false,
     });
-    const result4 = await iterator.next();
+    const result4Promise = iterator.next();
+    resolveSlowField('Han');
+    const result4 = await result4Promise;
     expectJSON(result4).toDeepEqual({
       value: {
         incremental: [
@@ -2077,8 +2062,19 @@ describe('Execute: stream directive', () => {
       done: false,
     });
 
-    const result3 = await iterator.next();
+    const result3Promise = iterator.next();
+    resolveIterableCompletion(null);
+    const result3 = await result3Promise;
     expectJSON(result3).toDeepEqual({
+      value: {
+        completed: [{ id: '1' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
       value: {
         incremental: [
           {
@@ -2087,16 +2083,6 @@ describe('Execute: stream directive', () => {
           },
         ],
         completed: [{ id: '2' }],
-        hasNext: true,
-      },
-      done: false,
-    });
-    const result4Promise = iterator.next();
-    resolveIterableCompletion(null);
-    const result4 = await result4Promise;
-    expectJSON(result4).toDeepEqual({
-      value: {
-        completed: [{ id: '1' }],
         hasNext: false,
       },
       done: false,

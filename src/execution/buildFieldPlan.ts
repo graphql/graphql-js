@@ -12,17 +12,12 @@ export interface FieldGroup {
 
 export type GroupedFieldSet = Map<string, FieldGroup>;
 
-export interface NewGroupedFieldSetDetails {
-  groupedFieldSet: GroupedFieldSet;
-  shouldInitiateDefer: boolean;
-}
-
 export function buildFieldPlan(
   fields: Map<string, ReadonlyArray<FieldDetails>>,
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
 ): {
   groupedFieldSet: GroupedFieldSet;
-  newGroupedFieldSetDetailsMap: Map<DeferUsageSet, NewGroupedFieldSetDetails>;
+  newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
 } {
   const groupedFieldSet = new Map<
     string,
@@ -32,18 +27,15 @@ export function buildFieldPlan(
     }
   >();
 
-  const newGroupedFieldSetDetailsMap = new Map<
+  const newGroupedFieldSets = new Map<
     DeferUsageSet,
-    {
-      groupedFieldSet: Map<
-        string,
-        {
-          fields: Array<FieldDetails>;
-          deferUsages: DeferUsageSet;
-        }
-      >;
-      shouldInitiateDefer: boolean;
-    }
+    Map<
+      string,
+      {
+        fields: Array<FieldDetails>;
+        deferUsages: DeferUsageSet;
+      }
+    >
   >();
 
   const map = new Map<
@@ -94,12 +86,8 @@ export function buildFieldPlan(
       continue;
     }
 
-    let newGroupedFieldSetDetails = getBySet(
-      newGroupedFieldSetDetailsMap,
-      deferUsageSet,
-    );
-    let newGroupedFieldSet;
-    if (newGroupedFieldSetDetails === undefined) {
+    let newGroupedFieldSet = getBySet(newGroupedFieldSets, deferUsageSet);
+    if (newGroupedFieldSet === undefined) {
       newGroupedFieldSet = new Map<
         string,
         {
@@ -108,19 +96,7 @@ export function buildFieldPlan(
           knownDeferUsages: DeferUsageSet;
         }
       >();
-
-      newGroupedFieldSetDetails = {
-        groupedFieldSet: newGroupedFieldSet,
-        shouldInitiateDefer: Array.from(deferUsageSet).some(
-          (deferUsage) => !parentDeferUsages.has(deferUsage),
-        ),
-      };
-      newGroupedFieldSetDetailsMap.set(
-        deferUsageSet,
-        newGroupedFieldSetDetails,
-      );
-    } else {
-      newGroupedFieldSet = newGroupedFieldSetDetails.groupedFieldSet;
+      newGroupedFieldSets.set(deferUsageSet, newGroupedFieldSet);
     }
     let fieldGroup = newGroupedFieldSet.get(responseKey);
     if (fieldGroup === undefined) {
@@ -135,7 +111,7 @@ export function buildFieldPlan(
 
   return {
     groupedFieldSet,
-    newGroupedFieldSetDetailsMap,
+    newGroupedFieldSets,
   };
 }
 
