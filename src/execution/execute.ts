@@ -296,10 +296,9 @@ function executeOperation(
         undefined,
       );
     } else {
-      let newGroupedFieldSets;
-      ({ groupedFieldSet, newGroupedFieldSets } =
-        buildFieldPlan(groupedFieldSet));
-
+      const fieldPLan = buildFieldPlan(groupedFieldSet);
+      groupedFieldSet = fieldPLan.groupedFieldSet;
+      const newGroupedFieldSets = fieldPLan.newGroupedFieldSets;
       const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
 
       graphqlWrappedResult = executeRootGroupedFieldSet(
