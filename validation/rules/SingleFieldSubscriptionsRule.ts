@@ -7,13 +7,11 @@ import type {
 } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
-import type { FieldDetails } from '../../execution/collectFields.ts';
+import type { FieldGroup } from '../../execution/collectFields.ts';
 import { collectFields } from '../../execution/collectFields.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
-function toNodes(
-  fieldDetailsList: ReadonlyArray<FieldDetails>,
-): ReadonlyArray<FieldNode> {
-  return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
+function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
+  return fieldGroup.map((fieldDetails) => fieldDetails.node);
 }
 /**
  * Subscriptions must only include a non-introspection field.
@@ -43,15 +41,15 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
-          const { fields } = collectFields(
+          const { groupedFieldSet } = collectFields(
             schema,
             fragments,
             variableValues,
             subscriptionType,
             node,
           );
-          if (fields.size > 1) {
-            const fieldGroups = [...fields.values()];
+          if (groupedFieldSet.size > 1) {
+            const fieldGroups = [...groupedFieldSet.values()];
             const extraFieldGroups = fieldGroups.slice(1);
             const extraFieldSelections = extraFieldGroups.flatMap(
               (fieldGroup) => toNodes(fieldGroup),
@@ -65,7 +63,7 @@ export function SingleFieldSubscriptionsRule(
               ),
             );
           }
-          for (const fieldGroup of fields.values()) {
+          for (const fieldGroup of groupedFieldSet.values()) {
             const fieldName = toNodes(fieldGroup)[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
