@@ -274,8 +274,15 @@ function executeOperation(
       );
     }
 
-    const { groupedFieldSet: nonPartitionedGroupedFieldSet, newDeferUsages } =
-      collectFields(schema, fragments, variableValues, rootType, operation);
+    const collectedFields = collectFields(
+      schema,
+      fragments,
+      variableValues,
+      rootType,
+      operation,
+    );
+    let groupedFieldSet = collectedFields.groupedFieldSet;
+    const newDeferUsages = collectedFields.newDeferUsages;
     let graphqlWrappedResult: PromiseOrValue<
       GraphQLWrappedResult<ObjMap<unknown>>
     >;
@@ -285,13 +292,13 @@ function executeOperation(
         operation.operation,
         rootType,
         rootValue,
-        nonPartitionedGroupedFieldSet,
+        groupedFieldSet,
         undefined,
       );
     } else {
-      const { groupedFieldSet, newGroupedFieldSets } = buildFieldPlan(
-        nonPartitionedGroupedFieldSet,
-      );
+      let newGroupedFieldSets;
+      ({ groupedFieldSet, newGroupedFieldSets } =
+        buildFieldPlan(groupedFieldSet));
 
       const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
 
@@ -1586,15 +1593,18 @@ function collectAndExecuteSubfields(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   // Collect sub-fields to execute to complete this value.
-  const { groupedFieldSet: nonPartitionedGroupedFieldSet, newDeferUsages } =
-    collectSubfields(exeContext, returnType, fieldGroup);
-  let groupedFieldSet = nonPartitionedGroupedFieldSet;
+  const collectedSubfields = collectSubfields(
+    exeContext,
+    returnType,
+    fieldGroup,
+  );
+  let groupedFieldSet = collectedSubfields.groupedFieldSet;
+  const newDeferUsages = collectedSubfields.newDeferUsages;
   let newGroupedFieldSets;
   let newDeferMap = deferMap;
-
   if (deferMap !== undefined || newDeferUsages.length > 0) {
     ({ groupedFieldSet, newGroupedFieldSets } = buildSubFieldPlan(
-      nonPartitionedGroupedFieldSet,
+      groupedFieldSet,
       incrementalContext?.deferUsageSet,
     ));
     newDeferMap = addNewDeferredFragments(
