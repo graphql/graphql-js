@@ -1591,19 +1591,12 @@ function collectAndExecuteSubfields(
   let groupedFieldSet = nonPartitionedGroupedFieldSet;
   let newGroupedFieldSets;
   let newDeferMap = deferMap;
-  let hasDefers = deferMap !== undefined || newDeferUsages.length > 0;
 
-  if (hasDefers) {
+  if (deferMap !== undefined || newDeferUsages.length > 0) {
     ({ groupedFieldSet, newGroupedFieldSets } = buildSubFieldPlan(
       nonPartitionedGroupedFieldSet,
       incrementalContext?.deferUsageSet,
     ));
-    if (newGroupedFieldSets.size > 0) {
-      hasDefers = true;
-    }
-  }
-
-  if (hasDefers) {
     newDeferMap = addNewDeferredFragments(
       newDeferUsages,
       new Map(deferMap),
