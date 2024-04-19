@@ -1591,7 +1591,7 @@ function collectAndExecuteSubfields(
   let groupedFieldSet = nonPartitionedGroupedFieldSet;
   let newGroupedFieldSets;
   let newDeferMap = deferMap;
-  let hasDefers = Boolean(deferMap) || Boolean(newDeferUsages.length);
+  let hasDefers = deferMap !== undefined || newDeferUsages.length > 0;
 
   if (hasDefers) {
     ({ groupedFieldSet, newGroupedFieldSets } = buildSubFieldPlan(
