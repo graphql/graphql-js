@@ -1588,64 +1588,28 @@ function collectAndExecuteSubfields(
   // Collect sub-fields to execute to complete this value.
   const { groupedFieldSet: nonPartitionedGroupedFieldSet, newDeferUsages } =
     collectSubfields(exeContext, returnType, fieldGroup);
+  let groupedFieldSet = nonPartitionedGroupedFieldSet;
+  let newGroupedFieldSets;
+  let newDeferMap = deferMap;
+  let hasDefers = Boolean(deferMap) || Boolean(newDeferUsages.length);
 
-  if (newDeferUsages.length === 0) {
-    if (deferMap === undefined) {
-      return executeFields(
-        exeContext,
-        returnType,
-        result,
-        path,
-        nonPartitionedGroupedFieldSet,
-        incrementalContext,
-        undefined,
-      );
-    }
-
-    const { groupedFieldSet, newGroupedFieldSets } = buildSubFieldPlan(
+  if (hasDefers) {
+    ({ groupedFieldSet, newGroupedFieldSets } = buildSubFieldPlan(
       nonPartitionedGroupedFieldSet,
       incrementalContext?.deferUsageSet,
-    );
-
-    const subFields = executeFields(
-      exeContext,
-      returnType,
-      result,
-      path,
-      groupedFieldSet,
-      incrementalContext,
-      deferMap,
-    );
-
+    ));
     if (newGroupedFieldSets.size > 0) {
-      const newDeferredGroupedFieldSetRecords = executeDeferredGroupedFieldSets(
-        exeContext,
-        returnType,
-        result,
-        path,
-        incrementalContext?.deferUsageSet,
-        newGroupedFieldSets,
-        deferMap,
-      );
-
-      return withNewDeferredGroupedFieldSets(
-        subFields,
-        newDeferredGroupedFieldSetRecords,
-      );
+      hasDefers = true;
     }
-    return subFields;
   }
 
-  const { groupedFieldSet, newGroupedFieldSets } = buildSubFieldPlan(
-    nonPartitionedGroupedFieldSet,
-    incrementalContext?.deferUsageSet,
-  );
-
-  const newDeferMap = addNewDeferredFragments(
-    newDeferUsages,
-    new Map(deferMap),
-    path,
-  );
+  if (hasDefers) {
+    newDeferMap = addNewDeferredFragments(
+      newDeferUsages,
+      new Map(deferMap),
+      path,
+    );
+  }
 
   const subFields = executeFields(
     exeContext,
@@ -1657,7 +1621,7 @@ function collectAndExecuteSubfields(
     newDeferMap,
   );
 
-  if (newGroupedFieldSets.size > 0) {
+  if (newGroupedFieldSets && newDeferMap) {
     const newDeferredGroupedFieldSetRecords = executeDeferredGroupedFieldSets(
       exeContext,
       returnType,
