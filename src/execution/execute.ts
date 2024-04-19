@@ -1600,19 +1600,29 @@ function collectAndExecuteSubfields(
   );
   let groupedFieldSet = collectedSubfields.groupedFieldSet;
   const newDeferUsages = collectedSubfields.newDeferUsages;
-  let newGroupedFieldSets;
-  let newDeferMap = deferMap;
-  if (deferMap !== undefined || newDeferUsages.length > 0) {
-    ({ groupedFieldSet, newGroupedFieldSets } = buildSubFieldPlan(
-      groupedFieldSet,
-      incrementalContext?.deferUsageSet,
-    ));
-    newDeferMap = addNewDeferredFragments(
-      newDeferUsages,
-      new Map(deferMap),
+  if (deferMap === undefined && newDeferUsages.length === 0) {
+    return executeFields(
+      exeContext,
+      returnType,
+      result,
       path,
+      groupedFieldSet,
+      incrementalContext,
+      undefined,
     );
   }
+  const subFieldPlan = buildSubFieldPlan(
+    groupedFieldSet,
+    incrementalContext?.deferUsageSet,
+  );
+
+  groupedFieldSet = subFieldPlan.groupedFieldSet;
+  const newGroupedFieldSets = subFieldPlan.newGroupedFieldSets;
+  const newDeferMap = addNewDeferredFragments(
+    newDeferUsages,
+    new Map(deferMap),
+    path,
+  );
 
   const subFields = executeFields(
     exeContext,
@@ -1624,7 +1634,7 @@ function collectAndExecuteSubfields(
     newDeferMap,
   );
 
-  if (newGroupedFieldSets && newDeferMap) {
+  if (newGroupedFieldSets.size > 0) {
     const newDeferredGroupedFieldSetRecords = executeDeferredGroupedFieldSets(
       exeContext,
       returnType,
