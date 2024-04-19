@@ -3,14 +3,17 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.buildFieldPlan = void 0;
 const getBySet_js_1 = require('../jsutils/getBySet.js');
 const isSameSet_js_1 = require('../jsutils/isSameSet.js');
-function buildFieldPlan(fields, parentDeferUsages = new Set()) {
+function buildFieldPlan(
+  originalGroupedFieldSet,
+  parentDeferUsages = new Set(),
+) {
   const groupedFieldSet = new Map();
   const newGroupedFieldSets = new Map();
   const map = new Map();
-  for (const [responseKey, fieldDetailsList] of fields) {
+  for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
     const deferUsageSet = new Set();
     let inOriginalResult = false;
-    for (const fieldDetails of fieldDetailsList) {
+    for (const fieldDetails of fieldGroup) {
       const deferUsage = fieldDetails.deferUsage;
       if (deferUsage === undefined) {
         inOriginalResult = true;
@@ -30,19 +33,11 @@ function buildFieldPlan(fields, parentDeferUsages = new Set()) {
         }
       });
     }
-    map.set(responseKey, { deferUsageSet, fieldDetailsList });
+    map.set(responseKey, { deferUsageSet, fieldGroup });
   }
-  for (const [responseKey, { deferUsageSet, fieldDetailsList }] of map) {
+  for (const [responseKey, { deferUsageSet, fieldGroup }] of map) {
     if ((0, isSameSet_js_1.isSameSet)(deferUsageSet, parentDeferUsages)) {
-      let fieldGroup = groupedFieldSet.get(responseKey);
-      if (fieldGroup === undefined) {
-        fieldGroup = {
-          fields: [],
-          deferUsages: deferUsageSet,
-        };
-        groupedFieldSet.set(responseKey, fieldGroup);
-      }
-      fieldGroup.fields.push(...fieldDetailsList);
+      groupedFieldSet.set(responseKey, fieldGroup);
       continue;
     }
     let newGroupedFieldSet = (0, getBySet_js_1.getBySet)(
@@ -53,15 +48,7 @@ function buildFieldPlan(fields, parentDeferUsages = new Set()) {
       newGroupedFieldSet = new Map();
       newGroupedFieldSets.set(deferUsageSet, newGroupedFieldSet);
     }
-    let fieldGroup = newGroupedFieldSet.get(responseKey);
-    if (fieldGroup === undefined) {
-      fieldGroup = {
-        fields: [],
-        deferUsages: deferUsageSet,
-      };
-      newGroupedFieldSet.set(responseKey, fieldGroup);
-    }
-    fieldGroup.fields.push(...fieldDetailsList);
+    newGroupedFieldSet.set(responseKey, fieldGroup);
   }
   return {
     groupedFieldSet,

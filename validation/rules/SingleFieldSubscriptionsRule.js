@@ -4,8 +4,8 @@ exports.SingleFieldSubscriptionsRule = void 0;
 const GraphQLError_js_1 = require('../../error/GraphQLError.js');
 const kinds_js_1 = require('../../language/kinds.js');
 const collectFields_js_1 = require('../../execution/collectFields.js');
-function toNodes(fieldDetailsList) {
-  return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
+function toNodes(fieldGroup) {
+  return fieldGroup.map((fieldDetails) => fieldDetails.node);
 }
 /**
  * Subscriptions must only include a non-introspection field.
@@ -31,15 +31,15 @@ function SingleFieldSubscriptionsRule(context) {
               fragments[definition.name.value] = definition;
             }
           }
-          const { fields } = (0, collectFields_js_1.collectFields)(
+          const { groupedFieldSet } = (0, collectFields_js_1.collectFields)(
             schema,
             fragments,
             variableValues,
             subscriptionType,
             node,
           );
-          if (fields.size > 1) {
-            const fieldGroups = [...fields.values()];
+          if (groupedFieldSet.size > 1) {
+            const fieldGroups = [...groupedFieldSet.values()];
             const extraFieldGroups = fieldGroups.slice(1);
             const extraFieldSelections = extraFieldGroups.flatMap(
               (fieldGroup) => toNodes(fieldGroup),
@@ -53,7 +53,7 @@ function SingleFieldSubscriptionsRule(context) {
               ),
             );
           }
-          for (const fieldGroup of fields.values()) {
+          for (const fieldGroup of groupedFieldSet.values()) {
             const fieldName = toNodes(fieldGroup)[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(

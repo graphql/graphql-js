@@ -36,29 +36,20 @@ const values_js_1 = require('./values.js');
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 /**
- * A memoized function for building subfield plans with regard to the return
- * type. Memoizing ensures the subfield plans are not repeatedly calculated, which
+ * A memoized collection of relevant subfields with regard to the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
  */
-const buildSubFieldPlan = (0, memoize3_js_1.memoize3)(
-  (exeContext, returnType, fieldGroup) => {
-    const { fields: subFields, newDeferUsages } = (0,
-    collectFields_js_1.collectSubfields)(
+const collectSubfields = (0, memoize3_js_1.memoize3)(
+  (exeContext, returnType, fieldGroup) =>
+    (0, collectFields_js_1.collectSubfields)(
       exeContext.schema,
       exeContext.fragments,
       exeContext.variableValues,
       exeContext.operation,
       returnType,
-      fieldGroup.fields,
-    );
-    return {
-      ...(0, buildFieldPlan_js_1.buildFieldPlan)(
-        subFields,
-        fieldGroup.deferUsages,
-      ),
-      newDeferUsages,
-    };
-  },
+      fieldGroup,
+    ),
 );
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
@@ -142,7 +133,6 @@ exports.experimentalExecuteIncrementally = experimentalExecuteIncrementally;
  * in this case is the entire response.
  */
 function executeOperation(exeContext) {
-  const errors = [];
   try {
     const { operation, schema, fragments, variableValues, rootValue } =
       exeContext;
@@ -153,56 +143,73 @@ function executeOperation(exeContext) {
         { nodes: operation },
       );
     }
-    const { fields, newDeferUsages } = (0, collectFields_js_1.collectFields)(
+    const collectedFields = (0, collectFields_js_1.collectFields)(
       schema,
       fragments,
       variableValues,
       rootType,
       operation,
     );
-    const { groupedFieldSet, newGroupedFieldSets } = (0,
-    buildFieldPlan_js_1.buildFieldPlan)(fields);
-    const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
-    let graphqlWrappedResult = executeRootGroupedFieldSet(
-      exeContext,
-      operation.operation,
-      rootType,
-      rootValue,
-      groupedFieldSet,
-      errors,
-      newDeferMap,
-    );
-    const newDeferredGroupedFieldSetRecords = executeDeferredGroupedFieldSets(
-      exeContext,
-      rootType,
-      rootValue,
-      undefined,
-      undefined,
-      newGroupedFieldSets,
-      newDeferMap,
-    );
-    graphqlWrappedResult = withNewDeferredGroupedFieldSets(
-      graphqlWrappedResult,
-      newDeferredGroupedFieldSetRecords,
-    );
+    let groupedFieldSet = collectedFields.groupedFieldSet;
+    const newDeferUsages = collectedFields.newDeferUsages;
+    let graphqlWrappedResult;
+    if (newDeferUsages.length === 0) {
+      graphqlWrappedResult = executeRootGroupedFieldSet(
+        exeContext,
+        operation.operation,
+        rootType,
+        rootValue,
+        groupedFieldSet,
+        undefined,
+      );
+    } else {
+      const fieldPLan = (0, buildFieldPlan_js_1.buildFieldPlan)(
+        groupedFieldSet,
+      );
+      groupedFieldSet = fieldPLan.groupedFieldSet;
+      const newGroupedFieldSets = fieldPLan.newGroupedFieldSets;
+      const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
+      graphqlWrappedResult = executeRootGroupedFieldSet(
+        exeContext,
+        operation.operation,
+        rootType,
+        rootValue,
+        groupedFieldSet,
+        newDeferMap,
+      );
+      if (newGroupedFieldSets.size > 0) {
+        const newDeferredGroupedFieldSetRecords =
+          executeDeferredGroupedFieldSets(
+            exeContext,
+            rootType,
+            rootValue,
+            undefined,
+            undefined,
+            newGroupedFieldSets,
+            newDeferMap,
+          );
+        graphqlWrappedResult = withNewDeferredGroupedFieldSets(
+          graphqlWrappedResult,
+          newDeferredGroupedFieldSetRecords,
+        );
+      }
+    }
     if ((0, isPromise_js_1.isPromise)(graphqlWrappedResult)) {
       return graphqlWrappedResult.then(
-        (resolved) =>
-          buildDataResponse(exeContext, resolved[0], errors, resolved[1]),
+        (resolved) => buildDataResponse(exeContext, resolved[0], resolved[1]),
         (error) => ({
           data: null,
-          errors: withError(errors, error),
+          errors: withError(exeContext.errors, error),
         }),
       );
     }
     return buildDataResponse(
       exeContext,
       graphqlWrappedResult[0],
-      errors,
       graphqlWrappedResult[1],
     );
   } catch (error) {
-    return { data: null, errors: withError(errors, error) };
+    return { data: null, errors: withError(exeContext.errors, error) };
   }
 }
 function withNewDeferredGroupedFieldSets(
@@ -221,7 +228,8 @@ function withNewDeferredGroupedFieldSets(
 function withError(errors, error) {
   return errors.length === 0 ? [error] : [...errors, error];
 }
-function buildDataResponse(exeContext, data, errors, incrementalDataRecords) {
+function buildDataResponse(exeContext, data, incrementalDataRecords) {
+  const errors = exeContext.errors;
   if (incrementalDataRecords.length === 0) {
     return errors.length > 0 ? { errors, data } : { data };
   }
@@ -327,6 +335,7 @@ function buildExecutionContext(args) {
     typeResolver: typeResolver ?? exports.defaultTypeResolver,
     subscribeFieldResolver:
       subscribeFieldResolver ?? exports.defaultFieldResolver,
+    errors: [],
     cancellableStreams: new Set(),
   };
 }
@@ -334,6 +343,7 @@ exports.buildExecutionContext = buildExecutionContext;
 function buildPerEventExecutionContext(exeContext, payload) {
   return {
     ...exeContext,
+    errors: [],
     rootValue: payload,
   };
 }
@@ -343,7 +353,6 @@ function executeRootGroupedFieldSet(
   rootType,
   rootValue,
   groupedFieldSet,
-  errors,
   deferMap,
 ) {
   switch (operation) {
@@ -354,7 +363,7 @@ function executeRootGroupedFieldSet(
         rootValue,
         undefined,
         groupedFieldSet,
-        errors,
+        undefined,
         deferMap,
       );
     case ast_js_1.OperationTypeNode.MUTATION:
@@ -364,7 +373,7 @@ function executeRootGroupedFieldSet(
         rootValue,
         undefined,
         groupedFieldSet,
-        errors,
+        undefined,
         deferMap,
       );
     case ast_js_1.OperationTypeNode.SUBSCRIPTION:
@@ -376,7 +385,7 @@ function executeRootGroupedFieldSet(
         rootValue,
         undefined,
         groupedFieldSet,
-        errors,
+        undefined,
         deferMap,
       );
   }
@@ -391,7 +400,7 @@ function executeFieldsSerially(
   sourceValue,
   path,
   groupedFieldSet,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   return (0, promiseReduce_js_1.promiseReduce)(
@@ -408,7 +417,7 @@ function executeFieldsSerially(
         sourceValue,
         fieldGroup,
         fieldPath,
-        errors,
+        incrementalContext,
         deferMap,
       );
       if (result === undefined) {
@@ -438,7 +447,7 @@ function executeFields(
   sourceValue,
   path,
   groupedFieldSet,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   const results = Object.create(null);
@@ -457,7 +466,7 @@ function executeFields(
         sourceValue,
         fieldGroup,
         fieldPath,
-        errors,
+        incrementalContext,
         deferMap,
       );
       if (result !== undefined) {
@@ -497,7 +506,7 @@ function executeFields(
   ]);
 }
 function toNodes(fieldGroup) {
-  return fieldGroup.fields.map((fieldDetails) => fieldDetails.node);
+  return fieldGroup.map((fieldDetails) => fieldDetails.node);
 }
 /**
  * Implements the "Executing fields" section of the spec
@@ -511,10 +520,10 @@ function executeField(
   source,
   fieldGroup,
   path,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
-  const fieldName = fieldGroup.fields[0].node.name.value;
+  const fieldName = fieldGroup[0].node.name.value;
   const fieldDef = exeContext.schema.getField(parentType, fieldName);
   if (!fieldDef) {
     return;
@@ -535,7 +544,7 @@ function executeField(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = (0, values_js_1.getArgumentValues)(
       fieldDef,
-      fieldGroup.fields[0].node,
+      fieldGroup[0].node,
       exeContext.variableValues,
     );
     // The resolve function's optional third argument is a context value that
@@ -551,7 +560,7 @@ function executeField(
         info,
         path,
         result,
-        errors,
+        incrementalContext,
         deferMap,
       );
     }
@@ -562,19 +571,21 @@ function executeField(
       info,
       path,
       result,
-      errors,
+      incrementalContext,
       deferMap,
     );
     if ((0, isPromise_js_1.isPromise)(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
+        const errors = (incrementalContext ?? exeContext).errors;
         handleFieldError(rawError, returnType, fieldGroup, path, errors);
         return [null, []];
       });
     }
     return completed;
   } catch (rawError) {
+    const errors = (incrementalContext ?? exeContext).errors;
     handleFieldError(rawError, returnType, fieldGroup, path, errors);
     return [null, []];
   }
@@ -643,7 +654,7 @@ function completeValue(
   info,
   path,
   result,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   // If result is an Error, throw a located error.
@@ -660,7 +671,7 @@ function completeValue(
       info,
       path,
       result,
-      errors,
+      incrementalContext,
       deferMap,
     );
     if (completed[0] === null) {
@@ -683,7 +694,7 @@ function completeValue(
       info,
       path,
       result,
-      errors,
+      incrementalContext,
       deferMap,
     );
   }
@@ -702,7 +713,7 @@ function completeValue(
       info,
       path,
       result,
-      errors,
+      incrementalContext,
       deferMap,
     );
   }
@@ -715,7 +726,7 @@ function completeValue(
       info,
       path,
       result,
-      errors,
+      incrementalContext,
       deferMap,
     );
   }
@@ -735,7 +746,7 @@ async function completePromisedValue(
   info,
   path,
   result,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   try {
@@ -747,7 +758,7 @@ async function completePromisedValue(
       info,
       path,
       resolved,
-      errors,
+      incrementalContext,
       deferMap,
     );
     if ((0, isPromise_js_1.isPromise)(completed)) {
@@ -755,6 +766,7 @@ async function completePromisedValue(
     }
     return completed;
   } catch (rawError) {
+    const errors = (incrementalContext ?? exeContext).errors;
     handleFieldError(rawError, returnType, fieldGroup, path, errors);
     return [null, []];
   }
@@ -778,7 +790,7 @@ function getStreamUsage(exeContext, fieldGroup, path) {
   // safe to only check the first fieldNode for the stream directive
   const stream = (0, values_js_1.getDirectiveValues)(
     directives_js_1.GraphQLStreamDirective,
-    fieldGroup.fields[0].node,
+    fieldGroup[0].node,
     exeContext.variableValues,
   );
   if (!stream) {
@@ -799,12 +811,10 @@ function getStreamUsage(exeContext, fieldGroup, path) {
       false,
       '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
     );
-  const streamedFieldGroup = {
-    fields: fieldGroup.fields.map((fieldDetails) => ({
-      node: fieldDetails.node,
-      deferUsage: undefined,
-    })),
-  };
+  const streamedFieldGroup = fieldGroup.map((fieldDetails) => ({
+    node: fieldDetails.node,
+    deferUsage: undefined,
+  }));
   const streamUsage = {
     initialCount: stream.initialCount,
     label: typeof stream.label === 'string' ? stream.label : undefined,
@@ -824,7 +834,7 @@ async function completeAsyncIteratorValue(
   info,
   path,
   asyncIterator,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   let containsPromise = false;
@@ -892,7 +902,7 @@ async function completeAsyncIteratorValue(
           info,
           itemPath,
           item,
-          errors,
+          incrementalContext,
           deferMap,
         ).then((resolved) => {
           graphqlWrappedResult[1].push(...resolved[1]);
@@ -911,7 +921,7 @@ async function completeAsyncIteratorValue(
         fieldGroup,
         info,
         itemPath,
-        errors,
+        incrementalContext,
         deferMap,
       )
       // TODO: add tests for stream backed by asyncIterator that completes to a promise
@@ -940,7 +950,7 @@ function completeListValue(
   info,
   path,
   result,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   const itemType = returnType.ofType;
@@ -953,7 +963,7 @@ function completeListValue(
       info,
       path,
       asyncIterator,
-      errors,
+      incrementalContext,
       deferMap,
     );
   }
@@ -1003,7 +1013,7 @@ function completeListValue(
           info,
           itemPath,
           item,
-          errors,
+          incrementalContext,
           deferMap,
         ).then((resolved) => {
           graphqlWrappedResult[1].push(...resolved[1]);
@@ -1021,7 +1031,7 @@ function completeListValue(
         fieldGroup,
         info,
         itemPath,
-        errors,
+        incrementalContext,
         deferMap,
       )
     ) {
@@ -1051,7 +1061,7 @@ function completeListItemValue(
   fieldGroup,
   info,
   itemPath,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   try {
@@ -1062,7 +1072,7 @@ function completeListItemValue(
       info,
       itemPath,
       item,
-      errors,
+      incrementalContext,
       deferMap,
     );
     if ((0, isPromise_js_1.isPromise)(completedItem)) {
@@ -1075,6 +1085,7 @@ function completeListItemValue(
             return resolved[0];
           },
           (rawError) => {
+            const errors = (incrementalContext ?? exeContext).errors;
             handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
             return null;
           },
@@ -1085,6 +1096,7 @@ function completeListItemValue(
     completedResults.push(completedItem[0]);
     parent[1].push(...completedItem[1]);
   } catch (rawError) {
+    const errors = (incrementalContext ?? exeContext).errors;
     handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
     completedResults.push(null);
   }
@@ -1118,7 +1130,7 @@ function completeAbstractValue(
   info,
   path,
   result,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   const resolveTypeFn = returnType.resolveType ?? exeContext.typeResolver;
@@ -1140,7 +1152,7 @@ function completeAbstractValue(
         info,
         path,
         result,
-        errors,
+        incrementalContext,
         deferMap,
       ),
     );
@@ -1159,7 +1171,7 @@ function completeAbstractValue(
     info,
     path,
     result,
-    errors,
+    incrementalContext,
     deferMap,
   );
 }
@@ -1222,7 +1234,7 @@ function completeObjectValue(
   info,
   path,
   result,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   // If there is an isTypeOf predicate function, call it with the
@@ -1241,7 +1253,7 @@ function completeObjectValue(
           fieldGroup,
           path,
           result,
-          errors,
+          incrementalContext,
           deferMap,
         );
       });
@@ -1256,7 +1268,7 @@ function completeObjectValue(
     fieldGroup,
     path,
     result,
-    errors,
+    incrementalContext,
     deferMap,
   );
 }
@@ -1314,12 +1326,34 @@ function collectAndExecuteSubfields(
   fieldGroup,
   path,
   result,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   // Collect sub-fields to execute to complete this value.
-  const { groupedFieldSet, newGroupedFieldSets, newDeferUsages } =
-    buildSubFieldPlan(exeContext, returnType, fieldGroup);
+  const collectedSubfields = collectSubfields(
+    exeContext,
+    returnType,
+    fieldGroup,
+  );
+  let groupedFieldSet = collectedSubfields.groupedFieldSet;
+  const newDeferUsages = collectedSubfields.newDeferUsages;
+  if (deferMap === undefined && newDeferUsages.length === 0) {
+    return executeFields(
+      exeContext,
+      returnType,
+      result,
+      path,
+      groupedFieldSet,
+      incrementalContext,
+      undefined,
+    );
+  }
+  const subFieldPlan = buildSubFieldPlan(
+    groupedFieldSet,
+    incrementalContext?.deferUsageSet,
+  );
+  groupedFieldSet = subFieldPlan.groupedFieldSet;
+  const newGroupedFieldSets = subFieldPlan.newGroupedFieldSets;
   const newDeferMap = addNewDeferredFragments(
     newDeferUsages,
     new Map(deferMap),
@@ -1331,22 +1365,37 @@ function collectAndExecuteSubfields(
     result,
     path,
     groupedFieldSet,
-    errors,
+    incrementalContext,
     newDeferMap,
   );
-  const newDeferredGroupedFieldSetRecords = executeDeferredGroupedFieldSets(
-    exeContext,
-    returnType,
-    result,
-    path,
-    fieldGroup.deferUsages,
-    newGroupedFieldSets,
-    newDeferMap,
+  if (newGroupedFieldSets.size > 0) {
+    const newDeferredGroupedFieldSetRecords = executeDeferredGroupedFieldSets(
+      exeContext,
+      returnType,
+      result,
+      path,
+      incrementalContext?.deferUsageSet,
+      newGroupedFieldSets,
+      newDeferMap,
+    );
+    return withNewDeferredGroupedFieldSets(
+      subFields,
+      newDeferredGroupedFieldSetRecords,
+    );
+  }
+  return subFields;
+}
+function buildSubFieldPlan(originalGroupedFieldSet, deferUsageSet) {
+  let fieldPlan = originalGroupedFieldSet._fieldPlan;
+  if (fieldPlan !== undefined) {
+    return fieldPlan;
+  }
+  fieldPlan = (0, buildFieldPlan_js_1.buildFieldPlan)(
+    originalGroupedFieldSet,
+    deferUsageSet,
   );
-  return withNewDeferredGroupedFieldSets(
-    subFields,
-    newDeferredGroupedFieldSetRecords,
-  );
+  originalGroupedFieldSet._fieldPlan = fieldPlan;
+  return fieldPlan;
 }
 /**
  * If a resolveType function is not given, then a default resolve behavior is
@@ -1530,18 +1579,18 @@ function executeSubscription(exeContext) {
       { nodes: operation },
     );
   }
-  const { fields } = (0, collectFields_js_1.collectFields)(
+  const { groupedFieldSet } = (0, collectFields_js_1.collectFields)(
     schema,
     fragments,
     variableValues,
     rootType,
     operation,
   );
-  const firstRootField = fields.entries().next().value;
-  const [responseName, fieldDetailsList] = firstRootField;
-  const fieldName = fieldDetailsList[0].node.name.value;
+  const firstRootField = groupedFieldSet.entries().next().value;
+  const [responseName, fieldGroup] = firstRootField;
+  const fieldName = fieldGroup[0].node.name.value;
   const fieldDef = schema.getField(rootType, fieldName);
-  const fieldNodes = fieldDetailsList.map((fieldDetails) => fieldDetails.node);
+  const fieldNodes = fieldGroup.map((fieldDetails) => fieldDetails.node);
   if (!fieldDef) {
     throw new GraphQLError_js_1.GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
@@ -1628,7 +1677,10 @@ function executeDeferredGroupedFieldSets(
         sourceValue,
         path,
         groupedFieldSet,
-        [],
+        {
+          errors: [],
+          deferUsageSet,
+        },
         deferMap,
       );
     const deferredGroupedFieldSetRecord = {
@@ -1660,7 +1712,7 @@ function executeDeferredGroupedFieldSet(
   sourceValue,
   path,
   groupedFieldSet,
-  errors,
+  incrementalContext,
   deferMap,
 ) {
   let result;
@@ -1671,21 +1723,21 @@ function executeDeferredGroupedFieldSet(
       sourceValue,
       path,
       groupedFieldSet,
-      errors,
+      incrementalContext,
       deferMap,
     );
   } catch (error) {
     return {
       deferredFragmentRecords,
       path: (0, Path_js_1.pathToArray)(path),
-      errors: withError(errors, error),
+      errors: withError(incrementalContext.errors, error),
     };
   }
   if ((0, isPromise_js_1.isPromise)(result)) {
     return result.then(
       (resolved) =>
         buildDeferredGroupedFieldSetResult(
-          errors,
+          incrementalContext.errors,
           deferredFragmentRecords,
           path,
           resolved,
@@ -1693,12 +1745,12 @@ function executeDeferredGroupedFieldSet(
       (error) => ({
         deferredFragmentRecords,
         path: (0, Path_js_1.pathToArray)(path),
-        errors: withError(errors, error),
+        errors: withError(incrementalContext.errors, error),
       }),
     );
   }
   return buildDeferredGroupedFieldSetResult(
-    errors,
+    incrementalContext.errors,
     deferredFragmentRecords,
     path,
     result,
@@ -1743,7 +1795,7 @@ function firstSyncStreamItems(
         initialPath,
         initialItem,
         exeContext,
-        [],
+        { errors: [] },
         fieldGroup,
         info,
         itemType,
@@ -1774,7 +1826,7 @@ function firstSyncStreamItems(
           currentPath,
           item,
           exeContext,
-          [],
+          { errors: [] },
           fieldGroup,
           info,
           itemType,
@@ -1880,7 +1932,7 @@ async function getNextAsyncStreamItemsResult(
     itemPath,
     iteration.value,
     exeContext,
-    [],
+    { errors: [] },
     fieldGroup,
     info,
     itemType,
@@ -1905,7 +1957,7 @@ function completeStreamItems(
   itemPath,
   item,
   exeContext,
-  errors,
+  incrementalContext,
   fieldGroup,
   info,
   itemType,
@@ -1918,14 +1970,18 @@ function completeStreamItems(
       info,
       itemPath,
       item,
-      errors,
+      incrementalContext,
       new Map(),
     ).then(
       (resolvedItem) =>
-        buildStreamItemsResult(errors, streamRecord, resolvedItem),
+        buildStreamItemsResult(
+          incrementalContext.errors,
+          streamRecord,
+          resolvedItem,
+        ),
       (error) => ({
         streamRecord,
-        errors: withError(errors, error),
+        errors: withError(incrementalContext.errors, error),
       }),
     );
   }
@@ -1939,35 +1995,55 @@ function completeStreamItems(
         info,
         itemPath,
         item,
-        errors,
+        incrementalContext,
         new Map(),
       );
     } catch (rawError) {
-      handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
+      handleFieldError(
+        rawError,
+        itemType,
+        fieldGroup,
+        itemPath,
+        incrementalContext.errors,
+      );
       result = [null, []];
     }
   } catch (error) {
     return {
       streamRecord,
-      errors: withError(errors, error),
+      errors: withError(incrementalContext.errors, error),
     };
   }
   if ((0, isPromise_js_1.isPromise)(result)) {
     return result
       .then(undefined, (rawError) => {
-        handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
+        handleFieldError(
+          rawError,
+          itemType,
+          fieldGroup,
+          itemPath,
+          incrementalContext.errors,
+        );
         return [null, []];
       })
       .then(
         (resolvedItem) =>
-          buildStreamItemsResult(errors, streamRecord, resolvedItem),
+          buildStreamItemsResult(
+            incrementalContext.errors,
+            streamRecord,
+            resolvedItem,
+          ),
         (error) => ({
           streamRecord,
-          errors: withError(errors, error),
+          errors: withError(incrementalContext.errors, error),
         }),
       );
   }
-  return buildStreamItemsResult(errors, streamRecord, result);
+  return buildStreamItemsResult(
+    incrementalContext.errors,
+    streamRecord,
+    result,
+  );
 }
 function buildStreamItemsResult(errors, streamRecord, result) {
   return {

@@ -42,7 +42,7 @@ export function collectFields(
     groupedFieldSet,
     newDeferUsages,
   );
-  return { fields: groupedFieldSet, newDeferUsages };
+  return { groupedFieldSet, newDeferUsages };
 }
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
@@ -61,7 +61,7 @@ export function collectSubfields(
   variableValues,
   operation,
   returnType,
-  fieldDetails,
+  fieldGroup,
 ) {
   const context = {
     schema,
@@ -73,7 +73,7 @@ export function collectSubfields(
   };
   const subGroupedFieldSet = new AccumulatorMap();
   const newDeferUsages = [];
-  for (const fieldDetail of fieldDetails) {
+  for (const fieldDetail of fieldGroup) {
     const node = fieldDetail.node;
     if (node.selectionSet) {
       collectFieldsImpl(
@@ -86,7 +86,7 @@ export function collectSubfields(
     }
   }
   return {
-    fields: subGroupedFieldSet,
+    groupedFieldSet: subGroupedFieldSet,
     newDeferUsages,
   };
 }

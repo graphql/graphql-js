@@ -14,6 +14,8 @@ export interface FieldDetails {
   node: FieldNode;
   deferUsage: DeferUsage | undefined;
 }
+export type FieldGroup = ReadonlyArray<FieldDetails>;
+export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -32,7 +34,7 @@ export declare function collectFields(
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
 ): {
-  fields: Map<string, ReadonlyArray<FieldDetails>>;
+  groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
 };
 /**
@@ -53,8 +55,8 @@ export declare function collectSubfields(
   },
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
-  fieldDetails: ReadonlyArray<FieldDetails>,
+  fieldGroup: FieldGroup,
 ): {
-  fields: Map<string, ReadonlyArray<FieldDetails>>;
+  groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
 };

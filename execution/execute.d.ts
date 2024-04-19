@@ -17,7 +17,7 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
-import type { FieldGroup } from './buildFieldPlan.js';
+import type { FieldGroup } from './collectFields.js';
 import type {
   CancellableStreamRecord,
   ExecutionResult,
@@ -60,6 +60,7 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
+  errors: Array<GraphQLError>;
   cancellableStreams: Set<CancellableStreamRecord>;
 }
 export interface ExecutionArgs {
