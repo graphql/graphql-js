@@ -78,6 +78,66 @@ describe('Validate: Max introspection nodes rule', () => {
     `);
   });
 
+  it('3 interfaces deep introspection query from __schema', () => {
+    expectInvalid(`
+    {
+      __schema {
+        types {
+          interfaces {
+            interfaces {
+              interfaces {
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+    `);
+  });
+
+  it('3 possibleTypes deep introspection query from __schema', () => {
+    expectInvalid(`
+    {
+      __schema {
+        types {
+          possibleTypes {
+            possibleTypes {
+              possibleTypes {
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+    `);
+  });
+
+  it('3 possibleTypes deep introspection query from __schema', () => {
+    expectInvalid(`
+    {
+      __schema {
+        types {
+          inputFields {
+            type {
+              inputFields {
+                type {
+                  inputFields {
+                    type {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    `);
+  });
+
   it('3 fields deep introspection query from multiple __schema', () => {
     expectInvalid(`
     {

@@ -7,7 +7,7 @@ import { BREAK } from '../../language/visitor.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
-const MAX_FIELDS_DEPTH = 3;
+const MAX_DEPTH = 3;
 
 export function MaxIntrospectionDepthRule(
   context: ValidationContext,
@@ -16,20 +16,24 @@ export function MaxIntrospectionDepthRule(
    * Counts the depth of "__Type.fields" recursively and
    * returns `true` if the limit has been reached.
    */
-  function checkFieldsDepth(node: ASTNode, depth: number = 0): boolean {
+  function checkDepth(node: ASTNode, depth: number = 0): boolean {
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragment = context.getFragment(node.name.value);
       if (!fragment) {
         throw new Error(`Fragment ${node.name.value} not found`);
       }
-      return checkFieldsDepth(fragment, depth);
+      return checkDepth(fragment, depth);
     }
 
     if (
       'name' in node &&
-      node.name?.value === 'fields' &&
+      // check all introspection lists
+      (node.name?.value === 'fields' ||
+        node.name?.value === 'interfaces' ||
+        node.name?.value === 'possibleTypes' ||
+        node.name?.value === 'inputFields') &&
       // eslint-disable-next-line no-param-reassign
-      ++depth >= MAX_FIELDS_DEPTH
+      ++depth >= MAX_DEPTH
     ) {
       return true;
     }
@@ -37,7 +41,7 @@ export function MaxIntrospectionDepthRule(
     // handles inline fragments as well
     if ('selectionSet' in node && node.selectionSet) {
       for (const child of node.selectionSet.selections) {
-        if (checkFieldsDepth(child, depth)) {
+        if (checkDepth(child, depth)) {
           return true;
         }
       }
@@ -49,7 +53,7 @@ export function MaxIntrospectionDepthRule(
   return {
     Field(field) {
       if (field.name.value === '__schema' || field.name.value === '__type') {
-        if (checkFieldsDepth(field)) {
+        if (checkDepth(field)) {
           context.reportError(
             new GraphQLError('Maximum introspection depth exceeded'),
           );
