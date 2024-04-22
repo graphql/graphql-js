@@ -47,7 +47,7 @@ export function MaxIntrospectionDepthRule(
 
   return {
     Field(field) {
-      if (['__schema', '__type'].includes(field.name.value)) {
+      if (field.name.value === '__schema' || field.name.value === '__type') {
         if (checkFieldsDepth(field)) {
           context.reportError(
             new GraphQLError('Maximum introspection depth exceeded'),
