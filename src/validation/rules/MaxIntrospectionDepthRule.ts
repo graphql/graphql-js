@@ -25,12 +25,12 @@ export function MaxIntrospectionDepthRule(
     }
 
     if (
-      'name' in node &&
+      node.kind === Kind.FIELD &&
       // check all introspection lists
-      (node.name?.value === 'fields' ||
-        node.name?.value === 'interfaces' ||
-        node.name?.value === 'possibleTypes' ||
-        node.name?.value === 'inputFields') &&
+      (node.name.value === 'fields' ||
+        node.name.value === 'interfaces' ||
+        node.name.value === 'possibleTypes' ||
+        node.name.value === 'inputFields') &&
       // eslint-disable-next-line no-param-reassign
       ++depth >= MAX_DEPTH
     ) {
@@ -53,7 +53,7 @@ export function MaxIntrospectionDepthRule(
     OperationDefinition(node) {
       for (const child of node.selectionSet.selections) {
         if (
-          'name' in child &&
+          child.kind === Kind.FIELD &&
           (child.name.value === '__schema' || child.name.value === '__type')
         ) {
           if (checkDepth(node)) {
