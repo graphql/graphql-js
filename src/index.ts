@@ -382,7 +382,7 @@ export {
   ValuesOfCorrectTypeRule,
   VariablesAreInputTypesRule,
   VariablesInAllowedPositionRule,
-  MaxIntrospectionNodesRule,
+  MaxIntrospectionDepthRule,
   // SDL-specific validation rules
   LoneSchemaDefinitionRule,
   UniqueOperationTypesRule,
