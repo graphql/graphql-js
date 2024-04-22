@@ -3,7 +3,6 @@ import { GraphQLError } from '../../error/GraphQLError.js';
 import type { ASTNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
-import { BREAK } from '../../language/visitor.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
@@ -51,13 +50,20 @@ export function MaxIntrospectionDepthRule(
   }
 
   return {
-    Field(field) {
-      if (field.name.value === '__schema' || field.name.value === '__type') {
-        if (checkDepth(field)) {
-          context.reportError(
-            new GraphQLError('Maximum introspection depth exceeded'),
-          );
-          return BREAK;
+    OperationDefinition(node) {
+      for (const child of node.selectionSet.selections) {
+        if (
+          'name' in child &&
+          (child.name.value === '__schema' || child.name.value === '__type')
+        ) {
+          if (checkDepth(node)) {
+            context.reportError(
+              new GraphQLError('Maximum introspection depth exceeded', {
+                nodes: [node],
+              }),
+            );
+            return;
+          }
         }
       }
     },

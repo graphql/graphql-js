@@ -6,19 +6,12 @@ import { MaxIntrospectionDepthRule } from '../rules/MaxIntrospectionDepthRule.js
 
 import { expectValidationErrors } from './harness.js';
 
-function expectInvalid(queryStr: string) {
-  return expectValidationErrors(
-    MaxIntrospectionDepthRule,
-    queryStr,
-  ).toDeepEqual([
-    {
-      message: 'Maximum introspection depth exceeded',
-    },
-  ]);
+function expectErrors(queryStr: string) {
+  return expectValidationErrors(MaxIntrospectionDepthRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectValidationErrors(MaxIntrospectionDepthRule, queryStr).toDeepEqual([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Max introspection nodes rule', () => {
@@ -57,7 +50,7 @@ describe('Validate: Max introspection nodes rule', () => {
   });
 
   it('3 fields deep introspection query from __schema', () => {
-    expectInvalid(`
+    expectErrors(`
     {
       __schema {
         types {
@@ -75,11 +68,21 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('3 interfaces deep introspection query from __schema', () => {
-    expectInvalid(`
+    expectErrors(`
     {
       __schema {
         types {
@@ -93,11 +96,21 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('3 possibleTypes deep introspection query from __schema', () => {
-    expectInvalid(`
+    expectErrors(`
     {
       __schema {
         types {
@@ -111,11 +124,21 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('3 possibleTypes deep introspection query from __schema', () => {
-    expectInvalid(`
+    expectErrors(`
     {
       __schema {
         types {
@@ -135,11 +158,21 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('3 fields deep introspection query from multiple __schema', () => {
-    expectInvalid(`
+    expectErrors(`
     {
       one: __schema {
         types {
@@ -187,11 +220,21 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('3 fields deep introspection query from __type', () => {
-    expectInvalid(`
+    expectErrors(`
     {
       __type(name: "Query") {
         types {
@@ -209,11 +252,21 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('3 fields deep introspection query from multiple __type', () => {
-    expectInvalid(`
+    expectErrors(`
     {
       one: __type(name: "Query") {
         types {
@@ -261,7 +314,17 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('1 fields deep with 3 fields introspection query', () => {
@@ -289,7 +352,7 @@ describe('Validate: Max introspection nodes rule', () => {
   });
 
   it('3 fields deep from varying parents introspection query', () => {
-    expectInvalid(`
+    expectErrors(`
     {
       __schema {
         types {
@@ -309,11 +372,21 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('3 fields deep introspection query with inline fragments', () => {
-    expectInvalid(`
+    expectErrors(`
     query test {
       __schema {
         types {
@@ -339,11 +412,21 @@ describe('Validate: Max introspection nodes rule', () => {
         }
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 
   it('3 fields deep introspection query with fragments', () => {
-    expectInvalid(`
+    expectErrors(`
     query test {
       __schema {
         types {
@@ -373,6 +456,16 @@ describe('Validate: Max introspection nodes rule', () => {
         name
       }
     }
-    `);
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 5,
+            line: 2,
+          },
+        ],
+      },
+    ]);
   });
 });
