@@ -5,11 +5,6 @@ import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 import { BREAK } from '../../language/visitor.js';
 
-import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-} from '../../type/introspection.js';
-
 import type { ValidationContext } from '../ValidationContext.js';
 
 const MAX_FIELDS_DEPTH = 3;
@@ -52,11 +47,7 @@ export function MaxIntrospectionDepthRule(
 
   return {
     Field(field) {
-      if (
-        [SchemaMetaFieldDef.name, TypeMetaFieldDef.name].includes(
-          field.name.value,
-        )
-      ) {
+      if (['__schema', '__type'].includes(field.name.value)) {
         if (checkFieldsDepth(field)) {
           context.reportError(
             new GraphQLError('Maximum introspection depth exceeded'),
