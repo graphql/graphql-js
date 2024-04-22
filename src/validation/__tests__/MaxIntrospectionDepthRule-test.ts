@@ -252,6 +252,36 @@ describe('Validate: Max introspection nodes rule', () => {
     `);
   });
 
+  it('3 fields deep introspection query with inline fragments', () => {
+    expectInvalid(`
+    query test {
+      __schema {
+        types {
+          ... on __Type {
+            fields {
+              type {
+                ... on __Type {
+                  ofType {
+                    fields {
+                      type {
+                        ... on __Type {
+                          fields {
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    `);
+  });
+
   it('3 fields deep introspection query with fragments', () => {
     expectInvalid(`
     query test {

@@ -34,6 +34,7 @@ export function MaxIntrospectionDepthRule(
       return true;
     }
 
+    // handles inline fragments as well
     if ('selectionSet' in node && node.selectionSet) {
       for (const child of node.selectionSet.selections) {
         if (checkFieldsDepth(child, depth)) {
