@@ -19,7 +19,8 @@ export function MaxIntrospectionDepthRule(
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragment = context.getFragment(node.name.value);
       if (!fragment) {
-        throw new Error(`Fragment ${node.name.value} not found`);
+        // missing fragments checks are handled by the `KnownFragmentNamesRule`
+        return false;
       }
       return checkDepth(fragment, depth);
     }

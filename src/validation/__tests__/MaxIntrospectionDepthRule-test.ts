@@ -468,4 +468,16 @@ describe('Validate: Max introspection nodes rule', () => {
       },
     ]);
   });
+
+  it('opts out if fragment is missing', () => {
+    expectValid(`
+    query test {
+      __schema {
+        types {
+          ...Missing
+        }
+      }
+    }
+    `);
+  });
 });
