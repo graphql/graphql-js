@@ -873,19 +873,17 @@ async function completeAsyncIteratorValue(
     /* c8 ignore start */
     if (isPromise(item)) {
       completedResults.push(
-        completePromisedValue(
+        completePromisedListItemValue(
+          item,
+          graphqlWrappedResult,
           exeContext,
           itemType,
           fieldGroup,
           info,
           itemPath,
-          item,
           incrementalContext,
           deferMap,
-        ).then((resolved) => {
-          graphqlWrappedResult[1].push(...resolved[1]);
-          return resolved[0];
-        }),
+        ),
       );
       containsPromise = true;
     } else if (
@@ -984,19 +982,17 @@ function completeListValue(
     const itemPath = addPath(path, index, undefined);
     if (isPromise(item)) {
       completedResults.push(
-        completePromisedValue(
+        completePromisedListItemValue(
+          item,
+          graphqlWrappedResult,
           exeContext,
           itemType,
           fieldGroup,
           info,
           itemPath,
-          item,
           incrementalContext,
           deferMap,
-        ).then((resolved) => {
-          graphqlWrappedResult[1].push(...resolved[1]);
-          return resolved[0];
-        }),
+        ),
       );
       containsPromise = true;
     } else if (
@@ -1079,6 +1075,40 @@ function completeListItemValue(
     completedResults.push(null);
   }
   return false;
+}
+async function completePromisedListItemValue(
+  item,
+  parent,
+  exeContext,
+  itemType,
+  fieldGroup,
+  info,
+  itemPath,
+  incrementalContext,
+  deferMap,
+) {
+  try {
+    const resolved = await item;
+    let completed = completeValue(
+      exeContext,
+      itemType,
+      fieldGroup,
+      info,
+      itemPath,
+      resolved,
+      incrementalContext,
+      deferMap,
+    );
+    if (isPromise(completed)) {
+      completed = await completed;
+    }
+    parent[1].push(...completed[1]);
+    return completed[0];
+  } catch (rawError) {
+    const errors = (incrementalContext ?? exeContext).errors;
+    handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
+    return null;
+  }
 }
 /**
  * Complete a Scalar or Enum by serializing to a valid value, returning
