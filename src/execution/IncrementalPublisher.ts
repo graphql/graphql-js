@@ -1,3 +1,4 @@
+import { invariant } from '../jsutils/invariant.js';
 import { isPromise } from '../jsutils/isPromise.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
@@ -172,7 +173,7 @@ export interface FormattedCompletedResult {
 export function buildIncrementalResponse(
   context: IncrementalPublisherContext,
   result: ObjMap<unknown>,
-  errors: ReadonlyArray<GraphQLError>,
+  errors: ReadonlyArray<GraphQLError> | undefined,
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
 ): ExperimentalIncrementalExecutionResults {
   const incrementalPublisher = new IncrementalPublisher(context);
@@ -184,7 +185,7 @@ export function buildIncrementalResponse(
 }
 
 interface IncrementalPublisherContext {
-  cancellableStreams: Set<CancellableStreamRecord>;
+  cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
 /**
@@ -218,7 +219,7 @@ class IncrementalPublisher {
 
   buildResponse(
     data: ObjMap<unknown>,
-    errors: ReadonlyArray<GraphQLError>,
+    errors: ReadonlyArray<GraphQLError> | undefined,
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ExperimentalIncrementalExecutionResults {
     this._addIncrementalDataRecords(incrementalDataRecords);
@@ -227,7 +228,7 @@ class IncrementalPublisher {
     const pending = this._pendingSourcesToResults();
 
     const initialResult: InitialIncrementalExecutionResult =
-      errors.length === 0
+      errors === undefined
         ? { data, pending, hasNext: true }
         : { errors, data, pending, hasNext: true };
 
@@ -444,8 +445,12 @@ class IncrementalPublisher {
     };
 
     const returnStreamIterators = async (): Promise<void> => {
+      const cancellableStreams = this._context.cancellableStreams;
+      if (cancellableStreams === undefined) {
+        return;
+      }
       const promises: Array<Promise<unknown>> = [];
-      for (const streamRecord of this._context.cancellableStreams) {
+      for (const streamRecord of cancellableStreams) {
         if (streamRecord.earlyReturn !== undefined) {
           promises.push(streamRecord.earlyReturn());
         }
@@ -519,9 +524,11 @@ class IncrementalPublisher {
       );
     }
 
-    this._addIncrementalDataRecords(
-      deferredGroupedFieldSetResult.incrementalDataRecords,
-    );
+    const incrementalDataRecords =
+      deferredGroupedFieldSetResult.incrementalDataRecords;
+    if (incrementalDataRecords !== undefined) {
+      this._addIncrementalDataRecords(incrementalDataRecords);
+    }
 
     for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
       const id = deferredFragmentRecord.id;
@@ -587,6 +594,7 @@ class IncrementalPublisher {
       });
       this._pending.delete(streamRecord);
       if (isCancellableStreamRecord(streamRecord)) {
+        invariant(this._context.cancellableStreams !== undefined);
         this._context.cancellableStreams.delete(streamRecord);
         streamRecord.earlyReturn().catch(() => {
           /* c8 ignore next 1 */
@@ -597,6 +605,7 @@ class IncrementalPublisher {
       this._completed.push({ id });
       this._pending.delete(streamRecord);
       if (isCancellableStreamRecord(streamRecord)) {
+        invariant(this._context.cancellableStreams !== undefined);
         this._context.cancellableStreams.delete(streamRecord);
       }
     } else {
@@ -607,7 +616,7 @@ class IncrementalPublisher {
 
       this._incremental.push(incrementalEntry);
 
-      if (streamItemsResult.incrementalDataRecords.length > 0) {
+      if (streamItemsResult.incrementalDataRecords !== undefined) {
         this._addIncrementalDataRecords(
           streamItemsResult.incrementalDataRecords,
         );
@@ -655,7 +664,7 @@ function isDeferredFragmentRecord(
   return 'parent' in subsequentResultRecord;
 }
 
-function isDeferredGroupedFieldSetRecord(
+export function isDeferredGroupedFieldSetRecord(
   incrementalDataRecord: IncrementalDataRecord,
 ): incrementalDataRecord is DeferredGroupedFieldSetRecord {
   return 'deferredFragmentRecords' in incrementalDataRecord;
@@ -675,7 +684,7 @@ interface ReconcilableDeferredGroupedFieldSetResult {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   path: Array<string | number>;
   result: BareDeferredGroupedFieldSetResult;
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   sent?: true | undefined;
   errors?: never;
 }
@@ -694,6 +703,7 @@ function isNonReconcilableDeferredGroupedFieldSetResult(
 }
 
 export interface DeferredGroupedFieldSetRecord {
+  path: Path | undefined;
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   result: PromiseOrValue<DeferredGroupedFieldSetResult>;
 }
@@ -743,7 +753,7 @@ function isCancellableStreamRecord(
 interface ReconcilableStreamItemsResult {
   streamRecord: SubsequentResultRecord;
   result: BareStreamItemsResult;
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   errors?: never;
 }
 
