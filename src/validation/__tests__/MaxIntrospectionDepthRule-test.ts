@@ -73,8 +73,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -101,8 +101,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -129,8 +129,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -163,8 +163,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -225,8 +225,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -257,8 +257,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -319,8 +319,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -377,8 +377,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -417,8 +417,8 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
           },
         ],
       },
@@ -461,8 +461,28 @@ describe('Validate: Max introspection nodes rule', () => {
         message: 'Maximum introspection depth exceeded',
         locations: [
           {
-            column: 5,
-            line: 2,
+            column: 7,
+            line: 3,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('3 fields deep inside inline fragment on query', () => {
+    expectErrors(`
+    {
+      ... {
+        __schema { types { fields { type { fields { type { fields { name } } } } } } }
+      }
+    }
+    `).toDeepEqual([
+      {
+        message: 'Maximum introspection depth exceeded',
+        locations: [
+          {
+            column: 9,
+            line: 4,
           },
         ],
       },
