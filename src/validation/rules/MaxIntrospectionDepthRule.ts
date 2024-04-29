@@ -7,13 +7,13 @@ import { BREAK } from '../../language/visitor.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
-const MAX_DEPTH = 3;
+const MAX_LISTS_DEPTH = 3;
 
 export function MaxIntrospectionDepthRule(
   context: ValidationContext,
 ): ASTVisitor {
   /**
-   * Counts the depth of "__Type.fields" recursively and
+   * Counts the depth of list fields in "__Type" recursively and
    * returns `true` if the limit has been reached.
    */
   function checkDepth(node: ASTNode, depth: number = 0): boolean {
@@ -34,7 +34,7 @@ export function MaxIntrospectionDepthRule(
         node.name.value === 'possibleTypes' ||
         node.name.value === 'inputFields') &&
       // eslint-disable-next-line no-param-reassign
-      ++depth >= MAX_DEPTH
+      ++depth >= MAX_LISTS_DEPTH
     ) {
       return true;
     }
