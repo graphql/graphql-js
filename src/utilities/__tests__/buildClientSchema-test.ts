@@ -571,6 +571,21 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema with @oneOf directive', () => {
+    const sdl = dedent`
+      type Query {
+        someField(someArg: SomeInputObject): String
+      }
+
+      input SomeInputObject @oneOf {
+        someInputField1: String
+        someInputField2: String
+      }
+    `;
+
+    expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
   it('can use client schema for limited execution', () => {
     const schema = buildSchema(`
       scalar CustomScalar
