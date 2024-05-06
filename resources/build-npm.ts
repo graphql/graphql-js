@@ -105,8 +105,20 @@ function buildPackage(outDir: string, isESMOnly: boolean): void {
     packageJSON.version += '+esm';
   } else {
     delete packageJSON.type;
-    packageJSON.main = 'index';
+    packageJSON.main = 'index.js';
     packageJSON.module = 'index.mjs';
+    packageJSON.types = 'index.d.ts';
+    packageJSON.exports = {
+      '.': {
+        'import': {
+          'types': './index.d.ts',
+          'default': './index.mjs'
+        },
+        'require': {
+          'types': './index.d.ts',
+          'default': './index.js'
+        }
+    }
     emitTSFiles({ outDir, module: 'commonjs', extension: '.js' });
     emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
   }
