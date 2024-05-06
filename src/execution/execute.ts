@@ -405,7 +405,7 @@ function executeFieldsSerially(
   fields: Map<string, ReadonlyArray<FieldNode>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
-    fields.entries(),
+    Array.from(fields.entries()),
     (results, [responseName, fieldNodes]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = executeField(
@@ -446,7 +446,8 @@ function executeFields(
   let containsPromise = false;
 
   try {
-    for (const [responseName, fieldNodes] of fields.entries()) {
+    const fieldsEntries = Array.from(fields.entries());
+    for (const [responseName, fieldNodes] of fieldsEntries) {
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = executeField(
         exeContext,

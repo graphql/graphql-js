@@ -20,7 +20,8 @@ export function getLocation(source: Source, position: number): SourceLocation {
   let lastLineStart = 0;
   let line = 1;
 
-  for (const match of source.body.matchAll(LineRegExp)) {
+  const matches = Array.from(source.body.matchAll(LineRegExp))
+  for (const match of matches) {
     invariant(typeof match.index === 'number');
     if (match.index >= position) {
       break;

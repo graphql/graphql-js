@@ -1,7 +1,7 @@
 {
   "plugins": [
     "@babel/plugin-transform-typescript",
-    "@babel/plugin-transform-for-of",
+    ["@babel/plugin-transform-for-of", { "assumeArray": true }],
     "@babel/plugin-transform-destructuring"
   ],
   "presets": [

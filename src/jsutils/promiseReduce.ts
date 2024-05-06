@@ -9,7 +9,7 @@ import type { PromiseOrValue } from './PromiseOrValue';
  * return a Promise.
  */
 export function promiseReduce<T, U>(
-  values: Iterable<T>,
+  values: Array<T>,
   callbackFn: (accumulator: U, currentValue: T) => PromiseOrValue<U>,
   initialValue: PromiseOrValue<U>,
 ): PromiseOrValue<U> {

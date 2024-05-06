@@ -12,7 +12,8 @@ export function promiseForObject<T>(
 ): Promise<ObjMap<T>> {
   return Promise.all(Object.values(object)).then((resolvedValues) => {
     const resolvedObject = Object.create(null);
-    for (const [i, key] of Object.keys(object).entries()) {
+    const entries = Array.from(Object.keys(object).entries());
+    for (const [i, key] of entries) {
       resolvedObject[key] = resolvedValues[i];
     }
     return resolvedObject;
