@@ -1,6 +1,8 @@
 {
   "plugins": [
     "@babel/plugin-transform-typescript",
+    "@babel/plugin-transform-for-of",
+    "@babel/plugin-transform-destructuring",
     "./resources/inline-invariant"
   ],
   "env": {

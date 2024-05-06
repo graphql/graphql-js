@@ -1,5 +1,9 @@
 {
-  "plugins": ["@babel/plugin-transform-typescript"],
+  "plugins": [
+    "@babel/plugin-transform-typescript",
+    "@babel/plugin-transform-for-of",
+    "@babel/plugin-transform-destructuring"
+  ],
   "presets": [
     [
       "@babel/preset-env",

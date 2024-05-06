@@ -54,6 +54,8 @@
   "devDependencies": {
     "@babel/core": "7.17.9",
     "@babel/plugin-syntax-typescript": "7.16.7",
+    "@babel/plugin-transform-destructuring": "^7.24.5",
+    "@babel/plugin-transform-for-of": "^7.24.1",
     "@babel/plugin-transform-typescript": "7.16.8",
     "@babel/preset-env": "7.16.11",
     "@babel/register": "7.17.7",

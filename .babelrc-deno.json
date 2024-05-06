@@ -1,6 +1,8 @@
 {
   "plugins": [
     "@babel/plugin-syntax-typescript",
+    "@babel/plugin-transform-for-of",
+    "@babel/plugin-transform-destructuring",
     ["./resources/add-extension-to-import-paths", { "extension": "ts" }],
     "./resources/inline-invariant"
   ]
