@@ -1,4 +1,6 @@
 import { inspect } from '../jsutils/inspect.js';
+import { isInteger } from '../jsutils/isInteger.js';
+import { isNumeric } from '../jsutils/isNumeric.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
@@ -40,7 +42,7 @@ export const GraphQLInt = new GraphQLScalarType<number>({
       num = Number(coercedValue);
     }
 
-    if (typeof num !== 'number' || !Number.isInteger(num)) {
+    if (!isInteger(num)) {
       throw new GraphQLError(
         `Int cannot represent non-integer value: ${inspect(coercedValue)}`,
       );
@@ -51,21 +53,22 @@ export const GraphQLInt = new GraphQLScalarType<number>({
           inspect(coercedValue),
       );
     }
-    return num;
+    return Number(num);
   },
 
   parseValue(inputValue) {
-    if (typeof inputValue !== 'number' || !Number.isInteger(inputValue)) {
+    if (!isInteger(inputValue)) {
       throw new GraphQLError(
         `Int cannot represent non-integer value: ${inspect(inputValue)}`,
       );
     }
-    if (inputValue > GRAPHQL_MAX_INT || inputValue < GRAPHQL_MIN_INT) {
+    const coercedVal = Number(inputValue);
+    if (coercedVal > GRAPHQL_MAX_INT || coercedVal < GRAPHQL_MIN_INT) {
       throw new GraphQLError(
         `Int cannot represent non 32-bit signed integer value: ${inputValue}`,
       );
     }
-    return inputValue;
+    return coercedVal;
   },
 
   parseConstLiteral(valueNode) {
@@ -96,7 +99,7 @@ export const GraphQLInt = new GraphQLScalarType<number>({
   },
 });
 
-export const GraphQLFloat = new GraphQLScalarType<number>({
+export const GraphQLFloat = new GraphQLScalarType<number | bigint>({
   name: 'Float',
   description:
     'The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
@@ -113,16 +116,17 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
       num = Number(coercedValue);
     }
 
-    if (typeof num !== 'number' || !Number.isFinite(num)) {
+    if (!isNumeric(num)) {
       throw new GraphQLError(
         `Float cannot represent non numeric value: ${inspect(coercedValue)}`,
       );
     }
+
     return num;
   },
 
   parseValue(inputValue) {
-    if (typeof inputValue !== 'number' || !Number.isFinite(inputValue)) {
+    if (!isNumeric(inputValue)) {
       throw new GraphQLError(
         `Float cannot represent non numeric value: ${inspect(inputValue)}`,
       );
@@ -163,8 +167,8 @@ export const GraphQLString = new GraphQLScalarType<string>({
     if (typeof coercedValue === 'boolean') {
       return coercedValue ? 'true' : 'false';
     }
-    if (typeof coercedValue === 'number' && Number.isFinite(coercedValue)) {
-      return coercedValue.toString();
+    if (isNumeric(coercedValue)) {
+      return String(coercedValue);
     }
     throw new GraphQLError(
       `String cannot represent value: ${inspect(outputValue)}`,
@@ -207,8 +211,8 @@ export const GraphQLBoolean = new GraphQLScalarType<boolean>({
     if (typeof coercedValue === 'boolean') {
       return coercedValue;
     }
-    if (Number.isFinite(coercedValue)) {
-      return coercedValue !== 0;
+    if (isNumeric(coercedValue)) {
+      return Number(coercedValue) !== 0;
     }
     throw new GraphQLError(
       `Boolean cannot represent a non boolean value: ${inspect(coercedValue)}`,
@@ -252,7 +256,7 @@ export const GraphQLID = new GraphQLScalarType<string>({
     if (typeof coercedValue === 'string') {
       return coercedValue;
     }
-    if (Number.isInteger(coercedValue)) {
+    if (isInteger(coercedValue)) {
       return String(coercedValue);
     }
     throw new GraphQLError(
@@ -264,8 +268,8 @@ export const GraphQLID = new GraphQLScalarType<string>({
     if (typeof inputValue === 'string') {
       return inputValue;
     }
-    if (typeof inputValue === 'number' && Number.isInteger(inputValue)) {
-      return inputValue.toString();
+    if (isInteger(inputValue)) {
+      return String(inputValue);
     }
     throw new GraphQLError(`ID cannot represent value: ${inspect(inputValue)}`);
   },
