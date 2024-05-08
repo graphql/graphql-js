@@ -41,9 +41,14 @@ describe('astFromValue', () => {
       value: false,
     });
 
-    expect(astFromValue(1, GraphQLBoolean)).to.deep.equal({
+    expect(astFromValue(1n, GraphQLBoolean)).to.deep.equal({
       kind: 'BooleanValue',
       value: true,
+    });
+
+    expect(astFromValue(0n, GraphQLBoolean)).to.deep.equal({
+      kind: 'BooleanValue',
+      value: false,
     });
 
     const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
@@ -67,6 +72,11 @@ describe('astFromValue', () => {
     expect(astFromValue(1e4, GraphQLInt)).to.deep.equal({
       kind: 'IntValue',
       value: '10000',
+    });
+
+    expect(astFromValue(1n, GraphQLInt)).to.deep.equal({
+      kind: 'IntValue',
+      value: '1',
     });
 
     // GraphQL spec does not allow coercing non-integer values to Int to avoid
@@ -94,6 +104,11 @@ describe('astFromValue', () => {
     expect(astFromValue(123.0, GraphQLFloat)).to.deep.equal({
       kind: 'IntValue',
       value: '123',
+    });
+
+    expect(astFromValue(9007199254740993n, GraphQLFloat)).to.deep.equal({
+      kind: 'IntValue',
+      value: '9007199254740993',
     });
 
     expect(astFromValue(123.5, GraphQLFloat)).to.deep.equal({
@@ -131,6 +146,11 @@ describe('astFromValue', () => {
     expect(astFromValue(123, GraphQLString)).to.deep.equal({
       kind: 'StringValue',
       value: '123',
+    });
+
+    expect(astFromValue(9007199254740993n, GraphQLString)).to.deep.equal({
+      kind: 'StringValue',
+      value: '9007199254740993',
     });
 
     expect(astFromValue(false, GraphQLString)).to.deep.equal({
@@ -181,6 +201,11 @@ describe('astFromValue', () => {
     expect(astFromValue('01', GraphQLID)).to.deep.equal({
       kind: 'StringValue',
       value: '01',
+    });
+
+    expect(astFromValue(9007199254740993n, GraphQLID)).to.deep.equal({
+      kind: 'IntValue',
+      value: '9007199254740993',
     });
 
     expect(() => astFromValue(false, GraphQLID)).to.throw(
