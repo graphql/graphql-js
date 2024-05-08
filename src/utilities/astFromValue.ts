@@ -17,7 +17,10 @@ import {
 } from '../type/definition.js';
 import { GraphQLID } from '../type/scalars.js';
 
-import { astFromValueUntyped, integerStringRegExp } from './astFromValueUntyped.js';
+import {
+  astFromValueUntyped,
+  integerStringRegExp,
+} from './astFromValueUntyped.js';
 
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
@@ -107,7 +110,6 @@ export function astFromValue(
       return null;
     }
 
-
     if (typeof serialized === 'string') {
       // Enum types use Enum literals.
       if (isEnumType(type)) {
@@ -131,4 +133,3 @@ export function astFromValue(
   // Not reachable, all possible types have been considered.
   invariant(false, 'Unexpected input type: ' + inspect(type));
 }
-

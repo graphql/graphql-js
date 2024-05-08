@@ -62,8 +62,11 @@ export { valueFromAST } from './valueFromAST.js';
 // Create a JavaScript value from a GraphQL language AST without a type.
 export { valueFromASTUntyped } from './valueFromASTUntyped.js';
 
-// Create a GraphQL language AST from a JavaScript value.
+// Create a GraphQL language AST from a JavaScript value with a type.
 export { astFromValue } from './astFromValue.js';
+
+// Create a GraphQL language AST from a JavaScript value without a type.
+export { astFromValueUntyped } from './astFromValueUntyped.js';
 
 // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
 export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';

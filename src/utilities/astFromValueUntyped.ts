@@ -1,4 +1,5 @@
 import { inspect } from '../jsutils/inspect.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 
 import type { ConstObjectFieldNode, ConstValueNode } from '../language/ast.js';
@@ -20,64 +21,63 @@ import { Kind } from '../language/kinds.js';
  *
  */
 export function astFromValueUntyped(value: any): Maybe<ConstValueNode> {
-    // only explicit null, not undefined, NaN
-    if (value === null) {
-        return { kind: Kind.NULL };
+  // only explicit null, not undefined, NaN
+  if (value === null) {
+    return { kind: Kind.NULL };
+  }
+
+  // undefined
+  if (value === undefined) {
+    return null;
+  }
+
+  // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
+  // the value is not an array, convert the value using the list's item type.
+  if (isIterableObject(value)) {
+    const valuesNodes: Array<ConstValueNode> = [];
+    for (const item of value) {
+      const itemNode = astFromValueUntyped(item);
+      if (itemNode != null) {
+        valuesNodes.push(itemNode);
+      }
     }
+    return { kind: Kind.LIST, values: valuesNodes };
+  }
 
-    // undefined
-    if (value === undefined) {
-        return null;
+  if (typeof value === 'object') {
+    const fieldNodes: Array<ConstObjectFieldNode> = [];
+    for (const fieldName of Object.getOwnPropertyNames(value)) {
+      const fieldValue = value[fieldName];
+      const ast = astFromValueUntyped(fieldValue);
+      if (ast) {
+        fieldNodes.push({
+          kind: Kind.OBJECT_FIELD,
+          name: { kind: Kind.NAME, value: fieldName },
+          value: ast,
+        });
+      }
     }
+    return { kind: Kind.OBJECT, fields: fieldNodes };
+  }
 
-    // Convert JavaScript array to GraphQL list. If the GraphQLType is a list, but
-    // the value is not an array, convert the value using the list's item type.
-    if (Array.isArray(value)) {
-        const valuesNodes: Array<ConstValueNode> = [];
-        for (const item of value) {
-            const itemNode = astFromValueUntyped(item);
-            if (itemNode != null) {
-                valuesNodes.push(itemNode);
-            }
-        }
-        return { kind: Kind.LIST, values: valuesNodes };
-    }
+  // Others serialize based on their corresponding JavaScript scalar types.
+  if (typeof value === 'boolean') {
+    return { kind: Kind.BOOLEAN, value };
+  }
 
-    if (typeof value === 'object') {
-        const fieldNodes: Array<ConstObjectFieldNode> = [];
-        for (const fieldName of Object.getOwnPropertyNames(value)) {
-            const fieldValue = value[fieldName];
-            const ast = astFromValueUntyped(fieldValue);
-            if (ast) {
-                fieldNodes.push({
-                    kind: Kind.OBJECT_FIELD,
-                    name: { kind: Kind.NAME, value: fieldName },
-                    value: ast,
-                });
-            }
-        }
-        return { kind: Kind.OBJECT, fields: fieldNodes };
-    }
+  // JavaScript numbers can be Int or Float values.
+  if (typeof value === 'number' && isFinite(value)) {
+    const stringNum = String(value);
+    return integerStringRegExp.test(stringNum)
+      ? { kind: Kind.INT, value: stringNum }
+      : { kind: Kind.FLOAT, value: stringNum };
+  }
 
-    // Others serialize based on their corresponding JavaScript scalar types.
-    if (typeof value === 'boolean') {
-        return { kind: Kind.BOOLEAN, value };
-    }
+  if (typeof value === 'string') {
+    return { kind: Kind.STRING, value };
+  }
 
-    // JavaScript numbers can be Int or Float values.
-    if (typeof value === 'number' && isFinite(value)) {
-        const stringNum = String(value);
-        return integerStringRegExp.test(stringNum)
-            ? { kind: Kind.INT, value: stringNum }
-            : { kind: Kind.FLOAT, value: stringNum };
-    }
-
-    if (typeof value === 'string') {
-        return { kind: Kind.STRING, value };
-    }
-
-
-    throw new TypeError(`Cannot convert value to AST: ${inspect(value)}.`);
+  throw new TypeError(`Cannot convert value to AST: ${inspect(value)}.`);
 }
 
 /**
