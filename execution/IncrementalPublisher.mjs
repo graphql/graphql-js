@@ -1,3 +1,4 @@
+import { invariant } from '../jsutils/invariant.mjs';
 import { isPromise } from '../jsutils/isPromise.mjs';
 import { pathToArray } from '../jsutils/Path.mjs';
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.mjs';
@@ -36,7 +37,7 @@ class IncrementalPublisher {
     this._pruneEmpty();
     const pending = this._pendingSourcesToResults();
     const initialResult =
-      errors.length === 0
+      errors === undefined
         ? { data, pending, hasNext: true }
         : { errors, data, pending, hasNext: true };
     return {
@@ -206,8 +207,12 @@ class IncrementalPublisher {
       return { value: undefined, done: true };
     };
     const returnStreamIterators = async () => {
+      const cancellableStreams = this._context.cancellableStreams;
+      if (cancellableStreams === undefined) {
+        return;
+      }
       const promises = [];
-      for (const streamRecord of this._context.cancellableStreams) {
+      for (const streamRecord of cancellableStreams) {
         if (streamRecord.earlyReturn !== undefined) {
           promises.push(streamRecord.earlyReturn());
         }
@@ -268,9 +273,11 @@ class IncrementalPublisher {
         deferredGroupedFieldSetResult,
       );
     }
-    this._addIncrementalDataRecords(
-      deferredGroupedFieldSetResult.incrementalDataRecords,
-    );
+    const incrementalDataRecords =
+      deferredGroupedFieldSetResult.incrementalDataRecords;
+    if (incrementalDataRecords !== undefined) {
+      this._addIncrementalDataRecords(incrementalDataRecords);
+    }
     for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
       const id = deferredFragmentRecord.id;
       // TODO: add test case for this.
@@ -331,6 +338,7 @@ class IncrementalPublisher {
       });
       this._pending.delete(streamRecord);
       if (isCancellableStreamRecord(streamRecord)) {
+        this._context.cancellableStreams !== undefined || invariant(false);
         this._context.cancellableStreams.delete(streamRecord);
         streamRecord.earlyReturn().catch(() => {
           /* c8 ignore next 1 */
@@ -341,6 +349,7 @@ class IncrementalPublisher {
       this._completed.push({ id });
       this._pending.delete(streamRecord);
       if (isCancellableStreamRecord(streamRecord)) {
+        this._context.cancellableStreams !== undefined || invariant(false);
         this._context.cancellableStreams.delete(streamRecord);
       }
     } else {
@@ -349,7 +358,7 @@ class IncrementalPublisher {
         ...streamItemsResult.result,
       };
       this._incremental.push(incrementalEntry);
-      if (streamItemsResult.incrementalDataRecords.length > 0) {
+      if (streamItemsResult.incrementalDataRecords !== undefined) {
         this._addIncrementalDataRecords(
           streamItemsResult.incrementalDataRecords,
         );

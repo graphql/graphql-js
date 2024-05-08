@@ -60,8 +60,8 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  errors: Array<GraphQLError>;
-  cancellableStreams: Set<CancellableStreamRecord>;
+  errors: Array<GraphQLError> | undefined;
+  cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 export interface ExecutionArgs {
   schema: GraphQLSchema;

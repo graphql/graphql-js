@@ -149,11 +149,11 @@ export interface FormattedCompletedResult {
 export declare function buildIncrementalResponse(
   context: IncrementalPublisherContext,
   result: ObjMap<unknown>,
-  errors: ReadonlyArray<GraphQLError>,
+  errors: ReadonlyArray<GraphQLError> | undefined,
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
 ): ExperimentalIncrementalExecutionResults;
 interface IncrementalPublisherContext {
-  cancellableStreams: Set<CancellableStreamRecord>;
+  cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 export type DeferredGroupedFieldSetResult =
   | ReconcilableDeferredGroupedFieldSetResult
@@ -162,7 +162,7 @@ interface ReconcilableDeferredGroupedFieldSetResult {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   path: Array<string | number>;
   result: BareDeferredGroupedFieldSetResult;
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   sent?: true | undefined;
   errors?: never;
 }
@@ -203,7 +203,7 @@ export interface CancellableStreamRecord extends SubsequentResultRecord {
 interface ReconcilableStreamItemsResult {
   streamRecord: SubsequentResultRecord;
   result: BareStreamItemsResult;
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>;
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   errors?: never;
 }
 export declare function isReconcilableStreamItemsResult(
