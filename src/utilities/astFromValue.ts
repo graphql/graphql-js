@@ -17,6 +17,8 @@ import {
 } from '../type/definition.js';
 import { GraphQLID } from '../type/scalars.js';
 
+import { astFromValueUntyped, integerStringRegExp } from './astFromValueUntyped.js';
+
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
  * Function will match JavaScript/JSON values to GraphQL AST schema format
@@ -105,18 +107,6 @@ export function astFromValue(
       return null;
     }
 
-    // Others serialize based on their corresponding JavaScript scalar types.
-    if (typeof serialized === 'boolean') {
-      return { kind: Kind.BOOLEAN, value: serialized };
-    }
-
-    // JavaScript numbers can be Int or Float values.
-    if (typeof serialized === 'number' && Number.isFinite(serialized)) {
-      const stringNum = String(serialized);
-      return integerStringRegExp.test(stringNum)
-        ? { kind: Kind.INT, value: stringNum }
-        : { kind: Kind.FLOAT, value: stringNum };
-    }
 
     if (typeof serialized === 'string') {
       // Enum types use Enum literals.
@@ -135,16 +125,10 @@ export function astFromValue(
       };
     }
 
-    throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}.`);
+    return astFromValueUntyped(serialized);
   }
   /* c8 ignore next 3 */
   // Not reachable, all possible types have been considered.
   invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 
-/**
- * IntValue:
- *   - NegativeSign? 0
- *   - NegativeSign? NonZeroDigit ( Digit+ )?
- */
-const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;
