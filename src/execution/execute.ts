@@ -142,12 +142,12 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  errors: Array<GraphQLError>;
-  cancellableStreams: Set<CancellableStreamRecord>;
+  errors: Array<GraphQLError> | undefined;
+  cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
 interface IncrementalContext {
-  errors: Array<GraphQLError>;
+  errors: Array<GraphQLError> | undefined;
   deferUsageSet?: DeferUsageSet | undefined;
 }
 
@@ -169,7 +169,7 @@ export interface StreamUsage {
   fieldGroup: FieldGroup;
 }
 
-type GraphQLWrappedResult<T> = [T, Array<IncrementalDataRecord>];
+type GraphQLWrappedResult<T> = [T, Array<IncrementalDataRecord> | undefined];
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
@@ -353,30 +353,44 @@ function withNewDeferredGroupedFieldSets(
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   if (isPromise(result)) {
     return result.then((resolved) => {
-      resolved[1].push(...newDeferredGroupedFieldSetRecords);
+      addIncrementalDataRecords(resolved, newDeferredGroupedFieldSetRecords);
       return resolved;
     });
   }
 
-  result[1].push(...newDeferredGroupedFieldSetRecords);
+  addIncrementalDataRecords(result, newDeferredGroupedFieldSetRecords);
   return result;
 }
 
+function addIncrementalDataRecords(
+  graphqlWrappedResult: GraphQLWrappedResult<unknown>,
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined,
+): void {
+  if (incrementalDataRecords === undefined) {
+    return;
+  }
+  if (graphqlWrappedResult[1] === undefined) {
+    graphqlWrappedResult[1] = [...incrementalDataRecords];
+  } else {
+    graphqlWrappedResult[1].push(...incrementalDataRecords);
+  }
+}
+
 function withError(
-  errors: Array<GraphQLError>,
+  errors: Array<GraphQLError> | undefined,
   error: GraphQLError,
 ): ReadonlyArray<GraphQLError> {
-  return errors.length === 0 ? [error] : [...errors, error];
+  return errors === undefined ? [error] : [...errors, error];
 }
 
 function buildDataResponse(
   exeContext: ExecutionContext,
   data: ObjMap<unknown>,
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined,
 ): ExecutionResult | ExperimentalIncrementalExecutionResults {
   const errors = exeContext.errors;
-  if (incrementalDataRecords.length === 0) {
-    return errors.length > 0 ? { errors, data } : { data };
+  if (incrementalDataRecords === undefined) {
+    return errors !== undefined ? { errors, data } : { data };
   }
 
   return buildIncrementalResponse(
@@ -488,8 +502,8 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    errors: [],
-    cancellableStreams: new Set(),
+    errors: undefined,
+    cancellableStreams: undefined,
   };
 }
 
@@ -499,8 +513,8 @@ function buildPerEventExecutionContext(
 ): ExecutionContext {
   return {
     ...exeContext,
-    errors: [],
     rootValue: payload,
+    errors: undefined,
   };
 }
 
@@ -580,15 +594,15 @@ function executeFieldsSerially(
       if (isPromise(result)) {
         return result.then((resolved) => {
           graphqlWrappedResult[0][responseName] = resolved[0];
-          graphqlWrappedResult[1].push(...resolved[1]);
+          addIncrementalDataRecords(graphqlWrappedResult, resolved[1]);
           return graphqlWrappedResult;
         });
       }
       graphqlWrappedResult[0][responseName] = result[0];
-      graphqlWrappedResult[1].push(...result[1]);
+      addIncrementalDataRecords(graphqlWrappedResult, result[1]);
       return graphqlWrappedResult;
     },
-    [Object.create(null), []] as GraphQLWrappedResult<ObjMap<unknown>>,
+    [Object.create(null), undefined] as GraphQLWrappedResult<ObjMap<unknown>>,
   );
 }
 
@@ -608,7 +622,7 @@ function executeFields(
   const results = Object.create(null);
   const graphqlWrappedResult: GraphQLWrappedResult<ObjMap<unknown>> = [
     results,
-    [],
+    undefined,
   ];
   let containsPromise = false;
 
@@ -628,13 +642,13 @@ function executeFields(
       if (result !== undefined) {
         if (isPromise(result)) {
           results[responseName] = result.then((resolved) => {
-            graphqlWrappedResult[1].push(...resolved[1]);
+            addIncrementalDataRecords(graphqlWrappedResult, resolved[1]);
             return resolved[0];
           });
           containsPromise = true;
         } else {
           results[responseName] = result[0];
-          graphqlWrappedResult[1].push(...result[1]);
+          addIncrementalDataRecords(graphqlWrappedResult, result[1]);
         }
       }
     }
@@ -746,16 +760,28 @@ function executeField(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
-        const errors = (incrementalContext ?? exeContext).errors;
-        handleFieldError(rawError, returnType, fieldGroup, path, errors);
-        return [null, []];
+        handleFieldError(
+          rawError,
+          exeContext,
+          returnType,
+          fieldGroup,
+          path,
+          incrementalContext,
+        );
+        return [null, undefined];
       });
     }
     return completed;
   } catch (rawError) {
-    const errors = (incrementalContext ?? exeContext).errors;
-    handleFieldError(rawError, returnType, fieldGroup, path, errors);
-    return [null, []];
+    handleFieldError(
+      rawError,
+      exeContext,
+      returnType,
+      fieldGroup,
+      path,
+      incrementalContext,
+    );
+    return [null, undefined];
   }
 }
 
@@ -788,10 +814,11 @@ export function buildResolveInfo(
 
 function handleFieldError(
   rawError: unknown,
+  exeContext: ExecutionContext,
   returnType: GraphQLOutputType,
   fieldGroup: FieldGroup,
   path: Path,
-  errors: Array<GraphQLError>,
+  incrementalContext: IncrementalContext | undefined,
 ): void {
   const error = locatedError(rawError, toNodes(fieldGroup), pathToArray(path));
 
@@ -803,6 +830,12 @@ function handleFieldError(
 
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
+  const context = incrementalContext ?? exeContext;
+  let errors = context.errors;
+  if (errors === undefined) {
+    errors = [];
+    context.errors = errors;
+  }
   errors.push(error);
 }
 
@@ -865,7 +898,7 @@ function completeValue(
 
   // If result value is null or undefined then return null.
   if (result == null) {
-    return [null, []];
+    return [null, undefined];
   }
 
   // If field type is List, complete each item in the list with the inner type
@@ -885,7 +918,7 @@ function completeValue(
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
   if (isLeafType(returnType)) {
-    return [completeLeafValue(returnType, result), []];
+    return [completeLeafValue(returnType, result), undefined];
   }
 
   // If field type is an abstract type, Interface or Union, determine the
@@ -952,9 +985,15 @@ async function completePromisedValue(
     }
     return completed;
   } catch (rawError) {
-    const errors = (incrementalContext ?? exeContext).errors;
-    handleFieldError(rawError, returnType, fieldGroup, path, errors);
-    return [null, []];
+    handleFieldError(
+      rawError,
+      exeContext,
+      returnType,
+      fieldGroup,
+      path,
+      incrementalContext,
+    );
+    return [null, undefined];
   }
 }
 
@@ -1049,7 +1088,7 @@ async function completeAsyncIteratorValue(
   const completedResults: Array<unknown> = [];
   const graphqlWrappedResult: GraphQLWrappedResult<Array<unknown>> = [
     completedResults,
-    [],
+    undefined,
   ];
   let index = 0;
   const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
@@ -1069,6 +1108,9 @@ async function completeAsyncIteratorValue(
           path,
           earlyReturn: returnFn.bind(asyncIterator),
         };
+        if (exeContext.cancellableStreams === undefined) {
+          exeContext.cancellableStreams = new Set();
+        }
         exeContext.cancellableStreams.add(streamRecord);
       }
 
@@ -1083,7 +1125,7 @@ async function completeAsyncIteratorValue(
         itemType,
       );
 
-      graphqlWrappedResult[1].push(firstStreamItems);
+      addIncrementalDataRecords(graphqlWrappedResult, [firstStreamItems]);
       break;
     }
 
@@ -1216,7 +1258,7 @@ function completeIterableValue(
   const completedResults: Array<unknown> = [];
   const graphqlWrappedResult: GraphQLWrappedResult<Array<unknown>> = [
     completedResults,
-    [],
+    undefined,
   ];
   let index = 0;
   const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
@@ -1242,7 +1284,7 @@ function completeIterableValue(
         itemType,
       );
 
-      graphqlWrappedResult[1].push(firstStreamItems);
+      addIncrementalDataRecords(graphqlWrappedResult, [firstStreamItems]);
       break;
     }
 
@@ -1329,12 +1371,18 @@ function completeListItemValue(
       completedResults.push(
         completedItem.then(
           (resolved) => {
-            parent[1].push(...resolved[1]);
+            addIncrementalDataRecords(parent, resolved[1]);
             return resolved[0];
           },
           (rawError) => {
-            const errors = (incrementalContext ?? exeContext).errors;
-            handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
+            handleFieldError(
+              rawError,
+              exeContext,
+              itemType,
+              fieldGroup,
+              itemPath,
+              incrementalContext,
+            );
             return null;
           },
         ),
@@ -1343,10 +1391,16 @@ function completeListItemValue(
     }
 
     completedResults.push(completedItem[0]);
-    parent[1].push(...completedItem[1]);
+    addIncrementalDataRecords(parent, completedItem[1]);
   } catch (rawError) {
-    const errors = (incrementalContext ?? exeContext).errors;
-    handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
+    handleFieldError(
+      rawError,
+      exeContext,
+      itemType,
+      fieldGroup,
+      itemPath,
+      incrementalContext,
+    );
     completedResults.push(null);
   }
   return false;
@@ -1378,11 +1432,17 @@ async function completePromisedListItemValue(
     if (isPromise(completed)) {
       completed = await completed;
     }
-    parent[1].push(...completed[1]);
+    addIncrementalDataRecords(parent, completed[1]);
     return completed[0];
   } catch (rawError) {
-    const errors = (incrementalContext ?? exeContext).errors;
-    handleFieldError(rawError, itemType, fieldGroup, itemPath, errors);
+    handleFieldError(
+      rawError,
+      exeContext,
+      itemType,
+      fieldGroup,
+      itemPath,
+      incrementalContext,
+    );
     return null;
   }
 }
@@ -2040,7 +2100,7 @@ function executeDeferredGroupedFieldSets(
         path,
         groupedFieldSet,
         {
-          errors: [],
+          errors: undefined,
           deferUsageSet,
         },
         deferMap,
@@ -2130,7 +2190,7 @@ function executeDeferredGroupedFieldSet(
 }
 
 function buildDeferredGroupedFieldSetResult(
-  errors: ReadonlyArray<GraphQLError>,
+  errors: ReadonlyArray<GraphQLError> | undefined,
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
   path: Path | undefined,
   result: GraphQLWrappedResult<ObjMap<unknown>>,
@@ -2139,7 +2199,7 @@ function buildDeferredGroupedFieldSetResult(
     deferredFragmentRecords,
     path: pathToArray(path),
     result:
-      errors.length === 0 ? { data: result[0] } : { data: result[0], errors },
+      errors === undefined ? { data: result[0] } : { data: result[0], errors },
     incrementalDataRecords: result[1],
   };
 }
@@ -2174,7 +2234,7 @@ function firstSyncStreamItems(
         initialPath,
         initialItem,
         exeContext,
-        { errors: [] },
+        { errors: undefined },
         fieldGroup,
         info,
         itemType,
@@ -2197,7 +2257,7 @@ function firstSyncStreamItems(
           currentPath,
           item,
           exeContext,
-          { errors: [] },
+          { errors: undefined },
           fieldGroup,
           info,
           itemType,
@@ -2243,15 +2303,17 @@ function prependNextResolvedStreamItems(
   result: StreamItemsResult,
   nextStreamItems: StreamItemsRecord,
 ): StreamItemsResult {
-  return isReconcilableStreamItemsResult(result)
-    ? {
-        ...result,
-        incrementalDataRecords: [
-          nextStreamItems,
-          ...result.incrementalDataRecords,
-        ],
-      }
-    : result;
+  if (!isReconcilableStreamItemsResult(result)) {
+    return result;
+  }
+  const incrementalDataRecords = result.incrementalDataRecords;
+  return {
+    ...result,
+    incrementalDataRecords:
+      incrementalDataRecords === undefined
+        ? [nextStreamItems]
+        : [nextStreamItems, ...incrementalDataRecords],
+  };
 }
 
 function firstAsyncStreamItems(
@@ -2311,7 +2373,7 @@ async function getNextAsyncStreamItemsResult(
     itemPath,
     iteration.value,
     exeContext,
-    { errors: [] },
+    { errors: undefined },
     fieldGroup,
     info,
     itemType,
@@ -2384,12 +2446,13 @@ function completeStreamItems(
     } catch (rawError) {
       handleFieldError(
         rawError,
+        exeContext,
         itemType,
         fieldGroup,
         itemPath,
-        incrementalContext.errors,
+        incrementalContext,
       );
-      result = [null, []];
+      result = [null, undefined];
     }
   } catch (error) {
     return {
@@ -2403,12 +2466,13 @@ function completeStreamItems(
       .then(undefined, (rawError) => {
         handleFieldError(
           rawError,
+          exeContext,
           itemType,
           fieldGroup,
           itemPath,
-          incrementalContext.errors,
+          incrementalContext,
         );
-        return [null, []] as GraphQLWrappedResult<unknown>;
+        return [null, undefined] as GraphQLWrappedResult<unknown>;
       })
       .then(
         (resolvedItem) =>
@@ -2432,14 +2496,14 @@ function completeStreamItems(
 }
 
 function buildStreamItemsResult(
-  errors: ReadonlyArray<GraphQLError>,
+  errors: ReadonlyArray<GraphQLError> | undefined,
   streamRecord: SubsequentResultRecord,
   result: GraphQLWrappedResult<unknown>,
 ): StreamItemsResult {
   return {
     streamRecord,
     result:
-      errors.length === 0
+      errors === undefined
         ? { items: [result[0]] }
         : {
             items: [result[0]],
