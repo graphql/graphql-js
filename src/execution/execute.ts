@@ -2163,12 +2163,12 @@ function firstSyncStreamItems(
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
 ): StreamItemsRecord {
-  const path = streamRecord.path;
-  const initialPath = addPath(path, initialIndex, undefined);
-
-  const firstStreamItems: StreamItemsRecord = {
+  return {
     streamRecord,
     result: Promise.resolve().then(() => {
+      const path = streamRecord.path;
+      const initialPath = addPath(path, initialIndex, undefined);
+
       let result = completeStreamItems(
         streamRecord,
         initialPath,
@@ -2179,7 +2179,8 @@ function firstSyncStreamItems(
         info,
         itemType,
       );
-      const results = [result];
+      const firstStreamItems = { result };
+      let currentStreamItems = firstStreamItems;
       let currentIndex = initialIndex;
       let iteration = iterator.next();
       let erroredSynchronously = false;
@@ -2201,31 +2202,29 @@ function firstSyncStreamItems(
           info,
           itemType,
         );
-        results.push(result);
+
+        const nextStreamItems: StreamItemsRecord = { streamRecord, result };
+        currentStreamItems.result = prependNextStreamItems(
+          currentStreamItems.result,
+          nextStreamItems,
+        );
+        currentStreamItems = nextStreamItems;
+
         iteration = iterator.next();
       }
 
-      currentIndex = results.length - 1;
       // If a non-reconcilable stream items result was encountered, then the stream terminates in error.
       // Otherwise, add a stream terminator.
-      let currentResult = erroredSynchronously
-        ? results[currentIndex]
-        : prependNextStreamItems(results[currentIndex], {
-            streamRecord,
-            result: { streamRecord },
-          });
-
-      while (currentIndex-- > 0) {
-        currentResult = prependNextStreamItems(results[currentIndex], {
-          streamRecord,
-          result: currentResult,
-        });
+      if (!erroredSynchronously) {
+        currentStreamItems.result = prependNextStreamItems(
+          currentStreamItems.result,
+          { streamRecord, result: { streamRecord } },
+        );
       }
 
-      return currentResult;
+      return firstStreamItems.result;
     }),
   };
-  return firstStreamItems;
 }
 
 function prependNextStreamItems(
