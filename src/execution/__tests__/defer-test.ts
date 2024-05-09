@@ -1138,6 +1138,61 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
+  it('Correctly bundles varying subfields into incremental data records unique by defer combination, ignoring fields in a fragment masked by a parent defer', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer {
+          hero {
+            id
+          }
+        }
+        ... @defer {
+          hero {
+            name
+            shouldBeWithNameDespiteAdditionalDefer: name
+            ... @defer {
+              shouldBeWithNameDespiteAdditionalDefer: name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: [] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { hero: {} },
+            id: '0',
+          },
+          {
+            data: { id: '1' },
+            id: '0',
+            subPath: ['hero'],
+          },
+          {
+            data: {
+              name: 'Luke',
+              shouldBeWithNameDespiteAdditionalDefer: 'Luke',
+            },
+            id: '1',
+            subPath: ['hero'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
   it('Nulls cross defer boundaries, null first', async () => {
     const document = parse(`
       query {
