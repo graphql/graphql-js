@@ -90,6 +90,16 @@ describe('astFromValue', () => {
       'Int cannot represent non 32-bit signed integer value: 1e+40',
     );
 
+    // Note: outside the bounds of 32bit signed int.
+    expect(() => astFromValue(9007199254740991, GraphQLInt)).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 9007199254740991',
+    );
+
+    // Note: outside the bounds of 32bit signed int as BigInt.
+    expect(() => astFromValue(9007199254740991n, GraphQLInt)).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 9007199254740991',
+    );
+
     expect(() => astFromValue(NaN, GraphQLInt)).to.throw(
       'Int cannot represent non-integer value: NaN',
     );
