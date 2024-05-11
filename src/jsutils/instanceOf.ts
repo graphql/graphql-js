@@ -2,7 +2,6 @@ import { inspect } from './inspect';
 
 /* c8 ignore next 3 */
 const isProduction =
-  // eslint-disable-next-line no-undef
   typeof process !== 'undefined' &&
   // eslint-disable-next-line no-undef
   process.env.NODE_ENV === 'production';
