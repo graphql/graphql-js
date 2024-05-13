@@ -667,6 +667,106 @@ describe('Execute: stream directive', () => {
       },
     });
   });
+  it('Can stream a field that returns an async iterable with backpressure', async () => {
+    const document = parse(`
+      query {
+        friendList @stream {
+          name
+          id
+        }
+      }
+    `);
+    let count = 0;
+    const executeResult = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        async *friendList() {
+          for (const friend of friends) {
+            count++;
+            // eslint-disable-next-line no-await-in-loop
+            yield await Promise.resolve(friend);
+          }
+        },
+      },
+      streamHighWaterMark: 2,
+    });
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {
+        friendList: [],
+      },
+      pending: [{ id: '0', path: ['friendList'] }],
+      hasNext: true,
+    });
+
+    expect(count).to.equal(2);
+
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            items: [{ name: 'Luke', id: '1' }],
+            id: '0',
+          },
+        ],
+        hasNext: true,
+      },
+    });
+
+    expect(count).to.equal(3);
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            items: [{ name: 'Han', id: '2' }],
+            id: '0',
+          },
+        ],
+        hasNext: true,
+      },
+    });
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            items: [{ name: 'Leia', id: '3' }],
+            id: '0',
+          },
+        ],
+        hasNext: true,
+      },
+    });
+
+    const result5 = await iterator.next();
+    expectJSON(result5).toDeepEqual({
+      done: false,
+      value: {
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    });
+
+    const result6 = await iterator.next();
+    expectJSON(result6).toDeepEqual({ done: true, value: undefined });
+  });
   it('Can handle concurrent calls to .next() without waiting', async () => {
     const document = parse(`
       query {

@@ -185,6 +185,7 @@ export function buildIncrementalResponse(
 }
 
 interface IncrementalPublisherContext {
+  streamHighWaterMark: number;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
@@ -201,6 +202,7 @@ class IncrementalPublisher {
   private _completedResultQueue: Array<IncrementalDataRecordResult>;
   private _newPending: Set<SubsequentResultRecord>;
   private _incremental: Array<IncrementalResult>;
+  private _asyncStreamCounts: Map<AsyncStreamRecord, number>;
   private _completed: Array<CompletedResult>;
   // these are assigned within the Promise executor called synchronously within the constructor
   private _signalled!: Promise<unknown>;
@@ -213,6 +215,7 @@ class IncrementalPublisher {
     this._completedResultQueue = [];
     this._newPending = new Set();
     this._incremental = [];
+    this._asyncStreamCounts = new Map();
     this._completed = [];
     this._reset();
   }
@@ -427,7 +430,18 @@ class IncrementalPublisher {
             subsequentIncrementalExecutionResult.completed = this._completed;
           }
 
+          for (const [streamRecord, count] of this._asyncStreamCounts) {
+            streamRecord.waterMark -= count;
+            if (
+              streamRecord.resume !== undefined &&
+              streamRecord.waterMark < this._context.streamHighWaterMark
+            ) {
+              streamRecord.resume();
+            }
+          }
+
           this._incremental = [];
+          this._asyncStreamCounts.clear();
           this._completed = [];
 
           return { value: subsequentIncrementalExecutionResult, done: false };
@@ -593,20 +607,26 @@ class IncrementalPublisher {
         errors: streamItemsResult.errors,
       });
       this._pending.delete(streamRecord);
-      if (isCancellableStreamRecord(streamRecord)) {
-        invariant(this._context.cancellableStreams !== undefined);
-        this._context.cancellableStreams.delete(streamRecord);
-        streamRecord.earlyReturn().catch(() => {
-          /* c8 ignore next 1 */
-          // ignore error
-        });
+      if (isAsyncStreamRecord(streamRecord)) {
+        this._asyncStreamCounts.delete(streamRecord);
+        if (isCancellableStreamRecord(streamRecord)) {
+          invariant(this._context.cancellableStreams !== undefined);
+          this._context.cancellableStreams.delete(streamRecord);
+          streamRecord.earlyReturn().catch(() => {
+            /* c8 ignore next 1 */
+            // ignore error
+          });
+        }
       }
     } else if (streamItemsResult.result === undefined) {
       this._completed.push({ id });
       this._pending.delete(streamRecord);
-      if (isCancellableStreamRecord(streamRecord)) {
-        invariant(this._context.cancellableStreams !== undefined);
-        this._context.cancellableStreams.delete(streamRecord);
+      if (isAsyncStreamRecord(streamRecord)) {
+        this._asyncStreamCounts.delete(streamRecord);
+        if (isCancellableStreamRecord(streamRecord)) {
+          invariant(this._context.cancellableStreams !== undefined);
+          this._context.cancellableStreams.delete(streamRecord);
+        }
       }
     } else {
       const incrementalEntry: IncrementalStreamResult = {
@@ -615,6 +635,13 @@ class IncrementalPublisher {
       };
 
       this._incremental.push(incrementalEntry);
+      if (isAsyncStreamRecord(streamRecord)) {
+        const count = this._asyncStreamCounts.get(streamRecord);
+        this._asyncStreamCounts.set(
+          streamRecord,
+          count === undefined ? 1 : count + 1,
+        );
+      }
 
       if (streamItemsResult.incrementalDataRecords !== undefined) {
         this._addIncrementalDataRecords(
@@ -739,7 +766,18 @@ export class DeferredFragmentRecord implements SubsequentResultRecord {
   }
 }
 
-export interface CancellableStreamRecord extends SubsequentResultRecord {
+export interface AsyncStreamRecord extends SubsequentResultRecord {
+  waterMark: number;
+  resume: (() => void) | undefined;
+}
+
+function isAsyncStreamRecord(
+  subsequentResultRecord: SubsequentResultRecord,
+): subsequentResultRecord is AsyncStreamRecord {
+  return 'waterMark' in subsequentResultRecord;
+}
+
+export interface CancellableStreamRecord extends AsyncStreamRecord {
   earlyReturn: () => Promise<unknown>;
 }
 

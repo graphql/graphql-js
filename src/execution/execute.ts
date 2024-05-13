@@ -12,6 +12,7 @@ import { addPath, pathToArray } from '../jsutils/Path.js';
 import { promiseForObject } from '../jsutils/promiseForObject.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { promiseReduce } from '../jsutils/promiseReduce.js';
+import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
 import { locatedError } from '../error/locatedError.js';
@@ -59,6 +60,7 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
 import type {
+  AsyncStreamRecord,
   CancellableStreamRecord,
   DeferredGroupedFieldSetRecord,
   DeferredGroupedFieldSetResult,
@@ -143,6 +145,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError> | undefined;
+  streamHighWaterMark: number;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
@@ -161,6 +164,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  streamHighWaterMark?: Maybe<number>;
 }
 
 export interface StreamUsage {
@@ -439,6 +443,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    streamHighWaterMark,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -504,6 +509,7 @@ export function buildExecutionContext(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: undefined,
     cancellableStreams: undefined,
+    streamHighWaterMark: streamHighWaterMark ?? 100,
   };
 }
 
@@ -1096,16 +1102,20 @@ async function completeAsyncIteratorValue(
   while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
       const returnFn = asyncIterator.return;
-      let streamRecord: SubsequentResultRecord | CancellableStreamRecord;
+      let streamRecord: AsyncStreamRecord | CancellableStreamRecord;
       if (returnFn === undefined) {
         streamRecord = {
           label: streamUsage.label,
           path,
-        } as SubsequentResultRecord;
+          waterMark: 0,
+          resume: undefined,
+        };
       } else {
         streamRecord = {
           label: streamUsage.label,
           path,
+          waterMark: 0,
+          resume: undefined,
           earlyReturn: returnFn.bind(asyncIterator),
         };
         if (exeContext.cancellableStreams === undefined) {
@@ -2317,7 +2327,7 @@ function prependNextResolvedStreamItems(
 }
 
 function firstAsyncStreamItems(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: AsyncStreamRecord,
   path: Path,
   initialIndex: number,
   asyncIterator: AsyncIterator<unknown>,
@@ -2343,7 +2353,7 @@ function firstAsyncStreamItems(
 }
 
 async function getNextAsyncStreamItemsResult(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: AsyncStreamRecord,
   path: Path,
   index: number,
   asyncIterator: AsyncIterator<unknown>,
@@ -2353,6 +2363,18 @@ async function getNextAsyncStreamItemsResult(
   itemType: GraphQLOutputType,
 ): Promise<StreamItemsResult> {
   let iteration;
+
+  const waterMark = streamRecord.waterMark;
+
+  if (waterMark === exeContext.streamHighWaterMark) {
+    // promiseWithResolvers uses void only as a generic type parameter
+    // see: https://typescript-eslint.io/rules/no-invalid-void-type/
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    const { promise: resumed, resolve: resume } = promiseWithResolvers<void>();
+    streamRecord.resume = resume;
+    await resumed;
+  }
+
   try {
     iteration = await asyncIterator.next();
   } catch (error) {
@@ -2365,6 +2387,8 @@ async function getNextAsyncStreamItemsResult(
   if (iteration.done) {
     return { streamRecord };
   }
+
+  streamRecord.waterMark++;
 
   const itemPath = addPath(path, index, undefined);
 
