@@ -726,12 +726,6 @@ describe('Execute: defer directive', () => {
             },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             data: {
               id: '1',
@@ -739,7 +733,7 @@ describe('Execute: defer directive', () => {
             id: '1',
           },
         ],
-        completed: [{ id: '1' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -903,12 +897,6 @@ describe('Execute: defer directive', () => {
             },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             data: {
               bar: 'bar',
@@ -916,7 +904,7 @@ describe('Execute: defer directive', () => {
             id: '1',
           },
         ],
-        completed: [{ id: '1' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -1918,17 +1906,11 @@ describe('Execute: defer directive', () => {
             data: { name: 'slow', friends: [{}, {}, {}] },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           { data: { name: 'Han' }, id: '1' },
           { data: { name: 'Leia' }, id: '2' },
           { data: { name: 'C-3PO' }, id: '3' },
         ],
-        completed: [{ id: '1' }, { id: '2' }, { id: '3' }],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }, { id: '3' }],
         hasNext: false,
       },
     ]);
@@ -1974,17 +1956,11 @@ describe('Execute: defer directive', () => {
             },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           { data: { name: 'Han' }, id: '1' },
           { data: { name: 'Leia' }, id: '2' },
           { data: { name: 'C-3PO' }, id: '3' },
         ],
-        completed: [{ id: '1' }, { id: '2' }, { id: '3' }],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }, { id: '3' }],
         hasNext: false,
       },
     ]);

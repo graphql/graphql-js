@@ -2106,12 +2106,22 @@ function executeDeferredGroupedFieldSets(
         deferMap,
       );
 
+    const result = shouldDefer(parentDeferUsages, deferUsageSet)
+      ? Promise.resolve().then(executor)
+      : executor();
+
     const deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord = {
       deferredFragmentRecords,
-      result: shouldDefer(parentDeferUsages, deferUsageSet)
-        ? Promise.resolve().then(executor)
-        : executor(),
+      result,
     };
+
+    if (isPromise(result)) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      result.then((resolved) => {
+        deferredGroupedFieldSetRecord.result = resolved;
+        return resolved;
+      });
+    }
 
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }

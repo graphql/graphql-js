@@ -339,14 +339,17 @@ class IncrementalPublisher {
   private _enqueueCompletedDeferredGroupedFieldSet(
     result: DeferredGroupedFieldSetResult,
   ): void {
-    let hasPendingParent = false;
+    let readyToPublish = false;
     for (const deferredFragmentRecord of result.deferredFragmentRecords) {
-      if (deferredFragmentRecord.id !== undefined) {
-        hasPendingParent = true;
+      if (
+        this._pending.has(deferredFragmentRecord) ||
+        this._newPending.has(deferredFragmentRecord)
+      ) {
+        readyToPublish = true;
       }
       deferredFragmentRecord.results.push(result);
     }
-    if (hasPendingParent) {
+    if (readyToPublish) {
       this._completedResultQueue.push(result);
       this._trigger();
     }
