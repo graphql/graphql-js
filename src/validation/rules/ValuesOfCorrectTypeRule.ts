@@ -1,5 +1,4 @@
 import { didYouMean } from '../../jsutils/didYouMean.js';
-import { inspect } from '../../jsutils/inspect.js';
 import { suggestionList } from '../../jsutils/suggestionList.js';
 
 import { GraphQLError } from '../../error/GraphQLError.js';
@@ -24,6 +23,8 @@ import {
   isNonNullType,
   isRequiredInputField,
 } from '../../type/definition.js';
+
+import { replaceVariables } from '../../utilities/replaceVariables.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
@@ -71,10 +72,9 @@ export function ValuesOfCorrectTypeRule(
       for (const fieldDef of Object.values(type.getFields())) {
         const fieldNode = fieldNodeMap.get(fieldDef.name);
         if (!fieldNode && isRequiredInputField(fieldDef)) {
-          const typeStr = inspect(fieldDef.type);
           context.reportError(
             new GraphQLError(
-              `Field "${type.name}.${fieldDef.name}" of required type "${typeStr}" was not provided.`,
+              `Field "${fieldDef}" of required type "${fieldDef.type}" was not provided.`,
               { nodes: node },
             ),
           );
@@ -101,7 +101,7 @@ export function ValuesOfCorrectTypeRule(
         );
         context.reportError(
           new GraphQLError(
-            `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
+            `Field "${node.name.value}" is not defined by type "${parentType}".` +
               didYouMean(suggestions),
             { nodes: node },
           ),
@@ -113,7 +113,7 @@ export function ValuesOfCorrectTypeRule(
       if (isNonNullType(type)) {
         context.reportError(
           new GraphQLError(
-            `Expected value of type "${inspect(type)}", found ${print(node)}.`,
+            `Expected value of type "${type}", found ${print(node)}.`,
             { nodes: node },
           ),
         );
@@ -141,37 +141,36 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   const type = getNamedType(locationType);
 
   if (!isLeafType(type)) {
-    const typeStr = inspect(locationType);
     context.reportError(
       new GraphQLError(
-        `Expected value of type "${typeStr}", found ${print(node)}.`,
+        `Expected value of type "${locationType}", found ${print(node)}.`,
         { nodes: node },
       ),
     );
     return;
   }
 
+  const constValueNode = replaceVariables(node);
+
   // Scalars and Enums determine if a literal value is valid via parseLiteral(),
-  // which may throw or return an invalid value to indicate failure.
+  // which may throw or return undefined to indicate an invalid value.
   try {
-    const parseResult = type.parseLiteral(node, undefined /* variables */);
+    const parseResult = type.parseLiteral(constValueNode);
     if (parseResult === undefined) {
-      const typeStr = inspect(locationType);
       context.reportError(
         new GraphQLError(
-          `Expected value of type "${typeStr}", found ${print(node)}.`,
+          `Expected value of type "${locationType}", found ${print(node)}.`,
           { nodes: node },
         ),
       );
     }
   } catch (error) {
-    const typeStr = inspect(locationType);
     if (error instanceof GraphQLError) {
       context.reportError(error);
     } else {
       context.reportError(
         new GraphQLError(
-          `Expected value of type "${typeStr}", found ${print(node)}; ` +
+          `Expected value of type "${locationType}", found ${print(node)}; ` +
             error.message,
           { nodes: node, originalError: error },
         ),

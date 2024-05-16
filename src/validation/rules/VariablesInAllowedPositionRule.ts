@@ -1,4 +1,3 @@
-import { inspect } from '../../jsutils/inspect.js';
 import type { Maybe } from '../../jsutils/Maybe.js';
 
 import { GraphQLError } from '../../error/GraphQLError.js';
@@ -7,7 +6,10 @@ import type { ValueNode, VariableDefinitionNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { GraphQLType } from '../../type/definition.js';
+import type {
+  GraphQLDefaultValueUsage,
+  GraphQLType,
+} from '../../type/definition.js';
 import { isNonNullType } from '../../type/definition.js';
 import type { GraphQLSchema } from '../../type/schema.js';
 
@@ -57,11 +59,9 @@ export function VariablesInAllowedPositionRule(
                 defaultValue,
               )
             ) {
-              const varTypeStr = inspect(varType);
-              const typeStr = inspect(type);
               context.reportError(
                 new GraphQLError(
-                  `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
+                  `Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`,
                   { nodes: [varDef, node] },
                 ),
               );
@@ -86,7 +86,7 @@ function allowedVariableUsage(
   varType: GraphQLType,
   varDefaultValue: Maybe<ValueNode>,
   locationType: GraphQLType,
-  locationDefaultValue: Maybe<unknown>,
+  locationDefaultValue: GraphQLDefaultValueUsage | undefined,
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =
