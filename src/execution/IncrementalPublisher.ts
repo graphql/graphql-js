@@ -508,13 +508,16 @@ class IncrementalPublisher {
     ) {
       for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
         const id = deferredFragmentRecord.id;
-        if (id !== undefined) {
-          this._completed.push({
-            id,
-            errors: deferredGroupedFieldSetResult.errors,
-          });
-          this._pending.delete(deferredFragmentRecord);
+        // This can occur if multiple deferred grouped field sets error for a fragment.
+        if (!this._pending.has(deferredFragmentRecord)) {
+          continue;
         }
+        invariant(id !== undefined);
+        this._completed.push({
+          id,
+          errors: deferredGroupedFieldSetResult.errors,
+        });
+        this._pending.delete(deferredFragmentRecord);
       }
       return;
     }
@@ -535,8 +538,12 @@ class IncrementalPublisher {
       // TODO: add test case for this.
       // Presumably, this can occur if an error causes a fragment to be completed early,
       // while an asynchronous deferred grouped field set result is enqueued.
+      // Presumably, this can also occur if multiple deferred fragments are executed
+      // early and share a deferred grouped field set. This could be worked around
+      // another way, such as by checking whether the completedResultQueue already
+      // contains the completedResult prior to pushing.
       /* c8 ignore next 3 */
-      if (id === undefined) {
+      if (!this._pending.has(deferredFragmentRecord)) {
         continue;
       }
       const reconcilableResults = deferredFragmentRecord.reconcilableResults;
@@ -546,6 +553,7 @@ class IncrementalPublisher {
       ) {
         continue;
       }
+      invariant(id !== undefined);
       for (const reconcilableResult of reconcilableResults) {
         if (reconcilableResult.sent) {
           continue;
