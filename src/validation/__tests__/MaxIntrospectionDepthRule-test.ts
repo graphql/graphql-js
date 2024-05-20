@@ -137,7 +137,7 @@ describe('Validate: Max introspection nodes rule', () => {
     ]);
   });
 
-  it('3 possibleTypes deep introspection query from __schema', () => {
+  it('3 inputFields deep introspection query from __schema', () => {
     expectErrors(`
     {
       __schema {
