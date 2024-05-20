@@ -84,6 +84,7 @@ import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule';
 
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
+import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 import { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';
 import { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule';
 import { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule';
@@ -143,5 +144,6 @@ export const specifiedSDLRules = Object.freeze([
   KnownArgumentNamesOnDirectivesRule,
   UniqueArgumentNamesRule,
   UniqueInputFieldNamesRule,
+  MaxIntrospectionDepthRule,
   ProvidedRequiredArgumentsOnDirectivesRule,
 ]);
