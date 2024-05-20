@@ -32,11 +32,13 @@ export function MaxIntrospectionDepthRule(
       (node.name.value === 'fields' ||
         node.name.value === 'interfaces' ||
         node.name.value === 'possibleTypes' ||
-        node.name.value === 'inputFields') &&
-      // eslint-disable-next-line no-param-reassign
-      ++depth >= MAX_LISTS_DEPTH
+        node.name.value === 'inputFields')
     ) {
-      return true;
+      // eslint-disable-next-line no-param-reassign
+      depth++;
+      if (depth >= MAX_LISTS_DEPTH) {
+        return true;
+      }
     }
 
     // handles fields and inline fragments
