@@ -230,6 +230,24 @@ describe('Validate: Max introspection nodes rule', () => {
           },
         ],
       },
+      {
+        locations: [
+          {
+            column: 7,
+            line: 18,
+          },
+        ],
+        message: 'Maximum introspection depth exceeded',
+      },
+      {
+        locations: [
+          {
+            column: 7,
+            line: 33,
+          },
+        ],
+        message: 'Maximum introspection depth exceeded',
+      },
     ]);
   });
 
@@ -323,6 +341,24 @@ describe('Validate: Max introspection nodes rule', () => {
             line: 3,
           },
         ],
+      },
+      {
+        locations: [
+          {
+            column: 7,
+            line: 18,
+          },
+        ],
+        message: 'Maximum introspection depth exceeded',
+      },
+      {
+        locations: [
+          {
+            column: 7,
+            line: 33,
+          },
+        ],
+        message: 'Maximum introspection depth exceeded',
       },
     ]);
   });

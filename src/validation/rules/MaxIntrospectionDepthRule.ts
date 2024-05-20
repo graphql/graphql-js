@@ -3,7 +3,6 @@ import { GraphQLError } from '../../error/GraphQLError.js';
 import type { ASTNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
-import { BREAK } from '../../language/visitor.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
@@ -62,7 +61,7 @@ export function MaxIntrospectionDepthRule(
               nodes: [node],
             }),
           );
-          return BREAK;
+          return false;
         }
       }
     },
