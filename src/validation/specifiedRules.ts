@@ -19,6 +19,7 @@ import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule';
 import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule';
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
+import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 // Spec Section: "Fragments must not form cycles"
 import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule';
 // Spec Section: "All Variable Used Defined"
@@ -121,5 +122,6 @@ export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
     KnownArgumentNamesOnDirectivesRule,
     UniqueArgumentNamesRule,
     UniqueInputFieldNamesRule,
+    MaxIntrospectionDepthRule,
     ProvidedRequiredArgumentsOnDirectivesRule,
   ]);
