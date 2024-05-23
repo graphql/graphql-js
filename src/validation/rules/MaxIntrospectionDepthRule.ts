@@ -17,7 +17,7 @@ export function MaxIntrospectionDepthRule(
    */
   function checkDepth(
     node: ASTNode,
-    visitedFragments: Record<string, true>,
+    visitedFragments: { [fragmentName: string]: true },
     depth: number = 0,
   ): boolean {
     if (node.kind === Kind.FRAGMENT_SPREAD) {
