@@ -536,4 +536,19 @@ describe('Validate: Max introspection nodes rule', () => {
     }
     `);
   });
+
+  it("doesn't infinitely recurse on fragment cycle", () => {
+    expectValid(`
+    query test {
+      __schema {
+        types {
+          ...Cycle
+        }
+      }
+    }
+    fragment Cycle on __Type {
+      ...Cycle
+    }
+    `);
+  });
 });
