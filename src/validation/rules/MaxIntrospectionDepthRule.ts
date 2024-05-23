@@ -17,12 +17,12 @@ export function MaxIntrospectionDepthRule(
    */
   function checkDepth(
     node: ASTNode,
-    visitedFragments: { [fragmentName: string]: true },
+    visitedFragments: { [fragmentName: string]: true | undefined },
     depth: number = 0,
   ): boolean {
     if (node.kind === Kind.FRAGMENT_SPREAD) {
       const fragmentName = node.name.value;
-      if (visitedFragments[fragmentName]) {
+      if (visitedFragments[fragmentName] === true) {
         // Fragment cycles are handled by `NoFragmentCyclesRule`.
         return false;
       }
@@ -41,7 +41,7 @@ export function MaxIntrospectionDepthRule(
         visitedFragments[fragmentName] = true;
         return checkDepth(fragment, visitedFragments, depth);
       } finally {
-        delete visitedFragments[fragmentName];
+        visitedFragments[fragmentName] = undefined;
       }
     }
 
