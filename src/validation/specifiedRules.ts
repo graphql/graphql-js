@@ -1,3 +1,10 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`:
+ * * specifiedSDLRules @internal
+ * Should we still expose this file?
+ */
+
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"

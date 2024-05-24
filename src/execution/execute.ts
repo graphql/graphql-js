@@ -1,3 +1,14 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`:
+ * * ExecutionContext
+ * * assertValidExecutionArguments @internal
+ * * buildExecutionContext @internal
+ * * buildResolveInfo @internal
+ * * getFieldDef @internal
+ * Should we still expose this file?
+ */
+
 import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
