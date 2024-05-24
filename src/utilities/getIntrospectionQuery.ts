@@ -232,7 +232,6 @@ export interface IntrospectionObjectType {
   readonly interfaces: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionInterfaceType>
   >;
-  readonly isOneOf: boolean;
 }
 
 export interface IntrospectionInterfaceType {
