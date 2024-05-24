@@ -125,6 +125,8 @@ function buildPackageJSON() {
   delete packageJSON.scripts;
   delete packageJSON.devDependencies;
 
+  packageJSON.type = 'commonjs';
+
   // TODO: move to integration tests
   const publishTag = packageJSON.publishConfig?.tag;
   assert(publishTag != null, 'Should have packageJSON.publishConfig defined!');

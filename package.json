@@ -4,8 +4,55 @@
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "private": true,
-  "main": "index",
+  "main": "index.js",
   "module": "index.mjs",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./index.js.d.mts",
+        "default": "./index.d.ts"
+      },
+      "module": "./index.mjs",
+      "import": "./index.js.mjs",
+      "default": "./index.js"
+    },
+    "./execution/execute.js": {
+      "types": {
+        "import": "./execution/execute.js.d.mts",
+        "default": "./execution/execute.d.ts"
+      },
+      "module": "./execution/execute.mjs",
+      "import": "./execution/execute.js.mjs",
+      "default": "./execution/execute.js"
+    },
+    "./jsutils/instanceOf.js": {
+      "types": {
+        "import": "./jsutils/instanceOf.js.d.mts",
+        "default": "./jsutils/instanceOf.d.ts"
+      },
+      "module": "./jsutils/instanceOf.mjs",
+      "import": "./jsutils/instanceOf.js.mjs",
+      "default": "./jsutils/instanceOf.js"
+    },
+    "./language/parser.js": {
+      "types": {
+        "import": "./language/parser.js.d.mts",
+        "default": "./language/parser.d.ts"
+      },
+      "module": "./language/parser.mjs",
+      "import": "./language/parser.js.mjs",
+      "default": "./language/parser.js"
+    },
+    "./language/ast.js": {
+      "types": {
+        "import": "./language/ast.js.d.mts",
+        "default": "./language/ast.d.ts"
+      },
+      "module": "./language/ast.mjs",
+      "import": "./language/ast.js.mjs",
+      "default": "./language/ast.js"
+    }
+  },
   "typesVersions": {
     ">=4.1.0": {
       "*": [
