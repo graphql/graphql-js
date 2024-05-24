@@ -33,8 +33,10 @@ export interface IntrospectionOptions {
    */
   inputValueDeprecation?: boolean;
 
-  // Whether target GraphQL server supports `@oneOf` input objects.
-  // Default: false
+  /**
+   * Whether target GraphQL server supports `@oneOf` input objects.
+   * Default: false
+   */
   inputObjectOneOf?: boolean;
 }
 
