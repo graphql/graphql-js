@@ -142,8 +142,8 @@ function buildPackageJSON() {
         import: base + '/index.js.d.mts',
         default: base + '/index.d.ts',
       },
-      module: base + '/index.mjs',
       import: base + '/index.js.mjs',
+      module: base + '/index.mjs',
       default: base + '/index.js',
     };
     packageJSON.exports = {

@@ -12,8 +12,8 @@
         "import": "./execution/execute.js.d.mts",
         "default": "./execution/execute.d.ts"
       },
-      "module": "./execution/execute.mjs",
       "import": "./execution/execute.js.mjs",
+      "module": "./execution/execute.mjs",
       "default": "./execution/execute.js"
     },
     "./jsutils/instanceOf.js": {
@@ -21,8 +21,8 @@
         "import": "./jsutils/instanceOf.js.d.mts",
         "default": "./jsutils/instanceOf.d.ts"
       },
-      "module": "./jsutils/instanceOf.mjs",
       "import": "./jsutils/instanceOf.js.mjs",
+      "module": "./jsutils/instanceOf.mjs",
       "default": "./jsutils/instanceOf.js"
     },
     "./language/parser.js": {
@@ -30,8 +30,8 @@
         "import": "./language/parser.js.d.mts",
         "default": "./language/parser.d.ts"
       },
-      "module": "./language/parser.mjs",
       "import": "./language/parser.js.mjs",
+      "module": "./language/parser.mjs",
       "default": "./language/parser.js"
     },
     "./language/ast.js": {
@@ -39,8 +39,8 @@
         "import": "./language/ast.js.d.mts",
         "default": "./language/ast.d.ts"
       },
-      "module": "./language/ast.mjs",
       "import": "./language/ast.js.mjs",
+      "module": "./language/ast.mjs",
       "default": "./language/ast.js"
     }
   },
