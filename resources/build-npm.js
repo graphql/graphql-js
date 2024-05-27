@@ -13,13 +13,17 @@ const {
   showDirStats,
 } = require('./utils.js');
 
-const entryPoints = [
-  'index.ts',
-  'execution/execute.ts',
-  'jsutils/instanceOf.ts',
-  'language/parser.ts',
-  'language/ast.ts',
-];
+const entryPoints = fs
+  .readdirSync('./src', { recursive: true })
+  .filter((f) => f.endsWith('index.ts'))
+  .map((f) => f.replace(/^src/, ''))
+  .reverse()
+  .concat([
+    'execution/execute.ts',
+    'jsutils/instanceOf.ts',
+    'language/parser.ts',
+    'language/ast.ts',
+  ]);
 
 if (require.main === module) {
   fs.rmSync('./npmDist', { recursive: true, force: true });
@@ -126,6 +130,27 @@ function buildPackageJSON() {
   delete packageJSON.devDependencies;
 
   packageJSON.type = 'commonjs';
+
+  for (const entryPoint of entryPoints) {
+    if (!entryPoint.endsWith('index.ts')) {
+      continue;
+    }
+    const base = ('./' + path.dirname(entryPoint)).replace(/\/.?$/, '');
+    const generated = {};
+    generated[base] = {
+      types: {
+        import: base + '/index.js.d.mts',
+        default: base + '/index.d.ts',
+      },
+      module: base + '/index.mjs',
+      import: base + '/index.js.mjs',
+      default: base + '/index.js',
+    };
+    packageJSON.exports = {
+      ...generated,
+      ...packageJSON.exports,
+    };
+  }
 
   // TODO: move to integration tests
   const publishTag = packageJSON.publishConfig?.tag;

@@ -7,15 +7,6 @@
   "main": "index.js",
   "module": "index.mjs",
   "exports": {
-    ".": {
-      "types": {
-        "import": "./index.js.d.mts",
-        "default": "./index.d.ts"
-      },
-      "module": "./index.mjs",
-      "import": "./index.js.mjs",
-      "default": "./index.js"
-    },
     "./execution/execute.js": {
       "types": {
         "import": "./execution/execute.js.d.mts",
