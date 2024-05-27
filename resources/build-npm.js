@@ -142,8 +142,23 @@ function buildPackageJSON() {
         import: base + '/index.js.d.mts',
         default: base + '/index.d.ts',
       },
-      import: base + '/index.js.mjs',
+      /*
+       this is not automatically picked up by vitest, but we can instruct users to add it to their vitest config:
+      ```js title="vite.config.ts"
+      import { defineConfig } from 'vite';
+      export default defineConfig(async ({ mode }) => {
+        return {
+          resolve: mode === 'test' ? { conditions: ['vitest'] } : undefined,
+        };
+      });
+      ```
+       */
+      vitest: {
+        import: base + '/index.js.mjs',
+        default: base + '/index.js',
+      },
       module: base + '/index.mjs',
+      import: base + '/index.js.mjs',
       default: base + '/index.js',
     };
     packageJSON.exports = {
