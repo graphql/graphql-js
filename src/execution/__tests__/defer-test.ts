@@ -20,7 +20,7 @@ import { execute, experimentalExecuteIncrementally } from '../execute.js';
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../IncrementalPublisher.js';
+} from '../types.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
