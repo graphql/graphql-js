@@ -140,6 +140,7 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
+  enableEarlyExecution: boolean;
   errors: Array<GraphQLError> | undefined;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
@@ -159,6 +160,7 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  enableEarlyExecution?: Maybe<boolean>;
 }
 
 export interface StreamUsage {
@@ -437,6 +439,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    enableEarlyExecution,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -500,6 +503,7 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+    enableEarlyExecution: enableEarlyExecution === true,
     errors: undefined,
     cancellableStreams: undefined,
   };
@@ -2110,11 +2114,16 @@ function executeDeferredGroupedFieldSets(
         deferMap,
       );
 
-    deferredGroupedFieldSetRecord.result = new BoxedPromiseOrValue(
-      shouldDefer(parentDeferUsages, deferUsageSet)
-        ? Promise.resolve().then(executor)
-        : executor(),
+    const shouldDeferThisDeferUsageSet = shouldDefer(
+      parentDeferUsages,
+      deferUsageSet,
     );
+
+    deferredGroupedFieldSetRecord.result = shouldDeferThisDeferUsageSet
+      ? exeContext.enableEarlyExecution
+        ? new BoxedPromiseOrValue(Promise.resolve().then(executor))
+        : () => new BoxedPromiseOrValue(executor())
+      : new BoxedPromiseOrValue(executor());
 
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }
@@ -2226,57 +2235,74 @@ function buildSyncStreamItemQueue(
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
 ): Array<StreamItemRecord> {
-  const streamItemQueue: Array<StreamItemRecord> = [
-    new BoxedPromiseOrValue(
-      Promise.resolve().then(() => {
-        const initialPath = addPath(streamPath, initialIndex, undefined);
-        const firstStreamItem = new BoxedPromiseOrValue(
-          completeStreamItem(
-            initialPath,
-            initialItem,
-            exeContext,
-            { errors: undefined },
-            fieldGroup,
-            info,
-            itemType,
-          ),
-        );
-        let iteration = iterator.next();
-        let currentIndex = initialIndex + 1;
-        let currentStreamItem = firstStreamItem;
-        while (!iteration.done) {
-          // TODO: add test case for early sync termination
-          /* c8 ignore next 4 */
-          const result = currentStreamItem.value;
-          if (!isPromise(result) && result.errors !== undefined) {
-            break;
-          }
+  const streamItemQueue: Array<StreamItemRecord> = [];
 
-          const itemPath = addPath(streamPath, currentIndex, undefined);
+  const enableEarlyExecution = exeContext.enableEarlyExecution;
 
-          currentStreamItem = new BoxedPromiseOrValue(
-            completeStreamItem(
-              itemPath,
-              iteration.value,
-              exeContext,
-              { errors: undefined },
-              fieldGroup,
-              info,
-              itemType,
-            ),
-          );
-          streamItemQueue.push(currentStreamItem);
+  const firstExecutor = () => {
+    const initialPath = addPath(streamPath, initialIndex, undefined);
+    const firstStreamItem = new BoxedPromiseOrValue(
+      completeStreamItem(
+        initialPath,
+        initialItem,
+        exeContext,
+        { errors: undefined },
+        fieldGroup,
+        info,
+        itemType,
+      ),
+    );
 
-          iteration = iterator.next();
-          currentIndex = initialIndex + 1;
+    let iteration = iterator.next();
+    let currentIndex = initialIndex + 1;
+    let currentStreamItem:
+      | BoxedPromiseOrValue<StreamItemResult>
+      | (() => BoxedPromiseOrValue<StreamItemResult>) = firstStreamItem;
+    while (!iteration.done) {
+      // TODO: add test case for early sync termination
+      /* c8 ignore next 6 */
+      if (currentStreamItem instanceof BoxedPromiseOrValue) {
+        const result = currentStreamItem.value;
+        if (!isPromise(result) && result.errors !== undefined) {
+          break;
         }
+      }
 
-        streamItemQueue.push(new BoxedPromiseOrValue({}));
+      const itemPath = addPath(streamPath, currentIndex, undefined);
 
-        return firstStreamItem.value;
-      }),
-    ),
-  ];
+      const value = iteration.value;
+
+      const currentExecutor = () =>
+        completeStreamItem(
+          itemPath,
+          value,
+          exeContext,
+          { errors: undefined },
+          fieldGroup,
+          info,
+          itemType,
+        );
+
+      currentStreamItem = enableEarlyExecution
+        ? new BoxedPromiseOrValue(currentExecutor())
+        : () => new BoxedPromiseOrValue(currentExecutor());
+
+      streamItemQueue.push(currentStreamItem);
+
+      iteration = iterator.next();
+      currentIndex = initialIndex + 1;
+    }
+
+    streamItemQueue.push(new BoxedPromiseOrValue({}));
+
+    return firstStreamItem.value;
+  };
+
+  streamItemQueue.push(
+    enableEarlyExecution
+      ? new BoxedPromiseOrValue(Promise.resolve().then(firstExecutor))
+      : () => new BoxedPromiseOrValue(firstExecutor()),
+  );
 
   return streamItemQueue;
 }
@@ -2291,20 +2317,24 @@ function buildAsyncStreamItemQueue(
   itemType: GraphQLOutputType,
 ): Array<StreamItemRecord> {
   const streamItemQueue: Array<StreamItemRecord> = [];
+  const executor = () =>
+    getNextAsyncStreamItemResult(
+      streamItemQueue,
+      streamPath,
+      initialIndex,
+      asyncIterator,
+      exeContext,
+      fieldGroup,
+      info,
+      itemType,
+    );
+
   streamItemQueue.push(
-    new BoxedPromiseOrValue(
-      getNextAsyncStreamItemResult(
-        streamItemQueue,
-        streamPath,
-        initialIndex,
-        asyncIterator,
-        exeContext,
-        fieldGroup,
-        info,
-        itemType,
-      ),
-    ),
+    exeContext.enableEarlyExecution
+      ? new BoxedPromiseOrValue(executor())
+      : () => new BoxedPromiseOrValue(executor()),
   );
+
   return streamItemQueue;
 }
 
@@ -2345,19 +2375,22 @@ async function getNextAsyncStreamItemResult(
     itemType,
   );
 
+  const executor = () =>
+    getNextAsyncStreamItemResult(
+      streamItemQueue,
+      streamPath,
+      index,
+      asyncIterator,
+      exeContext,
+      fieldGroup,
+      info,
+      itemType,
+    );
+
   streamItemQueue.push(
-    new BoxedPromiseOrValue(
-      getNextAsyncStreamItemResult(
-        streamItemQueue,
-        streamPath,
-        index,
-        asyncIterator,
-        exeContext,
-        fieldGroup,
-        info,
-        itemType,
-      ),
-    ),
+    exeContext.enableEarlyExecution
+      ? new BoxedPromiseOrValue(executor())
+      : () => new BoxedPromiseOrValue(executor()),
   );
 
   return result;
