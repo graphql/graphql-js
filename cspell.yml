@@ -20,6 +20,13 @@ overrides:
     words:
       - clsx
       - infima
+      - noopener
+      - Vite
+      - craco
+      - esbuild
+      - swcrc
+      - noreferrer
+      - xlink
 
 validateDirectives: true
 ignoreRegExpList:
