@@ -9,7 +9,7 @@ out the most popular ones.
 
 ## Bundler-specific configuration
 
-Here are some bundler-specific suggestions for configuring your bundler to remove `globalThis.process` and `proces.env.NODE_ENV` on build time.
+Here are some bundler-specific suggestions for configuring your bundler to remove `globalThis.process` and `process.env.NODE_ENV` on build time.
 
 ### Vite
 
