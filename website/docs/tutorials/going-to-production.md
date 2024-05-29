@@ -17,8 +17,8 @@ Here are some bundler-specific suggestions for configuring your bundler to remov
 export default defineConfig({
   // ...
   define: {
-    "globalThis.process": JSON.stringify(true),
-    "process.env.NODE_ENV": JSON.stringify("production"),
+    'globalThis.process': JSON.stringify(true),
+    'process.env.NODE_ENV': JSON.stringify('production'),
   },
 });
 ```
@@ -32,9 +32,9 @@ const nextConfig = {
   webpack(config, { webpack }) {
     config.plugins.push(
       new webpack.DefinePlugin({
-        "globalThis.process": JSON.stringify(true),
-        "process.env.NODE_ENV": JSON.stringify("production"),
-      })
+        'globalThis.process': JSON.stringify(true),
+        'process.env.NODE_ENV': JSON.stringify('production'),
+      }),
     );
     return config;
   },
@@ -48,13 +48,13 @@ module.exports = nextConfig;
 With `create-react-app`, you need to use a third-party package like [`craco`](https://craco.js.org/) to modify the bundler configuration.
 
 ```js
-const webpack = require("webpack");
+const webpack = require('webpack');
 module.exports = {
   webpack: {
     plugins: [
       new webpack.DefinePlugin({
-        "globalThis.process": JSON.stringify(true),
-        "process.env.NODE_ENV": JSON.stringify("production"),
+        'globalThis.process': JSON.stringify(true),
+        'process.env.NODE_ENV': JSON.stringify('production'),
       }),
     ],
   },
@@ -77,9 +77,9 @@ module.exports = {
 ```js
 config.plugins.push(
   new webpack.DefinePlugin({
-    "globalThis.process": JSON.stringify(true),
-    "process.env.NODE_ENV": JSON.stringify("production"),
-  })
+    'globalThis.process': JSON.stringify(true),
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  }),
 );
 ```
 
@@ -97,8 +97,8 @@ export default [
         compress: {
           toplevel: true,
           global_defs: {
-            "@globalThis.process": JSON.stringify(true),
-            "@process.env.NODE_ENV": JSON.stringify("production"),
+            '@globalThis.process': JSON.stringify(true),
+            '@process.env.NODE_ENV': JSON.stringify('production'),
           },
         },
       }),
@@ -125,4 +125,3 @@ export default [
   }
 }
 ```
-
