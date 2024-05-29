@@ -15,6 +15,11 @@ module.exports = {
       label: 'Advanced',
       items: ['tutorials/constructing-types'],
     },
+    {
+      type: 'category',
+      label: 'FAQ',
+      items: ['tutorials/going-to-production'],
+    },
     'tutorials/express-graphql',
     'tutorials/defer-stream',
   ],
