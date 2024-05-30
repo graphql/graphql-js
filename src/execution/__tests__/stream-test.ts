@@ -146,10 +146,7 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          { items: ['banana'], id: '0' },
-          { items: ['coconut'], id: '0' },
-        ],
+        incremental: [{ items: ['banana', 'coconut'], id: '0' }],
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -169,11 +166,7 @@ describe('Execute: stream directive', () => {
         hasNext: true,
       },
       {
-        incremental: [
-          { items: ['apple'], id: '0' },
-          { items: ['banana'], id: '0' },
-          { items: ['coconut'], id: '0' },
-        ],
+        incremental: [{ items: ['apple', 'banana', 'coconut'], id: '0' }],
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -220,11 +213,7 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: ['banana'],
-            id: '0',
-          },
-          {
-            items: ['coconut'],
+            items: ['banana', 'coconut'],
             id: '0',
           },
         ],
@@ -284,11 +273,10 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [['banana', 'banana', 'banana']],
-            id: '0',
-          },
-          {
-            items: [['coconut', 'coconut', 'coconut']],
+            items: [
+              ['banana', 'banana', 'banana'],
+              ['coconut', 'coconut', 'coconut'],
+            ],
             id: '0',
           },
         ],
@@ -366,15 +354,11 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [{ name: 'Luke', id: '1' }],
-            id: '0',
-          },
-          {
-            items: [{ name: 'Han', id: '2' }],
-            id: '0',
-          },
-          {
-            items: [{ name: 'Leia', id: '3' }],
+            items: [
+              { name: 'Luke', id: '1' },
+              { name: 'Han', id: '2' },
+              { name: 'Leia', id: '3' },
+            ],
             id: '0',
           },
         ],
@@ -507,7 +491,7 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [null],
+            items: [null, { name: 'Leia', id: '3' }],
             id: '0',
             errors: [
               {
@@ -516,10 +500,6 @@ describe('Execute: stream directive', () => {
                 path: ['friendList', 1],
               },
             ],
-          },
-          {
-            items: [{ name: 'Leia', id: '3' }],
-            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -557,6 +537,11 @@ describe('Execute: stream directive', () => {
             items: [{ name: 'Luke', id: '1' }],
             id: '0',
           },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
           {
             items: [{ name: 'Han', id: '2' }],
             id: '0',
@@ -910,7 +895,7 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [null],
+            items: [null, { nonNullName: 'Han' }],
             id: '0',
             errors: [
               {
@@ -919,10 +904,6 @@ describe('Execute: stream directive', () => {
                 path: ['friendList', 1, 'nonNullName'],
               },
             ],
-          },
-          {
-            items: [{ nonNullName: 'Han' }],
-            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -956,7 +937,7 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [null],
+            items: [null, { nonNullName: 'Han' }],
             id: '0',
             errors: [
               {
@@ -965,10 +946,6 @@ describe('Execute: stream directive', () => {
                 path: ['friendList', 1, 'nonNullName'],
               },
             ],
-          },
-          {
-            items: [{ nonNullName: 'Han' }],
-            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -1086,7 +1063,7 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [null],
+            items: [null, { nonNullName: 'Han' }],
             id: '0',
             errors: [
               {
@@ -1095,10 +1072,6 @@ describe('Execute: stream directive', () => {
                 path: ['friendList', 1, 'nonNullName'],
               },
             ],
-          },
-          {
-            items: [{ nonNullName: 'Han' }],
-            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -1401,10 +1374,6 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [{ name: 'Luke' }],
-            id: '1',
-          },
-          {
             data: { scalarField: null },
             id: '0',
             errors: [
@@ -1414,6 +1383,10 @@ describe('Execute: stream directive', () => {
                 path: ['otherNestedObject', 'scalarField'],
               },
             ],
+          },
+          {
+            items: [{ name: 'Luke' }],
+            id: '1',
           },
         ],
         completed: [{ id: '0' }, { id: '1' }],
@@ -1717,11 +1690,10 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [{ id: '1', name: 'Luke' }],
-            id: '0',
-          },
-          {
-            items: [{ id: '2', name: 'Han' }],
+            items: [
+              { id: '1', name: 'Luke' },
+              { id: '2', name: 'Han' },
+            ],
             id: '0',
           },
         ],
@@ -1783,11 +1755,7 @@ describe('Execute: stream directive', () => {
             id: '0',
           },
           {
-            items: [{ name: 'Luke' }],
-            id: '1',
-          },
-          {
-            items: [{ name: 'Han' }],
+            items: [{ name: 'Luke' }, { name: 'Han' }],
             id: '1',
           },
         ],
@@ -1859,12 +1827,12 @@ describe('Execute: stream directive', () => {
         pending: [{ id: '2', path: ['friendList', 1], label: 'DeferName' }],
         incremental: [
           {
-            items: [{ id: '2' }],
-            id: '1',
-          },
-          {
             data: { name: 'Luke' },
             id: '0',
+          },
+          {
+            items: [{ id: '2' }],
+            id: '1',
           },
         ],
         completed: [{ id: '0' }],
@@ -1960,12 +1928,12 @@ describe('Execute: stream directive', () => {
         pending: [{ id: '2', path: ['friendList', 1], label: 'DeferName' }],
         incremental: [
           {
-            items: [{ id: '2' }],
-            id: '1',
-          },
-          {
             data: { name: 'Luke' },
             id: '0',
+          },
+          {
+            items: [{ id: '2' }],
+            id: '1',
           },
         ],
         completed: [{ id: '0' }],
