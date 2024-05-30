@@ -22,7 +22,7 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import type { ExecutionArgs } from '../execute.js';
 import { createSourceEventStream, subscribe } from '../execute.js';
-import type { ExecutionResult } from '../IncrementalPublisher.js';
+import type { ExecutionResult } from '../types.js';
 
 import { SimplePubSub } from './simplePubSub.js';
 

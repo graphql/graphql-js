@@ -58,6 +58,8 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
+import { buildIncrementalResponse } from './IncrementalPublisher.js';
+import { mapAsyncIterable } from './mapAsyncIterable.js';
 import type {
   CancellableStreamRecord,
   DeferredGroupedFieldSetRecord,
@@ -68,13 +70,11 @@ import type {
   StreamItemsRecord,
   StreamItemsResult,
   SubsequentResultRecord,
-} from './IncrementalPublisher.js';
+} from './types.js';
 import {
-  buildIncrementalResponse,
   DeferredFragmentRecord,
   isReconcilableStreamItemsResult,
-} from './IncrementalPublisher.js';
-import { mapAsyncIterable } from './mapAsyncIterable.js';
+} from './types.js';
 import {
   getArgumentValues,
   getDirectiveValues,
