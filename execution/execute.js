@@ -31,6 +31,7 @@ const buildFieldPlan_js_1 = require('./buildFieldPlan.js');
 const collectFields_js_1 = require('./collectFields.js');
 const IncrementalPublisher_js_1 = require('./IncrementalPublisher.js');
 const mapAsyncIterable_js_1 = require('./mapAsyncIterable.js');
+const types_js_1 = require('./types.js');
 const values_js_1 = require('./values.js');
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -1421,12 +1422,11 @@ function addNewDeferredFragments(newDeferUsages, newDeferMap, path) {
         ? undefined
         : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
     // Instantiate the new record.
-    const deferredFragmentRecord =
-      new IncrementalPublisher_js_1.DeferredFragmentRecord({
-        path,
-        label: newDeferUsage.label,
-        parent,
-      });
+    const deferredFragmentRecord = new types_js_1.DeferredFragmentRecord({
+      path,
+      label: newDeferUsage.label,
+      parent,
+    });
     // Update the map.
     newDeferMap.set(newDeferUsage, deferredFragmentRecord);
   }
@@ -1924,9 +1924,7 @@ function firstSyncStreamItems(
       while (!iteration.done) {
         if (
           !(0, isPromise_js_1.isPromise)(result) &&
-          !(0, IncrementalPublisher_js_1.isReconcilableStreamItemsResult)(
-            result,
-          )
+          !(0, types_js_1.isReconcilableStreamItemsResult)(result)
         ) {
           erroredSynchronously = true;
           break;
@@ -1977,7 +1975,7 @@ function prependNextStreamItems(result, nextStreamItems) {
   return prependNextResolvedStreamItems(result, nextStreamItems);
 }
 function prependNextResolvedStreamItems(result, nextStreamItems) {
-  if (!(0, IncrementalPublisher_js_1.isReconcilableStreamItemsResult)(result)) {
+  if (!(0, types_js_1.isReconcilableStreamItemsResult)(result)) {
     return result;
   }
   const incrementalDataRecords = result.incrementalDataRecords;

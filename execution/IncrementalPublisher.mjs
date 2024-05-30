@@ -2,6 +2,13 @@ import { invariant } from '../jsutils/invariant.mjs';
 import { isPromise } from '../jsutils/isPromise.mjs';
 import { pathToArray } from '../jsutils/Path.mjs';
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.mjs';
+import {
+  isCancellableStreamRecord,
+  isDeferredFragmentRecord,
+  isDeferredGroupedFieldSetRecord,
+  isDeferredGroupedFieldSetResult,
+  isNonReconcilableDeferredGroupedFieldSetResult,
+} from './types.mjs';
 export function buildIncrementalResponse(
   context,
   result,
@@ -396,36 +403,4 @@ class IncrementalPublisher {
       subPath: subPath.length > 0 ? subPath : undefined,
     };
   }
-}
-function isDeferredFragmentRecord(subsequentResultRecord) {
-  return 'parent' in subsequentResultRecord;
-}
-function isDeferredGroupedFieldSetRecord(incrementalDataRecord) {
-  return 'deferredFragmentRecords' in incrementalDataRecord;
-}
-function isDeferredGroupedFieldSetResult(subsequentResult) {
-  return 'deferredFragmentRecords' in subsequentResult;
-}
-function isNonReconcilableDeferredGroupedFieldSetResult(
-  deferredGroupedFieldSetResult,
-) {
-  return deferredGroupedFieldSetResult.errors !== undefined;
-}
-/** @internal */
-export class DeferredFragmentRecord {
-  constructor(opts) {
-    this.path = opts.path;
-    this.label = opts.label;
-    this.parent = opts.parent;
-    this.expectedReconcilableResults = 0;
-    this.results = [];
-    this.reconcilableResults = [];
-    this.children = new Set();
-  }
-}
-function isCancellableStreamRecord(subsequentResultRecord) {
-  return 'earlyReturn' in subsequentResultRecord;
-}
-export function isReconcilableStreamItemsResult(streamItemsResult) {
-  return streamItemsResult.result !== undefined;
 }

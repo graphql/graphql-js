@@ -22,7 +22,7 @@ import type {
   CancellableStreamRecord,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
-} from './IncrementalPublisher.js';
+} from './types.js';
 /**
  * Terminology
  *

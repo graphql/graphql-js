@@ -1,13 +1,11 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.isReconcilableStreamItemsResult =
-  exports.DeferredFragmentRecord =
-  exports.buildIncrementalResponse =
-    void 0;
+exports.buildIncrementalResponse = void 0;
 const invariant_js_1 = require('../jsutils/invariant.js');
 const isPromise_js_1 = require('../jsutils/isPromise.js');
 const Path_js_1 = require('../jsutils/Path.js');
 const promiseWithResolvers_js_1 = require('../jsutils/promiseWithResolvers.js');
+const types_js_1 = require('./types.js');
 function buildIncrementalResponse(
   context,
   result,
@@ -54,7 +52,9 @@ class IncrementalPublisher {
   }
   _addIncrementalDataRecords(incrementalDataRecords) {
     for (const incrementalDataRecord of incrementalDataRecords) {
-      if (isDeferredGroupedFieldSetRecord(incrementalDataRecord)) {
+      if (
+        (0, types_js_1.isDeferredGroupedFieldSetRecord)(incrementalDataRecord)
+      ) {
         for (const deferredFragmentRecord of incrementalDataRecord.deferredFragmentRecords) {
           deferredFragmentRecord.expectedReconcilableResults++;
           this._addDeferredFragmentRecord(deferredFragmentRecord);
@@ -107,7 +107,7 @@ class IncrementalPublisher {
     const maybeEmptyNewPending = this._newPending;
     this._newPending = new Set();
     for (const node of maybeEmptyNewPending) {
-      if (isDeferredFragmentRecord(node)) {
+      if ((0, types_js_1.isDeferredFragmentRecord)(node)) {
         if (node.expectedReconcilableResults) {
           this._newPending.add(node);
           continue;
@@ -178,7 +178,9 @@ class IncrementalPublisher {
         while (
           (completedResult = this._completedResultQueue.shift()) !== undefined
         ) {
-          if (isDeferredGroupedFieldSetResult(completedResult)) {
+          if (
+            (0, types_js_1.isDeferredGroupedFieldSetResult)(completedResult)
+          ) {
             this._handleCompletedDeferredGroupedFieldSet(completedResult);
           } else {
             this._handleCompletedStreamItems(completedResult);
@@ -260,7 +262,7 @@ class IncrementalPublisher {
   }
   _handleCompletedDeferredGroupedFieldSet(deferredGroupedFieldSetResult) {
     if (
-      isNonReconcilableDeferredGroupedFieldSetResult(
+      (0, types_js_1.isNonReconcilableDeferredGroupedFieldSetResult)(
         deferredGroupedFieldSetResult,
       )
     ) {
@@ -345,7 +347,7 @@ class IncrementalPublisher {
         errors: streamItemsResult.errors,
       });
       this._pending.delete(streamRecord);
-      if (isCancellableStreamRecord(streamRecord)) {
+      if ((0, types_js_1.isCancellableStreamRecord)(streamRecord)) {
         this._context.cancellableStreams !== undefined ||
           (0, invariant_js_1.invariant)(false);
         this._context.cancellableStreams.delete(streamRecord);
@@ -357,7 +359,7 @@ class IncrementalPublisher {
     } else if (streamItemsResult.result === undefined) {
       this._completed.push({ id });
       this._pending.delete(streamRecord);
-      if (isCancellableStreamRecord(streamRecord)) {
+      if ((0, types_js_1.isCancellableStreamRecord)(streamRecord)) {
         this._context.cancellableStreams !== undefined ||
           (0, invariant_js_1.invariant)(false);
         this._context.cancellableStreams.delete(streamRecord);
@@ -411,37 +413,3 @@ class IncrementalPublisher {
     };
   }
 }
-function isDeferredFragmentRecord(subsequentResultRecord) {
-  return 'parent' in subsequentResultRecord;
-}
-function isDeferredGroupedFieldSetRecord(incrementalDataRecord) {
-  return 'deferredFragmentRecords' in incrementalDataRecord;
-}
-function isDeferredGroupedFieldSetResult(subsequentResult) {
-  return 'deferredFragmentRecords' in subsequentResult;
-}
-function isNonReconcilableDeferredGroupedFieldSetResult(
-  deferredGroupedFieldSetResult,
-) {
-  return deferredGroupedFieldSetResult.errors !== undefined;
-}
-/** @internal */
-class DeferredFragmentRecord {
-  constructor(opts) {
-    this.path = opts.path;
-    this.label = opts.label;
-    this.parent = opts.parent;
-    this.expectedReconcilableResults = 0;
-    this.results = [];
-    this.reconcilableResults = [];
-    this.children = new Set();
-  }
-}
-exports.DeferredFragmentRecord = DeferredFragmentRecord;
-function isCancellableStreamRecord(subsequentResultRecord) {
-  return 'earlyReturn' in subsequentResultRecord;
-}
-function isReconcilableStreamItemsResult(streamItemsResult) {
-  return streamItemsResult.result !== undefined;
-}
-exports.isReconcilableStreamItemsResult = isReconcilableStreamItemsResult;

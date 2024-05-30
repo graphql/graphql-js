@@ -26,12 +26,12 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.mjs';
+import { buildIncrementalResponse } from './IncrementalPublisher.mjs';
+import { mapAsyncIterable } from './mapAsyncIterable.mjs';
 import {
-  buildIncrementalResponse,
   DeferredFragmentRecord,
   isReconcilableStreamItemsResult,
-} from './IncrementalPublisher.mjs';
-import { mapAsyncIterable } from './mapAsyncIterable.mjs';
+} from './types.mjs';
 import {
   getArgumentValues,
   getDirectiveValues,

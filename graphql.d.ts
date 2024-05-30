@@ -5,7 +5,7 @@ import type {
   GraphQLTypeResolver,
 } from './type/definition.js';
 import type { GraphQLSchema } from './type/schema.js';
-import type { ExecutionResult } from './execution/IncrementalPublisher.js';
+import type { ExecutionResult } from './execution/types.js';
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
  * by parsing, validating, and executing a GraphQL document along side a
