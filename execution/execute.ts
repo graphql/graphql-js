@@ -54,6 +54,8 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.ts';
+import { buildIncrementalResponse } from './IncrementalPublisher.ts';
+import { mapAsyncIterable } from './mapAsyncIterable.ts';
 import type {
   CancellableStreamRecord,
   DeferredGroupedFieldSetRecord,
@@ -64,13 +66,11 @@ import type {
   StreamItemsRecord,
   StreamItemsResult,
   SubsequentResultRecord,
-} from './IncrementalPublisher.ts';
+} from './types.ts';
 import {
-  buildIncrementalResponse,
   DeferredFragmentRecord,
   isReconcilableStreamItemsResult,
-} from './IncrementalPublisher.ts';
-import { mapAsyncIterable } from './mapAsyncIterable.ts';
+} from './types.ts';
 import {
   getArgumentValues,
   getDirectiveValues,

@@ -23,7 +23,7 @@ export type {
   FormattedIncrementalDeferResult,
   FormattedIncrementalStreamResult,
   FormattedIncrementalResult,
-} from './IncrementalPublisher.ts';
+} from './types.ts';
 export {
   getArgumentValues,
   getVariableValues,

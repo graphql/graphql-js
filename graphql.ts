@@ -11,7 +11,7 @@ import type { GraphQLSchema } from './type/schema.ts';
 import { validateSchema } from './type/validate.ts';
 import { validate } from './validation/validate.ts';
 import { execute } from './execution/execute.ts';
-import type { ExecutionResult } from './execution/IncrementalPublisher.ts';
+import type { ExecutionResult } from './execution/types.ts';
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
  * by parsing, validating, and executing a GraphQL document along side a
