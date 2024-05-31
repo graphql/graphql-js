@@ -188,7 +188,7 @@ export function isDeferredGroupedFieldSetResult(
   return 'deferredFragmentRecords' in subsequentResult;
 }
 
-interface ReconcilableDeferredGroupedFieldSetResult {
+export interface ReconcilableDeferredGroupedFieldSetResult {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
   path: Array<string | number>;
   result: BareDeferredGroupedFieldSetResult;
