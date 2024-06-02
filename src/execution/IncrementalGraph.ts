@@ -7,7 +7,6 @@ import type {
   IncrementalDataRecord,
   IncrementalDataRecordResult,
   ReconcilableDeferredGroupedFieldSetResult,
-  StreamItemsResult,
   SubsequentResultRecord,
 } from './types.js';
 import {
@@ -19,19 +18,18 @@ import {
  * @internal
  */
 export class IncrementalGraph {
-  // these are assigned within the Promise executor called synchronously within the constructor
-  newCompletedResultAvailable!: Promise<unknown>;
-  private _resolve!: () => void;
-
   private _pending: Set<SubsequentResultRecord>;
   private _newPending: Set<SubsequentResultRecord>;
-  private _completedResultQueue: Array<IncrementalDataRecordResult>;
+  private _completedQueue: Array<IncrementalDataRecordResult>;
+  private _nextQueue: Array<
+    (iterable: IteratorResult<Iterable<IncrementalDataRecordResult>>) => void
+  >;
 
   constructor() {
     this._pending = new Set();
     this._newPending = new Set();
-    this._completedResultQueue = [];
-    this._reset();
+    this._completedQueue = [];
+    this._nextQueue = [];
   }
 
   addIncrementalDataRecords(
@@ -67,10 +65,10 @@ export class IncrementalGraph {
       if (isPromise(result)) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         result.then((resolved) => {
-          this._enqueueCompletedStreamItems(resolved);
+          this._enqueue(resolved);
         });
       } else {
-        this._enqueueCompletedStreamItems(result);
+        this._enqueue(result);
       }
     }
   }
@@ -97,13 +95,37 @@ export class IncrementalGraph {
     return newPending;
   }
 
-  *completedResults(): Generator<IncrementalDataRecordResult> {
-    let completedResult: IncrementalDataRecordResult | undefined;
-    while (
-      (completedResult = this._completedResultQueue.shift()) !== undefined
-    ) {
-      yield completedResult;
-    }
+  completedIncrementalData() {
+    return {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next: (): Promise<
+        IteratorResult<Iterable<IncrementalDataRecordResult>>
+      > => {
+        const firstResult = this._completedQueue.shift();
+        if (firstResult !== undefined) {
+          return Promise.resolve({
+            value: this._yieldCurrentCompletedIncrementalData(firstResult),
+            done: false,
+          });
+        }
+        const { promise, resolve } =
+          promiseWithResolvers<
+            IteratorResult<Iterable<IncrementalDataRecordResult>>
+          >();
+        this._nextQueue.push(resolve);
+        return promise;
+      },
+      return: (): Promise<
+        IteratorResult<Iterable<IncrementalDataRecordResult>>
+      > => {
+        for (const resolve of this._nextQueue) {
+          resolve({ value: undefined, done: true });
+        }
+        return Promise.resolve({ value: undefined, done: true });
+      },
+    };
   }
 
   hasNext(): boolean {
@@ -120,10 +142,12 @@ export class IncrementalGraph {
     ) {
       return;
     }
-    this._pending.delete(deferredFragmentRecord);
+    this.removeSubsequentResultRecord(deferredFragmentRecord);
     for (const child of deferredFragmentRecord.children) {
       this._newPending.add(child);
-      this._completedResultQueue.push(...child.results);
+      for (const result of child.results) {
+        this._enqueue(result);
+      }
     }
     return reconcilableResults;
   }
@@ -132,6 +156,11 @@ export class IncrementalGraph {
     subsequentResultRecord: SubsequentResultRecord,
   ): void {
     this._pending.delete(subsequentResultRecord);
+    if (this._pending.size === 0) {
+      for (const resolve of this._nextQueue) {
+        resolve({ value: undefined, done: true });
+      }
+    }
   }
 
   private _addDeferredFragmentRecord(
@@ -186,28 +215,29 @@ export class IncrementalGraph {
       deferredFragmentRecord.results.push(result);
     }
     if (hasPendingParent) {
-      this._completedResultQueue.push(result);
-      this._trigger();
+      this._enqueue(result);
     }
   }
 
-  private _enqueueCompletedStreamItems(result: StreamItemsResult): void {
-    this._completedResultQueue.push(result);
-    this._trigger();
+  private *_yieldCurrentCompletedIncrementalData(
+    first: IncrementalDataRecordResult,
+  ): Generator<IncrementalDataRecordResult> {
+    yield first;
+    let completed;
+    while ((completed = this._completedQueue.shift()) !== undefined) {
+      yield completed;
+    }
   }
 
-  private _trigger() {
-    this._resolve();
-    this._reset();
-  }
-
-  private _reset() {
-    const { promise: newCompletedResultAvailable, resolve } =
-      // promiseWithResolvers uses void only as a generic type parameter
-      // see: https://typescript-eslint.io/rules/no-invalid-void-type/
-      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-      promiseWithResolvers<void>();
-    this._resolve = resolve;
-    this.newCompletedResultAvailable = newCompletedResultAvailable;
+  private _enqueue(completed: IncrementalDataRecordResult): void {
+    const next = this._nextQueue.shift();
+    if (next !== undefined) {
+      next({
+        value: this._yieldCurrentCompletedIncrementalData(completed),
+        done: false,
+      });
+      return;
+    }
+    this._completedQueue.push(completed);
   }
 }
