@@ -165,32 +165,18 @@ class IncrementalPublisher {
         await this._incrementalGraph.newCompletedResultAvailable;
       }
 
-      await returnStreamIterators().catch(() => {
+      await this._returnStreamIterators().catch(() => {
         // ignore errors
       });
 
       return { value: undefined, done: true };
     };
 
-    const returnStreamIterators = async (): Promise<void> => {
-      const cancellableStreams = this._context.cancellableStreams;
-      if (cancellableStreams === undefined) {
-        return;
-      }
-      const promises: Array<Promise<unknown>> = [];
-      for (const streamRecord of cancellableStreams) {
-        if (streamRecord.earlyReturn !== undefined) {
-          promises.push(streamRecord.earlyReturn());
-        }
-      }
-      await Promise.all(promises);
-    };
-
     const _return = async (): Promise<
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
       isDone = true;
-      await returnStreamIterators();
+      await this._returnStreamIterators();
       return { value: undefined, done: true };
     };
 
@@ -198,7 +184,7 @@ class IncrementalPublisher {
       error?: unknown,
     ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> => {
       isDone = true;
-      await returnStreamIterators();
+      await this._returnStreamIterators();
       return Promise.reject(error);
     };
 
@@ -361,5 +347,19 @@ class IncrementalPublisher {
       bestId,
       subPath: subPath.length > 0 ? subPath : undefined,
     };
+  }
+
+  private async _returnStreamIterators(): Promise<void> {
+    const cancellableStreams = this._context.cancellableStreams;
+    if (cancellableStreams === undefined) {
+      return;
+    }
+    const promises: Array<Promise<unknown>> = [];
+    for (const streamRecord of cancellableStreams) {
+      if (streamRecord.earlyReturn !== undefined) {
+        promises.push(streamRecord.earlyReturn());
+      }
+    }
+    await Promise.all(promises);
   }
 }
