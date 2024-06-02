@@ -230,7 +230,8 @@ class IncrementalPublisher {
         deferredGroupedFieldSetResult,
       )
     ) {
-      for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
+      for (const deferredFragmentRecord of deferredGroupedFieldSetResult
+        .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
         const id = deferredFragmentRecord.id;
         if (id !== undefined) {
           context.completed.push({
@@ -253,7 +254,8 @@ class IncrementalPublisher {
       this._incrementalGraph.addIncrementalDataRecords(incrementalDataRecords);
     }
 
-    for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
+    for (const deferredFragmentRecord of deferredGroupedFieldSetResult
+      .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
       const id = deferredFragmentRecord.id;
       // TODO: add test case for this.
       // Presumably, this can occur if an error causes a fragment to be completed early,
@@ -269,10 +271,6 @@ class IncrementalPublisher {
       }
       const incremental = context.incremental;
       for (const reconcilableResult of reconcilableResults) {
-        if (reconcilableResult.sent) {
-          continue;
-        }
-        reconcilableResult.sent = true;
         const { bestId, subPath } = this._getBestIdAndSubPath(
           id,
           deferredFragmentRecord,
@@ -343,7 +341,8 @@ class IncrementalPublisher {
     let maxLength = pathToArray(initialDeferredFragmentRecord.path).length;
     let bestId = initialId;
 
-    for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
+    for (const deferredFragmentRecord of deferredGroupedFieldSetResult
+      .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
       if (deferredFragmentRecord === initialDeferredFragmentRecord) {
         continue;
       }

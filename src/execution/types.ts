@@ -179,22 +179,21 @@ export type DeferredGroupedFieldSetResult =
 export function isDeferredGroupedFieldSetResult(
   subsequentResult: DeferredGroupedFieldSetResult | StreamItemsResult,
 ): subsequentResult is DeferredGroupedFieldSetResult {
-  return 'deferredFragmentRecords' in subsequentResult;
+  return 'deferredGroupedFieldSetRecord' in subsequentResult;
 }
 
 export interface ReconcilableDeferredGroupedFieldSetResult {
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord;
   path: Array<string | number>;
   result: BareDeferredGroupedFieldSetResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
-  sent?: true | undefined;
   errors?: never;
 }
 
 interface NonReconcilableDeferredGroupedFieldSetResult {
-  errors: ReadonlyArray<GraphQLError>;
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord;
   path: Array<string | number>;
+  errors: ReadonlyArray<GraphQLError>;
   result?: never;
 }
 

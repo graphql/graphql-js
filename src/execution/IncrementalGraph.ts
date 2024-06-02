@@ -3,6 +3,7 @@ import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
 import type {
   DeferredFragmentRecord,
+  DeferredGroupedFieldSetRecord,
   DeferredGroupedFieldSetResult,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
@@ -14,9 +15,9 @@ import { isDeferredGroupedFieldSetRecord } from './types.js';
 
 interface DeferredFragmentNode {
   deferredFragmentRecord: DeferredFragmentRecord;
-  expectedReconcilableResults: number;
+  deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
   results: Array<DeferredGroupedFieldSetResult>;
-  reconcilableResults: Array<ReconcilableDeferredGroupedFieldSetResult>;
+  reconcilableResults: Set<ReconcilableDeferredGroupedFieldSetResult>;
   children: Array<DeferredFragmentNode>;
 }
 
@@ -67,7 +68,9 @@ export class IncrementalGraph {
           const deferredFragmentNode = this._addDeferredFragmentNode(
             deferredFragmentRecord,
           );
-          deferredFragmentNode.expectedReconcilableResults++;
+          deferredFragmentNode.deferredGroupedFieldSetRecords.add(
+            incrementalDataRecord,
+          );
         }
 
         const result = incrementalDataRecord.result;
@@ -104,13 +107,16 @@ export class IncrementalGraph {
     reconcilableResult: ReconcilableDeferredGroupedFieldSetResult,
   ): void {
     const deferredFragmentNodes: Array<DeferredFragmentNode> =
-      reconcilableResult.deferredFragmentRecords
+      reconcilableResult.deferredGroupedFieldSetRecord.deferredFragmentRecords
         .map((deferredFragmentRecord) =>
           this._deferredFragmentNodes.get(deferredFragmentRecord),
         )
         .filter<DeferredFragmentNode>(isDeferredFragmentNode);
     for (const deferredFragmentNode of deferredFragmentNodes) {
-      deferredFragmentNode.reconcilableResults.push(reconcilableResult);
+      deferredFragmentNode.deferredGroupedFieldSetRecords.delete(
+        reconcilableResult.deferredGroupedFieldSetRecord,
+      );
+      deferredFragmentNode.reconcilableResults.add(reconcilableResult);
     }
   }
 
@@ -120,7 +126,7 @@ export class IncrementalGraph {
       if (isStreamNode(node)) {
         this._pending.add(node);
         newPending.push(node);
-      } else if (node.expectedReconcilableResults) {
+      } else if (node.deferredGroupedFieldSetRecords.size > 0) {
         this._pending.add(node);
         newPending.push(node.deferredFragmentRecord);
       } else {
@@ -181,12 +187,25 @@ export class IncrementalGraph {
     if (deferredFragmentNode === undefined) {
       return undefined;
     }
-    const reconcilableResults = deferredFragmentNode.reconcilableResults;
-    if (
-      deferredFragmentNode.expectedReconcilableResults !==
-      reconcilableResults.length
-    ) {
+    if (deferredFragmentNode.deferredGroupedFieldSetRecords.size > 0) {
       return;
+    }
+    const reconcilableResults = Array.from(
+      deferredFragmentNode.reconcilableResults,
+    );
+    for (const reconcilableResult of reconcilableResults) {
+      for (const otherDeferredFragmentRecord of reconcilableResult
+        .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+        const otherDeferredFragmentNode = this._deferredFragmentNodes.get(
+          otherDeferredFragmentRecord,
+        );
+        if (otherDeferredFragmentNode === undefined) {
+          continue;
+        }
+        otherDeferredFragmentNode.reconcilableResults.delete(
+          reconcilableResult,
+        );
+      }
     }
     this._removePending(deferredFragmentNode);
     for (const child of deferredFragmentNode.children) {
@@ -240,9 +259,9 @@ export class IncrementalGraph {
     }
     deferredFragmentNode = {
       deferredFragmentRecord,
-      expectedReconcilableResults: 0,
+      deferredGroupedFieldSetRecords: new Set(),
       results: [],
-      reconcilableResults: [],
+      reconcilableResults: new Set(),
       children: [],
     };
     this._deferredFragmentNodes.set(
@@ -263,7 +282,8 @@ export class IncrementalGraph {
     result: DeferredGroupedFieldSetResult,
   ): void {
     let isPending = false;
-    for (const deferredFragmentRecord of result.deferredFragmentRecords) {
+    for (const deferredFragmentRecord of result.deferredGroupedFieldSetRecord
+      .deferredFragmentRecords) {
       const deferredFragmentNode = this._deferredFragmentNodes.get(
         deferredFragmentRecord,
       );

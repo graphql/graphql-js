@@ -2089,9 +2089,14 @@ function executeDeferredGroupedFieldSets(
       deferMap,
     );
 
+    const deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord = {
+      deferredFragmentRecords,
+      result: undefined as unknown as DeferredGroupedFieldSetResult,
+    };
+
     const executor = () =>
       executeDeferredGroupedFieldSet(
-        deferredFragmentRecords,
+        deferredGroupedFieldSetRecord,
         exeContext,
         parentType,
         sourceValue,
@@ -2104,12 +2109,12 @@ function executeDeferredGroupedFieldSets(
         deferMap,
       );
 
-    const deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord = {
-      deferredFragmentRecords,
-      result: shouldDefer(parentDeferUsages, deferUsageSet)
-        ? Promise.resolve().then(executor)
-        : executor(),
-    };
+    deferredGroupedFieldSetRecord.result = shouldDefer(
+      parentDeferUsages,
+      deferUsageSet,
+    )
+      ? Promise.resolve().then(executor)
+      : executor();
 
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }
@@ -2134,7 +2139,7 @@ function shouldDefer(
 }
 
 function executeDeferredGroupedFieldSet(
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
+  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
@@ -2156,7 +2161,7 @@ function executeDeferredGroupedFieldSet(
     );
   } catch (error) {
     return {
-      deferredFragmentRecords,
+      deferredGroupedFieldSetRecord,
       path: pathToArray(path),
       errors: withError(incrementalContext.errors, error),
     };
@@ -2167,12 +2172,12 @@ function executeDeferredGroupedFieldSet(
       (resolved) =>
         buildDeferredGroupedFieldSetResult(
           incrementalContext.errors,
-          deferredFragmentRecords,
+          deferredGroupedFieldSetRecord,
           path,
           resolved,
         ),
       (error) => ({
-        deferredFragmentRecords,
+        deferredGroupedFieldSetRecord,
         path: pathToArray(path),
         errors: withError(incrementalContext.errors, error),
       }),
@@ -2181,7 +2186,7 @@ function executeDeferredGroupedFieldSet(
 
   return buildDeferredGroupedFieldSetResult(
     incrementalContext.errors,
-    deferredFragmentRecords,
+    deferredGroupedFieldSetRecord,
     path,
     result,
   );
@@ -2189,12 +2194,12 @@ function executeDeferredGroupedFieldSet(
 
 function buildDeferredGroupedFieldSetResult(
   errors: ReadonlyArray<GraphQLError> | undefined,
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
+  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   path: Path | undefined,
   result: GraphQLWrappedResult<ObjMap<unknown>>,
 ): DeferredGroupedFieldSetResult {
   return {
-    deferredFragmentRecords,
+    deferredGroupedFieldSetRecord,
     path: pathToArray(path),
     result:
       errors === undefined ? { data: result[0] } : { data: result[0], errors },
