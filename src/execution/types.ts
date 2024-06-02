@@ -166,12 +166,6 @@ export interface FormattedCompletedResult {
   errors?: ReadonlyArray<GraphQLError>;
 }
 
-export function isDeferredFragmentRecord(
-  subsequentResultRecord: SubsequentResultRecord,
-): subsequentResultRecord is DeferredFragmentRecord {
-  return 'parent' in subsequentResultRecord;
-}
-
 export function isDeferredGroupedFieldSetRecord(
   incrementalDataRecord: IncrementalDataRecord,
 ): incrementalDataRecord is DeferredGroupedFieldSetRecord {
@@ -221,30 +215,11 @@ export interface SubsequentResultRecord {
   id?: string | undefined;
 }
 
-/** @internal */
-export class DeferredFragmentRecord implements SubsequentResultRecord {
+export interface DeferredFragmentRecord extends SubsequentResultRecord {
   path: Path | undefined;
   label: string | undefined;
   id?: string | undefined;
   parent: DeferredFragmentRecord | undefined;
-  expectedReconcilableResults: number;
-  results: Array<DeferredGroupedFieldSetResult>;
-  reconcilableResults: Array<ReconcilableDeferredGroupedFieldSetResult>;
-  children: Set<DeferredFragmentRecord>;
-
-  constructor(opts: {
-    path: Path | undefined;
-    label: string | undefined;
-    parent: DeferredFragmentRecord | undefined;
-  }) {
-    this.path = opts.path;
-    this.label = opts.label;
-    this.parent = opts.parent;
-    this.expectedReconcilableResults = 0;
-    this.results = [];
-    this.reconcilableResults = [];
-    this.children = new Set();
-  }
 }
 
 export interface CancellableStreamRecord extends SubsequentResultRecord {
