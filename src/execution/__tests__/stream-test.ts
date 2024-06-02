@@ -1445,6 +1445,10 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
+            items: [{ name: 'Luke' }],
+            id: '1',
+          },
+          {
             data: { scalarField: null },
             id: '0',
             errors: [
@@ -1454,10 +1458,6 @@ describe('Execute: stream directive', () => {
                 path: ['otherNestedObject', 'scalarField'],
               },
             ],
-          },
-          {
-            items: [{ name: 'Luke' }],
-            id: '1',
           },
         ],
         completed: [{ id: '0' }],
@@ -1947,12 +1947,12 @@ describe('Execute: stream directive', () => {
         pending: [{ id: '2', path: ['friendList', 1], label: 'DeferName' }],
         incremental: [
           {
-            data: { name: 'Luke' },
-            id: '0',
-          },
-          {
             items: [{ id: '2' }],
             id: '1',
+          },
+          {
+            data: { name: 'Luke' },
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
@@ -2048,12 +2048,12 @@ describe('Execute: stream directive', () => {
         pending: [{ id: '2', path: ['friendList', 1], label: 'DeferName' }],
         incremental: [
           {
-            data: { name: 'Luke' },
-            id: '0',
-          },
-          {
             items: [{ id: '2' }],
             id: '1',
+          },
+          {
+            data: { name: 'Luke' },
+            id: '0',
           },
         ],
         completed: [{ id: '0' }],
