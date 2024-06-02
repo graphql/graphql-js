@@ -120,10 +120,21 @@ class IncrementalPublisher {
     const _next = async (): Promise<
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
-      while (!isDone) {
+      if (isDone) {
+        await this._returnAsyncIteratorsIgnoringErrors();
+        return { value: undefined, done: true };
+      }
+
+      const completedIncrementalData =
+        this._incrementalGraph.completedIncrementalData();
+      // use the raw iterator rather than 'for await ... of' so as not to trigger the
+      // '.return()' method on the iterator when exiting the loop with the next value
+      const asyncIterator = completedIncrementalData[Symbol.asyncIterator]();
+      let iteration = await asyncIterator.next();
+      while (!iteration.done) {
         let pending: Array<PendingResult> = [];
 
-        for (const completedResult of this._incrementalGraph.completedResults()) {
+        for (const completedResult of iteration.value) {
           if (isDeferredGroupedFieldSetResult(completedResult)) {
             this._handleCompletedDeferredGroupedFieldSet(completedResult);
           } else {
@@ -138,6 +149,7 @@ class IncrementalPublisher {
           const hasNext = this._incrementalGraph.hasNext();
 
           if (!hasNext) {
+            // eslint-disable-next-line require-atomic-updates
             isDone = true;
           }
 
@@ -162,13 +174,10 @@ class IncrementalPublisher {
         }
 
         // eslint-disable-next-line no-await-in-loop
-        await this._incrementalGraph.newCompletedResultAvailable;
+        iteration = await asyncIterator.next();
       }
 
-      await this._returnStreamIterators().catch(() => {
-        // ignore errors
-      });
-
+      await this._returnAsyncIteratorsIgnoringErrors();
       return { value: undefined, done: true };
     };
 
@@ -176,7 +185,7 @@ class IncrementalPublisher {
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
       isDone = true;
-      await this._returnStreamIterators();
+      await this._returnAsyncIterators();
       return { value: undefined, done: true };
     };
 
@@ -184,7 +193,7 @@ class IncrementalPublisher {
       error?: unknown,
     ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> => {
       isDone = true;
-      await this._returnStreamIterators();
+      await this._returnAsyncIterators();
       return Promise.reject(error);
     };
 
@@ -349,7 +358,9 @@ class IncrementalPublisher {
     };
   }
 
-  private async _returnStreamIterators(): Promise<void> {
+  private async _returnAsyncIterators(): Promise<void> {
+    await this._incrementalGraph.completedIncrementalData().return();
+
     const cancellableStreams = this._context.cancellableStreams;
     if (cancellableStreams === undefined) {
       return;
@@ -361,5 +372,11 @@ class IncrementalPublisher {
       }
     }
     await Promise.all(promises);
+  }
+
+  private async _returnAsyncIteratorsIgnoringErrors(): Promise<void> {
+    await this._returnAsyncIterators().catch(() => {
+      // Ignore errors
+    });
   }
 }
