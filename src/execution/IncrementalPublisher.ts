@@ -237,18 +237,15 @@ class IncrementalPublisher {
             id,
             errors: deferredGroupedFieldSetResult.errors,
           });
-          this._incrementalGraph.removeSubsequentResultRecord(
-            deferredFragmentRecord,
-          );
+          this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord);
         }
       }
       return;
     }
-    for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
-      deferredFragmentRecord.reconcilableResults.push(
-        deferredGroupedFieldSetResult,
-      );
-    }
+
+    this._incrementalGraph.addCompletedReconcilableDeferredGroupedFieldSet(
+      deferredGroupedFieldSetResult,
+    );
 
     const incrementalDataRecords =
       deferredGroupedFieldSetResult.incrementalDataRecords;
@@ -306,7 +303,7 @@ class IncrementalPublisher {
         id,
         errors: streamItemsResult.errors,
       });
-      this._incrementalGraph.removeSubsequentResultRecord(streamRecord);
+      this._incrementalGraph.removeStream(streamRecord);
       if (isCancellableStreamRecord(streamRecord)) {
         invariant(this._context.cancellableStreams !== undefined);
         this._context.cancellableStreams.delete(streamRecord);
@@ -317,7 +314,7 @@ class IncrementalPublisher {
       }
     } else if (streamItemsResult.result === undefined) {
       context.completed.push({ id });
-      this._incrementalGraph.removeSubsequentResultRecord(streamRecord);
+      this._incrementalGraph.removeStream(streamRecord);
       if (isCancellableStreamRecord(streamRecord)) {
         invariant(this._context.cancellableStreams !== undefined);
         this._context.cancellableStreams.delete(streamRecord);
