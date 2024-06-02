@@ -74,9 +74,8 @@ export class IncrementalGraph {
   }
 
   getNewPending(): ReadonlyArray<SubsequentResultRecord> {
-    const maybeEmptyNewPending = this._newPending;
     const newPending = [];
-    for (const node of maybeEmptyNewPending) {
+    for (const node of this._newPending) {
       if (isDeferredFragmentRecord(node)) {
         if (node.expectedReconcilableResults) {
           this._pending.add(node);
@@ -84,7 +83,7 @@ export class IncrementalGraph {
           continue;
         }
         for (const child of node.children) {
-          this._addNonEmptyNewPending(child, newPending);
+          this._newPending.add(child);
         }
       } else {
         this._pending.add(node);
@@ -186,22 +185,6 @@ export class IncrementalGraph {
     parent.children.add(deferredFragmentRecord);
 
     this._addDeferredFragmentRecord(parent);
-  }
-
-  private _addNonEmptyNewPending(
-    deferredFragmentRecord: DeferredFragmentRecord,
-    newPending: Array<SubsequentResultRecord>,
-  ): void {
-    if (deferredFragmentRecord.expectedReconcilableResults) {
-      this._pending.add(deferredFragmentRecord);
-      newPending.push(deferredFragmentRecord);
-      return;
-    }
-    /* c8 ignore next 5 */
-    // TODO: add test case for this, if when skipping an empty deferred fragment, the empty fragment has nested children.
-    for (const child of deferredFragmentRecord.children) {
-      this._addNonEmptyNewPending(child, newPending);
-    }
   }
 
   private _enqueueCompletedDeferredGroupedFieldSet(
