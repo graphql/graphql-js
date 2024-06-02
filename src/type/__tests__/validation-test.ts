@@ -431,6 +431,23 @@ describe('Type System: A Schema must have Object root types', () => {
       },
     ]);
   });
+
+  it('rejects a Schema whose directives have empty locations', () => {
+    const badDirective = new GraphQLDirective({
+      name: 'BadDirective',
+      args: {},
+      locations: [],
+    });
+    const schema = new GraphQLSchema({
+      query: SomeObjectType,
+      directives: [badDirective],
+    });
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message: 'Directive @BadDirective must include 1 or more locations.',
+      },
+    ]);
+  });
 });
 
 describe('Type System: Root types must all be different if provided', () => {
