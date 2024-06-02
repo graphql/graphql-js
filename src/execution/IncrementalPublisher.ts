@@ -300,12 +300,7 @@ class IncrementalPublisher {
   ): void {
     const streamRecord = streamItemsResult.streamRecord;
     const id = streamRecord.id;
-    // TODO: Consider adding invariant or non-null assertion, as this should never happen. Since the stream is converted into a linked list
-    // for ordering purposes, if an entry errors, additional entries will not be processed.
-    /* c8 ignore next 3 */
-    if (id === undefined) {
-      return;
-    }
+    invariant(id !== undefined);
     if (streamItemsResult.errors !== undefined) {
       context.completed.push({
         id,
