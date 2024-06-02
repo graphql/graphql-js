@@ -12,6 +12,7 @@ import type {
   DeferredGroupedFieldSetResult,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
+  IncrementalDataRecordResult,
   IncrementalDeferResult,
   IncrementalResult,
   IncrementalStreamResult,
@@ -45,6 +46,12 @@ interface IncrementalPublisherContext {
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
+interface SubsequentIncrementalExecutionResultContext {
+  pending: Array<PendingResult>;
+  incremental: Array<IncrementalResult>;
+  completed: Array<CompletedResult>;
+}
+
 /**
  * This class is used to publish incremental results to the client, enabling semi-concurrent
  * execution while preserving result order.
@@ -55,15 +62,11 @@ class IncrementalPublisher {
   private _context: IncrementalPublisherContext;
   private _nextId: number;
   private _incrementalGraph: IncrementalGraph;
-  private _incremental: Array<IncrementalResult>;
-  private _completed: Array<CompletedResult>;
 
   constructor(context: IncrementalPublisherContext) {
     this._context = context;
     this._nextId = 0;
     this._incrementalGraph = new IncrementalGraph();
-    this._incremental = [];
-    this._completed = [];
   }
 
   buildResponse(
@@ -125,6 +128,12 @@ class IncrementalPublisher {
         return { value: undefined, done: true };
       }
 
+      const context: SubsequentIncrementalExecutionResultContext = {
+        pending: [],
+        incremental: [],
+        completed: [],
+      };
+
       const completedIncrementalData =
         this._incrementalGraph.completedIncrementalData();
       // use the raw iterator rather than 'for await ... of' so as not to trigger the
@@ -132,20 +141,12 @@ class IncrementalPublisher {
       const asyncIterator = completedIncrementalData[Symbol.asyncIterator]();
       let iteration = await asyncIterator.next();
       while (!iteration.done) {
-        let pending: Array<PendingResult> = [];
-
         for (const completedResult of iteration.value) {
-          if (isDeferredGroupedFieldSetResult(completedResult)) {
-            this._handleCompletedDeferredGroupedFieldSet(completedResult);
-          } else {
-            this._handleCompletedStreamItems(completedResult);
-          }
-
-          const newPending = this._incrementalGraph.getNewPending();
-          pending = [...pending, ...this._pendingSourcesToResults(newPending)];
+          this._handleCompletedIncrementalData(completedResult, context);
         }
 
-        if (this._incremental.length > 0 || this._completed.length > 0) {
+        const { incremental, completed } = context;
+        if (incremental.length > 0 || completed.length > 0) {
           const hasNext = this._incrementalGraph.hasNext();
 
           if (!hasNext) {
@@ -156,19 +157,16 @@ class IncrementalPublisher {
           const subsequentIncrementalExecutionResult: SubsequentIncrementalExecutionResult =
             { hasNext };
 
+          const pending = context.pending;
           if (pending.length > 0) {
             subsequentIncrementalExecutionResult.pending = pending;
           }
-          if (this._incremental.length > 0) {
-            subsequentIncrementalExecutionResult.incremental =
-              this._incremental;
+          if (incremental.length > 0) {
+            subsequentIncrementalExecutionResult.incremental = incremental;
           }
-          if (this._completed.length > 0) {
-            subsequentIncrementalExecutionResult.completed = this._completed;
+          if (completed.length > 0) {
+            subsequentIncrementalExecutionResult.completed = completed;
           }
-
-          this._incremental = [];
-          this._completed = [];
 
           return { value: subsequentIncrementalExecutionResult, done: false };
         }
@@ -207,8 +205,25 @@ class IncrementalPublisher {
     };
   }
 
+  private _handleCompletedIncrementalData(
+    completedIncrementalData: IncrementalDataRecordResult,
+    context: SubsequentIncrementalExecutionResultContext,
+  ): void {
+    if (isDeferredGroupedFieldSetResult(completedIncrementalData)) {
+      this._handleCompletedDeferredGroupedFieldSet(
+        completedIncrementalData,
+        context,
+      );
+    } else {
+      this._handleCompletedStreamItems(completedIncrementalData, context);
+    }
+    const newPending = this._incrementalGraph.getNewPending();
+    context.pending.push(...this._pendingSourcesToResults(newPending));
+  }
+
   private _handleCompletedDeferredGroupedFieldSet(
     deferredGroupedFieldSetResult: DeferredGroupedFieldSetResult,
+    context: SubsequentIncrementalExecutionResultContext,
   ): void {
     if (
       isNonReconcilableDeferredGroupedFieldSetResult(
@@ -218,7 +233,7 @@ class IncrementalPublisher {
       for (const deferredFragmentRecord of deferredGroupedFieldSetResult.deferredFragmentRecords) {
         const id = deferredFragmentRecord.id;
         if (id !== undefined) {
-          this._completed.push({
+          context.completed.push({
             id,
             errors: deferredGroupedFieldSetResult.errors,
           });
@@ -255,6 +270,7 @@ class IncrementalPublisher {
       if (reconcilableResults === undefined) {
         continue;
       }
+      const incremental = context.incremental;
       for (const reconcilableResult of reconcilableResults) {
         if (reconcilableResult.sent) {
           continue;
@@ -272,14 +288,15 @@ class IncrementalPublisher {
         if (subPath !== undefined) {
           incrementalEntry.subPath = subPath;
         }
-        this._incremental.push(incrementalEntry);
+        incremental.push(incrementalEntry);
       }
-      this._completed.push({ id });
+      context.completed.push({ id });
     }
   }
 
   private _handleCompletedStreamItems(
     streamItemsResult: StreamItemsResult,
+    context: SubsequentIncrementalExecutionResultContext,
   ): void {
     const streamRecord = streamItemsResult.streamRecord;
     const id = streamRecord.id;
@@ -290,7 +307,7 @@ class IncrementalPublisher {
       return;
     }
     if (streamItemsResult.errors !== undefined) {
-      this._completed.push({
+      context.completed.push({
         id,
         errors: streamItemsResult.errors,
       });
@@ -304,7 +321,7 @@ class IncrementalPublisher {
         });
       }
     } else if (streamItemsResult.result === undefined) {
-      this._completed.push({ id });
+      context.completed.push({ id });
       this._incrementalGraph.removeSubsequentResultRecord(streamRecord);
       if (isCancellableStreamRecord(streamRecord)) {
         invariant(this._context.cancellableStreams !== undefined);
@@ -316,7 +333,7 @@ class IncrementalPublisher {
         ...streamItemsResult.result,
       };
 
-      this._incremental.push(incrementalEntry);
+      context.incremental.push(incrementalEntry);
 
       if (streamItemsResult.incrementalDataRecords !== undefined) {
         this._incrementalGraph.addIncrementalDataRecords(
