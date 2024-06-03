@@ -99,6 +99,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ValuesOfCorrectTypeRule,
   ProvidedRequiredArgumentsRule,
   VariablesInAllowedPositionRule,
+  MaxIntrospectionDepthRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
 ]);
@@ -122,6 +123,5 @@ export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
     KnownArgumentNamesOnDirectivesRule,
     UniqueArgumentNamesRule,
     UniqueInputFieldNamesRule,
-    MaxIntrospectionDepthRule,
     ProvidedRequiredArgumentsOnDirectivesRule,
   ]);
