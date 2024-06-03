@@ -70,7 +70,7 @@ import type {
   IncrementalDataRecord,
   StreamItemsRecord,
   StreamItemsResult,
-  SubsequentResultRecord,
+  StreamRecord,
 } from './types.js';
 import { isReconcilableStreamItemsResult } from './types.js';
 import {
@@ -1094,12 +1094,12 @@ async function completeAsyncIteratorValue(
   while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
       const returnFn = asyncIterator.return;
-      let streamRecord: SubsequentResultRecord | CancellableStreamRecord;
+      let streamRecord: StreamRecord | CancellableStreamRecord;
       if (returnFn === undefined) {
         streamRecord = {
           label: streamUsage.label,
           path,
-        } as SubsequentResultRecord;
+        } as StreamRecord;
       } else {
         streamRecord = {
           label: streamUsage.label,
@@ -1266,7 +1266,7 @@ function completeIterableValue(
     const item = iteration.value;
 
     if (streamUsage && index >= streamUsage.initialCount) {
-      const streamRecord: SubsequentResultRecord = {
+      const streamRecord: StreamRecord = {
         label: streamUsage.label,
         path,
       };
@@ -2212,7 +2212,7 @@ function getDeferredFragmentRecords(
 }
 
 function firstSyncStreamItems(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   initialItem: PromiseOrValue<unknown>,
   initialIndex: number,
   iterator: Iterator<unknown>,
@@ -2315,7 +2315,7 @@ function prependNextResolvedStreamItems(
 }
 
 function firstAsyncStreamItems(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   path: Path,
   initialIndex: number,
   asyncIterator: AsyncIterator<unknown>,
@@ -2341,7 +2341,7 @@ function firstAsyncStreamItems(
 }
 
 async function getNextAsyncStreamItemsResult(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   path: Path,
   index: number,
   asyncIterator: AsyncIterator<unknown>,
@@ -2395,7 +2395,7 @@ async function getNextAsyncStreamItemsResult(
 }
 
 function completeStreamItems(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   itemPath: Path,
   item: unknown,
   exeContext: ExecutionContext,
@@ -2495,7 +2495,7 @@ function completeStreamItems(
 
 function buildStreamItemsResult(
   errors: ReadonlyArray<GraphQLError> | undefined,
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   result: GraphQLWrappedResult<unknown>,
 ): StreamItemsResult {
   return {

@@ -7,6 +7,7 @@ import type {
   IncrementalDataRecord,
   IncrementalDataRecordResult,
   ReconcilableDeferredGroupedFieldSetResult,
+  StreamRecord,
   SubsequentResultRecord,
 } from './types.js';
 import { isDeferredGroupedFieldSetRecord } from './types.js';
@@ -27,11 +28,11 @@ function isDeferredFragmentNode(
 
 function isStreamNode(
   subsequentResultNode: SubsequentResultNode,
-): subsequentResultNode is SubsequentResultRecord {
+): subsequentResultNode is StreamRecord {
   return 'path' in subsequentResultNode;
 }
 
-type SubsequentResultNode = DeferredFragmentNode | SubsequentResultRecord;
+type SubsequentResultNode = DeferredFragmentNode | StreamRecord;
 
 /**
  * @internal
@@ -215,7 +216,7 @@ export class IncrementalGraph {
     }
   }
 
-  removeStream(streamRecord: SubsequentResultRecord): void {
+  removeStream(streamRecord: StreamRecord): void {
     this._removePending(streamRecord);
   }
 
