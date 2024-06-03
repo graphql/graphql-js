@@ -82,9 +82,10 @@ import { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBe
 // Spec Section: "Input Object Field Uniqueness"
 import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule';
 
+import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
+
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
-import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 import { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';
 import { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule';
 import { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule';
@@ -125,6 +126,7 @@ export const specifiedRules = Object.freeze([
   VariablesInAllowedPositionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
+  MaxIntrospectionDepthRule,
 ]);
 
 /**
@@ -144,6 +146,5 @@ export const specifiedSDLRules = Object.freeze([
   KnownArgumentNamesOnDirectivesRule,
   UniqueArgumentNamesRule,
   UniqueInputFieldNamesRule,
-  MaxIntrospectionDepthRule,
   ProvidedRequiredArgumentsOnDirectivesRule,
 ]);
