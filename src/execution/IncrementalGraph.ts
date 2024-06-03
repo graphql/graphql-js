@@ -110,7 +110,7 @@ export class IncrementalGraph {
     this._newPending.clear();
 
     for (const incrementalDataRecord of this._newIncrementalDataRecords) {
-      const result = incrementalDataRecord.result;
+      const result = incrementalDataRecord.result.value;
       if (isPromise(result)) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         result.then((resolved) => this._enqueue(resolved));
