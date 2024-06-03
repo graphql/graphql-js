@@ -233,13 +233,18 @@ class IncrementalPublisher {
       for (const deferredFragmentRecord of deferredGroupedFieldSetResult
         .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
         const id = deferredFragmentRecord.id;
-        if (id !== undefined) {
-          context.completed.push({
-            id,
-            errors: deferredGroupedFieldSetResult.errors,
-          });
-          this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord);
+        if (
+          !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
+        ) {
+          // This can occur if multiple deferred grouped field sets error for a fragment.
+          continue;
         }
+        invariant(id !== undefined);
+        context.completed.push({
+          id,
+          errors: deferredGroupedFieldSetResult.errors,
+        });
+        this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord);
       }
       return;
     }
