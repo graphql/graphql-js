@@ -17,9 +17,9 @@ import { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule';
 import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule';
 // Spec Section: "Lone Anonymous Operation"
 import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule';
+import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
-import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 // Spec Section: "Fragments must not form cycles"
 import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule';
 // Spec Section: "All Variable Used Defined"
@@ -99,9 +99,9 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ValuesOfCorrectTypeRule,
   ProvidedRequiredArgumentsRule,
   VariablesInAllowedPositionRule,
-  MaxIntrospectionDepthRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
+  MaxIntrospectionDepthRule,
 ]);
 
 /**
