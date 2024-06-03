@@ -17,7 +17,9 @@ export function MaxIntrospectionDepthRule(
    */
   function checkDepth(
     node: ASTNode,
-    visitedFragments: { [fragmentName: string]: true | undefined },
+    visitedFragments: {
+      [fragmentName: string]: true | undefined;
+    } = Object.create(null),
     depth: number = 0,
   ): boolean {
     if (node.kind === Kind.FRAGMENT_SPREAD) {
@@ -75,7 +77,7 @@ export function MaxIntrospectionDepthRule(
   return {
     Field(node) {
       if (node.name.value === '__schema' || node.name.value === '__type') {
-        if (checkDepth(node, Object.create(null))) {
+        if (checkDepth(node)) {
           context.reportError(
             new GraphQLError('Maximum introspection depth exceeded', {
               nodes: [node],
