@@ -23,9 +23,9 @@ import { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.js';
 import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js';
 // Spec Section: "Lone Anonymous Operation"
 import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.js';
+import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.js';
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js';
-import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.js';
 // Spec Section: "Fragments must not form cycles"
 import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.js';
 // Spec Section: "All Variable Used Defined"
