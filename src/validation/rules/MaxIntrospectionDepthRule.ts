@@ -50,6 +50,7 @@ export function MaxIntrospectionDepthRule(
     if (
       node.kind === Kind.FIELD &&
       // check all introspection lists
+      // TODO: instead of relying on field names, check whether the type is a list
       (node.name.value === 'fields' ||
         node.name.value === 'interfaces' ||
         node.name.value === 'possibleTypes' ||
