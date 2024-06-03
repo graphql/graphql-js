@@ -1,6 +1,6 @@
+import type { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
 import type {
   GraphQLError,
@@ -205,7 +205,7 @@ export function isNonReconcilableDeferredGroupedFieldSetResult(
 
 export interface DeferredGroupedFieldSetRecord {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
-  result: PromiseOrValue<DeferredGroupedFieldSetResult>;
+  result: BoxedPromiseOrValue<DeferredGroupedFieldSetResult>;
 }
 
 export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
@@ -266,7 +266,7 @@ export type StreamItemsResult =
 
 export interface StreamItemsRecord {
   streamRecord: StreamRecord;
-  result: PromiseOrValue<StreamItemsResult>;
+  result: BoxedPromiseOrValue<StreamItemsResult>;
 }
 
 export type IncrementalDataRecord =
