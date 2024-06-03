@@ -1939,7 +1939,9 @@ describe('Execute: stream directive', () => {
       hasNext: true,
     });
 
-    const result2 = await iterator.next();
+    const result2Promise = iterator.next();
+    resolveIterableCompletion(null);
+    const result2 = await result2Promise;
     expectJSON(result2).toDeepEqual({
       value: {
         pending: [{ id: '2', path: ['friendList', 1], label: 'DeferName' }],
@@ -1960,7 +1962,7 @@ describe('Execute: stream directive', () => {
     });
 
     const result3Promise = iterator.next();
-    resolveIterableCompletion(null);
+    resolveSlowField('Han');
     const result3 = await result3Promise;
     expectJSON(result3).toDeepEqual({
       value: {
@@ -1969,9 +1971,7 @@ describe('Execute: stream directive', () => {
       },
       done: false,
     });
-    const result4Promise = iterator.next();
-    resolveSlowField('Han');
-    const result4 = await result4Promise;
+    const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
       value: {
         incremental: [
@@ -2062,19 +2062,8 @@ describe('Execute: stream directive', () => {
       done: false,
     });
 
-    const result3Promise = iterator.next();
-    resolveIterableCompletion(null);
-    const result3 = await result3Promise;
+    const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({
-      value: {
-        completed: [{ id: '1' }],
-        hasNext: true,
-      },
-      done: false,
-    });
-
-    const result4 = await iterator.next();
-    expectJSON(result4).toDeepEqual({
       value: {
         incremental: [
           {
@@ -2083,6 +2072,17 @@ describe('Execute: stream directive', () => {
           },
         ],
         completed: [{ id: '2' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    const result4Promise = iterator.next();
+    resolveIterableCompletion(null);
+    const result4 = await result4Promise;
+    expectJSON(result4).toDeepEqual({
+      value: {
+        completed: [{ id: '1' }],
         hasNext: false,
       },
       done: false,
