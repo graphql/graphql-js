@@ -217,14 +217,16 @@ export class IncrementalGraph {
     return reconcilableResults;
   }
 
-  removeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord): void {
+  removeDeferredFragment(
+    deferredFragmentRecord: DeferredFragmentRecord,
+  ): boolean {
     const deferredFragmentNode = this._deferredFragmentNodes.get(
       deferredFragmentRecord,
     );
     // TODO: add test case?
     /* c8 ignore next 3 */
     if (deferredFragmentNode === undefined) {
-      return;
+      return false;
     }
     this._removePending(deferredFragmentNode);
     this._deferredFragmentNodes.delete(deferredFragmentRecord);
@@ -233,6 +235,7 @@ export class IncrementalGraph {
     for (const child of deferredFragmentNode.children) {
       this.removeDeferredFragment(child.deferredFragmentRecord);
     }
+    return true;
   }
 
   removeStream(streamRecord: StreamRecord): void {
