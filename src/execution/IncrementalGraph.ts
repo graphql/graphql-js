@@ -204,8 +204,6 @@ export class IncrementalGraph {
     const deferredFragmentNode = this._deferredFragmentNodes.get(
       deferredFragmentRecord,
     );
-    // TODO: add test case?
-    /* c8 ignore next 3 */
     if (deferredFragmentNode === undefined) {
       return false;
     }
