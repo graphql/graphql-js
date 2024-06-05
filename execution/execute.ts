@@ -1,3 +1,4 @@
+import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
@@ -58,6 +59,7 @@ import { buildIncrementalResponse } from './IncrementalPublisher.ts';
 import { mapAsyncIterable } from './mapAsyncIterable.ts';
 import type {
   CancellableStreamRecord,
+  DeferredFragmentRecord,
   DeferredGroupedFieldSetRecord,
   DeferredGroupedFieldSetResult,
   ExecutionResult,
@@ -65,12 +67,9 @@ import type {
   IncrementalDataRecord,
   StreamItemsRecord,
   StreamItemsResult,
-  SubsequentResultRecord,
+  StreamRecord,
 } from './types.ts';
-import {
-  DeferredFragmentRecord,
-  isReconcilableStreamItemsResult,
-} from './types.ts';
+import { isReconcilableStreamItemsResult } from './types.ts';
 import {
   getArgumentValues,
   getDirectiveValues,
@@ -1021,12 +1020,12 @@ async function completeAsyncIteratorValue(
   while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
       const returnFn = asyncIterator.return;
-      let streamRecord: SubsequentResultRecord | CancellableStreamRecord;
+      let streamRecord: StreamRecord | CancellableStreamRecord;
       if (returnFn === undefined) {
         streamRecord = {
           label: streamUsage.label,
           path,
-        } as SubsequentResultRecord;
+        } as StreamRecord;
       } else {
         streamRecord = {
           label: streamUsage.label,
@@ -1180,7 +1179,7 @@ function completeIterableValue(
   while (!iteration.done) {
     const item = iteration.value;
     if (streamUsage && index >= streamUsage.initialCount) {
-      const streamRecord: SubsequentResultRecord = {
+      const streamRecord: StreamRecord = {
         label: streamUsage.label,
         path,
       };
@@ -1557,11 +1556,11 @@ function addNewDeferredFragments(
         ? undefined
         : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
     // Instantiate the new record.
-    const deferredFragmentRecord = new DeferredFragmentRecord({
+    const deferredFragmentRecord: DeferredFragmentRecord = {
       path,
       label: newDeferUsage.label,
       parent,
-    });
+    };
     // Update the map.
     newDeferMap.set(newDeferUsage, deferredFragmentRecord);
   }
@@ -1930,9 +1929,14 @@ function executeDeferredGroupedFieldSets(
       deferUsageSet,
       deferMap,
     );
+    const deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord = {
+      deferredFragmentRecords,
+      result:
+        undefined as unknown as BoxedPromiseOrValue<DeferredGroupedFieldSetResult>,
+    };
     const executor = () =>
       executeDeferredGroupedFieldSet(
-        deferredFragmentRecords,
+        deferredGroupedFieldSetRecord,
         exeContext,
         parentType,
         sourceValue,
@@ -1944,12 +1948,11 @@ function executeDeferredGroupedFieldSets(
         },
         deferMap,
       );
-    const deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord = {
-      deferredFragmentRecords,
-      result: shouldDefer(parentDeferUsages, deferUsageSet)
+    deferredGroupedFieldSetRecord.result = new BoxedPromiseOrValue(
+      shouldDefer(parentDeferUsages, deferUsageSet)
         ? Promise.resolve().then(executor)
         : executor(),
-    };
+    );
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }
   return newDeferredGroupedFieldSetRecords;
@@ -1970,7 +1973,7 @@ function shouldDefer(
   );
 }
 function executeDeferredGroupedFieldSet(
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
+  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
@@ -1992,7 +1995,7 @@ function executeDeferredGroupedFieldSet(
     );
   } catch (error) {
     return {
-      deferredFragmentRecords,
+      deferredGroupedFieldSetRecord,
       path: pathToArray(path),
       errors: withError(incrementalContext.errors, error),
     };
@@ -2002,12 +2005,12 @@ function executeDeferredGroupedFieldSet(
       (resolved) =>
         buildDeferredGroupedFieldSetResult(
           incrementalContext.errors,
-          deferredFragmentRecords,
+          deferredGroupedFieldSetRecord,
           path,
           resolved,
         ),
       (error) => ({
-        deferredFragmentRecords,
+        deferredGroupedFieldSetRecord,
         path: pathToArray(path),
         errors: withError(incrementalContext.errors, error),
       }),
@@ -2015,19 +2018,19 @@ function executeDeferredGroupedFieldSet(
   }
   return buildDeferredGroupedFieldSetResult(
     incrementalContext.errors,
-    deferredFragmentRecords,
+    deferredGroupedFieldSetRecord,
     path,
     result,
   );
 }
 function buildDeferredGroupedFieldSetResult(
   errors: ReadonlyArray<GraphQLError> | undefined,
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
+  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   path: Path | undefined,
   result: GraphQLWrappedResult<ObjMap<unknown>>,
 ): DeferredGroupedFieldSetResult {
   return {
-    deferredFragmentRecords,
+    deferredGroupedFieldSetRecord,
     path: pathToArray(path),
     result:
       errors === undefined ? { data: result[0] } : { data: result[0], errors },
@@ -2043,7 +2046,7 @@ function getDeferredFragmentRecords(
   );
 }
 function firstSyncStreamItems(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   initialItem: PromiseOrValue<unknown>,
   initialIndex: number,
   iterator: Iterator<unknown>,
@@ -2054,60 +2057,71 @@ function firstSyncStreamItems(
 ): StreamItemsRecord {
   return {
     streamRecord,
-    result: Promise.resolve().then(() => {
-      const path = streamRecord.path;
-      const initialPath = addPath(path, initialIndex, undefined);
-      let result = completeStreamItems(
-        streamRecord,
-        initialPath,
-        initialItem,
-        exeContext,
-        { errors: undefined },
-        fieldGroup,
-        info,
-        itemType,
-      );
-      const firstStreamItems = { result };
-      let currentStreamItems = firstStreamItems;
-      let currentIndex = initialIndex;
-      let iteration = iterator.next();
-      let erroredSynchronously = false;
-      while (!iteration.done) {
-        if (!isPromise(result) && !isReconcilableStreamItemsResult(result)) {
-          erroredSynchronously = true;
-          break;
+    result: new BoxedPromiseOrValue(
+      Promise.resolve().then(() => {
+        const path = streamRecord.path;
+        const initialPath = addPath(path, initialIndex, undefined);
+        let result = new BoxedPromiseOrValue(
+          completeStreamItems(
+            streamRecord,
+            initialPath,
+            initialItem,
+            exeContext,
+            { errors: undefined },
+            fieldGroup,
+            info,
+            itemType,
+          ),
+        );
+        const firstStreamItems = { result };
+        let currentStreamItems = firstStreamItems;
+        let currentIndex = initialIndex;
+        let iteration = iterator.next();
+        let erroredSynchronously = false;
+        while (!iteration.done) {
+          const value = result.value;
+          if (!isPromise(value) && !isReconcilableStreamItemsResult(value)) {
+            erroredSynchronously = true;
+            break;
+          }
+          const item = iteration.value;
+          currentIndex++;
+          const currentPath = addPath(path, currentIndex, undefined);
+          result = new BoxedPromiseOrValue(
+            completeStreamItems(
+              streamRecord,
+              currentPath,
+              item,
+              exeContext,
+              { errors: undefined },
+              fieldGroup,
+              info,
+              itemType,
+            ),
+          );
+          const nextStreamItems: StreamItemsRecord = { streamRecord, result };
+          currentStreamItems.result = new BoxedPromiseOrValue(
+            prependNextStreamItems(
+              currentStreamItems.result.value,
+              nextStreamItems,
+            ),
+          );
+          currentStreamItems = nextStreamItems;
+          iteration = iterator.next();
         }
-        const item = iteration.value;
-        currentIndex++;
-        const currentPath = addPath(path, currentIndex, undefined);
-        result = completeStreamItems(
-          streamRecord,
-          currentPath,
-          item,
-          exeContext,
-          { errors: undefined },
-          fieldGroup,
-          info,
-          itemType,
-        );
-        const nextStreamItems: StreamItemsRecord = { streamRecord, result };
-        currentStreamItems.result = prependNextStreamItems(
-          currentStreamItems.result,
-          nextStreamItems,
-        );
-        currentStreamItems = nextStreamItems;
-        iteration = iterator.next();
-      }
-      // If a non-reconcilable stream items result was encountered, then the stream terminates in error.
-      // Otherwise, add a stream terminator.
-      if (!erroredSynchronously) {
-        currentStreamItems.result = prependNextStreamItems(
-          currentStreamItems.result,
-          { streamRecord, result: { streamRecord } },
-        );
-      }
-      return firstStreamItems.result;
-    }),
+        // If a non-reconcilable stream items result was encountered, then the stream terminates in error.
+        // Otherwise, add a stream terminator.
+        if (!erroredSynchronously) {
+          currentStreamItems.result = new BoxedPromiseOrValue(
+            prependNextStreamItems(currentStreamItems.result.value, {
+              streamRecord,
+              result: new BoxedPromiseOrValue({ streamRecord }),
+            }),
+          );
+        }
+        return firstStreamItems.result.value;
+      }),
+    ),
   };
 }
 function prependNextStreamItems(
@@ -2138,7 +2152,7 @@ function prependNextResolvedStreamItems(
   };
 }
 function firstAsyncStreamItems(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   path: Path,
   initialIndex: number,
   asyncIterator: AsyncIterator<unknown>,
@@ -2149,21 +2163,23 @@ function firstAsyncStreamItems(
 ): StreamItemsRecord {
   const firstStreamItems: StreamItemsRecord = {
     streamRecord,
-    result: getNextAsyncStreamItemsResult(
-      streamRecord,
-      path,
-      initialIndex,
-      asyncIterator,
-      exeContext,
-      fieldGroup,
-      info,
-      itemType,
+    result: new BoxedPromiseOrValue(
+      getNextAsyncStreamItemsResult(
+        streamRecord,
+        path,
+        initialIndex,
+        asyncIterator,
+        exeContext,
+        fieldGroup,
+        info,
+        itemType,
+      ),
     ),
   };
   return firstStreamItems;
 }
 async function getNextAsyncStreamItemsResult(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   path: Path,
   index: number,
   asyncIterator: AsyncIterator<unknown>,
@@ -2197,21 +2213,23 @@ async function getNextAsyncStreamItemsResult(
   );
   const nextStreamItems: StreamItemsRecord = {
     streamRecord,
-    result: getNextAsyncStreamItemsResult(
-      streamRecord,
-      path,
-      index,
-      asyncIterator,
-      exeContext,
-      fieldGroup,
-      info,
-      itemType,
+    result: new BoxedPromiseOrValue(
+      getNextAsyncStreamItemsResult(
+        streamRecord,
+        path,
+        index,
+        asyncIterator,
+        exeContext,
+        fieldGroup,
+        info,
+        itemType,
+      ),
     ),
   };
   return prependNextStreamItems(result, nextStreamItems);
 }
 function completeStreamItems(
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   itemPath: Path,
   item: unknown,
   exeContext: ExecutionContext,
@@ -2307,7 +2325,7 @@ function completeStreamItems(
 }
 function buildStreamItemsResult(
   errors: ReadonlyArray<GraphQLError> | undefined,
-  streamRecord: SubsequentResultRecord,
+  streamRecord: StreamRecord,
   result: GraphQLWrappedResult<unknown>,
 ): StreamItemsResult {
   return {

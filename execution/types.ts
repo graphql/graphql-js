@@ -1,6 +1,6 @@
+import type { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { Path } from '../jsutils/Path.ts';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 import type {
   GraphQLError,
   GraphQLFormattedError,
@@ -146,11 +146,6 @@ export interface FormattedCompletedResult {
   label?: string;
   errors?: ReadonlyArray<GraphQLError>;
 }
-export function isDeferredFragmentRecord(
-  subsequentResultRecord: SubsequentResultRecord,
-): subsequentResultRecord is DeferredFragmentRecord {
-  return 'parent' in subsequentResultRecord;
-}
 export function isDeferredGroupedFieldSetRecord(
   incrementalDataRecord: IncrementalDataRecord,
 ): incrementalDataRecord is DeferredGroupedFieldSetRecord {
@@ -162,20 +157,19 @@ export type DeferredGroupedFieldSetResult =
 export function isDeferredGroupedFieldSetResult(
   subsequentResult: DeferredGroupedFieldSetResult | StreamItemsResult,
 ): subsequentResult is DeferredGroupedFieldSetResult {
-  return 'deferredFragmentRecords' in subsequentResult;
+  return 'deferredGroupedFieldSetRecord' in subsequentResult;
 }
-interface ReconcilableDeferredGroupedFieldSetResult {
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+export interface ReconcilableDeferredGroupedFieldSetResult {
+  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord;
   path: Array<string | number>;
   result: BareDeferredGroupedFieldSetResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
-  sent?: true | undefined;
   errors?: never;
 }
 interface NonReconcilableDeferredGroupedFieldSetResult {
-  errors: ReadonlyArray<GraphQLError>;
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord;
   path: Array<string | number>;
+  errors: ReadonlyArray<GraphQLError>;
   result?: never;
 }
 export function isNonReconcilableDeferredGroupedFieldSetResult(
@@ -185,38 +179,21 @@ export function isNonReconcilableDeferredGroupedFieldSetResult(
 }
 export interface DeferredGroupedFieldSetRecord {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
-  result: PromiseOrValue<DeferredGroupedFieldSetResult>;
+  result: BoxedPromiseOrValue<DeferredGroupedFieldSetResult>;
 }
-export interface SubsequentResultRecord {
-  path: Path | undefined;
-  label: string | undefined;
-  id?: string | undefined;
-}
-/** @internal */
-export class DeferredFragmentRecord implements SubsequentResultRecord {
+export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
+export interface DeferredFragmentRecord {
   path: Path | undefined;
   label: string | undefined;
   id?: string | undefined;
   parent: DeferredFragmentRecord | undefined;
-  expectedReconcilableResults: number;
-  results: Array<DeferredGroupedFieldSetResult>;
-  reconcilableResults: Array<ReconcilableDeferredGroupedFieldSetResult>;
-  children: Set<DeferredFragmentRecord>;
-  constructor(opts: {
-    path: Path | undefined;
-    label: string | undefined;
-    parent: DeferredFragmentRecord | undefined;
-  }) {
-    this.path = opts.path;
-    this.label = opts.label;
-    this.parent = opts.parent;
-    this.expectedReconcilableResults = 0;
-    this.results = [];
-    this.reconcilableResults = [];
-    this.children = new Set();
-  }
 }
-export interface CancellableStreamRecord extends SubsequentResultRecord {
+export interface StreamRecord {
+  path: Path;
+  label: string | undefined;
+  id?: string | undefined;
+}
+export interface CancellableStreamRecord extends StreamRecord {
   earlyReturn: () => Promise<unknown>;
 }
 export function isCancellableStreamRecord(
@@ -225,7 +202,7 @@ export function isCancellableStreamRecord(
   return 'earlyReturn' in subsequentResultRecord;
 }
 interface ReconcilableStreamItemsResult {
-  streamRecord: SubsequentResultRecord;
+  streamRecord: StreamRecord;
   result: BareStreamItemsResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   errors?: never;
@@ -236,13 +213,13 @@ export function isReconcilableStreamItemsResult(
   return streamItemsResult.result !== undefined;
 }
 interface TerminatingStreamItemsResult {
-  streamRecord: SubsequentResultRecord;
+  streamRecord: StreamRecord;
   result?: never;
   incrementalDataRecords?: never;
   errors?: never;
 }
 interface NonReconcilableStreamItemsResult {
-  streamRecord: SubsequentResultRecord;
+  streamRecord: StreamRecord;
   errors: ReadonlyArray<GraphQLError>;
   result?: never;
 }
@@ -251,8 +228,8 @@ export type StreamItemsResult =
   | TerminatingStreamItemsResult
   | NonReconcilableStreamItemsResult;
 export interface StreamItemsRecord {
-  streamRecord: SubsequentResultRecord;
-  result: PromiseOrValue<StreamItemsResult>;
+  streamRecord: StreamRecord;
+  result: BoxedPromiseOrValue<StreamItemsResult>;
 }
 export type IncrementalDataRecord =
   | DeferredGroupedFieldSetRecord
