@@ -1,3 +1,4 @@
+import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.mjs';
 import { inspect } from '../jsutils/inspect.mjs';
 import { invariant } from '../jsutils/invariant.mjs';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.mjs';
@@ -28,10 +29,7 @@ import {
 } from './collectFields.mjs';
 import { buildIncrementalResponse } from './IncrementalPublisher.mjs';
 import { mapAsyncIterable } from './mapAsyncIterable.mjs';
-import {
-  DeferredFragmentRecord,
-  isReconcilableStreamItemsResult,
-} from './types.mjs';
+import { isReconcilableStreamItemsResult } from './types.mjs';
 import {
   getArgumentValues,
   getDirectiveValues,
@@ -1394,11 +1392,11 @@ function addNewDeferredFragments(newDeferUsages, newDeferMap, path) {
         ? undefined
         : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
     // Instantiate the new record.
-    const deferredFragmentRecord = new DeferredFragmentRecord({
+    const deferredFragmentRecord = {
       path,
       label: newDeferUsage.label,
       parent,
-    });
+    };
     // Update the map.
     newDeferMap.set(newDeferUsage, deferredFragmentRecord);
   }
@@ -1740,9 +1738,13 @@ function executeDeferredGroupedFieldSets(
       deferUsageSet,
       deferMap,
     );
+    const deferredGroupedFieldSetRecord = {
+      deferredFragmentRecords,
+      result: undefined,
+    };
     const executor = () =>
       executeDeferredGroupedFieldSet(
-        deferredFragmentRecords,
+        deferredGroupedFieldSetRecord,
         exeContext,
         parentType,
         sourceValue,
@@ -1754,12 +1756,11 @@ function executeDeferredGroupedFieldSets(
         },
         deferMap,
       );
-    const deferredGroupedFieldSetRecord = {
-      deferredFragmentRecords,
-      result: shouldDefer(parentDeferUsages, deferUsageSet)
+    deferredGroupedFieldSetRecord.result = new BoxedPromiseOrValue(
+      shouldDefer(parentDeferUsages, deferUsageSet)
         ? Promise.resolve().then(executor)
         : executor(),
-    };
+    );
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }
   return newDeferredGroupedFieldSetRecords;
@@ -1777,7 +1778,7 @@ function shouldDefer(parentDeferUsages, deferUsages) {
   );
 }
 function executeDeferredGroupedFieldSet(
-  deferredFragmentRecords,
+  deferredGroupedFieldSetRecord,
   exeContext,
   parentType,
   sourceValue,
@@ -1799,7 +1800,7 @@ function executeDeferredGroupedFieldSet(
     );
   } catch (error) {
     return {
-      deferredFragmentRecords,
+      deferredGroupedFieldSetRecord,
       path: pathToArray(path),
       errors: withError(incrementalContext.errors, error),
     };
@@ -1809,12 +1810,12 @@ function executeDeferredGroupedFieldSet(
       (resolved) =>
         buildDeferredGroupedFieldSetResult(
           incrementalContext.errors,
-          deferredFragmentRecords,
+          deferredGroupedFieldSetRecord,
           path,
           resolved,
         ),
       (error) => ({
-        deferredFragmentRecords,
+        deferredGroupedFieldSetRecord,
         path: pathToArray(path),
         errors: withError(incrementalContext.errors, error),
       }),
@@ -1822,19 +1823,19 @@ function executeDeferredGroupedFieldSet(
   }
   return buildDeferredGroupedFieldSetResult(
     incrementalContext.errors,
-    deferredFragmentRecords,
+    deferredGroupedFieldSetRecord,
     path,
     result,
   );
 }
 function buildDeferredGroupedFieldSetResult(
   errors,
-  deferredFragmentRecords,
+  deferredGroupedFieldSetRecord,
   path,
   result,
 ) {
   return {
-    deferredFragmentRecords,
+    deferredGroupedFieldSetRecord,
     path: pathToArray(path),
     result:
       errors === undefined ? { data: result[0] } : { data: result[0], errors },
@@ -1858,60 +1859,71 @@ function firstSyncStreamItems(
 ) {
   return {
     streamRecord,
-    result: Promise.resolve().then(() => {
-      const path = streamRecord.path;
-      const initialPath = addPath(path, initialIndex, undefined);
-      let result = completeStreamItems(
-        streamRecord,
-        initialPath,
-        initialItem,
-        exeContext,
-        { errors: undefined },
-        fieldGroup,
-        info,
-        itemType,
-      );
-      const firstStreamItems = { result };
-      let currentStreamItems = firstStreamItems;
-      let currentIndex = initialIndex;
-      let iteration = iterator.next();
-      let erroredSynchronously = false;
-      while (!iteration.done) {
-        if (!isPromise(result) && !isReconcilableStreamItemsResult(result)) {
-          erroredSynchronously = true;
-          break;
+    result: new BoxedPromiseOrValue(
+      Promise.resolve().then(() => {
+        const path = streamRecord.path;
+        const initialPath = addPath(path, initialIndex, undefined);
+        let result = new BoxedPromiseOrValue(
+          completeStreamItems(
+            streamRecord,
+            initialPath,
+            initialItem,
+            exeContext,
+            { errors: undefined },
+            fieldGroup,
+            info,
+            itemType,
+          ),
+        );
+        const firstStreamItems = { result };
+        let currentStreamItems = firstStreamItems;
+        let currentIndex = initialIndex;
+        let iteration = iterator.next();
+        let erroredSynchronously = false;
+        while (!iteration.done) {
+          const value = result.value;
+          if (!isPromise(value) && !isReconcilableStreamItemsResult(value)) {
+            erroredSynchronously = true;
+            break;
+          }
+          const item = iteration.value;
+          currentIndex++;
+          const currentPath = addPath(path, currentIndex, undefined);
+          result = new BoxedPromiseOrValue(
+            completeStreamItems(
+              streamRecord,
+              currentPath,
+              item,
+              exeContext,
+              { errors: undefined },
+              fieldGroup,
+              info,
+              itemType,
+            ),
+          );
+          const nextStreamItems = { streamRecord, result };
+          currentStreamItems.result = new BoxedPromiseOrValue(
+            prependNextStreamItems(
+              currentStreamItems.result.value,
+              nextStreamItems,
+            ),
+          );
+          currentStreamItems = nextStreamItems;
+          iteration = iterator.next();
         }
-        const item = iteration.value;
-        currentIndex++;
-        const currentPath = addPath(path, currentIndex, undefined);
-        result = completeStreamItems(
-          streamRecord,
-          currentPath,
-          item,
-          exeContext,
-          { errors: undefined },
-          fieldGroup,
-          info,
-          itemType,
-        );
-        const nextStreamItems = { streamRecord, result };
-        currentStreamItems.result = prependNextStreamItems(
-          currentStreamItems.result,
-          nextStreamItems,
-        );
-        currentStreamItems = nextStreamItems;
-        iteration = iterator.next();
-      }
-      // If a non-reconcilable stream items result was encountered, then the stream terminates in error.
-      // Otherwise, add a stream terminator.
-      if (!erroredSynchronously) {
-        currentStreamItems.result = prependNextStreamItems(
-          currentStreamItems.result,
-          { streamRecord, result: { streamRecord } },
-        );
-      }
-      return firstStreamItems.result;
-    }),
+        // If a non-reconcilable stream items result was encountered, then the stream terminates in error.
+        // Otherwise, add a stream terminator.
+        if (!erroredSynchronously) {
+          currentStreamItems.result = new BoxedPromiseOrValue(
+            prependNextStreamItems(currentStreamItems.result.value, {
+              streamRecord,
+              result: new BoxedPromiseOrValue({ streamRecord }),
+            }),
+          );
+        }
+        return firstStreamItems.result.value;
+      }),
+    ),
   };
 }
 function prependNextStreamItems(result, nextStreamItems) {
@@ -1947,15 +1959,17 @@ function firstAsyncStreamItems(
 ) {
   const firstStreamItems = {
     streamRecord,
-    result: getNextAsyncStreamItemsResult(
-      streamRecord,
-      path,
-      initialIndex,
-      asyncIterator,
-      exeContext,
-      fieldGroup,
-      info,
-      itemType,
+    result: new BoxedPromiseOrValue(
+      getNextAsyncStreamItemsResult(
+        streamRecord,
+        path,
+        initialIndex,
+        asyncIterator,
+        exeContext,
+        fieldGroup,
+        info,
+        itemType,
+      ),
     ),
   };
   return firstStreamItems;
@@ -1995,15 +2009,17 @@ async function getNextAsyncStreamItemsResult(
   );
   const nextStreamItems = {
     streamRecord,
-    result: getNextAsyncStreamItemsResult(
-      streamRecord,
-      path,
-      index,
-      asyncIterator,
-      exeContext,
-      fieldGroup,
-      info,
-      itemType,
+    result: new BoxedPromiseOrValue(
+      getNextAsyncStreamItemsResult(
+        streamRecord,
+        path,
+        index,
+        asyncIterator,
+        exeContext,
+        fieldGroup,
+        info,
+        itemType,
+      ),
     ),
   };
   return prependNextStreamItems(result, nextStreamItems);
