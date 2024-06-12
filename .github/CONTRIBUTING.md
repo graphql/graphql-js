@@ -93,17 +93,21 @@ then use `npm version patch|minor|major` in order to increment the version in
 package.json and tag and commit a release. Then `git push && git push --tags`
 to sync this change with source control. Then `npm publish npmDist` to actually
 publish the release to NPM.
-Once published, add [release notes](https://github.com/graphql/graphql-js/tags).
+Once published, add [release notes](https://github.com/graphql/graphql-js/releases).
 Use [semver](https://semver.org/) to determine which version part to increment.
 
 Example for a patch release:
 
 ```sh
+npm ci
 npm test
 npm version patch
 git push --follow-tags
-npm publish npmDist
+cd npmDist && npm publish
+npm run changelog
 ```
+
+Then upload the changelog to [https://github.com/graphql/graphql-js/releases](https://github.com/graphql/graphql-js/releases).
 
 ## License
 
