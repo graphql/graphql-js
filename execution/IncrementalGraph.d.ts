@@ -41,8 +41,9 @@ export declare class IncrementalGraph {
   removeStream(streamRecord: StreamRecord): void;
   private _removePending;
   private _addDeferredGroupedFieldSetRecord;
-  private _addStreamItemsRecord;
+  private _addStreamRecord;
   private _addDeferredFragmentNode;
+  private _onStreamItems;
   private _yieldCurrentCompletedIncrementalData;
   private _enqueue;
 }

@@ -32,7 +32,6 @@ const buildFieldPlan_js_1 = require('./buildFieldPlan.js');
 const collectFields_js_1 = require('./collectFields.js');
 const IncrementalPublisher_js_1 = require('./IncrementalPublisher.js');
 const mapAsyncIterable_js_1 = require('./mapAsyncIterable.js');
-const types_js_1 = require('./types.js');
 const values_js_1 = require('./values.js');
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -891,17 +890,28 @@ async function completeAsyncIteratorValue(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
+      const streamItemQueue = buildAsyncStreamItemQueue(
+        index,
+        path,
+        asyncIterator,
+        exeContext,
+        streamUsage.fieldGroup,
+        info,
+        itemType,
+      );
       const returnFn = asyncIterator.return;
       let streamRecord;
       if (returnFn === undefined) {
         streamRecord = {
           label: streamUsage.label,
           path,
+          streamItemQueue,
         };
       } else {
         streamRecord = {
           label: streamUsage.label,
           path,
+          streamItemQueue,
           earlyReturn: returnFn.bind(asyncIterator),
         };
         if (exeContext.cancellableStreams === undefined) {
@@ -909,17 +919,7 @@ async function completeAsyncIteratorValue(
         }
         exeContext.cancellableStreams.add(streamRecord);
       }
-      const firstStreamItems = firstAsyncStreamItems(
-        streamRecord,
-        path,
-        index,
-        asyncIterator,
-        exeContext,
-        streamUsage.fieldGroup,
-        info,
-        itemType,
-      );
-      addIncrementalDataRecords(graphqlWrappedResult, [firstStreamItems]);
+      addIncrementalDataRecords(graphqlWrappedResult, [streamRecord]);
       break;
     }
     const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
@@ -1052,21 +1052,21 @@ function completeIterableValue(
   while (!iteration.done) {
     const item = iteration.value;
     if (streamUsage && index >= streamUsage.initialCount) {
-      const streamRecord = {
+      const syncStreamRecord = {
         label: streamUsage.label,
         path,
+        streamItemQueue: buildSyncStreamItemQueue(
+          item,
+          index,
+          path,
+          iterator,
+          exeContext,
+          streamUsage.fieldGroup,
+          info,
+          itemType,
+        ),
       };
-      const firstStreamItems = firstSyncStreamItems(
-        streamRecord,
-        item,
-        index,
-        iterator,
-        exeContext,
-        streamUsage.fieldGroup,
-        info,
-        itemType,
-      );
-      addIncrementalDataRecords(graphqlWrappedResult, [firstStreamItems]);
+      addIncrementalDataRecords(graphqlWrappedResult, [syncStreamRecord]);
       break;
     }
     // No need to modify the info object containing the path,
@@ -1896,64 +1896,29 @@ function getDeferredFragmentRecords(deferUsages, deferMap) {
     deferredFragmentRecordFromDeferUsage(deferUsage, deferMap),
   );
 }
-function firstSyncStreamItems(
-  streamRecord,
+function buildSyncStreamItemQueue(
   initialItem,
   initialIndex,
+  streamPath,
   iterator,
   exeContext,
   fieldGroup,
   info,
   itemType,
 ) {
-  return {
-    streamRecord,
-    result: new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+  const streamItemQueue = [
+    new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
       Promise.resolve().then(() => {
-        const path = streamRecord.path;
         const initialPath = (0, Path_js_1.addPath)(
-          path,
+          streamPath,
           initialIndex,
           undefined,
         );
-        let result = new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-          completeStreamItems(
-            streamRecord,
-            initialPath,
-            initialItem,
-            exeContext,
-            { errors: undefined },
-            fieldGroup,
-            info,
-            itemType,
-          ),
-        );
-        const firstStreamItems = { result };
-        let currentStreamItems = firstStreamItems;
-        let currentIndex = initialIndex;
-        let iteration = iterator.next();
-        let erroredSynchronously = false;
-        while (!iteration.done) {
-          const value = result.value;
-          if (
-            !(0, isPromise_js_1.isPromise)(value) &&
-            !(0, types_js_1.isReconcilableStreamItemsResult)(value)
-          ) {
-            erroredSynchronously = true;
-            break;
-          }
-          const item = iteration.value;
-          currentIndex++;
-          const currentPath = (0, Path_js_1.addPath)(
-            path,
-            currentIndex,
-            undefined,
-          );
-          result = new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-            completeStreamItems(
-              streamRecord,
-              currentPath,
-              item,
+        const firstStreamItem =
+          new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+            completeStreamItem(
+              initialPath,
+              initialItem,
               exeContext,
               { errors: undefined },
               fieldGroup,
@@ -1961,72 +1926,63 @@ function firstSyncStreamItems(
               itemType,
             ),
           );
-          const nextStreamItems = { streamRecord, result };
-          currentStreamItems.result =
-            new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-              prependNextStreamItems(
-                currentStreamItems.result.value,
-                nextStreamItems,
-              ),
-            );
-          currentStreamItems = nextStreamItems;
+        let iteration = iterator.next();
+        let currentIndex = initialIndex + 1;
+        let currentStreamItem = firstStreamItem;
+        while (!iteration.done) {
+          // TODO: add test case for early sync termination
+          /* c8 ignore next 4 */
+          const result = currentStreamItem.value;
+          if (
+            !(0, isPromise_js_1.isPromise)(result) &&
+            result.errors !== undefined
+          ) {
+            break;
+          }
+          const itemPath = (0, Path_js_1.addPath)(
+            streamPath,
+            currentIndex,
+            undefined,
+          );
+          currentStreamItem = new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+            completeStreamItem(
+              itemPath,
+              iteration.value,
+              exeContext,
+              { errors: undefined },
+              fieldGroup,
+              info,
+              itemType,
+            ),
+          );
+          streamItemQueue.push(currentStreamItem);
           iteration = iterator.next();
+          currentIndex = initialIndex + 1;
         }
-        // If a non-reconcilable stream items result was encountered, then the stream terminates in error.
-        // Otherwise, add a stream terminator.
-        if (!erroredSynchronously) {
-          currentStreamItems.result =
-            new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-              prependNextStreamItems(currentStreamItems.result.value, {
-                streamRecord,
-                result: new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue({
-                  streamRecord,
-                }),
-              }),
-            );
-        }
-        return firstStreamItems.result.value;
+        streamItemQueue.push(
+          new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue({}),
+        );
+        return firstStreamItem.value;
       }),
     ),
-  };
+  ];
+  return streamItemQueue;
 }
-function prependNextStreamItems(result, nextStreamItems) {
-  if ((0, isPromise_js_1.isPromise)(result)) {
-    return result.then((resolved) =>
-      prependNextResolvedStreamItems(resolved, nextStreamItems),
-    );
-  }
-  return prependNextResolvedStreamItems(result, nextStreamItems);
-}
-function prependNextResolvedStreamItems(result, nextStreamItems) {
-  if (!(0, types_js_1.isReconcilableStreamItemsResult)(result)) {
-    return result;
-  }
-  const incrementalDataRecords = result.incrementalDataRecords;
-  return {
-    ...result,
-    incrementalDataRecords:
-      incrementalDataRecords === undefined
-        ? [nextStreamItems]
-        : [nextStreamItems, ...incrementalDataRecords],
-  };
-}
-function firstAsyncStreamItems(
-  streamRecord,
-  path,
+function buildAsyncStreamItemQueue(
   initialIndex,
+  streamPath,
   asyncIterator,
   exeContext,
   fieldGroup,
   info,
   itemType,
 ) {
-  const firstStreamItems = {
-    streamRecord,
-    result: new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-      getNextAsyncStreamItemsResult(
-        streamRecord,
-        path,
+  const streamItemQueue = [];
+  streamItemQueue.push(
+    new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+      getNextAsyncStreamItemResult(
+        streamItemQueue,
+        streamPath,
         initialIndex,
         asyncIterator,
         exeContext,
@@ -2035,12 +1991,12 @@ function firstAsyncStreamItems(
         itemType,
       ),
     ),
-  };
-  return firstStreamItems;
+  );
+  return streamItemQueue;
 }
-async function getNextAsyncStreamItemsResult(
-  streamRecord,
-  path,
+async function getNextAsyncStreamItemResult(
+  streamItemQueue,
+  streamPath,
   index,
   asyncIterator,
   exeContext,
@@ -2053,22 +2009,20 @@ async function getNextAsyncStreamItemsResult(
     iteration = await asyncIterator.next();
   } catch (error) {
     return {
-      streamRecord,
       errors: [
         (0, locatedError_js_1.locatedError)(
           error,
           toNodes(fieldGroup),
-          (0, Path_js_1.pathToArray)(path),
+          (0, Path_js_1.pathToArray)(streamPath),
         ),
       ],
     };
   }
   if (iteration.done) {
-    return { streamRecord };
+    return {};
   }
-  const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
-  const result = completeStreamItems(
-    streamRecord,
+  const itemPath = (0, Path_js_1.addPath)(streamPath, index, undefined);
+  const result = completeStreamItem(
     itemPath,
     iteration.value,
     exeContext,
@@ -2077,12 +2031,11 @@ async function getNextAsyncStreamItemsResult(
     info,
     itemType,
   );
-  const nextStreamItems = {
-    streamRecord,
-    result: new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-      getNextAsyncStreamItemsResult(
-        streamRecord,
-        path,
+  streamItemQueue.push(
+    new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+      getNextAsyncStreamItemResult(
+        streamItemQueue,
+        streamPath,
         index,
         asyncIterator,
         exeContext,
@@ -2091,11 +2044,10 @@ async function getNextAsyncStreamItemsResult(
         itemType,
       ),
     ),
-  };
-  return prependNextStreamItems(result, nextStreamItems);
+  );
+  return result;
 }
-function completeStreamItems(
-  streamRecord,
+function completeStreamItem(
   itemPath,
   item,
   exeContext,
@@ -2116,13 +2068,8 @@ function completeStreamItems(
       new Map(),
     ).then(
       (resolvedItem) =>
-        buildStreamItemsResult(
-          incrementalContext.errors,
-          streamRecord,
-          resolvedItem,
-        ),
+        buildStreamItemResult(incrementalContext.errors, resolvedItem),
       (error) => ({
-        streamRecord,
         errors: withError(incrementalContext.errors, error),
       }),
     );
@@ -2153,7 +2100,6 @@ function completeStreamItems(
     }
   } catch (error) {
     return {
-      streamRecord,
       errors: withError(incrementalContext.errors, error),
     };
   }
@@ -2172,33 +2118,18 @@ function completeStreamItems(
       })
       .then(
         (resolvedItem) =>
-          buildStreamItemsResult(
-            incrementalContext.errors,
-            streamRecord,
-            resolvedItem,
-          ),
+          buildStreamItemResult(incrementalContext.errors, resolvedItem),
         (error) => ({
-          streamRecord,
           errors: withError(incrementalContext.errors, error),
         }),
       );
   }
-  return buildStreamItemsResult(
-    incrementalContext.errors,
-    streamRecord,
-    result,
-  );
+  return buildStreamItemResult(incrementalContext.errors, result);
 }
-function buildStreamItemsResult(errors, streamRecord, result) {
+function buildStreamItemResult(errors, result) {
   return {
-    streamRecord,
-    result:
-      errors === undefined
-        ? { items: [result[0]] }
-        : {
-            items: [result[0]],
-            errors: [...errors],
-          },
+    item: result[0],
+    errors,
     incrementalDataRecords: result[1],
   };
 }

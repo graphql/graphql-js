@@ -12,6 +12,3 @@ export function isNonReconcilableDeferredGroupedFieldSetResult(
 export function isCancellableStreamRecord(subsequentResultRecord) {
   return 'earlyReturn' in subsequentResultRecord;
 }
-export function isReconcilableStreamItemsResult(streamItemsResult) {
-  return streamItemsResult.result !== undefined;
-}

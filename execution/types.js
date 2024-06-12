@@ -1,7 +1,6 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.isReconcilableStreamItemsResult =
-  exports.isCancellableStreamRecord =
+exports.isCancellableStreamRecord =
   exports.isNonReconcilableDeferredGroupedFieldSetResult =
   exports.isDeferredGroupedFieldSetResult =
   exports.isDeferredGroupedFieldSetRecord =
@@ -25,7 +24,3 @@ function isCancellableStreamRecord(subsequentResultRecord) {
   return 'earlyReturn' in subsequentResultRecord;
 }
 exports.isCancellableStreamRecord = isCancellableStreamRecord;
-function isReconcilableStreamItemsResult(streamItemsResult) {
-  return streamItemsResult.result !== undefined;
-}
-exports.isReconcilableStreamItemsResult = isReconcilableStreamItemsResult;

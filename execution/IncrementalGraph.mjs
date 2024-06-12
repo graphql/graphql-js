@@ -4,8 +4,8 @@ import { isDeferredGroupedFieldSetRecord } from './types.mjs';
 function isDeferredFragmentNode(node) {
   return node !== undefined;
 }
-function isStreamNode(subsequentResultNode) {
-  return 'path' in subsequentResultNode;
+function isStreamNode(record) {
+  return 'streamItemQueue' in record;
 }
 /**
  * @internal
@@ -24,7 +24,7 @@ export class IncrementalGraph {
       if (isDeferredGroupedFieldSetRecord(incrementalDataRecord)) {
         this._addDeferredGroupedFieldSetRecord(incrementalDataRecord);
       } else {
-        this._addStreamItemsRecord(incrementalDataRecord);
+        this._addStreamRecord(incrementalDataRecord);
       }
     }
   }
@@ -48,6 +48,7 @@ export class IncrementalGraph {
       if (isStreamNode(node)) {
         this._pending.add(node);
         newPending.push(node);
+        this._newIncrementalDataRecords.add(node);
       } else if (node.deferredGroupedFieldSetRecords.size > 0) {
         for (const deferredGroupedFieldSetNode of node.deferredGroupedFieldSetRecords) {
           this._newIncrementalDataRecords.add(deferredGroupedFieldSetNode);
@@ -62,12 +63,20 @@ export class IncrementalGraph {
     }
     this._newPending.clear();
     for (const incrementalDataRecord of this._newIncrementalDataRecords) {
-      const result = incrementalDataRecord.result.value;
-      if (isPromise(result)) {
+      if (isStreamNode(incrementalDataRecord)) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        result.then((resolved) => this._enqueue(resolved));
+        this._onStreamItems(
+          incrementalDataRecord,
+          incrementalDataRecord.streamItemQueue,
+        );
       } else {
-        this._enqueue(result);
+        const result = incrementalDataRecord.result.value;
+        if (isPromise(result)) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          result.then((resolved) => this._enqueue(resolved));
+        } else {
+          this._enqueue(result);
+        }
       }
     }
     this._newIncrementalDataRecords.clear();
@@ -176,12 +185,8 @@ export class IncrementalGraph {
       );
     }
   }
-  _addStreamItemsRecord(streamItemsRecord) {
-    const streamRecord = streamItemsRecord.streamRecord;
-    if (!this._pending.has(streamRecord)) {
-      this._newPending.add(streamRecord);
-    }
-    this._newIncrementalDataRecords.add(streamItemsRecord);
+  _addStreamRecord(streamRecord) {
+    this._newPending.add(streamRecord);
   }
   _addDeferredFragmentNode(deferredFragmentRecord) {
     let deferredFragmentNode = this._deferredFragmentNodes.get(
@@ -208,6 +213,62 @@ export class IncrementalGraph {
     const parentNode = this._addDeferredFragmentNode(parent);
     parentNode.children.push(deferredFragmentNode);
     return deferredFragmentNode;
+  }
+  async _onStreamItems(streamRecord, streamItemQueue) {
+    let items = [];
+    let errors = [];
+    let incrementalDataRecords = [];
+    let streamItemRecord;
+    while ((streamItemRecord = streamItemQueue.shift()) !== undefined) {
+      let result = streamItemRecord.value;
+      if (isPromise(result)) {
+        if (items.length > 0) {
+          this._enqueue({
+            streamRecord,
+            result:
+              // TODO add additional test case or rework for coverage
+              errors.length > 0 /* c8 ignore start */
+                ? { items, errors } /* c8 ignore stop */
+                : { items },
+            incrementalDataRecords,
+          });
+          items = [];
+          errors = [];
+          incrementalDataRecords = [];
+        }
+        // eslint-disable-next-line no-await-in-loop
+        result = await result;
+        // wait an additional tick to coalesce resolving additional promises
+        // within the queue
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.resolve();
+      }
+      if (result.item === undefined) {
+        if (items.length > 0) {
+          this._enqueue({
+            streamRecord,
+            result: errors.length > 0 ? { items, errors } : { items },
+            incrementalDataRecords,
+          });
+        }
+        this._enqueue(
+          result.errors === undefined
+            ? { streamRecord }
+            : {
+                streamRecord,
+                errors: result.errors,
+              },
+        );
+        return;
+      }
+      items.push(result.item);
+      if (result.errors !== undefined) {
+        errors.push(...result.errors);
+      }
+      if (result.incrementalDataRecords !== undefined) {
+        incrementalDataRecords.push(...result.incrementalDataRecords);
+      }
+    }
   }
   *_yieldCurrentCompletedIncrementalData(first) {
     yield first;

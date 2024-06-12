@@ -29,7 +29,6 @@ import {
 } from './collectFields.mjs';
 import { buildIncrementalResponse } from './IncrementalPublisher.mjs';
 import { mapAsyncIterable } from './mapAsyncIterable.mjs';
-import { isReconcilableStreamItemsResult } from './types.mjs';
 import {
   getArgumentValues,
   getDirectiveValues,
@@ -869,17 +868,28 @@ async function completeAsyncIteratorValue(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
+      const streamItemQueue = buildAsyncStreamItemQueue(
+        index,
+        path,
+        asyncIterator,
+        exeContext,
+        streamUsage.fieldGroup,
+        info,
+        itemType,
+      );
       const returnFn = asyncIterator.return;
       let streamRecord;
       if (returnFn === undefined) {
         streamRecord = {
           label: streamUsage.label,
           path,
+          streamItemQueue,
         };
       } else {
         streamRecord = {
           label: streamUsage.label,
           path,
+          streamItemQueue,
           earlyReturn: returnFn.bind(asyncIterator),
         };
         if (exeContext.cancellableStreams === undefined) {
@@ -887,17 +897,7 @@ async function completeAsyncIteratorValue(
         }
         exeContext.cancellableStreams.add(streamRecord);
       }
-      const firstStreamItems = firstAsyncStreamItems(
-        streamRecord,
-        path,
-        index,
-        asyncIterator,
-        exeContext,
-        streamUsage.fieldGroup,
-        info,
-        itemType,
-      );
-      addIncrementalDataRecords(graphqlWrappedResult, [firstStreamItems]);
+      addIncrementalDataRecords(graphqlWrappedResult, [streamRecord]);
       break;
     }
     const itemPath = addPath(path, index, undefined);
@@ -1026,21 +1026,21 @@ function completeIterableValue(
   while (!iteration.done) {
     const item = iteration.value;
     if (streamUsage && index >= streamUsage.initialCount) {
-      const streamRecord = {
+      const syncStreamRecord = {
         label: streamUsage.label,
         path,
+        streamItemQueue: buildSyncStreamItemQueue(
+          item,
+          index,
+          path,
+          iterator,
+          exeContext,
+          streamUsage.fieldGroup,
+          info,
+          itemType,
+        ),
       };
-      const firstStreamItems = firstSyncStreamItems(
-        streamRecord,
-        item,
-        index,
-        iterator,
-        exeContext,
-        streamUsage.fieldGroup,
-        info,
-        itemType,
-      );
-      addIncrementalDataRecords(graphqlWrappedResult, [firstStreamItems]);
+      addIncrementalDataRecords(graphqlWrappedResult, [syncStreamRecord]);
       break;
     }
     // No need to modify the info object containing the path,
@@ -1847,25 +1847,22 @@ function getDeferredFragmentRecords(deferUsages, deferMap) {
     deferredFragmentRecordFromDeferUsage(deferUsage, deferMap),
   );
 }
-function firstSyncStreamItems(
-  streamRecord,
+function buildSyncStreamItemQueue(
   initialItem,
   initialIndex,
+  streamPath,
   iterator,
   exeContext,
   fieldGroup,
   info,
   itemType,
 ) {
-  return {
-    streamRecord,
-    result: new BoxedPromiseOrValue(
+  const streamItemQueue = [
+    new BoxedPromiseOrValue(
       Promise.resolve().then(() => {
-        const path = streamRecord.path;
-        const initialPath = addPath(path, initialIndex, undefined);
-        let result = new BoxedPromiseOrValue(
-          completeStreamItems(
-            streamRecord,
+        const initialPath = addPath(streamPath, initialIndex, undefined);
+        const firstStreamItem = new BoxedPromiseOrValue(
+          completeStreamItem(
             initialPath,
             initialItem,
             exeContext,
@@ -1875,25 +1872,21 @@ function firstSyncStreamItems(
             itemType,
           ),
         );
-        const firstStreamItems = { result };
-        let currentStreamItems = firstStreamItems;
-        let currentIndex = initialIndex;
         let iteration = iterator.next();
-        let erroredSynchronously = false;
+        let currentIndex = initialIndex + 1;
+        let currentStreamItem = firstStreamItem;
         while (!iteration.done) {
-          const value = result.value;
-          if (!isPromise(value) && !isReconcilableStreamItemsResult(value)) {
-            erroredSynchronously = true;
+          // TODO: add test case for early sync termination
+          /* c8 ignore next 4 */
+          const result = currentStreamItem.value;
+          if (!isPromise(result) && result.errors !== undefined) {
             break;
           }
-          const item = iteration.value;
-          currentIndex++;
-          const currentPath = addPath(path, currentIndex, undefined);
-          result = new BoxedPromiseOrValue(
-            completeStreamItems(
-              streamRecord,
-              currentPath,
-              item,
+          const itemPath = addPath(streamPath, currentIndex, undefined);
+          currentStreamItem = new BoxedPromiseOrValue(
+            completeStreamItem(
+              itemPath,
+              iteration.value,
               exeContext,
               { errors: undefined },
               fieldGroup,
@@ -1901,68 +1894,32 @@ function firstSyncStreamItems(
               itemType,
             ),
           );
-          const nextStreamItems = { streamRecord, result };
-          currentStreamItems.result = new BoxedPromiseOrValue(
-            prependNextStreamItems(
-              currentStreamItems.result.value,
-              nextStreamItems,
-            ),
-          );
-          currentStreamItems = nextStreamItems;
+          streamItemQueue.push(currentStreamItem);
           iteration = iterator.next();
+          currentIndex = initialIndex + 1;
         }
-        // If a non-reconcilable stream items result was encountered, then the stream terminates in error.
-        // Otherwise, add a stream terminator.
-        if (!erroredSynchronously) {
-          currentStreamItems.result = new BoxedPromiseOrValue(
-            prependNextStreamItems(currentStreamItems.result.value, {
-              streamRecord,
-              result: new BoxedPromiseOrValue({ streamRecord }),
-            }),
-          );
-        }
-        return firstStreamItems.result.value;
+        streamItemQueue.push(new BoxedPromiseOrValue({}));
+        return firstStreamItem.value;
       }),
     ),
-  };
+  ];
+  return streamItemQueue;
 }
-function prependNextStreamItems(result, nextStreamItems) {
-  if (isPromise(result)) {
-    return result.then((resolved) =>
-      prependNextResolvedStreamItems(resolved, nextStreamItems),
-    );
-  }
-  return prependNextResolvedStreamItems(result, nextStreamItems);
-}
-function prependNextResolvedStreamItems(result, nextStreamItems) {
-  if (!isReconcilableStreamItemsResult(result)) {
-    return result;
-  }
-  const incrementalDataRecords = result.incrementalDataRecords;
-  return {
-    ...result,
-    incrementalDataRecords:
-      incrementalDataRecords === undefined
-        ? [nextStreamItems]
-        : [nextStreamItems, ...incrementalDataRecords],
-  };
-}
-function firstAsyncStreamItems(
-  streamRecord,
-  path,
+function buildAsyncStreamItemQueue(
   initialIndex,
+  streamPath,
   asyncIterator,
   exeContext,
   fieldGroup,
   info,
   itemType,
 ) {
-  const firstStreamItems = {
-    streamRecord,
-    result: new BoxedPromiseOrValue(
-      getNextAsyncStreamItemsResult(
-        streamRecord,
-        path,
+  const streamItemQueue = [];
+  streamItemQueue.push(
+    new BoxedPromiseOrValue(
+      getNextAsyncStreamItemResult(
+        streamItemQueue,
+        streamPath,
         initialIndex,
         asyncIterator,
         exeContext,
@@ -1971,12 +1928,12 @@ function firstAsyncStreamItems(
         itemType,
       ),
     ),
-  };
-  return firstStreamItems;
+  );
+  return streamItemQueue;
 }
-async function getNextAsyncStreamItemsResult(
-  streamRecord,
-  path,
+async function getNextAsyncStreamItemResult(
+  streamItemQueue,
+  streamPath,
   index,
   asyncIterator,
   exeContext,
@@ -1989,16 +1946,16 @@ async function getNextAsyncStreamItemsResult(
     iteration = await asyncIterator.next();
   } catch (error) {
     return {
-      streamRecord,
-      errors: [locatedError(error, toNodes(fieldGroup), pathToArray(path))],
+      errors: [
+        locatedError(error, toNodes(fieldGroup), pathToArray(streamPath)),
+      ],
     };
   }
   if (iteration.done) {
-    return { streamRecord };
+    return {};
   }
-  const itemPath = addPath(path, index, undefined);
-  const result = completeStreamItems(
-    streamRecord,
+  const itemPath = addPath(streamPath, index, undefined);
+  const result = completeStreamItem(
     itemPath,
     iteration.value,
     exeContext,
@@ -2007,12 +1964,11 @@ async function getNextAsyncStreamItemsResult(
     info,
     itemType,
   );
-  const nextStreamItems = {
-    streamRecord,
-    result: new BoxedPromiseOrValue(
-      getNextAsyncStreamItemsResult(
-        streamRecord,
-        path,
+  streamItemQueue.push(
+    new BoxedPromiseOrValue(
+      getNextAsyncStreamItemResult(
+        streamItemQueue,
+        streamPath,
         index,
         asyncIterator,
         exeContext,
@@ -2021,11 +1977,10 @@ async function getNextAsyncStreamItemsResult(
         itemType,
       ),
     ),
-  };
-  return prependNextStreamItems(result, nextStreamItems);
+  );
+  return result;
 }
-function completeStreamItems(
-  streamRecord,
+function completeStreamItem(
   itemPath,
   item,
   exeContext,
@@ -2046,13 +2001,8 @@ function completeStreamItems(
       new Map(),
     ).then(
       (resolvedItem) =>
-        buildStreamItemsResult(
-          incrementalContext.errors,
-          streamRecord,
-          resolvedItem,
-        ),
+        buildStreamItemResult(incrementalContext.errors, resolvedItem),
       (error) => ({
-        streamRecord,
         errors: withError(incrementalContext.errors, error),
       }),
     );
@@ -2083,7 +2033,6 @@ function completeStreamItems(
     }
   } catch (error) {
     return {
-      streamRecord,
       errors: withError(incrementalContext.errors, error),
     };
   }
@@ -2102,33 +2051,18 @@ function completeStreamItems(
       })
       .then(
         (resolvedItem) =>
-          buildStreamItemsResult(
-            incrementalContext.errors,
-            streamRecord,
-            resolvedItem,
-          ),
+          buildStreamItemResult(incrementalContext.errors, resolvedItem),
         (error) => ({
-          streamRecord,
           errors: withError(incrementalContext.errors, error),
         }),
       );
   }
-  return buildStreamItemsResult(
-    incrementalContext.errors,
-    streamRecord,
-    result,
-  );
+  return buildStreamItemResult(incrementalContext.errors, result);
 }
-function buildStreamItemsResult(errors, streamRecord, result) {
+function buildStreamItemResult(errors, result) {
   return {
-    streamRecord,
-    result:
-      errors === undefined
-        ? { items: [result[0]] }
-        : {
-            items: [result[0]],
-            errors: [...errors],
-          },
+    item: result[0],
+    errors,
     incrementalDataRecords: result[1],
   };
 }

@@ -182,10 +182,23 @@ export interface DeferredFragmentRecord {
   id?: string | undefined;
   parent: DeferredFragmentRecord | undefined;
 }
+export interface StreamItemResult {
+  item?: unknown;
+  incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
+  errors?: ReadonlyArray<GraphQLError> | undefined;
+}
+export type StreamItemRecord = BoxedPromiseOrValue<StreamItemResult>;
 export interface StreamRecord {
   path: Path;
   label: string | undefined;
   id?: string | undefined;
+  streamItemQueue: Array<StreamItemRecord>;
+}
+export interface StreamItemsResult {
+  streamRecord: StreamRecord;
+  result?: BareStreamItemsResult | undefined;
+  incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
+  errors?: ReadonlyArray<GraphQLError> | undefined;
 }
 export interface CancellableStreamRecord extends StreamRecord {
   earlyReturn: () => Promise<unknown>;
@@ -193,37 +206,9 @@ export interface CancellableStreamRecord extends StreamRecord {
 export declare function isCancellableStreamRecord(
   subsequentResultRecord: SubsequentResultRecord,
 ): subsequentResultRecord is CancellableStreamRecord;
-interface ReconcilableStreamItemsResult {
-  streamRecord: StreamRecord;
-  result: BareStreamItemsResult;
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
-  errors?: never;
-}
-export declare function isReconcilableStreamItemsResult(
-  streamItemsResult: StreamItemsResult,
-): streamItemsResult is ReconcilableStreamItemsResult;
-interface TerminatingStreamItemsResult {
-  streamRecord: StreamRecord;
-  result?: never;
-  incrementalDataRecords?: never;
-  errors?: never;
-}
-interface NonReconcilableStreamItemsResult {
-  streamRecord: StreamRecord;
-  errors: ReadonlyArray<GraphQLError>;
-  result?: never;
-}
-export type StreamItemsResult =
-  | ReconcilableStreamItemsResult
-  | TerminatingStreamItemsResult
-  | NonReconcilableStreamItemsResult;
-export interface StreamItemsRecord {
-  streamRecord: StreamRecord;
-  result: BoxedPromiseOrValue<StreamItemsResult>;
-}
 export type IncrementalDataRecord =
   | DeferredGroupedFieldSetRecord
-  | StreamItemsRecord;
+  | StreamRecord;
 export type IncrementalDataRecordResult =
   | DeferredGroupedFieldSetResult
   | StreamItemsResult;
