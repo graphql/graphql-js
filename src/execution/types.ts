@@ -203,11 +203,13 @@ export function isNonReconcilableDeferredGroupedFieldSetResult(
   return deferredGroupedFieldSetResult.errors !== undefined;
 }
 
+type ThunkIncrementalResult<T> =
+  | BoxedPromiseOrValue<T>
+  | (() => BoxedPromiseOrValue<T>);
+
 export interface DeferredGroupedFieldSetRecord {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
-  result:
-    | BoxedPromiseOrValue<DeferredGroupedFieldSetResult>
-    | (() => BoxedPromiseOrValue<DeferredGroupedFieldSetResult>);
+  result: ThunkIncrementalResult<DeferredGroupedFieldSetResult>;
 }
 
 export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
@@ -225,9 +227,7 @@ export interface StreamItemResult {
   errors?: ReadonlyArray<GraphQLError> | undefined;
 }
 
-export type StreamItemRecord =
-  | BoxedPromiseOrValue<StreamItemResult>
-  | (() => BoxedPromiseOrValue<StreamItemResult>);
+export type StreamItemRecord = ThunkIncrementalResult<StreamItemResult>;
 
 export interface StreamRecord {
   path: Path;
