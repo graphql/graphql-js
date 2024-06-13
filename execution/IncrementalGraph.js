@@ -1,6 +1,7 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.IncrementalGraph = void 0;
+const BoxedPromiseOrValue_js_1 = require('../jsutils/BoxedPromiseOrValue.js');
 const isPromise_js_1 = require('../jsutils/isPromise.js');
 const promiseWithResolvers_js_1 = require('../jsutils/promiseWithResolvers.js');
 const types_js_1 = require('./types.js');
@@ -75,7 +76,12 @@ class IncrementalGraph {
           incrementalDataRecord.streamItemQueue,
         );
       } else {
-        const result = incrementalDataRecord.result.value;
+        const deferredGroupedFieldSetResult = incrementalDataRecord.result;
+        const result =
+          deferredGroupedFieldSetResult instanceof
+          BoxedPromiseOrValue_js_1.BoxedPromiseOrValue
+            ? deferredGroupedFieldSetResult.value
+            : deferredGroupedFieldSetResult().value;
         if ((0, isPromise_js_1.isPromise)(result)) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           result.then((resolved) => this._enqueue(resolved));
@@ -226,7 +232,10 @@ class IncrementalGraph {
     let incrementalDataRecords = [];
     let streamItemRecord;
     while ((streamItemRecord = streamItemQueue.shift()) !== undefined) {
-      let result = streamItemRecord.value;
+      let result =
+        streamItemRecord instanceof BoxedPromiseOrValue_js_1.BoxedPromiseOrValue
+          ? streamItemRecord.value
+          : streamItemRecord().value;
       if ((0, isPromise_js_1.isPromise)(result)) {
         if (items.length > 0) {
           this._enqueue({

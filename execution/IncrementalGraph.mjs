@@ -1,3 +1,4 @@
+import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.mjs';
 import { isPromise } from '../jsutils/isPromise.mjs';
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.mjs';
 import { isDeferredGroupedFieldSetRecord } from './types.mjs';
@@ -70,7 +71,11 @@ export class IncrementalGraph {
           incrementalDataRecord.streamItemQueue,
         );
       } else {
-        const result = incrementalDataRecord.result.value;
+        const deferredGroupedFieldSetResult = incrementalDataRecord.result;
+        const result =
+          deferredGroupedFieldSetResult instanceof BoxedPromiseOrValue
+            ? deferredGroupedFieldSetResult.value
+            : deferredGroupedFieldSetResult().value;
         if (isPromise(result)) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           result.then((resolved) => this._enqueue(resolved));
@@ -220,7 +225,10 @@ export class IncrementalGraph {
     let incrementalDataRecords = [];
     let streamItemRecord;
     while ((streamItemRecord = streamItemQueue.shift()) !== undefined) {
-      let result = streamItemRecord.value;
+      let result =
+        streamItemRecord instanceof BoxedPromiseOrValue
+          ? streamItemRecord.value
+          : streamItemRecord().value;
       if (isPromise(result)) {
         if (items.length > 0) {
           this._enqueue({

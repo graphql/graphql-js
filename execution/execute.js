@@ -288,6 +288,7 @@ function buildExecutionContext(args) {
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    enableEarlyExecution,
   } = args;
   // If the schema used for execution is invalid, throw an error.
   (0, validate_js_1.assertValidSchema)(schema);
@@ -349,6 +350,7 @@ function buildExecutionContext(args) {
     typeResolver: typeResolver ?? exports.defaultTypeResolver,
     subscribeFieldResolver:
       subscribeFieldResolver ?? exports.defaultFieldResolver,
+    enableEarlyExecution: enableEarlyExecution === true,
     errors: undefined,
     cancellableStreams: undefined,
   };
@@ -1804,12 +1806,17 @@ function executeDeferredGroupedFieldSets(
         },
         deferMap,
       );
-    deferredGroupedFieldSetRecord.result =
-      new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-        shouldDefer(parentDeferUsages, deferUsageSet)
-          ? Promise.resolve().then(executor)
-          : executor(),
-      );
+    const shouldDeferThisDeferUsageSet = shouldDefer(
+      parentDeferUsages,
+      deferUsageSet,
+    );
+    deferredGroupedFieldSetRecord.result = shouldDeferThisDeferUsageSet
+      ? exeContext.enableEarlyExecution
+        ? new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+            Promise.resolve().then(executor),
+          )
+        : () => new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor())
+      : new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor());
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }
   return newDeferredGroupedFieldSetRecords;
@@ -1906,66 +1913,77 @@ function buildSyncStreamItemQueue(
   info,
   itemType,
 ) {
-  const streamItemQueue = [
-    new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-      Promise.resolve().then(() => {
-        const initialPath = (0, Path_js_1.addPath)(
-          streamPath,
-          initialIndex,
-          undefined,
-        );
-        const firstStreamItem =
-          new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-            completeStreamItem(
-              initialPath,
-              initialItem,
-              exeContext,
-              { errors: undefined },
-              fieldGroup,
-              info,
-              itemType,
-            ),
-          );
-        let iteration = iterator.next();
-        let currentIndex = initialIndex + 1;
-        let currentStreamItem = firstStreamItem;
-        while (!iteration.done) {
-          // TODO: add test case for early sync termination
-          /* c8 ignore next 4 */
-          const result = currentStreamItem.value;
-          if (
-            !(0, isPromise_js_1.isPromise)(result) &&
-            result.errors !== undefined
-          ) {
-            break;
-          }
-          const itemPath = (0, Path_js_1.addPath)(
-            streamPath,
-            currentIndex,
-            undefined,
-          );
-          currentStreamItem = new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-            completeStreamItem(
-              itemPath,
-              iteration.value,
-              exeContext,
-              { errors: undefined },
-              fieldGroup,
-              info,
-              itemType,
-            ),
-          );
-          streamItemQueue.push(currentStreamItem);
-          iteration = iterator.next();
-          currentIndex = initialIndex + 1;
+  const streamItemQueue = [];
+  const enableEarlyExecution = exeContext.enableEarlyExecution;
+  const firstExecutor = () => {
+    const initialPath = (0, Path_js_1.addPath)(
+      streamPath,
+      initialIndex,
+      undefined,
+    );
+    const firstStreamItem = new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+      completeStreamItem(
+        initialPath,
+        initialItem,
+        exeContext,
+        { errors: undefined },
+        fieldGroup,
+        info,
+        itemType,
+      ),
+    );
+    let iteration = iterator.next();
+    let currentIndex = initialIndex + 1;
+    let currentStreamItem = firstStreamItem;
+    while (!iteration.done) {
+      // TODO: add test case for early sync termination
+      /* c8 ignore next 6 */
+      if (
+        currentStreamItem instanceof
+        BoxedPromiseOrValue_js_1.BoxedPromiseOrValue
+      ) {
+        const result = currentStreamItem.value;
+        if (
+          !(0, isPromise_js_1.isPromise)(result) &&
+          result.errors !== undefined
+        ) {
+          break;
         }
-        streamItemQueue.push(
-          new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue({}),
+      }
+      const itemPath = (0, Path_js_1.addPath)(
+        streamPath,
+        currentIndex,
+        undefined,
+      );
+      const value = iteration.value;
+      const currentExecutor = () =>
+        completeStreamItem(
+          itemPath,
+          value,
+          exeContext,
+          { errors: undefined },
+          fieldGroup,
+          info,
+          itemType,
         );
-        return firstStreamItem.value;
-      }),
-    ),
-  ];
+      currentStreamItem = enableEarlyExecution
+        ? new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(currentExecutor())
+        : () =>
+            new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(currentExecutor());
+      streamItemQueue.push(currentStreamItem);
+      iteration = iterator.next();
+      currentIndex = initialIndex + 1;
+    }
+    streamItemQueue.push(new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue({}));
+    return firstStreamItem.value;
+  };
+  streamItemQueue.push(
+    enableEarlyExecution
+      ? new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+          Promise.resolve().then(firstExecutor),
+        )
+      : () => new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(firstExecutor()),
+  );
   return streamItemQueue;
 }
 function buildAsyncStreamItemQueue(
@@ -1978,19 +1996,21 @@ function buildAsyncStreamItemQueue(
   itemType,
 ) {
   const streamItemQueue = [];
+  const executor = () =>
+    getNextAsyncStreamItemResult(
+      streamItemQueue,
+      streamPath,
+      initialIndex,
+      asyncIterator,
+      exeContext,
+      fieldGroup,
+      info,
+      itemType,
+    );
   streamItemQueue.push(
-    new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-      getNextAsyncStreamItemResult(
-        streamItemQueue,
-        streamPath,
-        initialIndex,
-        asyncIterator,
-        exeContext,
-        fieldGroup,
-        info,
-        itemType,
-      ),
-    ),
+    exeContext.enableEarlyExecution
+      ? new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor())
+      : () => new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor()),
   );
   return streamItemQueue;
 }
@@ -2031,19 +2051,21 @@ async function getNextAsyncStreamItemResult(
     info,
     itemType,
   );
+  const executor = () =>
+    getNextAsyncStreamItemResult(
+      streamItemQueue,
+      streamPath,
+      index,
+      asyncIterator,
+      exeContext,
+      fieldGroup,
+      info,
+      itemType,
+    );
   streamItemQueue.push(
-    new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-      getNextAsyncStreamItemResult(
-        streamItemQueue,
-        streamPath,
-        index,
-        asyncIterator,
-        exeContext,
-        fieldGroup,
-        info,
-        itemType,
-      ),
-    ),
+    exeContext.enableEarlyExecution
+      ? new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor())
+      : () => new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor()),
   );
   return result;
 }
