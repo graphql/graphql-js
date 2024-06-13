@@ -135,11 +135,16 @@ const query = new GraphQLObjectType({
 
 const schema = new GraphQLSchema({ query });
 
-async function complete(document: DocumentNode, rootValue: unknown = { hero }) {
+async function complete(
+  document: DocumentNode,
+  rootValue: unknown = { hero },
+  enableEarlyExecution = false,
+) {
   const result = await experimentalExecuteIncrementally({
     schema,
     document,
     rootValue,
+    enableEarlyExecution,
   });
 
   if ('initialResult' in result) {
@@ -246,6 +251,118 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+  });
+  it('Does not execute deferred fragments early when not specified', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          id
+          ...NameFragment @defer
+        }
+      }
+      fragment NameFragment on Hero {
+        name
+      }
+    `);
+    const order: Array<string> = [];
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        id: async () => {
+          await resolveOnNextTick();
+          await resolveOnNextTick();
+          order.push('slow-id');
+          return hero.id;
+        },
+        name: () => {
+          order.push('fast-name');
+          return hero.name;
+        },
+      },
+    });
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            id: '1',
+          },
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              name: 'Luke',
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+    expect(order).to.deep.equal(['slow-id', 'fast-name']);
+  });
+  it('Does execute deferred fragments early when specified', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          id
+          ...NameFragment @defer
+        }
+      }
+      fragment NameFragment on Hero {
+        name
+      }
+    `);
+    const order: Array<string> = [];
+    const result = await complete(
+      document,
+      {
+        hero: {
+          ...hero,
+          id: async () => {
+            await resolveOnNextTick();
+            await resolveOnNextTick();
+            order.push('slow-id');
+            return hero.id;
+          },
+          name: () => {
+            order.push('fast-name');
+            return hero.name;
+          },
+        },
+      },
+      true,
+    );
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            id: '1',
+          },
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              name: 'Luke',
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+    expect(order).to.deep.equal(['fast-name', 'slow-id']);
   });
   it('Can defer fragments on the top level Query field', async () => {
     const document = parse(`
@@ -1492,20 +1609,24 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document, {
-      a: {
-        b: {
-          c: {
-            d: 'd',
-            nonNullErrorField: async () => {
-              await resolveOnNextTick();
-              return null;
+    const result = await complete(
+      document,
+      {
+        a: {
+          b: {
+            c: {
+              d: 'd',
+              nonNullErrorField: async () => {
+                await resolveOnNextTick();
+                return null;
+              },
             },
           },
+          someField: 'someField',
         },
-        someField: 'someField',
       },
-    });
+      true,
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1564,12 +1685,16 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document, {
-      hero: {
-        ...hero,
-        nonNullName: () => null,
+    const result = await complete(
+      document,
+      {
+        hero: {
+          ...hero,
+          nonNullName: () => null,
+        },
       },
-    });
+      true,
+    );
     expectJSON(result).toDeepEqual({
       data: {
         hero: null,
@@ -1596,12 +1721,16 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document, {
-      hero: {
-        ...hero,
-        nonNullName: () => null,
+    const result = await complete(
+      document,
+      {
+        hero: {
+          ...hero,
+          nonNullName: () => null,
+        },
       },
-    });
+      true,
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {},
