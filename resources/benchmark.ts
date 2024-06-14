@@ -366,8 +366,11 @@ function sampleModule(modulePath: string): BenchmarkSample {
 
   const sampleCode = `
     import fs from 'node:fs';
+    import os from 'node:os';
 
     import { benchmark } from '${moduleURL}';
+
+    os.setPriority(os.constants.priority.PRIORITY_HIGHEST);
 
     // warm up, it looks like 7 is a magic number to reliably trigger JIT
     await benchmark.measure();
@@ -399,8 +402,10 @@ function sampleModule(modulePath: string): BenchmarkSample {
   `;
 
   const result = cp.spawnSync(
-    process.execPath,
+    'sudo',
     [
+      '--close-from=4',
+      `"${process.execPath}"`,
       // V8 flags
       '--predictable',
       '--no-concurrent-sweeping',
@@ -412,9 +417,10 @@ function sampleModule(modulePath: string): BenchmarkSample {
       // Node.js flags
       '--input-type=module',
       '--eval',
-      sampleCode,
+      `"${sampleCode}"`,
     ],
     {
+      shell: true,
       stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
       env: { NODE_ENV: 'production' },
     },
