@@ -57,13 +57,44 @@ describe('suggestionList', () => {
       'ab',
       'a',
     ]);
+
+    expectSuggestions('GraphQl', [
+      'graphics',
+      'SQL',
+      'GraphQL',
+      'quarks',
+      'mark',
+    ]).to.deep.equal(['GraphQL', 'graphics']);
   });
 
-  it('Returns options with the same lexical distance sorted lexicographically', () => {
+  it('Returns options with the same lexical distance sorted naturally', () => {
     expectSuggestions('a', ['az', 'ax', 'ay']).to.deep.equal([
       'ax',
       'ay',
       'az',
     ]);
+
+    expectSuggestions('boo', ['moo', 'foo', 'zoo']).to.deep.equal([
+      'foo',
+      'moo',
+      'zoo',
+    ]);
+
+    expectSuggestions('abc', ['a1', 'a12', 'a2']).to.deep.equal([
+      'a1',
+      'a2',
+      'a12',
+    ]);
+  });
+
+  it('Returns options sorted first by lexical distance then naturally', () => {
+    // cSpell:ignore csutomer, stomer
+    expectSuggestions('csutomer', [
+      'store',
+      'customer',
+      'stomer',
+      'some',
+      'more',
+    ]).to.deep.equal(['customer', 'stomer', 'some', 'store']);
   });
 });
