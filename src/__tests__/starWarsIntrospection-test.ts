@@ -35,6 +35,8 @@ describe('Star Wars Introspection Tests', () => {
             { name: 'String' },
             { name: 'Episode' },
             { name: 'Droid' },
+            { name: 'Jedi' },
+            { name: 'Sith' },
             { name: 'Query' },
             { name: 'Boolean' },
             { name: '__Schema' },
@@ -327,6 +329,42 @@ describe('Star Wars Introspection Tests', () => {
                   {
                     name: 'id',
                     description: 'id of the droid',
+                    type: {
+                      kind: 'NON_NULL',
+                      name: null,
+                      ofType: {
+                        kind: 'SCALAR',
+                        name: 'String',
+                      },
+                    },
+                    defaultValue: null,
+                  },
+                ],
+              },
+              {
+                name: 'jedi',
+                args: [
+                  {
+                    name: 'id',
+                    description: 'id of the jedi',
+                    type: {
+                      kind: 'NON_NULL',
+                      name: null,
+                      ofType: {
+                        kind: 'SCALAR',
+                        name: 'String',
+                      },
+                    },
+                    defaultValue: null,
+                  },
+                ],
+              },
+              {
+                name: 'sith',
+                args: [
+                  {
+                    name: 'id',
+                    description: 'id of the sith',
                     type: {
                       kind: 'NON_NULL',
                       name: null,

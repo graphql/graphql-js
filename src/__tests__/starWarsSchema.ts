@@ -8,7 +8,15 @@ import {
 import { GraphQLString } from '../type/scalars.js';
 import { GraphQLSchema } from '../type/schema.js';
 
-import { getDroid, getFriends, getHero, getHuman } from './starWarsData.js';
+import {
+  getDroid,
+  getEnemies,
+  getFriends,
+  getHero,
+  getHuman,
+  getJedi,
+  getSith,
+} from './starWarsData.js';
 
 /**
  * This is designed to be an end-to-end test, demonstrating
@@ -242,6 +250,86 @@ const droidType = new GraphQLObjectType({
 });
 
 /**
+ * We introduce two new types to represent characters in the Star Wars universe:
+ * Jedi and Sith. Both types have a non-null array field 'enemies' that references
+ * characters of the opposite type, creating a bidirectional relationship.
+ *
+ * This implements the following type system shorthand:
+ * ```graphql
+ * type Jedi {
+ *   id: String!
+ *   human: Human!
+ *   lightsaberColor: String
+ *   enemies: [Sith!]!
+ * }
+ *
+ * type Sith {
+ *   id: String!
+ *   human: Human!
+ *   darkSidePower: String
+ *   enemies: [Jedi!]!
+ * }
+ * ```
+ */
+const jediType = new GraphQLObjectType({
+  name: 'Jedi',
+  description: 'A Jedi character in the Star Wars universe.',
+  fields: () => ({
+    id: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: 'The id of the Jedi.',
+    },
+    name: {
+      type: GraphQLString,
+      description: 'The name of the Jedi.',
+    },
+    human: {
+      type: new GraphQLNonNull(humanType),
+      description: 'The human counterpart of the Jedi.',
+      resolve: (jedi) => getHuman(jedi.human),
+    },
+    lightsaberColor: {
+      type: GraphQLString,
+      description: "The color of the Jedi's lightsaber.",
+    },
+    enemies: {
+      type: new GraphQLList('Sith'),
+      description: 'The enemies of the Jedi.',
+      resolve: (sith) => getEnemies(sith),
+    },
+  }),
+});
+
+const sithType = new GraphQLObjectType({
+  name: 'Sith',
+  description: 'A Sith character in the Star Wars universe.',
+  fields: () => ({
+    id: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: 'The id of the Sith.',
+    },
+    name: {
+      type: GraphQLString,
+      description: 'The name of the Sith.',
+    },
+    human: {
+      type: new GraphQLNonNull(humanType),
+      description: 'The human counterpart of the Jedi.',
+      resolve: (sith) => getHuman(sith.human),
+    },
+    darkSidePower: {
+      type: GraphQLString,
+      description: 'The dark side power of the Sith.',
+    },
+    enemies: {
+      type: new GraphQLList('Jedi'),
+      description: 'The enemies of the Sith.',
+      resolve: (sith) => getEnemies(sith),
+    },
+  }),
+});
+
+/**
  * This is the type that will be the root of our query, and the
  * entry point into our schema. It gives us the ability to fetch
  * objects by their IDs, as well as to fetch the undisputed hero
@@ -253,6 +341,8 @@ const droidType = new GraphQLObjectType({
  *   hero(episode: Episode): Character
  *   human(id: String!): Human
  *   droid(id: String!): Droid
+ *   jedi(id: String!): Jedi
+ *   sith(id: String!): Sith
  * }
  * ```
  */
@@ -290,6 +380,26 @@ const queryType = new GraphQLObjectType({
       },
       resolve: (_source, { id }) => getDroid(id),
     },
+    jedi: {
+      type: jediType,
+      args: {
+        id: {
+          description: 'id of the jedi',
+          type: new GraphQLNonNull(GraphQLString),
+        },
+      },
+      resolve: (_source, { id }) => getJedi(id),
+    },
+    sith: {
+      type: sithType,
+      args: {
+        id: {
+          description: 'id of the sith',
+          type: new GraphQLNonNull(GraphQLString),
+        },
+      },
+      resolve: (_source, { id }) => getSith(id),
+    },
   }),
 });
 
@@ -299,5 +409,5 @@ const queryType = new GraphQLObjectType({
  */
 export const StarWarsSchema: GraphQLSchema = new GraphQLSchema({
   query: queryType,
-  types: [humanType, droidType],
+  types: [humanType, droidType, jediType, sithType],
 });
