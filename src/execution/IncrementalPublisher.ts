@@ -60,11 +60,13 @@ interface SubsequentIncrementalExecutionResultContext {
  */
 class IncrementalPublisher {
   private _context: IncrementalPublisherContext;
+  private _ids: Map<SubsequentResultRecord, string>;
   private _nextId: number;
   private _incrementalGraph: IncrementalGraph;
 
   constructor(context: IncrementalPublisherContext) {
     this._context = context;
+    this._ids = new Map();
     this._nextId = 0;
     this._incrementalGraph = new IncrementalGraph();
   }
@@ -96,7 +98,7 @@ class IncrementalPublisher {
     const pendingResults: Array<PendingResult> = [];
     for (const pendingSource of newPending) {
       const id = String(this._getNextId());
-      pendingSource.id = id;
+      this._ids.set(pendingSource, id);
       const pendingResult: PendingResult = {
         id,
         path: pathToArray(pendingSource.path),
@@ -232,14 +234,15 @@ class IncrementalPublisher {
     ) {
       for (const deferredFragmentRecord of deferredGroupedFieldSetResult
         .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-        const id = deferredFragmentRecord.id;
         if (
           !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
         ) {
           // This can occur if multiple deferred grouped field sets error for a fragment.
           continue;
         }
+        const id = this._ids.get(deferredFragmentRecord);
         invariant(id !== undefined);
+        this._ids.delete(deferredFragmentRecord);
         context.completed.push({
           id,
           errors: deferredGroupedFieldSetResult.errors,
@@ -265,7 +268,7 @@ class IncrementalPublisher {
       if (reconcilableResults === undefined) {
         continue;
       }
-      const id = deferredFragmentRecord.id;
+      const id = this._ids.get(deferredFragmentRecord);
       invariant(id !== undefined);
       const incremental = context.incremental;
       for (const reconcilableResult of reconcilableResults) {
@@ -283,6 +286,7 @@ class IncrementalPublisher {
         }
         incremental.push(incrementalEntry);
       }
+      this._ids.delete(deferredFragmentRecord);
       context.completed.push({ id });
     }
   }
@@ -292,9 +296,10 @@ class IncrementalPublisher {
     context: SubsequentIncrementalExecutionResultContext,
   ): void {
     const streamRecord = streamItemsResult.streamRecord;
-    const id = streamRecord.id;
+    const id = this._ids.get(streamRecord);
     invariant(id !== undefined);
     if (streamItemsResult.errors !== undefined) {
+      this._ids.delete(streamRecord);
       context.completed.push({
         id,
         errors: streamItemsResult.errors,
@@ -309,6 +314,7 @@ class IncrementalPublisher {
         });
       }
     } else if (streamItemsResult.result === undefined) {
+      this._ids.delete(streamRecord);
       context.completed.push({ id });
       this._incrementalGraph.removeStream(streamRecord);
       if (isCancellableStreamRecord(streamRecord)) {
@@ -344,7 +350,7 @@ class IncrementalPublisher {
       if (deferredFragmentRecord === initialDeferredFragmentRecord) {
         continue;
       }
-      const id = deferredFragmentRecord.id;
+      const id = this._ids.get(deferredFragmentRecord);
       // TODO: add test case for when an fragment has not been released, but might be processed for the shortest path.
       /* c8 ignore next 3 */
       if (id === undefined) {
