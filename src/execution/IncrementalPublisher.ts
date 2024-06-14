@@ -261,19 +261,13 @@ class IncrementalPublisher {
 
     for (const deferredFragmentRecord of deferredGroupedFieldSetResult
       .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-      const id = deferredFragmentRecord.id;
-      // TODO: add test case for this.
-      // Presumably, this can occur if an error causes a fragment to be completed early,
-      // while an asynchronous deferred grouped field set result is enqueued.
-      /* c8 ignore next 3 */
-      if (id === undefined) {
-        continue;
-      }
       const reconcilableResults =
         this._incrementalGraph.completeDeferredFragment(deferredFragmentRecord);
       if (reconcilableResults === undefined) {
         continue;
       }
+      const id = deferredFragmentRecord.id;
+      invariant(id !== undefined);
       const incremental = context.incremental;
       for (const reconcilableResult of reconcilableResults) {
         const { bestId, subPath } = this._getBestIdAndSubPath(
