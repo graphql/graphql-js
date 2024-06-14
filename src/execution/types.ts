@@ -217,7 +217,6 @@ export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
 export interface DeferredFragmentRecord {
   path: Path | undefined;
   label: string | undefined;
-  id?: string | undefined;
   parent: DeferredFragmentRecord | undefined;
 }
 
@@ -232,7 +231,6 @@ export type StreamItemRecord = ThunkIncrementalResult<StreamItemResult>;
 export interface StreamRecord {
   path: Path;
   label: string | undefined;
-  id?: string | undefined;
   streamItemQueue: Array<StreamItemRecord>;
 }
 
