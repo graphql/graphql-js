@@ -1,4 +1,5 @@
 import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
+import { invariant } from '../jsutils/invariant.js';
 import { isPromise } from '../jsutils/isPromise.js';
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
@@ -20,19 +21,13 @@ interface DeferredFragmentNode {
   deferredFragmentRecord: DeferredFragmentRecord;
   deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
   reconcilableResults: Set<ReconcilableDeferredGroupedFieldSetResult>;
-  children: Array<DeferredFragmentNode>;
+  children: Set<SubsequentResultNode>;
 }
 
 function isDeferredFragmentNode(
-  node: DeferredFragmentNode | undefined,
+  node: SubsequentResultNode | undefined,
 ): node is DeferredFragmentNode {
-  return node !== undefined;
-}
-
-function isStreamNode(
-  record: SubsequentResultNode | IncrementalDataRecord,
-): record is StreamRecord {
-  return 'streamItemQueue' in record;
+  return node !== undefined && 'deferredFragmentRecord' in node;
 }
 
 type SubsequentResultNode = DeferredFragmentNode | StreamRecord;
@@ -47,8 +42,6 @@ export class IncrementalGraph {
     DeferredFragmentNode
   >;
 
-  private _newPending: Set<SubsequentResultNode>;
-  private _newIncrementalDataRecords: Set<IncrementalDataRecord>;
   private _completedQueue: Array<IncrementalDataRecordResult>;
   private _nextQueue: Array<
     (iterable: IteratorResult<Iterable<IncrementalDataRecordResult>>) => void
@@ -57,22 +50,20 @@ export class IncrementalGraph {
   constructor() {
     this._pending = new Set();
     this._deferredFragmentNodes = new Map();
-    this._newIncrementalDataRecords = new Set();
-    this._newPending = new Set();
     this._completedQueue = [];
     this._nextQueue = [];
   }
 
-  addIncrementalDataRecords(
+  getNewPending(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
-  ): void {
-    for (const incrementalDataRecord of incrementalDataRecords) {
-      if (isDeferredGroupedFieldSetRecord(incrementalDataRecord)) {
-        this._addDeferredGroupedFieldSetRecord(incrementalDataRecord);
-      } else {
-        this._addStreamRecord(incrementalDataRecord);
-      }
-    }
+  ): ReadonlyArray<SubsequentResultRecord> {
+    const newPending = new Set<SubsequentResultNode>();
+    this._addIncrementalDataRecords(
+      incrementalDataRecords,
+      undefined,
+      newPending,
+    );
+    return this._pendingNodesToResults(newPending);
   }
 
   addCompletedReconcilableDeferredGroupedFieldSet(
@@ -90,54 +81,15 @@ export class IncrementalGraph {
       );
       deferredFragmentNode.reconcilableResults.add(reconcilableResult);
     }
-  }
 
-  getNewPending(): ReadonlyArray<SubsequentResultRecord> {
-    const newPending: Array<SubsequentResultRecord> = [];
-    for (const node of this._newPending) {
-      if (isStreamNode(node)) {
-        this._pending.add(node);
-        newPending.push(node);
-        this._newIncrementalDataRecords.add(node);
-      } else if (node.deferredGroupedFieldSetRecords.size > 0) {
-        for (const deferredGroupedFieldSetNode of node.deferredGroupedFieldSetRecords) {
-          this._newIncrementalDataRecords.add(deferredGroupedFieldSetNode);
-        }
-        this._pending.add(node);
-        newPending.push(node.deferredFragmentRecord);
-      } else {
-        for (const child of node.children) {
-          this._newPending.add(child);
-        }
-      }
+    const incrementalDataRecords = reconcilableResult.incrementalDataRecords;
+    if (incrementalDataRecords !== undefined) {
+      this._addIncrementalDataRecords(
+        incrementalDataRecords,
+        reconcilableResult.deferredGroupedFieldSetRecord
+          .deferredFragmentRecords,
+      );
     }
-    this._newPending.clear();
-
-    for (const incrementalDataRecord of this._newIncrementalDataRecords) {
-      if (isStreamNode(incrementalDataRecord)) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._onStreamItems(
-          incrementalDataRecord,
-          incrementalDataRecord.streamItemQueue,
-        );
-      } else {
-        const deferredGroupedFieldSetResult = incrementalDataRecord.result;
-        const result =
-          deferredGroupedFieldSetResult instanceof BoxedPromiseOrValue
-            ? deferredGroupedFieldSetResult.value
-            : deferredGroupedFieldSetResult().value;
-
-        if (isPromise(result)) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          result.then((resolved) => this._enqueue(resolved));
-        } else {
-          this._enqueue(result);
-        }
-      }
-    }
-    this._newIncrementalDataRecords.clear();
-
-    return newPending;
   }
 
   completedIncrementalData() {
@@ -177,9 +129,12 @@ export class IncrementalGraph {
     return this._pending.size > 0;
   }
 
-  completeDeferredFragment(
-    deferredFragmentRecord: DeferredFragmentRecord,
-  ): Array<ReconcilableDeferredGroupedFieldSetResult> | undefined {
+  completeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord):
+    | {
+        newPending: ReadonlyArray<SubsequentResultRecord>;
+        reconcilableResults: ReadonlyArray<ReconcilableDeferredGroupedFieldSetResult>;
+      }
+    | undefined {
     const deferredFragmentNode = this._deferredFragmentNodes.get(
       deferredFragmentRecord,
     );
@@ -209,10 +164,10 @@ export class IncrementalGraph {
       }
     }
     this._removePending(deferredFragmentNode);
-    for (const child of deferredFragmentNode.children) {
-      this._newPending.add(child);
-    }
-    return reconcilableResults;
+    const newPending = this._pendingNodesToResults(
+      deferredFragmentNode.children,
+    );
+    return { newPending, reconcilableResults };
   }
 
   removeDeferredFragment(
@@ -227,9 +182,11 @@ export class IncrementalGraph {
     this._removePending(deferredFragmentNode);
     this._deferredFragmentNodes.delete(deferredFragmentRecord);
     // TODO: add test case for an erroring deferred fragment with child defers
-    /* c8 ignore next 3 */
+    /* c8 ignore next 5 */
     for (const child of deferredFragmentNode.children) {
-      this.removeDeferredFragment(child.deferredFragmentRecord);
+      if (isDeferredFragmentNode(child)) {
+        this.removeDeferredFragment(child.deferredFragmentRecord);
+      }
     }
     return true;
   }
@@ -247,28 +204,90 @@ export class IncrementalGraph {
     }
   }
 
-  private _addDeferredGroupedFieldSetRecord(
-    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+  private _addIncrementalDataRecords(
+    incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
+    parents: ReadonlyArray<DeferredFragmentRecord> | undefined,
+    newPending?: Set<SubsequentResultNode> | undefined,
   ): void {
-    for (const deferredFragmentRecord of deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-      const deferredFragmentNode = this._addDeferredFragmentNode(
-        deferredFragmentRecord,
-      );
-      if (this._pending.has(deferredFragmentNode)) {
-        this._newIncrementalDataRecords.add(deferredGroupedFieldSetRecord);
+    for (const incrementalDataRecord of incrementalDataRecords) {
+      if (isDeferredGroupedFieldSetRecord(incrementalDataRecord)) {
+        for (const deferredFragmentRecord of incrementalDataRecord.deferredFragmentRecords) {
+          const deferredFragmentNode = this._addDeferredFragmentNode(
+            deferredFragmentRecord,
+            newPending,
+          );
+          deferredFragmentNode.deferredGroupedFieldSetRecords.add(
+            incrementalDataRecord,
+          );
+        }
+        if (this._hasPendingFragment(incrementalDataRecord)) {
+          this._onDeferredGroupedFieldSet(incrementalDataRecord);
+        }
+      } else if (parents === undefined) {
+        invariant(newPending !== undefined);
+        newPending.add(incrementalDataRecord);
+      } else {
+        for (const parent of parents) {
+          const deferredFragmentNode = this._addDeferredFragmentNode(
+            parent,
+            newPending,
+          );
+          deferredFragmentNode.children.add(incrementalDataRecord);
+        }
       }
-      deferredFragmentNode.deferredGroupedFieldSetRecords.add(
-        deferredGroupedFieldSetRecord,
-      );
     }
   }
 
-  private _addStreamRecord(streamRecord: StreamRecord): void {
-    this._newPending.add(streamRecord);
+  private _pendingNodesToResults(
+    newPendingNodes: Set<SubsequentResultNode>,
+  ): ReadonlyArray<SubsequentResultRecord> {
+    const newPendingResults: Array<SubsequentResultRecord> = [];
+    for (const node of newPendingNodes) {
+      if (isDeferredFragmentNode(node)) {
+        if (node.deferredGroupedFieldSetRecords.size > 0) {
+          for (const deferredGroupedFieldSetRecord of node.deferredGroupedFieldSetRecords) {
+            if (!this._hasPendingFragment(deferredGroupedFieldSetRecord)) {
+              this._onDeferredGroupedFieldSet(deferredGroupedFieldSetRecord);
+            }
+          }
+          this._pending.add(node);
+          newPendingResults.push(node.deferredFragmentRecord);
+          continue;
+        }
+        this._deferredFragmentNodes.delete(node.deferredFragmentRecord);
+        for (const child of node.children) {
+          newPendingNodes.add(child);
+        }
+      } else {
+        this._pending.add(node);
+        newPendingResults.push(node);
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._onStreamItems(node);
+      }
+    }
+    return newPendingResults;
+  }
+
+  private _hasPendingFragment(
+    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+  ): boolean {
+    return deferredGroupedFieldSetRecord.deferredFragmentRecords.some(
+      (deferredFragmentRecord) => {
+        const deferredFragmentRecordNode = this._deferredFragmentNodes.get(
+          deferredFragmentRecord,
+        );
+        return (
+          deferredFragmentRecordNode !== undefined &&
+          this._pending.has(deferredFragmentRecordNode)
+        );
+      },
+    );
   }
 
   private _addDeferredFragmentNode(
     deferredFragmentRecord: DeferredFragmentRecord,
+    newPending: Set<SubsequentResultNode> | undefined,
   ): DeferredFragmentNode {
     let deferredFragmentNode = this._deferredFragmentNodes.get(
       deferredFragmentRecord,
@@ -280,7 +299,7 @@ export class IncrementalGraph {
       deferredFragmentRecord,
       deferredGroupedFieldSetRecords: new Set(),
       reconcilableResults: new Set(),
-      children: [],
+      children: new Set(),
     };
     this._deferredFragmentNodes.set(
       deferredFragmentRecord,
@@ -288,21 +307,37 @@ export class IncrementalGraph {
     );
     const parent = deferredFragmentRecord.parent;
     if (parent === undefined) {
-      this._newPending.add(deferredFragmentNode);
+      invariant(newPending !== undefined);
+      newPending.add(deferredFragmentNode);
       return deferredFragmentNode;
     }
-    const parentNode = this._addDeferredFragmentNode(parent);
-    parentNode.children.push(deferredFragmentNode);
+    const parentNode = this._addDeferredFragmentNode(parent, newPending);
+    parentNode.children.add(deferredFragmentNode);
     return deferredFragmentNode;
   }
 
-  private async _onStreamItems(
-    streamRecord: StreamRecord,
-    streamItemQueue: Array<StreamItemRecord>,
-  ): Promise<void> {
+  private _onDeferredGroupedFieldSet(
+    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+  ): void {
+    const deferredGroupedFieldSetResult = deferredGroupedFieldSetRecord.result;
+    const result =
+      deferredGroupedFieldSetResult instanceof BoxedPromiseOrValue
+        ? deferredGroupedFieldSetResult.value
+        : deferredGroupedFieldSetResult().value;
+
+    if (isPromise(result)) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      result.then((resolved) => this._enqueue(resolved));
+    } else {
+      this._enqueue(result);
+    }
+  }
+
+  private async _onStreamItems(streamRecord: StreamRecord): Promise<void> {
     let items: Array<unknown> = [];
     let errors: Array<GraphQLError> = [];
     let incrementalDataRecords: Array<IncrementalDataRecord> = [];
+    const streamItemQueue = streamRecord.streamItemQueue;
     let streamItemRecord: StreamItemRecord | undefined;
     while ((streamItemRecord = streamItemQueue.shift()) !== undefined) {
       let result =
