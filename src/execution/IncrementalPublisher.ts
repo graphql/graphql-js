@@ -74,8 +74,9 @@ class IncrementalPublisher {
     errors: ReadonlyArray<GraphQLError> | undefined,
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ExperimentalIncrementalExecutionResults {
-    this._incrementalGraph.addIncrementalDataRecords(incrementalDataRecords);
-    const newPending = this._incrementalGraph.getNewPending();
+    const newPending = this._incrementalGraph.getNewPending(
+      incrementalDataRecords,
+    );
 
     const pending = this._pendingSourcesToResults(newPending);
 
@@ -217,8 +218,6 @@ class IncrementalPublisher {
     } else {
       this._handleCompletedStreamItems(completedIncrementalData, context);
     }
-    const newPending = this._incrementalGraph.getNewPending();
-    context.pending.push(...this._pendingSourcesToResults(newPending));
   }
 
   private _handleCompletedDeferredGroupedFieldSet(
@@ -252,22 +251,19 @@ class IncrementalPublisher {
       deferredGroupedFieldSetResult,
     );
 
-    const incrementalDataRecords =
-      deferredGroupedFieldSetResult.incrementalDataRecords;
-    if (incrementalDataRecords !== undefined) {
-      this._incrementalGraph.addIncrementalDataRecords(incrementalDataRecords);
-    }
-
     for (const deferredFragmentRecord of deferredGroupedFieldSetResult
       .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-      const reconcilableResults =
-        this._incrementalGraph.completeDeferredFragment(deferredFragmentRecord);
-      if (reconcilableResults === undefined) {
+      const completion = this._incrementalGraph.completeDeferredFragment(
+        deferredFragmentRecord,
+      );
+      if (completion === undefined) {
         continue;
       }
       const id = deferredFragmentRecord.id;
       invariant(id !== undefined);
       const incremental = context.incremental;
+      const { newPending, reconcilableResults } = completion;
+      context.pending.push(...this._pendingSourcesToResults(newPending));
       for (const reconcilableResult of reconcilableResults) {
         const { bestId, subPath } = this._getBestIdAndSubPath(
           id,
@@ -323,10 +319,12 @@ class IncrementalPublisher {
 
       context.incremental.push(incrementalEntry);
 
-      if (streamItemsResult.incrementalDataRecords !== undefined) {
-        this._incrementalGraph.addIncrementalDataRecords(
-          streamItemsResult.incrementalDataRecords,
+      const incrementalDataRecords = streamItemsResult.incrementalDataRecords;
+      if (incrementalDataRecords !== undefined) {
+        const newPending = this._incrementalGraph.getNewPending(
+          incrementalDataRecords,
         );
+        context.pending.push(...this._pendingSourcesToResults(newPending));
       }
     }
   }
