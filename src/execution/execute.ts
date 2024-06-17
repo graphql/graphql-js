@@ -63,7 +63,6 @@ import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import type {
   CancellableStreamRecord,
-  DeferredFragmentRecord,
   DeferredGroupedFieldSetRecord,
   DeferredGroupedFieldSetResult,
   ExecutionResult,
@@ -73,6 +72,7 @@ import type {
   StreamItemResult,
   StreamRecord,
 } from './types.js';
+import { DeferredFragmentRecord } from './types.js';
 import {
   getArgumentValues,
   getDirectiveValues,
@@ -1676,11 +1676,11 @@ function addNewDeferredFragments(
         : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
 
     // Instantiate the new record.
-    const deferredFragmentRecord: DeferredFragmentRecord = {
+    const deferredFragmentRecord = new DeferredFragmentRecord(
       path,
-      label: newDeferUsage.label,
+      newDeferUsage.label,
       parent,
-    };
+    );
 
     // Update the map.
     newDeferMap.set(newDeferUsage, deferredFragmentRecord);
@@ -2114,16 +2114,33 @@ function executeDeferredGroupedFieldSets(
         deferMap,
       );
 
-    const shouldDeferThisDeferUsageSet = shouldDefer(
-      parentDeferUsages,
-      deferUsageSet,
-    );
-
-    deferredGroupedFieldSetRecord.result = shouldDeferThisDeferUsageSet
-      ? exeContext.enableEarlyExecution
-        ? new BoxedPromiseOrValue(Promise.resolve().then(executor))
-        : () => new BoxedPromiseOrValue(executor())
-      : new BoxedPromiseOrValue(executor());
+    if (exeContext.enableEarlyExecution) {
+      deferredGroupedFieldSetRecord.result = new BoxedPromiseOrValue(
+        shouldDefer(parentDeferUsages, deferUsageSet)
+          ? Promise.resolve().then(executor)
+          : executor(),
+      );
+    } else if (
+      deferredFragmentRecords.some(
+        (deferredFragmentRecord) => deferredFragmentRecord.pending,
+      )
+    ) {
+      deferredGroupedFieldSetRecord.result = new BoxedPromiseOrValue(
+        executor(),
+      );
+    } else {
+      deferredGroupedFieldSetRecord.result = () =>
+        new BoxedPromiseOrValue(executor());
+      const resolveThunk = () => {
+        const maybeThunk = deferredGroupedFieldSetRecord.result;
+        if (!(maybeThunk instanceof BoxedPromiseOrValue)) {
+          deferredGroupedFieldSetRecord.result = maybeThunk();
+        }
+      };
+      for (const deferredFragmentRecord of deferredFragmentRecords) {
+        deferredFragmentRecord.onPending(resolveThunk);
+      }
+    }
 
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }

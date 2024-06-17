@@ -214,10 +214,36 @@ export interface DeferredGroupedFieldSetRecord {
 
 export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
 
-export interface DeferredFragmentRecord {
+/** @internal */
+export class DeferredFragmentRecord {
   path: Path | undefined;
   label: string | undefined;
   parent: DeferredFragmentRecord | undefined;
+  fns: Array<() => void>;
+  pending: boolean;
+
+  constructor(
+    path: Path | undefined,
+    label: string | undefined,
+    parent: DeferredFragmentRecord | undefined,
+  ) {
+    this.path = path;
+    this.label = label;
+    this.parent = parent;
+    this.pending = false;
+    this.fns = [];
+  }
+
+  onPending(fn: () => void): void {
+    this.fns.push(fn);
+  }
+
+  setAsPending(): void {
+    this.pending = true;
+    for (const fn of this.fns) {
+      fn();
+    }
+  }
 }
 
 export interface StreamItemResult {
