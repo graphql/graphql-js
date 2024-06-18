@@ -27,6 +27,10 @@ export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
               : value.constructor?.name;
           if (className === valueClassName) {
             const stringifiedValue = inspect(value);
+            if (globalThis.process.env.GRAPHQL_ALLOW_OTHER_INSTANCES) {
+              console.warn(`GRAPHQL_ALLOW_OTHER_INSTANCES enabled: You are using an instance of ${className} "${stringifiedValue}" from another module or realm. Make sure you know what you are doing!`);
+              return false;
+            }
             throw new Error(
               `Cannot use ${className} "${stringifiedValue}" from another module or realm.
 
