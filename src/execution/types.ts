@@ -190,7 +190,7 @@ export interface ReconcilableDeferredGroupedFieldSetResult {
   errors?: never;
 }
 
-interface NonReconcilableDeferredGroupedFieldSetResult {
+export interface NonReconcilableDeferredGroupedFieldSetResult {
   deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord;
   path: Array<string | number>;
   errors: ReadonlyArray<GraphQLError>;

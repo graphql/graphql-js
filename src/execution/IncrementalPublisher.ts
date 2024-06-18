@@ -231,14 +231,11 @@ class IncrementalPublisher {
         deferredGroupedFieldSetResult,
       )
     ) {
-      for (const deferredFragmentRecord of deferredGroupedFieldSetResult
-        .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-        if (
-          !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
-        ) {
-          // This can occur if multiple deferred grouped field sets error for a fragment.
-          continue;
-        }
+      const deferredFragmentRecords =
+        this._incrementalGraph.removeNonReconcilableDeferredGroupedFieldSet(
+          deferredGroupedFieldSetResult,
+        );
+      for (const deferredFragmentRecord of deferredFragmentRecords) {
         const id = this._ids.get(deferredFragmentRecord);
         invariant(id !== undefined);
         this._ids.delete(deferredFragmentRecord);
