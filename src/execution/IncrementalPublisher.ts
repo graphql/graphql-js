@@ -246,7 +246,6 @@ class IncrementalPublisher {
           id,
           errors: deferredGroupedFieldSetResult.errors,
         });
-        this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord);
       }
       return;
     }
