@@ -21,6 +21,11 @@ import { typeFromAST } from '../utilities/typeFromAST';
 
 import { getDirectiveValues } from './values';
 
+interface FragmentEntry {
+  fragment: FragmentDefinitionNode;
+  runtimeType: GraphQLObjectType;
+}
+
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -37,7 +42,9 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
 ): Map<string, ReadonlyArray<FieldNode>> {
+  const foundFragments: Array<FragmentEntry> = [];
   const fields = new Map();
+  const visited = new Set<string>();
   collectFieldsImpl(
     schema,
     fragments,
@@ -45,8 +52,24 @@ export function collectFields(
     runtimeType,
     selectionSet,
     fields,
-    new Set(),
+    visited,
+    foundFragments,
   );
+
+  let entry;
+  while ((entry = foundFragments.pop()) !== undefined) {
+    collectFieldsImpl(
+      schema,
+      fragments,
+      variableValues,
+      entry.runtimeType,
+      entry.fragment.selectionSet,
+      fields,
+      visited,
+      foundFragments,
+    );
+  }
+
   return fields;
 }
 
@@ -68,6 +91,7 @@ export function collectSubfields(
   fieldNodes: ReadonlyArray<FieldNode>,
 ): Map<string, ReadonlyArray<FieldNode>> {
   const subFieldNodes = new Map();
+  const foundFragments: Array<FragmentEntry> = [];
   const visitedFragmentNames = new Set<string>();
   for (const node of fieldNodes) {
     if (node.selectionSet) {
@@ -79,9 +103,25 @@ export function collectSubfields(
         node.selectionSet,
         subFieldNodes,
         visitedFragmentNames,
+        foundFragments,
       );
     }
   }
+
+  let entry;
+  while ((entry = foundFragments.pop()) !== undefined) {
+    collectFieldsImpl(
+      schema,
+      fragments,
+      variableValues,
+      entry.runtimeType,
+      entry.fragment.selectionSet,
+      subFieldNodes,
+      visitedFragmentNames,
+      foundFragments,
+    );
+  }
+
   return subFieldNodes;
 }
 
@@ -93,6 +133,7 @@ function collectFieldsImpl(
   selectionSet: SelectionSetNode,
   fields: Map<string, Array<FieldNode>>,
   visitedFragmentNames: Set<string>,
+  foundFragments: Array<FragmentEntry>,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -124,6 +165,7 @@ function collectFieldsImpl(
           selection.selectionSet,
           fields,
           visitedFragmentNames,
+          foundFragments,
         );
         break;
       }
@@ -143,15 +185,8 @@ function collectFieldsImpl(
         ) {
           continue;
         }
-        collectFieldsImpl(
-          schema,
-          fragments,
-          variableValues,
-          runtimeType,
-          fragment.selectionSet,
-          fields,
-          visitedFragmentNames,
-        );
+
+        foundFragments.push({ runtimeType, fragment });
         break;
       }
     }

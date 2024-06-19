@@ -22,7 +22,6 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
 import { execute, executeSync } from '../execute';
-import { print } from '../../language';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {
@@ -81,7 +80,6 @@ describe('Execute: Handles basic execution tasks', () => {
       }),
     });
 
-
     const n = 10000;
     const fragments = Array.from(Array(n).keys()).reduce(
       (acc, next) =>
@@ -96,7 +94,6 @@ describe('Execute: Handles basic execution tasks', () => {
     const document = parse(`
       query {
         ...X${n}
-        __typename
       }
       ${fragments}
       fragment X0 on Query {
