@@ -207,26 +207,15 @@ function findConflictsWithinSelectionSet(
         discoveredFragments,
       );
 
-      // (E) Then collect any conflicts between the provided collection of fields
-      // and any fragment names found in the given fragment.
-      while (discoveredFragments.length !== 0) {
-        const item = discoveredFragments.pop();
-        if (!item || comparedFragmentPairs.has(item[1], item[0], false)) {
-          continue;
-        }
-        const [fragmentName, referencedFragmentName] = item;
-        comparedFragmentPairs.add(referencedFragmentName, fragmentName, false);
-        collectConflictsBetweenFieldsAndFragment(
-          context,
-          conflicts,
-          cachedFieldsAndFragmentNames,
-          comparedFragmentPairs,
-          false,
-          fieldMap,
-          referencedFragmentName,
-          discoveredFragments,
-        );
-      }
+      processDiscoveredFragments(
+        context,
+        conflicts,
+        cachedFieldsAndFragmentNames,
+        comparedFragmentPairs,
+        false,
+        fieldMap,
+        discoveredFragments,
+      );
       // (C) Then compare this fragment with all other fragments found in this
       // selection set to collect conflicts between fragments spread together.
       // This compares each item in the list of fragment names to every other
@@ -439,33 +428,15 @@ function findConflictsBetweenSubSelectionSets(
     );
   }
 
-  // (E) Then collect any conflicts between the provided collection of fields
-  // and any fragment names found in the given fragment.
-  while (discoveredFragments.length !== 0) {
-    const item = discoveredFragments.pop();
-    if (
-      !item ||
-      comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)
-    ) {
-      continue;
-    }
-    const [fragmentName, referencedFragmentName] = item;
-    comparedFragmentPairs.add(
-      referencedFragmentName,
-      fragmentName,
-      areMutuallyExclusive,
-    );
-    collectConflictsBetweenFieldsAndFragment(
-      context,
-      conflicts,
-      cachedFieldsAndFragmentNames,
-      comparedFragmentPairs,
-      areMutuallyExclusive,
-      fieldMap1,
-      referencedFragmentName,
-      discoveredFragments,
-    );
-  }
+  processDiscoveredFragments(
+    context,
+    conflicts,
+    cachedFieldsAndFragmentNames,
+    comparedFragmentPairs,
+    areMutuallyExclusive,
+    fieldMap1,
+    discoveredFragments,
+  );
 
   // (I) Then collect conflicts between the second collection of fields and
   // those referenced by each fragment name associated with the first.
@@ -482,33 +453,15 @@ function findConflictsBetweenSubSelectionSets(
     );
   }
 
-  // (E) Then collect any conflicts between the provided collection of fields
-  // and any fragment names found in the given fragment.
-  while (discoveredFragments.length !== 0) {
-    const item = discoveredFragments.pop();
-    if (
-      !item ||
-      comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)
-    ) {
-      continue;
-    }
-    const [fragmentName, referencedFragmentName] = item;
-    comparedFragmentPairs.add(
-      referencedFragmentName,
-      fragmentName,
-      areMutuallyExclusive,
-    );
-    collectConflictsBetweenFieldsAndFragment(
-      context,
-      conflicts,
-      cachedFieldsAndFragmentNames,
-      comparedFragmentPairs,
-      areMutuallyExclusive,
-      fieldMap2,
-      referencedFragmentName,
-      discoveredFragments,
-    );
-  }
+  processDiscoveredFragments(
+    context,
+    conflicts,
+    cachedFieldsAndFragmentNames,
+    comparedFragmentPairs,
+    areMutuallyExclusive,
+    fieldMap2,
+    discoveredFragments,
+  );
 
   // (J) Also collect conflicts between any fragment names by the first and
   // fragment names by the second. This compares each item in the first set of
@@ -528,6 +481,44 @@ function findConflictsBetweenSubSelectionSets(
   }
   return conflicts;
 }
+
+// (E) Then collect any conflicts between the provided collection of fields
+// and any fragment names found in the given fragment.
+const processDiscoveredFragments = (
+  context: ValidationContext,
+  conflicts: Array<Conflict>,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
+  comparedFragmentPairs: PairSet,
+  areMutuallyExclusive: boolean,
+  fieldMap: NodeAndDefCollection,
+  discoveredFragments: Array<Array<string>>,
+) => {
+  while (discoveredFragments.length !== 0) {
+    const item = discoveredFragments.pop();
+    if (
+      !item ||
+      comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)
+    ) {
+      continue;
+    }
+    const [fragmentName, referencedFragmentName] = item;
+    comparedFragmentPairs.add(
+      referencedFragmentName,
+      fragmentName,
+      areMutuallyExclusive,
+    );
+    collectConflictsBetweenFieldsAndFragment(
+      context,
+      conflicts,
+      cachedFieldsAndFragmentNames,
+      comparedFragmentPairs,
+      areMutuallyExclusive,
+      fieldMap,
+      referencedFragmentName,
+      discoveredFragments,
+    );
+  }
+};
 
 // Collect all Conflicts "within" one collection of fields.
 function collectConflictsWithin(
