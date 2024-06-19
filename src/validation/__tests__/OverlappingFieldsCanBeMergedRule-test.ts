@@ -1138,4 +1138,28 @@ describe('Validate: Overlapping fields can be merged', () => {
       },
     ]);
   });
+
+  it('does not hit stack size limits', () => {
+    const n = 10000;
+    const fragments = Array.from(Array(n).keys()).reduce(
+      (acc, next) =>
+        acc.concat(`\n
+        fragment X${next + 1} on Query {
+          ...X${next}
+        }
+      `),
+      '',
+    );
+
+    const query = `
+      query Test {
+        ...X${n}
+      }
+      ${fragments}
+      fragment X0 on Query {
+        __typename
+      }
+    `;
+    expectErrors(query).toDeepEqual([]);
+  });
 });
