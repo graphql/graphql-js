@@ -2114,16 +2114,25 @@ function executeDeferredGroupedFieldSets(
         deferMap,
       );
 
-    const shouldDeferThisDeferUsageSet = shouldDefer(
-      parentDeferUsages,
-      deferUsageSet,
-    );
-
-    deferredGroupedFieldSetRecord.result = shouldDeferThisDeferUsageSet
-      ? exeContext.enableEarlyExecution
-        ? new BoxedPromiseOrValue(Promise.resolve().then(executor))
-        : () => new BoxedPromiseOrValue(executor())
-      : new BoxedPromiseOrValue(executor());
+    if (exeContext.enableEarlyExecution) {
+      deferredGroupedFieldSetRecord.result = new BoxedPromiseOrValue(
+        shouldDefer(parentDeferUsages, deferUsageSet)
+          ? Promise.resolve().then(executor)
+          : executor(),
+      );
+    } else {
+      deferredGroupedFieldSetRecord.result = () =>
+        new BoxedPromiseOrValue(executor());
+      const resolveThunk = () => {
+        const maybeThunk = deferredGroupedFieldSetRecord.result;
+        if (!(maybeThunk instanceof BoxedPromiseOrValue)) {
+          deferredGroupedFieldSetRecord.result = maybeThunk();
+        }
+      };
+      for (const deferredFragmentRecord of deferredFragmentRecords) {
+        deferredFragmentRecord.onPending(resolveThunk);
+      }
+    }
 
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }
