@@ -207,15 +207,6 @@ function findConflictsWithinSelectionSet(
         discoveredFragments,
       );
 
-      processDiscoveredFragments(
-        context,
-        conflicts,
-        cachedFieldsAndFragmentNames,
-        comparedFragmentPairs,
-        false,
-        fieldMap,
-        discoveredFragments,
-      );
       // (C) Then compare this fragment with all other fragments found in this
       // selection set to collect conflicts between fragments spread together.
       // This compares each item in the list of fragment names to every other
@@ -232,6 +223,16 @@ function findConflictsWithinSelectionSet(
         );
       }
     }
+
+    processDiscoveredFragments(
+      context,
+      conflicts,
+      cachedFieldsAndFragmentNames,
+      comparedFragmentPairs,
+      false,
+      fieldMap,
+      discoveredFragments,
+    );
   }
   return conflicts;
 }
