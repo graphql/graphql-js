@@ -8,6 +8,7 @@ import type { GraphQLError } from '../error/GraphQLError.js';
 import type {
   DeferredFragmentRecord,
   DeferredGroupedFieldSetRecord,
+  DeferredGroupedFieldSetResult,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
   ReconcilableDeferredGroupedFieldSetResult,
@@ -113,12 +114,10 @@ export class IncrementalGraph {
         reconcilableResults: ReadonlyArray<ReconcilableDeferredGroupedFieldSetResult>;
       }
     | undefined {
-    // TODO: add test case?
-    /* c8 ignore next 3 */
-    if (!this._rootNodes.has(deferredFragmentRecord)) {
-      return;
-    }
-    if (deferredFragmentRecord.deferredGroupedFieldSetRecords.size > 0) {
+    if (
+      !this._rootNodes.has(deferredFragmentRecord) ||
+      deferredFragmentRecord.deferredGroupedFieldSetRecords.size > 0
+    ) {
       return;
     }
     const reconcilableResults = Array.from(
@@ -202,6 +201,7 @@ export class IncrementalGraph {
     for (const node of maybeEmptyNewRootNodes) {
       if (isDeferredFragmentRecord(node)) {
         if (node.deferredGroupedFieldSetRecords.size > 0) {
+          node.setAsPending();
           for (const deferredGroupedFieldSetRecord of node.deferredGroupedFieldSetRecords) {
             if (!this._completesRootNode(deferredGroupedFieldSetRecord)) {
               this._onDeferredGroupedFieldSet(deferredGroupedFieldSetRecord);
@@ -253,12 +253,9 @@ export class IncrementalGraph {
   private _onDeferredGroupedFieldSet(
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   ): void {
-    const deferredGroupedFieldSetResult = deferredGroupedFieldSetRecord.result;
-    const result =
-      deferredGroupedFieldSetResult instanceof BoxedPromiseOrValue
-        ? deferredGroupedFieldSetResult.value
-        : deferredGroupedFieldSetResult().value;
-
+    const result = (
+      deferredGroupedFieldSetRecord.result as BoxedPromiseOrValue<DeferredGroupedFieldSetResult>
+    ).value;
     if (isPromise(result)) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       result.then((resolved) => this._enqueue(resolved));
