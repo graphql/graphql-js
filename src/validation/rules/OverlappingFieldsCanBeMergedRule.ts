@@ -425,6 +425,7 @@ function findConflictsBetweenSubSelectionSets(
 
   // (I) Then collect conflicts between the first collection of fields and
   // those referenced by each fragment name associated with the second.
+  const discoveredFragments: Array<Array<string>> = [];
   for (const fragmentName2 of fragmentNames2) {
     collectConflictsBetweenFieldsAndFragment(
       context,
@@ -434,7 +435,28 @@ function findConflictsBetweenSubSelectionSets(
       areMutuallyExclusive,
       fieldMap1,
       fragmentName2,
-      [],
+      discoveredFragments,
+    );
+  }
+
+  // (E) Then collect any conflicts between the provided collection of fields
+  // and any fragment names found in the given fragment.
+  while (discoveredFragments.length !== 0) {
+    const item = discoveredFragments.pop();
+    if (!item || comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)) {
+      continue;
+    }
+    const [fragmentName, referencedFragmentName] = item;
+    comparedFragmentPairs.add(referencedFragmentName, fragmentName, areMutuallyExclusive);
+    collectConflictsBetweenFieldsAndFragment(
+      context,
+      conflicts,
+      cachedFieldsAndFragmentNames,
+      comparedFragmentPairs,
+      areMutuallyExclusive,
+      fieldMap1,
+      fragmentName,
+      discoveredFragments,
     );
   }
 
@@ -449,7 +471,28 @@ function findConflictsBetweenSubSelectionSets(
       areMutuallyExclusive,
       fieldMap2,
       fragmentName1,
-      [],
+      discoveredFragments,
+    );
+  }
+
+  // (E) Then collect any conflicts between the provided collection of fields
+  // and any fragment names found in the given fragment.
+  while (discoveredFragments.length !== 0) {
+    const item = discoveredFragments.pop();
+    if (!item || comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)) {
+      continue;
+    }
+    const [fragmentName, referencedFragmentName] = item;
+    comparedFragmentPairs.add(referencedFragmentName, fragmentName, areMutuallyExclusive);
+    collectConflictsBetweenFieldsAndFragment(
+      context,
+      conflicts,
+      cachedFieldsAndFragmentNames,
+      comparedFragmentPairs,
+      areMutuallyExclusive,
+      fieldMap2,
+      fragmentName,
+      discoveredFragments,
     );
   }
 

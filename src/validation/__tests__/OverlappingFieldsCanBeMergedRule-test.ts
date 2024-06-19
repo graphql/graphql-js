@@ -1160,6 +1160,7 @@ describe('Validate: Overlapping fields can be merged', () => {
         __typename
       }
     `;
+
     expectErrors(query).toDeepEqual([]);
   });
 });
