@@ -82,6 +82,7 @@ import { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBe
 // Spec Section: "Input Object Field Uniqueness"
 import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule';
 
+// TODO: Spec Section
 import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 
 // SDL-specific validation rules
