@@ -191,8 +191,8 @@ function findConflictsWithinSelectionSet(
     fieldMap,
   );
 
+  const discoveredFragments: Array<[string, string]> = [];
   if (fragmentNames.length !== 0) {
-    const discoveredFragments: Array<[string, string]> = [];
     // (B) Then collect conflicts between these fields and those represented by
     // each spread fragment name found.
     for (let i = 0; i < fragmentNames.length; i++) {
