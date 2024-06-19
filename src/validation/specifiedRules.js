@@ -126,6 +126,7 @@ export const specifiedRules = Object.freeze([
   VariablesInAllowedPositionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
+  // Technically this isn't part of the spec but it's a strongly encouraged validation rule.
   MaxIntrospectionDepthRule,
 ]);
 
