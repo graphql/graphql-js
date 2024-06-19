@@ -485,7 +485,7 @@ function findConflictsBetweenSubSelectionSets(
 
 // (E) Then collect any conflicts between the provided collection of fields
 // and any fragment names found in the given fragment.
-const processDiscoveredFragments = (
+function processDiscoveredFragments(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
@@ -493,16 +493,19 @@ const processDiscoveredFragments = (
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
   discoveredFragments: Array<Array<string>>,
-) => {
-  while (discoveredFragments.length !== 0) {
-    const item = discoveredFragments.pop();
+) {
+  let item;
+  while ((item = discoveredFragments.pop()) !== undefined) {
+    const [fragmentName, referencedFragmentName] = item;
     if (
-      !item ||
-      comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)
+      comparedFragmentPairs.has(
+        referencedFragmentName,
+        fragmentName,
+        areMutuallyExclusive,
+      )
     ) {
       continue;
     }
-    const [fragmentName, referencedFragmentName] = item;
     comparedFragmentPairs.add(
       referencedFragmentName,
       fragmentName,
@@ -519,7 +522,7 @@ const processDiscoveredFragments = (
       discoveredFragments,
     );
   }
-};
+}
 
 // Collect all Conflicts "within" one collection of fields.
 function collectConflictsWithin(
