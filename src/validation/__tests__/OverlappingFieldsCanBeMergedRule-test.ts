@@ -1163,4 +1163,45 @@ describe('Validate: Overlapping fields can be merged', () => {
 
     expectErrors(query).toDeepEqual([]);
   });
+
+  it('finds conflicts in nested fragments', () => {
+    const n = 10000;
+    const fragments = Array.from(Array(n).keys()).reduce(
+      (acc, next) =>
+        acc.concat(`\n
+        fragment X${next + 1} on Query {
+          ...X${next}
+        }
+      `),
+      '',
+    );
+
+    const query = `
+      query Test {
+        type: conflict
+        ...X${n}
+      }
+      ${fragments}
+      fragment X0 on Query {
+        type: conflict2
+        __typename
+      }
+    `;
+    expectErrors(query).toDeepEqual([
+      {
+        locations: [
+          {
+            column: 9,
+            line: 3,
+          },
+          {
+            column: 9,
+            line: 50008,
+          },
+        ],
+        message:
+          'Fields "type" conflict because "conflict" and "conflict2" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+      },
+    ]);
+  });
 });

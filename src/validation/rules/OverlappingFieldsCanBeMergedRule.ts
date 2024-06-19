@@ -223,7 +223,7 @@ function findConflictsWithinSelectionSet(
           comparedFragmentPairs,
           false,
           fieldMap,
-          fragmentName,
+          referencedFragmentName,
           discoveredFragments,
         );
       }
@@ -443,11 +443,18 @@ function findConflictsBetweenSubSelectionSets(
   // and any fragment names found in the given fragment.
   while (discoveredFragments.length !== 0) {
     const item = discoveredFragments.pop();
-    if (!item || comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)) {
+    if (
+      !item ||
+      comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)
+    ) {
       continue;
     }
     const [fragmentName, referencedFragmentName] = item;
-    comparedFragmentPairs.add(referencedFragmentName, fragmentName, areMutuallyExclusive);
+    comparedFragmentPairs.add(
+      referencedFragmentName,
+      fragmentName,
+      areMutuallyExclusive,
+    );
     collectConflictsBetweenFieldsAndFragment(
       context,
       conflicts,
@@ -455,7 +462,7 @@ function findConflictsBetweenSubSelectionSets(
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap1,
-      fragmentName,
+      referencedFragmentName,
       discoveredFragments,
     );
   }
@@ -479,11 +486,18 @@ function findConflictsBetweenSubSelectionSets(
   // and any fragment names found in the given fragment.
   while (discoveredFragments.length !== 0) {
     const item = discoveredFragments.pop();
-    if (!item || comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)) {
+    if (
+      !item ||
+      comparedFragmentPairs.has(item[1], item[0], areMutuallyExclusive)
+    ) {
       continue;
     }
     const [fragmentName, referencedFragmentName] = item;
-    comparedFragmentPairs.add(referencedFragmentName, fragmentName, areMutuallyExclusive);
+    comparedFragmentPairs.add(
+      referencedFragmentName,
+      fragmentName,
+      areMutuallyExclusive,
+    );
     collectConflictsBetweenFieldsAndFragment(
       context,
       conflicts,
@@ -491,7 +505,7 @@ function findConflictsBetweenSubSelectionSets(
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap2,
-      fragmentName,
+      referencedFragmentName,
       discoveredFragments,
     );
   }
