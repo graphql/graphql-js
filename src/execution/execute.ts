@@ -142,6 +142,7 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   enableEarlyExecution: boolean;
   errors: Array<GraphQLError> | undefined;
+  nextId: number;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
@@ -299,7 +300,11 @@ function executeOperation(
       const fieldPLan = buildFieldPlan(groupedFieldSet);
       groupedFieldSet = fieldPLan.groupedFieldSet;
       const newGroupedFieldSets = fieldPLan.newGroupedFieldSets;
-      const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
+      const newDeferMap = addNewDeferredFragments(
+        exeContext,
+        newDeferUsages,
+        new Map(),
+      );
 
       graphqlWrappedResult = executeRootGroupedFieldSet(
         exeContext,
@@ -505,6 +510,7 @@ export function buildExecutionContext(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     enableEarlyExecution: enableEarlyExecution === true,
     errors: undefined,
+    nextId: 0,
     cancellableStreams: undefined,
   };
 }
@@ -1113,6 +1119,7 @@ async function completeAsyncIteratorValue(
         streamRecord = {
           label: streamUsage.label,
           path,
+          id: String(exeContext.nextId++),
           streamItemQueue,
         };
       } else {
@@ -1120,6 +1127,7 @@ async function completeAsyncIteratorValue(
           label: streamUsage.label,
           path,
           streamItemQueue,
+          id: String(exeContext.nextId++),
           earlyReturn: returnFn.bind(asyncIterator),
         };
         if (exeContext.cancellableStreams === undefined) {
@@ -1274,6 +1282,7 @@ function completeIterableValue(
       const syncStreamRecord: StreamRecord = {
         label: streamUsage.label,
         path,
+        id: String(exeContext.nextId++),
         streamItemQueue: buildSyncStreamItemQueue(
           item,
           index,
@@ -1662,6 +1671,7 @@ function invalidReturnTypeError(
  *
  */
 function addNewDeferredFragments(
+  exeContext: ExecutionContext,
   newDeferUsages: ReadonlyArray<DeferUsage>,
   newDeferMap: Map<DeferUsage, DeferredFragmentRecord>,
   path?: Path | undefined,
@@ -1679,6 +1689,7 @@ function addNewDeferredFragments(
     const deferredFragmentRecord = new DeferredFragmentRecord(
       path,
       newDeferUsage.label,
+      String(exeContext.nextId++),
       parent,
     );
 
@@ -1733,6 +1744,7 @@ function collectAndExecuteSubfields(
   groupedFieldSet = subFieldPlan.groupedFieldSet;
   const newGroupedFieldSets = subFieldPlan.newGroupedFieldSets;
   const newDeferMap = addNewDeferredFragments(
+    exeContext,
     newDeferUsages,
     new Map(deferMap),
     path,

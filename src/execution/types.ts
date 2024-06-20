@@ -218,7 +218,7 @@ export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
 export class DeferredFragmentRecord {
   path: Path | undefined;
   label: string | undefined;
-  id?: string | undefined;
+  id: string;
   parent: DeferredFragmentRecord | undefined;
   deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
   reconcilableResults: Set<ReconcilableDeferredGroupedFieldSetResult>;
@@ -230,10 +230,12 @@ export class DeferredFragmentRecord {
   constructor(
     path: Path | undefined,
     label: string | undefined,
+    id: string,
     parent: DeferredFragmentRecord | undefined,
   ) {
     this.path = path;
     this.label = label;
+    this.id = id;
     this.parent = parent;
     this.deferredGroupedFieldSetRecords = new Set();
     this.reconcilableResults = new Set();
@@ -276,7 +278,7 @@ export type StreamItemRecord = ThunkIncrementalResult<StreamItemResult>;
 export interface StreamRecord {
   path: Path;
   label: string | undefined;
-  id?: string | undefined;
+  id: string;
   streamItemQueue: Array<StreamItemRecord>;
 }
 

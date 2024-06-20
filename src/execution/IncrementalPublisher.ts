@@ -60,12 +60,10 @@ interface SubsequentIncrementalExecutionResultContext {
  */
 class IncrementalPublisher {
   private _context: IncrementalPublisherContext;
-  private _nextId: number;
   private _incrementalGraph: IncrementalGraph;
 
   constructor(context: IncrementalPublisherContext) {
     this._context = context;
-    this._nextId = 0;
     this._incrementalGraph = new IncrementalGraph();
   }
 
@@ -96,10 +94,8 @@ class IncrementalPublisher {
   ): Array<PendingResult> {
     const pendingResults: Array<PendingResult> = [];
     for (const node of newRootNodes) {
-      const id = String(this._getNextId());
-      node.id = id;
       const pendingResult: PendingResult = {
-        id,
+        id: node.id,
         path: pathToArray(node.path),
       };
       if (node.label !== undefined) {
@@ -108,10 +104,6 @@ class IncrementalPublisher {
       pendingResults.push(pendingResult);
     }
     return pendingResults;
-  }
-
-  private _getNextId(): string {
-    return String(this._nextId++);
   }
 
   private _subscribe(): AsyncGenerator<
@@ -231,16 +223,14 @@ class IncrementalPublisher {
     ) {
       for (const deferredFragmentRecord of deferredGroupedFieldSetResult
         .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-        const id = deferredFragmentRecord.id;
         if (
           !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
         ) {
           // This can occur if multiple deferred grouped field sets error for a fragment.
           continue;
         }
-        invariant(id !== undefined);
         context.completed.push({
-          id,
+          id: deferredFragmentRecord.id,
           errors: deferredGroupedFieldSetResult.errors,
         });
       }
@@ -259,11 +249,10 @@ class IncrementalPublisher {
       if (completion === undefined) {
         continue;
       }
-      const id = deferredFragmentRecord.id;
-      invariant(id !== undefined);
       const incremental = context.incremental;
       const { newRootNodes, reconcilableResults } = completion;
       context.pending.push(...this._toPendingResults(newRootNodes));
+      const id = deferredFragmentRecord.id;
       for (const reconcilableResult of reconcilableResults) {
         const { bestId, subPath } = this._getBestIdAndSubPath(
           id,
@@ -289,7 +278,6 @@ class IncrementalPublisher {
   ): void {
     const streamRecord = streamItemsResult.streamRecord;
     const id = streamRecord.id;
-    invariant(id !== undefined);
     if (streamItemsResult.errors !== undefined) {
       context.completed.push({
         id,

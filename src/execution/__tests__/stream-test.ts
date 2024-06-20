@@ -1978,14 +1978,14 @@ describe('Execute: stream directive', () => {
             nestedFriendList: [],
           },
         },
-        pending: [{ id: '0', path: ['nestedObject', 'nestedFriendList'] }],
+        pending: [{ id: '1', path: ['nestedObject', 'nestedFriendList'] }],
         hasNext: true,
       },
       {
         incremental: [
           {
             items: [{ id: '1', name: 'Luke' }],
-            id: '0',
+            id: '1',
           },
         ],
         hasNext: true,
@@ -1994,13 +1994,13 @@ describe('Execute: stream directive', () => {
         incremental: [
           {
             items: [{ id: '2', name: 'Han' }],
-            id: '0',
+            id: '1',
           },
         ],
         hasNext: true,
       },
       {
-        completed: [{ id: '0' }],
+        completed: [{ id: '1' }],
         hasNext: false,
       },
     ]);
