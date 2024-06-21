@@ -17,7 +17,7 @@ import type { Source } from '../language/source';
  * an object which can contain all the values you need.
  */
 export interface GraphQLErrorExtensions {
-  [attributeName: string | symbol]: unknown;
+  [attributeName: string]: unknown;
 }
 
 export interface GraphQLErrorOptions {
