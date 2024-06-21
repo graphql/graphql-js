@@ -124,7 +124,12 @@ function validateDirectives(context) {
     }
     // Ensure they are named correctly.
     validateName(context, directive);
-    // TODO: Ensure proper locations.
+    if (directive.locations.length === 0) {
+      context.reportError(
+        `Directive @${directive.name} must include 1 or more locations.`,
+        directive.astNode,
+      );
+    }
     // Ensure the arguments are valid.
     for (const arg of directive.args) {
       // Ensure they are named correctly.
