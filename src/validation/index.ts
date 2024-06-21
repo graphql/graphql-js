@@ -4,7 +4,7 @@ export { ValidationContext } from './ValidationContext';
 export type { ValidationRule } from './ValidationContext';
 
 // All validation rules in the GraphQL Specification.
-export { specifiedRules } from './specifiedRules';
+export { specifiedRules, recommendedRules } from './specifiedRules';
 
 // Spec Section: "Executable Definitions"
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
