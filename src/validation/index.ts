@@ -4,7 +4,7 @@ export { ValidationContext } from './ValidationContext';
 export type { ValidationRule } from './ValidationContext';
 
 // All validation rules in the GraphQL Specification.
-export { specifiedRules } from './specifiedRules';
+export { specifiedRules, recommendedRules } from './specifiedRules';
 
 // Spec Section: "Executable Definitions"
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
@@ -83,6 +83,8 @@ export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule';
 
 // Spec Section: "All Variable Usages Are Allowed"
 export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule';
+
+export { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 
 // SDL-specific validation rules
 export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
