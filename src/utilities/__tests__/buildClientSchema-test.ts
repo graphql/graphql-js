@@ -377,32 +377,38 @@ describe('Type System: build schema from introspection', () => {
 
     // Client types do not get server-only values, so `value` mirrors `name`,
     // rather than using the integers defined in the "server" schema.
-    expect(clientFoodEnum.getValues()).to.deep.equal([
-      {
-        name: 'VEGETABLES',
-        description: 'Foods that are vegetables.',
-        value: 'VEGETABLES',
-        deprecationReason: null,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'FRUITS',
-        description: null,
-        value: 'FRUITS',
-        deprecationReason: null,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'OILS',
-        description: null,
-        value: 'OILS',
-        deprecationReason: 'Too fatty',
-        extensions: {},
-        astNode: undefined,
-      },
-    ]);
+    const values = clientFoodEnum.getValues();
+    expect(values).to.have.lengthOf(3);
+
+    expect(values[0]).to.deep.include({
+      coordinate: 'Food.VEGETABLES',
+      name: 'VEGETABLES',
+      description: 'Foods that are vegetables.',
+      value: 'VEGETABLES',
+      deprecationReason: null,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[1]).to.deep.include({
+      coordinate: 'Food.FRUITS',
+      name: 'FRUITS',
+      description: null,
+      value: 'FRUITS',
+      deprecationReason: null,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[2]).to.deep.include({
+      coordinate: 'Food.OILS',
+      name: 'OILS',
+      description: null,
+      value: 'OILS',
+      deprecationReason: 'Too fatty',
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('builds a schema with an input object', () => {
@@ -439,6 +445,7 @@ describe('Type System: build schema from introspection', () => {
       }
 
       type Query {
+        defaultID(intArg: ID = "123"): String
         defaultInt(intArg: Int = 30): String
         defaultList(listArg: [Int] = [1, 2, 3]): String
         defaultObject(objArg: Geo = { lat: 37.485, lon: -122.148 }): String
@@ -592,6 +599,28 @@ describe('Type System: build schema from introspection', () => {
     });
 
     expect(result.data).to.deep.equal({ foo: 'bar' });
+  });
+
+  it('can use client schema for execution if resolvers are added', () => {
+    const schema = buildSchema(`
+      type Query {
+        foo(bar: String = "abc"): String
+      }
+    `);
+
+    const introspection = introspectionFromSchema(schema);
+    const clientSchema = buildClientSchema(introspection);
+
+    const QueryType: GraphQLObjectType = clientSchema.getType('Query') as any;
+    QueryType.getFields().foo.resolve = (_value, args) => args.bar;
+
+    const result = graphqlSync({
+      schema: clientSchema,
+      source: '{ foo }',
+    });
+
+    expect(result.data).to.deep.equal({ foo: 'abc' });
+    expect(result.data).to.deep.equal({ foo: 'abc' });
   });
 
   it('can build invalid schema', () => {

@@ -83,7 +83,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               // This type of error would be caught at validation-time
               // hence the vague error message here.
-              'Argument "input" of non-null type "TestInputObject!" must not be null.',
+              'Argument Query.test(input:) of non-null type TestInputObject! must not be null.',
             path: ['test'],
           },
         ],
