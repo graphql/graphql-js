@@ -129,8 +129,7 @@ exports.getLocation =
   exports.isInterfaceType =
   exports.isObjectType =
     void 0;
-exports.NoUndefinedVariablesRule =
-  exports.NoFragmentCyclesRule =
+exports.NoFragmentCyclesRule =
   exports.LoneAnonymousOperationRule =
   exports.KnownTypeNamesRule =
   exports.KnownFragmentNamesRule =
@@ -139,6 +138,7 @@ exports.NoUndefinedVariablesRule =
   exports.FragmentsOnCompositeTypesRule =
   exports.FieldsOnCorrectTypeRule =
   exports.ExecutableDefinitionsRule =
+  exports.recommendedRules =
   exports.specifiedRules =
   exports.ValidationContext =
   exports.validate =
@@ -180,9 +180,7 @@ exports.NoUndefinedVariablesRule =
   exports.printSourceLocation =
   exports.printLocation =
     void 0;
-exports.separateOperations =
-  exports.concatAST =
-  exports.coerceInputValue =
+exports.coerceInputValue =
   exports.visitWithTypeInfo =
   exports.TypeInfo =
   exports.astFromValue =
@@ -214,6 +212,7 @@ exports.separateOperations =
   exports.UniqueTypeNamesRule =
   exports.UniqueOperationTypesRule =
   exports.LoneSchemaDefinitionRule =
+  exports.MaxIntrospectionDepthRule =
   exports.VariablesInAllowedPositionRule =
   exports.VariablesAreInputTypesRule =
   exports.ValuesOfCorrectTypeRule =
@@ -230,6 +229,7 @@ exports.separateOperations =
   exports.OverlappingFieldsCanBeMergedRule =
   exports.NoUnusedVariablesRule =
   exports.NoUnusedFragmentsRule =
+  exports.NoUndefinedVariablesRule =
     void 0;
 exports.findDangerousChanges =
   exports.findBreakingChanges =
@@ -239,6 +239,8 @@ exports.findDangerousChanges =
   exports.isTypeSubTypeOf =
   exports.isEqualType =
   exports.stripIgnoredCharacters =
+  exports.separateOperations =
+  exports.concatAST =
     void 0;
 // The GraphQL.js version info.
 var version_js_1 = require('./version.js');
@@ -1111,6 +1113,12 @@ Object.defineProperty(exports, 'specifiedRules', {
     return index_js_4.specifiedRules;
   },
 });
+Object.defineProperty(exports, 'recommendedRules', {
+  enumerable: true,
+  get: function () {
+    return index_js_4.recommendedRules;
+  },
+});
 // Individual validation rules.
 Object.defineProperty(exports, 'ExecutableDefinitionsRule', {
   enumerable: true,
@@ -1266,6 +1274,12 @@ Object.defineProperty(exports, 'VariablesInAllowedPositionRule', {
   enumerable: true,
   get: function () {
     return index_js_4.VariablesInAllowedPositionRule;
+  },
+});
+Object.defineProperty(exports, 'MaxIntrospectionDepthRule', {
+  enumerable: true,
+  get: function () {
+    return index_js_4.MaxIntrospectionDepthRule;
   },
 });
 // SDL-specific validation rules

@@ -10,6 +10,7 @@ exports.NoSchemaIntrospectionCustomRule =
   exports.UniqueTypeNamesRule =
   exports.UniqueOperationTypesRule =
   exports.LoneSchemaDefinitionRule =
+  exports.MaxIntrospectionDepthRule =
   exports.VariablesInAllowedPositionRule =
   exports.VariablesAreInputTypesRule =
   exports.ValuesOfCorrectTypeRule =
@@ -40,6 +41,7 @@ exports.NoSchemaIntrospectionCustomRule =
   exports.DeferStreamDirectiveOnValidOperationsRule =
   exports.DeferStreamDirectiveOnRootFieldRule =
   exports.DeferStreamDirectiveLabelRule =
+  exports.recommendedRules =
   exports.specifiedRules =
   exports.ValidationContext =
   exports.validate =
@@ -64,6 +66,12 @@ Object.defineProperty(exports, 'specifiedRules', {
   enumerable: true,
   get: function () {
     return specifiedRules_js_1.specifiedRules;
+  },
+});
+Object.defineProperty(exports, 'recommendedRules', {
+  enumerable: true,
+  get: function () {
+    return specifiedRules_js_1.recommendedRules;
   },
 });
 // Spec Section: "Defer And Stream Directive Labels Are Unique"
@@ -304,6 +312,13 @@ Object.defineProperty(exports, 'VariablesInAllowedPositionRule', {
   enumerable: true,
   get: function () {
     return VariablesInAllowedPositionRule_js_1.VariablesInAllowedPositionRule;
+  },
+});
+var MaxIntrospectionDepthRule_js_1 = require('./rules/MaxIntrospectionDepthRule.js');
+Object.defineProperty(exports, 'MaxIntrospectionDepthRule', {
+  enumerable: true,
+  get: function () {
+    return MaxIntrospectionDepthRule_js_1.MaxIntrospectionDepthRule;
   },
 });
 // SDL-specific validation rules

@@ -1,7 +1,7 @@
 export { validate } from './validate.js';
 export { ValidationContext } from './ValidationContext.js';
 export type { ValidationRule } from './ValidationContext.js';
-export { specifiedRules } from './specifiedRules.js';
+export { specifiedRules, recommendedRules } from './specifiedRules.js';
 export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.js';
 export { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.js';
 export { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.js';
@@ -32,6 +32,7 @@ export { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule.js';
 export { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule.js';
 export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.js';
 export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.js';
+export { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.js';
 export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js';
 export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.js';
 export { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule.js';

@@ -1,6 +1,9 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.specifiedSDLRules = exports.specifiedRules = void 0;
+exports.specifiedSDLRules =
+  exports.specifiedRules =
+  exports.recommendedRules =
+    void 0;
 // Spec Section: "Defer And Stream Directive Labels Are Unique"
 const DeferStreamDirectiveLabelRule_js_1 = require('./rules/DeferStreamDirectiveLabelRule.js');
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
@@ -25,6 +28,8 @@ const KnownTypeNamesRule_js_1 = require('./rules/KnownTypeNamesRule.js');
 const LoneAnonymousOperationRule_js_1 = require('./rules/LoneAnonymousOperationRule.js');
 // SDL-specific validation rules
 const LoneSchemaDefinitionRule_js_1 = require('./rules/LoneSchemaDefinitionRule.js');
+// TODO: Spec Section
+const MaxIntrospectionDepthRule_js_1 = require('./rules/MaxIntrospectionDepthRule.js');
 // Spec Section: "Fragments must not form cycles"
 const NoFragmentCyclesRule_js_1 = require('./rules/NoFragmentCyclesRule.js');
 // Spec Section: "All Variable Used Defined"
@@ -71,6 +76,13 @@ const VariablesAreInputTypesRule_js_1 = require('./rules/VariablesAreInputTypesR
 // Spec Section: "All Variable Usages Are Allowed"
 const VariablesInAllowedPositionRule_js_1 = require('./rules/VariablesInAllowedPositionRule.js');
 /**
+ * Technically these aren't part of the spec but they are strongly encouraged
+ * validation rules.
+ */
+exports.recommendedRules = Object.freeze([
+  MaxIntrospectionDepthRule_js_1.MaxIntrospectionDepthRule,
+]);
+/**
  * This set includes all validation rules defined by the GraphQL spec.
  *
  * The order of the rules in this list has been adjusted to lead to the
@@ -107,6 +119,7 @@ exports.specifiedRules = Object.freeze([
   VariablesInAllowedPositionRule_js_1.VariablesInAllowedPositionRule,
   OverlappingFieldsCanBeMergedRule_js_1.OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule_js_1.UniqueInputFieldNamesRule,
+  ...exports.recommendedRules,
 ]);
 /**
  * @internal
