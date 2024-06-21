@@ -2,7 +2,7 @@ export { validate } from './validate';
 
 export { ValidationContext, ValidationRule } from './ValidationContext';
 
-export { specifiedRules } from './specifiedRules';
+export { specifiedRules, recommendedRules } from './specifiedRules';
 
 // Spec Section: "Executable Definitions"
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';

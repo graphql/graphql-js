@@ -82,6 +82,9 @@ import { OverlappingFieldsCanBeMergedRule } from './rules/OverlappingFieldsCanBe
 // Spec Section: "Input Object Field Uniqueness"
 import { UniqueInputFieldNamesRule } from './rules/UniqueInputFieldNamesRule';
 
+// TODO: Spec Section
+import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
+
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
 import { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule';
@@ -90,6 +93,12 @@ import { UniqueEnumValueNamesRule } from './rules/UniqueEnumValueNamesRule';
 import { UniqueFieldDefinitionNamesRule } from './rules/UniqueFieldDefinitionNamesRule';
 import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
 import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
+
+/**
+ * Technically these aren't part of the spec but they are strongly encouraged
+ * validation rules.
+ */
+export const recommendedRules = Object.freeze([MaxIntrospectionDepthRule]);
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
@@ -124,6 +133,7 @@ export const specifiedRules = Object.freeze([
   VariablesInAllowedPositionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
+  ...recommendedRules,
 ]);
 
 /**
