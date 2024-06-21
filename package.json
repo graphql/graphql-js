@@ -27,7 +27,7 @@
     "node": ">= 10.x"
   },
   "scripts": {
-    "preversion": ". ./resources/checkgit.sh && npm ci",
+    "preversion": "bash -c '. ./resources/checkgit.sh && npm ci'",
     "version": "node resources/gen-version.js && npm test && git add src/version.js",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.js",
     "changelog": "node resources/gen-changelog.js",

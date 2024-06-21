@@ -1,4 +1,5 @@
 # Exit immediately if any subcommand terminated
+set -e
 trap "exit 1" ERR
 
 #
