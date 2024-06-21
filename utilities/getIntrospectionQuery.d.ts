@@ -30,7 +30,7 @@ export interface IntrospectionOptions {
    * Whether target GraphQL server supports `@oneOf` input objects.
    * Default: false
    */
-  inputObjectOneOf?: boolean;
+  oneOf?: boolean;
 }
 /**
  * Produce the GraphQL query recommended for a full schema introspection.

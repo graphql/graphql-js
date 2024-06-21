@@ -12,7 +12,7 @@ function getIntrospectionQuery(options) {
     directiveIsRepeatable: false,
     schemaDescription: false,
     inputValueDeprecation: false,
-    inputObjectOneOf: false,
+    oneOf: false,
     ...options,
   };
   const descriptions = optionsWithDefault.descriptions ? 'description' : '';
@@ -28,7 +28,7 @@ function getIntrospectionQuery(options) {
   function inputDeprecation(str) {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
-  const inputObjectOneOf = optionsWithDefault.inputObjectOneOf ? 'isOneOf' : '';
+  const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
   return `
     query IntrospectionQuery {
       __schema {
@@ -56,7 +56,7 @@ function getIntrospectionQuery(options) {
       name
       ${descriptions}
       ${specifiedByUrl}
-      ${inputObjectOneOf}
+      ${oneOf}
       fields(includeDeprecated: true) {
         name
         ${descriptions}
