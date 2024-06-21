@@ -95,6 +95,12 @@ import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
 import { PossibleTypeExtensionsRule } from './rules/PossibleTypeExtensionsRule';
 
 /**
+ * Technically these aren't part of the spec but they are strongly encouraged
+ * validation rules.
+ */
+export const recommendedRules = Object.freeze([MaxIntrospectionDepthRule]);
+
+/**
  * This set includes all validation rules defined by the GraphQL spec.
  *
  * The order of the rules in this list has been adjusted to lead to the
@@ -127,8 +133,7 @@ export const specifiedRules = Object.freeze([
   VariablesInAllowedPositionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
-  // Technically this isn't part of the spec but it's a strongly encouraged validation rule.
-  MaxIntrospectionDepthRule,
+  ...recommendedRules,
 ]);
 
 /**
