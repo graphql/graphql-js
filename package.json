@@ -29,7 +29,7 @@
     "node": "^16.19.0 || ^18.14.0 || >=19.7.0"
   },
   "scripts": {
-    "preversion": ". ./resources/checkgit.sh && npm ci --ignore-scripts",
+    "preversion": "bash -c '. ./resources/checkgit.sh && npm ci --ignore-scripts'",
     "version": "node --loader ts-node/esm resources/gen-version.ts && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "node --loader ts-node/esm resources/gen-changelog.ts",
