@@ -23,6 +23,7 @@ import {
   assertDirective,
   GraphQLDeprecatedDirective,
   GraphQLIncludeDirective,
+  GraphQLOneOfDirective,
   GraphQLSkipDirective,
   GraphQLSpecifiedByDirective,
 } from '../../type/directives';
@@ -222,7 +223,7 @@ describe('Schema Builder', () => {
   it('Maintains @include, @skip & @specifiedBy', () => {
     const schema = buildSchema('type Query');
 
-    expect(schema.getDirectives()).to.have.lengthOf(4);
+    expect(schema.getDirectives()).to.have.lengthOf(5);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
     expect(schema.getDirective('deprecated')).to.equal(
@@ -231,6 +232,7 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('specifiedBy')).to.equal(
       GraphQLSpecifiedByDirective,
     );
+    expect(schema.getDirective('oneOf')).to.equal(GraphQLOneOfDirective);
   });
 
   it('Overriding directives excludes specified', () => {
@@ -239,9 +241,10 @@ describe('Schema Builder', () => {
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
       directive @specifiedBy on FIELD_DEFINITION
+      directive @oneOf on OBJECT
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(4);
+    expect(schema.getDirectives()).to.have.lengthOf(5);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
       GraphQLIncludeDirective,
@@ -252,18 +255,20 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('specifiedBy')).to.not.equal(
       GraphQLSpecifiedByDirective,
     );
+    expect(schema.getDirective('oneOf')).to.not.equal(GraphQLOneOfDirective);
   });
 
-  it('Adding directives maintains @include, @skip & @specifiedBy', () => {
+  it('Adding directives maintains @include, @skip, @deprecated, @specifiedBy, and @oneOf', () => {
     const schema = buildSchema(`
       directive @foo(arg: Int) on FIELD
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(5);
+    expect(schema.getDirectives()).to.have.lengthOf(6);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
     expect(schema.getDirective('include')).to.not.equal(undefined);
     expect(schema.getDirective('deprecated')).to.not.equal(undefined);
     expect(schema.getDirective('specifiedBy')).to.not.equal(undefined);
+    expect(schema.getDirective('oneOf')).to.not.equal(undefined);
   });
 
   it('Type modifiers', () => {

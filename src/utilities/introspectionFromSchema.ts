@@ -30,6 +30,7 @@ export function introspectionFromSchema(
     directiveIsRepeatable: true,
     schemaDescription: true,
     inputValueDeprecation: true,
+    oneOf: true,
     ...options,
   };
 

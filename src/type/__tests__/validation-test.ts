@@ -336,7 +336,7 @@ describe('Type System: A Schema must have Object root types', () => {
     ]);
   });
 
-  it('rejects a schema extended with invalid root types', () => {
+  it('rejects a Schema extended with invalid root types', () => {
     let schema = buildSchema(`
       input SomeInputObject {
         test: String
@@ -1658,6 +1658,47 @@ describe('Type System: Input Object fields must have input types', () => {
         message:
           'The type of SomeInputObject.foo must be Input Type but got: SomeObject.',
         locations: [{ line: 7, column: 14 }],
+      },
+    ]);
+  });
+});
+
+describe('Type System: OneOf Input Object fields must be nullable', () => {
+  it('rejects non-nullable fields', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject @oneOf {
+        a: String
+        b: String!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message: 'OneOf input field SomeInputObject.b must be nullable.',
+        locations: [{ line: 8, column: 12 }],
+      },
+    ]);
+  });
+
+  it('rejects fields with default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject @oneOf {
+        a: String
+        b: String = "foo"
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'OneOf input field SomeInputObject.b cannot have a default value.',
+        locations: [{ line: 8, column: 9 }],
       },
     ]);
   });

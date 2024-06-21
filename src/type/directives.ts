@@ -210,6 +210,17 @@ export const GraphQLSpecifiedByDirective: GraphQLDirective =
   });
 
 /**
+ * Used to indicate an Input Object is a OneOf Input Object.
+ */
+export const GraphQLOneOfDirective: GraphQLDirective = new GraphQLDirective({
+  name: 'oneOf',
+  description:
+    'Indicates exactly one field must be supplied and this field must not be `null`.',
+  locations: [DirectiveLocation.INPUT_OBJECT],
+  args: {},
+});
+
+/**
  * The full list of specified directives.
  */
 export const specifiedDirectives: ReadonlyArray<GraphQLDirective> =
@@ -218,6 +229,7 @@ export const specifiedDirectives: ReadonlyArray<GraphQLDirective> =
     GraphQLSkipDirective,
     GraphQLDeprecatedDirective,
     GraphQLSpecifiedByDirective,
+    GraphQLOneOfDirective,
   ]);
 
 export function isSpecifiedDirective(directive: GraphQLDirective): boolean {

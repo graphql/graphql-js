@@ -503,6 +503,23 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Print Input Type with @oneOf directive', () => {
+    const InputType = new GraphQLInputObjectType({
+      name: 'InputType',
+      isOneOf: true,
+      fields: {
+        int: { type: GraphQLInt },
+      },
+    });
+
+    const schema = new GraphQLSchema({ types: [InputType] });
+    expectPrintedSchema(schema).to.equal(dedent`
+      input InputType @oneOf {
+        int: Int
+      }
+    `);
+  });
+
   it('Custom Scalar', () => {
     const OddType = new GraphQLScalarType({ name: 'Odd' });
 
@@ -673,6 +690,11 @@ describe('Type System Printer', () => {
       ) on SCALAR
 
       """
+      Indicates exactly one field must be supplied and this field must not be \`null\`.
+      """
+      directive @oneOf on INPUT_OBJECT
+
+      """
       A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       """
       type __Schema {
@@ -714,6 +736,7 @@ describe('Type System Printer', () => {
         enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
         inputFields(includeDeprecated: Boolean = false): [__InputValue!]
         ofType: __Type
+        isOneOf: Boolean
       }
 
       """An enum describing what kind of type a given \`__Type\` is."""

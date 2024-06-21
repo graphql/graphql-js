@@ -874,6 +874,28 @@ describe('Validate: Values of correct type', () => {
     });
   });
 
+  describe('Valid oneOf input object value', () => {
+    it('Exactly one field', () => {
+      expectValid(`
+        {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: "abc" })
+          }
+        }
+      `);
+    });
+
+    it('Exactly one non-nullable variable', () => {
+      expectValid(`
+        query ($string: String!) {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: $string })
+          }
+        }
+      `);
+    });
+  });
+
   describe('Invalid input object value', () => {
     it('Partial object, missing required', () => {
       expectErrors(`
@@ -1038,6 +1060,70 @@ describe('Validate: Values of correct type', () => {
           }
         `,
       );
+    });
+  });
+
+  describe('Invalid oneOf input object value', () => {
+    it('Invalid field type', () => {
+      expectErrors(`
+        {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: 2 })
+          }
+        }
+      `).toDeepEqual([
+        {
+          message: 'String cannot represent a non string value: 2',
+          locations: [{ line: 4, column: 52 }],
+        },
+      ]);
+    });
+
+    it('Exactly one null field', () => {
+      expectErrors(`
+        {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: null })
+          }
+        }
+      `).toDeepEqual([
+        {
+          message: 'Field "OneOfInput.stringField" must be non-null.',
+          locations: [{ line: 4, column: 37 }],
+        },
+      ]);
+    });
+
+    it('Exactly one nullable variable', () => {
+      expectErrors(`
+        query ($string: String) {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: $string })
+          }
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Variable "string" must be non-nullable to be used for OneOf Input Object "OneOfInput".',
+          locations: [{ line: 4, column: 37 }],
+        },
+      ]);
+    });
+
+    it('More than one field', () => {
+      expectErrors(`
+        {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: "abc", intField: 123 })
+          }
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'OneOf Input Object "OneOfInput" must specify exactly one key.',
+          locations: [{ line: 4, column: 37 }],
+        },
+      ]);
     });
   });
 

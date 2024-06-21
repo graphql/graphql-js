@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import {
   GraphQLDeprecatedDirective,
   GraphQLIncludeDirective,
+  GraphQLOneOfDirective,
   GraphQLSkipDirective,
   GraphQLSpecifiedByDirective,
 } from '../../type/directives';
@@ -802,6 +803,7 @@ describe('findBreakingChanges', () => {
         GraphQLSkipDirective,
         GraphQLIncludeDirective,
         GraphQLSpecifiedByDirective,
+        GraphQLOneOfDirective,
       ],
     });
 
