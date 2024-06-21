@@ -241,6 +241,7 @@ function buildClientSchema(introspection, options) {
       name: inputObjectIntrospection.name,
       description: inputObjectIntrospection.description,
       fields: () => buildInputValueDefMap(inputObjectIntrospection.inputFields),
+      isOneOf: inputObjectIntrospection.isOneOf,
     });
   }
   function buildFieldDefMap(typeIntrospection) {

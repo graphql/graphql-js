@@ -20,6 +20,7 @@ function introspectionFromSchema(schema, options) {
     directiveIsRepeatable: true,
     schemaDescription: true,
     inputValueDeprecation: true,
+    inputObjectOneOf: true,
     ...options,
   };
   const document = (0, parser_js_1.parse)(
