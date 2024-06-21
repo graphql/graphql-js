@@ -25,6 +25,8 @@ import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js';
 import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.js';
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js';
+// TODO: Spec Section
+import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.js';
 // Spec Section: "Fragments must not form cycles"
 import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.js';
 // Spec Section: "All Variable Used Defined"
@@ -75,8 +77,11 @@ import { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.j
 import { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.js';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
 
-// TODO: Spec Section
-import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.js';
+/**
+ * Technically these aren't part of the spec but they are strongly encouraged
+ * validation rules.
+ */
+export const recommendedRules = Object.freeze([MaxIntrospectionDepthRule]);
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.
@@ -115,8 +120,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   VariablesInAllowedPositionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
-  // Technically this isn't part of the spec but it's a strongly encouraged validation rule.
-  MaxIntrospectionDepthRule,
+  ...recommendedRules,
 ]);
 
 /**

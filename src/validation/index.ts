@@ -4,7 +4,7 @@ export { ValidationContext } from './ValidationContext.js';
 export type { ValidationRule } from './ValidationContext.js';
 
 // All validation rules in the GraphQL Specification.
-export { specifiedRules } from './specifiedRules.js';
+export { specifiedRules, recommendedRules } from './specifiedRules.js';
 
 // Spec Section: "Defer And Stream Directive Labels Are Unique"
 export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.js';
