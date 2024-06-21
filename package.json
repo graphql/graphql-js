@@ -1,6 +1,6 @@
 {
   "name": "graphql",
-  "version": "16.8.1",
+  "version": "16.8.2",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "private": true,
@@ -30,7 +30,7 @@
     "node": "^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0"
   },
   "scripts": {
-    "preversion": ". ./resources/checkgit.sh && npm ci --ignore-scripts",
+    "preversion": "bash -c '. ./resources/checkgit.sh && npm ci --ignore-scripts'",
     "version": "node resources/gen-version.js && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "node resources/gen-changelog.js",
