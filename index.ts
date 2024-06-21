@@ -346,6 +346,7 @@ export {
   ValidationContext,
   // All validation rules in the GraphQL Specification.
   specifiedRules,
+  recommendedRules,
   // Individual validation rules.
   ExecutableDefinitionsRule,
   FieldsOnCorrectTypeRule,
@@ -373,6 +374,7 @@ export {
   ValuesOfCorrectTypeRule,
   VariablesAreInputTypesRule,
   VariablesInAllowedPositionRule,
+  MaxIntrospectionDepthRule,
   // SDL-specific validation rules
   LoneSchemaDefinitionRule,
   UniqueOperationTypesRule,

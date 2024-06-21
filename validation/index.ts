@@ -2,7 +2,7 @@ export { validate } from './validate.ts';
 export { ValidationContext } from './ValidationContext.ts';
 export type { ValidationRule } from './ValidationContext.ts';
 // All validation rules in the GraphQL Specification.
-export { specifiedRules } from './specifiedRules.ts';
+export { specifiedRules, recommendedRules } from './specifiedRules.ts';
 // Spec Section: "Defer And Stream Directive Labels Are Unique"
 export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.ts';
 // Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
@@ -63,6 +63,7 @@ export { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule.ts';
 export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.ts';
 // Spec Section: "All Variable Usages Are Allowed"
 export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.ts';
+export { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.ts';
 // SDL-specific validation rules
 export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.ts';
 export { UniqueOperationTypesRule } from './rules/UniqueOperationTypesRule.ts';
