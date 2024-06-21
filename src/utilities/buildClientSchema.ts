@@ -311,6 +311,7 @@ export function buildClientSchema(
       name: inputObjectIntrospection.name,
       description: inputObjectIntrospection.description,
       fields: () => buildInputValueDefMap(inputObjectIntrospection.inputFields),
+      isOneOf: inputObjectIntrospection.isOneOf,
     });
   }
 

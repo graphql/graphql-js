@@ -32,6 +32,12 @@ export interface IntrospectionOptions {
    * Default: false
    */
   inputValueDeprecation?: boolean;
+
+  /**
+   * Whether target GraphQL server supports `@oneOf` input objects.
+   * Default: false
+   */
+  inputObjectOneOf?: boolean;
 }
 
 /**
@@ -45,6 +51,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     directiveIsRepeatable: false,
     schemaDescription: false,
     inputValueDeprecation: false,
+    inputObjectOneOf: false,
     ...options,
   };
 
@@ -62,6 +69,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   function inputDeprecation(str: string) {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
+  const inputObjectOneOf = optionsWithDefault.inputObjectOneOf ? 'isOneOf' : '';
 
   return `
     query IntrospectionQuery {
@@ -90,6 +98,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       name
       ${descriptions}
       ${specifiedByUrl}
+      ${inputObjectOneOf}
       fields(includeDeprecated: true) {
         name
         ${descriptions}
@@ -259,6 +268,7 @@ export interface IntrospectionInputObjectType {
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly inputFields: ReadonlyArray<IntrospectionInputValue>;
+  readonly isOneOf: boolean;
 }
 
 export interface IntrospectionListTypeRef<
