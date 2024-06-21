@@ -18,9 +18,11 @@ import { isInputType, isNonNullType } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import { coerceInputValue } from '../utilities/coerceInputValue.js';
+import {
+  coerceInputLiteral,
+  coerceInputValue,
+} from '../utilities/coerceInputValue.js';
 import { typeFromAST } from '../utilities/typeFromAST.js';
-import { valueFromAST } from '../utilities/valueFromAST.js';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
@@ -84,7 +86,7 @@ function coerceVariableValues(
       const varTypeStr = print(varDefNode.type);
       onError(
         new GraphQLError(
-          `Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`,
+          `Variable "$${varName}" expected value of type ${varTypeStr} which cannot be used as an input type.`,
           { nodes: varDefNode.type },
         ),
       );
@@ -93,12 +95,14 @@ function coerceVariableValues(
 
     if (!Object.hasOwn(inputs, varName)) {
       if (varDefNode.defaultValue) {
-        coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
+        coercedValues[varName] = coerceInputLiteral(
+          varDefNode.defaultValue,
+          varType,
+        );
       } else if (isNonNullType(varType)) {
-        const varTypeStr = inspect(varType);
         onError(
           new GraphQLError(
-            `Variable "$${varName}" of required type "${varTypeStr}" was not provided.`,
+            `Variable "$${varName}" of required type ${varType} was not provided.`,
             { nodes: varDefNode },
           ),
         );
@@ -108,10 +112,9 @@ function coerceVariableValues(
 
     const value = inputs[varName];
     if (value === null && isNonNullType(varType)) {
-      const varTypeStr = inspect(varType);
       onError(
         new GraphQLError(
-          `Variable "$${varName}" of non-null type "${varTypeStr}" must not be null.`,
+          `Variable "$${varName}" of non-null type ${varType} must not be null.`,
           { nodes: varDefNode },
         ),
       );
@@ -170,8 +173,7 @@ export function getArgumentValues(
         coercedValues[name] = argDef.defaultValue;
       } else if (isNonNullType(argType)) {
         throw new GraphQLError(
-          `Argument "${name}" of required type "${inspect(argType)}" ` +
-            'was not provided.',
+          `Argument ${argDef} of required type ${argType} was not provided.`,
           { nodes: node },
         );
       }
@@ -191,7 +193,7 @@ export function getArgumentValues(
           coercedValues[name] = argDef.defaultValue;
         } else if (isNonNullType(argType)) {
           throw new GraphQLError(
-            `Argument "${name}" of required type "${inspect(argType)}" ` +
+            `Argument ${argDef} of required type ${argType} ` +
               `was provided the variable "$${variableName}" which was not provided a runtime value.`,
             { nodes: valueNode },
           );
@@ -203,19 +205,20 @@ export function getArgumentValues(
 
     if (isNull && isNonNullType(argType)) {
       throw new GraphQLError(
-        `Argument "${name}" of non-null type "${inspect(argType)}" ` +
-          'must not be null.',
+        `Argument ${argDef} of non-null type ${argType} must not be null.`,
         { nodes: valueNode },
       );
     }
 
-    const coercedValue = valueFromAST(valueNode, argType, variableValues);
+    const coercedValue = coerceInputLiteral(valueNode, argType, variableValues);
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
       // continue with an invalid argument value.
       throw new GraphQLError(
-        `Argument "${name}" has invalid value ${print(valueNode)}.`,
+        `Argument ${argDef} of type ${argType} has invalid value ${print(
+          valueNode,
+        )}.`,
         { nodes: valueNode },
       );
     }
