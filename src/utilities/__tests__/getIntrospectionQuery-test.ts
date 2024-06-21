@@ -117,6 +117,14 @@ describe('getIntrospectionQuery', () => {
     );
   });
 
+  it('include "isOneOf" field on input objects', () => {
+    expectIntrospectionQuery().toNotMatch('isOneOf');
+
+    expectIntrospectionQuery({ inputObjectOneOf: true }).toMatch('isOneOf', 1);
+
+    expectIntrospectionQuery({ inputObjectOneOf: false }).toNotMatch('isOneOf');
+  });
+
   it('include deprecated input field and args', () => {
     expectIntrospectionQuery().toMatch('includeDeprecated: true', 2);
 
