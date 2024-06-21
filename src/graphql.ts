@@ -15,7 +15,7 @@ import { validateSchema } from './type/validate.js';
 import { validate } from './validation/validate.js';
 
 import { execute } from './execution/execute.js';
-import type { ExecutionResult } from './execution/IncrementalPublisher.js';
+import type { ExecutionResult } from './execution/types.js';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
