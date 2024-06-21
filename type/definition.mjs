@@ -648,6 +648,16 @@ export class GraphQLUnionType {
 function defineTypes(types) {
   return resolveReadonlyArrayThunk(types);
 }
+function enumValuesFromConfig(values) {
+  return Object.entries(values).map(([valueName, valueConfig]) => ({
+    name: assertEnumValueName(valueName),
+    description: valueConfig.description,
+    value: valueConfig.value !== undefined ? valueConfig.value : valueName,
+    deprecationReason: valueConfig.deprecationReason,
+    extensions: toObjMap(valueConfig.extensions),
+    astNode: valueConfig.astNode,
+  }));
+}
 /**
  * Enum Type Definition
  *
@@ -678,31 +688,34 @@ export class GraphQLEnumType /* <T> */ {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._values = Object.entries(config.values).map(
-      ([valueName, valueConfig]) => ({
-        name: assertEnumValueName(valueName),
-        description: valueConfig.description,
-        value: valueConfig.value !== undefined ? valueConfig.value : valueName,
-        deprecationReason: valueConfig.deprecationReason,
-        extensions: toObjMap(valueConfig.extensions),
-        astNode: valueConfig.astNode,
-      }),
-    );
-    this._valueLookup = new Map(
-      this._values.map((enumValue) => [enumValue.value, enumValue]),
-    );
-    this._nameLookup = keyMap(this._values, (value) => value.name);
+    this._values =
+      typeof config.values === 'function'
+        ? config.values
+        : enumValuesFromConfig(config.values);
+    this._valueLookup = null;
+    this._nameLookup = null;
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLEnumType';
   }
   getValues() {
+    if (typeof this._values === 'function') {
+      this._values = enumValuesFromConfig(this._values());
+    }
     return this._values;
   }
   getValue(name) {
+    if (this._nameLookup === null) {
+      this._nameLookup = keyMap(this.getValues(), (value) => value.name);
+    }
     return this._nameLookup[name];
   }
   serialize(outputValue /* T */) {
+    if (this._valueLookup === null) {
+      this._valueLookup = new Map(
+        this.getValues().map((enumValue) => [enumValue.value, enumValue]),
+      );
+    }
     const enumValue = this._valueLookup.get(outputValue);
     if (enumValue === undefined) {
       throw new GraphQLError(

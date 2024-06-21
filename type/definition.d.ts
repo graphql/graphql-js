@@ -745,12 +745,13 @@ export declare class GraphQLEnumType {
 export interface GraphQLEnumTypeConfig {
   name: string;
   description?: Maybe<string>;
-  values: GraphQLEnumValueConfigMap;
+  values: ThunkObjMap<GraphQLEnumValueConfig>;
   extensions?: Maybe<Readonly<GraphQLEnumTypeExtensions>>;
   astNode?: Maybe<EnumTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 }
 interface GraphQLEnumTypeNormalizedConfig extends GraphQLEnumTypeConfig {
+  values: ObjMap<GraphQLEnumValueConfig>;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
   extensionASTNodes: ReadonlyArray<EnumTypeExtensionNode>;
 }
