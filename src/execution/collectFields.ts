@@ -21,10 +21,17 @@ import { typeFromAST } from '../utilities/typeFromAST';
 
 import { getDirectiveValues } from './values';
 
-interface FragmentEntry {
-  fragment: FragmentDefinitionNode;
+interface FieldEntry {
+  selection: FieldNode;
+  name: string;
+}
+
+interface EntryWithSelectionset {
+  selectionSet: SelectionSetNode;
   runtimeType: GraphQLObjectType;
 }
+
+type StackEntry = EntryWithSelectionset | FieldEntry;
 
 /**
  * Given a selectionSet, collects all of the fields and returns them.
@@ -42,32 +49,30 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
 ): Map<string, ReadonlyArray<FieldNode>> {
-  const foundFragments: Array<FragmentEntry> = [];
+  const stack: Array<StackEntry> = [{ selectionSet, runtimeType }];
   const fields = new Map();
   const visited = new Set<string>();
-  collectFieldsImpl(
-    schema,
-    fragments,
-    variableValues,
-    runtimeType,
-    selectionSet,
-    fields,
-    visited,
-    foundFragments,
-  );
 
   let entry;
-  while ((entry = foundFragments.pop()) !== undefined) {
-    collectFieldsImpl(
-      schema,
-      fragments,
-      variableValues,
-      entry.runtimeType,
-      entry.fragment.selectionSet,
-      fields,
-      visited,
-      foundFragments,
-    );
+  while ((entry = stack.shift()) !== undefined) {
+    if ('selectionSet' in entry) {
+      collectFieldsImpl(
+        schema,
+        fragments,
+        variableValues,
+        entry.runtimeType,
+        entry.selectionSet,
+        visited,
+        stack,
+      );
+    } else {
+      const fieldList = fields.get(entry.name);
+      if (fieldList !== undefined) {
+        fieldList.push(entry.selection);
+      } else {
+        fields.set(entry.name, [entry.selection]);
+      }
+    }
   }
 
   return fields;
@@ -91,35 +96,34 @@ export function collectSubfields(
   fieldNodes: ReadonlyArray<FieldNode>,
 ): Map<string, ReadonlyArray<FieldNode>> {
   const subFieldNodes = new Map();
-  const foundFragments: Array<FragmentEntry> = [];
+  const stack: Array<StackEntry> = [];
   const visitedFragmentNames = new Set<string>();
   for (const node of fieldNodes) {
     if (node.selectionSet) {
-      collectFieldsImpl(
-        schema,
-        fragments,
-        variableValues,
-        returnType,
-        node.selectionSet,
-        subFieldNodes,
-        visitedFragmentNames,
-        foundFragments,
-      );
+      stack.push({ selectionSet: node.selectionSet, runtimeType: returnType });
     }
   }
 
   let entry;
-  while ((entry = foundFragments.pop()) !== undefined) {
-    collectFieldsImpl(
-      schema,
-      fragments,
-      variableValues,
-      entry.runtimeType,
-      entry.fragment.selectionSet,
-      subFieldNodes,
-      visitedFragmentNames,
-      foundFragments,
-    );
+  while ((entry = stack.shift()) !== undefined) {
+    if ('selectionSet' in entry) {
+      collectFieldsImpl(
+        schema,
+        fragments,
+        variableValues,
+        entry.runtimeType,
+        entry.selectionSet,
+        visitedFragmentNames,
+        stack,
+      );
+    } else {
+      const fieldList = subFieldNodes.get(entry.name);
+      if (fieldList !== undefined) {
+        fieldList.push(entry.selection);
+      } else {
+        subFieldNodes.set(entry.name, [entry.selection]);
+      }
+    }
   }
 
   return subFieldNodes;
@@ -131,10 +135,10 @@ function collectFieldsImpl(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: Map<string, Array<FieldNode>>,
   visitedFragmentNames: Set<string>,
-  foundFragments: Array<FragmentEntry>,
+  stack: Array<StackEntry>,
 ): void {
+  const discovered = [];
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
@@ -142,12 +146,7 @@ function collectFieldsImpl(
           continue;
         }
         const name = getFieldEntryKey(selection);
-        const fieldList = fields.get(name);
-        if (fieldList !== undefined) {
-          fieldList.push(selection);
-        } else {
-          fields.set(name, [selection]);
-        }
+        discovered.push({ selection, name });
         break;
       }
       case Kind.INLINE_FRAGMENT: {
@@ -157,16 +156,7 @@ function collectFieldsImpl(
         ) {
           continue;
         }
-        collectFieldsImpl(
-          schema,
-          fragments,
-          variableValues,
-          runtimeType,
-          selection.selectionSet,
-          fields,
-          visitedFragmentNames,
-          foundFragments,
-        );
+        discovered.push({ selectionSet: selection.selectionSet, runtimeType });
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
@@ -186,10 +176,14 @@ function collectFieldsImpl(
           continue;
         }
 
-        foundFragments.push({ runtimeType, fragment });
+        discovered.push({ selectionSet: fragment.selectionSet, runtimeType });
         break;
       }
     }
+  }
+
+  if (discovered.length !== 0) {
+    stack.unshift(...discovered);
   }
 }
 
