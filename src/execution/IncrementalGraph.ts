@@ -145,7 +145,7 @@ export class IncrementalGraph {
     const reconcilableResults = Array.from(
       deferredFragmentNode.reconcilableResults,
     );
-    this._removePending(deferredFragmentNode);
+    this._removeRootNode(deferredFragmentNode);
     for (const reconcilableResult of reconcilableResults) {
       for (const otherDeferredFragmentNode of this._fragmentsToNodes(
         reconcilableResult.deferredGroupedFieldSetRecord
@@ -171,7 +171,7 @@ export class IncrementalGraph {
     if (deferredFragmentNode === undefined) {
       return false;
     }
-    this._removePending(deferredFragmentNode);
+    this._removeRootNode(deferredFragmentNode);
     this._deferredFragmentNodes.delete(deferredFragmentRecord);
     // TODO: add test case for an erroring deferred fragment with child defers
     /* c8 ignore next 5 */
@@ -184,10 +184,10 @@ export class IncrementalGraph {
   }
 
   removeStream(streamRecord: StreamRecord): void {
-    this._removePending(streamRecord);
+    this._removeRootNode(streamRecord);
   }
 
-  private _removePending(subsequentResultNode: SubsequentResultNode): void {
+  private _removeRootNode(subsequentResultNode: SubsequentResultNode): void {
     this._rootNodes.delete(subsequentResultNode);
     if (this._rootNodes.size === 0) {
       for (const resolve of this._nextQueue) {
@@ -212,7 +212,7 @@ export class IncrementalGraph {
             incrementalDataRecord,
           );
         }
-        if (this._hasPendingFragment(incrementalDataRecord)) {
+        if (this._completesRootNode(incrementalDataRecord)) {
           this._onDeferredGroupedFieldSet(incrementalDataRecord);
         }
       } else if (parents === undefined) {
@@ -231,37 +231,37 @@ export class IncrementalGraph {
   }
 
   private _promoteNonEmptyToRoot(
-    newPendingNodes: Set<SubsequentResultNode>,
+    newRootNodes: Set<SubsequentResultNode>,
   ): ReadonlyArray<SubsequentResultRecord> {
-    const newPendingResults: Array<SubsequentResultRecord> = [];
-    for (const node of newPendingNodes) {
+    const newPending: Array<SubsequentResultRecord> = [];
+    for (const node of newRootNodes) {
       if (isDeferredFragmentNode(node)) {
         if (node.deferredGroupedFieldSetRecords.size > 0) {
           for (const deferredGroupedFieldSetRecord of node.deferredGroupedFieldSetRecords) {
-            if (!this._hasPendingFragment(deferredGroupedFieldSetRecord)) {
+            if (!this._completesRootNode(deferredGroupedFieldSetRecord)) {
               this._onDeferredGroupedFieldSet(deferredGroupedFieldSetRecord);
             }
           }
           this._rootNodes.add(node);
-          newPendingResults.push(node.deferredFragmentRecord);
+          newPending.push(node.deferredFragmentRecord);
           continue;
         }
         this._deferredFragmentNodes.delete(node.deferredFragmentRecord);
         for (const child of node.children) {
-          newPendingNodes.add(child);
+          newRootNodes.add(child);
         }
       } else {
         this._rootNodes.add(node);
-        newPendingResults.push(node);
+        newPending.push(node);
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._onStreamItems(node);
       }
     }
-    return newPendingResults;
+    return newPending;
   }
 
-  private _hasPendingFragment(
+  private _completesRootNode(
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   ): boolean {
     return this._fragmentsToNodes(
