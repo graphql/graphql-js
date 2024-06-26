@@ -74,11 +74,11 @@ class IncrementalPublisher {
     errors: ReadonlyArray<GraphQLError> | undefined,
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ExperimentalIncrementalExecutionResults {
-    const newPending = this._incrementalGraph.getNewPending(
+    const newRootNodes = this._incrementalGraph.getNewRootNodes(
       incrementalDataRecords,
     );
 
-    const pending = this._pendingSourcesToResults(newPending);
+    const pending = this._toPendingResults(newRootNodes);
 
     const initialResult: InitialIncrementalExecutionResult =
       errors === undefined
@@ -91,19 +91,19 @@ class IncrementalPublisher {
     };
   }
 
-  private _pendingSourcesToResults(
-    newPending: ReadonlyArray<SubsequentResultRecord>,
+  private _toPendingResults(
+    newRootNodes: ReadonlyArray<SubsequentResultRecord>,
   ): Array<PendingResult> {
     const pendingResults: Array<PendingResult> = [];
-    for (const pendingSource of newPending) {
+    for (const node of newRootNodes) {
       const id = String(this._getNextId());
-      pendingSource.id = id;
+      node.id = id;
       const pendingResult: PendingResult = {
         id,
-        path: pathToArray(pendingSource.path),
+        path: pathToArray(node.path),
       };
-      if (pendingSource.label !== undefined) {
-        pendingResult.label = pendingSource.label;
+      if (node.label !== undefined) {
+        pendingResult.label = node.label;
       }
       pendingResults.push(pendingResult);
     }
@@ -262,8 +262,8 @@ class IncrementalPublisher {
       const id = deferredFragmentRecord.id;
       invariant(id !== undefined);
       const incremental = context.incremental;
-      const { newPending, reconcilableResults } = completion;
-      context.pending.push(...this._pendingSourcesToResults(newPending));
+      const { newRootNodes, reconcilableResults } = completion;
+      context.pending.push(...this._toPendingResults(newRootNodes));
       for (const reconcilableResult of reconcilableResults) {
         const { bestId, subPath } = this._getBestIdAndSubPath(
           id,
@@ -321,10 +321,10 @@ class IncrementalPublisher {
 
       const incrementalDataRecords = streamItemsResult.incrementalDataRecords;
       if (incrementalDataRecords !== undefined) {
-        const newPending = this._incrementalGraph.getNewPending(
+        const newRootNodes = this._incrementalGraph.getNewRootNodes(
           incrementalDataRecords,
         );
-        context.pending.push(...this._pendingSourcesToResults(newPending));
+        context.pending.push(...this._toPendingResults(newRootNodes));
       }
     }
   }

@@ -54,7 +54,7 @@ export class IncrementalGraph {
     this._nextQueue = [];
   }
 
-  getNewPending(
+  getNewRootNodes(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ReadonlyArray<SubsequentResultRecord> {
     const initialResultChildren = new Set<SubsequentResultNode>();
@@ -127,7 +127,7 @@ export class IncrementalGraph {
 
   completeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord):
     | {
-        newPending: ReadonlyArray<SubsequentResultRecord>;
+        newRootNodes: ReadonlyArray<SubsequentResultRecord>;
         reconcilableResults: ReadonlyArray<ReconcilableDeferredGroupedFieldSetResult>;
       }
     | undefined {
@@ -156,10 +156,10 @@ export class IncrementalGraph {
         );
       }
     }
-    const newPending = this._promoteNonEmptyToRoot(
+    const newRootNodes = this._promoteNonEmptyToRoot(
       deferredFragmentNode.children,
     );
-    return { newPending, reconcilableResults };
+    return { newRootNodes, reconcilableResults };
   }
 
   removeDeferredFragment(
