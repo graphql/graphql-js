@@ -1,9 +1,11 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import type { DocumentNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
@@ -605,12 +607,12 @@ describe('Execute: defer directive', () => {
         data: {
           hero: {},
         },
-        pending: [{ id: '0', path: ['hero'] }],
+        pending: [{ id: '1', path: ['hero'] }],
         hasNext: true,
       },
       {
-        incremental: [{ data: { name: 'Luke' }, id: '0' }],
-        completed: [{ id: '0' }],
+        incremental: [{ data: { name: 'Luke' }, id: '1' }],
+        completed: [{ id: '1' }],
         hasNext: false,
       },
     ]);
@@ -785,8 +787,8 @@ describe('Execute: defer directive', () => {
           hero: {},
         },
         pending: [
-          { id: '0', path: ['hero'], label: 'DeferID' },
-          { id: '1', path: [], label: 'DeferName' },
+          { id: '1', path: ['hero'], label: 'DeferID' },
+          { id: '0', path: [], label: 'DeferName' },
         ],
         hasNext: true,
       },
@@ -796,17 +798,17 @@ describe('Execute: defer directive', () => {
             data: {
               id: '1',
             },
-            id: '0',
+            id: '1',
           },
           {
             data: {
               name: 'Luke',
             },
-            id: '1',
+            id: '0',
             subPath: ['hero'],
           },
         ],
-        completed: [{ id: '0' }, { id: '1' }],
+        completed: [{ id: '1' }, { id: '0' }],
         hasNext: false,
       },
     ]);
@@ -856,6 +858,134 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
+  it('Initiates all deferred grouped field sets immediately if and only if they have been released as pending', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            ... @defer {
+              b {
+                c { d }
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            someField
+            ... @defer {
+              b {
+                e { f }
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const { promise: slowFieldPromise, resolve: resolveSlowField } =
+      promiseWithResolvers();
+    let cResolverCalled = false;
+    let eResolverCalled = false;
+    const executeResult = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        a: {
+          someField: slowFieldPromise,
+          b: {
+            c: () => {
+              cResolverCalled = true;
+              return { d: 'd' };
+            },
+            e: () => {
+              eResolverCalled = true;
+              return { f: 'f' };
+            },
+          },
+        },
+      },
+      enableEarlyExecution: false,
+    });
+
+    assert('initialResult' in executeResult);
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {},
+      pending: [
+        { id: '0', path: [] },
+        { id: '1', path: [] },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    expect(cResolverCalled).to.equal(false);
+    expect(eResolverCalled).to.equal(false);
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      value: {
+        pending: [{ id: '2', path: ['a'] }],
+        incremental: [
+          {
+            data: { a: {} },
+            id: '0',
+          },
+          {
+            data: { b: {} },
+            id: '2',
+          },
+          {
+            data: { c: { d: 'd' } },
+            id: '2',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '2' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    expect(cResolverCalled).to.equal(true);
+    expect(eResolverCalled).to.equal(false);
+
+    resolveSlowField('someField');
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      value: {
+        pending: [{ id: '3', path: ['a'] }],
+        incremental: [
+          {
+            data: { someField: 'someField' },
+            id: '1',
+            subPath: ['a'],
+          },
+          {
+            data: { e: { f: 'f' } },
+            id: '3',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '1' }, { id: '3' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+
+    expect(eResolverCalled).to.equal(true);
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
   it('Can deduplicate multiple defers on the same object', async () => {
     const document = parse(`
       query {
@@ -889,18 +1019,18 @@ describe('Execute: defer directive', () => {
         data: { hero: { friends: [{}, {}, {}] } },
         pending: [
           { id: '0', path: ['hero', 'friends', 0] },
-          { id: '1', path: ['hero', 'friends', 1] },
-          { id: '2', path: ['hero', 'friends', 2] },
+          { id: '4', path: ['hero', 'friends', 1] },
+          { id: '8', path: ['hero', 'friends', 2] },
         ],
         hasNext: true,
       },
       {
         incremental: [
           { data: { id: '2', name: 'Han' }, id: '0' },
-          { data: { id: '3', name: 'Leia' }, id: '1' },
-          { data: { id: '4', name: 'C-3PO' }, id: '2' },
+          { data: { id: '3', name: 'Leia' }, id: '4' },
+          { data: { id: '4', name: 'C-3PO' }, id: '8' },
         ],
-        completed: [{ id: '0' }, { id: '1' }, { id: '2' }],
+        completed: [{ id: '0' }, { id: '4' }, { id: '8' }],
         hasNext: false,
       },
     ]);
@@ -1145,8 +1275,8 @@ describe('Execute: defer directive', () => {
           },
         },
         pending: [
-          { id: '0', path: ['hero', 'nestedObject', 'deeperObject'] },
           { id: '1', path: ['hero', 'nestedObject', 'deeperObject'] },
+          { id: '2', path: ['hero', 'nestedObject', 'deeperObject'] },
         ],
         hasNext: true,
       },
@@ -1156,16 +1286,16 @@ describe('Execute: defer directive', () => {
             data: {
               foo: 'foo',
             },
-            id: '0',
+            id: '1',
           },
           {
             data: {
               bar: 'bar',
             },
-            id: '1',
+            id: '2',
           },
         ],
-        completed: [{ id: '0' }, { id: '1' }],
+        completed: [{ id: '1' }, { id: '2' }],
         hasNext: false,
       },
     ]);
@@ -1221,8 +1351,8 @@ describe('Execute: defer directive', () => {
           },
         },
         pending: [
-          { id: '0', path: ['a', 'b'] },
-          { id: '1', path: [] },
+          { id: '1', path: ['a', 'b'] },
+          { id: '0', path: [] },
         ],
         hasNext: true,
       },
@@ -1230,14 +1360,14 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { e: { f: 'f' } },
-            id: '0',
+            id: '1',
           },
           {
             data: { g: { h: 'h' } },
-            id: '1',
+            id: '0',
           },
         ],
-        completed: [{ id: '0' }, { id: '1' }],
+        completed: [{ id: '1' }, { id: '0' }],
         hasNext: false,
       },
     ]);

@@ -63,7 +63,6 @@ import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import type {
   CancellableStreamRecord,
-  DeferredFragmentRecord,
   DeferredGroupedFieldSetRecord,
   DeferredGroupedFieldSetResult,
   ExecutionResult,
@@ -73,6 +72,7 @@ import type {
   StreamItemResult,
   StreamRecord,
 } from './types.js';
+import { DeferredFragmentRecord } from './types.js';
 import {
   getArgumentValues,
   getDirectiveValues,
@@ -142,6 +142,7 @@ export interface ExecutionContext {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   enableEarlyExecution: boolean;
   errors: Array<GraphQLError> | undefined;
+  nextId: number;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
@@ -299,7 +300,11 @@ function executeOperation(
       const fieldPLan = buildFieldPlan(groupedFieldSet);
       groupedFieldSet = fieldPLan.groupedFieldSet;
       const newGroupedFieldSets = fieldPLan.newGroupedFieldSets;
-      const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
+      const newDeferMap = addNewDeferredFragments(
+        exeContext,
+        newDeferUsages,
+        new Map(),
+      );
 
       graphqlWrappedResult = executeRootGroupedFieldSet(
         exeContext,
@@ -505,6 +510,7 @@ export function buildExecutionContext(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     enableEarlyExecution: enableEarlyExecution === true,
     errors: undefined,
+    nextId: 0,
     cancellableStreams: undefined,
   };
 }
@@ -1113,6 +1119,7 @@ async function completeAsyncIteratorValue(
         streamRecord = {
           label: streamUsage.label,
           path,
+          id: String(exeContext.nextId++),
           streamItemQueue,
         };
       } else {
@@ -1120,6 +1127,7 @@ async function completeAsyncIteratorValue(
           label: streamUsage.label,
           path,
           streamItemQueue,
+          id: String(exeContext.nextId++),
           earlyReturn: returnFn.bind(asyncIterator),
         };
         if (exeContext.cancellableStreams === undefined) {
@@ -1274,6 +1282,7 @@ function completeIterableValue(
       const syncStreamRecord: StreamRecord = {
         label: streamUsage.label,
         path,
+        id: String(exeContext.nextId++),
         streamItemQueue: buildSyncStreamItemQueue(
           item,
           index,
@@ -1662,6 +1671,7 @@ function invalidReturnTypeError(
  *
  */
 function addNewDeferredFragments(
+  exeContext: ExecutionContext,
   newDeferUsages: ReadonlyArray<DeferUsage>,
   newDeferMap: Map<DeferUsage, DeferredFragmentRecord>,
   path?: Path | undefined,
@@ -1676,11 +1686,12 @@ function addNewDeferredFragments(
         : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
 
     // Instantiate the new record.
-    const deferredFragmentRecord: DeferredFragmentRecord = {
+    const deferredFragmentRecord = new DeferredFragmentRecord(
       path,
-      label: newDeferUsage.label,
+      newDeferUsage.label,
+      String(exeContext.nextId++),
       parent,
-    };
+    );
 
     // Update the map.
     newDeferMap.set(newDeferUsage, deferredFragmentRecord);
@@ -1733,6 +1744,7 @@ function collectAndExecuteSubfields(
   groupedFieldSet = subFieldPlan.groupedFieldSet;
   const newGroupedFieldSets = subFieldPlan.newGroupedFieldSets;
   const newDeferMap = addNewDeferredFragments(
+    exeContext,
     newDeferUsages,
     new Map(deferMap),
     path,
@@ -2114,16 +2126,25 @@ function executeDeferredGroupedFieldSets(
         deferMap,
       );
 
-    const shouldDeferThisDeferUsageSet = shouldDefer(
-      parentDeferUsages,
-      deferUsageSet,
-    );
-
-    deferredGroupedFieldSetRecord.result = shouldDeferThisDeferUsageSet
-      ? exeContext.enableEarlyExecution
-        ? new BoxedPromiseOrValue(Promise.resolve().then(executor))
-        : () => new BoxedPromiseOrValue(executor())
-      : new BoxedPromiseOrValue(executor());
+    if (exeContext.enableEarlyExecution) {
+      deferredGroupedFieldSetRecord.result = new BoxedPromiseOrValue(
+        shouldDefer(parentDeferUsages, deferUsageSet)
+          ? Promise.resolve().then(executor)
+          : executor(),
+      );
+    } else {
+      deferredGroupedFieldSetRecord.result = () =>
+        new BoxedPromiseOrValue(executor());
+      const resolveThunk = () => {
+        const maybeThunk = deferredGroupedFieldSetRecord.result;
+        if (!(maybeThunk instanceof BoxedPromiseOrValue)) {
+          deferredGroupedFieldSetRecord.result = maybeThunk();
+        }
+      };
+      for (const deferredFragmentRecord of deferredFragmentRecords) {
+        deferredFragmentRecord.onPending(resolveThunk);
+      }
+    }
 
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }

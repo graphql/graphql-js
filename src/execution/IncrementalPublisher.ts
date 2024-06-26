@@ -60,12 +60,10 @@ interface SubsequentIncrementalExecutionResultContext {
  */
 class IncrementalPublisher {
   private _context: IncrementalPublisherContext;
-  private _nextId: number;
   private _incrementalGraph: IncrementalGraph;
 
   constructor(context: IncrementalPublisherContext) {
     this._context = context;
-    this._nextId = 0;
     this._incrementalGraph = new IncrementalGraph();
   }
 
@@ -74,10 +72,11 @@ class IncrementalPublisher {
     errors: ReadonlyArray<GraphQLError> | undefined,
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ExperimentalIncrementalExecutionResults {
-    this._incrementalGraph.addIncrementalDataRecords(incrementalDataRecords);
-    const newPending = this._incrementalGraph.getNewPending();
+    const newRootNodes = this._incrementalGraph.getNewRootNodes(
+      incrementalDataRecords,
+    );
 
-    const pending = this._pendingSourcesToResults(newPending);
+    const pending = this._toPendingResults(newRootNodes);
 
     const initialResult: InitialIncrementalExecutionResult =
       errors === undefined
@@ -90,27 +89,21 @@ class IncrementalPublisher {
     };
   }
 
-  private _pendingSourcesToResults(
-    newPending: ReadonlyArray<SubsequentResultRecord>,
+  private _toPendingResults(
+    newRootNodes: ReadonlyArray<SubsequentResultRecord>,
   ): Array<PendingResult> {
     const pendingResults: Array<PendingResult> = [];
-    for (const pendingSource of newPending) {
-      const id = String(this._getNextId());
-      pendingSource.id = id;
+    for (const node of newRootNodes) {
       const pendingResult: PendingResult = {
-        id,
-        path: pathToArray(pendingSource.path),
+        id: node.id,
+        path: pathToArray(node.path),
       };
-      if (pendingSource.label !== undefined) {
-        pendingResult.label = pendingSource.label;
+      if (node.label !== undefined) {
+        pendingResult.label = node.label;
       }
       pendingResults.push(pendingResult);
     }
     return pendingResults;
-  }
-
-  private _getNextId(): string {
-    return String(this._nextId++);
   }
 
   private _subscribe(): AsyncGenerator<
@@ -217,8 +210,6 @@ class IncrementalPublisher {
     } else {
       this._handleCompletedStreamItems(completedIncrementalData, context);
     }
-    const newPending = this._incrementalGraph.getNewPending();
-    context.pending.push(...this._pendingSourcesToResults(newPending));
   }
 
   private _handleCompletedDeferredGroupedFieldSet(
@@ -232,16 +223,14 @@ class IncrementalPublisher {
     ) {
       for (const deferredFragmentRecord of deferredGroupedFieldSetResult
         .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-        const id = deferredFragmentRecord.id;
         if (
           !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
         ) {
           // This can occur if multiple deferred grouped field sets error for a fragment.
           continue;
         }
-        invariant(id !== undefined);
         context.completed.push({
-          id,
+          id: deferredFragmentRecord.id,
           errors: deferredGroupedFieldSetResult.errors,
         });
       }
@@ -252,22 +241,18 @@ class IncrementalPublisher {
       deferredGroupedFieldSetResult,
     );
 
-    const incrementalDataRecords =
-      deferredGroupedFieldSetResult.incrementalDataRecords;
-    if (incrementalDataRecords !== undefined) {
-      this._incrementalGraph.addIncrementalDataRecords(incrementalDataRecords);
-    }
-
     for (const deferredFragmentRecord of deferredGroupedFieldSetResult
       .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-      const reconcilableResults =
-        this._incrementalGraph.completeDeferredFragment(deferredFragmentRecord);
-      if (reconcilableResults === undefined) {
+      const completion = this._incrementalGraph.completeDeferredFragment(
+        deferredFragmentRecord,
+      );
+      if (completion === undefined) {
         continue;
       }
-      const id = deferredFragmentRecord.id;
-      invariant(id !== undefined);
       const incremental = context.incremental;
+      const { newRootNodes, reconcilableResults } = completion;
+      context.pending.push(...this._toPendingResults(newRootNodes));
+      const id = deferredFragmentRecord.id;
       for (const reconcilableResult of reconcilableResults) {
         const { bestId, subPath } = this._getBestIdAndSubPath(
           id,
@@ -293,7 +278,6 @@ class IncrementalPublisher {
   ): void {
     const streamRecord = streamItemsResult.streamRecord;
     const id = streamRecord.id;
-    invariant(id !== undefined);
     if (streamItemsResult.errors !== undefined) {
       context.completed.push({
         id,
@@ -323,10 +307,12 @@ class IncrementalPublisher {
 
       context.incremental.push(incrementalEntry);
 
-      if (streamItemsResult.incrementalDataRecords !== undefined) {
-        this._incrementalGraph.addIncrementalDataRecords(
-          streamItemsResult.incrementalDataRecords,
+      const incrementalDataRecords = streamItemsResult.incrementalDataRecords;
+      if (incrementalDataRecords !== undefined) {
+        const newRootNodes = this._incrementalGraph.getNewRootNodes(
+          incrementalDataRecords,
         );
+        context.pending.push(...this._toPendingResults(newRootNodes));
       }
     }
   }
