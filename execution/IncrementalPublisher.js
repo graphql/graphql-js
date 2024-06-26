@@ -32,9 +32,10 @@ class IncrementalPublisher {
     this._incrementalGraph = new IncrementalGraph_js_1.IncrementalGraph();
   }
   buildResponse(data, errors, incrementalDataRecords) {
-    this._incrementalGraph.addIncrementalDataRecords(incrementalDataRecords);
-    const newPending = this._incrementalGraph.getNewPending();
-    const pending = this._pendingSourcesToResults(newPending);
+    const newRootNodes = this._incrementalGraph.getNewRootNodes(
+      incrementalDataRecords,
+    );
+    const pending = this._toPendingResults(newRootNodes);
     const initialResult =
       errors === undefined
         ? { data, pending, hasNext: true }
@@ -44,17 +45,17 @@ class IncrementalPublisher {
       subsequentResults: this._subscribe(),
     };
   }
-  _pendingSourcesToResults(newPending) {
+  _toPendingResults(newRootNodes) {
     const pendingResults = [];
-    for (const pendingSource of newPending) {
+    for (const node of newRootNodes) {
       const id = String(this._getNextId());
-      pendingSource.id = id;
+      node.id = id;
       const pendingResult = {
         id,
-        path: (0, Path_js_1.pathToArray)(pendingSource.path),
+        path: (0, Path_js_1.pathToArray)(node.path),
       };
-      if (pendingSource.label !== undefined) {
-        pendingResult.label = pendingSource.label;
+      if (node.label !== undefined) {
+        pendingResult.label = node.label;
       }
       pendingResults.push(pendingResult);
     }
@@ -141,8 +142,6 @@ class IncrementalPublisher {
     } else {
       this._handleCompletedStreamItems(completedIncrementalData, context);
     }
-    const newPending = this._incrementalGraph.getNewPending();
-    context.pending.push(...this._pendingSourcesToResults(newPending));
   }
   _handleCompletedDeferredGroupedFieldSet(
     deferredGroupedFieldSetResult,
@@ -173,21 +172,19 @@ class IncrementalPublisher {
     this._incrementalGraph.addCompletedReconcilableDeferredGroupedFieldSet(
       deferredGroupedFieldSetResult,
     );
-    const incrementalDataRecords =
-      deferredGroupedFieldSetResult.incrementalDataRecords;
-    if (incrementalDataRecords !== undefined) {
-      this._incrementalGraph.addIncrementalDataRecords(incrementalDataRecords);
-    }
     for (const deferredFragmentRecord of deferredGroupedFieldSetResult
       .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
-      const reconcilableResults =
-        this._incrementalGraph.completeDeferredFragment(deferredFragmentRecord);
-      if (reconcilableResults === undefined) {
+      const completion = this._incrementalGraph.completeDeferredFragment(
+        deferredFragmentRecord,
+      );
+      if (completion === undefined) {
         continue;
       }
       const id = deferredFragmentRecord.id;
       id !== undefined || (0, invariant_js_1.invariant)(false);
       const incremental = context.incremental;
+      const { newRootNodes, reconcilableResults } = completion;
+      context.pending.push(...this._toPendingResults(newRootNodes));
       for (const reconcilableResult of reconcilableResults) {
         const { bestId, subPath } = this._getBestIdAndSubPath(
           id,
@@ -239,10 +236,12 @@ class IncrementalPublisher {
         ...streamItemsResult.result,
       };
       context.incremental.push(incrementalEntry);
-      if (streamItemsResult.incrementalDataRecords !== undefined) {
-        this._incrementalGraph.addIncrementalDataRecords(
-          streamItemsResult.incrementalDataRecords,
+      const incrementalDataRecords = streamItemsResult.incrementalDataRecords;
+      if (incrementalDataRecords !== undefined) {
+        const newRootNodes = this._incrementalGraph.getNewRootNodes(
+          incrementalDataRecords,
         );
+        context.pending.push(...this._toPendingResults(newRootNodes));
       }
     }
   }

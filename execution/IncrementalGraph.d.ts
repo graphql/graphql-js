@@ -10,20 +10,17 @@ import type {
  * @internal
  */
 export declare class IncrementalGraph {
-  private _pending;
+  private _rootNodes;
   private _deferredFragmentNodes;
-  private _newPending;
-  private _newIncrementalDataRecords;
   private _completedQueue;
   private _nextQueue;
   constructor();
-  addIncrementalDataRecords(
+  getNewRootNodes(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
-  ): void;
+  ): ReadonlyArray<SubsequentResultRecord>;
   addCompletedReconcilableDeferredGroupedFieldSet(
     reconcilableResult: ReconcilableDeferredGroupedFieldSetResult,
   ): void;
-  getNewPending(): ReadonlyArray<SubsequentResultRecord>;
   completedIncrementalData(): {
     [Symbol.asyncIterator](): any;
     next: () => Promise<IteratorResult<Iterable<IncrementalDataRecordResult>>>;
@@ -32,17 +29,23 @@ export declare class IncrementalGraph {
     >;
   };
   hasNext(): boolean;
-  completeDeferredFragment(
-    deferredFragmentRecord: DeferredFragmentRecord,
-  ): Array<ReconcilableDeferredGroupedFieldSetResult> | undefined;
+  completeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord):
+    | {
+        newRootNodes: ReadonlyArray<SubsequentResultRecord>;
+        reconcilableResults: ReadonlyArray<ReconcilableDeferredGroupedFieldSetResult>;
+      }
+    | undefined;
   removeDeferredFragment(
     deferredFragmentRecord: DeferredFragmentRecord,
   ): boolean;
   removeStream(streamRecord: StreamRecord): void;
-  private _removePending;
-  private _addDeferredGroupedFieldSetRecord;
-  private _addStreamRecord;
+  private _removeRootNode;
+  private _addIncrementalDataRecords;
+  private _promoteNonEmptyToRoot;
+  private _completesRootNode;
+  private _fragmentsToNodes;
   private _addDeferredFragmentNode;
+  private _onDeferredGroupedFieldSet;
   private _onStreamItems;
   private _yieldCurrentCompletedIncrementalData;
   private _enqueue;
