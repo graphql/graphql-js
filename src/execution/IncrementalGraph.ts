@@ -231,10 +231,10 @@ export class IncrementalGraph {
   }
 
   private _promoteNonEmptyToRoot(
-    newRootNodes: Set<SubsequentResultNode>,
+    maybeEmptyNewRootNodes: Set<SubsequentResultNode>,
   ): ReadonlyArray<SubsequentResultRecord> {
-    const newPending: Array<SubsequentResultRecord> = [];
-    for (const node of newRootNodes) {
+    const newRootNodes: Array<SubsequentResultRecord> = [];
+    for (const node of maybeEmptyNewRootNodes) {
       if (isDeferredFragmentNode(node)) {
         if (node.deferredGroupedFieldSetRecords.size > 0) {
           for (const deferredGroupedFieldSetRecord of node.deferredGroupedFieldSetRecords) {
@@ -243,22 +243,22 @@ export class IncrementalGraph {
             }
           }
           this._rootNodes.add(node);
-          newPending.push(node.deferredFragmentRecord);
+          newRootNodes.push(node.deferredFragmentRecord);
           continue;
         }
         this._deferredFragmentNodes.delete(node.deferredFragmentRecord);
         for (const child of node.children) {
-          newRootNodes.add(child);
+          maybeEmptyNewRootNodes.add(child);
         }
       } else {
         this._rootNodes.add(node);
-        newPending.push(node);
+        newRootNodes.push(node);
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._onStreamItems(node);
       }
     }
-    return newPending;
+    return newRootNodes;
   }
 
   private _completesRootNode(
