@@ -8,6 +8,9 @@ The JavaScript reference implementation for GraphQL, a query language for APIs c
 See more complete documentation at https://graphql.org/ and
 https://graphql.org/graphql-js/.
 
+**API Documentation**: [Link to GraphQL.js API Documentation](https://graphql.org/graphql-js/graphql/)
+
+
 Looking for help? Find resources [from the community](https://graphql.org/community/).
 
 ## Getting Started
