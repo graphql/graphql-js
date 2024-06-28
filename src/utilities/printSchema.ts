@@ -36,6 +36,18 @@ import type { GraphQLSchema } from '../type/schema.js';
 
 import { astFromValue } from './astFromValue.js';
 
+/**
+ * Returns a string representation of the given `GraphQLSchema` in SDL format.
+ * 
+ * **Note**: This function will *not* print directives in the SDL format.
+ * If your intent is to print a schema with directives, use [`printSchemaWithDirectives`](https://the-guild.dev/graphql/tools/docs/api/modules/utils_src#printschemawithdirectives) instead.
+ *
+ * ## Example
+ * Given a schema, convert it to SDL
+ * ```
+ * const sdl = printSchema(schema);
+ * ```
+ */
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
     schema,
