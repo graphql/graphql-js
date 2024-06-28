@@ -11,7 +11,6 @@ import type {
  */
 export declare class IncrementalGraph {
   private _rootNodes;
-  private _deferredFragmentNodes;
   private _completedQueue;
   private _nextQueue;
   constructor();
@@ -43,8 +42,7 @@ export declare class IncrementalGraph {
   private _addIncrementalDataRecords;
   private _promoteNonEmptyToRoot;
   private _completesRootNode;
-  private _fragmentsToNodes;
-  private _addDeferredFragmentNode;
+  private _addDeferredFragment;
   private _onDeferredGroupedFieldSet;
   private _onStreamItems;
   private _yieldCurrentCompletedIncrementalData;

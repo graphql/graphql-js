@@ -179,12 +179,24 @@ export interface DeferredGroupedFieldSetRecord {
   result: ThunkIncrementalResult<DeferredGroupedFieldSetResult>;
 }
 export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
-export interface DeferredFragmentRecord {
+/** @internal */
+export declare class DeferredFragmentRecord {
   path: Path | undefined;
   label: string | undefined;
   id?: string | undefined;
   parent: DeferredFragmentRecord | undefined;
+  deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
+  reconcilableResults: Set<ReconcilableDeferredGroupedFieldSetResult>;
+  children: Set<SubsequentResultRecord>;
+  constructor(
+    path: Path | undefined,
+    label: string | undefined,
+    parent: DeferredFragmentRecord | undefined,
+  );
 }
+export declare function isDeferredFragmentRecord(
+  subsequentResultRecord: SubsequentResultRecord,
+): subsequentResultRecord is DeferredFragmentRecord;
 export interface StreamItemResult {
   item?: unknown;
   incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;

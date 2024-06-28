@@ -1,6 +1,8 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.isCancellableStreamRecord =
+  exports.isDeferredFragmentRecord =
+  exports.DeferredFragmentRecord =
   exports.isNonReconcilableDeferredGroupedFieldSetResult =
   exports.isDeferredGroupedFieldSetResult =
   exports.isDeferredGroupedFieldSetRecord =
@@ -20,6 +22,22 @@ function isNonReconcilableDeferredGroupedFieldSetResult(
 }
 exports.isNonReconcilableDeferredGroupedFieldSetResult =
   isNonReconcilableDeferredGroupedFieldSetResult;
+/** @internal */
+class DeferredFragmentRecord {
+  constructor(path, label, parent) {
+    this.path = path;
+    this.label = label;
+    this.parent = parent;
+    this.deferredGroupedFieldSetRecords = new Set();
+    this.reconcilableResults = new Set();
+    this.children = new Set();
+  }
+}
+exports.DeferredFragmentRecord = DeferredFragmentRecord;
+function isDeferredFragmentRecord(subsequentResultRecord) {
+  return subsequentResultRecord instanceof DeferredFragmentRecord;
+}
+exports.isDeferredFragmentRecord = isDeferredFragmentRecord;
 function isCancellableStreamRecord(subsequentResultRecord) {
   return 'earlyReturn' in subsequentResultRecord;
 }

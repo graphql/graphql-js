@@ -29,6 +29,7 @@ import {
 } from './collectFields.mjs';
 import { buildIncrementalResponse } from './IncrementalPublisher.mjs';
 import { mapAsyncIterable } from './mapAsyncIterable.mjs';
+import { DeferredFragmentRecord } from './types.mjs';
 import {
   getArgumentValues,
   getDirectiveValues,
@@ -1394,11 +1395,11 @@ function addNewDeferredFragments(newDeferUsages, newDeferMap, path) {
         ? undefined
         : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
     // Instantiate the new record.
-    const deferredFragmentRecord = {
+    const deferredFragmentRecord = new DeferredFragmentRecord(
       path,
-      label: newDeferUsage.label,
+      newDeferUsage.label,
       parent,
-    };
+    );
     // Update the map.
     newDeferMap.set(newDeferUsage, deferredFragmentRecord);
   }
