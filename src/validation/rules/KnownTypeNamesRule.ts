@@ -52,9 +52,14 @@ export function KnownTypeNamesRule(
           typeName,
           isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames],
         );
+        const parentNode: any = ancestors[2];
+        const parentName = parentNode?.name
+          ? ` in type "${parentNode.name.value}"`
+          : '';
         context.reportError(
           new GraphQLError(
-            `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
+            `Unknown type "${typeName}"${parentName}.` +
+              didYouMean(suggestedTypes),
             { nodes: node },
           ),
         );
