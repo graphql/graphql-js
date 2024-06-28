@@ -230,9 +230,28 @@ describe('astFromValue', () => {
       },
     });
 
-    expect(() => astFromValue('value', returnCustomClassScalar)).to.throw(
-      'Cannot convert value to AST: {}.',
-    );
+    expect(astFromValue('value', returnCustomClassScalar)).to.deep.equal({
+      kind: 'ObjectValue',
+      fields: [],
+    });
+
+    const returnObjectScalar = new GraphQLScalarType({
+      name: 'ReturnObjectScalar',
+      serialize() {
+        return { some: 'data' };
+      },
+    });
+
+    expect(astFromValue('value', returnObjectScalar)).to.deep.equal({
+      kind: 'ObjectValue',
+      fields: [
+        {
+          kind: 'ObjectField',
+          name: { kind: 'Name', value: 'some' },
+          value: { kind: 'StringValue', value: 'data' },
+        },
+      ],
+    });
   });
 
   it('does not converts NonNull values to NullValue', () => {
