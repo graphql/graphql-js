@@ -59,7 +59,6 @@ import { buildIncrementalResponse } from './IncrementalPublisher.ts';
 import { mapAsyncIterable } from './mapAsyncIterable.ts';
 import type {
   CancellableStreamRecord,
-  DeferredFragmentRecord,
   DeferredGroupedFieldSetRecord,
   DeferredGroupedFieldSetResult,
   ExecutionResult,
@@ -69,6 +68,7 @@ import type {
   StreamItemResult,
   StreamRecord,
 } from './types.ts';
+import { DeferredFragmentRecord } from './types.ts';
 import {
   getArgumentValues,
   getDirectiveValues,
@@ -1560,11 +1560,11 @@ function addNewDeferredFragments(
         ? undefined
         : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
     // Instantiate the new record.
-    const deferredFragmentRecord: DeferredFragmentRecord = {
+    const deferredFragmentRecord = new DeferredFragmentRecord(
       path,
-      label: newDeferUsage.label,
+      newDeferUsage.label,
       parent,
-    };
+    );
     // Update the map.
     newDeferMap.set(newDeferUsage, deferredFragmentRecord);
   }

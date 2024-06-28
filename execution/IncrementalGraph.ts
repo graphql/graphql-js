@@ -13,42 +13,28 @@ import type {
   StreamRecord,
   SubsequentResultRecord,
 } from './types.ts';
-import { isDeferredGroupedFieldSetRecord } from './types.ts';
-interface DeferredFragmentNode {
-  deferredFragmentRecord: DeferredFragmentRecord;
-  deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
-  reconcilableResults: Set<ReconcilableDeferredGroupedFieldSetResult>;
-  children: Set<SubsequentResultNode>;
-}
-function isDeferredFragmentNode(
-  node: SubsequentResultNode | undefined,
-): node is DeferredFragmentNode {
-  return node !== undefined && 'deferredFragmentRecord' in node;
-}
-type SubsequentResultNode = DeferredFragmentNode | StreamRecord;
+import {
+  isDeferredFragmentRecord,
+  isDeferredGroupedFieldSetRecord,
+} from './types.ts';
 /**
  * @internal
  */
 export class IncrementalGraph {
-  private _rootNodes: Set<SubsequentResultNode>;
-  private _deferredFragmentNodes: Map<
-    DeferredFragmentRecord,
-    DeferredFragmentNode
-  >;
+  private _rootNodes: Set<SubsequentResultRecord>;
   private _completedQueue: Array<IncrementalDataRecordResult>;
   private _nextQueue: Array<
     (iterable: IteratorResult<Iterable<IncrementalDataRecordResult>>) => void
   >;
   constructor() {
     this._rootNodes = new Set();
-    this._deferredFragmentNodes = new Map();
     this._completedQueue = [];
     this._nextQueue = [];
   }
   getNewRootNodes(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ReadonlyArray<SubsequentResultRecord> {
-    const initialResultChildren = new Set<SubsequentResultNode>();
+    const initialResultChildren = new Set<SubsequentResultRecord>();
     this._addIncrementalDataRecords(
       incrementalDataRecords,
       undefined,
@@ -59,13 +45,12 @@ export class IncrementalGraph {
   addCompletedReconcilableDeferredGroupedFieldSet(
     reconcilableResult: ReconcilableDeferredGroupedFieldSetResult,
   ): void {
-    for (const deferredFragmentNode of this._fragmentsToNodes(
-      reconcilableResult.deferredGroupedFieldSetRecord.deferredFragmentRecords,
-    )) {
-      deferredFragmentNode.deferredGroupedFieldSetRecords.delete(
+    for (const deferredFragmentRecord of reconcilableResult
+      .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+      deferredFragmentRecord.deferredGroupedFieldSetRecords.delete(
         reconcilableResult.deferredGroupedFieldSetRecord,
       );
-      deferredFragmentNode.reconcilableResults.add(reconcilableResult);
+      deferredFragmentRecord.reconcilableResults.add(reconcilableResult);
     }
     const incrementalDataRecords = reconcilableResult.incrementalDataRecords;
     if (incrementalDataRecords !== undefined) {
@@ -117,61 +102,47 @@ export class IncrementalGraph {
         reconcilableResults: ReadonlyArray<ReconcilableDeferredGroupedFieldSetResult>;
       }
     | undefined {
-    const deferredFragmentNode = this._deferredFragmentNodes.get(
-      deferredFragmentRecord,
-    );
     // TODO: add test case?
     /* c8 ignore next 3 */
-    if (deferredFragmentNode === undefined) {
+    if (!this._rootNodes.has(deferredFragmentRecord)) {
       return;
     }
-    if (deferredFragmentNode.deferredGroupedFieldSetRecords.size > 0) {
+    if (deferredFragmentRecord.deferredGroupedFieldSetRecords.size > 0) {
       return;
     }
     const reconcilableResults = Array.from(
-      deferredFragmentNode.reconcilableResults,
+      deferredFragmentRecord.reconcilableResults,
     );
-    this._removeRootNode(deferredFragmentNode);
+    this._removeRootNode(deferredFragmentRecord);
     for (const reconcilableResult of reconcilableResults) {
-      for (const otherDeferredFragmentNode of this._fragmentsToNodes(
-        reconcilableResult.deferredGroupedFieldSetRecord
-          .deferredFragmentRecords,
-      )) {
-        otherDeferredFragmentNode.reconcilableResults.delete(
+      for (const otherDeferredFragmentRecord of reconcilableResult
+        .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+        otherDeferredFragmentRecord.reconcilableResults.delete(
           reconcilableResult,
         );
       }
     }
     const newRootNodes = this._promoteNonEmptyToRoot(
-      deferredFragmentNode.children,
+      deferredFragmentRecord.children,
     );
     return { newRootNodes, reconcilableResults };
   }
   removeDeferredFragment(
     deferredFragmentRecord: DeferredFragmentRecord,
   ): boolean {
-    const deferredFragmentNode = this._deferredFragmentNodes.get(
-      deferredFragmentRecord,
-    );
-    if (deferredFragmentNode === undefined) {
+    if (!this._rootNodes.has(deferredFragmentRecord)) {
       return false;
     }
-    this._removeRootNode(deferredFragmentNode);
-    this._deferredFragmentNodes.delete(deferredFragmentRecord);
-    // TODO: add test case for an erroring deferred fragment with child defers
-    /* c8 ignore next 5 */
-    for (const child of deferredFragmentNode.children) {
-      if (isDeferredFragmentNode(child)) {
-        this.removeDeferredFragment(child.deferredFragmentRecord);
-      }
-    }
+    this._removeRootNode(deferredFragmentRecord);
     return true;
   }
   removeStream(streamRecord: StreamRecord): void {
     this._removeRootNode(streamRecord);
   }
-  private _removeRootNode(subsequentResultNode: SubsequentResultNode): void {
-    this._rootNodes.delete(subsequentResultNode);
+  private _removeRootNode(
+    subsequentResultRecord: SubsequentResultRecord,
+  ): void {
+    this._rootNodes.delete(subsequentResultRecord);
     if (this._rootNodes.size === 0) {
       for (const resolve of this._nextQueue) {
         resolve({ value: undefined, done: true });
@@ -181,16 +152,16 @@ export class IncrementalGraph {
   private _addIncrementalDataRecords(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
     parents: ReadonlyArray<DeferredFragmentRecord> | undefined,
-    initialResultChildren?: Set<SubsequentResultNode> | undefined,
+    initialResultChildren?: Set<SubsequentResultRecord> | undefined,
   ): void {
     for (const incrementalDataRecord of incrementalDataRecords) {
       if (isDeferredGroupedFieldSetRecord(incrementalDataRecord)) {
         for (const deferredFragmentRecord of incrementalDataRecord.deferredFragmentRecords) {
-          const deferredFragmentNode = this._addDeferredFragmentNode(
+          this._addDeferredFragment(
             deferredFragmentRecord,
             initialResultChildren,
           );
-          deferredFragmentNode.deferredGroupedFieldSetRecords.add(
+          deferredFragmentRecord.deferredGroupedFieldSetRecords.add(
             incrementalDataRecord,
           );
         }
@@ -202,21 +173,18 @@ export class IncrementalGraph {
         initialResultChildren.add(incrementalDataRecord);
       } else {
         for (const parent of parents) {
-          const deferredFragmentNode = this._addDeferredFragmentNode(
-            parent,
-            initialResultChildren,
-          );
-          deferredFragmentNode.children.add(incrementalDataRecord);
+          this._addDeferredFragment(parent, initialResultChildren);
+          parent.children.add(incrementalDataRecord);
         }
       }
     }
   }
   private _promoteNonEmptyToRoot(
-    maybeEmptyNewRootNodes: Set<SubsequentResultNode>,
+    maybeEmptyNewRootNodes: Set<SubsequentResultRecord>,
   ): ReadonlyArray<SubsequentResultRecord> {
     const newRootNodes: Array<SubsequentResultRecord> = [];
     for (const node of maybeEmptyNewRootNodes) {
-      if (isDeferredFragmentNode(node)) {
+      if (isDeferredFragmentRecord(node)) {
         if (node.deferredGroupedFieldSetRecords.size > 0) {
           for (const deferredGroupedFieldSetRecord of node.deferredGroupedFieldSetRecords) {
             if (!this._completesRootNode(deferredGroupedFieldSetRecord)) {
@@ -224,10 +192,9 @@ export class IncrementalGraph {
             }
           }
           this._rootNodes.add(node);
-          newRootNodes.push(node.deferredFragmentRecord);
+          newRootNodes.push(node);
           continue;
         }
-        this._deferredFragmentNodes.delete(node.deferredFragmentRecord);
         for (const child of node.children) {
           maybeEmptyNewRootNodes.add(child);
         }
@@ -243,51 +210,25 @@ export class IncrementalGraph {
   private _completesRootNode(
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   ): boolean {
-    return this._fragmentsToNodes(
-      deferredGroupedFieldSetRecord.deferredFragmentRecords,
-    ).some((node) => this._rootNodes.has(node));
+    return deferredGroupedFieldSetRecord.deferredFragmentRecords.some(
+      (deferredFragmentRecord) => this._rootNodes.has(deferredFragmentRecord),
+    );
   }
-  private _fragmentsToNodes(
-    deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
-  ): Array<DeferredFragmentNode> {
-    return deferredFragmentRecords
-      .map((deferredFragmentRecord) =>
-        this._deferredFragmentNodes.get(deferredFragmentRecord),
-      )
-      .filter<DeferredFragmentNode>(isDeferredFragmentNode);
-  }
-  private _addDeferredFragmentNode(
+  private _addDeferredFragment(
     deferredFragmentRecord: DeferredFragmentRecord,
-    initialResultChildren: Set<SubsequentResultNode> | undefined,
-  ): DeferredFragmentNode {
-    let deferredFragmentNode = this._deferredFragmentNodes.get(
-      deferredFragmentRecord,
-    );
-    if (deferredFragmentNode !== undefined) {
-      return deferredFragmentNode;
+    initialResultChildren: Set<SubsequentResultRecord> | undefined,
+  ): void {
+    if (this._rootNodes.has(deferredFragmentRecord)) {
+      return;
     }
-    deferredFragmentNode = {
-      deferredFragmentRecord,
-      deferredGroupedFieldSetRecords: new Set(),
-      reconcilableResults: new Set(),
-      children: new Set(),
-    };
-    this._deferredFragmentNodes.set(
-      deferredFragmentRecord,
-      deferredFragmentNode,
-    );
     const parent = deferredFragmentRecord.parent;
     if (parent === undefined) {
       initialResultChildren !== undefined || invariant(false);
-      initialResultChildren.add(deferredFragmentNode);
-      return deferredFragmentNode;
+      initialResultChildren.add(deferredFragmentRecord);
+      return;
     }
-    const parentNode = this._addDeferredFragmentNode(
-      parent,
-      initialResultChildren,
-    );
-    parentNode.children.add(deferredFragmentNode);
-    return deferredFragmentNode;
+    parent.children.add(deferredFragmentRecord);
+    this._addDeferredFragment(parent, initialResultChildren);
   }
   private _onDeferredGroupedFieldSet(
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
