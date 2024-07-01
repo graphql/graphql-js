@@ -72,6 +72,47 @@ describe('Execute: Handles basic execution tasks', () => {
     );
   });
 
+  it('works with deeply nested fragments', async () => {
+    const DataType: GraphQLObjectType = new GraphQLObjectType({
+      name: 'Query',
+      fields: () => ({
+        a: { type: GraphQLString, resolve: () => 'Apple' },
+      }),
+    });
+
+    const n = 10000;
+    const fragments = Array.from(Array(n).keys()).reduce(
+      (acc, next) =>
+        acc.concat(`\n
+        fragment X${next + 1} on Query {
+          ...X${next}
+        }
+      `),
+      '',
+    );
+
+    const document = parse(`
+      query {
+        ...X${n}
+      }
+      ${fragments}
+      fragment X0 on Query {
+        a
+      }
+    `);
+
+    const result = await execute({
+      schema: new GraphQLSchema({ query: DataType }),
+      document,
+    });
+
+    expect(result).to.deep.equal({
+      data: {
+        a: 'Apple',
+      },
+    });
+  });
+
   it('executes arbitrary code', async () => {
     const data = {
       a: () => 'Apple',

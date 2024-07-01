@@ -191,6 +191,7 @@ function findConflictsWithinSelectionSet(
     fieldMap,
   );
 
+  const discoveredFragments: Array<[string, string]> = [];
   if (fragmentNames.length !== 0) {
     // (B) Then collect conflicts between these fields and those represented by
     // each spread fragment name found.
@@ -203,7 +204,9 @@ function findConflictsWithinSelectionSet(
         false,
         fieldMap,
         fragmentNames[i],
+        discoveredFragments,
       );
+
       // (C) Then compare this fragment with all other fragments found in this
       // selection set to collect conflicts between fragments spread together.
       // This compares each item in the list of fragment names to every other
@@ -220,6 +223,16 @@ function findConflictsWithinSelectionSet(
         );
       }
     }
+
+    processDiscoveredFragments(
+      context,
+      conflicts,
+      cachedFieldsAndFragmentNames,
+      comparedFragmentPairs,
+      false,
+      fieldMap,
+      discoveredFragments,
+    );
   }
   return conflicts;
 }
@@ -234,6 +247,7 @@ function collectConflictsBetweenFieldsAndFragment(
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
   fragmentName: string,
+  discoveredFragments: Array<Array<string>>,
 ): void {
   const fragment = context.getFragment(fragmentName);
   if (!fragment) {
@@ -264,35 +278,12 @@ function collectConflictsBetweenFieldsAndFragment(
     fieldMap2,
   );
 
-  // (E) Then collect any conflicts between the provided collection of fields
-  // and any fragment names found in the given fragment.
-  for (const referencedFragmentName of referencedFragmentNames) {
-    // Memoize so two fragments are not compared for conflicts more than once.
-    if (
-      comparedFragmentPairs.has(
-        referencedFragmentName,
-        fragmentName,
-        areMutuallyExclusive,
-      )
-    ) {
-      continue;
-    }
-    comparedFragmentPairs.add(
-      referencedFragmentName,
+  discoveredFragments.push(
+    ...referencedFragmentNames.map((referencedFragmentName) => [
       fragmentName,
-      areMutuallyExclusive,
-    );
-
-    collectConflictsBetweenFieldsAndFragment(
-      context,
-      conflicts,
-      cachedFieldsAndFragmentNames,
-      comparedFragmentPairs,
-      areMutuallyExclusive,
-      fieldMap,
       referencedFragmentName,
-    );
-  }
+    ]),
+  );
 }
 
 // Collect all conflicts found between two fragments, including via spreading in
@@ -424,6 +415,7 @@ function findConflictsBetweenSubSelectionSets(
 
   // (I) Then collect conflicts between the first collection of fields and
   // those referenced by each fragment name associated with the second.
+  const discoveredFragments: Array<Array<string>> = [];
   for (const fragmentName2 of fragmentNames2) {
     collectConflictsBetweenFieldsAndFragment(
       context,
@@ -433,8 +425,19 @@ function findConflictsBetweenSubSelectionSets(
       areMutuallyExclusive,
       fieldMap1,
       fragmentName2,
+      discoveredFragments,
     );
   }
+
+  processDiscoveredFragments(
+    context,
+    conflicts,
+    cachedFieldsAndFragmentNames,
+    comparedFragmentPairs,
+    areMutuallyExclusive,
+    fieldMap1,
+    discoveredFragments,
+  );
 
   // (I) Then collect conflicts between the second collection of fields and
   // those referenced by each fragment name associated with the first.
@@ -447,8 +450,19 @@ function findConflictsBetweenSubSelectionSets(
       areMutuallyExclusive,
       fieldMap2,
       fragmentName1,
+      discoveredFragments,
     );
   }
+
+  processDiscoveredFragments(
+    context,
+    conflicts,
+    cachedFieldsAndFragmentNames,
+    comparedFragmentPairs,
+    areMutuallyExclusive,
+    fieldMap2,
+    discoveredFragments,
+  );
 
   // (J) Also collect conflicts between any fragment names by the first and
   // fragment names by the second. This compares each item in the first set of
@@ -467,6 +481,47 @@ function findConflictsBetweenSubSelectionSets(
     }
   }
   return conflicts;
+}
+
+// (E) Then collect any conflicts between the provided collection of fields
+// and any fragment names found in the given fragment.
+function processDiscoveredFragments(
+  context: ValidationContext,
+  conflicts: Array<Conflict>,
+  cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
+  comparedFragmentPairs: PairSet,
+  areMutuallyExclusive: boolean,
+  fieldMap: NodeAndDefCollection,
+  discoveredFragments: Array<Array<string>>,
+) {
+  let item;
+  while ((item = discoveredFragments.pop()) !== undefined) {
+    const [fragmentName, referencedFragmentName] = item;
+    if (
+      comparedFragmentPairs.has(
+        referencedFragmentName,
+        fragmentName,
+        areMutuallyExclusive,
+      )
+    ) {
+      continue;
+    }
+    comparedFragmentPairs.add(
+      referencedFragmentName,
+      fragmentName,
+      areMutuallyExclusive,
+    );
+    collectConflictsBetweenFieldsAndFragment(
+      context,
+      conflicts,
+      cachedFieldsAndFragmentNames,
+      comparedFragmentPairs,
+      areMutuallyExclusive,
+      fieldMap,
+      referencedFragmentName,
+      discoveredFragments,
+    );
+  }
 }
 
 // Collect all Conflicts "within" one collection of fields.
