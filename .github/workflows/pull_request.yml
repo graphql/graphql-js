@@ -3,6 +3,8 @@ on: pull_request
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
+    secrets:
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   diff-npm-package:
     name: Diff content of NPM package
