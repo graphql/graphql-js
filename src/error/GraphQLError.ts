@@ -45,12 +45,17 @@ function toNormalizedOptions(
 ): GraphQLErrorOptions {
   const firstArg = args[0];
   if (firstArg == null || 'kind' in firstArg || 'length' in firstArg) {
+    const originalError =
+      args[4] instanceof GraphQLError && args[4].originalError
+        ? args[4].originalError
+        : args[4];
+
     return {
       nodes: firstArg,
       source: args[1],
       positions: args[2],
       path: args[3],
-      originalError: args[4],
+      originalError,
       extensions: args[5],
     };
   }

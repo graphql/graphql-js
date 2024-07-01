@@ -71,6 +71,30 @@ describe('GraphQLError', () => {
     });
   });
 
+  it('uses correct originalError for deprecated declaration of GraphQLError', () => {
+    const originalError = new Error('original');
+    const graphQLError = new GraphQLError('msg', {
+      originalError,
+    });
+    const deprecatedError = new GraphQLError(
+      'msg',
+      null,
+      undefined,
+      undefined,
+      undefined,
+      graphQLError,
+    );
+    const expectedError = new GraphQLError('msg', graphQLError);
+
+    expect(deprecatedError).to.include({
+      name: 'GraphQLError',
+      message: 'msg',
+      stack: originalError.stack,
+      originalError,
+    });
+    expect(deprecatedError).to.deep.equal(expectedError);
+  });
+
   it('creates new stack if original error has no stack', () => {
     const original = new Error('original');
     const e = new GraphQLError('msg', { originalError: original });
