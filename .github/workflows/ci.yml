@@ -1,5 +1,9 @@
 name: CI
-on: workflow_call
+on:
+  workflow_call:
+    secrets:
+      codecov_token:
+        required: true
 jobs:
   lint:
     name: Lint source files
@@ -148,7 +152,7 @@ jobs:
         with:
           file: ./coverage/coverage-final.json
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.codecov_token }}
 
   test:
     name: Run tests on Node v${{ matrix.node_version_to_setup }}
