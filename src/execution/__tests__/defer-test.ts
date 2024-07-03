@@ -986,7 +986,7 @@ describe('Execute: defer directive', () => {
     });
   });
 
-  it('Initiates all deferred grouped field sets immediately once they have been released as pending', async () => {
+  it('Initiates unique deferred grouped field sets after those that are common to sibling defers', async () => {
     const document = parse(`
       query {
         ... @defer {
@@ -1076,7 +1076,7 @@ describe('Execute: defer directive', () => {
     resolveC();
 
     expect(cResolverCalled).to.equal(true);
-    expect(eResolverCalled).to.equal(true);
+    expect(eResolverCalled).to.equal(false);
 
     const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({

@@ -2123,15 +2123,6 @@ function executeDeferredGroupedFieldSets(
     } else {
       deferredGroupedFieldSetRecord.result = () =>
         new BoxedPromiseOrValue(executor());
-      const resolveThunk = () => {
-        const maybeThunk = deferredGroupedFieldSetRecord.result;
-        if (!(maybeThunk instanceof BoxedPromiseOrValue)) {
-          deferredGroupedFieldSetRecord.result = maybeThunk();
-        }
-      };
-      for (const deferredFragmentRecord of deferredFragmentRecords) {
-        deferredFragmentRecord.onPending(resolveThunk);
-      }
     }
 
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);

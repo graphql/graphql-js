@@ -8,7 +8,6 @@ import type { GraphQLError } from '../error/GraphQLError.js';
 import type {
   DeferredFragmentRecord,
   DeferredGroupedFieldSetRecord,
-  DeferredGroupedFieldSetResult,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
   ReconcilableDeferredGroupedFieldSetResult,
@@ -201,7 +200,6 @@ export class IncrementalGraph {
     for (const node of maybeEmptyNewRootNodes) {
       if (isDeferredFragmentRecord(node)) {
         if (node.deferredGroupedFieldSetRecords.size > 0) {
-          node.setAsPending();
           for (const deferredGroupedFieldSetRecord of node.deferredGroupedFieldSetRecords) {
             if (!this._completesRootNode(deferredGroupedFieldSetRecord)) {
               this._onDeferredGroupedFieldSet(deferredGroupedFieldSetRecord);
@@ -253,14 +251,16 @@ export class IncrementalGraph {
   private _onDeferredGroupedFieldSet(
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   ): void {
-    const result = (
-      deferredGroupedFieldSetRecord.result as BoxedPromiseOrValue<DeferredGroupedFieldSetResult>
-    ).value;
-    if (isPromise(result)) {
+    let deferredGroupedFieldSetResult = deferredGroupedFieldSetRecord.result;
+    if (!(deferredGroupedFieldSetResult instanceof BoxedPromiseOrValue)) {
+      deferredGroupedFieldSetResult = deferredGroupedFieldSetResult();
+    }
+    const value = deferredGroupedFieldSetResult.value;
+    if (isPromise(value)) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      result.then((resolved) => this._enqueue(resolved));
+      value.then((resolved) => this._enqueue(resolved));
     } else {
-      this._enqueue(result);
+      this._enqueue(value);
     }
   }
 

@@ -224,9 +224,6 @@ export class DeferredFragmentRecord {
   reconcilableResults: Set<ReconcilableDeferredGroupedFieldSetResult>;
   children: Set<SubsequentResultRecord>;
 
-  private pending: boolean;
-  private fns: Array<() => void>;
-
   constructor(
     path: Path | undefined,
     label: string | undefined,
@@ -238,24 +235,6 @@ export class DeferredFragmentRecord {
     this.deferredGroupedFieldSetRecords = new Set();
     this.reconcilableResults = new Set();
     this.children = new Set();
-    this.pending = false;
-    this.fns = [];
-  }
-
-  onPending(fn: () => void): void {
-    if (this.pending) {
-      fn();
-    } else {
-      this.fns.push(fn);
-    }
-  }
-
-  setAsPending(): void {
-    this.pending = true;
-    let fn;
-    while ((fn = this.fns.shift()) !== undefined) {
-      fn();
-    }
   }
 }
 
