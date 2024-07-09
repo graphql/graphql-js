@@ -53,6 +53,19 @@ interface SubsequentIncrementalExecutionResultContext {
 }
 
 /**
+ * The IncrementalPublisherState Enum tracks the state of the IncrementalPublisher, which is initialized to
+ * "Started". When there are no more incremental results to publish, the state is set to "Completed". On the
+ * next call to next, clean-up is potentially performed and the state is set to "Finished".
+ *
+ * If the IncrementalPublisher is ended early, it may be advanced directly from "Started" to "Finished".
+ */
+enum IncrementalPublisherState {
+  Started = 1,
+  Completed = 2,
+  Finished = 3,
+}
+
+/**
  * This class is used to publish incremental results to the client, enabling semi-concurrent
  * execution while preserving result order.
  *
@@ -119,14 +132,29 @@ class IncrementalPublisher {
     void,
     void
   > {
-    let isDone = false;
+    let incrementalPublisherState: IncrementalPublisherState =
+      IncrementalPublisherState.Started;
+
+    const _finish = async (): Promise<void> => {
+      incrementalPublisherState = IncrementalPublisherState.Finished;
+      this._incrementalGraph.abort();
+      await this._returnAsyncIterators();
+    };
 
     const _next = async (): Promise<
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
-      if (isDone) {
-        await this._returnAsyncIteratorsIgnoringErrors();
-        return { value: undefined, done: true };
+      switch (incrementalPublisherState) {
+        case IncrementalPublisherState.Finished: {
+          return { value: undefined, done: true };
+        }
+        case IncrementalPublisherState.Completed: {
+          await _finish();
+          return { value: undefined, done: true };
+        }
+        case IncrementalPublisherState.Started: {
+          // continue
+        }
       }
 
       const context: SubsequentIncrementalExecutionResultContext = {
@@ -147,7 +175,7 @@ class IncrementalPublisher {
           const hasNext = this._incrementalGraph.hasNext();
 
           if (!hasNext) {
-            isDone = true;
+            incrementalPublisherState = IncrementalPublisherState.Completed;
           }
 
           const subsequentIncrementalExecutionResult: SubsequentIncrementalExecutionResult =
@@ -171,25 +199,20 @@ class IncrementalPublisher {
         batch = await this._incrementalGraph.nextCompletedBatch();
       } while (batch !== undefined);
 
-      await this._returnAsyncIteratorsIgnoringErrors();
       return { value: undefined, done: true };
     };
 
     const _return = async (): Promise<
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
-      isDone = true;
-      this._incrementalGraph.abort();
-      await this._returnAsyncIterators();
+      await _finish();
       return { value: undefined, done: true };
     };
 
     const _throw = async (
       error?: unknown,
     ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> => {
-      isDone = true;
-      this._incrementalGraph.abort();
-      await this._returnAsyncIterators();
+      await _finish();
       return Promise.reject(error);
     };
 
@@ -371,11 +394,5 @@ class IncrementalPublisher {
       }
     }
     await Promise.all(promises);
-  }
-
-  private async _returnAsyncIteratorsIgnoringErrors(): Promise<void> {
-    await this._returnAsyncIterators().catch(() => {
-      // Ignore errors
-    });
   }
 }

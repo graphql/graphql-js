@@ -2,6 +2,7 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
@@ -1791,7 +1792,7 @@ describe('Execute: stream directive', () => {
     ]);
   });
 
-  it('Returns iterator and ignores errors when stream payloads are filtered', async () => {
+  it('Returns iterator and passes through errors when stream payloads are filtered', async () => {
     let returned = false;
     let requested = false;
     const iterable = {
@@ -1814,7 +1815,7 @@ describe('Execute: stream directive', () => {
         },
         return: () => {
           returned = true;
-          // Ignores errors from return.
+          // This error should be passed through.
           return Promise.reject(new Error('Oops'));
         },
       }),
@@ -1889,8 +1890,8 @@ describe('Execute: stream directive', () => {
       },
     });
 
-    const result3 = await iterator.next();
-    expectJSON(result3).toDeepEqual({ done: true, value: undefined });
+    const result3Promise = iterator.next();
+    await expectPromise(result3Promise).toRejectWith('Oops');
 
     assert(returned);
   });
@@ -2339,6 +2340,8 @@ describe('Execute: stream directive', () => {
           }),
         return: () => {
           returned = true;
+          // This error should be passed through.
+          return Promise.reject(new Error('Oops'));
         },
       }),
     };
@@ -2378,7 +2381,7 @@ describe('Execute: stream directive', () => {
       done: true,
       value: undefined,
     });
-    await returnPromise;
+    await expectPromise(returnPromise).toRejectWith('Oops');
     assert(returned);
   });
   it('Can return async iterable when underlying iterable does not have a return method', async () => {
@@ -2498,13 +2501,7 @@ describe('Execute: stream directive', () => {
       done: true,
       value: undefined,
     });
-    try {
-      await throwPromise; /* c8 ignore start */
-      // Not reachable, always throws
-      /* c8 ignore stop */
-    } catch (e) {
-      // ignore error
-    }
+    await expectPromise(throwPromise).toRejectWith('bad');
     assert(returned);
   });
 });
