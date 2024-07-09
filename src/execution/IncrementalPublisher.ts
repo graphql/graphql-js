@@ -135,14 +135,10 @@ class IncrementalPublisher {
         completed: [],
       };
 
-      const completedIncrementalData =
-        this._incrementalGraph.completedIncrementalData();
-      // use the raw iterator rather than 'for await ... of' so as not to trigger the
-      // '.return()' method on the iterator when exiting the loop with the next value
-      const asyncIterator = completedIncrementalData[Symbol.asyncIterator]();
-      let iteration = await asyncIterator.next();
-      while (!iteration.done) {
-        for (const completedResult of iteration.value) {
+      let batch: Iterable<IncrementalDataRecordResult> | undefined =
+        this._incrementalGraph.currentCompletedBatch();
+      do {
+        for (const completedResult of batch) {
           this._handleCompletedIncrementalData(completedResult, context);
         }
 
@@ -151,7 +147,6 @@ class IncrementalPublisher {
           const hasNext = this._incrementalGraph.hasNext();
 
           if (!hasNext) {
-            // eslint-disable-next-line require-atomic-updates
             isDone = true;
           }
 
@@ -173,8 +168,8 @@ class IncrementalPublisher {
         }
 
         // eslint-disable-next-line no-await-in-loop
-        iteration = await asyncIterator.next();
-      }
+        batch = await this._incrementalGraph.nextCompletedBatch();
+      } while (batch !== undefined);
 
       await this._returnAsyncIteratorsIgnoringErrors();
       return { value: undefined, done: true };
@@ -184,6 +179,7 @@ class IncrementalPublisher {
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
       isDone = true;
+      this._incrementalGraph.abort();
       await this._returnAsyncIterators();
       return { value: undefined, done: true };
     };
@@ -192,6 +188,7 @@ class IncrementalPublisher {
       error?: unknown,
     ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> => {
       isDone = true;
+      this._incrementalGraph.abort();
       await this._returnAsyncIterators();
       return Promise.reject(error);
     };
@@ -363,8 +360,6 @@ class IncrementalPublisher {
   }
 
   private async _returnAsyncIterators(): Promise<void> {
-    await this._incrementalGraph.completedIncrementalData().return();
-
     const cancellableStreams = this._context.cancellableStreams;
     if (cancellableStreams === undefined) {
       return;
