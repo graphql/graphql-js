@@ -157,11 +157,6 @@ export class IncrementalGraph {
     subsequentResultRecord: SubsequentResultRecord,
   ): void {
     this._rootNodes.delete(subsequentResultRecord);
-    if (this._rootNodes.size === 0) {
-      for (const resolve of this._nextQueue) {
-        resolve({ value: undefined, done: true });
-      }
-    }
   }
 
   private _addIncrementalDataRecords(
@@ -335,6 +330,11 @@ export class IncrementalGraph {
     let completed;
     while ((completed = this._completedQueue.shift()) !== undefined) {
       yield completed;
+    }
+    if (this._rootNodes.size === 0) {
+      for (const resolve of this._nextQueue) {
+        resolve({ value: undefined, done: true });
+      }
     }
   }
 
