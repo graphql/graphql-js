@@ -20,13 +20,11 @@ export declare class IncrementalGraph {
   addCompletedReconcilableDeferredGroupedFieldSet(
     reconcilableResult: ReconcilableDeferredGroupedFieldSetResult,
   ): void;
-  completedIncrementalData(): {
-    [Symbol.asyncIterator](): any;
-    next: () => Promise<IteratorResult<Iterable<IncrementalDataRecordResult>>>;
-    return: () => Promise<
-      IteratorResult<Iterable<IncrementalDataRecordResult>>
-    >;
-  };
+  currentCompletedBatch(): Generator<IncrementalDataRecordResult>;
+  nextCompletedBatch(): Promise<
+    Iterable<IncrementalDataRecordResult> | undefined
+  >;
+  abort(): void;
   hasNext(): boolean;
   completeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord):
     | {

@@ -41,31 +41,27 @@ class IncrementalGraph {
       );
     }
   }
-  completedIncrementalData() {
-    return {
-      [Symbol.asyncIterator]() {
-        return this;
-      },
-      next: () => {
-        const firstResult = this._completedQueue.shift();
-        if (firstResult !== undefined) {
-          return Promise.resolve({
-            value: this._yieldCurrentCompletedIncrementalData(firstResult),
-            done: false,
-          });
-        }
-        const { promise, resolve } = (0,
-        promiseWithResolvers_js_1.promiseWithResolvers)();
-        this._nextQueue.push(resolve);
-        return promise;
-      },
-      return: () => {
-        for (const resolve of this._nextQueue) {
-          resolve({ value: undefined, done: true });
-        }
-        return Promise.resolve({ value: undefined, done: true });
-      },
-    };
+  *currentCompletedBatch() {
+    let completed;
+    while ((completed = this._completedQueue.shift()) !== undefined) {
+      yield completed;
+    }
+    if (this._rootNodes.size === 0) {
+      for (const resolve of this._nextQueue) {
+        resolve(undefined);
+      }
+    }
+  }
+  nextCompletedBatch() {
+    const { promise, resolve } = (0,
+    promiseWithResolvers_js_1.promiseWithResolvers)();
+    this._nextQueue.push(resolve);
+    return promise;
+  }
+  abort() {
+    for (const resolve of this._nextQueue) {
+      resolve(undefined);
+    }
   }
   hasNext() {
     return this._rootNodes.size > 0;
@@ -108,11 +104,6 @@ class IncrementalGraph {
   }
   _removeRootNode(subsequentResultRecord) {
     this._rootNodes.delete(subsequentResultRecord);
-    if (this._rootNodes.size === 0) {
-      for (const resolve of this._nextQueue) {
-        resolve({ value: undefined, done: true });
-      }
-    }
   }
   _addIncrementalDataRecords(
     incrementalDataRecords,
@@ -268,18 +259,12 @@ class IncrementalGraph {
   }
   *_yieldCurrentCompletedIncrementalData(first) {
     yield first;
-    let completed;
-    while ((completed = this._completedQueue.shift()) !== undefined) {
-      yield completed;
-    }
+    yield* this.currentCompletedBatch();
   }
   _enqueue(completed) {
     const next = this._nextQueue.shift();
     if (next !== undefined) {
-      next({
-        value: this._yieldCurrentCompletedIncrementalData(completed),
-        done: false,
-      });
+      next(this._yieldCurrentCompletedIncrementalData(completed));
       return;
     }
     this._completedQueue.push(completed);
