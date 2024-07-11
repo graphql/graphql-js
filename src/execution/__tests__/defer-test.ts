@@ -1,9 +1,11 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import type { DocumentNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
@@ -854,6 +856,253 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+  });
+
+  it('Initiates deferred grouped field sets only if they have been released as pending', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            ... @defer {
+              b {
+                c { d }
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            someField
+            ... @defer {
+              b {
+                e { f }
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const { promise: slowFieldPromise, resolve: resolveSlowField } =
+      promiseWithResolvers();
+    let cResolverCalled = false;
+    let eResolverCalled = false;
+    const executeResult = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        a: {
+          someField: slowFieldPromise,
+          b: {
+            c: () => {
+              cResolverCalled = true;
+              return { d: 'd' };
+            },
+            e: () => {
+              eResolverCalled = true;
+              return { f: 'f' };
+            },
+          },
+        },
+      },
+      enableEarlyExecution: false,
+    });
+
+    assert('initialResult' in executeResult);
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {},
+      pending: [
+        { id: '0', path: [] },
+        { id: '1', path: [] },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    expect(cResolverCalled).to.equal(false);
+    expect(eResolverCalled).to.equal(false);
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      value: {
+        pending: [{ id: '2', path: ['a'] }],
+        incremental: [
+          {
+            data: { a: {} },
+            id: '0',
+          },
+          {
+            data: { b: {} },
+            id: '2',
+          },
+          {
+            data: { c: { d: 'd' } },
+            id: '2',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '2' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    expect(cResolverCalled).to.equal(true);
+    expect(eResolverCalled).to.equal(false);
+
+    resolveSlowField('someField');
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      value: {
+        pending: [{ id: '3', path: ['a'] }],
+        incremental: [
+          {
+            data: { someField: 'someField' },
+            id: '1',
+            subPath: ['a'],
+          },
+          {
+            data: { e: { f: 'f' } },
+            id: '3',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '1' }, { id: '3' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+
+    expect(eResolverCalled).to.equal(true);
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it('Initiates unique deferred grouped field sets after those that are common to sibling defers', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            ... @defer {
+              b {
+                c { d }
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            ... @defer {
+              b {
+                c { d }
+                e { f }
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const { promise: cPromise, resolve: resolveC } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let cResolverCalled = false;
+    let eResolverCalled = false;
+    const executeResult = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        a: {
+          b: {
+            c: async () => {
+              cResolverCalled = true;
+              await cPromise;
+              return { d: 'd' };
+            },
+            e: () => {
+              eResolverCalled = true;
+              return { f: 'f' };
+            },
+          },
+        },
+      },
+      enableEarlyExecution: false,
+    });
+
+    assert('initialResult' in executeResult);
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {},
+      pending: [
+        { id: '0', path: [] },
+        { id: '1', path: [] },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    expect(cResolverCalled).to.equal(false);
+    expect(eResolverCalled).to.equal(false);
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      value: {
+        pending: [
+          { id: '2', path: ['a'] },
+          { id: '3', path: ['a'] },
+        ],
+        incremental: [
+          {
+            data: { a: {} },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveC();
+
+    expect(cResolverCalled).to.equal(true);
+    expect(eResolverCalled).to.equal(false);
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      value: {
+        incremental: [
+          {
+            data: { b: { c: { d: 'd' } } },
+            id: '2',
+          },
+          {
+            data: { e: { f: 'f' } },
+            id: '3',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '2' }, { id: '3' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
   });
 
   it('Can deduplicate multiple defers on the same object', async () => {
