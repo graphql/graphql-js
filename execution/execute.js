@@ -890,65 +890,85 @@ async function completeAsyncIteratorValue(
   const graphqlWrappedResult = [completedResults, undefined];
   let index = 0;
   const streamUsage = getStreamUsage(exeContext, fieldGroup, path);
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    if (streamUsage && index >= streamUsage.initialCount) {
-      const streamItemQueue = buildAsyncStreamItemQueue(
-        index,
-        path,
-        asyncIterator,
-        exeContext,
-        streamUsage.fieldGroup,
-        info,
-        itemType,
-      );
-      const returnFn = asyncIterator.return;
-      let streamRecord;
-      if (returnFn === undefined) {
-        streamRecord = {
-          label: streamUsage.label,
+  const earlyReturn =
+    asyncIterator.return === undefined
+      ? undefined
+      : asyncIterator.return.bind(asyncIterator);
+  try {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      if (streamUsage && index >= streamUsage.initialCount) {
+        const streamItemQueue = buildAsyncStreamItemQueue(
+          index,
           path,
-          streamItemQueue,
-        };
-      } else {
-        streamRecord = {
-          label: streamUsage.label,
-          path,
-          streamItemQueue,
-          earlyReturn: returnFn.bind(asyncIterator),
-        };
-        if (exeContext.cancellableStreams === undefined) {
-          exeContext.cancellableStreams = new Set();
+          asyncIterator,
+          exeContext,
+          streamUsage.fieldGroup,
+          info,
+          itemType,
+        );
+        let streamRecord;
+        if (earlyReturn === undefined) {
+          streamRecord = {
+            label: streamUsage.label,
+            path,
+            streamItemQueue,
+          };
+        } else {
+          streamRecord = {
+            label: streamUsage.label,
+            path,
+            earlyReturn,
+            streamItemQueue,
+          };
+          if (exeContext.cancellableStreams === undefined) {
+            exeContext.cancellableStreams = new Set();
+          }
+          exeContext.cancellableStreams.add(streamRecord);
         }
-        exeContext.cancellableStreams.add(streamRecord);
+        addIncrementalDataRecords(graphqlWrappedResult, [streamRecord]);
+        break;
       }
-      addIncrementalDataRecords(graphqlWrappedResult, [streamRecord]);
-      break;
-    }
-    const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
-    let iteration;
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      iteration = await asyncIterator.next();
-    } catch (rawError) {
-      throw (0, locatedError_js_1.locatedError)(
-        rawError,
-        toNodes(fieldGroup),
-        (0, Path_js_1.pathToArray)(path),
-      );
-    }
-    // TODO: add test case for stream returning done before initialCount
-    /* c8 ignore next 3 */
-    if (iteration.done) {
-      break;
-    }
-    const item = iteration.value;
-    // TODO: add tests for stream backed by asyncIterator that returns a promise
-    /* c8 ignore start */
-    if ((0, isPromise_js_1.isPromise)(item)) {
-      completedResults.push(
-        completePromisedListItemValue(
+      const itemPath = (0, Path_js_1.addPath)(path, index, undefined);
+      let iteration;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        iteration = await asyncIterator.next();
+      } catch (rawError) {
+        throw (0, locatedError_js_1.locatedError)(
+          rawError,
+          toNodes(fieldGroup),
+          (0, Path_js_1.pathToArray)(path),
+        );
+      }
+      // TODO: add test case for stream returning done before initialCount
+      /* c8 ignore next 3 */
+      if (iteration.done) {
+        break;
+      }
+      const item = iteration.value;
+      // TODO: add tests for stream backed by asyncIterator that returns a promise
+      /* c8 ignore start */
+      if ((0, isPromise_js_1.isPromise)(item)) {
+        completedResults.push(
+          completePromisedListItemValue(
+            item,
+            graphqlWrappedResult,
+            exeContext,
+            itemType,
+            fieldGroup,
+            info,
+            itemPath,
+            incrementalContext,
+            deferMap,
+          ),
+        );
+        containsPromise = true;
+      } else if (
+        /* c8 ignore stop */
+        completeListItemValue(
           item,
+          completedResults,
           graphqlWrappedResult,
           exeContext,
           itemType,
@@ -957,30 +977,23 @@ async function completeAsyncIteratorValue(
           itemPath,
           incrementalContext,
           deferMap,
-        ),
-      );
-      containsPromise = true;
-    } else if (
+        )
+        // TODO: add tests for stream backed by asyncIterator that completes to a promise
+        /* c8 ignore start */
+      ) {
+        containsPromise = true;
+      }
       /* c8 ignore stop */
-      completeListItemValue(
-        item,
-        completedResults,
-        graphqlWrappedResult,
-        exeContext,
-        itemType,
-        fieldGroup,
-        info,
-        itemPath,
-        incrementalContext,
-        deferMap,
-      )
-      // TODO: add tests for stream backed by asyncIterator that completes to a promise
-      /* c8 ignore start */
-    ) {
-      containsPromise = true;
+      index++;
     }
-    /* c8 ignore stop */
-    index++;
+  } catch (error) {
+    if (earlyReturn !== undefined) {
+      earlyReturn().catch(() => {
+        /* c8 ignore next 1 */
+        // ignore error
+      });
+    }
+    throw error;
   }
   return containsPromise
     ? /* c8 ignore start */ Promise.all(completedResults).then((resolved) => [
