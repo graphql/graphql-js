@@ -66,12 +66,10 @@ export class IncrementalGraph {
     return this._rootNodes.size > 0;
   }
   completeDeferredFragment(deferredFragmentRecord) {
-    // TODO: add test case?
-    /* c8 ignore next 3 */
-    if (!this._rootNodes.has(deferredFragmentRecord)) {
-      return;
-    }
-    if (deferredFragmentRecord.deferredGroupedFieldSetRecords.size > 0) {
+    if (
+      !this._rootNodes.has(deferredFragmentRecord) ||
+      deferredFragmentRecord.deferredGroupedFieldSetRecords.size > 0
+    ) {
       return;
     }
     const reconcilableResults = Array.from(
@@ -179,16 +177,16 @@ export class IncrementalGraph {
     this._addDeferredFragment(parent, initialResultChildren);
   }
   _onDeferredGroupedFieldSet(deferredGroupedFieldSetRecord) {
-    const deferredGroupedFieldSetResult = deferredGroupedFieldSetRecord.result;
-    const result =
-      deferredGroupedFieldSetResult instanceof BoxedPromiseOrValue
-        ? deferredGroupedFieldSetResult.value
-        : deferredGroupedFieldSetResult().value;
-    if (isPromise(result)) {
+    let deferredGroupedFieldSetResult = deferredGroupedFieldSetRecord.result;
+    if (!(deferredGroupedFieldSetResult instanceof BoxedPromiseOrValue)) {
+      deferredGroupedFieldSetResult = deferredGroupedFieldSetResult();
+    }
+    const value = deferredGroupedFieldSetResult.value;
+    if (isPromise(value)) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      result.then((resolved) => this._enqueue(resolved));
+      value.then((resolved) => this._enqueue(resolved));
     } else {
-      this._enqueue(result);
+      this._enqueue(value);
     }
   }
   async _onStreamItems(streamRecord) {

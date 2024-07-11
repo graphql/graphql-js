@@ -1820,17 +1820,17 @@ function executeDeferredGroupedFieldSets(
         },
         deferMap,
       );
-    const shouldDeferThisDeferUsageSet = shouldDefer(
-      parentDeferUsages,
-      deferUsageSet,
-    );
-    deferredGroupedFieldSetRecord.result = shouldDeferThisDeferUsageSet
-      ? exeContext.enableEarlyExecution
-        ? new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
-            Promise.resolve().then(executor),
-          )
-        : () => new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor())
-      : new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor());
+    if (exeContext.enableEarlyExecution) {
+      deferredGroupedFieldSetRecord.result =
+        new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
+          shouldDefer(parentDeferUsages, deferUsageSet)
+            ? Promise.resolve().then(executor)
+            : executor(),
+        );
+    } else {
+      deferredGroupedFieldSetRecord.result = () =>
+        new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor());
+    }
     newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
   }
   return newDeferredGroupedFieldSetRecords;
