@@ -63,11 +63,11 @@ import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import type {
   CancellableStreamRecord,
-  DeferredGroupedFieldSetRecord,
-  DeferredGroupedFieldSetResult,
+  CompletedExecutionGroup,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
+  PendingExecutionGroup,
   StreamItemRecord,
   StreamItemResult,
   StreamRecord,
@@ -311,20 +311,19 @@ function executeOperation(
       );
 
       if (newGroupedFieldSets.size > 0) {
-        const newDeferredGroupedFieldSetRecords =
-          executeDeferredGroupedFieldSets(
-            exeContext,
-            rootType,
-            rootValue,
-            undefined,
-            undefined,
-            newGroupedFieldSets,
-            newDeferMap,
-          );
+        const newPendingExecutionGroups = executeExecutionGroups(
+          exeContext,
+          rootType,
+          rootValue,
+          undefined,
+          undefined,
+          newGroupedFieldSets,
+          newDeferMap,
+        );
 
-        graphqlWrappedResult = withNewDeferredGroupedFieldSets(
+        graphqlWrappedResult = withNewExecutionGroups(
           graphqlWrappedResult,
-          newDeferredGroupedFieldSetRecords,
+          newPendingExecutionGroups,
         );
       }
     }
@@ -347,18 +346,18 @@ function executeOperation(
   }
 }
 
-function withNewDeferredGroupedFieldSets(
+function withNewExecutionGroups(
   result: PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>>,
-  newDeferredGroupedFieldSetRecords: ReadonlyArray<DeferredGroupedFieldSetRecord>,
+  newPendingExecutionGroups: ReadonlyArray<PendingExecutionGroup>,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   if (isPromise(result)) {
     return result.then((resolved) => {
-      addIncrementalDataRecords(resolved, newDeferredGroupedFieldSetRecords);
+      addIncrementalDataRecords(resolved, newPendingExecutionGroups);
       return resolved;
     });
   }
 
-  addIncrementalDataRecords(result, newDeferredGroupedFieldSetRecords);
+  addIncrementalDataRecords(result, newPendingExecutionGroups);
   return result;
 }
 
@@ -1762,7 +1761,7 @@ function collectAndExecuteSubfields(
   );
 
   if (newGroupedFieldSets.size > 0) {
-    const newDeferredGroupedFieldSetRecords = executeDeferredGroupedFieldSets(
+    const newPendingExecutionGroups = executeExecutionGroups(
       exeContext,
       returnType,
       result,
@@ -1772,10 +1771,7 @@ function collectAndExecuteSubfields(
       newDeferMap,
     );
 
-    return withNewDeferredGroupedFieldSets(
-      subFields,
-      newDeferredGroupedFieldSetRecords,
-    );
+    return withNewExecutionGroups(subFields, newPendingExecutionGroups);
   }
   return subFields;
 }
@@ -2088,7 +2084,7 @@ function assertEventStream(result: unknown): AsyncIterable<unknown> {
   return result;
 }
 
-function executeDeferredGroupedFieldSets(
+function executeExecutionGroups(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
@@ -2096,9 +2092,8 @@ function executeDeferredGroupedFieldSets(
   parentDeferUsages: DeferUsageSet | undefined,
   newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
-): ReadonlyArray<DeferredGroupedFieldSetRecord> {
-  const newDeferredGroupedFieldSetRecords: Array<DeferredGroupedFieldSetRecord> =
-    [];
+): ReadonlyArray<PendingExecutionGroup> {
+  const newPendingExecutionGroups: Array<PendingExecutionGroup> = [];
 
   for (const [deferUsageSet, groupedFieldSet] of newGroupedFieldSets) {
     const deferredFragmentRecords = getDeferredFragmentRecords(
@@ -2106,15 +2101,15 @@ function executeDeferredGroupedFieldSets(
       deferMap,
     );
 
-    const deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord = {
+    const pendingExecutionGroup: PendingExecutionGroup = {
       deferredFragmentRecords,
       result:
-        undefined as unknown as BoxedPromiseOrValue<DeferredGroupedFieldSetResult>,
+        undefined as unknown as BoxedPromiseOrValue<CompletedExecutionGroup>,
     };
 
     const executor = () =>
-      executeDeferredGroupedFieldSet(
-        deferredGroupedFieldSetRecord,
+      executeExecutionGroup(
+        pendingExecutionGroup,
         exeContext,
         parentType,
         sourceValue,
@@ -2128,20 +2123,19 @@ function executeDeferredGroupedFieldSets(
       );
 
     if (exeContext.enableEarlyExecution) {
-      deferredGroupedFieldSetRecord.result = new BoxedPromiseOrValue(
+      pendingExecutionGroup.result = new BoxedPromiseOrValue(
         shouldDefer(parentDeferUsages, deferUsageSet)
           ? Promise.resolve().then(executor)
           : executor(),
       );
     } else {
-      deferredGroupedFieldSetRecord.result = () =>
-        new BoxedPromiseOrValue(executor());
+      pendingExecutionGroup.result = () => new BoxedPromiseOrValue(executor());
     }
 
-    newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
+    newPendingExecutionGroups.push(pendingExecutionGroup);
   }
 
-  return newDeferredGroupedFieldSetRecords;
+  return newPendingExecutionGroups;
 }
 
 function shouldDefer(
@@ -2160,8 +2154,8 @@ function shouldDefer(
   );
 }
 
-function executeDeferredGroupedFieldSet(
-  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+function executeExecutionGroup(
+  pendingExecutionGroup: PendingExecutionGroup,
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
@@ -2169,7 +2163,7 @@ function executeDeferredGroupedFieldSet(
   groupedFieldSet: GroupedFieldSet,
   incrementalContext: IncrementalContext,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
-): PromiseOrValue<DeferredGroupedFieldSetResult> {
+): PromiseOrValue<CompletedExecutionGroup> {
   let result;
   try {
     result = executeFields(
@@ -2183,7 +2177,7 @@ function executeDeferredGroupedFieldSet(
     );
   } catch (error) {
     return {
-      deferredGroupedFieldSetRecord,
+      pendingExecutionGroup,
       path: pathToArray(path),
       errors: withError(incrementalContext.errors, error),
     };
@@ -2192,36 +2186,36 @@ function executeDeferredGroupedFieldSet(
   if (isPromise(result)) {
     return result.then(
       (resolved) =>
-        buildDeferredGroupedFieldSetResult(
+        buildCompletedExecutionGroup(
           incrementalContext.errors,
-          deferredGroupedFieldSetRecord,
+          pendingExecutionGroup,
           path,
           resolved,
         ),
       (error) => ({
-        deferredGroupedFieldSetRecord,
+        pendingExecutionGroup,
         path: pathToArray(path),
         errors: withError(incrementalContext.errors, error),
       }),
     );
   }
 
-  return buildDeferredGroupedFieldSetResult(
+  return buildCompletedExecutionGroup(
     incrementalContext.errors,
-    deferredGroupedFieldSetRecord,
+    pendingExecutionGroup,
     path,
     result,
   );
 }
 
-function buildDeferredGroupedFieldSetResult(
+function buildCompletedExecutionGroup(
   errors: ReadonlyArray<GraphQLError> | undefined,
-  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+  pendingExecutionGroup: PendingExecutionGroup,
   path: Path | undefined,
   result: GraphQLWrappedResult<ObjMap<unknown>>,
-): DeferredGroupedFieldSetResult {
+): CompletedExecutionGroup {
   return {
-    deferredGroupedFieldSetRecord,
+    pendingExecutionGroup,
     path: pathToArray(path),
     result:
       errors === undefined ? { data: result[0] } : { data: result[0], errors },
