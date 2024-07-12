@@ -212,7 +212,7 @@ export interface PendingExecutionGroup {
   result: ThunkIncrementalResult<CompletedExecutionGroup>;
 }
 
-export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
+export type DeliveryGroup = DeferredFragmentRecord | StreamRecord;
 
 /** @internal */
 export class DeferredFragmentRecord {
@@ -222,7 +222,7 @@ export class DeferredFragmentRecord {
   parent: DeferredFragmentRecord | undefined;
   pendingExecutionGroups: Set<PendingExecutionGroup>;
   successfulExecutionGroups: Set<SuccessfulExecutionGroup>;
-  children: Set<SubsequentResultRecord>;
+  children: Set<DeliveryGroup>;
 
   constructor(
     path: Path | undefined,
@@ -239,9 +239,9 @@ export class DeferredFragmentRecord {
 }
 
 export function isDeferredFragmentRecord(
-  subsequentResultRecord: SubsequentResultRecord,
-): subsequentResultRecord is DeferredFragmentRecord {
-  return subsequentResultRecord instanceof DeferredFragmentRecord;
+  deliveryGroup: DeliveryGroup,
+): deliveryGroup is DeferredFragmentRecord {
+  return deliveryGroup instanceof DeferredFragmentRecord;
 }
 
 export interface StreamItemResult {
@@ -271,9 +271,9 @@ export interface CancellableStreamRecord extends StreamRecord {
 }
 
 export function isCancellableStreamRecord(
-  subsequentResultRecord: SubsequentResultRecord,
-): subsequentResultRecord is CancellableStreamRecord {
-  return 'earlyReturn' in subsequentResultRecord;
+  deliveryGroup: DeliveryGroup,
+): deliveryGroup is CancellableStreamRecord {
+  return 'earlyReturn' in deliveryGroup;
 }
 
 export type IncrementalDataRecord = PendingExecutionGroup | StreamRecord;

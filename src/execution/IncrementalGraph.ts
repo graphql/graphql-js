@@ -7,12 +7,12 @@ import type { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
   DeferredFragmentRecord,
+  DeliveryGroup,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
   PendingExecutionGroup,
   StreamItemRecord,
   StreamRecord,
-  SubsequentResultRecord,
   SuccessfulExecutionGroup,
 } from './types.js';
 import { isDeferredFragmentRecord, isPendingExecutionGroup } from './types.js';
@@ -21,7 +21,7 @@ import { isDeferredFragmentRecord, isPendingExecutionGroup } from './types.js';
  * @internal
  */
 export class IncrementalGraph {
-  private _rootNodes: Set<SubsequentResultRecord>;
+  private _rootNodes: Set<DeliveryGroup>;
 
   private _completedQueue: Array<IncrementalDataRecordResult>;
   private _nextQueue: Array<
@@ -36,8 +36,8 @@ export class IncrementalGraph {
 
   getNewRootNodes(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
-  ): ReadonlyArray<SubsequentResultRecord> {
-    const initialResultChildren = new Set<SubsequentResultRecord>();
+  ): ReadonlyArray<DeliveryGroup> {
+    const initialResultChildren = new Set<DeliveryGroup>();
     this._addIncrementalDataRecords(
       incrementalDataRecords,
       undefined,
@@ -103,7 +103,7 @@ export class IncrementalGraph {
 
   completeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord):
     | {
-        newRootNodes: ReadonlyArray<SubsequentResultRecord>;
+        newRootNodes: ReadonlyArray<DeliveryGroup>;
         successfulExecutionGroups: ReadonlyArray<SuccessfulExecutionGroup>;
       }
     | undefined {
@@ -145,16 +145,14 @@ export class IncrementalGraph {
     this._removeRootNode(streamRecord);
   }
 
-  private _removeRootNode(
-    subsequentResultRecord: SubsequentResultRecord,
-  ): void {
-    this._rootNodes.delete(subsequentResultRecord);
+  private _removeRootNode(deliveryGroup: DeliveryGroup): void {
+    this._rootNodes.delete(deliveryGroup);
   }
 
   private _addIncrementalDataRecords(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
     parents: ReadonlyArray<DeferredFragmentRecord> | undefined,
-    initialResultChildren?: Set<SubsequentResultRecord> | undefined,
+    initialResultChildren?: Set<DeliveryGroup> | undefined,
   ): void {
     for (const incrementalDataRecord of incrementalDataRecords) {
       if (isPendingExecutionGroup(incrementalDataRecord)) {
@@ -183,9 +181,9 @@ export class IncrementalGraph {
   }
 
   private _promoteNonEmptyToRoot(
-    maybeEmptyNewRootNodes: Set<SubsequentResultRecord>,
-  ): ReadonlyArray<SubsequentResultRecord> {
-    const newRootNodes: Array<SubsequentResultRecord> = [];
+    maybeEmptyNewRootNodes: Set<DeliveryGroup>,
+  ): ReadonlyArray<DeliveryGroup> {
+    const newRootNodes: Array<DeliveryGroup> = [];
     for (const node of maybeEmptyNewRootNodes) {
       if (isDeferredFragmentRecord(node)) {
         if (node.pendingExecutionGroups.size > 0) {
@@ -222,7 +220,7 @@ export class IncrementalGraph {
 
   private _addDeferredFragment(
     deferredFragmentRecord: DeferredFragmentRecord,
-    initialResultChildren: Set<SubsequentResultRecord> | undefined,
+    initialResultChildren: Set<DeliveryGroup> | undefined,
   ): void {
     if (this._rootNodes.has(deferredFragmentRecord)) {
       return;

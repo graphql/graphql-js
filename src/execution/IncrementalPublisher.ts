@@ -10,6 +10,7 @@ import type {
   CompletedExecutionGroup,
   CompletedResult,
   DeferredFragmentRecord,
+  DeliveryGroup,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
@@ -20,7 +21,6 @@ import type {
   PendingResult,
   StreamItemsResult,
   SubsequentIncrementalExecutionResult,
-  SubsequentResultRecord,
 } from './types.js';
 import {
   isCancellableStreamRecord,
@@ -92,7 +92,7 @@ class IncrementalPublisher {
   }
 
   private _toPendingResults(
-    newRootNodes: ReadonlyArray<SubsequentResultRecord>,
+    newRootNodes: ReadonlyArray<DeliveryGroup>,
   ): Array<PendingResult> {
     const pendingResults: Array<PendingResult> = [];
     for (const node of newRootNodes) {
