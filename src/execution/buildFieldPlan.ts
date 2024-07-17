@@ -24,27 +24,24 @@ export function buildFieldPlan(
 
   for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
     const deferUsageSet = new Set<DeferUsage>();
-    let inOriginalResult = false;
     for (const fieldDetails of fieldGroup) {
       const deferUsage = fieldDetails.deferUsage;
       if (deferUsage === undefined) {
-        inOriginalResult = true;
-        continue;
+        deferUsageSet.clear();
+        break;
       }
       deferUsageSet.add(deferUsage);
     }
-    if (inOriginalResult) {
-      deferUsageSet.clear();
-    } else {
-      deferUsageSet.forEach((deferUsage) => {
-        const ancestors = getAncestors(deferUsage);
-        for (const ancestor of ancestors) {
-          if (deferUsageSet.has(ancestor)) {
-            deferUsageSet.delete(deferUsage);
-          }
+
+    deferUsageSet.forEach((deferUsage) => {
+      const ancestors = getAncestors(deferUsage);
+      for (const ancestor of ancestors) {
+        if (deferUsageSet.has(ancestor)) {
+          deferUsageSet.delete(deferUsage);
         }
-      });
-    }
+      }
+    });
+
     if (isSameSet(deferUsageSet, parentDeferUsages)) {
       groupedFieldSet.set(responseKey, fieldGroup);
       continue;
