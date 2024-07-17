@@ -33,14 +33,14 @@ export function buildFieldPlan(
       deferUsageSet.add(deferUsage);
     }
 
-    deferUsageSet.forEach((deferUsage) => {
+    for (const deferUsage of deferUsageSet) {
       const ancestors = getAncestors(deferUsage);
       for (const ancestor of ancestors) {
         if (deferUsageSet.has(ancestor)) {
           deferUsageSet.delete(deferUsage);
         }
       }
-    });
+    }
 
     if (isSameSet(deferUsageSet, parentDeferUsages)) {
       groupedFieldSet.set(responseKey, fieldGroup);
