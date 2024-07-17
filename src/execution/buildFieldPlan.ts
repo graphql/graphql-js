@@ -34,11 +34,14 @@ export function buildFieldPlan(
     }
 
     for (const deferUsage of deferUsageSet) {
-      const ancestors = getAncestors(deferUsage);
-      for (const ancestor of ancestors) {
-        if (deferUsageSet.has(ancestor)) {
+      let parentDeferUsage: DeferUsage | undefined =
+        deferUsage.parentDeferUsage;
+      while (parentDeferUsage !== undefined) {
+        if (deferUsageSet.has(parentDeferUsage)) {
           deferUsageSet.delete(deferUsage);
+          break;
         }
+        parentDeferUsage = parentDeferUsage.parentDeferUsage;
       }
     }
 
@@ -59,14 +62,4 @@ export function buildFieldPlan(
     groupedFieldSet,
     newGroupedFieldSets,
   };
-}
-
-function getAncestors(deferUsage: DeferUsage): ReadonlyArray<DeferUsage> {
-  const ancestors: Array<DeferUsage> = [];
-  let parentDeferUsage: DeferUsage | undefined = deferUsage.parentDeferUsage;
-  while (parentDeferUsage !== undefined) {
-    ancestors.unshift(parentDeferUsage);
-    parentDeferUsage = parentDeferUsage.parentDeferUsage;
-  }
-  return ancestors;
 }
