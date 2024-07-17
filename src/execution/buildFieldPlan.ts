@@ -19,41 +19,22 @@ export function buildFieldPlan(
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
 ): FieldPlan {
   const groupedFieldSet = new Map<string, FieldGroup>();
-
   const newGroupedFieldSets = new Map<DeferUsageSet, Map<string, FieldGroup>>();
-
   for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
-    const deferUsageSet = new Set<DeferUsage>();
-    for (const fieldDetails of fieldGroup) {
-      const deferUsage = fieldDetails.deferUsage;
-      if (deferUsage === undefined) {
-        deferUsageSet.clear();
-        break;
-      }
-      deferUsageSet.add(deferUsage);
-    }
+    const filteredDeferUsageSet = getFilteredDeferUsageSet(fieldGroup);
 
-    for (const deferUsage of deferUsageSet) {
-      let parentDeferUsage: DeferUsage | undefined =
-        deferUsage.parentDeferUsage;
-      while (parentDeferUsage !== undefined) {
-        if (deferUsageSet.has(parentDeferUsage)) {
-          deferUsageSet.delete(deferUsage);
-          break;
-        }
-        parentDeferUsage = parentDeferUsage.parentDeferUsage;
-      }
-    }
-
-    if (isSameSet(deferUsageSet, parentDeferUsages)) {
+    if (isSameSet(filteredDeferUsageSet, parentDeferUsages)) {
       groupedFieldSet.set(responseKey, fieldGroup);
       continue;
     }
 
-    let newGroupedFieldSet = getBySet(newGroupedFieldSets, deferUsageSet);
+    let newGroupedFieldSet = getBySet(
+      newGroupedFieldSets,
+      filteredDeferUsageSet,
+    );
     if (newGroupedFieldSet === undefined) {
       newGroupedFieldSet = new Map();
-      newGroupedFieldSets.set(deferUsageSet, newGroupedFieldSet);
+      newGroupedFieldSets.set(filteredDeferUsageSet, newGroupedFieldSet);
     }
     newGroupedFieldSet.set(responseKey, fieldGroup);
   }
@@ -62,4 +43,30 @@ export function buildFieldPlan(
     groupedFieldSet,
     newGroupedFieldSets,
   };
+}
+
+function getFilteredDeferUsageSet(
+  fieldGroup: FieldGroup,
+): ReadonlySet<DeferUsage> {
+  const filteredDeferUsageSet = new Set<DeferUsage>();
+  for (const fieldDetails of fieldGroup) {
+    const deferUsage = fieldDetails.deferUsage;
+    if (deferUsage === undefined) {
+      filteredDeferUsageSet.clear();
+      return filteredDeferUsageSet;
+    }
+    filteredDeferUsageSet.add(deferUsage);
+  }
+
+  for (const deferUsage of filteredDeferUsageSet) {
+    let parentDeferUsage: DeferUsage | undefined = deferUsage.parentDeferUsage;
+    while (parentDeferUsage !== undefined) {
+      if (filteredDeferUsageSet.has(parentDeferUsage)) {
+        filteredDeferUsageSet.delete(deferUsage);
+        break;
+      }
+      parentDeferUsage = parentDeferUsage.parentDeferUsage;
+    }
+  }
+  return filteredDeferUsageSet;
 }
