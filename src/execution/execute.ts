@@ -311,7 +311,7 @@ function executeOperation(
       );
 
       if (newGroupedFieldSets.size > 0) {
-        const newPendingExecutionGroups = executeExecutionGroups(
+        const newPendingExecutionGroups = collectExecutionGroups(
           exeContext,
           rootType,
           rootValue,
@@ -1761,7 +1761,7 @@ function collectAndExecuteSubfields(
   );
 
   if (newGroupedFieldSets.size > 0) {
-    const newPendingExecutionGroups = executeExecutionGroups(
+    const newPendingExecutionGroups = collectExecutionGroups(
       exeContext,
       returnType,
       result,
@@ -2084,7 +2084,7 @@ function assertEventStream(result: unknown): AsyncIterable<unknown> {
   return result;
 }
 
-function executeExecutionGroups(
+function collectExecutionGroups(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
