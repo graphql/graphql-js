@@ -22,14 +22,6 @@ export function buildFieldPlan(
 
   const newGroupedFieldSets = new Map<DeferUsageSet, Map<string, FieldGroup>>();
 
-  const map = new Map<
-    string,
-    {
-      deferUsageSet: DeferUsageSet;
-      fieldGroup: FieldGroup;
-    }
-  >();
-
   for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
     const deferUsageSet = new Set<DeferUsage>();
     let inOriginalResult = false;
@@ -53,10 +45,6 @@ export function buildFieldPlan(
         }
       });
     }
-    map.set(responseKey, { deferUsageSet, fieldGroup });
-  }
-
-  for (const [responseKey, { deferUsageSet, fieldGroup }] of map) {
     if (isSameSet(deferUsageSet, parentDeferUsages)) {
       groupedFieldSet.set(responseKey, fieldGroup);
       continue;
