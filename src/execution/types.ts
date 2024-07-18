@@ -88,7 +88,7 @@ export interface FormattedSubsequentIncrementalExecutionResult<
   extensions?: TExtensions;
 }
 
-interface BareCompletedExecutionGroup<TData = ObjMap<unknown>> {
+interface ExecutionGroupResult<TData = ObjMap<unknown>> {
   errors?: ReadonlyArray<GraphQLError>;
   data: TData;
 }
@@ -96,7 +96,7 @@ interface BareCompletedExecutionGroup<TData = ObjMap<unknown>> {
 export interface IncrementalDeferResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends BareCompletedExecutionGroup<TData> {
+> extends ExecutionGroupResult<TData> {
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
@@ -113,7 +113,7 @@ export interface FormattedIncrementalDeferResult<
   extensions?: TExtensions;
 }
 
-interface BareStreamItemsResult<TData = ReadonlyArray<unknown>> {
+interface StreamItemsRecordResult<TData = ReadonlyArray<unknown>> {
   errors?: ReadonlyArray<GraphQLError>;
   items: TData;
 }
@@ -121,7 +121,7 @@ interface BareStreamItemsResult<TData = ReadonlyArray<unknown>> {
 export interface IncrementalStreamResult<
   TData = ReadonlyArray<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends BareStreamItemsResult<TData> {
+> extends StreamItemsRecordResult<TData> {
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
@@ -185,7 +185,7 @@ export function isCompletedExecutionGroup(
 export interface SuccessfulExecutionGroup {
   pendingExecutionGroup: PendingExecutionGroup;
   path: Array<string | number>;
-  result: BareCompletedExecutionGroup;
+  result: ExecutionGroupResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   errors?: never;
 }
@@ -261,9 +261,9 @@ export interface StreamRecord {
 
 export interface StreamItemsResult {
   streamRecord: StreamRecord;
-  result?: BareStreamItemsResult | undefined;
+  errors?: ReadonlyArray<GraphQLError>;
+  result?: StreamItemsRecordResult;
   incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
-  errors?: ReadonlyArray<GraphQLError> | undefined;
 }
 
 export interface CancellableStreamRecord extends StreamRecord {
