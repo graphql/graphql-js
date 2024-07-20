@@ -48,8 +48,8 @@ import { GraphQLStreamDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import { assertValidSchema } from '../type/validate.js';
 
-import type { DeferUsageSet, FieldPlan } from './buildFieldPlan.js';
-import { buildFieldPlan } from './buildFieldPlan.js';
+import type { DeferUsageSet, ExecutionPlan } from './buildExecutionPlan.js';
+import { buildExecutionPlan } from './buildExecutionPlan.js';
 import type {
   DeferUsage,
   FieldGroup,
@@ -296,7 +296,7 @@ function executeOperation(
         undefined,
       );
     } else {
-      const fieldPLan = buildFieldPlan(groupedFieldSet);
+      const fieldPLan = buildExecutionPlan(groupedFieldSet);
       groupedFieldSet = fieldPLan.groupedFieldSet;
       const newGroupedFieldSets = fieldPLan.newGroupedFieldSets;
       const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
@@ -1737,13 +1737,13 @@ function collectAndExecuteSubfields(
       undefined,
     );
   }
-  const subFieldPlan = buildSubFieldPlan(
+  const subExecutionPlan = buildSubExecutionPlan(
     groupedFieldSet,
     incrementalContext?.deferUsageSet,
   );
 
-  groupedFieldSet = subFieldPlan.groupedFieldSet;
-  const newGroupedFieldSets = subFieldPlan.newGroupedFieldSets;
+  groupedFieldSet = subExecutionPlan.groupedFieldSet;
+  const newGroupedFieldSets = subExecutionPlan.newGroupedFieldSets;
   const newDeferMap = addNewDeferredFragments(
     newDeferUsages,
     new Map(deferMap),
@@ -1776,20 +1776,21 @@ function collectAndExecuteSubfields(
   return subFields;
 }
 
-function buildSubFieldPlan(
+function buildSubExecutionPlan(
   originalGroupedFieldSet: GroupedFieldSet,
   deferUsageSet: DeferUsageSet | undefined,
-): FieldPlan {
-  let fieldPlan = (
-    originalGroupedFieldSet as unknown as { _fieldPlan: FieldPlan }
-  )._fieldPlan;
-  if (fieldPlan !== undefined) {
-    return fieldPlan;
+): ExecutionPlan {
+  let executionPlan = (
+    originalGroupedFieldSet as unknown as { _executionPlan: ExecutionPlan }
+  )._executionPlan;
+  if (executionPlan !== undefined) {
+    return executionPlan;
   }
-  fieldPlan = buildFieldPlan(originalGroupedFieldSet, deferUsageSet);
-  (originalGroupedFieldSet as unknown as { _fieldPlan: FieldPlan })._fieldPlan =
-    fieldPlan;
-  return fieldPlan;
+  executionPlan = buildExecutionPlan(originalGroupedFieldSet, deferUsageSet);
+  (
+    originalGroupedFieldSet as unknown as { _executionPlan: ExecutionPlan }
+  )._executionPlan = executionPlan;
+  return executionPlan;
 }
 
 /**

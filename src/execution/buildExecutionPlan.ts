@@ -9,15 +9,15 @@ import type {
 
 export type DeferUsageSet = ReadonlySet<DeferUsage>;
 
-export interface FieldPlan {
+export interface ExecutionPlan {
   groupedFieldSet: GroupedFieldSet;
   newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
 }
 
-export function buildFieldPlan(
+export function buildExecutionPlan(
   originalGroupedFieldSet: GroupedFieldSet,
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
-): FieldPlan {
+): ExecutionPlan {
   const groupedFieldSet = new Map<string, FieldGroup>();
   const newGroupedFieldSets = new Map<DeferUsageSet, Map<string, FieldGroup>>();
   for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
