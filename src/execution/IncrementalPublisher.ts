@@ -226,8 +226,11 @@ class IncrementalPublisher {
         deferredGroupedFieldSetResult,
       )
     ) {
-      for (const deferredFragmentRecord of deferredGroupedFieldSetResult
-        .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+      const deferredFragmentRecords =
+        this._incrementalGraph.getDeferredFragmentRecords(
+          deferredGroupedFieldSetResult.deferredGroupedFieldSetRecord,
+        );
+      for (const deferredFragmentRecord of deferredFragmentRecords) {
         const id = deferredFragmentRecord.id;
         if (
           !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
@@ -248,8 +251,11 @@ class IncrementalPublisher {
       deferredGroupedFieldSetResult,
     );
 
-    for (const deferredFragmentRecord of deferredGroupedFieldSetResult
-      .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+    const deferredFragmentRecords =
+      this._incrementalGraph.getDeferredFragmentRecords(
+        deferredGroupedFieldSetResult.deferredGroupedFieldSetRecord,
+      );
+    for (const deferredFragmentRecord of deferredFragmentRecords) {
       const completion = this._incrementalGraph.completeDeferredFragment(
         deferredFragmentRecord,
       );
@@ -334,8 +340,11 @@ class IncrementalPublisher {
     let maxLength = pathToArray(initialDeferredFragmentRecord.path).length;
     let bestId = initialId;
 
-    for (const deferredFragmentRecord of deferredGroupedFieldSetResult
-      .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+    const deferredFragmentRecords =
+      this._incrementalGraph.getDeferredFragmentRecords(
+        deferredGroupedFieldSetResult.deferredGroupedFieldSetRecord,
+      );
+    for (const deferredFragmentRecord of deferredFragmentRecords) {
       if (deferredFragmentRecord === initialDeferredFragmentRecord) {
         continue;
       }

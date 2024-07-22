@@ -7,6 +7,8 @@ import type {
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
 
+import type { DeferUsage } from './collectFields.js';
+
 /**
  * The result of GraphQL execution.
  *
@@ -169,7 +171,7 @@ export interface FormattedCompletedResult {
 export function isDeferredGroupedFieldSetRecord(
   incrementalDataRecord: IncrementalDataRecord,
 ): incrementalDataRecord is DeferredGroupedFieldSetRecord {
-  return 'deferredFragmentRecords' in incrementalDataRecord;
+  return 'deferUsages' in incrementalDataRecord;
 }
 
 export type DeferredGroupedFieldSetResult =
@@ -208,7 +210,8 @@ type ThunkIncrementalResult<T> =
   | (() => BoxedPromiseOrValue<T>);
 
 export interface DeferredGroupedFieldSetRecord {
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+  deferUsages: ReadonlySet<DeferUsage>;
+  path: Path | undefined;
   result: ThunkIncrementalResult<DeferredGroupedFieldSetResult>;
 }
 

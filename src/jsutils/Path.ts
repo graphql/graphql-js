@@ -4,6 +4,7 @@ export interface Path {
   readonly prev: Path | undefined;
   readonly key: string | number;
   readonly typename: string | undefined;
+  readonly fieldDepth: number;
 }
 
 /**
@@ -14,7 +15,12 @@ export function addPath(
   key: string | number,
   typename: string | undefined,
 ): Path {
-  return { prev, key, typename };
+  const fieldDepth = prev
+    ? typeof key === 'number'
+      ? prev.fieldDepth
+      : prev.fieldDepth + 1
+    : 1;
+  return { prev, key, typename, fieldDepth };
 }
 
 /**
@@ -30,4 +36,26 @@ export function pathToArray(
     curr = curr.prev;
   }
   return flattened.reverse();
+}
+
+export function pathAtFieldDepth(
+  path: Path | undefined,
+  fieldDepth: number,
+): Path | undefined {
+  if (fieldDepth === 0) {
+    return undefined;
+  }
+  let currentPath = path;
+  while (currentPath !== undefined) {
+    if (currentPath.fieldDepth === fieldDepth) {
+      return currentPath;
+    }
+    currentPath = currentPath.prev;
+  }
+  /* c8 ignore next 5 */
+  throw new Error(
+    `Path is of fieldDepth ${
+      path === undefined ? 0 : path.fieldDepth
+    }, but fieldDepth ${fieldDepth} requested.`,
+  );
 }
