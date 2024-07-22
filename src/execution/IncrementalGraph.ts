@@ -65,7 +65,7 @@ export class IncrementalGraph {
   addCompletedReconcilableDeferredGroupedFieldSet(
     reconcilableResult: ReconcilableDeferredGroupedFieldSetResult,
   ): void {
-    const deferredFragmentRecords = this.getDeferredFragmentRecords(
+    const deferredFragmentRecords = this._getDeferredFragmentRecords(
       reconcilableResult.deferredGroupedFieldSetRecord,
     );
     for (const deferredFragmentRecord of deferredFragmentRecords) {
@@ -84,14 +84,46 @@ export class IncrementalGraph {
     }
   }
 
-  getDeferredFragmentRecords(
-    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
-  ): Array<DeferredFragmentRecord> {
-    const { deferUsages, path } = deferredGroupedFieldSetRecord;
-    return Array.from(deferUsages).map((deferUsage) => {
-      const deferUsagePath = pathAtFieldDepth(path, deferUsage.fieldDepth);
-      return this._getDeferredFragmentRecord(deferUsage, deferUsagePath);
-    });
+  getDeferredFragmentRecord(
+    deferUsage: DeferUsage,
+    path: Path | undefined,
+  ): DeferredFragmentRecord {
+    const deferUsagePath = pathAtFieldDepth(path, deferUsage.fieldDepth);
+    let deferredFragmentRecords:
+      | WeakMap<DeferUsage, DeferredFragmentRecord>
+      | undefined;
+    if (deferUsagePath === undefined) {
+      deferredFragmentRecords = this._rootDeferredFragments;
+    } else {
+      deferredFragmentRecords =
+        this._nonRootDeferredFragments.get(deferUsagePath);
+      if (deferredFragmentRecords === undefined) {
+        deferredFragmentRecords = new WeakMap();
+        this._nonRootDeferredFragments.set(
+          deferUsagePath,
+          deferredFragmentRecords,
+        );
+      }
+    }
+    let deferredFragmentRecord = deferredFragmentRecords.get(deferUsage);
+    if (deferredFragmentRecord === undefined) {
+      let parent: DeferredFragmentRecord | undefined;
+      const parentDeferUsage = deferUsage.parentDeferUsage;
+      if (parentDeferUsage !== undefined) {
+        const parentPath = pathAtFieldDepth(
+          deferUsagePath,
+          parentDeferUsage.fieldDepth,
+        );
+        parent = this.getDeferredFragmentRecord(parentDeferUsage, parentPath);
+      }
+      deferredFragmentRecord = new DeferredFragmentRecord(
+        deferUsagePath,
+        deferUsage.label,
+        parent,
+      );
+      deferredFragmentRecords.set(deferUsage, deferredFragmentRecord);
+    }
+    return deferredFragmentRecord;
   }
 
   *currentCompletedBatch(): Generator<IncrementalDataRecordResult> {
@@ -143,7 +175,7 @@ export class IncrementalGraph {
     );
     this._removeRootNode(deferredFragmentRecord);
     for (const reconcilableResult of reconcilableResults) {
-      const deferredFragmentRecords = this.getDeferredFragmentRecords(
+      const deferredFragmentRecords = this._getDeferredFragmentRecords(
         reconcilableResult.deferredGroupedFieldSetRecord,
       );
       for (const otherDeferredFragmentRecord of deferredFragmentRecords) {
@@ -172,40 +204,6 @@ export class IncrementalGraph {
     this._removeRootNode(streamRecord);
   }
 
-  private _getDeferredFragmentRecord(
-    deferUsage: DeferUsage,
-    path: Path | undefined,
-  ): DeferredFragmentRecord {
-    let deferredFragmentRecords:
-      | WeakMap<DeferUsage, DeferredFragmentRecord>
-      | undefined;
-    if (path === undefined) {
-      deferredFragmentRecords = this._rootDeferredFragments;
-    } else {
-      deferredFragmentRecords = this._nonRootDeferredFragments.get(path);
-      if (deferredFragmentRecords === undefined) {
-        deferredFragmentRecords = new WeakMap();
-        this._nonRootDeferredFragments.set(path, deferredFragmentRecords);
-      }
-    }
-    let deferredFragmentRecord = deferredFragmentRecords.get(deferUsage);
-    if (deferredFragmentRecord === undefined) {
-      let parent: DeferredFragmentRecord | undefined;
-      const parentDeferUsage = deferUsage.parentDeferUsage;
-      if (parentDeferUsage !== undefined) {
-        const parentPath = pathAtFieldDepth(path, parentDeferUsage.fieldDepth);
-        parent = this._getDeferredFragmentRecord(parentDeferUsage, parentPath);
-      }
-      deferredFragmentRecord = new DeferredFragmentRecord(
-        path,
-        deferUsage.label,
-        parent,
-      );
-      deferredFragmentRecords.set(deferUsage, deferredFragmentRecord);
-    }
-    return deferredFragmentRecord;
-  }
-
   private _removeRootNode(
     subsequentResultRecord: SubsequentResultRecord,
   ): void {
@@ -219,7 +217,7 @@ export class IncrementalGraph {
   ): void {
     for (const incrementalDataRecord of incrementalDataRecords) {
       if (isDeferredGroupedFieldSetRecord(incrementalDataRecord)) {
-        const deferredFragmentRecords = this.getDeferredFragmentRecords(
+        const deferredFragmentRecords = this._getDeferredFragmentRecords(
           incrementalDataRecord,
         );
         for (const deferredFragmentRecord of deferredFragmentRecords) {
@@ -244,6 +242,15 @@ export class IncrementalGraph {
         }
       }
     }
+  }
+
+  private _getDeferredFragmentRecords(
+    deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
+  ): Array<DeferredFragmentRecord> {
+    const { deferUsages, path } = deferredGroupedFieldSetRecord;
+    return Array.from(deferUsages).map((deferUsage) =>
+      this.getDeferredFragmentRecord(deferUsage, path),
+    );
   }
 
   private _promoteNonEmptyToRoot(
@@ -279,7 +286,7 @@ export class IncrementalGraph {
   private _completesRootNode(
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   ): boolean {
-    const deferredFragmentRecords = this.getDeferredFragmentRecords(
+    const deferredFragmentRecords = this._getDeferredFragmentRecords(
       deferredGroupedFieldSetRecord,
     );
     return deferredFragmentRecords.some((deferredFragmentRecord) =>
