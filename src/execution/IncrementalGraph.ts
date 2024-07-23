@@ -2,7 +2,7 @@ import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isPromise } from '../jsutils/isPromise.js';
 import type { Path } from '../jsutils/Path.js';
-import { pathAtFieldDepth, pathToArray } from '../jsutils/Path.js';
+import { pathAtFieldDepth } from '../jsutils/Path.js';
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
@@ -10,7 +10,6 @@ import type { GraphQLError } from '../error/GraphQLError.js';
 import type { DeferUsage } from './collectFields.js';
 import type {
   DeferredGroupedFieldSetRecord,
-  DeferredGroupedFieldSetResult,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
   ReconcilableDeferredGroupedFieldSetResult,
@@ -125,12 +124,11 @@ export class IncrementalGraph {
     }
   }
 
-  getBestIdAndSubPath(
+  getDeepestDeferredFragmentRecord(
     initialDeferUsage: DeferUsage,
-    deferredGroupedFieldSetResult: DeferredGroupedFieldSetResult,
-  ): { bestId: string; subPath: ReadonlyArray<string | number> | undefined } {
-    const { deferUsages, path } =
-      deferredGroupedFieldSetResult.deferredGroupedFieldSetRecord;
+    deferUsages: ReadonlySet<DeferUsage>,
+    path: Path | undefined,
+  ): DeferredFragmentRecord {
     let bestDeferUsage = initialDeferUsage;
     let maxFieldDepth = initialDeferUsage.fieldDepth;
     for (const deferUsage of deferUsages) {
@@ -143,19 +141,7 @@ export class IncrementalGraph {
         bestDeferUsage = deferUsage;
       }
     }
-    const deferredFragmentRecord = this._deferredFragmentFactory.get(
-      bestDeferUsage,
-      path,
-    );
-    const bestId = deferredFragmentRecord.id;
-    invariant(bestId !== undefined);
-    const subPath = pathToArray(path).slice(
-      pathToArray(deferredFragmentRecord.path).length,
-    );
-    return {
-      bestId,
-      subPath: subPath.length > 0 ? subPath : undefined,
-    };
+    return this._deferredFragmentFactory.get(bestDeferUsage, path);
   }
 
   *currentCompletedBatch(): Generator<IncrementalDataRecordResult> {
@@ -195,7 +181,7 @@ export class IncrementalGraph {
     path: Path | undefined,
   ):
     | {
-        id: string;
+        deferredFragmentRecord: DeferredFragmentRecord;
         newRootNodes: ReadonlyArray<SubsequentResultRecord>;
         reconcilableResults: ReadonlyArray<ReconcilableDeferredGroupedFieldSetResult>;
       }
@@ -230,15 +216,13 @@ export class IncrementalGraph {
     const newRootNodes = this._promoteNonEmptyToRoot(
       deferredFragmentRecord.children,
     );
-    const id = deferredFragmentRecord.id;
-    invariant(id !== undefined);
-    return { id, newRootNodes, reconcilableResults };
+    return { deferredFragmentRecord, newRootNodes, reconcilableResults };
   }
 
   removeDeferredFragment(
     deferUsage: DeferUsage,
     path: Path | undefined,
-  ): string | undefined {
+  ): DeferredFragmentRecord | undefined {
     const deferredFragmentRecord = this._deferredFragmentFactory.get(
       deferUsage,
       path,
@@ -247,7 +231,7 @@ export class IncrementalGraph {
       return;
     }
     this._removeRootNode(deferredFragmentRecord);
-    return deferredFragmentRecord.id;
+    return deferredFragmentRecord;
   }
 
   removeStream(streamRecord: StreamRecord): void {

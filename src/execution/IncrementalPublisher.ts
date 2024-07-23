@@ -228,14 +228,14 @@ class IncrementalPublisher {
       )
     ) {
       for (const deferUsage of deferUsages) {
-        const id = this._incrementalGraph.removeDeferredFragment(
-          deferUsage,
-          path,
-        );
-        if (id === undefined) {
+        const deferredFragmentRecord =
+          this._incrementalGraph.removeDeferredFragment(deferUsage, path);
+        if (deferredFragmentRecord === undefined) {
           // This can occur if multiple deferred grouped field sets error for a fragment.
           continue;
         }
+        const id = deferredFragmentRecord.id;
+        invariant(id !== undefined);
         context.completed.push({
           id,
           errors: deferredGroupedFieldSetResult.errors,
@@ -257,18 +257,30 @@ class IncrementalPublisher {
         continue;
       }
       const incremental = context.incremental;
-      const { id, newRootNodes, reconcilableResults } = completion;
+      const { deferredFragmentRecord, newRootNodes, reconcilableResults } =
+        completion;
+      const id = deferredFragmentRecord.id;
+      invariant(id !== undefined);
       context.pending.push(...this._toPendingResults(newRootNodes));
       for (const reconcilableResult of reconcilableResults) {
-        const { bestId, subPath } = this._incrementalGraph.getBestIdAndSubPath(
-          deferUsage,
-          reconcilableResult,
-        );
+        const { deferUsages: resultDeferUsages, path: resultPath } =
+          reconcilableResult.deferredGroupedFieldSetRecord;
+        const bestDeferredFragmentRecord =
+          this._incrementalGraph.getDeepestDeferredFragmentRecord(
+            deferUsage,
+            resultDeferUsages,
+            resultPath,
+          );
+        const bestId = bestDeferredFragmentRecord.id;
+        invariant(bestId !== undefined);
         const incrementalEntry: IncrementalDeferResult = {
           ...reconcilableResult.result,
           id: bestId,
         };
-        if (subPath !== undefined) {
+        const subPath = pathToArray(resultPath).slice(
+          pathToArray(bestDeferredFragmentRecord.path).length,
+        );
+        if (subPath.length > 0) {
           incrementalEntry.subPath = subPath;
         }
         incremental.push(incrementalEntry);
