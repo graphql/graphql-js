@@ -337,9 +337,16 @@ export class IncrementalGraph {
     deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord,
   ): boolean {
     const { deferUsages, path } = deferredGroupedFieldSetRecord;
-    return Array.from(deferUsages).some((deferUsage) =>
-      this._rootNodes.has(this._getDeferredFragmentRecord(deferUsage, path)),
-    );
+    for (const deferUsage of deferUsages) {
+      const deferredFragmentRecord = this._getDeferredFragmentRecord(
+        deferUsage,
+        path,
+      );
+      if (this._rootNodes.has(deferredFragmentRecord)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private _addDeferredFragment(
