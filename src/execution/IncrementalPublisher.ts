@@ -4,7 +4,6 @@ import { pathToArray } from '../jsutils/Path.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
-import type { DeferUsage } from './collectFields.js';
 import { IncrementalGraph } from './IncrementalGraph.js';
 import type {
   CancellableStreamRecord,
@@ -229,16 +228,14 @@ class IncrementalPublisher {
       )
     ) {
       for (const deferUsage of deferUsages) {
-        const deferredFragmentRecord =
-          this._incrementalGraph.getDeferredFragmentRecord(deferUsage, path);
-        const id = deferredFragmentRecord.id;
-        if (
-          !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
-        ) {
+        const id = this._incrementalGraph.removeDeferredFragment(
+          deferUsage,
+          path,
+        );
+        if (id === undefined) {
           // This can occur if multiple deferred grouped field sets error for a fragment.
           continue;
         }
-        invariant(id !== undefined);
         context.completed.push({
           id,
           errors: deferredGroupedFieldSetResult.errors,
@@ -252,22 +249,18 @@ class IncrementalPublisher {
     );
 
     for (const deferUsage of deferUsages) {
-      const deferredFragmentRecord =
-        this._incrementalGraph.getDeferredFragmentRecord(deferUsage, path);
       const completion = this._incrementalGraph.completeDeferredFragment(
-        deferredFragmentRecord,
+        deferUsage,
+        path,
       );
       if (completion === undefined) {
         continue;
       }
-      const id = deferredFragmentRecord.id;
-      invariant(id !== undefined);
       const incremental = context.incremental;
       const { newRootNodes, reconcilableResults } = completion;
       context.pending.push(...this._toPendingResults(newRootNodes));
       for (const reconcilableResult of reconcilableResults) {
-        const { bestId, subPath } = this._getBestIdAndSubPath(
-          id,
+        const { bestId, subPath } = this._incrementalGraph.getBestIdAndSubPath(
           deferUsage,
           reconcilableResult,
         );
@@ -280,6 +273,8 @@ class IncrementalPublisher {
         }
         incremental.push(incrementalEntry);
       }
+      const id = completion.id;
+      invariant(id !== undefined);
       context.completed.push({ id });
     }
   }
@@ -328,43 +323,6 @@ class IncrementalPublisher {
         context.pending.push(...this._toPendingResults(newRootNodes));
       }
     }
-  }
-
-  private _getBestIdAndSubPath(
-    initialId: string,
-    initialDeferUsage: DeferUsage,
-    deferredGroupedFieldSetResult: DeferredGroupedFieldSetResult,
-  ): { bestId: string; subPath: ReadonlyArray<string | number> | undefined } {
-    const { deferUsages, path } =
-      deferredGroupedFieldSetResult.deferredGroupedFieldSetRecord;
-    const initialDeferredFragmentRecord =
-      this._incrementalGraph.getDeferredFragmentRecord(initialDeferUsage, path);
-    let maxLength = pathToArray(initialDeferredFragmentRecord.path).length;
-    let bestId = initialId;
-    for (const deferUsage of deferUsages) {
-      const deferredFragmentRecord =
-        this._incrementalGraph.getDeferredFragmentRecord(deferUsage, path);
-      if (deferredFragmentRecord === initialDeferredFragmentRecord) {
-        continue;
-      }
-      const id = deferredFragmentRecord.id;
-      // TODO: add test case for when an fragment has not been released, but might be processed for the shortest path.
-      /* c8 ignore next 3 */
-      if (id === undefined) {
-        continue;
-      }
-      const fragmentPath = pathToArray(deferredFragmentRecord.path);
-      const length = fragmentPath.length;
-      if (length > maxLength) {
-        maxLength = length;
-        bestId = id;
-      }
-    }
-    const subPath = pathToArray(path).slice(maxLength);
-    return {
-      bestId,
-      subPath: subPath.length > 0 ? subPath : undefined,
-    };
   }
 
   private async _returnAsyncIterators(): Promise<void> {
