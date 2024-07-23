@@ -56,10 +56,11 @@ class DeferredFragmentFactory {
     }
     let deferredFragmentRecord = deferredFragmentRecords.get(deferUsage);
     if (deferredFragmentRecord === undefined) {
+      const { label, parentDeferUsage } = deferUsage;
       deferredFragmentRecord = new DeferredFragmentRecord(
-        deferUsage,
         deferUsagePath,
-        deferUsage.label,
+        label,
+        parentDeferUsage,
       );
       deferredFragmentRecords.set(deferUsage, deferredFragmentRecord);
     }
@@ -333,7 +334,7 @@ export class IncrementalGraph {
     if (this._rootNodes.has(deferredFragmentRecord)) {
       return;
     }
-    const parentDeferUsage = deferredFragmentRecord.deferUsage.parentDeferUsage;
+    const parentDeferUsage = deferredFragmentRecord.parentDeferUsage;
     if (parentDeferUsage === undefined) {
       invariant(initialResultChildren !== undefined);
       initialResultChildren.add(deferredFragmentRecord);
