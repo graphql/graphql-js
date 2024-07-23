@@ -257,7 +257,7 @@ class IncrementalPublisher {
         continue;
       }
       const incremental = context.incremental;
-      const { newRootNodes, reconcilableResults } = completion;
+      const { id, newRootNodes, reconcilableResults } = completion;
       context.pending.push(...this._toPendingResults(newRootNodes));
       for (const reconcilableResult of reconcilableResults) {
         const { bestId, subPath } = this._incrementalGraph.getBestIdAndSubPath(
@@ -273,8 +273,6 @@ class IncrementalPublisher {
         }
         incremental.push(incrementalEntry);
       }
-      const id = completion.id;
-      invariant(id !== undefined);
       context.completed.push({ id });
     }
   }

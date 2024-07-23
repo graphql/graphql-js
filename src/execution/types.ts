@@ -219,22 +219,22 @@ export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
 
 /** @internal */
 export class DeferredFragmentRecord {
+  deferUsage: DeferUsage;
   path: Path | undefined;
   label: string | undefined;
   id?: string | undefined;
-  parent: DeferredFragmentRecord | undefined;
   deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
   reconcilableResults: Set<ReconcilableDeferredGroupedFieldSetResult>;
   children: Set<SubsequentResultRecord>;
 
   constructor(
+    deferUsage: DeferUsage,
     path: Path | undefined,
     label: string | undefined,
-    parent: DeferredFragmentRecord | undefined,
   ) {
+    this.deferUsage = deferUsage;
     this.path = path;
     this.label = label;
-    this.parent = parent;
     this.deferredGroupedFieldSetRecords = new Set();
     this.reconcilableResults = new Set();
     this.children = new Set();
