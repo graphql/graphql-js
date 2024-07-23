@@ -256,12 +256,10 @@ class IncrementalPublisher {
       if (completion === undefined) {
         continue;
       }
-      const incremental = context.incremental;
       const { deferredFragmentRecord, newRootNodes, reconcilableResults } =
         completion;
-      const id = deferredFragmentRecord.id;
-      invariant(id !== undefined);
       context.pending.push(...this._toPendingResults(newRootNodes));
+      const incremental = context.incremental;
       for (const reconcilableResult of reconcilableResults) {
         const { deferUsages: resultDeferUsages, path: resultPath } =
           reconcilableResult.deferredGroupedFieldSetRecord;
@@ -285,6 +283,8 @@ class IncrementalPublisher {
         }
         incremental.push(incrementalEntry);
       }
+      const id = deferredFragmentRecord.id;
+      invariant(id !== undefined);
       context.completed.push({ id });
     }
   }
