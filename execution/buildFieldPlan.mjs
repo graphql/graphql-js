@@ -6,41 +6,19 @@ export function buildFieldPlan(
 ) {
   const groupedFieldSet = new Map();
   const newGroupedFieldSets = new Map();
-  const map = new Map();
   for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
-    const deferUsageSet = new Set();
-    let inOriginalResult = false;
-    for (const fieldDetails of fieldGroup) {
-      const deferUsage = fieldDetails.deferUsage;
-      if (deferUsage === undefined) {
-        inOriginalResult = true;
-        continue;
-      }
-      deferUsageSet.add(deferUsage);
-    }
-    if (inOriginalResult) {
-      deferUsageSet.clear();
-    } else {
-      deferUsageSet.forEach((deferUsage) => {
-        const ancestors = getAncestors(deferUsage);
-        for (const ancestor of ancestors) {
-          if (deferUsageSet.has(ancestor)) {
-            deferUsageSet.delete(deferUsage);
-          }
-        }
-      });
-    }
-    map.set(responseKey, { deferUsageSet, fieldGroup });
-  }
-  for (const [responseKey, { deferUsageSet, fieldGroup }] of map) {
-    if (isSameSet(deferUsageSet, parentDeferUsages)) {
+    const filteredDeferUsageSet = getFilteredDeferUsageSet(fieldGroup);
+    if (isSameSet(filteredDeferUsageSet, parentDeferUsages)) {
       groupedFieldSet.set(responseKey, fieldGroup);
       continue;
     }
-    let newGroupedFieldSet = getBySet(newGroupedFieldSets, deferUsageSet);
+    let newGroupedFieldSet = getBySet(
+      newGroupedFieldSets,
+      filteredDeferUsageSet,
+    );
     if (newGroupedFieldSet === undefined) {
       newGroupedFieldSet = new Map();
-      newGroupedFieldSets.set(deferUsageSet, newGroupedFieldSet);
+      newGroupedFieldSets.set(filteredDeferUsageSet, newGroupedFieldSet);
     }
     newGroupedFieldSet.set(responseKey, fieldGroup);
   }
@@ -49,12 +27,25 @@ export function buildFieldPlan(
     newGroupedFieldSets,
   };
 }
-function getAncestors(deferUsage) {
-  const ancestors = [];
-  let parentDeferUsage = deferUsage.parentDeferUsage;
-  while (parentDeferUsage !== undefined) {
-    ancestors.unshift(parentDeferUsage);
-    parentDeferUsage = parentDeferUsage.parentDeferUsage;
+function getFilteredDeferUsageSet(fieldGroup) {
+  const filteredDeferUsageSet = new Set();
+  for (const fieldDetails of fieldGroup) {
+    const deferUsage = fieldDetails.deferUsage;
+    if (deferUsage === undefined) {
+      filteredDeferUsageSet.clear();
+      return filteredDeferUsageSet;
+    }
+    filteredDeferUsageSet.add(deferUsage);
   }
-  return ancestors;
+  for (const deferUsage of filteredDeferUsageSet) {
+    let parentDeferUsage = deferUsage.parentDeferUsage;
+    while (parentDeferUsage !== undefined) {
+      if (filteredDeferUsageSet.has(parentDeferUsage)) {
+        filteredDeferUsageSet.delete(deferUsage);
+        break;
+      }
+      parentDeferUsage = parentDeferUsage.parentDeferUsage;
+    }
+  }
+  return filteredDeferUsageSet;
 }
