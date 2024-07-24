@@ -46,7 +46,7 @@ export class IncrementalGraph {
     return this._promoteNonEmptyToRoot(initialResultChildren);
   }
 
-  addCompletedReconcilableExecutionGroup(
+  addCompletedSuccessfulExecutionGroup(
     successfulExecutionGroup: SuccessfulExecutionGroup,
   ): void {
     for (const deferredFragmentRecord of successfulExecutionGroup

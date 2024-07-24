@@ -237,7 +237,7 @@ class IncrementalPublisher {
       return;
     }
 
-    this._incrementalGraph.addCompletedReconcilableExecutionGroup(
+    this._incrementalGraph.addCompletedSuccessfulExecutionGroup(
       completedExecutionGroup,
     );
 
