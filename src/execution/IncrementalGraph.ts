@@ -1,12 +1,13 @@
 import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isPromise } from '../jsutils/isPromise.js';
+import type { Path } from '../jsutils/Path.js';
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
+import type { DeferUsage } from './collectFields.js';
 import type {
-  DeferredFragmentRecord,
   DeliveryGroup,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
@@ -15,20 +16,88 @@ import type {
   StreamRecord,
   SuccessfulExecutionGroup,
 } from './types.js';
-import { isDeferredFragmentRecord, isPendingExecutionGroup } from './types.js';
+import {
+  DeferredFragmentRecord,
+  isDeferredFragmentRecord,
+  isPendingExecutionGroup,
+} from './types.js';
+
+/**
+ * @internal
+ */
+class DeferredFragmentFactory {
+  private _rootDeferredFragments = new Map<
+    DeferUsage,
+    DeferredFragmentRecord
+  >();
+
+  get(deferUsage: DeferUsage, path: Path | undefined): DeferredFragmentRecord {
+    const deferUsagePath = this._pathAtDepth(path, deferUsage.depth);
+    let deferredFragmentRecords:
+      | Map<DeferUsage, DeferredFragmentRecord>
+      | undefined;
+    if (deferUsagePath === undefined) {
+      deferredFragmentRecords = this._rootDeferredFragments;
+    } else {
+      deferredFragmentRecords = (
+        deferUsagePath as unknown as {
+          deferredFragmentRecords: Map<DeferUsage, DeferredFragmentRecord>;
+        }
+      ).deferredFragmentRecords;
+      if (deferredFragmentRecords === undefined) {
+        deferredFragmentRecords = new Map();
+        (
+          deferUsagePath as unknown as {
+            deferredFragmentRecords: Map<DeferUsage, DeferredFragmentRecord>;
+          }
+        ).deferredFragmentRecords = deferredFragmentRecords;
+      }
+    }
+    let deferredFragmentRecord = deferredFragmentRecords.get(deferUsage);
+    if (deferredFragmentRecord === undefined) {
+      const { label, parentDeferUsage } = deferUsage;
+      deferredFragmentRecord = new DeferredFragmentRecord(
+        deferUsagePath,
+        label,
+        parentDeferUsage,
+      );
+      deferredFragmentRecords.set(deferUsage, deferredFragmentRecord);
+    }
+    return deferredFragmentRecord;
+  }
+
+  private _pathAtDepth(
+    path: Path | undefined,
+    depth: number,
+  ): Path | undefined {
+    if (depth === 0) {
+      return;
+    }
+    let currentPath = path;
+    invariant(currentPath !== undefined);
+    let currentDepth = currentPath.depth;
+    while (currentDepth > depth) {
+      currentPath = currentPath.prev;
+      invariant(currentPath !== undefined);
+      currentDepth = currentPath.depth;
+    }
+    return currentPath;
+  }
+}
 
 /**
  * @internal
  */
 export class IncrementalGraph {
   private _rootNodes: Set<DeliveryGroup>;
-
+  private _deferredFragmentFactory: DeferredFragmentFactory;
   private _completedQueue: Array<IncrementalDataRecordResult>;
   private _nextQueue: Array<
     (iterable: Iterable<IncrementalDataRecordResult> | undefined) => void
   >;
 
   constructor() {
+    this._deferredFragmentFactory = new DeferredFragmentFactory();
     this._rootNodes = new Set();
     this._completedQueue = [];
     this._nextQueue = [];
@@ -51,15 +120,21 @@ export class IncrementalGraph {
   ): void {
     const { pendingExecutionGroup, incrementalDataRecords } =
       successfulExecutionGroup;
+    const { deferUsages, path } = pendingExecutionGroup;
 
-    const deferredFragmentRecords =
-      pendingExecutionGroup.deferredFragmentRecords;
-
-    for (const deferredFragmentRecord of deferredFragmentRecords) {
-      const { pendingExecutionGroups, successfulExecutionGroups } =
-        deferredFragmentRecord;
-      pendingExecutionGroups.delete(pendingExecutionGroup);
-      successfulExecutionGroups.add(successfulExecutionGroup);
+    const deferredFragmentRecords: Array<DeferredFragmentRecord> = [];
+    for (const deferUsage of deferUsages) {
+      const deferredFragmentRecord = this._deferredFragmentFactory.get(
+        deferUsage,
+        path,
+      );
+      deferredFragmentRecords.push(deferredFragmentRecord);
+      deferredFragmentRecord.pendingExecutionGroups.delete(
+        successfulExecutionGroup.pendingExecutionGroup,
+      );
+      deferredFragmentRecord.successfulExecutionGroups.add(
+        successfulExecutionGroup,
+      );
     }
 
     if (incrementalDataRecords !== undefined) {
@@ -68,6 +143,26 @@ export class IncrementalGraph {
         deferredFragmentRecords,
       );
     }
+  }
+
+  getDeepestDeferredFragmentRecord(
+    initialDeferUsage: DeferUsage,
+    deferUsages: ReadonlySet<DeferUsage>,
+    path: Path | undefined,
+  ): DeferredFragmentRecord {
+    let bestDeferUsage = initialDeferUsage;
+    let maxDepth = initialDeferUsage.depth;
+    for (const deferUsage of deferUsages) {
+      if (deferUsage === initialDeferUsage) {
+        continue;
+      }
+      const depth = deferUsage.depth;
+      if (depth > maxDepth) {
+        maxDepth = depth;
+        bestDeferUsage = deferUsage;
+      }
+    }
+    return this._deferredFragmentFactory.get(bestDeferUsage, path);
   }
 
   *currentCompletedBatch(): Generator<IncrementalDataRecordResult> {
@@ -102,12 +197,20 @@ export class IncrementalGraph {
     return this._rootNodes.size > 0;
   }
 
-  completeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord):
+  completeDeferredFragment(
+    deferUsage: DeferUsage,
+    path: Path | undefined,
+  ):
     | {
+        deferredFragmentRecord: DeferredFragmentRecord;
         newRootNodes: ReadonlyArray<DeliveryGroup>;
         successfulExecutionGroups: ReadonlyArray<SuccessfulExecutionGroup>;
       }
     | undefined {
+    const deferredFragmentRecord = this._deferredFragmentFactory.get(
+      deferUsage,
+      path,
+    );
     if (
       !this._rootNodes.has(deferredFragmentRecord) ||
       deferredFragmentRecord.pendingExecutionGroups.size > 0
@@ -119,8 +222,13 @@ export class IncrementalGraph {
     );
     this._rootNodes.delete(deferredFragmentRecord);
     for (const successfulExecutionGroup of successfulExecutionGroups) {
-      for (const otherDeferredFragmentRecord of successfulExecutionGroup
-        .pendingExecutionGroup.deferredFragmentRecords) {
+      const { deferUsages, path: resultPath } =
+        successfulExecutionGroup.pendingExecutionGroup;
+      for (const otherDeferUsage of deferUsages) {
+        const otherDeferredFragmentRecord = this._deferredFragmentFactory.get(
+          otherDeferUsage,
+          resultPath,
+        );
         otherDeferredFragmentRecord.successfulExecutionGroups.delete(
           successfulExecutionGroup,
         );
@@ -129,17 +237,22 @@ export class IncrementalGraph {
     const newRootNodes = this._promoteNonEmptyToRoot(
       deferredFragmentRecord.children,
     );
-    return { newRootNodes, successfulExecutionGroups };
+    return { deferredFragmentRecord, newRootNodes, successfulExecutionGroups };
   }
 
   removeDeferredFragment(
-    deferredFragmentRecord: DeferredFragmentRecord,
-  ): boolean {
+    deferUsage: DeferUsage,
+    path: Path | undefined,
+  ): DeferredFragmentRecord | undefined {
+    const deferredFragmentRecord = this._deferredFragmentFactory.get(
+      deferUsage,
+      path,
+    );
     if (!this._rootNodes.has(deferredFragmentRecord)) {
-      return false;
+      return;
     }
     this._rootNodes.delete(deferredFragmentRecord);
-    return true;
+    return deferredFragmentRecord;
   }
 
   removeStream(streamRecord: StreamRecord): void {
@@ -153,7 +266,12 @@ export class IncrementalGraph {
   ): void {
     for (const incrementalDataRecord of incrementalDataRecords) {
       if (isPendingExecutionGroup(incrementalDataRecord)) {
-        for (const deferredFragmentRecord of incrementalDataRecord.deferredFragmentRecords) {
+        const { deferUsages, path } = incrementalDataRecord;
+        for (const deferUsage of deferUsages) {
+          const deferredFragmentRecord = this._deferredFragmentFactory.get(
+            deferUsage,
+            path,
+          );
           this._addDeferredFragment(
             deferredFragmentRecord,
             initialResultChildren,
@@ -210,9 +328,17 @@ export class IncrementalGraph {
   private _completesRootNode(
     pendingExecutionGroup: PendingExecutionGroup,
   ): boolean {
-    return pendingExecutionGroup.deferredFragmentRecords.some(
-      (deferredFragmentRecord) => this._rootNodes.has(deferredFragmentRecord),
-    );
+    const { deferUsages, path } = pendingExecutionGroup;
+    for (const deferUsage of deferUsages) {
+      const deferredFragmentRecord = this._deferredFragmentFactory.get(
+        deferUsage,
+        path,
+      );
+      if (this._rootNodes.has(deferredFragmentRecord)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private _addDeferredFragment(
@@ -222,12 +348,16 @@ export class IncrementalGraph {
     if (this._rootNodes.has(deferredFragmentRecord)) {
       return;
     }
-    const parent = deferredFragmentRecord.parent;
-    if (parent === undefined) {
+    const parentDeferUsage = deferredFragmentRecord.parentDeferUsage;
+    if (parentDeferUsage === undefined) {
       invariant(initialResultChildren !== undefined);
       initialResultChildren.add(deferredFragmentRecord);
       return;
     }
+    const parent = this._deferredFragmentFactory.get(
+      parentDeferUsage,
+      deferredFragmentRecord.path,
+    );
     parent.children.add(deferredFragmentRecord);
     this._addDeferredFragment(parent, initialResultChildren);
   }

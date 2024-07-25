@@ -7,6 +7,8 @@ import type {
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
 
+import type { DeferUsage } from './collectFields.js';
+
 /**
  * The result of GraphQL execution.
  *
@@ -169,7 +171,7 @@ export interface FormattedCompletedResult {
 export function isPendingExecutionGroup(
   incrementalDataRecord: IncrementalDataRecord,
 ): incrementalDataRecord is PendingExecutionGroup {
-  return 'deferredFragmentRecords' in incrementalDataRecord;
+  return 'deferUsages' in incrementalDataRecord;
 }
 
 export type CompletedExecutionGroup =
@@ -208,7 +210,8 @@ type ThunkIncrementalResult<T> =
   | (() => BoxedPromiseOrValue<T>);
 
 export interface PendingExecutionGroup {
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+  deferUsages: ReadonlySet<DeferUsage>;
+  path: Path | undefined;
   result: ThunkIncrementalResult<CompletedExecutionGroup>;
 }
 
@@ -218,8 +221,8 @@ export type DeliveryGroup = DeferredFragmentRecord | StreamRecord;
 export class DeferredFragmentRecord {
   path: Path | undefined;
   label: string | undefined;
+  parentDeferUsage: DeferUsage | undefined;
   id?: string | undefined;
-  parent: DeferredFragmentRecord | undefined;
   pendingExecutionGroups: Set<PendingExecutionGroup>;
   successfulExecutionGroups: Set<SuccessfulExecutionGroup>;
   children: Set<DeliveryGroup>;
@@ -227,11 +230,11 @@ export class DeferredFragmentRecord {
   constructor(
     path: Path | undefined,
     label: string | undefined,
-    parent: DeferredFragmentRecord | undefined,
+    parentDeferUsage: DeferUsage | undefined,
   ) {
     this.path = path;
     this.label = label;
-    this.parent = parent;
+    this.parentDeferUsage = parentDeferUsage;
     this.pendingExecutionGroups = new Set();
     this.successfulExecutionGroups = new Set();
     this.children = new Set();
