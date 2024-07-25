@@ -134,6 +134,30 @@ describe('Execute: Handles OneOf Input Objects', () => {
       });
     });
 
+    it('accepts multiple variable key as long as only one has a value', () => {
+      // NOTE: This is an *invalid* query, but it should be an *executable* query.
+      const query = `
+        query ($a: String) {
+          test(input: { a: $a, b: $b }) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue, {
+        a: 'abc',
+      });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          test: {
+            a: 'abc',
+            b: null,
+          },
+        },
+      });
+    });
+
     it('rejects a variable with multiple non-null keys', () => {
       const query = `
         query ($input: TestInputObject!) {
