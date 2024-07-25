@@ -49,22 +49,23 @@ export class IncrementalGraph {
   addCompletedSuccessfulExecutionGroup(
     successfulExecutionGroup: SuccessfulExecutionGroup,
   ): void {
-    for (const deferredFragmentRecord of successfulExecutionGroup
-      .pendingExecutionGroup.deferredFragmentRecords) {
-      deferredFragmentRecord.pendingExecutionGroups.delete(
-        successfulExecutionGroup.pendingExecutionGroup,
-      );
-      deferredFragmentRecord.successfulExecutionGroups.add(
-        successfulExecutionGroup,
-      );
+    const { pendingExecutionGroup, incrementalDataRecords } =
+      successfulExecutionGroup;
+
+    const deferredFragmentRecords =
+      pendingExecutionGroup.deferredFragmentRecords;
+
+    for (const deferredFragmentRecord of deferredFragmentRecords) {
+      const { pendingExecutionGroups, successfulExecutionGroups } =
+        deferredFragmentRecord;
+      pendingExecutionGroups.delete(pendingExecutionGroup);
+      successfulExecutionGroups.add(successfulExecutionGroup);
     }
 
-    const incrementalDataRecords =
-      successfulExecutionGroup.incrementalDataRecords;
     if (incrementalDataRecords !== undefined) {
       this._addIncrementalDataRecords(
         incrementalDataRecords,
-        successfulExecutionGroup.pendingExecutionGroup.deferredFragmentRecords,
+        deferredFragmentRecords,
       );
     }
   }
