@@ -210,11 +210,9 @@ describe('stripIgnoredCharacters', () => {
 
     const queryAST = parse(kitchenSinkQuery, {
       noLocation: true,
-      experimentalClientControlledNullability: true,
     });
     const strippedAST = parse(strippedQuery, {
       noLocation: true,
-      experimentalClientControlledNullability: true,
     });
     expect(strippedAST).to.deep.equal(queryAST);
   });
