@@ -79,14 +79,14 @@ export interface FormattedSubsequentIncrementalExecutionResult<
   completed?: ReadonlyArray<FormattedCompletedResult>;
   extensions?: TExtensions;
 }
-interface BareDeferredGroupedFieldSetResult<TData = ObjMap<unknown>> {
+interface ExecutionGroupResult<TData = ObjMap<unknown>> {
   errors?: ReadonlyArray<GraphQLError>;
   data: TData;
 }
 export interface IncrementalDeferResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends BareDeferredGroupedFieldSetResult<TData> {
+> extends ExecutionGroupResult<TData> {
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
@@ -101,14 +101,14 @@ export interface FormattedIncrementalDeferResult<
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
-interface BareStreamItemsResult<TData = ReadonlyArray<unknown>> {
+interface StreamItemsRecordResult<TData = ReadonlyArray<unknown>> {
   errors?: ReadonlyArray<GraphQLError>;
   items: TData;
 }
 export interface IncrementalStreamResult<
   TData = ReadonlyArray<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends BareStreamItemsResult<TData> {
+> extends StreamItemsRecordResult<TData> {
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
@@ -146,48 +146,48 @@ export interface FormattedCompletedResult {
   label?: string;
   errors?: ReadonlyArray<GraphQLError>;
 }
-export declare function isDeferredGroupedFieldSetRecord(
+export declare function isPendingExecutionGroup(
   incrementalDataRecord: IncrementalDataRecord,
-): incrementalDataRecord is DeferredGroupedFieldSetRecord;
-export type DeferredGroupedFieldSetResult =
-  | ReconcilableDeferredGroupedFieldSetResult
-  | NonReconcilableDeferredGroupedFieldSetResult;
-export declare function isDeferredGroupedFieldSetResult(
-  subsequentResult: DeferredGroupedFieldSetResult | StreamItemsResult,
-): subsequentResult is DeferredGroupedFieldSetResult;
-export interface ReconcilableDeferredGroupedFieldSetResult {
-  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord;
+): incrementalDataRecord is PendingExecutionGroup;
+export type CompletedExecutionGroup =
+  | SuccessfulExecutionGroup
+  | FailedExecutionGroup;
+export declare function isCompletedExecutionGroup(
+  subsequentResult: CompletedExecutionGroup | StreamItemsResult,
+): subsequentResult is CompletedExecutionGroup;
+export interface SuccessfulExecutionGroup {
+  pendingExecutionGroup: PendingExecutionGroup;
   path: Array<string | number>;
-  result: BareDeferredGroupedFieldSetResult;
+  result: ExecutionGroupResult;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   errors?: never;
 }
-interface NonReconcilableDeferredGroupedFieldSetResult {
-  deferredGroupedFieldSetRecord: DeferredGroupedFieldSetRecord;
+interface FailedExecutionGroup {
+  pendingExecutionGroup: PendingExecutionGroup;
   path: Array<string | number>;
   errors: ReadonlyArray<GraphQLError>;
   result?: never;
 }
-export declare function isNonReconcilableDeferredGroupedFieldSetResult(
-  deferredGroupedFieldSetResult: DeferredGroupedFieldSetResult,
-): deferredGroupedFieldSetResult is NonReconcilableDeferredGroupedFieldSetResult;
+export declare function isFailedExecutionGroup(
+  completedExecutionGroup: CompletedExecutionGroup,
+): completedExecutionGroup is FailedExecutionGroup;
 type ThunkIncrementalResult<T> =
   | BoxedPromiseOrValue<T>
   | (() => BoxedPromiseOrValue<T>);
-export interface DeferredGroupedFieldSetRecord {
+export interface PendingExecutionGroup {
   deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
-  result: ThunkIncrementalResult<DeferredGroupedFieldSetResult>;
+  result: ThunkIncrementalResult<CompletedExecutionGroup>;
 }
-export type SubsequentResultRecord = DeferredFragmentRecord | StreamRecord;
+export type DeliveryGroup = DeferredFragmentRecord | StreamRecord;
 /** @internal */
 export declare class DeferredFragmentRecord {
   path: Path | undefined;
   label: string | undefined;
   id?: string | undefined;
   parent: DeferredFragmentRecord | undefined;
-  deferredGroupedFieldSetRecords: Set<DeferredGroupedFieldSetRecord>;
-  reconcilableResults: Set<ReconcilableDeferredGroupedFieldSetResult>;
-  children: Set<SubsequentResultRecord>;
+  pendingExecutionGroups: Set<PendingExecutionGroup>;
+  successfulExecutionGroups: Set<SuccessfulExecutionGroup>;
+  children: Set<DeliveryGroup>;
   constructor(
     path: Path | undefined,
     label: string | undefined,
@@ -195,8 +195,8 @@ export declare class DeferredFragmentRecord {
   );
 }
 export declare function isDeferredFragmentRecord(
-  subsequentResultRecord: SubsequentResultRecord,
-): subsequentResultRecord is DeferredFragmentRecord;
+  deliveryGroup: DeliveryGroup,
+): deliveryGroup is DeferredFragmentRecord;
 export interface StreamItemResult {
   item?: unknown;
   incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
@@ -211,20 +211,18 @@ export interface StreamRecord {
 }
 export interface StreamItemsResult {
   streamRecord: StreamRecord;
-  result?: BareStreamItemsResult | undefined;
+  errors?: ReadonlyArray<GraphQLError>;
+  result?: StreamItemsRecordResult;
   incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
-  errors?: ReadonlyArray<GraphQLError> | undefined;
 }
 export interface CancellableStreamRecord extends StreamRecord {
   earlyReturn: () => Promise<unknown>;
 }
 export declare function isCancellableStreamRecord(
-  subsequentResultRecord: SubsequentResultRecord,
-): subsequentResultRecord is CancellableStreamRecord;
-export type IncrementalDataRecord =
-  | DeferredGroupedFieldSetRecord
-  | StreamRecord;
+  deliveryGroup: DeliveryGroup,
+): deliveryGroup is CancellableStreamRecord;
+export type IncrementalDataRecord = PendingExecutionGroup | StreamRecord;
 export type IncrementalDataRecordResult =
-  | DeferredGroupedFieldSetResult
+  | CompletedExecutionGroup
   | StreamItemsResult;
 export {};

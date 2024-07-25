@@ -1,6 +1,6 @@
 import { getBySet } from '../jsutils/getBySet.mjs';
 import { isSameSet } from '../jsutils/isSameSet.mjs';
-export function buildFieldPlan(
+export function buildExecutionPlan(
   originalGroupedFieldSet,
   parentDeferUsages = new Set(),
 ) {

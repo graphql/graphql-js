@@ -1,10 +1,10 @@
 import type { DeferUsage, GroupedFieldSet } from './collectFields.js';
 export type DeferUsageSet = ReadonlySet<DeferUsage>;
-export interface FieldPlan {
+export interface ExecutionPlan {
   groupedFieldSet: GroupedFieldSet;
   newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>;
 }
-export declare function buildFieldPlan(
+export declare function buildExecutionPlan(
   originalGroupedFieldSet: GroupedFieldSet,
   parentDeferUsages?: DeferUsageSet,
-): FieldPlan;
+): ExecutionPlan;

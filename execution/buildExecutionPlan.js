@@ -1,9 +1,9 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.buildFieldPlan = void 0;
+exports.buildExecutionPlan = void 0;
 const getBySet_js_1 = require('../jsutils/getBySet.js');
 const isSameSet_js_1 = require('../jsutils/isSameSet.js');
-function buildFieldPlan(
+function buildExecutionPlan(
   originalGroupedFieldSet,
   parentDeferUsages = new Set(),
 ) {
@@ -32,7 +32,7 @@ function buildFieldPlan(
     newGroupedFieldSets,
   };
 }
-exports.buildFieldPlan = buildFieldPlan;
+exports.buildExecutionPlan = buildExecutionPlan;
 function getFilteredDeferUsageSet(fieldGroup) {
   const filteredDeferUsageSet = new Set();
   for (const fieldDetails of fieldGroup) {

@@ -1,10 +1,10 @@
 import type {
   DeferredFragmentRecord,
+  DeliveryGroup,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
-  ReconcilableDeferredGroupedFieldSetResult,
   StreamRecord,
-  SubsequentResultRecord,
+  SuccessfulExecutionGroup,
 } from './types.js';
 /**
  * @internal
@@ -16,9 +16,9 @@ export declare class IncrementalGraph {
   constructor();
   getNewRootNodes(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
-  ): ReadonlyArray<SubsequentResultRecord>;
-  addCompletedReconcilableDeferredGroupedFieldSet(
-    reconcilableResult: ReconcilableDeferredGroupedFieldSetResult,
+  ): ReadonlyArray<DeliveryGroup>;
+  addCompletedSuccessfulExecutionGroup(
+    successfulExecutionGroup: SuccessfulExecutionGroup,
   ): void;
   currentCompletedBatch(): Generator<IncrementalDataRecordResult>;
   nextCompletedBatch(): Promise<
@@ -28,8 +28,8 @@ export declare class IncrementalGraph {
   hasNext(): boolean;
   completeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord):
     | {
-        newRootNodes: ReadonlyArray<SubsequentResultRecord>;
-        reconcilableResults: ReadonlyArray<ReconcilableDeferredGroupedFieldSetResult>;
+        newRootNodes: ReadonlyArray<DeliveryGroup>;
+        successfulExecutionGroups: ReadonlyArray<SuccessfulExecutionGroup>;
       }
     | undefined;
   removeDeferredFragment(
@@ -41,7 +41,7 @@ export declare class IncrementalGraph {
   private _promoteNonEmptyToRoot;
   private _completesRootNode;
   private _addDeferredFragment;
-  private _onDeferredGroupedFieldSet;
+  private _onExecutionGroup;
   private _onStreamItems;
   private _yieldCurrentCompletedIncrementalData;
   private _enqueue;

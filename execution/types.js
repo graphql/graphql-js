@@ -3,42 +3,39 @@ Object.defineProperty(exports, '__esModule', { value: true });
 exports.isCancellableStreamRecord =
   exports.isDeferredFragmentRecord =
   exports.DeferredFragmentRecord =
-  exports.isNonReconcilableDeferredGroupedFieldSetResult =
-  exports.isDeferredGroupedFieldSetResult =
-  exports.isDeferredGroupedFieldSetRecord =
+  exports.isFailedExecutionGroup =
+  exports.isCompletedExecutionGroup =
+  exports.isPendingExecutionGroup =
     void 0;
-function isDeferredGroupedFieldSetRecord(incrementalDataRecord) {
+function isPendingExecutionGroup(incrementalDataRecord) {
   return 'deferredFragmentRecords' in incrementalDataRecord;
 }
-exports.isDeferredGroupedFieldSetRecord = isDeferredGroupedFieldSetRecord;
-function isDeferredGroupedFieldSetResult(subsequentResult) {
-  return 'deferredGroupedFieldSetRecord' in subsequentResult;
+exports.isPendingExecutionGroup = isPendingExecutionGroup;
+function isCompletedExecutionGroup(subsequentResult) {
+  return 'pendingExecutionGroup' in subsequentResult;
 }
-exports.isDeferredGroupedFieldSetResult = isDeferredGroupedFieldSetResult;
-function isNonReconcilableDeferredGroupedFieldSetResult(
-  deferredGroupedFieldSetResult,
-) {
-  return deferredGroupedFieldSetResult.errors !== undefined;
+exports.isCompletedExecutionGroup = isCompletedExecutionGroup;
+function isFailedExecutionGroup(completedExecutionGroup) {
+  return completedExecutionGroup.errors !== undefined;
 }
-exports.isNonReconcilableDeferredGroupedFieldSetResult =
-  isNonReconcilableDeferredGroupedFieldSetResult;
+exports.isFailedExecutionGroup = isFailedExecutionGroup;
 /** @internal */
 class DeferredFragmentRecord {
   constructor(path, label, parent) {
     this.path = path;
     this.label = label;
     this.parent = parent;
-    this.deferredGroupedFieldSetRecords = new Set();
-    this.reconcilableResults = new Set();
+    this.pendingExecutionGroups = new Set();
+    this.successfulExecutionGroups = new Set();
     this.children = new Set();
   }
 }
 exports.DeferredFragmentRecord = DeferredFragmentRecord;
-function isDeferredFragmentRecord(subsequentResultRecord) {
-  return subsequentResultRecord instanceof DeferredFragmentRecord;
+function isDeferredFragmentRecord(deliveryGroup) {
+  return deliveryGroup instanceof DeferredFragmentRecord;
 }
 exports.isDeferredFragmentRecord = isDeferredFragmentRecord;
-function isCancellableStreamRecord(subsequentResultRecord) {
-  return 'earlyReturn' in subsequentResultRecord;
+function isCancellableStreamRecord(deliveryGroup) {
+  return 'earlyReturn' in deliveryGroup;
 }
 exports.isCancellableStreamRecord = isCancellableStreamRecord;

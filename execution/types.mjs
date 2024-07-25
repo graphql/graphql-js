@@ -1,13 +1,11 @@
-export function isDeferredGroupedFieldSetRecord(incrementalDataRecord) {
+export function isPendingExecutionGroup(incrementalDataRecord) {
   return 'deferredFragmentRecords' in incrementalDataRecord;
 }
-export function isDeferredGroupedFieldSetResult(subsequentResult) {
-  return 'deferredGroupedFieldSetRecord' in subsequentResult;
+export function isCompletedExecutionGroup(subsequentResult) {
+  return 'pendingExecutionGroup' in subsequentResult;
 }
-export function isNonReconcilableDeferredGroupedFieldSetResult(
-  deferredGroupedFieldSetResult,
-) {
-  return deferredGroupedFieldSetResult.errors !== undefined;
+export function isFailedExecutionGroup(completedExecutionGroup) {
+  return completedExecutionGroup.errors !== undefined;
 }
 /** @internal */
 export class DeferredFragmentRecord {
@@ -15,14 +13,14 @@ export class DeferredFragmentRecord {
     this.path = path;
     this.label = label;
     this.parent = parent;
-    this.deferredGroupedFieldSetRecords = new Set();
-    this.reconcilableResults = new Set();
+    this.pendingExecutionGroups = new Set();
+    this.successfulExecutionGroups = new Set();
     this.children = new Set();
   }
 }
-export function isDeferredFragmentRecord(subsequentResultRecord) {
-  return subsequentResultRecord instanceof DeferredFragmentRecord;
+export function isDeferredFragmentRecord(deliveryGroup) {
+  return deliveryGroup instanceof DeferredFragmentRecord;
 }
-export function isCancellableStreamRecord(subsequentResultRecord) {
-  return 'earlyReturn' in subsequentResultRecord;
+export function isCancellableStreamRecord(deliveryGroup) {
+  return 'earlyReturn' in deliveryGroup;
 }

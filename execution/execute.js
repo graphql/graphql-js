@@ -28,7 +28,7 @@ const kinds_js_1 = require('../language/kinds.js');
 const definition_js_1 = require('../type/definition.js');
 const directives_js_1 = require('../type/directives.js');
 const validate_js_1 = require('../type/validate.js');
-const buildFieldPlan_js_1 = require('./buildFieldPlan.js');
+const buildExecutionPlan_js_1 = require('./buildExecutionPlan.js');
 const collectFields_js_1 = require('./collectFields.js');
 const IncrementalPublisher_js_1 = require('./IncrementalPublisher.js');
 const mapAsyncIterable_js_1 = require('./mapAsyncIterable.js');
@@ -165,11 +165,11 @@ function executeOperation(exeContext) {
         undefined,
       );
     } else {
-      const fieldPLan = (0, buildFieldPlan_js_1.buildFieldPlan)(
+      const executionPlan = (0, buildExecutionPlan_js_1.buildExecutionPlan)(
         groupedFieldSet,
       );
-      groupedFieldSet = fieldPLan.groupedFieldSet;
-      const newGroupedFieldSets = fieldPLan.newGroupedFieldSets;
+      groupedFieldSet = executionPlan.groupedFieldSet;
+      const newGroupedFieldSets = executionPlan.newGroupedFieldSets;
       const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
       graphqlWrappedResult = executeRootGroupedFieldSet(
         exeContext,
@@ -180,19 +180,18 @@ function executeOperation(exeContext) {
         newDeferMap,
       );
       if (newGroupedFieldSets.size > 0) {
-        const newDeferredGroupedFieldSetRecords =
-          executeDeferredGroupedFieldSets(
-            exeContext,
-            rootType,
-            rootValue,
-            undefined,
-            undefined,
-            newGroupedFieldSets,
-            newDeferMap,
-          );
-        graphqlWrappedResult = withNewDeferredGroupedFieldSets(
+        const newPendingExecutionGroups = collectExecutionGroups(
+          exeContext,
+          rootType,
+          rootValue,
+          undefined,
+          undefined,
+          newGroupedFieldSets,
+          newDeferMap,
+        );
+        graphqlWrappedResult = withNewExecutionGroups(
           graphqlWrappedResult,
-          newDeferredGroupedFieldSetRecords,
+          newPendingExecutionGroups,
         );
       }
     }
@@ -214,17 +213,14 @@ function executeOperation(exeContext) {
     return { data: null, errors: withError(exeContext.errors, error) };
   }
 }
-function withNewDeferredGroupedFieldSets(
-  result,
-  newDeferredGroupedFieldSetRecords,
-) {
+function withNewExecutionGroups(result, newPendingExecutionGroups) {
   if ((0, isPromise_js_1.isPromise)(result)) {
     return result.then((resolved) => {
-      addIncrementalDataRecords(resolved, newDeferredGroupedFieldSetRecords);
+      addIncrementalDataRecords(resolved, newPendingExecutionGroups);
       return resolved;
     });
   }
-  addIncrementalDataRecords(result, newDeferredGroupedFieldSetRecords);
+  addIncrementalDataRecords(result, newPendingExecutionGroups);
   return result;
 }
 function addIncrementalDataRecords(
@@ -1481,12 +1477,12 @@ function collectAndExecuteSubfields(
       undefined,
     );
   }
-  const subFieldPlan = buildSubFieldPlan(
+  const subExecutionPlan = buildSubExecutionPlan(
     groupedFieldSet,
     incrementalContext?.deferUsageSet,
   );
-  groupedFieldSet = subFieldPlan.groupedFieldSet;
-  const newGroupedFieldSets = subFieldPlan.newGroupedFieldSets;
+  groupedFieldSet = subExecutionPlan.groupedFieldSet;
+  const newGroupedFieldSets = subExecutionPlan.newGroupedFieldSets;
   const newDeferMap = addNewDeferredFragments(
     newDeferUsages,
     new Map(deferMap),
@@ -1502,7 +1498,7 @@ function collectAndExecuteSubfields(
     newDeferMap,
   );
   if (newGroupedFieldSets.size > 0) {
-    const newDeferredGroupedFieldSetRecords = executeDeferredGroupedFieldSets(
+    const newPendingExecutionGroups = collectExecutionGroups(
       exeContext,
       returnType,
       result,
@@ -1511,24 +1507,21 @@ function collectAndExecuteSubfields(
       newGroupedFieldSets,
       newDeferMap,
     );
-    return withNewDeferredGroupedFieldSets(
-      subFields,
-      newDeferredGroupedFieldSetRecords,
-    );
+    return withNewExecutionGroups(subFields, newPendingExecutionGroups);
   }
   return subFields;
 }
-function buildSubFieldPlan(originalGroupedFieldSet, deferUsageSet) {
-  let fieldPlan = originalGroupedFieldSet._fieldPlan;
-  if (fieldPlan !== undefined) {
-    return fieldPlan;
+function buildSubExecutionPlan(originalGroupedFieldSet, deferUsageSet) {
+  let executionPlan = originalGroupedFieldSet._executionPlan;
+  if (executionPlan !== undefined) {
+    return executionPlan;
   }
-  fieldPlan = (0, buildFieldPlan_js_1.buildFieldPlan)(
+  executionPlan = (0, buildExecutionPlan_js_1.buildExecutionPlan)(
     originalGroupedFieldSet,
     deferUsageSet,
   );
-  originalGroupedFieldSet._fieldPlan = fieldPlan;
-  return fieldPlan;
+  originalGroupedFieldSet._executionPlan = executionPlan;
+  return executionPlan;
 }
 /**
  * If a resolveType function is not given, then a default resolve behavior is
@@ -1787,7 +1780,7 @@ function assertEventStream(result) {
   }
   return result;
 }
-function executeDeferredGroupedFieldSets(
+function collectExecutionGroups(
   exeContext,
   parentType,
   sourceValue,
@@ -1796,19 +1789,19 @@ function executeDeferredGroupedFieldSets(
   newGroupedFieldSets,
   deferMap,
 ) {
-  const newDeferredGroupedFieldSetRecords = [];
+  const newPendingExecutionGroups = [];
   for (const [deferUsageSet, groupedFieldSet] of newGroupedFieldSets) {
     const deferredFragmentRecords = getDeferredFragmentRecords(
       deferUsageSet,
       deferMap,
     );
-    const deferredGroupedFieldSetRecord = {
+    const pendingExecutionGroup = {
       deferredFragmentRecords,
       result: undefined,
     };
     const executor = () =>
-      executeDeferredGroupedFieldSet(
-        deferredGroupedFieldSetRecord,
+      executeExecutionGroup(
+        pendingExecutionGroup,
         exeContext,
         parentType,
         sourceValue,
@@ -1821,19 +1814,19 @@ function executeDeferredGroupedFieldSets(
         deferMap,
       );
     if (exeContext.enableEarlyExecution) {
-      deferredGroupedFieldSetRecord.result =
+      pendingExecutionGroup.result =
         new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(
           shouldDefer(parentDeferUsages, deferUsageSet)
             ? Promise.resolve().then(executor)
             : executor(),
         );
     } else {
-      deferredGroupedFieldSetRecord.result = () =>
+      pendingExecutionGroup.result = () =>
         new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor());
     }
-    newDeferredGroupedFieldSetRecords.push(deferredGroupedFieldSetRecord);
+    newPendingExecutionGroups.push(pendingExecutionGroup);
   }
-  return newDeferredGroupedFieldSetRecords;
+  return newPendingExecutionGroups;
 }
 function shouldDefer(parentDeferUsages, deferUsages) {
   // If we have a new child defer usage, defer.
@@ -1847,8 +1840,8 @@ function shouldDefer(parentDeferUsages, deferUsages) {
     )
   );
 }
-function executeDeferredGroupedFieldSet(
-  deferredGroupedFieldSetRecord,
+function executeExecutionGroup(
+  pendingExecutionGroup,
   exeContext,
   parentType,
   sourceValue,
@@ -1870,7 +1863,7 @@ function executeDeferredGroupedFieldSet(
     );
   } catch (error) {
     return {
-      deferredGroupedFieldSetRecord,
+      pendingExecutionGroup,
       path: (0, Path_js_1.pathToArray)(path),
       errors: withError(incrementalContext.errors, error),
     };
@@ -1878,34 +1871,34 @@ function executeDeferredGroupedFieldSet(
   if ((0, isPromise_js_1.isPromise)(result)) {
     return result.then(
       (resolved) =>
-        buildDeferredGroupedFieldSetResult(
+        buildCompletedExecutionGroup(
           incrementalContext.errors,
-          deferredGroupedFieldSetRecord,
+          pendingExecutionGroup,
           path,
           resolved,
         ),
       (error) => ({
-        deferredGroupedFieldSetRecord,
+        pendingExecutionGroup,
         path: (0, Path_js_1.pathToArray)(path),
         errors: withError(incrementalContext.errors, error),
       }),
     );
   }
-  return buildDeferredGroupedFieldSetResult(
+  return buildCompletedExecutionGroup(
     incrementalContext.errors,
-    deferredGroupedFieldSetRecord,
+    pendingExecutionGroup,
     path,
     result,
   );
 }
-function buildDeferredGroupedFieldSetResult(
+function buildCompletedExecutionGroup(
   errors,
-  deferredGroupedFieldSetRecord,
+  pendingExecutionGroup,
   path,
   result,
 ) {
   return {
-    deferredGroupedFieldSetRecord,
+    pendingExecutionGroup,
     path: (0, Path_js_1.pathToArray)(path),
     result:
       errors === undefined ? { data: result[0] } : { data: result[0], errors },

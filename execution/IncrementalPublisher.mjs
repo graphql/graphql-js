@@ -3,8 +3,8 @@ import { pathToArray } from '../jsutils/Path.mjs';
 import { IncrementalGraph } from './IncrementalGraph.mjs';
 import {
   isCancellableStreamRecord,
-  isDeferredGroupedFieldSetResult,
-  isNonReconcilableDeferredGroupedFieldSetResult,
+  isCompletedExecutionGroup,
+  isFailedExecutionGroup,
 } from './types.mjs';
 export function buildIncrementalResponse(
   context,
@@ -128,26 +128,16 @@ class IncrementalPublisher {
     };
   }
   _handleCompletedIncrementalData(completedIncrementalData, context) {
-    if (isDeferredGroupedFieldSetResult(completedIncrementalData)) {
-      this._handleCompletedDeferredGroupedFieldSet(
-        completedIncrementalData,
-        context,
-      );
+    if (isCompletedExecutionGroup(completedIncrementalData)) {
+      this._handleCompletedExecutionGroup(completedIncrementalData, context);
     } else {
       this._handleCompletedStreamItems(completedIncrementalData, context);
     }
   }
-  _handleCompletedDeferredGroupedFieldSet(
-    deferredGroupedFieldSetResult,
-    context,
-  ) {
-    if (
-      isNonReconcilableDeferredGroupedFieldSetResult(
-        deferredGroupedFieldSetResult,
-      )
-    ) {
-      for (const deferredFragmentRecord of deferredGroupedFieldSetResult
-        .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+  _handleCompletedExecutionGroup(completedExecutionGroup, context) {
+    if (isFailedExecutionGroup(completedExecutionGroup)) {
+      for (const deferredFragmentRecord of completedExecutionGroup
+        .pendingExecutionGroup.deferredFragmentRecords) {
         const id = deferredFragmentRecord.id;
         if (
           !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
@@ -158,16 +148,16 @@ class IncrementalPublisher {
         id !== undefined || invariant(false);
         context.completed.push({
           id,
-          errors: deferredGroupedFieldSetResult.errors,
+          errors: completedExecutionGroup.errors,
         });
       }
       return;
     }
-    this._incrementalGraph.addCompletedReconcilableDeferredGroupedFieldSet(
-      deferredGroupedFieldSetResult,
+    this._incrementalGraph.addCompletedSuccessfulExecutionGroup(
+      completedExecutionGroup,
     );
-    for (const deferredFragmentRecord of deferredGroupedFieldSetResult
-      .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+    for (const deferredFragmentRecord of completedExecutionGroup
+      .pendingExecutionGroup.deferredFragmentRecords) {
       const completion = this._incrementalGraph.completeDeferredFragment(
         deferredFragmentRecord,
       );
@@ -177,16 +167,16 @@ class IncrementalPublisher {
       const id = deferredFragmentRecord.id;
       id !== undefined || invariant(false);
       const incremental = context.incremental;
-      const { newRootNodes, reconcilableResults } = completion;
+      const { newRootNodes, successfulExecutionGroups } = completion;
       context.pending.push(...this._toPendingResults(newRootNodes));
-      for (const reconcilableResult of reconcilableResults) {
+      for (const successfulExecutionGroup of successfulExecutionGroups) {
         const { bestId, subPath } = this._getBestIdAndSubPath(
           id,
           deferredFragmentRecord,
-          reconcilableResult,
+          successfulExecutionGroup,
         );
         const incrementalEntry = {
-          ...reconcilableResult.result,
+          ...successfulExecutionGroup.result,
           id: bestId,
         };
         if (subPath !== undefined) {
@@ -240,12 +230,12 @@ class IncrementalPublisher {
   _getBestIdAndSubPath(
     initialId,
     initialDeferredFragmentRecord,
-    deferredGroupedFieldSetResult,
+    completedExecutionGroup,
   ) {
     let maxLength = pathToArray(initialDeferredFragmentRecord.path).length;
     let bestId = initialId;
-    for (const deferredFragmentRecord of deferredGroupedFieldSetResult
-      .deferredGroupedFieldSetRecord.deferredFragmentRecords) {
+    for (const deferredFragmentRecord of completedExecutionGroup
+      .pendingExecutionGroup.deferredFragmentRecords) {
       if (deferredFragmentRecord === initialDeferredFragmentRecord) {
         continue;
       }
@@ -262,7 +252,7 @@ class IncrementalPublisher {
         bestId = id;
       }
     }
-    const subPath = deferredGroupedFieldSetResult.path.slice(maxLength);
+    const subPath = completedExecutionGroup.path.slice(maxLength);
     return {
       bestId,
       subPath: subPath.length > 0 ? subPath : undefined,
