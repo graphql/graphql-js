@@ -118,6 +118,11 @@ export function astFromValue(
         : { kind: Kind.FLOAT, value: stringNum };
     }
 
+    if (typeof serialized === 'bigint') {
+      const stringNum = String(serialized);
+      return { kind: Kind.INT, value: stringNum };
+    }
+
     if (typeof serialized === 'string') {
       // Enum types use Enum literals.
       if (isEnumType(type)) {
