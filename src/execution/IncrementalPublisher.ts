@@ -4,13 +4,12 @@ import { pathToArray } from '../jsutils/Path.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
+import type { DeliveryGroup } from './DeferredFragments.js';
 import { IncrementalGraph } from './IncrementalGraph.js';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,
   CompletedResult,
-  DeferredFragmentRecord,
-  DeliveryGroup,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
   IncrementalDataRecordResult,
@@ -218,16 +217,16 @@ class IncrementalPublisher {
     completedExecutionGroup: CompletedExecutionGroup,
     context: SubsequentIncrementalExecutionResultContext,
   ): void {
+    const { deferUsages, path } = completedExecutionGroup.pendingExecutionGroup;
     if (isFailedExecutionGroup(completedExecutionGroup)) {
-      for (const deferredFragmentRecord of completedExecutionGroup
-        .pendingExecutionGroup.deferredFragmentRecords) {
-        const id = deferredFragmentRecord.id;
-        if (
-          !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
-        ) {
+      for (const deferUsage of deferUsages) {
+        const deferredFragmentRecord =
+          this._incrementalGraph.removeDeferredFragment(deferUsage, path);
+        if (deferredFragmentRecord === undefined) {
           // This can occur if multiple deferred grouped field sets error for a fragment.
           continue;
         }
+        const id = deferredFragmentRecord.id;
         invariant(id !== undefined);
         context.completed.push({
           id,
@@ -241,34 +240,46 @@ class IncrementalPublisher {
       completedExecutionGroup,
     );
 
-    for (const deferredFragmentRecord of completedExecutionGroup
-      .pendingExecutionGroup.deferredFragmentRecords) {
+    for (const deferUsage of deferUsages) {
       const completion = this._incrementalGraph.completeDeferredFragment(
-        deferredFragmentRecord,
+        deferUsage,
+        path,
       );
       if (completion === undefined) {
         continue;
       }
-      const id = deferredFragmentRecord.id;
-      invariant(id !== undefined);
       const incremental = context.incremental;
-      const { newRootNodes, successfulExecutionGroups } = completion;
+      const {
+        deferredFragmentRecord,
+        newRootNodes,
+        successfulExecutionGroups,
+      } = completion;
       context.pending.push(...this._toPendingResults(newRootNodes));
       for (const successfulExecutionGroup of successfulExecutionGroups) {
-        const { bestId, subPath } = this._getBestIdAndSubPath(
-          id,
-          deferredFragmentRecord,
-          successfulExecutionGroup,
-        );
+        const { deferUsages: resultDeferUsages, path: resultPath } =
+          successfulExecutionGroup.pendingExecutionGroup;
+        const bestDeferredFragmentRecord =
+          this._incrementalGraph.getDeepestDeferredFragmentAtRoot(
+            deferUsage,
+            resultDeferUsages,
+            resultPath,
+          );
+        const bestId = bestDeferredFragmentRecord.id;
+        invariant(bestId !== undefined);
         const incrementalEntry: IncrementalDeferResult = {
           ...successfulExecutionGroup.result,
           id: bestId,
         };
-        if (subPath !== undefined) {
+        const subPath = pathToArray(resultPath).slice(
+          pathToArray(bestDeferredFragmentRecord.path).length,
+        );
+        if (subPath.length > 0) {
           incrementalEntry.subPath = subPath;
         }
         incremental.push(incrementalEntry);
       }
+      const id = deferredFragmentRecord.id;
+      invariant(id !== undefined);
       context.completed.push({ id });
     }
   }
@@ -317,39 +328,6 @@ class IncrementalPublisher {
         context.pending.push(...this._toPendingResults(newRootNodes));
       }
     }
-  }
-
-  private _getBestIdAndSubPath(
-    initialId: string,
-    initialDeferredFragmentRecord: DeferredFragmentRecord,
-    completedExecutionGroup: CompletedExecutionGroup,
-  ): { bestId: string; subPath: ReadonlyArray<string | number> | undefined } {
-    let maxLength = pathToArray(initialDeferredFragmentRecord.path).length;
-    let bestId = initialId;
-
-    for (const deferredFragmentRecord of completedExecutionGroup
-      .pendingExecutionGroup.deferredFragmentRecords) {
-      if (deferredFragmentRecord === initialDeferredFragmentRecord) {
-        continue;
-      }
-      const id = deferredFragmentRecord.id;
-      // TODO: add test case for when an fragment has not been released, but might be processed for the shortest path.
-      /* c8 ignore next 3 */
-      if (id === undefined) {
-        continue;
-      }
-      const fragmentPath = pathToArray(deferredFragmentRecord.path);
-      const length = fragmentPath.length;
-      if (length > maxLength) {
-        maxLength = length;
-        bestId = id;
-      }
-    }
-    const subPath = completedExecutionGroup.path.slice(maxLength);
-    return {
-      bestId,
-      subPath: subPath.length > 0 ? subPath : undefined,
-    };
   }
 
   private async _returnAsyncIterators(): Promise<void> {
