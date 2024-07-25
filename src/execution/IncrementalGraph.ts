@@ -73,15 +73,13 @@ class DeferredFragmentFactory {
     if (depth === 0) {
       return;
     }
+    const stack: Array<Path> = [];
     let currentPath = path;
-    invariant(currentPath !== undefined);
-    let currentDepth = currentPath.depth;
-    while (currentDepth > depth) {
+    while (currentPath !== undefined) {
+      stack.unshift(currentPath);
       currentPath = currentPath.prev;
-      invariant(currentPath !== undefined);
-      currentDepth = currentPath.depth;
     }
-    return currentPath;
+    return stack[depth - 1];
   }
 }
 

@@ -11,7 +11,6 @@ describe('Path', () => {
       prev: undefined,
       key: 1,
       typename: 'First',
-      depth: 1,
     });
   });
 
@@ -23,7 +22,6 @@ describe('Path', () => {
       prev: first,
       key: 'two',
       typename: 'Second',
-      depth: 2,
     });
   });
 

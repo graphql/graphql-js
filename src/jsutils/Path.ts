@@ -4,7 +4,6 @@ export interface Path {
   readonly prev: Path | undefined;
   readonly key: string | number;
   readonly typename: string | undefined;
-  readonly depth: number;
 }
 
 /**
@@ -15,12 +14,7 @@ export function addPath(
   key: string | number,
   typename: string | undefined,
 ): Path {
-  return {
-    prev,
-    key,
-    typename,
-    depth: prev === undefined ? 1 : prev.depth + 1,
-  };
+  return { prev, key, typename };
 }
 
 /**

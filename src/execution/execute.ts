@@ -88,7 +88,7 @@ const collectSubfields = memoize3(
     exeContext: ExecutionContext,
     returnType: GraphQLObjectType,
     fieldGroup: FieldGroup,
-    depth: number,
+    path: Path,
   ) =>
     _collectSubfields(
       exeContext.schema,
@@ -97,7 +97,7 @@ const collectSubfields = memoize3(
       exeContext.operation,
       returnType,
       fieldGroup,
-      depth,
+      path,
     ),
 );
 
@@ -1630,7 +1630,7 @@ function collectAndExecuteSubfields(
     exeContext,
     returnType,
     fieldGroup,
-    path.depth,
+    path,
   );
   if (
     !exeContext.encounteredDefer &&
