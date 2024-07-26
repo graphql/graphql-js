@@ -248,13 +248,13 @@ class IncrementalPublisher {
       if (completion === undefined) {
         continue;
       }
+      const incremental = context.incremental;
       const {
         deferredFragmentRecord,
         newRootNodes,
         successfulExecutionGroups,
       } = completion;
       context.pending.push(...this._toPendingResults(newRootNodes));
-      const incremental = context.incremental;
       for (const successfulExecutionGroup of successfulExecutionGroups) {
         const { deferUsages: resultDeferUsages, path: resultPath } =
           successfulExecutionGroup.pendingExecutionGroup;
