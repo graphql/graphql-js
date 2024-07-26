@@ -51,8 +51,8 @@ interface CollectFieldsContext {
   variableValues: { [variable: string]: unknown };
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
-  encounteredDefer: boolean;
   visitedFragmentNames: Set<string>;
+  encounteredDefer: boolean;
 }
 
 /**
@@ -78,8 +78,8 @@ export function collectFields(
     variableValues,
     runtimeType,
     operation,
-    encounteredDefer: false,
     visitedFragmentNames: new Set(),
+    encounteredDefer: false,
   };
 
   collectFieldsImpl(context, operation.selectionSet, groupedFieldSet);
@@ -115,8 +115,8 @@ export function collectSubfields(
     variableValues,
     runtimeType: returnType,
     operation,
-    encounteredDefer: false,
     visitedFragmentNames: new Set(),
+    encounteredDefer: false,
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
 
