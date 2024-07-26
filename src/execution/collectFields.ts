@@ -51,6 +51,7 @@ interface CollectFieldsContext {
   variableValues: { [variable: string]: unknown };
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
+  encounteredDefer: boolean;
   visitedFragmentNames: Set<string>;
 }
 
@@ -77,10 +78,14 @@ export function collectFields(
     variableValues,
     runtimeType,
     operation,
+    encounteredDefer: false,
     visitedFragmentNames: new Set(),
   };
 
   collectFieldsImpl(context, operation.selectionSet, groupedFieldSet);
+  if (context.encounteredDefer) {
+    (groupedFieldSet as GroupedFieldSet).encounteredDefer = true;
+  }
   return groupedFieldSet;
 }
 
@@ -110,6 +115,7 @@ export function collectSubfields(
     variableValues,
     runtimeType: returnType,
     operation,
+    encounteredDefer: false,
     visitedFragmentNames: new Set(),
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
@@ -127,15 +133,16 @@ export function collectSubfields(
     }
   }
 
+  if (context.encounteredDefer) {
+    (subGroupedFieldSet as GroupedFieldSet).encounteredDefer = true;
+  }
   return subGroupedFieldSet;
 }
 
 function collectFieldsImpl(
   context: CollectFieldsContext,
   selectionSet: SelectionSetNode,
-  groupedFieldSet: AccumulatorMap<string, FieldDetails> & {
-    encounteredDefer?: boolean;
-  },
+  groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   path?: Path,
   deferUsage?: DeferUsage,
 ): void {
@@ -185,7 +192,7 @@ function collectFieldsImpl(
             deferUsage,
           );
         } else {
-          groupedFieldSet.encounteredDefer = true;
+          context.encounteredDefer = true;
           collectFieldsImpl(
             context,
             selection.selectionSet,
@@ -233,7 +240,7 @@ function collectFieldsImpl(
             deferUsage,
           );
         } else {
-          groupedFieldSet.encounteredDefer = true;
+          context.encounteredDefer = true;
           collectFieldsImpl(
             context,
             fragment.selectionSet,
