@@ -7,10 +7,15 @@ import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 import type { GraphQLError } from '../error/GraphQLError.js';
 
 import type { DeferUsage } from './collectFields.js';
-import { DeferredFragmentFactory } from './DeferredFragmentFactory.js';
 import type {
   DeferredFragmentRecord,
   DeliveryGroup,
+} from './DeferredFragments.js';
+import {
+  DeferredFragmentFactory,
+  isDeferredFragmentRecord,
+} from './DeferredFragments.js';
+import type {
   IncrementalDataRecord,
   IncrementalDataRecordResult,
   PendingExecutionGroup,
@@ -18,7 +23,7 @@ import type {
   StreamRecord,
   SuccessfulExecutionGroup,
 } from './types.js';
-import { isDeferredFragmentRecord, isPendingExecutionGroup } from './types.js';
+import { isPendingExecutionGroup } from './types.js';
 
 /**
  * @internal

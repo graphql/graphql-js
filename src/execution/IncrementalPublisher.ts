@@ -4,12 +4,12 @@ import { pathToArray } from '../jsutils/Path.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
+import type { DeliveryGroup } from './DeferredFragments.js';
 import { IncrementalGraph } from './IncrementalGraph.js';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,
   CompletedResult,
-  DeliveryGroup,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
   IncrementalDataRecordResult,

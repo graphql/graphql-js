@@ -1,7 +1,43 @@
 import type { Path } from '../jsutils/Path.js';
 
 import type { DeferUsage } from './collectFields.js';
-import { DeferredFragmentRecord } from './types.js';
+import type {
+  PendingExecutionGroup,
+  StreamRecord,
+  SuccessfulExecutionGroup,
+} from './types.js';
+
+export type DeliveryGroup = DeferredFragmentRecord | StreamRecord;
+
+/** @internal */
+export class DeferredFragmentRecord {
+  path: Path | undefined;
+  label: string | undefined;
+  parentDeferUsage: DeferUsage | undefined;
+  id?: string | undefined;
+  pendingExecutionGroups: Set<PendingExecutionGroup>;
+  successfulExecutionGroups: Set<SuccessfulExecutionGroup>;
+  children: Set<DeliveryGroup>;
+
+  constructor(
+    path: Path | undefined,
+    label: string | undefined,
+    parentDeferUsage: DeferUsage | undefined,
+  ) {
+    this.path = path;
+    this.label = label;
+    this.parentDeferUsage = parentDeferUsage;
+    this.pendingExecutionGroups = new Set();
+    this.successfulExecutionGroups = new Set();
+    this.children = new Set();
+  }
+}
+
+export function isDeferredFragmentRecord(
+  deliveryGroup: DeliveryGroup,
+): deliveryGroup is DeferredFragmentRecord {
+  return deliveryGroup instanceof DeferredFragmentRecord;
+}
 
 /**
  * @internal
