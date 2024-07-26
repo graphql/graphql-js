@@ -1035,7 +1035,6 @@ function getStreamUsage(
 
   const streamedFieldGroup: FieldGroup = fieldGroup.map((fieldDetails) => ({
     node: fieldDetails.node,
-    fieldDepth: 0,
     deferUsage: undefined,
   }));
 
