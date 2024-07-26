@@ -20,6 +20,13 @@ export class DeferredFragmentFactory {
     if (deferUsagePath === undefined) {
       deferredFragmentRecords = this._rootDeferredFragments;
     } else {
+      // A doubly nested Map<Path, Map<DeferUsage, DeferredFragmentRecord>>
+      // could be used, but could leak memory in long running operations.
+      // A WeakMap could be used instead. The below implementation is
+      // WeakMap-Like, saving the Map on the Path object directly.
+      // Alternatively, memory could be reclaimed manually, taking care to
+      // also reclaim memory for nested DeferredFragmentRecords if the parent
+      // is removed secondary to an error.
       deferredFragmentRecords = (
         deferUsagePath as unknown as {
           deferredFragmentRecords: Map<DeferUsage, DeferredFragmentRecord>;
