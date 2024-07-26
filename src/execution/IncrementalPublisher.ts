@@ -259,7 +259,7 @@ class IncrementalPublisher {
         const { deferUsages: resultDeferUsages, path: resultPath } =
           successfulExecutionGroup.pendingExecutionGroup;
         const bestDeferredFragmentRecord =
-          this._incrementalGraph.getDeepestDeferredFragmentRecord(
+          this._incrementalGraph.getDeepestDeferredFragmentAtRoot(
             deferUsage,
             resultDeferUsages,
             resultPath,

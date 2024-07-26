@@ -85,7 +85,7 @@ export class IncrementalGraph {
     }
   }
 
-  getDeepestDeferredFragmentRecord(
+  getDeepestDeferredFragmentAtRoot(
     initialDeferUsage: DeferUsage,
     deferUsages: ReadonlySet<DeferUsage>,
     path: Path | undefined,
