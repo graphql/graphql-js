@@ -47,7 +47,7 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = definition;
             }
           }
-          const { groupedFieldSet } = collectFields(
+          const groupedFieldSet = collectFields(
             schema,
             fragments,
             variableValues,

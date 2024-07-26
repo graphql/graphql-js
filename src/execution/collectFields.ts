@@ -1,6 +1,8 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { invariant } from '../jsutils/invariant.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { Path } from '../jsutils/Path.js';
+import { pathToArray } from '../jsutils/Path.js';
 
 import type {
   FieldNode,
@@ -29,6 +31,7 @@ import { getDirectiveValues } from './values.js';
 export interface DeferUsage {
   label: string | undefined;
   parentDeferUsage: DeferUsage | undefined;
+  depth: number;
 }
 
 export interface FieldDetails {
@@ -38,7 +41,9 @@ export interface FieldDetails {
 
 export type FieldGroup = ReadonlyArray<FieldDetails>;
 
-export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
+export type GroupedFieldSet = ReadonlyMap<string, FieldGroup> & {
+  encounteredDefer?: boolean;
+};
 
 interface CollectFieldsContext {
   schema: GraphQLSchema;
@@ -47,6 +52,7 @@ interface CollectFieldsContext {
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
+  encounteredDefer: boolean;
 }
 
 /**
@@ -64,12 +70,8 @@ export function collectFields(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
-): {
-  groupedFieldSet: GroupedFieldSet;
-  newDeferUsages: ReadonlyArray<DeferUsage>;
-} {
+): GroupedFieldSet {
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
-  const newDeferUsages: Array<DeferUsage> = [];
   const context: CollectFieldsContext = {
     schema,
     fragments,
@@ -77,15 +79,14 @@ export function collectFields(
     runtimeType,
     operation,
     visitedFragmentNames: new Set(),
+    encounteredDefer: false,
   };
 
-  collectFieldsImpl(
-    context,
-    operation.selectionSet,
-    groupedFieldSet,
-    newDeferUsages,
-  );
-  return { groupedFieldSet, newDeferUsages };
+  collectFieldsImpl(context, operation.selectionSet, groupedFieldSet);
+  if (context.encounteredDefer) {
+    (groupedFieldSet as GroupedFieldSet).encounteredDefer = true;
+  }
+  return groupedFieldSet;
 }
 
 /**
@@ -106,10 +107,8 @@ export function collectSubfields(
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldGroup: FieldGroup,
-): {
-  groupedFieldSet: GroupedFieldSet;
-  newDeferUsages: ReadonlyArray<DeferUsage>;
-} {
+  path: Path,
+): GroupedFieldSet {
   const context: CollectFieldsContext = {
     schema,
     fragments,
@@ -117,34 +116,34 @@ export function collectSubfields(
     runtimeType: returnType,
     operation,
     visitedFragmentNames: new Set(),
+    encounteredDefer: false,
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
-  const newDeferUsages: Array<DeferUsage> = [];
 
   for (const fieldDetail of fieldGroup) {
-    const node = fieldDetail.node;
+    const { node, deferUsage } = fieldDetail;
     if (node.selectionSet) {
       collectFieldsImpl(
         context,
         node.selectionSet,
         subGroupedFieldSet,
-        newDeferUsages,
-        fieldDetail.deferUsage,
+        path,
+        deferUsage,
       );
     }
   }
 
-  return {
-    groupedFieldSet: subGroupedFieldSet,
-    newDeferUsages,
-  };
+  if (context.encounteredDefer) {
+    (subGroupedFieldSet as GroupedFieldSet).encounteredDefer = true;
+  }
+  return subGroupedFieldSet;
 }
 
 function collectFieldsImpl(
   context: CollectFieldsContext,
   selectionSet: SelectionSetNode,
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
-  newDeferUsages: Array<DeferUsage>,
+  path?: Path,
   deferUsage?: DeferUsage,
 ): void {
   const {
@@ -180,6 +179,7 @@ function collectFieldsImpl(
           operation,
           variableValues,
           selection,
+          path,
           deferUsage,
         );
 
@@ -188,16 +188,16 @@ function collectFieldsImpl(
             context,
             selection.selectionSet,
             groupedFieldSet,
-            newDeferUsages,
+            path,
             deferUsage,
           );
         } else {
-          newDeferUsages.push(newDeferUsage);
+          context.encounteredDefer = true;
           collectFieldsImpl(
             context,
             selection.selectionSet,
             groupedFieldSet,
-            newDeferUsages,
+            path,
             newDeferUsage,
           );
         }
@@ -211,6 +211,7 @@ function collectFieldsImpl(
           operation,
           variableValues,
           selection,
+          path,
           deferUsage,
         );
 
@@ -235,16 +236,16 @@ function collectFieldsImpl(
             context,
             fragment.selectionSet,
             groupedFieldSet,
-            newDeferUsages,
+            path,
             deferUsage,
           );
         } else {
-          newDeferUsages.push(newDeferUsage);
+          context.encounteredDefer = true;
           collectFieldsImpl(
             context,
             fragment.selectionSet,
             groupedFieldSet,
-            newDeferUsages,
+            path,
             newDeferUsage,
           );
         }
@@ -263,6 +264,7 @@ function getDeferUsage(
   operation: OperationDefinitionNode,
   variableValues: { [variable: string]: unknown },
   node: FragmentSpreadNode | InlineFragmentNode,
+  path: Path | undefined,
   parentDeferUsage: DeferUsage | undefined,
 ): DeferUsage | undefined {
   const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues);
@@ -283,6 +285,7 @@ function getDeferUsage(
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
     parentDeferUsage,
+    depth: pathToArray(path).length,
   };
 }
 
