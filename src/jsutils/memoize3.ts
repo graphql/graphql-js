@@ -1,5 +1,5 @@
 /**
- * Memoizes the provided three-argument function.
+ * Memoizes the provided three-argument or more function based on the first three arguments.
  */
 export function memoize3<
   A1 extends object,
