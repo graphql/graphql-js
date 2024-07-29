@@ -148,12 +148,12 @@ function buildPackageJSON() {
       import { defineConfig } from 'vite';
       export default defineConfig(async ({ mode }) => {
         return {
-          resolve: mode === 'test' ? { conditions: ['vitest'] } : undefined,
+          resolve: mode === 'test' ? { conditions: ['dual-module-hazard-workaround'] } : undefined,
         };
       });
       ```
        */
-      vitest: {
+      'dual-module-hazard-workaround': {
         import: base + '/index.js.mjs',
         default: base + '/index.js',
       },
