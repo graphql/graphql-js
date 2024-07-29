@@ -7,59 +7,7 @@
   "main": "index.js",
   "module": "index.mjs",
   "exports": {
-    "./package.json": "./package.json",
-    "./execution/execute.js": {
-      "types": {
-        "import": "./execution/execute.js.d.mts",
-        "default": "./execution/execute.d.ts"
-      },
-      "vitest": {
-        "import": "./execution/execute.js.mjs",
-        "default": "./execution/execute.js"
-      },
-      "module": "./execution/execute.mjs",
-      "import": "./execution/execute.js.mjs",
-      "default": "./execution/execute.js"
-    },
-    "./jsutils/instanceOf.js": {
-      "types": {
-        "import": "./jsutils/instanceOf.js.d.mts",
-        "default": "./jsutils/instanceOf.d.ts"
-      },
-      "vitest": {
-        "import": "./jsutils/instanceOf.js.mjs",
-        "default": "./jsutils/instanceOf.js"
-      },
-      "module": "./jsutils/instanceOf.mjs",
-      "import": "./jsutils/instanceOf.js.mjs",
-      "default": "./jsutils/instanceOf.js"
-    },
-    "./language/parser.js": {
-      "types": {
-        "import": "./language/parser.js.d.mts",
-        "default": "./language/parser.d.ts"
-      },
-      "vitest": {
-        "import": "./language/parser.js.mjs",
-        "default": "./language/parser.js"
-      },
-      "module": "./language/parser.mjs",
-      "import": "./language/parser.js.mjs",
-      "default": "./language/parser.js"
-    },
-    "./language/ast.js": {
-      "types": {
-        "import": "./language/ast.js.d.mts",
-        "default": "./language/ast.d.ts"
-      },
-      "vitest": {
-        "import": "./language/ast.js.mjs",
-        "default": "./language/ast.js"
-      },
-      "module": "./language/ast.mjs",
-      "import": "./language/ast.js.mjs",
-      "default": "./language/ast.js"
-    }
+    "./package.json": "./package.json"
   },
   "typesVersions": {
     ">=4.1.0": {

@@ -132,15 +132,13 @@ function buildPackageJSON() {
   packageJSON.type = 'commonjs';
 
   for (const entryPoint of entryPoints) {
-    if (!entryPoint.endsWith('index.ts')) {
-      continue;
-    }
     const base = ('./' + path.dirname(entryPoint)).replace(/\/.?$/, '');
+    const filename = path.basename(entryPoint, '.ts');
     const generated = {};
-    generated[base] = {
+    generated[filename === 'index' ? base : `${base}/${filename}.js`] = {
       types: {
-        import: base + '/index.js.d.mts',
-        default: base + '/index.d.ts',
+        import: `${base}/${filename}.js.d.mts`,
+        default: `${base}/${filename}.d.ts`,
       },
       /*
        this is not automatically picked up by vitest, but we can instruct users to add it to their vitest config:
@@ -154,12 +152,12 @@ function buildPackageJSON() {
       ```
        */
       'dual-module-hazard-workaround': {
-        import: base + '/index.js.mjs',
-        default: base + '/index.js',
+        import: `${base}/${filename}.js.mjs`,
+        default: `${base}/${filename}.js`,
       },
-      module: base + '/index.mjs',
-      import: base + '/index.js.mjs',
-      default: base + '/index.js',
+      module: `${base}/${filename}.mjs`,
+      import: `${base}/${filename}.js.mjs`,
+      default: `${base}/${filename}.js`,
     };
     packageJSON.exports = {
       ...generated,
