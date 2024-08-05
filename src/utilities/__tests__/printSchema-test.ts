@@ -591,6 +591,15 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints deprecated directives with explicitly `null` reason', () => {
+    const SDL = dedent`
+      type Query {
+        someField: String @deprecated(reason: null)
+      }`;
+    const schema = buildSchema(SDL);
+    expectPrintedSchema(schema).to.equal(SDL);
+  });
+
   it('Prints custom directives', () => {
     const SimpleDirective = new GraphQLDirective({
       name: 'simpleDirective',
