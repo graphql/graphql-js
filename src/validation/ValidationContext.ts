@@ -1,3 +1,13 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`:
+ * * ASTValidationContext
+ * * ASTValidationRule
+ * * SDLValidationContext
+ * * SDLValidationRule
+ * Should we still expose this file?
+ */
+
 import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
 
