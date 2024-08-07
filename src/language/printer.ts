@@ -57,13 +57,8 @@ const printDocASTReducer: ASTReducer<string> = {
   Field: {
     leave({ alias, name, arguments: args, directives, selectionSet }) {
       const prefix = wrap('', alias, ': ') + name;
-      let argsLine = prefix + wrap('(', join(args, ', '), ')');
 
-      if (argsLine.length > MAX_LINE_LENGTH) {
-        argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
-      }
-
-      return join([argsLine, join(directives, ' '), selectionSet], ' ');
+      return join([wrappedLineAndArgs(prefix, args), join(directives, ' '), selectionSet], ' ');
     },
   },
 
@@ -72,8 +67,12 @@ const printDocASTReducer: ASTReducer<string> = {
   // Fragments
 
   FragmentSpread: {
-    leave: ({ name, directives }) =>
-      '...' + name + wrap(' ', join(directives, ' ')),
+    leave: ({ name, arguments: args, directives }) => {
+      const prefix = '...' + name;
+      return (
+        wrappedLineAndArgs(prefix, args) + wrap(' ', join(directives, ' '))
+      );
+    },
   },
 
   InlineFragment: {
@@ -344,4 +343,16 @@ function hasMultilineItems(maybeArray: Maybe<ReadonlyArray<string>>): boolean {
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
   return maybeArray?.some((str) => str.includes('\n')) ?? false;
+}
+
+function wrappedLineAndArgs(
+  prefix: string,
+  args: ReadonlyArray<string> | undefined,
+): string {
+  let argsLine = prefix + wrap('(', join(args, ', '), ')');
+
+  if (argsLine.length > MAX_LINE_LENGTH) {
+    argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+  }
+  return argsLine;
 }

@@ -103,6 +103,27 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser will understand and parse fragment variable definitions
+   * and arguments on fragment spreads. Fragment variable definitions will be represented
+   * in the `variableDefinitions` field of the FragmentDefinitionNode.
+   * Fragment spread arguments will be represented in the `arguments` field of FragmentSpreadNode.
+   *
+   * For example:
+   *
+   * ```graphql
+   * {
+   *   t { ...A(var: true) }
+   * }
+   * fragment A($var: Boolean = false) on T {
+   *   ...B(x: $var)
+   * }
+   * ```
+   */
+    experimentalFragmentArguments?: boolean | undefined;
 }
 
 /**
@@ -485,7 +506,7 @@ export class Parser {
   /**
    * Corresponds to both FragmentSpread and InlineFragment in the spec.
    *
-   * FragmentSpread : ... FragmentName Directives?
+   * FragmentSpread : ... FragmentName Arguments? Directives?
    *
    * InlineFragment : ... TypeCondition? Directives? SelectionSet
    */
@@ -495,9 +516,21 @@ export class Parser {
 
     const hasTypeCondition = this.expectOptionalKeyword('on');
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
+      const name = this.parseFragmentName();
+      if (
+        this.peek(TokenKind.PAREN_L) &&
+        this._options.experimentalFragmentArguments
+      ) {
+        return this.node<FragmentSpreadNode>(start, {
+          kind: Kind.FRAGMENT_SPREAD,
+          name,
+          arguments: this.parseArguments(false),
+          directives: this.parseDirectives(false),
+        });
+      }
       return this.node<FragmentSpreadNode>(start, {
         kind: Kind.FRAGMENT_SPREAD,
-        name: this.parseFragmentName(),
+        name,
         directives: this.parseDirectives(false),
       });
     }
@@ -511,32 +544,24 @@ export class Parser {
 
   /**
    * FragmentDefinition :
-   *   - fragment FragmentName on TypeCondition Directives? SelectionSet
+   *   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
    *
    * TypeCondition : NamedType
    */
   parseFragmentDefinition(): FragmentDefinitionNode {
     const start = this._lexer.token;
     this.expectKeyword('fragment');
-    // Legacy support for defining variables within fragments changes
-    // the grammar of FragmentDefinition:
-    //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options.allowLegacyFragmentVariables === true) {
-      return this.node<FragmentDefinitionNode>(start, {
-        kind: Kind.FRAGMENT_DEFINITION,
-        name: this.parseFragmentName(),
-        variableDefinitions: this.parseVariableDefinitions(),
-        typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
-        directives: this.parseDirectives(false),
-        selectionSet: this.parseSelectionSet(),
-      });
-    }
     return this.node<FragmentDefinitionNode>(start, {
       kind: Kind.FRAGMENT_DEFINITION,
       name: this.parseFragmentName(),
+      variableDefinitions:
+        this._options.experimentalFragmentArguments === true || this._options.allowLegacyFragmentVariables === true
+          ? this.parseVariableDefinitions()
+          : undefined,
       typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
       directives: this.parseDirectives(false),
       selectionSet: this.parseSelectionSet(),
+
     });
   }
 
