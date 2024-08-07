@@ -55,6 +55,7 @@ import { assertValidSchema } from '../type/validate';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
+  FieldDetails,
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
 
@@ -67,7 +68,7 @@ const collectSubfields = memoize3(
   (
     exeContext: ExecutionContext,
     returnType: GraphQLObjectType,
-    fieldNodes: ReadonlyArray<FieldNode>,
+    fieldNodes: ReadonlyArray<FieldDetails>,
   ) =>
     _collectSubfields(
       exeContext.schema,
@@ -402,7 +403,7 @@ function executeFieldsSerially(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
-  fields: Map<string, ReadonlyArray<FieldNode>>,
+  fields: Map<string, ReadonlyArray<FieldDetails>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   return promiseReduce(
     fields.entries(),
@@ -440,7 +441,7 @@ function executeFields(
   parentType: GraphQLObjectType,
   sourceValue: unknown,
   path: Path | undefined,
-  fields: Map<string, ReadonlyArray<FieldNode>>,
+  fields: Map<string, ReadonlyArray<FieldDetails>>,
 ): PromiseOrValue<ObjMap<unknown>> {
   const results = Object.create(null);
   let containsPromise = false;
@@ -494,10 +495,10 @@ function executeField(
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   source: unknown,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldEntries: ReadonlyArray<FieldDetails>,
   path: Path,
 ): PromiseOrValue<unknown> {
-  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
+  const fieldDef = getFieldDef(exeContext.schema, parentType, fieldEntries[0]);
   if (!fieldDef) {
     return;
   }
@@ -508,7 +509,7 @@ function executeField(
   const info = buildResolveInfo(
     exeContext,
     fieldDef,
-    fieldNodes,
+    fieldEntries,
     parentType,
     path,
   );
@@ -519,9 +520,10 @@ function executeField(
     // variables scope to fulfill any variable references.
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
-      fieldDef,
-      fieldNodes[0],
+      fieldEntries[0].node,
+      fieldDef.args,
       exeContext.variableValues,
+      fieldEntries[0].fragmentVariableValues
     );
 
     // The resolve function's optional third argument is a context value that
@@ -534,13 +536,13 @@ function executeField(
     let completed;
     if (isPromise(result)) {
       completed = result.then((resolved) =>
-        completeValue(exeContext, returnType, fieldNodes, info, path, resolved),
+        completeValue(exeContext, returnType, fieldEntries, info, path, resolved),
       );
     } else {
       completed = completeValue(
         exeContext,
         returnType,
-        fieldNodes,
+        fieldEntries,
         info,
         path,
         result,
@@ -551,13 +553,13 @@ function executeField(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldNodes, pathToArray(path));
+        const error = locatedError(rawError, fieldEntries.map(entry => entry.node), pathToArray(path));
         return handleFieldError(error, returnType, exeContext);
       });
     }
     return completed;
   } catch (rawError) {
-    const error = locatedError(rawError, fieldNodes, pathToArray(path));
+    const error = locatedError(rawError, fieldEntries.map(entry => entry.node), pathToArray(path));
     return handleFieldError(error, returnType, exeContext);
   }
 }
@@ -568,7 +570,7 @@ function executeField(
 export function buildResolveInfo(
   exeContext: ExecutionContext,
   fieldDef: GraphQLField<unknown, unknown>,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldEntries: ReadonlyArray<FieldDetails>,
   parentType: GraphQLObjectType,
   path: Path,
 ): GraphQLResolveInfo {
@@ -576,7 +578,7 @@ export function buildResolveInfo(
   // information about the current execution state.
   return {
     fieldName: fieldDef.name,
-    fieldNodes,
+    fieldNodes: fieldEntries.map(entry => entry.node),
     returnType: fieldDef.type,
     parentType,
     path,
@@ -629,7 +631,7 @@ function handleFieldError(
 function completeValue(
   exeContext: ExecutionContext,
   returnType: GraphQLOutputType,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldNodes: ReadonlyArray<FieldDetails>,
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
@@ -720,7 +722,7 @@ function completeValue(
 function completeListValue(
   exeContext: ExecutionContext,
   returnType: GraphQLList<GraphQLOutputType>,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldEntries: ReadonlyArray<FieldDetails>,
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
@@ -746,7 +748,7 @@ function completeListValue(
           completeValue(
             exeContext,
             itemType,
-            fieldNodes,
+            fieldEntries,
             info,
             itemPath,
             resolved,
@@ -756,7 +758,7 @@ function completeListValue(
         completedItem = completeValue(
           exeContext,
           itemType,
-          fieldNodes,
+          fieldEntries,
           info,
           itemPath,
           item,
@@ -770,7 +772,7 @@ function completeListValue(
         return completedItem.then(undefined, (rawError) => {
           const error = locatedError(
             rawError,
-            fieldNodes,
+            fieldEntries.map(entry => entry.node),
             pathToArray(itemPath),
           );
           return handleFieldError(error, itemType, exeContext);
@@ -778,7 +780,7 @@ function completeListValue(
       }
       return completedItem;
     } catch (rawError) {
-      const error = locatedError(rawError, fieldNodes, pathToArray(itemPath));
+      const error = locatedError(rawError, fieldEntries.map(entry => entry.node), pathToArray(itemPath));
       return handleFieldError(error, itemType, exeContext);
     }
   });
@@ -811,7 +813,7 @@ function completeLeafValue(
 function completeAbstractValue(
   exeContext: ExecutionContext,
   returnType: GraphQLAbstractType,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldEntries: ReadonlyArray<FieldDetails>,
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
@@ -820,6 +822,7 @@ function completeAbstractValue(
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
+  const fieldNodes = fieldEntries.map(entry => entry.node)
   if (isPromise(runtimeType)) {
     return runtimeType.then((resolvedRuntimeType) =>
       completeObjectValue(
@@ -832,7 +835,7 @@ function completeAbstractValue(
           info,
           result,
         ),
-        fieldNodes,
+        fieldEntries,
         info,
         path,
         result,
@@ -850,7 +853,7 @@ function completeAbstractValue(
       info,
       result,
     ),
-    fieldNodes,
+    fieldEntries,
     info,
     path,
     result,
@@ -918,13 +921,13 @@ function ensureValidRuntimeType(
 function completeObjectValue(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
+  fieldEntries: ReadonlyArray<FieldDetails>,
   info: GraphQLResolveInfo,
   path: Path,
   result: unknown,
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
-  const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
+  const subFieldNodes = collectSubfields(exeContext, returnType, fieldEntries);
 
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
@@ -935,7 +938,7 @@ function completeObjectValue(
     if (isPromise(isTypeOf)) {
       return isTypeOf.then((resolvedIsTypeOf) => {
         if (!resolvedIsTypeOf) {
-          throw invalidReturnTypeError(returnType, result, fieldNodes);
+          throw invalidReturnTypeError(returnType, result, fieldEntries.map(entry => entry.node));
         }
         return executeFields(
           exeContext,
@@ -948,7 +951,7 @@ function completeObjectValue(
     }
 
     if (!isTypeOf) {
-      throw invalidReturnTypeError(returnType, result, fieldNodes);
+      throw invalidReturnTypeError(returnType, result, fieldEntries.map(entry => entry.node));
     }
   }
 
@@ -1044,9 +1047,9 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
 export function getFieldDef(
   schema: GraphQLSchema,
   parentType: GraphQLObjectType,
-  fieldNode: FieldNode,
+  entry: FieldDetails,
 ): Maybe<GraphQLField<unknown, unknown>> {
-  const fieldName = fieldNode.name.value;
+  const fieldName = entry.node.name.value;
 
   if (
     fieldName === SchemaMetaFieldDef.name &&

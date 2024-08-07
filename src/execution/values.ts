@@ -9,12 +9,13 @@ import { GraphQLError } from '../error/GraphQLError';
 import type {
   DirectiveNode,
   FieldNode,
+  FragmentSpreadNode,
   VariableDefinitionNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 
-import type { GraphQLField } from '../type/definition';
+import type { GraphQLArgument, GraphQLField } from '../type/definition';
 import { isInputType, isNonNullType } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
@@ -22,6 +23,7 @@ import type { GraphQLSchema } from '../type/schema';
 import { coerceInputValue } from '../utilities/coerceInputValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
+import { valueFromASTUntyped } from '../utilities';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
@@ -150,9 +152,10 @@ function coerceVariableValues(
  * Object prototype.
  */
 export function getArgumentValues(
-  def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
+  argDefs: ReadonlyArray<GraphQLArgument>,
   variableValues?: Maybe<ObjMap<unknown>>,
+  fragmentArgValues?: Maybe<ObjMap<unknown>>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
 
@@ -161,7 +164,7 @@ export function getArgumentValues(
   const argumentNodes = node.arguments ?? [];
   const argNodeMap = keyMap(argumentNodes, (arg) => arg.name.value);
 
-  for (const argDef of def.args) {
+  for (const argDef of argDefs) {
     const name = argDef.name;
     const argType = argDef.type;
     const argumentNode = argNodeMap[name];
@@ -180,29 +183,36 @@ export function getArgumentValues(
     }
 
     const valueNode = argumentNode.value;
-    let isNull = valueNode.kind === Kind.NULL;
+    let hasValue = valueNode.kind !== Kind.NULL;
 
     if (valueNode.kind === Kind.VARIABLE) {
       const variableName = valueNode.name.value;
       if (
-        variableValues == null ||
-        !hasOwnProperty(variableValues, variableName)
+        fragmentArgValues != null &&
+        hasOwnProperty(fragmentArgValues, variableName)
       ) {
-        if (argDef.defaultValue !== undefined) {
+        hasValue = fragmentArgValues![variableName] != null;
+        if (!hasValue && argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
-        } else if (isNonNullType(argType)) {
-          throw new GraphQLError(
-            `Argument "${name}" of required type "${inspect(argType)}" ` +
-              `was provided the variable "$${variableName}" which was not provided a runtime value.`,
-            { nodes: valueNode },
-          );
+          continue;
         }
+      } else if (variableValues != null && hasOwnProperty(variableValues, variableName)) {
+        hasValue = variableValues[variableName] != null;
+      } else if (argDef.defaultValue !== undefined) {
+        coercedValues[name] = argDef.defaultValue;
+        continue;
+      } else if (isNonNullType(argType)) {
+        throw new GraphQLError(
+          `Argument "${name}" of required type "${inspect(argType)}" ` +
+            `was provided the variable "$${variableName}" which was not provided a runtime value.`,
+          { nodes: valueNode },
+        );
+      } else {
         continue;
       }
-      isNull = variableValues[variableName] == null;
     }
 
-    if (isNull && isNonNullType(argType)) {
+    if (!hasValue && isNonNullType(argType)) {
       throw new GraphQLError(
         `Argument "${name}" of non-null type "${inspect(argType)}" ` +
           'must not be null.',
@@ -210,7 +220,11 @@ export function getArgumentValues(
       );
     }
 
-    const coercedValue = valueFromAST(valueNode, argType, variableValues);
+    const coercedValue = valueFromAST(valueNode, argType, {
+      ...variableValues,
+      ...fragmentArgValues,
+    });
+
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
@@ -220,6 +234,76 @@ export function getArgumentValues(
         { nodes: valueNode },
       );
     }
+    coercedValues[name] = coercedValue;
+  }
+  return coercedValues;
+}
+
+export function getArgumentValuesFromSpread(
+  /** NOTE: For error annotations only */
+  node: FragmentSpreadNode,
+  schema: GraphQLSchema,
+  fragmentVarDefs: ReadonlyArray<VariableDefinitionNode>,
+  variableValues: Maybe<ObjMap<unknown>>,
+  fragmentArgValues?: Maybe<ObjMap<unknown>>,
+): { [argument: string]: unknown } {
+  const coercedValues: { [argument: string]: unknown } = {};
+  const argNodeMap = keyMap(node?.arguments || [], (arg) => arg.name.value);
+
+  for (const varDef of fragmentVarDefs) {
+    const name = varDef.variable.name.value;
+    const argType = typeFromAST(schema, varDef.type);
+    const argumentNode = argNodeMap[name];
+
+    if (argumentNode == null) {
+      if (varDef.defaultValue !== undefined) {
+        coercedValues[name] = valueFromASTUntyped(varDef.defaultValue);
+      } else if (isNonNullType(argType)) {
+        throw new GraphQLError(
+          `Argument "${name}" of required type "${inspect(argType)}" ` +
+            'was not provided.',
+          { nodes: node },
+        );
+      } else {
+        coercedValues[name] = undefined;
+      }
+      continue;
+    }
+
+    const valueNode = argumentNode.value;
+
+    let hasValue = valueNode.kind !== Kind.NULL;
+    if (valueNode.kind === Kind.VARIABLE) {
+      const variableName = valueNode.name.value;
+      if (
+        fragmentArgValues != null &&
+        hasOwnProperty(fragmentArgValues, variableName)
+      ) {
+        hasValue = fragmentArgValues[variableName] != null;
+      } else if (
+        variableValues != null &&
+        hasOwnProperty(variableValues, variableName)
+      ) {
+        hasValue = variableValues[variableName] != null;
+      }
+    }
+
+    if (!hasValue && isNonNullType(argType)) {
+      throw new GraphQLError(
+        `Argument "${name}" of non-null type "${inspect(argType)}" ` +
+          'must not be null.',
+        { nodes: valueNode },
+      );
+    }
+
+    let coercedValue;
+    if (argType && isInputType(argType)) {
+      coercedValue = valueFromAST(valueNode, argType, {
+        ...variableValues,
+        ...fragmentArgValues,
+      });
+    }
+
     coercedValues[name] = coercedValue;
   }
   return coercedValues;
@@ -246,7 +330,7 @@ export function getDirectiveValues(
   );
 
   if (directiveNode) {
-    return getArgumentValues(directiveDef, directiveNode, variableValues);
+    return getArgumentValues(directiveNode, directiveDef.args, variableValues);
   }
 }
 

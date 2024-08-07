@@ -57,20 +57,20 @@ export function SingleFieldSubscriptionsRule(
                 operationName != null
                   ? `Subscription "${operationName}" must select only one top level field.`
                   : 'Anonymous Subscription must select only one top level field.',
-                { nodes: extraFieldSelections },
+                { nodes: extraFieldSelections.map(entry => entry.node) },
               ),
             );
           }
           for (const fieldNodes of fields.values()) {
             const field = fieldNodes[0];
-            const fieldName = field.name.value;
+            const fieldName = field.node.name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
                 new GraphQLError(
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  { nodes: fieldNodes },
+                  { nodes: fieldNodes.map(entry => entry.node) },
                 ),
               );
             }

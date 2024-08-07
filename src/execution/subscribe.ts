@@ -214,14 +214,14 @@ async function executeSubscription(
     rootType,
     operation.selectionSet,
   );
-  const [responseName, fieldNodes] = [...rootFields.entries()][0];
-  const fieldDef = getFieldDef(schema, rootType, fieldNodes[0]);
+  const [responseName, fieldEntries] = [...rootFields.entries()][0];
+  const fieldDef = getFieldDef(schema, rootType, fieldEntries[0]);
 
   if (!fieldDef) {
-    const fieldName = fieldNodes[0].name.value;
+    const fieldName = fieldEntries[0].node.name.value;
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
-      { nodes: fieldNodes },
+      { nodes: fieldEntries.map(entry => entry.node) },
     );
   }
 
@@ -229,7 +229,7 @@ async function executeSubscription(
   const info = buildResolveInfo(
     exeContext,
     fieldDef,
-    fieldNodes,
+    fieldEntries,
     rootType,
     path,
   );
@@ -240,7 +240,7 @@ async function executeSubscription(
 
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
-    const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
+    const args = getArgumentValues(fieldEntries[0].node, fieldDef.args, variableValues);
 
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
@@ -257,6 +257,6 @@ async function executeSubscription(
     }
     return eventStream;
   } catch (error) {
-    throw locatedError(error, fieldNodes, pathToArray(path));
+    throw locatedError(error, fieldEntries.map(entry => entry.node), pathToArray(path));
   }
 }

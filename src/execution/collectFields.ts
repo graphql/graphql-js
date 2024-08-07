@@ -19,7 +19,12 @@ import type { GraphQLSchema } from '../type/schema';
 
 import { typeFromAST } from '../utilities/typeFromAST';
 
-import { getDirectiveValues } from './values';
+import { getArgumentValuesFromSpread, getDirectiveValues } from './values';
+
+export interface FieldDetails {
+  node: FieldNode;
+  fragmentVariableValues?: ObjMap<unknown> | undefined;
+}
 
 /**
  * Given a selectionSet, collects all of the fields and returns them.
@@ -36,7 +41,7 @@ export function collectFields(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-): Map<string, ReadonlyArray<FieldNode>> {
+): Map<string, ReadonlyArray<FieldDetails>> {
   const fields = new Map();
   collectFieldsImpl(
     schema,
@@ -46,6 +51,7 @@ export function collectFields(
     selectionSet,
     fields,
     new Set(),
+    undefined
   );
   return fields;
 }
@@ -65,24 +71,24 @@ export function collectSubfields(
   fragments: ObjMap<FragmentDefinitionNode>,
   variableValues: { [variable: string]: unknown },
   returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-): Map<string, ReadonlyArray<FieldNode>> {
-  const subFieldNodes = new Map();
+  fieldEntries: ReadonlyArray<FieldDetails>,
+): Map<string, ReadonlyArray<FieldDetails>> {
+  const subFieldEntries = new Map();
   const visitedFragmentNames = new Set<string>();
-  for (const node of fieldNodes) {
-    if (node.selectionSet) {
+  for (const entry of fieldEntries) {
+    if (entry.node.selectionSet) {
       collectFieldsImpl(
         schema,
         fragments,
         variableValues,
         returnType,
-        node.selectionSet,
-        subFieldNodes,
+        entry.node.selectionSet,
+        subFieldEntries,
         visitedFragmentNames,
       );
     }
   }
-  return subFieldNodes;
+  return subFieldEntries;
 }
 
 function collectFieldsImpl(
@@ -91,21 +97,23 @@ function collectFieldsImpl(
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: Map<string, Array<FieldNode>>,
+  fields: Map<string, Array<FieldDetails>>,
   visitedFragmentNames: Set<string>,
+  localVariableValues?: { [variable: string]: unknown },
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
-        if (!shouldIncludeNode(variableValues, selection)) {
+        const vars = localVariableValues ?? variableValues;
+        if (!shouldIncludeNode(vars, selection)) {
           continue;
         }
         const name = getFieldEntryKey(selection);
         const fieldList = fields.get(name);
         if (fieldList !== undefined) {
-          fieldList.push(selection);
+          fieldList.push({ node: selection, fragmentVariableValues: localVariableValues ?? undefined });
         } else {
-          fields.set(name, [selection]);
+          fields.set(name, [{ node: selection, fragmentVariableValues: localVariableValues ?? undefined }]);
         }
         break;
       }
@@ -143,6 +151,26 @@ function collectFieldsImpl(
         ) {
           continue;
         }
+
+        // We need to introduce a concept of shadowing:
+        //
+        // - when a fragment defines a variable that is in the parent scope but not given
+        //   in the fragment-spread we need to look at this variable as undefined and check
+        //   whether the definition has a defaultValue, if not remove it from the variableValues.
+        // - when a fragment does not define a variable we need to copy it over from the parent
+        //   scope as that variable can still get used in spreads later on in the selectionSet.
+        // - when a value is passed in through the fragment-spread we need to copy over the key-value
+        //   into our variable-values.
+        const fragmentVariableValues = fragment.variableDefinitions
+          ? getArgumentValuesFromSpread(
+              selection,
+              schema,
+              fragment.variableDefinitions,
+              variableValues,
+              localVariableValues,
+            )
+          : undefined;
+
         collectFieldsImpl(
           schema,
           fragments,
@@ -151,6 +179,7 @@ function collectFieldsImpl(
           fragment.selectionSet,
           fields,
           visitedFragmentNames,
+          fragmentVariableValues
         );
         break;
       }
