@@ -15,7 +15,7 @@ import type {
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 
-import type { GraphQLArgument, GraphQLField } from '../type/definition';
+import type { GraphQLArgument } from '../type/definition';
 import { isInputType, isNonNullType } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
@@ -23,7 +23,7 @@ import type { GraphQLSchema } from '../type/schema';
 import { coerceInputValue } from '../utilities/coerceInputValue';
 import { typeFromAST } from '../utilities/typeFromAST';
 import { valueFromAST } from '../utilities/valueFromAST';
-import { valueFromASTUntyped } from '../utilities';
+import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
@@ -191,12 +191,15 @@ export function getArgumentValues(
         fragmentArgValues != null &&
         hasOwnProperty(fragmentArgValues, variableName)
       ) {
-        hasValue = fragmentArgValues![variableName] != null;
+        hasValue = fragmentArgValues[variableName] != null;
         if (!hasValue && argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
           continue;
         }
-      } else if (variableValues != null && hasOwnProperty(variableValues, variableName)) {
+      } else if (
+        variableValues != null &&
+        hasOwnProperty(variableValues, variableName)
+      ) {
         hasValue = variableValues[variableName] != null;
       } else if (argDef.defaultValue !== undefined) {
         coercedValues[name] = argDef.defaultValue;
@@ -248,7 +251,7 @@ export function getArgumentValuesFromSpread(
   fragmentArgValues?: Maybe<ObjMap<unknown>>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
-  const argNodeMap = keyMap(node?.arguments || [], (arg) => arg.name.value);
+  const argNodeMap = keyMap(node?.arguments ?? [], (arg) => arg.name.value);
 
   for (const varDef of fragmentVarDefs) {
     const name = varDef.variable.name.value;

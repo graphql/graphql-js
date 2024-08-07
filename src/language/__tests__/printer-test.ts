@@ -239,7 +239,6 @@ describe('Printer: Query document', () => {
           c: "a long string extending arguments over max length"
         )
       }
-    `
-    );
+    `);
   });
 });

@@ -228,7 +228,8 @@ export class TypeInfo {
         if (directive) {
           argDef = directive.args.find((arg) => arg.name === node.name.value);
         } else if (fragmentSpread) {
-          const fragmentDef = this._fragmentDefinitions[fragmentSpread.name.value]
+          const fragmentDef =
+            this._fragmentDefinitions[fragmentSpread.name.value];
           const fragVarDef = fragmentDef?.variableDefinitions?.find(
             (varDef) => varDef.variable.name.value === node.name.value,
           );

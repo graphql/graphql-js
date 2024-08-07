@@ -58,7 +58,10 @@ const printDocASTReducer: ASTReducer<string> = {
     leave({ alias, name, arguments: args, directives, selectionSet }) {
       const prefix = wrap('', alias, ': ') + name;
 
-      return join([wrappedLineAndArgs(prefix, args), join(directives, ' '), selectionSet], ' ');
+      return join(
+        [wrappedLineAndArgs(prefix, args), join(directives, ' '), selectionSet],
+        ' ',
+      );
     },
   },
 

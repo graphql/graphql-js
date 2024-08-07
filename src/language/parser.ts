@@ -123,7 +123,7 @@ export interface ParseOptions {
    * }
    * ```
    */
-    experimentalFragmentArguments?: boolean | undefined;
+  experimentalFragmentArguments?: boolean | undefined;
 }
 
 /**
@@ -555,13 +555,13 @@ export class Parser {
       kind: Kind.FRAGMENT_DEFINITION,
       name: this.parseFragmentName(),
       variableDefinitions:
-        this._options.experimentalFragmentArguments === true || this._options.allowLegacyFragmentVariables === true
+        this._options.experimentalFragmentArguments === true ||
+        this._options.allowLegacyFragmentVariables === true
           ? this.parseVariableDefinitions()
           : undefined,
       typeCondition: (this.expectKeyword('on'), this.parseNamedType()),
       directives: this.parseDirectives(false),
       selectionSet: this.parseSelectionSet(),
-
     });
   }
 

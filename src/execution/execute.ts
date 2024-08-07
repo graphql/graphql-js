@@ -52,10 +52,10 @@ import {
 import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
+import type { FieldDetails } from './collectFields';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
-  FieldDetails,
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
 
@@ -523,7 +523,7 @@ function executeField(
       fieldEntries[0].node,
       fieldDef.args,
       exeContext.variableValues,
-      fieldEntries[0].fragmentVariableValues
+      fieldEntries[0].fragmentVariableValues,
     );
 
     // The resolve function's optional third argument is a context value that
@@ -536,7 +536,14 @@ function executeField(
     let completed;
     if (isPromise(result)) {
       completed = result.then((resolved) =>
-        completeValue(exeContext, returnType, fieldEntries, info, path, resolved),
+        completeValue(
+          exeContext,
+          returnType,
+          fieldEntries,
+          info,
+          path,
+          resolved,
+        ),
       );
     } else {
       completed = completeValue(
@@ -553,13 +560,21 @@ function executeField(
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
       return completed.then(undefined, (rawError) => {
-        const error = locatedError(rawError, fieldEntries.map(entry => entry.node), pathToArray(path));
+        const error = locatedError(
+          rawError,
+          fieldEntries.map((entry) => entry.node),
+          pathToArray(path),
+        );
         return handleFieldError(error, returnType, exeContext);
       });
     }
     return completed;
   } catch (rawError) {
-    const error = locatedError(rawError, fieldEntries.map(entry => entry.node), pathToArray(path));
+    const error = locatedError(
+      rawError,
+      fieldEntries.map((entry) => entry.node),
+      pathToArray(path),
+    );
     return handleFieldError(error, returnType, exeContext);
   }
 }
@@ -578,7 +593,7 @@ export function buildResolveInfo(
   // information about the current execution state.
   return {
     fieldName: fieldDef.name,
-    fieldNodes: fieldEntries.map(entry => entry.node),
+    fieldNodes: fieldEntries.map((entry) => entry.node),
     returnType: fieldDef.type,
     parentType,
     path,
@@ -772,7 +787,7 @@ function completeListValue(
         return completedItem.then(undefined, (rawError) => {
           const error = locatedError(
             rawError,
-            fieldEntries.map(entry => entry.node),
+            fieldEntries.map((entry) => entry.node),
             pathToArray(itemPath),
           );
           return handleFieldError(error, itemType, exeContext);
@@ -780,7 +795,11 @@ function completeListValue(
       }
       return completedItem;
     } catch (rawError) {
-      const error = locatedError(rawError, fieldEntries.map(entry => entry.node), pathToArray(itemPath));
+      const error = locatedError(
+        rawError,
+        fieldEntries.map((entry) => entry.node),
+        pathToArray(itemPath),
+      );
       return handleFieldError(error, itemType, exeContext);
     }
   });
@@ -822,7 +841,7 @@ function completeAbstractValue(
   const contextValue = exeContext.contextValue;
   const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
-  const fieldNodes = fieldEntries.map(entry => entry.node)
+  const fieldNodes = fieldEntries.map((entry) => entry.node);
   if (isPromise(runtimeType)) {
     return runtimeType.then((resolvedRuntimeType) =>
       completeObjectValue(
@@ -938,7 +957,11 @@ function completeObjectValue(
     if (isPromise(isTypeOf)) {
       return isTypeOf.then((resolvedIsTypeOf) => {
         if (!resolvedIsTypeOf) {
-          throw invalidReturnTypeError(returnType, result, fieldEntries.map(entry => entry.node));
+          throw invalidReturnTypeError(
+            returnType,
+            result,
+            fieldEntries.map((entry) => entry.node),
+          );
         }
         return executeFields(
           exeContext,
@@ -951,7 +974,11 @@ function completeObjectValue(
     }
 
     if (!isTypeOf) {
-      throw invalidReturnTypeError(returnType, result, fieldEntries.map(entry => entry.node));
+      throw invalidReturnTypeError(
+        returnType,
+        result,
+        fieldEntries.map((entry) => entry.node),
+      );
     }
   }
 

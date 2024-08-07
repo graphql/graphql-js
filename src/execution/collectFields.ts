@@ -51,7 +51,7 @@ export function collectFields(
     selectionSet,
     fields,
     new Set(),
-    undefined
+    undefined,
   );
   return fields;
 }
@@ -111,9 +111,17 @@ function collectFieldsImpl(
         const name = getFieldEntryKey(selection);
         const fieldList = fields.get(name);
         if (fieldList !== undefined) {
-          fieldList.push({ node: selection, fragmentVariableValues: localVariableValues ?? undefined });
+          fieldList.push({
+            node: selection,
+            fragmentVariableValues: localVariableValues ?? undefined,
+          });
         } else {
-          fields.set(name, [{ node: selection, fragmentVariableValues: localVariableValues ?? undefined }]);
+          fields.set(name, [
+            {
+              node: selection,
+              fragmentVariableValues: localVariableValues ?? undefined,
+            },
+          ]);
         }
         break;
       }
@@ -179,7 +187,7 @@ function collectFieldsImpl(
           fragment.selectionSet,
           fields,
           visitedFragmentNames,
-          fragmentVariableValues
+          fragmentVariableValues,
         );
         break;
       }
