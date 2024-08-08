@@ -11,7 +11,7 @@ import type { ValidationContext } from '../ValidationContext';
  * A GraphQL operation is only valid if all variables defined by an operation
  * are used, either directly or within a spread fragment.
  *
- * See https://spec.graphql.org/draft/#sec-All-Variables-Used
+ * See https://spec.graphql.org/draft/#sec-All-Operation-Variables-Used
  */
 export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
   let variableDefs: Array<VariableDefinitionNode> = [];
@@ -23,7 +23,7 @@ export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
       },
       leave(operation) {
         const variableNameUsed = Object.create(null);
-        const usages = context.getRecursiveVariableUsages(operation);
+        const usages = context.getOperationVariableUsages(operation);
 
         for (const { node } of usages) {
           variableNameUsed[node.name.value] = true;

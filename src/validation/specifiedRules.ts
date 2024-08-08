@@ -27,6 +27,8 @@ import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule';
 import { NoUndefinedVariablesRule } from './rules/NoUndefinedVariablesRule';
 // Spec Section: "Fragments must be used"
 import { NoUnusedFragmentsRule } from './rules/NoUnusedFragmentsRule';
+// Spec Section: "All Fragment Variables Used"
+import { NoUnusedFragmentVariablesRule } from './rules/NoUnusedFragmentVariablesRule';
 // Spec Section: "All Variables Used"
 import { NoUnusedVariablesRule } from './rules/NoUnusedVariablesRule';
 // Spec Section: "Field Selection Merging"
@@ -100,6 +102,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   NoUndefinedVariablesRule,
   NoUnusedVariablesRule,
   KnownDirectivesRule,
+  NoUnusedFragmentVariablesRule,
   UniqueDirectivesPerLocationRule,
   KnownArgumentNamesRule,
   UniqueArgumentNamesRule,
