@@ -4,7 +4,10 @@ import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { InputValueDefinitionNode } from '../../language/ast';
+import type {
+  InputValueDefinitionNode,
+  VariableDefinitionNode,
+} from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
@@ -50,6 +53,37 @@ export function ProvidedRequiredArgumentsRule(
               new GraphQLError(
                 `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
+              ),
+            );
+          }
+        }
+      },
+    },
+    FragmentSpread: {
+      // Validate on leave to allow for directive errors to appear first.
+      leave(spreadNode) {
+        const fragmentDef = context.getFragment(spreadNode.name.value);
+        if (!fragmentDef) {
+          return false;
+        }
+
+        const providedArgs = new Set(
+          // FIXME: https://github.com/graphql/graphql-js/issues/2203
+          /* c8 ignore next */
+          spreadNode.arguments?.map((arg) => arg.name.value),
+        );
+        // FIXME: https://github.com/graphql/graphql-js/issues/2203
+        /* c8 ignore next */
+        for (const varDef of fragmentDef.variableDefinitions ?? []) {
+          if (
+            !providedArgs.has(varDef.variable.name.value) &&
+            isRequiredArgumentNode(varDef)
+          ) {
+            const argTypeStr = inspect(varDef.type);
+            context.reportError(
+              new GraphQLError(
+                `Fragment "${spreadNode.name.value}" argument "${varDef.variable.name.value}" of type "${argTypeStr}" is required, but it was not provided.`,
+                { nodes: [spreadNode, varDef] },
               ),
             );
           }
@@ -122,6 +156,8 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
   };
 }
 
-function isRequiredArgumentNode(arg: InputValueDefinitionNode): boolean {
+function isRequiredArgumentNode(
+  arg: InputValueDefinitionNode | VariableDefinitionNode,
+): boolean {
   return arg.type.kind === Kind.NON_NULL_TYPE && arg.defaultValue == null;
 }

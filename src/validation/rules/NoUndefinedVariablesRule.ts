@@ -25,7 +25,10 @@ export function NoUndefinedVariablesRule(
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        for (const { node } of usages) {
+        for (const { node, fragmentVarDef } of usages) {
+          if (fragmentVarDef) {
+            continue;
+          }
           const varName = node.name.value;
           if (variableNameDefined[varName] !== true) {
             context.reportError(

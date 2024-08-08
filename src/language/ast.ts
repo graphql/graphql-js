@@ -209,11 +209,10 @@ export const QueryDocumentKeys: {
   Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
   Argument: ['name', 'value'],
 
-  FragmentSpread: ['name', 'directives'],
+  FragmentSpread: ['name', 'arguments', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
     'name',
-    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
     'variableDefinitions',
     'typeCondition',
     'directives',
@@ -383,6 +382,7 @@ export interface FragmentSpreadNode {
   readonly kind: Kind.FRAGMENT_SPREAD;
   readonly loc?: Location;
   readonly name: NameNode;
+  readonly arguments?: ReadonlyArray<ArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
 }
 
@@ -398,7 +398,6 @@ export interface FragmentDefinitionNode {
   readonly kind: Kind.FRAGMENT_DEFINITION;
   readonly loc?: Location;
   readonly name: NameNode;
-  /** @deprecated variableDefinitions will be removed in v17.0.0 */
   readonly variableDefinitions?: ReadonlyArray<VariableDefinitionNode>;
   readonly typeCondition: NamedTypeNode;
   readonly directives?: ReadonlyArray<DirectiveNode>;

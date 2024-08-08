@@ -9,6 +9,7 @@ import type {
   FragmentSpreadNode,
   OperationDefinitionNode,
   SelectionSetNode,
+  VariableDefinitionNode,
   VariableNode,
 } from '../language/ast';
 import { Kind } from '../language/kinds';
@@ -26,13 +27,15 @@ import type {
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
+import type { TypeInfo } from '../utilities/TypeInfo';
+import { visitWithTypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
   readonly defaultValue: Maybe<unknown>;
+  readonly fragmentVarDef: Maybe<VariableDefinitionNode>;
 }
 
 /**
@@ -199,16 +202,25 @@ export class ValidationContext extends ASTValidationContext {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages: Array<VariableUsage> = [];
-      const typeInfo = new TypeInfo(this._schema);
+      const typeInfo = this._typeInfo;
+      const fragmentVariableDefinitions =
+        node.kind === Kind.FRAGMENT_DEFINITION
+          ? node.variableDefinitions
+          : undefined;
+
       visit(
         node,
         visitWithTypeInfo(typeInfo, {
           VariableDefinition: () => false,
           Variable(variable) {
+            const fragmentVarDef = fragmentVariableDefinitions?.find(
+              (varDef) => varDef.variable.name.value === variable.name.value,
+            );
             newUsages.push({
               node: variable,
               type: typeInfo.getInputType(),
               defaultValue: typeInfo.getDefaultValue(),
+              fragmentVarDef,
             });
           },
         }),
@@ -231,6 +243,20 @@ export class ValidationContext extends ASTValidationContext {
       this._recursiveVariableUsages.set(operation, usages);
     }
     return usages;
+  }
+
+  getOperationVariableUsages(
+    operation: OperationDefinitionNode,
+  ): ReadonlyArray<VariableUsage> {
+    let usages = this._recursiveVariableUsages.get(operation);
+    if (!usages) {
+      usages = this.getVariableUsages(operation);
+      for (const frag of this.getRecursivelyReferencedFragments(operation)) {
+        usages = usages.concat(this.getVariableUsages(frag));
+      }
+      this._recursiveVariableUsages.set(operation, usages);
+    }
+    return usages.filter(({ fragmentVarDef }) => !fragmentVarDef);
   }
 
   getType(): Maybe<GraphQLOutputType> {

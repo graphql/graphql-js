@@ -1284,4 +1284,35 @@ describe('Validate: Values of correct type', () => {
       ]);
     });
   });
+
+  describe('Fragment argument values', () => {
+    it('list variables with invalid item', () => {
+      expectErrors(`
+        fragment InvalidItem($a: [String] = ["one", 2]) on Query {
+          dog { name }
+        }
+      `).toDeepEqual([
+        {
+          message: 'String cannot represent a non string value: 2',
+          locations: [{ line: 2, column: 53 }],
+        },
+      ]);
+    });
+
+    it('fragment spread with invalid argument value', () => {
+      expectErrors(`
+        fragment GivesString on Query {
+          ...ExpectsInt(a: "three")
+        }
+        fragment ExpectsInt($a: Int) on Query {
+          dog { name }
+        }
+      `).toDeepEqual([
+        {
+          message: 'Int cannot represent non-integer value: "three"',
+          locations: [{ line: 3, column: 28 }],
+        },
+      ]);
+    });
+  });
 });

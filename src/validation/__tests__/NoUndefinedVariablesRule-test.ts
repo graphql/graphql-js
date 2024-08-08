@@ -404,4 +404,67 @@ describe('Validate: No undefined variables', () => {
       },
     ]);
   });
+
+  it('fragment defined arguments are not undefined variables', () => {
+    expectValid(`
+      query Foo {
+        ...FragA
+      }
+      fragment FragA($a: String) on Type {
+        field1(a: $a)
+      }
+    `);
+  });
+
+  it('defined variables used as fragment arguments are not undefined variables', () => {
+    expectValid(`
+      query Foo($b: String) {
+        ...FragA(a: $b)
+      }
+      fragment FragA($a: String) on Type {
+        field1
+      }
+    `);
+  });
+
+  it('variables used as fragment arguments may be undefined variables', () => {
+    expectErrors(`
+      query Foo {
+        ...FragA(a: $a)
+      }
+      fragment FragA($a: String) on Type {
+        field1
+      }
+    `).toDeepEqual([
+      {
+        message: 'Variable "$a" is not defined by operation "Foo".',
+        locations: [
+          { line: 3, column: 21 },
+          { line: 2, column: 7 },
+        ],
+      },
+    ]);
+  });
+
+  it('variables shadowed by parent fragment arguments are still undefined variables', () => {
+    expectErrors(`
+      query Foo {
+        ...FragA
+      }
+      fragment FragA($a: String) on Type {
+        ...FragB
+      }
+      fragment FragB on Type {
+        field1(a: $a)
+      }
+    `).toDeepEqual([
+      {
+        message: 'Variable "$a" is not defined by operation "Foo".',
+        locations: [
+          { line: 9, column: 19 },
+          { line: 2, column: 7 },
+        ],
+      },
+    ]);
+  });
 });
