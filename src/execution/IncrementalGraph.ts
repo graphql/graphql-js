@@ -309,19 +309,12 @@ export class IncrementalGraph {
     }
   }
 
-  private *_yieldCurrentCompletedIncrementalData(
-    first: IncrementalDataRecordResult,
-  ): Generator<IncrementalDataRecordResult> {
-    yield first;
-    yield* this.currentCompletedBatch();
-  }
-
   private _enqueue(completed: IncrementalDataRecordResult): void {
+    this._completedQueue.push(completed);
     const next = this._nextQueue.shift();
-    if (next !== undefined) {
-      next(this._yieldCurrentCompletedIncrementalData(completed));
+    if (next === undefined) {
       return;
     }
-    this._completedQueue.push(completed);
+    next(this.currentCompletedBatch());
   }
 }
