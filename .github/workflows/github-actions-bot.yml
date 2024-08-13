@@ -38,7 +38,7 @@ jobs:
           WORKFLOW_ID: ${{github.event.workflow_run.id}}
 
       - name: Add comment on PR
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('node:fs');
@@ -64,7 +64,7 @@ jobs:
       cmd: ${{ steps.parse-cmd.outputs.cmd }}
       pull_request_json: ${{ steps.parse-cmd.outputs.pull_request_json }}
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -74,7 +74,7 @@ jobs:
             });
 
       - id: parse-cmd
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const comment = context.payload.comment.body;
@@ -115,12 +115,12 @@ jobs:
     permissions:
       pull-requests: write # to add comment to pull request
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: replyMessage
 
       - if: failure()
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('node:fs');
@@ -144,7 +144,7 @@ jobs:
           RUN_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
 
       - if: always()
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('node:fs');
