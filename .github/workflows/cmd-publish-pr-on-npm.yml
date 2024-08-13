@@ -18,13 +18,13 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           ref: ${{ fromJSON(inputs.pull_request_json).merge_commit_sha }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -36,7 +36,7 @@ jobs:
         run: npm run build:npm
 
       - name: Upload npmDist package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: npmDist
           path: ./npmDist
@@ -50,19 +50,19 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
           # 'registry-url' is required for 'npm publish'
           registry-url: 'https://registry.npmjs.org'
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: npmDist
           path: npmDist
@@ -70,7 +70,7 @@ jobs:
       - name: Modify NPM package to be canary release
         env:
           PULL_REQUEST_JSON: ${{ inputs.pull_request_json }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('node:fs');
@@ -113,7 +113,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.npm_canary_pr_publish_token }}
 
       - name: Upload replyMessage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: replyMessage
           path: ./replyMessage.txt

@@ -15,7 +15,7 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -29,7 +29,7 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -39,7 +39,7 @@ jobs:
         run: 'git fetch --depth=1 origin "$BASE_SHA:refs/tags/BASE"'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -51,7 +51,7 @@ jobs:
         run: 'npm run diff:npm BASE HEAD'
 
       - name: Upload generated report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: npm-dist-diff.html
           path: ./reports/npm-dist-diff.html
