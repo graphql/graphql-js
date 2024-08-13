@@ -2116,7 +2116,7 @@ describe('Execute: stream directive', () => {
 
     const document = parse(`
     query {
-      friendList @stream(initialCount: 1, label:"stream-label") {
+      friendList @stream(label:"stream-label") {
         ...NameFragment @defer(label: "DeferName") @defer(label: "DeferName")
         id
       }
@@ -2146,12 +2146,9 @@ describe('Execute: stream directive', () => {
     const result1 = executeResult.initialResult;
     expectJSON(result1).toDeepEqual({
       data: {
-        friendList: [{ id: '1' }],
+        friendList: [],
       },
-      pending: [
-        { id: '0', path: ['friendList', 0], label: 'DeferName' },
-        { id: '1', path: ['friendList'], label: 'stream-label' },
-      ],
+      pending: [{ id: '0', path: ['friendList'], label: 'stream-label' }],
       hasNext: true,
     });
 
@@ -2160,13 +2157,18 @@ describe('Execute: stream directive', () => {
     const result2 = await result2Promise;
     expectJSON(result2).toDeepEqual({
       value: {
+        pending: [{ id: '1', path: ['friendList', 0], label: 'DeferName' }],
         incremental: [
           {
-            data: { name: 'Luke' },
+            items: [{ id: '1' }],
             id: '0',
           },
+          {
+            data: { name: 'Luke' },
+            id: '1',
+          },
         ],
-        completed: [{ id: '0' }],
+        completed: [{ id: '1' }],
         hasNext: true,
       },
       done: false,
@@ -2181,7 +2183,7 @@ describe('Execute: stream directive', () => {
         incremental: [
           {
             items: [{ id: '2' }],
-            id: '1',
+            id: '0',
           },
         ],
         hasNext: true,
@@ -2191,7 +2193,7 @@ describe('Execute: stream directive', () => {
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
       value: {
-        completed: [{ id: '1' }],
+        completed: [{ id: '0' }],
         hasNext: true,
       },
       done: false,

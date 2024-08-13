@@ -2387,7 +2387,7 @@ async function getNextAsyncStreamItemResult(
     getNextAsyncStreamItemResult(
       streamItemQueue,
       streamPath,
-      index,
+      index + 1,
       asyncIterator,
       exeContext,
       fieldGroup,
