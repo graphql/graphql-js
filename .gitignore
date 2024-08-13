@@ -9,7 +9,6 @@
 /.eslintcache
 /.cspellcache
 /.docusaurus
-/.stryker-tmp
 /node_modules
 /reports
 /npmDist
