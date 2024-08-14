@@ -1,8 +1,8 @@
 export function isPendingExecutionGroup(incrementalDataRecord) {
   return 'deferredFragmentRecords' in incrementalDataRecord;
 }
-export function isCompletedExecutionGroup(subsequentResult) {
-  return 'pendingExecutionGroup' in subsequentResult;
+export function isCompletedExecutionGroup(incrementalDataRecordResult) {
+  return 'pendingExecutionGroup' in incrementalDataRecordResult;
 }
 export function isFailedExecutionGroup(completedExecutionGroup) {
   return completedExecutionGroup.errors !== undefined;

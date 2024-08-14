@@ -36,13 +36,11 @@ export declare class IncrementalGraph {
     deferredFragmentRecord: DeferredFragmentRecord,
   ): boolean;
   removeStream(streamRecord: StreamRecord): void;
-  private _removeRootNode;
   private _addIncrementalDataRecords;
   private _promoteNonEmptyToRoot;
   private _completesRootNode;
   private _addDeferredFragment;
   private _onExecutionGroup;
   private _onStreamItems;
-  private _yieldCurrentCompletedIncrementalData;
   private _enqueue;
 }

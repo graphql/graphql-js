@@ -153,8 +153,8 @@ export type CompletedExecutionGroup =
   | SuccessfulExecutionGroup
   | FailedExecutionGroup;
 export declare function isCompletedExecutionGroup(
-  subsequentResult: CompletedExecutionGroup | StreamItemsResult,
-): subsequentResult is CompletedExecutionGroup;
+  incrementalDataRecordResult: IncrementalDataRecordResult,
+): incrementalDataRecordResult is CompletedExecutionGroup;
 export interface SuccessfulExecutionGroup {
   pendingExecutionGroup: PendingExecutionGroup;
   path: Array<string | number>;

@@ -25,21 +25,20 @@ class IncrementalGraph {
     return this._promoteNonEmptyToRoot(initialResultChildren);
   }
   addCompletedSuccessfulExecutionGroup(successfulExecutionGroup) {
-    for (const deferredFragmentRecord of successfulExecutionGroup
-      .pendingExecutionGroup.deferredFragmentRecords) {
-      deferredFragmentRecord.pendingExecutionGroups.delete(
-        successfulExecutionGroup.pendingExecutionGroup,
-      );
-      deferredFragmentRecord.successfulExecutionGroups.add(
-        successfulExecutionGroup,
-      );
+    const { pendingExecutionGroup, incrementalDataRecords } =
+      successfulExecutionGroup;
+    const deferredFragmentRecords =
+      pendingExecutionGroup.deferredFragmentRecords;
+    for (const deferredFragmentRecord of deferredFragmentRecords) {
+      const { pendingExecutionGroups, successfulExecutionGroups } =
+        deferredFragmentRecord;
+      pendingExecutionGroups.delete(pendingExecutionGroup);
+      successfulExecutionGroups.add(successfulExecutionGroup);
     }
-    const incrementalDataRecords =
-      successfulExecutionGroup.incrementalDataRecords;
     if (incrementalDataRecords !== undefined) {
       this._addIncrementalDataRecords(
         incrementalDataRecords,
-        successfulExecutionGroup.pendingExecutionGroup.deferredFragmentRecords,
+        deferredFragmentRecords,
       );
     }
   }
@@ -78,7 +77,7 @@ class IncrementalGraph {
     const successfulExecutionGroups = Array.from(
       deferredFragmentRecord.successfulExecutionGroups,
     );
-    this._removeRootNode(deferredFragmentRecord);
+    this._rootNodes.delete(deferredFragmentRecord);
     for (const successfulExecutionGroup of successfulExecutionGroups) {
       for (const otherDeferredFragmentRecord of successfulExecutionGroup
         .pendingExecutionGroup.deferredFragmentRecords) {
@@ -96,14 +95,11 @@ class IncrementalGraph {
     if (!this._rootNodes.has(deferredFragmentRecord)) {
       return false;
     }
-    this._removeRootNode(deferredFragmentRecord);
+    this._rootNodes.delete(deferredFragmentRecord);
     return true;
   }
   removeStream(streamRecord) {
-    this._removeRootNode(streamRecord);
-  }
-  _removeRootNode(deliveryGroup) {
-    this._rootNodes.delete(deliveryGroup);
+    this._rootNodes.delete(streamRecord);
   }
   _addIncrementalDataRecords(
     incrementalDataRecords,
@@ -259,17 +255,13 @@ class IncrementalGraph {
       }
     }
   }
-  *_yieldCurrentCompletedIncrementalData(first) {
-    yield first;
-    yield* this.currentCompletedBatch();
-  }
   _enqueue(completed) {
+    this._completedQueue.push(completed);
     const next = this._nextQueue.shift();
-    if (next !== undefined) {
-      next(this._yieldCurrentCompletedIncrementalData(completed));
+    if (next === undefined) {
       return;
     }
-    this._completedQueue.push(completed);
+    next(this.currentCompletedBatch());
   }
 }
 exports.IncrementalGraph = IncrementalGraph;
