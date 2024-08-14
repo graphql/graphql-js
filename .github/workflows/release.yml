@@ -1,0 +1,82 @@
+name: publish-npm
+on:
+  push:
+    tags: 
+      - v17.*.*
+
+permissions: {}
+jobs:
+  build-npm-dist:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build NPM package
+        run: npm run build:npm
+
+      - name: Upload npmDist package
+        uses: actions/upload-artifact@v4
+        with:
+          name: npmDist
+          path: ./npmDist
+
+  publish-release:
+    runs-on: ubuntu-latest
+    name: Publish Release
+    environment: release-npm
+    needs: [build-npm-dist]
+    permissions:
+      contents: read # for actions/checkout
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+          # 'registry-url' is required for 'npm publish'
+          registry-url: 'https://registry.npmjs.org'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: npmDist
+          path: npmDist
+
+      - name: Publish NPM package
+        run: npm publish --ignore-scripts ./npmDist
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.npm_canary_pr_publish_token }}
+
+
+      - name: Create CHANGELOG.txt
+        run: npm run changelog > CHANGELOG.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: ./CHANGELOG.txt
+          repository: graphql/graphql-js
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
+          make_latest: false

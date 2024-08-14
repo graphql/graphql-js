@@ -103,6 +103,11 @@ npm ci
 npm test
 npm version patch
 git push --follow-tags
+```
+
+The action will run and publish the package for you, in case that fails try:
+
+```sh
 cd npmDist && npm publish
 npm run changelog
 ```
