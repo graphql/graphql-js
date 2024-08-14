@@ -155,9 +155,9 @@ export type CompletedExecutionGroup =
   | SuccessfulExecutionGroup
   | FailedExecutionGroup;
 export function isCompletedExecutionGroup(
-  subsequentResult: CompletedExecutionGroup | StreamItemsResult,
-): subsequentResult is CompletedExecutionGroup {
-  return 'pendingExecutionGroup' in subsequentResult;
+  incrementalDataRecordResult: IncrementalDataRecordResult,
+): incrementalDataRecordResult is CompletedExecutionGroup {
+  return 'pendingExecutionGroup' in incrementalDataRecordResult;
 }
 export interface SuccessfulExecutionGroup {
   pendingExecutionGroup: PendingExecutionGroup;

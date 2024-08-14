@@ -42,21 +42,20 @@ export class IncrementalGraph {
   addCompletedSuccessfulExecutionGroup(
     successfulExecutionGroup: SuccessfulExecutionGroup,
   ): void {
-    for (const deferredFragmentRecord of successfulExecutionGroup
-      .pendingExecutionGroup.deferredFragmentRecords) {
-      deferredFragmentRecord.pendingExecutionGroups.delete(
-        successfulExecutionGroup.pendingExecutionGroup,
-      );
-      deferredFragmentRecord.successfulExecutionGroups.add(
-        successfulExecutionGroup,
-      );
+    const { pendingExecutionGroup, incrementalDataRecords } =
+      successfulExecutionGroup;
+    const deferredFragmentRecords =
+      pendingExecutionGroup.deferredFragmentRecords;
+    for (const deferredFragmentRecord of deferredFragmentRecords) {
+      const { pendingExecutionGroups, successfulExecutionGroups } =
+        deferredFragmentRecord;
+      pendingExecutionGroups.delete(pendingExecutionGroup);
+      successfulExecutionGroups.add(successfulExecutionGroup);
     }
-    const incrementalDataRecords =
-      successfulExecutionGroup.incrementalDataRecords;
     if (incrementalDataRecords !== undefined) {
       this._addIncrementalDataRecords(
         incrementalDataRecords,
-        successfulExecutionGroup.pendingExecutionGroup.deferredFragmentRecords,
+        deferredFragmentRecords,
       );
     }
   }
@@ -103,7 +102,7 @@ export class IncrementalGraph {
     const successfulExecutionGroups = Array.from(
       deferredFragmentRecord.successfulExecutionGroups,
     );
-    this._removeRootNode(deferredFragmentRecord);
+    this._rootNodes.delete(deferredFragmentRecord);
     for (const successfulExecutionGroup of successfulExecutionGroups) {
       for (const otherDeferredFragmentRecord of successfulExecutionGroup
         .pendingExecutionGroup.deferredFragmentRecords) {
@@ -123,14 +122,11 @@ export class IncrementalGraph {
     if (!this._rootNodes.has(deferredFragmentRecord)) {
       return false;
     }
-    this._removeRootNode(deferredFragmentRecord);
+    this._rootNodes.delete(deferredFragmentRecord);
     return true;
   }
   removeStream(streamRecord: StreamRecord): void {
-    this._removeRootNode(streamRecord);
-  }
-  private _removeRootNode(deliveryGroup: DeliveryGroup): void {
-    this._rootNodes.delete(deliveryGroup);
+    this._rootNodes.delete(streamRecord);
   }
   private _addIncrementalDataRecords(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
@@ -288,18 +284,12 @@ export class IncrementalGraph {
       }
     }
   }
-  private *_yieldCurrentCompletedIncrementalData(
-    first: IncrementalDataRecordResult,
-  ): Generator<IncrementalDataRecordResult> {
-    yield first;
-    yield* this.currentCompletedBatch();
-  }
   private _enqueue(completed: IncrementalDataRecordResult): void {
+    this._completedQueue.push(completed);
     const next = this._nextQueue.shift();
-    if (next !== undefined) {
-      next(this._yieldCurrentCompletedIncrementalData(completed));
+    if (next === undefined) {
       return;
     }
-    this._completedQueue.push(completed);
+    next(this.currentCompletedBatch());
   }
 }
