@@ -34,7 +34,7 @@ import type { GraphQLSchema } from '../type/schema.js';
 import { astFromValue } from './astFromValue.js';
 import { sortValueNode } from './sortValueNode.js';
 
-export enum BreakingChangeType {
+enum BreakingChangeType {
   TYPE_REMOVED = 'TYPE_REMOVED',
   TYPE_CHANGED_KIND = 'TYPE_CHANGED_KIND',
   TYPE_REMOVED_FROM_UNION = 'TYPE_REMOVED_FROM_UNION',
@@ -52,8 +52,9 @@ export enum BreakingChangeType {
   DIRECTIVE_REPEATABLE_REMOVED = 'DIRECTIVE_REPEATABLE_REMOVED',
   DIRECTIVE_LOCATION_REMOVED = 'DIRECTIVE_LOCATION_REMOVED',
 }
+export { BreakingChangeType };
 
-export enum DangerousChangeType {
+enum DangerousChangeType {
   VALUE_ADDED_TO_ENUM = 'VALUE_ADDED_TO_ENUM',
   TYPE_ADDED_TO_UNION = 'TYPE_ADDED_TO_UNION',
   OPTIONAL_INPUT_FIELD_ADDED = 'OPTIONAL_INPUT_FIELD_ADDED',
@@ -61,6 +62,7 @@ export enum DangerousChangeType {
   IMPLEMENTED_INTERFACE_ADDED = 'IMPLEMENTED_INTERFACE_ADDED',
   ARG_DEFAULT_VALUE_CHANGE = 'ARG_DEFAULT_VALUE_CHANGE',
 }
+export { DangerousChangeType };
 
 export interface BreakingChange {
   type: BreakingChangeType;

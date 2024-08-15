@@ -443,7 +443,7 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
     } as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>),
 });
 
-export enum TypeKind {
+enum TypeKind {
   SCALAR = 'SCALAR',
   OBJECT = 'OBJECT',
   INTERFACE = 'INTERFACE',
@@ -453,6 +453,7 @@ export enum TypeKind {
   LIST = 'LIST',
   NON_NULL = 'NON_NULL',
 }
+export { TypeKind };
 
 export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   name: '__TypeKind',
