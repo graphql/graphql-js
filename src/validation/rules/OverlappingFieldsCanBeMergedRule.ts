@@ -235,6 +235,13 @@ function collectConflictsBetweenFieldsAndFragment(
   fieldMap: NodeAndDefCollection,
   fragmentName: string,
 ): void {
+  // Memoize so the fields and fragments are not compared for conflicts more
+  // than once.
+  if (comparedFragmentPairs.has(fieldMap, fragmentName, areMutuallyExclusive)) {
+    return;
+  }
+  comparedFragmentPairs.add(fieldMap, fragmentName, areMutuallyExclusive);
+
   const fragment = context.getFragment(fragmentName);
   if (!fragment) {
     return;
@@ -800,14 +807,19 @@ function subfieldConflicts(
  * A way to keep track of pairs of things when the ordering of the pair does not matter.
  */
 class PairSet {
-  _data: Map<string, Map<string, boolean>>;
+  _data: Map<string | NodeAndDefCollection, Map<string, boolean>>;
 
   constructor() {
     this._data = new Map();
   }
 
-  has(a: string, b: string, areMutuallyExclusive: boolean): boolean {
-    const [key1, key2] = a < b ? [a, b] : [b, a];
+  has(
+    a: string | NodeAndDefCollection,
+    b: string,
+    areMutuallyExclusive: boolean,
+  ): boolean {
+    const [key1, key2] =
+      typeof a !== 'string' ? [a, b] : a < b ? [a, b] : [b, a];
 
     const result = this._data.get(key1)?.get(key2);
     if (result === undefined) {
@@ -820,8 +832,13 @@ class PairSet {
     return areMutuallyExclusive ? true : areMutuallyExclusive === result;
   }
 
-  add(a: string, b: string, areMutuallyExclusive: boolean): void {
-    const [key1, key2] = a < b ? [a, b] : [b, a];
+  add(
+    a: string | NodeAndDefCollection,
+    b: string,
+    areMutuallyExclusive: boolean,
+  ): void {
+    const [key1, key2] =
+      typeof a !== 'string' ? [a, b] : a < b ? [a, b] : [b, a];
 
     const map = this._data.get(key1);
     if (map === undefined) {
