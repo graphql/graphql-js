@@ -548,6 +548,33 @@ describe('Validate: Overlapping fields can be merged', () => {
     ]);
   });
 
+  it('reports deep conflict after nested fragments', () => {
+    expectErrors(`
+      fragment F on T {
+        ...G
+      }
+      fragment G on T {
+        ...H
+      }
+      fragment H on T {
+        x: a
+      }
+      {
+        x: b
+        ...F
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "x" conflict because "b" and "a" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 12, column: 9 },
+          { line: 9, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('ignores unknown fragments', () => {
     expectValid(`
       {
