@@ -200,7 +200,6 @@ function findConflictsWithinSelectionSet(
         conflicts,
         cachedFieldsAndFragmentNames,
         comparedFragmentPairs,
-        null,
         false,
         fieldMap,
         fragmentNames[i],
@@ -232,15 +231,10 @@ function collectConflictsBetweenFieldsAndFragment(
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
   comparedFragmentPairs: PairSet,
-  comparedFragmentsForFields: null | Set<string>,
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
   fragmentName: string,
 ): void {
-  if (comparedFragmentsForFields?.has(fragmentName)) {
-    return;
-  }
-
   const fragment = context.getFragment(fragmentName);
   if (!fragment) {
     return;
@@ -272,15 +266,12 @@ function collectConflictsBetweenFieldsAndFragment(
 
   // (E) Then collect any conflicts between the provided collection of fields
   // and any fragment names found in the given fragment.
-  const newComparedFragmentsForFields =
-    comparedFragmentsForFields ?? new Set([fragmentName]);
   for (const referencedFragmentName of referencedFragmentNames) {
     collectConflictsBetweenFieldsAndFragment(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
       comparedFragmentPairs,
-      newComparedFragmentsForFields,
       areMutuallyExclusive,
       fieldMap,
       referencedFragmentName,
@@ -423,7 +414,6 @@ function findConflictsBetweenSubSelectionSets(
       conflicts,
       cachedFieldsAndFragmentNames,
       comparedFragmentPairs,
-      null,
       areMutuallyExclusive,
       fieldMap1,
       fragmentName2,
@@ -438,7 +428,6 @@ function findConflictsBetweenSubSelectionSets(
       conflicts,
       cachedFieldsAndFragmentNames,
       comparedFragmentPairs,
-      null,
       areMutuallyExclusive,
       fieldMap2,
       fragmentName1,
