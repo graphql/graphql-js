@@ -1165,4 +1165,31 @@ describe('Validate: Overlapping fields can be merged', () => {
       },
     ]);
   });
+
+  it('does not infinite loop on recursive fragments separated by fields', () => {
+    expectValid(`
+      {
+        ...fragA
+        ...fragB
+      }
+
+      fragment fragA on T {
+        x {
+          ...fragA
+          x {
+            ...fragA
+          }
+        }
+      }
+
+      fragment fragB on T {
+        x {
+          ...fragB
+          x {
+            ...fragB
+          }
+        }
+      }
+    `);
+  });
 });
