@@ -36,7 +36,7 @@ import { typeFromAST } from '../../utilities/typeFromAST.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
-/* eslint-disable max-params */
+/* eslint-disable @typescript-eslint/max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 

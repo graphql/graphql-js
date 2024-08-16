@@ -276,7 +276,7 @@ describe('stripIgnoredCharacters', () => {
       let testValue;
       try {
         testValue = lexValue(testStr);
-      } catch (e) {
+      } catch (_e) {
         continue; // skip invalid values
       }
 

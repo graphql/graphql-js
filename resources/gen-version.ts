@@ -1,4 +1,4 @@
-import { readPackageJSON, writeGeneratedFile } from './utils.js';
+import { prettify, readPackageJSON, writeGeneratedFile } from './utils.js';
 
 const { version } = readPackageJSON();
 const versionMatch = /^(\d+)\.(\d+)\.(\d+)-?(.*)?$/.exec(version);
@@ -30,4 +30,5 @@ export const versionInfo = Object.freeze({
 });
 `;
 
-writeGeneratedFile('./src/version.ts', body);
+const prettified = await prettify('./src/version.ts', body);
+writeGeneratedFile('./src/version.ts', prettified);

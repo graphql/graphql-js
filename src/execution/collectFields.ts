@@ -110,7 +110,7 @@ export function collectFields(
  *
  * @internal
  */
-// eslint-disable-next-line max-params
+// eslint-disable-next-line @typescript-eslint/max-params
 export function collectSubfields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDetails>,

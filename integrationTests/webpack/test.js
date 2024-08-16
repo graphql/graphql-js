@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 /* eslint-disable n/no-missing-import */
 import cjs from './dist/main-cjs.cjs';

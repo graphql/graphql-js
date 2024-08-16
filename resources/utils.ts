@@ -212,10 +212,19 @@ const prettierConfig = JSON.parse(
   fs.readFileSync(localRepoPath('.prettierrc'), 'utf-8'),
 );
 
+export async function prettify(
+  filepath: string,
+  body: string,
+): Promise<string> {
+  return prettier.format(body, {
+    filepath,
+    ...prettierConfig,
+  });
+}
+
 export function writeGeneratedFile(filepath: string, body: string): void {
-  const formatted = prettier.format(body, { filepath, ...prettierConfig });
   fs.mkdirSync(path.dirname(filepath), { recursive: true });
-  fs.writeFileSync(filepath, formatted);
+  fs.writeFileSync(filepath, body);
 }
 
 interface PackageJSON {
@@ -253,7 +262,7 @@ export function readTSConfig(overrides?: any): ts.CompilerOptions {
     );
   assert(tsConfigError === undefined, 'Fail to parse config: ' + tsConfigError);
   assert(
-    tsConfig.compilerOptions,
+    tsConfig.compilerOptions !== undefined,
     '"tsconfig.json" should have `compilerOptions`',
   );
 

@@ -333,8 +333,8 @@ function readNextToken(lexer: Lexer, start: number): Token {
       code === 0x0027
         ? 'Unexpected single quote character (\'), did you mean to use a double quote (")?'
         : isUnicodeScalarValue(code) || isSupplementaryCodePoint(body, position)
-        ? `Unexpected character: ${printCodePointAt(lexer, position)}.`
-        : `Invalid character: ${printCodePointAt(lexer, position)}.`,
+          ? `Unexpected character: ${printCodePointAt(lexer, position)}.`
+          : `Invalid character: ${printCodePointAt(lexer, position)}.`,
     );
   }
 
@@ -700,10 +700,10 @@ function readHexDigit(code: number): number {
   return code >= 0x0030 && code <= 0x0039 // 0-9
     ? code - 0x0030
     : code >= 0x0041 && code <= 0x0046 // A-F
-    ? code - 0x0037
-    : code >= 0x0061 && code <= 0x0066 // a-f
-    ? code - 0x0057
-    : -1;
+      ? code - 0x0037
+      : code >= 0x0061 && code <= 0x0066 // a-f
+        ? code - 0x0057
+        : -1;
 }
 
 /**
