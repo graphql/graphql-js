@@ -3,7 +3,7 @@ import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { NameNode } from '../../language/ast';
+import type { NameNode, ObjectFieldNode } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { ASTValidationContext } from '../ValidationContext';
@@ -22,6 +22,8 @@ export function UniqueInputFieldNamesRule(
   const knownNameStack: Array<ObjMap<NameNode>> = [];
   let knownNames: ObjMap<NameNode> = Object.create(null);
 
+  let knownNamesInList: (readonly ObjectFieldNode[])[] = Object.create([]);
+
   return {
     ObjectValue: {
       enter() {
@@ -34,18 +36,54 @@ export function UniqueInputFieldNamesRule(
         knownNames = prevKnownNames;
       },
     },
+    ListValue: {
+      enter(node) {
+        node.values.forEach((valueNode) => {
+          if(valueNode.kind === 'ObjectValue') {
+            knownNamesInList.push(valueNode.fields);
+          }
+        });
+      },
+      leave() {
+        knownNamesInList = Object.create([]);
+      },
+    },
     ObjectField(node) {
       const fieldName = node.name.value;
+
+      let isError = false;
       if (knownNames[fieldName]) {
+        if (!knownNamesInList.length) {
+          isError = true;
+        }
+        else {
+          for (const fields of knownNamesInList) {
+            const nestedFields = fields.filter(
+              (field) => field.name.value === fieldName,
+            );
+            
+            // expecting only one field with the same name, if there is more than one, report error. if there is no field with the same name, mean it is in the nested object instead list value, report error.
+            if (nestedFields.length !== 1) {            
+              isError = true;
+            }
+          }
+        }
+      }
+
+
+
+      if(isError) {
         context.reportError(
           new GraphQLError(
             `There can be only one input field named "${fieldName}".`,
-            { nodes: [knownNames[fieldName], node.name] },
+            [knownNames[fieldName], node.name],
           ),
         );
-      } else {
+      }
+      else {
         knownNames[fieldName] = node.name;
       }
     },
+
   };
 }

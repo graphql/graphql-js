@@ -53,6 +53,56 @@ describe('Validate: Unique input field names', () => {
     `);
   });
 
+  it('allow and/or with duplicate fields in array', () => {
+    expectValid(`
+      {
+        field(arg: { and: [{ f: true }, { f: true }] })
+      }
+    `);
+    expectValid(`
+      {
+        field(arg: { or: [{ f: true }, { f: {f1: true} }] })
+      }
+    `);
+    expectValid(`
+      {
+        field(arg: { or: [{ f: true }, { f1: {f: true} }] })
+      }
+    `);
+  });
+
+  it('duplicate input object fields in objects of array', () => {
+    expectErrors(`
+      {
+        field(arg: { or: [{ f: true, f: true }] })
+      }
+    `).toDeepEqual([
+      {
+        message: 'There can be only one input field named "f".',
+        locations: [
+          { line: 3, column: 29 },
+          { line: 3, column: 38 },
+        ],
+      },
+    ]);
+  });
+
+  it('nested input object fields in objects of array', () => {
+    expectErrors(`
+      {
+        field(arg: { or: [{f2: true}, { f1: {f2: "value", f2: "value" }}] })
+      }
+    `).toDeepEqual([
+      {
+        message: 'There can be only one input field named "f2".',
+        locations: [
+          { line: 3, column: 46 },
+          { line: 3, column: 59 },
+        ],
+      },
+    ]);
+  });
+  
   it('duplicate input object fields', () => {
     expectErrors(`
       {
