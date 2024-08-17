@@ -64,7 +64,7 @@ export function UniqueInputFieldNamesRule(
             );
 
             // expecting only one field with the same name, if there is more than one, report error. if there is no field with the same name, mean it is in the nested object instead list value, report error.
-            if (nestedFields.length !== 1) {            
+            if (!isError && nestedFields.length !== 1) {            
               isError = true;
             }
           }
