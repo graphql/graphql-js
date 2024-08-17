@@ -22,7 +22,8 @@ export function UniqueInputFieldNamesRule(
   const knownNameStack: Array<ObjMap<NameNode>> = [];
   let knownNames: ObjMap<NameNode> = Object.create(null);
 
-  let knownNamesInList: (readonly ObjectFieldNode[])[] = Object.create([]);
+  let knownNamesInList: Array<ReadonlyArray<ObjectFieldNode>> =
+    Object.create([]);
 
   return {
     ObjectValue: {
@@ -61,7 +62,7 @@ export function UniqueInputFieldNamesRule(
             const nestedFields = fields.filter(
               (field) => field.name.value === fieldName,
             );
-            
+
             // expecting only one field with the same name, if there is more than one, report error. if there is no field with the same name, mean it is in the nested object instead list value, report error.
             if (nestedFields.length !== 1) {            
               isError = true;
@@ -76,7 +77,7 @@ export function UniqueInputFieldNamesRule(
         context.reportError(
           new GraphQLError(
             `There can be only one input field named "${fieldName}".`,
-            [knownNames[fieldName], node.name],
+            { nodes: [knownNames[fieldName], node.name] },
           ),
         );
       }
