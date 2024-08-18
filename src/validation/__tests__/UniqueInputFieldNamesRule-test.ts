@@ -56,7 +56,7 @@ describe('Validate: Unique input field names', () => {
   it('allow and/or with duplicate fields in array', () => {
     expectValid(`
       {
-        field(arg: { and: [{ f: true }, { f: true }] })
+        field(arg: { and: [{ f: "value1" }, { f: "value2" }] })
       }
     `);
     expectValid(`
