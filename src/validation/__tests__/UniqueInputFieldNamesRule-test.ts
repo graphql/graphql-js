@@ -69,19 +69,40 @@ describe('Validate: Unique input field names', () => {
         field(arg: { or: [{ f: true }, { f1: {f: true} }] })
       }
     `);
+    expectValid(`
+      {
+        field(arg: { 
+          or: [
+            { field: true },
+            { 
+              deep1: { 
+                deep2: {
+                  and: [{ field: false }, { field: true }]
+                }
+              } 
+            }
+            {
+              deep1: {
+                field: true
+              }
+            }
+          ]
+        })
+      }
+    `);
   });
 
   it('duplicate input object fields in objects of array', () => {
     expectErrors(`
       {
-        field(arg: { or: [{ f: true, f: true }] })
+        field(arg: { or: [{ f: "value1", f: "value2" }] })
       }
     `).toDeepEqual([
       {
         message: 'There can be only one input field named "f".',
         locations: [
           { line: 3, column: 29 },
-          { line: 3, column: 38 },
+          { line: 3, column: 42 },
         ],
       },
     ]);
@@ -90,19 +111,19 @@ describe('Validate: Unique input field names', () => {
   it('nested input object fields in objects of array', () => {
     expectErrors(`
       {
-        field(arg: { or: [{f2: true}, { f1: {f2: "value", f2: "value" }}] })
+        field(arg: { or: [ { f2: "value1" }, { f1: { f2: "value2", f2: "value3" } } ] })
       }
     `).toDeepEqual([
       {
         message: 'There can be only one input field named "f2".',
         locations: [
-          { line: 3, column: 46 },
-          { line: 3, column: 59 },
+          { line: 3, column: 54 },
+          { line: 3, column: 68 },
         ],
       },
     ]);
   });
-  
+
   it('duplicate input object fields', () => {
     expectErrors(`
       {

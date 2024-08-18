@@ -22,8 +22,8 @@ export function UniqueInputFieldNamesRule(
   const knownNameStack: Array<ObjMap<NameNode>> = [];
   let knownNames: ObjMap<NameNode> = Object.create(null);
 
-  let knownNamesInList: Array<ReadonlyArray<ObjectFieldNode>> =
-    Object.create([]);
+  const knownNamesInListStack: Array<Array<ReadonlyArray<ObjectFieldNode>>> =
+    [];
 
   return {
     ObjectValue: {
@@ -39,52 +39,55 @@ export function UniqueInputFieldNamesRule(
     },
     ListValue: {
       enter(node) {
+        const knownNamesInList: Array<ReadonlyArray<ObjectFieldNode>> =
+          Object.create([]);
         node.values.forEach((valueNode) => {
-          if(valueNode.kind === 'ObjectValue') {
+          if (valueNode.kind === 'ObjectValue') {
             knownNamesInList.push(valueNode.fields);
           }
         });
+
+        knownNamesInListStack.push(knownNamesInList);
       },
       leave() {
-        knownNamesInList = Object.create([]);
+        knownNamesInListStack.pop();
       },
     },
     ObjectField(node) {
       const fieldName = node.name.value;
-
       let isError = false;
+
       if (knownNames[fieldName]) {
+        // get latest element in knownNamesInListStack
+        const knownNamesInList =
+          knownNamesInListStack[knownNamesInListStack.length - 1] || [];
+
         if (!knownNamesInList.length) {
           isError = true;
-        }
-        else {
+        } else {
           for (const fields of knownNamesInList) {
             const nestedFields = fields.filter(
               (field) => field.name.value === fieldName,
             );
 
             // expecting only one field with the same name, if there is more than one, report error. if there is no field with the same name, mean it is in the nested object instead list value, report error.
-            if (!isError && nestedFields.length !== 1) {            
+            if (!isError && nestedFields.length !== 1) {
               isError = true;
             }
           }
         }
       }
 
-
-
-      if(isError) {
+      if (isError) {
         context.reportError(
           new GraphQLError(
             `There can be only one input field named "${fieldName}".`,
             { nodes: [knownNames[fieldName], node.name] },
           ),
         );
-      }
-      else {
+      } else {
         knownNames[fieldName] = node.name;
       }
     },
-
   };
 }
