@@ -61,7 +61,7 @@ describe('Validate: Unique input field names', () => {
     `);
     expectValid(`
       {
-        field(arg: { or: [{ f: true }, { f: {f1: true} }] })
+        field(arg: { or: [{ f: { f1: "value1" } }, { f: { f1: "value2" } }] })
       }
     `);
     expectValid(`
