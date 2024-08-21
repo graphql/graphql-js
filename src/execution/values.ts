@@ -14,15 +14,17 @@ import type {
 import { Kind } from '../language/kinds.js';
 import { print } from '../language/printer.js';
 
-import type { GraphQLArgument } from '../type/definition.js';
-import { isInputType, isNonNullType } from '../type/definition.js';
+import type { GraphQLArgument, GraphQLField } from '../type/definition.js';
+import { isNonNullType } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
 import { coerceInputValue } from '../utilities/coerceInputValue.js';
-import { typeFromAST } from '../utilities/typeFromAST.js';
+import type { GraphQLVariableSignature } from '../utilities/getVariableSignature.js';
+import { getVariableSignature } from '../utilities/getVariableSignature.js';
 import { valueFromAST } from '../utilities/valueFromAST.js';
-import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.js';
+
+import type { FragmentVariables } from './collectFields.js';
 
 type CoercedVariableValues =
   | { errors: ReadonlyArray<GraphQLError>; coerced?: never }
@@ -70,14 +72,6 @@ export function getVariableValues(
   return { errors };
 }
 
-/**
- * Prepares an object map of argument values given a list of argument
- * definitions and list of argument AST nodes.
- *
- * Note: The returned value is a plain Object with a prototype, since it is
- * exposed to user code. Care should be taken to not pull values from the
- * Object prototype.
- */
 function coerceVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
@@ -86,24 +80,19 @@ function coerceVariableValues(
 ): { [variable: string]: unknown } {
   const coercedValues: { [variable: string]: unknown } = {};
   for (const varDefNode of varDefNodes) {
-    const varName = varDefNode.variable.name.value;
-    const varType = typeFromAST(schema, varDefNode.type);
-    if (!isInputType(varType)) {
-      // Must use input types for variables. This should be caught during
-      // validation, however is checked again here for safety.
-      const varTypeStr = print(varDefNode.type);
-      onError(
-        new GraphQLError(
-          `Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`,
-          { nodes: varDefNode.type },
-        ),
-      );
+    let varSignature;
+    try {
+      varSignature = getVariableSignature(schema, varDefNode);
+    } catch (error) {
+      onError(error);
       continue;
     }
 
+    const { name: varName, type: varType } = varSignature;
     if (!Object.hasOwn(inputs, varName)) {
-      if (varDefNode.defaultValue) {
-        coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
+      const defaultValue = varSignature.defaultValue;
+      if (defaultValue !== undefined) {
+        coercedValues[varName] = defaultValue;
       } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
         onError(
@@ -159,15 +148,25 @@ function coerceVariableValues(
  * Object prototype.
  */
 export function getArgumentValues(
+  def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  argDefs: ReadonlyArray<GraphQLArgument>,
+  variableValues?: Maybe<ObjMap<unknown>>,
+): { [argument: string]: unknown } {
+  return experimentalGetArgumentValues(node, def.args, variableValues);
+}
+
+export function experimentalGetArgumentValues(
+  node: FieldNode | DirectiveNode | FragmentSpreadNode,
+  argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
   variableValues: Maybe<ObjMap<unknown>>,
-  fragmentArgValues?: Maybe<ObjMap<unknown>>,
+  fragmentVariables?: Maybe<FragmentVariables>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
-  const argNodeMap = new Map(
-    node.arguments?.map((arg) => [arg.name.value, arg]),
-  );
+
+  // FIXME: https://github.com/graphql/graphql-js/issues/2203
+  /* c8 ignore next */
+  const argumentNodes = node.arguments ?? [];
+  const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
 
   for (const argDef of argDefs) {
     const name = argDef.name;
@@ -192,11 +191,8 @@ export function getArgumentValues(
     let hasValue = valueNode.kind !== Kind.NULL;
     if (valueNode.kind === Kind.VARIABLE) {
       const variableName = valueNode.name.value;
-      if (
-        fragmentArgValues != null &&
-        Object.hasOwn(fragmentArgValues, variableName)
-      ) {
-        hasValue = fragmentArgValues[variableName] != null;
+      if (fragmentVariables?.signatures[variableName]) {
+        hasValue = fragmentVariables.values[variableName] != null;
         if (!hasValue && argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
           continue;
@@ -228,12 +224,12 @@ export function getArgumentValues(
       );
     }
 
-    // TODO: Make this follow the spec more closely
-    const coercedValue = valueFromAST(valueNode, argType, {
-      ...variableValues,
-      ...fragmentArgValues,
-    });
-
+    const coercedValue = valueFromAST(
+      valueNode,
+      argType,
+      variableValues,
+      fragmentVariables?.values,
+    );
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
@@ -243,79 +239,6 @@ export function getArgumentValues(
         { nodes: valueNode },
       );
     }
-    coercedValues[name] = coercedValue;
-  }
-  return coercedValues;
-}
-
-export function getArgumentValuesFromSpread(
-  /** NOTE: For error annotations only */
-  node: FragmentSpreadNode,
-  schema: GraphQLSchema,
-  fragmentVarDefs: ReadonlyArray<VariableDefinitionNode>,
-  variableValues: Maybe<ObjMap<unknown>>,
-  fragmentArgValues?: Maybe<ObjMap<unknown>>,
-): { [argument: string]: unknown } {
-  const coercedValues: { [argument: string]: unknown } = {};
-  const argNodeMap = new Map(
-    node.arguments?.map((arg) => [arg.name.value, arg]),
-  );
-
-  for (const varDef of fragmentVarDefs) {
-    const name = varDef.variable.name.value;
-    const argType = typeFromAST(schema, varDef.type);
-    const argumentNode = argNodeMap.get(name);
-
-    if (argumentNode == null) {
-      if (varDef.defaultValue !== undefined) {
-        coercedValues[name] = valueFromASTUntyped(varDef.defaultValue);
-      } else if (isNonNullType(argType)) {
-        throw new GraphQLError(
-          `Argument "${name}" of required type "${inspect(argType)}" ` +
-            'was not provided.',
-          { nodes: node },
-        );
-      } else {
-        coercedValues[name] = undefined;
-      }
-      continue;
-    }
-
-    const valueNode = argumentNode.value;
-
-    let hasValue = valueNode.kind !== Kind.NULL;
-    if (valueNode.kind === Kind.VARIABLE) {
-      const variableName = valueNode.name.value;
-      if (
-        fragmentArgValues != null &&
-        Object.hasOwn(fragmentArgValues, variableName)
-      ) {
-        hasValue = fragmentArgValues[variableName] != null;
-      } else if (
-        variableValues != null &&
-        Object.hasOwn(variableValues, variableName)
-      ) {
-        hasValue = variableValues[variableName] != null;
-      }
-    }
-
-    if (!hasValue && isNonNullType(argType)) {
-      throw new GraphQLError(
-        `Argument "${name}" of non-null type "${inspect(argType)}" ` +
-          'must not be null.',
-        { nodes: valueNode },
-      );
-    }
-
-    // TODO: Make this follow the spec more closely
-    let coercedValue;
-    if (argType && isInputType(argType)) {
-      coercedValue = valueFromAST(valueNode, argType, {
-        ...variableValues,
-        ...fragmentArgValues,
-      });
-    }
-
     coercedValues[name] = coercedValue;
   }
   return coercedValues;
@@ -336,12 +259,18 @@ export function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: { readonly directives?: ReadonlyArray<DirectiveNode> | undefined },
   variableValues?: Maybe<ObjMap<unknown>>,
+  fragmentVariables?: Maybe<FragmentVariables>,
 ): undefined | { [argument: string]: unknown } {
   const directiveNode = node.directives?.find(
     (directive) => directive.name.value === directiveDef.name,
   );
 
   if (directiveNode) {
-    return getArgumentValues(directiveNode, directiveDef.args, variableValues);
+    return experimentalGetArgumentValues(
+      directiveNode,
+      directiveDef.args,
+      variableValues,
+      fragmentVariables,
+    );
   }
 }

@@ -2,15 +2,14 @@ import type { ObjMap } from '../../jsutils/ObjMap.js';
 
 import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type {
-  FieldNode,
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
-} from '../../language/ast.js';
+import type { FieldNode, OperationDefinitionNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { FieldGroup } from '../../execution/collectFields.js';
+import type {
+  FieldGroup,
+  FragmentDetails,
+} from '../../execution/collectFields.js';
 import { collectFields } from '../../execution/collectFields.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
@@ -41,10 +40,10 @@ export function SingleFieldSubscriptionsRule(
             [variable: string]: any;
           } = Object.create(null);
           const document = context.getDocument();
-          const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
+          const fragments: ObjMap<FragmentDetails> = Object.create(null);
           for (const definition of document.definitions) {
             if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-              fragments[definition.name.value] = definition;
+              fragments[definition.name.value] = { definition };
             }
           }
           const { groupedFieldSet } = collectFields(

@@ -22,33 +22,44 @@ import {
 } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
+import type { GraphQLVariableSignature } from '../utilities/getVariableSignature.js';
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
-import { getArgumentValuesFromSpread, getDirectiveValues } from './values.js';
+import { experimentalGetArgumentValues, getDirectiveValues } from './values.js';
 
 export interface DeferUsage {
   label: string | undefined;
   parentDeferUsage: DeferUsage | undefined;
 }
 
+export interface FragmentVariables {
+  signatures: ObjMap<GraphQLVariableSignature>;
+  values: ObjMap<unknown>;
+}
+
 export interface FieldDetails {
   node: FieldNode;
-  deferUsage: DeferUsage | undefined;
-  fragmentVariableValues?: ObjMap<unknown> | undefined;
+  deferUsage?: DeferUsage | undefined;
+  fragmentVariables?: FragmentVariables | undefined;
 }
 
 export type FieldGroup = ReadonlyArray<FieldDetails>;
 
 export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
 
+export interface FragmentDetails {
+  definition: FragmentDefinitionNode;
+  variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
+}
+
 interface CollectFieldsContext {
   schema: GraphQLSchema;
-  fragments: ObjMap<FragmentDefinitionNode>;
+  fragments: ObjMap<FragmentDetails>;
+  variableValues: { [variable: string]: unknown };
+  fragmentVariableValues?: FragmentVariables;
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
-  localVariableValues: { [variable: string]: unknown } | undefined;
-  variableValues: { [variable: string]: unknown };
 }
 
 /**
@@ -62,7 +73,7 @@ interface CollectFieldsContext {
  */
 export function collectFields(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
@@ -75,10 +86,9 @@ export function collectFields(
   const context: CollectFieldsContext = {
     schema,
     fragments,
-    runtimeType,
     variableValues,
+    runtimeType,
     operation,
-    localVariableValues: undefined,
     visitedFragmentNames: new Set(),
   };
 
@@ -104,7 +114,7 @@ export function collectFields(
 // eslint-disable-next-line max-params
 export function collectSubfields(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: { [variable: string]: unknown },
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
@@ -116,9 +126,8 @@ export function collectSubfields(
   const context: CollectFieldsContext = {
     schema,
     fragments,
-    runtimeType: returnType,
-    localVariableValues: undefined,
     variableValues,
+    runtimeType: returnType,
     operation,
     visitedFragmentNames: new Set(),
   };
@@ -144,19 +153,20 @@ export function collectSubfields(
   };
 }
 
+// eslint-disable-next-line max-params
 function collectFieldsImpl(
   context: CollectFieldsContext,
   selectionSet: SelectionSetNode,
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   newDeferUsages: Array<DeferUsage>,
   deferUsage?: DeferUsage,
+  fragmentVariables?: FragmentVariables,
 ): void {
   const {
     schema,
     fragments,
-    runtimeType,
     variableValues,
-    localVariableValues,
+    runtimeType,
     operation,
     visitedFragmentNames,
   } = context;
@@ -164,20 +174,19 @@ function collectFieldsImpl(
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
-        const vars = localVariableValues ?? variableValues;
-        if (!shouldIncludeNode(vars, selection)) {
+        if (!shouldIncludeNode(selection, variableValues, fragmentVariables)) {
           continue;
         }
         groupedFieldSet.add(getFieldEntryKey(selection), {
           node: selection,
           deferUsage,
-          fragmentVariableValues: localVariableValues ?? undefined,
+          fragmentVariables,
         });
         break;
       }
       case Kind.INLINE_FRAGMENT: {
         if (
-          !shouldIncludeNode(variableValues, selection) ||
+          !shouldIncludeNode(selection, variableValues, fragmentVariables) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
           continue;
@@ -186,6 +195,7 @@ function collectFieldsImpl(
         const newDeferUsage = getDeferUsage(
           operation,
           variableValues,
+          fragmentVariables,
           selection,
           deferUsage,
         );
@@ -197,6 +207,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
+            fragmentVariables,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
@@ -206,77 +217,74 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
+            fragmentVariables,
           );
         }
 
         break;
       }
       case Kind.FRAGMENT_SPREAD: {
-        const fragmentName = selection.name.value;
+        const fragName = selection.name.value;
 
         const newDeferUsage = getDeferUsage(
           operation,
           variableValues,
+          fragmentVariables,
           selection,
           deferUsage,
         );
 
         if (
           !newDeferUsage &&
-          (visitedFragmentNames.has(fragmentName) ||
-            !shouldIncludeNode(variableValues, selection))
+          (visitedFragmentNames.has(fragName) ||
+            !shouldIncludeNode(selection, variableValues, fragmentVariables))
         ) {
           continue;
         }
 
-        const fragment = fragments[fragmentName];
+        const fragment = fragments[fragName];
         if (
           fragment == null ||
-          !doesFragmentConditionMatch(schema, fragment, runtimeType)
+          !doesFragmentConditionMatch(schema, fragment.definition, runtimeType)
         ) {
           continue;
         }
 
-        // We need to introduce a concept of shadowing:
-        //
-        // - when a fragment defines a variable that is in the parent scope but not given
-        //   in the fragment-spread we need to look at this variable as undefined and check
-        //   whether the definition has a defaultValue, if not remove it from the variableValues.
-        // - when a fragment does not define a variable we need to copy it over from the parent
-        //   scope as that variable can still get used in spreads later on in the selectionSet.
-        // - when a value is passed in through the fragment-spread we need to copy over the key-value
-        //   into our variable-values.
-        context.localVariableValues = fragment.variableDefinitions
-          ? getArgumentValuesFromSpread(
+        const fragmentVariableSignatures = fragment.variableSignatures;
+        let newFragmentVariables: FragmentVariables | undefined;
+        if (fragmentVariableSignatures) {
+          newFragmentVariables = {
+            signatures: fragmentVariableSignatures,
+            values: experimentalGetArgumentValues(
               selection,
-              schema,
-              fragment.variableDefinitions,
+              Object.values(fragmentVariableSignatures),
               variableValues,
-              context.localVariableValues,
-            )
-          : undefined;
+              fragmentVariables,
+            ),
+          };
+        }
 
         if (!newDeferUsage) {
-          visitedFragmentNames.add(fragmentName);
+          visitedFragmentNames.add(fragName);
           collectFieldsImpl(
             context,
-            fragment.selectionSet,
+            fragment.definition.selectionSet,
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
+            newFragmentVariables,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
           collectFieldsImpl(
             context,
-            fragment.selectionSet,
+            fragment.definition.selectionSet,
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
+            newFragmentVariables,
           );
         }
-        context.localVariableValues = undefined;
-
         break;
       }
     }
@@ -291,10 +299,16 @@ function collectFieldsImpl(
 function getDeferUsage(
   operation: OperationDefinitionNode,
   variableValues: { [variable: string]: unknown },
+  fragmentVariables: FragmentVariables | undefined,
   node: FragmentSpreadNode | InlineFragmentNode,
   parentDeferUsage: DeferUsage | undefined,
 ): DeferUsage | undefined {
-  const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues);
+  const defer = getDirectiveValues(
+    GraphQLDeferDirective,
+    node,
+    variableValues,
+    fragmentVariables,
+  );
 
   if (!defer) {
     return;
@@ -320,10 +334,16 @@ function getDeferUsage(
  * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
-  variableValues: { [variable: string]: unknown },
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
+  variableValues: { [variable: string]: unknown },
+  fragmentVariables: FragmentVariables | undefined,
 ): boolean {
-  const skip = getDirectiveValues(GraphQLSkipDirective, node, variableValues);
+  const skip = getDirectiveValues(
+    GraphQLSkipDirective,
+    node,
+    variableValues,
+    fragmentVariables,
+  );
   if (skip?.if === true) {
     return false;
   }
@@ -332,6 +352,7 @@ function shouldIncludeNode(
     GraphQLIncludeDirective,
     node,
     variableValues,
+    fragmentVariables,
   );
   if (include?.if === false) {
     return false;

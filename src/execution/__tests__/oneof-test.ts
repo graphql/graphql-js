@@ -74,17 +74,11 @@ describe('Execute: Handles OneOf Input Objects', () => {
       const result = executeQuery(query, rootValue);
 
       expectJSON(result).toDeepEqual({
-        data: {
-          test: null,
-        },
         errors: [
           {
-            locations: [{ column: 23, line: 3 }],
+            locations: [{ column: 16, line: 2 }],
             message:
-              // This type of error would be caught at validation-time
-              // hence the vague error message here.
-              'Argument "input" of non-null type "TestInputObject!" must not be null.',
-            path: ['test'],
+              'Variable "$input" of required type "TestInputObject!" was not provided.',
           },
         ],
       });
