@@ -14,12 +14,12 @@ import { Kind } from '../language/kinds.js';
 import { print } from '../language/printer.js';
 
 import type { GraphQLField } from '../type/definition.js';
-import { isInputType, isNonNullType } from '../type/definition.js';
+import { isNonNullType } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
 import { coerceInputValue } from '../utilities/coerceInputValue.js';
-import { typeFromAST } from '../utilities/typeFromAST.js';
+import { getVariableSignature } from '../utilities/getVariableSignature.js';
 import { valueFromAST } from '../utilities/valueFromAST.js';
 
 type CoercedVariableValues =
@@ -76,24 +76,16 @@ function coerceVariableValues(
 ): { [variable: string]: unknown } {
   const coercedValues: { [variable: string]: unknown } = {};
   for (const varDefNode of varDefNodes) {
-    const varName = varDefNode.variable.name.value;
-    const varType = typeFromAST(schema, varDefNode.type);
-    if (!isInputType(varType)) {
-      // Must use input types for variables. This should be caught during
-      // validation, however is checked again here for safety.
-      const varTypeStr = print(varDefNode.type);
-      onError(
-        new GraphQLError(
-          `Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`,
-          { nodes: varDefNode.type },
-        ),
-      );
+    const varSignature = getVariableSignature(schema, varDefNode);
+    if (varSignature instanceof GraphQLError) {
+      onError(varSignature);
       continue;
     }
 
+    const { name: varName, type: varType } = varSignature;
     if (!Object.hasOwn(inputs, varName)) {
       if (varDefNode.defaultValue) {
-        coercedValues[varName] = valueFromAST(varDefNode.defaultValue, varType);
+        coercedValues[varName] = varSignature.defaultValue;
       } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
         onError(
