@@ -258,14 +258,31 @@ function readNextToken(lexer: Lexer, start: number): Token {
         return createToken(lexer, TokenKind.PAREN_L, position, position + 1);
       case 0x0029: // )
         return createToken(lexer, TokenKind.PAREN_R, position, position + 1);
-      case 0x002e: // .
-        if (
-          body.charCodeAt(position + 1) === 0x002e &&
-          body.charCodeAt(position + 2) === 0x002e
-        ) {
+      case 0x002e: {
+        // .
+        const nextCode = body.charCodeAt(position + 1);
+        if (nextCode === 0x002e && body.charCodeAt(position + 2) === 0x002e) {
           return createToken(lexer, TokenKind.SPREAD, position, position + 3);
         }
+        if (nextCode === 0x002e) {
+          throw syntaxError(
+            lexer.source,
+            position,
+            'Unexpected "..", did you mean "..."?',
+          );
+        } else if (isDigit(nextCode)) {
+          const digits = lexer.source.body.slice(
+            position + 1,
+            readDigits(lexer, position + 1, nextCode),
+          );
+          throw syntaxError(
+            lexer.source,
+            position,
+            `Invalid number, expected digit before ".", did you mean "0.${digits}"?`,
+          );
+        }
         break;
+      }
       case 0x003a: // :
         return createToken(lexer, TokenKind.COLON, position, position + 1);
       case 0x003d: // =
