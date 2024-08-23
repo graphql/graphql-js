@@ -2089,7 +2089,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Object field AnotherObject.field includes required argument requiredArg that is missing from the Interface field AnotherInterface.field.',
+          'Argument "AnotherObject.field(requiredArg:)" must not be required type "String!" if not provided by the Interface field "AnotherInterface.field".',
         locations: [
           { line: 13, column: 11 },
           { line: 7, column: 9 },
@@ -2546,7 +2546,7 @@ describe('Interfaces must adhere to Interface they implement', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Object field ChildInterface.field includes required argument requiredArg that is missing from the Interface field ParentInterface.field.',
+          'Argument "ChildInterface.field(requiredArg:)" must not be required type "String!" if not provided by the Interface field "ParentInterface.field".',
         locations: [
           { line: 13, column: 11 },
           { line: 7, column: 9 },

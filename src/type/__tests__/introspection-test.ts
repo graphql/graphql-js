@@ -1644,7 +1644,7 @@ describe('Introspection', () => {
       errors: [
         {
           message:
-            'Field "__type" argument "name" of type "String!" is required, but it was not provided.',
+            'Argument "__type(name:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 3, column: 9 }],
         },
       ],

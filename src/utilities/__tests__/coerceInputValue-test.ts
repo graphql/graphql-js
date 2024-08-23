@@ -238,7 +238,8 @@ describe('coerceInputValue', () => {
       const result = coerceValue({ bar: 123 }, TestInputObject);
       expectErrors(result).to.deep.equal([
         {
-          error: 'Field "foo" of required type "Int!" was not provided.',
+          error:
+            'Field "TestInputObject.foo" of required type "Int!" was not provided.',
           path: [],
           value: { bar: 123 },
         },

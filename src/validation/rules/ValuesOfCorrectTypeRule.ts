@@ -221,7 +221,7 @@ function validateOneOfInputObject(
     if (isNullableVariable) {
       context.reportError(
         new GraphQLError(
-          `Variable "${variableName}" must be non-nullable to be used for OneOf Input Object "${type.name}".`,
+          `Variable "$${variableName}" must be non-nullable to be used for OneOf Input Object "${type.name}".`,
           { nodes: [node] },
         ),
       );

@@ -168,7 +168,7 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Field "multipleReqs" argument "req1" of type "Int!" is required, but it was not provided.',
+            'Argument "multipleReqs(req1:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
@@ -184,12 +184,12 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Field "multipleReqs" argument "req1" of type "Int!" is required, but it was not provided.',
+            'Argument "multipleReqs(req1:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
         {
           message:
-            'Field "multipleReqs" argument "req2" of type "Int!" is required, but it was not provided.',
+            'Argument "multipleReqs(req2:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
@@ -205,7 +205,7 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Field "multipleReqs" argument "req2" of type "Int!" is required, but it was not provided.',
+            'Argument "multipleReqs(req2:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
@@ -244,12 +244,12 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Directive "@include" argument "if" of type "Boolean!" is required, but it was not provided.',
+            'Argument "@include(if:)" of type "Boolean!" is required, but it was not provided.',
           locations: [{ line: 3, column: 15 }],
         },
         {
           message:
-            'Directive "@skip" argument "if" of type "Boolean!" is required, but it was not provided.',
+            'Argument "@skip(if:)" of type "Boolean!" is required, but it was not provided.',
           locations: [{ line: 4, column: 18 }],
         },
       ]);
@@ -277,7 +277,7 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+            'Argument "@test(arg:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 3, column: 23 }],
         },
       ]);
@@ -291,7 +291,7 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Directive "@include" argument "if" of type "Boolean!" is required, but it was not provided.',
+            'Argument "@include(if:)" of type "Boolean!" is required, but it was not provided.',
           locations: [{ line: 3, column: 23 }],
         },
       ]);
@@ -306,7 +306,7 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Directive "@deprecated" argument "reason" of type "String!" is required, but it was not provided.',
+            'Argument "@deprecated(reason:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 3, column: 23 }],
         },
       ]);
@@ -328,7 +328,7 @@ describe('Validate: Provided required arguments', () => {
       ).toDeepEqual([
         {
           message:
-            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+            'Argument "@test(arg:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 4, column: 30 }],
         },
       ]);
@@ -350,7 +350,7 @@ describe('Validate: Provided required arguments', () => {
       ).toDeepEqual([
         {
           message:
-            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+            'Argument "@test(arg:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 2, column: 29 }],
         },
       ]);

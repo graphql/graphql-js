@@ -110,7 +110,7 @@ function coerceInputValueImpl(
             pathToArray(path),
             inputValue,
             new GraphQLError(
-              `Field "${field.name}" of required type "${typeStr}" was not provided.`,
+              `Field "${type.name}.${field.name}" of required type "${typeStr}" was not provided.`,
             ),
           );
         }

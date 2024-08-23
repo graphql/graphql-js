@@ -124,7 +124,7 @@ function findDirectiveChanges(
   for (const oldDirective of directivesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.DIRECTIVE_REMOVED,
-      description: `${oldDirective.name} was removed.`,
+      description: `Directive @${oldDirective.name} was removed.`,
     });
   }
 
@@ -135,7 +135,7 @@ function findDirectiveChanges(
       if (isRequiredArgument(newArg)) {
         schemaChanges.push({
           type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
-          description: `A required arg ${newArg.name} on directive ${oldDirective.name} was added.`,
+          description: `A required argument @${oldDirective.name}(${newArg.name}:) was added.`,
         });
       }
     }
@@ -143,14 +143,14 @@ function findDirectiveChanges(
     for (const oldArg of argsDiff.removed) {
       schemaChanges.push({
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
-        description: `${oldArg.name} was removed from ${oldDirective.name}.`,
+        description: `Argument @${oldDirective.name}(${oldArg.name}:) was removed.`,
       });
     }
 
     if (oldDirective.isRepeatable && !newDirective.isRepeatable) {
       schemaChanges.push({
         type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
-        description: `Repeatable flag was removed from ${oldDirective.name}.`,
+        description: `Repeatable flag was removed from @${oldDirective.name}.`,
       });
     }
 
@@ -158,7 +158,7 @@ function findDirectiveChanges(
       if (!newDirective.locations.includes(location)) {
         schemaChanges.push({
           type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-          description: `${location} was removed from ${oldDirective.name}.`,
+          description: `${location} was removed from @${oldDirective.name}.`,
         });
       }
     }
@@ -231,12 +231,12 @@ function findInputObjectTypeChanges(
     if (isRequiredInputField(newField)) {
       schemaChanges.push({
         type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
-        description: `A required field ${newField.name} on input type ${oldType.name} was added.`,
+        description: `A required field ${oldType.name}.${newField.name} was added.`,
       });
     } else {
       schemaChanges.push({
         type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
-        description: `An optional field ${newField.name} on input type ${oldType.name} was added.`,
+        description: `An optional field ${oldType.name}.${newField.name} was added.`,
       });
     }
   }
@@ -244,7 +244,7 @@ function findInputObjectTypeChanges(
   for (const oldField of fieldsDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.FIELD_REMOVED,
-      description: `${oldType.name}.${oldField.name} was removed.`,
+      description: `Field ${oldType.name}.${oldField.name} was removed.`,
     });
   }
 
@@ -257,7 +257,7 @@ function findInputObjectTypeChanges(
       schemaChanges.push({
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
-          `${oldType.name}.${oldField.name} changed type from ` +
+          `Field ${oldType.name}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
       });
     }
@@ -300,14 +300,14 @@ function findEnumTypeChanges(
   for (const newValue of valuesDiff.added) {
     schemaChanges.push({
       type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
-      description: `${newValue.name} was added to enum type ${oldType.name}.`,
+      description: `Enum value ${oldType.name}.${newValue.name} was added.`,
     });
   }
 
   for (const oldValue of valuesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-      description: `${oldValue.name} was removed from enum type ${oldType.name}.`,
+      description: `Enum value ${oldType.name}.${oldValue.name} was removed.`,
     });
   }
 
@@ -351,7 +351,7 @@ function findFieldChanges(
   for (const oldField of fieldsDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.FIELD_REMOVED,
-      description: `${oldType.name}.${oldField.name} was removed.`,
+      description: `Field ${oldType.name}.${oldField.name} was removed.`,
     });
   }
 
@@ -366,7 +366,7 @@ function findFieldChanges(
       schemaChanges.push({
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
-          `${oldType.name}.${oldField.name} changed type from ` +
+          `Field ${oldType.name}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
       });
     }
@@ -386,7 +386,7 @@ function findArgChanges(
   for (const oldArg of argsDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.ARG_REMOVED,
-      description: `${oldType.name}.${oldField.name} arg ${oldArg.name} was removed.`,
+      description: `Argument ${oldType.name}.${oldField.name}(${oldArg.name}:) was removed.`,
     });
   }
 
@@ -399,14 +399,14 @@ function findArgChanges(
       schemaChanges.push({
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          `${oldType.name}.${oldField.name} arg ${oldArg.name} has changed type from ` +
+          `Argument ${oldType.name}.${oldField.name}(${oldArg.name}:) has changed type from ` +
           `${String(oldArg.type)} to ${String(newArg.type)}.`,
       });
     } else if (oldArg.defaultValue !== undefined) {
       if (newArg.defaultValue === undefined) {
         schemaChanges.push({
           type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-          description: `${oldType.name}.${oldField.name} arg ${oldArg.name} defaultValue was removed.`,
+          description: `${oldType.name}.${oldField.name}(${oldArg.name}:) defaultValue was removed.`,
         });
       } else {
         // Since we looking only for client's observable changes we should
@@ -418,7 +418,7 @@ function findArgChanges(
         if (oldValueStr !== newValueStr) {
           schemaChanges.push({
             type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-            description: `${oldType.name}.${oldField.name} arg ${oldArg.name} has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
+            description: `${oldType.name}.${oldField.name}(${oldArg.name}:) has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
           });
         }
       }
@@ -429,12 +429,12 @@ function findArgChanges(
     if (isRequiredArgument(newArg)) {
       schemaChanges.push({
         type: BreakingChangeType.REQUIRED_ARG_ADDED,
-        description: `A required arg ${newArg.name} on ${oldType.name}.${oldField.name} was added.`,
+        description: `A required argument ${oldType.name}.${oldField.name}(${newArg.name}:) was added.`,
       });
     } else {
       schemaChanges.push({
         type: DangerousChangeType.OPTIONAL_ARG_ADDED,
-        description: `An optional arg ${newArg.name} on ${oldType.name}.${oldField.name} was added.`,
+        description: `An optional argument ${oldType.name}.${oldField.name}(${newArg.name}:) was added.`,
       });
     }
   }
