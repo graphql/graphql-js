@@ -10,7 +10,6 @@ import type { ASTVisitor } from '../../language/visitor.js';
 import type { GraphQLArgument } from '../../type/definition.js';
 import {
   getNamedType,
-  isCompositeType,
   isRequiredArgument,
   isType,
 } from '../../type/definition.js';
@@ -50,17 +49,14 @@ export function ProvidedRequiredArgumentsRule(
         for (const argDef of fieldDef.args) {
           if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
             const fieldType = getNamedType(context.getType());
-            const parentType = context.getParentType();
-            const parentTypeStr =
+            const parentType =
               fieldType && isIntrospectionType(fieldType)
-                ? '<meta>.'
-                : parentType && isCompositeType(parentType)
-                ? `${parentType}.`
-                : '';
+                ? '<meta>'
+                : context.getParentType();
             const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
-                `Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
+                `Argument "${parentType}.${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
               ),
             );
