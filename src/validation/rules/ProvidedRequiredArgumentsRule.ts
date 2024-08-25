@@ -55,7 +55,7 @@ export function ProvidedRequiredArgumentsRule(
               fieldType && isIntrospectionType(fieldType)
                 ? '<meta>.'
                 : parentType && isCompositeType(parentType)
-                ? `${parentType.name}.`
+                ? `${parentType}.`
                 : '';
             const argTypeStr = inspect(argDef.type);
             context.reportError(

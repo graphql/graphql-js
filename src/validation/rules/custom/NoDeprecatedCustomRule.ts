@@ -28,7 +28,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
         invariant(parentType != null);
         context.reportError(
           new GraphQLError(
-            `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
+            `The field ${parentType}.${fieldDef.name} is deprecated. ${deprecationReason}`,
             { nodes: node },
           ),
         );
@@ -52,7 +52,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
           invariant(parentType != null && fieldDef != null);
           context.reportError(
             new GraphQLError(
-              `The argument "${parentType.name}.${fieldDef.name}(${argDef.name}:)" is deprecated. ${deprecationReason}`,
+              `The argument "${parentType}.${fieldDef.name}(${argDef.name}:)" is deprecated. ${deprecationReason}`,
               { nodes: node },
             ),
           );
