@@ -8,8 +8,14 @@ import { print } from '../../language/printer.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
 import type { GraphQLArgument } from '../../type/definition.js';
-import { isRequiredArgument, isType } from '../../type/definition.js';
+import {
+  getNamedType,
+  isCompositeType,
+  isRequiredArgument,
+  isType,
+} from '../../type/definition.js';
 import { specifiedDirectives } from '../../type/directives.js';
+import { isIntrospectionType } from '../../type/introspection.js';
 
 import type {
   SDLValidationContext,
@@ -43,10 +49,18 @@ export function ProvidedRequiredArgumentsRule(
         );
         for (const argDef of fieldDef.args) {
           if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
+            const fieldType = getNamedType(context.getType());
+            const parentType = context.getParentType();
+            const parentTypeStr =
+              fieldType && isIntrospectionType(fieldType)
+                ? '<meta>.'
+                : parentType && isCompositeType(parentType)
+                ? `${parentType.name}.`
+                : '';
             const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
-                `Argument "${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
+                `Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
               ),
             );

@@ -168,7 +168,7 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Argument "multipleReqs(req1:)" of type "Int!" is required, but it was not provided.',
+            'Argument "ComplicatedArgs.multipleReqs(req1:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
@@ -184,12 +184,12 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Argument "multipleReqs(req1:)" of type "Int!" is required, but it was not provided.',
+            'Argument "ComplicatedArgs.multipleReqs(req1:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
         {
           message:
-            'Argument "multipleReqs(req2:)" of type "Int!" is required, but it was not provided.',
+            'Argument "ComplicatedArgs.multipleReqs(req2:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
@@ -205,7 +205,7 @@ describe('Validate: Provided required arguments', () => {
       `).toDeepEqual([
         {
           message:
-            'Argument "multipleReqs(req2:)" of type "Int!" is required, but it was not provided.',
+            'Argument "ComplicatedArgs.multipleReqs(req2:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
