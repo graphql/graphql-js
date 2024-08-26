@@ -150,47 +150,24 @@ function executeOperation(exeContext) {
       rootType,
       operation,
     );
-    let groupedFieldSet = collectedFields.groupedFieldSet;
-    const newDeferUsages = collectedFields.newDeferUsages;
-    let graphqlWrappedResult;
-    if (newDeferUsages.length === 0) {
-      graphqlWrappedResult = executeRootGroupedFieldSet(
-        exeContext,
-        operation.operation,
-        rootType,
-        rootValue,
-        groupedFieldSet,
-        undefined,
-      );
-    } else {
-      const executionPlan = buildExecutionPlan(groupedFieldSet);
-      groupedFieldSet = executionPlan.groupedFieldSet;
-      const newGroupedFieldSets = executionPlan.newGroupedFieldSets;
-      const newDeferMap = addNewDeferredFragments(newDeferUsages, new Map());
-      graphqlWrappedResult = executeRootGroupedFieldSet(
-        exeContext,
-        operation.operation,
-        rootType,
-        rootValue,
-        groupedFieldSet,
-        newDeferMap,
-      );
-      if (newGroupedFieldSets.size > 0) {
-        const newPendingExecutionGroups = collectExecutionGroups(
-          exeContext,
-          rootType,
-          rootValue,
-          undefined,
-          undefined,
-          newGroupedFieldSets,
-          newDeferMap,
-        );
-        graphqlWrappedResult = withNewExecutionGroups(
-          graphqlWrappedResult,
-          newPendingExecutionGroups,
-        );
-      }
-    }
+    const { groupedFieldSet, newDeferUsages } = collectedFields;
+    const graphqlWrappedResult =
+      newDeferUsages.length === 0
+        ? executeRootGroupedFieldSet(
+            exeContext,
+            operation.operation,
+            rootType,
+            rootValue,
+            groupedFieldSet,
+            undefined,
+          )
+        : executeExecutionPlan(
+            exeContext,
+            rootType,
+            rootValue,
+            newDeferUsages,
+            buildExecutionPlan(groupedFieldSet),
+          );
     if (isPromise(graphqlWrappedResult)) {
       return graphqlWrappedResult.then(
         (resolved) => buildDataResponse(exeContext, resolved[0], resolved[1]),
@@ -208,6 +185,44 @@ function executeOperation(exeContext) {
   } catch (error) {
     return { data: null, errors: withError(exeContext.errors, error) };
   }
+}
+function executeExecutionPlan(
+  exeContext,
+  returnType,
+  sourceValue,
+  newDeferUsages,
+  executionPlan,
+  path,
+  incrementalContext,
+  deferMap,
+) {
+  const newDeferMap = getNewDeferMap(newDeferUsages, deferMap, path);
+  const { groupedFieldSet, newGroupedFieldSets } = executionPlan;
+  const graphqlWrappedResult = executeFields(
+    exeContext,
+    returnType,
+    sourceValue,
+    path,
+    groupedFieldSet,
+    incrementalContext,
+    newDeferMap,
+  );
+  if (newGroupedFieldSets.size > 0) {
+    const newPendingExecutionGroups = collectExecutionGroups(
+      exeContext,
+      returnType,
+      sourceValue,
+      path,
+      incrementalContext?.deferUsageSet,
+      newGroupedFieldSets,
+      newDeferMap,
+    );
+    return withNewExecutionGroups(
+      graphqlWrappedResult,
+      newPendingExecutionGroups,
+    );
+  }
+  return graphqlWrappedResult;
 }
 function withNewExecutionGroups(result, newPendingExecutionGroups) {
   if (isPromise(result)) {
@@ -1385,17 +1400,9 @@ function invalidReturnTypeError(returnType, result, fieldGroup) {
  *
  * Note: As defer directives may be used with operations returning lists,
  * a DeferUsage object may correspond to many DeferredFragmentRecords.
- *
- * DeferredFragmentRecord creation includes the following steps:
- * 1. The new DeferredFragmentRecord is instantiated at the given path.
- * 2. The parent result record is calculated from the given incremental data
- * record.
- * 3. The IncrementalPublisher is notified that a new DeferredFragmentRecord
- * with the calculated parent has been added; the record will be released only
- * after the parent has completed.
- *
  */
-function addNewDeferredFragments(newDeferUsages, newDeferMap, path) {
+function getNewDeferMap(newDeferUsages, deferMap, path) {
+  const newDeferMap = new Map(deferMap);
   // For each new deferUsage object:
   for (const newDeferUsage of newDeferUsages) {
     const parentDeferUsage = newDeferUsage.parentDeferUsage;
@@ -1433,52 +1440,30 @@ function collectAndExecuteSubfields(
     returnType,
     fieldGroup,
   );
-  let groupedFieldSet = collectedSubfields.groupedFieldSet;
-  const newDeferUsages = collectedSubfields.newDeferUsages;
-  if (deferMap === undefined && newDeferUsages.length === 0) {
-    return executeFields(
-      exeContext,
-      returnType,
-      result,
-      path,
-      groupedFieldSet,
-      incrementalContext,
-      undefined,
-    );
-  }
-  const subExecutionPlan = buildSubExecutionPlan(
-    groupedFieldSet,
-    incrementalContext?.deferUsageSet,
-  );
-  groupedFieldSet = subExecutionPlan.groupedFieldSet;
-  const newGroupedFieldSets = subExecutionPlan.newGroupedFieldSets;
-  const newDeferMap = addNewDeferredFragments(
-    newDeferUsages,
-    new Map(deferMap),
-    path,
-  );
-  const subFields = executeFields(
-    exeContext,
-    returnType,
-    result,
-    path,
-    groupedFieldSet,
-    incrementalContext,
-    newDeferMap,
-  );
-  if (newGroupedFieldSets.size > 0) {
-    const newPendingExecutionGroups = collectExecutionGroups(
-      exeContext,
-      returnType,
-      result,
-      path,
-      incrementalContext?.deferUsageSet,
-      newGroupedFieldSets,
-      newDeferMap,
-    );
-    return withNewExecutionGroups(subFields, newPendingExecutionGroups);
-  }
-  return subFields;
+  const { groupedFieldSet, newDeferUsages } = collectedSubfields;
+  return deferMap === undefined && newDeferUsages.length === 0
+    ? executeFields(
+        exeContext,
+        returnType,
+        result,
+        path,
+        groupedFieldSet,
+        incrementalContext,
+        undefined,
+      )
+    : executeExecutionPlan(
+        exeContext,
+        returnType,
+        result,
+        newDeferUsages,
+        buildSubExecutionPlan(
+          groupedFieldSet,
+          incrementalContext?.deferUsageSet,
+        ),
+        path,
+        incrementalContext,
+        deferMap,
+      );
 }
 function buildSubExecutionPlan(originalGroupedFieldSet, deferUsageSet) {
   let executionPlan = originalGroupedFieldSet._executionPlan;
