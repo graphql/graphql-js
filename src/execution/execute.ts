@@ -297,11 +297,8 @@ function executeOperation(
             exeContext,
             rootType,
             rootValue,
-            undefined,
             newDeferUsages,
             buildExecutionPlan(groupedFieldSet),
-            undefined,
-            undefined,
           );
 
     if (isPromise(graphqlWrappedResult)) {
@@ -327,11 +324,11 @@ function executeExecutionPlan(
   exeContext: ExecutionContext,
   returnType: GraphQLObjectType,
   sourceValue: unknown,
-  path: Path | undefined,
   newDeferUsages: ReadonlyArray<DeferUsage>,
   executionPlan: ExecutionPlan,
-  incrementalContext: IncrementalContext | undefined,
-  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
+  path?: Path | undefined,
+  incrementalContext?: IncrementalContext | undefined,
+  deferMap?: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   const newDeferMap = getNewDeferMap(newDeferUsages, deferMap, path);
 
@@ -1752,12 +1749,12 @@ function collectAndExecuteSubfields(
         exeContext,
         returnType,
         result,
-        path,
         newDeferUsages,
         buildSubExecutionPlan(
           groupedFieldSet,
           incrementalContext?.deferUsageSet,
         ),
+        path,
         incrementalContext,
         deferMap,
       );
