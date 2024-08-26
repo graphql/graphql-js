@@ -49,14 +49,19 @@ export function ProvidedRequiredArgumentsRule(
         for (const argDef of fieldDef.args) {
           if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
             const fieldType = getNamedType(context.getType());
-            const parentType =
-              fieldType && isIntrospectionType(fieldType)
-                ? '<meta>'
-                : context.getParentType();
+            let parentTypeStr: string | undefined;
+            if (fieldType && isIntrospectionType(fieldType)) {
+              parentTypeStr = '<meta>.';
+            } else {
+              const parentType = context.getParentType();
+              if (parentType) {
+                parentTypeStr = `${context.getParentType()}.`;
+              }
+            }
             const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
-                `Argument "${parentType}.${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
+                `Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
               ),
             );
