@@ -40,12 +40,17 @@ export {
   // Definitions
   GraphQLSchema,
   GraphQLDirective,
+  GraphQLSchemaElement,
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
+  GraphQLInputField,
   GraphQLList,
   GraphQLNonNull,
   // Standard GraphQL Scalars
@@ -161,23 +166,19 @@ export type {
   GraphQLSchemaExtensions,
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
-  GraphQLArgument,
   GraphQLArgumentConfig,
   GraphQLArgumentExtensions,
   GraphQLEnumTypeConfig,
   GraphQLEnumTypeExtensions,
-  GraphQLEnumValue,
   GraphQLEnumValueConfig,
   GraphQLEnumValueConfigMap,
   GraphQLEnumValueExtensions,
-  GraphQLField,
   GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldExtensions,
   GraphQLFieldMap,
   GraphQLFieldResolver,
-  GraphQLInputField,
   GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
   GraphQLInputFieldExtensions,
@@ -219,6 +220,7 @@ export {
   parseValue,
   parseConstValue,
   parseType,
+  parseSchemaCoordinate,
   // Print
   print,
   // Visit
@@ -240,6 +242,7 @@ export {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
+  isSchemaCoordinateNode,
 } from './language/index.js';
 
 export type {
@@ -315,6 +318,7 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  SchemaCoordinateNode,
 } from './language/index.js';
 
 // Execute GraphQL queries.
@@ -464,6 +468,8 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  resolveSchemaCoordinate,
+  resolveASTSchemaCoordinate,
 } from './utilities/index.js';
 
 export type {
@@ -493,4 +499,5 @@ export type {
   BreakingChange,
   DangerousChange,
   TypedQueryDocumentNode,
+  ResolvedSchemaElement,
 } from './utilities/index.js';
