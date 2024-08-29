@@ -76,6 +76,7 @@ const printDocASTReducer: ASTReducer<string> = {
     },
   },
   Argument: { leave: ({ name, value }) => name + ': ' + value },
+  FragmentArgument: { leave: ({ name, value }) => name + ': ' + value },
 
   // Nullability Modifiers
 

@@ -24,6 +24,7 @@ import type {
   FieldDefinitionNode,
   FieldNode,
   FloatValueNode,
+  FragmentArgumentNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
@@ -528,6 +529,12 @@ export class Parser {
     return this.optionalMany(TokenKind.PAREN_L, item, TokenKind.PAREN_R);
   }
 
+  /* experimental */
+  parseFragmentArguments(): Array<FragmentArgumentNode> {
+    const item = this.parseFragmentArgument;
+    return this.optionalMany(TokenKind.PAREN_L, item, TokenKind.PAREN_R);
+  }
+
   /**
    * Argument[Const] : Name : Value[?Const]
    */
@@ -547,6 +554,19 @@ export class Parser {
 
   parseConstArgument(): ConstArgumentNode {
     return this.parseArgument(true);
+  }
+
+  /* experimental */
+  parseFragmentArgument(): FragmentArgumentNode {
+    const start = this._lexer.token;
+    const name = this.parseName();
+
+    this.expectToken(TokenKind.COLON);
+    return this.node<FragmentArgumentNode>(start, {
+      kind: Kind.FRAGMENT_ARGUMENT,
+      name,
+      value: this.parseValueLiteral(false),
+    });
   }
 
   // Implements the parsing rules in the Fragments section.
@@ -572,7 +592,7 @@ export class Parser {
         return this.node<FragmentSpreadNode>(start, {
           kind: Kind.FRAGMENT_SPREAD,
           name,
-          arguments: this.parseArguments(false),
+          arguments: this.parseFragmentArguments(),
           directives: this.parseDirectives(false),
         });
       }

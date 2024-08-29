@@ -264,6 +264,7 @@ export type {
   SelectionNode,
   FieldNode,
   ArgumentNode,
+  FragmentArgumentNode,
   NullabilityAssertionNode,
   NonNullAssertionNode,
   ErrorBoundaryNode,

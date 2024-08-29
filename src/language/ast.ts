@@ -146,6 +146,7 @@ export type ASTNode =
   | SelectionSetNode
   | FieldNode
   | ArgumentNode
+  | FragmentArgumentNode
   | FragmentSpreadNode
   | InlineFragmentNode
   | FragmentDefinitionNode
@@ -221,6 +222,7 @@ export const QueryDocumentKeys: {
     'nullabilityAssertion',
   ],
   Argument: ['name', 'value'],
+  FragmentArgument: ['name', 'value'],
   // Note: Client Controlled Nullability is experimental and may be changed
   // or removed in the future.
   ListNullabilityOperator: ['nullabilityAssertion'],
@@ -422,13 +424,20 @@ export interface ConstArgumentNode {
   readonly value: ConstValueNode;
 }
 
+export interface FragmentArgumentNode {
+  readonly kind: Kind.FRAGMENT_ARGUMENT;
+  readonly loc?: Location | undefined;
+  readonly name: NameNode;
+  readonly value: ValueNode;
+}
+
 /** Fragments */
 
 export interface FragmentSpreadNode {
   readonly kind: Kind.FRAGMENT_SPREAD;
   readonly loc?: Location | undefined;
   readonly name: NameNode;
-  readonly arguments?: ReadonlyArray<ArgumentNode> | undefined;
+  readonly arguments?: ReadonlyArray<FragmentArgumentNode> | undefined;
   readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
 }
 
