@@ -247,11 +247,10 @@ function readNextToken(lexer, start) {
           position,
           position + 1,
         );
-      case 0x002e: // .
-        if (
-          body.charCodeAt(position + 1) === 0x002e &&
-          body.charCodeAt(position + 2) === 0x002e
-        ) {
+      case 0x002e: {
+        // .
+        const nextCode = body.charCodeAt(position + 1);
+        if (nextCode === 0x002e && body.charCodeAt(position + 2) === 0x002e) {
           return createToken(
             lexer,
             tokenKind_js_1.TokenKind.SPREAD,
@@ -259,7 +258,25 @@ function readNextToken(lexer, start) {
             position + 3,
           );
         }
+        if (nextCode === 0x002e) {
+          throw (0, syntaxError_js_1.syntaxError)(
+            lexer.source,
+            position,
+            'Unexpected "..", did you mean "..."?',
+          );
+        } else if ((0, characterClasses_js_1.isDigit)(nextCode)) {
+          const digits = lexer.source.body.slice(
+            position + 1,
+            readDigits(lexer, position + 1, nextCode),
+          );
+          throw (0, syntaxError_js_1.syntaxError)(
+            lexer.source,
+            position,
+            `Invalid number, expected digit before ".", did you mean "0.${digits}"?`,
+          );
+        }
         break;
+      }
       case 0x003a: // :
         return createToken(
           lexer,
