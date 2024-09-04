@@ -711,7 +711,7 @@ function completeValue(
     );
     if (completed[0] === null) {
       throw new Error(
-        `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        `Cannot return null for non-nullable field ${info.parentType}.${info.fieldName}.`,
       );
     }
     return completed;
@@ -1017,7 +1017,7 @@ function completeListValue(
   }
   if (!isIterableObject(result)) {
     throw new GraphQLError(
-      `Expected Iterable, but did not find one for field "${info.parentType.name}.${info.fieldName}".`,
+      `Expected Iterable, but did not find one for field "${info.parentType}.${info.fieldName}".`,
     );
   }
   return completeIterableValue(
@@ -1301,7 +1301,7 @@ function ensureValidRuntimeType(
 ) {
   if (runtimeTypeName == null) {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}". Either the "${returnType.name}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
+      `Abstract type "${returnType}" must resolve to an Object type at runtime for field "${info.parentType}.${info.fieldName}". Either the "${returnType}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`,
       { nodes: toNodes(fieldGroup) },
     );
   }
@@ -1314,26 +1314,26 @@ function ensureValidRuntimeType(
   }
   if (typeof runtimeTypeName !== 'string') {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" must resolve to an Object type at runtime for field "${info.parentType.name}.${info.fieldName}" with ` +
+      `Abstract type "${returnType}" must resolve to an Object type at runtime for field "${info.parentType}.${info.fieldName}" with ` +
         `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`,
     );
   }
   const runtimeType = exeContext.schema.getType(runtimeTypeName);
   if (runtimeType == null) {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
+      `Abstract type "${returnType}" was resolved to a type "${runtimeTypeName}" that does not exist inside the schema.`,
       { nodes: toNodes(fieldGroup) },
     );
   }
   if (!isObjectType(runtimeType)) {
     throw new GraphQLError(
-      `Abstract type "${returnType.name}" was resolved to a non-object type "${runtimeTypeName}".`,
+      `Abstract type "${returnType}" was resolved to a non-object type "${runtimeTypeName}".`,
       { nodes: toNodes(fieldGroup) },
     );
   }
   if (!exeContext.schema.isSubType(returnType, runtimeType)) {
     throw new GraphQLError(
-      `Runtime Object type "${runtimeType.name}" is not a possible type for "${returnType.name}".`,
+      `Runtime Object type "${runtimeType}" is not a possible type for "${returnType}".`,
       { nodes: toNodes(fieldGroup) },
     );
   }
@@ -1389,7 +1389,7 @@ function completeObjectValue(
 }
 function invalidReturnTypeError(returnType, result, fieldGroup) {
   return new GraphQLError(
-    `Expected value of type "${returnType.name}" but got: ${inspect(result)}.`,
+    `Expected value of type "${returnType}" but got: ${inspect(result)}.`,
     { nodes: toNodes(fieldGroup) },
   );
 }

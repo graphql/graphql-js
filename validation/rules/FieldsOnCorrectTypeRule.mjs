@@ -37,7 +37,7 @@ export function FieldsOnCorrectTypeRule(context) {
           // Report an error, including helpful suggestions.
           context.reportError(
             new GraphQLError(
-              `Cannot query field "${fieldName}" on type "${type.name}".` +
+              `Cannot query field "${fieldName}" on type "${type}".` +
                 suggestion,
               { nodes: node },
             ),

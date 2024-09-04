@@ -27,7 +27,7 @@ export function DeferStreamDirectiveLabelRule(context) {
         if (labelValue.kind !== Kind.STRING) {
           context.reportError(
             new GraphQLError(
-              `Directive "${node.name.value}"'s label argument must be a static string.`,
+              `Argument "@${node.name.value}(label:)" must be a static string.`,
               { nodes: node },
             ),
           );
@@ -37,7 +37,7 @@ export function DeferStreamDirectiveLabelRule(context) {
         if (knownLabel != null) {
           context.reportError(
             new GraphQLError(
-              'Defer/Stream directive label argument must be unique.',
+              'Value for arguments "defer(label:)" and "stream(label:)" must be unique across all Defer/Stream directive usages.',
               { nodes: [knownLabel, node] },
             ),
           );

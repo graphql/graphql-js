@@ -21,7 +21,7 @@ export function NoDeprecatedCustomRule(context) {
         parentType != null || invariant(false);
         context.reportError(
           new GraphQLError(
-            `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
+            `The field ${parentType}.${fieldDef.name} is deprecated. ${deprecationReason}`,
             { nodes: node },
           ),
         );
@@ -35,7 +35,7 @@ export function NoDeprecatedCustomRule(context) {
         if (directiveDef != null) {
           context.reportError(
             new GraphQLError(
-              `Directive "@${directiveDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
+              `The argument "@${directiveDef.name}(${argDef.name}:)" is deprecated. ${deprecationReason}`,
               { nodes: node },
             ),
           );
@@ -45,7 +45,7 @@ export function NoDeprecatedCustomRule(context) {
           (parentType != null && fieldDef != null) || invariant(false);
           context.reportError(
             new GraphQLError(
-              `Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
+              `The argument "${parentType}.${fieldDef.name}(${argDef.name}:)" is deprecated. ${deprecationReason}`,
               { nodes: node },
             ),
           );

@@ -33,7 +33,7 @@ function KnownArgumentNamesRule(context) {
         );
         context.reportError(
           new GraphQLError_js_1.GraphQLError(
-            `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +
+            `Unknown argument "${argName}" on field "${parentType}.${fieldDef.name}".` +
               (0, didYouMean_js_1.didYouMean)(suggestions),
             { nodes: argNode },
           ),

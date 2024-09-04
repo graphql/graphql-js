@@ -188,9 +188,9 @@ function getArgumentValues(def, node, variableValues) {
       // execution. This is a runtime check to ensure execution does not
       // continue with an invalid argument value.
       throw new GraphQLError_js_1.GraphQLError(
-        `Argument "${name}" has invalid value ${(0, printer_js_1.print)(
-          valueNode,
-        )}.`,
+        `Argument "${name}" of type "${(0, inspect_js_1.inspect)(
+          argType,
+        )}" has invalid value ${(0, printer_js_1.print)(valueNode)}.`,
         { nodes: valueNode },
       );
     }

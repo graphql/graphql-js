@@ -54,7 +54,7 @@ function ValuesOfCorrectTypeRule(context) {
           const typeStr = (0, inspect_js_1.inspect)(fieldDef.type);
           context.reportError(
             new GraphQLError_js_1.GraphQLError(
-              `Field "${type.name}.${fieldDef.name}" of required type "${typeStr}" was not provided.`,
+              `Field "${type}.${fieldDef.name}" of required type "${typeStr}" was not provided.`,
               { nodes: node },
             ),
           );
@@ -82,7 +82,7 @@ function ValuesOfCorrectTypeRule(context) {
         );
         context.reportError(
           new GraphQLError_js_1.GraphQLError(
-            `Field "${node.name.value}" is not defined by type "${parentType.name}".` +
+            `Field "${node.name.value}" is not defined by type "${parentType}".` +
               (0, didYouMean_js_1.didYouMean)(suggestions),
             { nodes: node },
           ),
@@ -176,7 +176,7 @@ function validateOneOfInputObject(
   if (isNotExactlyOneField) {
     context.reportError(
       new GraphQLError_js_1.GraphQLError(
-        `OneOf Input Object "${type.name}" must specify exactly one key.`,
+        `OneOf Input Object "${type}" must specify exactly one key.`,
         { nodes: [node] },
       ),
     );
@@ -188,7 +188,7 @@ function validateOneOfInputObject(
   if (isNullLiteral) {
     context.reportError(
       new GraphQLError_js_1.GraphQLError(
-        `Field "${type.name}.${keys[0]}" must be non-null.`,
+        `Field "${type}.${keys[0]}" must be non-null.`,
         {
           nodes: [node],
         },
@@ -204,7 +204,7 @@ function validateOneOfInputObject(
     if (isNullableVariable) {
       context.reportError(
         new GraphQLError_js_1.GraphQLError(
-          `Variable "${variableName}" must be non-nullable to be used for OneOf Input Object "${type.name}".`,
+          `Variable "$${variableName}" must be non-nullable to be used for OneOf Input Object "${type}".`,
           { nodes: [node] },
         ),
       );

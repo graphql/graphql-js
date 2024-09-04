@@ -2,8 +2,13 @@ import { inspect } from '../../jsutils/inspect.mjs';
 import { GraphQLError } from '../../error/GraphQLError.mjs';
 import { Kind } from '../../language/kinds.mjs';
 import { print } from '../../language/printer.mjs';
-import { isRequiredArgument, isType } from '../../type/definition.mjs';
+import {
+  getNamedType,
+  isRequiredArgument,
+  isType,
+} from '../../type/definition.mjs';
 import { specifiedDirectives } from '../../type/directives.mjs';
+import { isIntrospectionType } from '../../type/introspection.mjs';
 /**
  * Provided required arguments
  *
@@ -28,10 +33,20 @@ export function ProvidedRequiredArgumentsRule(context) {
         );
         for (const argDef of fieldDef.args) {
           if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
+            const fieldType = getNamedType(context.getType());
+            let parentTypeStr;
+            if (fieldType && isIntrospectionType(fieldType)) {
+              parentTypeStr = '<meta>.';
+            } else {
+              const parentType = context.getParentType();
+              if (parentType) {
+                parentTypeStr = `${context.getParentType()}.`;
+              }
+            }
             const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
-                `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
+                `Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
               ),
             );
@@ -90,7 +105,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(context) {
                 : print(argDef.type);
               context.reportError(
                 new GraphQLError(
-                  `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
+                  `Argument "@${directiveName}(${argName}:)" of type "${argType}" is required, but it was not provided.`,
                   { nodes: directiveNode },
                 ),
               );

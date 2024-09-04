@@ -22,7 +22,7 @@ export function StreamDirectiveOnListFieldRule(context) {
       ) {
         context.reportError(
           new GraphQLError(
-            `Stream directive cannot be used on non-list field "${fieldDef.name}" on type "${parentType.name}".`,
+            `Directive "@stream" cannot be used on non-list field "${parentType}.${fieldDef.name}".`,
             { nodes: node },
           ),
         );

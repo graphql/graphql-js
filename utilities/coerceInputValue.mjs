@@ -61,7 +61,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       onError(
         pathToArray(path),
         inputValue,
-        new GraphQLError(`Expected type "${type.name}" to be an object.`),
+        new GraphQLError(`Expected type "${type}" to be an object.`),
       );
       return;
     }
@@ -78,7 +78,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
             pathToArray(path),
             inputValue,
             new GraphQLError(
-              `Field "${field.name}" of required type "${typeStr}" was not provided.`,
+              `Field "${type}.${field.name}" of required type "${typeStr}" was not provided.`,
             ),
           );
         }
@@ -102,7 +102,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           pathToArray(path),
           inputValue,
           new GraphQLError(
-            `Field "${fieldName}" is not defined by type "${type.name}".` +
+            `Field "${fieldName}" is not defined by type "${type}".` +
               didYouMean(suggestions),
           ),
         );
@@ -115,7 +115,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           pathToArray(path),
           inputValue,
           new GraphQLError(
-            `Exactly one key must be specified for OneOf type "${type.name}".`,
+            `Exactly one key must be specified for OneOf type "${type}".`,
           ),
         );
       }
@@ -145,7 +145,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         onError(
           pathToArray(path),
           inputValue,
-          new GraphQLError(`Expected type "${type.name}". ` + error.message, {
+          new GraphQLError(`Expected type "${type}". ` + error.message, {
             originalError: error,
           }),
         );
@@ -156,7 +156,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       onError(
         pathToArray(path),
         inputValue,
-        new GraphQLError(`Expected type "${type.name}".`),
+        new GraphQLError(`Expected type "${type}".`),
       );
     }
     return parseResult;

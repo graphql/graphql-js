@@ -65,7 +65,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         (0, Path_js_1.pathToArray)(path),
         inputValue,
         new GraphQLError_js_1.GraphQLError(
-          `Expected type "${type.name}" to be an object.`,
+          `Expected type "${type}" to be an object.`,
         ),
       );
       return;
@@ -83,7 +83,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
             (0, Path_js_1.pathToArray)(path),
             inputValue,
             new GraphQLError_js_1.GraphQLError(
-              `Field "${field.name}" of required type "${typeStr}" was not provided.`,
+              `Field "${type}.${field.name}" of required type "${typeStr}" was not provided.`,
             ),
           );
         }
@@ -107,7 +107,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           (0, Path_js_1.pathToArray)(path),
           inputValue,
           new GraphQLError_js_1.GraphQLError(
-            `Field "${fieldName}" is not defined by type "${type.name}".` +
+            `Field "${fieldName}" is not defined by type "${type}".` +
               (0, didYouMean_js_1.didYouMean)(suggestions),
           ),
         );
@@ -120,7 +120,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           (0, Path_js_1.pathToArray)(path),
           inputValue,
           new GraphQLError_js_1.GraphQLError(
-            `Exactly one key must be specified for OneOf type "${type.name}".`,
+            `Exactly one key must be specified for OneOf type "${type}".`,
           ),
         );
       }
@@ -153,7 +153,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
           (0, Path_js_1.pathToArray)(path),
           inputValue,
           new GraphQLError_js_1.GraphQLError(
-            `Expected type "${type.name}". ` + error.message,
+            `Expected type "${type}". ` + error.message,
             {
               originalError: error,
             },
@@ -166,7 +166,7 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
       onError(
         (0, Path_js_1.pathToArray)(path),
         inputValue,
-        new GraphQLError_js_1.GraphQLError(`Expected type "${type.name}".`),
+        new GraphQLError_js_1.GraphQLError(`Expected type "${type}".`),
       );
     }
     return parseResult;

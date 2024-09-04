@@ -8,6 +8,7 @@ const kinds_js_1 = require('../../language/kinds.js');
 const printer_js_1 = require('../../language/printer.js');
 const definition_js_1 = require('../../type/definition.js');
 const directives_js_1 = require('../../type/directives.js');
+const introspection_js_1 = require('../../type/introspection.js');
 /**
  * Provided required arguments
  *
@@ -35,10 +36,25 @@ function ProvidedRequiredArgumentsRule(context) {
             !providedArgs.has(argDef.name) &&
             (0, definition_js_1.isRequiredArgument)(argDef)
           ) {
+            const fieldType = (0, definition_js_1.getNamedType)(
+              context.getType(),
+            );
+            let parentTypeStr;
+            if (
+              fieldType &&
+              (0, introspection_js_1.isIntrospectionType)(fieldType)
+            ) {
+              parentTypeStr = '<meta>.';
+            } else {
+              const parentType = context.getParentType();
+              if (parentType) {
+                parentTypeStr = `${context.getParentType()}.`;
+              }
+            }
             const argTypeStr = (0, inspect_js_1.inspect)(argDef.type);
             context.reportError(
               new GraphQLError_js_1.GraphQLError(
-                `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
+                `Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
               ),
             );
@@ -101,7 +117,7 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
                 : (0, printer_js_1.print)(argDef.type);
               context.reportError(
                 new GraphQLError_js_1.GraphQLError(
-                  `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
+                  `Argument "@${directiveName}(${argName}:)" of type "${argType}" is required, but it was not provided.`,
                   { nodes: directiveNode },
                 ),
               );
