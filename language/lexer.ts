@@ -233,14 +233,31 @@ function readNextToken(lexer: Lexer, start: number): Token {
         return createToken(lexer, TokenKind.PAREN_L, position, position + 1);
       case 41: // )
         return createToken(lexer, TokenKind.PAREN_R, position, position + 1);
-      case 46: // .
-        if (
-          body.charCodeAt(position + 1) === 46 &&
-          body.charCodeAt(position + 2) === 46
-        ) {
+      case 46: {
+        // .
+        const nextCode = body.charCodeAt(position + 1);
+        if (nextCode === 46 && body.charCodeAt(position + 2) === 46) {
           return createToken(lexer, TokenKind.SPREAD, position, position + 3);
         }
+        if (nextCode === 46) {
+          throw syntaxError(
+            lexer.source,
+            position,
+            'Unexpected "..", did you mean "..."?',
+          );
+        } else if (isDigit(nextCode)) {
+          const digits = lexer.source.body.slice(
+            position + 1,
+            readDigits(lexer, position + 1, nextCode),
+          );
+          throw syntaxError(
+            lexer.source,
+            position,
+            `Invalid number, expected digit before ".", did you mean "0.${digits}"?`,
+          );
+        }
         break;
+      }
       case 58: // :
         return createToken(lexer, TokenKind.COLON, position, position + 1);
       case 61: // =
