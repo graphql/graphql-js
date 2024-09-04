@@ -1,5 +1,7 @@
 import { describe, it } from 'mocha';
 
+import type { ParseOptions } from '../../language/parser.js';
+
 import type { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
@@ -11,12 +13,16 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness.js';
 
-function expectErrors(queryStr: string) {
-  return expectValidationErrors(OverlappingFieldsCanBeMergedRule, queryStr);
+function expectErrors(queryStr: string, options?: ParseOptions | undefined) {
+  return expectValidationErrors(
+    OverlappingFieldsCanBeMergedRule,
+    queryStr,
+    options,
+  );
 }
 
-function expectValid(queryStr: string) {
-  expectErrors(queryStr).toDeepEqual([]);
+function expectValid(queryStr: string, options?: ParseOptions | undefined) {
+  expectErrors(queryStr, options).toDeepEqual([]);
 }
 
 function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
@@ -231,6 +237,39 @@ describe('Validate: Overlapping fields can be merged', () => {
         fido: nickname
       }
     `).toDeepEqual([
+      {
+        message:
+          'Fields "fido" conflict because "name" and "nickname" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('Same literal aliases allowed on same field targets', () => {
+    expectValid(
+      `
+      fragment sameLiteralAliasesWithSameFieldTargets on Dog {
+        "fido": name
+        fido: name
+      }
+      `,
+      { experimentalParseStringLiteralAliases: true },
+    );
+  });
+
+  it('Same literal aliases with different field targets', () => {
+    expectErrors(
+      `
+      fragment sameLiteralAliasesWithDifferentFieldTargets on Dog {
+        "fido": name
+        fido: nickname
+      }
+      `,
+      { experimentalParseStringLiteralAliases: true },
+    ).toDeepEqual([
       {
         message:
           'Fields "fido" conflict because "name" and "nickname" are different fields. Use different aliases on the fields to fetch both if this was intentional.',

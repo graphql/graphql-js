@@ -130,6 +130,23 @@ export interface ParseOptions {
    * future.
    */
   experimentalClientControlledNullability?: boolean | undefined;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser will understand and parse StringValues as aliases.
+   *
+   * The syntax looks like the following:
+   *
+   * ```graphql
+   *   {
+   *     "alias": field
+   *   }
+   * ```
+   * Note: this feature is experimental and may change or be removed in the
+   * future.
+   */
+  experimentalParseStringLiteralAliases?: boolean | undefined;
 }
 
 /**
@@ -230,6 +247,17 @@ export class Parser {
    */
   parseName(): NameNode {
     const token = this.expectToken(TokenKind.NAME);
+    return this.node<NameNode>(token, {
+      kind: Kind.NAME,
+      value: token.value,
+    });
+  }
+
+  /**
+   * Converts a string lex token into a name parse node.
+   */
+  parseStringLiteralAlias(): NameNode {
+    const token = this.expectToken(TokenKind.STRING);
     return this.node<NameNode>(token, {
       kind: Kind.NAME,
       value: token.value,
@@ -454,14 +482,23 @@ export class Parser {
   parseField(): FieldNode {
     const start = this._lexer.token;
 
-    const nameOrAlias = this.parseName();
     let alias;
     let name;
-    if (this.expectOptionalToken(TokenKind.COLON)) {
-      alias = nameOrAlias;
+    if (
+      this._options.experimentalParseStringLiteralAliases &&
+      this.peek(TokenKind.STRING)
+    ) {
+      alias = this.parseStringLiteralAlias();
+      this.expectToken(TokenKind.COLON);
       name = this.parseName();
     } else {
-      name = nameOrAlias;
+      const nameOrAlias = this.parseName();
+      if (this.expectOptionalToken(TokenKind.COLON)) {
+        alias = nameOrAlias;
+        name = this.parseName();
+      } else {
+        name = nameOrAlias;
+      }
     }
 
     return this.node<FieldNode>(start, {
