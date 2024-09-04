@@ -1644,7 +1644,7 @@ describe('Introspection', () => {
       errors: [
         {
           message:
-            'Field "__type" argument "name" of type "String!" is required, but it was not provided.',
+            'Argument "<meta>.__type(name:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 3, column: 9 }],
         },
       ],
@@ -1738,11 +1738,11 @@ describe('Introspection', () => {
       _3: any,
       info: GraphQLResolveInfo,
     ): never {
-      expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
+      expect.fail(`Called on ${info.parentType}::${info.fieldName}`);
     }
 
     function typeResolver(_1: any, _2: any, info: GraphQLResolveInfo): never {
-      expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
+      expect.fail(`Called on ${info.parentType}::${info.fieldName}`);
     }
     /* c8 ignore stop */
 

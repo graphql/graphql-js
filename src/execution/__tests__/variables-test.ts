@@ -226,7 +226,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Argument "input" has invalid value ["foo", "bar", "baz"].',
+                'Argument "input" of type "TestInputObject" has invalid value ["foo", "bar", "baz"].',
               path: ['fieldWithObjectInput'],
               locations: [{ line: 3, column: 41 }],
             },
@@ -262,7 +262,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Argument "input" has invalid value { c: "foo", e: "bar" }.',
+                'Argument "input" of type "TestInputObject" has invalid value { c: "foo", e: "bar" }.',
               path: ['fieldWithObjectInput'],
               locations: [{ line: 3, column: 41 }],
             },
@@ -462,7 +462,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { a: "foo", b: "bar" }; Field "c" of required type "String!" was not provided.',
+                'Variable "$input" got invalid value { a: "foo", b: "bar" }; Field "TestInputObject.c" of required type "String!" was not provided.',
               locations: [{ line: 2, column: 16 }],
             },
           ],
@@ -481,12 +481,12 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" got invalid value { a: "foo" } at "input.na"; Field "c" of required type "String!" was not provided.',
+                'Variable "$input" got invalid value { a: "foo" } at "input.na"; Field "TestInputObject.c" of required type "String!" was not provided.',
               locations: [{ line: 2, column: 18 }],
             },
             {
               message:
-                'Variable "$input" got invalid value { na: { a: "foo" } }; Field "nb" of required type "String!" was not provided.',
+                'Variable "$input" got invalid value { na: { a: "foo" } }; Field "TestNestedInputObject.nb" of required type "String!" was not provided.',
               locations: [{ line: 2, column: 18 }],
             },
           ],
@@ -1042,7 +1042,8 @@ describe('Execute: Handles inputs', () => {
         },
         errors: [
           {
-            message: 'Argument "input" has invalid value WRONG_TYPE.',
+            message:
+              'Argument "input" of type "String" has invalid value WRONG_TYPE.',
             locations: [{ line: 3, column: 48 }],
             path: ['fieldWithDefaultArgumentValue'],
           },

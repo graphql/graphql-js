@@ -28,7 +28,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
         invariant(parentType != null);
         context.reportError(
           new GraphQLError(
-            `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
+            `The field ${parentType}.${fieldDef.name} is deprecated. ${deprecationReason}`,
             { nodes: node },
           ),
         );
@@ -42,7 +42,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
         if (directiveDef != null) {
           context.reportError(
             new GraphQLError(
-              `Directive "@${directiveDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
+              `The argument "@${directiveDef.name}(${argDef.name}:)" is deprecated. ${deprecationReason}`,
               { nodes: node },
             ),
           );
@@ -52,7 +52,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
           invariant(parentType != null && fieldDef != null);
           context.reportError(
             new GraphQLError(
-              `Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
+              `The argument "${parentType}.${fieldDef.name}(${argDef.name}:)" is deprecated. ${deprecationReason}`,
               { nodes: node },
             ),
           );

@@ -106,7 +106,7 @@ describe('Validate: no deprecated', () => {
       `).toDeepEqual([
         {
           message:
-            'Field "Query.someField" argument "deprecatedArg" is deprecated. Some arg reason.',
+            'The argument "Query.someField(deprecatedArg:)" is deprecated. Some arg reason.',
           locations: [{ line: 3, column: 21 }],
         },
       ]);
@@ -150,7 +150,7 @@ describe('Validate: no deprecated', () => {
       `).toDeepEqual([
         {
           message:
-            'Directive "@someDirective" argument "deprecatedArg" is deprecated. Some arg reason.',
+            'The argument "@someDirective(deprecatedArg:)" is deprecated. Some arg reason.',
           locations: [{ line: 3, column: 36 }],
         },
       ]);
