@@ -22,7 +22,7 @@ export function DeferStreamDirectiveOnRootFieldRule(
         if (mutationType && parentType === mutationType) {
           context.reportError(
             new GraphQLError(
-              `Defer directive cannot be used on root mutation type "${parentType.name}".`,
+              `Defer directive cannot be used on root mutation type "${parentType}".`,
               { nodes: node },
             ),
           );
@@ -30,7 +30,7 @@ export function DeferStreamDirectiveOnRootFieldRule(
         if (subscriptionType && parentType === subscriptionType) {
           context.reportError(
             new GraphQLError(
-              `Defer directive cannot be used on root subscription type "${parentType.name}".`,
+              `Defer directive cannot be used on root subscription type "${parentType}".`,
               { nodes: node },
             ),
           );
@@ -40,7 +40,7 @@ export function DeferStreamDirectiveOnRootFieldRule(
         if (mutationType && parentType === mutationType) {
           context.reportError(
             new GraphQLError(
-              `Stream directive cannot be used on root mutation type "${parentType.name}".`,
+              `Stream directive cannot be used on root mutation type "${parentType}".`,
               { nodes: node },
             ),
           );
@@ -48,7 +48,7 @@ export function DeferStreamDirectiveOnRootFieldRule(
         if (subscriptionType && parentType === subscriptionType) {
           context.reportError(
             new GraphQLError(
-              `Stream directive cannot be used on root subscription type "${parentType.name}".`,
+              `Stream directive cannot be used on root subscription type "${parentType}".`,
               { nodes: node },
             ),
           );

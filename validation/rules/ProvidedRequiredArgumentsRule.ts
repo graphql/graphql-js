@@ -5,8 +5,13 @@ import { Kind } from '../../language/kinds.ts';
 import { print } from '../../language/printer.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
 import type { GraphQLArgument } from '../../type/definition.ts';
-import { isRequiredArgument, isType } from '../../type/definition.ts';
+import {
+  getNamedType,
+  isRequiredArgument,
+  isType,
+} from '../../type/definition.ts';
 import { specifiedDirectives } from '../../type/directives.ts';
+import { isIntrospectionType } from '../../type/introspection.ts';
 import type {
   SDLValidationContext,
   ValidationContext,
@@ -37,10 +42,20 @@ export function ProvidedRequiredArgumentsRule(
         );
         for (const argDef of fieldDef.args) {
           if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
+            const fieldType = getNamedType(context.getType());
+            let parentTypeStr: string | undefined;
+            if (fieldType && isIntrospectionType(fieldType)) {
+              parentTypeStr = '<meta>.';
+            } else {
+              const parentType = context.getParentType();
+              if (parentType) {
+                parentTypeStr = `${context.getParentType()}.`;
+              }
+            }
             const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
-                `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
+                `Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
               ),
             );
@@ -104,7 +119,7 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
                 : print(argDef.type);
               context.reportError(
                 new GraphQLError(
-                  `Directive "@${directiveName}" argument "${argName}" of type "${argType}" is required, but it was not provided.`,
+                  `Argument "@${directiveName}(${argName}:)" of type "${argType}" is required, but it was not provided.`,
                   { nodes: directiveNode },
                 ),
               );
