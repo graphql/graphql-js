@@ -1264,4 +1264,239 @@ describe('Validate: Overlapping fields can be merged', () => {
       },
     ]);
   });
+
+  describe('fragment arguments must produce fields that can be merged', () => {
+    it('allows conflicting spreads at different depths', () => {
+      expectValid(`
+        query ValidDifferingFragmentArgs($command1: DogCommand, $command2: DogCommand) {
+          dog {
+            ...DoesKnowCommand(command: $command1)
+            mother {
+              ...DoesKnowCommand(command: $command2)
+            }
+          }
+        }
+        fragment DoesKnowCommand($command: DogCommand) on Dog {
+          doesKnowCommand(dogCommand: $command)
+        }
+      `);
+    });
+
+    it('encounters conflict in fragments', () => {
+      expectErrors(`
+        {
+          ...WithArgs(x: 3)
+          ...WithArgs(x: 4)
+        }
+        fragment WithArgs($x: Int) on Type {
+          a(x: $x)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Spreads "WithArgs" conflict because WithArgs(x: 3) and WithArgs(x: 4) have different fragment arguments.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 4, column: 11 },
+          ],
+        },
+      ]);
+    });
+
+    it('allows operations with overlapping fields with arguments using identical operation variables', () => {
+      expectValid(`
+        query ($y: Int = 1) {
+          a(x: $y)
+          ...WithArgs(x: 1)
+        }
+        fragment WithArgs($x: Int = 1) on Type {
+          a(x: $y)
+        }
+      `);
+    });
+
+    it('allows operations with overlapping fields with identical variable arguments passed via fragment arguments', () => {
+      expectValid(`
+        query ($y: Int = 1) {
+          a(x: $y)
+          ...WithArgs(x: $y)
+        }
+        fragment WithArgs($x: Int) on Type {
+          a(x: $x)
+        }
+      `);
+    });
+
+    it('allows operations with overlapping fields with identical variable arguments passed via nested fragment arguments', () => {
+      expectValid(`
+        query ($z: Int = 1) {
+          a(x: $z)
+          ...WithArgs(y: $z)
+        }
+        fragment WithArgs($y: Int) on Type {
+          ...NestedWithArgs(x: $y)
+        }
+        fragment NestedWithArgs($x: Int) on Type {
+          a(x: $x)
+        }
+      `);
+    });
+
+    it('allows operations with overlapping fields with identical arguments via fragment variable defaults', () => {
+      expectValid(`
+        query {
+          a(x: 1)
+          ...WithArgs
+        }
+        fragment WithArgs($x: Int = 1) on Type {
+          a(x: $x)
+        }
+      `);
+    });
+
+    it('raises errors with overlapping fields with arguments that conflict via operation variables even with defaults and fragment variable defaults', () => {
+      expectErrors(`
+        query ($y: Int = 1) {
+          a(x: $y)
+          ...WithArgs
+        }
+        fragment WithArgs($x: Int = 1) on Type {
+          a(x: $x)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "a" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 3, column: 11 },
+            { line: 7, column: 11 },
+          ],
+        },
+      ]);
+    });
+
+    it('allows operations with overlapping list fields with identical variable arguments passed via fragment arguments', () => {
+      expectValid(`
+        query Query($stringListVarY: [String]) {
+          complicatedArgs {
+            stringListArgField(stringListArg: $stringListVarY)
+            ...WithArgs(stringListVarX: $stringListVarY)
+          }
+        }
+        fragment WithArgs($stringListVarX: [String]) on Type {
+          stringListArgField(stringListArg: $stringListVarX)
+        }
+      `);
+    });
+
+    it('allows operations with overlapping list fields with identical variable arguments in item position passed via fragment arguments', () => {
+      expectValid(`
+        query Query($stringListVarY: [String]) {
+          complicatedArgs {
+            stringListArgField(stringListArg: [$stringListVarY])
+            ...WithArgs(stringListVarX: $stringListVarY)
+          }
+        }
+        fragment WithArgs($stringListVarX: [String]) on Type {
+          stringListArgField(stringListArg: [$stringListVarX])
+        }
+      `);
+    });
+
+    it('allows operations with overlapping input object fields with identical variable arguments passed via fragment arguments', () => {
+      expectValid(`
+        query Query($complexVarY: ComplexInput) {
+          complicatedArgs {
+            complexArgField(complexArg: $complexVarY)
+            ...WithArgs(complexVarX: $complexVarY)
+          }
+        }
+        fragment WithArgs($complexVarX: ComplexInput) on Type {
+          complexArgField(complexArg: $complexVarX)
+        }
+      `);
+    });
+
+    it('allows operations with overlapping input object fields with identical variable arguments in field position passed via fragment arguments', () => {
+      expectValid(`
+        query Query($boolVarY: Boolean) {
+          complicatedArgs {
+            complexArgField(complexArg: {requiredArg: $boolVarY})
+            ...WithArgs(boolVarX: $boolVarY)
+          }
+        }
+        fragment WithArgs($boolVarX: Boolean) on Type {
+          complexArgField(complexArg: {requiredArg: $boolVarX})
+        }
+      `);
+    });
+
+    it('encounters nested field conflict in fragments that could otherwise merge', () => {
+      expectErrors(`
+        query ValidDifferingFragmentArgs($command1: DogCommand, $command2: DogCommand) {
+          dog {
+            ...DoesKnowCommandNested(command: $command1)
+            mother {
+              ...DoesKnowCommandNested(command: $command2)
+            }
+          }
+        }
+        fragment DoesKnowCommandNested($command: DogCommand) on Dog {
+          doesKnowCommand(dogCommand: $command)
+          mother {
+            doesKnowCommand(dogCommand: $command)
+          }
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Fields "mother" conflict because subfields "doesKnowCommand" conflict because they have differing arguments. Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 13 },
+            { line: 13, column: 13 },
+            { line: 12, column: 11 },
+            { line: 11, column: 11 },
+          ],
+        },
+      ]);
+    });
+
+    it('encounters nested conflict in fragments', () => {
+      expectErrors(`
+        {
+          connection {
+            edges {
+              ...WithArgs(x: 3)
+            }
+          }
+          ...Connection
+        }
+        fragment Connection on Type {
+          connection {
+            edges {
+              ...WithArgs(x: 4)
+            }
+          }
+        }
+        fragment WithArgs($x: Int) on Type {
+          a(x: $x)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Spreads "WithArgs" conflict because WithArgs(x: 3) and WithArgs(x: 4) have different fragment arguments.',
+          locations: [
+            {
+              column: 15,
+              line: 5,
+            },
+            {
+              column: 15,
+              line: 13,
+            },
+          ],
+        },
+      ]);
+    });
+  });
 });

@@ -36,9 +36,18 @@ export function VariablesInAllowedPositionRule(
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        for (const { node, type, defaultValue } of usages) {
+        for (const {
+          node,
+          type,
+          defaultValue,
+          fragmentVariableDefinition,
+        } of usages) {
           const varName = node.name.value;
-          const varDef = varDefMap.get(varName);
+
+          let varDef = fragmentVariableDefinition;
+          if (!varDef) {
+            varDef = varDefMap.get(varName);
+          }
           if (varDef && type) {
             // A var type is allowed if it is the same or more strict (e.g. is
             // a subtype of) than the expected type. It can be more strict if

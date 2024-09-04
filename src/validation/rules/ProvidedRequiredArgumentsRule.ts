@@ -2,7 +2,10 @@ import { inspect } from '../../jsutils/inspect.js';
 
 import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { InputValueDefinitionNode } from '../../language/ast.js';
+import type {
+  InputValueDefinitionNode,
+  VariableDefinitionNode,
+} from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import { print } from '../../language/printer.js';
 import type { ASTVisitor } from '../../language/visitor.js';
@@ -10,6 +13,8 @@ import type { ASTVisitor } from '../../language/visitor.js';
 import type { GraphQLArgument } from '../../type/definition.js';
 import { isRequiredArgument, isType } from '../../type/definition.js';
 import { specifiedDirectives } from '../../type/directives.js';
+
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
 import type {
   SDLValidationContext,
@@ -48,6 +53,42 @@ export function ProvidedRequiredArgumentsRule(
               new GraphQLError(
                 `Field "${fieldDef.name}" argument "${argDef.name}" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
+              ),
+            );
+          }
+        }
+      },
+    },
+    FragmentSpread: {
+      // Validate on leave to allow for deeper errors to appear first.
+      leave(spreadNode) {
+        const fragmentSignature = context.getFragmentSignature();
+        if (!fragmentSignature) {
+          return false;
+        }
+
+        const providedArgs = new Set(
+          // FIXME: https://github.com/graphql/graphql-js/issues/2203
+          /* c8 ignore next */
+          spreadNode.arguments?.map((arg) => arg.name.value),
+        );
+        for (const [
+          varName,
+          variableDefinition,
+        ] of fragmentSignature.variableDefinitions) {
+          if (
+            !providedArgs.has(varName) &&
+            isRequiredArgumentNode(variableDefinition)
+          ) {
+            const type = typeFromAST(
+              context.getSchema(),
+              variableDefinition.type,
+            );
+            const argTypeStr = inspect(type);
+            context.reportError(
+              new GraphQLError(
+                `Fragment "${spreadNode.name.value}" argument "${varName}" of type "${argTypeStr}" is required, but it was not provided.`,
+                { nodes: spreadNode },
               ),
             );
           }
@@ -127,6 +168,8 @@ export function ProvidedRequiredArgumentsOnDirectivesRule(
   };
 }
 
-function isRequiredArgumentNode(arg: InputValueDefinitionNode): boolean {
+function isRequiredArgumentNode(
+  arg: InputValueDefinitionNode | VariableDefinitionNode,
+): boolean {
   return arg.type.kind === Kind.NON_NULL_TYPE && arg.defaultValue == null;
 }
