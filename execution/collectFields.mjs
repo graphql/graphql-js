@@ -77,14 +77,16 @@ export function collectSubfields(
   const subGroupedFieldSet = new AccumulatorMap();
   const newDeferUsages = [];
   for (const fieldDetail of fieldGroup) {
-    const node = fieldDetail.node;
-    if (node.selectionSet) {
+    const selectionSet = fieldDetail.node.selectionSet;
+    if (selectionSet) {
+      const { deferUsage, fragmentVariables } = fieldDetail;
       collectFieldsImpl(
         context,
-        node.selectionSet,
+        selectionSet,
         subGroupedFieldSet,
         newDeferUsages,
-        fieldDetail.deferUsage,
+        deferUsage,
+        fragmentVariables,
       );
     }
   }
