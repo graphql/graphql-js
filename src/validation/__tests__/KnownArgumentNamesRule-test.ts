@@ -100,6 +100,19 @@ describe('Validate: Known argument names', () => {
     `);
   });
 
+  it('fragment args are known', () => {
+    expectValid(`
+      {
+        dog {
+          ...withArg(dogCommand: SIT)
+        }
+      }
+      fragment withArg($dogCommand: DogCommand) on Dog {
+        doesKnowCommand(dogCommand: $dogCommand)
+      }
+    `);
+  });
+
   it('field args are invalid', () => {
     expectErrors(`
       {
@@ -144,6 +157,43 @@ describe('Validate: Known argument names', () => {
         message:
           'Unknown argument "iff" on directive "@skip". Did you mean "if"?',
         locations: [{ line: 3, column: 19 }],
+      },
+    ]);
+  });
+
+  it('arg passed to fragment without arg is reported', () => {
+    expectErrors(`
+      {
+        dog {
+          ...withoutArg(unknown: true)
+        }
+      }
+      fragment withoutArg on Dog {
+        doesKnowCommand
+      }
+    `).toDeepEqual([
+      {
+        message: 'Unknown argument "unknown" on fragment "withoutArg".',
+        locations: [{ line: 4, column: 25 }],
+      },
+    ]);
+  });
+
+  it('misspelled fragment args are reported', () => {
+    expectErrors(`
+      {
+        dog {
+          ...withArg(command: SIT)
+        }
+      }
+      fragment withArg($dogCommand: DogCommand) on Dog {
+        doesKnowCommand(dogCommand: $dogCommand)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Unknown argument "command" on fragment "withArg". Did you mean "dogCommand"?',
+        locations: [{ line: 4, column: 22 }],
       },
     ]);
   });

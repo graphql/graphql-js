@@ -230,4 +230,42 @@ describe('Validate: No unused variables', () => {
       },
     ]);
   });
+
+  it('fragment defined arguments are not unused variables', () => {
+    expectValid(`
+      query Foo {
+        ...FragA
+      }
+      fragment FragA($a: String) on Type {
+        field1(a: $a)
+      }
+    `);
+  });
+
+  it('defined variables used as fragment arguments are not unused variables', () => {
+    expectValid(`
+      query Foo($b: String) {
+        ...FragA(a: $b)
+      }
+      fragment FragA($a: String) on Type {
+        field1(a: $a)
+      }
+    `);
+  });
+
+  it('unused fragment variables are reported', () => {
+    expectErrors(`
+      query Foo {
+        ...FragA(a: "value")
+      }
+      fragment FragA($a: String) on Type {
+        field1
+      }
+    `).toDeepEqual([
+      {
+        message: 'Variable "$a" is never used in fragment "FragA".',
+        locations: [{ line: 5, column: 22 }],
+      },
+    ]);
+  });
 });

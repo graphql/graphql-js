@@ -356,4 +356,83 @@ describe('Validate: Provided required arguments', () => {
       ]);
     });
   });
+
+  describe('Fragment required arguments', () => {
+    it('ignores unknown arguments', () => {
+      expectValid(`
+        {
+          ...Foo(unknownArgument: true)
+        }
+        fragment Foo on Query {
+          dog
+        }
+      `);
+    });
+
+    it('Missing nullable argument with default is allowed', () => {
+      expectValid(`
+          {
+            ...F
+          }
+          fragment F($x: Int = 3) on Query {
+            foo
+          }
+        `);
+    });
+    it('Missing nullable argument is allowed', () => {
+      expectValid(`
+          {
+            ...F
+          }
+          fragment F($x: Int) on Query {
+            foo
+          }
+        `);
+    });
+    it('Missing non-nullable argument with default is allowed', () => {
+      expectValid(`
+          {
+            ...F
+          }
+          fragment F($x: Int! = 3) on Query {
+            foo
+          }
+        `);
+    });
+    it('Missing non-nullable argument is not allowed', () => {
+      expectErrors(`
+          {
+            ...F
+          }
+          fragment F($x: Int!) on Query {
+            foo
+          }
+        `).toDeepEqual([
+        {
+          message:
+            'Fragment "F" argument "x" of type "Int!" is required, but it was not provided.',
+          locations: [{ line: 3, column: 13 }],
+        },
+      ]);
+    });
+
+    it('Supplies required variables', () => {
+      expectValid(`
+          {
+            ...F(x: 3)
+          }
+          fragment F($x: Int!) on Query {
+            foo
+          }
+        `);
+    });
+
+    it('Skips missing fragments', () => {
+      expectValid(`
+          {
+            ...Missing(x: 3)
+          }
+        `);
+    });
+  });
 });
