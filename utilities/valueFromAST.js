@@ -25,7 +25,7 @@ const definition_js_1 = require('../type/definition.js');
  * | NullValue            | null          |
  *
  */
-function valueFromAST(valueNode, type, variables) {
+function valueFromAST(valueNode, type, variables, fragmentVariables) {
   if (!valueNode) {
     // When there is no node, then there is also no value.
     // Importantly, this is different from returning the value null.
@@ -33,11 +33,12 @@ function valueFromAST(valueNode, type, variables) {
   }
   if (valueNode.kind === kinds_js_1.Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    if (variables == null || variables[variableName] === undefined) {
+    const variableValue =
+      fragmentVariables?.[variableName] ?? variables?.[variableName];
+    if (variableValue === undefined) {
       // No valid return value.
       return;
     }
-    const variableValue = variables[variableName];
     if (variableValue === null && (0, definition_js_1.isNonNullType)(type)) {
       return; // Invalid: intentionally return no value.
     }
@@ -50,7 +51,7 @@ function valueFromAST(valueNode, type, variables) {
     if (valueNode.kind === kinds_js_1.Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
-    return valueFromAST(valueNode, type.ofType, variables);
+    return valueFromAST(valueNode, type.ofType, variables, fragmentVariables);
   }
   if (valueNode.kind === kinds_js_1.Kind.NULL) {
     // This is explicitly returning the value null.
@@ -61,7 +62,7 @@ function valueFromAST(valueNode, type, variables) {
     if (valueNode.kind === kinds_js_1.Kind.LIST) {
       const coercedValues = [];
       for (const itemNode of valueNode.values) {
-        if (isMissingVariable(itemNode, variables)) {
+        if (isMissingVariable(itemNode, variables, fragmentVariables)) {
           // If an array contains a missing variable, it is either coerced to
           // null or if the item type is non-null, it considered invalid.
           if ((0, definition_js_1.isNonNullType)(itemType)) {
@@ -69,7 +70,12 @@ function valueFromAST(valueNode, type, variables) {
           }
           coercedValues.push(null);
         } else {
-          const itemValue = valueFromAST(itemNode, itemType, variables);
+          const itemValue = valueFromAST(
+            itemNode,
+            itemType,
+            variables,
+            fragmentVariables,
+          );
           if (itemValue === undefined) {
             return; // Invalid: intentionally return no value.
           }
@@ -78,7 +84,12 @@ function valueFromAST(valueNode, type, variables) {
       }
       return coercedValues;
     }
-    const coercedValue = valueFromAST(valueNode, itemType, variables);
+    const coercedValue = valueFromAST(
+      valueNode,
+      itemType,
+      variables,
+      fragmentVariables,
+    );
     if (coercedValue === undefined) {
       return; // Invalid: intentionally return no value.
     }
@@ -94,7 +105,10 @@ function valueFromAST(valueNode, type, variables) {
     );
     for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes.get(field.name);
-      if (fieldNode == null || isMissingVariable(fieldNode.value, variables)) {
+      if (
+        fieldNode == null ||
+        isMissingVariable(fieldNode.value, variables, fragmentVariables)
+      ) {
         if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if ((0, definition_js_1.isNonNullType)(field.type)) {
@@ -102,7 +116,12 @@ function valueFromAST(valueNode, type, variables) {
         }
         continue;
       }
-      const fieldValue = valueFromAST(fieldNode.value, field.type, variables);
+      const fieldValue = valueFromAST(
+        fieldNode.value,
+        field.type,
+        variables,
+        fragmentVariables,
+      );
       if (fieldValue === undefined) {
         return; // Invalid: intentionally return no value.
       }
@@ -145,9 +164,11 @@ function valueFromAST(valueNode, type, variables) {
 exports.valueFromAST = valueFromAST;
 // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
-function isMissingVariable(valueNode, variables) {
+function isMissingVariable(valueNode, variables, fragmentVariables) {
   return (
     valueNode.kind === kinds_js_1.Kind.VARIABLE &&
+    (fragmentVariables == null ||
+      fragmentVariables[valueNode.name.value] === undefined) &&
     (variables == null || variables[valueNode.name.value] === undefined)
   );
 }

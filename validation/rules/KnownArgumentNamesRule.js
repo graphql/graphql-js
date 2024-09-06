@@ -20,16 +20,39 @@ function KnownArgumentNamesRule(context) {
   return {
     // eslint-disable-next-line new-cap
     ...KnownArgumentNamesOnDirectivesRule(context),
+    FragmentArgument(argNode) {
+      const fragmentSignature = context.getFragmentSignature();
+      if (fragmentSignature) {
+        const varDef = fragmentSignature.variableDefinitions.get(
+          argNode.name.value,
+        );
+        if (!varDef) {
+          const argName = argNode.name.value;
+          const suggestions = (0, suggestionList_js_1.suggestionList)(
+            argName,
+            Array.from(fragmentSignature.variableDefinitions.values()).map(
+              (varSignature) => varSignature.variable.name.value,
+            ),
+          );
+          context.reportError(
+            new GraphQLError_js_1.GraphQLError(
+              `Unknown argument "${argName}" on fragment "${fragmentSignature.definition.name.value}".` +
+                (0, didYouMean_js_1.didYouMean)(suggestions),
+              { nodes: argNode },
+            ),
+          );
+        }
+      }
+    },
     Argument(argNode) {
       const argDef = context.getArgument();
       const fieldDef = context.getFieldDef();
       const parentType = context.getParentType();
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
-        const knownArgsNames = fieldDef.args.map((arg) => arg.name);
         const suggestions = (0, suggestionList_js_1.suggestionList)(
           argName,
-          knownArgsNames,
+          fieldDef.args.map((arg) => arg.name),
         );
         context.reportError(
           new GraphQLError_js_1.GraphQLError(

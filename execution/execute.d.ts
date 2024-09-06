@@ -6,7 +6,6 @@ import { GraphQLError } from '../error/GraphQLError.js';
 import type {
   DocumentNode,
   FieldNode,
-  FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast.js';
 import type {
@@ -17,7 +16,7 @@ import type {
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
-import type { FieldGroup } from './collectFields.js';
+import type { FieldGroup, FragmentDetails } from './collectFields.js';
 import type {
   CancellableStreamRecord,
   ExecutionResult,
@@ -50,7 +49,7 @@ import type {
  */
 export interface ExecutionContext {
   schema: GraphQLSchema;
-  fragments: ObjMap<FragmentDefinitionNode>;
+  fragments: ObjMap<FragmentDetails>;
   rootValue: unknown;
   contextValue: unknown;
   operation: OperationDefinitionNode;

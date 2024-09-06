@@ -15,6 +15,7 @@ var Kind;
   Kind['SELECTION_SET'] = 'SelectionSet';
   Kind['FIELD'] = 'Field';
   Kind['ARGUMENT'] = 'Argument';
+  Kind['FRAGMENT_ARGUMENT'] = 'FragmentArgument';
   /** Nullability Modifiers */
   Kind['LIST_NULLABILITY_OPERATOR'] = 'ListNullabilityOperator';
   Kind['NON_NULL_ASSERTION'] = 'NonNullAssertion';

@@ -12,17 +12,41 @@ const GraphQLError_js_1 = require('../../error/GraphQLError.js');
  */
 function NoUnusedVariablesRule(context) {
   return {
-    OperationDefinition(operation) {
-      const usages = context.getRecursiveVariableUsages(operation);
-      const variableNameUsed = new Set(
+    FragmentDefinition(fragment) {
+      const usages = context.getVariableUsages(fragment);
+      const argumentNameUsed = new Set(
         usages.map(({ node }) => node.name.value),
       );
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      /* c8 ignore next */
+      const variableDefinitions = fragment.variableDefinitions ?? [];
+      for (const varDef of variableDefinitions) {
+        const argName = varDef.variable.name.value;
+        if (!argumentNameUsed.has(argName)) {
+          context.reportError(
+            new GraphQLError_js_1.GraphQLError(
+              `Variable "$${argName}" is never used in fragment "${fragment.name.value}".`,
+              { nodes: varDef },
+            ),
+          );
+        }
+      }
+    },
+    OperationDefinition(operation) {
+      const usages = context.getRecursiveVariableUsages(operation);
+      const operationVariableNameUsed = new Set();
+      for (const { node, fragmentVariableDefinition } of usages) {
+        const varName = node.name.value;
+        if (!fragmentVariableDefinition) {
+          operationVariableNameUsed.add(varName);
+        }
+      }
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       /* c8 ignore next */
       const variableDefinitions = operation.variableDefinitions ?? [];
       for (const variableDef of variableDefinitions) {
         const variableName = variableDef.variable.name.value;
-        if (!variableNameUsed.has(variableName)) {
+        if (!operationVariableNameUsed.has(variableName)) {
           context.reportError(
             new GraphQLError_js_1.GraphQLError(
               operation.name

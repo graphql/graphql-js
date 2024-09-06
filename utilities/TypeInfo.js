@@ -21,6 +21,7 @@ class TypeInfo {
     initialType,
     /** @deprecated will be removed in 17.0.0 */
     getFieldDefFn,
+    fragmentSignatures,
   ) {
     this._schema = schema;
     this._typeStack = [];
@@ -31,6 +32,9 @@ class TypeInfo {
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
+    this._fragmentSignaturesByName = fragmentSignatures ?? (() => null);
+    this._fragmentSignature = null;
+    this._fragmentArgument = null;
     this._getFieldDef = getFieldDefFn ?? getFieldDef;
     if (initialType) {
       if ((0, definition_js_1.isInputType)(initialType)) {
@@ -71,6 +75,15 @@ class TypeInfo {
   getArgument() {
     return this._argument;
   }
+  getFragmentSignature() {
+    return this._fragmentSignature;
+  }
+  getFragmentSignatureByName() {
+    return this._fragmentSignaturesByName;
+  }
+  getFragmentArgument() {
+    return this._fragmentArgument;
+  }
   getEnumValue() {
     return this._enumValue;
   }
@@ -81,6 +94,12 @@ class TypeInfo {
     // checked before continuing since TypeInfo is used as part of validation
     // which occurs before guarantees of schema and document validity.
     switch (node.kind) {
+      case kinds_js_1.Kind.DOCUMENT: {
+        const fragmentSignatures = getFragmentSignatures(node);
+        this._fragmentSignaturesByName = (fragmentName) =>
+          fragmentSignatures.get(fragmentName);
+        break;
+      }
       case kinds_js_1.Kind.SELECTION_SET: {
         const namedType = (0, definition_js_1.getNamedType)(this.getType());
         this._parentTypeStack.push(
@@ -113,6 +132,12 @@ class TypeInfo {
         const rootType = schema.getRootType(node.operation);
         this._typeStack.push(
           (0, definition_js_1.isObjectType)(rootType) ? rootType : undefined,
+        );
+        break;
+      }
+      case kinds_js_1.Kind.FRAGMENT_SPREAD: {
+        this._fragmentSignature = this.getFragmentSignatureByName()(
+          node.name.value,
         );
         break;
       }
@@ -150,6 +175,24 @@ class TypeInfo {
         }
         this._argument = argDef;
         this._defaultValueStack.push(argDef ? argDef.defaultValue : undefined);
+        this._inputTypeStack.push(
+          (0, definition_js_1.isInputType)(argType) ? argType : undefined,
+        );
+        break;
+      }
+      case kinds_js_1.Kind.FRAGMENT_ARGUMENT: {
+        const fragmentSignature = this.getFragmentSignature();
+        const argDef = fragmentSignature?.variableDefinitions.get(
+          node.name.value,
+        );
+        this._fragmentArgument = argDef;
+        let argType;
+        if (argDef) {
+          argType = (0, typeFromAST_js_1.typeFromAST)(
+            this._schema,
+            argDef.type,
+          );
+        }
         this._inputTypeStack.push(
           (0, definition_js_1.isInputType)(argType) ? argType : undefined,
         );
@@ -206,6 +249,10 @@ class TypeInfo {
   }
   leave(node) {
     switch (node.kind) {
+      case kinds_js_1.Kind.DOCUMENT:
+        this._fragmentSignaturesByName = /* c8 ignore start */ () =>
+          null /* c8 ignore end */;
+        break;
       case kinds_js_1.Kind.SELECTION_SET:
         this._parentTypeStack.pop();
         break;
@@ -215,6 +262,9 @@ class TypeInfo {
         break;
       case kinds_js_1.Kind.DIRECTIVE:
         this._directive = null;
+        break;
+      case kinds_js_1.Kind.FRAGMENT_SPREAD:
+        this._fragmentSignature = null;
         break;
       case kinds_js_1.Kind.OPERATION_DEFINITION:
       case kinds_js_1.Kind.INLINE_FRAGMENT:
@@ -229,6 +279,12 @@ class TypeInfo {
         this._defaultValueStack.pop();
         this._inputTypeStack.pop();
         break;
+      case kinds_js_1.Kind.FRAGMENT_ARGUMENT: {
+        this._fragmentArgument = null;
+        this._defaultValueStack.pop();
+        this._inputTypeStack.pop();
+        break;
+      }
       case kinds_js_1.Kind.LIST:
       case kinds_js_1.Kind.OBJECT_FIELD:
         this._defaultValueStack.pop();
@@ -245,6 +301,22 @@ class TypeInfo {
 exports.TypeInfo = TypeInfo;
 function getFieldDef(schema, parentType, fieldNode) {
   return schema.getField(parentType, fieldNode.name.value);
+}
+function getFragmentSignatures(document) {
+  const fragmentSignatures = new Map();
+  for (const definition of document.definitions) {
+    if (definition.kind === kinds_js_1.Kind.FRAGMENT_DEFINITION) {
+      const variableDefinitions = new Map();
+      if (definition.variableDefinitions) {
+        for (const varDef of definition.variableDefinitions) {
+          variableDefinitions.set(varDef.variable.name.value, varDef);
+        }
+      }
+      const signature = { definition, variableDefinitions };
+      fragmentSignatures.set(definition.name.value, signature);
+    }
+  }
+  return fragmentSignatures;
 }
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance

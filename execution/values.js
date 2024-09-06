@@ -1,6 +1,7 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.getDirectiveValues =
+  exports.experimentalGetArgumentValues =
   exports.getArgumentValues =
   exports.getVariableValues =
     void 0;
@@ -11,8 +12,8 @@ const kinds_js_1 = require('../language/kinds.js');
 const printer_js_1 = require('../language/printer.js');
 const definition_js_1 = require('../type/definition.js');
 const coerceInputValue_js_1 = require('../utilities/coerceInputValue.js');
-const typeFromAST_js_1 = require('../utilities/typeFromAST.js');
 const valueFromAST_js_1 = require('../utilities/valueFromAST.js');
+const getVariableSignature_js_1 = require('./getVariableSignature.js');
 /**
  * Prepares an object map of variableValues of the correct type based on the
  * provided variable definitions and arbitrary input. If the input cannot be
@@ -51,26 +52,18 @@ exports.getVariableValues = getVariableValues;
 function coerceVariableValues(schema, varDefNodes, inputs, onError) {
   const coercedValues = {};
   for (const varDefNode of varDefNodes) {
-    const varName = varDefNode.variable.name.value;
-    const varType = (0, typeFromAST_js_1.typeFromAST)(schema, varDefNode.type);
-    if (!(0, definition_js_1.isInputType)(varType)) {
-      // Must use input types for variables. This should be caught during
-      // validation, however is checked again here for safety.
-      const varTypeStr = (0, printer_js_1.print)(varDefNode.type);
-      onError(
-        new GraphQLError_js_1.GraphQLError(
-          `Variable "$${varName}" expected value of type "${varTypeStr}" which cannot be used as an input type.`,
-          { nodes: varDefNode.type },
-        ),
-      );
+    const varSignature = (0, getVariableSignature_js_1.getVariableSignature)(
+      schema,
+      varDefNode,
+    );
+    if (varSignature instanceof GraphQLError_js_1.GraphQLError) {
+      onError(varSignature);
       continue;
     }
+    const { name: varName, type: varType } = varSignature;
     if (!Object.hasOwn(inputs, varName)) {
       if (varDefNode.defaultValue) {
-        coercedValues[varName] = (0, valueFromAST_js_1.valueFromAST)(
-          varDefNode.defaultValue,
-          varType,
-        );
+        coercedValues[varName] = varSignature.defaultValue;
       } else if ((0, definition_js_1.isNonNullType)(varType)) {
         const varTypeStr = (0, inspect_js_1.inspect)(varType);
         onError(
@@ -125,12 +118,21 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
  * Object prototype.
  */
 function getArgumentValues(def, node, variableValues) {
+  return experimentalGetArgumentValues(node, def.args, variableValues);
+}
+exports.getArgumentValues = getArgumentValues;
+function experimentalGetArgumentValues(
+  node,
+  argDefs,
+  variableValues,
+  fragmentVariables,
+) {
   const coercedValues = {};
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
   const argumentNodes = node.arguments ?? [];
   const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
-  for (const argDef of def.args) {
+  for (const argDef of argDefs) {
     const name = argDef.name;
     const argType = argDef.type;
     const argumentNode = argNodeMap.get(name);
@@ -151,9 +153,12 @@ function getArgumentValues(def, node, variableValues) {
     let isNull = valueNode.kind === kinds_js_1.Kind.NULL;
     if (valueNode.kind === kinds_js_1.Kind.VARIABLE) {
       const variableName = valueNode.name.value;
+      const scopedVariableValues = fragmentVariables?.signatures[variableName]
+        ? fragmentVariables.values
+        : variableValues;
       if (
-        variableValues == null ||
-        !Object.hasOwn(variableValues, variableName)
+        scopedVariableValues == null ||
+        !Object.hasOwn(scopedVariableValues, variableName)
       ) {
         if (argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
@@ -168,7 +173,7 @@ function getArgumentValues(def, node, variableValues) {
         }
         continue;
       }
-      isNull = variableValues[variableName] == null;
+      isNull = scopedVariableValues[variableName] == null;
     }
     if (isNull && (0, definition_js_1.isNonNullType)(argType)) {
       throw new GraphQLError_js_1.GraphQLError(
@@ -182,6 +187,7 @@ function getArgumentValues(def, node, variableValues) {
       valueNode,
       argType,
       variableValues,
+      fragmentVariables?.values,
     );
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
@@ -198,7 +204,7 @@ function getArgumentValues(def, node, variableValues) {
   }
   return coercedValues;
 }
-exports.getArgumentValues = getArgumentValues;
+exports.experimentalGetArgumentValues = experimentalGetArgumentValues;
 /**
  * Prepares an object map of argument values given a directive definition
  * and a AST node which may contain directives. Optionally also accepts a map
@@ -210,12 +216,22 @@ exports.getArgumentValues = getArgumentValues;
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-function getDirectiveValues(directiveDef, node, variableValues) {
+function getDirectiveValues(
+  directiveDef,
+  node,
+  variableValues,
+  fragmentVariables,
+) {
   const directiveNode = node.directives?.find(
     (directive) => directive.name.value === directiveDef.name,
   );
   if (directiveNode) {
-    return getArgumentValues(directiveDef, directiveNode, variableValues);
+    return experimentalGetArgumentValues(
+      directiveNode,
+      directiveDef.args,
+      variableValues,
+      fragmentVariables,
+    );
   }
 }
 exports.getDirectiveValues = getDirectiveValues;

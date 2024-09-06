@@ -150,7 +150,12 @@ exports.__DirectiveLocation = new definition_js_1.GraphQLEnumType({
     },
     VARIABLE_DEFINITION: {
       value: directiveLocation_js_1.DirectiveLocation.VARIABLE_DEFINITION,
-      description: 'Location adjacent to a variable definition.',
+      description: 'Location adjacent to an operation variable definition.',
+    },
+    FRAGMENT_VARIABLE_DEFINITION: {
+      value:
+        directiveLocation_js_1.DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION,
+      description: 'Location adjacent to a fragment variable definition.',
     },
     SCHEMA: {
       value: directiveLocation_js_1.DirectiveLocation.SCHEMA,

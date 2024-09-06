@@ -6,16 +6,26 @@ import type {
 } from '../language/ast.js';
 import type { GraphQLObjectType } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
+import type { GraphQLVariableSignature } from './getVariableSignature.js';
 export interface DeferUsage {
   label: string | undefined;
   parentDeferUsage: DeferUsage | undefined;
 }
+export interface FragmentVariables {
+  signatures: ObjMap<GraphQLVariableSignature>;
+  values: ObjMap<unknown>;
+}
 export interface FieldDetails {
   node: FieldNode;
-  deferUsage: DeferUsage | undefined;
+  deferUsage?: DeferUsage | undefined;
+  fragmentVariables?: FragmentVariables | undefined;
 }
 export type FieldGroup = ReadonlyArray<FieldDetails>;
 export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
+export interface FragmentDetails {
+  definition: FragmentDefinitionNode;
+  variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
+}
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -27,7 +37,7 @@ export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
  */
 export declare function collectFields(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: {
     [variable: string]: unknown;
   },
@@ -49,7 +59,7 @@ export declare function collectFields(
  */
 export declare function collectSubfields(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: {
     [variable: string]: unknown;
   },

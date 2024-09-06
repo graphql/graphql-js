@@ -17,6 +17,7 @@ const isAsyncIterable_js_1 = require('../jsutils/isAsyncIterable.js');
 const isIterableObject_js_1 = require('../jsutils/isIterableObject.js');
 const isObjectLike_js_1 = require('../jsutils/isObjectLike.js');
 const isPromise_js_1 = require('../jsutils/isPromise.js');
+const mapValue_js_1 = require('../jsutils/mapValue.js');
 const memoize3_js_1 = require('../jsutils/memoize3.js');
 const Path_js_1 = require('../jsutils/Path.js');
 const promiseForObject_js_1 = require('../jsutils/promiseForObject.js');
@@ -30,6 +31,7 @@ const directives_js_1 = require('../type/directives.js');
 const validate_js_1 = require('../type/validate.js');
 const buildExecutionPlan_js_1 = require('./buildExecutionPlan.js');
 const collectFields_js_1 = require('./collectFields.js');
+const getVariableSignature_js_1 = require('./getVariableSignature.js');
 const IncrementalPublisher_js_1 = require('./IncrementalPublisher.js');
 const mapAsyncIterable_js_1 = require('./mapAsyncIterable.js');
 const types_js_1 = require('./types.js');
@@ -320,9 +322,19 @@ function buildExecutionContext(args) {
           operation = definition;
         }
         break;
-      case kinds_js_1.Kind.FRAGMENT_DEFINITION:
-        fragments[definition.name.value] = definition;
+      case kinds_js_1.Kind.FRAGMENT_DEFINITION: {
+        let variableSignatures;
+        if (definition.variableDefinitions) {
+          variableSignatures = Object.create(null);
+          for (const varDef of definition.variableDefinitions) {
+            const signature = (0,
+            getVariableSignature_js_1.getVariableSignature)(schema, varDef);
+            variableSignatures[signature.name] = signature;
+          }
+        }
+        fragments[definition.name.value] = { definition, variableSignatures };
         break;
+      }
       default:
       // ignore non-executable definitions
     }
@@ -568,10 +580,11 @@ function executeField(
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
     // TODO: find a way to memoize, in case this field is within a List type.
-    const args = (0, values_js_1.getArgumentValues)(
-      fieldDef,
+    const args = (0, values_js_1.experimentalGetArgumentValues)(
       fieldGroup[0].node,
+      fieldDef.args,
       exeContext.variableValues,
+      fieldGroup[0].fragmentVariables,
     );
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
@@ -642,7 +655,10 @@ function buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path) {
     parentType,
     path,
     schema: exeContext.schema,
-    fragments: exeContext.fragments,
+    fragments: (0, mapValue_js_1.mapValue)(
+      exeContext.fragments,
+      (fragment) => fragment.definition,
+    ),
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
@@ -849,6 +865,7 @@ function getStreamUsage(exeContext, fieldGroup, path) {
     directives_js_1.GraphQLStreamDirective,
     fieldGroup[0].node,
     exeContext.variableValues,
+    fieldGroup[0].fragmentVariables,
   );
   if (!stream) {
     return;
@@ -871,6 +888,7 @@ function getStreamUsage(exeContext, fieldGroup, path) {
   const streamedFieldGroup = fieldGroup.map((fieldDetails) => ({
     node: fieldDetails.node,
     deferUsage: undefined,
+    fragmentVariables: fieldDetails.fragmentVariables,
   }));
   const streamUsage = {
     initialCount: stream.initialCount,

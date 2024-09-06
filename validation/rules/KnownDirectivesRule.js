@@ -74,8 +74,13 @@ function getDirectiveLocationForASTPath(ancestors) {
       return directiveLocation_js_1.DirectiveLocation.INLINE_FRAGMENT;
     case kinds_js_1.Kind.FRAGMENT_DEFINITION:
       return directiveLocation_js_1.DirectiveLocation.FRAGMENT_DEFINITION;
-    case kinds_js_1.Kind.VARIABLE_DEFINITION:
-      return directiveLocation_js_1.DirectiveLocation.VARIABLE_DEFINITION;
+    case kinds_js_1.Kind.VARIABLE_DEFINITION: {
+      const parentNode = ancestors[ancestors.length - 3];
+      'kind' in parentNode || (0, invariant_js_1.invariant)(false);
+      return parentNode.kind === kinds_js_1.Kind.OPERATION_DEFINITION
+        ? directiveLocation_js_1.DirectiveLocation.VARIABLE_DEFINITION
+        : directiveLocation_js_1.DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION;
+    }
     case kinds_js_1.Kind.SCHEMA_DEFINITION:
     case kinds_js_1.Kind.SCHEMA_EXTENSION:
       return directiveLocation_js_1.DirectiveLocation.SCHEMA;

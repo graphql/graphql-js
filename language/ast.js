@@ -82,12 +82,13 @@ exports.QueryDocumentKeys = {
     'nullabilityAssertion',
   ],
   Argument: ['name', 'value'],
+  FragmentArgument: ['name', 'value'],
   // Note: Client Controlled Nullability is experimental and may be changed
   // or removed in the future.
   ListNullabilityOperator: ['nullabilityAssertion'],
   NonNullAssertion: ['nullabilityAssertion'],
   ErrorBoundary: ['nullabilityAssertion'],
-  FragmentSpread: ['name', 'directives'],
+  FragmentSpread: ['name', 'arguments', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
     'name',

@@ -9,6 +9,7 @@ const printer_js_1 = require('../../language/printer.js');
 const definition_js_1 = require('../../type/definition.js');
 const directives_js_1 = require('../../type/directives.js');
 const introspection_js_1 = require('../../type/introspection.js');
+const typeFromAST_js_1 = require('../../utilities/typeFromAST.js');
 /**
  * Provided required arguments
  *
@@ -56,6 +57,41 @@ function ProvidedRequiredArgumentsRule(context) {
               new GraphQLError_js_1.GraphQLError(
                 `Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
                 { nodes: fieldNode },
+              ),
+            );
+          }
+        }
+      },
+    },
+    FragmentSpread: {
+      // Validate on leave to allow for deeper errors to appear first.
+      leave(spreadNode) {
+        const fragmentSignature = context.getFragmentSignature();
+        if (!fragmentSignature) {
+          return false;
+        }
+        const providedArgs = new Set(
+          // FIXME: https://github.com/graphql/graphql-js/issues/2203
+          /* c8 ignore next */
+          spreadNode.arguments?.map((arg) => arg.name.value),
+        );
+        for (const [
+          varName,
+          variableDefinition,
+        ] of fragmentSignature.variableDefinitions) {
+          if (
+            !providedArgs.has(varName) &&
+            isRequiredArgumentNode(variableDefinition)
+          ) {
+            const type = (0, typeFromAST_js_1.typeFromAST)(
+              context.getSchema(),
+              variableDefinition.type,
+            );
+            const argTypeStr = (0, inspect_js_1.inspect)(type);
+            context.reportError(
+              new GraphQLError_js_1.GraphQLError(
+                `Fragment "${spreadNode.name.value}" argument "${varName}" of type "${argTypeStr}" is required, but it was not provided.`,
+                { nodes: spreadNode },
               ),
             );
           }

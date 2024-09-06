@@ -6,6 +6,7 @@ import type {
   FragmentSpreadNode,
   OperationDefinitionNode,
   SelectionSetNode,
+  VariableDefinitionNode,
   VariableNode,
 } from '../language/ast.js';
 import type { ASTVisitor } from '../language/visitor.js';
@@ -19,12 +20,14 @@ import type {
 } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
+import type { FragmentSignature } from '../utilities/TypeInfo.js';
 import { TypeInfo } from '../utilities/TypeInfo.js';
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
   readonly defaultValue: Maybe<unknown>;
+  readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -83,6 +86,10 @@ export declare class ValidationContext extends ASTValidationContext {
   getFieldDef(): Maybe<GraphQLField<unknown, unknown>>;
   getDirective(): Maybe<GraphQLDirective>;
   getArgument(): Maybe<GraphQLArgument>;
+  getFragmentSignature(): Maybe<FragmentSignature>;
+  getFragmentSignatureByName(): (
+    fragmentName: string,
+  ) => Maybe<FragmentSignature>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
 }
 export type ValidationRule = (context: ValidationContext) => ASTVisitor;

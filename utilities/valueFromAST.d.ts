@@ -26,4 +26,5 @@ export declare function valueFromAST(
   valueNode: Maybe<ValueNode>,
   type: GraphQLInputType,
   variables?: Maybe<ObjMap<unknown>>,
+  fragmentVariables?: Maybe<ObjMap<unknown>>,
 ): unknown;

@@ -25,7 +25,7 @@ export function SingleFieldSubscriptionsRule(context) {
           const fragments = Object.create(null);
           for (const definition of document.definitions) {
             if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-              fragments[definition.name.value] = definition;
+              fragments[definition.name.value] = { definition };
             }
           }
           const { groupedFieldSet } = collectFields(

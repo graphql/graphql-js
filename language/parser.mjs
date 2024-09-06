@@ -343,6 +343,11 @@ export class Parser {
     const item = isConst ? this.parseConstArgument : this.parseArgument;
     return this.optionalMany(TokenKind.PAREN_L, item, TokenKind.PAREN_R);
   }
+  /* experimental */
+  parseFragmentArguments() {
+    const item = this.parseFragmentArgument;
+    return this.optionalMany(TokenKind.PAREN_L, item, TokenKind.PAREN_R);
+  }
   parseArgument(isConst = false) {
     const start = this._lexer.token;
     const name = this.parseName();
@@ -356,11 +361,22 @@ export class Parser {
   parseConstArgument() {
     return this.parseArgument(true);
   }
+  /* experimental */
+  parseFragmentArgument() {
+    const start = this._lexer.token;
+    const name = this.parseName();
+    this.expectToken(TokenKind.COLON);
+    return this.node(start, {
+      kind: Kind.FRAGMENT_ARGUMENT,
+      name,
+      value: this.parseValueLiteral(false),
+    });
+  }
   // Implements the parsing rules in the Fragments section.
   /**
    * Corresponds to both FragmentSpread and InlineFragment in the spec.
    *
-   * FragmentSpread : ... FragmentName Directives?
+   * FragmentSpread : ... FragmentName Arguments? Directives?
    *
    * InlineFragment : ... TypeCondition? Directives? SelectionSet
    */
@@ -369,9 +385,21 @@ export class Parser {
     this.expectToken(TokenKind.SPREAD);
     const hasTypeCondition = this.expectOptionalKeyword('on');
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
+      const name = this.parseFragmentName();
+      if (
+        this.peek(TokenKind.PAREN_L) &&
+        this._options.experimentalFragmentArguments
+      ) {
+        return this.node(start, {
+          kind: Kind.FRAGMENT_SPREAD,
+          name,
+          arguments: this.parseFragmentArguments(),
+          directives: this.parseDirectives(false),
+        });
+      }
       return this.node(start, {
         kind: Kind.FRAGMENT_SPREAD,
-        name: this.parseFragmentName(),
+        name,
         directives: this.parseDirectives(false),
       });
     }
@@ -384,17 +412,14 @@ export class Parser {
   }
   /**
    * FragmentDefinition :
-   *   - fragment FragmentName on TypeCondition Directives? SelectionSet
+   *   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
    *
    * TypeCondition : NamedType
    */
   parseFragmentDefinition() {
     const start = this._lexer.token;
     this.expectKeyword('fragment');
-    // Legacy support for defining variables within fragments changes
-    // the grammar of FragmentDefinition:
-    //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options.allowLegacyFragmentVariables === true) {
+    if (this._options.experimentalFragmentArguments === true) {
       return this.node(start, {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),

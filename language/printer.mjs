@@ -51,12 +51,8 @@ const printDocASTReducer = {
       selectionSet,
     }) {
       const prefix = join([wrap('', alias, ': '), name], '');
-      let argsLine = prefix + wrap('(', join(args, ', '), ')');
-      if (argsLine.length > MAX_LINE_LENGTH) {
-        argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
-      }
       return join([
-        argsLine,
+        wrappedLineAndArgs(prefix, args),
         // Note: Client Controlled Nullability is experimental and may be
         // changed or removed in the future.
         nullabilityAssertion,
@@ -66,6 +62,7 @@ const printDocASTReducer = {
     },
   },
   Argument: { leave: ({ name, value }) => name + ': ' + value },
+  FragmentArgument: { leave: ({ name, value }) => name + ': ' + value },
   // Nullability Modifiers
   ListNullabilityOperator: {
     leave({ nullabilityAssertion }) {
@@ -84,8 +81,12 @@ const printDocASTReducer = {
   },
   // Fragments
   FragmentSpread: {
-    leave: ({ name, directives }) =>
-      '...' + name + wrap(' ', join(directives, ' ')),
+    leave: ({ name, arguments: args, directives }) => {
+      const prefix = '...' + name;
+      return (
+        wrappedLineAndArgs(prefix, args) + wrap(' ', join(directives, ' '))
+      );
+    },
   },
   InlineFragment: {
     leave: ({ typeCondition, directives, selectionSet }) =>
@@ -329,4 +330,11 @@ function hasMultilineItems(maybeArray) {
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
   return maybeArray?.some((str) => str.includes('\n')) ?? false;
+}
+function wrappedLineAndArgs(prefix, args) {
+  let argsLine = prefix + wrap('(', join(args, ', '), ')');
+  if (argsLine.length > MAX_LINE_LENGTH) {
+    argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+  }
+  return argsLine;
 }

@@ -27,6 +27,8 @@ var DirectiveLocation;
   DirectiveLocation['ENUM_VALUE'] = 'ENUM_VALUE';
   DirectiveLocation['INPUT_OBJECT'] = 'INPUT_OBJECT';
   DirectiveLocation['INPUT_FIELD_DEFINITION'] = 'INPUT_FIELD_DEFINITION';
+  DirectiveLocation['FRAGMENT_VARIABLE_DEFINITION'] =
+    'FRAGMENT_VARIABLE_DEFINITION';
 })(
   (DirectiveLocation =
     exports.DirectiveLocation || (exports.DirectiveLocation = {})),

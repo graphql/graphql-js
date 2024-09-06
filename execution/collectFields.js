@@ -91,12 +91,14 @@ function collectSubfields(
   };
 }
 exports.collectSubfields = collectSubfields;
+// eslint-disable-next-line max-params
 function collectFieldsImpl(
   context,
   selectionSet,
   groupedFieldSet,
   newDeferUsages,
   deferUsage,
+  fragmentVariables,
 ) {
   const {
     schema,
@@ -109,18 +111,19 @@ function collectFieldsImpl(
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case kinds_js_1.Kind.FIELD: {
-        if (!shouldIncludeNode(variableValues, selection)) {
+        if (!shouldIncludeNode(selection, variableValues, fragmentVariables)) {
           continue;
         }
         groupedFieldSet.add(getFieldEntryKey(selection), {
           node: selection,
           deferUsage,
+          fragmentVariables,
         });
         break;
       }
       case kinds_js_1.Kind.INLINE_FRAGMENT: {
         if (
-          !shouldIncludeNode(variableValues, selection) ||
+          !shouldIncludeNode(selection, variableValues, fragmentVariables) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
           continue;
@@ -128,6 +131,7 @@ function collectFieldsImpl(
         const newDeferUsage = getDeferUsage(
           operation,
           variableValues,
+          fragmentVariables,
           selection,
           deferUsage,
         );
@@ -138,6 +142,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
+            fragmentVariables,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
@@ -147,6 +152,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
+            fragmentVariables,
           );
         }
         break;
@@ -156,40 +162,56 @@ function collectFieldsImpl(
         const newDeferUsage = getDeferUsage(
           operation,
           variableValues,
+          fragmentVariables,
           selection,
           deferUsage,
         );
         if (
           !newDeferUsage &&
           (visitedFragmentNames.has(fragName) ||
-            !shouldIncludeNode(variableValues, selection))
+            !shouldIncludeNode(selection, variableValues, fragmentVariables))
         ) {
           continue;
         }
         const fragment = fragments[fragName];
         if (
           fragment == null ||
-          !doesFragmentConditionMatch(schema, fragment, runtimeType)
+          !doesFragmentConditionMatch(schema, fragment.definition, runtimeType)
         ) {
           continue;
+        }
+        const fragmentVariableSignatures = fragment.variableSignatures;
+        let newFragmentVariables;
+        if (fragmentVariableSignatures) {
+          newFragmentVariables = {
+            signatures: fragmentVariableSignatures,
+            values: (0, values_js_1.experimentalGetArgumentValues)(
+              selection,
+              Object.values(fragmentVariableSignatures),
+              variableValues,
+              fragmentVariables,
+            ),
+          };
         }
         if (!newDeferUsage) {
           visitedFragmentNames.add(fragName);
           collectFieldsImpl(
             context,
-            fragment.selectionSet,
+            fragment.definition.selectionSet,
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
+            newFragmentVariables,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
           collectFieldsImpl(
             context,
-            fragment.selectionSet,
+            fragment.definition.selectionSet,
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
+            newFragmentVariables,
           );
         }
         break;
@@ -202,11 +224,18 @@ function collectFieldsImpl(
  * deferred based on the experimental flag, defer directive present and
  * not disabled by the "if" argument.
  */
-function getDeferUsage(operation, variableValues, node, parentDeferUsage) {
+function getDeferUsage(
+  operation,
+  variableValues,
+  fragmentVariables,
+  node,
+  parentDeferUsage,
+) {
   const defer = (0, values_js_1.getDirectiveValues)(
     directives_js_1.GraphQLDeferDirective,
     node,
     variableValues,
+    fragmentVariables,
   );
   if (!defer) {
     return;
@@ -228,11 +257,12 @@ function getDeferUsage(operation, variableValues, node, parentDeferUsage) {
  * Determines if a field should be included based on the `@include` and `@skip`
  * directives, where `@skip` has higher precedence than `@include`.
  */
-function shouldIncludeNode(variableValues, node) {
+function shouldIncludeNode(node, variableValues, fragmentVariables) {
   const skip = (0, values_js_1.getDirectiveValues)(
     directives_js_1.GraphQLSkipDirective,
     node,
     variableValues,
+    fragmentVariables,
   );
   if (skip?.if === true) {
     return false;
@@ -241,6 +271,7 @@ function shouldIncludeNode(variableValues, node) {
     directives_js_1.GraphQLIncludeDirective,
     node,
     variableValues,
+    fragmentVariables,
   );
   if (include?.if === false) {
     return false;

@@ -120,17 +120,40 @@ class ValidationContext extends ASTValidationContext {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages = [];
-      const typeInfo = new TypeInfo_js_1.TypeInfo(this._schema);
+      const typeInfo = new TypeInfo_js_1.TypeInfo(
+        this._schema,
+        undefined,
+        undefined,
+        this._typeInfo.getFragmentSignatureByName(),
+      );
+      const fragmentDefinition =
+        node.kind === kinds_js_1.Kind.FRAGMENT_DEFINITION ? node : undefined;
       (0, visitor_js_1.visit)(
         node,
         (0, TypeInfo_js_1.visitWithTypeInfo)(typeInfo, {
           VariableDefinition: () => false,
           Variable(variable) {
-            newUsages.push({
-              node: variable,
-              type: typeInfo.getInputType(),
-              defaultValue: typeInfo.getDefaultValue(),
-            });
+            let fragmentVariableDefinition;
+            if (fragmentDefinition) {
+              const fragmentSignature = typeInfo.getFragmentSignatureByName()(
+                fragmentDefinition.name.value,
+              );
+              fragmentVariableDefinition =
+                fragmentSignature?.variableDefinitions.get(variable.name.value);
+              newUsages.push({
+                node: variable,
+                type: typeInfo.getInputType(),
+                defaultValue: undefined,
+                fragmentVariableDefinition,
+              });
+            } else {
+              newUsages.push({
+                node: variable,
+                type: typeInfo.getInputType(),
+                defaultValue: typeInfo.getDefaultValue(),
+                fragmentVariableDefinition: undefined,
+              });
+            }
           },
         }),
       );
@@ -170,6 +193,12 @@ class ValidationContext extends ASTValidationContext {
   }
   getArgument() {
     return this._typeInfo.getArgument();
+  }
+  getFragmentSignature() {
+    return this._typeInfo.getFragmentSignature();
+  }
+  getFragmentSignatureByName() {
+    return this._typeInfo.getFragmentSignatureByName();
   }
   getEnumValue() {
     return this._typeInfo.getEnumValue();

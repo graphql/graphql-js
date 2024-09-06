@@ -4,11 +4,14 @@ import { GraphQLError } from '../error/GraphQLError.js';
 import type {
   DirectiveNode,
   FieldNode,
+  FragmentSpreadNode,
   VariableDefinitionNode,
 } from '../language/ast.js';
-import type { GraphQLField } from '../type/definition.js';
+import type { GraphQLArgument, GraphQLField } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
+import type { FragmentVariables } from './collectFields.js';
+import type { GraphQLVariableSignature } from './getVariableSignature.js';
 type CoercedVariableValues =
   | {
       errors: ReadonlyArray<GraphQLError>;
@@ -54,6 +57,14 @@ export declare function getArgumentValues(
 ): {
   [argument: string]: unknown;
 };
+export declare function experimentalGetArgumentValues(
+  node: FieldNode | DirectiveNode | FragmentSpreadNode,
+  argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
+  variableValues: Maybe<ObjMap<unknown>>,
+  fragmentVariables?: Maybe<FragmentVariables>,
+): {
+  [argument: string]: unknown;
+};
 /**
  * Prepares an object map of argument values given a directive definition
  * and a AST node which may contain directives. Optionally also accepts a map
@@ -71,6 +82,7 @@ export declare function getDirectiveValues(
     readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
   },
   variableValues?: Maybe<ObjMap<unknown>>,
+  fragmentVariables?: Maybe<FragmentVariables>,
 ):
   | undefined
   | {

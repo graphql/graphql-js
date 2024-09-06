@@ -65,7 +65,7 @@ export function buildASTSchema(documentAST, options) {
 export function buildSchema(source, options) {
   const document = parse(source, {
     noLocation: options?.noLocation,
-    allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
+    experimentalFragmentArguments: options?.experimentalFragmentArguments,
   });
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,

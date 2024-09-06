@@ -17,6 +17,7 @@ import type {
   EnumValueDefinitionNode,
   FieldDefinitionNode,
   FieldNode,
+  FragmentArgumentNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
@@ -74,21 +75,25 @@ export interface ParseOptions {
    */
   maxTokens?: number | undefined;
   /**
-   * @deprecated will be removed in the v17.0.0
+   * EXPERIMENTAL:
    *
-   * If enabled, the parser will understand and parse variable definitions
-   * contained in a fragment definition. They'll be represented in the
-   * `variableDefinitions` field of the FragmentDefinitionNode.
+   * If enabled, the parser will understand and parse fragment variable definitions
+   * and arguments on fragment spreads. Fragment variable definitions will be represented
+   * in the `variableDefinitions` field of the FragmentDefinitionNode.
+   * Fragment spread arguments will be represented in the `arguments` field of FragmentSpreadNode.
    *
-   * The syntax is identical to normal, query-defined variables. For example:
+   * For example:
    *
    * ```graphql
+   * {
+   *   t { ...A(var: true) }
+   * }
    * fragment A($var: Boolean = false) on T {
-   *   ...
+   *   ...B(x: $var)
    * }
    * ```
    */
-  allowLegacyFragmentVariables?: boolean | undefined;
+  experimentalFragmentArguments?: boolean | undefined;
   /**
    * EXPERIMENTAL:
    *
@@ -251,23 +256,25 @@ export declare class Parser {
    */
   parseArguments(isConst: true): Array<ConstArgumentNode>;
   parseArguments(isConst: boolean): Array<ArgumentNode>;
+  parseFragmentArguments(): Array<FragmentArgumentNode>;
   /**
    * Argument[Const] : Name : Value[?Const]
    */
   parseArgument(isConst: true): ConstArgumentNode;
   parseArgument(isConst?: boolean): ArgumentNode;
   parseConstArgument(): ConstArgumentNode;
+  parseFragmentArgument(): FragmentArgumentNode;
   /**
    * Corresponds to both FragmentSpread and InlineFragment in the spec.
    *
-   * FragmentSpread : ... FragmentName Directives?
+   * FragmentSpread : ... FragmentName Arguments? Directives?
    *
    * InlineFragment : ... TypeCondition? Directives? SelectionSet
    */
   parseFragment(): FragmentSpreadNode | InlineFragmentNode;
   /**
    * FragmentDefinition :
-   *   - fragment FragmentName on TypeCondition Directives? SelectionSet
+   *   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
    *
    * TypeCondition : NamedType
    */

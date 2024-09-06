@@ -1,5 +1,10 @@
 import type { Maybe } from '../jsutils/Maybe.js';
-import type { ASTNode, FieldNode } from '../language/ast.js';
+import type {
+  ASTNode,
+  FieldNode,
+  FragmentDefinitionNode,
+  VariableDefinitionNode,
+} from '../language/ast.js';
 import type { ASTVisitor } from '../language/visitor.js';
 import type {
   GraphQLArgument,
@@ -12,6 +17,10 @@ import type {
 } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
+export interface FragmentSignature {
+  readonly definition: FragmentDefinitionNode;
+  readonly variableDefinitions: Map<string, VariableDefinitionNode>;
+}
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
  * of the current field and type definitions at any point in a GraphQL document
@@ -27,6 +36,9 @@ export declare class TypeInfo {
   private _directive;
   private _argument;
   private _enumValue;
+  private _fragmentSignaturesByName;
+  private _fragmentSignature;
+  private _fragmentArgument;
   private _getFieldDef;
   constructor(
     schema: GraphQLSchema,
@@ -36,7 +48,10 @@ export declare class TypeInfo {
      */
     initialType?: Maybe<GraphQLType>,
     /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn?: GetFieldDefFn,
+    getFieldDefFn?: Maybe<GetFieldDefFn>,
+    fragmentSignatures?: Maybe<
+      (fragmentName: string) => Maybe<FragmentSignature>
+    >,
   );
   get [Symbol.toStringTag](): string;
   getType(): Maybe<GraphQLOutputType>;
@@ -47,6 +62,11 @@ export declare class TypeInfo {
   getDefaultValue(): Maybe<unknown>;
   getDirective(): Maybe<GraphQLDirective>;
   getArgument(): Maybe<GraphQLArgument>;
+  getFragmentSignature(): Maybe<FragmentSignature>;
+  getFragmentSignatureByName(): (
+    fragmentName: string,
+  ) => Maybe<FragmentSignature>;
+  getFragmentArgument(): Maybe<VariableDefinitionNode>;
   getEnumValue(): Maybe<GraphQLEnumValue>;
   enter(node: ASTNode): void;
   leave(node: ASTNode): void;
