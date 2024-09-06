@@ -35,6 +35,7 @@ export type {
   ErrorBoundaryNode,
   ListNullabilityOperatorNode,
   ArgumentNode,
+  FragmentArgumentNode /* for experimental fragment arguments */,
   ConstArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,

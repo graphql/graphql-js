@@ -7,6 +7,7 @@ import type {
   FragmentSpreadNode,
   OperationDefinitionNode,
   SelectionSetNode,
+  VariableDefinitionNode,
   VariableNode,
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
@@ -22,12 +23,14 @@ import type {
 } from '../type/definition.ts';
 import type { GraphQLDirective } from '../type/directives.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
+import type { FragmentSignature } from '../utilities/TypeInfo.ts';
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.ts';
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
   readonly defaultValue: Maybe<unknown>;
+  readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }
 /**
  * An instance of this class is passed as the "this" context to all validators,
@@ -174,17 +177,40 @@ export class ValidationContext extends ASTValidationContext {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages: Array<VariableUsage> = [];
-      const typeInfo = new TypeInfo(this._schema);
+      const typeInfo = new TypeInfo(
+        this._schema,
+        undefined,
+        undefined,
+        this._typeInfo.getFragmentSignatureByName(),
+      );
+      const fragmentDefinition =
+        node.kind === Kind.FRAGMENT_DEFINITION ? node : undefined;
       visit(
         node,
         visitWithTypeInfo(typeInfo, {
           VariableDefinition: () => false,
           Variable(variable) {
-            newUsages.push({
-              node: variable,
-              type: typeInfo.getInputType(),
-              defaultValue: typeInfo.getDefaultValue(),
-            });
+            let fragmentVariableDefinition;
+            if (fragmentDefinition) {
+              const fragmentSignature = typeInfo.getFragmentSignatureByName()(
+                fragmentDefinition.name.value,
+              );
+              fragmentVariableDefinition =
+                fragmentSignature?.variableDefinitions.get(variable.name.value);
+              newUsages.push({
+                node: variable,
+                type: typeInfo.getInputType(),
+                defaultValue: undefined,
+                fragmentVariableDefinition,
+              });
+            } else {
+              newUsages.push({
+                node: variable,
+                type: typeInfo.getInputType(),
+                defaultValue: typeInfo.getDefaultValue(),
+                fragmentVariableDefinition: undefined,
+              });
+            }
           },
         }),
       );
@@ -226,6 +252,14 @@ export class ValidationContext extends ASTValidationContext {
   }
   getArgument(): Maybe<GraphQLArgument> {
     return this._typeInfo.getArgument();
+  }
+  getFragmentSignature(): Maybe<FragmentSignature> {
+    return this._typeInfo.getFragmentSignature();
+  }
+  getFragmentSignatureByName(): (
+    fragmentName: string,
+  ) => Maybe<FragmentSignature> {
+    return this._typeInfo.getFragmentSignatureByName();
   }
   getEnumValue(): Maybe<GraphQLEnumValue> {
     return this._typeInfo.getEnumValue();

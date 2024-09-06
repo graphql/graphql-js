@@ -130,6 +130,7 @@ export type ASTNode =
   | SelectionSetNode
   | FieldNode
   | ArgumentNode
+  | FragmentArgumentNode
   | FragmentSpreadNode
   | InlineFragmentNode
   | FragmentDefinitionNode
@@ -202,12 +203,13 @@ export const QueryDocumentKeys: {
     'nullabilityAssertion',
   ],
   Argument: ['name', 'value'],
+  FragmentArgument: ['name', 'value'],
   // Note: Client Controlled Nullability is experimental and may be changed
   // or removed in the future.
   ListNullabilityOperator: ['nullabilityAssertion'],
   NonNullAssertion: ['nullabilityAssertion'],
   ErrorBoundary: ['nullabilityAssertion'],
-  FragmentSpread: ['name', 'directives'],
+  FragmentSpread: ['name', 'arguments', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
     'name',
@@ -373,11 +375,18 @@ export interface ConstArgumentNode {
   readonly name: NameNode;
   readonly value: ConstValueNode;
 }
+export interface FragmentArgumentNode {
+  readonly kind: Kind.FRAGMENT_ARGUMENT;
+  readonly loc?: Location | undefined;
+  readonly name: NameNode;
+  readonly value: ValueNode;
+}
 /** Fragments */
 export interface FragmentSpreadNode {
   readonly kind: Kind.FRAGMENT_SPREAD;
   readonly loc?: Location | undefined;
   readonly name: NameNode;
+  readonly arguments?: ReadonlyArray<FragmentArgumentNode> | undefined;
   readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
 }
 export interface InlineFragmentNode {
@@ -391,7 +400,6 @@ export interface FragmentDefinitionNode {
   readonly kind: Kind.FRAGMENT_DEFINITION;
   readonly loc?: Location | undefined;
   readonly name: NameNode;
-  /** @deprecated variableDefinitions will be removed in v17.0.0 */
   readonly variableDefinitions?:
     | ReadonlyArray<VariableDefinitionNode>
     | undefined;

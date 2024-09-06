@@ -1,13 +1,12 @@
 import type { ObjMap } from '../../jsutils/ObjMap.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
-import type {
-  FieldNode,
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
-} from '../../language/ast.ts';
+import type { FieldNode, OperationDefinitionNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
-import type { FieldGroup } from '../../execution/collectFields.ts';
+import type {
+  FieldGroup,
+  FragmentDetails,
+} from '../../execution/collectFields.ts';
 import { collectFields } from '../../execution/collectFields.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
@@ -35,10 +34,10 @@ export function SingleFieldSubscriptionsRule(
             [variable: string]: any;
           } = Object.create(null);
           const document = context.getDocument();
-          const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
+          const fragments: ObjMap<FragmentDetails> = Object.create(null);
           for (const definition of document.definitions) {
             if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-              fragments[definition.name.value] = definition;
+              fragments[definition.name.value] = { definition };
             }
           }
           const { groupedFieldSet } = collectFields(

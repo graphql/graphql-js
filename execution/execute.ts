@@ -5,6 +5,7 @@ import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import { isPromise } from '../jsutils/isPromise.ts';
+import { mapValue } from '../jsutils/mapValue.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
 import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
@@ -18,7 +19,6 @@ import { locatedError } from '../error/locatedError.ts';
 import type {
   DocumentNode,
   FieldNode,
-  FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast.ts';
 import { OperationTypeNode } from '../language/ast.ts';
@@ -49,12 +49,14 @@ import { buildExecutionPlan } from './buildExecutionPlan.ts';
 import type {
   DeferUsage,
   FieldGroup,
+  FragmentDetails,
   GroupedFieldSet,
 } from './collectFields.ts';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.ts';
+import { getVariableSignature } from './getVariableSignature.ts';
 import { buildIncrementalResponse } from './IncrementalPublisher.ts';
 import { mapAsyncIterable } from './mapAsyncIterable.ts';
 import type {
@@ -70,6 +72,7 @@ import type {
 } from './types.ts';
 import { DeferredFragmentRecord } from './types.ts';
 import {
+  experimentalGetArgumentValues,
   getArgumentValues,
   getDirectiveValues,
   getVariableValues,
@@ -124,7 +127,7 @@ const collectSubfields = memoize3(
  */
 export interface ExecutionContext {
   schema: GraphQLSchema;
-  fragments: ObjMap<FragmentDefinitionNode>;
+  fragments: ObjMap<FragmentDetails>;
   rootValue: unknown;
   contextValue: unknown;
   operation: OperationDefinitionNode;
@@ -425,7 +428,7 @@ export function buildExecutionContext(
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
   let operation: OperationDefinitionNode | undefined;
-  const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
+  const fragments: ObjMap<FragmentDetails> = Object.create(null);
   for (const definition of document.definitions) {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
@@ -442,9 +445,18 @@ export function buildExecutionContext(
           operation = definition;
         }
         break;
-      case Kind.FRAGMENT_DEFINITION:
-        fragments[definition.name.value] = definition;
+      case Kind.FRAGMENT_DEFINITION: {
+        let variableSignatures;
+        if (definition.variableDefinitions) {
+          variableSignatures = Object.create(null);
+          for (const varDef of definition.variableDefinitions) {
+            const signature = getVariableSignature(schema, varDef);
+            variableSignatures[signature.name] = signature;
+          }
+        }
+        fragments[definition.name.value] = { definition, variableSignatures };
         break;
+      }
       default:
       // ignore non-executable definitions
     }
@@ -682,10 +694,11 @@ function executeField(
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
     // TODO: find a way to memoize, in case this field is within a List type.
-    const args = getArgumentValues(
-      fieldDef,
+    const args = experimentalGetArgumentValues(
       fieldGroup[0].node,
+      fieldDef.args,
       exeContext.variableValues,
+      fieldGroup[0].fragmentVariables,
     );
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
@@ -762,7 +775,10 @@ export function buildResolveInfo(
     parentType,
     path,
     schema: exeContext.schema,
-    fragments: exeContext.fragments,
+    fragments: mapValue(
+      exeContext.fragments,
+      (fragment) => fragment.definition,
+    ),
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
@@ -977,6 +993,7 @@ function getStreamUsage(
     GraphQLStreamDirective,
     fieldGroup[0].node,
     exeContext.variableValues,
+    fieldGroup[0].fragmentVariables,
   );
   if (!stream) {
     return;
@@ -996,6 +1013,7 @@ function getStreamUsage(
   const streamedFieldGroup: FieldGroup = fieldGroup.map((fieldDetails) => ({
     node: fieldDetails.node,
     deferUsage: undefined,
+    fragmentVariables: fieldDetails.fragmentVariables,
   }));
   const streamUsage = {
     initialCount: stream.initialCount,
