@@ -163,7 +163,5 @@ var OperationTypeNode;
   OperationTypeNode['QUERY'] = 'query';
   OperationTypeNode['MUTATION'] = 'mutation';
   OperationTypeNode['SUBSCRIPTION'] = 'subscription';
-})(
-  (OperationTypeNode =
-    exports.OperationTypeNode || (exports.OperationTypeNode = {})),
-);
+})(OperationTypeNode || (OperationTypeNode = {}));
+exports.OperationTypeNode = OperationTypeNode;

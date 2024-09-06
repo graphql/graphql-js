@@ -30,4 +30,5 @@ var TokenKind;
   TokenKind['STRING'] = 'String';
   TokenKind['BLOCK_STRING'] = 'BlockString';
   TokenKind['COMMENT'] = 'Comment';
-})((TokenKind = exports.TokenKind || (exports.TokenKind = {})));
+})(TokenKind || (TokenKind = {}));
+exports.TokenKind = TokenKind;

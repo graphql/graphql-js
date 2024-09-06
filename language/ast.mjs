@@ -147,9 +147,10 @@ export function isNode(maybeNode) {
   const maybeKind = maybeNode?.kind;
   return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
-export var OperationTypeNode;
+var OperationTypeNode;
 (function (OperationTypeNode) {
   OperationTypeNode['QUERY'] = 'query';
   OperationTypeNode['MUTATION'] = 'mutation';
   OperationTypeNode['SUBSCRIPTION'] = 'subscription';
 })(OperationTypeNode || (OperationTypeNode = {}));
+export { OperationTypeNode };

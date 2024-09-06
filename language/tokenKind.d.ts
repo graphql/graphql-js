@@ -2,7 +2,7 @@
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-export declare enum TokenKind {
+declare enum TokenKind {
   SOF = '<SOF>',
   EOF = '<EOF>',
   BANG = '!',
@@ -27,3 +27,4 @@ export declare enum TokenKind {
   BLOCK_STRING = 'BlockString',
   COMMENT = 'Comment',
 }
+export { TokenKind };

@@ -1,7 +1,7 @@
 /**
  * The set of allowed directive location values.
  */
-export var DirectiveLocation;
+var DirectiveLocation;
 (function (DirectiveLocation) {
   /** Request Definitions */
   DirectiveLocation['QUERY'] = 'QUERY';
@@ -27,3 +27,4 @@ export var DirectiveLocation;
   DirectiveLocation['FRAGMENT_VARIABLE_DEFINITION'] =
     'FRAGMENT_VARIABLE_DEFINITION';
 })(DirectiveLocation || (DirectiveLocation = {}));
+export { DirectiveLocation };

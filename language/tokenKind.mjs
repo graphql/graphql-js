@@ -2,7 +2,7 @@
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-export var TokenKind;
+var TokenKind;
 (function (TokenKind) {
   TokenKind['SOF'] = '<SOF>';
   TokenKind['EOF'] = '<EOF>';
@@ -28,3 +28,4 @@ export var TokenKind;
   TokenKind['BLOCK_STRING'] = 'BlockString';
   TokenKind['COMMENT'] = 'Comment';
 })(TokenKind || (TokenKind = {}));
+export { TokenKind };

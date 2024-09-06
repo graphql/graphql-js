@@ -7,7 +7,7 @@ export declare const __Type: GraphQLObjectType;
 export declare const __Field: GraphQLObjectType;
 export declare const __InputValue: GraphQLObjectType;
 export declare const __EnumValue: GraphQLObjectType;
-export declare enum TypeKind {
+declare enum TypeKind {
   SCALAR = 'SCALAR',
   OBJECT = 'OBJECT',
   INTERFACE = 'INTERFACE',
@@ -17,6 +17,7 @@ export declare enum TypeKind {
   LIST = 'LIST',
   NON_NULL = 'NON_NULL',
 }
+export { TypeKind };
 export declare const __TypeKind: GraphQLEnumType;
 /**
  * Note that these are GraphQLField and not GraphQLFieldConfig,

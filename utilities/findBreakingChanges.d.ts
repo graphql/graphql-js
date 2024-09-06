@@ -1,5 +1,5 @@
 import type { GraphQLSchema } from '../type/schema.js';
-export declare enum BreakingChangeType {
+declare enum BreakingChangeType {
   TYPE_REMOVED = 'TYPE_REMOVED',
   TYPE_CHANGED_KIND = 'TYPE_CHANGED_KIND',
   TYPE_REMOVED_FROM_UNION = 'TYPE_REMOVED_FROM_UNION',
@@ -17,7 +17,8 @@ export declare enum BreakingChangeType {
   DIRECTIVE_REPEATABLE_REMOVED = 'DIRECTIVE_REPEATABLE_REMOVED',
   DIRECTIVE_LOCATION_REMOVED = 'DIRECTIVE_LOCATION_REMOVED',
 }
-export declare enum DangerousChangeType {
+export { BreakingChangeType };
+declare enum DangerousChangeType {
   VALUE_ADDED_TO_ENUM = 'VALUE_ADDED_TO_ENUM',
   TYPE_ADDED_TO_UNION = 'TYPE_ADDED_TO_UNION',
   OPTIONAL_INPUT_FIELD_ADDED = 'OPTIONAL_INPUT_FIELD_ADDED',
@@ -25,6 +26,7 @@ export declare enum DangerousChangeType {
   IMPLEMENTED_INTERFACE_ADDED = 'IMPLEMENTED_INTERFACE_ADDED',
   ARG_DEFAULT_VALUE_CHANGE = 'ARG_DEFAULT_VALUE_CHANGE',
 }
+export { DangerousChangeType };
 export interface BreakingChange {
   type: BreakingChangeType;
   description: string;

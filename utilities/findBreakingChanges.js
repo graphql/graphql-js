@@ -36,10 +36,8 @@ var BreakingChangeType;
     'DIRECTIVE_REPEATABLE_REMOVED';
   BreakingChangeType['DIRECTIVE_LOCATION_REMOVED'] =
     'DIRECTIVE_LOCATION_REMOVED';
-})(
-  (BreakingChangeType =
-    exports.BreakingChangeType || (exports.BreakingChangeType = {})),
-);
+})(BreakingChangeType || (BreakingChangeType = {}));
+exports.BreakingChangeType = BreakingChangeType;
 var DangerousChangeType;
 (function (DangerousChangeType) {
   DangerousChangeType['VALUE_ADDED_TO_ENUM'] = 'VALUE_ADDED_TO_ENUM';
@@ -50,10 +48,8 @@ var DangerousChangeType;
   DangerousChangeType['IMPLEMENTED_INTERFACE_ADDED'] =
     'IMPLEMENTED_INTERFACE_ADDED';
   DangerousChangeType['ARG_DEFAULT_VALUE_CHANGE'] = 'ARG_DEFAULT_VALUE_CHANGE';
-})(
-  (DangerousChangeType =
-    exports.DangerousChangeType || (exports.DangerousChangeType = {})),
-);
+})(DangerousChangeType || (DangerousChangeType = {}));
+exports.DangerousChangeType = DangerousChangeType;
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of breaking changes covered by the other functions down below.

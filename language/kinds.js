@@ -65,4 +65,5 @@ var Kind;
   Kind['UNION_TYPE_EXTENSION'] = 'UnionTypeExtension';
   Kind['ENUM_TYPE_EXTENSION'] = 'EnumTypeExtension';
   Kind['INPUT_OBJECT_TYPE_EXTENSION'] = 'InputObjectTypeExtension';
-})((Kind = exports.Kind || (exports.Kind = {})));
+})(Kind || (Kind = {}));
+exports.Kind = Kind;

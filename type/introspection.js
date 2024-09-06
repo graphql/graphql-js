@@ -475,7 +475,8 @@ var TypeKind;
   TypeKind['INPUT_OBJECT'] = 'INPUT_OBJECT';
   TypeKind['LIST'] = 'LIST';
   TypeKind['NON_NULL'] = 'NON_NULL';
-})((TypeKind = exports.TypeKind || (exports.TypeKind = {})));
+})(TypeKind || (TypeKind = {}));
+exports.TypeKind = TypeKind;
 exports.__TypeKind = new definition_js_1.GraphQLEnumType({
   name: '__TypeKind',
   description: 'An enum describing what kind of type a given `__Type` is.',

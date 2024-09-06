@@ -185,11 +185,12 @@ export interface OperationDefinitionNode {
   readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
   readonly selectionSet: SelectionSetNode;
 }
-export declare enum OperationTypeNode {
+declare enum OperationTypeNode {
   QUERY = 'query',
   MUTATION = 'mutation',
   SUBSCRIPTION = 'subscription',
 }
+export { OperationTypeNode };
 export interface VariableDefinitionNode {
   readonly kind: Kind.VARIABLE_DEFINITION;
   readonly loc?: Location | undefined;

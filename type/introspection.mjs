@@ -420,7 +420,7 @@ export const __EnumValue = new GraphQLObjectType({
     },
   }),
 });
-export var TypeKind;
+var TypeKind;
 (function (TypeKind) {
   TypeKind['SCALAR'] = 'SCALAR';
   TypeKind['OBJECT'] = 'OBJECT';
@@ -431,6 +431,7 @@ export var TypeKind;
   TypeKind['LIST'] = 'LIST';
   TypeKind['NON_NULL'] = 'NON_NULL';
 })(TypeKind || (TypeKind = {}));
+export { TypeKind };
 export const __TypeKind = new GraphQLEnumType({
   name: '__TypeKind',
   description: 'An enum describing what kind of type a given `__Type` is.',

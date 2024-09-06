@@ -2,6 +2,11 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 exports.instanceOf = void 0;
 const inspect_js_1 = require('./inspect.js');
+/* c8 ignore next 3 */
+const isProduction =
+  globalThis.process != null &&
+  // eslint-disable-next-line no-undef
+  process.env.NODE_ENV === 'production';
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
@@ -11,7 +16,7 @@ const inspect_js_1 = require('./inspect.js');
 exports.instanceOf =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
-  globalThis.process != null && globalThis.process.env.NODE_ENV === 'production'
+  isProduction
     ? function instanceOf(value, constructor) {
         return value instanceof constructor;
       }

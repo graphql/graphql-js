@@ -1,7 +1,7 @@
 /**
  * The set of allowed kind values for AST nodes.
  */
-export var Kind;
+var Kind;
 (function (Kind) {
   /** Name */
   Kind['NAME'] = 'Name';
@@ -63,3 +63,4 @@ export var Kind;
   Kind['ENUM_TYPE_EXTENSION'] = 'EnumTypeExtension';
   Kind['INPUT_OBJECT_TYPE_EXTENSION'] = 'InputObjectTypeExtension';
 })(Kind || (Kind = {}));
+export { Kind };
