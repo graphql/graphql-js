@@ -1515,6 +1515,20 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
+    it('when argument passed to a directive on a nested field', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a(value: true)
+        }
+        fragment a($value: Boolean!) on TestType {
+          nested { echo(input: "echo") @skip(if: $value) }
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: { nested: {} },
+      });
+    });
+
     it('when a nullable argument to a directive with a field default is not provided and shadowed by an operation variable', () => {
       // this test uses the @defer directive and incremental delivery because the `if` argument for skip/include have no field defaults
       const document = parse(
