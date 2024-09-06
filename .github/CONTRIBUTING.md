@@ -82,7 +82,7 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 
 ## Merge Process
 
-Once a pull request has been approved by 2 reviewers from [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team, we must wait 2 weeks before merging the pull request, this allows for other reviewers to give feedback without rushing any merges. Pull request can be merged by a member of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers-write) team.
+Once a pull request has been approved by 2 reviewers from [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team, it may be merged by any member of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers-write) team. For more complex pull requests, a larger cohort of reviewers is suggested. Any reviewer may request that the topic be brought for more in depth discussion at GraphQL JS Working Group meeting, where decisions will be made by consensus. A PR that has been merged without discussion at a GraphQL JS Working Group meeting may be reverted if a more in depth discussion is later requested.
 
 ## Release on NPM
 
