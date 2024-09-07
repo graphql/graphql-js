@@ -43,6 +43,7 @@ export type {
   SelectionNode,
   FieldNode,
   ArgumentNode,
+  FragmentArgumentNode /* for experimental fragment arguments */,
   ConstArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,

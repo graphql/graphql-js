@@ -145,6 +145,7 @@ export type ASTNode =
   | SelectionSetNode
   | FieldNode
   | ArgumentNode
+  | FragmentArgumentNode
   | FragmentSpreadNode
   | InlineFragmentNode
   | FragmentDefinitionNode
@@ -208,6 +209,7 @@ export const QueryDocumentKeys: {
   SelectionSet: ['selections'],
   Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
   Argument: ['name', 'value'],
+  FragmentArgument: ['name', 'value'],
 
   FragmentSpread: ['name', 'arguments', 'directives'],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
@@ -382,7 +384,7 @@ export interface FragmentSpreadNode {
   readonly kind: Kind.FRAGMENT_SPREAD;
   readonly loc?: Location;
   readonly name: NameNode;
-  readonly arguments?: ReadonlyArray<ArgumentNode>;
+  readonly arguments?: ReadonlyArray<FragmentArgumentNode>;
   readonly directives?: ReadonlyArray<DirectiveNode>;
 }
 
@@ -499,6 +501,13 @@ export interface ConstObjectFieldNode {
   readonly loc?: Location;
   readonly name: NameNode;
   readonly value: ConstValueNode;
+}
+
+export interface FragmentArgumentNode {
+  readonly kind: Kind.FRAGMENT_ARGUMENT;
+  readonly loc?: Location | undefined;
+  readonly name: NameNode;
+  readonly value: ValueNode;
 }
 
 /** Directives */

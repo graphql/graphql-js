@@ -51,9 +51,6 @@ export { PossibleFragmentSpreadsRule } from './rules/PossibleFragmentSpreadsRule
 // Spec Section: "Argument Optionality"
 export { ProvidedRequiredArgumentsRule } from './rules/ProvidedRequiredArgumentsRule';
 
-// Spec Section: "All Fragment Variables Used"
-export { NoUnusedFragmentVariablesRule } from './rules/NoUnusedFragmentVariablesRule';
-
 // Spec Section: "Leaf Field Selections"
 export { ScalarLeafsRule } from './rules/ScalarLeafsRule';
 

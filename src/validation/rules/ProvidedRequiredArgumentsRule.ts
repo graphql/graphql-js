@@ -16,6 +16,8 @@ import type { GraphQLArgument } from '../../type/definition';
 import { isRequiredArgument, isType } from '../../type/definition';
 import { specifiedDirectives } from '../../type/directives';
 
+import { typeFromAST } from '../../utilities/typeFromAST';
+
 import type {
   SDLValidationContext,
   ValidationContext,
@@ -40,7 +42,6 @@ export function ProvidedRequiredArgumentsRule(
         if (!fieldDef) {
           return false;
         }
-
         const providedArgs = new Set(
           // FIXME: https://github.com/graphql/graphql-js/issues/2203
           /* c8 ignore next */
@@ -60,10 +61,10 @@ export function ProvidedRequiredArgumentsRule(
       },
     },
     FragmentSpread: {
-      // Validate on leave to allow for directive errors to appear first.
+      // Validate on leave to allow for deeper errors to appear first.
       leave(spreadNode) {
-        const fragmentDef = context.getFragment(spreadNode.name.value);
-        if (!fragmentDef) {
+        const fragmentSignature = context.getFragmentSignature();
+        if (!fragmentSignature) {
           return false;
         }
 
@@ -72,18 +73,22 @@ export function ProvidedRequiredArgumentsRule(
           /* c8 ignore next */
           spreadNode.arguments?.map((arg) => arg.name.value),
         );
-        // FIXME: https://github.com/graphql/graphql-js/issues/2203
-        /* c8 ignore next */
-        for (const varDef of fragmentDef.variableDefinitions ?? []) {
+        for (const [varName, variableDefinition] of Object.entries(
+          fragmentSignature.variableDefinitions,
+        )) {
           if (
-            !providedArgs.has(varDef.variable.name.value) &&
-            isRequiredArgumentNode(varDef)
+            !providedArgs.has(varName) &&
+            isRequiredArgumentNode(variableDefinition)
           ) {
-            const argTypeStr = inspect(varDef.type);
+            const type = typeFromAST(
+              context.getSchema(),
+              variableDefinition.type,
+            );
+            const argTypeStr = inspect(type);
             context.reportError(
               new GraphQLError(
-                `Fragment "${spreadNode.name.value}" argument "${varDef.variable.name.value}" of type "${argTypeStr}" is required, but it was not provided.`,
-                { nodes: [spreadNode, varDef] },
+                `Fragment "${spreadNode.name.value}" argument "${varName}" of type "${argTypeStr}" is required, but it was not provided.`,
+                { nodes: spreadNode },
               ),
             );
           }

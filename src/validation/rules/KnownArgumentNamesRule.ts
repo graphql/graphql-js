@@ -26,6 +26,29 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
   return {
     // eslint-disable-next-line new-cap
     ...KnownArgumentNamesOnDirectivesRule(context),
+    FragmentArgument(argNode) {
+      const fragmentSignature = context.getFragmentSignature();
+      if (fragmentSignature) {
+        const varDef =
+          fragmentSignature.variableDefinitions[argNode.name.value];
+        if (!varDef) {
+          const argName = argNode.name.value;
+          const suggestions = suggestionList(
+            argName,
+            Array.from(
+              Object.values(fragmentSignature.variableDefinitions),
+            ).map((varSignature) => varSignature.variable.name.value),
+          );
+          context.reportError(
+            new GraphQLError(
+              `Unknown argument "${argName}" on fragment "${fragmentSignature.definition.name.value}".` +
+                didYouMean(suggestions),
+              { nodes: argNode },
+            ),
+          );
+        }
+      }
+    },
     Argument(argNode) {
       const argDef = context.getArgument();
       const fieldDef = context.getFieldDef();
@@ -33,8 +56,10 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
-        const knownArgsNames = fieldDef.args.map((arg) => arg.name);
-        const suggestions = suggestionList(argName, knownArgsNames);
+        const suggestions = suggestionList(
+          argName,
+          fieldDef.args.map((arg) => arg.name),
+        );
         context.reportError(
           new GraphQLError(
             `Unknown argument "${argName}" on field "${parentType.name}.${fieldDef.name}".` +

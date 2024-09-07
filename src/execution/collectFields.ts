@@ -17,13 +17,24 @@ import {
 } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 
+import type { GraphQLVariableSignature } from '../utilities/getVariableSignature';
 import { typeFromAST } from '../utilities/typeFromAST';
 
-import { getArgumentValuesFromSpread, getDirectiveValues } from './values';
+import { experimentalGetArgumentValues, getDirectiveValues } from './values';
+
+export interface FragmentVariables {
+  signatures: ObjMap<GraphQLVariableSignature>;
+  values: ObjMap<unknown>;
+}
 
 export interface FieldDetails {
   node: FieldNode;
-  fragmentVariableValues?: ObjMap<unknown> | undefined;
+  fragmentVariables?: FragmentVariables | undefined;
+}
+
+export interface FragmentDetails {
+  definition: FragmentDefinitionNode;
+  variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
 }
 
 /**
@@ -37,7 +48,7 @@ export interface FieldDetails {
  */
 export function collectFields(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
@@ -68,7 +79,7 @@ export function collectFields(
  */
 export function collectSubfields(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: { [variable: string]: unknown },
   returnType: GraphQLObjectType,
   fieldEntries: ReadonlyArray<FieldDetails>,
@@ -85,6 +96,7 @@ export function collectSubfields(
         entry.node.selectionSet,
         subFieldEntries,
         visitedFragmentNames,
+        entry.fragmentVariables,
       );
     }
   }
@@ -93,19 +105,18 @@ export function collectSubfields(
 
 function collectFieldsImpl(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
   fields: Map<string, Array<FieldDetails>>,
   visitedFragmentNames: Set<string>,
-  localVariableValues?: { [variable: string]: unknown },
+  fragmentVariables?: FragmentVariables,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
-        const vars = localVariableValues ?? variableValues;
-        if (!shouldIncludeNode(vars, selection)) {
+        if (!shouldIncludeNode(selection, variableValues, fragmentVariables)) {
           continue;
         }
         const name = getFieldEntryKey(selection);
@@ -113,13 +124,13 @@ function collectFieldsImpl(
         if (fieldList !== undefined) {
           fieldList.push({
             node: selection,
-            fragmentVariableValues: localVariableValues ?? undefined,
+            fragmentVariables,
           });
         } else {
           fields.set(name, [
             {
               node: selection,
-              fragmentVariableValues: localVariableValues ?? undefined,
+              fragmentVariables,
             },
           ]);
         }
@@ -127,7 +138,7 @@ function collectFieldsImpl(
       }
       case Kind.INLINE_FRAGMENT: {
         if (
-          !shouldIncludeNode(variableValues, selection) ||
+          !shouldIncludeNode(selection, variableValues, fragmentVariables) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
           continue;
@@ -140,6 +151,7 @@ function collectFieldsImpl(
           selection.selectionSet,
           fields,
           visitedFragmentNames,
+          fragmentVariables,
         );
         break;
       }
@@ -147,7 +159,7 @@ function collectFieldsImpl(
         const fragName = selection.name.value;
         if (
           visitedFragmentNames.has(fragName) ||
-          !shouldIncludeNode(variableValues, selection)
+          !shouldIncludeNode(selection, variableValues, fragmentVariables)
         ) {
           continue;
         }
@@ -155,39 +167,34 @@ function collectFieldsImpl(
         const fragment = fragments[fragName];
         if (
           !fragment ||
-          !doesFragmentConditionMatch(schema, fragment, runtimeType)
+          !doesFragmentConditionMatch(schema, fragment.definition, runtimeType)
         ) {
           continue;
         }
 
-        // We need to introduce a concept of shadowing:
-        //
-        // - when a fragment defines a variable that is in the parent scope but not given
-        //   in the fragment-spread we need to look at this variable as undefined and check
-        //   whether the definition has a defaultValue, if not remove it from the variableValues.
-        // - when a fragment does not define a variable we need to copy it over from the parent
-        //   scope as that variable can still get used in spreads later on in the selectionSet.
-        // - when a value is passed in through the fragment-spread we need to copy over the key-value
-        //   into our variable-values.
-        const fragmentVariableValues = fragment.variableDefinitions
-          ? getArgumentValuesFromSpread(
+        const fragmentVariableSignatures = fragment.variableSignatures;
+        let newFragmentVariables: FragmentVariables | undefined;
+        if (fragmentVariableSignatures) {
+          newFragmentVariables = {
+            signatures: fragmentVariableSignatures,
+            values: experimentalGetArgumentValues(
               selection,
-              schema,
-              fragment.variableDefinitions,
+              Object.values(fragmentVariableSignatures),
               variableValues,
-              localVariableValues,
-            )
-          : undefined;
+              fragmentVariables,
+            ),
+          };
+        }
 
         collectFieldsImpl(
           schema,
           fragments,
           variableValues,
           runtimeType,
-          fragment.selectionSet,
+          fragment.definition.selectionSet,
           fields,
           visitedFragmentNames,
-          fragmentVariableValues,
+          newFragmentVariables,
         );
         break;
       }
@@ -200,10 +207,16 @@ function collectFieldsImpl(
  * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
-  variableValues: { [variable: string]: unknown },
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
+  variableValues: { [variable: string]: unknown },
+  fragmentVariables: FragmentVariables | undefined,
 ): boolean {
-  const skip = getDirectiveValues(GraphQLSkipDirective, node, variableValues);
+  const skip = getDirectiveValues(
+    GraphQLSkipDirective,
+    node,
+    variableValues,
+    fragmentVariables,
+  );
   if (skip?.if === true) {
     return false;
   }
@@ -212,6 +225,7 @@ function shouldIncludeNode(
     GraphQLIncludeDirective,
     node,
     variableValues,
+    fragmentVariables,
   );
   if (include?.if === false) {
     return false;

@@ -27,15 +27,15 @@ import type {
 import type { GraphQLDirective } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 
-import type { TypeInfo } from '../utilities/TypeInfo';
-import { visitWithTypeInfo } from '../utilities/TypeInfo';
+import type { FragmentSignature } from '../utilities/TypeInfo';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 
 type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
   readonly defaultValue: Maybe<unknown>;
-  readonly fragmentVarDef: Maybe<VariableDefinitionNode>;
+  readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }
 
 /**
@@ -202,26 +202,42 @@ export class ValidationContext extends ASTValidationContext {
     let usages = this._variableUsages.get(node);
     if (!usages) {
       const newUsages: Array<VariableUsage> = [];
-      const typeInfo = this._typeInfo;
-      const fragmentVariableDefinitions =
-        node.kind === Kind.FRAGMENT_DEFINITION
-          ? node.variableDefinitions
-          : undefined;
+      const typeInfo = new TypeInfo(
+        this._schema,
+        undefined,
+        undefined,
+        this._typeInfo.getFragmentSignatureByName(),
+      );
+      const fragmentDefinition =
+        node.kind === Kind.FRAGMENT_DEFINITION ? node : undefined;
 
       visit(
         node,
         visitWithTypeInfo(typeInfo, {
           VariableDefinition: () => false,
           Variable(variable) {
-            const fragmentVarDef = fragmentVariableDefinitions?.find(
-              (varDef) => varDef.variable.name.value === variable.name.value,
-            );
-            newUsages.push({
-              node: variable,
-              type: typeInfo.getInputType(),
-              defaultValue: typeInfo.getDefaultValue(),
-              fragmentVarDef,
-            });
+            let fragmentVariableDefinition;
+            if (fragmentDefinition) {
+              const fragmentSignature = typeInfo.getFragmentSignatureByName()(
+                fragmentDefinition.name.value,
+              );
+
+              fragmentVariableDefinition =
+                fragmentSignature?.variableDefinitions[variable.name.value];
+              newUsages.push({
+                node: variable,
+                type: typeInfo.getInputType(),
+                defaultValue: undefined, // fragment variables have a variable default but no location default, which is what this default value represents
+                fragmentVariableDefinition,
+              });
+            } else {
+              newUsages.push({
+                node: variable,
+                type: typeInfo.getInputType(),
+                defaultValue: typeInfo.getDefaultValue(),
+                fragmentVariableDefinition: undefined,
+              });
+            }
           },
         }),
       );
@@ -243,20 +259,6 @@ export class ValidationContext extends ASTValidationContext {
       this._recursiveVariableUsages.set(operation, usages);
     }
     return usages;
-  }
-
-  getOperationVariableUsages(
-    operation: OperationDefinitionNode,
-  ): ReadonlyArray<VariableUsage> {
-    let usages = this._recursiveVariableUsages.get(operation);
-    if (!usages) {
-      usages = this.getVariableUsages(operation);
-      for (const frag of this.getRecursivelyReferencedFragments(operation)) {
-        usages = usages.concat(this.getVariableUsages(frag));
-      }
-      this._recursiveVariableUsages.set(operation, usages);
-    }
-    return usages.filter(({ fragmentVarDef }) => !fragmentVarDef);
   }
 
   getType(): Maybe<GraphQLOutputType> {
@@ -285,6 +287,16 @@ export class ValidationContext extends ASTValidationContext {
 
   getArgument(): Maybe<GraphQLArgument> {
     return this._typeInfo.getArgument();
+  }
+
+  getFragmentSignature(): Maybe<FragmentSignature> {
+    return this._typeInfo.getFragmentSignature();
+  }
+
+  getFragmentSignatureByName(): (
+    fragmentName: string,
+  ) => Maybe<FragmentSignature> {
+    return this._typeInfo.getFragmentSignatureByName();
   }
 
   getEnumValue(): Maybe<GraphQLEnumValue> {

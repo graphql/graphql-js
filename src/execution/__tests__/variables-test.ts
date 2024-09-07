@@ -1201,7 +1201,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.have.property('errors');
       expect(result.errors).to.have.length(1);
-      expect(result.errors?.[0]?.message).to.match(
+      expect(result.errors?.[0].message).to.match(
         /Argument "value" of required type "String!"/,
       );
     });
@@ -1269,7 +1269,7 @@ describe('Execute: Handles inputs', () => {
 
       expect(result).to.have.property('errors');
       expect(result.errors).to.have.length(1);
-      expect(result.errors?.[0]?.message).to.match(
+      expect(result.errors?.[0].message).to.match(
         /Argument "value" of non-null type "String!"/,
       );
     });
@@ -1303,6 +1303,22 @@ describe('Execute: Handles inputs', () => {
       expect(result).to.deep.equal({
         data: {
           fieldWithNullableStringInput: '"B"',
+        },
+      });
+    });
+
+    it('when a nullable argument without a field default is not provided and shadowed by an operation variable', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query($x: String = "A") {
+          ...a
+        }
+        fragment a($x: String) on TestType {
+          fieldWithNullableStringInput(input: $x)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithNullableStringInput: null,
         },
       });
     });
@@ -1411,6 +1427,27 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
+    it('when argument variables with the same name are used directly and recursively', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a(value: "A")
+        }
+        fragment a($value: String!) on TestType {
+          ...b(value: "B")
+          fieldInFragmentA: fieldWithNonNullableStringInput(input: $value)
+        }
+        fragment b($value: String!) on TestType {
+          fieldInFragmentB: fieldWithNonNullableStringInput(input: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {
+          fieldInFragmentA: '"A"',
+          fieldInFragmentB: '"B"',
+        },
+      });
+    });
+
     it('when argument passed in as list', () => {
       const result = executeQueryWithFragmentArguments(`
         query Q($opValue: String = "op") {
@@ -1431,6 +1468,34 @@ describe('Execute: Handles inputs', () => {
           bList: '[null, "op"]',
           cList: '[null]',
         },
+      });
+    });
+
+    it('when argument passed to a directive', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a(value: true)
+        }
+        fragment a($value: Boolean!) on TestType {
+          fieldWithNonNullableStringInput @skip(if: $value)
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: {},
+      });
+    });
+
+    it('when argument passed to a directive on a nested field', () => {
+      const result = executeQueryWithFragmentArguments(`
+        query {
+          ...a(value: true)
+        }
+        fragment a($value: Boolean!) on TestType {
+          nested { echo(input: "echo") @skip(if: $value) }
+        }
+      `);
+      expect(result).to.deep.equal({
+        data: { nested: {} },
       });
     });
   });

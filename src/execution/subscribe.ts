@@ -241,8 +241,8 @@ async function executeSubscription(
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
     const args = getArgumentValues(
+      fieldDef,
       fieldEntries[0].node,
-      fieldDef.args,
       variableValues,
     );
 

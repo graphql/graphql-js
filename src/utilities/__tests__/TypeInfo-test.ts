@@ -68,6 +68,9 @@ describe('TypeInfo', () => {
     expect(typeInfo.getDirective()).to.equal(null);
     expect(typeInfo.getArgument()).to.equal(null);
     expect(typeInfo.getEnumValue()).to.equal(null);
+    expect(typeInfo.getFragmentSignature()).to.equal(null);
+    expect(typeInfo.getFragmentSignatureByName()('')).to.equal(null);
+    expect(typeInfo.getFragmentArgument()).to.equal(null);
   });
 });
 
@@ -511,12 +514,12 @@ describe('visitWithTypeInfo', () => {
       ['enter', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
       ['enter', 'Name', 'Foo', 'QueryRoot', 'undefined'],
       ['leave', 'Name', 'Foo', 'QueryRoot', 'undefined'],
-      ['enter', 'Argument', null, 'QueryRoot', 'ID!'],
+      ['enter', 'FragmentArgument', null, 'QueryRoot', 'ID!'],
       ['enter', 'Name', 'x', 'QueryRoot', 'ID!'],
       ['leave', 'Name', 'x', 'QueryRoot', 'ID!'],
       ['enter', 'IntValue', null, 'QueryRoot', 'ID!'],
       ['leave', 'IntValue', null, 'QueryRoot', 'ID!'],
-      ['leave', 'Argument', null, 'QueryRoot', 'ID!'],
+      ['leave', 'FragmentArgument', null, 'QueryRoot', 'ID!'],
       ['leave', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
       ['leave', 'SelectionSet', null, 'QueryRoot', 'undefined'],
       ['leave', 'OperationDefinition', null, 'QueryRoot', 'undefined'],
@@ -617,12 +620,12 @@ describe('visitWithTypeInfo', () => {
       ['enter', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
       ['enter', 'Name', 'Foo', 'QueryRoot', 'undefined'],
       ['leave', 'Name', 'Foo', 'QueryRoot', 'undefined'],
-      ['enter', 'Argument', null, 'QueryRoot', 'ID'],
+      ['enter', 'FragmentArgument', null, 'QueryRoot', 'ID'],
       ['enter', 'Name', 'x', 'QueryRoot', 'ID'],
       ['leave', 'Name', 'x', 'QueryRoot', 'ID'],
       ['enter', 'NullValue', null, 'QueryRoot', 'ID'],
       ['leave', 'NullValue', null, 'QueryRoot', 'ID'],
-      ['leave', 'Argument', null, 'QueryRoot', 'ID'],
+      ['leave', 'FragmentArgument', null, 'QueryRoot', 'ID'],
       ['leave', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
       ['leave', 'SelectionSet', null, 'QueryRoot', 'undefined'],
       ['leave', 'OperationDefinition', null, 'QueryRoot', 'undefined'],

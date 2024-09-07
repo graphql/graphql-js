@@ -4,6 +4,7 @@ import { invariant } from '../jsutils/invariant';
 import { isIterableObject } from '../jsutils/isIterableObject';
 import { isObjectLike } from '../jsutils/isObjectLike';
 import { isPromise } from '../jsutils/isPromise';
+import { mapValue } from '../jsutils/mapValue';
 import type { Maybe } from '../jsutils/Maybe';
 import { memoize3 } from '../jsutils/memoize3';
 import type { ObjMap } from '../jsutils/ObjMap';
@@ -20,7 +21,6 @@ import { locatedError } from '../error/locatedError';
 import type {
   DocumentNode,
   FieldNode,
-  FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast';
 import { OperationTypeNode } from '../language/ast';
@@ -52,12 +52,14 @@ import {
 import type { GraphQLSchema } from '../type/schema';
 import { assertValidSchema } from '../type/validate';
 
-import type { FieldDetails } from './collectFields';
+import { getVariableSignature } from '../utilities/getVariableSignature';
+
+import type { FieldDetails, FragmentDetails } from './collectFields';
 import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields';
-import { getArgumentValues, getVariableValues } from './values';
+import { experimentalGetArgumentValues, getVariableValues } from './values';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -107,7 +109,7 @@ const collectSubfields = memoize3(
  */
 export interface ExecutionContext {
   schema: GraphQLSchema;
-  fragments: ObjMap<FragmentDefinitionNode>;
+  fragments: ObjMap<FragmentDetails>;
   rootValue: unknown;
   contextValue: unknown;
   operation: OperationDefinitionNode;
@@ -290,7 +292,7 @@ export function buildExecutionContext(
   } = args;
 
   let operation: OperationDefinitionNode | undefined;
-  const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
+  const fragments: ObjMap<FragmentDetails> = Object.create(null);
   for (const definition of document.definitions) {
     switch (definition.kind) {
       case Kind.OPERATION_DEFINITION:
@@ -307,9 +309,18 @@ export function buildExecutionContext(
           operation = definition;
         }
         break;
-      case Kind.FRAGMENT_DEFINITION:
-        fragments[definition.name.value] = definition;
+      case Kind.FRAGMENT_DEFINITION: {
+        let variableSignatures;
+        if (definition.variableDefinitions) {
+          variableSignatures = Object.create(null);
+          for (const varDef of definition.variableDefinitions) {
+            const signature = getVariableSignature(schema, varDef);
+            variableSignatures[signature.name] = signature;
+          }
+        }
+        fragments[definition.name.value] = { definition, variableSignatures };
         break;
+      }
       default:
       // ignore non-executable definitions
     }
@@ -519,11 +530,11 @@ function executeField(
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
     // TODO: find a way to memoize, in case this field is within a List type.
-    const args = getArgumentValues(
+    const args = experimentalGetArgumentValues(
       fieldEntries[0].node,
       fieldDef.args,
       exeContext.variableValues,
-      fieldEntries[0].fragmentVariableValues,
+      fieldEntries[0].fragmentVariables,
     );
 
     // The resolve function's optional third argument is a context value that
@@ -598,7 +609,10 @@ export function buildResolveInfo(
     parentType,
     path,
     schema: exeContext.schema,
-    fragments: exeContext.fragments,
+    fragments: mapValue(
+      exeContext.fragments,
+      (fragment) => fragment.definition,
+    ),
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
