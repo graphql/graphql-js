@@ -1991,7 +1991,9 @@ function createSourceEventStreamImpl(
   try {
     const eventStream = executeSubscription(exeContext);
     if (isPromise(eventStream)) {
-      return eventStream.then(undefined, (error: unknown) => ({ errors: [error as GraphQLError] }));
+      return eventStream.then(undefined, (error: unknown) => ({
+        errors: [error as GraphQLError],
+      }));
     }
 
     return eventStream;
@@ -2066,9 +2068,11 @@ function executeSubscription(
     const result = resolveFn(rootValue, args, contextValue, info);
 
     if (isPromise(result)) {
-      return result.then(assertEventStream).then(undefined, (error: unknown) => {
-        throw locatedError(error, fieldNodes, pathToArray(path));
-      });
+      return result
+        .then(assertEventStream)
+        .then(undefined, (error: unknown) => {
+          throw locatedError(error, fieldNodes, pathToArray(path));
+        });
     }
 
     return assertEventStream(result);
