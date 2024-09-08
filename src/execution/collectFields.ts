@@ -32,15 +32,10 @@ export interface DeferUsage {
   parentDeferUsage: DeferUsage | undefined;
 }
 
-export interface FragmentVariables {
-  signatures: ObjMap<GraphQLVariableSignature>;
-  values: ObjMap<unknown>;
-}
-
 export interface FieldDetails {
   node: FieldNode;
   deferUsage?: DeferUsage | undefined;
-  fragmentVariables?: FragmentVariables | undefined;
+  fragmentVariableValues?: { [variable: string]: unknown } | undefined;
 }
 
 export type FieldGroup = ReadonlyArray<FieldDetails>;
@@ -136,14 +131,14 @@ export function collectSubfields(
   for (const fieldDetail of fieldGroup) {
     const selectionSet = fieldDetail.node.selectionSet;
     if (selectionSet) {
-      const { deferUsage, fragmentVariables } = fieldDetail;
+      const { deferUsage, fragmentVariableValues } = fieldDetail;
       collectFieldsImpl(
         context,
         selectionSet,
         subGroupedFieldSet,
         newDeferUsages,
         deferUsage,
-        fragmentVariables,
+        fragmentVariableValues,
       );
     }
   }
@@ -161,7 +156,7 @@ function collectFieldsImpl(
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   newDeferUsages: Array<DeferUsage>,
   deferUsage?: DeferUsage,
-  fragmentVariables?: FragmentVariables,
+  fragmentVariableValues?: { [variable: string]: unknown },
 ): void {
   const {
     schema,
@@ -172,22 +167,24 @@ function collectFieldsImpl(
     visitedFragmentNames,
   } = context;
 
+  const scopedVariableValues = fragmentVariableValues ?? variableValues;
+
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
-        if (!shouldIncludeNode(selection, variableValues, fragmentVariables)) {
+        if (!shouldIncludeNode(scopedVariableValues, selection)) {
           continue;
         }
         groupedFieldSet.add(getFieldEntryKey(selection), {
           node: selection,
           deferUsage,
-          fragmentVariables,
+          fragmentVariableValues,
         });
         break;
       }
       case Kind.INLINE_FRAGMENT: {
         if (
-          !shouldIncludeNode(selection, variableValues, fragmentVariables) ||
+          !shouldIncludeNode(scopedVariableValues, selection) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
           continue;
@@ -195,8 +192,7 @@ function collectFieldsImpl(
 
         const newDeferUsage = getDeferUsage(
           operation,
-          variableValues,
-          fragmentVariables,
+          scopedVariableValues,
           selection,
           deferUsage,
         );
@@ -208,7 +204,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
-            fragmentVariables,
+            fragmentVariableValues,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
@@ -218,7 +214,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
-            fragmentVariables,
+            fragmentVariableValues,
           );
         }
 
@@ -229,8 +225,7 @@ function collectFieldsImpl(
 
         const newDeferUsage = getDeferUsage(
           operation,
-          variableValues,
-          fragmentVariables,
+          scopedVariableValues,
           selection,
           deferUsage,
         );
@@ -238,7 +233,7 @@ function collectFieldsImpl(
         if (
           !newDeferUsage &&
           (visitedFragmentNames.has(fragName) ||
-            !shouldIncludeNode(selection, variableValues, fragmentVariables))
+            !shouldIncludeNode(scopedVariableValues, selection))
         ) {
           continue;
         }
@@ -252,17 +247,20 @@ function collectFieldsImpl(
         }
 
         const fragmentVariableSignatures = fragment.variableSignatures;
-        let newFragmentVariables: FragmentVariables | undefined;
+        let newFragmentVariableValues:
+          | { [variable: string]: unknown }
+          | undefined;
         if (fragmentVariableSignatures) {
-          newFragmentVariables = {
-            signatures: fragmentVariableSignatures,
-            values: experimentalGetArgumentValues(
-              selection,
-              Object.values(fragmentVariableSignatures),
-              variableValues,
-              fragmentVariables,
-            ),
-          };
+          newFragmentVariableValues = experimentalGetArgumentValues(
+            selection,
+            Object.values(fragmentVariableSignatures),
+            scopedVariableValues,
+          );
+          for (const [variableName, value] of Object.entries(variableValues)) {
+            if (!fragment.variableSignatures?.[variableName]) {
+              newFragmentVariableValues[variableName] = value;
+            }
+          }
         }
 
         if (!newDeferUsage) {
@@ -273,7 +271,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
-            newFragmentVariables,
+            newFragmentVariableValues,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
@@ -283,7 +281,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
-            newFragmentVariables,
+            newFragmentVariableValues,
           );
         }
         break;
@@ -300,16 +298,10 @@ function collectFieldsImpl(
 function getDeferUsage(
   operation: OperationDefinitionNode,
   variableValues: { [variable: string]: unknown },
-  fragmentVariables: FragmentVariables | undefined,
   node: FragmentSpreadNode | InlineFragmentNode,
   parentDeferUsage: DeferUsage | undefined,
 ): DeferUsage | undefined {
-  const defer = getDirectiveValues(
-    GraphQLDeferDirective,
-    node,
-    variableValues,
-    fragmentVariables,
-  );
+  const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues);
 
   if (!defer) {
     return;
@@ -335,16 +327,10 @@ function getDeferUsage(
  * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
-  node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
   variableValues: { [variable: string]: unknown },
-  fragmentVariables: FragmentVariables | undefined,
+  node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
 ): boolean {
-  const skip = getDirectiveValues(
-    GraphQLSkipDirective,
-    node,
-    variableValues,
-    fragmentVariables,
-  );
+  const skip = getDirectiveValues(GraphQLSkipDirective, node, variableValues);
   if (skip?.if === true) {
     return false;
   }
@@ -353,7 +339,6 @@ function shouldIncludeNode(
     GraphQLIncludeDirective,
     node,
     variableValues,
-    fragmentVariables,
   );
   if (include?.if === false) {
     return false;

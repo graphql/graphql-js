@@ -22,7 +22,6 @@ import type { GraphQLSchema } from '../type/schema.js';
 import { coerceInputValue } from '../utilities/coerceInputValue.js';
 import { valueFromAST } from '../utilities/valueFromAST.js';
 
-import type { FragmentVariables } from './collectFields.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
 import { getVariableSignature } from './getVariableSignature.js';
 
@@ -156,7 +155,6 @@ export function experimentalGetArgumentValues(
   node: FieldNode | DirectiveNode | FragmentSpreadNode,
   argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
   variableValues: Maybe<ObjMap<unknown>>,
-  fragmentVariables?: Maybe<FragmentVariables>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
 
@@ -188,12 +186,9 @@ export function experimentalGetArgumentValues(
 
     if (valueNode.kind === Kind.VARIABLE) {
       const variableName = valueNode.name.value;
-      const scopedVariableValues = fragmentVariables?.signatures[variableName]
-        ? fragmentVariables.values
-        : variableValues;
       if (
-        scopedVariableValues == null ||
-        !Object.hasOwn(scopedVariableValues, variableName)
+        variableValues == null ||
+        !Object.hasOwn(variableValues, variableName)
       ) {
         if (argDef.defaultValue !== undefined) {
           coercedValues[name] = argDef.defaultValue;
@@ -206,7 +201,7 @@ export function experimentalGetArgumentValues(
         }
         continue;
       }
-      isNull = scopedVariableValues[variableName] == null;
+      isNull = variableValues[variableName] == null;
     }
 
     if (isNull && isNonNullType(argType)) {
@@ -217,12 +212,7 @@ export function experimentalGetArgumentValues(
       );
     }
 
-    const coercedValue = valueFromAST(
-      valueNode,
-      argType,
-      variableValues,
-      fragmentVariables?.values,
-    );
+    const coercedValue = valueFromAST(valueNode, argType, variableValues);
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
       // execution. This is a runtime check to ensure execution does not
@@ -254,7 +244,6 @@ export function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: { readonly directives?: ReadonlyArray<DirectiveNode> | undefined },
   variableValues?: Maybe<ObjMap<unknown>>,
-  fragmentVariables?: Maybe<FragmentVariables>,
 ): undefined | { [argument: string]: unknown } {
   const directiveNode = node.directives?.find(
     (directive) => directive.name.value === directiveDef.name,
@@ -265,7 +254,6 @@ export function getDirectiveValues(
       directiveNode,
       directiveDef.args,
       variableValues,
-      fragmentVariables,
     );
   }
 }
