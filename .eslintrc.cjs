@@ -431,7 +431,7 @@ module.exports = {
         'tsdoc/syntax': 'error',
 
         //////////////////////////////////////////////////////////////////////////
-        // `@typescript-eslint/eslint-plugin` rule list based on `v5.5.x`
+        // `@typescript-eslint/eslint-plugin` rule list based on `v8.4.x`
         //////////////////////////////////////////////////////////////////////////
 
         // Supported Rules
@@ -472,6 +472,7 @@ module.exports = {
         '@typescript-eslint/no-base-to-string': 'error',
         '@typescript-eslint/no-confusing-non-null-assertion': 'error',
         '@typescript-eslint/no-confusing-void-expression': 'off', // TODO: enable with ignoreArrowShorthand
+        '@typescript-eslint/no-deprecated': 'off',
         '@typescript-eslint/no-dupe-class-members': 'error',
         '@typescript-eslint/no-duplicate-enum-values': 'error',
         '@typescript-eslint/no-duplicate-type-constituents': 'error',
