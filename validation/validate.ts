@@ -38,8 +38,6 @@ export function validate(
   options?: {
     maxErrors?: number;
   },
-  /** @deprecated will be removed in 17.0.0 */
-  typeInfo: TypeInfo = new TypeInfo(schema),
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
   // If the schema used for validation is invalid, throw an error.
@@ -48,6 +46,7 @@ export function validate(
     'Too many validation errors, error limit reached. Validation aborted.',
   );
   const errors: Array<GraphQLError> = [];
+  const typeInfo = new TypeInfo(schema);
   const context = new ValidationContext(
     schema,
     documentAST,
