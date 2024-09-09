@@ -62,11 +62,11 @@ export function OverlappingFieldsCanBeMergedRule(
   // A memoization for when fields and a fragment or two fragments are compared
   // "between" each other for conflicts. Comparisons made be made many times,
   // so memoizing this can dramatically improve the performance of this validator.
-  const comparedFieldsAndFragmentPairs = new PairSet<
+  const comparedFieldsAndFragmentPairs = new OrderedPairSet<
     NodeAndDefCollection,
     string
-  >((a, _) => typeof a === 'string');
-  const comparedFragmentPairs = new PairSet<string, string>((a, b) => a < b);
+  >();
+  const comparedFragmentPairs = new PairSet<string>((a, b) => a < b);
 
   // A cache for the "field map" and list of fragment names found in any given
   // selection set. Selection sets may be asked for this information multiple
@@ -173,8 +173,8 @@ type FieldsAndFragmentNames = readonly [NodeAndDefCollection, FragmentNames];
 function findConflictsWithinSelectionSet(
   context: ValidationContext,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFieldsAndFragmentPairs: PairSet<NodeAndDefCollection, string>,
-  comparedFragmentPairs: PairSet<string, string>,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
 ): Array<Conflict> {
@@ -239,8 +239,8 @@ function collectConflictsBetweenFieldsAndFragment(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFieldsAndFragmentPairs: PairSet<NodeAndDefCollection, string>,
-  comparedFragmentPairs: PairSet<string, string>,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
   fragmentName: string,
@@ -314,8 +314,8 @@ function collectConflictsBetweenFragments(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFieldsAndFragmentPairs: PairSet<NodeAndDefCollection, string>,
-  comparedFragmentPairs: PairSet<string, string>,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   areMutuallyExclusive: boolean,
   fragmentName1: string,
   fragmentName2: string,
@@ -406,8 +406,8 @@ function collectConflictsBetweenFragments(
 function findConflictsBetweenSubSelectionSets(
   context: ValidationContext,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFieldsAndFragmentPairs: PairSet<NodeAndDefCollection, string>,
-  comparedFragmentPairs: PairSet<string, string>,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   areMutuallyExclusive: boolean,
   parentType1: Maybe<GraphQLNamedType>,
   selectionSet1: SelectionSetNode,
@@ -496,8 +496,8 @@ function collectConflictsWithin(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFieldsAndFragmentPairs: PairSet<NodeAndDefCollection, string>,
-  comparedFragmentPairs: PairSet<string, string>,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   fieldMap: NodeAndDefCollection,
 ): void {
   // A field map is a keyed collection, where each key represents a response
@@ -539,8 +539,8 @@ function collectConflictsBetween(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFieldsAndFragmentPairs: PairSet<NodeAndDefCollection, string>,
-  comparedFragmentPairs: PairSet<string, string>,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   parentFieldsAreMutuallyExclusive: boolean,
   fieldMap1: NodeAndDefCollection,
   fieldMap2: NodeAndDefCollection,
@@ -579,8 +579,8 @@ function collectConflictsBetween(
 function findConflict(
   context: ValidationContext,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFieldsAndFragmentPairs: PairSet<NodeAndDefCollection, string>,
-  comparedFragmentPairs: PairSet<string, string>,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
   field1: NodeAndDef,
@@ -841,44 +841,62 @@ function subfieldConflicts(
 }
 
 /**
- * A way to keep track of pairs of things when the ordering of the pair does not matter.
+ * A way to keep track of pairs of things where the ordering of the pair
+ * matters.
+ *
+ * Provides a third argument for has/set to allow flagging the pair as
+ * weakly or strongly present within the collection.
  */
-class PairSet<T, U> {
-  _data: Map<T | U, Map<T | U, boolean>>;
-  _orderer: (a: T | U, b: T | U) => [T | U, T | U];
+class OrderedPairSet<T, U> {
+  _data: Map<T, Map<U, boolean>>;
 
-  constructor(comparator: (a: T | U, b: T | U) => boolean) {
+  constructor() {
     this._data = new Map();
-    this._orderer = (a: T | U, b: T | U) =>
-      comparator(a, b) ? [a, b] : [b, a];
   }
 
-  has(a: T, b: U, areMutuallyExclusive: boolean): boolean;
-  has(a: U, b: T, areMutuallyExclusive: boolean): boolean;
-  has(a: T | U, b: T | U, areMutuallyExclusive: boolean): boolean {
-    const [key1, key2] = this._orderer(a, b);
-
-    const result = this._data.get(key1)?.get(key2);
+  has(a: T, b: U, weaklyPresent: boolean): boolean {
+    const result = this._data.get(a)?.get(b);
     if (result === undefined) {
       return false;
     }
 
-    // areMutuallyExclusive being false is a superset of being true, hence if
-    // we want to know if this PairSet "has" these two with no exclusivity,
-    // we have to ensure it was added as such.
-    return areMutuallyExclusive ? true : areMutuallyExclusive === result;
+    return weaklyPresent ? true : weaklyPresent === result;
   }
 
-  add(a: T, b: U, areMutuallyExclusive: boolean): void;
-  add(a: U, b: T, areMutuallyExclusive: boolean): void;
-  add(a: T | U, b: T | U, areMutuallyExclusive: boolean): void {
-    const [key1, key2] = this._orderer(a, b);
-
-    const map = this._data.get(key1);
+  add(a: T, b: U, weaklyPresent: boolean): void {
+    const map = this._data.get(a);
     if (map === undefined) {
-      this._data.set(key1, new Map([[key2, areMutuallyExclusive]]));
+      this._data.set(a, new Map([[b, weaklyPresent]]));
     } else {
-      map.set(key2, areMutuallyExclusive);
+      map.set(b, weaklyPresent);
+    }
+  }
+}
+
+/**
+ * A way to keep track of pairs of similar things when the ordering of the pair
+ * does not matter.
+ */
+class PairSet<T> {
+  _orderedPairSet: OrderedPairSet<T, T>;
+  _comparator: (a: T, b: T) => boolean;
+
+  constructor(comparator: (a: T, b: T) => boolean) {
+    this._orderedPairSet = new OrderedPairSet();
+    this._comparator = comparator;
+  }
+
+  has(a: T, b: T, weaklyPresent: boolean): boolean {
+    return this._comparator(a, b)
+      ? this._orderedPairSet.has(a, b, weaklyPresent)
+      : this._orderedPairSet.has(b, a, weaklyPresent);
+  }
+
+  add(a: T, b: T, weaklyPresent: boolean): void {
+    if (this._comparator(a, b)) {
+      this._orderedPairSet.add(a, b, weaklyPresent);
+    } else {
+      this._orderedPairSet.add(b, a, weaklyPresent);
     }
   }
 }
