@@ -17,9 +17,7 @@ class TypeInfo {
      * Initial type may be provided in rare cases to facilitate traversals
      *  beginning somewhere other than documents.
      */
-    initialType, 
-    /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn, fragmentSignatures) {
+    initialType, fragmentSignatures) {
         this._schema = schema;
         this._typeStack = [];
         this._parentTypeStack = [];
@@ -32,7 +30,6 @@ class TypeInfo {
         this._fragmentSignaturesByName = fragmentSignatures ?? (() => null);
         this._fragmentSignature = null;
         this._fragmentArgument = null;
-        this._getFieldDef = getFieldDefFn ?? getFieldDef;
         if (initialType) {
             if ((0, definition_js_1.isInputType)(initialType)) {
                 this._inputTypeStack.push(initialType);
@@ -106,7 +103,7 @@ class TypeInfo {
                 let fieldDef;
                 let fieldType;
                 if (parentType) {
-                    fieldDef = this._getFieldDef(schema, parentType, node);
+                    fieldDef = schema.getField(parentType, node.name.value);
                     if (fieldDef) {
                         fieldType = fieldDef.type;
                     }
@@ -255,9 +252,6 @@ class TypeInfo {
     }
 }
 exports.TypeInfo = TypeInfo;
-function getFieldDef(schema, parentType, fieldNode) {
-    return schema.getField(parentType, fieldNode.name.value);
-}
 function getFragmentSignatures(document) {
     const fragmentSignatures = new Map();
     for (const definition of document.definitions) {

@@ -114,7 +114,7 @@ export class ValidationContext extends ASTValidationContext {
         let usages = this._variableUsages.get(node);
         if (!usages) {
             const newUsages = [];
-            const typeInfo = new TypeInfo(this._schema, undefined, undefined, this._typeInfo.getFragmentSignatureByName());
+            const typeInfo = new TypeInfo(this._schema, undefined, this._typeInfo.getFragmentSignatureByName());
             const fragmentDefinition = node.kind === Kind.FRAGMENT_DEFINITION ? node : undefined;
             visit(node, visitWithTypeInfo(typeInfo, {
                 VariableDefinition: () => false,

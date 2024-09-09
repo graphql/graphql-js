@@ -1,5 +1,5 @@
 import type { Maybe } from '../jsutils/Maybe.js';
-import type { ASTNode, FieldNode, FragmentDefinitionNode, VariableDefinitionNode } from '../language/ast.js';
+import type { ASTNode, FragmentDefinitionNode, VariableDefinitionNode } from '../language/ast.js';
 import type { ASTVisitor } from '../language/visitor.js';
 import type { GraphQLArgument, GraphQLCompositeType, GraphQLEnumValue, GraphQLField, GraphQLInputType, GraphQLOutputType, GraphQLType } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
@@ -26,15 +26,12 @@ export declare class TypeInfo {
     private _fragmentSignaturesByName;
     private _fragmentSignature;
     private _fragmentArgument;
-    private _getFieldDef;
     constructor(schema: GraphQLSchema, 
     /**
      * Initial type may be provided in rare cases to facilitate traversals
      *  beginning somewhere other than documents.
      */
-    initialType?: Maybe<GraphQLType>, 
-    /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn?: Maybe<GetFieldDefFn>, fragmentSignatures?: Maybe<(fragmentName: string) => Maybe<FragmentSignature>>);
+    initialType?: Maybe<GraphQLType>, fragmentSignatures?: Maybe<(fragmentName: string) => Maybe<FragmentSignature>>);
     get [Symbol.toStringTag](): string;
     getType(): Maybe<GraphQLOutputType>;
     getParentType(): Maybe<GraphQLCompositeType>;
@@ -51,10 +48,8 @@ export declare class TypeInfo {
     enter(node: ASTNode): void;
     leave(node: ASTNode): void;
 }
-type GetFieldDefFn = (schema: GraphQLSchema, parentType: GraphQLCompositeType, fieldNode: FieldNode) => Maybe<GraphQLField<unknown, unknown>>;
 /**
  * Creates a new visitor instance which maintains a provided TypeInfo instance
  * along with visiting visitor.
  */
 export declare function visitWithTypeInfo(typeInfo: TypeInfo, visitor: ASTVisitor): ASTVisitor;
-export {};
