@@ -53,35 +53,6 @@ describe('Validate: Supports full validation', () => {
     ]);
   });
 
-  it('Deprecated: validates using a custom TypeInfo', () => {
-    // This TypeInfo will never return a valid field.
-    const typeInfo = new TypeInfo(testSchema, null, () => null);
-
-    const doc = parse(`
-      query {
-        human {
-          pets {
-            ... on Cat {
-              meowsVolume
-            }
-            ... on Dog {
-              barkVolume
-            }
-          }
-        }
-      }
-    `);
-
-    const errors = validate(testSchema, doc, undefined, undefined, typeInfo);
-    const errorMessages = errors.map((error) => error.message);
-
-    expect(errorMessages).to.deep.equal([
-      'Cannot query field "human" on type "QueryRoot". Did you mean "human"?',
-      'Cannot query field "meowsVolume" on type "Cat". Did you mean "meowsVolume"?',
-      'Cannot query field "barkVolume" on type "Dog". Did you mean "barkVolume"?',
-    ]);
-  });
-
   it('validates using a custom rule', () => {
     const schema = buildSchema(`
       directive @custom(arg: String) on FIELD

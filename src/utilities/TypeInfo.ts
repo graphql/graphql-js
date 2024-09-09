@@ -3,7 +3,6 @@ import type { Maybe } from '../jsutils/Maybe.js';
 import type {
   ASTNode,
   DocumentNode,
-  FieldNode,
   FragmentDefinitionNode,
   VariableDefinitionNode,
 } from '../language/ast.js';
@@ -64,7 +63,6 @@ export class TypeInfo {
 
   private _fragmentSignature: Maybe<FragmentSignature>;
   private _fragmentArgument: Maybe<VariableDefinitionNode>;
-  private _getFieldDef: GetFieldDefFn;
 
   constructor(
     schema: GraphQLSchema,
@@ -73,9 +71,6 @@ export class TypeInfo {
      *  beginning somewhere other than documents.
      */
     initialType?: Maybe<GraphQLType>,
-
-    /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn?: Maybe<GetFieldDefFn>,
     fragmentSignatures?: Maybe<
       (fragmentName: string) => Maybe<FragmentSignature>
     >,
@@ -92,7 +87,6 @@ export class TypeInfo {
     this._fragmentSignaturesByName = fragmentSignatures ?? (() => null);
     this._fragmentSignature = null;
     this._fragmentArgument = null;
-    this._getFieldDef = getFieldDefFn ?? getFieldDef;
     if (initialType) {
       if (isInputType(initialType)) {
         this._inputTypeStack.push(initialType);
@@ -185,7 +179,7 @@ export class TypeInfo {
         let fieldDef;
         let fieldType: unknown;
         if (parentType) {
-          fieldDef = this._getFieldDef(schema, parentType, node);
+          fieldDef = schema.getField(parentType, node.name.value);
           if (fieldDef) {
             fieldType = fieldDef.type;
           }
@@ -346,20 +340,6 @@ export class TypeInfo {
       // Ignore other nodes
     }
   }
-}
-
-type GetFieldDefFn = (
-  schema: GraphQLSchema,
-  parentType: GraphQLCompositeType,
-  fieldNode: FieldNode,
-) => Maybe<GraphQLField<unknown, unknown>>;
-
-function getFieldDef(
-  schema: GraphQLSchema,
-  parentType: GraphQLCompositeType,
-  fieldNode: FieldNode,
-) {
-  return schema.getField(parentType, fieldNode.name.value);
 }
 
 function getFragmentSignatures(
