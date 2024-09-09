@@ -380,6 +380,7 @@ function getScopedVariableValues(
       scopedVariableValues[variableName] = value;
     }
   }
+  return scopedVariableValues;
 }
 
 /**
