@@ -27,14 +27,13 @@ const ValidationContext_js_1 = require("./ValidationContext.js");
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-function validate(schema, documentAST, rules = specifiedRules_js_1.specifiedRules, options, 
-/** @deprecated will be removed in 17.0.0 */
-typeInfo = new TypeInfo_js_1.TypeInfo(schema)) {
+function validate(schema, documentAST, rules = specifiedRules_js_1.specifiedRules, options) {
     const maxErrors = options?.maxErrors ?? 100;
     // If the schema used for validation is invalid, throw an error.
     (0, validate_js_1.assertValidSchema)(schema);
     const abortError = new GraphQLError_js_1.GraphQLError('Too many validation errors, error limit reached. Validation aborted.');
     const errors = [];
+    const typeInfo = new TypeInfo_js_1.TypeInfo(schema);
     const context = new ValidationContext_js_1.ValidationContext(schema, documentAST, typeInfo, (error) => {
         if (errors.length >= maxErrors) {
             throw abortError;

@@ -2,7 +2,6 @@ import type { Maybe } from '../jsutils/Maybe.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import type { DocumentNode } from '../language/ast.js';
 import type { GraphQLSchema } from '../type/schema.js';
-import { TypeInfo } from '../utilities/TypeInfo.js';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
 /**
  * Implements the "Validation" section of the spec.
@@ -26,9 +25,7 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
  */
 export declare function validate(schema: GraphQLSchema, documentAST: DocumentNode, rules?: ReadonlyArray<ValidationRule>, options?: {
     maxErrors?: number;
-}, 
-/** @deprecated will be removed in 17.0.0 */
-typeInfo?: TypeInfo): ReadonlyArray<GraphQLError>;
+}): ReadonlyArray<GraphQLError>;
 /**
  * @internal
  */
