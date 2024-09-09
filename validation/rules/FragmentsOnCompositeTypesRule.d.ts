@@ -9,6 +9,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Fragments-On-Composite-Types
  */
-export declare function FragmentsOnCompositeTypesRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function FragmentsOnCompositeTypesRule(context: ValidationContext): ASTVisitor;

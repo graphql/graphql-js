@@ -10,6 +10,4 @@ import type { ValidationContext } from '../../ValidationContext.js';
  * GraphQL Specification. This rule effectively disables introspection, which
  * does not reflect best practices and should only be done if absolutely necessary.
  */
-export declare function NoSchemaIntrospectionCustomRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function NoSchemaIntrospectionCustomRule(context: ValidationContext): ASTVisitor;

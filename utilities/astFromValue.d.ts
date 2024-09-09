@@ -22,7 +22,4 @@ import type { GraphQLInputType } from '../type/definition.js';
  * | null          | NullValue            |
  *
  */
-export declare function astFromValue(
-  value: unknown,
-  type: GraphQLInputType,
-): Maybe<ConstValueNode>;
+export declare function astFromValue(value: unknown, type: GraphQLInputType): Maybe<ConstValueNode>;

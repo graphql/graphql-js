@@ -5,6 +5,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * A GraphQL document is only valid if defer directives are not used on root mutation or subscription types.
  */
-export declare function DeferStreamDirectiveOnValidOperationsRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function DeferStreamDirectiveOnValidOperationsRule(context: ValidationContext): ASTVisitor;

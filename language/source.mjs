@@ -1,5 +1,5 @@
-import { devAssert } from '../jsutils/devAssert.mjs';
-import { instanceOf } from '../jsutils/instanceOf.mjs';
+import { devAssert } from "../jsutils/devAssert.mjs";
+import { instanceOf } from "../jsutils/instanceOf.mjs";
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
  * optional, but they are useful for clients who store GraphQL documents in source files.
@@ -8,28 +8,16 @@ import { instanceOf } from '../jsutils/instanceOf.mjs';
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 export class Source {
-  constructor(
-    body,
-    name = 'GraphQL request',
-    locationOffset = { line: 1, column: 1 },
-  ) {
-    this.body = body;
-    this.name = name;
-    this.locationOffset = locationOffset;
-    this.locationOffset.line > 0 ||
-      devAssert(
-        false,
-        'line in locationOffset is 1-indexed and must be positive.',
-      );
-    this.locationOffset.column > 0 ||
-      devAssert(
-        false,
-        'column in locationOffset is 1-indexed and must be positive.',
-      );
-  }
-  get [Symbol.toStringTag]() {
-    return 'Source';
-  }
+    constructor(body, name = 'GraphQL request', locationOffset = { line: 1, column: 1 }) {
+        this.body = body;
+        this.name = name;
+        this.locationOffset = locationOffset;
+        (this.locationOffset.line > 0) || devAssert(false, 'line in locationOffset is 1-indexed and must be positive.');
+        (this.locationOffset.column > 0) || devAssert(false, 'column in locationOffset is 1-indexed and must be positive.');
+    }
+    get [Symbol.toStringTag]() {
+        return 'Source';
+    }
 }
 /**
  * Test if the given value is a Source object.
@@ -37,5 +25,5 @@ export class Source {
  * @internal
  */
 export function isSource(source) {
-  return instanceOf(source, Source);
+    return instanceOf(source, Source);
 }

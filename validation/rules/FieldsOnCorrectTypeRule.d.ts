@@ -8,6 +8,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selections
  */
-export declare function FieldsOnCorrectTypeRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function FieldsOnCorrectTypeRule(context: ValidationContext): ASTVisitor;

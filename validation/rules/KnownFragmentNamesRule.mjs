@@ -1,4 +1,4 @@
-import { GraphQLError } from '../../error/GraphQLError.mjs';
+import { GraphQLError } from "../../error/GraphQLError.mjs";
 /**
  * Known fragment names
  *
@@ -8,17 +8,15 @@ import { GraphQLError } from '../../error/GraphQLError.mjs';
  * See https://spec.graphql.org/draft/#sec-Fragment-spread-target-defined
  */
 export function KnownFragmentNamesRule(context) {
-  return {
-    FragmentSpread(node) {
-      const fragmentName = node.name.value;
-      const fragment = context.getFragment(fragmentName);
-      if (!fragment) {
-        context.reportError(
-          new GraphQLError(`Unknown fragment "${fragmentName}".`, {
-            nodes: node.name,
-          }),
-        );
-      }
-    },
-  };
+    return {
+        FragmentSpread(node) {
+            const fragmentName = node.name.value;
+            const fragment = context.getFragment(fragmentName);
+            if (!fragment) {
+                context.reportError(new GraphQLError(`Unknown fragment "${fragmentName}".`, {
+                    nodes: node.name,
+                }));
+            }
+        },
+    };
 }

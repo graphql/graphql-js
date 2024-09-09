@@ -8,11 +8,8 @@ import type { GraphQLInputType, GraphQLSchema } from '../type/index.js';
  * getArgumentValues() can be reused for fragment arguments.
  * */
 export interface GraphQLVariableSignature {
-  name: string;
-  type: GraphQLInputType;
-  defaultValue: unknown;
+    name: string;
+    type: GraphQLInputType;
+    defaultValue: unknown;
 }
-export declare function getVariableSignature(
-  schema: GraphQLSchema,
-  varDefNode: VariableDefinitionNode,
-): GraphQLVariableSignature | GraphQLError;
+export declare function getVariableSignature(schema: GraphQLSchema, varDefNode: VariableDefinitionNode): GraphQLVariableSignature | GraphQLError;

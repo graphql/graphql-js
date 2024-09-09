@@ -8,6 +8,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Lone-Anonymous-Operation
  */
-export declare function LoneAnonymousOperationRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function LoneAnonymousOperationRule(context: ASTValidationContext): ASTVisitor;

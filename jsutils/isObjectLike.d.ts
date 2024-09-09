@@ -3,5 +3,5 @@
  * `null` and has a `typeof` result of "object".
  */
 export declare function isObjectLike(value: unknown): value is {
-  [key: string]: unknown;
+    [key: string]: unknown;
 };

@@ -8,6 +8,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-spreads-must-not-form-cycles
  */
-export declare function NoFragmentCyclesRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function NoFragmentCyclesRule(context: ASTValidationContext): ASTVisitor;

@@ -1,30 +1,26 @@
 import type { ObjMap } from '../jsutils/ObjMap.js';
-import type {
-  FieldNode,
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
-} from '../language/ast.js';
+import type { FieldNode, FragmentDefinitionNode, OperationDefinitionNode } from '../language/ast.js';
 import type { GraphQLObjectType } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
 export interface DeferUsage {
-  label: string | undefined;
-  parentDeferUsage: DeferUsage | undefined;
+    label: string | undefined;
+    parentDeferUsage: DeferUsage | undefined;
 }
 export interface FragmentVariables {
-  signatures: ObjMap<GraphQLVariableSignature>;
-  values: ObjMap<unknown>;
+    signatures: ObjMap<GraphQLVariableSignature>;
+    values: ObjMap<unknown>;
 }
 export interface FieldDetails {
-  node: FieldNode;
-  deferUsage?: DeferUsage | undefined;
-  fragmentVariables?: FragmentVariables | undefined;
+    node: FieldNode;
+    deferUsage?: DeferUsage | undefined;
+    fragmentVariables?: FragmentVariables | undefined;
 }
 export type FieldGroup = ReadonlyArray<FieldDetails>;
 export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
 export interface FragmentDetails {
-  definition: FragmentDefinitionNode;
-  variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
+    definition: FragmentDefinitionNode;
+    variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
 }
 /**
  * Given a selectionSet, collects all of the fields and returns them.
@@ -35,17 +31,11 @@ export interface FragmentDetails {
  *
  * @internal
  */
-export declare function collectFields(
-  schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDetails>,
-  variableValues: {
+export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: {
     [variable: string]: unknown;
-  },
-  runtimeType: GraphQLObjectType,
-  operation: OperationDefinitionNode,
-): {
-  groupedFieldSet: GroupedFieldSet;
-  newDeferUsages: ReadonlyArray<DeferUsage>;
+}, runtimeType: GraphQLObjectType, operation: OperationDefinitionNode): {
+    groupedFieldSet: GroupedFieldSet;
+    newDeferUsages: ReadonlyArray<DeferUsage>;
 };
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
@@ -57,16 +47,9 @@ export declare function collectFields(
  *
  * @internal
  */
-export declare function collectSubfields(
-  schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDetails>,
-  variableValues: {
+export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: {
     [variable: string]: unknown;
-  },
-  operation: OperationDefinitionNode,
-  returnType: GraphQLObjectType,
-  fieldGroup: FieldGroup,
-): {
-  groupedFieldSet: GroupedFieldSet;
-  newDeferUsages: ReadonlyArray<DeferUsage>;
+}, operation: OperationDefinitionNode, returnType: GraphQLObjectType, fieldGroup: FieldGroup): {
+    groupedFieldSet: GroupedFieldSet;
+    newDeferUsages: ReadonlyArray<DeferUsage>;
 };

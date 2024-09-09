@@ -1,5 +1,5 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.promiseForObject = void 0;
 /**
  * This function transforms a JS object `ObjMap<Promise<T>>` into
@@ -9,13 +9,13 @@ exports.promiseForObject = void 0;
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
 async function promiseForObject(object, callback) {
-  const keys = Object.keys(object);
-  const values = Object.values(object);
-  const resolvedValues = await Promise.all(values);
-  const resolvedObject = Object.create(null);
-  for (let i = 0; i < keys.length; ++i) {
-    resolvedObject[keys[i]] = resolvedValues[i];
-  }
-  return callback(resolvedObject);
+    const keys = Object.keys(object);
+    const values = Object.values(object);
+    const resolvedValues = await Promise.all(values);
+    const resolvedObject = Object.create(null);
+    for (let i = 0; i < keys.length; ++i) {
+        resolvedObject[keys[i]] = resolvedValues[i];
+    }
+    return callback(resolvedObject);
 }
 exports.promiseForObject = promiseForObject;

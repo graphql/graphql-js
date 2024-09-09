@@ -8,14 +8,14 @@ export declare const __Field: GraphQLObjectType;
 export declare const __InputValue: GraphQLObjectType;
 export declare const __EnumValue: GraphQLObjectType;
 declare enum TypeKind {
-  SCALAR = 'SCALAR',
-  OBJECT = 'OBJECT',
-  INTERFACE = 'INTERFACE',
-  UNION = 'UNION',
-  ENUM = 'ENUM',
-  INPUT_OBJECT = 'INPUT_OBJECT',
-  LIST = 'LIST',
-  NON_NULL = 'NON_NULL',
+    SCALAR = "SCALAR",
+    OBJECT = "OBJECT",
+    INTERFACE = "INTERFACE",
+    UNION = "UNION",
+    ENUM = "ENUM",
+    INPUT_OBJECT = "INPUT_OBJECT",
+    LIST = "LIST",
+    NON_NULL = "NON_NULL"
 }
 export { TypeKind };
 export declare const __TypeKind: GraphQLEnumType;

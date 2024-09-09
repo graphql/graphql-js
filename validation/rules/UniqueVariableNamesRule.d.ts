@@ -5,6 +5,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * A GraphQL operation is only valid if all its variables are uniquely named.
  */
-export declare function UniqueVariableNamesRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function UniqueVariableNamesRule(context: ASTValidationContext): ASTVisitor;

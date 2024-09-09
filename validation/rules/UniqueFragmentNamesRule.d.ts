@@ -7,6 +7,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Fragment-Name-Uniqueness
  */
-export declare function UniqueFragmentNamesRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function UniqueFragmentNamesRule(context: ASTValidationContext): ASTVisitor;

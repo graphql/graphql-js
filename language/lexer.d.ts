@@ -10,34 +10,34 @@ import { TokenKind } from './tokenKind.js';
  * whenever called.
  */
 export declare class Lexer {
-  source: Source;
-  /**
-   * The previously focused non-ignored token.
-   */
-  lastToken: Token;
-  /**
-   * The currently focused non-ignored token.
-   */
-  token: Token;
-  /**
-   * The (1-indexed) line containing the current token.
-   */
-  line: number;
-  /**
-   * The character offset at which the current line begins.
-   */
-  lineStart: number;
-  constructor(source: Source);
-  get [Symbol.toStringTag](): string;
-  /**
-   * Advances the token stream to the next non-ignored token.
-   */
-  advance(): Token;
-  /**
-   * Looks ahead and returns the next non-ignored token, but does not change
-   * the state of Lexer.
-   */
-  lookahead(): Token;
+    source: Source;
+    /**
+     * The previously focused non-ignored token.
+     */
+    lastToken: Token;
+    /**
+     * The currently focused non-ignored token.
+     */
+    token: Token;
+    /**
+     * The (1-indexed) line containing the current token.
+     */
+    line: number;
+    /**
+     * The character offset at which the current line begins.
+     */
+    lineStart: number;
+    constructor(source: Source);
+    get [Symbol.toStringTag](): string;
+    /**
+     * Advances the token stream to the next non-ignored token.
+     */
+    advance(): Token;
+    /**
+     * Looks ahead and returns the next non-ignored token, but does not change
+     * the state of Lexer.
+     */
+    lookahead(): Token;
 }
 /**
  * @internal

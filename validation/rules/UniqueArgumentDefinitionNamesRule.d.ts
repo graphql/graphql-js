@@ -6,6 +6,4 @@ import type { SDLValidationContext } from '../ValidationContext.js';
  * A GraphQL Object or Interface type is only valid if all its fields have uniquely named arguments.
  * A GraphQL Directive is only valid if all its arguments are uniquely named.
  */
-export declare function UniqueArgumentDefinitionNamesRule(
-  context: SDLValidationContext,
-): ASTVisitor;
+export declare function UniqueArgumentDefinitionNamesRule(context: SDLValidationContext): ASTVisitor;

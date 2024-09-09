@@ -8,6 +8,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Values-of-Correct-Type
  */
-export declare function ValuesOfCorrectTypeRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function ValuesOfCorrectTypeRule(context: ValidationContext): ASTVisitor;

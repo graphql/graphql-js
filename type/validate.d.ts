@@ -7,9 +7,7 @@ import type { GraphQLSchema } from './schema.js';
  * Validation runs synchronously, returning an array of encountered errors, or
  * an empty array if no errors were encountered and the Schema is valid.
  */
-export declare function validateSchema(
-  schema: GraphQLSchema,
-): ReadonlyArray<GraphQLError>;
+export declare function validateSchema(schema: GraphQLSchema): ReadonlyArray<GraphQLError>;
 /**
  * Utility function which asserts a schema is valid by throwing an error if
  * it is invalid.

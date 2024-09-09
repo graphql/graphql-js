@@ -1,8 +1,5 @@
 import type { ASTVisitor } from '../../language/visitor.js';
-import type {
-  SDLValidationContext,
-  ValidationContext,
-} from '../ValidationContext.js';
+import type { SDLValidationContext, ValidationContext } from '../ValidationContext.js';
 /**
  * Unique directive names per location
  *
@@ -11,6 +8,4 @@ import type {
  *
  * See https://spec.graphql.org/draft/#sec-Directives-Are-Unique-Per-Location
  */
-export declare function UniqueDirectivesPerLocationRule(
-  context: ValidationContext | SDLValidationContext,
-): ASTVisitor;
+export declare function UniqueDirectivesPerLocationRule(context: ValidationContext | SDLValidationContext): ASTVisitor;

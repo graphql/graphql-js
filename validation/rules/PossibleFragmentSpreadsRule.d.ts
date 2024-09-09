@@ -7,6 +7,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  * be true: if there is a non-empty intersection of the possible parent types,
  * and possible types which pass the type condition.
  */
-export declare function PossibleFragmentSpreadsRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function PossibleFragmentSpreadsRule(context: ValidationContext): ASTVisitor;

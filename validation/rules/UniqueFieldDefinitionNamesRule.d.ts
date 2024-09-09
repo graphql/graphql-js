@@ -5,6 +5,4 @@ import type { SDLValidationContext } from '../ValidationContext.js';
  *
  * A GraphQL complex type is only valid if all its fields are uniquely named.
  */
-export declare function UniqueFieldDefinitionNamesRule(
-  context: SDLValidationContext,
-): ASTVisitor;
+export declare function UniqueFieldDefinitionNamesRule(context: SDLValidationContext): ASTVisitor;

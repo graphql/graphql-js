@@ -5,6 +5,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * A GraphQL document is only valid if defer and stream directives' label argument is static and unique.
  */
-export declare function DeferStreamDirectiveLabelRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function DeferStreamDirectiveLabelRule(context: ValidationContext): ASTVisitor;

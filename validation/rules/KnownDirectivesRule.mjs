@@ -1,10 +1,10 @@
-import { inspect } from '../../jsutils/inspect.mjs';
-import { invariant } from '../../jsutils/invariant.mjs';
-import { GraphQLError } from '../../error/GraphQLError.mjs';
-import { OperationTypeNode } from '../../language/ast.mjs';
-import { DirectiveLocation } from '../../language/directiveLocation.mjs';
-import { Kind } from '../../language/kinds.mjs';
-import { specifiedDirectives } from '../../type/directives.mjs';
+import { inspect } from "../../jsutils/inspect.mjs";
+import { invariant } from "../../jsutils/invariant.mjs";
+import { GraphQLError } from "../../error/GraphQLError.mjs";
+import { OperationTypeNode } from "../../language/ast.mjs";
+import { DirectiveLocation } from "../../language/directiveLocation.mjs";
+import { Kind } from "../../language/kinds.mjs";
+import { specifiedDirectives } from "../../type/directives.mjs";
 /**
  * Known directives
  *
@@ -14,111 +14,101 @@ import { specifiedDirectives } from '../../type/directives.mjs';
  * See https://spec.graphql.org/draft/#sec-Directives-Are-Defined
  */
 export function KnownDirectivesRule(context) {
-  const locationsMap = new Map();
-  const schema = context.getSchema();
-  const definedDirectives = schema
-    ? schema.getDirectives()
-    : specifiedDirectives;
-  for (const directive of definedDirectives) {
-    locationsMap.set(directive.name, directive.locations);
-  }
-  const astDefinitions = context.getDocument().definitions;
-  for (const def of astDefinitions) {
-    if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      locationsMap.set(
-        def.name.value,
-        def.locations.map((name) => name.value),
-      );
+    const locationsMap = new Map();
+    const schema = context.getSchema();
+    const definedDirectives = schema
+        ? schema.getDirectives()
+        : specifiedDirectives;
+    for (const directive of definedDirectives) {
+        locationsMap.set(directive.name, directive.locations);
     }
-  }
-  return {
-    Directive(node, _key, _parent, _path, ancestors) {
-      const name = node.name.value;
-      const locations = locationsMap.get(name);
-      if (locations == null) {
-        context.reportError(
-          new GraphQLError(`Unknown directive "@${name}".`, { nodes: node }),
-        );
-        return;
-      }
-      const candidateLocation = getDirectiveLocationForASTPath(ancestors);
-      if (candidateLocation != null && !locations.includes(candidateLocation)) {
-        context.reportError(
-          new GraphQLError(
-            `Directive "@${name}" may not be used on ${candidateLocation}.`,
-            { nodes: node },
-          ),
-        );
-      }
-    },
-  };
+    const astDefinitions = context.getDocument().definitions;
+    for (const def of astDefinitions) {
+        if (def.kind === Kind.DIRECTIVE_DEFINITION) {
+            locationsMap.set(def.name.value, def.locations.map((name) => name.value));
+        }
+    }
+    return {
+        Directive(node, _key, _parent, _path, ancestors) {
+            const name = node.name.value;
+            const locations = locationsMap.get(name);
+            if (locations == null) {
+                context.reportError(new GraphQLError(`Unknown directive "@${name}".`, { nodes: node }));
+                return;
+            }
+            const candidateLocation = getDirectiveLocationForASTPath(ancestors);
+            if (candidateLocation != null && !locations.includes(candidateLocation)) {
+                context.reportError(new GraphQLError(`Directive "@${name}" may not be used on ${candidateLocation}.`, { nodes: node }));
+            }
+        },
+    };
 }
 function getDirectiveLocationForASTPath(ancestors) {
-  const appliedTo = ancestors.at(-1);
-  (appliedTo != null && 'kind' in appliedTo) || invariant(false);
-  switch (appliedTo.kind) {
-    case Kind.OPERATION_DEFINITION:
-      return getDirectiveLocationForOperation(appliedTo.operation);
-    case Kind.FIELD:
-      return DirectiveLocation.FIELD;
-    case Kind.FRAGMENT_SPREAD:
-      return DirectiveLocation.FRAGMENT_SPREAD;
-    case Kind.INLINE_FRAGMENT:
-      return DirectiveLocation.INLINE_FRAGMENT;
-    case Kind.FRAGMENT_DEFINITION:
-      return DirectiveLocation.FRAGMENT_DEFINITION;
-    case Kind.VARIABLE_DEFINITION: {
-      const parentNode = ancestors[ancestors.length - 3];
-      'kind' in parentNode || invariant(false);
-      return parentNode.kind === Kind.OPERATION_DEFINITION
-        ? DirectiveLocation.VARIABLE_DEFINITION
-        : DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION;
+    const appliedTo = ancestors.at(-1);
+    (appliedTo != null && 'kind' in appliedTo) || invariant(false);
+    switch (appliedTo.kind) {
+        case Kind.OPERATION_DEFINITION:
+            return getDirectiveLocationForOperation(appliedTo.operation);
+        case Kind.FIELD:
+            return DirectiveLocation.FIELD;
+        case Kind.FRAGMENT_SPREAD:
+            return DirectiveLocation.FRAGMENT_SPREAD;
+        case Kind.INLINE_FRAGMENT:
+            return DirectiveLocation.INLINE_FRAGMENT;
+        case Kind.FRAGMENT_DEFINITION:
+            return DirectiveLocation.FRAGMENT_DEFINITION;
+        case Kind.VARIABLE_DEFINITION: {
+            const parentNode = ancestors[ancestors.length - 3];
+            ('kind' in parentNode) || invariant(false);
+            return parentNode.kind === Kind.OPERATION_DEFINITION
+                ? DirectiveLocation.VARIABLE_DEFINITION
+                : DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION;
+        }
+        case Kind.SCHEMA_DEFINITION:
+        case Kind.SCHEMA_EXTENSION:
+            return DirectiveLocation.SCHEMA;
+        case Kind.SCALAR_TYPE_DEFINITION:
+        case Kind.SCALAR_TYPE_EXTENSION:
+            return DirectiveLocation.SCALAR;
+        case Kind.OBJECT_TYPE_DEFINITION:
+        case Kind.OBJECT_TYPE_EXTENSION:
+            return DirectiveLocation.OBJECT;
+        case Kind.FIELD_DEFINITION:
+            return DirectiveLocation.FIELD_DEFINITION;
+        case Kind.INTERFACE_TYPE_DEFINITION:
+        case Kind.INTERFACE_TYPE_EXTENSION:
+            return DirectiveLocation.INTERFACE;
+        case Kind.UNION_TYPE_DEFINITION:
+        case Kind.UNION_TYPE_EXTENSION:
+            return DirectiveLocation.UNION;
+        case Kind.ENUM_TYPE_DEFINITION:
+        case Kind.ENUM_TYPE_EXTENSION:
+            return DirectiveLocation.ENUM;
+        case Kind.ENUM_VALUE_DEFINITION:
+            return DirectiveLocation.ENUM_VALUE;
+        case Kind.INPUT_OBJECT_TYPE_DEFINITION:
+        case Kind.INPUT_OBJECT_TYPE_EXTENSION:
+            return DirectiveLocation.INPUT_OBJECT;
+        case Kind.INPUT_VALUE_DEFINITION: {
+            const parentNode = ancestors.at(-3);
+            (parentNode != null && 'kind' in parentNode) || invariant(false);
+            return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION
+                ? DirectiveLocation.INPUT_FIELD_DEFINITION
+                : DirectiveLocation.ARGUMENT_DEFINITION;
+        }
+        // Not reachable, all possible types have been considered.
+        /* c8 ignore next 2 */
+        default:
+            (false) || invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
     }
-    case Kind.SCHEMA_DEFINITION:
-    case Kind.SCHEMA_EXTENSION:
-      return DirectiveLocation.SCHEMA;
-    case Kind.SCALAR_TYPE_DEFINITION:
-    case Kind.SCALAR_TYPE_EXTENSION:
-      return DirectiveLocation.SCALAR;
-    case Kind.OBJECT_TYPE_DEFINITION:
-    case Kind.OBJECT_TYPE_EXTENSION:
-      return DirectiveLocation.OBJECT;
-    case Kind.FIELD_DEFINITION:
-      return DirectiveLocation.FIELD_DEFINITION;
-    case Kind.INTERFACE_TYPE_DEFINITION:
-    case Kind.INTERFACE_TYPE_EXTENSION:
-      return DirectiveLocation.INTERFACE;
-    case Kind.UNION_TYPE_DEFINITION:
-    case Kind.UNION_TYPE_EXTENSION:
-      return DirectiveLocation.UNION;
-    case Kind.ENUM_TYPE_DEFINITION:
-    case Kind.ENUM_TYPE_EXTENSION:
-      return DirectiveLocation.ENUM;
-    case Kind.ENUM_VALUE_DEFINITION:
-      return DirectiveLocation.ENUM_VALUE;
-    case Kind.INPUT_OBJECT_TYPE_DEFINITION:
-    case Kind.INPUT_OBJECT_TYPE_EXTENSION:
-      return DirectiveLocation.INPUT_OBJECT;
-    case Kind.INPUT_VALUE_DEFINITION: {
-      const parentNode = ancestors.at(-3);
-      (parentNode != null && 'kind' in parentNode) || invariant(false);
-      return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION
-        ? DirectiveLocation.INPUT_FIELD_DEFINITION
-        : DirectiveLocation.ARGUMENT_DEFINITION;
-    }
-    // Not reachable, all possible types have been considered.
-    /* c8 ignore next 2 */
-    default:
-      false || invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
-  }
 }
 function getDirectiveLocationForOperation(operation) {
-  switch (operation) {
-    case OperationTypeNode.QUERY:
-      return DirectiveLocation.QUERY;
-    case OperationTypeNode.MUTATION:
-      return DirectiveLocation.MUTATION;
-    case OperationTypeNode.SUBSCRIPTION:
-      return DirectiveLocation.SUBSCRIPTION;
-  }
+    switch (operation) {
+        case OperationTypeNode.QUERY:
+            return DirectiveLocation.QUERY;
+        case OperationTypeNode.MUTATION:
+            return DirectiveLocation.MUTATION;
+        case OperationTypeNode.SUBSCRIPTION:
+            return DirectiveLocation.SUBSCRIPTION;
+    }
 }

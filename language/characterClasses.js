@@ -1,11 +1,6 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
-exports.isNameContinue =
-  exports.isNameStart =
-  exports.isLetter =
-  exports.isDigit =
-  exports.isWhiteSpace =
-    void 0;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isNameContinue = exports.isNameStart = exports.isLetter = exports.isDigit = exports.isWhiteSpace = void 0;
 /**
  * ```
  * WhiteSpace ::
@@ -15,7 +10,7 @@ exports.isNameContinue =
  * @internal
  */
 function isWhiteSpace(code) {
-  return code === 0x0009 || code === 0x0020;
+    return code === 0x0009 || code === 0x0020;
 }
 exports.isWhiteSpace = isWhiteSpace;
 /**
@@ -26,7 +21,7 @@ exports.isWhiteSpace = isWhiteSpace;
  * @internal
  */
 function isDigit(code) {
-  return code >= 0x0030 && code <= 0x0039;
+    return code >= 0x0030 && code <= 0x0039;
 }
 exports.isDigit = isDigit;
 /**
@@ -40,10 +35,9 @@ exports.isDigit = isDigit;
  * @internal
  */
 function isLetter(code) {
-  return (
-    (code >= 0x0061 && code <= 0x007a) || // A-Z
-    (code >= 0x0041 && code <= 0x005a) // a-z
-  );
+    return ((code >= 0x0061 && code <= 0x007a) || // A-Z
+        (code >= 0x0041 && code <= 0x005a) // a-z
+    );
 }
 exports.isLetter = isLetter;
 /**
@@ -55,7 +49,7 @@ exports.isLetter = isLetter;
  * @internal
  */
 function isNameStart(code) {
-  return isLetter(code) || code === 0x005f;
+    return isLetter(code) || code === 0x005f;
 }
 exports.isNameStart = isNameStart;
 /**
@@ -68,6 +62,6 @@ exports.isNameStart = isNameStart;
  * @internal
  */
 function isNameContinue(code) {
-  return isLetter(code) || isDigit(code) || code === 0x005f;
+    return isLetter(code) || isDigit(code) || code === 0x005f;
 }
 exports.isNameContinue = isNameContinue;

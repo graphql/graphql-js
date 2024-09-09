@@ -8,6 +8,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Input-Object-Field-Uniqueness
  */
-export declare function UniqueInputFieldNamesRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function UniqueInputFieldNamesRule(context: ASTValidationContext): ASTVisitor;

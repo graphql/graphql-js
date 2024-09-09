@@ -10,6 +10,6 @@ import type { PromiseOrValue } from './PromiseOrValue.js';
  * @internal
  * */
 export declare class BoxedPromiseOrValue<T> {
-  value: PromiseOrValue<T>;
-  constructor(value: PromiseOrValue<T>);
+    value: PromiseOrValue<T>;
+    constructor(value: PromiseOrValue<T>);
 }

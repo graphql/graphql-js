@@ -24,24 +24,15 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-export declare function validate(
-  schema: GraphQLSchema,
-  documentAST: DocumentNode,
-  rules?: ReadonlyArray<ValidationRule>,
-  options?: {
+export declare function validate(schema: GraphQLSchema, documentAST: DocumentNode, rules?: ReadonlyArray<ValidationRule>, options?: {
     maxErrors?: number;
-  },
-  /** @deprecated will be removed in 17.0.0 */
-  typeInfo?: TypeInfo,
-): ReadonlyArray<GraphQLError>;
+}, 
+/** @deprecated will be removed in 17.0.0 */
+typeInfo?: TypeInfo): ReadonlyArray<GraphQLError>;
 /**
  * @internal
  */
-export declare function validateSDL(
-  documentAST: DocumentNode,
-  schemaToExtend?: Maybe<GraphQLSchema>,
-  rules?: ReadonlyArray<SDLValidationRule>,
-): ReadonlyArray<GraphQLError>;
+export declare function validateSDL(documentAST: DocumentNode, schemaToExtend?: Maybe<GraphQLSchema>, rules?: ReadonlyArray<SDLValidationRule>): ReadonlyArray<GraphQLError>;
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
  * if it is invalid.
@@ -55,7 +46,4 @@ export declare function assertValidSDL(documentAST: DocumentNode): void;
  *
  * @internal
  */
-export declare function assertValidSDLExtension(
-  documentAST: DocumentNode,
-  schema: GraphQLSchema,
-): void;
+export declare function assertValidSDLExtension(documentAST: DocumentNode, schema: GraphQLSchema): void;

@@ -3,19 +3,12 @@ import type { GraphQLSchema } from '../type/schema.js';
 /**
  * Provided two types, return true if the types are equal (invariant).
  */
-export declare function isEqualType(
-  typeA: GraphQLType,
-  typeB: GraphQLType,
-): boolean;
+export declare function isEqualType(typeA: GraphQLType, typeB: GraphQLType): boolean;
 /**
  * Provided a type and a super type, return true if the first type is either
  * equal or a subset of the second super type (covariant).
  */
-export declare function isTypeSubTypeOf(
-  schema: GraphQLSchema,
-  maybeSubType: GraphQLType,
-  superType: GraphQLType,
-): boolean;
+export declare function isTypeSubTypeOf(schema: GraphQLSchema, maybeSubType: GraphQLType, superType: GraphQLType): boolean;
 /**
  * Provided two composite types, determine if they "overlap". Two composite
  * types overlap when the Sets of possible concrete types for each intersect.
@@ -25,8 +18,4 @@ export declare function isTypeSubTypeOf(
  *
  * This function is commutative.
  */
-export declare function doTypesOverlap(
-  schema: GraphQLSchema,
-  typeA: GraphQLCompositeType,
-  typeB: GraphQLCompositeType,
-): boolean;
+export declare function doTypesOverlap(schema: GraphQLSchema, typeA: GraphQLCompositeType, typeB: GraphQLCompositeType): boolean;

@@ -16,8 +16,6 @@
  * ```
  */
 export function isIterableObject(maybeIterable) {
-  return (
-    typeof maybeIterable === 'object' &&
-    typeof maybeIterable?.[Symbol.iterator] === 'function'
-  );
+    return (typeof maybeIterable === 'object' &&
+        typeof maybeIterable?.[Symbol.iterator] === 'function');
 }

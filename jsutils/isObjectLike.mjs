@@ -3,5 +3,5 @@
  * `null` and has a `typeof` result of "object".
  */
 export function isObjectLike(value) {
-  return typeof value == 'object' && value !== null;
+    return typeof value == 'object' && value !== null;
 }

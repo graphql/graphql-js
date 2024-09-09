@@ -1,6 +1,6 @@
 interface Location {
-  line: number;
-  column: number;
+    line: number;
+    column: number;
 }
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
@@ -10,11 +10,11 @@ interface Location {
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 export declare class Source {
-  body: string;
-  name: string;
-  locationOffset: Location;
-  constructor(body: string, name?: string, locationOffset?: Location);
-  get [Symbol.toStringTag](): string;
+    body: string;
+    name: string;
+    locationOffset: Location;
+    constructor(body: string, name?: string, locationOffset?: Location);
+    get [Symbol.toStringTag](): string;
 }
 /**
  * Test if the given value is a Source object.

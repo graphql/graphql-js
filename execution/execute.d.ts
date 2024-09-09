@@ -3,25 +3,11 @@ import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { GraphQLError } from '../error/GraphQLError.js';
-import type {
-  DocumentNode,
-  FieldNode,
-  OperationDefinitionNode,
-} from '../language/ast.js';
-import type {
-  GraphQLField,
-  GraphQLFieldResolver,
-  GraphQLObjectType,
-  GraphQLResolveInfo,
-  GraphQLTypeResolver,
-} from '../type/definition.js';
+import type { DocumentNode, FieldNode, OperationDefinitionNode } from '../language/ast.js';
+import type { GraphQLField, GraphQLFieldResolver, GraphQLObjectType, GraphQLResolveInfo, GraphQLTypeResolver } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import type { FieldGroup, FragmentDetails } from './collectFields.js';
-import type {
-  CancellableStreamRecord,
-  ExecutionResult,
-  ExperimentalIncrementalExecutionResults,
-} from './types.js';
+import type { CancellableStreamRecord, ExecutionResult, ExperimentalIncrementalExecutionResults } from './types.js';
 /**
  * Terminology
  *
@@ -48,39 +34,39 @@ import type {
  * and the fragments defined in the query document
  */
 export interface ExecutionContext {
-  schema: GraphQLSchema;
-  fragments: ObjMap<FragmentDetails>;
-  rootValue: unknown;
-  contextValue: unknown;
-  operation: OperationDefinitionNode;
-  variableValues: {
-    [variable: string]: unknown;
-  };
-  fieldResolver: GraphQLFieldResolver<any, any>;
-  typeResolver: GraphQLTypeResolver<any, any>;
-  subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  enableEarlyExecution: boolean;
-  errors: Array<GraphQLError> | undefined;
-  cancellableStreams: Set<CancellableStreamRecord> | undefined;
+    schema: GraphQLSchema;
+    fragments: ObjMap<FragmentDetails>;
+    rootValue: unknown;
+    contextValue: unknown;
+    operation: OperationDefinitionNode;
+    variableValues: {
+        [variable: string]: unknown;
+    };
+    fieldResolver: GraphQLFieldResolver<any, any>;
+    typeResolver: GraphQLTypeResolver<any, any>;
+    subscribeFieldResolver: GraphQLFieldResolver<any, any>;
+    enableEarlyExecution: boolean;
+    errors: Array<GraphQLError> | undefined;
+    cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 export interface ExecutionArgs {
-  schema: GraphQLSchema;
-  document: DocumentNode;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Maybe<{
-    readonly [variable: string]: unknown;
-  }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  enableEarlyExecution?: Maybe<boolean>;
+    schema: GraphQLSchema;
+    document: DocumentNode;
+    rootValue?: unknown;
+    contextValue?: unknown;
+    variableValues?: Maybe<{
+        readonly [variable: string]: unknown;
+    }>;
+    operationName?: Maybe<string>;
+    fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+    typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+    subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+    enableEarlyExecution?: Maybe<boolean>;
 }
 export interface StreamUsage {
-  label: string | undefined;
-  initialCount: number;
-  fieldGroup: FieldGroup;
+    label: string | undefined;
+    initialCount: number;
+    fieldGroup: FieldGroup;
 }
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -98,9 +84,7 @@ export interface StreamUsage {
  * Use `experimentalExecuteIncrementally` if you want to support incremental
  * delivery.
  */
-export declare function execute(
-  args: ExecutionArgs,
-): PromiseOrValue<ExecutionResult>;
+export declare function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult>;
 /**
  * Implements the "Executing requests" section of the GraphQL specification,
  * including `@defer` and `@stream` as proposed in
@@ -113,9 +97,7 @@ export declare function execute(
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
  */
-export declare function experimentalExecuteIncrementally(
-  args: ExecutionArgs,
-): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults>;
+export declare function experimentalExecuteIncrementally(args: ExecutionArgs): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults>;
 /**
  * Also implements the "Executing requests" section of the GraphQL specification.
  * However, it guarantees to complete synchronously (or throw an error) assuming
@@ -131,20 +113,12 @@ export declare function executeSync(args: ExecutionArgs): ExecutionResult;
  * TODO: consider no longer exporting this function
  * @internal
  */
-export declare function buildExecutionContext(
-  args: ExecutionArgs,
-): ReadonlyArray<GraphQLError> | ExecutionContext;
+export declare function buildExecutionContext(args: ExecutionArgs): ReadonlyArray<GraphQLError> | ExecutionContext;
 /**
  * TODO: consider no longer exporting this function
  * @internal
  */
-export declare function buildResolveInfo(
-  exeContext: ExecutionContext,
-  fieldDef: GraphQLField<unknown, unknown>,
-  fieldNodes: ReadonlyArray<FieldNode>,
-  parentType: GraphQLObjectType,
-  path: Path,
-): GraphQLResolveInfo;
+export declare function buildResolveInfo(exeContext: ExecutionContext, fieldDef: GraphQLField<unknown, unknown>, fieldNodes: ReadonlyArray<FieldNode>, parentType: GraphQLObjectType, path: Path): GraphQLResolveInfo;
 /**
  * If a resolveType function is not given, then a default resolve behavior is
  * used which attempts two strategies:
@@ -162,10 +136,7 @@ export declare const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown>;
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context value.
  */
-export declare const defaultFieldResolver: GraphQLFieldResolver<
-  unknown,
-  unknown
->;
+export declare const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown>;
 /**
  * Implements the "Subscribe" algorithm described in the GraphQL specification.
  *
@@ -192,11 +163,7 @@ export declare const defaultFieldResolver: GraphQLFieldResolver<
  *
  * Accepts an object with named arguments.
  */
-export declare function subscribe(
-  args: ExecutionArgs,
-): PromiseOrValue<
-  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
->;
+export declare function subscribe(args: ExecutionArgs): PromiseOrValue<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.
@@ -225,6 +192,4 @@ export declare function subscribe(
  * or otherwise separating these two steps. For more on this, see the
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
-export declare function createSourceEventStream(
-  args: ExecutionArgs,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;
+export declare function createSourceEventStream(args: ExecutionArgs): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult>;

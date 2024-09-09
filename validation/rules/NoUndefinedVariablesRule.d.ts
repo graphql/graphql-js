@@ -8,6 +8,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-All-Variable-Uses-Defined
  */
-export declare function NoUndefinedVariablesRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function NoUndefinedVariablesRule(context: ValidationContext): ASTVisitor;

@@ -8,6 +8,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Executable-Definitions
  */
-export declare function ExecutableDefinitionsRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function ExecutableDefinitionsRule(context: ASTValidationContext): ASTVisitor;

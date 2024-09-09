@@ -1,4 +1,4 @@
-import { isPromise } from './isPromise.mjs';
+import { isPromise } from "./isPromise.mjs";
 /**
  * A BoxedPromiseOrValue is a container for a value or promise where the value
  * will be updated when the promise resolves.
@@ -10,13 +10,13 @@ import { isPromise } from './isPromise.mjs';
  * @internal
  * */
 export class BoxedPromiseOrValue {
-  constructor(value) {
-    this.value = value;
-    if (isPromise(value)) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      value.then((resolved) => {
-        this.value = resolved;
-      });
+    constructor(value) {
+        this.value = value;
+        if (isPromise(value)) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            value.then((resolved) => {
+                this.value = resolved;
+            });
+        }
     }
-  }
 }

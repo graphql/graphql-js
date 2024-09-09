@@ -5,7 +5,4 @@ import type { DocumentNode, OperationDefinitionNode } from '../language/ast.js';
  * name. If a name is not provided, an operation is only returned if only one is
  * provided in the document.
  */
-export declare function getOperationAST(
-  documentAST: DocumentNode,
-  operationName?: Maybe<string>,
-): Maybe<OperationDefinitionNode>;
+export declare function getOperationAST(documentAST: DocumentNode, operationName?: Maybe<string>): Maybe<OperationDefinitionNode>;

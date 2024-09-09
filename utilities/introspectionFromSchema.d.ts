@@ -1,8 +1,5 @@
 import type { GraphQLSchema } from '../type/schema.js';
-import type {
-  IntrospectionOptions,
-  IntrospectionQuery,
-} from './getIntrospectionQuery.js';
+import type { IntrospectionOptions, IntrospectionQuery } from './getIntrospectionQuery.js';
 /**
  * Build an IntrospectionQuery from a GraphQLSchema
  *
@@ -12,7 +9,4 @@ import type {
  * This is the inverse of buildClientSchema. The primary use case is outside
  * of the server context, for instance when doing schema comparisons.
  */
-export declare function introspectionFromSchema(
-  schema: GraphQLSchema,
-  options?: IntrospectionOptions,
-): IntrospectionQuery;
+export declare function introspectionFromSchema(schema: GraphQLSchema, options?: IntrospectionOptions): IntrospectionQuery;

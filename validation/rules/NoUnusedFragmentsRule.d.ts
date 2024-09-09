@@ -8,6 +8,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Fragments-Must-Be-Used
  */
-export declare function NoUnusedFragmentsRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function NoUnusedFragmentsRule(context: ASTValidationContext): ASTVisitor;

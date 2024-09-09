@@ -9,6 +9,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Field-Selection-Merging
  */
-export declare function OverlappingFieldsCanBeMergedRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function OverlappingFieldsCanBeMergedRule(context: ValidationContext): ASTVisitor;

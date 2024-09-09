@@ -1,18 +1,18 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.printString = void 0;
 /**
  * Prints a string as a GraphQL StringValue literal. Replaces control characters
  * and excluded characters (" U+0022 and \\ U+005C) with escape sequences.
  */
 function printString(str) {
-  return `"${str.replace(escapedRegExp, escapedReplacer)}"`;
+    return `"${str.replace(escapedRegExp, escapedReplacer)}"`;
 }
 exports.printString = printString;
 // eslint-disable-next-line no-control-regex
 const escapedRegExp = /[\x00-\x1f\x22\x5c\x7f-\x9f]/g;
 function escapedReplacer(str) {
-  return escapeSequences[str.charCodeAt(0)];
+    return escapeSequences[str.charCodeAt(0)];
 }
 // prettier-ignore
 const escapeSequences = [
@@ -21,15 +21,15 @@ const escapeSequences = [
     '\\u0010', '\\u0011', '\\u0012', '\\u0013', '\\u0014', '\\u0015', '\\u0016', '\\u0017',
     '\\u0018', '\\u0019', '\\u001A', '\\u001B', '\\u001C', '\\u001D', '\\u001E', '\\u001F',
     '', '', '\\"', '', '', '', '', '',
+    '', '', '', '', '', '', '', '', // 2F
     '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '', // 3F
     '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '', // 4F
     '', '', '', '', '', '', '', '',
+    '', '', '', '', '\\\\', '', '', '', // 5F
     '', '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', '',
-    '', '', '', '', '\\\\', '', '', '',
-    '', '', '', '', '', '', '', '',
-    '', '', '', '', '', '', '', '',
+    '', '', '', '', '', '', '', '', // 6F
     '', '', '', '', '', '', '', '',
     '', '', '', '', '', '', '', '\\u007F',
     '\\u0080', '\\u0081', '\\u0082', '\\u0083', '\\u0084', '\\u0085', '\\u0086', '\\u0087',

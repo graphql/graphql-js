@@ -1,5 +1,5 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.isIterableObject = void 0;
 /**
  * Returns true if the provided object is an Object (i.e. not a string literal)
@@ -19,9 +19,7 @@ exports.isIterableObject = void 0;
  * ```
  */
 function isIterableObject(maybeIterable) {
-  return (
-    typeof maybeIterable === 'object' &&
-    typeof maybeIterable?.[Symbol.iterator] === 'function'
-  );
+    return (typeof maybeIterable === 'object' &&
+        typeof maybeIterable?.[Symbol.iterator] === 'function');
 }
 exports.isIterableObject = isIterableObject;

@@ -22,9 +22,4 @@ import type { GraphQLInputType } from '../type/definition.js';
  * | NullValue            | null          |
  *
  */
-export declare function valueFromAST(
-  valueNode: Maybe<ValueNode>,
-  type: GraphQLInputType,
-  variables?: Maybe<ObjMap<unknown>>,
-  fragmentVariables?: Maybe<ObjMap<unknown>>,
-): unknown;
+export declare function valueFromAST(valueNode: Maybe<ValueNode>, type: GraphQLInputType, variables?: Maybe<ObjMap<unknown>>, fragmentVariables?: Maybe<ObjMap<unknown>>): unknown;

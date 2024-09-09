@@ -17,7 +17,4 @@ import type { ValueNode } from '../language/ast.js';
  * | Null                 | null             |
  *
  */
-export declare function valueFromASTUntyped(
-  valueNode: ValueNode,
-  variables?: Maybe<ObjMap<unknown>>,
-): unknown;
+export declare function valueFromASTUntyped(valueNode: ValueNode, variables?: Maybe<ObjMap<unknown>>): unknown;

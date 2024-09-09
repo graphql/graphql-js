@@ -1,7 +1,7 @@
-import { printBlockString } from '../language/blockString.mjs';
-import { isPunctuatorTokenKind, Lexer } from '../language/lexer.mjs';
-import { isSource, Source } from '../language/source.mjs';
-import { TokenKind } from '../language/tokenKind.mjs';
+import { printBlockString } from "../language/blockString.mjs";
+import { isPunctuatorTokenKind, Lexer } from "../language/lexer.mjs";
+import { isSource, Source } from "../language/source.mjs";
+import { TokenKind } from "../language/tokenKind.mjs";
 /**
  * Strips characters that are not significant to the validity or execution
  * of a GraphQL document:
@@ -63,32 +63,33 @@ import { TokenKind } from '../language/tokenKind.mjs';
  * ```
  */
 export function stripIgnoredCharacters(source) {
-  const sourceObj = isSource(source) ? source : new Source(source);
-  const body = sourceObj.body;
-  const lexer = new Lexer(sourceObj);
-  let strippedBody = '';
-  let wasLastAddedTokenNonPunctuator = false;
-  while (lexer.advance().kind !== TokenKind.EOF) {
-    const currentToken = lexer.token;
-    const tokenKind = currentToken.kind;
-    /**
-     * Every two non-punctuator tokens should have space between them.
-     * Also prevent case of non-punctuator token following by spread resulting
-     * in invalid token (e.g. `1...` is invalid Float token).
-     */
-    const isNonPunctuator = !isPunctuatorTokenKind(currentToken.kind);
-    if (wasLastAddedTokenNonPunctuator) {
-      if (isNonPunctuator || currentToken.kind === TokenKind.SPREAD) {
-        strippedBody += ' ';
-      }
+    const sourceObj = isSource(source) ? source : new Source(source);
+    const body = sourceObj.body;
+    const lexer = new Lexer(sourceObj);
+    let strippedBody = '';
+    let wasLastAddedTokenNonPunctuator = false;
+    while (lexer.advance().kind !== TokenKind.EOF) {
+        const currentToken = lexer.token;
+        const tokenKind = currentToken.kind;
+        /**
+         * Every two non-punctuator tokens should have space between them.
+         * Also prevent case of non-punctuator token following by spread resulting
+         * in invalid token (e.g. `1...` is invalid Float token).
+         */
+        const isNonPunctuator = !isPunctuatorTokenKind(currentToken.kind);
+        if (wasLastAddedTokenNonPunctuator) {
+            if (isNonPunctuator || currentToken.kind === TokenKind.SPREAD) {
+                strippedBody += ' ';
+            }
+        }
+        const tokenBody = body.slice(currentToken.start, currentToken.end);
+        if (tokenKind === TokenKind.BLOCK_STRING) {
+            strippedBody += printBlockString(currentToken.value, { minimize: true });
+        }
+        else {
+            strippedBody += tokenBody;
+        }
+        wasLastAddedTokenNonPunctuator = isNonPunctuator;
     }
-    const tokenBody = body.slice(currentToken.start, currentToken.end);
-    if (tokenKind === TokenKind.BLOCK_STRING) {
-      strippedBody += printBlockString(currentToken.value, { minimize: true });
-    } else {
-      strippedBody += tokenBody;
-    }
-    wasLastAddedTokenNonPunctuator = isNonPunctuator;
-  }
-  return strippedBody;
+    return strippedBody;
 }

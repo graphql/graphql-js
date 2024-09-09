@@ -5,6 +5,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * A GraphQL document is only valid if stream directives are used on list fields.
  */
-export declare function StreamDirectiveOnListFieldRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function StreamDirectiveOnListFieldRule(context: ValidationContext): ASTVisitor;

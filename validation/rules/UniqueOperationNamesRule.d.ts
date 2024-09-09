@@ -7,6 +7,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Operation-Name-Uniqueness
  */
-export declare function UniqueOperationNamesRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function UniqueOperationNamesRule(context: ASTValidationContext): ASTVisitor;

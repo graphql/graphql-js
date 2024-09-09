@@ -1,9 +1,6 @@
 import type { Maybe } from './jsutils/Maybe.js';
 import type { Source } from './language/source.js';
-import type {
-  GraphQLFieldResolver,
-  GraphQLTypeResolver,
-} from './type/definition.js';
+import type { GraphQLFieldResolver, GraphQLTypeResolver } from './type/definition.js';
 import type { GraphQLSchema } from './type/schema.js';
 import type { ExecutionResult } from './execution/types.js';
 /**
@@ -48,16 +45,16 @@ import type { ExecutionResult } from './execution/types.js';
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export interface GraphQLArgs {
-  schema: GraphQLSchema;
-  source: string | Source;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Maybe<{
-    readonly [variable: string]: unknown;
-  }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+    schema: GraphQLSchema;
+    source: string | Source;
+    rootValue?: unknown;
+    contextValue?: unknown;
+    variableValues?: Maybe<{
+        readonly [variable: string]: unknown;
+    }>;
+    operationName?: Maybe<string>;
+    fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+    typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
 }
 export declare function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
 /**

@@ -8,6 +8,4 @@ import type { ValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Variables-Are-Input-Types
  */
-export declare function VariablesAreInputTypesRule(
-  context: ValidationContext,
-): ASTVisitor;
+export declare function VariablesAreInputTypesRule(context: ValidationContext): ASTVisitor;

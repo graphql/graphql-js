@@ -8,6 +8,4 @@ import type { ASTValidationContext } from '../ValidationContext.js';
  *
  * See https://spec.graphql.org/draft/#sec-Argument-Names
  */
-export declare function UniqueArgumentNamesRule(
-  context: ASTValidationContext,
-): ASTVisitor;
+export declare function UniqueArgumentNamesRule(context: ASTValidationContext): ASTVisitor;

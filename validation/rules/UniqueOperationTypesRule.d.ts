@@ -5,6 +5,4 @@ import type { SDLValidationContext } from '../ValidationContext.js';
  *
  * A GraphQL document is only valid if it has only one type per operation.
  */
-export declare function UniqueOperationTypesRule(
-  context: SDLValidationContext,
-): ASTVisitor;
+export declare function UniqueOperationTypesRule(context: SDLValidationContext): ASTVisitor;
