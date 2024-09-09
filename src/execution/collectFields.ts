@@ -35,7 +35,7 @@ export interface DeferUsage {
 export interface FieldDetails {
   node: FieldNode;
   deferUsage?: DeferUsage | undefined;
-  fragmentVariableValues?: { [variable: string]: unknown } | undefined;
+  scopedVariableValues?: { [variable: string]: unknown } | undefined;
 }
 
 export type FieldGroup = ReadonlyArray<FieldDetails>;
@@ -131,14 +131,14 @@ export function collectSubfields(
   for (const fieldDetail of fieldGroup) {
     const selectionSet = fieldDetail.node.selectionSet;
     if (selectionSet) {
-      const { deferUsage, fragmentVariableValues } = fieldDetail;
+      const { deferUsage, scopedVariableValues } = fieldDetail;
       collectFieldsImpl(
         context,
         selectionSet,
         subGroupedFieldSet,
         newDeferUsages,
         deferUsage,
-        fragmentVariableValues,
+        scopedVariableValues,
       );
     }
   }
@@ -156,35 +156,35 @@ function collectFieldsImpl(
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   newDeferUsages: Array<DeferUsage>,
   deferUsage?: DeferUsage,
-  fragmentVariableValues?: { [variable: string]: unknown },
+  scopedVariableValues?: { [variable: string]: unknown },
 ): void {
   const {
     schema,
     fragments,
-    variableValues,
+    variableValues: operationVariableValues,
     runtimeType,
     operation,
     visitedFragmentNames,
   } = context;
 
-  const scopedVariableValues = fragmentVariableValues ?? variableValues;
+  const variableValues = scopedVariableValues ?? operationVariableValues;
 
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
-        if (!shouldIncludeNode(scopedVariableValues, selection)) {
+        if (!shouldIncludeNode(variableValues, selection)) {
           continue;
         }
         groupedFieldSet.add(getFieldEntryKey(selection), {
           node: selection,
           deferUsage,
-          fragmentVariableValues,
+          scopedVariableValues,
         });
         break;
       }
       case Kind.INLINE_FRAGMENT: {
         if (
-          !shouldIncludeNode(scopedVariableValues, selection) ||
+          !shouldIncludeNode(variableValues, selection) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
           continue;
@@ -192,7 +192,7 @@ function collectFieldsImpl(
 
         const newDeferUsage = getDeferUsage(
           operation,
-          scopedVariableValues,
+          variableValues,
           selection,
           deferUsage,
         );
@@ -204,7 +204,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
-            fragmentVariableValues,
+            scopedVariableValues,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
@@ -214,7 +214,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
-            fragmentVariableValues,
+            scopedVariableValues,
           );
         }
 
@@ -225,7 +225,7 @@ function collectFieldsImpl(
 
         const newDeferUsage = getDeferUsage(
           operation,
-          scopedVariableValues,
+          variableValues,
           selection,
           deferUsage,
         );
@@ -233,7 +233,7 @@ function collectFieldsImpl(
         if (
           !newDeferUsage &&
           (visitedFragmentNames.has(fragName) ||
-            !shouldIncludeNode(scopedVariableValues, selection))
+            !shouldIncludeNode(variableValues, selection))
         ) {
           continue;
         }
@@ -247,18 +247,20 @@ function collectFieldsImpl(
         }
 
         const fragmentVariableSignatures = fragment.variableSignatures;
-        let newFragmentVariableValues:
+        let newScopedVariableValues:
           | { [variable: string]: unknown }
           | undefined;
         if (fragmentVariableSignatures) {
-          newFragmentVariableValues = experimentalGetArgumentValues(
+          newScopedVariableValues = experimentalGetArgumentValues(
             selection,
             Object.values(fragmentVariableSignatures),
-            scopedVariableValues,
+            variableValues,
           );
-          for (const [variableName, value] of Object.entries(variableValues)) {
+          for (const [variableName, value] of Object.entries(
+            operationVariableValues,
+          )) {
             if (!fragment.variableSignatures?.[variableName]) {
-              newFragmentVariableValues[variableName] = value;
+              newScopedVariableValues[variableName] = value;
             }
           }
         }
@@ -271,7 +273,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             deferUsage,
-            newFragmentVariableValues,
+            newScopedVariableValues,
           );
         } else {
           newDeferUsages.push(newDeferUsage);
@@ -281,7 +283,7 @@ function collectFieldsImpl(
             groupedFieldSet,
             newDeferUsages,
             newDeferUsage,
-            newFragmentVariableValues,
+            newScopedVariableValues,
           );
         }
         break;

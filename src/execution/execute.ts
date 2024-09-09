@@ -752,7 +752,7 @@ function executeField(
     const args = experimentalGetArgumentValues(
       fieldGroup[0].node,
       fieldDef.args,
-      fieldGroup[0].fragmentVariableValues ?? exeContext.variableValues,
+      fieldGroup[0].scopedVariableValues ?? exeContext.variableValues,
     );
 
     // The resolve function's optional third argument is a context value that
@@ -1060,7 +1060,7 @@ function getStreamUsage(
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
     fieldGroup[0].node,
-    fieldGroup[0].fragmentVariableValues ?? exeContext.variableValues,
+    fieldGroup[0].scopedVariableValues ?? exeContext.variableValues,
   );
 
   if (!stream) {
@@ -1089,7 +1089,7 @@ function getStreamUsage(
   const streamedFieldGroup: FieldGroup = fieldGroup.map((fieldDetails) => ({
     node: fieldDetails.node,
     deferUsage: undefined,
-    fragmentVariableValues: fieldDetails.fragmentVariableValues,
+    scopedVariableValues: fieldDetails.scopedVariableValues,
   }));
 
   const streamUsage = {
