@@ -205,7 +205,6 @@ export class ValidationContext extends ASTValidationContext {
       const typeInfo = new TypeInfo(
         this._schema,
         undefined,
-        undefined,
         this._typeInfo.getFragmentSignatureByName(),
       );
       const fragmentDefinition =
