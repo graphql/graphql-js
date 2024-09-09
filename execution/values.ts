@@ -229,9 +229,7 @@ export function experimentalGetArgumentValues(
       // execution. This is a runtime check to ensure execution does not
       // continue with an invalid argument value.
       throw new GraphQLError(
-        `Argument "${name}" of type "${inspect(
-          argType,
-        )}" has invalid value ${print(valueNode)}.`,
+        `Argument "${name}" of type "${inspect(argType)}" has invalid value ${print(valueNode)}.`,
         { nodes: valueNode },
       );
     }

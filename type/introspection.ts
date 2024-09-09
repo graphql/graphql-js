@@ -70,7 +70,7 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
         ),
         resolve: (schema) => schema.getDirectives(),
       },
-    } as GraphQLFieldConfigMap<GraphQLSchema, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLSchema, unknown>,
 });
 export const __Directive: GraphQLObjectType = new GraphQLObjectType({
   name: '__Directive',
@@ -112,7 +112,7 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
             : field.args.filter((arg) => arg.deprecationReason == null);
         },
       },
-    } as GraphQLFieldConfigMap<GraphQLDirective, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLDirective, unknown>,
 });
 export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
   name: '__DirectiveLocation',
@@ -328,7 +328,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           }
         },
       },
-    } as GraphQLFieldConfigMap<GraphQLType, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLType, unknown>,
 });
 export const __Field: GraphQLObjectType = new GraphQLObjectType({
   name: '__Field',
@@ -372,7 +372,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (field) => field.deprecationReason,
       },
-    } as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>,
 });
 export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
   name: '__InputValue',
@@ -410,7 +410,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (obj) => obj.deprecationReason,
       },
-    } as GraphQLFieldConfigMap<GraphQLInputField, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLInputField, unknown>,
 });
 export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
   name: '__EnumValue',
@@ -434,7 +434,7 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (enumValue) => enumValue.deprecationReason,
       },
-    } as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>,
 });
 enum TypeKind {
   SCALAR = 'SCALAR',

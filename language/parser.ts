@@ -1076,9 +1076,7 @@ export class Parser {
       throw syntaxError(
         this._lexer.source,
         this._lexer.token.start,
-        `${getTokenDesc(
-          this._lexer.token,
-        )} is reserved and cannot be used for an enum value.`,
+        `${getTokenDesc(this._lexer.token)} is reserved and cannot be used for an enum value.`,
       );
     }
     return this.parseName();

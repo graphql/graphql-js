@@ -63,8 +63,8 @@ export function isConstValueNode(node: ASTNode): node is ConstValueNode {
     (node.kind === Kind.LIST
       ? node.values.some(isConstValueNode)
       : node.kind === Kind.OBJECT
-      ? node.fields.some((field) => isConstValueNode(field.value))
-      : node.kind !== Kind.VARIABLE)
+        ? node.fields.some((field) => isConstValueNode(field.value))
+        : node.kind !== Kind.VARIABLE)
   );
 }
 export function isTypeNode(node: ASTNode): node is TypeNode {

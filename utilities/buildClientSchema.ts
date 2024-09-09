@@ -66,9 +66,7 @@ export function buildClientSchema(
   (isObjectLike(introspection) && isObjectLike(introspection.__schema)) ||
     devAssert(
       false,
-      `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${inspect(
-        introspection,
-      )}.`,
+      `Invalid or incomplete introspection result. Ensure that you are passing "data" property of introspection response and no "errors" was returned alongside: ${inspect(introspection)}.`,
     );
   // Get the schema from the introspection result.
   const schemaIntrospection = introspection.__schema;

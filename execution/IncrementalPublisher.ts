@@ -164,6 +164,7 @@ class IncrementalPublisher {
       isDone = true;
       this._incrementalGraph.abort();
       await this._returnAsyncIterators();
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject(error);
     };
     return {

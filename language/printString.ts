@@ -59,6 +59,7 @@ const escapeSequences = [
     "",
     "",
     "",
+    "", // 2F
     "",
     "",
     "",
@@ -74,6 +75,7 @@ const escapeSequences = [
     "",
     "",
     "",
+    "", // 3F
     "",
     "",
     "",
@@ -89,9 +91,7 @@ const escapeSequences = [
     "",
     "",
     "",
-    "",
-    "",
-    "",
+    "", // 4F
     "",
     "",
     "",
@@ -107,6 +107,7 @@ const escapeSequences = [
     "\\\\",
     "",
     "",
+    "", // 5F
     "",
     "",
     "",
@@ -122,8 +123,7 @@ const escapeSequences = [
     "",
     "",
     "",
-    "",
-    "",
+    "", // 6F
     "",
     "",
     "",

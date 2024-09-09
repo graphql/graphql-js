@@ -382,11 +382,7 @@ function validateTypeImplementsInterface(
       const ifaceArg = ifaceField.args.find((arg) => arg.name === argName);
       if (!ifaceArg && isRequiredArgument(typeArg)) {
         context.reportError(
-          `Argument "${type}.${fieldName}(${argName}:)" must not be required type "${inspect(
-            typeArg.type,
-          )}" if not provided by the Interface field "${
-            iface.name
-          }.${fieldName}".`,
+          `Argument "${type}.${fieldName}(${argName}:)" must not be required type "${inspect(typeArg.type)}" if not provided by the Interface field "${iface.name}.${fieldName}".`,
           [typeArg.astNode, ifaceField.astNode],
         );
       }
