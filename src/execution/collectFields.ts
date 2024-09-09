@@ -246,24 +246,12 @@ function collectFieldsImpl(
           continue;
         }
 
-        const fragmentVariableSignatures = fragment.variableSignatures;
-        let newScopedVariableValues:
-          | { [variable: string]: unknown }
-          | undefined;
-        if (fragmentVariableSignatures) {
-          newScopedVariableValues = experimentalGetArgumentValues(
-            selection,
-            Object.values(fragmentVariableSignatures),
-            variableValues,
-          );
-          for (const [variableName, value] of Object.entries(
-            operationVariableValues,
-          )) {
-            if (!fragment.variableSignatures?.[variableName]) {
-              newScopedVariableValues[variableName] = value;
-            }
-          }
-        }
+        const newScopedVariableValues = getScopedVariableValues(
+          fragment.variableSignatures,
+          selection,
+          variableValues,
+          operationVariableValues,
+        );
 
         if (!newDeferUsage) {
           visitedFragmentNames.add(fragName);
@@ -368,6 +356,30 @@ function doesFragmentConditionMatch(
     return schema.isSubType(conditionalType, type);
   }
   return false;
+}
+
+/**
+ * Constructs a variableValues map for the given fragment.
+ */
+function getScopedVariableValues(
+  fragmentVariableSignatures: ObjMap<GraphQLVariableSignature> | undefined,
+  fragmentSpreadNode: FragmentSpreadNode,
+  variableValues: { [variable: string]: unknown },
+  operationVariableValues: { [variable: string]: unknown },
+): { [variable: string]: unknown } | undefined {
+  if (!fragmentVariableSignatures) {
+    return;
+  }
+  const scopedVariableValues = experimentalGetArgumentValues(
+    fragmentSpreadNode,
+    Object.values(fragmentVariableSignatures),
+    variableValues,
+  );
+  for (const [variableName, value] of Object.entries(operationVariableValues)) {
+    if (fragmentVariableSignatures[variableName] === undefined) {
+      scopedVariableValues[variableName] = value;
+    }
+  }
 }
 
 /**
