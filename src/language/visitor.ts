@@ -74,8 +74,8 @@ type ASTReducerFn<TReducedNode extends ASTNode, R> = (
 type ReducedField<T, R> = T extends ASTNode
   ? R
   : T extends ReadonlyArray<ASTNode>
-  ? ReadonlyArray<R>
-  : T;
+    ? ReadonlyArray<R>
+    : T;
 
 /**
  * A KeyMap describes each the traversable properties of each kind of node.
@@ -284,7 +284,7 @@ export function visit(
     } else {
       stack = { inArray, index, keys, edits, prev: stack };
       inArray = Array.isArray(node);
-      keys = inArray ? node : (visitorKeys as any)[node.kind] ?? [];
+      keys = inArray ? node : ((visitorKeys as any)[node.kind] ?? []);
       index = -1;
       edits = [];
       if (parent != null) {

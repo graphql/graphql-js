@@ -82,7 +82,7 @@ import {
   getVariableValues,
 } from './values.js';
 
-/* eslint-disable max-params */
+/* eslint-disable @typescript-eslint/max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 
@@ -307,9 +307,9 @@ function executeOperation(
     if (isPromise(graphqlWrappedResult)) {
       return graphqlWrappedResult.then(
         (resolved) => buildDataResponse(exeContext, resolved[0], resolved[1]),
-        (error) => ({
+        (error: unknown) => ({
           data: null,
-          errors: withError(exeContext.errors, error),
+          errors: withError(exeContext.errors, error as GraphQLError),
         }),
       );
     }
@@ -790,7 +790,7 @@ function executeField(
     if (isPromise(completed)) {
       // Note: we don't rely on a `catch` method, but we do expect "thenable"
       // to take a second callback for the error case.
-      return completed.then(undefined, (rawError) => {
+      return completed.then(undefined, (rawError: unknown) => {
         handleFieldError(
           rawError,
           exeContext,
@@ -1423,7 +1423,7 @@ function completeListItemValue(
             addIncrementalDataRecords(parent, resolved[1]);
             return resolved[0];
           },
-          (rawError) => {
+          (rawError: unknown) => {
             handleFieldError(
               rawError,
               exeContext,
@@ -1991,7 +1991,9 @@ function createSourceEventStreamImpl(
   try {
     const eventStream = executeSubscription(exeContext);
     if (isPromise(eventStream)) {
-      return eventStream.then(undefined, (error) => ({ errors: [error] }));
+      return eventStream.then(undefined, (error: unknown) => ({
+        errors: [error as GraphQLError],
+      }));
     }
 
     return eventStream;
@@ -2066,9 +2068,11 @@ function executeSubscription(
     const result = resolveFn(rootValue, args, contextValue, info);
 
     if (isPromise(result)) {
-      return result.then(assertEventStream).then(undefined, (error) => {
-        throw locatedError(error, fieldNodes, pathToArray(path));
-      });
+      return result
+        .then(assertEventStream)
+        .then(undefined, (error: unknown) => {
+          throw locatedError(error, fieldNodes, pathToArray(path));
+        });
     }
 
     return assertEventStream(result);
@@ -2201,10 +2205,10 @@ function executeExecutionGroup(
           path,
           resolved,
         ),
-      (error) => ({
+      (error: unknown) => ({
         pendingExecutionGroup,
         path: pathToArray(path),
-        errors: withError(incrementalContext.errors, error),
+        errors: withError(incrementalContext.errors, error as GraphQLError),
       }),
     );
   }
@@ -2434,8 +2438,8 @@ function completeStreamItem(
     ).then(
       (resolvedItem) =>
         buildStreamItemResult(incrementalContext.errors, resolvedItem),
-      (error) => ({
-        errors: withError(incrementalContext.errors, error),
+      (error: unknown) => ({
+        errors: withError(incrementalContext.errors, error as GraphQLError),
       }),
     );
   }
@@ -2472,7 +2476,7 @@ function completeStreamItem(
 
   if (isPromise(result)) {
     return result
-      .then(undefined, (rawError) => {
+      .then(undefined, (rawError: unknown) => {
         handleFieldError(
           rawError,
           exeContext,
@@ -2486,8 +2490,8 @@ function completeStreamItem(
       .then(
         (resolvedItem) =>
           buildStreamItemResult(incrementalContext.errors, resolvedItem),
-        (error) => ({
-          errors: withError(incrementalContext.errors, error),
+        (error: unknown) => ({
+          errors: withError(incrementalContext.errors, error as GraphQLError),
         }),
       );
   }

@@ -23,65 +23,66 @@ module.exports = {
     'require-to-string-tag': 'off',
 
     //////////////////////////////////////////////////////////////////////////////
-    // `eslint-plugin-n` rule list based on `v15.7.x`
+    // `eslint-plugin-n` rule list based on `v17.10.x`
     //////////////////////////////////////////////////////////////////////////////
 
-    // Possible Errors
-    // https://github.com/eslint-community/eslint-plugin-n#possible-errors
+    // Rules
+    // https://github.com/eslint-community/eslint-plugin-n/?tab=readme-ov-file#-rules
+    'n/callback-return': 'error',
+    'n/exports-style': 'off', // TODO: consider
+    'n/file-extension-in-import': 'error',
+    'n/global-require': 'error',
     'n/handle-callback-err': ['error', 'error'],
+    'n/hashbang': 'error',
     'n/no-callback-literal': 'error',
+    'n/no-deprecated-api': 'error',
     'n/no-exports-assign': 'error',
     'n/no-extraneous-import': 'error',
     'n/no-extraneous-require': 'error',
     'n/no-missing-import': 'error',
     'n/no-missing-require': 'error',
+    'n/no-mixed-requires': 'error',
     'n/no-new-require': 'error',
     'n/no-path-concat': 'error',
+    'n/no-process-env': 'off',
     'n/no-process-exit': 'off',
+    'n/no-restricted-import': 'off',
+    'n/no-restricted-require': 'off',
+    'n/no-sync': 'off', // TODO: consider enabling, currently triggers with executeSync/graphqlSync, without ability to add exceptions
     'n/no-unpublished-bin': 'error',
     'n/no-unpublished-import': 'error',
     'n/no-unpublished-require': 'error',
     'n/no-unsupported-features/es-builtins': 'error',
     'n/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
     'n/no-unsupported-features/node-builtins': 'error',
-    'n/process-exit-as-throw': 'error',
-    'n/shebang': 'error',
-
-    // Best Practices
-    // https://github.com/eslint-community/eslint-plugin-n#best-practices
-    'n/no-deprecated-api': 'error',
-
-    // Stylistic Issues
-    // https://github.com/eslint-community/eslint-plugin-n#stylistic-issues
-    'n/callback-return': 'error',
-    'n/exports-style': 'off', // TODO: consider
-    'n/file-extension-in-import': 'error',
-    'n/global-require': 'error',
-    'n/no-mixed-requires': 'error',
-    'n/no-process-env': 'off',
-    'n/no-restricted-import': 'off',
-    'n/no-restricted-require': 'off',
-    'n/no-sync': 'error',
     'n/prefer-global/buffer': 'error',
     'n/prefer-global/console': 'error',
     'n/prefer-global/process': 'error',
     'n/prefer-global/text-decoder': 'error',
     'n/prefer-global/text-encoder': 'error',
-    'n/prefer-global/url-search-params': 'error',
     'n/prefer-global/url': 'error',
+    'n/prefer-global/url-search-params': 'error',
+    'n/prefer-node-protocol': 'error',
     'n/prefer-promises/dns': 'off',
     'n/prefer-promises/fs': 'off',
+    'n/process-exit-as-throw': 'error',
+    'n/shebang': 'error',
 
     //////////////////////////////////////////////////////////////////////////////
-    // `eslint-plugin-import` rule list based on `v2.27.x`
+    // `eslint-plugin-import` rule list based on `v2.29.x`
     //////////////////////////////////////////////////////////////////////////////
 
     // Static analysis
     // https://github.com/benmosher/eslint-plugin-import#static-analysis
-    'import/no-unresolved': 'off', // TODO:  blocked by https://github.com/import-js/eslint-plugin-import/issues/2170
-    'import/named': 'error',
     'import/default': 'error',
+    'import/named': 'error',
     'import/namespace': 'error',
+    'import/no-absolute-path': 'error',
+    'import/no-cycle': 'error',
+    'import/no-dynamic-require': 'error',
+    'import/no-internal-modules': 'off',
+    'import/no-relative-packages': 'off',
+    'import/no-relative-parent-imports': 'off',
     'import/no-restricted-paths': [
       'error',
       {
@@ -89,15 +90,10 @@ module.exports = {
         zones: [{ target: './src', from: 'src/__testUtils__' }],
       },
     ],
-    'import/no-absolute-path': 'error',
-    'import/no-dynamic-require': 'error',
-    'import/no-internal-modules': 'off',
-    'import/no-webpack-loader-syntax': 'error',
     'import/no-self-import': 'error',
-    'import/no-cycle': 'error',
+    'import/no-unresolved': 'off', // TODO:  blocked by https://github.com/import-js/eslint-plugin-import/issues/2170
     'import/no-useless-path-segments': 'error',
-    'import/no-relative-parent-imports': 'off',
-    'import/no-relative-packages': 'off',
+    'import/no-webpack-loader-syntax': 'error',
 
     // Helpful warnings
     // https://github.com/benmosher/eslint-plugin-import#helpful-warnings
@@ -121,28 +117,29 @@ module.exports = {
     // Style guide
     // https://github.com/benmosher/eslint-plugin-import#style-guide
     'import/consistent-type-specifier-style': 'error',
-    'import/first': 'error',
+    'import/dynamic-import-chunkname': 'off',
     'import/exports-last': 'off',
-    'import/no-duplicates': 'error',
-    'import/no-namespace': 'error',
     'import/extensions': ['error', 'ignorePackages'],
+    'import/first': 'error',
+    'import/group-exports': 'off',
+    'import/imports-first': 'off',
+    'import/max-dependencies': 'off',
+    'import/newline-after-import': 'error',
+    'import/no-anonymous-default-export': 'error',
+    'import/no-default-export': 'error',
+    'import/no-duplicates': 'error',
+    'import/no-named-default': 'error',
+    'import/no-named-export': 'off',
+    'import/no-namespace': 'error',
+    'import/no-unassigned-import': 'error',
     'import/order': [
       'error',
       { 'newlines-between': 'always-and-inside-groups' },
     ],
-    'import/newline-after-import': 'error',
     'import/prefer-default-export': 'off',
-    'import/max-dependencies': 'off',
-    'import/no-unassigned-import': 'error',
-    'import/no-named-default': 'error',
-    'import/no-default-export': 'error',
-    'import/no-named-export': 'off',
-    'import/no-anonymous-default-export': 'error',
-    'import/group-exports': 'off',
-    'import/dynamic-import-chunkname': 'off',
 
     //////////////////////////////////////////////////////////////////////////////
-    // `eslint-plugin-simple-import-sort` rule list based on `v10.0.x`
+    // `eslint-plugin-simple-import-sort` rule list based on `v12.1.x`
     // https://github.com/lydell/eslint-plugin-simple-import-sort
     //////////////////////////////////////////////////////////////////////////////
 
@@ -182,7 +179,7 @@ module.exports = {
     'simple-import-sort/exports': 'off', // TODO: error
 
     //////////////////////////////////////////////////////////////////////////////
-    // ESLint builtin rules list based on `v8.38.x`
+    // ESLint builtin rules list based on `v8.57.x`
     //////////////////////////////////////////////////////////////////////////////
 
     // Possible Errors
@@ -284,7 +281,7 @@ module.exports = {
     'max-lines': 'off',
     'max-lines-per-function': 'off',
     'max-nested-callbacks': 'off',
-    'max-params': ['error', 5], // TODO: drop to default number, which is 3
+    'max-params': ['error', { max: 5 }], // TODO: drop to default number, which is 3
     'max-statements': 'off',
     'multiline-comment-style': 'off',
     'new-cap': 'error',
@@ -308,8 +305,6 @@ module.exports = {
     'no-extra-bind': 'error',
     'no-extra-boolean-cast': 'error',
     'no-extra-label': 'error',
-    'no-extra-semi': 'off',
-    'no-floating-decimal': 'off',
     'no-global-assign': 'error',
     'no-implicit-coercion': 'error',
     'no-implicit-globals': 'off',
@@ -323,7 +318,6 @@ module.exports = {
     'no-lonely-if': 'error',
     'no-loop-func': 'error',
     'no-magic-numbers': 'off',
-    'no-mixed-operators': 'off',
     'no-multi-assign': 'off',
     'no-multi-str': 'error',
     'no-negated-condition': 'off',
@@ -356,7 +350,6 @@ module.exports = {
       },
     ],
     'no-return-assign': 'error',
-    'no-return-await': 'error',
     'no-script-url': 'error',
     'no-sequences': 'error',
     'no-shadow': 'error',
@@ -383,7 +376,6 @@ module.exports = {
     'no-with': 'error',
     'object-shorthand': 'error',
     'one-var': ['error', 'never'],
-    'one-var-declaration-per-line': 'off',
     'operator-assignment': 'error',
     'prefer-arrow-callback': 'error',
     'prefer-const': 'error',
@@ -398,7 +390,6 @@ module.exports = {
     'prefer-rest-params': 'off', // TODO: error
     'prefer-spread': 'error',
     'prefer-template': 'off',
-    'quote-props': ['error', 'as-needed'],
     radix: 'error',
     'require-await': 'error',
     'require-unicode-regexp': 'off',
@@ -406,7 +397,6 @@ module.exports = {
     'sort-imports': 'off',
     'sort-keys': 'off',
     'sort-vars': 'off',
-    'spaced-comment': 'error',
     strict: 'error',
     'symbol-description': 'off',
     'vars-on-top': 'error',
@@ -414,75 +404,7 @@ module.exports = {
 
     // Layout & Formatting
     // https://eslint.org/docs/latest/rules/#layout--formatting
-    'line-comment-position': 'off',
-    'lines-around-comment': 'off',
-    'lines-between-class-members': [
-      'error',
-      'always',
-      { exceptAfterSingleLine: true },
-    ],
-    'max-statements-per-line': 'off',
-    'no-tabs': 'error',
-    'padding-line-between-statements': 'off',
-    quotes: ['error', 'single', { avoidEscape: true }],
-
-    // Bellow rules are disabled because coflicts with Prettier, see:
-    // https://github.com/prettier/eslint-config-prettier/blob/master/index.js
-    'array-bracket-newline': 'off',
-    'array-bracket-spacing': 'off',
-    'array-element-newline': 'off',
-    'arrow-parens': 'off',
-    'arrow-spacing': 'off',
-    'block-spacing': 'off',
-    'brace-style': 'off',
-    'comma-dangle': 'off',
-    'comma-spacing': 'off',
-    'comma-style': 'off',
-    'computed-property-spacing': 'off',
-    'dot-location': 'off',
-    'eol-last': 'off',
-    'func-call-spacing': 'off',
-    'function-call-argument-newline': 'off',
-    'function-paren-newline': 'off',
-    'generator-star-spacing': 'off',
-    'implicit-arrow-linebreak': 'off',
-    indent: 'off',
-    'jsx-quotes': 'off',
-    'key-spacing': 'off',
-    'keyword-spacing': 'off',
-    'linebreak-style': 'off',
-    'max-len': 'off',
-    'multiline-ternary': 'off',
-    'newline-per-chained-call': 'off',
-    'new-parens': 'off',
-    'no-extra-parens': 'off',
-    'no-mixed-spaces-and-tabs': 'off',
-    'no-multi-spaces': 'off',
-    'no-multiple-empty-lines': 'off',
-    'no-trailing-spaces': 'off',
-    'no-whitespace-before-property': 'off',
-    'nonblock-statement-body-position': 'off',
-    'object-curly-newline': 'off',
-    'object-curly-spacing': 'off',
-    'object-property-newline': 'off',
-    'operator-linebreak': 'off',
-    'padded-blocks': 'off',
-    'rest-spread-spacing': 'off',
-    semi: 'off',
-    'semi-spacing': 'off',
-    'semi-style': 'off',
-    'space-before-blocks': 'off',
-    'space-before-function-paren': 'off',
-    'space-in-parens': 'off',
-    'space-infix-ops': 'off',
-    'space-unary-ops': 'off',
-    'switch-colon-spacing': 'off',
-    'template-curly-spacing': 'off',
-    'template-tag-spacing': 'off',
     'unicode-bom': 'off',
-    'wrap-iife': 'off',
-    'wrap-regex': 'off',
-    'yield-star-spacing': 'off',
   },
   overrides: [
     {
@@ -502,18 +424,18 @@ module.exports = {
       extends: ['plugin:import/typescript'],
       rules: {
         //////////////////////////////////////////////////////////////////////////
-        // `eslint-plugin-tsdoc` rule list based on `v0.2.x`
+        // `eslint-plugin-tsdoc` rule list based on `v0.3.x`
         // https://github.com/microsoft/tsdoc/tree/master/eslint-plugin
         //////////////////////////////////////////////////////////////////////////
 
         'tsdoc/syntax': 'error',
 
         //////////////////////////////////////////////////////////////////////////
-        // `@typescript-eslint/eslint-plugin` rule list based on `v5.58.x`
+        // `@typescript-eslint/eslint-plugin` rule list based on `v8.4.x`
         //////////////////////////////////////////////////////////////////////////
 
         // Supported Rules
-        // https://typescript-eslint.io/rules/#extension-rules
+        // https://typescript-eslint.io/rules/
         '@typescript-eslint/adjacent-overload-signatures': 'error',
         '@typescript-eslint/array-type': ['error', { default: 'generic' }],
         '@typescript-eslint/await-thenable': 'error',
@@ -524,40 +446,55 @@ module.exports = {
         '@typescript-eslint/ban-tslint-comment': 'error',
         '@typescript-eslint/ban-types': 'off', // TODO: temporarily disabled
         '@typescript-eslint/class-literal-property-style': 'off', // TODO: enable after TS conversion
+        '@typescript-eslint/class-methods-use-this': 'off',
         '@typescript-eslint/consistent-generic-constructors': 'error',
         '@typescript-eslint/consistent-indexed-object-style': [
           'error',
           'index-signature',
         ],
+        '@typescript-eslint/consistent-return': 'off',
         '@typescript-eslint/consistent-type-assertions': 'off', // TODO: temporarily disable
         '@typescript-eslint/consistent-type-definitions': 'error',
         '@typescript-eslint/consistent-type-exports': 'error',
         '@typescript-eslint/consistent-type-imports': 'error',
+        '@typescript-eslint/default-param-last': 'error',
+        '@typescript-eslint/dot-notation': 'error',
         '@typescript-eslint/explicit-function-return-type': 'off', // TODO: consider
         '@typescript-eslint/explicit-member-accessibility': 'off', // TODO: consider
         '@typescript-eslint/explicit-module-boundary-types': 'off', // TODO: consider
+        '@typescript-eslint/init-declarations': 'off',
+        '@typescript-eslint/max-params': ['error', { max: 5 }], // TODO: drop to default number, which is 3
         '@typescript-eslint/member-ordering': 'error',
         '@typescript-eslint/method-signature-style': 'error',
         '@typescript-eslint/naming-convention': 'off', // TODO: consider
+        '@typescript-eslint/no-array-constructor': 'error',
+        '@typescript-eslint/no-array-delete': 'error',
         '@typescript-eslint/no-base-to-string': 'error',
         '@typescript-eslint/no-confusing-non-null-assertion': 'error',
         '@typescript-eslint/no-confusing-void-expression': 'off', // TODO: enable with ignoreArrowShorthand
+        '@typescript-eslint/no-deprecated': 'off',
+        '@typescript-eslint/no-dupe-class-members': 'error',
         '@typescript-eslint/no-duplicate-enum-values': 'error',
         '@typescript-eslint/no-duplicate-type-constituents': 'error',
         '@typescript-eslint/no-dynamic-delete': 'off',
-        '@typescript-eslint/no-empty-interface': 'error',
+        '@typescript-eslint/no-empty-function': 'error',
+        '@typescript-eslint/no-empty-object-type': 'error',
         '@typescript-eslint/no-explicit-any': 'off', // TODO: error
         '@typescript-eslint/no-extra-non-null-assertion': 'error',
         '@typescript-eslint/no-extraneous-class': 'off', // TODO: consider
         '@typescript-eslint/no-floating-promises': 'error',
         '@typescript-eslint/no-for-in-array': 'error',
-        '@typescript-eslint/no-implicit-any-catch': 'off', // TODO: Enable after TS conversion
-        '@typescript-eslint/no-import-type-side-effects': 'error',
         '@typescript-eslint/no-implied-eval': 'error',
+        '@typescript-eslint/no-import-type-side-effects': 'error',
         '@typescript-eslint/no-inferrable-types': [
           'error',
           { ignoreParameters: true, ignoreProperties: true },
         ],
+        '@typescript-eslint/no-invalid-this': 'error',
+        '@typescript-eslint/no-invalid-void-type': 'error',
+        '@typescript-eslint/no-loop-func': 'error',
+        '@typescript-eslint/no-magic-numbers': 'off',
+        '@typescript-eslint/no-meaningless-void-operator': 'error',
         '@typescript-eslint/no-misused-new': 'error',
         '@typescript-eslint/no-misused-promises': 'error',
         '@typescript-eslint/no-mixed-enums': 'error',
@@ -565,17 +502,23 @@ module.exports = {
         '@typescript-eslint/no-non-null-asserted-nullish-coalescing': 'error',
         '@typescript-eslint/no-non-null-asserted-optional-chain': 'error',
         '@typescript-eslint/no-non-null-assertion': 'error',
+        '@typescript-eslint/no-redeclare': 'error',
         '@typescript-eslint/no-redundant-type-constituents': 'error',
-        '@typescript-eslint/no-invalid-void-type': 'error',
         '@typescript-eslint/no-require-imports': 'error',
+        '@typescript-eslint/no-restricted-imports': 'error',
+        '@typescript-eslint/no-restricted-types': 'error',
         '@typescript-eslint/no-this-alias': 'error',
-        '@typescript-eslint/no-type-alias': 'off', // TODO: consider
+        '@typescript-eslint/no-shadow': 'error',
         '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'error',
         '@typescript-eslint/no-unnecessary-condition': 'off', // TODO: temporary disable
+        '@typescript-eslint/no-unnecessary-parameter-property-assignment':
+          'error',
         '@typescript-eslint/no-unnecessary-qualifier': 'error',
+        '@typescript-eslint/no-unnecessary-template-expression': 'error',
         '@typescript-eslint/no-unnecessary-type-arguments': 'error',
         '@typescript-eslint/no-unnecessary-type-assertion': 'error',
         '@typescript-eslint/no-unnecessary-type-constraint': 'error',
+        '@typescript-eslint/no-unnecessary-type-parameters': 'error',
         '@typescript-eslint/no-unsafe-argument': 'off', // TODO: consider
         '@typescript-eslint/no-unsafe-assignment': 'off', // TODO: consider
         '@typescript-eslint/no-unsafe-call': 'off', // TODO: consider
@@ -583,12 +526,32 @@ module.exports = {
         '@typescript-eslint/no-unsafe-enum-comparison': 'off', // TODO: error
         '@typescript-eslint/no-unsafe-member-access': 'off', // TODO: consider
         '@typescript-eslint/no-unsafe-return': 'off', // TODO: consider
+        '@typescript-eslint/no-unsafe-unary-minus': 'error',
+        '@typescript-eslint/no-unused-expressions': 'error',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            args: 'all',
+            argsIgnorePattern: '^_',
+            caughtErrors: 'all',
+            caughtErrorsIgnorePattern: '^_',
+            destructuredArrayIgnorePattern: '^_',
+            varsIgnorePattern: '^_',
+            ignoreRestSiblings: true,
+          },
+        ],
+        '@typescript-eslint/no-use-before-define': 'off',
+        '@typescript-eslint/no-useless-constructor': 'error',
         '@typescript-eslint/no-useless-empty-export': 'error',
         '@typescript-eslint/no-var-requires': 'error',
+        '@typescript-eslint/no-wrapper-object-types': 'error',
         '@typescript-eslint/non-nullable-type-assertion-style': 'off', //TODO: temporarily disabled
+        '@typescript-eslint/only-throw-error': 'error',
         '@typescript-eslint/parameter-properties': 'error',
         '@typescript-eslint/prefer-as-const': 'error',
+        '@typescript-eslint/prefer-destructuring': 'off',
         '@typescript-eslint/prefer-enum-initializers': 'error',
+        '@typescript-eslint/prefer-find': 'error',
         '@typescript-eslint/prefer-for-of': 'error',
         '@typescript-eslint/prefer-function-type': 'error',
         '@typescript-eslint/prefer-includes': 'error',
@@ -596,18 +559,19 @@ module.exports = {
         '@typescript-eslint/prefer-namespace-keyword': 'error',
         '@typescript-eslint/prefer-nullish-coalescing': 'error',
         '@typescript-eslint/prefer-optional-chain': 'error',
+        '@typescript-eslint/prefer-promise-reject-errors': 'error',
         '@typescript-eslint/prefer-readonly': 'off',
         '@typescript-eslint/prefer-readonly-parameter-types': 'off', // TODO: consider
         '@typescript-eslint/prefer-reduce-type-parameter': 'error',
         '@typescript-eslint/prefer-regexp-exec': 'off',
         '@typescript-eslint/prefer-return-this-type': 'error',
         '@typescript-eslint/prefer-string-starts-ends-with': 'error',
-        '@typescript-eslint/prefer-ts-expect-error': 'error',
         '@typescript-eslint/promise-function-async': 'off',
         '@typescript-eslint/require-array-sort-compare': 'error',
+        '@typescript-eslint/require-await': 'error',
         '@typescript-eslint/restrict-plus-operands': 'off', // TODO: temporarily disabled
         '@typescript-eslint/restrict-template-expressions': 'off', // TODO: temporarily disabled
-        '@typescript-eslint/sort-type-union-intersection-members': 'off', // TODO: consider
+        '@typescript-eslint/return-await': 'error',
         '@typescript-eslint/strict-boolean-expressions': [
           'error',
           { allowNullableBoolean: true }, // TODO: consider removing
@@ -617,87 +581,38 @@ module.exports = {
         '@typescript-eslint/typedef': 'off',
         '@typescript-eslint/unbound-method': 'off', // TODO: consider
         '@typescript-eslint/unified-signatures': 'error',
+        '@typescript-eslint/use-unknown-in-catch-callback-variable': 'error',
 
-        // Extension Rules
-        // https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#extension-rules
+        // Disable conflicting ESLint rules for Extension Rules
+        // https://typescript-eslint.io/rules/?=extension-xdeprecated
 
-        // Disable conflicting ESLint rules and enable TS-compatible ones
+        // Below list intentionally includes ESLint rules disabled above.
+        // If any of the above rules are enabled in the future, they must still be disabled for TS files.
+        'class-methods-use-this': 'off',
+        'consistent-return': 'off',
         'default-param-last': 'off',
         'dot-notation': 'off',
-        'lines-between-class-members': 'off',
+        'init-declarations': 'off',
+        'max-params': 'off',
         'no-array-constructor': 'off',
         'no-dupe-class-members': 'off',
         'no-empty-function': 'off',
+        'no-implied-eval': 'off',
         'no-invalid-this': 'off',
         'no-loop-func': 'off',
-        'no-loss-of-precision': 'off',
+        'no-magic-numbers': 'off',
         'no-redeclare': 'off',
-        'no-throw-literal': 'off',
+        'no-restricted-imports': 'off',
         'no-shadow': 'off',
         'no-unused-expressions': 'off',
         'no-unused-vars': 'off',
+        'no-use-before-define': 'off',
         'no-useless-constructor': 'off',
+        'only-throw-error': 'off',
+        'prefer-destructuring': 'off',
+        'prefer-promise-reject-errors': 'off',
         'require-await': 'off',
-        'no-return-await': 'off',
-
-        '@typescript-eslint/default-param-last': 'error',
-        '@typescript-eslint/dot-notation': 'error',
-        '@typescript-eslint/lines-around-comment': 'off',
-        '@typescript-eslint/lines-between-class-members': [
-          'error',
-          'always',
-          { exceptAfterSingleLine: true },
-        ],
-        '@typescript-eslint/no-array-constructor': 'error',
-        '@typescript-eslint/no-dupe-class-members': 'error',
-        '@typescript-eslint/no-empty-function': 'error',
-        '@typescript-eslint/no-invalid-this': 'error',
-        '@typescript-eslint/no-loop-func': 'error',
-        '@typescript-eslint/no-loss-of-precision': 'error',
-        '@typescript-eslint/no-redeclare': 'error',
-        '@typescript-eslint/no-throw-literal': 'error', // TODO: [error, { allowThrowingAny: false, allowThrowingUnknown: false }]
-        '@typescript-eslint/no-shadow': 'error',
-        '@typescript-eslint/no-unused-expressions': 'error',
-        '@typescript-eslint/no-unused-vars': [
-          'error',
-          {
-            vars: 'all',
-            args: 'all',
-            argsIgnorePattern: '^_',
-            varsIgnorePattern: '^_T',
-          },
-        ],
-        '@typescript-eslint/no-useless-constructor': 'error',
-        '@typescript-eslint/require-await': 'error',
-        '@typescript-eslint/return-await': 'error',
-
-        // Disable for JS and TS
-        '@typescript-eslint/init-declarations': 'off',
-        '@typescript-eslint/no-magic-numbers': 'off',
-        '@typescript-eslint/no-restricted-imports': 'off',
-        '@typescript-eslint/no-use-before-define': 'off',
-        '@typescript-eslint/no-duplicate-imports': 'off', // Superseded by `import/no-duplicates`
-
-        // Below rules are disabled because they conflict with Prettier, see:
-        // https://github.com/prettier/eslint-config-prettier/blob/main/index.js
-        '@typescript-eslint/block-spacing': 'off',
-        '@typescript-eslint/object-curly-spacing': 'off',
-        '@typescript-eslint/quotes': 'off',
-        '@typescript-eslint/brace-style': 'off',
-        '@typescript-eslint/comma-dangle': 'off',
-        '@typescript-eslint/comma-spacing': 'off',
-        '@typescript-eslint/func-call-spacing': 'off',
-        '@typescript-eslint/indent': 'off',
-        '@typescript-eslint/key-spacing': 'off',
-        '@typescript-eslint/keyword-spacing': 'off',
-        '@typescript-eslint/member-delimiter-style': 'off',
-        '@typescript-eslint/no-extra-parens': 'off',
-        '@typescript-eslint/no-extra-semi': 'off',
-        '@typescript-eslint/semi': 'off',
-        '@typescript-eslint/space-before-blocks': 'off',
-        '@typescript-eslint/space-before-function-paren': 'off',
-        '@typescript-eslint/space-infix-ops': 'off',
-        '@typescript-eslint/type-annotation-spacing': 'off',
+        'return-await': 'off',
       },
     },
     {
@@ -778,6 +693,11 @@ module.exports = {
       },
       rules: {
         'only-ascii': ['error', { allowEmoji: true }],
+        // TODO: remove when fetch/cpSync stabilizes across all node versions
+        'n/no-unsupported-features/node-builtins': [
+          'error',
+          { ignores: ['fetch', 'fs.cpSync'] },
+        ],
         'n/no-unpublished-import': 'off',
         'n/no-sync': 'off',
         'import/no-namespace': 'off',

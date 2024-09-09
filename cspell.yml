@@ -50,6 +50,7 @@ words:
 
   # TODO: contribute upstream
   - deno
+  - hashbang
 
   # TODO: remove bellow words
   - QLID # GraphQLID

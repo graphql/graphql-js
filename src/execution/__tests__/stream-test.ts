@@ -2,6 +2,7 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
@@ -2500,13 +2501,7 @@ describe('Execute: stream directive', () => {
       done: true,
       value: undefined,
     });
-    try {
-      await throwPromise; /* c8 ignore start */
-      // Not reachable, always throws
-      /* c8 ignore stop */
-    } catch (e) {
-      // ignore error
-    }
+    await expectPromise(throwPromise).toRejectWith('bad');
     assert(returned);
   });
 });

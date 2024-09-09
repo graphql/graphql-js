@@ -405,7 +405,7 @@ describe('Execute: Handles basic execution tasks', () => {
         throw new Error('Error getting syncError');
       },
       syncRawError() {
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
         throw 'Error getting syncRawError';
       },
       syncReturnError() {
@@ -428,11 +428,11 @@ describe('Execute: Handles basic execution tasks', () => {
         );
       },
       asyncRawReject() {
-        // eslint-disable-next-line prefer-promise-reject-errors
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         return Promise.reject('Error getting asyncRawReject');
       },
       asyncEmptyReject() {
-        // eslint-disable-next-line prefer-promise-reject-errors
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         return Promise.reject();
       },
       asyncError() {
@@ -442,7 +442,7 @@ describe('Execute: Handles basic execution tasks', () => {
       },
       asyncRawError() {
         return new Promise(() => {
-          // eslint-disable-next-line @typescript-eslint/no-throw-literal
+          // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
           throw 'Error getting asyncRawError';
         });
       },

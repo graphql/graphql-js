@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 
 export const bigSchemaSDL = fs.readFileSync(
   new URL('github-schema.graphql', import.meta.url),

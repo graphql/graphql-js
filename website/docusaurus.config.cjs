@@ -2,8 +2,7 @@
 
 const path = require('path');
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const { themes } = require('prism-react-renderer');
 
 /** @type {import('@docusaurus/types').Config} */
 module.exports = {
@@ -127,8 +126,8 @@ module.exports = {
         copyright: `Copyright &copy; ${new Date().getFullYear()} <a href="https://graphql.org/foundation/" target="_blank" rel="noopener noreferrer">The GraphQL Foundation</a>. All rights reserved. <br/> For web site terms of use, trademark policy and general project policies please see&nbsp; <a href="https://lfprojects.org/" target="_blank" rel="noopener noreferrer">https://lfprojects.org</a>.`,
       },
       prism: {
-        theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
+        theme: themes.lightCodeTheme,
+        darkTheme: themes.darkCodeTheme,
       },
     }),
 };

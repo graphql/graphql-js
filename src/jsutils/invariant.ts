@@ -3,8 +3,6 @@ export function invariant(
   message?: string,
 ): asserts condition {
   if (!condition) {
-    throw new Error(
-      message != null ? message : 'Unexpected invariant triggered.',
-    );
+    throw new Error(message ?? 'Unexpected invariant triggered.');
   }
 }

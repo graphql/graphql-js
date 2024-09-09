@@ -265,6 +265,7 @@ describe('mapAsyncIterable', () => {
     await expectPromise(doubles.next()).toRejectWith('Goodbye');
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   async function testClosesSourceWithMapper<T>(mapper: (value: number) => T) {
     let didVisitFinally = false;
 

@@ -5,7 +5,12 @@ import ts from 'typescript';
 
 import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
 import { inlineInvariant } from './inline-invariant.js';
-import { readTSConfig, showDirStats, writeGeneratedFile } from './utils.js';
+import {
+  prettify,
+  readTSConfig,
+  showDirStats,
+  writeGeneratedFile,
+} from './utils.js';
 
 fs.rmSync('./denoDist', { recursive: true, force: true });
 fs.mkdirSync('./denoDist');
@@ -32,7 +37,9 @@ for (const sourceFile of tsProgram.getSourceFiles()) {
 
   const filepath = path.relative('./src', sourceFile.fileName);
   const destPath = path.join('./denoDist', filepath);
-  writeGeneratedFile(destPath, newContent);
+  // eslint-disable-next-line no-await-in-loop
+  const prettified = await prettify(destPath, newContent);
+  writeGeneratedFile(destPath, prettified);
 }
 
 fs.copyFileSync('./LICENSE', './denoDist/LICENSE');
