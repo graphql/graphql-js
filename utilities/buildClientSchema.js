@@ -106,27 +106,23 @@ function buildClientSchema(introspection, options) {
     // Given a type's introspection result, construct the correct
     // GraphQLType instance.
     function buildType(type) {
-        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-        if (type != null && type.name != null && type.kind != null) {
-            // FIXME: Properly type IntrospectionType, it's a breaking change so fix in v17
-            // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-            switch (type.kind) {
-                case introspection_js_1.TypeKind.SCALAR:
-                    return buildScalarDef(type);
-                case introspection_js_1.TypeKind.OBJECT:
-                    return buildObjectDef(type);
-                case introspection_js_1.TypeKind.INTERFACE:
-                    return buildInterfaceDef(type);
-                case introspection_js_1.TypeKind.UNION:
-                    return buildUnionDef(type);
-                case introspection_js_1.TypeKind.ENUM:
-                    return buildEnumDef(type);
-                case introspection_js_1.TypeKind.INPUT_OBJECT:
-                    return buildInputObjectDef(type);
-            }
+        switch (type.kind) {
+            case introspection_js_1.TypeKind.SCALAR:
+                return buildScalarDef(type);
+            case introspection_js_1.TypeKind.OBJECT:
+                return buildObjectDef(type);
+            case introspection_js_1.TypeKind.INTERFACE:
+                return buildInterfaceDef(type);
+            case introspection_js_1.TypeKind.UNION:
+                return buildUnionDef(type);
+            case introspection_js_1.TypeKind.ENUM:
+                return buildEnumDef(type);
+            case introspection_js_1.TypeKind.INPUT_OBJECT:
+                return buildInputObjectDef(type);
         }
-        const typeStr = (0, inspect_js_1.inspect)(type);
-        throw new Error(`Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${typeStr}.`);
+        // Unreachable.
+        // @ts-expect-error
+        throw new Error(`Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${(0, inspect_js_1.inspect)(type)}.`);
     }
     function buildScalarDef(scalarIntrospection) {
         return new definition_js_1.GraphQLScalarType({

@@ -103,27 +103,23 @@ export function buildClientSchema(introspection, options) {
     // Given a type's introspection result, construct the correct
     // GraphQLType instance.
     function buildType(type) {
-        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-        if (type != null && type.name != null && type.kind != null) {
-            // FIXME: Properly type IntrospectionType, it's a breaking change so fix in v17
-            // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-            switch (type.kind) {
-                case TypeKind.SCALAR:
-                    return buildScalarDef(type);
-                case TypeKind.OBJECT:
-                    return buildObjectDef(type);
-                case TypeKind.INTERFACE:
-                    return buildInterfaceDef(type);
-                case TypeKind.UNION:
-                    return buildUnionDef(type);
-                case TypeKind.ENUM:
-                    return buildEnumDef(type);
-                case TypeKind.INPUT_OBJECT:
-                    return buildInputObjectDef(type);
-            }
+        switch (type.kind) {
+            case TypeKind.SCALAR:
+                return buildScalarDef(type);
+            case TypeKind.OBJECT:
+                return buildObjectDef(type);
+            case TypeKind.INTERFACE:
+                return buildInterfaceDef(type);
+            case TypeKind.UNION:
+                return buildUnionDef(type);
+            case TypeKind.ENUM:
+                return buildEnumDef(type);
+            case TypeKind.INPUT_OBJECT:
+                return buildInputObjectDef(type);
         }
-        const typeStr = inspect(type);
-        throw new Error(`Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${typeStr}.`);
+        // Unreachable.
+        // @ts-expect-error
+        throw new Error(`Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${inspect(type)}.`);
     }
     function buildScalarDef(scalarIntrospection) {
         return new GraphQLScalarType({
