@@ -785,14 +785,9 @@ function ensureValidRuntimeType(runtimeTypeName, exeContext, returnType, fieldGr
     if (runtimeTypeName == null) {
         throw new GraphQLError(`Abstract type "${returnType}" must resolve to an Object type at runtime for field "${info.parentType}.${info.fieldName}". Either the "${returnType}" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.`, { nodes: toNodes(fieldGroup) });
     }
-    // releases before 16.0.0 supported returning `GraphQLObjectType` from `resolveType`
-    // TODO: remove in 17.0.0 release
-    if (isObjectType(runtimeTypeName)) {
-        throw new GraphQLError('Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.');
-    }
     if (typeof runtimeTypeName !== 'string') {
         throw new GraphQLError(`Abstract type "${returnType}" must resolve to an Object type at runtime for field "${info.parentType}.${info.fieldName}" with ` +
-            `value ${inspect(result)}, received "${inspect(runtimeTypeName)}".`);
+            `value ${inspect(result)}, received "${inspect(runtimeTypeName)}", which is not a valid Object type name.`);
     }
     const runtimeType = exeContext.schema.getType(runtimeTypeName);
     if (runtimeType == null) {
