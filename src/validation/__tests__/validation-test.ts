@@ -9,7 +9,6 @@ import type { DirectiveNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
-import { TypeInfo } from '../../utilities/TypeInfo.js';
 
 import { validate } from '../validate.js';
 import type { ValidationContext } from '../ValidationContext.js';
