@@ -83,11 +83,18 @@ exports.QueryDocumentKeys = {
     ListNullabilityOperator: ['nullabilityAssertion'],
     NonNullAssertion: ['nullabilityAssertion'],
     ErrorBoundary: ['nullabilityAssertion'],
-    FragmentSpread: ['name', 'arguments', 'directives'],
+    FragmentSpread: [
+        'name',
+        // Note: Fragment arguments are experimental and may be changed or removed
+        // in the future.
+        'arguments',
+        'directives',
+    ],
     InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
     FragmentDefinition: [
         'name',
-        // Note: fragment variable definitions are deprecated and will removed in v17.0.0
+        // Note: Fragment variables are experimental and may be changed or removed
+        // in the future.
         'variableDefinitions',
         'typeCondition',
         'directives',
