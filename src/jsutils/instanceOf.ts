@@ -1,6 +1,6 @@
 import { inspect } from './inspect.js';
 
-/* c8 ignore next 3 */
+/* c8 ignore next 6 */
 const isProduction =
   globalThis.process == null ||
   // eslint-disable-next-line no-undef
