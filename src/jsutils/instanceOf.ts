@@ -1,10 +1,12 @@
 import { inspect } from './inspect.js';
 
 /* c8 ignore next 3 */
-const isDevelopment =
-  globalThis.process != null &&
+const isProduction =
+  globalThis.process == null ||
   // eslint-disable-next-line no-undef
-  process.env.NODE_ENV === 'development';
+  (process.env.NODE_ENV !== 'development' &&
+    // eslint-disable-next-line no-undef
+    process.env.NODE_ENV !== 'test');
 
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
@@ -13,8 +15,13 @@ const isDevelopment =
  * See: https://webpack.js.org/guides/production/
  */
 export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
-  isDevelopment
+  /* c8 ignore next 6 */
+  // FIXME: https://github.com/graphql/graphql-js/issues/2317
+  isProduction
     ? function instanceOf(value: unknown, constructor: Constructor): boolean {
+        return value instanceof constructor;
+      }
+    : function instanceOf(value: unknown, constructor: Constructor): boolean {
         if (value instanceof constructor) {
           return true;
         }
@@ -45,11 +52,6 @@ spurious results.`,
           }
         }
         return false;
-      }
-    : /* c8 ignore next 4 */
-      // FIXME: https://github.com/graphql/graphql-js/issues/2317
-      function instanceOf(value: unknown, constructor: Constructor): boolean {
-        return value instanceof constructor;
       };
 
 interface Constructor extends Function {
