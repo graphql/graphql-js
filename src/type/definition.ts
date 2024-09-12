@@ -718,10 +718,10 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-
-    // prettier-ignore
-    // FIXME: blocked by https://github.com/prettier/prettier/issues/14625
-    this._fields = (defineFieldMap<TSource, TContext>).bind(undefined, config.fields);
+    this._fields = (defineFieldMap<TSource, TContext>).bind(
+      undefined,
+      config.fields,
+    );
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
 
@@ -1035,10 +1035,10 @@ export class GraphQLInterfaceType<TSource = any, TContext = any> {
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-
-    // prettier-ignore
-    // FIXME: blocked by https://github.com/prettier/prettier/issues/14625
-    this._fields = (defineFieldMap<TSource, TContext>).bind(undefined, config.fields);
+    this._fields = (defineFieldMap<TSource, TContext>).bind(
+      undefined,
+      config.fields,
+    );
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
 
