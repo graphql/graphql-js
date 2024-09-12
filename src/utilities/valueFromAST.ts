@@ -167,7 +167,10 @@ export function valueFromAST(
     // no value is returned.
     let result;
     try {
-      result = type.parseLiteral(valueNode, variables);
+      result = type.parseLiteral(
+        valueNode,
+        fragmentVariables ? { ...variables, ...fragmentVariables } : variables,
+      );
     } catch (_error) {
       return; // Invalid: intentionally return no value.
     }
