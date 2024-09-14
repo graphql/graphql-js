@@ -18,7 +18,8 @@ import type { ASTVisitor } from '../../language/visitor';
 import type {
   GraphQLField,
   GraphQLNamedType,
-  GraphQLOutputType} from '../../type/definition';
+  GraphQLOutputType,
+} from '../../type/definition';
 import {
   getNamedType,
   isInterfaceType,
