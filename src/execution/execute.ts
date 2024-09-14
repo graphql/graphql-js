@@ -42,8 +42,8 @@ import {
   isLeafType,
   isListType,
   isNonNullType,
-  isSemanticNonNullType,
   isObjectType,
+  isSemanticNonNullType,
 } from '../type/definition';
 import {
   SchemaMetaFieldDef,
@@ -155,7 +155,8 @@ export interface ExecutionArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   /**
-   * @default {true}
+   * Set to `false` to disable error propagation. Experimental.
+   *
    * @experimental
    */
   errorPropagation?: boolean;

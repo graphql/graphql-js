@@ -19,15 +19,16 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLSemanticNonNull,
   GraphQLUnionType,
   isEnumType,
   isInputObjectType,
   isInterfaceType,
   isListType,
   isNonNullType,
-  isSemanticNonNullType,
   isObjectType,
   isScalarType,
+  isSemanticNonNullType,
   isUnionType,
 } from '../type/definition';
 import { GraphQLDirective } from '../type/directives';

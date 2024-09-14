@@ -6,21 +6,19 @@ import { print } from '../language/printer';
 
 import { astFromValue } from '../utilities/astFromValue';
 
-import {
+import type {
   GraphQLEnumValue,
   GraphQLField,
   GraphQLFieldConfigMap,
   GraphQLInputField,
   GraphQLNamedType,
-  GraphQLType,
-  isSemanticNonNullType,
-} from './definition';
+  GraphQLType} from './definition';
 import {
   GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLSemanticNonNull,
   GraphQLObjectType,
+  GraphQLSemanticNonNull,
   isAbstractType,
   isEnumType,
   isInputObjectType,
@@ -29,6 +27,7 @@ import {
   isNonNullType,
   isObjectType,
   isScalarType,
+  isSemanticNonNullType,
   isUnionType,
 } from './definition';
 import type { GraphQLDirective } from './directives';
@@ -414,7 +413,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         resolve: (field, { nullability }, _context, info) => {
           if (nullability === TypeNullability.FULL) {
             return field.type;
-          } else {
+          } 
             const mode =
               nullability === TypeNullability.AUTO
                 ? info.errorPropagation
@@ -422,7 +421,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
                   : TypeNullability.SEMANTIC
                 : nullability;
             return convertOutputTypeToNullabilityMode(field.type, mode);
-          }
+          
         },
       },
       isDeprecated: {
@@ -452,10 +451,10 @@ function convertOutputTypeToNullabilityMode(
       return new GraphQLList(
         convertOutputTypeToNullabilityMode(type.ofType, mode),
       );
-    } else {
+    } 
       return type;
-    }
-  } else {
+    
+  } 
     if (isNonNullType(type) || isSemanticNonNullType(type)) {
       return new GraphQLSemanticNonNull(
         convertOutputTypeToNullabilityMode(type.ofType, mode),
@@ -464,10 +463,10 @@ function convertOutputTypeToNullabilityMode(
       return new GraphQLList(
         convertOutputTypeToNullabilityMode(type.ofType, mode),
       );
-    } else {
+    } 
       return type;
-    }
-  }
+    
+  
 }
 
 export const __InputValue: GraphQLObjectType = new GraphQLObjectType({

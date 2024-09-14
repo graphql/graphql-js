@@ -15,12 +15,10 @@ import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
 
-import {
+import type {
   GraphQLField,
   GraphQLNamedType,
-  GraphQLOutputType,
-  isSemanticNonNullType,
-} from '../../type/definition';
+  GraphQLOutputType} from '../../type/definition';
 import {
   getNamedType,
   isInterfaceType,
@@ -28,6 +26,7 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
+  isSemanticNonNullType,
 } from '../../type/definition';
 
 import { sortValueNode } from '../../utilities/sortValueNode';
