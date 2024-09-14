@@ -297,6 +297,9 @@ export type IntrospectionTypeRef =
   | IntrospectionListTypeRef
   | IntrospectionNonNullTypeRef<
       IntrospectionNamedTypeRef | IntrospectionListTypeRef
+    >
+  | IntrospectionSemanticNonNullTypeRef<
+      IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >;
 
 export type IntrospectionOutputTypeRef =

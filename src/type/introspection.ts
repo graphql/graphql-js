@@ -502,6 +502,11 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
       description:
         'Indicates this type is a non-null. `ofType` is a valid field.',
     },
+    SEMANTIC_NON_NULL: {
+      value: TypeKind.SEMANTIC_NON_NULL,
+      description:
+        'Indicates this type is a semantic-non-null. `ofType` is a valid field.',
+    },
   },
 });
 

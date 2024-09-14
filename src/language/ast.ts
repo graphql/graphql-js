@@ -161,6 +161,7 @@ export type ASTNode =
   | NamedTypeNode
   | ListTypeNode
   | NonNullTypeNode
+  | SemanticNonNullTypeNode
   | SchemaDefinitionNode
   | OperationTypeDefinitionNode
   | ScalarTypeDefinitionNode
@@ -521,7 +522,11 @@ export interface ConstDirectiveNode {
 
 /** Type Reference */
 
-export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
+export type TypeNode =
+  | NamedTypeNode
+  | ListTypeNode
+  | NonNullTypeNode
+  | SemanticNonNullTypeNode;
 
 export interface NamedTypeNode {
   readonly kind: Kind.NAMED_TYPE;
