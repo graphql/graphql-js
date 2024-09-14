@@ -285,6 +285,13 @@ export interface IntrospectionNonNullTypeRef<
   readonly ofType: T;
 }
 
+export interface IntrospectionSemanticNonNullTypeRef<
+  T extends IntrospectionTypeRef = IntrospectionTypeRef,
+> {
+  readonly kind: 'SEMANTIC_NON_NULL';
+  readonly ofType: T;
+}
+
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef
   | IntrospectionListTypeRef

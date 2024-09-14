@@ -260,7 +260,9 @@ export function isInputType(type: unknown): type is GraphQLInputType {
     isScalarType(type) ||
     isEnumType(type) ||
     isInputObjectType(type) ||
-    (isWrappingType(type) && isInputType(type.ofType))
+    (!isSemanticNonNullType(type) &&
+      isWrappingType(type) &&
+      isInputType(type.ofType))
   );
 }
 
@@ -1167,6 +1169,7 @@ export interface GraphQLArgument {
 }
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean {
+  // Note: input types cannot be SemanticNonNull
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
 
@@ -1858,6 +1861,7 @@ export interface GraphQLInputField {
 }
 
 export function isRequiredInputField(field: GraphQLInputField): boolean {
+  // Note: input types cannot be SemanticNonNull
   return isNonNullType(field.type) && field.defaultValue === undefined;
 }
 

@@ -88,6 +88,7 @@ function allowedVariableUsage(
   locationType: GraphQLType,
   locationDefaultValue: Maybe<unknown>,
 ): boolean {
+  // Note: SemanticNonNull cannot occur on input.
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =
       varDefaultValue != null && varDefaultValue.kind !== Kind.NULL;

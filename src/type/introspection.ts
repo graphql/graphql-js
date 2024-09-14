@@ -6,13 +6,14 @@ import { print } from '../language/printer';
 
 import { astFromValue } from '../utilities/astFromValue';
 
-import type {
+import {
   GraphQLEnumValue,
   GraphQLField,
   GraphQLFieldConfigMap,
   GraphQLInputField,
   GraphQLNamedType,
   GraphQLType,
+  isSemanticNonNullType,
 } from './definition';
 import {
   GraphQLEnumType,
@@ -237,6 +238,9 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
           }
+          if (isSemanticNonNullType(type)) {
+            return TypeKind.SEMANTIC_NON_NULL;
+          }
           /* c8 ignore next 3 */
           // Not reachable, all possible types have been considered)
           invariant(false, `Unexpected type: "${inspect(type)}".`);
@@ -452,6 +456,7 @@ enum TypeKind {
   INPUT_OBJECT = 'INPUT_OBJECT',
   LIST = 'LIST',
   NON_NULL = 'NON_NULL',
+  SEMANTIC_NON_NULL = 'SEMANTIC_NON_NULL',
 }
 export { TypeKind };
 

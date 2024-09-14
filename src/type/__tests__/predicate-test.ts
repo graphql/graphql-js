@@ -19,6 +19,7 @@ import {
   assertListType,
   assertNamedType,
   assertNonNullType,
+  assertSemanticNonNullType,
   assertNullableType,
   assertObjectType,
   assertOutputType,
@@ -33,6 +34,7 @@ import {
   GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
+  GraphQLSemanticNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
@@ -46,6 +48,7 @@ import {
   isListType,
   isNamedType,
   isNonNullType,
+  isSemanticNonNullType,
   isNullableType,
   isObjectType,
   isOutputType,
@@ -297,6 +300,45 @@ describe('Type predicates', () => {
       ).to.equal(false);
       expect(() =>
         assertNonNullType(new GraphQLList(new GraphQLNonNull(ObjectType))),
+      ).to.throw();
+      expect(isNonNullType(new GraphQLSemanticNonNull(ObjectType))).to.equal(
+        false,
+      );
+      expect(() =>
+        assertNonNullType(new GraphQLSemanticNonNull(ObjectType)),
+      ).to.throw();
+    });
+  });
+
+  describe('isSemanticNonNullType', () => {
+    it('returns true for a semantic-non-null wrapped type', () => {
+      expect(
+        isSemanticNonNullType(new GraphQLSemanticNonNull(ObjectType)),
+      ).to.equal(true);
+      expect(() =>
+        assertSemanticNonNullType(new GraphQLSemanticNonNull(ObjectType)),
+      ).to.not.throw();
+    });
+
+    it('returns false for an unwrapped type', () => {
+      expect(isSemanticNonNullType(ObjectType)).to.equal(false);
+      expect(() => assertSemanticNonNullType(ObjectType)).to.throw();
+    });
+
+    it('returns false for a not non-null wrapped type', () => {
+      expect(
+        isSemanticNonNullType(
+          new GraphQLList(new GraphQLSemanticNonNull(ObjectType)),
+        ),
+      ).to.equal(false);
+      expect(() =>
+        assertSemanticNonNullType(
+          new GraphQLList(new GraphQLSemanticNonNull(ObjectType)),
+        ),
+      ).to.throw();
+      expect(isNonNullType(new GraphQLNonNull(ObjectType))).to.equal(false);
+      expect(() =>
+        assertNonNullType(new GraphQLNonNull(ObjectType)),
       ).to.throw();
     });
   });
