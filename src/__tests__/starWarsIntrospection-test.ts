@@ -42,10 +42,10 @@ describe('Star Wars Introspection Tests', () => {
             { name: '__TypeKind' },
             { name: '__Field' },
             { name: '__InputValue' },
+            { name: '__TypeNullability' },
             { name: '__EnumValue' },
             { name: '__Directive' },
             { name: '__DirectiveLocation' },
-            { name: '__TypeNullability' },
           ],
         },
       });
