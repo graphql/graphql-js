@@ -336,9 +336,11 @@ describe('Type predicates', () => {
           new GraphQLList(new GraphQLSemanticNonNull(ObjectType)),
         ),
       ).to.throw();
-      expect(isNonNullType(new GraphQLNonNull(ObjectType))).to.equal(false);
+      expect(isSemanticNonNullType(new GraphQLNonNull(ObjectType))).to.equal(
+        false,
+      );
       expect(() =>
-        assertNonNullType(new GraphQLNonNull(ObjectType)),
+        assertSemanticNonNullType(new GraphQLNonNull(ObjectType)),
       ).to.throw();
     });
   });
@@ -539,12 +541,26 @@ describe('Type predicates', () => {
       expect(() =>
         assertNullableType(new GraphQLList(new GraphQLNonNull(ObjectType))),
       ).to.not.throw();
+      expect(
+        isNullableType(new GraphQLList(new GraphQLSemanticNonNull(ObjectType))),
+      ).to.equal(true);
+      expect(() =>
+        assertNullableType(
+          new GraphQLList(new GraphQLSemanticNonNull(ObjectType)),
+        ),
+      ).to.not.throw();
     });
 
     it('returns false for non-null types', () => {
       expect(isNullableType(new GraphQLNonNull(ObjectType))).to.equal(false);
       expect(() =>
         assertNullableType(new GraphQLNonNull(ObjectType)),
+      ).to.throw();
+      expect(isNullableType(new GraphQLSemanticNonNull(ObjectType))).to.equal(
+        false,
+      );
+      expect(() =>
+        assertNullableType(new GraphQLSemanticNonNull(ObjectType)),
       ).to.throw();
     });
   });
