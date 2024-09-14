@@ -37,6 +37,7 @@ import type {
   NamedTypeNode,
   NameNode,
   NonNullTypeNode,
+  SemanticNonNullTypeNode,
   NullValueNode,
   ObjectFieldNode,
   ObjectTypeDefinitionNode,
@@ -740,6 +741,7 @@ export class Parser {
    *   - NamedType
    *   - ListType
    *   - NonNullType
+   *   - SemanticNonNullType
    */
   parseTypeReference(): TypeNode {
     const start = this._lexer.token;
@@ -758,6 +760,12 @@ export class Parser {
     if (this.expectOptionalToken(TokenKind.BANG)) {
       return this.node<NonNullTypeNode>(start, {
         kind: Kind.NON_NULL_TYPE,
+        type,
+      });
+    }
+    if (this.expectOptionalToken(TokenKind.ASTERISK)) {
+      return this.node<SemanticNonNullTypeNode>(start, {
+        kind: Kind.SEMANTIC_NON_NULL_TYPE,
         type,
       });
     }

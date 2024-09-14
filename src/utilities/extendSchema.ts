@@ -51,6 +51,7 @@ import {
   GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
+  GraphQLSemanticNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
@@ -436,6 +437,9 @@ export function extendSchemaImpl(
     }
     if (node.kind === Kind.NON_NULL_TYPE) {
       return new GraphQLNonNull(getWrappedType(node.type));
+    }
+    if (node.kind === Kind.SEMANTIC_NON_NULL_TYPE) {
+      return new GraphQLSemanticNonNull(getWrappedType(node.type));
     }
     return getNamedType(node);
   }
