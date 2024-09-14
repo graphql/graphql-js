@@ -520,6 +520,12 @@ describe('Type predicates', () => {
       expect(() =>
         assertWrappingType(new GraphQLNonNull(ObjectType)),
       ).to.not.throw();
+      expect(isWrappingType(new GraphQLSemanticNonNull(ObjectType))).to.equal(
+        true,
+      );
+      expect(() =>
+        assertWrappingType(new GraphQLSemanticNonNull(ObjectType)),
+      ).to.not.throw();
     });
 
     it('returns false for unwrapped types', () => {
