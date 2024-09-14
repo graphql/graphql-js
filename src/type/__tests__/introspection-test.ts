@@ -437,6 +437,11 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'SEMANTIC_NON_NULL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               possibleTypes: null,
             },
@@ -652,6 +657,37 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              possibleTypes: null,
+            },
+            {
+              kind: 'ENUM',
+              name: '__TypeNullability',
+              specifiedByURL: null,
+              fields: null,
+              inputFields: null,
+              interfaces: null,
+              enumValues: [
+                {
+                  name: 'AUTO',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'TRADITIONAL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'SEMANTIC',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'FULL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+              ],
               possibleTypes: null,
             },
             {
@@ -925,37 +961,6 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'INPUT_FIELD_DEFINITION',
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-              ],
-              possibleTypes: null,
-            },
-            {
-              kind: 'ENUM',
-              name: '__TypeNullability',
-              specifiedByURL: null,
-              fields: null,
-              inputFields: null,
-              interfaces: null,
-              enumValues: [
-                {
-                  name: 'AUTO',
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-                {
-                  name: 'TRADITIONAL',
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-                {
-                  name: 'SEMANTIC',
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-                {
-                  name: 'FULL',
                   isDeprecated: false,
                   deprecationReason: null,
                 },
