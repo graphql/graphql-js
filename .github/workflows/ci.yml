@@ -201,7 +201,7 @@ jobs:
         run: npm run build:npm
 
       - name: Upload npmDist package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: npmDist
           path: ./npmDist
@@ -229,7 +229,7 @@ jobs:
         run: npm run build:deno
 
       - name: Upload denoDist package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: denoDist
           path: ./denoDist
@@ -256,7 +256,7 @@ jobs:
         run: npm run build:website
 
       - name: Upload denoDist package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: websiteDist
           path: ./websiteDist
