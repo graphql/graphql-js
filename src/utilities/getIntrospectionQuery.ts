@@ -118,7 +118,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         args${inputDeprecation('(includeDeprecated: true)')} {
           ...InputValue
         }
-        type${nullability ? `(nullability: ${nullability})` : ``} {
+        type${nullability ? `(nullability: ${nullability})` : ''} {
           ...TypeRef
         }
         isDeprecated
