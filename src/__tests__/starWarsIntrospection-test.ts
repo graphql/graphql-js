@@ -45,6 +45,7 @@ describe('Star Wars Introspection Tests', () => {
             { name: '__EnumValue' },
             { name: '__Directive' },
             { name: '__DirectiveLocation' },
+            { name: '__TypeNullability' },
           ],
         },
       });

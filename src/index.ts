@@ -75,6 +75,7 @@ export {
   __Schema,
   __Directive,
   __DirectiveLocation,
+  __TypeNullability,
   __Type,
   __Field,
   __InputValue,

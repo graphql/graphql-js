@@ -12,7 +12,8 @@ import type {
   GraphQLFieldConfigMap,
   GraphQLInputField,
   GraphQLNamedType,
-  GraphQLType} from './definition';
+  GraphQLType,
+} from './definition';
 import {
   GraphQLEnumType,
   GraphQLList,
@@ -406,22 +407,21 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         type: new GraphQLNonNull(__Type),
         args: {
           nullability: {
-            type: __TypeNullability,
-            defaultValue: 'AUTO',
+            type: new GraphQLNonNull(__TypeNullability),
+            defaultValue: TypeNullability.AUTO,
           },
         },
         resolve: (field, { nullability }, _context, info) => {
           if (nullability === TypeNullability.FULL) {
             return field.type;
-          } 
-            const mode =
-              nullability === TypeNullability.AUTO
-                ? info.errorPropagation
-                  ? TypeNullability.TRADITIONAL
-                  : TypeNullability.SEMANTIC
-                : nullability;
-            return convertOutputTypeToNullabilityMode(field.type, mode);
-          
+          }
+          const mode =
+            nullability === TypeNullability.AUTO
+              ? info.errorPropagation
+                ? TypeNullability.TRADITIONAL
+                : TypeNullability.SEMANTIC
+              : nullability;
+          return convertOutputTypeToNullabilityMode(field.type, mode);
         },
       },
       isDeprecated: {
@@ -451,22 +451,19 @@ function convertOutputTypeToNullabilityMode(
       return new GraphQLList(
         convertOutputTypeToNullabilityMode(type.ofType, mode),
       );
-    } 
-      return type;
-    
-  } 
-    if (isNonNullType(type) || isSemanticNonNullType(type)) {
-      return new GraphQLSemanticNonNull(
-        convertOutputTypeToNullabilityMode(type.ofType, mode),
-      );
-    } else if (isListType(type)) {
-      return new GraphQLList(
-        convertOutputTypeToNullabilityMode(type.ofType, mode),
-      );
-    } 
-      return type;
-    
-  
+    }
+    return type;
+  }
+  if (isNonNullType(type) || isSemanticNonNullType(type)) {
+    return new GraphQLSemanticNonNull(
+      convertOutputTypeToNullabilityMode(type.ofType, mode),
+    );
+  } else if (isListType(type)) {
+    return new GraphQLList(
+      convertOutputTypeToNullabilityMode(type.ofType, mode),
+    );
+  }
+  return type;
 }
 
 export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
@@ -649,6 +646,7 @@ export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
     __Schema,
     __Directive,
     __DirectiveLocation,
+    __TypeNullability,
     __Type,
     __Field,
     __InputValue,
