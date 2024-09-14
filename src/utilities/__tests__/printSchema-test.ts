@@ -782,7 +782,7 @@ describe('Type System Printer', () => {
         name: String!
         description: String
         args(includeDeprecated: Boolean = false): [__InputValue!]!
-        type: __Type!
+        type(nullability: __TypeNullability!): __Type!
         isDeprecated: Boolean!
         deprecationReason: String
       }
@@ -886,6 +886,13 @@ describe('Type System Printer', () => {
 
         """Location adjacent to an input object field definition."""
         INPUT_FIELD_DEFINITION
+      }
+
+      enum __TypeNullability {
+        AUTO
+        TRADITIONAL
+        SEMANTIC
+        FULL
       }
     `);
   });
