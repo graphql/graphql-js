@@ -25,6 +25,7 @@ import {
   isInterfaceType,
   isListType,
   isNonNullType,
+  isSemanticNonNullType,
   isObjectType,
   isScalarType,
   isUnionType,
@@ -62,6 +63,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     } else if (isNonNullType(type)) {
       // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
+    } else if (isSemanticNonNullType(type)) {
+      // @ts-expect-error
+      return new GraphQLSemanticNonNull(replaceType(type.ofType));
     }
     // @ts-expect-error FIXME: TS Conversion
     return replaceNamedType<GraphQLNamedType>(type);

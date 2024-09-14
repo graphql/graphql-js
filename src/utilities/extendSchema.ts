@@ -59,6 +59,7 @@ import {
   isInterfaceType,
   isListType,
   isNonNullType,
+  isSemanticNonNullType,
   isObjectType,
   isScalarType,
   isUnionType,
@@ -224,6 +225,10 @@ export function extendSchemaImpl(
     if (isNonNullType(type)) {
       // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
+    }
+    if (isSemanticNonNullType(type)) {
+      // @ts-expect-error
+      return new GraphQLSemanticNonNull(replaceType(type.ofType));
     }
     // @ts-expect-error FIXME
     return replaceNamedType(type);

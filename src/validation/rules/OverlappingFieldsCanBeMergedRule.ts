@@ -15,10 +15,11 @@ import { Kind } from '../../language/kinds';
 import { print } from '../../language/printer';
 import type { ASTVisitor } from '../../language/visitor';
 
-import type {
+import {
   GraphQLField,
   GraphQLNamedType,
   GraphQLOutputType,
+  isSemanticNonNullType,
 } from '../../type/definition';
 import {
   getNamedType,
@@ -721,6 +722,14 @@ function doTypesConflict(
       : true;
   }
   if (isNonNullType(type2)) {
+    return true;
+  }
+  if (isSemanticNonNullType(type1)) {
+    return isSemanticNonNullType(type2)
+      ? doTypesConflict(type1.ofType, type2.ofType)
+      : true;
+  }
+  if (isSemanticNonNullType(type2)) {
     return true;
   }
   if (isLeafType(type1) || isLeafType(type2)) {

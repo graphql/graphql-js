@@ -42,6 +42,7 @@ import {
   isLeafType,
   isListType,
   isNonNullType,
+  isSemanticNonNullType,
   isObjectType,
 } from '../type/definition';
 import {
@@ -115,6 +116,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
+  errorPropagation: boolean;
 }
 
 /**
@@ -595,7 +597,7 @@ function handleFieldError(
 ): null {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType)) {
+  if (exeContext.errorPropagation && isNonNullType(returnType)) {
     throw error;
   }
 
@@ -653,6 +655,25 @@ function completeValue(
     if (completed === null) {
       throw new Error(
         `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+      );
+    }
+    return completed;
+  }
+
+  // If field type is SemanticNonNull, complete for inner type, and throw field error
+  // if result is null.
+  if (isSemanticNonNullType(returnType)) {
+    const completed = completeValue(
+      exeContext,
+      returnType.ofType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
+    if (completed === null) {
+      throw new Error(
+        `Cannot return null for semantic-non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
     }
     return completed;

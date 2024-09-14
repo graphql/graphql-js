@@ -541,6 +541,12 @@ export interface NonNullTypeNode {
   readonly type: NamedTypeNode | ListTypeNode;
 }
 
+export interface SemanticNonNullTypeNode {
+  readonly kind: Kind.SEMANTIC_NON_NULL_TYPE;
+  readonly loc?: Location;
+  readonly type: NamedTypeNode | ListTypeNode;
+}
+
 /** Type System Definition */
 
 export type TypeSystemDefinitionNode =
