@@ -236,6 +236,7 @@ export const QueryDocumentKeys: {
   NamedType: ['name'],
   ListType: ['type'],
   NonNullType: ['type'],
+  SemanticNonNullType: ['type'],
 
   SchemaDefinition: ['description', 'directives', 'operationTypes'],
   OperationTypeDefinition: ['type'],
