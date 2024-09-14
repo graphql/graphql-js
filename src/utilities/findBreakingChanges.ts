@@ -22,11 +22,11 @@ import {
   isListType,
   isNamedType,
   isNonNullType,
-  isSemanticNonNullType,
   isObjectType,
   isRequiredArgument,
   isRequiredInputField,
   isScalarType,
+  isSemanticNonNullType,
   isUnionType,
 } from '../type/definition';
 import { isSpecifiedScalarType } from '../type/scalars';
@@ -462,7 +462,7 @@ function isChangeSafeForObjectOrInterfaceField(
         isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType)) ||
       // moving from nullable to semantic-non-null of the same underlying type is safe
       (isSemanticNonNullType(newType) &&
-        isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType)) ||
+        isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
     );
   }
 
@@ -477,11 +477,14 @@ function isChangeSafeForObjectOrInterfaceField(
   if (isSemanticNonNullType(oldType)) {
     return (
       // if they're both semantic-non-null, make sure the underlying types are compatible
-        (isSemanticNonNullType(newType) &&
-        isChangeSafeForObjectOrInterfaceField(oldType.ofType, newType.ofType)) ||
+      (isSemanticNonNullType(newType) &&
+        isChangeSafeForObjectOrInterfaceField(
+          oldType.ofType,
+          newType.ofType,
+        )) ||
       // moving from semantic-non-null to non-null of the same underlying type is safe
-        isNonNullType(newType) &&
-        isChangeSafeForObjectOrInterfaceField(oldType.ofType, newType.ofType)
+      (isNonNullType(newType) &&
+        isChangeSafeForObjectOrInterfaceField(oldType.ofType, newType.ofType))
     );
   }
 

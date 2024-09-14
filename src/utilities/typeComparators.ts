@@ -4,8 +4,8 @@ import {
   isInterfaceType,
   isListType,
   isNonNullType,
-  isSemanticNonNullType,
   isObjectType,
+  isSemanticNonNullType,
 } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
