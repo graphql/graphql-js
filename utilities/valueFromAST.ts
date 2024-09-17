@@ -30,12 +30,12 @@ import {
  * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
+ * @deprecated use `coerceInputLiteral()` instead - will be removed in v18
  */
 export function valueFromAST(
   valueNode: Maybe<ValueNode>,
   type: GraphQLInputType,
   variables?: Maybe<ObjMap<unknown>>,
-  fragmentVariables?: Maybe<ObjMap<unknown>>,
 ): unknown {
   if (!valueNode) {
     // When there is no node, then there is also no value.
@@ -44,8 +44,7 @@ export function valueFromAST(
   }
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    const variableValue =
-      fragmentVariables?.[variableName] ?? variables?.[variableName];
+    const variableValue = variables?.[variableName];
     if (variableValue === undefined) {
       // No valid return value.
       return;
@@ -62,7 +61,7 @@ export function valueFromAST(
     if (valueNode.kind === Kind.NULL) {
       return; // Invalid: intentionally return no value.
     }
-    return valueFromAST(valueNode, type.ofType, variables, fragmentVariables);
+    return valueFromAST(valueNode, type.ofType, variables);
   }
   if (valueNode.kind === Kind.NULL) {
     // This is explicitly returning the value null.
@@ -73,7 +72,7 @@ export function valueFromAST(
     if (valueNode.kind === Kind.LIST) {
       const coercedValues = [];
       for (const itemNode of valueNode.values) {
-        if (isMissingVariable(itemNode, variables, fragmentVariables)) {
+        if (isMissingVariable(itemNode, variables)) {
           // If an array contains a missing variable, it is either coerced to
           // null or if the item type is non-null, it considered invalid.
           if (isNonNullType(itemType)) {
@@ -81,12 +80,7 @@ export function valueFromAST(
           }
           coercedValues.push(null);
         } else {
-          const itemValue = valueFromAST(
-            itemNode,
-            itemType,
-            variables,
-            fragmentVariables,
-          );
+          const itemValue = valueFromAST(itemNode, itemType, variables);
           if (itemValue === undefined) {
             return; // Invalid: intentionally return no value.
           }
@@ -95,12 +89,7 @@ export function valueFromAST(
       }
       return coercedValues;
     }
-    const coercedValue = valueFromAST(
-      valueNode,
-      itemType,
-      variables,
-      fragmentVariables,
-    );
+    const coercedValue = valueFromAST(valueNode, itemType, variables);
     if (coercedValue === undefined) {
       return; // Invalid: intentionally return no value.
     }
@@ -116,10 +105,7 @@ export function valueFromAST(
     );
     for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes.get(field.name);
-      if (
-        fieldNode == null ||
-        isMissingVariable(fieldNode.value, variables, fragmentVariables)
-      ) {
+      if (fieldNode == null || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
@@ -127,12 +113,7 @@ export function valueFromAST(
         }
         continue;
       }
-      const fieldValue = valueFromAST(
-        fieldNode.value,
-        field.type,
-        variables,
-        fragmentVariables,
-      );
+      const fieldValue = valueFromAST(fieldNode.value, field.type, variables);
       if (fieldValue === undefined) {
         return; // Invalid: intentionally return no value.
       }
@@ -173,12 +154,9 @@ export function valueFromAST(
 function isMissingVariable(
   valueNode: ValueNode,
   variables: Maybe<ObjMap<unknown>>,
-  fragmentVariables: Maybe<ObjMap<unknown>>,
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&
-    (fragmentVariables == null ||
-      fragmentVariables[valueNode.name.value] === undefined) &&
     (variables == null || variables[valueNode.name.value] === undefined)
   );
 }

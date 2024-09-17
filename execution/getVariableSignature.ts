@@ -3,8 +3,8 @@ import type { VariableDefinitionNode } from '../language/ast.ts';
 import { print } from '../language/printer.ts';
 import { isInputType } from '../type/definition.ts';
 import type { GraphQLInputType, GraphQLSchema } from '../type/index.ts';
+import { coerceInputLiteral } from '../utilities/coerceInputValue.ts';
 import { typeFromAST } from '../utilities/typeFromAST.ts';
-import { valueFromAST } from '../utilities/valueFromAST.ts';
 /**
  * A GraphQLVariableSignature is required to coerce a variable value.
  *
@@ -31,9 +31,12 @@ export function getVariableSignature(
       { nodes: varDefNode.type },
     );
   }
+  const defaultValue = varDefNode.defaultValue;
   return {
     name: varName,
     type: varType,
-    defaultValue: valueFromAST(varDefNode.defaultValue, varType),
+    defaultValue: defaultValue
+      ? coerceInputLiteral(varDefNode.defaultValue, varType)
+      : undefined,
   };
 }

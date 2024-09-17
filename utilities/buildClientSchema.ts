@@ -2,7 +2,7 @@ import { devAssert } from '../jsutils/devAssert.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import { keyValMap } from '../jsutils/keyValMap.ts';
-import { parseValue } from '../language/parser.ts';
+import { parseConstValue } from '../language/parser.ts';
 import type {
   GraphQLFieldConfig,
   GraphQLFieldConfigMap,
@@ -29,6 +29,7 @@ import { introspectionTypes, TypeKind } from '../type/introspection.ts';
 import { specifiedScalarTypes } from '../type/scalars.ts';
 import type { GraphQLSchemaValidationOptions } from '../type/schema.ts';
 import { GraphQLSchema } from '../type/schema.ts';
+import { coerceInputLiteral } from './coerceInputValue.ts';
 import type {
   IntrospectionDirective,
   IntrospectionEnumType,
@@ -44,7 +45,6 @@ import type {
   IntrospectionTypeRef,
   IntrospectionUnionType,
 } from './getIntrospectionQuery.ts';
-import { valueFromAST } from './valueFromAST.ts';
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -337,7 +337,10 @@ export function buildClientSchema(
     }
     const defaultValue =
       inputValueIntrospection.defaultValue != null
-        ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
+        ? coerceInputLiteral(
+            parseConstValue(inputValueIntrospection.defaultValue),
+            type,
+          )
         : undefined;
     return {
       description: inputValueIntrospection.description,
