@@ -6,8 +6,8 @@ import { print } from '../language/printer.js';
 import { isInputType } from '../type/definition.js';
 import type { GraphQLInputType, GraphQLSchema } from '../type/index.js';
 
+import { coerceInputLiteral } from '../utilities/coerceInputValue.js';
 import { typeFromAST } from '../utilities/typeFromAST.js';
-import { valueFromAST } from '../utilities/valueFromAST.js';
 
 /**
  * A GraphQLVariableSignature is required to coerce a variable value.
@@ -38,9 +38,13 @@ export function getVariableSignature(
     );
   }
 
+  const defaultValue = varDefNode.defaultValue;
+
   return {
     name: varName,
     type: varType,
-    defaultValue: valueFromAST(varDefNode.defaultValue, varType),
+    defaultValue: defaultValue
+      ? coerceInputLiteral(varDefNode.defaultValue, varType)
+      : undefined,
   };
 }

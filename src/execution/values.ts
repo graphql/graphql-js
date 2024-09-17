@@ -19,8 +19,10 @@ import { isNonNullType } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import { coerceInputValue } from '../utilities/coerceInputValue.js';
-import { valueFromAST } from '../utilities/valueFromAST.js';
+import {
+  coerceInputLiteral,
+  coerceInputValue,
+} from '../utilities/coerceInputValue.js';
 
 import type { FragmentVariables } from './collectFields.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
@@ -217,11 +219,11 @@ export function experimentalGetArgumentValues(
       );
     }
 
-    const coercedValue = valueFromAST(
+    const coercedValue = coerceInputLiteral(
       valueNode,
       argType,
       variableValues,
-      fragmentVariables?.values,
+      fragmentVariables,
     );
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
