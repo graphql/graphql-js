@@ -24,8 +24,6 @@ exports.parse = parse;
  *
  * This is useful within tools that operate upon GraphQL Values directly and
  * in isolation of complete GraphQL documents.
- *
- * Consider providing the results to the utility function: valueFromAST().
  */
 function parseValue(source, options) {
     const parser = new Parser(source, options);

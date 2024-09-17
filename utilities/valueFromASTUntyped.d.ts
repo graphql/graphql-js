@@ -4,8 +4,8 @@ import type { ValueNode } from '../language/ast.js';
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
- * Unlike `valueFromAST()`, no type is provided. The resulting JavaScript value
- * will reflect the provided GraphQL value AST.
+ * No type is provided. The resulting JavaScript value will reflect the
+ * provided GraphQL value AST.
  *
  * | GraphQL Value        | JavaScript Value |
  * | -------------------- | ---------------- |

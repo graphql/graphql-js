@@ -4,8 +4,7 @@ import { GraphQLError } from "../error/GraphQLError.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { print } from "../language/printer.mjs";
 import { isNonNullType } from "../type/definition.mjs";
-import { coerceInputValue } from "../utilities/coerceInputValue.mjs";
-import { valueFromAST } from "../utilities/valueFromAST.mjs";
+import { coerceInputLiteral, coerceInputValue, } from "../utilities/coerceInputValue.mjs";
 import { getVariableSignature } from "./getVariableSignature.mjs";
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -128,7 +127,7 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
             throw new GraphQLError(`Argument "${name}" of non-null type "${inspect(argType)}" ` +
                 'must not be null.', { nodes: valueNode });
         }
-        const coercedValue = valueFromAST(valueNode, argType, variableValues, fragmentVariables?.values);
+        const coercedValue = coerceInputLiteral(valueNode, argType, variableValues, fragmentVariables);
         if (coercedValue === undefined) {
             // Note: ValuesOfCorrectTypeRule validation should catch this before
             // execution. This is a runtime check to ensure execution does not

@@ -78,8 +78,6 @@ export declare function parse(source: string | Source, options?: ParseOptions | 
  *
  * This is useful within tools that operate upon GraphQL Values directly and
  * in isolation of complete GraphQL documents.
- *
- * Consider providing the results to the utility function: valueFromAST().
  */
 export declare function parseValue(source: string | Source, options?: ParseOptions | undefined): ValueNode;
 /**

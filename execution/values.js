@@ -8,7 +8,6 @@ const kinds_js_1 = require("../language/kinds.js");
 const printer_js_1 = require("../language/printer.js");
 const definition_js_1 = require("../type/definition.js");
 const coerceInputValue_js_1 = require("../utilities/coerceInputValue.js");
-const valueFromAST_js_1 = require("../utilities/valueFromAST.js");
 const getVariableSignature_js_1 = require("./getVariableSignature.js");
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -133,7 +132,7 @@ function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVa
             throw new GraphQLError_js_1.GraphQLError(`Argument "${name}" of non-null type "${(0, inspect_js_1.inspect)(argType)}" ` +
                 'must not be null.', { nodes: valueNode });
         }
-        const coercedValue = (0, valueFromAST_js_1.valueFromAST)(valueNode, argType, variableValues, fragmentVariables?.values);
+        const coercedValue = (0, coerceInputValue_js_1.coerceInputLiteral)(valueNode, argType, variableValues, fragmentVariables);
         if (coercedValue === undefined) {
             // Note: ValuesOfCorrectTypeRule validation should catch this before
             // execution. This is a runtime check to ensure execution does not

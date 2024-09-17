@@ -17,15 +17,20 @@ export { printSchema, printType, printDirective, printIntrospectionSchema, } fro
 // Create a GraphQLType from a GraphQL language AST.
 export { typeFromAST } from "./typeFromAST.mjs";
 // Create a JavaScript value from a GraphQL language AST with a type.
-export { valueFromAST } from "./valueFromAST.mjs";
+export { 
+/** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
+valueFromAST, } from "./valueFromAST.mjs";
 // Create a JavaScript value from a GraphQL language AST without a type.
 export { valueFromASTUntyped } from "./valueFromASTUntyped.mjs";
 // Create a GraphQL language AST from a JavaScript value.
 export { astFromValue } from "./astFromValue.mjs";
 // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
 export { TypeInfo, visitWithTypeInfo } from "./TypeInfo.mjs";
+export { 
 // Coerces a JavaScript value to a GraphQL type, or produces errors.
-export { coerceInputValue } from "./coerceInputValue.mjs";
+coerceInputValue, 
+// Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
+coerceInputLiteral, } from "./coerceInputValue.mjs";
 // Concatenates multiple AST together.
 export { concatAST } from "./concatAST.mjs";
 // Separates an AST into an AST per Operation.

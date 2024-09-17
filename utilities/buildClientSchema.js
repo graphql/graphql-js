@@ -11,7 +11,7 @@ const directives_js_1 = require("../type/directives.js");
 const introspection_js_1 = require("../type/introspection.js");
 const scalars_js_1 = require("../type/scalars.js");
 const schema_js_1 = require("../type/schema.js");
-const valueFromAST_js_1 = require("./valueFromAST.js");
+const coerceInputValue_js_1 = require("./coerceInputValue.js");
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -230,7 +230,7 @@ function buildClientSchema(introspection, options) {
             throw new Error(`Introspection must provide input type for arguments, but received: ${typeStr}.`);
         }
         const defaultValue = inputValueIntrospection.defaultValue != null
-            ? (0, valueFromAST_js_1.valueFromAST)((0, parser_js_1.parseValue)(inputValueIntrospection.defaultValue), type)
+            ? (0, coerceInputValue_js_1.coerceInputLiteral)((0, parser_js_1.parseConstValue)(inputValueIntrospection.defaultValue), type)
             : undefined;
         return {
             description: inputValueIntrospection.description,

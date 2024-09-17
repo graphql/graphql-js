@@ -9,11 +9,13 @@ export { extendSchema } from './extendSchema.js';
 export { lexicographicSortSchema } from './lexicographicSortSchema.js';
 export { printSchema, printType, printDirective, printIntrospectionSchema, } from './printSchema.js';
 export { typeFromAST } from './typeFromAST.js';
-export { valueFromAST } from './valueFromAST.js';
+export { 
+/** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
+valueFromAST, } from './valueFromAST.js';
 export { valueFromASTUntyped } from './valueFromASTUntyped.js';
 export { astFromValue } from './astFromValue.js';
 export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';
-export { coerceInputValue } from './coerceInputValue.js';
+export { coerceInputValue, coerceInputLiteral, } from './coerceInputValue.js';
 export { concatAST } from './concatAST.js';
 export { separateOperations } from './separateOperations.js';
 export { stripIgnoredCharacters } from './stripIgnoredCharacters.js';

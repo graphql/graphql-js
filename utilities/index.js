@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findDangerousChanges = exports.findBreakingChanges = exports.DangerousChangeType = exports.BreakingChangeType = exports.doTypesOverlap = exports.isTypeSubTypeOf = exports.isEqualType = exports.stripIgnoredCharacters = exports.separateOperations = exports.concatAST = exports.coerceInputValue = exports.visitWithTypeInfo = exports.TypeInfo = exports.astFromValue = exports.valueFromASTUntyped = exports.valueFromAST = exports.typeFromAST = exports.printIntrospectionSchema = exports.printDirective = exports.printType = exports.printSchema = exports.lexicographicSortSchema = exports.extendSchema = exports.buildSchema = exports.buildASTSchema = exports.buildClientSchema = exports.introspectionFromSchema = exports.getOperationAST = exports.getIntrospectionQuery = void 0;
+exports.findDangerousChanges = exports.findBreakingChanges = exports.DangerousChangeType = exports.BreakingChangeType = exports.doTypesOverlap = exports.isTypeSubTypeOf = exports.isEqualType = exports.stripIgnoredCharacters = exports.separateOperations = exports.concatAST = exports.coerceInputLiteral = exports.coerceInputValue = exports.visitWithTypeInfo = exports.TypeInfo = exports.astFromValue = exports.valueFromASTUntyped = exports.valueFromAST = exports.typeFromAST = exports.printIntrospectionSchema = exports.printDirective = exports.printType = exports.printSchema = exports.lexicographicSortSchema = exports.extendSchema = exports.buildSchema = exports.buildASTSchema = exports.buildClientSchema = exports.introspectionFromSchema = exports.getOperationAST = exports.getIntrospectionQuery = void 0;
 // Produce the GraphQL query recommended for a full schema introspection.
 var getIntrospectionQuery_js_1 = require("./getIntrospectionQuery.js");
 Object.defineProperty(exports, "getIntrospectionQuery", { enumerable: true, get: function () { return getIntrospectionQuery_js_1.getIntrospectionQuery; } });
@@ -34,6 +34,7 @@ var typeFromAST_js_1 = require("./typeFromAST.js");
 Object.defineProperty(exports, "typeFromAST", { enumerable: true, get: function () { return typeFromAST_js_1.typeFromAST; } });
 // Create a JavaScript value from a GraphQL language AST with a type.
 var valueFromAST_js_1 = require("./valueFromAST.js");
+/** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
 Object.defineProperty(exports, "valueFromAST", { enumerable: true, get: function () { return valueFromAST_js_1.valueFromAST; } });
 // Create a JavaScript value from a GraphQL language AST without a type.
 var valueFromASTUntyped_js_1 = require("./valueFromASTUntyped.js");
@@ -45,9 +46,11 @@ Object.defineProperty(exports, "astFromValue", { enumerable: true, get: function
 var TypeInfo_js_1 = require("./TypeInfo.js");
 Object.defineProperty(exports, "TypeInfo", { enumerable: true, get: function () { return TypeInfo_js_1.TypeInfo; } });
 Object.defineProperty(exports, "visitWithTypeInfo", { enumerable: true, get: function () { return TypeInfo_js_1.visitWithTypeInfo; } });
-// Coerces a JavaScript value to a GraphQL type, or produces errors.
 var coerceInputValue_js_1 = require("./coerceInputValue.js");
+// Coerces a JavaScript value to a GraphQL type, or produces errors.
 Object.defineProperty(exports, "coerceInputValue", { enumerable: true, get: function () { return coerceInputValue_js_1.coerceInputValue; } });
+// Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
+Object.defineProperty(exports, "coerceInputLiteral", { enumerable: true, get: function () { return coerceInputValue_js_1.coerceInputLiteral; } });
 // Concatenates multiple AST together.
 var concatAST_js_1 = require("./concatAST.js");
 Object.defineProperty(exports, "concatAST", { enumerable: true, get: function () { return concatAST_js_1.concatAST; } });

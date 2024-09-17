@@ -21,5 +21,6 @@ import type { GraphQLInputType } from '../type/definition.js';
  * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
+ * @deprecated use `coerceInputLiteral()` instead - will be removed in v18
  */
-export declare function valueFromAST(valueNode: Maybe<ValueNode>, type: GraphQLInputType, variables?: Maybe<ObjMap<unknown>>, fragmentVariables?: Maybe<ObjMap<unknown>>): unknown;
+export declare function valueFromAST(valueNode: Maybe<ValueNode>, type: GraphQLInputType, variables?: Maybe<ObjMap<unknown>>): unknown;

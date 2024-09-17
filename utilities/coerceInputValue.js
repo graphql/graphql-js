@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.coerceInputValue = void 0;
+exports.coerceInputLiteral = exports.coerceInputValue = void 0;
 const didYouMean_js_1 = require("../jsutils/didYouMean.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
@@ -10,6 +10,7 @@ const Path_js_1 = require("../jsutils/Path.js");
 const printPathArray_js_1 = require("../jsutils/printPathArray.js");
 const suggestionList_js_1 = require("../jsutils/suggestionList.js");
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
+const kinds_js_1 = require("../language/kinds.js");
 const definition_js_1 = require("../type/definition.js");
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
@@ -118,4 +119,116 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
     /* c8 ignore next 3 */
     // Not reachable, all possible types have been considered.
     (false) || (0, invariant_js_1.invariant)(false, 'Unexpected input type: ' + (0, inspect_js_1.inspect)(type));
+}
+/**
+ * Produces a coerced "internal" JavaScript value given a GraphQL Value AST.
+ *
+ * Returns `undefined` when the value could not be validly coerced according to
+ * the provided type.
+ */
+function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableValues) {
+    if (valueNode.kind === kinds_js_1.Kind.VARIABLE) {
+        const variableValue = getVariableValue(valueNode, variableValues, fragmentVariableValues);
+        if (variableValue == null && (0, definition_js_1.isNonNullType)(type)) {
+            return; // Invalid: intentionally return no value.
+        }
+        // Note: This does no further checking that this variable is correct.
+        // This assumes validated has checked this variable is of the correct type.
+        return variableValue;
+    }
+    if ((0, definition_js_1.isNonNullType)(type)) {
+        if (valueNode.kind === kinds_js_1.Kind.NULL) {
+            return; // Invalid: intentionally return no value.
+        }
+        return coerceInputLiteral(valueNode, type.ofType, variableValues, fragmentVariableValues);
+    }
+    if (valueNode.kind === kinds_js_1.Kind.NULL) {
+        return null; // Explicitly return the value null.
+    }
+    if ((0, definition_js_1.isListType)(type)) {
+        if (valueNode.kind !== kinds_js_1.Kind.LIST) {
+            // Lists accept a non-list value as a list of one.
+            const itemValue = coerceInputLiteral(valueNode, type.ofType, variableValues, fragmentVariableValues);
+            if (itemValue === undefined) {
+                return; // Invalid: intentionally return no value.
+            }
+            return [itemValue];
+        }
+        const coercedValue = [];
+        for (const itemNode of valueNode.values) {
+            let itemValue = coerceInputLiteral(itemNode, type.ofType, variableValues, fragmentVariableValues);
+            if (itemValue === undefined) {
+                if (itemNode.kind === kinds_js_1.Kind.VARIABLE &&
+                    getVariableValue(itemNode, variableValues, fragmentVariableValues) ==
+                        null &&
+                    !(0, definition_js_1.isNonNullType)(type.ofType)) {
+                    // A missing variable within a list is coerced to null.
+                    itemValue = null;
+                }
+                else {
+                    return; // Invalid: intentionally return no value.
+                }
+            }
+            coercedValue.push(itemValue);
+        }
+        return coercedValue;
+    }
+    if ((0, definition_js_1.isInputObjectType)(type)) {
+        if (valueNode.kind !== kinds_js_1.Kind.OBJECT) {
+            return; // Invalid: intentionally return no value.
+        }
+        const coercedValue = {};
+        const fieldDefs = type.getFields();
+        const hasUndefinedField = valueNode.fields.some((field) => !Object.hasOwn(fieldDefs, field.name.value));
+        if (hasUndefinedField) {
+            return; // Invalid: intentionally return no value.
+        }
+        const fieldNodes = new Map(valueNode.fields.map((field) => [field.name.value, field]));
+        for (const field of Object.values(fieldDefs)) {
+            const fieldNode = fieldNodes.get(field.name);
+            if (!fieldNode ||
+                (fieldNode.value.kind === kinds_js_1.Kind.VARIABLE &&
+                    getVariableValue(fieldNode.value, variableValues, fragmentVariableValues) == null)) {
+                if ((0, definition_js_1.isRequiredInputField)(field)) {
+                    return; // Invalid: intentionally return no value.
+                }
+                if (field.defaultValue !== undefined) {
+                    coercedValue[field.name] = field.defaultValue;
+                }
+            }
+            else {
+                const fieldValue = coerceInputLiteral(fieldNode.value, field.type, variableValues, fragmentVariableValues);
+                if (fieldValue === undefined) {
+                    return; // Invalid: intentionally return no value.
+                }
+                coercedValue[field.name] = fieldValue;
+            }
+        }
+        if (type.isOneOf) {
+            const keys = Object.keys(coercedValue);
+            if (keys.length !== 1) {
+                return; // Invalid: not exactly one key, intentionally return no value.
+            }
+            if (coercedValue[keys[0]] === null) {
+                return; // Invalid: value not non-null, intentionally return no value.
+            }
+        }
+        return coercedValue;
+    }
+    const leafType = (0, definition_js_1.assertLeafType)(type);
+    try {
+        return leafType.parseLiteral(valueNode, variableValues);
+    }
+    catch (_error) {
+        // Invalid: ignore error and intentionally return no value.
+    }
+}
+exports.coerceInputLiteral = coerceInputLiteral;
+// Retrieves the variable value for the given variable node.
+function getVariableValue(variableNode, variableValues, fragmentVariableValues) {
+    const varName = variableNode.name.value;
+    if (fragmentVariableValues?.signatures[varName]) {
+        return fragmentVariableValues.values[varName];
+    }
+    return variableValues?.[varName];
 }

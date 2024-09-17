@@ -2,13 +2,13 @@ import { devAssert } from "../jsutils/devAssert.mjs";
 import { inspect } from "../jsutils/inspect.mjs";
 import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { keyValMap } from "../jsutils/keyValMap.mjs";
-import { parseValue } from "../language/parser.mjs";
+import { parseConstValue } from "../language/parser.mjs";
 import { assertInterfaceType, assertNullableType, assertObjectType, GraphQLEnumType, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLUnionType, isInputType, isOutputType, } from "../type/definition.mjs";
 import { GraphQLDirective } from "../type/directives.mjs";
 import { introspectionTypes, TypeKind } from "../type/introspection.mjs";
 import { specifiedScalarTypes } from "../type/scalars.mjs";
 import { GraphQLSchema } from "../type/schema.mjs";
-import { valueFromAST } from "./valueFromAST.mjs";
+import { coerceInputLiteral } from "./coerceInputValue.mjs";
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -227,7 +227,7 @@ export function buildClientSchema(introspection, options) {
             throw new Error(`Introspection must provide input type for arguments, but received: ${typeStr}.`);
         }
         const defaultValue = inputValueIntrospection.defaultValue != null
-            ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
+            ? coerceInputLiteral(parseConstValue(inputValueIntrospection.defaultValue), type)
             : undefined;
         return {
             description: inputValueIntrospection.description,

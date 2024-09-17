@@ -13,7 +13,7 @@ const scalars_js_1 = require("../type/scalars.js");
 const schema_js_1 = require("../type/schema.js");
 const validate_js_1 = require("../validation/validate.js");
 const values_js_1 = require("../execution/values.js");
-const valueFromAST_js_1 = require("./valueFromAST.js");
+const coerceInputValue_js_1 = require("./coerceInputValue.js");
 /**
  * Produces a new schema given an existing schema and a document which may
  * contain GraphQL type extensions and definitions. The original schema will
@@ -365,7 +365,9 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
             argConfigMap[arg.name.value] = {
                 type,
                 description: arg.description?.value,
-                defaultValue: (0, valueFromAST_js_1.valueFromAST)(arg.defaultValue, type),
+                defaultValue: arg.defaultValue
+                    ? (0, coerceInputValue_js_1.coerceInputLiteral)(arg.defaultValue, type)
+                    : undefined,
                 deprecationReason: getDeprecationReason(arg),
                 astNode: arg,
             };
@@ -385,7 +387,9 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
                 inputFieldMap[field.name.value] = {
                     type,
                     description: field.description?.value,
-                    defaultValue: (0, valueFromAST_js_1.valueFromAST)(field.defaultValue, type),
+                    defaultValue: field.defaultValue
+                        ? (0, coerceInputValue_js_1.coerceInputLiteral)(field.defaultValue, type)
+                        : undefined,
                     deprecationReason: getDeprecationReason(field),
                     astNode: field,
                 };
