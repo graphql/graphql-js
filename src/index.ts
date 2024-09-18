@@ -219,6 +219,7 @@ export {
   parseValue,
   parseConstValue,
   parseType,
+  parseSchemaCoordinate,
   // Print
   print,
   // Visit
@@ -240,6 +241,7 @@ export {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
+  isSchemaCoordinateNode,
 } from './language/index.js';
 
 export type {
@@ -316,6 +318,7 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  SchemaCoordinateNode,
 } from './language/index.js';
 
 // Execute GraphQL queries.
@@ -468,6 +471,8 @@ export {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  resolveSchemaCoordinate,
+  resolveASTSchemaCoordinate,
 } from './utilities/index.js';
 
 export type {
@@ -497,4 +502,5 @@ export type {
   BreakingChange,
   DangerousChange,
   TypedQueryDocumentNode,
+  ResolvedSchemaElement,
 } from './utilities/index.js';

@@ -105,3 +105,10 @@ export type { BreakingChange, DangerousChange } from './findBreakingChanges.js';
 
 // Wrapper type that contains DocumentNode and types that can be deduced from it.
 export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.js';
+
+// Schema coordinates
+export {
+  resolveSchemaCoordinate,
+  resolveASTSchemaCoordinate,
+} from './resolveSchemaCoordinate.js';
+export type { ResolvedSchemaElement } from './resolveSchemaCoordinate.js';

@@ -11,6 +11,7 @@ enum TokenKind {
   AMP = '&',
   PAREN_L = '(',
   PAREN_R = ')',
+  DOT = '.',
   SPREAD = '...',
   COLON = ':',
   EQUALS = '=',
