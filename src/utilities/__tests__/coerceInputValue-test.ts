@@ -307,7 +307,7 @@ describe('coerceInputValue', () => {
       expectErrors(result).to.deep.equal([
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
           value: { foo: 123, bar: 456 },
         },
@@ -319,7 +319,7 @@ describe('coerceInputValue', () => {
       expectErrors(result).to.deep.equal([
         {
           error:
-            'Field "bar" of OneOf type "TestInputObject" must be non-null.',
+            'Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: ['bar'],
           value: null,
         },
@@ -331,7 +331,7 @@ describe('coerceInputValue', () => {
       expectErrors(result).to.deep.equal([
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
           value: { foo: null, bar: null },
         },
@@ -364,7 +364,7 @@ describe('coerceInputValue', () => {
         },
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
           value: { foo: 'abc', bar: 'def' },
         },
@@ -385,7 +385,7 @@ describe('coerceInputValue', () => {
         },
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
           value: { foo: 123, unknownField: 123 },
         },
@@ -403,7 +403,7 @@ describe('coerceInputValue', () => {
         },
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
           value: { bart: 123 },
         },

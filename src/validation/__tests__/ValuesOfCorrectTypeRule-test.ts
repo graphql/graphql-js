@@ -1088,7 +1088,8 @@ describe('Validate: Values of correct type', () => {
         }
       `).toDeepEqual([
         {
-          message: 'Field "OneOfInput.stringField" must be non-null.',
+          message:
+            'Within OneOf Input Object Type "OneOfInput", exactly one field must be specified, and the value for that field must be non-null.',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -1104,7 +1105,7 @@ describe('Validate: Values of correct type', () => {
       `).toDeepEqual([
         {
           message:
-            'Variable "$string" must be non-nullable to be used for OneOf Input Object "OneOfInput".',
+            'Variable "$string" must be non-nullable to be used for Within OneOf Input Object Type "OneOfInput".',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -1120,7 +1121,7 @@ describe('Validate: Values of correct type', () => {
       `).toDeepEqual([
         {
           message:
-            'OneOf Input Object "OneOfInput" must specify exactly one key.',
+            'Within OneOf Input Object Type "OneOfInput", exactly one field must be specified, and the value for that field must be non-null.',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
