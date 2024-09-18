@@ -40,6 +40,7 @@ import type {
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 
+import type { GraphQLVariableSignature } from '../utilities/getVariableSignature';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped';
 
 import { assertEnumValueName, assertName } from './assertName';
@@ -1069,7 +1070,9 @@ export interface GraphQLArgument {
   astNode: Maybe<InputValueDefinitionNode>;
 }
 
-export function isRequiredArgument(arg: GraphQLArgument): boolean {
+export function isRequiredArgument(
+  arg: GraphQLArgument | GraphQLVariableSignature,
+): boolean {
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
 

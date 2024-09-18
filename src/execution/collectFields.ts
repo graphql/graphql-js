@@ -17,9 +17,25 @@ import {
 } from '../type/directives';
 import type { GraphQLSchema } from '../type/schema';
 
+import type { GraphQLVariableSignature } from '../utilities/getVariableSignature';
 import { typeFromAST } from '../utilities/typeFromAST';
 
-import { getDirectiveValues } from './values';
+import { experimentalGetArgumentValues, getDirectiveValues } from './values';
+
+export interface FragmentVariables {
+  signatures: ObjMap<GraphQLVariableSignature>;
+  values: ObjMap<unknown>;
+}
+
+export interface FieldDetails {
+  node: FieldNode;
+  fragmentVariables?: FragmentVariables | undefined;
+}
+
+export interface FragmentDetails {
+  definition: FragmentDefinitionNode;
+  variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
+}
 
 /**
  * Given a selectionSet, collects all of the fields and returns them.
@@ -32,11 +48,11 @@ import { getDirectiveValues } from './values';
  */
 export function collectFields(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-): Map<string, ReadonlyArray<FieldNode>> {
+): Map<string, ReadonlyArray<FieldDetails>> {
   const fields = new Map();
   collectFieldsImpl(
     schema,
@@ -46,6 +62,7 @@ export function collectFields(
     selectionSet,
     fields,
     new Set(),
+    undefined,
   );
   return fields;
 }
@@ -62,56 +79,66 @@ export function collectFields(
  */
 export function collectSubfields(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: { [variable: string]: unknown },
   returnType: GraphQLObjectType,
-  fieldNodes: ReadonlyArray<FieldNode>,
-): Map<string, ReadonlyArray<FieldNode>> {
-  const subFieldNodes = new Map();
+  fieldEntries: ReadonlyArray<FieldDetails>,
+): Map<string, ReadonlyArray<FieldDetails>> {
+  const subFieldEntries = new Map();
   const visitedFragmentNames = new Set<string>();
-  for (const node of fieldNodes) {
-    if (node.selectionSet) {
+  for (const entry of fieldEntries) {
+    if (entry.node.selectionSet) {
       collectFieldsImpl(
         schema,
         fragments,
         variableValues,
         returnType,
-        node.selectionSet,
-        subFieldNodes,
+        entry.node.selectionSet,
+        subFieldEntries,
         visitedFragmentNames,
+        entry.fragmentVariables,
       );
     }
   }
-  return subFieldNodes;
+  return subFieldEntries;
 }
 
 function collectFieldsImpl(
   schema: GraphQLSchema,
-  fragments: ObjMap<FragmentDefinitionNode>,
+  fragments: ObjMap<FragmentDetails>,
   variableValues: { [variable: string]: unknown },
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  fields: Map<string, Array<FieldNode>>,
+  fields: Map<string, Array<FieldDetails>>,
   visitedFragmentNames: Set<string>,
+  fragmentVariables?: FragmentVariables,
 ): void {
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
       case Kind.FIELD: {
-        if (!shouldIncludeNode(variableValues, selection)) {
+        if (!shouldIncludeNode(selection, variableValues, fragmentVariables)) {
           continue;
         }
         const name = getFieldEntryKey(selection);
         const fieldList = fields.get(name);
         if (fieldList !== undefined) {
-          fieldList.push(selection);
+          fieldList.push({
+            node: selection,
+            fragmentVariables,
+          });
         } else {
-          fields.set(name, [selection]);
+          fields.set(name, [
+            {
+              node: selection,
+              fragmentVariables,
+            },
+          ]);
         }
         break;
       }
       case Kind.INLINE_FRAGMENT: {
         if (
-          !shouldIncludeNode(variableValues, selection) ||
+          !shouldIncludeNode(selection, variableValues, fragmentVariables) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
           continue;
@@ -124,6 +151,7 @@ function collectFieldsImpl(
           selection.selectionSet,
           fields,
           visitedFragmentNames,
+          fragmentVariables,
         );
         break;
       }
@@ -131,7 +159,7 @@ function collectFieldsImpl(
         const fragName = selection.name.value;
         if (
           visitedFragmentNames.has(fragName) ||
-          !shouldIncludeNode(variableValues, selection)
+          !shouldIncludeNode(selection, variableValues, fragmentVariables)
         ) {
           continue;
         }
@@ -139,18 +167,34 @@ function collectFieldsImpl(
         const fragment = fragments[fragName];
         if (
           !fragment ||
-          !doesFragmentConditionMatch(schema, fragment, runtimeType)
+          !doesFragmentConditionMatch(schema, fragment.definition, runtimeType)
         ) {
           continue;
         }
+
+        const fragmentVariableSignatures = fragment.variableSignatures;
+        let newFragmentVariables: FragmentVariables | undefined;
+        if (fragmentVariableSignatures) {
+          newFragmentVariables = {
+            signatures: fragmentVariableSignatures,
+            values: experimentalGetArgumentValues(
+              selection,
+              Object.values(fragmentVariableSignatures),
+              variableValues,
+              fragmentVariables,
+            ),
+          };
+        }
+
         collectFieldsImpl(
           schema,
           fragments,
           variableValues,
           runtimeType,
-          fragment.selectionSet,
+          fragment.definition.selectionSet,
           fields,
           visitedFragmentNames,
+          newFragmentVariables,
         );
         break;
       }
@@ -163,10 +207,16 @@ function collectFieldsImpl(
  * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
-  variableValues: { [variable: string]: unknown },
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
+  variableValues: { [variable: string]: unknown },
+  fragmentVariables: FragmentVariables | undefined,
 ): boolean {
-  const skip = getDirectiveValues(GraphQLSkipDirective, node, variableValues);
+  const skip = getDirectiveValues(
+    GraphQLSkipDirective,
+    node,
+    variableValues,
+    fragmentVariables,
+  );
   if (skip?.if === true) {
     return false;
   }
@@ -175,6 +225,7 @@ function shouldIncludeNode(
     GraphQLIncludeDirective,
     node,
     variableValues,
+    fragmentVariables,
   );
   if (include?.if === false) {
     return false;

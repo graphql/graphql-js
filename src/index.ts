@@ -263,6 +263,7 @@ export type {
   SelectionNode,
   FieldNode,
   ArgumentNode,
+  FragmentArgumentNode,
   ConstArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,

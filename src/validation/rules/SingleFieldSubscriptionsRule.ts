@@ -2,13 +2,11 @@ import type { ObjMap } from '../../jsutils/ObjMap';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type {
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
-} from '../../language/ast';
+import type { OperationDefinitionNode } from '../../language/ast';
 import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
+import type { FragmentDetails } from '../../execution/collectFields';
 import { collectFields } from '../../execution/collectFields';
 
 import type { ValidationContext } from '../ValidationContext';
@@ -35,10 +33,10 @@ export function SingleFieldSubscriptionsRule(
             [variable: string]: any;
           } = Object.create(null);
           const document = context.getDocument();
-          const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
+          const fragments: ObjMap<FragmentDetails> = Object.create(null);
           for (const definition of document.definitions) {
             if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-              fragments[definition.name.value] = definition;
+              fragments[definition.name.value] = { definition };
             }
           }
           const fields = collectFields(
@@ -57,20 +55,20 @@ export function SingleFieldSubscriptionsRule(
                 operationName != null
                   ? `Subscription "${operationName}" must select only one top level field.`
                   : 'Anonymous Subscription must select only one top level field.',
-                { nodes: extraFieldSelections },
+                { nodes: extraFieldSelections.map((entry) => entry.node) },
               ),
             );
           }
           for (const fieldNodes of fields.values()) {
             const field = fieldNodes[0];
-            const fieldName = field.name.value;
+            const fieldName = field.node.name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
                 new GraphQLError(
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  { nodes: fieldNodes },
+                  { nodes: fieldNodes.map((entry) => entry.node) },
                 ),
               );
             }
