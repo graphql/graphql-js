@@ -183,11 +183,6 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               'Variable "$input" got invalid value { a: "abc", b: null }; Exactly one key must be specified for OneOf type "TestInputObject".',
           },
-          {
-            message:
-              'Variable "$input" got invalid value null at "input.b"; Field "b" of OneOf type "TestInputObject" must be non-null.',
-            locations: [{ line: 2, column: 16 }],
-          },
         ],
       });
     });
@@ -211,16 +206,6 @@ describe('Execute: Handles OneOf Input Objects', () => {
             locations: [{ column: 16, line: 2 }],
             message:
               'Variable "$input" got invalid value { a: null, b: null }; Exactly one key must be specified for OneOf type "TestInputObject".',
-          },
-          {
-            message:
-              'Variable "$input" got invalid value null at "input.a"; Field "a" of OneOf type "TestInputObject" must be non-null.',
-            locations: [{ line: 2, column: 16 }],
-          },
-          {
-            message:
-              'Variable "$input" got invalid value null at "input.b"; Field "b" of OneOf type "TestInputObject" must be non-null.',
-            locations: [{ line: 2, column: 16 }],
           },
         ],
       });

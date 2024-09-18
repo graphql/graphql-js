@@ -326,7 +326,7 @@ describe('coerceInputValue', () => {
       ]);
     });
 
-    it('returns descriptive errors if more than one field is null', () => {
+    it('returns an error if more than one field is null', () => {
       const result = coerceValue({ foo: null, bar: null }, TestInputObject);
       expectErrors(result).to.deep.equal([
         {
@@ -334,18 +334,6 @@ describe('coerceInputValue', () => {
             'Exactly one key must be specified for OneOf type "TestInputObject".',
           path: [],
           value: { foo: null, bar: null },
-        },
-        {
-          error:
-            'Field "foo" of OneOf type "TestInputObject" must be non-null.',
-          path: ['foo'],
-          value: null,
-        },
-        {
-          error:
-            'Field "bar" of OneOf type "TestInputObject" must be non-null.',
-          path: ['bar'],
-          value: null,
         },
       ]);
     });

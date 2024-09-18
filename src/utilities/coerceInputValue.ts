@@ -186,8 +186,8 @@ function coerceInputValueImpl(
             `Exactly one key must be specified for OneOf type "${type}".`,
           ),
         );
-      }
-      for (const key of keys) {
+      } else {
+        const key = keys[0];
         const value = inputValue[key];
         if (value === null || coercedValue[key] === null) {
           onError(
