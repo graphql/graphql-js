@@ -129,13 +129,14 @@ export function valueFromAST(
     }
 
     if (type.isOneOf) {
-      const keys = Object.keys(coercedObj);
-      if (keys.length !== 1) {
+      const coercedKeys = Object.keys(coercedObj);
+      if (fieldNodes.size !== 1 || coercedKeys.length !== 1) {
         return; // Invalid: not exactly one key, intentionally return no value.
       }
-
-      if (coercedObj[keys[0]] === null) {
-        return; // Invalid: value not non-null, intentionally return no value.
+      for (const [key, value] of fieldNodes) {
+        if (value.value.kind === Kind.NULL || coercedObj[key] === null) {
+          return; // Invalid: not exactly one key, intentionally return no value.
+        }
       }
     }
 

@@ -303,22 +303,47 @@ describe('coerceInputValue', () => {
     });
 
     it('returns an error if more than one field is specified', () => {
-      const result = coerceValue({ foo: 123, bar: null }, TestInputObject);
+      const result = coerceValue({ foo: 123, bar: 456 }, TestInputObject);
       expectErrors(result).to.deep.equal([
         {
           error:
             'Exactly one key must be specified for OneOf type "TestInputObject".',
           path: [],
-          value: { foo: 123, bar: null },
+          value: { foo: 123, bar: 456 },
         },
       ]);
     });
 
-    it('returns an error the one field is null', () => {
+    it('returns an error if the one field is null', () => {
       const result = coerceValue({ bar: null }, TestInputObject);
       expectErrors(result).to.deep.equal([
         {
-          error: 'Field "bar" must be non-null.',
+          error:
+            'Field "bar" of OneOf type "TestInputObject" must be non-null.',
+          path: ['bar'],
+          value: null,
+        },
+      ]);
+    });
+
+    it('returns descriptive errors if more than one field is null', () => {
+      const result = coerceValue({ foo: null, bar: null }, TestInputObject);
+      expectErrors(result).to.deep.equal([
+        {
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
+          path: [],
+          value: { foo: null, bar: null },
+        },
+        {
+          error:
+            'Field "foo" of OneOf type "TestInputObject" must be non-null.',
+          path: ['foo'],
+          value: null,
+        },
+        {
+          error:
+            'Field "bar" of OneOf type "TestInputObject" must be non-null.',
           path: ['bar'],
           value: null,
         },
@@ -367,6 +392,12 @@ describe('coerceInputValue', () => {
         {
           error:
             'Field "unknownField" is not defined by type "TestInputObject".',
+          path: [],
+          value: { foo: 123, unknownField: 123 },
+        },
+        {
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
           path: [],
           value: { foo: 123, unknownField: 123 },
         },
