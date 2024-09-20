@@ -183,7 +183,7 @@ function coerceInputValueImpl(
           pathToArray(path),
           inputValue,
           new GraphQLError(
-            `Within OneOf Input Object Type "${type}", exactly one field must be specified, and the value for that field must be non-null.`,
+            `Within OneOf Input Object type "${type}", exactly one field must be specified, and the value for that field must be non-null.`,
           ),
         );
       } else {
@@ -194,7 +194,7 @@ function coerceInputValueImpl(
             pathToArray(path).concat(key),
             value,
             new GraphQLError(
-              `Within OneOf Input Object Type "${type}", exactly one field must be specified, and the value for that field must be non-null.`,
+              `Within OneOf Input Object type "${type}", exactly one field must be specified, and the value for that field must be non-null.`,
             ),
           );
         }

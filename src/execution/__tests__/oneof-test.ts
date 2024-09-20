@@ -157,7 +157,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" got invalid value { a: "abc", b: 123 }; Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+              'Variable "$input" got invalid value { a: "abc", b: 123 }; Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           },
         ],
       });
@@ -181,7 +181,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" got invalid value { a: "abc", b: null }; Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+              'Variable "$input" got invalid value { a: "abc", b: null }; Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           },
         ],
       });
@@ -205,7 +205,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" got invalid value { a: null, b: null }; Within OneOf Input Object Type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+              'Variable "$input" got invalid value { a: null, b: null }; Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           },
         ],
       });

@@ -27,7 +27,11 @@ import {
   GraphQLDirective,
   GraphQLIncludeDirective,
 } from '../../type/directives.js';
-import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
+import {
+  GraphQLBoolean,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
 import { executeSync, experimentalExecuteIncrementally } from '../execute.js';
@@ -90,6 +94,15 @@ const TestNestedInputObject = new GraphQLInputObjectType({
   },
 });
 
+const TestOneOfInputObject = new GraphQLInputObjectType({
+  name: 'TestOneOfInputObject',
+  fields: {
+    a: { type: GraphQLString },
+    b: { type: GraphQLInt },
+  },
+  isOneOf: true,
+});
+
 const TestEnum = new GraphQLEnumType({
   name: 'TestEnum',
   values: {
@@ -139,6 +152,9 @@ const TestType = new GraphQLObjectType({
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
       defaultValue: 'Hello World',
+    }),
+    fieldWithOneOfObjectInput: fieldWithInputArg({
+      type: TestOneOfInputObject,
     }),
     list: fieldWithInputArg({ type: new GraphQLList(GraphQLString) }),
     nested: {
@@ -1111,6 +1127,206 @@ describe('Execute: Handles inputs', () => {
             '"Hello World"',
         },
       });
+    });
+  });
+
+  describe('Handles OneOf Input Object types', () => {
+    it('allows OneOf Input Object with single field', () => {
+      const result = executeQuery(`
+        {
+          fieldWithOneOfObjectInput(input: { a: "abc" })
+        }
+      `);
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithOneOfObjectInput: '{ a: "abc" }',
+        },
+      });
+    });
+  });
+
+  it('errors with OneOf Input Object with more than one field', () => {
+    const result = executeQuery(`
+      {
+        fieldWithOneOfObjectInput(input: { a: "abc", b: 123 })
+      }
+    `);
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        fieldWithOneOfObjectInput: null,
+      },
+      errors: [
+        {
+          message:
+            'Argument "input" of type "TestOneOfInputObject" has invalid value { a: "abc", b: 123 }.',
+          path: ['fieldWithOneOfObjectInput'],
+          locations: [{ line: 3, column: 42 }],
+        },
+      ],
+    });
+  });
+
+  it('errors with OneOf Input Object with a single null value', () => {
+    const result = executeQuery(`
+      {
+        fieldWithOneOfObjectInput(input: { a: null })
+      }
+    `);
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        fieldWithOneOfObjectInput: null,
+      },
+      errors: [
+        {
+          message:
+            'Argument "input" of type "TestOneOfInputObject" has invalid value { a: null }.',
+          path: ['fieldWithOneOfObjectInput'],
+          locations: [{ line: 3, column: 42 }],
+        },
+      ],
+    });
+  });
+
+  it('errors with OneOf Input Object with multiple values, only one non-null', () => {
+    const result = executeQuery(`
+      {
+        fieldWithOneOfObjectInput(input: { a: "abc", b: null })
+      }
+    `);
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        fieldWithOneOfObjectInput: null,
+      },
+      errors: [
+        {
+          message:
+            'Argument "input" of type "TestOneOfInputObject" has invalid value { a: "abc", b: null }.',
+          path: ['fieldWithOneOfObjectInput'],
+          locations: [{ line: 3, column: 42 }],
+        },
+      ],
+    });
+  });
+
+  it('allows a variable for the entire OneOf Object with a single value', () => {
+    const result = executeQuery(
+      `
+        query ($input: TestOneOfInputObject) {
+          fieldWithOneOfObjectInput(input: $input)
+        }
+      `,
+      { input: { a: 'abc' } },
+    );
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        fieldWithOneOfObjectInput: '{ a: "abc" }',
+      },
+    });
+  });
+
+  it('allows a variable for the entire OneOf Object with a single defined value', () => {
+    const result = executeQuery(
+      `
+        query ($input: TestOneOfInputObject) {
+          fieldWithOneOfObjectInput(input: $input)
+        }
+      `,
+      { input: { a: 'abc', b: undefined } },
+    );
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        fieldWithOneOfObjectInput: '{ a: "abc" }',
+      },
+    });
+  });
+
+  it('errors with variable with no value', () => {
+    const result = executeQuery(
+      `
+        query ($input: TestOneOfInputObject) {
+          fieldWithOneOfObjectInput(input: $input)
+        }
+      `,
+      { input: {} },
+    );
+
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Variable "$input" got invalid value {}; Within OneOf Input Object type "TestOneOfInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          locations: [{ line: 2, column: 16 }],
+        },
+      ],
+    });
+  });
+
+  it('errors with variable with multiple values', () => {
+    const result = executeQuery(
+      `
+        query ($input: TestOneOfInputObject) {
+          fieldWithOneOfObjectInput(input: $input)
+        }
+      `,
+      { input: { a: 'abc', b: 123 } },
+    );
+
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Variable "$input" got invalid value { a: "abc", b: 123 }; Within OneOf Input Object type "TestOneOfInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          locations: [{ line: 2, column: 16 }],
+        },
+      ],
+    });
+  });
+
+  it('errors with variable with single null value', () => {
+    const result = executeQuery(
+      `
+        query ($input: TestOneOfInputObject) {
+          fieldWithOneOfObjectInput(input: $input)
+        }
+      `,
+      { input: { a: null } },
+    );
+
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Variable "$input" got invalid value null at "input.a"; Within OneOf Input Object type "TestOneOfInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          locations: [{ line: 2, column: 16 }],
+        },
+      ],
+    });
+  });
+
+  it('errors with variable with multiple values, only one non-null', () => {
+    const result = executeQuery(
+      `
+        query ($input: TestOneOfInputObject) {
+          fieldWithOneOfObjectInput(input: $input)
+        }
+      `,
+      { input: { a: 'abc', b: null } },
+    );
+
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Variable "$input" got invalid value { a: "abc", b: null }; Within OneOf Input Object type "TestOneOfInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          locations: [{ line: 2, column: 16 }],
+        },
+      ],
     });
   });
 
