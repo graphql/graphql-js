@@ -1105,7 +1105,7 @@ describe('Validate: Values of correct type', () => {
       `).toDeepEqual([
         {
           message:
-            'Variable "$string" must be non-nullable to be used for Within OneOf Input Object type "OneOfInput".',
+            'Variable "$string" must be non-nullable to be used within OneOf Input Object type "OneOfInput".',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
