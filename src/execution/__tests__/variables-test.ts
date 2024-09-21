@@ -1167,6 +1167,28 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
+    it('errors with OneOf Input Object with no fields', () => {
+      const result = executeQuery(`
+        {
+          fieldWithOneOfObjectInput(input: {})
+        }
+      `);
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithOneOfObjectInput: null,
+        },
+        errors: [
+          {
+            message:
+              'Argument "input" of type "TestOneOfInputObject" has invalid value {  }.',
+            path: ['fieldWithOneOfObjectInput'],
+            locations: [{ line: 3, column: 44 }],
+          },
+        ],
+      });
+    });
+
     it('errors with OneOf Input Object with a single null value', () => {
       const result = executeQuery(`
         {
