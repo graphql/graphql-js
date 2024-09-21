@@ -1228,13 +1228,14 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('allows a variable for the entire OneOf Object with a single defined value', () => {
+    it('allows a variable for the entire OneOf Object with a single defined value and additional undefined value', () => {
       const result = executeQuery(
         `
           query ($input: TestOneOfInputObject) {
             fieldWithOneOfObjectInput(input: $input)
           }
         `,
+        // Note: this is non-normative graphql-js specific behavior.
         { input: { a: 'abc', b: undefined } },
       );
 
