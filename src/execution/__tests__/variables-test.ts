@@ -1328,6 +1328,47 @@ describe('Execute: Handles inputs', () => {
         ],
       });
     });
+
+    it('accepts a good default value', () => {
+      const result = executeQuery(
+        `
+          query ($input: TestOneOfInputObject = { a: "abc" }) {
+            fieldWithOneOfObjectInput(input: $input)
+          }
+        `,
+      );
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithOneOfObjectInput: '{ a: "abc" }',
+        },
+      });
+    });
+
+    it('rejects a bad default value', () => {
+      const result = executeQuery(
+        `
+          query ($input: TestOneOfInputObject = { a: "abc", b: 123 }) {
+            fieldWithOneOfObjectInput(input: $input)
+          }
+        `,
+      );
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithOneOfObjectInput: null,
+        },
+        errors: [
+          {
+            locations: [{ line: 3, column: 46 }],
+            message:
+              // Default values are not currently validated separately, hence the vague error message here.
+              'Argument "input" of type "TestOneOfInputObject" has invalid value $input.',
+            path: ['fieldWithOneOfObjectInput'],
+          },
+        ],
+      });
+    });
   });
 
   describe('getVariableValues: limit maximum number of coercion errors', () => {
