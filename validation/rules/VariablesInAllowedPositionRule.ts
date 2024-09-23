@@ -4,7 +4,10 @@ import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { ValueNode, VariableDefinitionNode } from '../../language/ast.ts';
 import { Kind } from '../../language/kinds.ts';
 import type { ASTVisitor } from '../../language/visitor.ts';
-import type { GraphQLType } from '../../type/definition.ts';
+import type {
+  GraphQLDefaultValueUsage,
+  GraphQLType,
+} from '../../type/definition.ts';
 import { isNonNullType } from '../../type/definition.ts';
 import type { GraphQLSchema } from '../../type/schema.ts';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators.ts';
@@ -85,7 +88,7 @@ function allowedVariableUsage(
   varType: GraphQLType,
   varDefaultValue: Maybe<ValueNode>,
   locationType: GraphQLType,
-  locationDefaultValue: Maybe<unknown>,
+  locationDefaultValue: GraphQLDefaultValueUsage | undefined,
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =

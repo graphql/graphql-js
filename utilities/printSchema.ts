@@ -232,10 +232,13 @@ function printArgs(
   );
 }
 function printInputValue(arg: GraphQLInputField): string {
-  const defaultAST = astFromValue(arg.defaultValue, arg.type);
   let argDecl = arg.name + ': ' + String(arg.type);
-  if (defaultAST) {
-    argDecl += ` = ${print(defaultAST)}`;
+  if (arg.defaultValue) {
+    const literal =
+      arg.defaultValue.literal ??
+      astFromValue(arg.defaultValue.value, arg.type);
+    literal != null || invariant(false, 'Invalid default value');
+    argDecl += ` = ${print(literal)}`;
   }
   return argDecl + printDeprecated(arg.deprecationReason);
 }

@@ -3,6 +3,7 @@ import { invariant } from '../jsutils/invariant.ts';
 import { keyMap } from '../jsutils/keyMap.ts';
 import { print } from '../language/printer.ts';
 import type {
+  GraphQLDefaultValueUsage,
   GraphQLEnumType,
   GraphQLField,
   GraphQLInputObjectType,
@@ -474,8 +475,11 @@ function typeKindName(type: GraphQLNamedType): string {
   // Not reachable, all possible types have been considered.
   false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
-function stringifyValue(value: unknown, type: GraphQLInputType): string {
-  const ast = astFromValue(value, type);
+function stringifyValue(
+  defaultValue: GraphQLDefaultValueUsage,
+  type: GraphQLInputType,
+): string {
+  const ast = defaultValue.literal ?? astFromValue(defaultValue.value, type);
   ast != null || invariant(false);
   return print(sortValueNode(ast));
 }

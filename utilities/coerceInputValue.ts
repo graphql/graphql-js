@@ -12,7 +12,10 @@ import { suggestionList } from '../jsutils/suggestionList.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import type { ValueNode, VariableNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
-import type { GraphQLInputType } from '../type/definition.ts';
+import type {
+  GraphQLDefaultValueUsage,
+  GraphQLInputType,
+} from '../type/definition.ts';
 import {
   assertLeafType,
   isInputObjectType,
@@ -97,8 +100,11 @@ function coerceInputValueImpl(
     for (const field of Object.values(fieldDefs)) {
       const fieldValue = inputValue[field.name];
       if (fieldValue === undefined) {
-        if (field.defaultValue !== undefined) {
-          coercedValue[field.name] = field.defaultValue;
+        if (field.defaultValue) {
+          coercedValue[field.name] = coerceDefaultValue(
+            field.defaultValue,
+            field.type,
+          );
         } else if (isNonNullType(field.type)) {
           const typeStr = inspect(field.type);
           onError(
@@ -301,8 +307,11 @@ export function coerceInputLiteral(
         if (isRequiredInputField(field)) {
           return; // Invalid: intentionally return no value.
         }
-        if (field.defaultValue !== undefined) {
-          coercedValue[field.name] = field.defaultValue;
+        if (field.defaultValue) {
+          coercedValue[field.name] = coerceDefaultValue(
+            field.defaultValue,
+            field.type,
+          );
         }
       } else {
         const fieldValue = coerceInputLiteral(
@@ -346,4 +355,21 @@ function getVariableValue(
     return fragmentVariableValues.values[varName];
   }
   return variableValues?.[varName];
+}
+/**
+ * @internal
+ */
+export function coerceDefaultValue(
+  defaultValue: GraphQLDefaultValueUsage,
+  type: GraphQLInputType,
+): unknown {
+  // Memoize the result of coercing the default value in a hidden field.
+  let coercedValue = (defaultValue as any)._memoizedCoercedValue;
+  if (coercedValue === undefined) {
+    coercedValue = defaultValue.literal
+      ? coerceInputLiteral(defaultValue.literal, type)
+      : defaultValue.value;
+    (defaultValue as any)._memoizedCoercedValue = coercedValue;
+  }
+  return coercedValue;
 }

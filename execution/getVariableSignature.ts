@@ -2,8 +2,11 @@ import { GraphQLError } from '../error/GraphQLError.ts';
 import type { VariableDefinitionNode } from '../language/ast.ts';
 import { print } from '../language/printer.ts';
 import { isInputType } from '../type/definition.ts';
-import type { GraphQLInputType, GraphQLSchema } from '../type/index.ts';
-import { coerceInputLiteral } from '../utilities/coerceInputValue.ts';
+import type {
+  GraphQLDefaultValueUsage,
+  GraphQLInputType,
+  GraphQLSchema,
+} from '../type/index.ts';
 import { typeFromAST } from '../utilities/typeFromAST.ts';
 /**
  * A GraphQLVariableSignature is required to coerce a variable value.
@@ -14,7 +17,7 @@ import { typeFromAST } from '../utilities/typeFromAST.ts';
 export interface GraphQLVariableSignature {
   name: string;
   type: GraphQLInputType;
-  defaultValue: unknown;
+  defaultValue: GraphQLDefaultValueUsage | undefined;
 }
 export function getVariableSignature(
   schema: GraphQLSchema,
@@ -35,8 +38,6 @@ export function getVariableSignature(
   return {
     name: varName,
     type: varType,
-    defaultValue: defaultValue
-      ? coerceInputLiteral(varDefNode.defaultValue, varType)
-      : undefined,
+    defaultValue: defaultValue ? { literal: defaultValue } : undefined,
   };
 }

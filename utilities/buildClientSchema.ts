@@ -29,7 +29,6 @@ import { introspectionTypes, TypeKind } from '../type/introspection.ts';
 import { specifiedScalarTypes } from '../type/scalars.ts';
 import type { GraphQLSchemaValidationOptions } from '../type/schema.ts';
 import { GraphQLSchema } from '../type/schema.ts';
-import { coerceInputLiteral } from './coerceInputValue.ts';
 import type {
   IntrospectionDirective,
   IntrospectionEnumType,
@@ -335,17 +334,13 @@ export function buildClientSchema(
         `Introspection must provide input type for arguments, but received: ${typeStr}.`,
       );
     }
-    const defaultValue =
-      inputValueIntrospection.defaultValue != null
-        ? coerceInputLiteral(
-            parseConstValue(inputValueIntrospection.defaultValue),
-            type,
-          )
-        : undefined;
     return {
       description: inputValueIntrospection.description,
       type,
-      defaultValue,
+      defaultValueLiteral:
+        inputValueIntrospection.defaultValue != null
+          ? parseConstValue(inputValueIntrospection.defaultValue)
+          : undefined,
       deprecationReason: inputValueIntrospection.deprecationReason,
     };
   }
