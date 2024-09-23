@@ -66,7 +66,7 @@ export function OverlappingFieldsCanBeMergedRule(
     NodeAndDefCollection,
     string
   >();
-  const comparedFragmentPairs = new PairSet<string>((a, b) => a < b);
+  const comparedFragmentPairs = new PairSet<string>();
 
   // A cache for the "field map" and list of fragment names found in any given
   // selection set. Selection sets may be asked for this information multiple
@@ -879,21 +879,19 @@ class OrderedPairSet<T, U> {
  */
 class PairSet<T> {
   _orderedPairSet: OrderedPairSet<T, T>;
-  _comparator: (a: T, b: T) => boolean;
 
-  constructor(comparator: (a: T, b: T) => boolean) {
+  constructor() {
     this._orderedPairSet = new OrderedPairSet();
-    this._comparator = comparator;
   }
 
   has(a: T, b: T, weaklyPresent: boolean): boolean {
-    return this._comparator(a, b)
+    return a < b
       ? this._orderedPairSet.has(a, b, weaklyPresent)
       : this._orderedPairSet.has(b, a, weaklyPresent);
   }
 
   add(a: T, b: T, weaklyPresent: boolean): void {
-    if (this._comparator(a, b)) {
+    if (a < b) {
       this._orderedPairSet.add(a, b, weaklyPresent);
     } else {
       this._orderedPairSet.add(b, a, weaklyPresent);
