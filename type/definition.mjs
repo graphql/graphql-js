@@ -462,7 +462,7 @@ export function defineArguments(args) {
         name: assertName(argName),
         description: argConfig.description,
         type: argConfig.type,
-        defaultValue: argConfig.defaultValue,
+        defaultValue: defineDefaultValue(argName, argConfig),
         deprecationReason: argConfig.deprecationReason,
         extensions: toObjMap(argConfig.extensions),
         astNode: argConfig.astNode,
@@ -487,7 +487,8 @@ export function argsToArgsConfig(args) {
     return keyValMap(args, (arg) => arg.name, (arg) => ({
         description: arg.description,
         type: arg.type,
-        defaultValue: arg.defaultValue,
+        defaultValue: arg.defaultValue?.value,
+        defaultValueLiteral: arg.defaultValue?.literal,
         deprecationReason: arg.deprecationReason,
         extensions: arg.extensions,
         astNode: arg.astNode,
@@ -495,6 +496,15 @@ export function argsToArgsConfig(args) {
 }
 export function isRequiredArgument(arg) {
     return isNonNullType(arg.type) && arg.defaultValue === undefined;
+}
+export function defineDefaultValue(argName, config) {
+    if (config.defaultValue === undefined && !config.defaultValueLiteral) {
+        return;
+    }
+    (!(config.defaultValue !== undefined && config.defaultValueLiteral)) || devAssert(false, `Argument "${argName}" has both a defaultValue and a defaultValueLiteral property, but only one must be provided.`);
+    return config.defaultValueLiteral
+        ? { literal: config.defaultValueLiteral }
+        : { value: config.defaultValue };
 }
 /**
  * Interface Type Definition
@@ -797,7 +807,8 @@ export class GraphQLInputObjectType {
         const fields = mapValue(this.getFields(), (field) => ({
             description: field.description,
             type: field.type,
-            defaultValue: field.defaultValue,
+            defaultValue: field.defaultValue?.value,
+            defaultValueLiteral: field.defaultValue?.literal,
             deprecationReason: field.deprecationReason,
             extensions: field.extensions,
             astNode: field.astNode,
@@ -825,7 +836,7 @@ function defineInputFieldMap(fields) {
         name: assertName(fieldName),
         description: fieldConfig.description,
         type: fieldConfig.type,
-        defaultValue: fieldConfig.defaultValue,
+        defaultValue: defineDefaultValue(fieldName, fieldConfig),
         deprecationReason: fieldConfig.deprecationReason,
         extensions: toObjMap(fieldConfig.extensions),
         astNode: fieldConfig.astNode,

@@ -4,7 +4,6 @@ exports.getVariableSignature = void 0;
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
 const printer_js_1 = require("../language/printer.js");
 const definition_js_1 = require("../type/definition.js");
-const coerceInputValue_js_1 = require("../utilities/coerceInputValue.js");
 const typeFromAST_js_1 = require("../utilities/typeFromAST.js");
 function getVariableSignature(schema, varDefNode) {
     const varName = varDefNode.variable.name.value;
@@ -19,9 +18,7 @@ function getVariableSignature(schema, varDefNode) {
     return {
         name: varName,
         type: varType,
-        defaultValue: defaultValue
-            ? (0, coerceInputValue_js_1.coerceInputLiteral)(varDefNode.defaultValue, varType)
-            : undefined,
+        defaultValue: defaultValue ? { literal: defaultValue } : undefined,
     };
 }
 exports.getVariableSignature = getVariableSignature;

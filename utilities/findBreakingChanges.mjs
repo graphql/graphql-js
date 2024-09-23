@@ -365,8 +365,8 @@ function typeKindName(type) {
     // Not reachable, all possible types have been considered.
     (false) || invariant(false, 'Unexpected type: ' + inspect(type));
 }
-function stringifyValue(value, type) {
-    const ast = astFromValue(value, type);
+function stringifyValue(defaultValue, type) {
+    const ast = defaultValue.literal ?? astFromValue(defaultValue.value, type);
     (ast != null) || invariant(false);
     return print(sortValueNode(ast));
 }

@@ -178,10 +178,12 @@ function printArgs(args, indentation = '') {
         ')');
 }
 function printInputValue(arg) {
-    const defaultAST = (0, astFromValue_js_1.astFromValue)(arg.defaultValue, arg.type);
     let argDecl = arg.name + ': ' + String(arg.type);
-    if (defaultAST) {
-        argDecl += ` = ${(0, printer_js_1.print)(defaultAST)}`;
+    if (arg.defaultValue) {
+        const literal = arg.defaultValue.literal ??
+            (0, astFromValue_js_1.astFromValue)(arg.defaultValue.value, arg.type);
+        (literal != null) || (0, invariant_js_1.invariant)(false, 'Invalid default value');
+        argDecl += ` = ${(0, printer_js_1.print)(literal)}`;
     }
     return argDecl + printDeprecated(arg.deprecationReason);
 }

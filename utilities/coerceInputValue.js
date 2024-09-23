@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.coerceInputLiteral = exports.coerceInputValue = void 0;
+exports.coerceDefaultValue = exports.coerceInputLiteral = exports.coerceInputValue = void 0;
 const didYouMean_js_1 = require("../jsutils/didYouMean.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
@@ -60,8 +60,8 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         for (const field of Object.values(fieldDefs)) {
             const fieldValue = inputValue[field.name];
             if (fieldValue === undefined) {
-                if (field.defaultValue !== undefined) {
-                    coercedValue[field.name] = field.defaultValue;
+                if (field.defaultValue) {
+                    coercedValue[field.name] = coerceDefaultValue(field.defaultValue, field.type);
                 }
                 else if ((0, definition_js_1.isNonNullType)(field.type)) {
                     const typeStr = (0, inspect_js_1.inspect)(field.type);
@@ -192,8 +192,8 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
                 if ((0, definition_js_1.isRequiredInputField)(field)) {
                     return; // Invalid: intentionally return no value.
                 }
-                if (field.defaultValue !== undefined) {
-                    coercedValue[field.name] = field.defaultValue;
+                if (field.defaultValue) {
+                    coercedValue[field.name] = coerceDefaultValue(field.defaultValue, field.type);
                 }
             }
             else {
@@ -232,3 +232,18 @@ function getVariableValue(variableNode, variableValues, fragmentVariableValues) 
     }
     return variableValues?.[varName];
 }
+/**
+ * @internal
+ */
+function coerceDefaultValue(defaultValue, type) {
+    // Memoize the result of coercing the default value in a hidden field.
+    let coercedValue = defaultValue._memoizedCoercedValue;
+    if (coercedValue === undefined) {
+        coercedValue = defaultValue.literal
+            ? coerceInputLiteral(defaultValue.literal, type)
+            : defaultValue.value;
+        defaultValue._memoizedCoercedValue = coercedValue;
+    }
+    return coercedValue;
+}
+exports.coerceDefaultValue = coerceDefaultValue;

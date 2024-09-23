@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isRequiredInputField = exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.isRequiredArgument = exports.argsToArgsConfig = exports.defineArguments = exports.GraphQLObjectType = exports.GraphQLScalarType = exports.resolveObjMapThunk = exports.resolveReadonlyArrayThunk = exports.getNamedType = exports.assertNamedType = exports.isNamedType = exports.getNullableType = exports.assertNullableType = exports.isNullableType = exports.assertWrappingType = exports.isWrappingType = exports.GraphQLNonNull = exports.GraphQLList = exports.assertAbstractType = exports.isAbstractType = exports.assertCompositeType = exports.isCompositeType = exports.assertLeafType = exports.isLeafType = exports.assertOutputType = exports.isOutputType = exports.assertInputType = exports.isInputType = exports.assertNonNullType = exports.isNonNullType = exports.assertListType = exports.isListType = exports.assertInputObjectType = exports.isInputObjectType = exports.assertEnumType = exports.isEnumType = exports.assertUnionType = exports.isUnionType = exports.assertInterfaceType = exports.isInterfaceType = exports.assertObjectType = exports.isObjectType = exports.assertScalarType = exports.isScalarType = exports.assertType = exports.isType = void 0;
+exports.GraphQLInputObjectType = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.defineDefaultValue = exports.isRequiredArgument = exports.argsToArgsConfig = exports.defineArguments = exports.GraphQLObjectType = exports.GraphQLScalarType = exports.resolveObjMapThunk = exports.resolveReadonlyArrayThunk = exports.getNamedType = exports.assertNamedType = exports.isNamedType = exports.getNullableType = exports.assertNullableType = exports.isNullableType = exports.assertWrappingType = exports.isWrappingType = exports.GraphQLNonNull = exports.GraphQLList = exports.assertAbstractType = exports.isAbstractType = exports.assertCompositeType = exports.isCompositeType = exports.assertLeafType = exports.isLeafType = exports.assertOutputType = exports.isOutputType = exports.assertInputType = exports.isInputType = exports.assertNonNullType = exports.isNonNullType = exports.assertListType = exports.isListType = exports.assertInputObjectType = exports.isInputObjectType = exports.assertEnumType = exports.isEnumType = exports.assertUnionType = exports.isUnionType = exports.assertInterfaceType = exports.isInterfaceType = exports.assertObjectType = exports.isObjectType = exports.assertScalarType = exports.isScalarType = exports.assertType = exports.isType = void 0;
+exports.isRequiredInputField = void 0;
 const devAssert_js_1 = require("../jsutils/devAssert.js");
 const didYouMean_js_1 = require("../jsutils/didYouMean.js");
 const identityFunc_js_1 = require("../jsutils/identityFunc.js");
@@ -507,7 +508,7 @@ function defineArguments(args) {
         name: (0, assertName_js_1.assertName)(argName),
         description: argConfig.description,
         type: argConfig.type,
-        defaultValue: argConfig.defaultValue,
+        defaultValue: defineDefaultValue(argName, argConfig),
         deprecationReason: argConfig.deprecationReason,
         extensions: (0, toObjMap_js_1.toObjMap)(argConfig.extensions),
         astNode: argConfig.astNode,
@@ -533,7 +534,8 @@ function argsToArgsConfig(args) {
     return (0, keyValMap_js_1.keyValMap)(args, (arg) => arg.name, (arg) => ({
         description: arg.description,
         type: arg.type,
-        defaultValue: arg.defaultValue,
+        defaultValue: arg.defaultValue?.value,
+        defaultValueLiteral: arg.defaultValue?.literal,
         deprecationReason: arg.deprecationReason,
         extensions: arg.extensions,
         astNode: arg.astNode,
@@ -544,6 +546,16 @@ function isRequiredArgument(arg) {
     return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
 exports.isRequiredArgument = isRequiredArgument;
+function defineDefaultValue(argName, config) {
+    if (config.defaultValue === undefined && !config.defaultValueLiteral) {
+        return;
+    }
+    (!(config.defaultValue !== undefined && config.defaultValueLiteral)) || (0, devAssert_js_1.devAssert)(false, `Argument "${argName}" has both a defaultValue and a defaultValueLiteral property, but only one must be provided.`);
+    return config.defaultValueLiteral
+        ? { literal: config.defaultValueLiteral }
+        : { value: config.defaultValue };
+}
+exports.defineDefaultValue = defineDefaultValue;
 /**
  * Interface Type Definition
  *
@@ -848,7 +860,8 @@ class GraphQLInputObjectType {
         const fields = (0, mapValue_js_1.mapValue)(this.getFields(), (field) => ({
             description: field.description,
             type: field.type,
-            defaultValue: field.defaultValue,
+            defaultValue: field.defaultValue?.value,
+            defaultValueLiteral: field.defaultValue?.literal,
             deprecationReason: field.deprecationReason,
             extensions: field.extensions,
             astNode: field.astNode,
@@ -877,7 +890,7 @@ function defineInputFieldMap(fields) {
         name: (0, assertName_js_1.assertName)(fieldName),
         description: fieldConfig.description,
         type: fieldConfig.type,
-        defaultValue: fieldConfig.defaultValue,
+        defaultValue: defineDefaultValue(fieldName, fieldConfig),
         deprecationReason: fieldConfig.deprecationReason,
         extensions: (0, toObjMap_js_1.toObjMap)(fieldConfig.extensions),
         astNode: fieldConfig.astNode,

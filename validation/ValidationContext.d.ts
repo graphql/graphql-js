@@ -2,7 +2,7 @@ import type { Maybe } from '../jsutils/Maybe.js';
 import type { GraphQLError } from '../error/GraphQLError.js';
 import type { DocumentNode, FragmentDefinitionNode, FragmentSpreadNode, OperationDefinitionNode, SelectionSetNode, VariableDefinitionNode, VariableNode } from '../language/ast.js';
 import type { ASTVisitor } from '../language/visitor.js';
-import type { GraphQLArgument, GraphQLCompositeType, GraphQLEnumValue, GraphQLField, GraphQLInputType, GraphQLOutputType } from '../type/definition.js';
+import type { GraphQLArgument, GraphQLCompositeType, GraphQLDefaultValueUsage, GraphQLEnumValue, GraphQLField, GraphQLInputType, GraphQLOutputType } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import type { FragmentSignature } from '../utilities/TypeInfo.js';
@@ -11,7 +11,7 @@ type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
     readonly node: VariableNode;
     readonly type: Maybe<GraphQLInputType>;
-    readonly defaultValue: Maybe<unknown>;
+    readonly defaultValue: GraphQLDefaultValueUsage | undefined;
     readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }
 /**

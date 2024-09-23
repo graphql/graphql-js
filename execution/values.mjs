@@ -4,7 +4,7 @@ import { GraphQLError } from "../error/GraphQLError.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { print } from "../language/printer.mjs";
 import { isNonNullType } from "../type/definition.mjs";
-import { coerceInputLiteral, coerceInputValue, } from "../utilities/coerceInputValue.mjs";
+import { coerceDefaultValue, coerceInputLiteral, coerceInputValue, } from "../utilities/coerceInputValue.mjs";
 import { getVariableSignature } from "./getVariableSignature.mjs";
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -44,8 +44,8 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         }
         const { name: varName, type: varType } = varSignature;
         if (!Object.hasOwn(inputs, varName)) {
-            if (varDefNode.defaultValue) {
-                coercedValues[varName] = varSignature.defaultValue;
+            if (varSignature.defaultValue) {
+                coercedValues[varName] = coerceDefaultValue(varSignature.defaultValue, varType);
             }
             else if (isNonNullType(varType)) {
                 const varTypeStr = inspect(varType);
@@ -94,8 +94,8 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
         const argType = argDef.type;
         const argumentNode = argNodeMap.get(name);
         if (argumentNode == null) {
-            if (argDef.defaultValue !== undefined) {
-                coercedValues[name] = argDef.defaultValue;
+            if (argDef.defaultValue) {
+                coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type);
             }
             else if (isNonNullType(argType)) {
                 throw new GraphQLError(`Argument "${name}" of required type "${inspect(argType)}" ` +
@@ -112,8 +112,8 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
                 : variableValues;
             if (scopedVariableValues == null ||
                 !Object.hasOwn(scopedVariableValues, variableName)) {
-                if (argDef.defaultValue !== undefined) {
-                    coercedValues[name] = argDef.defaultValue;
+                if (argDef.defaultValue) {
+                    coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type);
                 }
                 else if (isNonNullType(argType)) {
                     throw new GraphQLError(`Argument "${name}" of required type "${inspect(argType)}" ` +

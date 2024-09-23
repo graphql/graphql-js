@@ -56,8 +56,8 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
         for (const field of Object.values(fieldDefs)) {
             const fieldValue = inputValue[field.name];
             if (fieldValue === undefined) {
-                if (field.defaultValue !== undefined) {
-                    coercedValue[field.name] = field.defaultValue;
+                if (field.defaultValue) {
+                    coercedValue[field.name] = coerceDefaultValue(field.defaultValue, field.type);
                 }
                 else if (isNonNullType(field.type)) {
                     const typeStr = inspect(field.type);
@@ -188,8 +188,8 @@ export function coerceInputLiteral(valueNode, type, variableValues, fragmentVari
                 if (isRequiredInputField(field)) {
                     return; // Invalid: intentionally return no value.
                 }
-                if (field.defaultValue !== undefined) {
-                    coercedValue[field.name] = field.defaultValue;
+                if (field.defaultValue) {
+                    coercedValue[field.name] = coerceDefaultValue(field.defaultValue, field.type);
                 }
             }
             else {
@@ -226,4 +226,18 @@ function getVariableValue(variableNode, variableValues, fragmentVariableValues) 
         return fragmentVariableValues.values[varName];
     }
     return variableValues?.[varName];
+}
+/**
+ * @internal
+ */
+export function coerceDefaultValue(defaultValue, type) {
+    // Memoize the result of coercing the default value in a hidden field.
+    let coercedValue = defaultValue._memoizedCoercedValue;
+    if (coercedValue === undefined) {
+        coercedValue = defaultValue.literal
+            ? coerceInputLiteral(defaultValue.literal, type)
+            : defaultValue.value;
+        defaultValue._memoizedCoercedValue = coercedValue;
+    }
+    return coercedValue;
 }

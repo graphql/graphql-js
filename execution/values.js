@@ -48,8 +48,8 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
         }
         const { name: varName, type: varType } = varSignature;
         if (!Object.hasOwn(inputs, varName)) {
-            if (varDefNode.defaultValue) {
-                coercedValues[varName] = varSignature.defaultValue;
+            if (varSignature.defaultValue) {
+                coercedValues[varName] = (0, coerceInputValue_js_1.coerceDefaultValue)(varSignature.defaultValue, varType);
             }
             else if ((0, definition_js_1.isNonNullType)(varType)) {
                 const varTypeStr = (0, inspect_js_1.inspect)(varType);
@@ -99,8 +99,8 @@ function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVa
         const argType = argDef.type;
         const argumentNode = argNodeMap.get(name);
         if (argumentNode == null) {
-            if (argDef.defaultValue !== undefined) {
-                coercedValues[name] = argDef.defaultValue;
+            if (argDef.defaultValue) {
+                coercedValues[name] = (0, coerceInputValue_js_1.coerceDefaultValue)(argDef.defaultValue, argDef.type);
             }
             else if ((0, definition_js_1.isNonNullType)(argType)) {
                 throw new GraphQLError_js_1.GraphQLError(`Argument "${name}" of required type "${(0, inspect_js_1.inspect)(argType)}" ` +
@@ -117,8 +117,8 @@ function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVa
                 : variableValues;
             if (scopedVariableValues == null ||
                 !Object.hasOwn(scopedVariableValues, variableName)) {
-                if (argDef.defaultValue !== undefined) {
-                    coercedValues[name] = argDef.defaultValue;
+                if (argDef.defaultValue) {
+                    coercedValues[name] = (0, coerceInputValue_js_1.coerceDefaultValue)(argDef.defaultValue, argDef.type);
                 }
                 else if ((0, definition_js_1.isNonNullType)(argType)) {
                     throw new GraphQLError_js_1.GraphQLError(`Argument "${name}" of required type "${(0, inspect_js_1.inspect)(argType)}" ` +

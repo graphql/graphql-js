@@ -10,7 +10,6 @@ import { isSpecifiedScalarType, specifiedScalarTypes, } from "../type/scalars.mj
 import { assertSchema, GraphQLSchema } from "../type/schema.mjs";
 import { assertValidSDLExtension } from "../validation/validate.mjs";
 import { getDirectiveValues } from "../execution/values.mjs";
-import { coerceInputLiteral } from "./coerceInputValue.mjs";
 /**
  * Produces a new schema given an existing schema and a document which may
  * contain GraphQL type extensions and definitions. The original schema will
@@ -361,9 +360,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
             argConfigMap[arg.name.value] = {
                 type,
                 description: arg.description?.value,
-                defaultValue: arg.defaultValue
-                    ? coerceInputLiteral(arg.defaultValue, type)
-                    : undefined,
+                defaultValueLiteral: arg.defaultValue,
                 deprecationReason: getDeprecationReason(arg),
                 astNode: arg,
             };
@@ -383,9 +380,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
                 inputFieldMap[field.name.value] = {
                     type,
                     description: field.description?.value,
-                    defaultValue: field.defaultValue
-                        ? coerceInputLiteral(field.defaultValue, type)
-                        : undefined,
+                    defaultValueLiteral: field.defaultValue,
                     deprecationReason: getDeprecationReason(field),
                     astNode: field,
                 };

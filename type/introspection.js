@@ -354,8 +354,12 @@ exports.__InputValue = new definition_js_1.GraphQLObjectType({
             description: 'A GraphQL-formatted string representing the default value for this input value.',
             resolve(inputValue) {
                 const { type, defaultValue } = inputValue;
-                const valueAST = (0, astFromValue_js_1.astFromValue)(defaultValue, type);
-                return valueAST ? (0, printer_js_1.print)(valueAST) : null;
+                if (!defaultValue) {
+                    return null;
+                }
+                const literal = defaultValue.literal ?? (0, astFromValue_js_1.astFromValue)(defaultValue.value, type);
+                (literal != null) || (0, invariant_js_1.invariant)(false, 'Invalid default value');
+                return (0, printer_js_1.print)(literal);
             },
         },
         isDeprecated: {

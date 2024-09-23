@@ -368,8 +368,8 @@ function typeKindName(type) {
     // Not reachable, all possible types have been considered.
     (false) || (0, invariant_js_1.invariant)(false, 'Unexpected type: ' + (0, inspect_js_1.inspect)(type));
 }
-function stringifyValue(value, type) {
-    const ast = (0, astFromValue_js_1.astFromValue)(value, type);
+function stringifyValue(defaultValue, type) {
+    const ast = defaultValue.literal ?? (0, astFromValue_js_1.astFromValue)(defaultValue.value, type);
     (ast != null) || (0, invariant_js_1.invariant)(false);
     return (0, printer_js_1.print)((0, sortValueNode_js_1.sortValueNode)(ast));
 }

@@ -96,7 +96,7 @@ function valueFromAST(valueNode, type, variables) {
             const fieldNode = fieldNodes.get(field.name);
             if (fieldNode == null || isMissingVariable(fieldNode.value, variables)) {
                 if (field.defaultValue !== undefined) {
-                    coercedObj[field.name] = field.defaultValue;
+                    coercedObj[field.name] = field.defaultValue.value;
                 }
                 else if ((0, definition_js_1.isNonNullType)(field.type)) {
                     return; // Invalid: intentionally return no value.

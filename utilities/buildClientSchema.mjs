@@ -8,7 +8,6 @@ import { GraphQLDirective } from "../type/directives.mjs";
 import { introspectionTypes, TypeKind } from "../type/introspection.mjs";
 import { specifiedScalarTypes } from "../type/scalars.mjs";
 import { GraphQLSchema } from "../type/schema.mjs";
-import { coerceInputLiteral } from "./coerceInputValue.mjs";
 /**
  * Build a GraphQLSchema for use by client tools.
  *
@@ -226,13 +225,12 @@ export function buildClientSchema(introspection, options) {
             const typeStr = inspect(type);
             throw new Error(`Introspection must provide input type for arguments, but received: ${typeStr}.`);
         }
-        const defaultValue = inputValueIntrospection.defaultValue != null
-            ? coerceInputLiteral(parseConstValue(inputValueIntrospection.defaultValue), type)
-            : undefined;
         return {
             description: inputValueIntrospection.description,
             type,
-            defaultValue,
+            defaultValueLiteral: inputValueIntrospection.defaultValue != null
+                ? parseConstValue(inputValueIntrospection.defaultValue)
+                : undefined,
             deprecationReason: inputValueIntrospection.deprecationReason,
         };
     }

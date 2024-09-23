@@ -1,7 +1,6 @@
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { print } from "../language/printer.mjs";
 import { isInputType } from "../type/definition.mjs";
-import { coerceInputLiteral } from "../utilities/coerceInputValue.mjs";
 import { typeFromAST } from "../utilities/typeFromAST.mjs";
 export function getVariableSignature(schema, varDefNode) {
     const varName = varDefNode.variable.name.value;
@@ -16,8 +15,6 @@ export function getVariableSignature(schema, varDefNode) {
     return {
         name: varName,
         type: varType,
-        defaultValue: defaultValue
-            ? coerceInputLiteral(varDefNode.defaultValue, varType)
-            : undefined,
+        defaultValue: defaultValue ? { literal: defaultValue } : undefined,
     };
 }
