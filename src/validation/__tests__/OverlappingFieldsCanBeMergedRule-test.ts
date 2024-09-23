@@ -638,10 +638,10 @@ describe('Validate: Overlapping fields can be merged', () => {
     expectErrors(`
       {
         field {
-          ...F
+          ...I
         }
         field {
-          ...I
+          ...F
         }
       }
       fragment F on T {
@@ -661,14 +661,14 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "field" conflict because subfields "x" conflict because "a" and "b" are different fields and subfields "y" conflict because "c" and "d" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "field" conflict because subfields "y" conflict because "d" and "c" are different fields and subfields "x" conflict because "b" and "a" are different fields. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
-          { line: 11, column: 9 },
-          { line: 15, column: 9 },
-          { line: 6, column: 9 },
-          { line: 22, column: 9 },
           { line: 18, column: 9 },
+          { line: 22, column: 9 },
+          { line: 6, column: 9 },
+          { line: 15, column: 9 },
+          { line: 11, column: 9 },
         ],
       },
     ]);
