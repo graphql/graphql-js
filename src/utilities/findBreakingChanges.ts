@@ -5,6 +5,7 @@ import { keyMap } from '../jsutils/keyMap.js';
 import { print } from '../language/printer.js';
 
 import type {
+  GraphQLDefaultValueUsage,
   GraphQLEnumType,
   GraphQLField,
   GraphQLInputObjectType,
@@ -534,8 +535,11 @@ function typeKindName(type: GraphQLNamedType): string {
   invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
-function stringifyValue(value: unknown, type: GraphQLInputType): string {
-  const ast = astFromValue(value, type);
+function stringifyValue(
+  defaultValue: GraphQLDefaultValueUsage,
+  type: GraphQLInputType,
+): string {
+  const ast = defaultValue.literal ?? astFromValue(defaultValue.value, type);
   invariant(ast != null);
   return print(sortValueNode(ast));
 }

@@ -32,7 +32,6 @@ import { specifiedScalarTypes } from '../type/scalars.js';
 import type { GraphQLSchemaValidationOptions } from '../type/schema.js';
 import { GraphQLSchema } from '../type/schema.js';
 
-import { coerceInputLiteral } from './coerceInputValue.js';
 import type {
   IntrospectionDirective,
   IntrospectionEnumType,
@@ -374,17 +373,13 @@ export function buildClientSchema(
       );
     }
 
-    const defaultValue =
-      inputValueIntrospection.defaultValue != null
-        ? coerceInputLiteral(
-            parseConstValue(inputValueIntrospection.defaultValue),
-            type,
-          )
-        : undefined;
     return {
       description: inputValueIntrospection.description,
       type,
-      defaultValue,
+      defaultValueLiteral:
+        inputValueIntrospection.defaultValue != null
+          ? parseConstValue(inputValueIntrospection.defaultValue)
+          : undefined,
       deprecationReason: inputValueIntrospection.deprecationReason,
     };
   }

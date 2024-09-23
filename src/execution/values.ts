@@ -20,6 +20,7 @@ import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
 import {
+  coerceDefaultValue,
   coerceInputLiteral,
   coerceInputValue,
 } from '../utilities/coerceInputValue.js';
@@ -90,8 +91,11 @@ function coerceVariableValues(
 
     const { name: varName, type: varType } = varSignature;
     if (!Object.hasOwn(inputs, varName)) {
-      if (varDefNode.defaultValue) {
-        coercedValues[varName] = varSignature.defaultValue;
+      if (varSignature.defaultValue) {
+        coercedValues[varName] = coerceDefaultValue(
+          varSignature.defaultValue,
+          varType,
+        );
       } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
         onError(
@@ -173,8 +177,11 @@ export function experimentalGetArgumentValues(
     const argumentNode = argNodeMap.get(name);
 
     if (argumentNode == null) {
-      if (argDef.defaultValue !== undefined) {
-        coercedValues[name] = argDef.defaultValue;
+      if (argDef.defaultValue) {
+        coercedValues[name] = coerceDefaultValue(
+          argDef.defaultValue,
+          argDef.type,
+        );
       } else if (isNonNullType(argType)) {
         throw new GraphQLError(
           `Argument "${name}" of required type "${inspect(argType)}" ` +
@@ -197,8 +204,11 @@ export function experimentalGetArgumentValues(
         scopedVariableValues == null ||
         !Object.hasOwn(scopedVariableValues, variableName)
       ) {
-        if (argDef.defaultValue !== undefined) {
-          coercedValues[name] = argDef.defaultValue;
+        if (argDef.defaultValue) {
+          coercedValues[name] = coerceDefaultValue(
+            argDef.defaultValue,
+            argDef.type,
+          );
         } else if (isNonNullType(argType)) {
           throw new GraphQLError(
             `Argument "${name}" of required type "${inspect(argType)}" ` +
