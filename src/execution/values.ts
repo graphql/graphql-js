@@ -209,7 +209,7 @@ export function experimentalGetArgumentValues(
   node: FieldNode | DirectiveNode | FragmentSpreadNode,
   argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
   variableValues: Maybe<VariableValues>,
-  fragmentVariables?: Maybe<VariableValues>,
+  fragmentVariablesValues?: Maybe<VariableValues>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
 
@@ -244,8 +244,8 @@ export function experimentalGetArgumentValues(
 
     if (valueNode.kind === Kind.VARIABLE) {
       const variableName = valueNode.name.value;
-      const scopedVariableValues = fragmentVariables?.sources[variableName]
-        ? fragmentVariables
+      const scopedVariableValues = fragmentVariablesValues?.sources[variableName]
+        ? fragmentVariablesValues
         : variableValues;
       if (
         scopedVariableValues == null ||
@@ -280,7 +280,7 @@ export function experimentalGetArgumentValues(
       valueNode,
       argType,
       variableValues,
-      fragmentVariables,
+      fragmentVariablesValues,
     );
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before

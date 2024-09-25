@@ -1092,7 +1092,7 @@ function getStreamUsage(
   const streamedFieldGroup: FieldGroup = fieldGroup.map((fieldDetails) => ({
     node: fieldDetails.node,
     deferUsage: undefined,
-    fragmentVariables: fieldDetails.fragmentVariableValues,
+    fragmentVariablesValues: fieldDetails.fragmentVariableValues,
   }));
 
   const streamUsage = {
