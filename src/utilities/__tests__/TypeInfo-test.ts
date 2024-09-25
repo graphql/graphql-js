@@ -160,6 +160,7 @@ describe('visitWithTypeInfo', () => {
       {
         __typename
         __type(name: "Cat") { __typename }
+        __directive(name: "skip") { __typename }
         __schema {
           __typename # in object type
         }
@@ -174,6 +175,7 @@ describe('visitWithTypeInfo', () => {
         }
         pet {
           __type # unknown
+          __directive # unknown
           __schema # unknown
         }
       }
@@ -195,6 +197,8 @@ describe('visitWithTypeInfo', () => {
       ['QueryRoot', '__typename'],
       ['QueryRoot', '__type'],
       ['__Type', '__typename'],
+      ['QueryRoot', '__directive'],
+      ['__Directive', '__typename'],
       ['QueryRoot', '__schema'],
       ['__Schema', '__typename'],
       ['QueryRoot', 'humanOrAlien'],
@@ -204,6 +208,7 @@ describe('visitWithTypeInfo', () => {
       ['QueryRoot', undefined],
       [undefined, undefined],
       ['QueryRoot', 'pet'],
+      ['Pet', undefined],
       ['Pet', undefined],
       ['Pet', undefined],
     ]);
