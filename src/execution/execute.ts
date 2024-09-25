@@ -843,7 +843,7 @@ export function buildResolveInfo(
     ),
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
-    variableValues: exeContext.variableValues.coerced,
+    variableValues: exeContext.variableValues,
   };
 }
 

@@ -40,6 +40,8 @@ import type {
 import { Kind } from '../language/kinds.js';
 import { print } from '../language/printer.js';
 
+import type { VariableValues } from '../execution/values.js';
+
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.js';
 
 import { assertEnumValueName, assertName } from './assertName.js';
@@ -897,7 +899,7 @@ export interface GraphQLResolveInfo {
   readonly fragments: ObjMap<FragmentDefinitionNode>;
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
-  readonly variableValues: { [variable: string]: unknown };
+  readonly variableValues: VariableValues;
 }
 
 /**
