@@ -42,7 +42,11 @@
 - Changes to the `subscribe()` function:
   - `subscribe()` may now return a non-promise.
   - When a subscription root field errors, `subscribe()` now returns a well-formatted `GraphQLError` rather than throwing.
-- Properly type `IntrospectionType` using `TypeKind` Enum.
+- Changes to default values:
+  - The `defaultValue` property of `GraphQLArgument` and `GraphQLInputField` is now of new type `GraphQLDefaultValueUsage`. A `GraphQLDefaultValueUsage` object contains either a `literal` property, which is as AST node representing the parsed default value included within the SDL, or a `value` property, the default value as specified programmatically.
+  - Introspection now returns the exact original default value included within the SDL rather than attempting to "serialize" input values, avoiding some rare cases in which default values within an introspected schema could differ slightly from the original SDL (e.g. [#3501](https://github.com/graphql/graphql-js/issues/3051)).
+- Other Changes:
+- `IntrospectionType` is now properly typed using `TypeKind` Enum.
 
 ## Deprecations
 
