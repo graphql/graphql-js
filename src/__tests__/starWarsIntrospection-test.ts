@@ -375,7 +375,7 @@ describe('Star Wars Introspection Tests', () => {
                 name
                 ofType {
                   kind
-                  name  
+                  name
                 }
               }
               defaultValue
