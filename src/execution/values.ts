@@ -35,7 +35,7 @@ export interface VariableValues {
 
 interface VariableValueSource {
   readonly signature: GraphQLVariableSignature;
-  readonly value: unknown;
+  readonly value?: unknown;
 }
 
 type VariableValuesOrErrors =
@@ -104,10 +104,7 @@ function coerceVariableValues(
     if (!Object.hasOwn(inputs, varName)) {
       const defaultValue = varSignature.defaultValue;
       if (defaultValue) {
-        sources[varName] = {
-          signature: varSignature,
-          value: undefined,
-        };
+        sources[varName] = { signature: varSignature };
         coerced[varName] = coerceDefaultValue(defaultValue, varType);
       } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
@@ -118,10 +115,7 @@ function coerceVariableValues(
           ),
         );
       } else {
-        sources[varName] = {
-          signature: varSignature,
-          value: undefined,
-        };
+        sources[varName] = { signature: varSignature };
       }
       continue;
     }
@@ -244,7 +238,9 @@ export function experimentalGetArgumentValues(
 
     if (valueNode.kind === Kind.VARIABLE) {
       const variableName = valueNode.name.value;
-      const scopedVariableValues = fragmentVariablesValues?.sources[variableName]
+      const scopedVariableValues = fragmentVariablesValues?.sources[
+        variableName
+      ]
         ? fragmentVariablesValues
         : variableValues;
       if (
