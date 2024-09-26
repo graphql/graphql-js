@@ -8,5 +8,5 @@ export { parse, parseValue, parseConstValue, parseType } from "./parser.mjs";
 export { print } from "./printer.mjs";
 export { visit, visitInParallel, getEnterLeaveForKind, BREAK, } from "./visitor.mjs";
 export { Location, Token, OperationTypeNode } from "./ast.mjs";
-export { isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isNullabilityAssertionNode, isValueNode, isConstValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode, } from "./predicates.mjs";
+export { isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isConstValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode, } from "./predicates.mjs";
 export { DirectiveLocation } from "./directiveLocation.mjs";

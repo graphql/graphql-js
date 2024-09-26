@@ -7,7 +7,6 @@ var TokenKind;
     TokenKind["SOF"] = "<SOF>";
     TokenKind["EOF"] = "<EOF>";
     TokenKind["BANG"] = "!";
-    TokenKind["QUESTION_MARK"] = "?";
     TokenKind["DOLLAR"] = "$";
     TokenKind["AMP"] = "&";
     TokenKind["PAREN_L"] = "(";

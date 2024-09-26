@@ -61,7 +61,6 @@ export class Lexer {
  */
 export function isPunctuatorTokenKind(kind) {
     return (kind === TokenKind.BANG ||
-        kind === TokenKind.QUESTION_MARK ||
         kind === TokenKind.DOLLAR ||
         kind === TokenKind.AMP ||
         kind === TokenKind.PAREN_L ||
@@ -239,8 +238,6 @@ function readNextToken(lexer, start) {
                 return createToken(lexer, TokenKind.PIPE, position, position + 1);
             case 0x007d: // }
                 return createToken(lexer, TokenKind.BRACE_R, position, position + 1);
-            case 0x003f: // ?
-                return createToken(lexer, TokenKind.QUESTION_MARK, position, position + 1);
             // StringValue
             case 0x0022: // "
                 if (body.charCodeAt(position + 1) === 0x0022 &&

@@ -84,7 +84,7 @@ export declare class Token {
 /**
  * The list of all possible AST node types.
  */
-export type ASTNode = NameNode | DocumentNode | OperationDefinitionNode | VariableDefinitionNode | VariableNode | SelectionSetNode | FieldNode | ArgumentNode | FragmentArgumentNode | FragmentSpreadNode | InlineFragmentNode | FragmentDefinitionNode | IntValueNode | FloatValueNode | StringValueNode | BooleanValueNode | NullValueNode | EnumValueNode | ListValueNode | ObjectValueNode | ObjectFieldNode | DirectiveNode | NamedTypeNode | ListTypeNode | NonNullTypeNode | SchemaDefinitionNode | OperationTypeDefinitionNode | ScalarTypeDefinitionNode | ObjectTypeDefinitionNode | FieldDefinitionNode | InputValueDefinitionNode | InterfaceTypeDefinitionNode | UnionTypeDefinitionNode | EnumTypeDefinitionNode | EnumValueDefinitionNode | InputObjectTypeDefinitionNode | DirectiveDefinitionNode | SchemaExtensionNode | ScalarTypeExtensionNode | ObjectTypeExtensionNode | InterfaceTypeExtensionNode | UnionTypeExtensionNode | EnumTypeExtensionNode | InputObjectTypeExtensionNode | NonNullAssertionNode | ErrorBoundaryNode | ListNullabilityOperatorNode;
+export type ASTNode = NameNode | DocumentNode | OperationDefinitionNode | VariableDefinitionNode | VariableNode | SelectionSetNode | FieldNode | ArgumentNode | FragmentArgumentNode | FragmentSpreadNode | InlineFragmentNode | FragmentDefinitionNode | IntValueNode | FloatValueNode | StringValueNode | BooleanValueNode | NullValueNode | EnumValueNode | ListValueNode | ObjectValueNode | ObjectFieldNode | DirectiveNode | NamedTypeNode | ListTypeNode | NonNullTypeNode | SchemaDefinitionNode | OperationTypeDefinitionNode | ScalarTypeDefinitionNode | ObjectTypeDefinitionNode | FieldDefinitionNode | InputValueDefinitionNode | InterfaceTypeDefinitionNode | UnionTypeDefinitionNode | EnumTypeDefinitionNode | EnumValueDefinitionNode | InputObjectTypeDefinitionNode | DirectiveDefinitionNode | SchemaExtensionNode | ScalarTypeExtensionNode | ObjectTypeExtensionNode | InterfaceTypeExtensionNode | UnionTypeExtensionNode | EnumTypeExtensionNode | InputObjectTypeExtensionNode;
 /**
  * Utility type listing all nodes indexed by their kind.
  */
@@ -155,25 +155,8 @@ export interface FieldNode {
     readonly alias?: NameNode | undefined;
     readonly name: NameNode;
     readonly arguments?: ReadonlyArray<ArgumentNode> | undefined;
-    readonly nullabilityAssertion?: NullabilityAssertionNode | undefined;
     readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
     readonly selectionSet?: SelectionSetNode | undefined;
-}
-export type NullabilityAssertionNode = NonNullAssertionNode | ErrorBoundaryNode | ListNullabilityOperatorNode;
-export interface ListNullabilityOperatorNode {
-    readonly kind: Kind.LIST_NULLABILITY_OPERATOR;
-    readonly loc?: Location | undefined;
-    readonly nullabilityAssertion?: NullabilityAssertionNode | undefined;
-}
-export interface NonNullAssertionNode {
-    readonly kind: Kind.NON_NULL_ASSERTION;
-    readonly loc?: Location | undefined;
-    readonly nullabilityAssertion?: ListNullabilityOperatorNode | undefined;
-}
-export interface ErrorBoundaryNode {
-    readonly kind: Kind.ERROR_BOUNDARY;
-    readonly loc?: Location | undefined;
-    readonly nullabilityAssertion?: ListNullabilityOperatorNode | undefined;
 }
 export interface ArgumentNode {
     readonly kind: Kind.ARGUMENT;

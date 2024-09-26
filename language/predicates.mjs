@@ -13,11 +13,6 @@ export function isSelectionNode(node) {
         node.kind === Kind.FRAGMENT_SPREAD ||
         node.kind === Kind.INLINE_FRAGMENT);
 }
-export function isNullabilityAssertionNode(node) {
-    return (node.kind === Kind.LIST_NULLABILITY_OPERATOR ||
-        node.kind === Kind.NON_NULL_ASSERTION ||
-        node.kind === Kind.ERROR_BOUNDARY);
-}
 export function isValueNode(node) {
     return (node.kind === Kind.VARIABLE ||
         node.kind === Kind.INT ||

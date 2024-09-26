@@ -38,13 +38,10 @@ const printDocASTReducer = {
     },
     SelectionSet: { leave: ({ selections }) => block(selections) },
     Field: {
-        leave({ alias, name, arguments: args, nullabilityAssertion, directives, selectionSet, }) {
+        leave({ alias, name, arguments: args, directives, selectionSet }) {
             const prefix = join([wrap('', alias, ': '), name], '');
             return join([
                 wrappedLineAndArgs(prefix, args),
-                // Note: Client Controlled Nullability is experimental and may be
-                // changed or removed in the future.
-                nullabilityAssertion,
                 wrap(' ', join(directives, ' ')),
                 wrap(' ', selectionSet),
             ]);
@@ -52,22 +49,6 @@ const printDocASTReducer = {
     },
     Argument: { leave: ({ name, value }) => name + ': ' + value },
     FragmentArgument: { leave: ({ name, value }) => name + ': ' + value },
-    // Nullability Modifiers
-    ListNullabilityOperator: {
-        leave({ nullabilityAssertion }) {
-            return join(['[', nullabilityAssertion, ']']);
-        },
-    },
-    NonNullAssertion: {
-        leave({ nullabilityAssertion }) {
-            return join([nullabilityAssertion, '!']);
-        },
-    },
-    ErrorBoundary: {
-        leave({ nullabilityAssertion }) {
-            return join([nullabilityAssertion, '?']);
-        },
-    },
     // Fragments
     FragmentSpread: {
         leave: ({ name, arguments: args, directives }) => {

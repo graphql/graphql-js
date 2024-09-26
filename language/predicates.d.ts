@@ -1,8 +1,7 @@
-import type { ASTNode, ConstValueNode, DefinitionNode, ExecutableDefinitionNode, NullabilityAssertionNode, SelectionNode, TypeDefinitionNode, TypeExtensionNode, TypeNode, TypeSystemDefinitionNode, TypeSystemExtensionNode, ValueNode } from './ast.js';
+import type { ASTNode, ConstValueNode, DefinitionNode, ExecutableDefinitionNode, SelectionNode, TypeDefinitionNode, TypeExtensionNode, TypeNode, TypeSystemDefinitionNode, TypeSystemExtensionNode, ValueNode } from './ast.js';
 export declare function isDefinitionNode(node: ASTNode): node is DefinitionNode;
 export declare function isExecutableDefinitionNode(node: ASTNode): node is ExecutableDefinitionNode;
 export declare function isSelectionNode(node: ASTNode): node is SelectionNode;
-export declare function isNullabilityAssertionNode(node: ASTNode): node is NullabilityAssertionNode;
 export declare function isValueNode(node: ASTNode): node is ValueNode;
 export declare function isConstValueNode(node: ASTNode): node is ConstValueNode;
 export declare function isTypeNode(node: ASTNode): node is TypeNode;

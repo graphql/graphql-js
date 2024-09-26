@@ -69,7 +69,7 @@ print,
 // Visit
 visit, visitInParallel, getEnterLeaveForKind, BREAK, Kind, DirectiveLocation, 
 // Predicates
-isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isNullabilityAssertionNode, isValueNode, isConstValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode, } from "./language/index.mjs";
+isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isConstValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode, } from "./language/index.mjs";
 // Execute GraphQL queries.
 export { execute, experimentalExecuteIncrementally, executeSync, defaultFieldResolver, defaultTypeResolver, responsePathAsArray, getArgumentValues, getVariableValues, getDirectiveValues, subscribe, createSourceEventStream, } from "./execution/index.mjs";
 // Validate GraphQL documents.

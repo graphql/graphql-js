@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isTypeExtensionNode = exports.isTypeSystemExtensionNode = exports.isTypeDefinitionNode = exports.isTypeSystemDefinitionNode = exports.isTypeNode = exports.isConstValueNode = exports.isValueNode = exports.isNullabilityAssertionNode = exports.isSelectionNode = exports.isExecutableDefinitionNode = exports.isDefinitionNode = void 0;
+exports.isTypeExtensionNode = exports.isTypeSystemExtensionNode = exports.isTypeDefinitionNode = exports.isTypeSystemDefinitionNode = exports.isTypeNode = exports.isConstValueNode = exports.isValueNode = exports.isSelectionNode = exports.isExecutableDefinitionNode = exports.isDefinitionNode = void 0;
 const kinds_js_1 = require("./kinds.js");
 function isDefinitionNode(node) {
     return (isExecutableDefinitionNode(node) ||
@@ -19,12 +19,6 @@ function isSelectionNode(node) {
         node.kind === kinds_js_1.Kind.INLINE_FRAGMENT);
 }
 exports.isSelectionNode = isSelectionNode;
-function isNullabilityAssertionNode(node) {
-    return (node.kind === kinds_js_1.Kind.LIST_NULLABILITY_OPERATOR ||
-        node.kind === kinds_js_1.Kind.NON_NULL_ASSERTION ||
-        node.kind === kinds_js_1.Kind.ERROR_BOUNDARY);
-}
-exports.isNullabilityAssertionNode = isNullabilityAssertionNode;
 function isValueNode(node) {
     return (node.kind === kinds_js_1.Kind.VARIABLE ||
         node.kind === kinds_js_1.Kind.INT ||

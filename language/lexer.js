@@ -65,7 +65,6 @@ exports.Lexer = Lexer;
  */
 function isPunctuatorTokenKind(kind) {
     return (kind === tokenKind_js_1.TokenKind.BANG ||
-        kind === tokenKind_js_1.TokenKind.QUESTION_MARK ||
         kind === tokenKind_js_1.TokenKind.DOLLAR ||
         kind === tokenKind_js_1.TokenKind.AMP ||
         kind === tokenKind_js_1.TokenKind.PAREN_L ||
@@ -244,8 +243,6 @@ function readNextToken(lexer, start) {
                 return createToken(lexer, tokenKind_js_1.TokenKind.PIPE, position, position + 1);
             case 0x007d: // }
                 return createToken(lexer, tokenKind_js_1.TokenKind.BRACE_R, position, position + 1);
-            case 0x003f: // ?
-                return createToken(lexer, tokenKind_js_1.TokenKind.QUESTION_MARK, position, position + 1);
             // StringValue
             case 0x0022: // "
                 if (body.charCodeAt(position + 1) === 0x0022 &&

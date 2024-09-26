@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DirectiveLocation = exports.isTypeExtensionNode = exports.isTypeSystemExtensionNode = exports.isTypeDefinitionNode = exports.isTypeSystemDefinitionNode = exports.isTypeNode = exports.isConstValueNode = exports.isValueNode = exports.isNullabilityAssertionNode = exports.isSelectionNode = exports.isExecutableDefinitionNode = exports.isDefinitionNode = exports.OperationTypeNode = exports.Token = exports.Location = exports.BREAK = exports.getEnterLeaveForKind = exports.visitInParallel = exports.visit = exports.print = exports.parseType = exports.parseConstValue = exports.parseValue = exports.parse = exports.Lexer = exports.TokenKind = exports.Kind = exports.printSourceLocation = exports.printLocation = exports.getLocation = exports.Source = void 0;
+exports.DirectiveLocation = exports.isTypeExtensionNode = exports.isTypeSystemExtensionNode = exports.isTypeDefinitionNode = exports.isTypeSystemDefinitionNode = exports.isTypeNode = exports.isConstValueNode = exports.isValueNode = exports.isSelectionNode = exports.isExecutableDefinitionNode = exports.isDefinitionNode = exports.OperationTypeNode = exports.Token = exports.Location = exports.BREAK = exports.getEnterLeaveForKind = exports.visitInParallel = exports.visit = exports.print = exports.parseType = exports.parseConstValue = exports.parseValue = exports.parse = exports.Lexer = exports.TokenKind = exports.Kind = exports.printSourceLocation = exports.printLocation = exports.getLocation = exports.Source = void 0;
 var source_js_1 = require("./source.js");
 Object.defineProperty(exports, "Source", { enumerable: true, get: function () { return source_js_1.Source; } });
 var location_js_1 = require("./location.js");
@@ -34,7 +34,6 @@ var predicates_js_1 = require("./predicates.js");
 Object.defineProperty(exports, "isDefinitionNode", { enumerable: true, get: function () { return predicates_js_1.isDefinitionNode; } });
 Object.defineProperty(exports, "isExecutableDefinitionNode", { enumerable: true, get: function () { return predicates_js_1.isExecutableDefinitionNode; } });
 Object.defineProperty(exports, "isSelectionNode", { enumerable: true, get: function () { return predicates_js_1.isSelectionNode; } });
-Object.defineProperty(exports, "isNullabilityAssertionNode", { enumerable: true, get: function () { return predicates_js_1.isNullabilityAssertionNode; } });
 Object.defineProperty(exports, "isValueNode", { enumerable: true, get: function () { return predicates_js_1.isValueNode; } });
 Object.defineProperty(exports, "isConstValueNode", { enumerable: true, get: function () { return predicates_js_1.isConstValueNode; } });
 Object.defineProperty(exports, "isTypeNode", { enumerable: true, get: function () { return predicates_js_1.isTypeNode; } });
