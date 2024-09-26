@@ -356,6 +356,9 @@ describe('Validate: Known directives', () => {
             query: MyQuery
           }
 
+          directive @myDirective(arg:String) on ARGUMENT_DEFINITION 
+          directive @myDirective2(arg:String @myDirective) on FIELD 
+
           extend schema @onSchema
         `,
         schemaWithSDLDirectives,
