@@ -31,7 +31,7 @@ function nameNode(name: unknown, loc: unknown) {
 }
 
 function fieldNode(name: unknown, type: unknown, loc: unknown) {
-  return fieldNodeWithArgs(name, type, [], loc);
+  return fieldNodeWithArgs(name, type, undefined, loc);
 }
 
 function fieldNodeWithArgs(
@@ -46,7 +46,7 @@ function fieldNodeWithArgs(
     name,
     arguments: args,
     type,
-    directives: [],
+    directives: undefined,
     loc,
   };
 }
@@ -56,7 +56,7 @@ function enumValueNode(name: unknown, loc: unknown) {
     kind: 'EnumValueDefinition',
     name: nameNode(name, loc),
     description: undefined,
-    directives: [],
+    directives: undefined,
     loc,
   };
 }
@@ -73,7 +73,7 @@ function inputValueNode(
     description: undefined,
     type,
     defaultValue,
-    directives: [],
+    directives: undefined,
     loc,
   };
 }
@@ -93,8 +93,8 @@ describe('Schema Parser', () => {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
-          interfaces: [],
-          directives: [],
+          interfaces: undefined,
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('world', { start: 15, end: 20 }),
@@ -180,8 +180,8 @@ describe('Schema Parser', () => {
         {
           kind: 'ObjectTypeExtension',
           name: nameNode('Hello', { start: 12, end: 17 }),
-          interfaces: [],
-          directives: [],
+          interfaces: undefined,
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('world', { start: 22, end: 27 }),
@@ -206,8 +206,8 @@ describe('Schema Parser', () => {
           kind: 'ObjectTypeExtension',
           name: nameNode('Hello', { start: 12, end: 17 }),
           interfaces: [typeNode('Greeting', { start: 29, end: 37 })],
-          directives: [],
-          fields: [],
+          directives: undefined,
+          fields: undefined,
           loc: { start: 0, end: 37 },
         },
       ],
@@ -224,8 +224,8 @@ describe('Schema Parser', () => {
           kind: 'InterfaceTypeExtension',
           name: nameNode('Hello', { start: 17, end: 22 }),
           interfaces: [typeNode('Greeting', { start: 34, end: 42 })],
-          directives: [],
-          fields: [],
+          directives: undefined,
+          fields: undefined,
           loc: { start: 0, end: 42 },
         },
       ],
@@ -247,16 +247,16 @@ describe('Schema Parser', () => {
           kind: 'ObjectTypeExtension',
           name: nameNode('Hello', { start: 19, end: 24 }),
           interfaces: [typeNode('Greeting', { start: 36, end: 44 })],
-          directives: [],
-          fields: [],
+          directives: undefined,
+          fields: undefined,
           loc: { start: 7, end: 44 },
         },
         {
           kind: 'ObjectTypeExtension',
           name: nameNode('Hello', { start: 64, end: 69 }),
           interfaces: [typeNode('SecondGreeting', { start: 81, end: 95 })],
-          directives: [],
-          fields: [],
+          directives: undefined,
+          fields: undefined,
           loc: { start: 52, end: 95 },
         },
       ],
@@ -309,16 +309,16 @@ describe('Schema Parser', () => {
           kind: 'InterfaceTypeExtension',
           name: nameNode('Hello', { start: 24, end: 29 }),
           interfaces: [typeNode('Greeting', { start: 41, end: 49 })],
-          directives: [],
-          fields: [],
+          directives: undefined,
+          fields: undefined,
           loc: { start: 7, end: 49 },
         },
         {
           kind: 'InterfaceTypeExtension',
           name: nameNode('Hello', { start: 74, end: 79 }),
           interfaces: [typeNode('SecondGreeting', { start: 91, end: 105 })],
-          directives: [],
-          fields: [],
+          directives: undefined,
+          fields: undefined,
           loc: { start: 57, end: 105 },
         },
       ],
@@ -381,7 +381,7 @@ describe('Schema Parser', () => {
       definitions: [
         {
           kind: 'SchemaExtension',
-          directives: [],
+          directives: undefined,
           operationTypes: [
             {
               kind: 'OperationTypeDefinition',
@@ -409,11 +409,11 @@ describe('Schema Parser', () => {
             {
               kind: 'Directive',
               name: nameNode('directive', { start: 15, end: 24 }),
-              arguments: [],
+              arguments: undefined,
               loc: { start: 14, end: 24 },
             },
           ],
-          operationTypes: [],
+          operationTypes: undefined,
           loc: { start: 0, end: 24 },
         },
       ],
@@ -449,8 +449,8 @@ describe('Schema Parser', () => {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
-          interfaces: [],
-          directives: [],
+          interfaces: undefined,
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('world', { start: 15, end: 20 }),
@@ -479,7 +479,7 @@ describe('Schema Parser', () => {
           name: nameNode('Hello', { start: 10, end: 15 }),
           description: undefined,
           interfaces: [typeNode('World', { start: 27, end: 32 })],
-          directives: [],
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('field', { start: 35, end: 40 }),
@@ -505,7 +505,7 @@ describe('Schema Parser', () => {
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
           interfaces: [typeNode('World', { start: 22, end: 27 })],
-          directives: [],
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('field', { start: 30, end: 35 }),
@@ -534,7 +534,7 @@ describe('Schema Parser', () => {
             typeNode('Wo', { start: 22, end: 24 }),
             typeNode('rld', { start: 27, end: 30 }),
           ],
-          directives: [],
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('field', { start: 33, end: 38 }),
@@ -562,7 +562,7 @@ describe('Schema Parser', () => {
             typeNode('Wo', { start: 27, end: 29 }),
             typeNode('rld', { start: 32, end: 35 }),
           ],
-          directives: [],
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('field', { start: 38, end: 43 }),
@@ -591,7 +591,7 @@ describe('Schema Parser', () => {
             typeNode('Wo', { start: 24, end: 26 }),
             typeNode('rld', { start: 29, end: 32 }),
           ],
-          directives: [],
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('field', { start: 35, end: 40 }),
@@ -621,7 +621,7 @@ describe('Schema Parser', () => {
             typeNode('Wo', { start: 29, end: 31 }),
             typeNode('rld', { start: 34, end: 37 }),
           ],
-          directives: [],
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('field', { start: 40, end: 45 }),
@@ -646,7 +646,7 @@ describe('Schema Parser', () => {
           kind: 'EnumTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
-          directives: [],
+          directives: undefined,
           values: [enumValueNode('WORLD', { start: 13, end: 18 })],
           loc: { start: 0, end: 20 },
         },
@@ -665,7 +665,7 @@ describe('Schema Parser', () => {
           kind: 'EnumTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
-          directives: [],
+          directives: undefined,
           values: [
             enumValueNode('WO', { start: 13, end: 15 }),
             enumValueNode('RLD', { start: 17, end: 20 }),
@@ -691,8 +691,8 @@ describe('Schema Parser', () => {
           kind: 'InterfaceTypeDefinition',
           name: nameNode('Hello', { start: 10, end: 15 }),
           description: undefined,
-          interfaces: [],
-          directives: [],
+          interfaces: undefined,
+          directives: undefined,
           fields: [
             fieldNode(
               nameNode('world', { start: 20, end: 25 }),
@@ -721,8 +721,8 @@ describe('Schema Parser', () => {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
-          interfaces: [],
-          directives: [],
+          interfaces: undefined,
+          directives: undefined,
           fields: [
             fieldNodeWithArgs(
               nameNode('world', { start: 15, end: 20 }),
@@ -759,8 +759,8 @@ describe('Schema Parser', () => {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
-          interfaces: [],
-          directives: [],
+          interfaces: undefined,
+          directives: undefined,
           fields: [
             fieldNodeWithArgs(
               nameNode('world', { start: 15, end: 20 }),
@@ -801,8 +801,8 @@ describe('Schema Parser', () => {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
-          interfaces: [],
-          directives: [],
+          interfaces: undefined,
+          directives: undefined,
           fields: [
             fieldNodeWithArgs(
               nameNode('world', { start: 15, end: 20 }),
@@ -843,8 +843,8 @@ describe('Schema Parser', () => {
           kind: 'ObjectTypeDefinition',
           name: nameNode('Hello', { start: 5, end: 10 }),
           description: undefined,
-          interfaces: [],
-          directives: [],
+          interfaces: undefined,
+          directives: undefined,
           fields: [
             fieldNodeWithArgs(
               nameNode('world', { start: 15, end: 20 }),
@@ -883,7 +883,7 @@ describe('Schema Parser', () => {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
           description: undefined,
-          directives: [],
+          directives: undefined,
           types: [typeNode('World', { start: 14, end: 19 })],
           loc: { start: 0, end: 19 },
         },
@@ -902,7 +902,7 @@ describe('Schema Parser', () => {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
           description: undefined,
-          directives: [],
+          directives: undefined,
           types: [
             typeNode('Wo', { start: 14, end: 16 }),
             typeNode('Rld', { start: 19, end: 22 }),
@@ -924,7 +924,7 @@ describe('Schema Parser', () => {
           kind: 'UnionTypeDefinition',
           name: nameNode('Hello', { start: 6, end: 11 }),
           description: undefined,
-          directives: [],
+          directives: undefined,
           types: [
             typeNode('Wo', { start: 16, end: 18 }),
             typeNode('Rld', { start: 21, end: 24 }),
@@ -974,7 +974,7 @@ describe('Schema Parser', () => {
           kind: 'ScalarTypeDefinition',
           name: nameNode('Hello', { start: 7, end: 12 }),
           description: undefined,
-          directives: [],
+          directives: undefined,
           loc: { start: 0, end: 12 },
         },
       ],
@@ -995,7 +995,7 @@ input Hello {
           kind: 'InputObjectTypeDefinition',
           name: nameNode('Hello', { start: 7, end: 12 }),
           description: undefined,
-          directives: [],
+          directives: undefined,
           fields: [
             inputValueNode(
               nameNode('world', { start: 17, end: 22 }),
@@ -1037,7 +1037,7 @@ input Hello {
             value: 'foo',
             loc: { start: 11, end: 14 },
           },
-          arguments: [],
+          arguments: undefined,
           repeatable: false,
           locations: [
             {
@@ -1073,7 +1073,7 @@ input Hello {
             value: 'foo',
             loc: { start: 11, end: 14 },
           },
-          arguments: [],
+          arguments: undefined,
           repeatable: true,
           locations: [
             {
