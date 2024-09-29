@@ -240,7 +240,19 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
       path: { prev: undefined, key: 'result', typename: 'Test' },
-      variableValues: { var: 'abc' },
+      variableValues: {
+        sources: {
+          var: {
+            signature: {
+              name: 'var',
+              type: GraphQLString,
+              defaultValue: undefined,
+            },
+            value: 'abc',
+          },
+        },
+        coerced: { var: 'abc' },
+      },
     });
   });
 

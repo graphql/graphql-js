@@ -75,6 +75,7 @@ import type {
   StreamRecord,
 } from './types.js';
 import { DeferredFragmentRecord } from './types.js';
+import type { VariableValues } from './values.js';
 import {
   experimentalGetArgumentValues,
   getArgumentValues,
@@ -139,7 +140,7 @@ export interface ExecutionContext {
   rootValue: unknown;
   contextValue: unknown;
   operation: OperationDefinitionNode;
-  variableValues: { [variable: string]: unknown };
+  variableValues: VariableValues;
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
@@ -510,15 +511,15 @@ export function buildExecutionContext(
   /* c8 ignore next */
   const variableDefinitions = operation.variableDefinitions ?? [];
 
-  const coercedVariableValues = getVariableValues(
+  const variableValuesOrErrors = getVariableValues(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
     { maxErrors: 50 },
   );
 
-  if (coercedVariableValues.errors) {
-    return coercedVariableValues.errors;
+  if (variableValuesOrErrors.errors) {
+    return variableValuesOrErrors.errors;
   }
 
   return {
@@ -527,7 +528,7 @@ export function buildExecutionContext(
     rootValue,
     contextValue,
     operation,
-    variableValues: coercedVariableValues.coerced,
+    variableValues: variableValuesOrErrors.variableValues,
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
@@ -753,7 +754,7 @@ function executeField(
       fieldGroup[0].node,
       fieldDef.args,
       exeContext.variableValues,
-      fieldGroup[0].fragmentVariables,
+      fieldGroup[0].fragmentVariableValues,
     );
 
     // The resolve function's optional third argument is a context value that
@@ -1062,7 +1063,7 @@ function getStreamUsage(
     GraphQLStreamDirective,
     fieldGroup[0].node,
     exeContext.variableValues,
-    fieldGroup[0].fragmentVariables,
+    fieldGroup[0].fragmentVariableValues,
   );
 
   if (!stream) {
@@ -1091,7 +1092,7 @@ function getStreamUsage(
   const streamedFieldGroup: FieldGroup = fieldGroup.map((fieldDetails) => ({
     node: fieldDetails.node,
     deferUsage: undefined,
-    fragmentVariables: fieldDetails.fragmentVariables,
+    fragmentVariablesValues: fieldDetails.fragmentVariableValues,
   }));
 
   const streamUsage = {
