@@ -33,27 +33,32 @@
 
 ## New API features
 
-- Use `coerceInputLiteral()` instead of `valueFromAST()`.
 - Support for resolver functions returning async iterables.
 - Expose `printDirective()` helper function.
 
 ## API Changes:
 
+- Changes to input coercion:
+  - Use new utility `coerceInputLiteral()` instead of `valueFromAST()`.
+  - Use new utility `replaceVariableValues()` to replace variables within complex scalars uses as inputs. Internally, `replaceVariableValues()` uses new utility `valueToLiteral()` to convert from an external input value to a literal value. This allows variables embedded within complex scalars to use the correct default values.
+  - Use new utility `valueToLiteral()` to convert from an external input value to a literal value. Custom scalars can define custom behavior by implementing an optional `valueToLiteral()` method.
+  - Use new `parseConstLiteral()` methods on leaf types instead of `parseLiteral()` to convert literals to values, by first calling new utility `replaceVariableValues()` on the non-constant literal, and then by calling `parseConstLiteral()`.
 - Changes to the `subscribe()` function:
   - `subscribe()` may now return a non-promise.
   - When a subscription root field errors, `subscribe()` now returns a well-formatted `GraphQLError` rather than throwing.
+- Changes to Variable Values throughout the code base:
+  - Variable Values are now a dedicated type containing both the coerced values as before as well as the variable signature and provided source, so that variables embedded within complex scalars will be able to be properly replaced. This is non-spec behavior, but was previously supported by `graphql-js` and will now be sound.
+  - The return type of `getVariableValues()` has been updated, as have the provided arguments to `getArgumentValues()`, `coerceInputLiteral()`, and `collectFields()`, and `getDirectiveValues()`.
 - Changes to default values:
   - The `defaultValue` property of `GraphQLArgument` and `GraphQLInputField` is now of new type `GraphQLDefaultValueUsage`. A `GraphQLDefaultValueUsage` object contains either a `literal` property, which is as AST node representing the parsed default value included within the SDL, or a `value` property, the default value as specified programmatically.
   - Introspection now returns the exact original default value included within the SDL rather than attempting to "serialize" input values, avoiding some rare cases in which default values within an introspected schema could differ slightly from the original SDL (e.g. [#3501](https://github.com/graphql/graphql-js/issues/3051)).
 - Other Changes:
 - `IntrospectionType` is now properly typed using `TypeKind` Enum.
-- Changes to Variable Values throughout the code base:
-  - Variable Values are now a dedicated type containing both the coerced values as before as well as the variable signature and provided source, so that variables embedded within complex scalars will be able to be properly replaced. This is non-spec behavior, but was previously supported by `graphql-js` and will now be sound.
-  - The return type of `getVariableValues()` has been updated, as have the provided arguments to `getArgumentValues()`, `coerceInputLiteral()`, and `collectFields()`, and `getDirectiveValues()`.
 
 ## Deprecations
 
 - `valueFromAST()` is deprecated, use `coerceInputLiteral()` instead.
+- `parseLiteral()` methods of custom scalars are deprecated, use `parseConstLiteral()` instead.
 
 ## Removals
 
