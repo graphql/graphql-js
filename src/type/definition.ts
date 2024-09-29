@@ -528,22 +528,57 @@ export interface GraphQLScalarTypeExtensions {
  * Example:
  *
  * ```ts
+ * function ensureOdd(value) {
+ *   if (!Number.isFinite(value)) {
+ *     throw new Error(
+ *       `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *     );
+ *   }
+ *
+ *   if (value % 2 === 0) {
+ *     throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+ *   }
+ * }
+ *
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
  *   serialize(value) {
- *     if (!Number.isFinite(value)) {
- *       throw new Error(
- *         `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
- *       );
- *     }
- *
- *     if (value % 2 === 0) {
- *       throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
- *     }
- *     return value;
+ *     return ensureOdd(value);
+ *   },
+ *   parseValue(value) {
+ *     return ensureOdd(value);
+ *   }
+ *   valueToLiteral(value) {
+ *    return parse(`${ensureOdd(value)`);
  *   }
  * });
  * ```
+ *
+ * Custom scalars behavior is defined via the following functions:
+ *
+ *  - serialize(value): Implements "Result Coercion". Given an internal value,
+ *    produces an external value valid for this type. Returns undefined or
+ *    throws an error to indicate invalid values.
+ *
+ *  - parseValue(value): Implements "Input Coercion" for values. Given an
+ *    external value (for example, variable values), produces an internal value
+ *    valid for this type. Returns undefined or throws an error to indicate
+ *    invalid values.
+ *
+ *  - parseLiteral(ast): Implements "Input Coercion" for literals including
+ *    non-specified replacement of variables embedded within complex scalars.
+ *    This method will be removed in v18 favor of the combination of the
+ *    `replaceVariables()` utility and the `parseConstLiteral()` method.
+ *
+ *  - parseConstLiteral(ast): Implements "Input Coercion" for constant literals.
+ *    Given an GraphQL literal (AST) (for example, an argument value), produces
+ *    an internal value valid for this type. Returns undefined or throws an
+ *    error to indicate invalid values.
+ *
+ *  - valueToLiteral(value): Converts an external value to a GraphQL
+ *    literal (AST). Returns undefined or throws an error to indicate
+ *    invalid values.
+ *
  */
 export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   name: string;
@@ -551,7 +586,10 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   specifiedByURL: Maybe<string>;
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
+  /** @deprecated use `replaceVariables()` and `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
+  parseConstLiteral: GraphQLScalarConstLiteralParser<TInternal>;
+  valueToLiteral: GraphQLScalarValueToLiteral | undefined;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
@@ -570,6 +608,10 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
     this.parseLiteral =
       config.parseLiteral ??
       ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
+    this.parseConstLiteral =
+      config.parseConstLiteral ??
+      ((node) => parseValue(valueFromASTUntyped(node)));
+    this.valueToLiteral = config.valueToLiteral;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
@@ -579,6 +621,14 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
         typeof config.parseValue === 'function' &&
           typeof config.parseLiteral === 'function',
         `${this.name} must provide both "parseValue" and "parseLiteral" functions.`,
+      );
+    }
+
+    if (config.parseConstLiteral) {
+      devAssert(
+        typeof config.parseValue === 'function' &&
+          typeof config.parseConstLiteral === 'function',
+        `${this.name} must provide both "parseValue" and "parseConstLiteral" functions.`,
       );
     }
   }
@@ -595,6 +645,8 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
+      parseConstLiteral: this.parseConstLiteral,
+      valueToLiteral: this.valueToLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
@@ -620,8 +672,16 @@ export type GraphQLScalarValueParser<TInternal> = (
 
 export type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
-  variables?: Maybe<ObjMap<unknown>>,
-) => TInternal;
+  variables: Maybe<ObjMap<unknown>>,
+) => Maybe<TInternal>;
+
+export type GraphQLScalarConstLiteralParser<TInternal> = (
+  valueNode: ConstValueNode,
+) => Maybe<TInternal>;
+
+export type GraphQLScalarValueToLiteral = (
+  inputValue: unknown,
+) => ConstValueNode | undefined;
 
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   name: string;
@@ -632,7 +692,12 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   /** Parses an externally provided value to use as an input. */
   parseValue?: GraphQLScalarValueParser<TInternal> | undefined;
   /** Parses an externally provided literal value to use as an input. */
+  /** @deprecated use `replaceVariables()` and `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
   parseLiteral?: GraphQLScalarLiteralParser<TInternal> | undefined;
+  /** Parses an externally provided const literal value to use as an input. */
+  parseConstLiteral?: GraphQLScalarConstLiteralParser<TInternal> | undefined;
+  /** Translates an externally provided value to a literal (AST). */
+  valueToLiteral?: GraphQLScalarValueToLiteral | undefined;
   extensions?: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
   astNode?: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
@@ -643,6 +708,7 @@ interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
+  parseConstLiteral: GraphQLScalarConstLiteralParser<TInternal>;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 }
@@ -1377,11 +1443,16 @@ export class GraphQLEnumType /* <T> */ {
     return enumValue.value;
   }
 
+  /** @deprecated use `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
   parseLiteral(
     valueNode: ValueNode,
     _variables: Maybe<ObjMap<unknown>>,
   ): Maybe<any> /* T */ {
     // Note: variables will be resolved to a value before calling this function.
+    return this.parseConstLiteral(valueNode as ConstValueNode);
+  }
+
+  parseConstLiteral(valueNode: ConstValueNode): Maybe<any> /* T */ {
     if (valueNode.kind !== Kind.ENUM) {
       const valueStr = print(valueNode);
       throw new GraphQLError(
@@ -1401,6 +1472,12 @@ export class GraphQLEnumType /* <T> */ {
       );
     }
     return enumValue.value;
+  }
+
+  valueToLiteral(value: unknown): ConstValueNode | undefined {
+    if (typeof value === 'string' && this.getValue(value)) {
+      return { kind: Kind.ENUM, value };
+    }
   }
 
   toConfig(): GraphQLEnumTypeNormalizedConfig {

@@ -445,6 +445,10 @@ export {
   // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
   TypeInfo,
   visitWithTypeInfo,
+  // Converts a value to a const value by replacing variables.
+  replaceVariables,
+  // Create a GraphQL literal (AST) from a JavaScript input value.
+  valueToLiteral,
   // Coerces a JavaScript value to a GraphQL type, or produces errors.
   coerceInputValue,
   // Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
