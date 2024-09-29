@@ -24,6 +24,7 @@ import {
   isRequiredInputField,
 } from '../type/definition.ts';
 import type { VariableValues } from '../execution/values.ts';
+import { replaceVariables } from './replaceVariables.ts';
 type OnErrorCB = (
   path: ReadonlyArray<string | number>,
   invalidValue: unknown,
@@ -340,8 +341,13 @@ export function coerceInputLiteral(
     return coercedValue;
   }
   const leafType = assertLeafType(type);
+  const constValueNode = replaceVariables(
+    valueNode,
+    variableValues,
+    fragmentVariableValues,
+  );
   try {
-    return leafType.parseLiteral(valueNode, variableValues?.coerced);
+    return leafType.parseConstLiteral(constValueNode);
   } catch (_error) {
     // Invalid: ignore error and intentionally return no value.
   }

@@ -57,6 +57,10 @@ export { valueFromASTUntyped } from './valueFromASTUntyped.ts';
 export { astFromValue } from './astFromValue.ts';
 // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
 export { TypeInfo, visitWithTypeInfo } from './TypeInfo.ts';
+// Converts a value to a const value by replacing variables.
+export { replaceVariables } from './replaceVariables.ts';
+// Create a GraphQL literal (AST) from a JavaScript input value.
+export { valueToLiteral } from './valueToLiteral.ts';
 export {
   // Coerces a JavaScript value to a GraphQL type, or produces errors.
   coerceInputValue,
