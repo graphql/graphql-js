@@ -47,6 +47,9 @@
   - Introspection now returns the exact original default value included within the SDL rather than attempting to "serialize" input values, avoiding some rare cases in which default values within an introspected schema could differ slightly from the original SDL (e.g. [#3501](https://github.com/graphql/graphql-js/issues/3051)).
 - Other Changes:
 - `IntrospectionType` is now properly typed using `TypeKind` Enum.
+- Changes to Variable Values throughout the code base:
+  - Variable Values are now a dedicated type containing both the coerced values as before as well as the variable signature and provided source, so that variables embedded within complex scalars will be able to be properly replaced. This is non-spec behavior, but was previously supported by `graphql-js` and will now be sound.
+  - The return type of `getVariableValues()` has been updated, as have the provided arguments to `getArgumentValues()`, `coerceInputLiteral()`, and `collectFields()`, and `getDirectiveValues()`.
 
 ## Deprecations
 
