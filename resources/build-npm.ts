@@ -6,6 +6,7 @@ import ts from 'typescript';
 
 import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
 import { inlineInvariant } from './inline-invariant.js';
+import { optimizeForOf } from './optimize-for-of.js';
 import {
   prettify,
   readPackageJSON,
@@ -145,6 +146,7 @@ function emitTSFiles(options: {
 
   const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
   const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
+    before: [optimizeForOf(tsProgram)],
     after: [changeExtensionInImportPaths({ extension }), inlineInvariant],
   });
   assert(

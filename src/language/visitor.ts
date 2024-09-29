@@ -189,7 +189,7 @@ export function visit(
   let inArray = Array.isArray(root);
   let keys: any = [root];
   let index = -1;
-  let edits = [];
+  let edits: Array<any> = [];
   let node: any = root;
   let key: any = undefined;
   let parent: any = undefined;
