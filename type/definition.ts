@@ -37,6 +37,7 @@ import type {
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import { print } from '../language/printer.ts';
+import type { VariableValues } from '../execution/values.ts';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.ts';
 import { assertEnumValueName, assertName } from './assertName.ts';
 import type { GraphQLSchema } from './schema.ts';
@@ -794,9 +795,7 @@ export interface GraphQLResolveInfo {
   readonly fragments: ObjMap<FragmentDefinitionNode>;
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
-  readonly variableValues: {
-    [variable: string]: unknown;
-  };
+  readonly variableValues: VariableValues;
 }
 /**
  * Custom extensions

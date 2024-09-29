@@ -1,6 +1,6 @@
 import { inspect } from '../jsutils/inspect.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
-import type { ObjMap } from '../jsutils/ObjMap.ts';
+import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.ts';
 import { printPathArray } from '../jsutils/printPathArray.ts';
 import { GraphQLError } from '../error/GraphQLError.ts';
 import type {
@@ -20,19 +20,24 @@ import {
   coerceInputLiteral,
   coerceInputValue,
 } from '../utilities/coerceInputValue.ts';
-import type { FragmentVariables } from './collectFields.ts';
 import type { GraphQLVariableSignature } from './getVariableSignature.ts';
 import { getVariableSignature } from './getVariableSignature.ts';
-type CoercedVariableValues =
+export interface VariableValues {
+  readonly sources: ReadOnlyObjMap<VariableValueSource>;
+  readonly coerced: ReadOnlyObjMap<unknown>;
+}
+interface VariableValueSource {
+  readonly signature: GraphQLVariableSignature;
+  readonly value?: unknown;
+}
+type VariableValuesOrErrors =
   | {
-      errors: ReadonlyArray<GraphQLError>;
-      coerced?: never;
+      variableValues: VariableValues;
+      errors?: never;
     }
   | {
-      coerced: {
-        [variable: string]: unknown;
-      };
-      errors?: never;
+      errors: ReadonlyArray<GraphQLError>;
+      variableValues?: never;
     };
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -52,11 +57,11 @@ export function getVariableValues(
   options?: {
     maxErrors?: number;
   },
-): CoercedVariableValues {
-  const errors = [];
+): VariableValuesOrErrors {
+  const errors: Array<GraphQLError> = [];
   const maxErrors = options?.maxErrors;
   try {
-    const coerced = coerceVariableValues(
+    const variableValues = coerceVariableValues(
       schema,
       varDefNodes,
       inputs,
@@ -70,7 +75,7 @@ export function getVariableValues(
       },
     );
     if (errors.length === 0) {
-      return { coerced };
+      return { variableValues };
     }
   } catch (error) {
     errors.push(error);
@@ -84,12 +89,9 @@ function coerceVariableValues(
     readonly [variable: string]: unknown;
   },
   onError: (error: GraphQLError) => void,
-): {
-  [variable: string]: unknown;
-} {
-  const coercedValues: {
-    [variable: string]: unknown;
-  } = {};
+): VariableValues {
+  const sources: ObjMap<VariableValueSource> = Object.create(null);
+  const coerced: ObjMap<unknown> = Object.create(null);
   for (const varDefNode of varDefNodes) {
     const varSignature = getVariableSignature(schema, varDefNode);
     if (varSignature instanceof GraphQLError) {
@@ -98,11 +100,10 @@ function coerceVariableValues(
     }
     const { name: varName, type: varType } = varSignature;
     if (!Object.hasOwn(inputs, varName)) {
-      if (varSignature.defaultValue) {
-        coercedValues[varName] = coerceDefaultValue(
-          varSignature.defaultValue,
-          varType,
-        );
+      const defaultValue = varSignature.defaultValue;
+      if (defaultValue) {
+        sources[varName] = { signature: varSignature };
+        coerced[varName] = coerceDefaultValue(defaultValue, varType);
       } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
         onError(
@@ -111,6 +112,8 @@ function coerceVariableValues(
             { nodes: varDefNode },
           ),
         );
+      } else {
+        sources[varName] = { signature: varSignature };
       }
       continue;
     }
@@ -125,7 +128,8 @@ function coerceVariableValues(
       );
       continue;
     }
-    coercedValues[varName] = coerceInputValue(
+    sources[varName] = { signature: varSignature, value };
+    coerced[varName] = coerceInputValue(
       value,
       varType,
       (path, invalidValue, error) => {
@@ -143,7 +147,32 @@ function coerceVariableValues(
       },
     );
   }
-  return coercedValues;
+  return { sources, coerced };
+}
+export function getFragmentVariableValues(
+  fragmentSpreadNode: FragmentSpreadNode,
+  fragmentSignatures: ReadOnlyObjMap<GraphQLVariableSignature>,
+  variableValues: VariableValues,
+  fragmentVariableValues?: Maybe<VariableValues>,
+): VariableValues {
+  const varSignatures: Array<GraphQLVariableSignature> = [];
+  const sources = Object.create(null);
+  for (const [varName, varSignature] of Object.entries(fragmentSignatures)) {
+    varSignatures.push(varSignature);
+    sources[varName] = {
+      signature: varSignature,
+      value:
+        fragmentVariableValues?.sources[varName]?.value ??
+        variableValues.sources[varName]?.value,
+    };
+  }
+  const coerced = experimentalGetArgumentValues(
+    fragmentSpreadNode,
+    varSignatures,
+    variableValues,
+    fragmentVariableValues,
+  );
+  return { sources, coerced };
 }
 /**
  * Prepares an object map of argument values given a list of argument
@@ -156,7 +185,7 @@ function coerceVariableValues(
 export function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
-  variableValues?: Maybe<ObjMap<unknown>>,
+  variableValues?: Maybe<VariableValues>,
 ): {
   [argument: string]: unknown;
 } {
@@ -165,8 +194,8 @@ export function getArgumentValues(
 export function experimentalGetArgumentValues(
   node: FieldNode | DirectiveNode | FragmentSpreadNode,
   argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
-  variableValues: Maybe<ObjMap<unknown>>,
-  fragmentVariables?: Maybe<FragmentVariables>,
+  variableValues: Maybe<VariableValues>,
+  fragmentVariablesValues?: Maybe<VariableValues>,
 ): {
   [argument: string]: unknown;
 } {
@@ -200,12 +229,14 @@ export function experimentalGetArgumentValues(
     let isNull = valueNode.kind === Kind.NULL;
     if (valueNode.kind === Kind.VARIABLE) {
       const variableName = valueNode.name.value;
-      const scopedVariableValues = fragmentVariables?.signatures[variableName]
-        ? fragmentVariables.values
+      const scopedVariableValues = fragmentVariablesValues?.sources[
+        variableName
+      ]
+        ? fragmentVariablesValues
         : variableValues;
       if (
         scopedVariableValues == null ||
-        !Object.hasOwn(scopedVariableValues, variableName)
+        !Object.hasOwn(scopedVariableValues.coerced, variableName)
       ) {
         if (argDef.defaultValue) {
           coercedValues[name] = coerceDefaultValue(
@@ -221,7 +252,7 @@ export function experimentalGetArgumentValues(
         }
         continue;
       }
-      isNull = scopedVariableValues[variableName] == null;
+      isNull = scopedVariableValues.coerced[variableName] == null;
     }
     if (isNull && isNonNullType(argType)) {
       throw new GraphQLError(
@@ -234,7 +265,7 @@ export function experimentalGetArgumentValues(
       valueNode,
       argType,
       variableValues,
-      fragmentVariables,
+      fragmentVariablesValues,
     );
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
@@ -265,8 +296,8 @@ export function getDirectiveValues(
   node: {
     readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
   },
-  variableValues?: Maybe<ObjMap<unknown>>,
-  fragmentVariables?: Maybe<FragmentVariables>,
+  variableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<VariableValues>,
 ):
   | undefined
   | {
@@ -280,7 +311,7 @@ export function getDirectiveValues(
       directiveNode,
       directiveDef.args,
       variableValues,
-      fragmentVariables,
+      fragmentVariableValues,
     );
   }
 }

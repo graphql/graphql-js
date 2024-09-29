@@ -4,7 +4,6 @@ import { invariant } from '../jsutils/invariant.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
-import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type { Path } from '../jsutils/Path.ts';
 import { addPath, pathToArray } from '../jsutils/Path.ts';
 import { printPathArray } from '../jsutils/printPathArray.ts';
@@ -24,7 +23,7 @@ import {
   isNonNullType,
   isRequiredInputField,
 } from '../type/definition.ts';
-import type { FragmentVariables } from '../execution/collectFields.ts';
+import type { VariableValues } from '../execution/values.ts';
 type OnErrorCB = (
   path: ReadonlyArray<string | number>,
   invalidValue: unknown,
@@ -207,21 +206,21 @@ function coerceInputValueImpl(
 export function coerceInputLiteral(
   valueNode: ValueNode,
   type: GraphQLInputType,
-  variableValues?: Maybe<ObjMap<unknown>>,
-  fragmentVariableValues?: Maybe<FragmentVariables>,
+  variableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<VariableValues>,
 ): unknown {
   if (valueNode.kind === Kind.VARIABLE) {
-    const variableValue = getVariableValue(
+    const coercedVariableValue = getCoercedVariableValue(
       valueNode,
       variableValues,
       fragmentVariableValues,
     );
-    if (variableValue == null && isNonNullType(type)) {
+    if (coercedVariableValue == null && isNonNullType(type)) {
       return; // Invalid: intentionally return no value.
     }
     // Note: This does no further checking that this variable is correct.
     // This assumes validated has checked this variable is of the correct type.
-    return variableValue;
+    return coercedVariableValue;
   }
   if (isNonNullType(type)) {
     if (valueNode.kind === Kind.NULL) {
@@ -262,8 +261,11 @@ export function coerceInputLiteral(
       if (itemValue === undefined) {
         if (
           itemNode.kind === Kind.VARIABLE &&
-          getVariableValue(itemNode, variableValues, fragmentVariableValues) ==
-            null &&
+          getCoercedVariableValue(
+            itemNode,
+            variableValues,
+            fragmentVariableValues,
+          ) == null &&
           !isNonNullType(type.ofType)
         ) {
           // A missing variable within a list is coerced to null.
@@ -298,7 +300,7 @@ export function coerceInputLiteral(
       if (
         !fieldNode ||
         (fieldNode.value.kind === Kind.VARIABLE &&
-          getVariableValue(
+          getCoercedVariableValue(
             fieldNode.value,
             variableValues,
             fragmentVariableValues,
@@ -339,22 +341,22 @@ export function coerceInputLiteral(
   }
   const leafType = assertLeafType(type);
   try {
-    return leafType.parseLiteral(valueNode, variableValues);
+    return leafType.parseLiteral(valueNode, variableValues?.coerced);
   } catch (_error) {
     // Invalid: ignore error and intentionally return no value.
   }
 }
 // Retrieves the variable value for the given variable node.
-function getVariableValue(
+function getCoercedVariableValue(
   variableNode: VariableNode,
-  variableValues: Maybe<ObjMap<unknown>>,
-  fragmentVariableValues: Maybe<FragmentVariables> | undefined,
+  variableValues: Maybe<VariableValues>,
+  fragmentVariableValues: Maybe<VariableValues>,
 ): unknown {
   const varName = variableNode.name.value;
-  if (fragmentVariableValues?.signatures[varName]) {
-    return fragmentVariableValues.values[varName];
+  if (fragmentVariableValues?.sources[varName] !== undefined) {
+    return fragmentVariableValues.coerced[varName];
   }
-  return variableValues?.[varName];
+  return variableValues?.coerced[varName];
 }
 /**
  * @internal

@@ -8,6 +8,7 @@ import type {
   FragmentDetails,
 } from '../../execution/collectFields.ts';
 import { collectFields } from '../../execution/collectFields.ts';
+import type { VariableValues } from '../../execution/values.ts';
 import type { ValidationContext } from '../ValidationContext.ts';
 function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
   return fieldGroup.map((fieldDetails) => fieldDetails.node);
@@ -30,9 +31,7 @@ export function SingleFieldSubscriptionsRule(
         const subscriptionType = schema.getSubscriptionType();
         if (subscriptionType) {
           const operationName = node.name ? node.name.value : null;
-          const variableValues: {
-            [variable: string]: any;
-          } = Object.create(null);
+          const variableValues: VariableValues = Object.create(null);
           const document = context.getDocument();
           const fragments: ObjMap<FragmentDetails> = Object.create(null);
           for (const definition of document.definitions) {
