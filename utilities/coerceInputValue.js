@@ -128,13 +128,13 @@ function coerceInputValueImpl(inputValue, type, onError, path) {
  */
 function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableValues) {
     if (valueNode.kind === kinds_js_1.Kind.VARIABLE) {
-        const variableValue = getVariableValue(valueNode, variableValues, fragmentVariableValues);
-        if (variableValue == null && (0, definition_js_1.isNonNullType)(type)) {
+        const coercedVariableValue = getCoercedVariableValue(valueNode, variableValues, fragmentVariableValues);
+        if (coercedVariableValue == null && (0, definition_js_1.isNonNullType)(type)) {
             return; // Invalid: intentionally return no value.
         }
         // Note: This does no further checking that this variable is correct.
         // This assumes validated has checked this variable is of the correct type.
-        return variableValue;
+        return coercedVariableValue;
     }
     if ((0, definition_js_1.isNonNullType)(type)) {
         if (valueNode.kind === kinds_js_1.Kind.NULL) {
@@ -159,8 +159,7 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
             let itemValue = coerceInputLiteral(itemNode, type.ofType, variableValues, fragmentVariableValues);
             if (itemValue === undefined) {
                 if (itemNode.kind === kinds_js_1.Kind.VARIABLE &&
-                    getVariableValue(itemNode, variableValues, fragmentVariableValues) ==
-                        null &&
+                    getCoercedVariableValue(itemNode, variableValues, fragmentVariableValues) == null &&
                     !(0, definition_js_1.isNonNullType)(type.ofType)) {
                     // A missing variable within a list is coerced to null.
                     itemValue = null;
@@ -188,7 +187,7 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
             const fieldNode = fieldNodes.get(field.name);
             if (!fieldNode ||
                 (fieldNode.value.kind === kinds_js_1.Kind.VARIABLE &&
-                    getVariableValue(fieldNode.value, variableValues, fragmentVariableValues) == null)) {
+                    getCoercedVariableValue(fieldNode.value, variableValues, fragmentVariableValues) == null)) {
                 if ((0, definition_js_1.isRequiredInputField)(field)) {
                     return; // Invalid: intentionally return no value.
                 }
@@ -217,7 +216,7 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
     }
     const leafType = (0, definition_js_1.assertLeafType)(type);
     try {
-        return leafType.parseLiteral(valueNode, variableValues);
+        return leafType.parseLiteral(valueNode, variableValues?.coerced);
     }
     catch (_error) {
         // Invalid: ignore error and intentionally return no value.
@@ -225,12 +224,12 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
 }
 exports.coerceInputLiteral = coerceInputLiteral;
 // Retrieves the variable value for the given variable node.
-function getVariableValue(variableNode, variableValues, fragmentVariableValues) {
+function getCoercedVariableValue(variableNode, variableValues, fragmentVariableValues) {
     const varName = variableNode.name.value;
-    if (fragmentVariableValues?.signatures[varName]) {
-        return fragmentVariableValues.values[varName];
+    if (fragmentVariableValues?.sources[varName] !== undefined) {
+        return fragmentVariableValues.coerced[varName];
     }
-    return variableValues?.[varName];
+    return variableValues?.coerced[varName];
 }
 /**
  * @internal

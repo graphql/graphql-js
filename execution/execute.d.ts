@@ -8,6 +8,7 @@ import type { GraphQLField, GraphQLFieldResolver, GraphQLObjectType, GraphQLReso
 import type { GraphQLSchema } from '../type/schema.js';
 import type { FieldGroup, FragmentDetails } from './collectFields.js';
 import type { CancellableStreamRecord, ExecutionResult, ExperimentalIncrementalExecutionResults } from './types.js';
+import type { VariableValues } from './values.js';
 /**
  * Terminology
  *
@@ -39,9 +40,7 @@ export interface ExecutionContext {
     rootValue: unknown;
     contextValue: unknown;
     operation: OperationDefinitionNode;
-    variableValues: {
-        [variable: string]: unknown;
-    };
+    variableValues: VariableValues;
     fieldResolver: GraphQLFieldResolver<any, any>;
     typeResolver: GraphQLTypeResolver<any, any>;
     subscribeFieldResolver: GraphQLFieldResolver<any, any>;

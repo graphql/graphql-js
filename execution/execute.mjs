@@ -243,9 +243,9 @@ export function buildExecutionContext(args) {
     // FIXME: https://github.com/graphql/graphql-js/issues/2203
     /* c8 ignore next */
     const variableDefinitions = operation.variableDefinitions ?? [];
-    const coercedVariableValues = getVariableValues(schema, variableDefinitions, rawVariableValues ?? {}, { maxErrors: 50 });
-    if (coercedVariableValues.errors) {
-        return coercedVariableValues.errors;
+    const variableValuesOrErrors = getVariableValues(schema, variableDefinitions, rawVariableValues ?? {}, { maxErrors: 50 });
+    if (variableValuesOrErrors.errors) {
+        return variableValuesOrErrors.errors;
     }
     return {
         schema,
@@ -253,7 +253,7 @@ export function buildExecutionContext(args) {
         rootValue,
         contextValue,
         operation,
-        variableValues: coercedVariableValues.coerced,
+        variableValues: variableValuesOrErrors.variableValues,
         fieldResolver: fieldResolver ?? defaultFieldResolver,
         typeResolver: typeResolver ?? defaultTypeResolver,
         subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
@@ -380,7 +380,7 @@ function executeField(exeContext, parentType, source, fieldGroup, path, incremen
         // Build a JS object of arguments from the field.arguments AST, using the
         // variables scope to fulfill any variable references.
         // TODO: find a way to memoize, in case this field is within a List type.
-        const args = experimentalGetArgumentValues(fieldGroup[0].node, fieldDef.args, exeContext.variableValues, fieldGroup[0].fragmentVariables);
+        const args = experimentalGetArgumentValues(fieldGroup[0].node, fieldDef.args, exeContext.variableValues, fieldGroup[0].fragmentVariableValues);
         // The resolve function's optional third argument is a context value that
         // is provided to every resolve function within an execution. It is commonly
         // used to represent an authenticated user, or request-specific caches.
@@ -536,7 +536,7 @@ function getStreamUsage(exeContext, fieldGroup, path) {
     }
     // validation only allows equivalent streams on multiple fields, so it is
     // safe to only check the first fieldNode for the stream directive
-    const stream = getDirectiveValues(GraphQLStreamDirective, fieldGroup[0].node, exeContext.variableValues, fieldGroup[0].fragmentVariables);
+    const stream = getDirectiveValues(GraphQLStreamDirective, fieldGroup[0].node, exeContext.variableValues, fieldGroup[0].fragmentVariableValues);
     if (!stream) {
         return;
     }
@@ -549,7 +549,7 @@ function getStreamUsage(exeContext, fieldGroup, path) {
     const streamedFieldGroup = fieldGroup.map((fieldDetails) => ({
         node: fieldDetails.node,
         deferUsage: undefined,
-        fragmentVariables: fieldDetails.fragmentVariables,
+        fragmentVariablesValues: fieldDetails.fragmentVariableValues,
     }));
     const streamUsage = {
         initialCount: stream.initialCount,

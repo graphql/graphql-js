@@ -3,6 +3,7 @@ import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import type { ConstValueNode, EnumTypeDefinitionNode, EnumTypeExtensionNode, EnumValueDefinitionNode, FieldDefinitionNode, FieldNode, FragmentDefinitionNode, InputObjectTypeDefinitionNode, InputObjectTypeExtensionNode, InputValueDefinitionNode, InterfaceTypeDefinitionNode, InterfaceTypeExtensionNode, ObjectTypeDefinitionNode, ObjectTypeExtensionNode, OperationDefinitionNode, ScalarTypeDefinitionNode, ScalarTypeExtensionNode, UnionTypeDefinitionNode, UnionTypeExtensionNode, ValueNode } from '../language/ast.js';
+import type { VariableValues } from '../execution/values.js';
 import type { GraphQLSchema } from './schema.js';
 /**
  * These are all of the possible kinds of types.
@@ -344,9 +345,7 @@ export interface GraphQLResolveInfo {
     readonly fragments: ObjMap<FragmentDefinitionNode>;
     readonly rootValue: unknown;
     readonly operation: OperationDefinitionNode;
-    readonly variableValues: {
-        [variable: string]: unknown;
-    };
+    readonly variableValues: VariableValues;
 }
 /**
  * Custom extensions

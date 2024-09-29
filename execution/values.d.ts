@@ -1,20 +1,25 @@
 import type { Maybe } from '../jsutils/Maybe.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { ReadOnlyObjMap } from '../jsutils/ObjMap.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import type { DirectiveNode, FieldNode, FragmentSpreadNode, VariableDefinitionNode } from '../language/ast.js';
 import type { GraphQLArgument, GraphQLField } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
-import type { FragmentVariables } from './collectFields.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
-type CoercedVariableValues = {
-    errors: ReadonlyArray<GraphQLError>;
-    coerced?: never;
-} | {
-    coerced: {
-        [variable: string]: unknown;
-    };
+export interface VariableValues {
+    readonly sources: ReadOnlyObjMap<VariableValueSource>;
+    readonly coerced: ReadOnlyObjMap<unknown>;
+}
+interface VariableValueSource {
+    readonly signature: GraphQLVariableSignature;
+    readonly value?: unknown;
+}
+type VariableValuesOrErrors = {
+    variableValues: VariableValues;
     errors?: never;
+} | {
+    errors: ReadonlyArray<GraphQLError>;
+    variableValues?: never;
 };
 /**
  * Prepares an object map of variableValues of the correct type based on the
@@ -29,7 +34,8 @@ export declare function getVariableValues(schema: GraphQLSchema, varDefNodes: Re
     readonly [variable: string]: unknown;
 }, options?: {
     maxErrors?: number;
-}): CoercedVariableValues;
+}): VariableValuesOrErrors;
+export declare function getFragmentVariableValues(fragmentSpreadNode: FragmentSpreadNode, fragmentSignatures: ReadOnlyObjMap<GraphQLVariableSignature>, variableValues: VariableValues, fragmentVariableValues?: Maybe<VariableValues>): VariableValues;
 /**
  * Prepares an object map of argument values given a list of argument
  * definitions and list of argument AST nodes.
@@ -38,10 +44,10 @@ export declare function getVariableValues(schema: GraphQLSchema, varDefNodes: Re
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-export declare function getArgumentValues(def: GraphQLField<unknown, unknown> | GraphQLDirective, node: FieldNode | DirectiveNode, variableValues?: Maybe<ObjMap<unknown>>): {
+export declare function getArgumentValues(def: GraphQLField<unknown, unknown> | GraphQLDirective, node: FieldNode | DirectiveNode, variableValues?: Maybe<VariableValues>): {
     [argument: string]: unknown;
 };
-export declare function experimentalGetArgumentValues(node: FieldNode | DirectiveNode | FragmentSpreadNode, argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>, variableValues: Maybe<ObjMap<unknown>>, fragmentVariables?: Maybe<FragmentVariables>): {
+export declare function experimentalGetArgumentValues(node: FieldNode | DirectiveNode | FragmentSpreadNode, argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>, variableValues: Maybe<VariableValues>, fragmentVariablesValues?: Maybe<VariableValues>): {
     [argument: string]: unknown;
 };
 /**
@@ -57,7 +63,7 @@ export declare function experimentalGetArgumentValues(node: FieldNode | Directiv
  */
 export declare function getDirectiveValues(directiveDef: GraphQLDirective, node: {
     readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
-}, variableValues?: Maybe<ObjMap<unknown>>, fragmentVariables?: Maybe<FragmentVariables>): undefined | {
+}, variableValues?: Maybe<VariableValues>, fragmentVariableValues?: Maybe<VariableValues>): undefined | {
     [argument: string]: unknown;
 };
 export {};

@@ -3,18 +3,15 @@ import type { FieldNode, FragmentDefinitionNode, OperationDefinitionNode } from 
 import type { GraphQLObjectType } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
+import type { VariableValues } from './values.js';
 export interface DeferUsage {
     label: string | undefined;
     parentDeferUsage: DeferUsage | undefined;
 }
-export interface FragmentVariables {
-    signatures: ObjMap<GraphQLVariableSignature>;
-    values: ObjMap<unknown>;
-}
 export interface FieldDetails {
     node: FieldNode;
     deferUsage?: DeferUsage | undefined;
-    fragmentVariables?: FragmentVariables | undefined;
+    fragmentVariableValues?: VariableValues | undefined;
 }
 export type FieldGroup = ReadonlyArray<FieldDetails>;
 export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
@@ -31,9 +28,7 @@ export interface FragmentDetails {
  *
  * @internal
  */
-export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: {
-    [variable: string]: unknown;
-}, runtimeType: GraphQLObjectType, operation: OperationDefinitionNode): {
+export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, runtimeType: GraphQLObjectType, operation: OperationDefinitionNode): {
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };
@@ -47,9 +42,7 @@ export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<F
  *
  * @internal
  */
-export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: {
-    [variable: string]: unknown;
-}, operation: OperationDefinitionNode, returnType: GraphQLObjectType, fieldGroup: FieldGroup): {
+export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, operation: OperationDefinitionNode, returnType: GraphQLObjectType, fieldGroup: FieldGroup): {
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };
