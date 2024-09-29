@@ -26,6 +26,10 @@ export { valueFromASTUntyped } from "./valueFromASTUntyped.mjs";
 export { astFromValue } from "./astFromValue.mjs";
 // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
 export { TypeInfo, visitWithTypeInfo } from "./TypeInfo.mjs";
+// Converts a value to a const value by replacing variables.
+export { replaceVariables } from "./replaceVariables.mjs";
+// Create a GraphQL literal (AST) from a JavaScript input value.
+export { valueToLiteral } from "./valueToLiteral.mjs";
 export { 
 // Coerces a JavaScript value to a GraphQL type, or produces errors.
 coerceInputValue, 

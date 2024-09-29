@@ -6,6 +6,7 @@ const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
 const kinds_js_1 = require("../language/kinds.js");
 const printer_js_1 = require("../language/printer.js");
+const valueToLiteral_js_1 = require("../utilities/valueToLiteral.js");
 const definition_js_1 = require("./definition.js");
 /**
  * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).
@@ -47,7 +48,7 @@ exports.GraphQLInt = new definition_js_1.GraphQLScalarType({
         }
         return inputValue;
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.INT) {
             throw new GraphQLError_js_1.GraphQLError(`Int cannot represent non-integer value: ${(0, printer_js_1.print)(valueNode)}`, { nodes: valueNode });
         }
@@ -56,6 +57,14 @@ exports.GraphQLInt = new definition_js_1.GraphQLScalarType({
             throw new GraphQLError_js_1.GraphQLError(`Int cannot represent non 32-bit signed integer value: ${valueNode.value}`, { nodes: valueNode });
         }
         return num;
+    },
+    valueToLiteral(value) {
+        if (typeof value === 'number' &&
+            Number.isInteger(value) &&
+            value <= exports.GRAPHQL_MAX_INT &&
+            value >= exports.GRAPHQL_MIN_INT) {
+            return { kind: kinds_js_1.Kind.INT, value: String(value) };
+        }
     },
 });
 exports.GraphQLFloat = new definition_js_1.GraphQLScalarType({
@@ -81,11 +90,17 @@ exports.GraphQLFloat = new definition_js_1.GraphQLScalarType({
         }
         return inputValue;
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.FLOAT && valueNode.kind !== kinds_js_1.Kind.INT) {
             throw new GraphQLError_js_1.GraphQLError(`Float cannot represent non numeric value: ${(0, printer_js_1.print)(valueNode)}`, { nodes: valueNode });
         }
         return parseFloat(valueNode.value);
+    },
+    valueToLiteral(value) {
+        const literal = (0, valueToLiteral_js_1.defaultScalarValueToLiteral)(value);
+        if (literal.kind === kinds_js_1.Kind.FLOAT || literal.kind === kinds_js_1.Kind.INT) {
+            return literal;
+        }
     },
 });
 exports.GraphQLString = new definition_js_1.GraphQLScalarType({
@@ -112,11 +127,17 @@ exports.GraphQLString = new definition_js_1.GraphQLScalarType({
         }
         return inputValue;
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.STRING) {
             throw new GraphQLError_js_1.GraphQLError(`String cannot represent a non string value: ${(0, printer_js_1.print)(valueNode)}`, { nodes: valueNode });
         }
         return valueNode.value;
+    },
+    valueToLiteral(value) {
+        const literal = (0, valueToLiteral_js_1.defaultScalarValueToLiteral)(value);
+        if (literal.kind === kinds_js_1.Kind.STRING) {
+            return literal;
+        }
     },
 });
 exports.GraphQLBoolean = new definition_js_1.GraphQLScalarType({
@@ -138,11 +159,17 @@ exports.GraphQLBoolean = new definition_js_1.GraphQLScalarType({
         }
         return inputValue;
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.BOOLEAN) {
             throw new GraphQLError_js_1.GraphQLError(`Boolean cannot represent a non boolean value: ${(0, printer_js_1.print)(valueNode)}`, { nodes: valueNode });
         }
         return valueNode.value;
+    },
+    valueToLiteral(value) {
+        const literal = (0, valueToLiteral_js_1.defaultScalarValueToLiteral)(value);
+        if (literal.kind === kinds_js_1.Kind.BOOLEAN) {
+            return literal;
+        }
     },
 });
 exports.GraphQLID = new definition_js_1.GraphQLScalarType({
@@ -167,12 +194,22 @@ exports.GraphQLID = new definition_js_1.GraphQLScalarType({
         }
         throw new GraphQLError_js_1.GraphQLError(`ID cannot represent value: ${(0, inspect_js_1.inspect)(inputValue)}`);
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.STRING && valueNode.kind !== kinds_js_1.Kind.INT) {
             throw new GraphQLError_js_1.GraphQLError('ID cannot represent a non-string and non-integer value: ' +
                 (0, printer_js_1.print)(valueNode), { nodes: valueNode });
         }
         return valueNode.value;
+    },
+    valueToLiteral(value) {
+        // ID types can use number values and Int literals.
+        const stringValue = Number.isInteger(value) ? String(value) : value;
+        if (typeof stringValue === 'string') {
+            // Will parse as an IntValue.
+            return /^-?(?:0|[1-9][0-9]*)$/.test(stringValue)
+                ? { kind: kinds_js_1.Kind.INT, value: stringValue }
+                : { kind: kinds_js_1.Kind.STRING, value: stringValue, block: false };
+        }
     },
 });
 exports.specifiedScalarTypes = Object.freeze([

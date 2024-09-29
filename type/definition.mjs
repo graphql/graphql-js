@@ -291,22 +291,57 @@ export function resolveObjMapThunk(thunk) {
  * Example:
  *
  * ```ts
+ * function ensureOdd(value) {
+ *   if (!Number.isFinite(value)) {
+ *     throw new Error(
+ *       `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
+ *     );
+ *   }
+ *
+ *   if (value % 2 === 0) {
+ *     throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
+ *   }
+ * }
+ *
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
  *   serialize(value) {
- *     if (!Number.isFinite(value)) {
- *       throw new Error(
- *         `Scalar "Odd" cannot represent "${value}" since it is not a finite number.`,
- *       );
- *     }
- *
- *     if (value % 2 === 0) {
- *       throw new Error(`Scalar "Odd" cannot represent "${value}" since it is even.`);
- *     }
- *     return value;
+ *     return ensureOdd(value);
+ *   },
+ *   parseValue(value) {
+ *     return ensureOdd(value);
+ *   }
+ *   valueToLiteral(value) {
+ *    return parse(`${ensureOdd(value)`);
  *   }
  * });
  * ```
+ *
+ * Custom scalars behavior is defined via the following functions:
+ *
+ *  - serialize(value): Implements "Result Coercion". Given an internal value,
+ *    produces an external value valid for this type. Returns undefined or
+ *    throws an error to indicate invalid values.
+ *
+ *  - parseValue(value): Implements "Input Coercion" for values. Given an
+ *    external value (for example, variable values), produces an internal value
+ *    valid for this type. Returns undefined or throws an error to indicate
+ *    invalid values.
+ *
+ *  - parseLiteral(ast): Implements "Input Coercion" for literals including
+ *    non-specified replacement of variables embedded within complex scalars.
+ *    This method will be removed in v18 favor of the combination of the
+ *    `replaceVariables()` utility and the `parseConstLiteral()` method.
+ *
+ *  - parseConstLiteral(ast): Implements "Input Coercion" for constant literals.
+ *    Given an GraphQL literal (AST) (for example, an argument value), produces
+ *    an internal value valid for this type. Returns undefined or throws an
+ *    error to indicate invalid values.
+ *
+ *  - valueToLiteral(value): Converts an external value to a GraphQL
+ *    literal (AST). Returns undefined or throws an error to indicate
+ *    invalid values.
+ *
  */
 export class GraphQLScalarType {
     constructor(config) {
@@ -321,12 +356,20 @@ export class GraphQLScalarType {
         this.parseLiteral =
             config.parseLiteral ??
                 ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
+        this.parseConstLiteral =
+            config.parseConstLiteral ??
+                ((node) => parseValue(valueFromASTUntyped(node)));
+        this.valueToLiteral = config.valueToLiteral;
         this.extensions = toObjMap(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         if (config.parseLiteral) {
             (typeof config.parseValue === 'function' &&
                 typeof config.parseLiteral === 'function') || devAssert(false, `${this.name} must provide both "parseValue" and "parseLiteral" functions.`);
+        }
+        if (config.parseConstLiteral) {
+            (typeof config.parseValue === 'function' &&
+                typeof config.parseConstLiteral === 'function') || devAssert(false, `${this.name} must provide both "parseValue" and "parseConstLiteral" functions.`);
         }
     }
     get [Symbol.toStringTag]() {
@@ -340,6 +383,8 @@ export class GraphQLScalarType {
             serialize: this.serialize,
             parseValue: this.parseValue,
             parseLiteral: this.parseLiteral,
+            parseConstLiteral: this.parseConstLiteral,
+            valueToLiteral: this.valueToLiteral,
             extensions: this.extensions,
             astNode: this.astNode,
             extensionASTNodes: this.extensionASTNodes,
@@ -719,8 +764,12 @@ export class GraphQLEnumType /* <T> */ {
         }
         return enumValue.value;
     }
+    /** @deprecated use `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
     parseLiteral(valueNode, _variables) {
         // Note: variables will be resolved to a value before calling this function.
+        return this.parseConstLiteral(valueNode);
+    }
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== Kind.ENUM) {
             const valueStr = print(valueNode);
             throw new GraphQLError(`Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
@@ -733,6 +782,11 @@ export class GraphQLEnumType /* <T> */ {
                 didYouMeanEnumValue(this, valueStr), { nodes: valueNode });
         }
         return enumValue.value;
+    }
+    valueToLiteral(value) {
+        if (typeof value === 'string' && this.getValue(value)) {
+            return { kind: Kind.ENUM, value };
+        }
     }
     toConfig() {
         const values = keyValMap(this.getValues(), (value) => value.name, (value) => ({

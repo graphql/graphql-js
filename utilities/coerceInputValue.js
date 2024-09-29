@@ -12,6 +12,7 @@ const suggestionList_js_1 = require("../jsutils/suggestionList.js");
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
 const kinds_js_1 = require("../language/kinds.js");
 const definition_js_1 = require("../type/definition.js");
+const replaceVariables_js_1 = require("./replaceVariables.js");
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
@@ -215,8 +216,9 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
         return coercedValue;
     }
     const leafType = (0, definition_js_1.assertLeafType)(type);
+    const constValueNode = (0, replaceVariables_js_1.replaceVariables)(valueNode, variableValues, fragmentVariableValues);
     try {
-        return leafType.parseLiteral(valueNode, variableValues?.coerced);
+        return leafType.parseConstLiteral(constValueNode);
     }
     catch (_error) {
         // Invalid: ignore error and intentionally return no value.

@@ -3,6 +3,7 @@ import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { print } from "../language/printer.mjs";
+import { defaultScalarValueToLiteral } from "../utilities/valueToLiteral.mjs";
 import { GraphQLScalarType } from "./definition.mjs";
 /**
  * Maximum possible Int value as per GraphQL Spec (32-bit signed integer).
@@ -44,7 +45,7 @@ export const GraphQLInt = new GraphQLScalarType({
         }
         return inputValue;
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== Kind.INT) {
             throw new GraphQLError(`Int cannot represent non-integer value: ${print(valueNode)}`, { nodes: valueNode });
         }
@@ -53,6 +54,14 @@ export const GraphQLInt = new GraphQLScalarType({
             throw new GraphQLError(`Int cannot represent non 32-bit signed integer value: ${valueNode.value}`, { nodes: valueNode });
         }
         return num;
+    },
+    valueToLiteral(value) {
+        if (typeof value === 'number' &&
+            Number.isInteger(value) &&
+            value <= GRAPHQL_MAX_INT &&
+            value >= GRAPHQL_MIN_INT) {
+            return { kind: Kind.INT, value: String(value) };
+        }
     },
 });
 export const GraphQLFloat = new GraphQLScalarType({
@@ -78,11 +87,17 @@ export const GraphQLFloat = new GraphQLScalarType({
         }
         return inputValue;
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== Kind.FLOAT && valueNode.kind !== Kind.INT) {
             throw new GraphQLError(`Float cannot represent non numeric value: ${print(valueNode)}`, { nodes: valueNode });
         }
         return parseFloat(valueNode.value);
+    },
+    valueToLiteral(value) {
+        const literal = defaultScalarValueToLiteral(value);
+        if (literal.kind === Kind.FLOAT || literal.kind === Kind.INT) {
+            return literal;
+        }
     },
 });
 export const GraphQLString = new GraphQLScalarType({
@@ -109,11 +124,17 @@ export const GraphQLString = new GraphQLScalarType({
         }
         return inputValue;
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== Kind.STRING) {
             throw new GraphQLError(`String cannot represent a non string value: ${print(valueNode)}`, { nodes: valueNode });
         }
         return valueNode.value;
+    },
+    valueToLiteral(value) {
+        const literal = defaultScalarValueToLiteral(value);
+        if (literal.kind === Kind.STRING) {
+            return literal;
+        }
     },
 });
 export const GraphQLBoolean = new GraphQLScalarType({
@@ -135,11 +156,17 @@ export const GraphQLBoolean = new GraphQLScalarType({
         }
         return inputValue;
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== Kind.BOOLEAN) {
             throw new GraphQLError(`Boolean cannot represent a non boolean value: ${print(valueNode)}`, { nodes: valueNode });
         }
         return valueNode.value;
+    },
+    valueToLiteral(value) {
+        const literal = defaultScalarValueToLiteral(value);
+        if (literal.kind === Kind.BOOLEAN) {
+            return literal;
+        }
     },
 });
 export const GraphQLID = new GraphQLScalarType({
@@ -164,12 +191,22 @@ export const GraphQLID = new GraphQLScalarType({
         }
         throw new GraphQLError(`ID cannot represent value: ${inspect(inputValue)}`);
     },
-    parseLiteral(valueNode) {
+    parseConstLiteral(valueNode) {
         if (valueNode.kind !== Kind.STRING && valueNode.kind !== Kind.INT) {
             throw new GraphQLError('ID cannot represent a non-string and non-integer value: ' +
                 print(valueNode), { nodes: valueNode });
         }
         return valueNode.value;
+    },
+    valueToLiteral(value) {
+        // ID types can use number values and Int literals.
+        const stringValue = Number.isInteger(value) ? String(value) : value;
+        if (typeof stringValue === 'string') {
+            // Will parse as an IntValue.
+            return /^-?(?:0|[1-9][0-9]*)$/.test(stringValue)
+                ? { kind: Kind.INT, value: stringValue }
+                : { kind: Kind.STRING, value: stringValue, block: false };
+        }
     },
 });
 export const specifiedScalarTypes = Object.freeze([

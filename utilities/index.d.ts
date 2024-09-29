@@ -15,6 +15,8 @@ valueFromAST, } from './valueFromAST.js';
 export { valueFromASTUntyped } from './valueFromASTUntyped.js';
 export { astFromValue } from './astFromValue.js';
 export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';
+export { replaceVariables } from './replaceVariables.js';
+export { valueToLiteral } from './valueToLiteral.js';
 export { coerceInputValue, coerceInputLiteral, } from './coerceInputValue.js';
 export { concatAST } from './concatAST.js';
 export { separateOperations } from './separateOperations.js';

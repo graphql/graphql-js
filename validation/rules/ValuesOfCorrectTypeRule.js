@@ -8,6 +8,7 @@ const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 const printer_js_1 = require("../../language/printer.js");
 const definition_js_1 = require("../../type/definition.js");
+const replaceVariables_js_1 = require("../../utilities/replaceVariables.js");
 /**
  * Value literals of correct type
  *
@@ -94,10 +95,11 @@ function isValidValueNode(context, node) {
         context.reportError(new GraphQLError_js_1.GraphQLError(`Expected value of type "${typeStr}", found ${(0, printer_js_1.print)(node)}.`, { nodes: node }));
         return;
     }
-    // Scalars and Enums determine if a literal value is valid via parseLiteral(),
-    // which may throw or return an invalid value to indicate failure.
+    const constValueNode = (0, replaceVariables_js_1.replaceVariables)(node);
+    // Scalars and Enums determine if a literal value is valid via parseConstLiteral(),
+    // which may throw or return undefined to indicate an invalid value.
     try {
-        const parseResult = type.parseLiteral(node, undefined /* variables */);
+        const parseResult = type.parseConstLiteral(constValueNode);
         if (parseResult === undefined) {
             const typeStr = (0, inspect_js_1.inspect)(locationType);
             context.reportError(new GraphQLError_js_1.GraphQLError(`Expected value of type "${typeStr}", found ${(0, printer_js_1.print)(node)}.`, { nodes: node }));

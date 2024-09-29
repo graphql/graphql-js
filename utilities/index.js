@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findDangerousChanges = exports.findBreakingChanges = exports.DangerousChangeType = exports.BreakingChangeType = exports.doTypesOverlap = exports.isTypeSubTypeOf = exports.isEqualType = exports.stripIgnoredCharacters = exports.separateOperations = exports.concatAST = exports.coerceInputLiteral = exports.coerceInputValue = exports.visitWithTypeInfo = exports.TypeInfo = exports.astFromValue = exports.valueFromASTUntyped = exports.valueFromAST = exports.typeFromAST = exports.printIntrospectionSchema = exports.printDirective = exports.printType = exports.printSchema = exports.lexicographicSortSchema = exports.extendSchema = exports.buildSchema = exports.buildASTSchema = exports.buildClientSchema = exports.introspectionFromSchema = exports.getOperationAST = exports.getIntrospectionQuery = void 0;
+exports.findDangerousChanges = exports.findBreakingChanges = exports.DangerousChangeType = exports.BreakingChangeType = exports.doTypesOverlap = exports.isTypeSubTypeOf = exports.isEqualType = exports.stripIgnoredCharacters = exports.separateOperations = exports.concatAST = exports.coerceInputLiteral = exports.coerceInputValue = exports.valueToLiteral = exports.replaceVariables = exports.visitWithTypeInfo = exports.TypeInfo = exports.astFromValue = exports.valueFromASTUntyped = exports.valueFromAST = exports.typeFromAST = exports.printIntrospectionSchema = exports.printDirective = exports.printType = exports.printSchema = exports.lexicographicSortSchema = exports.extendSchema = exports.buildSchema = exports.buildASTSchema = exports.buildClientSchema = exports.introspectionFromSchema = exports.getOperationAST = exports.getIntrospectionQuery = void 0;
 // Produce the GraphQL query recommended for a full schema introspection.
 var getIntrospectionQuery_js_1 = require("./getIntrospectionQuery.js");
 Object.defineProperty(exports, "getIntrospectionQuery", { enumerable: true, get: function () { return getIntrospectionQuery_js_1.getIntrospectionQuery; } });
@@ -46,6 +46,12 @@ Object.defineProperty(exports, "astFromValue", { enumerable: true, get: function
 var TypeInfo_js_1 = require("./TypeInfo.js");
 Object.defineProperty(exports, "TypeInfo", { enumerable: true, get: function () { return TypeInfo_js_1.TypeInfo; } });
 Object.defineProperty(exports, "visitWithTypeInfo", { enumerable: true, get: function () { return TypeInfo_js_1.visitWithTypeInfo; } });
+// Converts a value to a const value by replacing variables.
+var replaceVariables_js_1 = require("./replaceVariables.js");
+Object.defineProperty(exports, "replaceVariables", { enumerable: true, get: function () { return replaceVariables_js_1.replaceVariables; } });
+// Create a GraphQL literal (AST) from a JavaScript input value.
+var valueToLiteral_js_1 = require("./valueToLiteral.js");
+Object.defineProperty(exports, "valueToLiteral", { enumerable: true, get: function () { return valueToLiteral_js_1.valueToLiteral; } });
 var coerceInputValue_js_1 = require("./coerceInputValue.js");
 // Coerces a JavaScript value to a GraphQL type, or produces errors.
 Object.defineProperty(exports, "coerceInputValue", { enumerable: true, get: function () { return coerceInputValue_js_1.coerceInputValue; } });
