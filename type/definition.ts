@@ -517,7 +517,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   parseValue: GraphQLScalarValueParser<TInternal>;
   /** @deprecated use `replaceVariables()` and `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
-  parseConstLiteral: GraphQLScalarConstLiteralParser<TInternal>;
+  parseConstLiteral: GraphQLScalarConstLiteralParser<TInternal> | undefined;
   valueToLiteral: GraphQLScalarValueToLiteral | undefined;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
@@ -535,9 +535,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
     this.parseLiteral =
       config.parseLiteral ??
       ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
-    this.parseConstLiteral =
-      config.parseConstLiteral ??
-      ((node) => parseValue(valueFromASTUntyped(node)));
+    this.parseConstLiteral = config.parseConstLiteral;
     this.valueToLiteral = config.valueToLiteral;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
@@ -624,7 +622,7 @@ interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
-  parseConstLiteral: GraphQLScalarConstLiteralParser<TInternal>;
+  parseConstLiteral: GraphQLScalarConstLiteralParser<TInternal> | undefined;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 }
