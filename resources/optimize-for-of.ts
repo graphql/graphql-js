@@ -37,10 +37,83 @@ export function optimizeForOf(program: ts.Program) {
       return ts.visitNode(sourceFile, visitNode) as ts.SourceFile;
 
       function visitNode(node: ts.Node): ts.Node {
+        // TODO: add Set support
+        // TODO: potentially add support for for..in statements as well
         if (isArrayForOfStatement(node)) {
           return convertForOfStatementForArray(node);
+        } else if (isMapForOfStatement(node)) {
+          return convertForOfStatementForMap(node);
+        } else if (isSetForOfStatement(node)) {
+          return convertForOfStatementForSet(node);
         }
+
         return ts.visitEachChild(node, visitNode, context);
+      }
+
+      function isSetForOfStatement(node: ts.Node): node is ts.ForOfStatement {
+        if (!ts.isForOfStatement(node) || node.awaitModifier != null) {
+          return false;
+        }
+
+        const { expression } = node;
+
+        const expressionType = typeChecker.getTypeAtLocation(expression);
+
+        for (const subType of unionTypeParts(expressionType)) {
+          assert(
+            !(subType.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)),
+            'Can not use any or unknown values in for-of loop: ' +
+              nodeLocationString(node),
+          );
+
+          if (subType.flags & ts.TypeFlags.StringLike) {
+            continue;
+          }
+
+          const typeName = subType.getSymbol()?.getName();
+          assert(typeName != null);
+
+          if (typeName === 'Set') {
+            continue;
+          }
+
+          return false;
+        }
+
+        return true;
+      }
+
+      function isMapForOfStatement(node: ts.Node): node is ts.ForOfStatement {
+        if (!ts.isForOfStatement(node) || node.awaitModifier != null) {
+          return false;
+        }
+
+        const { expression } = node;
+
+        const expressionType = typeChecker.getTypeAtLocation(expression);
+
+        for (const subType of unionTypeParts(expressionType)) {
+          assert(
+            !(subType.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)),
+            'Can not use any or unknown values in for-of loop: ' +
+              nodeLocationString(node),
+          );
+
+          if (subType.flags & ts.TypeFlags.StringLike) {
+            continue;
+          }
+
+          const typeName = subType.getSymbol()?.getName();
+          assert(typeName != null);
+
+          if (typeName === 'Map') {
+            continue;
+          }
+
+          return false;
+        }
+
+        return true;
       }
 
       function isArrayForOfStatement(node: ts.Node): node is ts.ForOfStatement {
@@ -91,6 +164,190 @@ export function optimizeForOf(program: ts.Program) {
         return (type.flags & ts.TypeFlags.Union) !== 0;
       }
 
+      function convertForOfStatementForSet(
+        forOfNode: ts.ForOfStatement,
+      ): ts.Statement {
+        const counter = factory.createLoopVariable();
+        const forDeclarations = [
+          factory.createVariableDeclaration(
+            counter,
+            undefined, // exclamationToken
+            undefined, // type
+            factory.createNumericLiteral(0),
+          ),
+        ];
+
+        // In the case where the user wrote an identifier as the RHS, like this:
+        //
+        //     for (let v of arr) { }
+        //
+        // we don't want to emit a temporary variable for the RHS, just use it directly.
+        const variableDeclarations = [];
+        let reference: ts.Identifier = factory.createIdentifier('temp');
+        if (ts.isIdentifier(forOfNode.expression)) {
+          reference = forOfNode.expression;
+        } else {
+          const temp = factory.createTempVariable(
+            (identifier) => (reference = identifier), // recordTempVariable
+          );
+          variableDeclarations.push(
+            factory.createVariableDeclaration(
+              temp,
+              undefined, // exclamationToken
+              undefined, // type
+              forOfNode.expression,
+            ),
+          );
+        }
+
+        const tempText = `_${reference.text}`;
+        const valuesExpression = factory.createCallExpression(
+          factory.createPropertyAccessExpression(
+            reference,
+            factory.createIdentifier('values'),
+          ),
+          undefined,
+          [],
+        );
+        variableDeclarations.push(
+          factory.createVariableDeclaration(
+            tempText,
+            undefined,
+            undefined,
+            valuesExpression,
+          ),
+        );
+        const rhsReference = factory.createIdentifier(tempText);
+
+        const forInitializer = factory.createVariableDeclarationList(
+          forDeclarations,
+          ts.NodeFlags.Let,
+        );
+
+        const forCondition = factory.createLessThan(
+          counter,
+          factory.createPropertyAccessExpression(rhsReference, 'length'),
+        );
+        const forIncrementor = factory.createPostfixIncrement(counter);
+
+        assert(ts.isVariableDeclarationList(forOfNode.initializer));
+        // It will use rhsIterationValue _a[_i] as the initializer.
+        const itemAssignment = convertForOfInitializer(
+          forOfNode.initializer,
+          factory.createElementAccessExpression(rhsReference, counter),
+        );
+
+        assert(ts.isBlock(forOfNode.statement));
+        const forBody = factory.updateBlock(forOfNode.statement, [
+          itemAssignment,
+          ...forOfNode.statement.statements,
+        ]);
+
+        const forStatement = factory.createForStatement(
+          forInitializer,
+          forCondition,
+          forIncrementor,
+          forBody,
+        );
+
+        return factory.createBlock([
+          factory.createVariableStatement(undefined, variableDeclarations),
+          forStatement,
+        ]);
+      }
+
+      function convertForOfStatementForMap(
+        forOfNode: ts.ForOfStatement,
+      ): ts.Statement {
+        const counter = factory.createLoopVariable();
+        const forDeclarations = [
+          factory.createVariableDeclaration(
+            counter,
+            undefined, // exclamationToken
+            undefined, // type
+            factory.createNumericLiteral(0),
+          ),
+        ];
+
+        // In the case where the user wrote an identifier as the RHS, like this:
+        //
+        //     for (let v of arr) { }
+        //
+        // we don't want to emit a temporary variable for the RHS, just use it directly.
+        const variableDeclarations = [];
+        let reference: ts.Identifier = factory.createIdentifier('temp');
+        if (ts.isIdentifier(forOfNode.expression)) {
+          reference = forOfNode.expression;
+        } else {
+          const temp = factory.createTempVariable(
+            (identifier) => (reference = identifier), // recordTempVariable
+          );
+          variableDeclarations.push(
+            factory.createVariableDeclaration(
+              temp,
+              undefined, // exclamationToken
+              undefined, // type
+              forOfNode.expression,
+            ),
+          );
+        }
+
+        const tempText = `_${reference.text}`;
+        const valuesExpression = factory.createCallExpression(
+          factory.createPropertyAccessExpression(
+            reference,
+            factory.createIdentifier('values'),
+          ),
+          undefined,
+          [],
+        );
+        variableDeclarations.push(
+          factory.createVariableDeclaration(
+            tempText,
+            undefined,
+            undefined,
+            valuesExpression,
+          ),
+        );
+        const rhsReference = factory.createIdentifier(tempText);
+
+        const forInitializer = factory.createVariableDeclarationList(
+          forDeclarations,
+          ts.NodeFlags.Let,
+        );
+
+        const forCondition = factory.createLessThan(
+          counter,
+          factory.createPropertyAccessExpression(rhsReference, 'length'),
+        );
+        const forIncrementor = factory.createPostfixIncrement(counter);
+
+        assert(ts.isVariableDeclarationList(forOfNode.initializer));
+        // It will use rhsIterationValue _a[_i] as the initializer.
+        const itemAssignment = convertForOfInitializer(
+          forOfNode.initializer,
+          factory.createElementAccessExpression(rhsReference, counter),
+        );
+
+        assert(ts.isBlock(forOfNode.statement));
+        const forBody = factory.updateBlock(forOfNode.statement, [
+          itemAssignment,
+          ...forOfNode.statement.statements,
+        ]);
+
+        const forStatement = factory.createForStatement(
+          forInitializer,
+          forCondition,
+          forIncrementor,
+          forBody,
+        );
+
+        return factory.createBlock([
+          factory.createVariableStatement(undefined, variableDeclarations),
+          forStatement,
+        ]);
+      }
+
       function convertForOfStatementForArray(
         forOfNode: ts.ForOfStatement,
       ): ts.Statement {
@@ -126,7 +383,7 @@ export function optimizeForOf(program: ts.Program) {
           );
         }
 
-        const forInitiliazer = factory.createVariableDeclarationList(
+        const forInitializer = factory.createVariableDeclarationList(
           forDeclarations,
           ts.NodeFlags.Let,
         );
@@ -151,7 +408,7 @@ export function optimizeForOf(program: ts.Program) {
         ]);
 
         return factory.createForStatement(
-          forInitiliazer,
+          forInitializer,
           forCondition,
           forIncrementor,
           forBody,
