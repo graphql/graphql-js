@@ -66,6 +66,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseConstLiteral', () => {
       function parseConstLiteral(str: string) {
+        /* @ts-expect-error to be removed in v18 when all custom scalars will have default method */
         return GraphQLInt.parseConstLiteral(parseConstValue(str));
       }
 
@@ -228,6 +229,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseConstLiteral', () => {
       function parseConstLiteral(str: string) {
+        /* @ts-expect-error to be removed in v18 when all custom scalars will have default method */
         return GraphQLFloat.parseConstLiteral(parseConstValue(str));
       }
 
@@ -338,6 +340,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseConstLiteral', () => {
       function parseConstLiteral(str: string) {
+        /* @ts-expect-error to be removed in v18 when all custom scalars will have default method */
         return GraphQLString.parseConstLiteral(parseConstValue(str));
       }
 
@@ -447,6 +450,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseConstLiteral', () => {
       function parseConstLiteral(str: string) {
+        /* @ts-expect-error to be removed in v18 when all custom scalars will have default method */
         return GraphQLBoolean.parseConstLiteral(parseConstValue(str));
       }
 
@@ -559,6 +563,7 @@ describe('Type System: Specified scalar types', () => {
 
     it('parseConstLiteral', () => {
       function parseConstLiteral(str: string) {
+        /* @ts-expect-error to be removed in v18 when all custom scalars will have default method */
         return GraphQLID.parseConstLiteral(parseConstValue(str));
       }
 
