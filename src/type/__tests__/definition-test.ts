@@ -72,10 +72,11 @@ describe('Type System: Scalars', () => {
     expect(scalar.serialize).to.equal(identityFunc);
     expect(scalar.parseValue).to.equal(identityFunc);
     expect(scalar.parseLiteral).to.be.a('function');
-    expect(scalar.parseConstLiteral).to.be.a('function');
+    /* default will be provided in v18 when parseLiteral is removed */
+    // expect(scalar.parseConstLiteral).to.be.a('function');
   });
 
-  it('use parseValue for parsing literals if parseConstLiteral omitted', () => {
+  it('use parseValue for parsing literals if parseLiteral omitted', () => {
     const scalar = new GraphQLScalarType({
       name: 'Foo',
       parseValue(value) {
@@ -83,11 +84,11 @@ describe('Type System: Scalars', () => {
       },
     });
 
-    expect(scalar.parseConstLiteral(parseConstValue('null'))).to.equal(
+    expect(scalar.parseLiteral(parseConstValue('null'), undefined)).to.equal(
       'parseValue: null',
     );
     expect(
-      scalar.parseConstLiteral(parseConstValue('{ foo: "bar" }')),
+      scalar.parseLiteral(parseConstValue('{ foo: "bar" }'), undefined),
     ).to.equal('parseValue: { foo: "bar" }');
   });
 
