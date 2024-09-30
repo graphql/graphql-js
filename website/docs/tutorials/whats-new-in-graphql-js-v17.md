@@ -33,16 +33,15 @@
 
 ## New API features
 
+- Use new utility `coerceInputLiteral()` as a replacement for `valueFromAST()`.
+- Use new utility `valueToLiteral()` to convert from an external input value to a literal value. Custom scalars can define custom behavior by implementing an optional new `valueToLiteral()` method, otherwise a default conversion function will be used.
+- Use new utility `replaceVariableValues()` to replace variables within complex scalars uses as inputs. This allows variables embedded within complex scalars to use the correct default values.
+- Use new `parseConstLiteral()` methods on custom scalar types instead of `parseLiteral()` (along with the new `valueToLiteral()` method when required) to automatically convert literals to values, including any variables embedded within complex scalars. Embedded variables will (finally) receive the appropriate default values! Note: `parseLiteral()` has been deprecated; in the next major version, it will be removed and the `parseConstLiteral()` method for custom scalars will be set to a default function when not provided, similar to the current behavior of `parseLiteral()`.
 - Support for resolver functions returning async iterables.
 - Expose `printDirective()` helper function.
 
 ## API Changes:
 
-- Changes to input coercion:
-  - Use new utility `coerceInputLiteral()` instead of `valueFromAST()`.
-  - Use new utility `replaceVariableValues()` to replace variables within complex scalars uses as inputs. Internally, `replaceVariableValues()` uses new utility `valueToLiteral()` to convert from an external input value to a literal value. This allows variables embedded within complex scalars to use the correct default values.
-  - Use new utility `valueToLiteral()` to convert from an external input value to a literal value. Custom scalars can define custom behavior by implementing an optional `valueToLiteral()` method.
-  - Use new `parseConstLiteral()` methods on leaf types instead of `parseLiteral()` to convert literals to values, by first calling new utility `replaceVariableValues()` on the non-constant literal, and then by calling `parseConstLiteral()`.
 - Changes to the `subscribe()` function:
   - `subscribe()` may now return a non-promise.
   - When a subscription root field errors, `subscribe()` now returns a well-formatted `GraphQLError` rather than throwing.
