@@ -356,9 +356,7 @@ export class GraphQLScalarType {
         this.parseLiteral =
             config.parseLiteral ??
                 ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
-        this.parseConstLiteral =
-            config.parseConstLiteral ??
-                ((node) => parseValue(valueFromASTUntyped(node)));
+        this.parseConstLiteral = config.parseConstLiteral;
         this.valueToLiteral = config.valueToLiteral;
         this.extensions = toObjMap(config.extensions);
         this.astNode = config.astNode;

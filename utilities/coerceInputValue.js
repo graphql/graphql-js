@@ -216,9 +216,10 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
         return coercedValue;
     }
     const leafType = (0, definition_js_1.assertLeafType)(type);
-    const constValueNode = (0, replaceVariables_js_1.replaceVariables)(valueNode, variableValues, fragmentVariableValues);
     try {
-        return leafType.parseConstLiteral(constValueNode);
+        return leafType.parseConstLiteral
+            ? leafType.parseConstLiteral((0, replaceVariables_js_1.replaceVariables)(valueNode, variableValues, fragmentVariableValues))
+            : leafType.parseLiteral(valueNode, variableValues?.coerced);
     }
     catch (_error) {
         // Invalid: ignore error and intentionally return no value.
