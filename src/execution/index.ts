@@ -10,7 +10,7 @@ export {
   subscribe,
 } from './execute.js';
 
-export type { ExecutionArgs } from './execute.js';
+export type { ExecutionArgs, ValidatedExecutionArgs } from './execute.js';
 
 export type {
   ExecutionResult,
