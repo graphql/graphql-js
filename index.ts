@@ -323,6 +323,7 @@ export {
 } from './execution/index.ts';
 export type {
   ExecutionArgs,
+  ValidatedExecutionArgs,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,

@@ -8,7 +8,7 @@ export {
   defaultTypeResolver,
   subscribe,
 } from './execute.ts';
-export type { ExecutionArgs } from './execute.ts';
+export type { ExecutionArgs, ValidatedExecutionArgs } from './execute.ts';
 export type {
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
