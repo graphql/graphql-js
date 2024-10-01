@@ -277,7 +277,7 @@ function executeOperation(
   const exeContext: ExecutionContext = {
     validatedExecutionArgs,
     errors: undefined,
-    cancellableStreams: new Set(),
+    cancellableStreams: undefined,
   };
   try {
     const { schema, fragments, rootValue, operation, variableValues } =
