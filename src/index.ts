@@ -331,6 +331,7 @@ export {
 
 export type {
   ExecutionArgs,
+  ValidatedExecutionArgs,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,
