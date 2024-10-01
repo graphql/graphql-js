@@ -34,7 +34,7 @@ import type { VariableValues } from './values.js';
  * Namely, schema of the type system that is currently executing,
  * and the fragments defined in the query document
  */
-export interface ExecutionContext {
+export interface ValidatedExecutionArgs {
     schema: GraphQLSchema;
     fragments: ObjMap<FragmentDetails>;
     rootValue: unknown;
@@ -45,6 +45,9 @@ export interface ExecutionContext {
     typeResolver: GraphQLTypeResolver<any, any>;
     subscribeFieldResolver: GraphQLFieldResolver<any, any>;
     enableEarlyExecution: boolean;
+}
+export interface ExecutionContext {
+    validatedExecutionArgs: ValidatedExecutionArgs;
     errors: Array<GraphQLError> | undefined;
     cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
@@ -112,12 +115,12 @@ export declare function executeSync(args: ExecutionArgs): ExecutionResult;
  * TODO: consider no longer exporting this function
  * @internal
  */
-export declare function buildExecutionContext(args: ExecutionArgs): ReadonlyArray<GraphQLError> | ExecutionContext;
+export declare function validateExecutionArgs(args: ExecutionArgs): ReadonlyArray<GraphQLError> | ValidatedExecutionArgs;
 /**
  * TODO: consider no longer exporting this function
  * @internal
  */
-export declare function buildResolveInfo(exeContext: ExecutionContext, fieldDef: GraphQLField<unknown, unknown>, fieldNodes: ReadonlyArray<FieldNode>, parentType: GraphQLObjectType, path: Path): GraphQLResolveInfo;
+export declare function buildResolveInfo(validatedExecutionArgs: ValidatedExecutionArgs, fieldDef: GraphQLField<unknown, unknown>, fieldNodes: ReadonlyArray<FieldNode>, parentType: GraphQLObjectType, path: Path): GraphQLResolveInfo;
 /**
  * If a resolveType function is not given, then a default resolve behavior is
  * used which attempts two strategies:
