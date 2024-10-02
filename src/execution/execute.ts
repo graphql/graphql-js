@@ -5,7 +5,6 @@ import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import { isPromise } from '../jsutils/isPromise.js';
-import { mapValue } from '../jsutils/mapValue.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import { memoize3 } from '../jsutils/memoize3.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
@@ -21,6 +20,7 @@ import { locatedError } from '../error/locatedError.js';
 import type {
   DocumentNode,
   FieldNode,
+  FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast.js';
 import { OperationTypeNode } from '../language/ast.js';
@@ -139,6 +139,10 @@ const collectSubfields = memoize3(
  */
 export interface ValidatedExecutionArgs {
   schema: GraphQLSchema;
+  // TODO: consider deprecating/removing fragmentDefinitions if/when fragment
+  // arguments are officially supported and/or the full fragment details are
+  // exposed within GraphQLResolveInfo.
+  fragmentDefinitions: ObjMap<FragmentDefinitionNode>;
   fragments: ObjMap<FragmentDetails>;
   rootValue: unknown;
   contextValue: unknown;
@@ -492,6 +496,8 @@ export function validateExecutionArgs(
   assertValidSchema(schema);
 
   let operation: OperationDefinitionNode | undefined;
+  const fragmentDefinitions: ObjMap<FragmentDefinitionNode> =
+    Object.create(null);
   const fragments: ObjMap<FragmentDetails> = Object.create(null);
   for (const definition of document.definitions) {
     switch (definition.kind) {
@@ -510,6 +516,7 @@ export function validateExecutionArgs(
         }
         break;
       case Kind.FRAGMENT_DEFINITION: {
+        fragmentDefinitions[definition.name.value] = definition;
         let variableSignatures;
         if (definition.variableDefinitions) {
           variableSignatures = Object.create(null);
@@ -550,6 +557,7 @@ export function validateExecutionArgs(
 
   return {
     schema,
+    fragmentDefinitions,
     fragments,
     rootValue,
     contextValue,
@@ -842,7 +850,7 @@ export function buildResolveInfo(
   parentType: GraphQLObjectType,
   path: Path,
 ): GraphQLResolveInfo {
-  const { schema, fragments, rootValue, operation, variableValues } =
+  const { schema, fragmentDefinitions, rootValue, operation, variableValues } =
     validatedExecutionArgs;
   // The resolve function's optional fourth argument is a collection of
   // information about the current execution state.
@@ -853,10 +861,7 @@ export function buildResolveInfo(
     parentType,
     path,
     schema,
-    fragments: mapValue(
-      fragments,
-      (fragmentDetails) => fragmentDetails.definition,
-    ),
+    fragments: fragmentDefinitions,
     rootValue,
     operation,
     variableValues,
