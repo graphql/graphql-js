@@ -34,6 +34,7 @@
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "node --loader ts-node/esm resources/gen-changelog.ts",
     "benchmark": "node --loader ts-node/esm resources/benchmark.ts",
+    "codspeed": "node --loader ts-node/esm resources/tinybench.ts",
     "test": "npm run lint && npm run check && npm run testonly:cover && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 --rulesdir resources/eslint-internal-rules/ .",
     "check": "tsc --pretty",
@@ -54,6 +55,7 @@
     "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist"
   },
   "devDependencies": {
+    "@codspeed/tinybench-plugin": "^3.1.1",
     "@docusaurus/core": "3.5.2",
     "@docusaurus/preset-classic": "3.5.2",
     "@mdx-js/react": "3.0.1",
@@ -81,6 +83,7 @@
     "prism-react-renderer": "2.4.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "tinybench": "^2.9.0",
     "ts-node": "10.9.2",
     "typedoc": "0.26.6",
     "typescript": "5.4.5",
