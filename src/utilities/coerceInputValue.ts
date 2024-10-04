@@ -43,9 +43,16 @@ type OnErrorCB = (
 export function coerceInputValue(
   inputValue: unknown,
   type: GraphQLInputType,
+  shouldProvideSuggestions: boolean,
   onError: OnErrorCB = defaultOnError,
 ): unknown {
-  return coerceInputValueImpl(inputValue, type, onError, undefined);
+  return coerceInputValueImpl(
+    inputValue,
+    type,
+    onError,
+    undefined,
+    shouldProvideSuggestions,
+  );
 }
 
 function defaultOnError(
@@ -66,10 +73,17 @@ function coerceInputValueImpl(
   type: GraphQLInputType,
   onError: OnErrorCB,
   path: Path | undefined,
+  shouldProvideSuggestions: boolean,
 ): unknown {
   if (isNonNullType(type)) {
     if (inputValue != null) {
-      return coerceInputValueImpl(inputValue, type.ofType, onError, path);
+      return coerceInputValueImpl(
+        inputValue,
+        type.ofType,
+        onError,
+        path,
+        shouldProvideSuggestions,
+      );
     }
     onError(
       pathToArray(path),
@@ -91,11 +105,25 @@ function coerceInputValueImpl(
     if (isIterableObject(inputValue)) {
       return Array.from(inputValue, (itemValue, index) => {
         const itemPath = addPath(path, index, undefined);
-        return coerceInputValueImpl(itemValue, itemType, onError, itemPath);
+        return coerceInputValueImpl(
+          itemValue,
+          itemType,
+          onError,
+          itemPath,
+          shouldProvideSuggestions,
+        );
       });
     }
     // Lists accept a non-list value as a list of one.
-    return [coerceInputValueImpl(inputValue, itemType, onError, path)];
+    return [
+      coerceInputValueImpl(
+        inputValue,
+        itemType,
+        onError,
+        path,
+        shouldProvideSuggestions,
+      ),
+    ];
   }
 
   if (isInputObjectType(type)) {
@@ -119,6 +147,7 @@ function coerceInputValueImpl(
           coercedValue[field.name] = coerceDefaultValue(
             field.defaultValue,
             field.type,
+            shouldProvideSuggestions,
           );
         } else if (isNonNullType(field.type)) {
           const typeStr = inspect(field.type);
@@ -138,6 +167,7 @@ function coerceInputValueImpl(
         field.type,
         onError,
         addPath(path, field.name, type.name),
+        shouldProvideSuggestions,
       );
     }
 
@@ -153,7 +183,7 @@ function coerceInputValueImpl(
           inputValue,
           new GraphQLError(
             `Field "${fieldName}" is not defined by type "${type}".` +
-              didYouMean(suggestions),
+              (shouldProvideSuggestions ? didYouMean(suggestions) : ''),
           ),
         );
       }
@@ -192,7 +222,7 @@ function coerceInputValueImpl(
     // which can throw to indicate failure. If it throws, maintain a reference
     // to the original error.
     try {
-      parseResult = type.parseValue(inputValue);
+      parseResult = type.parseValue(inputValue, shouldProvideSuggestions);
     } catch (error) {
       if (error instanceof GraphQLError) {
         onError(pathToArray(path), inputValue, error);
@@ -230,6 +260,7 @@ function coerceInputValueImpl(
 export function coerceInputLiteral(
   valueNode: ValueNode,
   type: GraphQLInputType,
+  shouldProvideSuggestions: boolean,
   variableValues?: Maybe<VariableValues>,
   fragmentVariableValues?: Maybe<VariableValues>,
 ): unknown {
@@ -254,6 +285,7 @@ export function coerceInputLiteral(
     return coerceInputLiteral(
       valueNode,
       type.ofType,
+      shouldProvideSuggestions,
       variableValues,
       fragmentVariableValues,
     );
@@ -269,6 +301,7 @@ export function coerceInputLiteral(
       const itemValue = coerceInputLiteral(
         valueNode,
         type.ofType,
+        shouldProvideSuggestions,
         variableValues,
         fragmentVariableValues,
       );
@@ -282,6 +315,7 @@ export function coerceInputLiteral(
       let itemValue = coerceInputLiteral(
         itemNode,
         type.ofType,
+        shouldProvideSuggestions,
         variableValues,
         fragmentVariableValues,
       );
@@ -340,12 +374,14 @@ export function coerceInputLiteral(
           coercedValue[field.name] = coerceDefaultValue(
             field.defaultValue,
             field.type,
+            shouldProvideSuggestions,
           );
         }
       } else {
         const fieldValue = coerceInputLiteral(
           fieldNode.value,
           field.type,
+          shouldProvideSuggestions,
           variableValues,
           fragmentVariableValues,
         );
@@ -375,8 +411,13 @@ export function coerceInputLiteral(
     return leafType.parseConstLiteral
       ? leafType.parseConstLiteral(
           replaceVariables(valueNode, variableValues, fragmentVariableValues),
+          shouldProvideSuggestions,
         )
-      : leafType.parseLiteral(valueNode, variableValues?.coerced);
+      : leafType.parseLiteral(
+          valueNode,
+          variableValues?.coerced,
+          shouldProvideSuggestions,
+        );
   } catch (_error) {
     // Invalid: ignore error and intentionally return no value.
   }
@@ -402,12 +443,13 @@ function getCoercedVariableValue(
 export function coerceDefaultValue(
   defaultValue: GraphQLDefaultValueUsage,
   type: GraphQLInputType,
+  shouldProvideSuggestions: boolean,
 ): unknown {
   // Memoize the result of coercing the default value in a hidden field.
   let coercedValue = (defaultValue as any)._memoizedCoercedValue;
   if (coercedValue === undefined) {
     coercedValue = defaultValue.literal
-      ? coerceInputLiteral(defaultValue.literal, type)
+      ? coerceInputLiteral(defaultValue.literal, type, shouldProvideSuggestions)
       : defaultValue.value;
     (defaultValue as any)._memoizedCoercedValue = coercedValue;
   }

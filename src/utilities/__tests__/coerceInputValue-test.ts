@@ -55,6 +55,7 @@ function coerceValue(
   const value = coerceInputValue(
     inputValue,
     type,
+    true,
     (path, invalidValue, error) => {
       errors.push({ path, value: invalidValue, error: error.message });
     },
@@ -538,7 +539,7 @@ describe('coerceInputValue', () => {
   describe('with default onError', () => {
     it('throw error without path', () => {
       expect(() =>
-        coerceInputValue(null, new GraphQLNonNull(GraphQLInt)),
+        coerceInputValue(null, new GraphQLNonNull(GraphQLInt), true),
       ).to.throw(
         'Invalid value null: Expected non-nullable type "Int!" not to be null.',
       );
@@ -549,6 +550,7 @@ describe('coerceInputValue', () => {
         coerceInputValue(
           [null],
           new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+          true,
         ),
       ).to.throw(
         'Invalid value null at "value[0]": Expected non-nullable type "Int!" not to be null.',
@@ -565,7 +567,7 @@ describe('coerceInputLiteral', () => {
     variableValues?: VariableValues,
   ) {
     const ast = parseValue(valueText);
-    const value = coerceInputLiteral(ast, type, variableValues);
+    const value = coerceInputLiteral(ast, type, true, variableValues);
     expect(value).to.deep.equal(expected);
   }
 
@@ -892,10 +894,14 @@ describe('coerceDefaultValue', () => {
     const defaultValueUsage = {
       literal: { kind: Kind.STRING, value: 'hello' },
     } as const;
-    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+    expect(coerceDefaultValue(defaultValueUsage, spyScalar, true)).to.equal(
+      'hello',
+    );
 
     // Call a second time
-    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+    expect(coerceDefaultValue(defaultValueUsage, spyScalar, true)).to.equal(
+      'hello',
+    );
     expect(parseValueCalls).to.deep.equal(['hello']);
   });
 });

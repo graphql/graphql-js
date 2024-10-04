@@ -154,6 +154,10 @@ export class SDLValidationContext extends ASTValidationContext {
     this._schema = schema;
   }
 
+  get shouldProvideSuggestions() {
+    return true;
+  }
+
   get [Symbol.toStringTag]() {
     return 'SDLValidationContext';
   }
@@ -177,22 +181,29 @@ export class ValidationContext extends ASTValidationContext {
     OperationDefinitionNode,
     ReadonlyArray<VariableUsage>
   >;
+  private _shouldProvideSuggestions: boolean;
 
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
+    shouldProvideSuggestions?: boolean,
   ) {
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+    this._shouldProvideSuggestions = shouldProvideSuggestions ?? true;
   }
 
   get [Symbol.toStringTag]() {
     return 'ValidationContext';
+  }
+
+  get shouldProvideSuggestions() {
+    return this._shouldProvideSuggestions;
   }
 
   getSchema(): GraphQLSchema {
