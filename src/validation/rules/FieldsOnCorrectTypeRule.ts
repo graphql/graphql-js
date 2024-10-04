@@ -45,12 +45,18 @@ export function FieldsOnCorrectTypeRule(
           // First determine if there are any suggested types to condition on.
           let suggestion = didYouMean(
             'to use an inline fragment on',
-            getSuggestedTypeNames(schema, type, fieldName),
+            context.shouldProvideSuggestions
+              ? getSuggestedTypeNames(schema, type, fieldName)
+              : [],
           );
 
           // If there are no suggested types, then perhaps this was a typo?
           if (suggestion === '') {
-            suggestion = didYouMean(getSuggestedFieldNames(type, fieldName));
+            suggestion = didYouMean(
+              context.shouldProvideSuggestions
+                ? getSuggestedFieldNames(type, fieldName)
+                : [],
+            );
           }
 
           // Report an error, including helpful suggestions.

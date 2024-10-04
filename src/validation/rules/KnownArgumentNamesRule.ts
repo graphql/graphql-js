@@ -34,12 +34,14 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
         );
         if (!varDef) {
           const argName = argNode.name.value;
-          const suggestions = suggestionList(
-            argName,
-            Array.from(fragmentSignature.variableDefinitions.values()).map(
-              (varSignature) => varSignature.variable.name.value,
-            ),
-          );
+          const suggestions = context.shouldProvideSuggestions
+            ? suggestionList(
+                argName,
+                Array.from(fragmentSignature.variableDefinitions.values()).map(
+                  (varSignature) => varSignature.variable.name.value,
+                ),
+              )
+            : [];
           context.reportError(
             new GraphQLError(
               `Unknown argument "${argName}" on fragment "${fragmentSignature.definition.name.value}".` +
@@ -57,10 +59,12 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
-        const suggestions = suggestionList(
-          argName,
-          fieldDef.args.map((arg) => arg.name),
-        );
+        const suggestions = context.shouldProvideSuggestions
+          ? suggestionList(
+              argName,
+              fieldDef.args.map((arg) => arg.name),
+            )
+          : [];
         context.reportError(
           new GraphQLError(
             `Unknown argument "${argName}" on field "${parentType}.${fieldDef.name}".` +

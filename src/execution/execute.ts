@@ -98,8 +98,13 @@ const collectSubfields = memoize3(
     returnType: GraphQLObjectType,
     fieldDetailsList: FieldDetailsList,
   ) => {
-    const { schema, fragments, operation, variableValues } =
-      validatedExecutionArgs;
+    const {
+      schema,
+      fragments,
+      operation,
+      variableValues,
+      shouldProvideSuggestions,
+    } = validatedExecutionArgs;
     return _collectSubfields(
       schema,
       fragments,
@@ -107,6 +112,7 @@ const collectSubfields = memoize3(
       operation,
       returnType,
       fieldDetailsList,
+      shouldProvideSuggestions,
     );
   },
 );
@@ -155,6 +161,7 @@ export interface ValidatedExecutionArgs {
     validatedExecutionArgs: ValidatedExecutionArgs,
   ) => PromiseOrValue<ExecutionResult>;
   enableEarlyExecution: boolean;
+  shouldProvideSuggestions: boolean;
 }
 
 export interface ExecutionContext {
@@ -184,6 +191,7 @@ export interface ExecutionArgs {
     ) => PromiseOrValue<ExecutionResult>
   >;
   enableEarlyExecution?: Maybe<boolean>;
+  shouldProvideSuggestions?: Maybe<boolean>;
 }
 
 export interface StreamUsage {
@@ -308,8 +316,14 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
     cancellableStreams: undefined,
   };
   try {
-    const { schema, fragments, rootValue, operation, variableValues } =
-      validatedExecutionArgs;
+    const {
+      schema,
+      fragments,
+      rootValue,
+      operation,
+      variableValues,
+      shouldProvideSuggestions,
+    } = validatedExecutionArgs;
     const rootType = schema.getRootType(operation.operation);
     if (rootType == null) {
       throw new GraphQLError(
@@ -324,6 +338,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       variableValues,
       rootType,
       operation,
+      shouldProvideSuggestions,
     );
 
     const { groupedFieldSet, newDeferUsages } = collectedFields;
@@ -501,6 +516,7 @@ export function validateExecutionArgs(
     subscribeFieldResolver,
     perEventExecutor,
     enableEarlyExecution,
+    shouldProvideSuggestions,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -559,7 +575,10 @@ export function validateExecutionArgs(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
-    { maxErrors: 50 },
+    {
+      maxErrors: 50,
+      shouldProvideSuggestions: shouldProvideSuggestions ?? true,
+    },
   );
 
   if (variableValuesOrErrors.errors) {
@@ -579,6 +598,7 @@ export function validateExecutionArgs(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
+    shouldProvideSuggestions: shouldProvideSuggestions ?? true,
   };
 }
 
@@ -762,7 +782,7 @@ function executeField(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<unknown>> | undefined {
   const validatedExecutionArgs = exeContext.validatedExecutionArgs;
-  const { schema, contextValue, variableValues } = validatedExecutionArgs;
+  const { schema, contextValue, variableValues, shouldProvideSuggestions } = validatedExecutionArgs;
   const fieldName = fieldDetailsList[0].node.name.value;
   const fieldDef = schema.getField(parentType, fieldName);
   if (!fieldDef) {
@@ -789,6 +809,7 @@ function executeField(
       fieldDetailsList[0].node,
       fieldDef.args,
       variableValues,
+      shouldProvideSuggestions,
       fieldDetailsList[0].fragmentVariableValues,
     );
 
@@ -1093,12 +1114,14 @@ function getStreamUsage(
       ._streamUsage;
   }
 
-  const { operation, variableValues } = validatedExecutionArgs;
+  const { operation, variableValues, shouldProvideSuggestions } =
+    validatedExecutionArgs;
   // validation only allows equivalent streams on multiple fields, so it is
   // safe to only check the first fieldNode for the stream directive
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
     fieldDetailsList[0].node,
+    shouldProvideSuggestions,
     variableValues,
     fieldDetailsList[0].fragmentVariableValues,
   );
@@ -2065,6 +2088,7 @@ function executeSubscription(
     contextValue,
     operation,
     variableValues,
+    shouldProvideSuggestions,
   } = validatedExecutionArgs;
 
   const rootType = schema.getSubscriptionType();
@@ -2081,6 +2105,7 @@ function executeSubscription(
     variableValues,
     rootType,
     operation,
+    shouldProvideSuggestions,
   );
 
   const firstRootField = groupedFieldSet.entries().next().value as [
@@ -2114,7 +2139,12 @@ function executeSubscription(
 
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
-    const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues);
+    const args = getArgumentValues(
+      fieldDef,
+      fieldNodes[0],
+      validatedExecutionArgs.shouldProvideSuggestions,
+      variableValues,
+    );
 
     // Call the `subscribe()` resolver or the default resolver to produce an
     // AsyncIterable yielding raw payloads.
