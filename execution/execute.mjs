@@ -5,7 +5,6 @@ import { isAsyncIterable } from "../jsutils/isAsyncIterable.mjs";
 import { isIterableObject } from "../jsutils/isIterableObject.mjs";
 import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { isPromise } from "../jsutils/isPromise.mjs";
-import { mapValue } from "../jsutils/mapValue.mjs";
 import { memoize3 } from "../jsutils/memoize3.mjs";
 import { addPath, pathToArray } from "../jsutils/Path.mjs";
 import { promiseForObject } from "../jsutils/promiseForObject.mjs";
@@ -211,6 +210,7 @@ export function validateExecutionArgs(args) {
     // If the schema used for execution is invalid, throw an error.
     assertValidSchema(schema);
     let operation;
+    const fragmentDefinitions = Object.create(null);
     const fragments = Object.create(null);
     for (const definition of document.definitions) {
         switch (definition.kind) {
@@ -228,6 +228,7 @@ export function validateExecutionArgs(args) {
                 }
                 break;
             case Kind.FRAGMENT_DEFINITION: {
+                fragmentDefinitions[definition.name.value] = definition;
                 let variableSignatures;
                 if (definition.variableDefinitions) {
                     variableSignatures = Object.create(null);
@@ -258,6 +259,7 @@ export function validateExecutionArgs(args) {
     }
     return {
         schema,
+        fragmentDefinitions,
         fragments,
         rootValue,
         contextValue,
@@ -412,7 +414,7 @@ function executeField(exeContext, parentType, source, fieldGroup, path, incremen
  * @internal
  */
 export function buildResolveInfo(validatedExecutionArgs, fieldDef, fieldNodes, parentType, path) {
-    const { schema, fragments, rootValue, operation, variableValues } = validatedExecutionArgs;
+    const { schema, fragmentDefinitions, rootValue, operation, variableValues } = validatedExecutionArgs;
     // The resolve function's optional fourth argument is a collection of
     // information about the current execution state.
     return {
@@ -422,7 +424,7 @@ export function buildResolveInfo(validatedExecutionArgs, fieldDef, fieldNodes, p
         parentType,
         path,
         schema,
-        fragments: mapValue(fragments, (fragmentDetails) => fragmentDetails.definition),
+        fragments: fragmentDefinitions,
         rootValue,
         operation,
         variableValues,

@@ -3,7 +3,7 @@ import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { GraphQLError } from '../error/GraphQLError.js';
-import type { DocumentNode, FieldNode, OperationDefinitionNode } from '../language/ast.js';
+import type { DocumentNode, FieldNode, FragmentDefinitionNode, OperationDefinitionNode } from '../language/ast.js';
 import type { GraphQLField, GraphQLFieldResolver, GraphQLObjectType, GraphQLResolveInfo, GraphQLTypeResolver } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import type { FieldGroup, FragmentDetails } from './collectFields.js';
@@ -36,6 +36,7 @@ import type { VariableValues } from './values.js';
  */
 export interface ValidatedExecutionArgs {
     schema: GraphQLSchema;
+    fragmentDefinitions: ObjMap<FragmentDefinitionNode>;
     fragments: ObjMap<FragmentDetails>;
     rootValue: unknown;
     contextValue: unknown;

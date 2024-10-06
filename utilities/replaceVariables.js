@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.replaceVariables = void 0;
 const kinds_js_1 = require("../language/kinds.js");
-const visitor_js_1 = require("../language/visitor.js");
 const valueToLiteral_js_1 = require("./valueToLiteral.js");
 /**
  * Replaces any Variables found within an AST Value literal with literals
@@ -13,9 +12,9 @@ const valueToLiteral_js_1 = require("./valueToLiteral.js");
  * coercion of custom scalars which accept complex literals.
  */
 function replaceVariables(valueNode, variableValues, fragmentVariableValues) {
-    return (0, visitor_js_1.visit)(valueNode, {
-        Variable(node) {
-            const varName = node.name.value;
+    switch (valueNode.kind) {
+        case kinds_js_1.Kind.VARIABLE: {
+            const varName = valueNode.name.value;
             const scopedVariableValues = fragmentVariableValues?.sources[varName]
                 ? fragmentVariableValues
                 : variableValues;
@@ -30,25 +29,43 @@ function replaceVariables(valueNode, variableValues, fragmentVariableValues) {
                 }
             }
             return (0, valueToLiteral_js_1.valueToLiteral)(scopedVariableSource.value, scopedVariableSource.signature.type);
-        },
-        ObjectValue(node) {
-            return {
-                ...node,
-                // Filter out any fields with a missing variable.
-                fields: node.fields.filter((field) => {
-                    if (field.value.kind !== kinds_js_1.Kind.VARIABLE) {
-                        return true;
-                    }
+        }
+        case kinds_js_1.Kind.OBJECT: {
+            const newFields = [];
+            for (const field of valueNode.fields) {
+                if (field.value.kind === kinds_js_1.Kind.VARIABLE) {
                     const scopedVariableSource = fragmentVariableValues?.sources[field.value.name.value] ??
                         variableValues?.sources[field.value.name.value];
                     if (scopedVariableSource?.value === undefined &&
                         scopedVariableSource?.signature.defaultValue === undefined) {
-                        return false;
+                        continue;
                     }
-                    return true;
-                }),
+                }
+                const newFieldNodeValue = replaceVariables(field.value, variableValues, fragmentVariableValues);
+                newFields.push({
+                    ...field,
+                    value: newFieldNodeValue,
+                });
+            }
+            return {
+                ...valueNode,
+                fields: newFields,
             };
-        },
-    });
+        }
+        case kinds_js_1.Kind.LIST: {
+            const newValues = [];
+            for (const value of valueNode.values) {
+                const newItemNodeValue = replaceVariables(value, variableValues, fragmentVariableValues);
+                newValues.push(newItemNodeValue);
+            }
+            return {
+                ...valueNode,
+                values: newValues,
+            };
+        }
+        default: {
+            return valueNode;
+        }
+    }
 }
 exports.replaceVariables = replaceVariables;

@@ -8,7 +8,6 @@ const isAsyncIterable_js_1 = require("../jsutils/isAsyncIterable.js");
 const isIterableObject_js_1 = require("../jsutils/isIterableObject.js");
 const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
 const isPromise_js_1 = require("../jsutils/isPromise.js");
-const mapValue_js_1 = require("../jsutils/mapValue.js");
 const memoize3_js_1 = require("../jsutils/memoize3.js");
 const Path_js_1 = require("../jsutils/Path.js");
 const promiseForObject_js_1 = require("../jsutils/promiseForObject.js");
@@ -217,6 +216,7 @@ function validateExecutionArgs(args) {
     // If the schema used for execution is invalid, throw an error.
     (0, validate_js_1.assertValidSchema)(schema);
     let operation;
+    const fragmentDefinitions = Object.create(null);
     const fragments = Object.create(null);
     for (const definition of document.definitions) {
         switch (definition.kind) {
@@ -234,6 +234,7 @@ function validateExecutionArgs(args) {
                 }
                 break;
             case kinds_js_1.Kind.FRAGMENT_DEFINITION: {
+                fragmentDefinitions[definition.name.value] = definition;
                 let variableSignatures;
                 if (definition.variableDefinitions) {
                     variableSignatures = Object.create(null);
@@ -264,6 +265,7 @@ function validateExecutionArgs(args) {
     }
     return {
         schema,
+        fragmentDefinitions,
         fragments,
         rootValue,
         contextValue,
@@ -419,7 +421,7 @@ function executeField(exeContext, parentType, source, fieldGroup, path, incremen
  * @internal
  */
 function buildResolveInfo(validatedExecutionArgs, fieldDef, fieldNodes, parentType, path) {
-    const { schema, fragments, rootValue, operation, variableValues } = validatedExecutionArgs;
+    const { schema, fragmentDefinitions, rootValue, operation, variableValues } = validatedExecutionArgs;
     // The resolve function's optional fourth argument is a collection of
     // information about the current execution state.
     return {
@@ -429,7 +431,7 @@ function buildResolveInfo(validatedExecutionArgs, fieldDef, fieldNodes, parentTy
         parentType,
         path,
         schema,
-        fragments: (0, mapValue_js_1.mapValue)(fragments, (fragmentDetails) => fragmentDetails.definition),
+        fragments: fragmentDefinitions,
         rootValue,
         operation,
         variableValues,
