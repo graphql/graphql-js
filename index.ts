@@ -310,6 +310,7 @@ export type {
 // Execute GraphQL queries.
 export {
   execute,
+  executeSubscriptionEvent,
   experimentalExecuteIncrementally,
   executeSync,
   defaultFieldResolver,

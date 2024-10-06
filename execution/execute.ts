@@ -139,6 +139,9 @@ export interface ValidatedExecutionArgs {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
+  perEventExecutor: (
+    validatedExecutionArgs: ValidatedExecutionArgs,
+  ) => PromiseOrValue<ExecutionResult>;
   enableEarlyExecution: boolean;
 }
 export interface ExecutionContext {
@@ -162,6 +165,11 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  perEventExecutor?: Maybe<
+    (
+      validatedExecutionArgs: ValidatedExecutionArgs,
+    ) => PromiseOrValue<ExecutionResult>
+  >;
   enableEarlyExecution?: Maybe<boolean>;
 }
 export interface StreamUsage {
@@ -195,22 +203,27 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     throw new Error(UNEXPECTED_EXPERIMENTAL_DIRECTIVES);
   }
   const result = experimentalExecuteIncrementally(args);
-  if (!isPromise(result)) {
-    if ('initialResult' in result) {
-      // This can happen if the operation contains @defer or @stream directives
-      // and is not validated prior to execution
-      throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-    }
-    return result;
+  // Multiple payloads could be encountered if the operation contains @defer or
+  // @stream directives and is not validated prior to execution
+  return ensureSinglePayload(result);
+}
+function ensureSinglePayload(
+  result: PromiseOrValue<
+    ExecutionResult | ExperimentalIncrementalExecutionResults
+  >,
+): PromiseOrValue<ExecutionResult> {
+  if (isPromise(result)) {
+    return result.then((resolved) => {
+      if ('initialResult' in resolved) {
+        throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
+      }
+      return resolved;
+    });
   }
-  return result.then((incrementalResult) => {
-    if ('initialResult' in incrementalResult) {
-      // This can happen if the operation contains @defer or @stream directives
-      // and is not validated prior to execution
-      throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-    }
-    return incrementalResult;
-  });
+  if ('initialResult' in result) {
+    throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
+  }
+  return result;
 }
 /**
  * Implements the "Executing requests" section of the GraphQL specification,
@@ -234,7 +247,7 @@ export function experimentalExecuteIncrementally(
   if (!('schema' in validatedExecutionArgs)) {
     return { errors: validatedExecutionArgs };
   }
-  return executeOperation(validatedExecutionArgs);
+  return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
 /**
  * Implements the "Executing operations" section of the spec.
@@ -251,7 +264,7 @@ export function experimentalExecuteIncrementally(
  * at which point we still log the error and null the parent field, which
  * in this case is the entire response.
  */
-function executeOperation(
+function executeQueryOrMutationOrSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
   const exeContext: ExecutionContext = {
@@ -433,6 +446,7 @@ export function validateExecutionArgs(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    perEventExecutor,
     enableEarlyExecution,
   } = args;
   // If the schema used for execution is invalid, throw an error.
@@ -499,6 +513,7 @@ export function validateExecutionArgs(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+    perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
   };
 }
@@ -1799,19 +1814,22 @@ function mapSourceToResponse(
   // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
   // This implements the "MapSourceToResponseEvent" algorithm described in
-  // the GraphQL specification. The `execute` function provides the
-  // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
-  // "ExecuteQuery" algorithm, for which `execute` is also used.
+  // the GraphQL specification..
   return mapAsyncIterable(resultOrStream, (payload: unknown) => {
     const perEventExecutionArgs: ValidatedExecutionArgs = {
       ...validatedExecutionArgs,
       rootValue: payload,
     };
-    // typecast to ExecutionResult, not possible to return
-    // ExperimentalIncrementalExecutionResults when
-    // exeContext.operation is 'subscription'.
-    return executeOperation(perEventExecutionArgs) as ExecutionResult;
+    return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
   });
+}
+export function executeSubscriptionEvent(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): PromiseOrValue<ExecutionResult> {
+  const result = executeQueryOrMutationOrSubscriptionEvent(
+    validatedExecutionArgs,
+  );
+  return ensureSinglePayload(result);
 }
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
