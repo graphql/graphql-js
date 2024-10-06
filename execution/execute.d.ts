@@ -44,6 +44,7 @@ export interface ValidatedExecutionArgs {
     fieldResolver: GraphQLFieldResolver<any, any>;
     typeResolver: GraphQLTypeResolver<any, any>;
     subscribeFieldResolver: GraphQLFieldResolver<any, any>;
+    perEventExecutor: (validatedExecutionArgs: ValidatedExecutionArgs) => PromiseOrValue<ExecutionResult>;
     enableEarlyExecution: boolean;
 }
 export interface ExecutionContext {
@@ -63,6 +64,7 @@ export interface ExecutionArgs {
     fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
     typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
     subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+    perEventExecutor?: Maybe<(validatedExecutionArgs: ValidatedExecutionArgs) => PromiseOrValue<ExecutionResult>>;
     enableEarlyExecution?: Maybe<boolean>;
 }
 export interface StreamUsage {
@@ -166,6 +168,7 @@ export declare const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown
  * Accepts an object with named arguments.
  */
 export declare function subscribe(args: ExecutionArgs): PromiseOrValue<AsyncGenerator<ExecutionResult, void, void> | ExecutionResult>;
+export declare function executeSubscriptionEvent(validatedExecutionArgs: ValidatedExecutionArgs): PromiseOrValue<ExecutionResult>;
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.

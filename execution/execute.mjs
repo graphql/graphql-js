@@ -59,22 +59,23 @@ export function execute(args) {
         throw new Error(UNEXPECTED_EXPERIMENTAL_DIRECTIVES);
     }
     const result = experimentalExecuteIncrementally(args);
-    if (!isPromise(result)) {
-        if ('initialResult' in result) {
-            // This can happen if the operation contains @defer or @stream directives
-            // and is not validated prior to execution
-            throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-        }
-        return result;
+    // Multiple payloads could be encountered if the operation contains @defer or
+    // @stream directives and is not validated prior to execution
+    return ensureSinglePayload(result);
+}
+function ensureSinglePayload(result) {
+    if (isPromise(result)) {
+        return result.then((resolved) => {
+            if ('initialResult' in resolved) {
+                throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
+            }
+            return resolved;
+        });
     }
-    return result.then((incrementalResult) => {
-        if ('initialResult' in incrementalResult) {
-            // This can happen if the operation contains @defer or @stream directives
-            // and is not validated prior to execution
-            throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-        }
-        return incrementalResult;
-    });
+    if ('initialResult' in result) {
+        throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
+    }
+    return result;
 }
 /**
  * Implements the "Executing requests" section of the GraphQL specification,
@@ -96,7 +97,7 @@ export function experimentalExecuteIncrementally(args) {
     if (!('schema' in validatedExecutionArgs)) {
         return { errors: validatedExecutionArgs };
     }
-    return executeOperation(validatedExecutionArgs);
+    return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
 /**
  * Implements the "Executing operations" section of the spec.
@@ -113,7 +114,7 @@ export function experimentalExecuteIncrementally(args) {
  * at which point we still log the error and null the parent field, which
  * in this case is the entire response.
  */
-function executeOperation(validatedExecutionArgs) {
+function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
     const exeContext = {
         validatedExecutionArgs,
         errors: undefined,
@@ -206,7 +207,7 @@ export function executeSync(args) {
  * @internal
  */
 export function validateExecutionArgs(args) {
-    const { schema, document, rootValue, contextValue, variableValues: rawVariableValues, operationName, fieldResolver, typeResolver, subscribeFieldResolver, enableEarlyExecution, } = args;
+    const { schema, document, rootValue, contextValue, variableValues: rawVariableValues, operationName, fieldResolver, typeResolver, subscribeFieldResolver, perEventExecutor, enableEarlyExecution, } = args;
     // If the schema used for execution is invalid, throw an error.
     assertValidSchema(schema);
     let operation;
@@ -265,6 +266,7 @@ export function validateExecutionArgs(args) {
         fieldResolver: fieldResolver ?? defaultFieldResolver,
         typeResolver: typeResolver ?? defaultTypeResolver,
         subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
+        perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
         enableEarlyExecution: enableEarlyExecution === true,
     };
 }
@@ -982,19 +984,18 @@ function mapSourceToResponse(validatedExecutionArgs, resultOrStream) {
     // For each payload yielded from a subscription, map it over the normal
     // GraphQL `execute` function, with `payload` as the rootValue.
     // This implements the "MapSourceToResponseEvent" algorithm described in
-    // the GraphQL specification. The `execute` function provides the
-    // "ExecuteSubscriptionEvent" algorithm, as it is nearly identical to the
-    // "ExecuteQuery" algorithm, for which `execute` is also used.
+    // the GraphQL specification..
     return mapAsyncIterable(resultOrStream, (payload) => {
         const perEventExecutionArgs = {
             ...validatedExecutionArgs,
             rootValue: payload,
         };
-        // typecast to ExecutionResult, not possible to return
-        // ExperimentalIncrementalExecutionResults when
-        // exeContext.operation is 'subscription'.
-        return executeOperation(perEventExecutionArgs);
+        return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
     });
+}
+export function executeSubscriptionEvent(validatedExecutionArgs) {
+    const result = executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+    return ensureSinglePayload(result);
 }
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
