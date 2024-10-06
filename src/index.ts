@@ -317,8 +317,10 @@ export type {
 // Execute GraphQL queries.
 export {
   execute,
+  executeQueryOrMutationOrSubscriptionEvent,
   executeSubscriptionEvent,
   experimentalExecuteIncrementally,
+  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
