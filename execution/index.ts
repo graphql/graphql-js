@@ -2,8 +2,10 @@ export { pathToArray as responsePathAsArray } from '../jsutils/Path.ts';
 export {
   createSourceEventStream,
   execute,
+  executeQueryOrMutationOrSubscriptionEvent,
   executeSubscriptionEvent,
   experimentalExecuteIncrementally,
+  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
