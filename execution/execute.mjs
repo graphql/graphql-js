@@ -96,7 +96,7 @@ export function experimentalExecuteIncrementally(args) {
     if (!('schema' in validatedExecutionArgs)) {
         return { errors: validatedExecutionArgs };
     }
-    return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+    return experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
 /**
  * Implements the "Executing operations" section of the spec.
@@ -113,7 +113,11 @@ export function experimentalExecuteIncrementally(args) {
  * at which point we still log the error and null the parent field, which
  * in this case is the entire response.
  */
-function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
+export function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
+    const result = experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+    return ensureSinglePayload(result);
+}
+export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
     const exeContext = {
         validatedExecutionArgs,
         errors: undefined,
@@ -996,8 +1000,7 @@ function mapSourceToResponse(validatedExecutionArgs, resultOrStream) {
     });
 }
 export function executeSubscriptionEvent(validatedExecutionArgs) {
-    const result = executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
-    return ensureSinglePayload(result);
+    return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the

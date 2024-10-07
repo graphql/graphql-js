@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSourceEventStream = exports.executeSubscriptionEvent = exports.subscribe = exports.defaultFieldResolver = exports.defaultTypeResolver = exports.buildResolveInfo = exports.validateExecutionArgs = exports.executeSync = exports.experimentalExecuteIncrementally = exports.execute = void 0;
+exports.createSourceEventStream = exports.executeSubscriptionEvent = exports.subscribe = exports.defaultFieldResolver = exports.defaultTypeResolver = exports.buildResolveInfo = exports.validateExecutionArgs = exports.executeSync = exports.experimentalExecuteQueryOrMutationOrSubscriptionEvent = exports.executeQueryOrMutationOrSubscriptionEvent = exports.experimentalExecuteIncrementally = exports.execute = void 0;
 const BoxedPromiseOrValue_js_1 = require("../jsutils/BoxedPromiseOrValue.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
@@ -100,7 +100,7 @@ function experimentalExecuteIncrementally(args) {
     if (!('schema' in validatedExecutionArgs)) {
         return { errors: validatedExecutionArgs };
     }
-    return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+    return experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
 exports.experimentalExecuteIncrementally = experimentalExecuteIncrementally;
 /**
@@ -119,6 +119,11 @@ exports.experimentalExecuteIncrementally = experimentalExecuteIncrementally;
  * in this case is the entire response.
  */
 function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
+    const result = experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+    return ensureSinglePayload(result);
+}
+exports.executeQueryOrMutationOrSubscriptionEvent = executeQueryOrMutationOrSubscriptionEvent;
+function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
     const exeContext = {
         validatedExecutionArgs,
         errors: undefined,
@@ -147,6 +152,7 @@ function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
         return { data: null, errors: withError(exeContext.errors, error) };
     }
 }
+exports.experimentalExecuteQueryOrMutationOrSubscriptionEvent = experimentalExecuteQueryOrMutationOrSubscriptionEvent;
 function executeExecutionPlan(exeContext, returnType, sourceValue, newDeferUsages, executionPlan, path, incrementalContext, deferMap) {
     const newDeferMap = getNewDeferMap(newDeferUsages, deferMap, path);
     const { groupedFieldSet, newGroupedFieldSets } = executionPlan;
@@ -1007,8 +1013,7 @@ function mapSourceToResponse(validatedExecutionArgs, resultOrStream) {
     });
 }
 function executeSubscriptionEvent(validatedExecutionArgs) {
-    const result = executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
-    return ensureSinglePayload(result);
+    return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
 exports.executeSubscriptionEvent = executeSubscriptionEvent;
 /**
