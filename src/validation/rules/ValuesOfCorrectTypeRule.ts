@@ -153,13 +153,13 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     return;
   }
 
-  // Scalars and Enums determine if a literal value is valid via parseConstLiteral(),
+  // Scalars and Enums determine if a literal value is valid via coerceInputLiteral(),
   // which may throw or return undefined to indicate an invalid value.
   try {
-    const parseResult = type.parseConstLiteral
-      ? type.parseConstLiteral(replaceVariables(node))
+    const coerced = type.coerceInputLiteral
+      ? type.coerceInputLiteral(replaceVariables(node))
       : type.parseLiteral(node, undefined);
-    if (parseResult === undefined) {
+    if (coerced === undefined) {
       const typeStr = inspect(locationType);
       context.reportError(
         new GraphQLError(
