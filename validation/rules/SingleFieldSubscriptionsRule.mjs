@@ -1,8 +1,8 @@
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
 import { collectFields } from "../../execution/collectFields.mjs";
-function toNodes(fieldGroup) {
-    return fieldGroup.map((fieldDetails) => fieldDetails.node);
+function toNodes(fieldDetailsList) {
+    return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
 }
 /**
  * Subscriptions must only include a non-introspection field.
@@ -30,19 +30,19 @@ export function SingleFieldSubscriptionsRule(context) {
                     }
                     const { groupedFieldSet } = collectFields(schema, fragments, variableValues, subscriptionType, node);
                     if (groupedFieldSet.size > 1) {
-                        const fieldGroups = [...groupedFieldSet.values()];
-                        const extraFieldGroups = fieldGroups.slice(1);
-                        const extraFieldSelections = extraFieldGroups.flatMap((fieldGroup) => toNodes(fieldGroup));
+                        const fieldDetailsLists = [...groupedFieldSet.values()];
+                        const extraFieldDetailsLists = fieldDetailsLists.slice(1);
+                        const extraFieldSelections = extraFieldDetailsLists.flatMap((fieldDetailsList) => toNodes(fieldDetailsList));
                         context.reportError(new GraphQLError(operationName != null
                             ? `Subscription "${operationName}" must select only one top level field.`
                             : 'Anonymous Subscription must select only one top level field.', { nodes: extraFieldSelections }));
                     }
-                    for (const fieldGroup of groupedFieldSet.values()) {
-                        const fieldName = toNodes(fieldGroup)[0].name.value;
+                    for (const fieldDetailsList of groupedFieldSet.values()) {
+                        const fieldName = toNodes(fieldDetailsList)[0].name.value;
                         if (fieldName.startsWith('__')) {
                             context.reportError(new GraphQLError(operationName != null
                                 ? `Subscription "${operationName}" must not select an introspection top level field.`
-                                : 'Anonymous Subscription must not select an introspection top level field.', { nodes: toNodes(fieldGroup) }));
+                                : 'Anonymous Subscription must not select an introspection top level field.', { nodes: toNodes(fieldDetailsList) }));
                         }
                     }
                 }

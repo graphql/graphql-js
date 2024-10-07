@@ -3,10 +3,10 @@ import { isSameSet } from "../jsutils/isSameSet.mjs";
 export function buildExecutionPlan(originalGroupedFieldSet, parentDeferUsages = new Set()) {
     const groupedFieldSet = new Map();
     const newGroupedFieldSets = new Map();
-    for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
-        const filteredDeferUsageSet = getFilteredDeferUsageSet(fieldGroup);
+    for (const [responseKey, fieldDetailsList] of originalGroupedFieldSet) {
+        const filteredDeferUsageSet = getFilteredDeferUsageSet(fieldDetailsList);
         if (isSameSet(filteredDeferUsageSet, parentDeferUsages)) {
-            groupedFieldSet.set(responseKey, fieldGroup);
+            groupedFieldSet.set(responseKey, fieldDetailsList);
             continue;
         }
         let newGroupedFieldSet = getBySet(newGroupedFieldSets, filteredDeferUsageSet);
@@ -14,16 +14,16 @@ export function buildExecutionPlan(originalGroupedFieldSet, parentDeferUsages = 
             newGroupedFieldSet = new Map();
             newGroupedFieldSets.set(filteredDeferUsageSet, newGroupedFieldSet);
         }
-        newGroupedFieldSet.set(responseKey, fieldGroup);
+        newGroupedFieldSet.set(responseKey, fieldDetailsList);
     }
     return {
         groupedFieldSet,
         newGroupedFieldSets,
     };
 }
-function getFilteredDeferUsageSet(fieldGroup) {
+function getFilteredDeferUsageSet(fieldDetailsList) {
     const filteredDeferUsageSet = new Set();
-    for (const fieldDetails of fieldGroup) {
+    for (const fieldDetails of fieldDetailsList) {
         const deferUsage = fieldDetails.deferUsage;
         if (deferUsage === undefined) {
             filteredDeferUsageSet.clear();

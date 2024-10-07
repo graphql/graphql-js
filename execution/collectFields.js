@@ -44,7 +44,7 @@ exports.collectFields = collectFields;
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/max-params
-function collectSubfields(schema, fragments, variableValues, operation, returnType, fieldGroup) {
+function collectSubfields(schema, fragments, variableValues, operation, returnType, fieldDetailsList) {
     const context = {
         schema,
         fragments,
@@ -55,7 +55,7 @@ function collectSubfields(schema, fragments, variableValues, operation, returnTy
     };
     const subGroupedFieldSet = new AccumulatorMap_js_1.AccumulatorMap();
     const newDeferUsages = [];
-    for (const fieldDetail of fieldGroup) {
+    for (const fieldDetail of fieldDetailsList) {
         const selectionSet = fieldDetail.node.selectionSet;
         if (selectionSet) {
             const { deferUsage, fragmentVariableValues } = fieldDetail;

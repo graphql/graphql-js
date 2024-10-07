@@ -6,7 +6,7 @@ import { GraphQLError } from '../error/GraphQLError.js';
 import type { DocumentNode, FieldNode, FragmentDefinitionNode, OperationDefinitionNode } from '../language/ast.js';
 import type { GraphQLField, GraphQLFieldResolver, GraphQLObjectType, GraphQLResolveInfo, GraphQLTypeResolver } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
-import type { FieldGroup, FragmentDetails } from './collectFields.js';
+import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
 import type { CancellableStreamRecord, ExecutionResult, ExperimentalIncrementalExecutionResults } from './types.js';
 import type { VariableValues } from './values.js';
 /**
@@ -71,7 +71,7 @@ export interface ExecutionArgs {
 export interface StreamUsage {
     label: string | undefined;
     initialCount: number;
-    fieldGroup: FieldGroup;
+    fieldDetailsList: FieldDetailsList;
 }
 /**
  * Implements the "Executing requests" section of the GraphQL specification.

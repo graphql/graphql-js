@@ -13,8 +13,8 @@ export interface FieldDetails {
     deferUsage?: DeferUsage | undefined;
     fragmentVariableValues?: VariableValues | undefined;
 }
-export type FieldGroup = ReadonlyArray<FieldDetails>;
-export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
+export type FieldDetailsList = ReadonlyArray<FieldDetails>;
+export type GroupedFieldSet = ReadonlyMap<string, FieldDetailsList>;
 export interface FragmentDetails {
     definition: FragmentDefinitionNode;
     variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
@@ -42,7 +42,7 @@ export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<F
  *
  * @internal
  */
-export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, operation: OperationDefinitionNode, returnType: GraphQLObjectType, fieldGroup: FieldGroup): {
+export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, operation: OperationDefinitionNode, returnType: GraphQLObjectType, fieldDetailsList: FieldDetailsList): {
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };
