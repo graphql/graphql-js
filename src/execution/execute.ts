@@ -98,13 +98,8 @@ const collectSubfields = memoize3(
     returnType: GraphQLObjectType,
     fieldDetailsList: FieldDetailsList,
   ) => {
-    const {
-      schema,
-      fragments,
-      operation,
-      variableValues,
-      shouldProvideSuggestions,
-    } = validatedExecutionArgs;
+    const { schema, fragments, operation, variableValues, maskSuggestions } =
+      validatedExecutionArgs;
     return _collectSubfields(
       schema,
       fragments,
@@ -112,7 +107,7 @@ const collectSubfields = memoize3(
       operation,
       returnType,
       fieldDetailsList,
-      shouldProvideSuggestions,
+      maskSuggestions,
     );
   },
 );
@@ -161,7 +156,7 @@ export interface ValidatedExecutionArgs {
     validatedExecutionArgs: ValidatedExecutionArgs,
   ) => PromiseOrValue<ExecutionResult>;
   enableEarlyExecution: boolean;
-  shouldProvideSuggestions: boolean;
+  maskSuggestions: boolean;
 }
 
 export interface ExecutionContext {
@@ -191,7 +186,7 @@ export interface ExecutionArgs {
     ) => PromiseOrValue<ExecutionResult>
   >;
   enableEarlyExecution?: Maybe<boolean>;
-  shouldProvideSuggestions?: Maybe<boolean>;
+  maskSuggestions?: Maybe<boolean>;
 }
 
 export interface StreamUsage {
@@ -322,7 +317,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       rootValue,
       operation,
       variableValues,
-      shouldProvideSuggestions,
+      maskSuggestions,
     } = validatedExecutionArgs;
     const rootType = schema.getRootType(operation.operation);
     if (rootType == null) {
@@ -338,7 +333,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       variableValues,
       rootType,
       operation,
-      shouldProvideSuggestions,
+      maskSuggestions,
     );
 
     const { groupedFieldSet, newDeferUsages } = collectedFields;
@@ -516,7 +511,6 @@ export function validateExecutionArgs(
     subscribeFieldResolver,
     perEventExecutor,
     enableEarlyExecution,
-    shouldProvideSuggestions,
   } = args;
 
   // If the schema used for execution is invalid, throw an error.
@@ -570,6 +564,7 @@ export function validateExecutionArgs(
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
   const variableDefinitions = operation.variableDefinitions ?? [];
+  const maskSuggestions = args.maskSuggestions ?? false;
 
   const variableValuesOrErrors = getVariableValues(
     schema,
@@ -577,7 +572,7 @@ export function validateExecutionArgs(
     rawVariableValues ?? {},
     {
       maxErrors: 50,
-      shouldProvideSuggestions: shouldProvideSuggestions ?? true,
+      maskSuggestions,
     },
   );
 
@@ -598,7 +593,7 @@ export function validateExecutionArgs(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
-    shouldProvideSuggestions: shouldProvideSuggestions ?? true,
+    maskSuggestions,
   };
 }
 
@@ -782,7 +777,8 @@ function executeField(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<unknown>> | undefined {
   const validatedExecutionArgs = exeContext.validatedExecutionArgs;
-  const { schema, contextValue, variableValues, shouldProvideSuggestions } = validatedExecutionArgs;
+  const { schema, contextValue, variableValues, maskSuggestions } =
+    validatedExecutionArgs;
   const fieldName = fieldDetailsList[0].node.name.value;
   const fieldDef = schema.getField(parentType, fieldName);
   if (!fieldDef) {
@@ -809,8 +805,8 @@ function executeField(
       fieldDetailsList[0].node,
       fieldDef.args,
       variableValues,
-      shouldProvideSuggestions,
       fieldDetailsList[0].fragmentVariableValues,
+      maskSuggestions,
     );
 
     // The resolve function's optional third argument is a context value that
@@ -1114,16 +1110,15 @@ function getStreamUsage(
       ._streamUsage;
   }
 
-  const { operation, variableValues, shouldProvideSuggestions } =
-    validatedExecutionArgs;
+  const { operation, variableValues, maskSuggestions } = validatedExecutionArgs;
   // validation only allows equivalent streams on multiple fields, so it is
   // safe to only check the first fieldNode for the stream directive
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
     fieldDetailsList[0].node,
-    shouldProvideSuggestions,
     variableValues,
     fieldDetailsList[0].fragmentVariableValues,
+    maskSuggestions,
   );
 
   if (!stream) {
@@ -2088,7 +2083,7 @@ function executeSubscription(
     contextValue,
     operation,
     variableValues,
-    shouldProvideSuggestions,
+    maskSuggestions,
   } = validatedExecutionArgs;
 
   const rootType = schema.getSubscriptionType();
@@ -2105,7 +2100,7 @@ function executeSubscription(
     variableValues,
     rootType,
     operation,
-    shouldProvideSuggestions,
+    maskSuggestions,
   );
 
   const firstRootField = groupedFieldSet.entries().next().value as [
@@ -2142,8 +2137,8 @@ function executeSubscription(
     const args = getArgumentValues(
       fieldDef,
       fieldNodes[0],
-      validatedExecutionArgs.shouldProvideSuggestions,
       variableValues,
+      maskSuggestions,
     );
 
     // Call the `subscribe()` resolver or the default resolver to produce an

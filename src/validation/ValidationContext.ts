@@ -154,8 +154,8 @@ export class SDLValidationContext extends ASTValidationContext {
     this._schema = schema;
   }
 
-  get shouldProvideSuggestions() {
-    return true;
+  get maskSuggestions() {
+    return false;
   }
 
   get [Symbol.toStringTag]() {
@@ -181,29 +181,29 @@ export class ValidationContext extends ASTValidationContext {
     OperationDefinitionNode,
     ReadonlyArray<VariableUsage>
   >;
-  private _shouldProvideSuggestions: boolean;
+  private _maskSuggestions: boolean;
 
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
-    shouldProvideSuggestions?: boolean,
+    maskSuggestions?: Maybe<boolean>,
   ) {
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
-    this._shouldProvideSuggestions = shouldProvideSuggestions ?? true;
+    this._maskSuggestions = maskSuggestions ?? false;
   }
 
   get [Symbol.toStringTag]() {
     return 'ValidationContext';
   }
 
-  get shouldProvideSuggestions() {
-    return this._shouldProvideSuggestions;
+  get maskSuggestions() {
+    return this._maskSuggestions;
   }
 
   getSchema(): GraphQLSchema {

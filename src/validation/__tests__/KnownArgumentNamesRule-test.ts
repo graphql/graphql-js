@@ -14,8 +14,12 @@ import {
   expectValidationErrors,
 } from './harness.js';
 
-function expectErrors(queryStr: string) {
-  return expectValidationErrors(KnownArgumentNamesRule, queryStr);
+function expectErrors(queryStr: string, maskSuggestions = false) {
+  return expectValidationErrors(
+    KnownArgumentNamesRule,
+    queryStr,
+    maskSuggestions,
+  );
 }
 
 function expectValid(queryStr: string) {
@@ -161,6 +165,22 @@ describe('Validate: Known argument names', () => {
     ]);
   });
 
+  it('misspelled directive args are reported (no suggestions)', () => {
+    expectErrors(
+      `
+      {
+        dog @skip(iff: true)
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message: 'Unknown argument "iff" on directive "@skip".',
+        locations: [{ line: 3, column: 19 }],
+      },
+    ]);
+  });
+
   it('arg passed to fragment without arg is reported', () => {
     expectErrors(`
       {
@@ -198,6 +218,27 @@ describe('Validate: Known argument names', () => {
     ]);
   });
 
+  it('misspelled fragment args are reported (no suggestions)', () => {
+    expectErrors(
+      `
+      {
+        dog {
+          ...withArg(command: SIT)
+        }
+      }
+      fragment withArg($dogCommand: DogCommand) on Dog {
+        doesKnowCommand(dogCommand: $dogCommand)
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message: 'Unknown argument "command" on fragment "withArg".',
+        locations: [{ line: 4, column: 22 }],
+      },
+    ]);
+  });
+
   it('invalid arg name', () => {
     expectErrors(`
       fragment invalidArgName on Dog {
@@ -220,6 +261,23 @@ describe('Validate: Known argument names', () => {
       {
         message:
           'Unknown argument "DogCommand" on field "Dog.doesKnowCommand". Did you mean "dogCommand"?',
+        locations: [{ line: 3, column: 25 }],
+      },
+    ]);
+  });
+
+  it('misspelled arg name is reported (no suggestions)', () => {
+    expectErrors(
+      `
+      fragment invalidArgName on Dog {
+        doesKnowCommand(DogCommand: true)
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message:
+          'Unknown argument "DogCommand" on field "Dog.doesKnowCommand".',
         locations: [{ line: 3, column: 25 }],
       },
     ]);
