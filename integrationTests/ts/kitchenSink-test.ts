@@ -8,7 +8,7 @@ new GraphQLScalarType({
   name: 'SomeScalar',
   serialize: undefined,
   parseValue: undefined,
-  parseConstLiteral: undefined,
+  coerceInputLiteral: undefined,
 });
 
 new GraphQLError('test', { nodes: undefined });

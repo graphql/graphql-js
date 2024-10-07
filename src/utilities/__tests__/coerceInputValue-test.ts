@@ -610,10 +610,10 @@ describe('coerceInputLiteral', () => {
     test('123.456', GraphQLID, undefined);
   });
 
-  it('convert using parseConstLiteral from a custom scalar type', () => {
+  it('convert using coerceInputLiteral from a custom scalar type', () => {
     const passthroughScalar = new GraphQLScalarType({
       name: 'PassthroughScalar',
-      parseConstLiteral(node) {
+      coerceInputLiteral(node) {
         invariant(node.kind === 'StringValue');
         return node.value;
       },
@@ -624,7 +624,7 @@ describe('coerceInputLiteral', () => {
 
     const printScalar = new GraphQLScalarType({
       name: 'PrintScalar',
-      parseConstLiteral(node) {
+      coerceInputLiteral(node) {
         return `~~~${print(node)}~~~`;
       },
       parseValue: identityFunc,
@@ -641,7 +641,7 @@ describe('coerceInputLiteral', () => {
 
     const throwScalar = new GraphQLScalarType({
       name: 'ThrowScalar',
-      parseConstLiteral() {
+      coerceInputLiteral() {
         throw new Error('Test');
       },
       parseValue: identityFunc,
@@ -651,7 +651,7 @@ describe('coerceInputLiteral', () => {
 
     const returnUndefinedScalar = new GraphQLScalarType({
       name: 'ReturnUndefinedScalar',
-      parseConstLiteral() {
+      coerceInputLiteral() {
         return undefined;
       },
       parseValue: identityFunc,

@@ -372,8 +372,8 @@ export function coerceInputLiteral(
 
   const leafType = assertLeafType(type);
   try {
-    return leafType.parseConstLiteral
-      ? leafType.parseConstLiteral(
+    return leafType.coerceInputLiteral
+      ? leafType.coerceInputLiteral(
           replaceVariables(valueNode, variableValues, fragmentVariableValues),
         )
       : leafType.parseLiteral(valueNode, variableValues?.coerced);

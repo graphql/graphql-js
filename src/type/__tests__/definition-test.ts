@@ -55,13 +55,13 @@ describe('Type System: Scalars', () => {
     ).not.to.throw();
   });
 
-  it('accepts a Scalar type defining parseValue and parseConstLiteral', () => {
+  it('accepts a Scalar type defining parseValue and coerceInputLiteral', () => {
     expect(
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
           parseValue: dummyFunc,
-          parseConstLiteral: dummyFunc,
+          coerceInputLiteral: dummyFunc,
         }),
     ).to.not.throw();
   });
@@ -73,7 +73,7 @@ describe('Type System: Scalars', () => {
     expect(scalar.parseValue).to.equal(identityFunc);
     expect(scalar.parseLiteral).to.be.a('function');
     /* default will be provided in v18 when parseLiteral is removed */
-    // expect(scalar.parseConstLiteral).to.be.a('function');
+    // expect(scalar.coerceInputLiteral).to.be.a('function');
   });
 
   it('use parseValue for parsing literals if parseLiteral omitted', () => {
@@ -104,15 +104,15 @@ describe('Type System: Scalars', () => {
     );
   });
 
-  it('rejects a Scalar type defining parseConstLiteral but not parseValue', () => {
+  it('rejects a Scalar type defining coerceInputLiteral but not parseValue', () => {
     expect(
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          parseConstLiteral: dummyFunc,
+          coerceInputLiteral: dummyFunc,
         }),
     ).to.throw(
-      'SomeScalar must provide both "parseValue" and "parseConstLiteral" functions.',
+      'SomeScalar must provide both "parseValue" and "coerceInputLiteral" functions.',
     );
   });
 });
