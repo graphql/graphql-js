@@ -32,8 +32,8 @@ export interface FieldDetails {
   deferUsage?: DeferUsage | undefined;
   fragmentVariableValues?: VariableValues | undefined;
 }
-export type FieldGroup = ReadonlyArray<FieldDetails>;
-export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
+export type FieldDetailsList = ReadonlyArray<FieldDetails>;
+export type GroupedFieldSet = ReadonlyMap<string, FieldDetailsList>;
 export interface FragmentDetails {
   definition: FragmentDefinitionNode;
   variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
@@ -100,7 +100,7 @@ export function collectSubfields(
   variableValues: VariableValues,
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
-  fieldGroup: FieldGroup,
+  fieldDetailsList: FieldDetailsList,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -115,7 +115,7 @@ export function collectSubfields(
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
-  for (const fieldDetail of fieldGroup) {
+  for (const fieldDetail of fieldDetailsList) {
     const selectionSet = fieldDetail.node.selectionSet;
     if (selectionSet) {
       const { deferUsage, fragmentVariableValues } = fieldDetail;

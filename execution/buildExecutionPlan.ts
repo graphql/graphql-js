@@ -2,7 +2,7 @@ import { getBySet } from '../jsutils/getBySet.ts';
 import { isSameSet } from '../jsutils/isSameSet.ts';
 import type {
   DeferUsage,
-  FieldGroup,
+  FieldDetailsList,
   GroupedFieldSet,
 } from './collectFields.ts';
 export type DeferUsageSet = ReadonlySet<DeferUsage>;
@@ -14,12 +14,15 @@ export function buildExecutionPlan(
   originalGroupedFieldSet: GroupedFieldSet,
   parentDeferUsages: DeferUsageSet = new Set<DeferUsage>(),
 ): ExecutionPlan {
-  const groupedFieldSet = new Map<string, FieldGroup>();
-  const newGroupedFieldSets = new Map<DeferUsageSet, Map<string, FieldGroup>>();
-  for (const [responseKey, fieldGroup] of originalGroupedFieldSet) {
-    const filteredDeferUsageSet = getFilteredDeferUsageSet(fieldGroup);
+  const groupedFieldSet = new Map<string, FieldDetailsList>();
+  const newGroupedFieldSets = new Map<
+    DeferUsageSet,
+    Map<string, FieldDetailsList>
+  >();
+  for (const [responseKey, fieldDetailsList] of originalGroupedFieldSet) {
+    const filteredDeferUsageSet = getFilteredDeferUsageSet(fieldDetailsList);
     if (isSameSet(filteredDeferUsageSet, parentDeferUsages)) {
-      groupedFieldSet.set(responseKey, fieldGroup);
+      groupedFieldSet.set(responseKey, fieldDetailsList);
       continue;
     }
     let newGroupedFieldSet = getBySet(
@@ -30,7 +33,7 @@ export function buildExecutionPlan(
       newGroupedFieldSet = new Map();
       newGroupedFieldSets.set(filteredDeferUsageSet, newGroupedFieldSet);
     }
-    newGroupedFieldSet.set(responseKey, fieldGroup);
+    newGroupedFieldSet.set(responseKey, fieldDetailsList);
   }
   return {
     groupedFieldSet,
@@ -38,10 +41,10 @@ export function buildExecutionPlan(
   };
 }
 function getFilteredDeferUsageSet(
-  fieldGroup: FieldGroup,
+  fieldDetailsList: FieldDetailsList,
 ): ReadonlySet<DeferUsage> {
   const filteredDeferUsageSet = new Set<DeferUsage>();
-  for (const fieldDetails of fieldGroup) {
+  for (const fieldDetails of fieldDetailsList) {
     const deferUsage = fieldDetails.deferUsage;
     if (deferUsage === undefined) {
       filteredDeferUsageSet.clear();
