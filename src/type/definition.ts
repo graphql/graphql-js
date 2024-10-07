@@ -668,7 +668,7 @@ export type GraphQLScalarValueParser<TInternal> = (
   inputValue: unknown,
 ) => TInternal;
 
-/* @deprecated in favor of GraphQLScalarInputLiteralCoercer, will be removed in v18 */ 
+/* @deprecated in favor of GraphQLScalarInputLiteralCoercer, will be removed in v18 */
 export type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
   variables: Maybe<ObjMap<unknown>>,
