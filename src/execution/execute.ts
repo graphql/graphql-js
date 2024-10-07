@@ -270,7 +270,9 @@ export function experimentalExecuteIncrementally(
     return { errors: validatedExecutionArgs };
   }
 
-  return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+  return experimentalExecuteQueryOrMutationOrSubscriptionEvent(
+    validatedExecutionArgs,
+  );
 }
 
 /**
@@ -288,7 +290,16 @@ export function experimentalExecuteIncrementally(
  * at which point we still log the error and null the parent field, which
  * in this case is the entire response.
  */
-function executeQueryOrMutationOrSubscriptionEvent(
+export function executeQueryOrMutationOrSubscriptionEvent(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): PromiseOrValue<ExecutionResult> {
+  const result = experimentalExecuteQueryOrMutationOrSubscriptionEvent(
+    validatedExecutionArgs,
+  );
+  return ensureSinglePayload(result);
+}
+
+export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
   const exeContext: ExecutionContext = {
@@ -1981,10 +1992,7 @@ function mapSourceToResponse(
 export function executeSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult> {
-  const result = executeQueryOrMutationOrSubscriptionEvent(
-    validatedExecutionArgs,
-  );
-  return ensureSinglePayload(result);
+  return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
 
 /**
