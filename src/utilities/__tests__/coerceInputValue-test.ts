@@ -50,7 +50,7 @@ interface CoerceError {
 function coerceValue(
   inputValue: unknown,
   type: GraphQLInputType,
-  maskSuggestions: boolean = false,
+  maskSuggestions = false,
 ): CoerceResult {
   const errors: Array<CoerceError> = [];
   const value = coerceInputValue(

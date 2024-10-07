@@ -61,13 +61,13 @@ import type { ExecutionResult } from './execution/types.js';
 export interface GraphQLArgs {
   schema: GraphQLSchema;
   source: string | Source;
-  maskSuggestions?: boolean;
   rootValue?: unknown;
   contextValue?: unknown;
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  maskSuggestions?: Maybe<boolean>;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {

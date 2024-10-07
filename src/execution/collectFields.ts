@@ -54,8 +54,8 @@ interface CollectFieldsContext {
   variableValues: VariableValues;
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
-  visitedFragmentNames: Set<string>;
   maskSuggestions: boolean;
+  visitedFragmentNames: Set<string>;
 }
 
 /**
@@ -87,8 +87,8 @@ export function collectFields(
     variableValues,
     runtimeType,
     operation,
-    visitedFragmentNames: new Set(),
     maskSuggestions,
+    visitedFragmentNames: new Set(),
   };
 
   collectFieldsImpl(
@@ -171,6 +171,7 @@ function collectFieldsImpl(
     variableValues,
     runtimeType,
     operation,
+    maskSuggestions,
     visitedFragmentNames,
   } = context;
 
@@ -178,7 +179,12 @@ function collectFieldsImpl(
     switch (selection.kind) {
       case Kind.FIELD: {
         if (
-          !shouldIncludeNode(selection, variableValues, fragmentVariableValues)
+          !shouldIncludeNode(
+            selection,
+            variableValues,
+            fragmentVariableValues,
+            maskSuggestions,
+          )
         ) {
           continue;
         }
@@ -195,6 +201,7 @@ function collectFieldsImpl(
             selection,
             variableValues,
             fragmentVariableValues,
+            maskSuggestions,
           ) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
@@ -207,6 +214,7 @@ function collectFieldsImpl(
           fragmentVariableValues,
           selection,
           deferUsage,
+          maskSuggestions,
         );
 
         if (!newDeferUsage) {
@@ -241,6 +249,7 @@ function collectFieldsImpl(
           fragmentVariableValues,
           selection,
           deferUsage,
+          maskSuggestions,
         );
 
         if (
@@ -250,6 +259,7 @@ function collectFieldsImpl(
               selection,
               variableValues,
               fragmentVariableValues,
+              maskSuggestions,
             ))
         ) {
           continue;
@@ -271,7 +281,7 @@ function collectFieldsImpl(
             fragmentVariableSignatures,
             variableValues,
             fragmentVariableValues,
-            false,
+            maskSuggestions,
           );
         }
 
@@ -307,18 +317,21 @@ function collectFieldsImpl(
  * deferred based on the experimental flag, defer directive present and
  * not disabled by the "if" argument.
  */
+// eslint-disable-next-line @typescript-eslint/max-params
 function getDeferUsage(
   operation: OperationDefinitionNode,
   variableValues: VariableValues,
   fragmentVariableValues: VariableValues | undefined,
   node: FragmentSpreadNode | InlineFragmentNode,
   parentDeferUsage: DeferUsage | undefined,
+  maskSuggestions: boolean,
 ): DeferUsage | undefined {
   const defer = getDirectiveValues(
     GraphQLDeferDirective,
     node,
     variableValues,
     fragmentVariableValues,
+    maskSuggestions,
   );
 
   if (!defer) {
@@ -348,12 +361,14 @@ function shouldIncludeNode(
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
   variableValues: VariableValues,
   fragmentVariableValues: VariableValues | undefined,
+  maskSuggestions: boolean,
 ): boolean {
   const skip = getDirectiveValues(
     GraphQLSkipDirective,
     node,
     variableValues,
     fragmentVariableValues,
+    maskSuggestions,
   );
   if (skip?.if === true) {
     return false;
@@ -364,6 +379,7 @@ function shouldIncludeNode(
     node,
     variableValues,
     fragmentVariableValues,
+    maskSuggestions,
   );
   if (include?.if === false) {
     return false;
