@@ -128,17 +128,24 @@ export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,
   queryStr: string,
+  maskSuggestions = false,
 ): any {
   const doc = parse(queryStr, { experimentalFragmentArguments: true });
-  const errors = validate(schema, doc, [rule]);
+  const errors = validate(schema, doc, [rule], { maskSuggestions });
   return expectJSON(errors);
 }
 
 export function expectValidationErrors(
   rule: ValidationRule,
   queryStr: string,
+  maskSuggestions = false,
 ): any {
-  return expectValidationErrorsWithSchema(testSchema, rule, queryStr);
+  return expectValidationErrorsWithSchema(
+    testSchema,
+    rule,
+    queryStr,
+    maskSuggestions,
+  );
 }
 
 export function expectSDLValidationErrors(

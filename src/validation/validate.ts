@@ -41,10 +41,10 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
-  options?: { maxErrors?: number; shouldProvideSuggestions?: boolean },
+  options?: { maxErrors?: number; maskSuggestions?: Maybe<boolean> },
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
-  const shouldProvideSuggestions = options?.shouldProvideSuggestions ?? true;
+  const maskSuggestions = options?.maskSuggestions ?? false;
 
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
@@ -64,7 +64,7 @@ export function validate(
       }
       errors.push(error);
     },
-    shouldProvideSuggestions,
+    maskSuggestions,
   );
 
   // This uses a specialized visitor which runs multiple visitors in parallel,
