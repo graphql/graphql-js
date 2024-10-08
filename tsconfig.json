@@ -11,8 +11,8 @@
       "dom" // Workaround for missing web-compatible globals in `@types/node`
     ],
     "target": "es2021",
-    "module": "es2022",
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "noEmit": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
