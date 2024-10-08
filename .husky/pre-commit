@@ -1,1 +1,1 @@
-npm run format:staged
+npm run precommit

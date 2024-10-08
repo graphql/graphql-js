@@ -42,7 +42,7 @@
     "testonly:watch": "npm run testonly -- --watch",
     "prettier": "prettier --cache --cache-strategy metadata --write --list-different .",
     "prettier:check": "prettier --cache --cache-strategy metadata --check .",
-    "format:staged": "lint-staged",
+    "precommit": "lint-staged",
     "check:spelling": "cspell --cache --no-progress \"**/*\"",
     "check:integrations": "mocha --full-trace resources/integration-test.ts",
     "serve": "docusaurus serve --dir websiteDist/ --config website/docusaurus.config.cjs",
