@@ -67,7 +67,7 @@ export interface GraphQLArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-  maskSuggestions?: Maybe<boolean>;
+  maskSuggestions?: boolean;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -121,7 +121,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
 
   // Validate
   const validationErrors = validate(schema, document, undefined, {
-    maskSuggestions,
+    maskSuggestions: maskSuggestions ?? false,
   });
   if (validationErrors.length > 0) {
     return { errors: validationErrors };

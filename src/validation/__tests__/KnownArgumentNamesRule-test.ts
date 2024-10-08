@@ -14,7 +14,7 @@ import {
   expectValidationErrors,
 } from './harness.js';
 
-function expectErrors(queryStr: string, maskSuggestions = false) {
+function expectErrors(queryStr: string, maskSuggestions: boolean = false) {
   return expectValidationErrors(
     KnownArgumentNamesRule,
     queryStr,

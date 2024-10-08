@@ -1424,7 +1424,7 @@ export class GraphQLEnumType /* <T> */ {
 
   parseValue(
     inputValue: unknown,
-    maskSuggestions?: Maybe<boolean>,
+    maskSuggestions?: boolean | undefined,
   ): Maybe<any> /* T */ {
     if (typeof inputValue !== 'string') {
       const valueStr = inspect(inputValue);
@@ -1448,7 +1448,7 @@ export class GraphQLEnumType /* <T> */ {
   parseLiteral(
     valueNode: ValueNode,
     _variables: Maybe<ObjMap<unknown>>,
-    maskSuggestions?: Maybe<boolean>,
+    maskSuggestions?: boolean | undefined,
   ): Maybe<any> /* T */ {
     // Note: variables will be resolved to a value before calling this function.
     return this.parseConstLiteral(valueNode as ConstValueNode, maskSuggestions);

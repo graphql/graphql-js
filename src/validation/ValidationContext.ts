@@ -188,7 +188,7 @@ export class ValidationContext extends ASTValidationContext {
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
-    maskSuggestions?: Maybe<boolean>,
+    maskSuggestions?: boolean,
   ) {
     super(ast, onError);
     this._schema = schema;

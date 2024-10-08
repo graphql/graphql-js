@@ -128,7 +128,7 @@ export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,
   queryStr: string,
-  maskSuggestions = false,
+  maskSuggestions: boolean = false,
 ): any {
   const doc = parse(queryStr, { experimentalFragmentArguments: true });
   const errors = validate(schema, doc, [rule], { maskSuggestions });

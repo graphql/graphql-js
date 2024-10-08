@@ -804,9 +804,9 @@ function executeField(
     const args = experimentalGetArgumentValues(
       fieldDetailsList[0].node,
       fieldDef.args,
+      maskSuggestions,
       variableValues,
       fieldDetailsList[0].fragmentVariableValues,
-      maskSuggestions,
     );
 
     // The resolve function's optional third argument is a context value that
@@ -1110,15 +1110,15 @@ function getStreamUsage(
       ._streamUsage;
   }
 
-  const { operation, variableValues, maskSuggestions } = validatedExecutionArgs;
+  const { operation, variableValues } = validatedExecutionArgs;
   // validation only allows equivalent streams on multiple fields, so it is
   // safe to only check the first fieldNode for the stream directive
   const stream = getDirectiveValues(
     GraphQLStreamDirective,
     fieldDetailsList[0].node,
+    false,
     variableValues,
     fieldDetailsList[0].fragmentVariableValues,
-    maskSuggestions,
   );
 
   if (!stream) {
@@ -2137,8 +2137,8 @@ function executeSubscription(
     const args = getArgumentValues(
       fieldDef,
       fieldNodes[0],
-      variableValues,
       maskSuggestions,
+      variableValues,
     );
 
     // Call the `subscribe()` resolver or the default resolver to produce an

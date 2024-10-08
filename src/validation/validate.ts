@@ -41,7 +41,7 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
-  options?: { maxErrors?: number; maskSuggestions?: Maybe<boolean> },
+  options?: { maxErrors?: number; maskSuggestions?: boolean },
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
   const maskSuggestions = options?.maskSuggestions ?? false;

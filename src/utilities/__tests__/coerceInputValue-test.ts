@@ -50,16 +50,16 @@ interface CoerceError {
 function coerceValue(
   inputValue: unknown,
   type: GraphQLInputType,
-  maskSuggestions = false,
+  maskSuggestions: boolean = false,
 ): CoerceResult {
   const errors: Array<CoerceError> = [];
   const value = coerceInputValue(
     inputValue,
     type,
+    maskSuggestions,
     (path, invalidValue, error) => {
       errors.push({ path, value: invalidValue, error: error.message });
     },
-    maskSuggestions,
   );
 
   return { errors, value };
@@ -589,7 +589,7 @@ describe('coerceInputValue', () => {
   describe('with default onError', () => {
     it('throw error without path', () => {
       expect(() =>
-        coerceInputValue(null, new GraphQLNonNull(GraphQLInt), undefined, true),
+        coerceInputValue(null, new GraphQLNonNull(GraphQLInt), true),
       ).to.throw(
         'Invalid value null: Expected non-nullable type "Int!" not to be null.',
       );
@@ -600,7 +600,6 @@ describe('coerceInputValue', () => {
         coerceInputValue(
           [null],
           new GraphQLList(new GraphQLNonNull(GraphQLInt)),
-          undefined,
           true,
         ),
       ).to.throw(
@@ -618,13 +617,7 @@ describe('coerceInputLiteral', () => {
     variableValues?: VariableValues,
   ) {
     const ast = parseValue(valueText);
-    const value = coerceInputLiteral(
-      ast,
-      type,
-      variableValues,
-      undefined,
-      true,
-    );
+    const value = coerceInputLiteral(ast, type, true, variableValues);
     expect(value).to.deep.equal(expected);
   }
 

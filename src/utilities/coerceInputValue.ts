@@ -43,15 +43,15 @@ type OnErrorCB = (
 export function coerceInputValue(
   inputValue: unknown,
   type: GraphQLInputType,
+  maskSuggestions?: boolean,
   onError: OnErrorCB = defaultOnError,
-  maskSuggestions?: Maybe<boolean>,
 ): unknown {
   return coerceInputValueImpl(
     inputValue,
     type,
     onError,
     undefined,
-    maskSuggestions,
+    maskSuggestions ?? false,
   );
 }
 
@@ -73,7 +73,7 @@ function coerceInputValueImpl(
   type: GraphQLInputType,
   onError: OnErrorCB,
   path: Path | undefined,
-  maskSuggestions?: Maybe<boolean>,
+  maskSuggestions: boolean,
 ): unknown {
   if (isNonNullType(type)) {
     if (inputValue != null) {
@@ -260,9 +260,9 @@ function coerceInputValueImpl(
 export function coerceInputLiteral(
   valueNode: ValueNode,
   type: GraphQLInputType,
+  maskSuggestions?: boolean,
   variableValues?: Maybe<VariableValues>,
   fragmentVariableValues?: Maybe<VariableValues>,
-  maskSuggestions?: Maybe<boolean>,
 ): unknown {
   if (valueNode.kind === Kind.VARIABLE) {
     const coercedVariableValue = getCoercedVariableValue(
@@ -285,9 +285,9 @@ export function coerceInputLiteral(
     return coerceInputLiteral(
       valueNode,
       type.ofType,
+      maskSuggestions,
       variableValues,
       fragmentVariableValues,
-      maskSuggestions,
     );
   }
 
@@ -301,9 +301,9 @@ export function coerceInputLiteral(
       const itemValue = coerceInputLiteral(
         valueNode,
         type.ofType,
+        maskSuggestions,
         variableValues,
         fragmentVariableValues,
-        maskSuggestions,
       );
       if (itemValue === undefined) {
         return; // Invalid: intentionally return no value.
@@ -315,9 +315,9 @@ export function coerceInputLiteral(
       let itemValue = coerceInputLiteral(
         itemNode,
         type.ofType,
+        maskSuggestions,
         variableValues,
         fragmentVariableValues,
-        maskSuggestions,
       );
       if (itemValue === undefined) {
         if (
@@ -381,9 +381,9 @@ export function coerceInputLiteral(
         const fieldValue = coerceInputLiteral(
           fieldNode.value,
           field.type,
+          maskSuggestions,
           variableValues,
           fragmentVariableValues,
-          maskSuggestions,
         );
         if (fieldValue === undefined) {
           return; // Invalid: intentionally return no value.
@@ -443,19 +443,13 @@ function getCoercedVariableValue(
 export function coerceDefaultValue(
   defaultValue: GraphQLDefaultValueUsage,
   type: GraphQLInputType,
-  maskSuggestions?: Maybe<boolean>,
+  maskSuggestions?: boolean,
 ): unknown {
   // Memoize the result of coercing the default value in a hidden field.
   let coercedValue = (defaultValue as any)._memoizedCoercedValue;
   if (coercedValue === undefined) {
     coercedValue = defaultValue.literal
-      ? coerceInputLiteral(
-          defaultValue.literal,
-          type,
-          undefined,
-          undefined,
-          maskSuggestions,
-        )
+      ? coerceInputLiteral(defaultValue.literal, type, maskSuggestions)
       : defaultValue.value;
     (defaultValue as any)._memoizedCoercedValue = coercedValue;
   }
