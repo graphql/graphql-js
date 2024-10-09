@@ -2,7 +2,6 @@ import { devAssert } from '../jsutils/devAssert.js';
 import { didYouMean } from '../jsutils/didYouMean.js';
 import { identityFunc } from '../jsutils/identityFunc.js';
 import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
 import { keyMap } from '../jsutils/keyMap.js';
 import { keyValMap } from '../jsutils/keyValMap.js';
 import { mapValue } from '../jsutils/mapValue.js';
@@ -46,6 +45,8 @@ import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.js';
 
 import { assertEnumValueName, assertName } from './assertName.js';
 import type { GraphQLSchema } from './schema.js';
+
+import { instanceOf } from '#instanceOf';
 
 // Predicates & Assertions
 

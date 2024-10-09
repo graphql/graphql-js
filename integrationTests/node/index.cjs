@@ -4,6 +4,7 @@ const { readFileSync } = require('fs');
 const {
   experimentalExecuteIncrementally,
   graphqlSync,
+  isSchema,
   parse,
 } = require('graphql');
 const { buildSchema } = require('graphql/utilities');
@@ -52,3 +53,12 @@ result = experimentalExecuteIncrementally({
 
 assert(result.errors?.[0] !== undefined);
 assert(!result.errors[0].message.includes('is not defined'));
+
+// test instanceOf without development condition
+class GraphQLSchema {
+  get [Symbol.toStringTag]() {
+    return 'GraphQLSchema';
+  }
+}
+const notSchema = new GraphQLSchema();
+assert(isSchema(notSchema) === false);

@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import { toObjMap } from '../jsutils/toObjMap.js';
@@ -36,6 +35,8 @@ import {
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from './introspection.js';
+
+import { instanceOf } from '#instanceOf';
 
 /**
  * Test if the given value is a GraphQL schema.

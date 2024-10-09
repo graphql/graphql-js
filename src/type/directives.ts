@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import { toObjMap } from '../jsutils/toObjMap.js';
 
@@ -17,6 +16,8 @@ import {
   GraphQLNonNull,
 } from './definition.js';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
+
+import { instanceOf } from '#instanceOf';
 
 /**
  * Test if the given value is a GraphQL directive.

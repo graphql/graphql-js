@@ -6,6 +6,7 @@ import ts from 'typescript';
 
 import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
 import { inlineInvariant } from './inline-invariant.js';
+import type { ImportsMap } from './utils.js';
 import {
   prettify,
   readPackageJSON,
@@ -102,12 +103,23 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
     packageJSON.exports['./*.js'] = './*.js';
     packageJSON.exports['./*'] = './*.js';
 
+    packageJSON.imports = mapImports(packageJSON.imports, (value: string) =>
+      updateImportPath(value, '.js'),
+    );
+
+    packageJSON.type = 'module';
     packageJSON.publishConfig.tag += '-esm';
     packageJSON.version += '+esm';
   } else {
-    delete packageJSON.type;
+    packageJSON.type = 'commonjs';
     packageJSON.main = 'index';
     packageJSON.module = 'index.mjs';
+
+    packageJSON.imports = mapImports(packageJSON.imports, (value: string) => ({
+      import: updateImportPath(value, '.mjs'),
+      default: updateImportPath(value, '.js'),
+    }));
+
     emitTSFiles({ outDir, module: 'commonjs', extension: '.js' });
     emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
   }
@@ -119,6 +131,25 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
   );
   // Should be done as the last step so only valid packages can be published
   writeGeneratedFile(packageJsonPath, prettified);
+}
+
+function updateImportPath(value: string, extension: string) {
+  return value.replace(/\/src\//g, '/').replace(/\.ts$/, extension);
+}
+
+function mapImports(
+  imports: ImportsMap,
+  replacer: (value: string) => string | ImportsMap,
+): ImportsMap {
+  const newImports: ImportsMap = {};
+  for (const [key, value] of Object.entries(imports)) {
+    if (typeof value === 'string') {
+      newImports[key] = replacer(value);
+      continue;
+    }
+    newImports[key] = mapImports(value, replacer);
+  }
+  return newImports;
 }
 
 // Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
@@ -143,7 +174,15 @@ function emitTSFiles(options: {
   tsHost.writeFile = (filepath, body) =>
     writeGeneratedFile(filepath.replace(/.js$/, extension), body);
 
-  const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
+  const tsProgram = ts.createProgram(
+    [
+      'src/index.ts',
+      'src/jsutils/instanceOf.ts',
+      'src/jsutils/instanceOfForDevelopment.ts',
+    ],
+    tsOptions,
+    tsHost,
+  );
   const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
     after: [changeExtensionInImportPaths({ extension }), inlineInvariant],
   });

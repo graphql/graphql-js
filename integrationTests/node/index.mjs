@@ -5,6 +5,7 @@ import { readFileSync } from 'fs';
 import {
   experimentalExecuteIncrementally,
   graphqlSync,
+  isSchema,
   parse,
 } from 'graphql-esm';
 import { buildSchema } from 'graphql-esm/utilities';
@@ -53,3 +54,12 @@ result = experimentalExecuteIncrementally({
 
 assert(result.errors?.[0] !== undefined);
 assert(!result.errors[0].message.includes('is not defined'));
+
+// test instanceOf without development condition
+class GraphQLSchema {
+  get [Symbol.toStringTag]() {
+    return 'Source';
+  }
+}
+const notSchema = new GraphQLSchema();
+assert(isSchema(notSchema) === false);

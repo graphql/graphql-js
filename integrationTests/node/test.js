@@ -14,13 +14,17 @@ const nodeVersions = graphqlPackageJSON.engines.node
 for (const version of nodeVersions) {
   console.log(`Testing on node@${version} ...`);
 
+  const dockerNodePath = `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node`;
+
+  childProcess.execSync(`${dockerNodePath} ./index.cjs`, { stdio: 'inherit' });
   childProcess.execSync(
-    `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node ./index.cjs`,
+    `${dockerNodePath} --conditions=development ./instanceOfForDevelopment.cjs`,
     { stdio: 'inherit' },
   );
 
+  childProcess.execSync(`${dockerNodePath} ./index.mjs`, { stdio: 'inherit' });
   childProcess.execSync(
-    `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node ./index.mjs`,
+    `${dockerNodePath} --conditions=development ./instanceOfForDevelopment.mjs`,
     { stdio: 'inherit' },
   );
 }

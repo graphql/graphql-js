@@ -28,6 +28,12 @@
   "engines": {
     "node": "^16.19.0 || ^18.14.0 || >=19.7.0"
   },
+  "imports": {
+    "#instanceOf": {
+      "development": "./src/jsutils/instanceOfForDevelopment.ts",
+      "default": "./src/jsutils/instanceOf.ts"
+    }
+  },
   "scripts": {
     "preversion": "bash -c '. ./resources/checkgit.sh && npm ci --ignore-scripts'",
     "version": "node --loader ts-node/esm resources/gen-version.ts && npm test && git add src/version.ts",
