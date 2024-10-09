@@ -1,7 +1,6 @@
 import cp from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import url from 'node:url';
 
 import { git, localRepoPath, makeTmpDir, npm } from './utils.js';
 
@@ -94,14 +93,7 @@ function prepareBenchmarkProject(
   }
 }
 
-interface BenchmarkSample {
-  name: string;
-  clocked: number;
-  memUsed: number;
-  involuntaryContextSwitches: number;
-}
-
-function sampleModule(modulePath: string): BenchmarkSample {
+function sampleModule(modulePath: string): void {
   // To support Windows we need to use URL instead of path
   //const moduleURL = url.pathToFileURL(modulePath);
 
