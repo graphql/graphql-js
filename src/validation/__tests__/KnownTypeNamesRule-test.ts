@@ -12,8 +12,8 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness.js';
 
-function expectErrors(queryStr: string, maskSuggestions = false) {
-  return expectValidationErrors(KnownTypeNamesRule, queryStr, maskSuggestions);
+function expectErrors(queryStr: string, hideSuggestions = false) {
+  return expectValidationErrors(KnownTypeNamesRule, queryStr, hideSuggestions);
 }
 
 function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {

@@ -12,12 +12,12 @@ import { validate } from '../validate.js';
 
 import { expectValidationErrorsWithSchema } from './harness.js';
 
-function expectErrors(queryStr: string, maskSuggestions = false) {
+function expectErrors(queryStr: string, hideSuggestions = false) {
   return expectValidationErrorsWithSchema(
     testSchema,
     FieldsOnCorrectTypeRule,
     queryStr,
-    maskSuggestions,
+    hideSuggestions,
   );
 }
 

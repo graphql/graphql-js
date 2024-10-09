@@ -45,7 +45,7 @@ export function FieldsOnCorrectTypeRule(
           // First determine if there are any suggested types to condition on.
           let suggestion = didYouMean(
             'to use an inline fragment on',
-            context.maskSuggestions
+            context.hideSuggestions
               ? []
               : getSuggestedTypeNames(schema, type, fieldName),
           );
@@ -53,7 +53,7 @@ export function FieldsOnCorrectTypeRule(
           // If there are no suggested types, then perhaps this was a typo?
           if (suggestion === '') {
             suggestion = didYouMean(
-              context.maskSuggestions
+              context.hideSuggestions
                 ? []
                 : getSuggestedFieldNames(type, fieldName),
             );

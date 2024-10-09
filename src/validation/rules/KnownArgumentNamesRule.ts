@@ -34,7 +34,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
         );
         if (!varDef) {
           const argName = argNode.name.value;
-          const suggestions = context.maskSuggestions
+          const suggestions = context.hideSuggestions
             ? []
             : suggestionList(
                 argName,
@@ -59,7 +59,7 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
 
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
-        const suggestions = context.maskSuggestions
+        const suggestions = context.hideSuggestions
           ? []
           : suggestionList(
               argName,
@@ -123,7 +123,7 @@ export function KnownArgumentNamesOnDirectivesRule(
             context.reportError(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
-                  (context.maskSuggestions ? '' : didYouMean(suggestions)),
+                  (context.hideSuggestions ? '' : didYouMean(suggestions)),
                 { nodes: argNode },
               ),
             );

@@ -19,11 +19,11 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness.js';
 
-function expectErrors(queryStr: string, maskSuggestions = false) {
+function expectErrors(queryStr: string, hideSuggestions = false) {
   return expectValidationErrors(
     ValuesOfCorrectTypeRule,
     queryStr,
-    maskSuggestions,
+    hideSuggestions,
   );
 }
 

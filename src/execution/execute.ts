@@ -98,7 +98,7 @@ const collectSubfields = memoize3(
     returnType: GraphQLObjectType,
     fieldDetailsList: FieldDetailsList,
   ) => {
-    const { schema, fragments, operation, variableValues, maskSuggestions } =
+    const { schema, fragments, operation, variableValues, hideSuggestions } =
       validatedExecutionArgs;
     return _collectSubfields(
       schema,
@@ -107,7 +107,7 @@ const collectSubfields = memoize3(
       operation,
       returnType,
       fieldDetailsList,
-      maskSuggestions,
+      hideSuggestions,
     );
   },
 );
@@ -156,7 +156,7 @@ export interface ValidatedExecutionArgs {
     validatedExecutionArgs: ValidatedExecutionArgs,
   ) => PromiseOrValue<ExecutionResult>;
   enableEarlyExecution: boolean;
-  maskSuggestions: boolean;
+  hideSuggestions: boolean;
 }
 
 export interface ExecutionContext {
@@ -186,7 +186,7 @@ export interface ExecutionArgs {
     ) => PromiseOrValue<ExecutionResult>
   >;
   enableEarlyExecution?: Maybe<boolean>;
-  maskSuggestions?: Maybe<boolean>;
+  hideSuggestions?: Maybe<boolean>;
 }
 
 export interface StreamUsage {
@@ -317,7 +317,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       rootValue,
       operation,
       variableValues,
-      maskSuggestions,
+      hideSuggestions,
     } = validatedExecutionArgs;
     const rootType = schema.getRootType(operation.operation);
     if (rootType == null) {
@@ -333,7 +333,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       variableValues,
       rootType,
       operation,
-      maskSuggestions,
+      hideSuggestions,
     );
 
     const { groupedFieldSet, newDeferUsages } = collectedFields;
@@ -564,7 +564,7 @@ export function validateExecutionArgs(
   // FIXME: https://github.com/graphql/graphql-js/issues/2203
   /* c8 ignore next */
   const variableDefinitions = operation.variableDefinitions ?? [];
-  const maskSuggestions = args.maskSuggestions ?? false;
+  const hideSuggestions = args.hideSuggestions ?? false;
 
   const variableValuesOrErrors = getVariableValues(
     schema,
@@ -572,7 +572,7 @@ export function validateExecutionArgs(
     rawVariableValues ?? {},
     {
       maxErrors: 50,
-      maskSuggestions,
+      hideSuggestions,
     },
   );
 
@@ -593,7 +593,7 @@ export function validateExecutionArgs(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
-    maskSuggestions,
+    hideSuggestions,
   };
 }
 
@@ -777,7 +777,7 @@ function executeField(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<unknown>> | undefined {
   const validatedExecutionArgs = exeContext.validatedExecutionArgs;
-  const { schema, contextValue, variableValues, maskSuggestions } =
+  const { schema, contextValue, variableValues, hideSuggestions } =
     validatedExecutionArgs;
   const fieldName = fieldDetailsList[0].node.name.value;
   const fieldDef = schema.getField(parentType, fieldName);
@@ -806,7 +806,7 @@ function executeField(
       fieldDef.args,
       variableValues,
       fieldDetailsList[0].fragmentVariableValues,
-      maskSuggestions,
+      hideSuggestions,
     );
 
     // The resolve function's optional third argument is a context value that
@@ -2082,7 +2082,7 @@ function executeSubscription(
     contextValue,
     operation,
     variableValues,
-    maskSuggestions,
+    hideSuggestions,
   } = validatedExecutionArgs;
 
   const rootType = schema.getSubscriptionType();
@@ -2099,7 +2099,7 @@ function executeSubscription(
     variableValues,
     rootType,
     operation,
-    maskSuggestions,
+    hideSuggestions,
   );
 
   const firstRootField = groupedFieldSet.entries().next().value as [
@@ -2137,7 +2137,7 @@ function executeSubscription(
       fieldDef,
       fieldNodes[0],
       variableValues,
-      maskSuggestions,
+      hideSuggestions,
     );
 
     // Call the `subscribe()` resolver or the default resolver to produce an

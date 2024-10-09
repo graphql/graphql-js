@@ -55,7 +55,7 @@ interface CollectFieldsContext {
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
-  maskSuggestions: boolean;
+  hideSuggestions: boolean;
 }
 
 /**
@@ -74,7 +74,7 @@ export function collectFields(
   variableValues: VariableValues,
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
-  maskSuggestions: boolean,
+  hideSuggestions: boolean,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -88,7 +88,7 @@ export function collectFields(
     runtimeType,
     operation,
     visitedFragmentNames: new Set(),
-    maskSuggestions,
+    hideSuggestions,
   };
 
   collectFieldsImpl(
@@ -118,7 +118,7 @@ export function collectSubfields(
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldDetailsList: FieldDetailsList,
-  maskSuggestions: boolean,
+  hideSuggestions: boolean,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -130,7 +130,7 @@ export function collectSubfields(
     runtimeType: returnType,
     operation,
     visitedFragmentNames: new Set(),
-    maskSuggestions,
+    hideSuggestions,
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
@@ -172,7 +172,7 @@ function collectFieldsImpl(
     runtimeType,
     operation,
     visitedFragmentNames,
-    maskSuggestions,
+    hideSuggestions,
   } = context;
 
   for (const selection of selectionSet.selections) {
@@ -272,7 +272,7 @@ function collectFieldsImpl(
             fragmentVariableSignatures,
             variableValues,
             fragmentVariableValues,
-            maskSuggestions,
+            hideSuggestions,
           );
         }
 

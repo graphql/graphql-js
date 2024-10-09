@@ -48,7 +48,7 @@ export function KnownTypeNamesRule(
           return;
         }
 
-        const suggestedTypes = context.maskSuggestions
+        const suggestedTypes = context.hideSuggestions
           ? []
           : suggestionList(
               typeName,

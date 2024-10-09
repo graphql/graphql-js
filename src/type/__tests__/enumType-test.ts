@@ -135,13 +135,13 @@ const schema = new GraphQLSchema({
 function executeQuery(
   source: string,
   variableValues?: { readonly [variable: string]: unknown },
-  maskSuggestions = false,
+  hideSuggestions = false,
 ) {
   return graphqlSync({
     schema,
     source,
     variableValues,
-    maskSuggestions,
+    hideSuggestions,
   });
 }
 

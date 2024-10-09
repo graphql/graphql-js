@@ -55,7 +55,7 @@ export function getVariableValues(
   schema: GraphQLSchema,
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { readonly [variable: string]: unknown },
-  options?: { maxErrors?: number; maskSuggestions?: boolean },
+  options?: { maxErrors?: number; hideSuggestions?: boolean },
 ): VariableValuesOrErrors {
   const errors: Array<GraphQLError> = [];
   const maxErrors = options?.maxErrors;
@@ -72,7 +72,7 @@ export function getVariableValues(
         }
         errors.push(error);
       },
-      options?.maskSuggestions,
+      options?.hideSuggestions,
     );
 
     if (errors.length === 0) {
@@ -90,7 +90,7 @@ function coerceVariableValues(
   varDefNodes: ReadonlyArray<VariableDefinitionNode>,
   inputs: { readonly [variable: string]: unknown },
   onError: (error: GraphQLError) => void,
-  maskSuggestions?: Maybe<boolean>,
+  hideSuggestions?: Maybe<boolean>,
 ): VariableValues {
   const sources: ObjMap<VariableValueSource> = Object.create(null);
   const coerced: ObjMap<unknown> = Object.create(null);
@@ -110,7 +110,7 @@ function coerceVariableValues(
         coerced[varName] = coerceDefaultValue(
           defaultValue,
           varType,
-          maskSuggestions,
+          hideSuggestions,
         );
       } else if (isNonNullType(varType)) {
         const varTypeStr = inspect(varType);
@@ -155,7 +155,7 @@ function coerceVariableValues(
           }),
         );
       },
-      maskSuggestions,
+      hideSuggestions,
     );
   }
 
@@ -167,7 +167,7 @@ export function getFragmentVariableValues(
   fragmentSignatures: ReadOnlyObjMap<GraphQLVariableSignature>,
   variableValues: VariableValues,
   fragmentVariableValues?: Maybe<VariableValues>,
-  maskSuggestions?: Maybe<boolean>,
+  hideSuggestions?: Maybe<boolean>,
 ): VariableValues {
   const varSignatures: Array<GraphQLVariableSignature> = [];
   const sources = Object.create(null);
@@ -186,7 +186,7 @@ export function getFragmentVariableValues(
     varSignatures,
     variableValues,
     fragmentVariableValues,
-    maskSuggestions,
+    hideSuggestions,
   );
 
   return { sources, coerced };
@@ -204,14 +204,14 @@ export function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
   variableValues?: Maybe<VariableValues>,
-  maskSuggestions?: Maybe<boolean>,
+  hideSuggestions?: Maybe<boolean>,
 ): { [argument: string]: unknown } {
   return experimentalGetArgumentValues(
     node,
     def.args,
     variableValues,
     undefined,
-    maskSuggestions,
+    hideSuggestions,
   );
 }
 
@@ -220,7 +220,7 @@ export function experimentalGetArgumentValues(
   argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
   variableValues: Maybe<VariableValues>,
   fragmentVariablesValues?: Maybe<VariableValues>,
-  maskSuggestions?: Maybe<boolean>,
+  hideSuggestions?: Maybe<boolean>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
 
@@ -239,7 +239,7 @@ export function experimentalGetArgumentValues(
         coercedValues[name] = coerceDefaultValue(
           argDef.defaultValue,
           argDef.type,
-          maskSuggestions,
+          hideSuggestions,
         );
       } else if (isNonNullType(argType)) {
         throw new GraphQLError(
@@ -269,7 +269,7 @@ export function experimentalGetArgumentValues(
           coercedValues[name] = coerceDefaultValue(
             argDef.defaultValue,
             argDef.type,
-            maskSuggestions,
+            hideSuggestions,
           );
         } else if (isNonNullType(argType)) {
           throw new GraphQLError(
@@ -296,7 +296,7 @@ export function experimentalGetArgumentValues(
       argType,
       variableValues,
       fragmentVariablesValues,
-      maskSuggestions,
+      hideSuggestions,
     );
     if (coercedValue === undefined) {
       // Note: ValuesOfCorrectTypeRule validation should catch this before
@@ -330,7 +330,7 @@ export function getDirectiveValues(
   node: { readonly directives?: ReadonlyArray<DirectiveNode> | undefined },
   variableValues?: Maybe<VariableValues>,
   fragmentVariableValues?: Maybe<VariableValues>,
-  maskSuggestions?: Maybe<boolean>,
+  hideSuggestions?: Maybe<boolean>,
 ): undefined | { [argument: string]: unknown } {
   const directiveNode = node.directives?.find(
     (directive) => directive.name.value === directiveDef.name,
@@ -342,7 +342,7 @@ export function getDirectiveValues(
       directiveDef.args,
       variableValues,
       fragmentVariableValues,
-      maskSuggestions,
+      hideSuggestions,
     );
   }
 }
