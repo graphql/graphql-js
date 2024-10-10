@@ -5,6 +5,7 @@ export type {
   IntrospectionOptions,
   IntrospectionQuery,
   IntrospectionSchema,
+  IntrospectionRootObjectType,
   IntrospectionType,
   IntrospectionInputType,
   IntrospectionOutputType,

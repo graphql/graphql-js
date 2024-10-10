@@ -188,15 +188,15 @@ export interface IntrospectionQuery {
 
 export interface IntrospectionSchema {
   readonly description?: Maybe<string>;
-  readonly queryType: IntrospectionNamedTypeRef<IntrospectionObjectType>;
-  readonly mutationType: Maybe<
-    IntrospectionNamedTypeRef<IntrospectionObjectType>
-  >;
-  readonly subscriptionType: Maybe<
-    IntrospectionNamedTypeRef<IntrospectionObjectType>
-  >;
+  readonly queryType: IntrospectionRootObjectType;
+  readonly mutationType: Maybe<IntrospectionRootObjectType>;
+  readonly subscriptionType: Maybe<IntrospectionRootObjectType>;
   readonly types: ReadonlyArray<IntrospectionType>;
   readonly directives: ReadonlyArray<IntrospectionDirective>;
+}
+
+export interface IntrospectionRootObjectType {
+  readonly name: string;
 }
 
 export type IntrospectionType =
