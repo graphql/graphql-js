@@ -61,6 +61,7 @@ import type { ExecutionResult } from './execution/types.js';
 export interface GraphQLArgs {
   schema: GraphQLSchema;
   source: string | Source;
+  hideSuggestions?: Maybe<boolean>;
   rootValue?: unknown;
   contextValue?: unknown;
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
@@ -101,6 +102,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    hideSuggestions,
   } = args;
 
   // Validate Schema
@@ -118,7 +120,9 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   }
 
   // Validate
-  const validationErrors = validate(schema, document);
+  const validationErrors = validate(schema, document, undefined, {
+    hideSuggestions,
+  });
   if (validationErrors.length > 0) {
     return { errors: validationErrors };
   }
@@ -133,5 +137,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    hideSuggestions,
   });
 }

@@ -12,8 +12,8 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness.js';
 
-function expectErrors(queryStr: string) {
-  return expectValidationErrors(KnownTypeNamesRule, queryStr);
+function expectErrors(queryStr: string, hideSuggestions = false) {
+  return expectValidationErrors(KnownTypeNamesRule, queryStr, hideSuggestions);
 }
 
 function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
@@ -73,6 +73,36 @@ describe('Validate: Known type names', () => {
       },
       {
         message: 'Unknown type "Peat". Did you mean "Pet" or "Cat"?',
+        locations: [{ line: 8, column: 29 }],
+      },
+    ]);
+  });
+
+  it('unknown type names are invalid (no suggestions)', () => {
+    expectErrors(
+      `
+      query Foo($var: [JumbledUpLetters!]!) {
+        user(id: 4) {
+          name
+          pets { ... on Badger { name }, ...PetFields }
+        }
+      }
+      fragment PetFields on Peat {
+        name
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message: 'Unknown type "JumbledUpLetters".',
+        locations: [{ line: 2, column: 24 }],
+      },
+      {
+        message: 'Unknown type "Badger".',
+        locations: [{ line: 5, column: 25 }],
+      },
+      {
+        message: 'Unknown type "Peat".',
         locations: [{ line: 8, column: 29 }],
       },
     ]);
