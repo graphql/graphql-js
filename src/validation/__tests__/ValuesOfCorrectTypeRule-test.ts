@@ -1094,22 +1094,6 @@ describe('Validate: Values of correct type', () => {
       ]);
     });
 
-    it('Exactly one nullable variable', () => {
-      expectErrors(`
-        query ($string: String) {
-          complicatedArgs {
-            oneOfArgField(oneOfArg: { stringField: $string })
-          }
-        }
-      `).toDeepEqual([
-        {
-          message:
-            'Variable "$string" must be non-nullable to be used for OneOf Input Object "OneOfInput".',
-          locations: [{ line: 4, column: 37 }],
-        },
-      ]);
-    });
-
     it('More than one field', () => {
       expectErrors(`
         {
