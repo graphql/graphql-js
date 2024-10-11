@@ -33,9 +33,9 @@ function getIntrospectionQuery(options) {
     query IntrospectionQuery {
       __schema {
         ${schemaDescription}
-        queryType { name }
-        mutationType { name }
-        subscriptionType { name }
+        queryType { name kind }
+        mutationType { name kind }
+        subscriptionType { name kind }
         types {
           ...FullType
         }
