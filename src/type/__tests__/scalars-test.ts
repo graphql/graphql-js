@@ -534,6 +534,8 @@ describe('Type System: Specified scalar types', () => {
       expect(parseValue(1)).to.equal('1');
       expect(parseValue(0)).to.equal('0');
       expect(parseValue(-1)).to.equal('-1');
+      expect(parseValue(BigInt(123))).to.equal('123');
+      expect(parseValue(1n)).to.equal('1');
 
       // Maximum and minimum safe numbers in JS
       expect(parseValue(9007199254740991)).to.equal('9007199254740991');
@@ -614,6 +616,8 @@ describe('Type System: Specified scalar types', () => {
       expect(serialize(123)).to.equal('123');
       expect(serialize(0)).to.equal('0');
       expect(serialize(-1)).to.equal('-1');
+      expect(serialize(BigInt(123))).to.equal('123');
+      expect(serialize(1n)).to.equal('1');
 
       const valueOf = () => 'valueOf ID';
       const toJSON = () => 'toJSON ID';
