@@ -716,7 +716,7 @@ describe('Type System: build schema from introspection', () => {
       delete introspection.__schema.queryType.name;
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        'Unknown type reference: {}.',
+        'Unknown type reference: { kind: "OBJECT" }.',
       );
     });
 
