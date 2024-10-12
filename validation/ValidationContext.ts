@@ -137,6 +137,9 @@ export class SDLValidationContext extends ASTValidationContext {
     super(ast, onError);
     this._schema = schema;
   }
+  get hideSuggestions() {
+    return false;
+  }
   get [Symbol.toStringTag]() {
     return 'SDLValidationContext';
   }
@@ -156,20 +159,26 @@ export class ValidationContext extends ASTValidationContext {
     OperationDefinitionNode,
     ReadonlyArray<VariableUsage>
   >;
+  private _hideSuggestions: boolean;
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
+    hideSuggestions?: Maybe<boolean>,
   ) {
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+    this._hideSuggestions = hideSuggestions ?? false;
   }
   get [Symbol.toStringTag]() {
     return 'ValidationContext';
+  }
+  get hideSuggestions() {
+    return this._hideSuggestions;
   }
   getSchema(): GraphQLSchema {
     return this._schema;

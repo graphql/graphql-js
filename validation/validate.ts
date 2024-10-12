@@ -37,9 +37,11 @@ export function validate(
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
   options?: {
     maxErrors?: number;
+    hideSuggestions?: Maybe<boolean>;
   },
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
+  const hideSuggestions = options?.hideSuggestions ?? false;
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
   const abortError = new GraphQLError(
@@ -57,6 +59,7 @@ export function validate(
       }
       errors.push(error);
     },
+    hideSuggestions,
   );
   // This uses a specialized visitor which runs multiple visitors in parallel,
   // while maintaining the visitor skip and break API.

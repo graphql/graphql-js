@@ -91,10 +91,12 @@ export function ValuesOfCorrectTypeRule(
       const parentType = getNamedType(context.getParentInputType());
       const fieldType = context.getInputType();
       if (!fieldType && isInputObjectType(parentType)) {
-        const suggestions = suggestionList(
-          node.name.value,
-          Object.keys(parentType.getFields()),
-        );
+        const suggestions = context.hideSuggestions
+          ? []
+          : suggestionList(
+              node.name.value,
+              Object.keys(parentType.getFields()),
+            );
         context.reportError(
           new GraphQLError(
             `Field "${node.name.value}" is not defined by type "${parentType}".` +
@@ -147,8 +149,8 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
   // which may throw or return undefined to indicate an invalid value.
   try {
     const parseResult = type.parseConstLiteral
-      ? type.parseConstLiteral(replaceVariables(node))
-      : type.parseLiteral(node, undefined);
+      ? type.parseConstLiteral(replaceVariables(node), context.hideSuggestions)
+      : type.parseLiteral(node, undefined, context.hideSuggestions);
     if (parseResult === undefined) {
       const typeStr = inspect(locationType);
       context.reportError(

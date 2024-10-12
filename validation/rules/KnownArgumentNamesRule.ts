@@ -29,12 +29,14 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
         );
         if (!varDef) {
           const argName = argNode.name.value;
-          const suggestions = suggestionList(
-            argName,
-            Array.from(fragmentSignature.variableDefinitions.values()).map(
-              (varSignature) => varSignature.variable.name.value,
-            ),
-          );
+          const suggestions = context.hideSuggestions
+            ? []
+            : suggestionList(
+                argName,
+                Array.from(fragmentSignature.variableDefinitions.values()).map(
+                  (varSignature) => varSignature.variable.name.value,
+                ),
+              );
           context.reportError(
             new GraphQLError(
               `Unknown argument "${argName}" on fragment "${fragmentSignature.definition.name.value}".` +
@@ -51,10 +53,12 @@ export function KnownArgumentNamesRule(context: ValidationContext): ASTVisitor {
       const parentType = context.getParentType();
       if (!argDef && fieldDef && parentType) {
         const argName = argNode.name.value;
-        const suggestions = suggestionList(
-          argName,
-          fieldDef.args.map((arg) => arg.name),
-        );
+        const suggestions = context.hideSuggestions
+          ? []
+          : suggestionList(
+              argName,
+              fieldDef.args.map((arg) => arg.name),
+            );
         context.reportError(
           new GraphQLError(
             `Unknown argument "${argName}" on field "${parentType}.${fieldDef.name}".` +
@@ -107,7 +111,7 @@ export function KnownArgumentNamesOnDirectivesRule(
             context.reportError(
               new GraphQLError(
                 `Unknown argument "${argName}" on directive "@${directiveName}".` +
-                  didYouMean(suggestions),
+                  (context.hideSuggestions ? '' : didYouMean(suggestions)),
                 { nodes: argNode },
               ),
             );

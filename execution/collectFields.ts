@@ -45,6 +45,7 @@ interface CollectFieldsContext {
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
+  hideSuggestions: boolean;
 }
 /**
  * Given a selectionSet, collects all of the fields and returns them.
@@ -55,12 +56,14 @@ interface CollectFieldsContext {
  *
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/max-params
 export function collectFields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDetails>,
   variableValues: VariableValues,
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
+  hideSuggestions: boolean,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -74,6 +77,7 @@ export function collectFields(
     runtimeType,
     operation,
     visitedFragmentNames: new Set(),
+    hideSuggestions,
   };
   collectFieldsImpl(
     context,
@@ -101,6 +105,7 @@ export function collectSubfields(
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldDetailsList: FieldDetailsList,
+  hideSuggestions: boolean,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -112,6 +117,7 @@ export function collectSubfields(
     runtimeType: returnType,
     operation,
     visitedFragmentNames: new Set(),
+    hideSuggestions,
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
@@ -150,6 +156,7 @@ function collectFieldsImpl(
     runtimeType,
     operation,
     visitedFragmentNames,
+    hideSuggestions,
   } = context;
   for (const selection of selectionSet.selections) {
     switch (selection.kind) {
@@ -241,6 +248,7 @@ function collectFieldsImpl(
             fragmentVariableSignatures,
             variableValues,
             fragmentVariableValues,
+            hideSuggestions,
           );
         }
         if (!newDeferUsage) {

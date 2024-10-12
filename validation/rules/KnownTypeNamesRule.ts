@@ -40,10 +40,12 @@ export function KnownTypeNamesRule(
         if (isSDL && standardTypeNames.has(typeName)) {
           return;
         }
-        const suggestedTypes = suggestionList(
-          typeName,
-          isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames],
-        );
+        const suggestedTypes = context.hideSuggestions
+          ? []
+          : suggestionList(
+              typeName,
+              isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames],
+            );
         context.reportError(
           new GraphQLError(
             `Unknown type "${typeName}".` + didYouMean(suggestedTypes),
