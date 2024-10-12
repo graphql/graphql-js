@@ -659,10 +659,10 @@ export declare class GraphQLEnumType {
     getValues(): ReadonlyArray<GraphQLEnumValue>;
     getValue(name: string): Maybe<GraphQLEnumValue>;
     serialize(outputValue: unknown): Maybe<string>;
-    parseValue(inputValue: unknown): Maybe<any>;
+    parseValue(inputValue: unknown, hideSuggestions?: Maybe<boolean>): Maybe<any>;
     /** @deprecated use `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
-    parseLiteral(valueNode: ValueNode, _variables: Maybe<ObjMap<unknown>>): Maybe<any>;
-    parseConstLiteral(valueNode: ConstValueNode): Maybe<any>;
+    parseLiteral(valueNode: ValueNode, _variables: Maybe<ObjMap<unknown>>, hideSuggestions?: Maybe<boolean>): Maybe<any>;
+    parseConstLiteral(valueNode: ConstValueNode, hideSuggestions?: Maybe<boolean>): Maybe<any>;
     valueToLiteral(value: unknown): ConstValueNode | undefined;
     toConfig(): GraphQLEnumTypeNormalizedConfig;
     toString(): string;

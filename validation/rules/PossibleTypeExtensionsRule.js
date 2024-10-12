@@ -54,9 +54,8 @@ function PossibleTypeExtensionsRule(context) {
                 ...definedTypes.keys(),
                 ...Object.keys(schema?.getTypeMap() ?? {}),
             ];
-            const suggestedTypes = (0, suggestionList_js_1.suggestionList)(typeName, allTypeNames);
             context.reportError(new GraphQLError_js_1.GraphQLError(`Cannot extend type "${typeName}" because it is not defined.` +
-                (0, didYouMean_js_1.didYouMean)(suggestedTypes), { nodes: node.name }));
+                (0, didYouMean_js_1.didYouMean)((0, suggestionList_js_1.suggestionList)(typeName, allTypeNames)), { nodes: node.name }));
         }
     }
 }

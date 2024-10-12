@@ -25,10 +25,14 @@ function FieldsOnCorrectTypeRule(context) {
                     const schema = context.getSchema();
                     const fieldName = node.name.value;
                     // First determine if there are any suggested types to condition on.
-                    let suggestion = (0, didYouMean_js_1.didYouMean)('to use an inline fragment on', getSuggestedTypeNames(schema, type, fieldName));
+                    let suggestion = (0, didYouMean_js_1.didYouMean)('to use an inline fragment on', context.hideSuggestions
+                        ? []
+                        : getSuggestedTypeNames(schema, type, fieldName));
                     // If there are no suggested types, then perhaps this was a typo?
                     if (suggestion === '') {
-                        suggestion = (0, didYouMean_js_1.didYouMean)(getSuggestedFieldNames(type, fieldName));
+                        suggestion = (0, didYouMean_js_1.didYouMean)(context.hideSuggestions
+                            ? []
+                            : getSuggestedFieldNames(type, fieldName));
                     }
                     // Report an error, including helpful suggestions.
                     context.reportError(new GraphQLError_js_1.GraphQLError(`Cannot query field "${fieldName}" on type "${type}".` +

@@ -60,7 +60,9 @@ function ValuesOfCorrectTypeRule(context) {
             const parentType = (0, definition_js_1.getNamedType)(context.getParentInputType());
             const fieldType = context.getInputType();
             if (!fieldType && (0, definition_js_1.isInputObjectType)(parentType)) {
-                const suggestions = (0, suggestionList_js_1.suggestionList)(node.name.value, Object.keys(parentType.getFields()));
+                const suggestions = context.hideSuggestions
+                    ? []
+                    : (0, suggestionList_js_1.suggestionList)(node.name.value, Object.keys(parentType.getFields()));
                 context.reportError(new GraphQLError_js_1.GraphQLError(`Field "${node.name.value}" is not defined by type "${parentType}".` +
                     (0, didYouMean_js_1.didYouMean)(suggestions), { nodes: node }));
             }
@@ -99,8 +101,8 @@ function isValidValueNode(context, node) {
     // which may throw or return undefined to indicate an invalid value.
     try {
         const parseResult = type.parseConstLiteral
-            ? type.parseConstLiteral((0, replaceVariables_js_1.replaceVariables)(node))
-            : type.parseLiteral(node, undefined);
+            ? type.parseConstLiteral((0, replaceVariables_js_1.replaceVariables)(node), context.hideSuggestions)
+            : type.parseLiteral(node, undefined, context.hideSuggestions);
         if (parseResult === undefined) {
             const typeStr = (0, inspect_js_1.inspect)(locationType);
             context.reportError(new GraphQLError_js_1.GraphQLError(`Expected value of type "${typeStr}", found ${(0, printer_js_1.print)(node)}.`, { nodes: node }));

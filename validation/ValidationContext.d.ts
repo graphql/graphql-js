@@ -37,6 +37,7 @@ export type ASTValidationRule = (context: ASTValidationContext) => ASTVisitor;
 export declare class SDLValidationContext extends ASTValidationContext {
     private _schema;
     constructor(ast: DocumentNode, schema: Maybe<GraphQLSchema>, onError: (error: GraphQLError) => void);
+    get hideSuggestions(): boolean;
     get [Symbol.toStringTag](): string;
     getSchema(): Maybe<GraphQLSchema>;
 }
@@ -46,8 +47,10 @@ export declare class ValidationContext extends ASTValidationContext {
     private _typeInfo;
     private _variableUsages;
     private _recursiveVariableUsages;
-    constructor(schema: GraphQLSchema, ast: DocumentNode, typeInfo: TypeInfo, onError: (error: GraphQLError) => void);
+    private _hideSuggestions;
+    constructor(schema: GraphQLSchema, ast: DocumentNode, typeInfo: TypeInfo, onError: (error: GraphQLError) => void, hideSuggestions?: Maybe<boolean>);
     get [Symbol.toStringTag](): string;
+    get hideSuggestions(): boolean;
     getSchema(): GraphQLSchema;
     getVariableUsages(node: NodeWithSelectionSet): ReadonlyArray<VariableUsage>;
     getRecursiveVariableUsages(operation: OperationDefinitionNode): ReadonlyArray<VariableUsage>;

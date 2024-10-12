@@ -28,7 +28,7 @@ export function SingleFieldSubscriptionsRule(context) {
                             fragments[definition.name.value] = { definition };
                         }
                     }
-                    const { groupedFieldSet } = collectFields(schema, fragments, variableValues, subscriptionType, node);
+                    const { groupedFieldSet } = collectFields(schema, fragments, variableValues, subscriptionType, node, context.hideSuggestions);
                     if (groupedFieldSet.size > 1) {
                         const fieldDetailsLists = [...groupedFieldSet.values()];
                         const extraFieldDetailsLists = fieldDetailsLists.slice(1);

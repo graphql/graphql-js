@@ -7,16 +7,16 @@ type OnErrorCB = (path: ReadonlyArray<string | number>, invalidValue: unknown, e
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
  */
-export declare function coerceInputValue(inputValue: unknown, type: GraphQLInputType, onError?: OnErrorCB): unknown;
+export declare function coerceInputValue(inputValue: unknown, type: GraphQLInputType, onError?: OnErrorCB, hideSuggestions?: Maybe<boolean>): unknown;
 /**
  * Produces a coerced "internal" JavaScript value given a GraphQL Value AST.
  *
  * Returns `undefined` when the value could not be validly coerced according to
  * the provided type.
  */
-export declare function coerceInputLiteral(valueNode: ValueNode, type: GraphQLInputType, variableValues?: Maybe<VariableValues>, fragmentVariableValues?: Maybe<VariableValues>): unknown;
+export declare function coerceInputLiteral(valueNode: ValueNode, type: GraphQLInputType, variableValues?: Maybe<VariableValues>, fragmentVariableValues?: Maybe<VariableValues>, hideSuggestions?: Maybe<boolean>): unknown;
 /**
  * @internal
  */
-export declare function coerceDefaultValue(defaultValue: GraphQLDefaultValueUsage, type: GraphQLInputType): unknown;
+export declare function coerceDefaultValue(defaultValue: GraphQLDefaultValueUsage, type: GraphQLInputType, hideSuggestions?: Maybe<boolean>): unknown;
 export {};

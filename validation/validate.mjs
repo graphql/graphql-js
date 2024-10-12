@@ -26,6 +26,7 @@ import { SDLValidationContext, ValidationContext, } from "./ValidationContext.mj
  */
 export function validate(schema, documentAST, rules = specifiedRules, options) {
     const maxErrors = options?.maxErrors ?? 100;
+    const hideSuggestions = options?.hideSuggestions ?? false;
     // If the schema used for validation is invalid, throw an error.
     assertValidSchema(schema);
     const abortError = new GraphQLError('Too many validation errors, error limit reached. Validation aborted.');
@@ -36,7 +37,7 @@ export function validate(schema, documentAST, rules = specifiedRules, options) {
             throw abortError;
         }
         errors.push(error);
-    });
+    }, hideSuggestions);
     // This uses a specialized visitor which runs multiple visitors in parallel,
     // while maintaining the visitor skip and break API.
     const visitor = visitInParallel(rules.map((rule) => rule(context)));

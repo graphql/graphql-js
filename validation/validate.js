@@ -29,6 +29,7 @@ const ValidationContext_js_1 = require("./ValidationContext.js");
  */
 function validate(schema, documentAST, rules = specifiedRules_js_1.specifiedRules, options) {
     const maxErrors = options?.maxErrors ?? 100;
+    const hideSuggestions = options?.hideSuggestions ?? false;
     // If the schema used for validation is invalid, throw an error.
     (0, validate_js_1.assertValidSchema)(schema);
     const abortError = new GraphQLError_js_1.GraphQLError('Too many validation errors, error limit reached. Validation aborted.');
@@ -39,7 +40,7 @@ function validate(schema, documentAST, rules = specifiedRules_js_1.specifiedRule
             throw abortError;
         }
         errors.push(error);
-    });
+    }, hideSuggestions);
     // This uses a specialized visitor which runs multiple visitors in parallel,
     // while maintaining the visitor skip and break API.
     const visitor = (0, visitor_js_1.visitInParallel)(rules.map((rule) => rule(context)));

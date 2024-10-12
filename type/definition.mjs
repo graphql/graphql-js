@@ -749,35 +749,35 @@ export class GraphQLEnumType /* <T> */ {
         }
         return enumValue.name;
     }
-    parseValue(inputValue) {
+    parseValue(inputValue, hideSuggestions) {
         if (typeof inputValue !== 'string') {
             const valueStr = inspect(inputValue);
             throw new GraphQLError(`Enum "${this.name}" cannot represent non-string value: ${valueStr}.` +
-                didYouMeanEnumValue(this, valueStr));
+                (hideSuggestions ? '' : didYouMeanEnumValue(this, valueStr)));
         }
         const enumValue = this.getValue(inputValue);
         if (enumValue == null) {
             throw new GraphQLError(`Value "${inputValue}" does not exist in "${this.name}" enum.` +
-                didYouMeanEnumValue(this, inputValue));
+                (hideSuggestions ? '' : didYouMeanEnumValue(this, inputValue)));
         }
         return enumValue.value;
     }
     /** @deprecated use `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
-    parseLiteral(valueNode, _variables) {
+    parseLiteral(valueNode, _variables, hideSuggestions) {
         // Note: variables will be resolved to a value before calling this function.
-        return this.parseConstLiteral(valueNode);
+        return this.parseConstLiteral(valueNode, hideSuggestions);
     }
-    parseConstLiteral(valueNode) {
+    parseConstLiteral(valueNode, hideSuggestions) {
         if (valueNode.kind !== Kind.ENUM) {
             const valueStr = print(valueNode);
             throw new GraphQLError(`Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +
-                didYouMeanEnumValue(this, valueStr), { nodes: valueNode });
+                (hideSuggestions ? '' : didYouMeanEnumValue(this, valueStr)), { nodes: valueNode });
         }
         const enumValue = this.getValue(valueNode.value);
         if (enumValue == null) {
             const valueStr = print(valueNode);
             throw new GraphQLError(`Value "${valueStr}" does not exist in "${this.name}" enum.` +
-                didYouMeanEnumValue(this, valueStr), { nodes: valueNode });
+                (hideSuggestions ? '' : didYouMeanEnumValue(this, valueStr)), { nodes: valueNode });
         }
         return enumValue.value;
     }

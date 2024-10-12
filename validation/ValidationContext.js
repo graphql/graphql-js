@@ -93,6 +93,9 @@ class SDLValidationContext extends ASTValidationContext {
         super(ast, onError);
         this._schema = schema;
     }
+    get hideSuggestions() {
+        return false;
+    }
     get [Symbol.toStringTag]() {
         return 'SDLValidationContext';
     }
@@ -102,15 +105,19 @@ class SDLValidationContext extends ASTValidationContext {
 }
 exports.SDLValidationContext = SDLValidationContext;
 class ValidationContext extends ASTValidationContext {
-    constructor(schema, ast, typeInfo, onError) {
+    constructor(schema, ast, typeInfo, onError, hideSuggestions) {
         super(ast, onError);
         this._schema = schema;
         this._typeInfo = typeInfo;
         this._variableUsages = new Map();
         this._recursiveVariableUsages = new Map();
+        this._hideSuggestions = hideSuggestions ?? false;
     }
     get [Symbol.toStringTag]() {
         return 'ValidationContext';
+    }
+    get hideSuggestions() {
+        return this._hideSuggestions;
     }
     getSchema() {
         return this._schema;

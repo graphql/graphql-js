@@ -34,8 +34,9 @@ export declare function getVariableValues(schema: GraphQLSchema, varDefNodes: Re
     readonly [variable: string]: unknown;
 }, options?: {
     maxErrors?: number;
+    hideSuggestions?: boolean;
 }): VariableValuesOrErrors;
-export declare function getFragmentVariableValues(fragmentSpreadNode: FragmentSpreadNode, fragmentSignatures: ReadOnlyObjMap<GraphQLVariableSignature>, variableValues: VariableValues, fragmentVariableValues?: Maybe<VariableValues>): VariableValues;
+export declare function getFragmentVariableValues(fragmentSpreadNode: FragmentSpreadNode, fragmentSignatures: ReadOnlyObjMap<GraphQLVariableSignature>, variableValues: VariableValues, fragmentVariableValues?: Maybe<VariableValues>, hideSuggestions?: Maybe<boolean>): VariableValues;
 /**
  * Prepares an object map of argument values given a list of argument
  * definitions and list of argument AST nodes.
@@ -44,10 +45,10 @@ export declare function getFragmentVariableValues(fragmentSpreadNode: FragmentSp
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-export declare function getArgumentValues(def: GraphQLField<unknown, unknown> | GraphQLDirective, node: FieldNode | DirectiveNode, variableValues?: Maybe<VariableValues>): {
+export declare function getArgumentValues(def: GraphQLField<unknown, unknown> | GraphQLDirective, node: FieldNode | DirectiveNode, variableValues?: Maybe<VariableValues>, hideSuggestions?: Maybe<boolean>): {
     [argument: string]: unknown;
 };
-export declare function experimentalGetArgumentValues(node: FieldNode | DirectiveNode | FragmentSpreadNode, argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>, variableValues: Maybe<VariableValues>, fragmentVariablesValues?: Maybe<VariableValues>): {
+export declare function experimentalGetArgumentValues(node: FieldNode | DirectiveNode | FragmentSpreadNode, argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>, variableValues: Maybe<VariableValues>, fragmentVariablesValues?: Maybe<VariableValues>, hideSuggestions?: Maybe<boolean>): {
     [argument: string]: unknown;
 };
 /**
@@ -63,7 +64,7 @@ export declare function experimentalGetArgumentValues(node: FieldNode | Directiv
  */
 export declare function getDirectiveValues(directiveDef: GraphQLDirective, node: {
     readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
-}, variableValues?: Maybe<VariableValues>, fragmentVariableValues?: Maybe<VariableValues>): undefined | {
+}, variableValues?: Maybe<VariableValues>, fragmentVariableValues?: Maybe<VariableValues>, hideSuggestions?: Maybe<boolean>): undefined | {
     [argument: string]: unknown;
 };
 export {};

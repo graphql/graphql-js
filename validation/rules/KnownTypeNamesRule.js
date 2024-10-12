@@ -31,7 +31,9 @@ function KnownTypeNamesRule(context) {
                 if (isSDL && standardTypeNames.has(typeName)) {
                     return;
                 }
-                const suggestedTypes = (0, suggestionList_js_1.suggestionList)(typeName, isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames]);
+                const suggestedTypes = context.hideSuggestions
+                    ? []
+                    : (0, suggestionList_js_1.suggestionList)(typeName, isSDL ? [...standardTypeNames, ...typeNames] : [...typeNames]);
                 context.reportError(new GraphQLError_js_1.GraphQLError(`Unknown type "${typeName}".` + (0, didYouMean_js_1.didYouMean)(suggestedTypes), { nodes: node }));
             }
         },

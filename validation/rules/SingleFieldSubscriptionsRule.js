@@ -31,7 +31,7 @@ function SingleFieldSubscriptionsRule(context) {
                             fragments[definition.name.value] = { definition };
                         }
                     }
-                    const { groupedFieldSet } = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, subscriptionType, node);
+                    const { groupedFieldSet } = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, subscriptionType, node, context.hideSuggestions);
                     if (groupedFieldSet.size > 1) {
                         const fieldDetailsLists = [...groupedFieldSet.values()];
                         const extraFieldDetailsLists = fieldDetailsLists.slice(1);

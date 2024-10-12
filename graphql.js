@@ -27,7 +27,7 @@ function graphqlSync(args) {
 }
 exports.graphqlSync = graphqlSync;
 function graphqlImpl(args) {
-    const { schema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver, } = args;
+    const { schema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver, hideSuggestions, } = args;
     // Validate Schema
     const schemaValidationErrors = (0, validate_js_1.validateSchema)(schema);
     if (schemaValidationErrors.length > 0) {
@@ -42,7 +42,9 @@ function graphqlImpl(args) {
         return { errors: [syntaxError] };
     }
     // Validate
-    const validationErrors = (0, validate_js_2.validate)(schema, document);
+    const validationErrors = (0, validate_js_2.validate)(schema, document, undefined, {
+        hideSuggestions,
+    });
     if (validationErrors.length > 0) {
         return { errors: validationErrors };
     }
@@ -56,5 +58,6 @@ function graphqlImpl(args) {
         operationName,
         fieldResolver,
         typeResolver,
+        hideSuggestions,
     });
 }

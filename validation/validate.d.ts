@@ -25,6 +25,7 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
  */
 export declare function validate(schema: GraphQLSchema, documentAST: DocumentNode, rules?: ReadonlyArray<ValidationRule>, options?: {
     maxErrors?: number;
+    hideSuggestions?: Maybe<boolean>;
 }): ReadonlyArray<GraphQLError>;
 /**
  * @internal

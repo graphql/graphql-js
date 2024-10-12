@@ -28,7 +28,7 @@ export interface FragmentDetails {
  *
  * @internal
  */
-export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, runtimeType: GraphQLObjectType, operation: OperationDefinitionNode): {
+export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, runtimeType: GraphQLObjectType, operation: OperationDefinitionNode, hideSuggestions: boolean): {
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };
@@ -42,7 +42,7 @@ export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<F
  *
  * @internal
  */
-export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, operation: OperationDefinitionNode, returnType: GraphQLObjectType, fieldDetailsList: FieldDetailsList): {
+export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, operation: OperationDefinitionNode, returnType: GraphQLObjectType, fieldDetailsList: FieldDetailsList, hideSuggestions: boolean): {
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };

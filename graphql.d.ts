@@ -47,6 +47,7 @@ import type { ExecutionResult } from './execution/types.js';
 export interface GraphQLArgs {
     schema: GraphQLSchema;
     source: string | Source;
+    hideSuggestions?: Maybe<boolean>;
     rootValue?: unknown;
     contextValue?: unknown;
     variableValues?: Maybe<{

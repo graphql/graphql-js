@@ -24,7 +24,7 @@ export function getVariableValues(schema, varDefNodes, inputs, options) {
                 throw new GraphQLError('Too many errors processing variables, error limit reached. Execution aborted.');
             }
             errors.push(error);
-        });
+        }, options?.hideSuggestions);
         if (errors.length === 0) {
             return { variableValues };
         }
@@ -34,7 +34,7 @@ export function getVariableValues(schema, varDefNodes, inputs, options) {
     }
     return { errors };
 }
-function coerceVariableValues(schema, varDefNodes, inputs, onError) {
+function coerceVariableValues(schema, varDefNodes, inputs, onError, hideSuggestions) {
     const sources = Object.create(null);
     const coerced = Object.create(null);
     for (const varDefNode of varDefNodes) {
@@ -48,7 +48,7 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
             const defaultValue = varSignature.defaultValue;
             if (defaultValue) {
                 sources[varName] = { signature: varSignature };
-                coerced[varName] = coerceDefaultValue(defaultValue, varType);
+                coerced[varName] = coerceDefaultValue(defaultValue, varType, hideSuggestions);
             }
             else if (isNonNullType(varType)) {
                 const varTypeStr = inspect(varType);
@@ -75,11 +75,11 @@ function coerceVariableValues(schema, varDefNodes, inputs, onError) {
                 nodes: varDefNode,
                 originalError: error,
             }));
-        });
+        }, hideSuggestions);
     }
     return { sources, coerced };
 }
-export function getFragmentVariableValues(fragmentSpreadNode, fragmentSignatures, variableValues, fragmentVariableValues) {
+export function getFragmentVariableValues(fragmentSpreadNode, fragmentSignatures, variableValues, fragmentVariableValues, hideSuggestions) {
     const varSignatures = [];
     const sources = Object.create(null);
     for (const [varName, varSignature] of Object.entries(fragmentSignatures)) {
@@ -90,7 +90,7 @@ export function getFragmentVariableValues(fragmentSpreadNode, fragmentSignatures
                 variableValues.sources[varName]?.value,
         };
     }
-    const coerced = experimentalGetArgumentValues(fragmentSpreadNode, varSignatures, variableValues, fragmentVariableValues);
+    const coerced = experimentalGetArgumentValues(fragmentSpreadNode, varSignatures, variableValues, fragmentVariableValues, hideSuggestions);
     return { sources, coerced };
 }
 /**
@@ -101,10 +101,10 @@ export function getFragmentVariableValues(fragmentSpreadNode, fragmentSignatures
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-export function getArgumentValues(def, node, variableValues) {
-    return experimentalGetArgumentValues(node, def.args, variableValues);
+export function getArgumentValues(def, node, variableValues, hideSuggestions) {
+    return experimentalGetArgumentValues(node, def.args, variableValues, undefined, hideSuggestions);
 }
-export function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVariablesValues) {
+export function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVariablesValues, hideSuggestions) {
     const coercedValues = {};
     // FIXME: https://github.com/graphql/graphql-js/issues/2203
     /* c8 ignore next */
@@ -116,7 +116,7 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
         const argumentNode = argNodeMap.get(name);
         if (argumentNode == null) {
             if (argDef.defaultValue) {
-                coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type);
+                coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type, hideSuggestions);
             }
             else if (isNonNullType(argType)) {
                 throw new GraphQLError(`Argument "${name}" of required type "${inspect(argType)}" ` +
@@ -134,7 +134,7 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
             if (scopedVariableValues == null ||
                 !Object.hasOwn(scopedVariableValues.coerced, variableName)) {
                 if (argDef.defaultValue) {
-                    coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type);
+                    coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type, hideSuggestions);
                 }
                 else if (isNonNullType(argType)) {
                     throw new GraphQLError(`Argument "${name}" of required type "${inspect(argType)}" ` +
@@ -148,7 +148,7 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
             throw new GraphQLError(`Argument "${name}" of non-null type "${inspect(argType)}" ` +
                 'must not be null.', { nodes: valueNode });
         }
-        const coercedValue = coerceInputLiteral(valueNode, argType, variableValues, fragmentVariablesValues);
+        const coercedValue = coerceInputLiteral(valueNode, argType, variableValues, fragmentVariablesValues, hideSuggestions);
         if (coercedValue === undefined) {
             // Note: ValuesOfCorrectTypeRule validation should catch this before
             // execution. This is a runtime check to ensure execution does not
@@ -170,9 +170,9 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-export function getDirectiveValues(directiveDef, node, variableValues, fragmentVariableValues) {
+export function getDirectiveValues(directiveDef, node, variableValues, fragmentVariableValues, hideSuggestions) {
     const directiveNode = node.directives?.find((directive) => directive.name.value === directiveDef.name);
     if (directiveNode) {
-        return experimentalGetArgumentValues(directiveNode, directiveDef.args, variableValues, fragmentVariableValues);
+        return experimentalGetArgumentValues(directiveNode, directiveDef.args, variableValues, fragmentVariableValues, hideSuggestions);
     }
 }

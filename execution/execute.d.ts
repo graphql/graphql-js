@@ -47,6 +47,7 @@ export interface ValidatedExecutionArgs {
     subscribeFieldResolver: GraphQLFieldResolver<any, any>;
     perEventExecutor: (validatedExecutionArgs: ValidatedExecutionArgs) => PromiseOrValue<ExecutionResult>;
     enableEarlyExecution: boolean;
+    hideSuggestions: boolean;
 }
 export interface ExecutionContext {
     validatedExecutionArgs: ValidatedExecutionArgs;
@@ -67,6 +68,7 @@ export interface ExecutionArgs {
     subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
     perEventExecutor?: Maybe<(validatedExecutionArgs: ValidatedExecutionArgs) => PromiseOrValue<ExecutionResult>>;
     enableEarlyExecution?: Maybe<boolean>;
+    hideSuggestions?: Maybe<boolean>;
 }
 export interface StreamUsage {
     label: string | undefined;

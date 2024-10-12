@@ -18,7 +18,8 @@ const values_js_1 = require("./values.js");
  *
  * @internal
  */
-function collectFields(schema, fragments, variableValues, runtimeType, operation) {
+// eslint-disable-next-line @typescript-eslint/max-params
+function collectFields(schema, fragments, variableValues, runtimeType, operation, hideSuggestions) {
     const groupedFieldSet = new AccumulatorMap_js_1.AccumulatorMap();
     const newDeferUsages = [];
     const context = {
@@ -28,6 +29,7 @@ function collectFields(schema, fragments, variableValues, runtimeType, operation
         runtimeType,
         operation,
         visitedFragmentNames: new Set(),
+        hideSuggestions,
     };
     collectFieldsImpl(context, operation.selectionSet, groupedFieldSet, newDeferUsages);
     return { groupedFieldSet, newDeferUsages };
@@ -44,7 +46,7 @@ exports.collectFields = collectFields;
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/max-params
-function collectSubfields(schema, fragments, variableValues, operation, returnType, fieldDetailsList) {
+function collectSubfields(schema, fragments, variableValues, operation, returnType, fieldDetailsList, hideSuggestions) {
     const context = {
         schema,
         fragments,
@@ -52,6 +54,7 @@ function collectSubfields(schema, fragments, variableValues, operation, returnTy
         runtimeType: returnType,
         operation,
         visitedFragmentNames: new Set(),
+        hideSuggestions,
     };
     const subGroupedFieldSet = new AccumulatorMap_js_1.AccumulatorMap();
     const newDeferUsages = [];
@@ -70,7 +73,7 @@ function collectSubfields(schema, fragments, variableValues, operation, returnTy
 exports.collectSubfields = collectSubfields;
 // eslint-disable-next-line @typescript-eslint/max-params
 function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues) {
-    const { schema, fragments, variableValues, runtimeType, operation, visitedFragmentNames, } = context;
+    const { schema, fragments, variableValues, runtimeType, operation, visitedFragmentNames, hideSuggestions, } = context;
     for (const selection of selectionSet.selections) {
         switch (selection.kind) {
             case kinds_js_1.Kind.FIELD: {
@@ -115,7 +118,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
                 const fragmentVariableSignatures = fragment.variableSignatures;
                 let newFragmentVariableValues;
                 if (fragmentVariableSignatures) {
-                    newFragmentVariableValues = (0, values_js_1.getFragmentVariableValues)(selection, fragmentVariableSignatures, variableValues, fragmentVariableValues);
+                    newFragmentVariableValues = (0, values_js_1.getFragmentVariableValues)(selection, fragmentVariableSignatures, variableValues, fragmentVariableValues, hideSuggestions);
                 }
                 if (!newDeferUsage) {
                     visitedFragmentNames.add(fragName);

@@ -25,7 +25,9 @@ function KnownArgumentNamesRule(context) {
                 const varDef = fragmentSignature.variableDefinitions.get(argNode.name.value);
                 if (!varDef) {
                     const argName = argNode.name.value;
-                    const suggestions = (0, suggestionList_js_1.suggestionList)(argName, Array.from(fragmentSignature.variableDefinitions.values()).map((varSignature) => varSignature.variable.name.value));
+                    const suggestions = context.hideSuggestions
+                        ? []
+                        : (0, suggestionList_js_1.suggestionList)(argName, Array.from(fragmentSignature.variableDefinitions.values()).map((varSignature) => varSignature.variable.name.value));
                     context.reportError(new GraphQLError_js_1.GraphQLError(`Unknown argument "${argName}" on fragment "${fragmentSignature.definition.name.value}".` +
                         (0, didYouMean_js_1.didYouMean)(suggestions), { nodes: argNode }));
                 }
@@ -37,7 +39,9 @@ function KnownArgumentNamesRule(context) {
             const parentType = context.getParentType();
             if (!argDef && fieldDef && parentType) {
                 const argName = argNode.name.value;
-                const suggestions = (0, suggestionList_js_1.suggestionList)(argName, fieldDef.args.map((arg) => arg.name));
+                const suggestions = context.hideSuggestions
+                    ? []
+                    : (0, suggestionList_js_1.suggestionList)(argName, fieldDef.args.map((arg) => arg.name));
                 context.reportError(new GraphQLError_js_1.GraphQLError(`Unknown argument "${argName}" on field "${parentType}.${fieldDef.name}".` +
                     (0, didYouMean_js_1.didYouMean)(suggestions), { nodes: argNode }));
             }
@@ -76,7 +80,7 @@ function KnownArgumentNamesOnDirectivesRule(context) {
                     if (!knownArgs.includes(argName)) {
                         const suggestions = (0, suggestionList_js_1.suggestionList)(argName, knownArgs);
                         context.reportError(new GraphQLError_js_1.GraphQLError(`Unknown argument "${argName}" on directive "@${directiveName}".` +
-                            (0, didYouMean_js_1.didYouMean)(suggestions), { nodes: argNode }));
+                            (context.hideSuggestions ? '' : (0, didYouMean_js_1.didYouMean)(suggestions)), { nodes: argNode }));
                     }
                 }
             }

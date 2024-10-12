@@ -22,7 +22,9 @@ export function KnownArgumentNamesRule(context) {
                 const varDef = fragmentSignature.variableDefinitions.get(argNode.name.value);
                 if (!varDef) {
                     const argName = argNode.name.value;
-                    const suggestions = suggestionList(argName, Array.from(fragmentSignature.variableDefinitions.values()).map((varSignature) => varSignature.variable.name.value));
+                    const suggestions = context.hideSuggestions
+                        ? []
+                        : suggestionList(argName, Array.from(fragmentSignature.variableDefinitions.values()).map((varSignature) => varSignature.variable.name.value));
                     context.reportError(new GraphQLError(`Unknown argument "${argName}" on fragment "${fragmentSignature.definition.name.value}".` +
                         didYouMean(suggestions), { nodes: argNode }));
                 }
@@ -34,7 +36,9 @@ export function KnownArgumentNamesRule(context) {
             const parentType = context.getParentType();
             if (!argDef && fieldDef && parentType) {
                 const argName = argNode.name.value;
-                const suggestions = suggestionList(argName, fieldDef.args.map((arg) => arg.name));
+                const suggestions = context.hideSuggestions
+                    ? []
+                    : suggestionList(argName, fieldDef.args.map((arg) => arg.name));
                 context.reportError(new GraphQLError(`Unknown argument "${argName}" on field "${parentType}.${fieldDef.name}".` +
                     didYouMean(suggestions), { nodes: argNode }));
             }
@@ -72,7 +76,7 @@ export function KnownArgumentNamesOnDirectivesRule(context) {
                     if (!knownArgs.includes(argName)) {
                         const suggestions = suggestionList(argName, knownArgs);
                         context.reportError(new GraphQLError(`Unknown argument "${argName}" on directive "@${directiveName}".` +
-                            didYouMean(suggestions), { nodes: argNode }));
+                            (context.hideSuggestions ? '' : didYouMean(suggestions)), { nodes: argNode }));
                     }
                 }
             }
