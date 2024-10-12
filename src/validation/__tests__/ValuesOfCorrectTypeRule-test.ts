@@ -19,8 +19,12 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness.js';
 
-function expectErrors(queryStr: string) {
-  return expectValidationErrors(ValuesOfCorrectTypeRule, queryStr);
+function expectErrors(queryStr: string, hideSuggestions = false) {
+  return expectValidationErrors(
+    ValuesOfCorrectTypeRule,
+    queryStr,
+    hideSuggestions,
+  );
 }
 
 function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
@@ -526,6 +530,24 @@ describe('Validate: Values of correct type', () => {
       ]);
     });
 
+    it('String into Enum (no suggestion)', () => {
+      expectErrors(
+        `
+        {
+          dog {
+            doesKnowCommand(dogCommand: "SIT")
+          }
+        }
+      `,
+        true,
+      ).toDeepEqual([
+        {
+          message: 'Enum "DogCommand" cannot represent non-enum value: "SIT".',
+          locations: [{ line: 4, column: 41 }],
+        },
+      ]);
+    });
+
     it('Boolean into Enum', () => {
       expectErrors(`
         {
@@ -567,6 +589,24 @@ describe('Validate: Values of correct type', () => {
         {
           message:
             'Value "sit" does not exist in "DogCommand" enum. Did you mean the enum value "SIT"?',
+          locations: [{ line: 4, column: 41 }],
+        },
+      ]);
+    });
+
+    it('Different case Enum Value into Enum (no suggestion)', () => {
+      expectErrors(
+        `
+        {
+          dog {
+            doesKnowCommand(dogCommand: sit)
+          }
+        }
+      `,
+        true,
+      ).toDeepEqual([
+        {
+          message: 'Value "sit" does not exist in "DogCommand" enum.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -963,6 +1003,28 @@ describe('Validate: Values of correct type', () => {
         {
           message:
             'Field "invalidField" is not defined by type "ComplexInput". Did you mean "intField"?',
+          locations: [{ line: 6, column: 15 }],
+        },
+      ]);
+    });
+
+    it('Partial object, unknown field arg (no suggestions)', () => {
+      expectErrors(
+        `
+        {
+          complicatedArgs {
+            complexArgField(complexArg: {
+              requiredField: true,
+              invalidField: "value"
+            })
+          }
+        }
+      `,
+        true,
+      ).toDeepEqual([
+        {
+          message:
+            'Field "invalidField" is not defined by type "ComplexInput".',
           locations: [{ line: 6, column: 15 }],
         },
       ]);
