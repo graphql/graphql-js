@@ -28,6 +28,11 @@ function ScalarLeafsRule(context) {
                     const typeStr = (0, inspect_js_1.inspect)(type);
                     context.reportError(new GraphQLError_js_1.GraphQLError(`Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`, { nodes: node }));
                 }
+                else if (selectionSet.selections.length === 0) {
+                    const fieldName = node.name.value;
+                    const typeStr = (0, inspect_js_1.inspect)(type);
+                    context.reportError(new GraphQLError_js_1.GraphQLError(`Field "${fieldName}" of type "${typeStr}" must have at least one field selected.`, { nodes: node }));
+                }
             }
         },
     };
