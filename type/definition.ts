@@ -1065,7 +1065,7 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   astNode?: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 }
-export interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
+interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
   extends GraphQLInterfaceTypeConfig<any, any> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldConfigMap<TSource, TContext>;
