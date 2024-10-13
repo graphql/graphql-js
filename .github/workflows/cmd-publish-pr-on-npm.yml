@@ -105,7 +105,7 @@ jobs:
             fs.writeFileSync('./replyMessage.txt', replyMessage.trim(), 'utf-8');
 
       - name: Publish NPM package
-        run: npm publish --ignore-scripts ./npmDist
+        run: npm publish --ignore-scripts ./npmDist --tag canary
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_CANARY_PR_PUBLISH_TOKEN }}
 
