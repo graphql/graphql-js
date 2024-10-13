@@ -155,11 +155,11 @@ function isValidValueNode(context: ValidationContext, node: ValueNode): void {
     return;
   }
 
-  // Scalars and Enums determine if a literal value is valid via parseConstLiteral(),
+  // Scalars and Enums determine if a literal value is valid via coerceInputLiteral(),
   // which may throw or return undefined to indicate an invalid value.
   try {
-    const parseResult = type.parseConstLiteral
-      ? type.parseConstLiteral(replaceVariables(node), context.hideSuggestions)
+    const parseResult = type.coerceInputLiteral
+      ? type.coerceInputLiteral(replaceVariables(node), context.hideSuggestions)
       : type.parseLiteral(node, undefined, context.hideSuggestions);
     if (parseResult === undefined) {
       const typeStr = inspect(locationType);
