@@ -41,7 +41,7 @@ describe('astFromValue', () => {
       value: false,
     });
 
-    expect(astFromValue(1n, GraphQLBoolean)).to.deep.equal({
+    expect(astFromValue(1, GraphQLBoolean)).to.deep.equal({
       kind: 'BooleanValue',
       value: true,
     });
@@ -49,6 +49,11 @@ describe('astFromValue', () => {
     expect(astFromValue(0n, GraphQLBoolean)).to.deep.equal({
       kind: 'BooleanValue',
       value: false,
+    });
+
+    expect(astFromValue(1n, GraphQLBoolean)).to.deep.equal({
+      kind: 'BooleanValue',
+      value: true,
     });
 
     const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
