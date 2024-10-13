@@ -192,6 +192,7 @@ describe('Type System: Specified scalar types', () => {
       expect(parseValue(-1)).to.equal(-1);
       expect(parseValue(0.1)).to.equal(0.1);
       expect(parseValue(Math.PI)).to.equal(Math.PI);
+      expect(parseValue(1n)).to.equal(1);
 
       expect(() => parseValue(NaN)).to.throw(
         'Float cannot represent non numeric value: NaN',
