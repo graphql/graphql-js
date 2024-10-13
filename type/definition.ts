@@ -497,9 +497,9 @@ export interface GraphQLScalarTypeExtensions {
  *  - parseLiteral(ast): Implements "Input Coercion" for literals including
  *    non-specified replacement of variables embedded within complex scalars.
  *    This method will be removed in v18 favor of the combination of the
- *    `replaceVariables()` utility and the `parseConstLiteral()` method.
+ *    `replaceVariables()` utility and the `coerceInputLiteral()` method.
  *
- *  - parseConstLiteral(ast): Implements "Input Coercion" for constant literals.
+ *  - coerceInputLiteral(ast): Implements "Input Coercion" for constant literals.
  *    Given an GraphQL literal (AST) (for example, an argument value), produces
  *    an internal value valid for this type. Returns undefined or throws an
  *    error to indicate invalid values.
@@ -515,9 +515,9 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   specifiedByURL: Maybe<string>;
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
-  /** @deprecated use `replaceVariables()` and `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
+  /** @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
-  parseConstLiteral: GraphQLScalarConstLiteralParser<TInternal> | undefined;
+  coerceInputLiteral: GraphQLScalarInputLiteralCoercer<TInternal> | undefined;
   valueToLiteral: GraphQLScalarValueToLiteral | undefined;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   astNode: Maybe<ScalarTypeDefinitionNode>;
@@ -535,7 +535,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
     this.parseLiteral =
       config.parseLiteral ??
       ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
-    this.parseConstLiteral = config.parseConstLiteral;
+    this.coerceInputLiteral = config.coerceInputLiteral;
     this.valueToLiteral = config.valueToLiteral;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
@@ -548,12 +548,12 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
           `${this.name} must provide both "parseValue" and "parseLiteral" functions.`,
         );
     }
-    if (config.parseConstLiteral) {
+    if (config.coerceInputLiteral) {
       (typeof config.parseValue === 'function' &&
-        typeof config.parseConstLiteral === 'function') ||
+        typeof config.coerceInputLiteral === 'function') ||
         devAssert(
           false,
-          `${this.name} must provide both "parseValue" and "parseConstLiteral" functions.`,
+          `${this.name} must provide both "parseValue" and "coerceInputLiteral" functions.`,
         );
     }
   }
@@ -568,7 +568,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
-      parseConstLiteral: this.parseConstLiteral,
+      coerceInputLiteral: this.coerceInputLiteral,
       valueToLiteral: this.valueToLiteral,
       extensions: this.extensions,
       astNode: this.astNode,
@@ -588,11 +588,12 @@ export type GraphQLScalarSerializer<TExternal> = (
 export type GraphQLScalarValueParser<TInternal> = (
   inputValue: unknown,
 ) => TInternal;
+/* @deprecated in favor of GraphQLScalarInputLiteralCoercer, will be removed in v18 */
 export type GraphQLScalarLiteralParser<TInternal> = (
   valueNode: ValueNode,
   variables: Maybe<ObjMap<unknown>>,
 ) => Maybe<TInternal>;
-export type GraphQLScalarConstLiteralParser<TInternal> = (
+export type GraphQLScalarInputLiteralCoercer<TInternal> = (
   valueNode: ConstValueNode,
 ) => Maybe<TInternal>;
 export type GraphQLScalarValueToLiteral = (
@@ -607,10 +608,10 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   /** Parses an externally provided value to use as an input. */
   parseValue?: GraphQLScalarValueParser<TInternal> | undefined;
   /** Parses an externally provided literal value to use as an input. */
-  /** @deprecated use `replaceVariables()` and `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
+  /** @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
   parseLiteral?: GraphQLScalarLiteralParser<TInternal> | undefined;
   /** Parses an externally provided const literal value to use as an input. */
-  parseConstLiteral?: GraphQLScalarConstLiteralParser<TInternal> | undefined;
+  coerceInputLiteral?: GraphQLScalarInputLiteralCoercer<TInternal> | undefined;
   /** Translates an externally provided value to a literal (AST). */
   valueToLiteral?: GraphQLScalarValueToLiteral | undefined;
   extensions?: Maybe<Readonly<GraphQLScalarTypeExtensions>>;
@@ -622,7 +623,7 @@ interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
-  parseConstLiteral: GraphQLScalarConstLiteralParser<TInternal> | undefined;
+  coerceInputLiteral: GraphQLScalarInputLiteralCoercer<TInternal> | undefined;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 }
@@ -1294,16 +1295,19 @@ export class GraphQLEnumType /* <T> */ {
     }
     return enumValue.value;
   }
-  /** @deprecated use `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
+  /** @deprecated use `coerceInputLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
   parseLiteral(
     valueNode: ValueNode,
     _variables: Maybe<ObjMap<unknown>>,
     hideSuggestions?: Maybe<boolean>,
   ): Maybe<any> /* T */ {
     // Note: variables will be resolved to a value before calling this function.
-    return this.parseConstLiteral(valueNode as ConstValueNode, hideSuggestions);
+    return this.coerceInputLiteral(
+      valueNode as ConstValueNode,
+      hideSuggestions,
+    );
   }
-  parseConstLiteral(
+  coerceInputLiteral(
     valueNode: ConstValueNode,
     hideSuggestions?: Maybe<boolean>,
   ): Maybe<any> /* T */ {
