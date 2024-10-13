@@ -375,9 +375,9 @@ exports.resolveObjMapThunk = resolveObjMapThunk;
  *  - parseLiteral(ast): Implements "Input Coercion" for literals including
  *    non-specified replacement of variables embedded within complex scalars.
  *    This method will be removed in v18 favor of the combination of the
- *    `replaceVariables()` utility and the `parseConstLiteral()` method.
+ *    `replaceVariables()` utility and the `coerceInputLiteral()` method.
  *
- *  - parseConstLiteral(ast): Implements "Input Coercion" for constant literals.
+ *  - coerceInputLiteral(ast): Implements "Input Coercion" for constant literals.
  *    Given an GraphQL literal (AST) (for example, an argument value), produces
  *    an internal value valid for this type. Returns undefined or throws an
  *    error to indicate invalid values.
@@ -400,7 +400,7 @@ class GraphQLScalarType {
         this.parseLiteral =
             config.parseLiteral ??
                 ((node, variables) => parseValue((0, valueFromASTUntyped_js_1.valueFromASTUntyped)(node, variables)));
-        this.parseConstLiteral = config.parseConstLiteral;
+        this.coerceInputLiteral = config.coerceInputLiteral;
         this.valueToLiteral = config.valueToLiteral;
         this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
         this.astNode = config.astNode;
@@ -409,9 +409,9 @@ class GraphQLScalarType {
             (typeof config.parseValue === 'function' &&
                 typeof config.parseLiteral === 'function') || (0, devAssert_js_1.devAssert)(false, `${this.name} must provide both "parseValue" and "parseLiteral" functions.`);
         }
-        if (config.parseConstLiteral) {
+        if (config.coerceInputLiteral) {
             (typeof config.parseValue === 'function' &&
-                typeof config.parseConstLiteral === 'function') || (0, devAssert_js_1.devAssert)(false, `${this.name} must provide both "parseValue" and "parseConstLiteral" functions.`);
+                typeof config.coerceInputLiteral === 'function') || (0, devAssert_js_1.devAssert)(false, `${this.name} must provide both "parseValue" and "coerceInputLiteral" functions.`);
         }
     }
     get [Symbol.toStringTag]() {
@@ -425,7 +425,7 @@ class GraphQLScalarType {
             serialize: this.serialize,
             parseValue: this.parseValue,
             parseLiteral: this.parseLiteral,
-            parseConstLiteral: this.parseConstLiteral,
+            coerceInputLiteral: this.coerceInputLiteral,
             valueToLiteral: this.valueToLiteral,
             extensions: this.extensions,
             astNode: this.astNode,
@@ -814,12 +814,12 @@ class GraphQLEnumType /* <T> */ {
         }
         return enumValue.value;
     }
-    /** @deprecated use `parseConstLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
+    /** @deprecated use `coerceInputLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
     parseLiteral(valueNode, _variables, hideSuggestions) {
         // Note: variables will be resolved to a value before calling this function.
-        return this.parseConstLiteral(valueNode, hideSuggestions);
+        return this.coerceInputLiteral(valueNode, hideSuggestions);
     }
-    parseConstLiteral(valueNode, hideSuggestions) {
+    coerceInputLiteral(valueNode, hideSuggestions) {
         if (valueNode.kind !== kinds_js_1.Kind.ENUM) {
             const valueStr = (0, printer_js_1.print)(valueNode);
             throw new GraphQLError_js_1.GraphQLError(`Enum "${this.name}" cannot represent non-enum value: ${valueStr}.` +

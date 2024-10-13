@@ -97,11 +97,11 @@ function isValidValueNode(context, node) {
         context.reportError(new GraphQLError_js_1.GraphQLError(`Expected value of type "${typeStr}", found ${(0, printer_js_1.print)(node)}.`, { nodes: node }));
         return;
     }
-    // Scalars and Enums determine if a literal value is valid via parseConstLiteral(),
+    // Scalars and Enums determine if a literal value is valid via coerceInputLiteral(),
     // which may throw or return undefined to indicate an invalid value.
     try {
-        const parseResult = type.parseConstLiteral
-            ? type.parseConstLiteral((0, replaceVariables_js_1.replaceVariables)(node), context.hideSuggestions)
+        const parseResult = type.coerceInputLiteral
+            ? type.coerceInputLiteral((0, replaceVariables_js_1.replaceVariables)(node), context.hideSuggestions)
             : type.parseLiteral(node, undefined, context.hideSuggestions);
         if (parseResult === undefined) {
             const typeStr = (0, inspect_js_1.inspect)(locationType);

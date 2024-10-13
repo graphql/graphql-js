@@ -45,7 +45,7 @@ export const GraphQLInt = new GraphQLScalarType({
         }
         return inputValue;
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== Kind.INT) {
             throw new GraphQLError(`Int cannot represent non-integer value: ${print(valueNode)}`, { nodes: valueNode });
         }
@@ -87,7 +87,7 @@ export const GraphQLFloat = new GraphQLScalarType({
         }
         return inputValue;
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== Kind.FLOAT && valueNode.kind !== Kind.INT) {
             throw new GraphQLError(`Float cannot represent non numeric value: ${print(valueNode)}`, { nodes: valueNode });
         }
@@ -124,7 +124,7 @@ export const GraphQLString = new GraphQLScalarType({
         }
         return inputValue;
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== Kind.STRING) {
             throw new GraphQLError(`String cannot represent a non string value: ${print(valueNode)}`, { nodes: valueNode });
         }
@@ -156,7 +156,7 @@ export const GraphQLBoolean = new GraphQLScalarType({
         }
         return inputValue;
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== Kind.BOOLEAN) {
             throw new GraphQLError(`Boolean cannot represent a non boolean value: ${print(valueNode)}`, { nodes: valueNode });
         }
@@ -191,7 +191,7 @@ export const GraphQLID = new GraphQLScalarType({
         }
         throw new GraphQLError(`ID cannot represent value: ${inspect(inputValue)}`);
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== Kind.STRING && valueNode.kind !== Kind.INT) {
             throw new GraphQLError('ID cannot represent a non-string and non-integer value: ' +
                 print(valueNode), { nodes: valueNode });

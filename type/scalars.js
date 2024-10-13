@@ -48,7 +48,7 @@ exports.GraphQLInt = new definition_js_1.GraphQLScalarType({
         }
         return inputValue;
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.INT) {
             throw new GraphQLError_js_1.GraphQLError(`Int cannot represent non-integer value: ${(0, printer_js_1.print)(valueNode)}`, { nodes: valueNode });
         }
@@ -90,7 +90,7 @@ exports.GraphQLFloat = new definition_js_1.GraphQLScalarType({
         }
         return inputValue;
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.FLOAT && valueNode.kind !== kinds_js_1.Kind.INT) {
             throw new GraphQLError_js_1.GraphQLError(`Float cannot represent non numeric value: ${(0, printer_js_1.print)(valueNode)}`, { nodes: valueNode });
         }
@@ -127,7 +127,7 @@ exports.GraphQLString = new definition_js_1.GraphQLScalarType({
         }
         return inputValue;
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.STRING) {
             throw new GraphQLError_js_1.GraphQLError(`String cannot represent a non string value: ${(0, printer_js_1.print)(valueNode)}`, { nodes: valueNode });
         }
@@ -159,7 +159,7 @@ exports.GraphQLBoolean = new definition_js_1.GraphQLScalarType({
         }
         return inputValue;
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.BOOLEAN) {
             throw new GraphQLError_js_1.GraphQLError(`Boolean cannot represent a non boolean value: ${(0, printer_js_1.print)(valueNode)}`, { nodes: valueNode });
         }
@@ -194,7 +194,7 @@ exports.GraphQLID = new definition_js_1.GraphQLScalarType({
         }
         throw new GraphQLError_js_1.GraphQLError(`ID cannot represent value: ${(0, inspect_js_1.inspect)(inputValue)}`);
     },
-    parseConstLiteral(valueNode) {
+    coerceInputLiteral(valueNode) {
         if (valueNode.kind !== kinds_js_1.Kind.STRING && valueNode.kind !== kinds_js_1.Kind.INT) {
             throw new GraphQLError_js_1.GraphQLError('ID cannot represent a non-string and non-integer value: ' +
                 (0, printer_js_1.print)(valueNode), { nodes: valueNode });
