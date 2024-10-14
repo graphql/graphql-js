@@ -74,3 +74,4 @@ function isTypeExtensionNode(node) {
         node.kind === kinds_js_1.Kind.INPUT_OBJECT_TYPE_EXTENSION);
 }
 exports.isTypeExtensionNode = isTypeExtensionNode;
+//# sourceMappingURL=predicates.js.map

@@ -667,3 +667,4 @@ function readName(lexer, start) {
     }
     return createToken(lexer, tokenKind_js_1.TokenKind.NAME, start, position, body.slice(start, position));
 }
+//# sourceMappingURL=lexer.js.map

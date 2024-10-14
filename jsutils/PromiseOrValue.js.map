@@ -1,0 +1,1 @@
+{"version":3,"file":"PromiseOrValue.js","sourceRoot":"","sources":["../../src/jsutils/PromiseOrValue.ts"],"names":[],"mappings":"","sourcesContent":["export type PromiseOrValue<T> = Promise<T> | T;\n"]}

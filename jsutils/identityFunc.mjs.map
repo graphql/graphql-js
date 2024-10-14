@@ -1,0 +1,1 @@
+{"version":3,"file":"identityFunc.js","sourceRoot":"","sources":["../../src/jsutils/identityFunc.ts"],"names":[],"mappings":"AAAA;;GAEG;AACH,MAAM,UAAU,YAAY,CAAI,CAAI;IAClC,OAAO,CAAC,CAAC;AACX,CAAC","sourcesContent":["/**\n * Returns the first argument it receives.\n */\nexport function identityFunc<T>(x: T): T {\n  return x;\n}\n"]}

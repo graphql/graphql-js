@@ -61,3 +61,4 @@ export function isTypeExtensionNode(node) {
         node.kind === Kind.ENUM_TYPE_EXTENSION ||
         node.kind === Kind.INPUT_OBJECT_TYPE_EXTENSION);
 }
+//# sourceMappingURL=predicates.js.map

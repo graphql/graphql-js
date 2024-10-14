@@ -73,3 +73,4 @@ function buildSchema(source, options) {
     });
 }
 exports.buildSchema = buildSchema;
+//# sourceMappingURL=buildASTSchema.js.map

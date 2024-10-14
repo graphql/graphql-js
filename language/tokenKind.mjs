@@ -28,3 +28,4 @@ var TokenKind;
     TokenKind["COMMENT"] = "Comment";
 })(TokenKind || (TokenKind = {}));
 export { TokenKind };
+//# sourceMappingURL=tokenKind.js.map

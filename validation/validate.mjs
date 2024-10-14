@@ -91,3 +91,4 @@ export function assertValidSDLExtension(documentAST, schema) {
         throw new Error(errors.map((error) => error.message).join('\n\n'));
     }
 }
+//# sourceMappingURL=validate.js.map

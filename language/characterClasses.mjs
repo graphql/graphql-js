@@ -57,3 +57,4 @@ export function isNameStart(code) {
 export function isNameContinue(code) {
     return isLetter(code) || isDigit(code) || code === 0x005f;
 }
+//# sourceMappingURL=characterClasses.js.map

@@ -26,3 +26,4 @@ function VariablesAreInputTypesRule(context) {
     };
 }
 exports.VariablesAreInputTypesRule = VariablesAreInputTypesRule;
+//# sourceMappingURL=VariablesAreInputTypesRule.js.map

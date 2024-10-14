@@ -16,3 +16,4 @@ export function pathToArray(path) {
     }
     return flattened.reverse();
 }
+//# sourceMappingURL=Path.js.map

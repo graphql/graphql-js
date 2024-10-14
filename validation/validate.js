@@ -98,3 +98,4 @@ function assertValidSDLExtension(documentAST, schema) {
     }
 }
 exports.assertValidSDLExtension = assertValidSDLExtension;
+//# sourceMappingURL=validate.js.map

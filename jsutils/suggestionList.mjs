@@ -104,3 +104,4 @@ function stringToArray(str) {
     }
     return array;
 }
+//# sourceMappingURL=suggestionList.js.map

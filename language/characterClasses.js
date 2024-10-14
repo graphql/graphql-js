@@ -65,3 +65,4 @@ function isNameContinue(code) {
     return isLetter(code) || isDigit(code) || code === 0x005f;
 }
 exports.isNameContinue = isNameContinue;
+//# sourceMappingURL=characterClasses.js.map

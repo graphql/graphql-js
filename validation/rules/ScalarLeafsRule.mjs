@@ -34,3 +34,4 @@ export function ScalarLeafsRule(context) {
         },
     };
 }
+//# sourceMappingURL=ScalarLeafsRule.js.map

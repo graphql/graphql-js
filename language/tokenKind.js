@@ -30,3 +30,4 @@ var TokenKind;
     TokenKind["BLOCK_STRING"] = "BlockString";
     TokenKind["COMMENT"] = "Comment";
 })(TokenKind || (exports.TokenKind = TokenKind = {}));
+//# sourceMappingURL=tokenKind.js.map

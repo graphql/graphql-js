@@ -256,3 +256,4 @@ function buildClientSchema(introspection, options) {
     }
 }
 exports.buildClientSchema = buildClientSchema;
+//# sourceMappingURL=buildClientSchema.js.map

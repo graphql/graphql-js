@@ -63,3 +63,4 @@ function NoDeprecatedCustomRule(context) {
     };
 }
 exports.NoDeprecatedCustomRule = NoDeprecatedCustomRule;
+//# sourceMappingURL=NoDeprecatedCustomRule.js.map

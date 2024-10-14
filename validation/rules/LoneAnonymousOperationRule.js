@@ -25,3 +25,4 @@ function LoneAnonymousOperationRule(context) {
     };
 }
 exports.LoneAnonymousOperationRule = LoneAnonymousOperationRule;
+//# sourceMappingURL=LoneAnonymousOperationRule.js.map

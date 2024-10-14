@@ -25,3 +25,4 @@ function NoSchemaIntrospectionCustomRule(context) {
     };
 }
 exports.NoSchemaIntrospectionCustomRule = NoSchemaIntrospectionCustomRule;
+//# sourceMappingURL=NoSchemaIntrospectionCustomRule.js.map

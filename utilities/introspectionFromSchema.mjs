@@ -25,3 +25,4 @@ export function introspectionFromSchema(schema, options) {
     (result.errors == null && result.data != null) || invariant(false);
     return result.data;
 }
+//# sourceMappingURL=introspectionFromSchema.js.map

@@ -26,3 +26,4 @@ export function LoneSchemaDefinitionRule(context) {
         },
     };
 }
+//# sourceMappingURL=LoneSchemaDefinitionRule.js.map

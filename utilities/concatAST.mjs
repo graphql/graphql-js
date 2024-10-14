@@ -11,3 +11,4 @@ export function concatAST(documents) {
     }
     return { kind: Kind.DOCUMENT, definitions };
 }
+//# sourceMappingURL=concatAST.js.map

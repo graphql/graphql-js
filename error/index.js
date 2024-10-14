@@ -7,3 +7,4 @@ var syntaxError_js_1 = require("./syntaxError.js");
 Object.defineProperty(exports, "syntaxError", { enumerable: true, get: function () { return syntaxError_js_1.syntaxError; } });
 var locatedError_js_1 = require("./locatedError.js");
 Object.defineProperty(exports, "locatedError", { enumerable: true, get: function () { return locatedError_js_1.locatedError; } });
+//# sourceMappingURL=index.js.map

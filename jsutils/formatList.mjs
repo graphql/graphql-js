@@ -23,3 +23,4 @@ function formatList(conjunction, items) {
     const lastItem = items.at(-1);
     return allButLast.join(', ') + ', ' + conjunction + ' ' + lastItem;
 }
+//# sourceMappingURL=formatList.js.map

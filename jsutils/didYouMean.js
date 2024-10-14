@@ -18,3 +18,4 @@ function didYouMean(firstArg, secondArg) {
     return message + suggestionList + '?';
 }
 exports.didYouMean = didYouMean;
+//# sourceMappingURL=didYouMean.js.map

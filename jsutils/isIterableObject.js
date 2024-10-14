@@ -23,3 +23,4 @@ function isIterableObject(maybeIterable) {
         typeof maybeIterable?.[Symbol.iterator] === 'function');
 }
 exports.isIterableObject = isIterableObject;
+//# sourceMappingURL=isIterableObject.js.map

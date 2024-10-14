@@ -501,3 +501,4 @@ function isIntrospectionType(type) {
     return exports.introspectionTypes.some(({ name }) => type.name === name);
 }
 exports.isIntrospectionType = isIntrospectionType;
+//# sourceMappingURL=introspection.js.map

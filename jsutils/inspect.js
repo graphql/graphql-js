@@ -92,3 +92,4 @@ function getObjectTag(object) {
     }
     return tag;
 }
+//# sourceMappingURL=inspect.js.map

@@ -25,3 +25,4 @@ export function UniqueOperationNamesRule(context) {
         FragmentDefinition: () => false,
     };
 }
+//# sourceMappingURL=UniqueOperationNamesRule.js.map

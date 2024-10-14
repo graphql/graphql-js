@@ -15,3 +15,4 @@ export async function promiseForObject(object, callback) {
     }
     return callback(resolvedObject);
 }
+//# sourceMappingURL=promiseForObject.js.map

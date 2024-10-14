@@ -405,3 +405,4 @@ function getUnionMemberTypeNodes(union, typeName) {
 function getDeprecatedDirectiveNode(definitionNode) {
     return definitionNode?.directives?.find((node) => node.name.value === directives_js_1.GraphQLDeprecatedDirective.name);
 }
+//# sourceMappingURL=validate.js.map

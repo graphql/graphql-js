@@ -29,3 +29,4 @@ var DirectiveLocation;
     DirectiveLocation["INPUT_FIELD_DEFINITION"] = "INPUT_FIELD_DEFINITION";
     DirectiveLocation["FRAGMENT_VARIABLE_DEFINITION"] = "FRAGMENT_VARIABLE_DEFINITION";
 })(DirectiveLocation || (exports.DirectiveLocation = DirectiveLocation = {}));
+//# sourceMappingURL=directiveLocation.js.map

@@ -14,3 +14,4 @@ export function didYouMean(firstArg, secondArg) {
     const suggestionList = orList(suggestions.slice(0, MAX_SUGGESTIONS).map((x) => `"${x}"`));
     return message + suggestionList + '?';
 }
+//# sourceMappingURL=didYouMean.js.map

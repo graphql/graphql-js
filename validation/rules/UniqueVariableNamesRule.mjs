@@ -20,3 +20,4 @@ export function UniqueVariableNamesRule(context) {
         },
     };
 }
+//# sourceMappingURL=UniqueVariableNamesRule.js.map

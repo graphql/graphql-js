@@ -15,3 +15,4 @@ function concatAST(documents) {
     return { kind: kinds_js_1.Kind.DOCUMENT, definitions };
 }
 exports.concatAST = concatAST;
+//# sourceMappingURL=concatAST.js.map

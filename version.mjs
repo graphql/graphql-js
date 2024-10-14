@@ -13,3 +13,4 @@ export const versionInfo = Object.freeze({
     patch: 0,
     preReleaseTag: 'alpha.7',
 });
+//# sourceMappingURL=version.js.map

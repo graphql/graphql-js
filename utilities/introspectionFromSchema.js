@@ -29,3 +29,4 @@ function introspectionFromSchema(schema, options) {
     return result.data;
 }
 exports.introspectionFromSchema = introspectionFromSchema;
+//# sourceMappingURL=introspectionFromSchema.js.map

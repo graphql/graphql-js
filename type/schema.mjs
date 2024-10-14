@@ -308,3 +308,4 @@ function collectReferencedTypes(type, typeSet) {
     }
     return typeSet;
 }
+//# sourceMappingURL=schema.js.map

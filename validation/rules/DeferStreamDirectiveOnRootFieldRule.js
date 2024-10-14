@@ -34,3 +34,4 @@ function DeferStreamDirectiveOnRootFieldRule(context) {
     };
 }
 exports.DeferStreamDirectiveOnRootFieldRule = DeferStreamDirectiveOnRootFieldRule;
+//# sourceMappingURL=DeferStreamDirectiveOnRootFieldRule.js.map

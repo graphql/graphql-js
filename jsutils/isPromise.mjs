@@ -5,3 +5,4 @@
 export function isPromise(value) {
     return typeof value?.then === 'function';
 }
+//# sourceMappingURL=isPromise.js.map

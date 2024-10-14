@@ -7,3 +7,4 @@ function invariant(condition, message) {
     }
 }
 exports.invariant = invariant;
+//# sourceMappingURL=invariant.js.map

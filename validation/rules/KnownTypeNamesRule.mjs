@@ -41,3 +41,4 @@ function isSDLNode(value) {
     return ('kind' in value &&
         (isTypeSystemDefinitionNode(value) || isTypeSystemExtensionNode(value)));
 }
+//# sourceMappingURL=KnownTypeNamesRule.js.map

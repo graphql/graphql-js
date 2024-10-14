@@ -9,3 +9,4 @@ function isPromise(value) {
     return typeof value?.then === 'function';
 }
 exports.isPromise = isPromise;
+//# sourceMappingURL=isPromise.js.map

@@ -41,3 +41,4 @@ function sortFields(fields) {
     }))
         .sort((fieldA, fieldB) => (0, naturalCompare_js_1.naturalCompare)(fieldA.name.value, fieldB.name.value));
 }
+//# sourceMappingURL=sortValueNode.js.map

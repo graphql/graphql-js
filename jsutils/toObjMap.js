@@ -15,3 +15,4 @@ function toObjMap(obj) {
     return map;
 }
 exports.toObjMap = toObjMap;
+//# sourceMappingURL=toObjMap.js.map

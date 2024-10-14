@@ -68,3 +68,4 @@ export function buildSchema(source, options) {
         assumeValid: options?.assumeValid,
     });
 }
+//# sourceMappingURL=buildASTSchema.js.map

@@ -21,3 +21,4 @@ function pathToArray(path) {
     return flattened.reverse();
 }
 exports.pathToArray = pathToArray;
+//# sourceMappingURL=Path.js.map

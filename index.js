@@ -313,3 +313,4 @@ Object.defineProperty(exports, "BreakingChangeType", { enumerable: true, get: fu
 Object.defineProperty(exports, "DangerousChangeType", { enumerable: true, get: function () { return index_js_6.DangerousChangeType; } });
 Object.defineProperty(exports, "findBreakingChanges", { enumerable: true, get: function () { return index_js_6.findBreakingChanges; } });
 Object.defineProperty(exports, "findDangerousChanges", { enumerable: true, get: function () { return index_js_6.findDangerousChanges; } });
+//# sourceMappingURL=index.js.map

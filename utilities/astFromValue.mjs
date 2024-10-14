@@ -121,3 +121,4 @@ export function astFromValue(value, type) {
  *   - NegativeSign? NonZeroDigit ( Digit+ )?
  */
 const integerStringRegExp = /^-?(?:0|[1-9][0-9]*)$/;
+//# sourceMappingURL=astFromValue.js.map

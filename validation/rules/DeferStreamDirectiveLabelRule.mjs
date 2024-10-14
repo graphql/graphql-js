@@ -32,3 +32,4 @@ export function DeferStreamDirectiveLabelRule(context) {
         },
     };
 }
+//# sourceMappingURL=DeferStreamDirectiveLabelRule.js.map

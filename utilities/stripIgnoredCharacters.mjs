@@ -93,3 +93,4 @@ export function stripIgnoredCharacters(source) {
     }
     return strippedBody;
 }
+//# sourceMappingURL=stripIgnoredCharacters.js.map

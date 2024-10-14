@@ -75,3 +75,4 @@ export { PossibleTypeExtensionsRule } from "./rules/PossibleTypeExtensionsRule.m
 // Optional rules not defined by the GraphQL Specification
 export { NoDeprecatedCustomRule } from "./rules/custom/NoDeprecatedCustomRule.mjs";
 export { NoSchemaIntrospectionCustomRule } from "./rules/custom/NoSchemaIntrospectionCustomRule.mjs";
+//# sourceMappingURL=index.js.map

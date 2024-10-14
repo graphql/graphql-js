@@ -47,3 +47,4 @@ export function mapAsyncIterable(iterable, callback) {
         },
     };
 }
+//# sourceMappingURL=mapAsyncIterable.js.map

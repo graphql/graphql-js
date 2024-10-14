@@ -49,3 +49,4 @@ spurious results.`);
         }
         return false;
     };
+//# sourceMappingURL=instanceOf.js.map

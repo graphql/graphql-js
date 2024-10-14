@@ -48,3 +48,4 @@ SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef, } from "./introspect
 export { validateSchema, assertValidSchema } from "./validate.mjs";
 // Upholds the spec rules about naming.
 export { assertName, assertEnumValueName } from "./assertName.mjs";
+//# sourceMappingURL=index.js.map

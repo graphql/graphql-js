@@ -32,3 +32,4 @@ function isSource(source) {
     return (0, instanceOf_js_1.instanceOf)(source, Source);
 }
 exports.isSource = isSource;
+//# sourceMappingURL=source.js.map

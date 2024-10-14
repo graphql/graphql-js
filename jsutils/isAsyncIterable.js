@@ -9,3 +9,4 @@ function isAsyncIterable(maybeAsyncIterable) {
     return typeof maybeAsyncIterable?.[Symbol.asyncIterator] === 'function';
 }
 exports.isAsyncIterable = isAsyncIterable;
+//# sourceMappingURL=isAsyncIterable.js.map

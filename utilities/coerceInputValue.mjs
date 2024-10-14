@@ -245,3 +245,4 @@ export function coerceDefaultValue(defaultValue, type, hideSuggestions) {
     }
     return coercedValue;
 }
+//# sourceMappingURL=coerceInputValue.js.map

@@ -112,3 +112,4 @@ function getDirectiveLocationForOperation(operation) {
             return DirectiveLocation.SUBSCRIPTION;
     }
 }
+//# sourceMappingURL=KnownDirectivesRule.js.map

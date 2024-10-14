@@ -33,3 +33,4 @@ function isCancellableStreamRecord(deliveryGroup) {
     return 'earlyReturn' in deliveryGroup;
 }
 exports.isCancellableStreamRecord = isCancellableStreamRecord;
+//# sourceMappingURL=types.js.map

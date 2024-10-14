@@ -147,3 +147,4 @@ var OperationTypeNode;
     OperationTypeNode["SUBSCRIPTION"] = "subscription";
 })(OperationTypeNode || (OperationTypeNode = {}));
 export { OperationTypeNode };
+//# sourceMappingURL=ast.js.map

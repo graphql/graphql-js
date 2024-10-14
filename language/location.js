@@ -21,3 +21,4 @@ function getLocation(source, position) {
     return { line, column: position + 1 - lastLineStart };
 }
 exports.getLocation = getLocation;
+//# sourceMappingURL=location.js.map

@@ -236,3 +236,4 @@ function serializeObject(outputValue) {
     }
     return outputValue;
 }
+//# sourceMappingURL=scalars.js.map

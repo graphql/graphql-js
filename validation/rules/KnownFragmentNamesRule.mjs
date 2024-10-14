@@ -20,3 +20,4 @@ export function KnownFragmentNamesRule(context) {
         },
     };
 }
+//# sourceMappingURL=KnownFragmentNamesRule.js.map

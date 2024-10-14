@@ -190,3 +190,4 @@ function doesFragmentConditionMatch(schema, fragment, type) {
 function getFieldEntryKey(node) {
     return node.alias ? node.alias.value : node.name.value;
 }
+//# sourceMappingURL=collectFields.js.map

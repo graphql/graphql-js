@@ -18,3 +18,4 @@ function typeFromAST(schema, typeNode) {
     }
 }
 exports.typeFromAST = typeFromAST;
+//# sourceMappingURL=typeFromAST.js.map

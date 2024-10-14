@@ -59,3 +59,4 @@ export function NoDeprecatedCustomRule(context) {
         },
     };
 }
+//# sourceMappingURL=NoDeprecatedCustomRule.js.map

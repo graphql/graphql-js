@@ -21,3 +21,4 @@ export function LoneAnonymousOperationRule(context) {
         },
     };
 }
+//# sourceMappingURL=LoneAnonymousOperationRule.js.map

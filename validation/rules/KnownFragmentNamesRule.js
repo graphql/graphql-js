@@ -24,3 +24,4 @@ function KnownFragmentNamesRule(context) {
     };
 }
 exports.KnownFragmentNamesRule = KnownFragmentNamesRule;
+//# sourceMappingURL=KnownFragmentNamesRule.js.map

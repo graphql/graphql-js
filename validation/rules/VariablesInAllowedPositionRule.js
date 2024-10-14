@@ -70,3 +70,4 @@ function allowedVariableUsage(schema, varType, varDefaultValue, locationType, lo
     }
     return (0, typeComparators_js_1.isTypeSubTypeOf)(schema, varType, locationType);
 }
+//# sourceMappingURL=VariablesInAllowedPositionRule.js.map

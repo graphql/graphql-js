@@ -107,3 +107,4 @@ exports.GraphQLError = GraphQLError;
 function undefinedIfEmpty(array) {
     return array === undefined || array.length === 0 ? undefined : array;
 }
+//# sourceMappingURL=GraphQLError.js.map

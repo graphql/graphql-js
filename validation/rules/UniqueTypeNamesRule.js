@@ -37,3 +37,4 @@ function UniqueTypeNamesRule(context) {
     }
 }
 exports.UniqueTypeNamesRule = UniqueTypeNamesRule;
+//# sourceMappingURL=UniqueTypeNamesRule.js.map

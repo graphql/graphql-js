@@ -13,3 +13,4 @@ function syntaxError(source, position, description) {
     });
 }
 exports.syntaxError = syntaxError;
+//# sourceMappingURL=syntaxError.js.map

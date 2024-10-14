@@ -69,3 +69,4 @@ function collectDependencies(selectionSet) {
     });
     return dependencies;
 }
+//# sourceMappingURL=separateOperations.js.map

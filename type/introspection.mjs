@@ -498,3 +498,4 @@ export const introspectionTypes = Object.freeze([
 export function isIntrospectionType(type) {
     return introspectionTypes.some(({ name }) => type.name === name);
 }
+//# sourceMappingURL=introspection.js.map

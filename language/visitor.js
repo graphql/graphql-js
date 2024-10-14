@@ -201,3 +201,4 @@ function getEnterLeaveForKind(visitor, kind) {
     return { enter: visitor.enter, leave: visitor.leave };
 }
 exports.getEnterLeaveForKind = getEnterLeaveForKind;
+//# sourceMappingURL=visitor.js.map

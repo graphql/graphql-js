@@ -15,3 +15,4 @@ export function promiseReduce(values, callbackFn, initialValue) {
     }
     return accumulator;
 }
+//# sourceMappingURL=promiseReduce.js.map

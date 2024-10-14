@@ -152,3 +152,4 @@ var OperationTypeNode;
     OperationTypeNode["MUTATION"] = "mutation";
     OperationTypeNode["SUBSCRIPTION"] = "subscription";
 })(OperationTypeNode || (exports.OperationTypeNode = OperationTypeNode = {}));
+//# sourceMappingURL=ast.js.map

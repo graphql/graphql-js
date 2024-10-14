@@ -50,3 +50,4 @@ export function SingleFieldSubscriptionsRule(context) {
         },
     };
 }
+//# sourceMappingURL=SingleFieldSubscriptionsRule.js.map

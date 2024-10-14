@@ -27,3 +27,4 @@ function UniqueFragmentNamesRule(context) {
     };
 }
 exports.UniqueFragmentNamesRule = UniqueFragmentNamesRule;
+//# sourceMappingURL=UniqueFragmentNamesRule.js.map

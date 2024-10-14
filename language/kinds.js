@@ -62,3 +62,4 @@ var Kind;
     Kind["ENUM_TYPE_EXTENSION"] = "EnumTypeExtension";
     Kind["INPUT_OBJECT_TYPE_EXTENSION"] = "InputObjectTypeExtension";
 })(Kind || (exports.Kind = Kind = {}));
+//# sourceMappingURL=kinds.js.map

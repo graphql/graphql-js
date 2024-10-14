@@ -27,3 +27,4 @@ var DirectiveLocation;
     DirectiveLocation["FRAGMENT_VARIABLE_DEFINITION"] = "FRAGMENT_VARIABLE_DEFINITION";
 })(DirectiveLocation || (DirectiveLocation = {}));
 export { DirectiveLocation };
+//# sourceMappingURL=directiveLocation.js.map

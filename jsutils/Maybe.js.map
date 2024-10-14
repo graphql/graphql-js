@@ -1,0 +1,1 @@
+{"version":3,"file":"Maybe.js","sourceRoot":"","sources":["../../src/jsutils/Maybe.ts"],"names":[],"mappings":"","sourcesContent":["/** Conveniently represents flow's \"Maybe\" type https://flow.org/en/docs/types/maybe/ */\nexport type Maybe<T> = null | undefined | T;\n"]}

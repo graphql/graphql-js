@@ -9,3 +9,4 @@ export function mapValue(map, fn) {
     }
     return result;
 }
+//# sourceMappingURL=mapValue.js.map

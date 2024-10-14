@@ -19,3 +19,4 @@ function promiseReduce(values, callbackFn, initialValue) {
     return accumulator;
 }
 exports.promiseReduce = promiseReduce;
+//# sourceMappingURL=promiseReduce.js.map

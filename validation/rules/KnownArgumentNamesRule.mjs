@@ -84,3 +84,4 @@ export function KnownArgumentNamesOnDirectivesRule(context) {
         },
     };
 }
+//# sourceMappingURL=KnownArgumentNamesRule.js.map

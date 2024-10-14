@@ -123,3 +123,4 @@ Object.defineProperty(exports, "assertValidSchema", { enumerable: true, get: fun
 var assertName_js_1 = require("./assertName.js");
 Object.defineProperty(exports, "assertName", { enumerable: true, get: function () { return assertName_js_1.assertName; } });
 Object.defineProperty(exports, "assertEnumValueName", { enumerable: true, get: function () { return assertName_js_1.assertEnumValueName; } });
+//# sourceMappingURL=index.js.map

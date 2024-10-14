@@ -60,3 +60,4 @@ var Kind;
     Kind["INPUT_OBJECT_TYPE_EXTENSION"] = "InputObjectTypeExtension";
 })(Kind || (Kind = {}));
 export { Kind };
+//# sourceMappingURL=kinds.js.map

@@ -229,3 +229,4 @@ function printDescription(def, indentation = '', firstInBlock = true) {
     const prefix = indentation && !firstInBlock ? '\n' + indentation : indentation;
     return prefix + blockString.replaceAll('\n', '\n' + indentation) + '\n';
 }
+//# sourceMappingURL=printSchema.js.map

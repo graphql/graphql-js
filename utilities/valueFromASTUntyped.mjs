@@ -36,3 +36,4 @@ export function valueFromASTUntyped(valueNode, variables) {
             return variables?.[valueNode.name.value];
     }
 }
+//# sourceMappingURL=valueFromASTUntyped.js.map

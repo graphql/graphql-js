@@ -26,3 +26,4 @@ exports.locatedError = locatedError;
 function isLocatedGraphQLError(error) {
     return Array.isArray(error.path);
 }
+//# sourceMappingURL=locatedError.js.map

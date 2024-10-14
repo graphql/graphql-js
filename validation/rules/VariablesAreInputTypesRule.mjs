@@ -22,3 +22,4 @@ export function VariablesAreInputTypesRule(context) {
         },
     };
 }
+//# sourceMappingURL=VariablesAreInputTypesRule.js.map

@@ -46,3 +46,4 @@ function getFragmentType(context, name) {
         }
     }
 }
+//# sourceMappingURL=PossibleFragmentSpreadsRule.js.map

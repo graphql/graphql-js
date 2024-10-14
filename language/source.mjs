@@ -27,3 +27,4 @@ export class Source {
 export function isSource(source) {
     return instanceOf(source, Source);
 }
+//# sourceMappingURL=source.js.map

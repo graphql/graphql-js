@@ -54,3 +54,4 @@ function SingleFieldSubscriptionsRule(context) {
     };
 }
 exports.SingleFieldSubscriptionsRule = SingleFieldSubscriptionsRule;
+//# sourceMappingURL=SingleFieldSubscriptionsRule.js.map

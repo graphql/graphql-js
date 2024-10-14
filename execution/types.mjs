@@ -24,3 +24,4 @@ export function isDeferredFragmentRecord(deliveryGroup) {
 export function isCancellableStreamRecord(deliveryGroup) {
     return 'earlyReturn' in deliveryGroup;
 }
+//# sourceMappingURL=types.js.map

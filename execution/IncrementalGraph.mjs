@@ -225,3 +225,4 @@ export class IncrementalGraph {
         next(this.currentCompletedBatch());
     }
 }
+//# sourceMappingURL=IncrementalGraph.js.map

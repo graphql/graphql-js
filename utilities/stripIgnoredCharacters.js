@@ -97,3 +97,4 @@ function stripIgnoredCharacters(source) {
     return strippedBody;
 }
 exports.stripIgnoredCharacters = stripIgnoredCharacters;
+//# sourceMappingURL=stripIgnoredCharacters.js.map

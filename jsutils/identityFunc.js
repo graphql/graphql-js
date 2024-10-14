@@ -8,3 +8,4 @@ function identityFunc(x) {
     return x;
 }
 exports.identityFunc = identityFunc;
+//# sourceMappingURL=identityFunc.js.map

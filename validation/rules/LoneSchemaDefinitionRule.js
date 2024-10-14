@@ -30,3 +30,4 @@ function LoneSchemaDefinitionRule(context) {
     };
 }
 exports.LoneSchemaDefinitionRule = LoneSchemaDefinitionRule;
+//# sourceMappingURL=LoneSchemaDefinitionRule.js.map

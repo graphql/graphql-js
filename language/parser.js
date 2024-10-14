@@ -1252,3 +1252,4 @@ function getTokenDesc(token) {
 function getTokenKindDesc(kind) {
     return (0, lexer_js_1.isPunctuatorTokenKind)(kind) ? `"${kind}"` : kind;
 }
+//# sourceMappingURL=parser.js.map

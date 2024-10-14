@@ -143,3 +143,4 @@ export function defaultScalarValueToLiteral(value) {
     }
     throw new TypeError(`Cannot convert value to AST: ${inspect(value)}.`);
 }
+//# sourceMappingURL=valueToLiteral.js.map

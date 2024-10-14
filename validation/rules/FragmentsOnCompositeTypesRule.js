@@ -36,3 +36,4 @@ function FragmentsOnCompositeTypesRule(context) {
     };
 }
 exports.FragmentsOnCompositeTypesRule = FragmentsOnCompositeTypesRule;
+//# sourceMappingURL=FragmentsOnCompositeTypesRule.js.map

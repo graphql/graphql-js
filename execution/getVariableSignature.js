@@ -22,3 +22,4 @@ function getVariableSignature(schema, varDefNode) {
     };
 }
 exports.getVariableSignature = getVariableSignature;
+//# sourceMappingURL=getVariableSignature.js.map

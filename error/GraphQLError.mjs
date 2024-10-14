@@ -103,3 +103,4 @@ export class GraphQLError extends Error {
 function undefinedIfEmpty(array) {
     return array === undefined || array.length === 0 ? undefined : array;
 }
+//# sourceMappingURL=GraphQLError.js.map

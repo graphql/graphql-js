@@ -139,3 +139,4 @@ function sortBy(array, mapToKey) {
         return (0, naturalCompare_js_1.naturalCompare)(key1, key2);
     });
 }
+//# sourceMappingURL=lexicographicSortSchema.js.map
