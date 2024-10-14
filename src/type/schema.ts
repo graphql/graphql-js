@@ -61,7 +61,7 @@ export function assertSchema(schema: unknown): GraphQLSchema {
  * an object which can contain all the values you need.
  */
 export interface GraphQLSchemaExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**

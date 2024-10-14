@@ -16,5 +16,10 @@ export function toObjMap<T>(
   for (const [key, value] of Object.entries(obj)) {
     map[key] = value;
   }
+
+  for (const key of Object.getOwnPropertySymbols(obj)) {
+    map[key] = obj[key];
+  }
+
   return map;
 }

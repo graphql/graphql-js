@@ -511,7 +511,7 @@ export function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T> {
  * an object which can contain all the values you need.
  */
 export interface GraphQLScalarTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -725,7 +725,7 @@ interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
  * you may find them useful.
  */
 export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -980,7 +980,7 @@ export interface GraphQLResolveInfo {
  * you may find them useful.
  */
 export interface GraphQLFieldExtensions<_TSource, _TContext, _TArgs = any> {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLFieldConfig<TSource, TContext, TArgs = any> {
@@ -1008,7 +1008,7 @@ export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
  * an object which can contain all the values you need.
  */
 export interface GraphQLArgumentExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLArgumentConfig {
@@ -1085,7 +1085,7 @@ export function defineDefaultValue(
  * an object which can contain all the values you need.
  */
 export interface GraphQLInterfaceTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1206,7 +1206,7 @@ interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
  * an object which can contain all the values you need.
  */
 export interface GraphQLUnionTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1324,7 +1324,7 @@ interface GraphQLUnionTypeNormalizedConfig
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 function enumValuesFromConfig(values: GraphQLEnumValueConfigMap) {
@@ -1559,7 +1559,7 @@ export type GraphQLEnumValueConfigMap /* <T> */ =
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumValueExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLEnumValueConfig {
@@ -1589,7 +1589,7 @@ export interface GraphQLEnumValue {
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputObjectTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1718,7 +1718,7 @@ interface GraphQLInputObjectTypeNormalizedConfig
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputFieldExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLInputFieldConfig {
