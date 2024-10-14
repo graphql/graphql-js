@@ -24,7 +24,7 @@ function testVariables(variableDefs: string, inputs: ReadOnlyObjMap<unknown>) {
   parser.expectToken(TokenKind.SOF);
   const variableValuesOrErrors = getVariableValues(
     new GraphQLSchema({ types: [GraphQLInt] }),
-    parser.parseVariableDefinitions(),
+    parser.parseVariableDefinitions() ?? [],
     inputs,
   );
   invariant(variableValuesOrErrors.variableValues !== undefined);

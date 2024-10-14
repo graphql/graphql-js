@@ -358,8 +358,6 @@ function indent(str: string): string {
 }
 
 function hasMultilineItems(maybeArray: Maybe<ReadonlyArray<string>>): boolean {
-  // FIXME: https://github.com/graphql/graphql-js/issues/2203
-  /* c8 ignore next */
   return maybeArray?.some((str) => str.includes('\n')) ?? false;
 }
 

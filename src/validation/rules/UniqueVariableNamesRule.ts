@@ -16,8 +16,6 @@ export function UniqueVariableNamesRule(
 ): ASTVisitor {
   return {
     OperationDefinition(operationNode) {
-      // See: https://github.com/graphql/graphql-js/issues/2203
-      /* c8 ignore next */
       const variableDefinitions = operationNode.variableDefinitions ?? [];
 
       const seenVariableDefinitions = groupBy(

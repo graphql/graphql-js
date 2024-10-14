@@ -51,8 +51,6 @@ export function UniqueFieldDefinitionNamesRule(
       knownFieldNames.set(typeName, fieldNames);
     }
 
-    // FIXME: https://github.com/graphql/graphql-js/issues/2203
-    /* c8 ignore next */
     const fieldNodes = node.fields ?? [];
 
     for (const fieldDef of fieldNodes) {
