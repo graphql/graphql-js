@@ -26,8 +26,6 @@ export function UniqueArgumentNamesRule(
   function checkArgUniqueness(parentNode: {
     arguments?: ReadonlyArray<ArgumentNode> | undefined;
   }) {
-    // FIXME: https://github.com/graphql/graphql-js/issues/2203
-    /* c8 ignore next */
     const argumentNodes = parentNode.arguments ?? [];
 
     const seenArgs = groupBy(argumentNodes, (arg) => arg.name.value);

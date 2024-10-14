@@ -639,7 +639,7 @@ describe('coerceInputLiteral', () => {
     parser.expectToken(TokenKind.SOF);
     const variableValuesOrErrors = getVariableValues(
       new GraphQLSchema({}),
-      parser.parseVariableDefinitions(),
+      parser.parseVariableDefinitions() ?? [],
       inputs,
     );
     invariant(variableValuesOrErrors.variableValues !== undefined);
@@ -926,6 +926,13 @@ describe('coerceInputLiteral', () => {
       requiredBool: true,
     });
     test('{ requiredBool: $foo }', testInputObj, undefined);
+    testWithVariables(
+      '',
+      {},
+      '{ requiredBool: $foo }',
+      testInputObj,
+      undefined,
+    );
     testWithVariables(
       '($foo: Boolean)',
       { foo: true },

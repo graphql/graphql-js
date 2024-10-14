@@ -224,8 +224,6 @@ export function experimentalGetArgumentValues(
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
 
-  // FIXME: https://github.com/graphql/graphql-js/issues/2203
-  /* c8 ignore next */
   const argumentNodes = node.arguments ?? [];
   const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
 

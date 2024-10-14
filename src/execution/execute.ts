@@ -561,8 +561,6 @@ export function validateExecutionArgs(
     return [new GraphQLError('Must provide an operation.')];
   }
 
-  // FIXME: https://github.com/graphql/graphql-js/issues/2203
-  /* c8 ignore next */
   const variableDefinitions = operation.variableDefinitions ?? [];
   const hideSuggestions = args.hideSuggestions ?? false;
 

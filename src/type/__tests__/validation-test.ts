@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.js';
@@ -807,6 +807,40 @@ describe('Type System: Union types must be valid', () => {
       ]);
     }
   });
+
+  it('rejects a Union type with non-Object members types with malformed AST', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: BadUnion
+      }
+
+      type TypeA {
+        field: String
+      }
+
+      type TypeB {
+        field: String
+      }
+
+      union BadUnion =
+        | TypeA
+        | String
+        | TypeB
+    `);
+
+    const badUnionNode = (schema.getType('BadUnion') as GraphQLUnionType)
+      ?.astNode;
+    assert(badUnionNode);
+    /* @ts-expect-error */
+    badUnionNode.types = undefined;
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Union type BadUnion can only include Object types, it cannot include String.',
+      },
+    ]);
+  });
 });
 
 describe('Type System: Input Objects must have fields', () => {
@@ -1205,6 +1239,35 @@ describe('Type System: Objects can only implement unique interfaces', () => {
         message:
           'Type BadObject must only implement Interface types, it cannot implement SomeInputObject.',
         locations: [{ line: 10, column: 33 }],
+      },
+    ]);
+  });
+
+  it('rejects an Object implementing a non-Interface type with malformed AST', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: BadObject
+      }
+
+      input SomeInputObject {
+        field: String
+      }
+
+      type BadObject implements SomeInputObject {
+        field: String
+      }
+    `);
+
+    const badObjectNode = (schema.getType('BadObject') as GraphQLObjectType)
+      ?.astNode;
+    assert(badObjectNode);
+    /* @ts-expect-error */
+    badObjectNode.interfaces = undefined;
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Type BadObject must only implement Interface types, it cannot implement SomeInputObject.',
       },
     ]);
   });
