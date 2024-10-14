@@ -1,6 +1,6 @@
 import { inspect } from "../jsutils/inspect.mjs";
 import { instanceOf } from "../jsutils/instanceOf.mjs";
-import { toObjMap } from "../jsutils/toObjMap.mjs";
+import { toObjMapWithSymbols } from "../jsutils/toObjMap.mjs";
 import { DirectiveLocation } from "../language/directiveLocation.mjs";
 import { assertName } from "./assertName.mjs";
 import { argsToArgsConfig, defineArguments, GraphQLNonNull, } from "./definition.mjs";
@@ -27,7 +27,7 @@ export class GraphQLDirective {
         this.description = config.description;
         this.locations = config.locations;
         this.isRepeatable = config.isRepeatable ?? false;
-        this.extensions = toObjMap(config.extensions);
+        this.extensions = toObjMapWithSymbols(config.extensions);
         this.astNode = config.astNode;
         const args = config.args ?? {};
         this.args = defineArguments(args);

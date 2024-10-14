@@ -96,7 +96,7 @@ class GraphQLSchema {
         // marked with assumeValid to avoid an additional type system validation.
         this.__validationErrors = config.assumeValid === true ? [] : undefined;
         this.description = config.description;
-        this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
+        this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         this._queryType = config.query;

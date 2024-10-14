@@ -32,7 +32,7 @@ class GraphQLDirective {
         this.description = config.description;
         this.locations = config.locations;
         this.isRepeatable = config.isRepeatable ?? false;
-        this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
+        this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
         const args = config.args ?? {};
         this.args = (0, definition_js_1.defineArguments)(args);

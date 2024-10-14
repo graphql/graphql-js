@@ -1,6 +1,6 @@
 import { inspect } from "../jsutils/inspect.mjs";
 import { instanceOf } from "../jsutils/instanceOf.mjs";
-import { toObjMap } from "../jsutils/toObjMap.mjs";
+import { toObjMapWithSymbols } from "../jsutils/toObjMap.mjs";
 import { OperationTypeNode } from "../language/ast.mjs";
 import { getNamedType, isInputObjectType, isInterfaceType, isObjectType, isUnionType, } from "./definition.mjs";
 import { isDirective, specifiedDirectives } from "./directives.mjs";
@@ -91,7 +91,7 @@ export class GraphQLSchema {
         // marked with assumeValid to avoid an additional type system validation.
         this.__validationErrors = config.assumeValid === true ? [] : undefined;
         this.description = config.description;
-        this.extensions = toObjMap(config.extensions);
+        this.extensions = toObjMapWithSymbols(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         this._queryType = config.query;

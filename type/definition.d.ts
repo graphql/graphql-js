@@ -166,7 +166,7 @@ export declare function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T>;
  * an object which can contain all the values you need.
  */
 export interface GraphQLScalarTypeExtensions {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 /**
  * Scalar Type Definition
@@ -298,7 +298,7 @@ interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal> extends GraphQ
  * you may find them useful.
  */
 export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 /**
  * Object Type Definition
@@ -406,7 +406,7 @@ export interface GraphQLResolveInfo {
  * you may find them useful.
  */
 export interface GraphQLFieldExtensions<_TSource, _TContext, _TArgs = any> {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 export interface GraphQLFieldConfig<TSource, TContext, TArgs = any> {
     description?: Maybe<string>;
@@ -429,7 +429,7 @@ export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
  * an object which can contain all the values you need.
  */
 export interface GraphQLArgumentExtensions {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 export interface GraphQLArgumentConfig {
     description?: Maybe<string>;
@@ -481,7 +481,7 @@ export declare function defineDefaultValue(argName: string, config: GraphQLArgum
  * an object which can contain all the values you need.
  */
 export interface GraphQLInterfaceTypeExtensions {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 /**
  * Interface Type Definition
@@ -550,7 +550,7 @@ interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext> extends GraphQ
  * an object which can contain all the values you need.
  */
 export interface GraphQLUnionTypeExtensions {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 /**
  * Union Type Definition
@@ -620,7 +620,7 @@ interface GraphQLUnionTypeNormalizedConfig extends GraphQLUnionTypeConfig<any, a
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumTypeExtensions {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 /**
  * Enum Type Definition
@@ -692,7 +692,7 @@ export type GraphQLEnumValueConfigMap = ObjMap<GraphQLEnumValueConfig>;
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumValueExtensions {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 export interface GraphQLEnumValueConfig {
     description?: Maybe<string>;
@@ -719,7 +719,7 @@ export interface GraphQLEnumValue {
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputObjectTypeExtensions {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 /**
  * Input Object Type Definition
@@ -781,7 +781,7 @@ interface GraphQLInputObjectTypeNormalizedConfig extends GraphQLInputObjectTypeC
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputFieldExtensions {
-    [attributeName: string]: unknown;
+    [attributeName: string | symbol]: unknown;
 }
 export interface GraphQLInputFieldConfig {
     description?: Maybe<string>;

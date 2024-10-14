@@ -402,7 +402,7 @@ class GraphQLScalarType {
                 ((node, variables) => parseValue((0, valueFromASTUntyped_js_1.valueFromASTUntyped)(node, variables)));
         this.coerceInputLiteral = config.coerceInputLiteral;
         this.valueToLiteral = config.valueToLiteral;
-        this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
+        this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         if (config.parseLiteral) {
@@ -485,7 +485,7 @@ class GraphQLObjectType {
         this.name = (0, assertName_js_1.assertName)(config.name);
         this.description = config.description;
         this.isTypeOf = config.isTypeOf;
-        this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
+        this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         this._fields = (defineFieldMap).bind(undefined, config.fields);
@@ -541,7 +541,7 @@ function defineFieldMap(fields) {
             resolve: fieldConfig.resolve,
             subscribe: fieldConfig.subscribe,
             deprecationReason: fieldConfig.deprecationReason,
-            extensions: (0, toObjMap_js_1.toObjMap)(fieldConfig.extensions),
+            extensions: (0, toObjMap_js_1.toObjMapWithSymbols)(fieldConfig.extensions),
             astNode: fieldConfig.astNode,
         };
     });
@@ -553,7 +553,7 @@ function defineArguments(args) {
         type: argConfig.type,
         defaultValue: defineDefaultValue(argName, argConfig),
         deprecationReason: argConfig.deprecationReason,
-        extensions: (0, toObjMap_js_1.toObjMap)(argConfig.extensions),
+        extensions: (0, toObjMap_js_1.toObjMapWithSymbols)(argConfig.extensions),
         astNode: argConfig.astNode,
     }));
 }
@@ -623,7 +623,7 @@ class GraphQLInterfaceType {
         this.name = (0, assertName_js_1.assertName)(config.name);
         this.description = config.description;
         this.resolveType = config.resolveType;
-        this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
+        this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         this._fields = (defineFieldMap).bind(undefined, config.fields);
@@ -693,7 +693,7 @@ class GraphQLUnionType {
         this.name = (0, assertName_js_1.assertName)(config.name);
         this.description = config.description;
         this.resolveType = config.resolveType;
-        this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
+        this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         this._types = defineTypes.bind(undefined, config.types);
@@ -735,7 +735,7 @@ function enumValuesFromConfig(values) {
         description: valueConfig.description,
         value: valueConfig.value !== undefined ? valueConfig.value : valueName,
         deprecationReason: valueConfig.deprecationReason,
-        extensions: (0, toObjMap_js_1.toObjMap)(valueConfig.extensions),
+        extensions: (0, toObjMap_js_1.toObjMapWithSymbols)(valueConfig.extensions),
         astNode: valueConfig.astNode,
     }));
 }
@@ -766,7 +766,7 @@ class GraphQLEnumType /* <T> */ {
     constructor(config) {
         this.name = (0, assertName_js_1.assertName)(config.name);
         this.description = config.description;
-        this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
+        this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         this._values =
@@ -893,7 +893,7 @@ class GraphQLInputObjectType {
     constructor(config) {
         this.name = (0, assertName_js_1.assertName)(config.name);
         this.description = config.description;
-        this.extensions = (0, toObjMap_js_1.toObjMap)(config.extensions);
+        this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
         this.extensionASTNodes = config.extensionASTNodes ?? [];
         this.isOneOf = config.isOneOf ?? false;
@@ -944,7 +944,7 @@ function defineInputFieldMap(fields) {
         type: fieldConfig.type,
         defaultValue: defineDefaultValue(fieldName, fieldConfig),
         deprecationReason: fieldConfig.deprecationReason,
-        extensions: (0, toObjMap_js_1.toObjMap)(fieldConfig.extensions),
+        extensions: (0, toObjMap_js_1.toObjMapWithSymbols)(fieldConfig.extensions),
         astNode: fieldConfig.astNode,
     }));
 }
