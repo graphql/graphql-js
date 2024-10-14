@@ -65,19 +65,32 @@ describe('replaceVariables', () => {
       );
     });
 
+    it('replaces missing variable declaration with null', () => {
+      const ast = parseValue('$var');
+      const vars = testVariables('', {});
+      expect(replaceVariables(ast, vars)).to.deep.equal(parseValue('null'));
+    });
+
+    it('replaces misspelled variable declaration with null', () => {
+      const ast = parseValue('$var1');
+      const vars = testVariables('($var2: Int)', { var2: 123 });
+      expect(replaceVariables(ast, vars)).to.deep.equal(parseValue('null'));
+    });
+
     it('replaces missing Variables in lists with null', () => {
       const ast = parseValue('[1, $var]');
       expect(replaceVariables(ast, undefined)).to.deep.equal(
         parseValue('[1, null]'),
       );
     });
-  });
 
-  it('omits missing Variables from objects', () => {
-    const ast = parseValue('{ foo: 1, bar: $var }');
-    expect(replaceVariables(ast, undefined)).to.deep.equal(
-      parseValue('{ foo: 1 }'),
-    );
+    it('omits missing Variables from objects', () => {
+      const ast = parseValue('{ foo: 1, bar: $var }');
+      const vars = testVariables('($wrongVar: Int)', { var: 123 });
+      expect(replaceVariables(ast, vars)).to.deep.equal(
+        parseValue('{ foo: 1 }'),
+      );
+    });
   });
 
   describe('Fragment Variables', () => {
