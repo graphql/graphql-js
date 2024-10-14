@@ -11,7 +11,7 @@ import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { suggestionList } from '../jsutils/suggestionList.js';
-import { toObjMap } from '../jsutils/toObjMap.js';
+import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
 
@@ -511,7 +511,7 @@ export function resolveObjMapThunk<T>(thunk: ThunkObjMap<T>): ObjMap<T> {
  * an object which can contain all the values you need.
  */
 export interface GraphQLScalarTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -610,7 +610,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
       ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
     this.coerceInputLiteral = config.coerceInputLiteral;
     this.valueToLiteral = config.valueToLiteral;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
@@ -725,7 +725,7 @@ interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
  * you may find them useful.
  */
 export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -783,7 +783,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.name = assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._fields = (defineFieldMap<TSource, TContext>).bind(
@@ -854,7 +854,7 @@ function defineFieldMap<TSource, TContext>(
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
       deprecationReason: fieldConfig.deprecationReason,
-      extensions: toObjMap(fieldConfig.extensions),
+      extensions: toObjMapWithSymbols(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
     };
   });
@@ -869,7 +869,7 @@ export function defineArguments(
     type: argConfig.type,
     defaultValue: defineDefaultValue(argName, argConfig),
     deprecationReason: argConfig.deprecationReason,
-    extensions: toObjMap(argConfig.extensions),
+    extensions: toObjMapWithSymbols(argConfig.extensions),
     astNode: argConfig.astNode,
   }));
 }
@@ -980,7 +980,7 @@ export interface GraphQLResolveInfo {
  * you may find them useful.
  */
 export interface GraphQLFieldExtensions<_TSource, _TContext, _TArgs = any> {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLFieldConfig<TSource, TContext, TArgs = any> {
@@ -1008,7 +1008,7 @@ export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
  * an object which can contain all the values you need.
  */
 export interface GraphQLArgumentExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLArgumentConfig {
@@ -1085,7 +1085,7 @@ export function defineDefaultValue(
  * an object which can contain all the values you need.
  */
 export interface GraphQLInterfaceTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1122,7 +1122,7 @@ export class GraphQLInterfaceType<TSource = any, TContext = any> {
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._fields = (defineFieldMap<TSource, TContext>).bind(
@@ -1206,7 +1206,7 @@ interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
  * an object which can contain all the values you need.
  */
 export interface GraphQLUnionTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1247,7 +1247,7 @@ export class GraphQLUnionType {
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
@@ -1324,7 +1324,7 @@ interface GraphQLUnionTypeNormalizedConfig
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 function enumValuesFromConfig(values: GraphQLEnumValueConfigMap) {
@@ -1333,7 +1333,7 @@ function enumValuesFromConfig(values: GraphQLEnumValueConfigMap) {
     description: valueConfig.description,
     value: valueConfig.value !== undefined ? valueConfig.value : valueName,
     deprecationReason: valueConfig.deprecationReason,
-    extensions: toObjMap(valueConfig.extensions),
+    extensions: toObjMapWithSymbols(valueConfig.extensions),
     astNode: valueConfig.astNode,
   }));
 }
@@ -1378,7 +1378,7 @@ export class GraphQLEnumType /* <T> */ {
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
     this.name = assertName(config.name);
     this.description = config.description;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
@@ -1559,7 +1559,7 @@ export type GraphQLEnumValueConfigMap /* <T> */ =
  * an object which can contain all the values you need.
  */
 export interface GraphQLEnumValueExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLEnumValueConfig {
@@ -1589,7 +1589,7 @@ export interface GraphQLEnumValue {
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputObjectTypeExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -1626,7 +1626,7 @@ export class GraphQLInputObjectType {
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
     this.name = assertName(config.name);
     this.description = config.description;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this.isOneOf = config.isOneOf ?? false;
@@ -1686,7 +1686,7 @@ function defineInputFieldMap(
     type: fieldConfig.type,
     defaultValue: defineDefaultValue(fieldName, fieldConfig),
     deprecationReason: fieldConfig.deprecationReason,
-    extensions: toObjMap(fieldConfig.extensions),
+    extensions: toObjMapWithSymbols(fieldConfig.extensions),
     astNode: fieldConfig.astNode,
   }));
 }
@@ -1718,7 +1718,7 @@ interface GraphQLInputObjectTypeNormalizedConfig
  * an object which can contain all the values you need.
  */
 export interface GraphQLInputFieldExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 export interface GraphQLInputFieldConfig {

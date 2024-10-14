@@ -86,6 +86,25 @@ describe('Type System: Scalars', () => {
     expect(someScalar.toConfig()).to.deep.equal(someScalarConfig);
   });
 
+  it('supports symbol extensions', () => {
+    const test = Symbol.for('test');
+    const someScalarConfig: GraphQLScalarTypeConfig<unknown, unknown> = {
+      name: 'SomeScalar',
+      description: 'SomeScalar description.',
+      specifiedByURL: 'https://example.com/foo_spec',
+      serialize: passThroughFunc,
+      parseValue: passThroughFunc,
+      parseLiteral: passThroughFunc,
+      coerceInputLiteral: passThroughFunc,
+      valueToLiteral: passThroughFunc,
+      extensions: { [test]: 'extension' },
+      astNode: dummyAny,
+      extensionASTNodes: [dummyAny],
+    };
+    const someScalar = new GraphQLScalarType(someScalarConfig);
+    expect(someScalar.toConfig()).to.deep.equal(someScalarConfig);
+  });
+
   it('provides default methods if omitted', () => {
     const scalar = new GraphQLScalarType({ name: 'Foo' });
 
