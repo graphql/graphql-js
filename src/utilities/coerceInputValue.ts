@@ -171,8 +171,28 @@ function coerceInputValueImpl(
       );
     }
 
+    /**
+     * keys with the value "undefined" do not appear within the coerced input
+     * object, but do appear within the original input object.
+     *
+     * Note: in graphql-js, supplying the value "undefined" for a variable
+     * (as opposed to entirely omitting the variable from the map) will cause
+     * the variable value to be coerced to "null", but supplying "undefined"
+     * for an input object field will cause the field to be dropped as if the
+     * field did not exist in the map. We could consider changing this for
+     * input object fields to match the behavior of scalars variables and
+     * output variables where an actual value of "undefined" is considered to
+     * have the same intent as the "null" value.
+     *
+     * This use of `fieldsWithDefinedValues` is a workaround for this JavaScript-
+     * specific behavior.
+     *
+     * See: https://github.com/graphql/graphql-js/issues/2533
+     */
+    let fieldsWithDefinedValues = 0;
+    const keys = Object.keys(inputValue);
     // Ensure every provided field is defined.
-    for (const fieldName of Object.keys(inputValue)) {
+    for (const fieldName of keys) {
       if (fieldDefs[fieldName] == null) {
         const suggestions = suggestionList(
           fieldName,
@@ -187,28 +207,34 @@ function coerceInputValueImpl(
           ),
         );
       }
+
+      if (inputValue[fieldName] !== undefined) {
+        fieldsWithDefinedValues++;
+      }
     }
 
     if (type.isOneOf) {
-      const keys = Object.keys(coercedValue);
-      if (keys.length !== 1) {
+      const coercedKeys = Object.keys(coercedValue);
+      if (fieldsWithDefinedValues !== 1 || coercedKeys.length !== 1) {
         onError(
           pathToArray(path),
           inputValue,
           new GraphQLError(
-            `Exactly one key must be specified for OneOf type "${type}".`,
+            `Within OneOf Input Object type "${type}", exactly one field must be specified, and the value for that field must be non-null.`,
           ),
         );
-      }
-
-      const key = keys[0];
-      const value = coercedValue[key];
-      if (value === null) {
-        onError(
-          pathToArray(path).concat(key),
-          value,
-          new GraphQLError(`Field "${key}" must be non-null.`),
-        );
+      } else {
+        const key = keys[0];
+        const value = inputValue[key];
+        if (value === null || coercedValue[key] === null) {
+          onError(
+            pathToArray(path).concat(key),
+            value,
+            new GraphQLError(
+              `Within OneOf Input Object type "${type}", exactly one field must be specified, and the value for that field must be non-null.`,
+            ),
+          );
+        }
       }
     }
 
@@ -393,13 +419,14 @@ export function coerceInputLiteral(
     }
 
     if (type.isOneOf) {
-      const keys = Object.keys(coercedValue);
-      if (keys.length !== 1) {
+      const coercedKeys = Object.keys(coercedValue);
+      if (fieldNodes.size !== 1 || coercedKeys.length !== 1) {
         return; // Invalid: not exactly one key, intentionally return no value.
       }
-
-      if (coercedValue[keys[0]] === null) {
-        return; // Invalid: value not non-null, intentionally return no value.
+      for (const [key, value] of fieldNodes) {
+        if (value.value.kind === Kind.NULL || coercedValue[key] === null) {
+          return; // Invalid: not exactly one key, intentionally return no value.
+        }
       }
     }
 

@@ -346,27 +346,58 @@ describe('coerceInputValue', () => {
       expectValue(result).to.deep.equal({ foo: 123 });
     });
 
+    it('returns an error if no fields are specified', () => {
+      const result = coerceValue({}, TestInputObject);
+      expectErrors(result).to.deep.equal([
+        {
+          error:
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          path: [],
+          value: {},
+        },
+      ]);
+    });
+
     it('returns an error if more than one field is specified', () => {
+      const result = coerceValue({ foo: 123, bar: 456 }, TestInputObject);
+      expectErrors(result).to.deep.equal([
+        {
+          error:
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          path: [],
+          value: { foo: 123, bar: 456 },
+        },
+      ]);
+    });
+
+    it('returns an error if the one field is null', () => {
+      const result = coerceValue({ bar: null }, TestInputObject);
+      expectErrors(result).to.deep.equal([
+        {
+          error:
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          path: ['bar'],
+          value: null,
+        },
+      ]);
+    });
+
+    it('returns an error if there are multiple fields with only a single non-null', () => {
       const result = coerceValue({ foo: 123, bar: null }, TestInputObject);
       expectErrors(result).to.deep.equal([
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
           value: { foo: 123, bar: null },
         },
       ]);
     });
 
-    it('returns an error the one field is null', () => {
-      const result = coerceValue({ bar: null }, TestInputObject);
-      expectErrors(result).to.deep.equal([
-        {
-          error: 'Field "bar" must be non-null.',
-          path: ['bar'],
-          value: null,
-        },
-      ]);
+    // special non-normative graphql-js behavior
+    it('returns no error for an additional fields with value of undefined', () => {
+      const result = coerceValue({ foo: 123, bar: undefined }, TestInputObject);
+      expectValue(result).to.deep.equal({ foo: 123 });
     });
 
     it('returns an error for an invalid field', () => {
@@ -395,7 +426,7 @@ describe('coerceInputValue', () => {
         },
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
           value: { foo: 'abc', bar: 'def' },
         },
@@ -414,6 +445,12 @@ describe('coerceInputValue', () => {
           path: [],
           value: { foo: 123, unknownField: 123 },
         },
+        {
+          error:
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          path: [],
+          value: { foo: 123, unknownField: 123 },
+        },
       ]);
     });
 
@@ -428,7 +465,7 @@ describe('coerceInputValue', () => {
         },
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
           value: { bart: 123 },
         },
@@ -888,6 +925,25 @@ describe('coerceInputLiteral', () => {
       { var: null },
       '$var',
       nonNullBool,
+      undefined,
+    );
+  });
+
+  it('accepts variable values for fields of OneOf Input Objects', () => {
+    testWithVariables({ a: 'abc' }, '{ a: $a }', testOneOfInputObj, {
+      a: 'abc',
+    });
+    testWithVariables({ a: null }, '{ a: $a }', testOneOfInputObj, undefined);
+    testWithVariables(
+      { a: 'abc', b: 'def' },
+      '{ a: $a, b: $b }',
+      testOneOfInputObj,
+      undefined,
+    );
+    testWithVariables(
+      { a: 'abc', b: null },
+      '{ a: $a, b: $b }',
+      testOneOfInputObj,
       undefined,
     );
   });
