@@ -71,7 +71,7 @@ describe('replaceVariables', () => {
       expect(replaceVariables(ast, vars)).to.deep.equal(parseValue('null'));
     });
 
-    it('replaces mispelled variable declaration with null', () => {
+    it('replaces misspelled variable declaration with null', () => {
       const ast = parseValue('$var1');
       const vars = testVariables('($var2: Int)', { var2: 123 });
       expect(replaceVariables(ast, vars)).to.deep.equal(parseValue('null'));
