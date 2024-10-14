@@ -143,10 +143,7 @@ function getOperationTypeNode(
   operation: OperationTypeNode,
 ): Maybe<ASTNode> {
   return [schema.astNode, ...schema.extensionASTNodes]
-    .flatMap(
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      (schemaNode) => /* c8 ignore next */ schemaNode?.operationTypes ?? [],
-    )
+    .flatMap((schemaNode) => schemaNode?.operationTypes ?? [])
     .find((operationNode) => operationNode.operation === operation)?.type;
 }
 function validateDirectives(context: SchemaValidationContext): void {
@@ -561,9 +558,8 @@ function getAllImplementsInterfaceNodes(
     | InterfaceTypeDefinitionNode
     | InterfaceTypeExtensionNode
   > = astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
-  // FIXME: https://github.com/graphql/graphql-js/issues/2203
   return nodes
-    .flatMap((typeNode) => /* c8 ignore next */ typeNode.interfaces ?? [])
+    .flatMap((typeNode) => typeNode.interfaces ?? [])
     .filter((ifaceNode) => ifaceNode.name.value === iface.name);
 }
 function getUnionMemberTypeNodes(
@@ -573,7 +569,6 @@ function getUnionMemberTypeNodes(
   const { astNode, extensionASTNodes } = union;
   const nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode> =
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
-  // FIXME: https://github.com/graphql/graphql-js/issues/2203
   return nodes
     .flatMap((unionNode) => /* c8 ignore next */ unionNode.types ?? [])
     .filter((typeNode) => typeNode.name.value === typeName);

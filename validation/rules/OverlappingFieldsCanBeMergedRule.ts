@@ -662,9 +662,8 @@ function findConflict(
       ];
     }
   }
-  // FIXME https://github.com/graphql/graphql-js/issues/2203
-  const directives1 = /* c8 ignore next */ node1.directives ?? [];
-  const directives2 = /* c8 ignore next */ node2.directives ?? [];
+  const directives1 = node1.directives ?? [];
+  const directives2 = node2.directives ?? [];
   if (!sameStreams(directives1, varMap1, directives2, varMap2)) {
     return [
       [responseName, 'they have differing stream directives'],

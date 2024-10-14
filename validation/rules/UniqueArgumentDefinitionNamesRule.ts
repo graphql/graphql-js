@@ -18,8 +18,6 @@ export function UniqueArgumentDefinitionNamesRule(
 ): ASTVisitor {
   return {
     DirectiveDefinition(directiveNode) {
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      /* c8 ignore next */
       const argumentNodes = directiveNode.arguments ?? [];
       return checkArgUniqueness(`@${directiveNode.name.value}`, argumentNodes);
     },
@@ -33,13 +31,9 @@ export function UniqueArgumentDefinitionNamesRule(
     readonly fields?: ReadonlyArray<FieldDefinitionNode> | undefined;
   }) {
     const typeName = typeNode.name.value;
-    // FIXME: https://github.com/graphql/graphql-js/issues/2203
-    /* c8 ignore next */
     const fieldNodes = typeNode.fields ?? [];
     for (const fieldDef of fieldNodes) {
       const fieldName = fieldDef.name.value;
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      /* c8 ignore next */
       const argumentNodes = fieldDef.arguments ?? [];
       checkArgUniqueness(`${typeName}.${fieldName}`, argumentNodes);
     }
