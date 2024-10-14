@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import { toObjMap } from '../jsutils/toObjMap.js';
 
@@ -22,7 +21,7 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
  * Test if the given value is a GraphQL directive.
  */
 export function isDirective(directive: unknown): directive is GraphQLDirective {
-  return instanceOf(directive, GraphQLDirective);
+  return directive instanceof GraphQLDirective;
 }
 
 export function assertDirective(directive: unknown): GraphQLDirective {

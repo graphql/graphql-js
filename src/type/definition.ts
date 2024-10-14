@@ -2,7 +2,6 @@ import { devAssert } from '../jsutils/devAssert.js';
 import { didYouMean } from '../jsutils/didYouMean.js';
 import { identityFunc } from '../jsutils/identityFunc.js';
 import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
 import { keyMap } from '../jsutils/keyMap.js';
 import { keyValMap } from '../jsutils/keyValMap.js';
 import { mapValue } from '../jsutils/mapValue.js';
@@ -78,7 +77,7 @@ export function assertType(type: unknown): GraphQLType {
  * There are predicates for each kind of GraphQL type.
  */
 export function isScalarType(type: unknown): type is GraphQLScalarType {
-  return instanceOf(type, GraphQLScalarType);
+  return type instanceof GraphQLScalarType;
 }
 
 export function assertScalarType(type: unknown): GraphQLScalarType {
@@ -89,7 +88,7 @@ export function assertScalarType(type: unknown): GraphQLScalarType {
 }
 
 export function isObjectType(type: unknown): type is GraphQLObjectType {
-  return instanceOf(type, GraphQLObjectType);
+  return type instanceof GraphQLObjectType;
 }
 
 export function assertObjectType(type: unknown): GraphQLObjectType {
@@ -100,7 +99,7 @@ export function assertObjectType(type: unknown): GraphQLObjectType {
 }
 
 export function isInterfaceType(type: unknown): type is GraphQLInterfaceType {
-  return instanceOf(type, GraphQLInterfaceType);
+  return type instanceof GraphQLInterfaceType;
 }
 
 export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
@@ -113,7 +112,7 @@ export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
 }
 
 export function isUnionType(type: unknown): type is GraphQLUnionType {
-  return instanceOf(type, GraphQLUnionType);
+  return type instanceof GraphQLUnionType;
 }
 
 export function assertUnionType(type: unknown): GraphQLUnionType {
@@ -124,7 +123,7 @@ export function assertUnionType(type: unknown): GraphQLUnionType {
 }
 
 export function isEnumType(type: unknown): type is GraphQLEnumType {
-  return instanceOf(type, GraphQLEnumType);
+  return type instanceof GraphQLEnumType;
 }
 
 export function assertEnumType(type: unknown): GraphQLEnumType {
@@ -137,7 +136,7 @@ export function assertEnumType(type: unknown): GraphQLEnumType {
 export function isInputObjectType(
   type: unknown,
 ): type is GraphQLInputObjectType {
-  return instanceOf(type, GraphQLInputObjectType);
+  return type instanceof GraphQLInputObjectType;
 }
 
 export function assertInputObjectType(type: unknown): GraphQLInputObjectType {
@@ -157,7 +156,7 @@ export function isListType(
 ): type is GraphQLList<GraphQLOutputType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType> {
-  return instanceOf(type, GraphQLList);
+  return type instanceof GraphQLList;
 }
 
 export function assertListType(type: unknown): GraphQLList<GraphQLType> {
@@ -179,7 +178,7 @@ export function isNonNullType(
 export function isNonNullType(
   type: unknown,
 ): type is GraphQLNonNull<GraphQLNullableType> {
-  return instanceOf(type, GraphQLNonNull);
+  return type instanceof GraphQLNonNull;
 }
 
 export function assertNonNullType(
