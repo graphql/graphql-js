@@ -26,10 +26,10 @@ export function replaceVariables(
       const scopedVariableValues = fragmentVariableValues?.sources[varName]
         ? fragmentVariableValues
         : variableValues;
-      if (scopedVariableValues == null) {
+      const scopedVariableSource = scopedVariableValues?.sources[varName];
+      if (scopedVariableSource == null) {
         return { kind: Kind.NULL };
       }
-      const scopedVariableSource = scopedVariableValues.sources[varName];
       if (scopedVariableSource.value === undefined) {
         const defaultValue = scopedVariableSource.signature.defaultValue;
         if (defaultValue !== undefined) {
