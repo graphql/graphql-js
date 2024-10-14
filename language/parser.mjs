@@ -174,8 +174,8 @@ export class Parser {
                 kind: Kind.OPERATION_DEFINITION,
                 operation: OperationTypeNode.QUERY,
                 name: undefined,
-                variableDefinitions: [],
-                directives: [],
+                variableDefinitions: undefined,
+                directives: undefined,
                 selectionSet: this.parseSelectionSet(),
             });
         }
@@ -494,7 +494,10 @@ export class Parser {
         while (this.peek(TokenKind.AT)) {
             directives.push(this.parseDirective(isConst));
         }
-        return directives;
+        if (directives.length) {
+            return directives;
+        }
+        return undefined;
     }
     parseConstDirectives() {
         return this.parseDirectives(true);
@@ -636,7 +639,7 @@ export class Parser {
     parseImplementsInterfaces() {
         return this.expectOptionalKeyword('implements')
             ? this.delimitedMany(TokenKind.AMP, this.parseNamedType)
-            : [];
+            : undefined;
     }
     /**
      * ```
@@ -745,7 +748,7 @@ export class Parser {
     parseUnionMemberTypes() {
         return this.expectOptionalToken(TokenKind.EQUALS)
             ? this.delimitedMany(TokenKind.PIPE, this.parseNamedType)
-            : [];
+            : undefined;
     }
     /**
      * EnumTypeDefinition :
@@ -875,7 +878,7 @@ export class Parser {
         this.expectKeyword('schema');
         const directives = this.parseConstDirectives();
         const operationTypes = this.optionalMany(TokenKind.BRACE_L, this.parseOperationTypeDefinition, TokenKind.BRACE_R);
-        if (directives.length === 0 && operationTypes.length === 0) {
+        if (directives === undefined && operationTypes === undefined) {
             throw this.unexpected();
         }
         return this.node(start, {
@@ -894,7 +897,7 @@ export class Parser {
         this.expectKeyword('scalar');
         const name = this.parseName();
         const directives = this.parseConstDirectives();
-        if (directives.length === 0) {
+        if (directives === undefined) {
             throw this.unexpected();
         }
         return this.node(start, {
@@ -917,9 +920,9 @@ export class Parser {
         const interfaces = this.parseImplementsInterfaces();
         const directives = this.parseConstDirectives();
         const fields = this.parseFieldsDefinition();
-        if (interfaces.length === 0 &&
-            directives.length === 0 &&
-            fields.length === 0) {
+        if (interfaces === undefined &&
+            directives === undefined &&
+            fields === undefined) {
             throw this.unexpected();
         }
         return this.node(start, {
@@ -944,9 +947,9 @@ export class Parser {
         const interfaces = this.parseImplementsInterfaces();
         const directives = this.parseConstDirectives();
         const fields = this.parseFieldsDefinition();
-        if (interfaces.length === 0 &&
-            directives.length === 0 &&
-            fields.length === 0) {
+        if (interfaces === undefined &&
+            directives === undefined &&
+            fields === undefined) {
             throw this.unexpected();
         }
         return this.node(start, {
@@ -969,7 +972,7 @@ export class Parser {
         const name = this.parseName();
         const directives = this.parseConstDirectives();
         const types = this.parseUnionMemberTypes();
-        if (directives.length === 0 && types.length === 0) {
+        if (directives === undefined && types === undefined) {
             throw this.unexpected();
         }
         return this.node(start, {
@@ -991,7 +994,7 @@ export class Parser {
         const name = this.parseName();
         const directives = this.parseConstDirectives();
         const values = this.parseEnumValuesDefinition();
-        if (directives.length === 0 && values.length === 0) {
+        if (directives === undefined && values === undefined) {
             throw this.unexpected();
         }
         return this.node(start, {
@@ -1013,7 +1016,7 @@ export class Parser {
         const name = this.parseName();
         const directives = this.parseConstDirectives();
         const fields = this.parseInputFieldsDefinition();
-        if (directives.length === 0 && fields.length === 0) {
+        if (directives === undefined && fields === undefined) {
             throw this.unexpected();
         }
         return this.node(start, {
@@ -1192,7 +1195,7 @@ export class Parser {
             } while (!this.expectOptionalToken(closeKind));
             return nodes;
         }
-        return [];
+        return undefined;
     }
     /**
      * Returns a non-empty list of parse nodes, determined by the parseFn.

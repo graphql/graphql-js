@@ -11,8 +11,6 @@ const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 function UniqueVariableNamesRule(context) {
     return {
         OperationDefinition(operationNode) {
-            // See: https://github.com/graphql/graphql-js/issues/2203
-            /* c8 ignore next */
             const variableDefinitions = operationNode.variableDefinitions ?? [];
             const seenVariableDefinitions = (0, groupBy_js_1.groupBy)(variableDefinitions, (node) => node.variable.name.value);
             for (const [variableName, variableNodes] of seenVariableDefinitions) {

@@ -17,8 +17,6 @@ function UniqueArgumentNamesRule(context) {
         Directive: checkArgUniqueness,
     };
     function checkArgUniqueness(parentNode) {
-        // FIXME: https://github.com/graphql/graphql-js/issues/2203
-        /* c8 ignore next */
         const argumentNodes = parentNode.arguments ?? [];
         const seenArgs = (0, groupBy_js_1.groupBy)(argumentNodes, (arg) => arg.name.value);
         for (const [argName, argNodes] of seenArgs) {

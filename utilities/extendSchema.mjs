@@ -287,9 +287,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     function getOperationTypes(nodes) {
         const opTypes = {};
         for (const node of nodes) {
-            // FIXME: https://github.com/graphql/graphql-js/issues/2203
-            const operationTypesNodes = 
-            /* c8 ignore next */ node.operationTypes ?? [];
+            const operationTypesNodes = node.operationTypes ?? [];
             for (const operationType of operationTypesNodes) {
                 // Note: While this could make early assertions to get the correctly
                 // typed values below, that would throw immediately while type system
@@ -331,8 +329,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     function buildFieldMap(nodes) {
         const fieldConfigMap = Object.create(null);
         for (const node of nodes) {
-            // FIXME: https://github.com/graphql/graphql-js/issues/2203
-            const nodeFields = /* c8 ignore next */ node.fields ?? [];
+            const nodeFields = node.fields ?? [];
             for (const field of nodeFields) {
                 fieldConfigMap[field.name.value] = {
                     // Note: While this could make assertions to get the correctly typed
@@ -349,8 +346,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
         return fieldConfigMap;
     }
     function buildArgumentMap(args) {
-        // FIXME: https://github.com/graphql/graphql-js/issues/2203
-        const argsNodes = /* c8 ignore next */ args ?? [];
+        const argsNodes = args ?? [];
         const argConfigMap = Object.create(null);
         for (const arg of argsNodes) {
             // Note: While this could make assertions to get the correctly typed
@@ -370,8 +366,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     function buildInputFieldMap(nodes) {
         const inputFieldMap = Object.create(null);
         for (const node of nodes) {
-            // FIXME: https://github.com/graphql/graphql-js/issues/2203
-            const fieldsNodes = /* c8 ignore next */ node.fields ?? [];
+            const fieldsNodes = node.fields ?? [];
             for (const field of fieldsNodes) {
                 // Note: While this could make assertions to get the correctly typed
                 // value, that would throw immediately while type system validation
@@ -391,8 +386,7 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
     function buildEnumValueMap(nodes) {
         const enumValueMap = Object.create(null);
         for (const node of nodes) {
-            // FIXME: https://github.com/graphql/graphql-js/issues/2203
-            const valuesNodes = /* c8 ignore next */ node.values ?? [];
+            const valuesNodes = node.values ?? [];
             for (const value of valuesNodes) {
                 enumValueMap[value.name.value] = {
                     description: value.description?.value,
@@ -408,18 +402,14 @@ export function extendSchemaImpl(schemaConfig, documentAST, options) {
         // values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
         // @ts-expect-error
-        return nodes.flatMap(
-        // FIXME: https://github.com/graphql/graphql-js/issues/2203
-        (node) => /* c8 ignore next */ node.interfaces?.map(getNamedType) ?? []);
+        return nodes.flatMap((node) => node.interfaces?.map(getNamedType) ?? []);
     }
     function buildUnionTypes(nodes) {
         // Note: While this could make assertions to get the correctly typed
         // values below, that would throw immediately while type system
         // validation with validateSchema() will produce more actionable results.
         // @ts-expect-error
-        return nodes.flatMap(
-        // FIXME: https://github.com/graphql/graphql-js/issues/2203
-        (node) => /* c8 ignore next */ node.types?.map(getNamedType) ?? []);
+        return nodes.flatMap((node) => node.types?.map(getNamedType) ?? []);
     }
     function buildType(astNode) {
         const name = astNode.name.value;

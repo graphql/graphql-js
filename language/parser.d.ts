@@ -135,7 +135,7 @@ export declare class Parser {
     /**
      * VariableDefinitions : ( VariableDefinition+ )
      */
-    parseVariableDefinitions(): Array<VariableDefinitionNode>;
+    parseVariableDefinitions(): Array<VariableDefinitionNode> | undefined;
     /**
      * VariableDefinition : Variable : Type DefaultValue? Directives[Const]?
      */
@@ -166,9 +166,9 @@ export declare class Parser {
     /**
      * Arguments[Const] : ( Argument[?Const]+ )
      */
-    parseArguments(isConst: true): Array<ConstArgumentNode>;
-    parseArguments(isConst: boolean): Array<ArgumentNode>;
-    parseFragmentArguments(): Array<FragmentArgumentNode>;
+    parseArguments(isConst: true): Array<ConstArgumentNode> | undefined;
+    parseArguments(isConst: boolean): Array<ArgumentNode> | undefined;
+    parseFragmentArguments(): Array<FragmentArgumentNode> | undefined;
     /**
      * Argument[Const] : Name : Value[?Const]
      */
@@ -241,9 +241,9 @@ export declare class Parser {
     /**
      * Directives[Const] : Directive[?Const]+
      */
-    parseDirectives(isConst: true): Array<ConstDirectiveNode>;
-    parseDirectives(isConst: boolean): Array<DirectiveNode>;
-    parseConstDirectives(): Array<ConstDirectiveNode>;
+    parseDirectives(isConst: true): Array<ConstDirectiveNode> | undefined;
+    parseDirectives(isConst: boolean): Array<DirectiveNode> | undefined;
+    parseConstDirectives(): Array<ConstDirectiveNode> | undefined;
     /**
      * ```
      * Directive[Const] : @ Name Arguments[?Const]?
@@ -292,13 +292,13 @@ export declare class Parser {
      *   - implements `&`? NamedType
      *   - ImplementsInterfaces & NamedType
      */
-    parseImplementsInterfaces(): Array<NamedTypeNode>;
+    parseImplementsInterfaces(): Array<NamedTypeNode> | undefined;
     /**
      * ```
      * FieldsDefinition : { FieldDefinition+ }
      * ```
      */
-    parseFieldsDefinition(): Array<FieldDefinitionNode>;
+    parseFieldsDefinition(): Array<FieldDefinitionNode> | undefined;
     /**
      * FieldDefinition :
      *   - Description? Name ArgumentsDefinition? : Type Directives[Const]?
@@ -307,7 +307,7 @@ export declare class Parser {
     /**
      * ArgumentsDefinition : ( InputValueDefinition+ )
      */
-    parseArgumentDefs(): Array<InputValueDefinitionNode>;
+    parseArgumentDefs(): Array<InputValueDefinitionNode> | undefined;
     /**
      * InputValueDefinition :
      *   - Description? Name : Type DefaultValue? Directives[Const]?
@@ -328,7 +328,7 @@ export declare class Parser {
      *   - = `|`? NamedType
      *   - UnionMemberTypes | NamedType
      */
-    parseUnionMemberTypes(): Array<NamedTypeNode>;
+    parseUnionMemberTypes(): Array<NamedTypeNode> | undefined;
     /**
      * EnumTypeDefinition :
      *   - Description? enum Name Directives[Const]? EnumValuesDefinition?
@@ -339,7 +339,7 @@ export declare class Parser {
      * EnumValuesDefinition : { EnumValueDefinition+ }
      * ```
      */
-    parseEnumValuesDefinition(): Array<EnumValueDefinitionNode>;
+    parseEnumValuesDefinition(): Array<EnumValueDefinitionNode> | undefined;
     /**
      * EnumValueDefinition : Description? EnumValue Directives[Const]?
      */
@@ -358,7 +358,7 @@ export declare class Parser {
      * InputFieldsDefinition : { InputValueDefinition+ }
      * ```
      */
-    parseInputFieldsDefinition(): Array<InputValueDefinitionNode>;
+    parseInputFieldsDefinition(): Array<InputValueDefinitionNode> | undefined;
     /**
      * TypeSystemExtension :
      *   - SchemaExtension
@@ -480,7 +480,7 @@ export declare class Parser {
      * that begins with a lex token of openKind and ends with a lex token of closeKind.
      * Advances the parser to the next lex token after the closing token.
      */
-    optionalMany<T>(openKind: TokenKind, parseFn: () => T, closeKind: TokenKind): Array<T>;
+    optionalMany<T>(openKind: TokenKind, parseFn: () => T, closeKind: TokenKind): Array<T> | undefined;
     /**
      * Returns a non-empty list of parse nodes, determined by the parseFn.
      * This list begins with a lex token of openKind and ends with a lex token of closeKind.

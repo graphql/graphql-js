@@ -9,8 +9,6 @@ import { GraphQLError } from "../../error/GraphQLError.mjs";
 export function UniqueArgumentDefinitionNamesRule(context) {
     return {
         DirectiveDefinition(directiveNode) {
-            // FIXME: https://github.com/graphql/graphql-js/issues/2203
-            /* c8 ignore next */
             const argumentNodes = directiveNode.arguments ?? [];
             return checkArgUniqueness(`@${directiveNode.name.value}`, argumentNodes);
         },
@@ -21,13 +19,9 @@ export function UniqueArgumentDefinitionNamesRule(context) {
     };
     function checkArgUniquenessPerField(typeNode) {
         const typeName = typeNode.name.value;
-        // FIXME: https://github.com/graphql/graphql-js/issues/2203
-        /* c8 ignore next */
         const fieldNodes = typeNode.fields ?? [];
         for (const fieldDef of fieldNodes) {
             const fieldName = fieldDef.name.value;
-            // FIXME: https://github.com/graphql/graphql-js/issues/2203
-            /* c8 ignore next */
             const argumentNodes = fieldDef.arguments ?? [];
             checkArgUniqueness(`${typeName}.${fieldName}`, argumentNodes);
         }

@@ -112,8 +112,6 @@ function getArgumentValues(def, node, variableValues, hideSuggestions) {
 exports.getArgumentValues = getArgumentValues;
 function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVariablesValues, hideSuggestions) {
     const coercedValues = {};
-    // FIXME: https://github.com/graphql/graphql-js/issues/2203
-    /* c8 ignore next */
     const argumentNodes = node.arguments ?? [];
     const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
     for (const argDef of argDefs) {

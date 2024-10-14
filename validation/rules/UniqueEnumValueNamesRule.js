@@ -23,8 +23,6 @@ function UniqueEnumValueNamesRule(context) {
             valueNames = new Map();
             knownValueNames.set(typeName, valueNames);
         }
-        // FIXME: https://github.com/graphql/graphql-js/issues/2203
-        /* c8 ignore next */
         const valueNodes = node.values ?? [];
         for (const valueDef of valueNodes) {
             const valueName = valueDef.name.value;
