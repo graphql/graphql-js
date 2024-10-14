@@ -1,7 +1,7 @@
 import { inspect } from '../jsutils/inspect.ts';
 import { instanceOf } from '../jsutils/instanceOf.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
-import { toObjMap } from '../jsutils/toObjMap.ts';
+import { toObjMapWithSymbols } from '../jsutils/toObjMap.ts';
 import type { DirectiveDefinitionNode } from '../language/ast.ts';
 import { DirectiveLocation } from '../language/directiveLocation.ts';
 import { assertName } from './assertName.ts';
@@ -39,7 +39,7 @@ export function assertDirective(directive: unknown): GraphQLDirective {
  * an object which can contain all the values you need.
  */
 export interface GraphQLDirectiveExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
@@ -58,7 +58,7 @@ export class GraphQLDirective {
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     const args = config.args ?? {};
     this.args = defineArguments(args);
