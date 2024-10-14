@@ -16,7 +16,7 @@ import {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-} from '../findBreakingChanges.js';
+} from '../findSchemaChanges.js';
 
 describe('findBreakingChanges', () => {
   it('should detect if a type was removed or not', () => {
