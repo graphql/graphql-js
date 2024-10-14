@@ -11,7 +11,7 @@ import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { suggestionList } from '../jsutils/suggestionList.js';
-import { toObjMap } from '../jsutils/toObjMap.js';
+import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
 
@@ -610,7 +610,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
       ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
     this.coerceInputLiteral = config.coerceInputLiteral;
     this.valueToLiteral = config.valueToLiteral;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
@@ -783,7 +783,7 @@ export class GraphQLObjectType<TSource = any, TContext = any> {
     this.name = assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._fields = (defineFieldMap<TSource, TContext>).bind(
@@ -854,7 +854,7 @@ function defineFieldMap<TSource, TContext>(
       resolve: fieldConfig.resolve,
       subscribe: fieldConfig.subscribe,
       deprecationReason: fieldConfig.deprecationReason,
-      extensions: toObjMap(fieldConfig.extensions),
+      extensions: toObjMapWithSymbols(fieldConfig.extensions),
       astNode: fieldConfig.astNode,
     };
   });
@@ -869,7 +869,7 @@ export function defineArguments(
     type: argConfig.type,
     defaultValue: defineDefaultValue(argName, argConfig),
     deprecationReason: argConfig.deprecationReason,
-    extensions: toObjMap(argConfig.extensions),
+    extensions: toObjMapWithSymbols(argConfig.extensions),
     astNode: argConfig.astNode,
   }));
 }
@@ -1122,7 +1122,7 @@ export class GraphQLInterfaceType<TSource = any, TContext = any> {
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this._fields = (defineFieldMap<TSource, TContext>).bind(
@@ -1247,7 +1247,7 @@ export class GraphQLUnionType {
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
@@ -1333,7 +1333,7 @@ function enumValuesFromConfig(values: GraphQLEnumValueConfigMap) {
     description: valueConfig.description,
     value: valueConfig.value !== undefined ? valueConfig.value : valueName,
     deprecationReason: valueConfig.deprecationReason,
-    extensions: toObjMap(valueConfig.extensions),
+    extensions: toObjMapWithSymbols(valueConfig.extensions),
     astNode: valueConfig.astNode,
   }));
 }
@@ -1378,7 +1378,7 @@ export class GraphQLEnumType /* <T> */ {
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
     this.name = assertName(config.name);
     this.description = config.description;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
@@ -1626,7 +1626,7 @@ export class GraphQLInputObjectType {
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
     this.name = assertName(config.name);
     this.description = config.description;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this.isOneOf = config.isOneOf ?? false;
@@ -1686,7 +1686,7 @@ function defineInputFieldMap(
     type: fieldConfig.type,
     defaultValue: defineDefaultValue(fieldName, fieldConfig),
     deprecationReason: fieldConfig.deprecationReason,
-    extensions: toObjMap(fieldConfig.extensions),
+    extensions: toObjMapWithSymbols(fieldConfig.extensions),
     astNode: fieldConfig.astNode,
   }));
 }
