@@ -110,7 +110,7 @@ function getArgumentValues(def, node, variableValues, hideSuggestions) {
     return experimentalGetArgumentValues(node, def.args, variableValues, undefined, hideSuggestions);
 }
 exports.getArgumentValues = getArgumentValues;
-function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVariablesValues, hideSuggestions) {
+function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVariableValues, hideSuggestions) {
     const coercedValues = {};
     const argumentNodes = node.arguments ?? [];
     const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
@@ -132,8 +132,8 @@ function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVa
         let isNull = valueNode.kind === kinds_js_1.Kind.NULL;
         if (valueNode.kind === kinds_js_1.Kind.VARIABLE) {
             const variableName = valueNode.name.value;
-            const scopedVariableValues = fragmentVariablesValues?.sources[variableName]
-                ? fragmentVariablesValues
+            const scopedVariableValues = fragmentVariableValues?.sources[variableName]
+                ? fragmentVariableValues
                 : variableValues;
             if (scopedVariableValues == null ||
                 !Object.hasOwn(scopedVariableValues.coerced, variableName)) {
@@ -152,7 +152,7 @@ function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVa
             throw new GraphQLError_js_1.GraphQLError(`Argument "${name}" of non-null type "${(0, inspect_js_1.inspect)(argType)}" ` +
                 'must not be null.', { nodes: valueNode });
         }
-        const coercedValue = (0, coerceInputValue_js_1.coerceInputLiteral)(valueNode, argType, variableValues, fragmentVariablesValues, hideSuggestions);
+        const coercedValue = (0, coerceInputValue_js_1.coerceInputLiteral)(valueNode, argType, variableValues, fragmentVariableValues, hideSuggestions);
         if (coercedValue === undefined) {
             // Note: ValuesOfCorrectTypeRule validation should catch this before
             // execution. This is a runtime check to ensure execution does not

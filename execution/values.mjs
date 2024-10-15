@@ -104,7 +104,7 @@ export function getFragmentVariableValues(fragmentSpreadNode, fragmentSignatures
 export function getArgumentValues(def, node, variableValues, hideSuggestions) {
     return experimentalGetArgumentValues(node, def.args, variableValues, undefined, hideSuggestions);
 }
-export function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVariablesValues, hideSuggestions) {
+export function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVariableValues, hideSuggestions) {
     const coercedValues = {};
     const argumentNodes = node.arguments ?? [];
     const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
@@ -126,8 +126,8 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
         let isNull = valueNode.kind === Kind.NULL;
         if (valueNode.kind === Kind.VARIABLE) {
             const variableName = valueNode.name.value;
-            const scopedVariableValues = fragmentVariablesValues?.sources[variableName]
-                ? fragmentVariablesValues
+            const scopedVariableValues = fragmentVariableValues?.sources[variableName]
+                ? fragmentVariableValues
                 : variableValues;
             if (scopedVariableValues == null ||
                 !Object.hasOwn(scopedVariableValues.coerced, variableName)) {
@@ -146,7 +146,7 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
             throw new GraphQLError(`Argument "${name}" of non-null type "${inspect(argType)}" ` +
                 'must not be null.', { nodes: valueNode });
         }
-        const coercedValue = coerceInputLiteral(valueNode, argType, variableValues, fragmentVariablesValues, hideSuggestions);
+        const coercedValue = coerceInputLiteral(valueNode, argType, variableValues, fragmentVariableValues, hideSuggestions);
         if (coercedValue === undefined) {
             // Note: ValuesOfCorrectTypeRule validation should catch this before
             // execution. This is a runtime check to ensure execution does not

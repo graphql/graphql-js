@@ -48,7 +48,7 @@ export declare function getFragmentVariableValues(fragmentSpreadNode: FragmentSp
 export declare function getArgumentValues(def: GraphQLField<unknown, unknown> | GraphQLDirective, node: FieldNode | DirectiveNode, variableValues?: Maybe<VariableValues>, hideSuggestions?: Maybe<boolean>): {
     [argument: string]: unknown;
 };
-export declare function experimentalGetArgumentValues(node: FieldNode | DirectiveNode | FragmentSpreadNode, argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>, variableValues: Maybe<VariableValues>, fragmentVariablesValues?: Maybe<VariableValues>, hideSuggestions?: Maybe<boolean>): {
+export declare function experimentalGetArgumentValues(node: FieldNode | DirectiveNode | FragmentSpreadNode, argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>, variableValues: Maybe<VariableValues>, fragmentVariableValues?: Maybe<VariableValues>, hideSuggestions?: Maybe<boolean>): {
     [argument: string]: unknown;
 };
 /**

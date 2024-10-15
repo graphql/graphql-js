@@ -562,7 +562,7 @@ function getStreamUsage(validatedExecutionArgs, fieldDetailsList, path) {
     const streamedFieldDetailsList = fieldDetailsList.map((fieldDetails) => ({
         node: fieldDetails.node,
         deferUsage: undefined,
-        fragmentVariablesValues: fieldDetails.fragmentVariableValues,
+        fragmentVariableValues: fieldDetails.fragmentVariableValues,
     }));
     const streamUsage = {
         initialCount: stream.initialCount,
