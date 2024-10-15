@@ -8,7 +8,11 @@ import type {
   GraphQLDefaultValueUsage,
   GraphQLType,
 } from '../../type/definition.ts';
-import { isNonNullType } from '../../type/definition.ts';
+import {
+  isInputObjectType,
+  isNonNullType,
+  isNullableType,
+} from '../../type/definition.ts';
 import type { GraphQLSchema } from '../../type/schema.ts';
 import { isTypeSubTypeOf } from '../../utilities/typeComparators.ts';
 import { typeFromAST } from '../../utilities/typeFromAST.ts';
@@ -34,6 +38,7 @@ export function VariablesInAllowedPositionRule(
         for (const {
           node,
           type,
+          parentType,
           defaultValue,
           fragmentVariableDefinition,
         } of usages) {
@@ -69,6 +74,20 @@ export function VariablesInAllowedPositionRule(
                 ),
               );
             }
+            if (
+              isInputObjectType(parentType) &&
+              parentType.isOneOf &&
+              isNullableType(varType)
+            ) {
+              const varTypeStr = inspect(varType);
+              const parentTypeStr = inspect(parentType);
+              context.reportError(
+                new GraphQLError(
+                  `Variable "$${varName}" is of type "${varTypeStr}" but must be non-nullable to be used for OneOf Input Object "${parentTypeStr}".`,
+                  { nodes: [varDef, node] },
+                ),
+              );
+            }
           }
         }
       },
@@ -80,8 +99,11 @@ export function VariablesInAllowedPositionRule(
 }
 /**
  * Returns true if the variable is allowed in the location it was found,
- * which includes considering if default values exist for either the variable
+ * including considering if default values exist for either the variable
  * or the location at which it is located.
+ *
+ * OneOf Input Object Type fields are considered separately above to
+ * provide a more descriptive error message.
  */
 function allowedVariableUsage(
   schema: GraphQLSchema,
