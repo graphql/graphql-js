@@ -365,6 +365,37 @@ describe('Validate: Variables are in allowed positions', () => {
     });
   });
 
+  describe('Validates OneOf Input Objects', () => {
+    it('Allows exactly one non-nullable variable', () => {
+      expectValid(`
+        query ($string: String!) {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: $string })
+          }
+        }
+      `);
+    });
+
+    it('Forbids one nullable variable', () => {
+      expectErrors(`
+        query ($string: String) {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: $string })
+          }
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Variable "$string" is of type "String" but must be non-nullable to be used for OneOf Input Object "OneOfInput".',
+          locations: [
+            { line: 2, column: 16 },
+            { line: 4, column: 52 },
+          ],
+        },
+      ]);
+    });
+  });
+
   describe('Fragment arguments are validated', () => {
     it('Boolean => Boolean', () => {
       expectValid(`

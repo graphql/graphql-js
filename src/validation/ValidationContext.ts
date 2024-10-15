@@ -35,6 +35,7 @@ type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
+  readonly parentType: Maybe<GraphQLInputType>;
   readonly defaultValue: GraphQLDefaultValueUsage | undefined;
   readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }
@@ -237,6 +238,7 @@ export class ValidationContext extends ASTValidationContext {
               newUsages.push({
                 node: variable,
                 type: typeInfo.getInputType(),
+                parentType: typeInfo.getParentInputType(),
                 defaultValue: undefined, // fragment variables have a variable default but no location default, which is what this default value represents
                 fragmentVariableDefinition,
               });
@@ -244,6 +246,7 @@ export class ValidationContext extends ASTValidationContext {
               newUsages.push({
                 node: variable,
                 type: typeInfo.getInputType(),
+                parentType: typeInfo.getParentInputType(),
                 defaultValue: typeInfo.getDefaultValue(),
                 fragmentVariableDefinition: undefined,
               });
