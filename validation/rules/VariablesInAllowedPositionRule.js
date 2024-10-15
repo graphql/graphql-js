@@ -23,7 +23,7 @@ function VariablesInAllowedPositionRule(context) {
             },
             leave(operation) {
                 const usages = context.getRecursiveVariableUsages(operation);
-                for (const { node, type, defaultValue, fragmentVariableDefinition, } of usages) {
+                for (const { node, type, parentType, defaultValue, fragmentVariableDefinition, } of usages) {
                     const varName = node.name.value;
                     let varDef = fragmentVariableDefinition;
                     if (!varDef) {
@@ -43,6 +43,13 @@ function VariablesInAllowedPositionRule(context) {
                             const typeStr = (0, inspect_js_1.inspect)(type);
                             context.reportError(new GraphQLError_js_1.GraphQLError(`Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`, { nodes: [varDef, node] }));
                         }
+                        if ((0, definition_js_1.isInputObjectType)(parentType) &&
+                            parentType.isOneOf &&
+                            (0, definition_js_1.isNullableType)(varType)) {
+                            const varTypeStr = (0, inspect_js_1.inspect)(varType);
+                            const parentTypeStr = (0, inspect_js_1.inspect)(parentType);
+                            context.reportError(new GraphQLError_js_1.GraphQLError(`Variable "$${varName}" is of type "${varTypeStr}" but must be non-nullable to be used for OneOf Input Object "${parentTypeStr}".`, { nodes: [varDef, node] }));
+                        }
                     }
                 }
             },
@@ -55,8 +62,11 @@ function VariablesInAllowedPositionRule(context) {
 exports.VariablesInAllowedPositionRule = VariablesInAllowedPositionRule;
 /**
  * Returns true if the variable is allowed in the location it was found,
- * which includes considering if default values exist for either the variable
+ * including considering if default values exist for either the variable
  * or the location at which it is located.
+ *
+ * OneOf Input Object Type fields are considered separately above to
+ * provide a more descriptive error message.
  */
 function allowedVariableUsage(schema, varType, varDefaultValue, locationType, locationDefaultValue) {
     if ((0, definition_js_1.isNonNullType)(locationType) && !(0, definition_js_1.isNonNullType)(varType)) {

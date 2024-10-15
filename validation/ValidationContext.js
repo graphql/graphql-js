@@ -139,6 +139,7 @@ class ValidationContext extends ASTValidationContext {
                         newUsages.push({
                             node: variable,
                             type: typeInfo.getInputType(),
+                            parentType: typeInfo.getParentInputType(),
                             defaultValue: undefined, // fragment variables have a variable default but no location default, which is what this default value represents
                             fragmentVariableDefinition,
                         });
@@ -147,6 +148,7 @@ class ValidationContext extends ASTValidationContext {
                         newUsages.push({
                             node: variable,
                             type: typeInfo.getInputType(),
+                            parentType: typeInfo.getParentInputType(),
                             defaultValue: typeInfo.getDefaultValue(),
                             fragmentVariableDefinition: undefined,
                         });

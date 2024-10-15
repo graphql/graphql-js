@@ -11,6 +11,7 @@ type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
     readonly node: VariableNode;
     readonly type: Maybe<GraphQLInputType>;
+    readonly parentType: Maybe<GraphQLInputType>;
     readonly defaultValue: GraphQLDefaultValueUsage | undefined;
     readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }
