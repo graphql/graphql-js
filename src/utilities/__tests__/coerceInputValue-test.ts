@@ -109,7 +109,7 @@ describe('coerceInputValue', () => {
   describe('for GraphQLScalar', () => {
     const TestScalar = new GraphQLScalarType({
       name: 'TestScalar',
-      parseValue(input: any) {
+      coerceInputValue(input: any) {
         if (input.error != null) {
           throw new Error(input.error);
         }
@@ -676,7 +676,7 @@ describe('coerceInputLiteral', () => {
         invariant(node.kind === 'StringValue');
         return node.value;
       },
-      parseValue: identityFunc,
+      coerceInputValue: identityFunc,
     });
 
     test('"value"', passthroughScalar, 'value');
@@ -686,7 +686,7 @@ describe('coerceInputLiteral', () => {
       coerceInputLiteral(node) {
         return `~~~${print(node)}~~~`;
       },
-      parseValue: identityFunc,
+      coerceInputValue: identityFunc,
     });
 
     test('"value"', printScalar, '~~~"value"~~~');
@@ -703,7 +703,7 @@ describe('coerceInputLiteral', () => {
       coerceInputLiteral() {
         throw new Error('Test');
       },
-      parseValue: identityFunc,
+      coerceInputValue: identityFunc,
     });
 
     test('value', throwScalar, undefined);
@@ -713,7 +713,7 @@ describe('coerceInputLiteral', () => {
       coerceInputLiteral() {
         return undefined;
       },
-      parseValue: identityFunc,
+      coerceInputValue: identityFunc,
     });
 
     test('value', returnUndefinedScalar, undefined);
@@ -945,12 +945,12 @@ describe('coerceInputLiteral', () => {
 
 describe('coerceDefaultValue', () => {
   it('memoizes coercion', () => {
-    const parseValueCalls: any = [];
+    const coerceInputValueCalls: any = [];
 
     const spyScalar = new GraphQLScalarType({
       name: 'SpyScalar',
-      parseValue(value) {
-        parseValueCalls.push(value);
+      coerceInputValue(value) {
+        coerceInputValueCalls.push(value);
         return value;
       },
     });
@@ -966,6 +966,6 @@ describe('coerceDefaultValue', () => {
     expect(coerceDefaultValue(defaultValueUsage, spyScalar, true)).to.equal(
       'hello',
     );
-    expect(parseValueCalls).to.deep.equal(['hello']);
+    expect(coerceInputValueCalls).to.deep.equal(['hello']);
   });
 });

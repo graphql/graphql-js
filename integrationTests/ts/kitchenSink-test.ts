@@ -6,8 +6,8 @@ import { Kind } from 'graphql/language';
 // Test subset of public APIs with "exactOptionalPropertyTypes" flag enabled
 new GraphQLScalarType({
   name: 'SomeScalar',
-  serialize: undefined,
-  parseValue: undefined,
+  coerceOutputValue: undefined,
+  coerceInputValue: undefined,
   coerceInputLiteral: undefined,
 });
 

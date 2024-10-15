@@ -521,9 +521,10 @@ export interface GraphQLScalarTypeExtensions {
  * Scalars (or Enums) and are defined with a name and a series of functions
  * used to parse input from ast or variables and to ensure validity.
  *
- * If a type's serialize function returns `null` or does not return a value
- * (i.e. it returns `undefined`) then an error will be raised and a `null`
- * value will be returned in the response. It is always better to validate
+ * If a type's coerceOutputValue function returns `null` or does not return a
+ * value (i.e. it returns `undefined`) then an error will be raised and a
+ * `null` value will be returned in the response. It is always better to
+ * validate.
  *
  * Example:
  *
@@ -542,10 +543,10 @@ export interface GraphQLScalarTypeExtensions {
  *
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
- *   serialize(value) {
+ *   coerceOutputValue(value) {
  *     return ensureOdd(value);
  *   },
- *   parseValue(value) {
+ *   coerceInputValue(value) {
  *     return ensureOdd(value);
  *   }
  *   valueToLiteral(value) {
@@ -556,19 +557,14 @@ export interface GraphQLScalarTypeExtensions {
  *
  * Custom scalars behavior is defined via the following functions:
  *
- *  - serialize(value): Implements "Result Coercion". Given an internal value,
+ *  - coerceOutputValue(value): Implements "Result Coercion". Given an internal value,
  *    produces an external value valid for this type. Returns undefined or
  *    throws an error to indicate invalid values.
  *
- *  - parseValue(value): Implements "Input Coercion" for values. Given an
+ *  - coerceInputValue(value): Implements "Input Coercion" for values. Given an
  *    external value (for example, variable values), produces an internal value
  *    valid for this type. Returns undefined or throws an error to indicate
  *    invalid values.
- *
- *  - parseLiteral(ast): Implements "Input Coercion" for literals including
- *    non-specified replacement of variables embedded within complex scalars.
- *    This method will be removed in v18 favor of the combination of the
- *    `replaceVariables()` utility and the `coerceInputLiteral()` method.
  *
  *  - coerceInputLiteral(ast): Implements "Input Coercion" for constant literals.
  *    Given an GraphQL literal (AST) (for example, an argument value), produces
@@ -579,15 +575,32 @@ export interface GraphQLScalarTypeExtensions {
  *    literal (AST). Returns undefined or throws an error to indicate
  *    invalid values.
  *
+ *  Deprecated, to be removed in v18:
+ *
+ *  - serialize(value): Implements "Result Coercion". Renamed to
+ *    `coerceOutputValue()`.
+ *
+ *  - parseValue(value): Implements "Input Coercion" for values. Renamed to
+ *    `coerceInputValue()`.
+ *
+ *  - parseLiteral(ast): Implements "Input Coercion" for literals including
+ *    non-specified replacement of variables embedded within complex scalars.
+ *    Replaced by the combination of the `replaceVariables()` utility and the
+ *    `coerceInputLiteral()` method.
+ *
  */
 export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
+  /** @deprecated use `coerceOutputValue()` instead, `serialize()` will be removed in v18 */
   serialize: GraphQLScalarSerializer<TExternal>;
+  /** @deprecated use `coerceInputValue()` instead, `parseValue()` will be removed in v18 */
   parseValue: GraphQLScalarValueParser<TInternal>;
-  /** @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
+  /** @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18 */
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
+  coerceOutputValue: GraphQLScalarOutputValueCoercer<TExternal>;
+  coerceInputValue: GraphQLScalarInputValueCoercer<TInternal>;
   coerceInputLiteral: GraphQLScalarInputLiteralCoercer<TInternal> | undefined;
   valueToLiteral: GraphQLScalarValueToLiteral | undefined;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
@@ -595,19 +608,23 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>) {
-    const parseValue =
-      config.parseValue ??
-      (identityFunc as GraphQLScalarValueParser<TInternal>);
-
     this.name = assertName(config.name);
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
     this.serialize =
-      config.serialize ?? (identityFunc as GraphQLScalarSerializer<TExternal>);
-    this.parseValue = parseValue;
+      config.serialize ??
+      config.coerceOutputValue ??
+      (identityFunc as GraphQLScalarSerializer<TExternal>);
+    this.parseValue =
+      config.parseValue ??
+      config.coerceInputValue ??
+      (identityFunc as GraphQLScalarValueParser<TInternal>);
     this.parseLiteral =
       config.parseLiteral ??
-      ((node, variables) => parseValue(valueFromASTUntyped(node, variables)));
+      ((node, variables) =>
+        this.coerceInputValue(valueFromASTUntyped(node, variables)));
+    this.coerceOutputValue = config.coerceOutputValue ?? this.serialize;
+    this.coerceInputValue = config.coerceInputValue ?? this.parseValue;
     this.coerceInputLiteral = config.coerceInputLiteral;
     this.valueToLiteral = config.valueToLiteral;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -624,9 +641,9 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
 
     if (config.coerceInputLiteral) {
       devAssert(
-        typeof config.parseValue === 'function' &&
+        typeof config.coerceInputValue === 'function' &&
           typeof config.coerceInputLiteral === 'function',
-        `${this.name} must provide both "parseValue" and "coerceInputLiteral" functions.`,
+        `${this.name} must provide both "coerceInputValue" and "coerceInputLiteral" functions.`,
       );
     }
   }
@@ -643,6 +660,8 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
       serialize: this.serialize,
       parseValue: this.parseValue,
       parseLiteral: this.parseLiteral,
+      coerceOutputValue: this.coerceOutputValue,
+      coerceInputValue: this.coerceInputValue,
       coerceInputLiteral: this.coerceInputLiteral,
       valueToLiteral: this.valueToLiteral,
       extensions: this.extensions,
@@ -660,11 +679,21 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal> {
   }
 }
 
+/* @deprecated in favor of GraphQLScalarOutputValueCoercer, will be removed in v18 */
 export type GraphQLScalarSerializer<TExternal> = (
   outputValue: unknown,
 ) => TExternal;
 
+export type GraphQLScalarOutputValueCoercer<TExternal> = (
+  outputValue: unknown,
+) => TExternal;
+
+/* @deprecated in favor of GraphQLScalarInputValueCoercer, will be removed in v18 */
 export type GraphQLScalarValueParser<TInternal> = (
+  inputValue: unknown,
+) => TInternal;
+
+export type GraphQLScalarInputValueCoercer<TInternal> = (
   inputValue: unknown,
 ) => TInternal;
 
@@ -687,13 +716,19 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   description?: Maybe<string>;
   specifiedByURL?: Maybe<string>;
   /** Serializes an internal value to include in a response. */
+  /** @deprecated use `coerceOutputValue()` instead, `serialize()` will be removed in v18 */
   serialize?: GraphQLScalarSerializer<TExternal> | undefined;
   /** Parses an externally provided value to use as an input. */
+  /** @deprecated use `coerceInputValue()` instead, `parseValue()` will be removed in v18 */
   parseValue?: GraphQLScalarValueParser<TInternal> | undefined;
   /** Parses an externally provided literal value to use as an input. */
-  /** @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
+  /** @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18 */
   parseLiteral?: GraphQLScalarLiteralParser<TInternal> | undefined;
-  /** Parses an externally provided const literal value to use as an input. */
+  /** Coerces an externally provided value to use as an input. */
+  coerceOutputValue?: GraphQLScalarOutputValueCoercer<TExternal> | undefined;
+  /** Coerces an internal value to include in a response. */
+  coerceInputValue?: GraphQLScalarInputValueCoercer<TInternal> | undefined;
+  /** Coerces an externally provided const literal value to use as an input. */
   coerceInputLiteral?: GraphQLScalarInputLiteralCoercer<TInternal> | undefined;
   /** Translates an externally provided value to a literal (AST). */
   valueToLiteral?: GraphQLScalarValueToLiteral | undefined;
@@ -707,6 +742,8 @@ interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
+  coerceOutputValue: GraphQLScalarOutputValueCoercer<TExternal>;
+  coerceInputValue: GraphQLScalarInputValueCoercer<TInternal>;
   coerceInputLiteral: GraphQLScalarInputLiteralCoercer<TInternal> | undefined;
   extensions: Readonly<GraphQLScalarTypeExtensions>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
@@ -1341,7 +1378,7 @@ function enumValuesFromConfig(values: GraphQLEnumValueConfigMap) {
 /**
  * Enum Type Definition
  *
- * Some leaf values of requests and input values are Enums. GraphQL serializes
+ * Some leaf values of requests and input values are Enums. GraphQL coerces
  * Enum values as strings, however internally Enums can be represented by any
  * kind of type, often integers.
  *
@@ -1408,7 +1445,12 @@ export class GraphQLEnumType /* <T> */ {
     return this._nameLookup[name];
   }
 
+  /** @deprecated use `coerceOutputValue()` instead, `serialize()` will be removed in v18 */
   serialize(outputValue: unknown /* T */): Maybe<string> {
+    return this.coerceOutputValue(outputValue);
+  }
+
+  coerceOutputValue(outputValue: unknown /* T */): Maybe<string> {
     if (this._valueLookup === null) {
       this._valueLookup = new Map(
         this.getValues().map((enumValue) => [enumValue.value, enumValue]),
@@ -1423,7 +1465,15 @@ export class GraphQLEnumType /* <T> */ {
     return enumValue.name;
   }
 
+  /** @deprecated use `coerceInputValue()` instead, `parseValue()` will be removed in v18 */
   parseValue(
+    inputValue: unknown,
+    hideSuggestions?: Maybe<boolean>,
+  ): Maybe<any> /* T */ {
+    return this.coerceInputValue(inputValue, hideSuggestions);
+  }
+
+  coerceInputValue(
     inputValue: unknown,
     hideSuggestions?: Maybe<boolean>,
   ): Maybe<any> /* T */ {
@@ -1445,7 +1495,7 @@ export class GraphQLEnumType /* <T> */ {
     return enumValue.value;
   }
 
-  /** @deprecated use `coerceInputLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
+  /** @deprecated use `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18 */
   parseLiteral(
     valueNode: ValueNode,
     _variables: Maybe<ObjMap<unknown>>,

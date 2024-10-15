@@ -1033,7 +1033,7 @@ describe('Validate: Values of correct type', () => {
     it('reports original error for custom scalar which throws', () => {
       const customScalar = new GraphQLScalarType({
         name: 'Invalid',
-        parseValue(value) {
+        coerceInputValue(value) {
           throw new Error(
             `Invalid scalar is always invalid: ${inspect(value)}`,
           );
@@ -1072,7 +1072,7 @@ describe('Validate: Values of correct type', () => {
     it('reports error for custom scalar that returns undefined', () => {
       const customScalar = new GraphQLScalarType({
         name: 'CustomScalar',
-        parseValue() {
+        coerceInputValue() {
           return undefined;
         },
       });
