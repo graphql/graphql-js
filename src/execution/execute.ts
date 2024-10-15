@@ -1145,7 +1145,7 @@ function getStreamUsage(
     (fieldDetails) => ({
       node: fieldDetails.node,
       deferUsage: undefined,
-      fragmentVariablesValues: fieldDetails.fragmentVariableValues,
+      fragmentVariableValues: fieldDetails.fragmentVariableValues,
     }),
   );
 
