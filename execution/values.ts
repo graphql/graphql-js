@@ -212,7 +212,7 @@ export function experimentalGetArgumentValues(
   node: FieldNode | DirectiveNode | FragmentSpreadNode,
   argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
   variableValues: Maybe<VariableValues>,
-  fragmentVariablesValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<VariableValues>,
   hideSuggestions?: Maybe<boolean>,
 ): {
   [argument: string]: unknown;
@@ -246,10 +246,8 @@ export function experimentalGetArgumentValues(
     let isNull = valueNode.kind === Kind.NULL;
     if (valueNode.kind === Kind.VARIABLE) {
       const variableName = valueNode.name.value;
-      const scopedVariableValues = fragmentVariablesValues?.sources[
-        variableName
-      ]
-        ? fragmentVariablesValues
+      const scopedVariableValues = fragmentVariableValues?.sources[variableName]
+        ? fragmentVariableValues
         : variableValues;
       if (
         scopedVariableValues == null ||
@@ -283,7 +281,7 @@ export function experimentalGetArgumentValues(
       valueNode,
       argType,
       variableValues,
-      fragmentVariablesValues,
+      fragmentVariableValues,
       hideSuggestions,
     );
     if (coercedValue === undefined) {
