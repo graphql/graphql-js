@@ -71,9 +71,7 @@ const QueryType = new GraphQLObjectType({
       args: {
         fromEnum: {
           type: ComplexEnum,
-          // Note: defaultValue is provided an *internal* representation for
-          // Enums, rather than the string name.
-          defaultValue: Complex1,
+          defaultValue: 'ONE',
         },
         provideGoodValue: { type: GraphQLBoolean },
         provideBadValue: { type: GraphQLBoolean },
@@ -306,7 +304,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Variable "$color" got invalid value 2; Enum "Color" cannot represent non-string value: 2.',
+            'Variable "$color" has invalid value: Enum "Color" cannot represent non-string value: 2.',
           locations: [{ line: 1, column: 8 }],
         },
       ],
