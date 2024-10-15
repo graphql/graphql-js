@@ -199,16 +199,16 @@ function coerceInputValueImpl(
             `Exactly one key must be specified for OneOf type "${type}".`,
           ),
         );
-      }
-
-      const key = keys[0];
-      const value = coercedValue[key];
-      if (value === null) {
-        onError(
-          pathToArray(path).concat(key),
-          value,
-          new GraphQLError(`Field "${key}" must be non-null.`),
-        );
+      } else {
+        const key = keys[0];
+        const value = coercedValue[key];
+        if (value === null) {
+          onError(
+            pathToArray(path).concat(key),
+            value,
+            new GraphQLError(`Field "${key}" must be non-null.`),
+          );
+        }
       }
     }
 
