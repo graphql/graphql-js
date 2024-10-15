@@ -219,7 +219,6 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          cache: npm
           node-version-file: '.node-version'
 
       - name: Install Dependencies
@@ -247,7 +246,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
-          node-version-file: '.node-version'
+          node-version: 18
 
       - name: Install Dependencies
         run: npm ci --ignore-scripts
