@@ -104,10 +104,16 @@ export {
 export {
   BreakingChangeType,
   DangerousChangeType,
+  SafeChangeType,
   findBreakingChanges,
   findDangerousChanges,
-} from './findBreakingChanges.js';
-export type { BreakingChange, DangerousChange } from './findBreakingChanges.js';
+  findSchemaChanges,
+} from './findSchemaChanges.js';
+export type {
+  BreakingChange,
+  DangerousChange,
+  SafeChange,
+} from './findSchemaChanges.js';
 
 // Wrapper type that contains DocumentNode and types that can be deduced from it.
 export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.js';

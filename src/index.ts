@@ -472,8 +472,10 @@ export {
   // Compares two GraphQLSchemas and detects breaking changes.
   BreakingChangeType,
   DangerousChangeType,
+  SafeChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  findSchemaChanges,
 } from './utilities/index.js';
 
 export type {
@@ -501,6 +503,7 @@ export type {
   IntrospectionDirective,
   BuildSchemaOptions,
   BreakingChange,
+  SafeChange,
   DangerousChange,
   TypedQueryDocumentNode,
 } from './utilities/index.js';
