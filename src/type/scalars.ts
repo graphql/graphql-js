@@ -252,7 +252,7 @@ export const GraphQLID = new GraphQLScalarType<string>({
     if (typeof coercedValue === 'string') {
       return coercedValue;
     }
-    if (Number.isInteger(coercedValue)) {
+    if (Number.isInteger(coercedValue) || typeof coercedValue === 'bigint') {
       return String(coercedValue);
     }
     throw new GraphQLError(
@@ -265,6 +265,9 @@ export const GraphQLID = new GraphQLScalarType<string>({
       return inputValue;
     }
     if (typeof inputValue === 'number' && Number.isInteger(inputValue)) {
+      return inputValue.toString();
+    }
+    if (typeof inputValue === 'bigint') {
       return inputValue.toString();
     }
     throw new GraphQLError(`ID cannot represent value: ${inspect(inputValue)}`);
