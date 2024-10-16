@@ -470,7 +470,7 @@ overrides:
     parser: '@typescript-eslint/parser'
     parserOptions:
       sourceType: module
-      project: ['tsconfig.json']
+      project: ['./tsconfig.json', './website/tsconfig.json']
     plugins:
       - '@typescript-eslint'
       - 'eslint-plugin-tsdoc'
