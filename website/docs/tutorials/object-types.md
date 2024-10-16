@@ -38,15 +38,15 @@ class RandomDie {
   }
 
   roll({ numRolls }) {
-    var output = [];
-    for (var i = 0; i < numRolls; i++) {
+    let output = [];
+    for (let i = 0; i < numRolls; i++) {
       output.push(this.rollOnce());
     }
     return output;
   }
 }
 
-var root = {
+let root = {
   getDie: function ({ numSides }) {
     return new RandomDie(numSides || 6);
   },
@@ -70,12 +70,12 @@ type Query {
 Putting this all together, here is some sample code that runs a server with this GraphQL API:
 
 ```js
-var express = require('express');
-var { graphqlHTTP } = require('express-graphql');
-var { buildSchema } = require('graphql');
+let express = require('express');
+let { graphqlHTTP } = require('express-graphql');
+let { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
-var schema = buildSchema(`
+let schema = buildSchema(`
   type RandomDie {
     numSides: Int!
     rollOnce: Int!
@@ -98,8 +98,8 @@ class RandomDie {
   }
 
   roll({ numRolls }) {
-    var output = [];
-    for (var i = 0; i < numRolls; i++) {
+    let output = [];
+    for (let i = 0; i < numRolls; i++) {
       output.push(this.rollOnce());
     }
     return output;
@@ -107,13 +107,13 @@ class RandomDie {
 }
 
 // The root provides the top-level API endpoints
-var root = {
+let root = {
   getDie: function ({ numSides }) {
     return new RandomDie(numSides || 6);
   },
 };
 
-var app = express();
+let app = express();
 app.use(
   '/graphql',
   graphqlHTTP({

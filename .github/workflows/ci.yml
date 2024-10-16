@@ -72,10 +72,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci --ignore-scripts
 
-      # Disabled due to https://github.com/milesj/docusaurus-plugin-typedoc-api/pull/19
-      # - name: Check that package-lock.json doesn't have conflicts
-      #  run: npm ls --depth 999
-
       - name: Run npm install
         run: npm install --ignore-scripts --force --package-lock-only --engine-strict --strict-peer-deps
 
@@ -246,16 +242,12 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: npm
+          # TODO: switch back in v17
+          # node-version-file: '.node-version'
           node-version: 18
 
       - name: Install Dependencies
-        run: npm ci --ignore-scripts
+        run: cd website && npm ci --ignore-scripts
 
       - name: Build Docs
-        run: npm run build:website
-
-      - name: Upload denoDist package
-        uses: actions/upload-artifact@v4
-        with:
-          name: websiteDist
-          path: ./websiteDist
+        run: cd website && npm run build

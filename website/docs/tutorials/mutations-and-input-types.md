@@ -21,8 +21,8 @@ It's often convenient to have a mutation that maps to a database create or updat
 Both mutations and queries can be handled by root resolvers, so the root that implements this schema can simply be:
 
 ```js
-var fakeDatabase = {};
-var root = {
+let fakeDatabase = {};
+let root = {
   setMessage: function ({ message }) {
     fakeDatabase.message = message;
     return message;
@@ -68,12 +68,12 @@ Naming input types with `Input` on the end is a useful convention, because you w
 Here's some runnable code that implements this schema, keeping the data in memory:
 
 ```js
-var express = require('express');
-var { graphqlHTTP } = require('express-graphql');
-var { buildSchema } = require('graphql');
+let express = require('express');
+let { graphqlHTTP } = require('express-graphql');
+let { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
-var schema = buildSchema(`
+let schema = buildSchema(`
   input MessageInput {
     content: String
     author: String
@@ -105,9 +105,9 @@ class Message {
 }
 
 // Maps username to content
-var fakeDatabase = {};
+let fakeDatabase = {};
 
-var root = {
+let root = {
   getMessage: function ({ id }) {
     if (!fakeDatabase[id]) {
       throw new Error('no message exists with id ' + id);
@@ -116,7 +116,7 @@ var root = {
   },
   createMessage: function ({ input }) {
     // Create a random id for our "database".
-    var id = require('crypto').randomBytes(10).toString('hex');
+    let id = require('crypto').randomBytes(10).toString('hex');
 
     fakeDatabase[id] = input;
     return new Message(id, input);
@@ -131,7 +131,7 @@ var root = {
   },
 };
 
-var app = express();
+let app = express();
 app.use(
   '/graphql',
   graphqlHTTP({
@@ -158,9 +158,9 @@ mutation {
 You can use variables to simplify mutation client logic just like you can with queries. For example, some JavaScript code that calls the server to execute this mutation is:
 
 ```js
-var author = 'andy';
-var content = 'hope is a good thing';
-var query = `mutation CreateMessage($input: MessageInput) {
+let author = 'andy';
+let content = 'hope is a good thing';
+let query = `mutation CreateMessage($input: MessageInput) {
   createMessage(input: $input) {
     id
   }

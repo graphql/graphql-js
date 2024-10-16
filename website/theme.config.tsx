@@ -167,7 +167,7 @@ function Footer() {
   );
 }
 
-export default {
+const cfg: DocsThemeConfig = {
   backgroundColor: {
     dark: '27,27,27',
   },
@@ -210,7 +210,7 @@ export default {
   },
   logo: graphQLLogo,
   docsRepositoryBase:
-    'https://github.com/graphql/graphql.github.io/tree/source',
+    'https://github.com/graphql/graphql-js/tree/16.x.x/website',
   color: {
     hue: 319,
   },
@@ -229,4 +229,6 @@ export default {
   search: {
     placeholder: 'Search…',
   },
-} as DocsThemeConfig;
+};
+
+export default cfg;

@@ -73,12 +73,6 @@ div[id^='headlessui-menu-items'] {
   @apply px-0;
 }
 
-/* todo: add ability hide links with displaying sidebar in Nextra */
-.nextra-nav-container a[href='/graphql-js/'],
-.nextra-menu-mobile li:has(a[href='/graphql-js/']) {
-  @apply hidden;
-}
-
 .nextra-nav-container > nav {
   @apply gap-6;
 }

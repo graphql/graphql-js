@@ -10,11 +10,11 @@ When you are using the `GraphQLSchema` constructor to create a schema, instead o
 For example, let's say we are building a simple API that lets you fetch user data for a few hardcoded users based on an id. Using `buildSchema` we could write a server with:
 
 ```js
-var express = require('express');
-var { graphqlHTTP } = require('express-graphql');
-var { buildSchema } = require('graphql');
+let express = require('express');
+let { graphqlHTTP } = require('express-graphql');
+let { buildSchema } = require('graphql');
 
-var schema = buildSchema(`
+let schema = buildSchema(`
   type User {
     id: String
     name: String
@@ -26,7 +26,7 @@ var schema = buildSchema(`
 `);
 
 // Maps id to User object
-var fakeDatabase = {
+let fakeDatabase = {
   a: {
     id: 'a',
     name: 'alice',
@@ -37,13 +37,13 @@ var fakeDatabase = {
   },
 };
 
-var root = {
+let root = {
   user: function ({ id }) {
     return fakeDatabase[id];
   },
 };
 
-var app = express();
+let app = express();
 app.use(
   '/graphql',
   graphqlHTTP({
@@ -60,12 +60,12 @@ app.listen(4000, () => {
 We can implement this same API without using GraphQL schema language:
 
 ```js
-var express = require('express');
-var { graphqlHTTP } = require('express-graphql');
-var graphql = require('graphql');
+let express = require('express');
+let { graphqlHTTP } = require('express-graphql');
+let graphql = require('graphql');
 
 // Maps id to User object
-var fakeDatabase = {
+let fakeDatabase = {
   a: {
     id: 'a',
     name: 'alice',
@@ -77,7 +77,7 @@ var fakeDatabase = {
 };
 
 // Define the User type
-var userType = new graphql.GraphQLObjectType({
+let userType = new graphql.GraphQLObjectType({
   name: 'User',
   fields: {
     id: { type: graphql.GraphQLString },
@@ -86,7 +86,7 @@ var userType = new graphql.GraphQLObjectType({
 });
 
 // Define the Query type
-var queryType = new graphql.GraphQLObjectType({
+let queryType = new graphql.GraphQLObjectType({
   name: 'Query',
   fields: {
     user: {
@@ -102,9 +102,9 @@ var queryType = new graphql.GraphQLObjectType({
   },
 });
 
-var schema = new graphql.GraphQLSchema({ query: queryType });
+let schema = new graphql.GraphQLSchema({ query: queryType });
 
-var app = express();
+let app = express();
 app.use(
   '/graphql',
   graphqlHTTP({

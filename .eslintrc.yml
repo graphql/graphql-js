@@ -466,7 +466,9 @@ rules:
   yield-star-spacing: off
 
 overrides:
-  - files: '**/*.ts'
+  - files:
+      - '**/*.ts'
+      - '**/*.tsx'
     parser: '@typescript-eslint/parser'
     parserOptions:
       sourceType: module
@@ -726,6 +728,3 @@ overrides:
       import/no-commonjs: off
       import/no-nodejs-modules: off
       import/no-extraneous-dependencies: off
-      # Ignore docusarus related webpack aliases
-      import/no-unresolved:
-        ['error', { 'ignore': ['^@theme', '^@docusaurus', '^@generated'] }]

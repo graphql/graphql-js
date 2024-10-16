@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app';
 import { Roboto_Flex, Roboto_Mono } from 'next/font/google';
+
 import '../css/globals.css';
 
 const robotoFlex = Roboto_Flex({
