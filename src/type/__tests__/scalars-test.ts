@@ -21,6 +21,7 @@ describe('Type System: Specified scalar types', () => {
       expect(parseValue(1)).to.equal(1);
       expect(parseValue(0)).to.equal(0);
       expect(parseValue(-1)).to.equal(-1);
+      expect(parseValue(1n)).to.equal(1);
 
       expect(() => parseValue(9876504321)).to.throw(
         'Int cannot represent non 32-bit signed integer value: 9876504321',
@@ -119,6 +120,7 @@ describe('Type System: Specified scalar types', () => {
       expect(serialize(1e5)).to.equal(100000);
       expect(serialize(false)).to.equal(0);
       expect(serialize(true)).to.equal(1);
+      expect(serialize(1n)).to.equal(1);
 
       const customValueOfObj = {
         value: 5,
@@ -190,6 +192,7 @@ describe('Type System: Specified scalar types', () => {
       expect(parseValue(-1)).to.equal(-1);
       expect(parseValue(0.1)).to.equal(0.1);
       expect(parseValue(Math.PI)).to.equal(Math.PI);
+      expect(parseValue(1n)).to.equal(1);
 
       expect(() => parseValue(NaN)).to.throw(
         'Float cannot represent non numeric value: NaN',
@@ -280,6 +283,7 @@ describe('Type System: Specified scalar types', () => {
       expect(serialize('-1.1')).to.equal(-1.1);
       expect(serialize(false)).to.equal(0.0);
       expect(serialize(true)).to.equal(1.0);
+      expect(serialize(1n)).to.equal(1n);
 
       const customValueOfObj = {
         value: 5.5,
@@ -380,6 +384,7 @@ describe('Type System: Specified scalar types', () => {
       expect(serialize(-1.1)).to.equal('-1.1');
       expect(serialize(true)).to.equal('true');
       expect(serialize(false)).to.equal('false');
+      expect(serialize(9007199254740993n)).to.equal('9007199254740993');
 
       const valueOf = () => 'valueOf string';
       const toJSON = () => 'toJSON string';
@@ -493,6 +498,8 @@ describe('Type System: Specified scalar types', () => {
 
       expect(serialize(1)).to.equal(true);
       expect(serialize(0)).to.equal(false);
+      expect(serialize(1n)).to.equal(true);
+      expect(serialize(0n)).to.equal(false);
       expect(serialize(true)).to.equal(true);
       expect(serialize(false)).to.equal(false);
       expect(
@@ -538,6 +545,9 @@ describe('Type System: Specified scalar types', () => {
       // Maximum and minimum safe numbers in JS
       expect(parseValue(9007199254740991)).to.equal('9007199254740991');
       expect(parseValue(-9007199254740991)).to.equal('-9007199254740991');
+
+      // Can handle bigint in JS
+      expect(parseValue(9007199254740993n)).to.equal('9007199254740993');
 
       expect(() => parseValue(undefined)).to.throw(
         'ID cannot represent value: undefined',
@@ -614,6 +624,7 @@ describe('Type System: Specified scalar types', () => {
       expect(serialize(123)).to.equal('123');
       expect(serialize(0)).to.equal('0');
       expect(serialize(-1)).to.equal('-1');
+      expect(serialize(9007199254740993n)).to.equal('9007199254740993');
 
       const valueOf = () => 'valueOf ID';
       const toJSON = () => 'toJSON ID';

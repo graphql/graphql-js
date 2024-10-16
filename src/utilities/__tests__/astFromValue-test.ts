@@ -46,6 +46,16 @@ describe('astFromValue', () => {
       value: true,
     });
 
+    expect(astFromValue(0n, GraphQLBoolean)).to.deep.equal({
+      kind: 'BooleanValue',
+      value: false,
+    });
+
+    expect(astFromValue(1n, GraphQLBoolean)).to.deep.equal({
+      kind: 'BooleanValue',
+      value: true,
+    });
+
     const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
     expect(astFromValue(0, NonNullBoolean)).to.deep.equal({
       kind: 'BooleanValue',
@@ -69,6 +79,11 @@ describe('astFromValue', () => {
       value: '10000',
     });
 
+    expect(astFromValue(1n, GraphQLInt)).to.deep.equal({
+      kind: 'IntValue',
+      value: '1',
+    });
+
     // GraphQL spec does not allow coercing non-integer values to Int to avoid
     // accidental data loss.
     expect(() => astFromValue(123.5, GraphQLInt)).to.throw(
@@ -78,6 +93,16 @@ describe('astFromValue', () => {
     // Note: outside the bounds of 32bit signed int.
     expect(() => astFromValue(1e40, GraphQLInt)).to.throw(
       'Int cannot represent non 32-bit signed integer value: 1e+40',
+    );
+
+    // Note: outside the bounds of 32bit signed int.
+    expect(() => astFromValue(9007199254740991, GraphQLInt)).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 9007199254740991',
+    );
+
+    // Note: outside the bounds of 32bit signed int as BigInt.
+    expect(() => astFromValue(9007199254740991n, GraphQLInt)).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 9007199254740991',
     );
 
     expect(() => astFromValue(NaN, GraphQLInt)).to.throw(
@@ -94,6 +119,11 @@ describe('astFromValue', () => {
     expect(astFromValue(123.0, GraphQLFloat)).to.deep.equal({
       kind: 'IntValue',
       value: '123',
+    });
+
+    expect(astFromValue(9007199254740993n, GraphQLFloat)).to.deep.equal({
+      kind: 'IntValue',
+      value: '9007199254740993',
     });
 
     expect(astFromValue(123.5, GraphQLFloat)).to.deep.equal({
@@ -131,6 +161,11 @@ describe('astFromValue', () => {
     expect(astFromValue(123, GraphQLString)).to.deep.equal({
       kind: 'StringValue',
       value: '123',
+    });
+
+    expect(astFromValue(9007199254740993n, GraphQLString)).to.deep.equal({
+      kind: 'StringValue',
+      value: '9007199254740993',
     });
 
     expect(astFromValue(false, GraphQLString)).to.deep.equal({
@@ -181,6 +216,11 @@ describe('astFromValue', () => {
     expect(astFromValue('01', GraphQLID)).to.deep.equal({
       kind: 'StringValue',
       value: '01',
+    });
+
+    expect(astFromValue(9007199254740993n, GraphQLID)).to.deep.equal({
+      kind: 'IntValue',
+      value: '9007199254740993',
     });
 
     expect(() => astFromValue(false, GraphQLID)).to.throw(
