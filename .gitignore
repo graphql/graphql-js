@@ -10,8 +10,9 @@
 /.cspellcache
 /.docusaurus
 /node_modules
+/website/node_modules
 /coverage
 /npmDist
 /denoDist
 /websiteDist
-website/.next
+/website/.next

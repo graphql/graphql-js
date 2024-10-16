@@ -9,3 +9,4 @@
 
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts
+/website/next-env.d.ts
