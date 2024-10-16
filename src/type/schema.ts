@@ -1,5 +1,4 @@
 import { inspect } from '../jsutils/inspect.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
@@ -41,7 +40,7 @@ import {
  * Test if the given value is a GraphQL schema.
  */
 export function isSchema(schema: unknown): schema is GraphQLSchema {
-  return instanceOf(schema, GraphQLSchema);
+  return schema instanceof GraphQLSchema;
 }
 
 export function assertSchema(schema: unknown): GraphQLSchema {
