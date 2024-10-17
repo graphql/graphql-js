@@ -96,11 +96,11 @@ const TestNestedInputObject = new GraphQLInputObjectType({
 
 const TestOneOfInputObject = new GraphQLInputObjectType({
   name: 'TestOneOfInputObject',
+  isOneOf: true,
   fields: {
     a: { type: GraphQLString },
     b: { type: GraphQLInt },
   },
-  isOneOf: true,
 });
 
 const TestEnum = new GraphQLEnumType({
@@ -1268,7 +1268,7 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('errors with variable with no value', () => {
+    it('errors with variable object with no fields', () => {
       const result = executeQuery(
         `
           query ($input: TestOneOfInputObject) {
@@ -1289,7 +1289,7 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('errors with variable with multiple values', () => {
+    it('errors with variable object with multiple fields', () => {
       const result = executeQuery(
         `
           query ($input: TestOneOfInputObject) {
@@ -1310,7 +1310,7 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('errors with variable with single null value', () => {
+    it('errors with variable object with single null field', () => {
       const result = executeQuery(
         `
           query ($input: TestOneOfInputObject) {
@@ -1331,7 +1331,7 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    it('errors with variable with multiple values, only one non-null', () => {
+    it('errors with variable object with multiple fields, only one non-null', () => {
       const result = executeQuery(
         `
           query ($input: TestOneOfInputObject) {

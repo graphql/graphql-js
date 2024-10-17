@@ -135,7 +135,7 @@ function coerceInputValueImpl(
     }
 
     /**
-     * keys with the value "undefined" do not appear within the coerced input
+     * Keys with the value "undefined" do not appear within the coerced input
      * object, but do appear within the original input object.
      *
      * Note: in graphql-js, supplying the value "undefined" for a variable
