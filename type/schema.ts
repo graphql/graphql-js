@@ -130,7 +130,7 @@ export class GraphQLSchema {
   extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
-  // Used as a cache for validateSchema().
+  assumeValid: boolean;
   __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
   private _queryType: Maybe<GraphQLObjectType>;
   private _mutationType: Maybe<GraphQLObjectType>;
@@ -148,6 +148,8 @@ export class GraphQLSchema {
   constructor(config: Readonly<GraphQLSchemaConfig>) {
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
+    this.assumeValid = config.assumeValid ?? false;
+    // Used as a cache for validateSchema().
     this.__validationErrors = config.assumeValid === true ? [] : undefined;
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -346,7 +348,7 @@ export class GraphQLSchema {
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
-      assumeValid: this.__validationErrors !== undefined,
+      assumeValid: this.assumeValid,
     };
   }
 }
