@@ -1,6 +1,9 @@
-import { describe, bench } from "vitest";
-import { execute } from '../execution/execute.js';
+import { bench,describe } from "vitest";
+
 import { parse } from '../language/parser.js';
+
+import { execute } from '../execution/execute.js';
+
 import { buildSchema } from '../utilities/buildASTSchema.js';
 
 const schema = buildSchema('type Query { listField: [String] }');

@@ -1,7 +1,10 @@
 import { bench, describe } from "vitest";
-import { bigSchemaSDL } from './fixtures';
-import { parse } from '../language/parser';
-import { buildASTSchema } from '../utilities/buildASTSchema';
+
+import { parse } from '../language/parser.js';
+
+import { buildASTSchema } from '../utilities/buildASTSchema.js';
+
+import { bigSchemaSDL } from './fixtures.js';
 
 const schemaAST = parse(bigSchemaSDL);
 

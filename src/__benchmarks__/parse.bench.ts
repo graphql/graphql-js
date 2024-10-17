@@ -1,5 +1,7 @@
 import { bench, describe } from 'vitest';
+
 import { parse } from '../language/parser.js';
+
 import { getIntrospectionQuery } from '../utilities/getIntrospectionQuery.js';
 
 

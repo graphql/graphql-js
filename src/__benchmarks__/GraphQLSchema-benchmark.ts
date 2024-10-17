@@ -1,7 +1,10 @@
 import { bench, describe } from "vitest";
+
 import { GraphQLSchema } from '../type/schema.js';
+
 import { buildClientSchema } from '../utilities/buildClientSchema.js';
-import { bigSchemaIntrospectionResult } from './fixtures';
+
+import { bigSchemaIntrospectionResult } from './fixtures.js';
 
 const bigSchema = buildClientSchema(bigSchemaIntrospectionResult.data);
 

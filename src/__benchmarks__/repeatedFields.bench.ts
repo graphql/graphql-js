@@ -1,5 +1,7 @@
 import { bench, describe } from "vitest";
+
 import { buildSchema } from "../utilities/buildASTSchema.js";
+
 import { graphqlSync } from "../graphql.js";
 
 const schema = buildSchema('type Query { hello: String! }');

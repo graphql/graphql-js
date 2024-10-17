@@ -1,7 +1,10 @@
 import { bench, describe } from 'vitest';
+
 import { visit, visitInParallel } from '../language/visitor.js';
-import { bigSchemaSDL } from './fixtures';
-import { parse } from '../language';
+
+import { parse } from '../language.js';
+
+import { bigSchemaSDL } from './fixtures.js';
 
 const documentAST = parse(bigSchemaSDL);
 const visitor = {

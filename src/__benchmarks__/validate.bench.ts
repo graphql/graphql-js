@@ -1,9 +1,13 @@
 import { bench, describe } from 'vitest';
+
 import { parse } from '../language/parser.js';
-import { getIntrospectionQuery } from '../utilities/getIntrospectionQuery.js';
-import { buildSchema } from '../utilities/buildASTSchema.js';
+
 import { validate, validateSDL } from '../validation/validate.js';
-import { bigSchemaSDL } from './fixtures';
+
+import { buildSchema } from '../utilities/buildASTSchema.js';
+import { getIntrospectionQuery } from '../utilities/getIntrospectionQuery.js';
+
+import { bigSchemaSDL } from './fixtures.js';
 
 const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
 const queryAST = parse(getIntrospectionQuery());
