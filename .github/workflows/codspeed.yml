@@ -20,6 +20,8 @@ jobs:
         run: npm install
       - name: Run benchmarks
         uses: CodSpeedHQ/action@v3
+        env:
+          CODSPEED_FORCE_OPTIMIZATION: true
         with:
           run: npm exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
