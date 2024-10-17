@@ -63,7 +63,6 @@
     "@docusaurus/preset-classic": "3.5.2",
     "@mdx-js/react": "3.0.1",
     "@svgr/webpack": "8.1.0",
-    "@types/chai": "4.3.19",
     "@types/mocha": "10.0.7",
     "@types/node": "22.5.4",
     "@typescript-eslint/eslint-plugin": "8.4.0",
