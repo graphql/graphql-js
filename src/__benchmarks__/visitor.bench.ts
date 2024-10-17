@@ -2,7 +2,7 @@ import { bench, describe } from 'vitest';
 
 import { visit, visitInParallel } from '../language/visitor.js';
 
-import { parse } from '../language.js';
+import { parse } from '../language/parser.js';
 
 import { bigSchemaSDL } from './fixtures.js';
 
