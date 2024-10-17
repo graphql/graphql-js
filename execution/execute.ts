@@ -708,7 +708,7 @@ function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
  * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
  * calling its resolve function, then calls completeValue to complete promises,
- * serialize scalars, or execute the sub-selection-set for objects.
+ * coercing scalars, or execute the sub-selection-set for objects.
  */
 function executeField(
   exeContext: ExecutionContext,
@@ -870,7 +870,7 @@ function handleFieldError(
  * for the inner type on each item in the list.
  *
  * If the field type is a Scalar or Enum, ensures the completed value is a legal
- * value of the type by calling the `serialize` method of GraphQL type
+ * value of the type by calling the `coerceOutputValue` method of GraphQL type
  * definition.
  *
  * If the field is an abstract type, determine the runtime type of the value
@@ -930,8 +930,8 @@ function completeValue(
       deferMap,
     );
   }
-  // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
-  // returning null if serialization is not possible.
+  // If field type is a leaf type, Scalar or Enum, coerce to a valid value,
+  // returning null if coercion is not possible.
   if (isLeafType(returnType)) {
     return [completeLeafValue(returnType, result), undefined];
   }
@@ -1467,14 +1467,14 @@ function completeLeafValue(
   returnType: GraphQLLeafType,
   result: unknown,
 ): unknown {
-  const serializedResult = returnType.serialize(result);
-  if (serializedResult == null) {
+  const coerced = returnType.coerceOutputValue(result);
+  if (coerced == null) {
     throw new Error(
-      `Expected \`${inspect(returnType)}.serialize(${inspect(result)})\` to ` +
-        `return non-nullable value, returned: ${inspect(serializedResult)}`,
+      `Expected \`${inspect(returnType)}.coerceOutputValue(${inspect(result)})\` to ` +
+        `return non-nullable value, returned: ${inspect(coerced)}`,
     );
   }
-  return serializedResult;
+  return coerced;
 }
 /**
  * Complete a value of an abstract type by determining the runtime object type

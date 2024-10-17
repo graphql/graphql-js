@@ -20,8 +20,8 @@ export const GraphQLInt = new GraphQLScalarType<number>({
   name: 'Int',
   description:
     'The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.',
-  serialize(outputValue) {
-    const coercedValue = serializeObject(outputValue);
+  coerceOutputValue(outputValue) {
+    const coercedValue = coerceOutputValueObject(outputValue);
     if (typeof coercedValue === 'boolean') {
       return coercedValue ? 1 : 0;
     }
@@ -42,7 +42,7 @@ export const GraphQLInt = new GraphQLScalarType<number>({
     }
     return num;
   },
-  parseValue(inputValue) {
+  coerceInputValue(inputValue) {
     if (typeof inputValue !== 'number' || !Number.isInteger(inputValue)) {
       throw new GraphQLError(
         `Int cannot represent non-integer value: ${inspect(inputValue)}`,
@@ -86,8 +86,8 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
   name: 'Float',
   description:
     'The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).',
-  serialize(outputValue) {
-    const coercedValue = serializeObject(outputValue);
+  coerceOutputValue(outputValue) {
+    const coercedValue = coerceOutputValueObject(outputValue);
     if (typeof coercedValue === 'boolean') {
       return coercedValue ? 1 : 0;
     }
@@ -102,7 +102,7 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
     }
     return num;
   },
-  parseValue(inputValue) {
+  coerceInputValue(inputValue) {
     if (typeof inputValue !== 'number' || !Number.isFinite(inputValue)) {
       throw new GraphQLError(
         `Float cannot represent non numeric value: ${inspect(inputValue)}`,
@@ -130,9 +130,9 @@ export const GraphQLString = new GraphQLScalarType<string>({
   name: 'String',
   description:
     'The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.',
-  serialize(outputValue) {
-    const coercedValue = serializeObject(outputValue);
-    // Serialize string, boolean and number values to a string, but do not
+  coerceOutputValue(outputValue) {
+    const coercedValue = coerceOutputValueObject(outputValue);
+    // Coerces string, boolean and number values to a string, but do not
     // attempt to coerce object, function, symbol, or other types as strings.
     if (typeof coercedValue === 'string') {
       return coercedValue;
@@ -147,7 +147,7 @@ export const GraphQLString = new GraphQLScalarType<string>({
       `String cannot represent value: ${inspect(outputValue)}`,
     );
   },
-  parseValue(inputValue) {
+  coerceInputValue(inputValue) {
     if (typeof inputValue !== 'string') {
       throw new GraphQLError(
         `String cannot represent a non string value: ${inspect(inputValue)}`,
@@ -174,8 +174,8 @@ export const GraphQLString = new GraphQLScalarType<string>({
 export const GraphQLBoolean = new GraphQLScalarType<boolean>({
   name: 'Boolean',
   description: 'The `Boolean` scalar type represents `true` or `false`.',
-  serialize(outputValue) {
-    const coercedValue = serializeObject(outputValue);
+  coerceOutputValue(outputValue) {
+    const coercedValue = coerceOutputValueObject(outputValue);
     if (typeof coercedValue === 'boolean') {
       return coercedValue;
     }
@@ -186,7 +186,7 @@ export const GraphQLBoolean = new GraphQLScalarType<boolean>({
       `Boolean cannot represent a non boolean value: ${inspect(coercedValue)}`,
     );
   },
-  parseValue(inputValue) {
+  coerceInputValue(inputValue) {
     if (typeof inputValue !== 'boolean') {
       throw new GraphQLError(
         `Boolean cannot represent a non boolean value: ${inspect(inputValue)}`,
@@ -214,8 +214,8 @@ export const GraphQLID = new GraphQLScalarType<string>({
   name: 'ID',
   description:
     'The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.',
-  serialize(outputValue) {
-    const coercedValue = serializeObject(outputValue);
+  coerceOutputValue(outputValue) {
+    const coercedValue = coerceOutputValueObject(outputValue);
     if (typeof coercedValue === 'string') {
       return coercedValue;
     }
@@ -226,7 +226,7 @@ export const GraphQLID = new GraphQLScalarType<string>({
       `ID cannot represent value: ${inspect(outputValue)}`,
     );
   },
-  parseValue(inputValue) {
+  coerceInputValue(inputValue) {
     if (typeof inputValue === 'string') {
       return inputValue;
     }
@@ -267,10 +267,10 @@ export const specifiedScalarTypes: ReadonlyArray<GraphQLScalarType> =
 export function isSpecifiedScalarType(type: GraphQLNamedType): boolean {
   return specifiedScalarTypes.some(({ name }) => type.name === name);
 }
-// Support serializing objects with custom valueOf() or toJSON() functions -
+// Support coercing objects with custom valueOf() or toJSON() functions -
 // a common way to represent a complex value which can be represented as
 // a string (ex: MongoDB id objects).
-function serializeObject(outputValue: unknown): unknown {
+function coerceOutputValueObject(outputValue: unknown): unknown {
   if (isObjectLike(outputValue)) {
     if (typeof outputValue.valueOf === 'function') {
       const valueOfResult = outputValue.valueOf();
