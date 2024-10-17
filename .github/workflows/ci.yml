@@ -55,10 +55,10 @@ jobs:
           rm gitignore/Global/ModelSim.gitignore
           rm gitignore/Global/Images.gitignore
           cat gitignore/Node.gitignore gitignore/Global/*.gitignore > all.gitignore
-          
+
           IGNORED_FILES_UNPROCESSED=$(git ls-files --cached --ignored --exclude-from=all.gitignore)
           IGNORED_FILES=$(grep -v -F "patches/@codspeed+core+3.1.0.patch" <<< "$IGNORED_FILES_UNPROCESSED" || true)
-        
+
           echo "IGNORED_FILES: $IGNORED_FILES"
           if  [[ "$IGNORED_FILES" != "" ]]; then
             echo -e "::error::Please remove these files:\n$IGNORED_FILES" | sed -z 's/\n/%0A/g'
