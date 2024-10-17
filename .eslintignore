@@ -10,3 +10,6 @@
 
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts
+
+# Ignore config files
+/vitest.config.ts

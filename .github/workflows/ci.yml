@@ -58,7 +58,8 @@ jobs:
           rm gitignore/Global/Images.gitignore
           cat gitignore/Node.gitignore gitignore/Global/*.gitignore > all.gitignore
 
-          IGNORED_FILES=$(git ls-files --cached --ignored --exclude-from=all.gitignore)
+          IGNORED_FILES=$(git ls-files --cached --ignored --exclude-from=all.gitignore)  
+          IGNORED_FILES=$(echo "$IGNORED_FILES" | grep -v 'patches/@codspeed+core+3.1.0.patch')
           if  [[ "$IGNORED_FILES" != "" ]]; then
             echo -e "::error::Please remove these files:\n$IGNORED_FILES" | sed -z 's/\n/%0A/g'
             exit 1

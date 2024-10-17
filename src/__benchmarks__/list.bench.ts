@@ -1,4 +1,4 @@
-import { bench,describe } from "vitest";
+import { bench, describe } from 'vitest';
 
 import { parse } from '../language/parser.js';
 
@@ -17,6 +17,7 @@ function syncListField() {
   return results;
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function asyncListField() {
   const results = [];
   for (let index = 0; index < 1000; index++) {
@@ -25,22 +26,23 @@ async function asyncListField() {
   return results;
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function* asyncIterableListField() {
   for (let index = 0; index < 1000; index++) {
     yield index;
   }
 }
 
-describe("execute listField benchmarks", () => {
-  bench("Execute Synchronous List Field", async () => {
+describe('execute listField benchmarks', () => {
+  bench('Execute Synchronous List Field', async () => {
     await execute({ schema, document, rootValue: { listField: syncListField } });
   });
 
-  bench("Execute Asynchronous List Field", async () => {
+  bench('Execute Asynchronous List Field', async () => {
     await execute({ schema, document, rootValue: { listField: asyncListField } });
   });
 
-  bench("Execute Async Iterable List Field", async () => {
+  bench('Execute Async Iterable List Field', async () => {
     await execute({ schema, document, rootValue: { listField: asyncIterableListField } });
   });
 });
