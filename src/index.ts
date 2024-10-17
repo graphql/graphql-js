@@ -198,8 +198,9 @@ export type {
   GraphQLUnionTypeExtensions,
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
-  /* @deprecated in favor of GraphQLScalarInputLiteralCoercer, will be removed in v18 */
   GraphQLScalarLiteralParser,
+  GraphQLScalarOutputValueCoercer,
+  GraphQLScalarInputValueCoercer,
   GraphQLScalarInputLiteralCoercer,
   GraphQLDefaultValueUsage,
 } from './type/index.js';

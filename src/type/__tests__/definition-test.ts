@@ -60,6 +60,8 @@ describe('Type System: Scalars', () => {
       serialize: someScalar.serialize,
       parseValue: someScalar.parseValue,
       parseLiteral: someScalar.parseLiteral,
+      coerceOutputValue: someScalar.coerceOutputValue,
+      coerceInputValue: someScalar.coerceInputValue,
       coerceInputLiteral: undefined,
       valueToLiteral: undefined,
       extensions: {},
@@ -76,6 +78,8 @@ describe('Type System: Scalars', () => {
       serialize: passThroughFunc,
       parseValue: passThroughFunc,
       parseLiteral: passThroughFunc,
+      coerceOutputValue: passThroughFunc,
+      coerceInputValue: passThroughFunc,
       coerceInputLiteral: passThroughFunc,
       valueToLiteral: passThroughFunc,
       extensions: { someExtension: 'extension' },
@@ -95,6 +99,8 @@ describe('Type System: Scalars', () => {
       serialize: passThroughFunc,
       parseValue: passThroughFunc,
       parseLiteral: passThroughFunc,
+      coerceOutputValue: passThroughFunc,
+      coerceInputValue: passThroughFunc,
       coerceInputLiteral: passThroughFunc,
       valueToLiteral: passThroughFunc,
       extensions: { [test]: 'extension' },
@@ -110,6 +116,8 @@ describe('Type System: Scalars', () => {
 
     expect(scalar.serialize).to.equal(identityFunc);
     expect(scalar.parseValue).to.equal(identityFunc);
+    expect(scalar.coerceOutputValue).to.equal(identityFunc);
+    expect(scalar.coerceInputValue).to.equal(identityFunc);
     expect(scalar.parseLiteral).to.be.a('function');
     /* default will be provided in v18 when parseLiteral is removed */
     // expect(scalar.coerceInputLiteral).to.be.a('function');
@@ -143,7 +151,7 @@ describe('Type System: Scalars', () => {
     );
   });
 
-  it('rejects a Scalar type defining coerceInputLiteral but not parseValue', () => {
+  it('rejects a Scalar type defining coerceInputLiteral but not coerceInputValue', () => {
     expect(
       () =>
         new GraphQLScalarType({
@@ -151,7 +159,7 @@ describe('Type System: Scalars', () => {
           coerceInputLiteral: passThroughFunc,
         }),
     ).to.throw(
-      'SomeScalar must provide both "parseValue" and "coerceInputLiteral" functions.',
+      'SomeScalar must provide both "coerceInputValue" and "coerceInputLiteral" functions.',
     );
   });
 });
@@ -642,6 +650,30 @@ describe('Type System: Enums', () => {
     };
     const someEnum = new GraphQLEnumType(someEnumConfig);
     expect(someEnum.toConfig()).to.deep.equal(someEnumConfig);
+  });
+
+  it('can be coerced to an output value via serialize() method', () => {
+    const someEnum = new GraphQLEnumType({
+      name: 'SomeEnum',
+      values: {
+        FOO: {
+          value: 'foo',
+        },
+      },
+    });
+    expect(someEnum.serialize('foo')).to.equal('FOO');
+  });
+
+  it('can be coerced to an input value via parseValue() method', () => {
+    const someEnum = new GraphQLEnumType({
+      name: 'SomeEnum',
+      values: {
+        FOO: {
+          value: 'foo',
+        },
+      },
+    });
+    expect(someEnum.parseValue('FOO')).to.equal('foo');
   });
 
   it('defines an enum type with deprecated value', () => {

@@ -1258,10 +1258,10 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(asyncResult).to.deep.equal(result);
   });
 
-  it('fails when serialize of custom scalar does not return a value', () => {
+  it('fails when coerceOutputValue of custom scalar does not return a value', () => {
     const customScalar = new GraphQLScalarType({
       name: 'CustomScalar',
-      serialize() {
+      coerceOutputValue() {
         /* returns nothing */
       },
     });
@@ -1283,7 +1283,7 @@ describe('Execute: Handles basic execution tasks', () => {
       errors: [
         {
           message:
-            'Expected `CustomScalar.serialize("CUSTOM_VALUE")` to return non-nullable value, returned: undefined',
+            'Expected `CustomScalar.coerceOutputValue("CUSTOM_VALUE")` to return non-nullable value, returned: undefined',
           locations: [{ line: 1, column: 3 }],
           path: ['customScalar'],
         },

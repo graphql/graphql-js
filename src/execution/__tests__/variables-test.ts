@@ -44,7 +44,7 @@ const TestFaultyScalarGraphQLError = new GraphQLError(
 
 const TestFaultyScalar = new GraphQLScalarType({
   name: 'FaultyScalar',
-  parseValue() {
+  coerceInputValue() {
     throw TestFaultyScalarGraphQLError;
   },
   coerceInputLiteral() {
@@ -54,13 +54,13 @@ const TestFaultyScalar = new GraphQLScalarType({
 
 const TestComplexScalar = new GraphQLScalarType({
   name: 'ComplexScalar',
-  parseValue(value) {
-    expect(value).to.equal('SerializedValue');
-    return 'DeserializedValue';
+  coerceInputValue(value) {
+    expect(value).to.equal('ExternalValue');
+    return 'InternalValue';
   },
   coerceInputLiteral(ast) {
-    expect(ast).to.include({ kind: 'StringValue', value: 'SerializedValue' });
-    return 'DeserializedValue';
+    expect(ast).to.include({ kind: 'StringValue', value: 'ExternalValue' });
+    return 'InternalValue';
   },
 });
 
@@ -284,13 +284,13 @@ describe('Execute: Handles inputs', () => {
       it('properly runs coerceInputLiteral on complex scalar types', () => {
         const result = executeQuery(`
           {
-            fieldWithObjectInput(input: {c: "foo", d: "SerializedValue"})
+            fieldWithObjectInput(input: {c: "foo", d: "ExternalValue"})
           }
         `);
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{ c: "foo", d: "DeserializedValue" }',
+            fieldWithObjectInput: '{ c: "foo", d: "InternalValue" }',
           },
         });
       });
@@ -447,25 +447,25 @@ describe('Execute: Handles inputs', () => {
       });
 
       it('executes with complex scalar input', () => {
-        const params = { input: { c: 'foo', d: 'SerializedValue' } };
+        const params = { input: { c: 'foo', d: 'ExternalValue' } };
         const result = executeQuery(doc, params);
 
         expect(result).to.deep.equal({
           data: {
-            fieldWithObjectInput: '{ c: "foo", d: "DeserializedValue" }',
+            fieldWithObjectInput: '{ c: "foo", d: "InternalValue" }',
           },
         });
       });
 
       it('errors on faulty scalar type input', () => {
-        const params = { input: { c: 'foo', e: 'SerializedValue' } };
+        const params = { input: { c: 'foo', e: 'ExternalValue' } };
         const result = executeQuery(doc, params);
 
         expectJSON(result).toDeepEqual({
           errors: [
             {
               message:
-                'Variable "$input" got invalid value "SerializedValue" at "input.e"; FaultyScalarErrorMessage',
+                'Variable "$input" got invalid value "ExternalValue" at "input.e"; FaultyScalarErrorMessage',
               locations: [{ line: 2, column: 16 }],
               extensions: { code: 'FaultyScalarErrorExtensionCode' },
             },
