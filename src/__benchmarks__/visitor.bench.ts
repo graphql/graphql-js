@@ -7,8 +7,11 @@ import { bigSchemaSDL } from './fixtures.js';
 
 const documentAST = parse(bigSchemaSDL);
 const visitor = {
-  enter() { /* do nothing */
-  }, leave() { /* do nothing */
+  enter() {
+    /* do nothing */
+  },
+  leave() {
+    /* do nothing */
   },
 };
 const visitors = new Array(50).fill(visitor);

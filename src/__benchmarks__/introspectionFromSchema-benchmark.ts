@@ -1,4 +1,4 @@
-import { bench, describe } from "vitest";
+import { bench, describe } from 'vitest';
 
 import { parse } from '../language/parser.js';
 
@@ -13,7 +13,11 @@ const schema = buildSchema(bigSchemaSDL, { assumeValid: true });
 const document = parse(getIntrospectionQuery());
 
 describe('Execute Introspection Query', () => {
-  bench('Introspection Query Execution', () => {
-    executeSync({ schema, document });
-  }, { iterations: 20 });
+  bench(
+    'Introspection Query Execution',
+    () => {
+      executeSync({ schema, document });
+    },
+    { iterations: 20 },
+  );
 });

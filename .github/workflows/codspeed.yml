@@ -3,7 +3,7 @@ name: CodSpeed Benchmarks
 on:
   push:
     branches:
-      - "main" # or "master"
+      - 'main' # or "master"
   pull_request:
   # `workflow_dispatch` allows CodSpeed to trigger backtest
   # performance analysis in order to generate initial data.
@@ -14,8 +14,8 @@ jobs:
     name: Run benchmarks
     runs-on: ubuntu-latest
     steps:
-      - uses: "actions/checkout@v4"
-      - uses: "actions/setup-node@v3"
+      - uses: 'actions/checkout@v4'
+      - uses: 'actions/setup-node@v3'
       - name: Install dependencies
         run: npm install
       - name: Run benchmarks

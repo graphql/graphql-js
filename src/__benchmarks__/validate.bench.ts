@@ -14,7 +14,6 @@ const queryAST = parse(getIntrospectionQuery());
 
 const sdlAST = parse(bigSchemaSDL);
 
-
 const invalidQueryAST = parse(`
   {
     unknownField

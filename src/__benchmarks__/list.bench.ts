@@ -35,14 +35,26 @@ async function* asyncIterableListField() {
 
 describe('execute listField benchmarks', () => {
   bench('Execute Synchronous List Field', async () => {
-    await execute({ schema, document, rootValue: { listField: syncListField } });
+    await execute({
+      schema,
+      document,
+      rootValue: { listField: syncListField },
+    });
   });
 
   bench('Execute Asynchronous List Field', async () => {
-    await execute({ schema, document, rootValue: { listField: asyncListField } });
+    await execute({
+      schema,
+      document,
+      rootValue: { listField: asyncListField },
+    });
   });
 
   bench('Execute Async Iterable List Field', async () => {
-    await execute({ schema, document, rootValue: { listField: asyncIterableListField } });
+    await execute({
+      schema,
+      document,
+      rootValue: { listField: asyncIterableListField },
+    });
   });
 });
