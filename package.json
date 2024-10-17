@@ -34,7 +34,6 @@
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "node --loader ts-node/esm resources/gen-changelog.ts",
     "benchmark": "node --loader ts-node/esm resources/benchmark.ts",
-    "codspeed": "node --loader ts-node/esm src/__benchmarks__/codspeed-benchmarks.ts",
     "test": "npm run lint && npm run check && npm run testonly:cover && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 --rulesdir resources/eslint-internal-rules/ .",
     "check": "tsc --pretty",
