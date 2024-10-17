@@ -95,6 +95,7 @@ export declare class GraphQLSchema {
     extensions: Readonly<GraphQLSchemaExtensions>;
     astNode: Maybe<SchemaDefinitionNode>;
     extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
+    assumeValid: boolean;
     __validationErrors: Maybe<ReadonlyArray<GraphQLError>>;
     private _queryType;
     private _mutationType;
