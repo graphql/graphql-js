@@ -99,11 +99,11 @@ function coerceInputValueImpl(inputValue, type, onError, path, hideSuggestions) 
     }
     if ((0, definition_js_1.isLeafType)(type)) {
         let parseResult;
-        // Scalars and Enums determine if an input value is valid via parseValue(),
+        // Scalars and Enums determine if an input value is valid via coerceInputValue(),
         // which can throw to indicate failure. If it throws, maintain a reference
         // to the original error.
         try {
-            parseResult = type.parseValue(inputValue, hideSuggestions);
+            parseResult = type.coerceInputValue(inputValue, hideSuggestions);
         }
         catch (error) {
             if (error instanceof GraphQLError_js_1.GraphQLError) {

@@ -383,7 +383,7 @@ function toNodes(fieldDetailsList) {
  * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
  * calling its resolve function, then calls completeValue to complete promises,
- * serialize scalars, or execute the sub-selection-set for objects.
+ * coercing scalars, or execute the sub-selection-set for objects.
  */
 function executeField(exeContext, parentType, source, fieldDetailsList, path, incrementalContext, deferMap) {
     const validatedExecutionArgs = exeContext.validatedExecutionArgs;
@@ -476,7 +476,7 @@ function handleFieldError(rawError, exeContext, returnType, fieldDetailsList, pa
  * for the inner type on each item in the list.
  *
  * If the field type is a Scalar or Enum, ensures the completed value is a legal
- * value of the type by calling the `serialize` method of GraphQL type
+ * value of the type by calling the `coerceOutputValue` method of GraphQL type
  * definition.
  *
  * If the field is an abstract type, determine the runtime type of the value
@@ -507,8 +507,8 @@ function completeValue(exeContext, returnType, fieldDetailsList, info, path, res
     if ((0, definition_js_1.isListType)(returnType)) {
         return completeListValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap);
     }
-    // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
-    // returning null if serialization is not possible.
+    // If field type is a leaf type, Scalar or Enum, coerce to a valid value,
+    // returning null if coercion is not possible.
     if ((0, definition_js_1.isLeafType)(returnType)) {
         return [completeLeafValue(returnType, result), undefined];
     }
@@ -784,12 +784,12 @@ async function completePromisedListItemValue(item, parent, exeContext, itemType,
  * null if serialization is not possible.
  */
 function completeLeafValue(returnType, result) {
-    const serializedResult = returnType.serialize(result);
-    if (serializedResult == null) {
-        throw new Error(`Expected \`${(0, inspect_js_1.inspect)(returnType)}.serialize(${(0, inspect_js_1.inspect)(result)})\` to ` +
-            `return non-nullable value, returned: ${(0, inspect_js_1.inspect)(serializedResult)}`);
+    const coerced = returnType.coerceOutputValue(result);
+    if (coerced == null) {
+        throw new Error(`Expected \`${(0, inspect_js_1.inspect)(returnType)}.coerceOutputValue(${(0, inspect_js_1.inspect)(result)})\` to ` +
+            `return non-nullable value, returned: ${(0, inspect_js_1.inspect)(coerced)}`);
     }
-    return serializedResult;
+    return coerced;
 }
 /**
  * Complete a value of an abstract type by determining the runtime object type

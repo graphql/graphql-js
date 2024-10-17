@@ -328,9 +328,10 @@ exports.resolveObjMapThunk = resolveObjMapThunk;
  * Scalars (or Enums) and are defined with a name and a series of functions
  * used to parse input from ast or variables and to ensure validity.
  *
- * If a type's serialize function returns `null` or does not return a value
- * (i.e. it returns `undefined`) then an error will be raised and a `null`
- * value will be returned in the response. It is always better to validate
+ * If a type's coerceOutputValue function returns `null` or does not return a
+ * value (i.e. it returns `undefined`) then an error will be raised and a
+ * `null` value will be returned in the response. It is always better to
+ * validate.
  *
  * Example:
  *
@@ -349,10 +350,10 @@ exports.resolveObjMapThunk = resolveObjMapThunk;
  *
  * const OddType = new GraphQLScalarType({
  *   name: 'Odd',
- *   serialize(value) {
+ *   coerceOutputValue(value) {
  *     return ensureOdd(value);
  *   },
- *   parseValue(value) {
+ *   coerceInputValue(value) {
  *     return ensureOdd(value);
  *   }
  *   valueToLiteral(value) {
@@ -363,19 +364,14 @@ exports.resolveObjMapThunk = resolveObjMapThunk;
  *
  * Custom scalars behavior is defined via the following functions:
  *
- *  - serialize(value): Implements "Result Coercion". Given an internal value,
+ *  - coerceOutputValue(value): Implements "Result Coercion". Given an internal value,
  *    produces an external value valid for this type. Returns undefined or
  *    throws an error to indicate invalid values.
  *
- *  - parseValue(value): Implements "Input Coercion" for values. Given an
+ *  - coerceInputValue(value): Implements "Input Coercion" for values. Given an
  *    external value (for example, variable values), produces an internal value
  *    valid for this type. Returns undefined or throws an error to indicate
  *    invalid values.
- *
- *  - parseLiteral(ast): Implements "Input Coercion" for literals including
- *    non-specified replacement of variables embedded within complex scalars.
- *    This method will be removed in v18 favor of the combination of the
- *    `replaceVariables()` utility and the `coerceInputLiteral()` method.
  *
  *  - coerceInputLiteral(ast): Implements "Input Coercion" for constant literals.
  *    Given an GraphQL literal (AST) (for example, an argument value), produces
@@ -386,20 +382,38 @@ exports.resolveObjMapThunk = resolveObjMapThunk;
  *    literal (AST). Returns undefined or throws an error to indicate
  *    invalid values.
  *
+ *  Deprecated, to be removed in v18:
+ *
+ *  - serialize(value): Implements "Result Coercion". Renamed to
+ *    `coerceOutputValue()`.
+ *
+ *  - parseValue(value): Implements "Input Coercion" for values. Renamed to
+ *    `coerceInputValue()`.
+ *
+ *  - parseLiteral(ast): Implements "Input Coercion" for literals including
+ *    non-specified replacement of variables embedded within complex scalars.
+ *    Replaced by the combination of the `replaceVariables()` utility and the
+ *    `coerceInputLiteral()` method.
+ *
  */
 class GraphQLScalarType {
     constructor(config) {
-        const parseValue = config.parseValue ??
-            identityFunc_js_1.identityFunc;
         this.name = (0, assertName_js_1.assertName)(config.name);
         this.description = config.description;
         this.specifiedByURL = config.specifiedByURL;
         this.serialize =
-            config.serialize ?? identityFunc_js_1.identityFunc;
-        this.parseValue = parseValue;
+            config.serialize ??
+                config.coerceOutputValue ??
+                identityFunc_js_1.identityFunc;
+        this.parseValue =
+            config.parseValue ??
+                config.coerceInputValue ??
+                identityFunc_js_1.identityFunc;
         this.parseLiteral =
             config.parseLiteral ??
-                ((node, variables) => parseValue((0, valueFromASTUntyped_js_1.valueFromASTUntyped)(node, variables)));
+                ((node, variables) => this.coerceInputValue((0, valueFromASTUntyped_js_1.valueFromASTUntyped)(node, variables)));
+        this.coerceOutputValue = config.coerceOutputValue ?? this.serialize;
+        this.coerceInputValue = config.coerceInputValue ?? this.parseValue;
         this.coerceInputLiteral = config.coerceInputLiteral;
         this.valueToLiteral = config.valueToLiteral;
         this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
@@ -410,8 +424,8 @@ class GraphQLScalarType {
                 typeof config.parseLiteral === 'function') || (0, devAssert_js_1.devAssert)(false, `${this.name} must provide both "parseValue" and "parseLiteral" functions.`);
         }
         if (config.coerceInputLiteral) {
-            (typeof config.parseValue === 'function' &&
-                typeof config.coerceInputLiteral === 'function') || (0, devAssert_js_1.devAssert)(false, `${this.name} must provide both "parseValue" and "coerceInputLiteral" functions.`);
+            (typeof config.coerceInputValue === 'function' &&
+                typeof config.coerceInputLiteral === 'function') || (0, devAssert_js_1.devAssert)(false, `${this.name} must provide both "coerceInputValue" and "coerceInputLiteral" functions.`);
         }
     }
     get [Symbol.toStringTag]() {
@@ -425,6 +439,8 @@ class GraphQLScalarType {
             serialize: this.serialize,
             parseValue: this.parseValue,
             parseLiteral: this.parseLiteral,
+            coerceOutputValue: this.coerceOutputValue,
+            coerceInputValue: this.coerceInputValue,
             coerceInputLiteral: this.coerceInputLiteral,
             valueToLiteral: this.valueToLiteral,
             extensions: this.extensions,
@@ -742,7 +758,7 @@ function enumValuesFromConfig(values) {
 /**
  * Enum Type Definition
  *
- * Some leaf values of requests and input values are Enums. GraphQL serializes
+ * Some leaf values of requests and input values are Enums. GraphQL coerces
  * Enum values as strings, however internally Enums can be represented by any
  * kind of type, often integers.
  *
@@ -791,7 +807,11 @@ class GraphQLEnumType /* <T> */ {
         }
         return this._nameLookup[name];
     }
+    /** @deprecated use `coerceOutputValue()` instead, `serialize()` will be removed in v18 */
     serialize(outputValue /* T */) {
+        return this.coerceOutputValue(outputValue);
+    }
+    coerceOutputValue(outputValue /* T */) {
         if (this._valueLookup === null) {
             this._valueLookup = new Map(this.getValues().map((enumValue) => [enumValue.value, enumValue]));
         }
@@ -801,7 +821,11 @@ class GraphQLEnumType /* <T> */ {
         }
         return enumValue.name;
     }
+    /** @deprecated use `coerceInputValue()` instead, `parseValue()` will be removed in v18 */
     parseValue(inputValue, hideSuggestions) {
+        return this.coerceInputValue(inputValue, hideSuggestions);
+    }
+    coerceInputValue(inputValue, hideSuggestions) {
         if (typeof inputValue !== 'string') {
             const valueStr = (0, inspect_js_1.inspect)(inputValue);
             throw new GraphQLError_js_1.GraphQLError(`Enum "${this.name}" cannot represent non-string value: ${valueStr}.` +
@@ -814,7 +838,7 @@ class GraphQLEnumType /* <T> */ {
         }
         return enumValue.value;
     }
-    /** @deprecated use `coerceInputLiteral()` instead, `parseLiteral()` will be deprecated in v18 */
+    /** @deprecated use `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18 */
     parseLiteral(valueNode, _variables, hideSuggestions) {
         // Note: variables will be resolved to a value before calling this function.
         return this.coerceInputLiteral(valueNode, hideSuggestions);
