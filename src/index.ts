@@ -367,6 +367,7 @@ export {
   KnownArgumentNamesRule,
   KnownDirectivesRule,
   KnownFragmentNamesRule,
+  KnownOperationTypesRule,
   KnownTypeNamesRule,
   LoneAnonymousOperationRule,
   NoFragmentCyclesRule,
