@@ -37,6 +37,7 @@ import type {
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import { print } from '../language/printer.ts';
+import type { GraphQLVariableSignature } from '../execution/getVariableSignature.ts';
 import type { VariableValues } from '../execution/values.ts';
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.ts';
 import { assertEnumValueName, assertName } from './assertName.ts';
@@ -968,7 +969,9 @@ export interface GraphQLArgument {
   extensions: Readonly<GraphQLArgumentExtensions>;
   astNode: Maybe<InputValueDefinitionNode>;
 }
-export function isRequiredArgument(arg: GraphQLArgument): boolean {
+export function isRequiredArgument(
+  arg: GraphQLArgument | GraphQLVariableSignature,
+): boolean {
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<

@@ -62,11 +62,17 @@ export { replaceVariables } from './replaceVariables.ts';
 // Create a GraphQL literal (AST) from a JavaScript input value.
 export { valueToLiteral } from './valueToLiteral.ts';
 export {
-  // Coerces a JavaScript value to a GraphQL type, or produces errors.
+  // Coerces a JavaScript value to a GraphQL type, or returns undefined.
   coerceInputValue,
   // Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
   coerceInputLiteral,
 } from './coerceInputValue.ts';
+export {
+  // Validate a JavaScript value with a GraphQL type, collecting all errors.
+  validateInputValue,
+  // Validate a GraphQL literal (AST) with a GraphQL type, collecting all errors.
+  validateInputLiteral,
+} from './validateInputValue.ts';
 // Concatenates multiple AST together.
 export { concatAST } from './concatAST.ts';
 // Separates an AST into an AST per Operation.
