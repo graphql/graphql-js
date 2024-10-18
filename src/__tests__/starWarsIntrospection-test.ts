@@ -362,5 +362,47 @@ describe('Star Wars Introspection Tests', () => {
         },
       });
     });
+
+    it('Allows querying the schema for directives', () => {
+      const data = queryStarWars(`
+        {
+          __directive(name: "skip") {
+            name
+            args {
+              name
+              type {
+                kind
+                name
+                ofType {
+                  kind
+                  name
+                }
+              }
+              defaultValue
+            }
+          }
+        }
+      `);
+
+      expect(data).to.deep.equal({
+        __directive: {
+          name: 'skip',
+          args: [
+            {
+              name: 'if',
+              type: {
+                kind: 'NON_NULL',
+                name: null,
+                ofType: {
+                  kind: 'SCALAR',
+                  name: 'Boolean',
+                },
+              },
+              defaultValue: null,
+            },
+          ],
+        },
+      });
+    });
   });
 });
