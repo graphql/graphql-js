@@ -40,6 +40,7 @@ import type {
 import { Kind } from '../language/kinds.js';
 import { print } from '../language/printer.js';
 
+import type { GraphQLVariableSignature } from '../execution/getVariableSignature.js';
 import type { VariableValues } from '../execution/values.js';
 
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.js';
@@ -1084,7 +1085,9 @@ export interface GraphQLArgument {
   astNode: Maybe<InputValueDefinitionNode>;
 }
 
-export function isRequiredArgument(arg: GraphQLArgument): boolean {
+export function isRequiredArgument(
+  arg: GraphQLArgument | GraphQLVariableSignature,
+): boolean {
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
 
