@@ -56,9 +56,9 @@ type Query {
 You could access this from JavaScript with the code:
 
 ```js
-var dice = 3;
-var sides = 6;
-var query = `query RollDice($dice: Int!, $sides: Int) {
+let dice = 3;
+let sides = 6;
+let query = `query RollDice($dice: Int!, $sides: Int) {
   rollDice(numDice: $dice, numSides: $sides)
 }`;
 
