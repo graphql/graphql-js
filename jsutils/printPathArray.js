@@ -5,9 +5,12 @@ exports.printPathArray = void 0;
  * Build a string describing the path.
  */
 function printPathArray(path) {
-    return path
-        .map((key) => typeof key === 'number' ? '[' + key.toString() + ']' : '.' + key)
-        .join('');
+    if (path.length === 0) {
+        return '';
+    }
+    return ` at ${path
+        .map((key) => (typeof key === 'number' ? `[${key}]` : `.${key}`))
+        .join('')}`;
 }
 exports.printPathArray = printPathArray;
 //# sourceMappingURL=printPathArray.js.map

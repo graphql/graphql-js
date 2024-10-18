@@ -3,6 +3,7 @@ import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import type { ConstValueNode, EnumTypeDefinitionNode, EnumTypeExtensionNode, EnumValueDefinitionNode, FieldDefinitionNode, FieldNode, FragmentDefinitionNode, InputObjectTypeDefinitionNode, InputObjectTypeExtensionNode, InputValueDefinitionNode, InterfaceTypeDefinitionNode, InterfaceTypeExtensionNode, ObjectTypeDefinitionNode, ObjectTypeExtensionNode, OperationDefinitionNode, ScalarTypeDefinitionNode, ScalarTypeExtensionNode, UnionTypeDefinitionNode, UnionTypeExtensionNode, ValueNode } from '../language/ast.js';
+import type { GraphQLVariableSignature } from '../execution/getVariableSignature.js';
 import type { VariableValues } from '../execution/values.js';
 import type { GraphQLSchema } from './schema.js';
 /**
@@ -484,7 +485,7 @@ export interface GraphQLArgument {
     extensions: Readonly<GraphQLArgumentExtensions>;
     astNode: Maybe<InputValueDefinitionNode>;
 }
-export declare function isRequiredArgument(arg: GraphQLArgument): boolean;
+export declare function isRequiredArgument(arg: GraphQLArgument | GraphQLVariableSignature): boolean;
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<GraphQLField<TSource, TContext>>;
 export type GraphQLDefaultValueUsage = {
     value: unknown;

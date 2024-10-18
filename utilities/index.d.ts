@@ -18,6 +18,7 @@ export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';
 export { replaceVariables } from './replaceVariables.js';
 export { valueToLiteral } from './valueToLiteral.js';
 export { coerceInputValue, coerceInputLiteral, } from './coerceInputValue.js';
+export { validateInputValue, validateInputLiteral, } from './validateInputValue.js';
 export { concatAST } from './concatAST.js';
 export { separateOperations } from './separateOperations.js';
 export { stripIgnoredCharacters } from './stripIgnoredCharacters.js';
