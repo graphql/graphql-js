@@ -49,5 +49,5 @@ export { stripIgnoredCharacters } from "./stripIgnoredCharacters.mjs";
 // Comparators for types
 export { isEqualType, isTypeSubTypeOf, doTypesOverlap, } from "./typeComparators.mjs";
 // Compares two GraphQLSchemas and detects breaking changes.
-export { BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges, } from "./findBreakingChanges.mjs";
+export { BreakingChangeType, DangerousChangeType, SafeChangeType, findBreakingChanges, findDangerousChanges, findSchemaChanges, } from "./findSchemaChanges.mjs";
 //# sourceMappingURL=index.js.map

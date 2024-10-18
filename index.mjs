@@ -143,5 +143,5 @@ stripIgnoredCharacters,
 // Comparators for types
 isEqualType, isTypeSubTypeOf, doTypesOverlap, 
 // Compares two GraphQLSchemas and detects breaking changes.
-BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges, } from "./utilities/index.mjs";
+BreakingChangeType, DangerousChangeType, SafeChangeType, findBreakingChanges, findDangerousChanges, findSchemaChanges, } from "./utilities/index.mjs";
 //# sourceMappingURL=index.js.map

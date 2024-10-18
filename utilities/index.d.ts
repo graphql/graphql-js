@@ -23,6 +23,6 @@ export { concatAST } from './concatAST.js';
 export { separateOperations } from './separateOperations.js';
 export { stripIgnoredCharacters } from './stripIgnoredCharacters.js';
 export { isEqualType, isTypeSubTypeOf, doTypesOverlap, } from './typeComparators.js';
-export { BreakingChangeType, DangerousChangeType, findBreakingChanges, findDangerousChanges, } from './findBreakingChanges.js';
-export type { BreakingChange, DangerousChange } from './findBreakingChanges.js';
+export { BreakingChangeType, DangerousChangeType, SafeChangeType, findBreakingChanges, findDangerousChanges, findSchemaChanges, } from './findSchemaChanges.js';
+export type { BreakingChange, DangerousChange, SafeChange, } from './findSchemaChanges.js';
 export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.js';

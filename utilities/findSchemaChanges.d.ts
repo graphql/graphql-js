@@ -27,6 +27,20 @@ declare enum DangerousChangeType {
     ARG_DEFAULT_VALUE_CHANGE = "ARG_DEFAULT_VALUE_CHANGE"
 }
 export { DangerousChangeType };
+declare enum SafeChangeType {
+    TYPE_ADDED = "TYPE_ADDED",
+    OPTIONAL_INPUT_FIELD_ADDED = "OPTIONAL_INPUT_FIELD_ADDED",
+    OPTIONAL_ARG_ADDED = "OPTIONAL_ARG_ADDED",
+    DIRECTIVE_ADDED = "DIRECTIVE_ADDED",
+    FIELD_ADDED = "FIELD_ADDED",
+    DIRECTIVE_REPEATABLE_ADDED = "DIRECTIVE_REPEATABLE_ADDED",
+    DIRECTIVE_LOCATION_ADDED = "DIRECTIVE_LOCATION_ADDED",
+    OPTIONAL_DIRECTIVE_ARG_ADDED = "OPTIONAL_DIRECTIVE_ARG_ADDED",
+    FIELD_CHANGED_KIND_SAFE = "FIELD_CHANGED_KIND_SAFE",
+    ARG_CHANGED_KIND_SAFE = "ARG_CHANGED_KIND_SAFE",
+    ARG_DEFAULT_VALUE_ADDED = "ARG_DEFAULT_VALUE_ADDED"
+}
+export { SafeChangeType };
 export interface BreakingChange {
     type: BreakingChangeType;
     description: string;
@@ -35,13 +49,23 @@ export interface DangerousChange {
     type: DangerousChangeType;
     description: string;
 }
+export interface SafeChange {
+    type: SafeChangeType;
+    description: string;
+}
+export type SchemaChange = SafeChange | DangerousChange | BreakingChange;
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of breaking changes covered by the other functions down below.
+ *
+ * @deprecated Please use `findSchemaChanges` instead. Will be removed in v18.
  */
 export declare function findBreakingChanges(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): Array<BreakingChange>;
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of potentially dangerous changes covered by the other functions down below.
+ *
+ * @deprecated Please use `findSchemaChanges` instead. Will be removed in v18.
  */
 export declare function findDangerousChanges(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): Array<DangerousChange>;
+export declare function findSchemaChanges(oldSchema: GraphQLSchema, newSchema: GraphQLSchema): Array<SchemaChange>;

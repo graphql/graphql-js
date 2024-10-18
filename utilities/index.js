@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findDangerousChanges = exports.findBreakingChanges = exports.DangerousChangeType = exports.BreakingChangeType = exports.doTypesOverlap = exports.isTypeSubTypeOf = exports.isEqualType = exports.stripIgnoredCharacters = exports.separateOperations = exports.concatAST = exports.validateInputLiteral = exports.validateInputValue = exports.coerceInputLiteral = exports.coerceInputValue = exports.valueToLiteral = exports.replaceVariables = exports.visitWithTypeInfo = exports.TypeInfo = exports.astFromValue = exports.valueFromASTUntyped = exports.valueFromAST = exports.typeFromAST = exports.printIntrospectionSchema = exports.printDirective = exports.printType = exports.printSchema = exports.lexicographicSortSchema = exports.extendSchema = exports.buildSchema = exports.buildASTSchema = exports.buildClientSchema = exports.introspectionFromSchema = exports.getOperationAST = exports.getIntrospectionQuery = void 0;
+exports.findSchemaChanges = exports.findDangerousChanges = exports.findBreakingChanges = exports.SafeChangeType = exports.DangerousChangeType = exports.BreakingChangeType = exports.doTypesOverlap = exports.isTypeSubTypeOf = exports.isEqualType = exports.stripIgnoredCharacters = exports.separateOperations = exports.concatAST = exports.validateInputLiteral = exports.validateInputValue = exports.coerceInputLiteral = exports.coerceInputValue = exports.valueToLiteral = exports.replaceVariables = exports.visitWithTypeInfo = exports.TypeInfo = exports.astFromValue = exports.valueFromASTUntyped = exports.valueFromAST = exports.typeFromAST = exports.printIntrospectionSchema = exports.printDirective = exports.printType = exports.printSchema = exports.lexicographicSortSchema = exports.extendSchema = exports.buildSchema = exports.buildASTSchema = exports.buildClientSchema = exports.introspectionFromSchema = exports.getOperationAST = exports.getIntrospectionQuery = void 0;
 // Produce the GraphQL query recommended for a full schema introspection.
 var getIntrospectionQuery_js_1 = require("./getIntrospectionQuery.js");
 Object.defineProperty(exports, "getIntrospectionQuery", { enumerable: true, get: function () { return getIntrospectionQuery_js_1.getIntrospectionQuery; } });
@@ -77,9 +77,11 @@ Object.defineProperty(exports, "isEqualType", { enumerable: true, get: function 
 Object.defineProperty(exports, "isTypeSubTypeOf", { enumerable: true, get: function () { return typeComparators_js_1.isTypeSubTypeOf; } });
 Object.defineProperty(exports, "doTypesOverlap", { enumerable: true, get: function () { return typeComparators_js_1.doTypesOverlap; } });
 // Compares two GraphQLSchemas and detects breaking changes.
-var findBreakingChanges_js_1 = require("./findBreakingChanges.js");
-Object.defineProperty(exports, "BreakingChangeType", { enumerable: true, get: function () { return findBreakingChanges_js_1.BreakingChangeType; } });
-Object.defineProperty(exports, "DangerousChangeType", { enumerable: true, get: function () { return findBreakingChanges_js_1.DangerousChangeType; } });
-Object.defineProperty(exports, "findBreakingChanges", { enumerable: true, get: function () { return findBreakingChanges_js_1.findBreakingChanges; } });
-Object.defineProperty(exports, "findDangerousChanges", { enumerable: true, get: function () { return findBreakingChanges_js_1.findDangerousChanges; } });
+var findSchemaChanges_js_1 = require("./findSchemaChanges.js");
+Object.defineProperty(exports, "BreakingChangeType", { enumerable: true, get: function () { return findSchemaChanges_js_1.BreakingChangeType; } });
+Object.defineProperty(exports, "DangerousChangeType", { enumerable: true, get: function () { return findSchemaChanges_js_1.DangerousChangeType; } });
+Object.defineProperty(exports, "SafeChangeType", { enumerable: true, get: function () { return findSchemaChanges_js_1.SafeChangeType; } });
+Object.defineProperty(exports, "findBreakingChanges", { enumerable: true, get: function () { return findSchemaChanges_js_1.findBreakingChanges; } });
+Object.defineProperty(exports, "findDangerousChanges", { enumerable: true, get: function () { return findSchemaChanges_js_1.findDangerousChanges; } });
+Object.defineProperty(exports, "findSchemaChanges", { enumerable: true, get: function () { return findSchemaChanges_js_1.findSchemaChanges; } });
 //# sourceMappingURL=index.js.map

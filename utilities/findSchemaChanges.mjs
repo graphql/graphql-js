@@ -36,9 +36,26 @@ var DangerousChangeType;
     DangerousChangeType["ARG_DEFAULT_VALUE_CHANGE"] = "ARG_DEFAULT_VALUE_CHANGE";
 })(DangerousChangeType || (DangerousChangeType = {}));
 export { DangerousChangeType };
+var SafeChangeType;
+(function (SafeChangeType) {
+    SafeChangeType["TYPE_ADDED"] = "TYPE_ADDED";
+    SafeChangeType["OPTIONAL_INPUT_FIELD_ADDED"] = "OPTIONAL_INPUT_FIELD_ADDED";
+    SafeChangeType["OPTIONAL_ARG_ADDED"] = "OPTIONAL_ARG_ADDED";
+    SafeChangeType["DIRECTIVE_ADDED"] = "DIRECTIVE_ADDED";
+    SafeChangeType["FIELD_ADDED"] = "FIELD_ADDED";
+    SafeChangeType["DIRECTIVE_REPEATABLE_ADDED"] = "DIRECTIVE_REPEATABLE_ADDED";
+    SafeChangeType["DIRECTIVE_LOCATION_ADDED"] = "DIRECTIVE_LOCATION_ADDED";
+    SafeChangeType["OPTIONAL_DIRECTIVE_ARG_ADDED"] = "OPTIONAL_DIRECTIVE_ARG_ADDED";
+    SafeChangeType["FIELD_CHANGED_KIND_SAFE"] = "FIELD_CHANGED_KIND_SAFE";
+    SafeChangeType["ARG_CHANGED_KIND_SAFE"] = "ARG_CHANGED_KIND_SAFE";
+    SafeChangeType["ARG_DEFAULT_VALUE_ADDED"] = "ARG_DEFAULT_VALUE_ADDED";
+})(SafeChangeType || (SafeChangeType = {}));
+export { SafeChangeType };
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of breaking changes covered by the other functions down below.
+ *
+ * @deprecated Please use `findSchemaChanges` instead. Will be removed in v18.
  */
 export function findBreakingChanges(oldSchema, newSchema) {
     // @ts-expect-error
@@ -47,12 +64,14 @@ export function findBreakingChanges(oldSchema, newSchema) {
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of potentially dangerous changes covered by the other functions down below.
+ *
+ * @deprecated Please use `findSchemaChanges` instead. Will be removed in v18.
  */
 export function findDangerousChanges(oldSchema, newSchema) {
     // @ts-expect-error
     return findSchemaChanges(oldSchema, newSchema).filter((change) => change.type in DangerousChangeType);
 }
-function findSchemaChanges(oldSchema, newSchema) {
+export function findSchemaChanges(oldSchema, newSchema) {
     return [
         ...findTypeChanges(oldSchema, newSchema),
         ...findDirectiveChanges(oldSchema, newSchema),
@@ -67,6 +86,12 @@ function findDirectiveChanges(oldSchema, newSchema) {
             description: `Directive @${oldDirective.name} was removed.`,
         });
     }
+    for (const newDirective of directivesDiff.added) {
+        schemaChanges.push({
+            type: SafeChangeType.DIRECTIVE_ADDED,
+            description: `Directive @${newDirective.name} was added.`,
+        });
+    }
     for (const [oldDirective, newDirective] of directivesDiff.persisted) {
         const argsDiff = diff(oldDirective.args, newDirective.args);
         for (const newArg of argsDiff.added) {
@@ -74,6 +99,12 @@ function findDirectiveChanges(oldSchema, newSchema) {
                 schemaChanges.push({
                     type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
                     description: `A required argument @${oldDirective.name}(${newArg.name}:) was added.`,
+                });
+            }
+            else {
+                schemaChanges.push({
+                    type: SafeChangeType.OPTIONAL_DIRECTIVE_ARG_ADDED,
+                    description: `An optional argument @${oldDirective.name}(${newArg.name}:) was added.`,
                 });
             }
         }
@@ -89,11 +120,25 @@ function findDirectiveChanges(oldSchema, newSchema) {
                 description: `Repeatable flag was removed from @${oldDirective.name}.`,
             });
         }
+        else if (newDirective.isRepeatable && !oldDirective.isRepeatable) {
+            schemaChanges.push({
+                type: SafeChangeType.DIRECTIVE_REPEATABLE_ADDED,
+                description: `Repeatable flag was added to @${oldDirective.name}.`,
+            });
+        }
         for (const location of oldDirective.locations) {
             if (!newDirective.locations.includes(location)) {
                 schemaChanges.push({
                     type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
                     description: `${location} was removed from @${oldDirective.name}.`,
+                });
+            }
+        }
+        for (const location of newDirective.locations) {
+            if (!oldDirective.locations.includes(location)) {
+                schemaChanges.push({
+                    type: SafeChangeType.DIRECTIVE_LOCATION_ADDED,
+                    description: `${location} was added to @${oldDirective.name}.`,
                 });
             }
         }
@@ -109,6 +154,12 @@ function findTypeChanges(oldSchema, newSchema) {
             description: isSpecifiedScalarType(oldType)
                 ? `Standard scalar ${oldType} was removed because it is not referenced anymore.`
                 : `${oldType} was removed.`,
+        });
+    }
+    for (const newType of typesDiff.added) {
+        schemaChanges.push({
+            type: SafeChangeType.TYPE_ADDED,
+            description: `${newType} was added.`,
         });
     }
     for (const [oldType, newType] of typesDiff.persisted) {
@@ -165,6 +216,13 @@ function findInputObjectTypeChanges(oldType, newType) {
         if (!isSafe) {
             schemaChanges.push({
                 type: BreakingChangeType.FIELD_CHANGED_KIND,
+                description: `Field ${oldType}.${oldField.name} changed type from ` +
+                    `${String(oldField.type)} to ${String(newField.type)}.`,
+            });
+        }
+        else {
+            schemaChanges.push({
+                type: SafeChangeType.FIELD_CHANGED_KIND_SAFE,
                 description: `Field ${oldType}.${oldField.name} changed type from ` +
                     `${String(oldField.type)} to ${String(newField.type)}.`,
             });
@@ -232,12 +290,25 @@ function findFieldChanges(oldType, newType) {
             description: `Field ${oldType}.${oldField.name} was removed.`,
         });
     }
+    for (const newField of fieldsDiff.added) {
+        schemaChanges.push({
+            type: SafeChangeType.FIELD_ADDED,
+            description: `Field ${oldType}.${newField.name} was added.`,
+        });
+    }
     for (const [oldField, newField] of fieldsDiff.persisted) {
         schemaChanges.push(...findArgChanges(oldType, oldField, newField));
         const isSafe = isChangeSafeForObjectOrInterfaceField(oldField.type, newField.type);
         if (!isSafe) {
             schemaChanges.push({
                 type: BreakingChangeType.FIELD_CHANGED_KIND,
+                description: `Field ${oldType}.${oldField.name} changed type from ` +
+                    `${String(oldField.type)} to ${String(newField.type)}.`,
+            });
+        }
+        else if (oldField.type.toString() !== newField.type.toString()) {
+            schemaChanges.push({
+                type: SafeChangeType.FIELD_CHANGED_KIND_SAFE,
                 description: `Field ${oldType}.${oldField.name} changed type from ` +
                     `${String(oldField.type)} to ${String(newField.type)}.`,
             });
@@ -283,6 +354,21 @@ function findArgChanges(oldType, oldField, newField) {
                     });
                 }
             }
+        }
+        else if (newArg.defaultValue !== undefined &&
+            oldArg.defaultValue === undefined) {
+            const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+            schemaChanges.push({
+                type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
+                description: `${oldType}.${oldField.name}(${oldArg.name}:) added a defaultValue ${newValueStr}.`,
+            });
+        }
+        else {
+            schemaChanges.push({
+                type: SafeChangeType.ARG_CHANGED_KIND_SAFE,
+                description: `Argument ${oldType}.${oldField.name}(${oldArg.name}:) has changed type from ` +
+                    `${String(oldArg.type)} to ${String(newArg.type)}.`,
+            });
         }
     }
     for (const newArg of argsDiff.added) {
@@ -392,4 +478,4 @@ function diff(oldArray, newArray) {
     }
     return { added, persisted, removed };
 }
-//# sourceMappingURL=findBreakingChanges.js.map
+//# sourceMappingURL=findSchemaChanges.js.map
