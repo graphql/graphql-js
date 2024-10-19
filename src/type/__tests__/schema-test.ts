@@ -18,6 +18,7 @@ import {
 } from '../definition.js';
 import { GraphQLDirective } from '../directives.js';
 import {
+  DirectiveMetaFieldDef,
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
@@ -414,6 +415,7 @@ describe('Type System: Schema', () => {
       expectField(catOrDog, '__typename').to.equal(TypeNameMetaFieldDef);
 
       expectField(queryType, '__type').to.equal(TypeMetaFieldDef);
+      expectField(queryType, '__directive').to.equal(DirectiveMetaFieldDef);
       expectField(queryType, '__schema').to.equal(SchemaMetaFieldDef);
     });
 
