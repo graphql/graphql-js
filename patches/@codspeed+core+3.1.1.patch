@@ -6,7 +6,7 @@ index 5087584..64fa54a 100644
      "--random-seed=1",
      "--no-opt",
      "--predictable",
-+    "--expose-gc"
++    "--expose-gc",
      "--predictable-gc-schedule",
 -    "--interpreted-frames-native-stack"
 +    "--interpreted-frames-native-stack",
