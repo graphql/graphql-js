@@ -1,11 +1,10 @@
 ---
 title: graphql/execution
-layout: ../_core/GraphQLJSLayout
-category: API Reference
-permalink: /graphql-js/execution/
-sublinks: execute
-next: /graphql-js/language/
 ---
+
+{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+
+# `graphql/execution`
 
 The `graphql/execution` module is responsible for the execution phase of
 fulfilling a GraphQL request. You can import either from the `graphql/execution` module, or from the root `graphql` module. For example:
@@ -17,11 +16,10 @@ var { execute } = require('graphql'); // CommonJS
 
 ## Overview
 
-<ul class="apiIndex">
+<ul className="apiIndex">
   <li>
     <a href="#execute">
-      <pre>function execute</pre>
-      Executes a GraphQL request on the provided schema.
+      `function execute` Executes a GraphQL request on the provided schema.
     </a>
   </li>
 </ul>
@@ -30,22 +28,22 @@ var { execute } = require('graphql'); // CommonJS
 
 ### execute
 
-```js
+```ts
 export function execute(
   schema: GraphQLSchema,
   documentAST: Document,
   rootValue?: mixed,
   contextValue?: mixed,
-  variableValues?: ?{[key: string]: mixed},
-  operationName?: ?string
-): MaybePromise<ExecutionResult>
+  variableValues?: { [key: string]: mixed },
+  operationName?: string,
+): MaybePromise<ExecutionResult>;
 
 type MaybePromise<T> = Promise<T> | T;
 
 type ExecutionResult = {
-  data: ?Object;
-  errors?: Array<GraphQLError>;
-}
+  data: Object;
+  errors?: GraphQLError[];
+};
 ```
 
 Implements the "Evaluating requests" section of the GraphQL specification.

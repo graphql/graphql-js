@@ -21,7 +21,7 @@ export default tsConfig(
       'npmDist',
       'npmEsmDist',
       'denoDist',
-      'websiteDist',
+      'website',
       'integrationTests/ts/*.ts',
     ],
   },
@@ -487,7 +487,7 @@ export default tsConfig(
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: ['tsconfig.json'],
+        project: ['tsconfig.json', './website/tsconfig.json'],
       },
     },
     rules: {
@@ -881,7 +881,7 @@ export default tsConfig(
       ...reactHooksPlugin.configs.recommended.rules,
       'no-restricted-exports': 'off',
       'import/no-default-export': 'off',
-      'import/no-extraneous-dependencies': 'off',
-      'import/no-nodejs-modules': 'off',    },
+      'import/no-nodejs-modules': 'off',
+    },
   },
 );

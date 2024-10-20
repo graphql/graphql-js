@@ -1,6 +1,5 @@
 ---
 title: Constructing Types
-category: Advanced Guides
 ---
 
 For many apps, you can define a fixed schema when the application starts, and define it using GraphQL schema language. In some cases, it's useful to construct a schema programmatically. You can do this using the `GraphQLSchema` constructor.
@@ -10,11 +9,11 @@ When you are using the `GraphQLSchema` constructor to create a schema, instead o
 For example, let's say we are building a simple API that lets you fetch user data for a few hardcoded users based on an id. Using `buildSchema` we could write a server with:
 
 ```js
-let express = require('express');
-let { graphqlHTTP } = require('express-graphql');
-let { buildSchema } = require('graphql');
+var express = require('express');
+var { createHandler } = require('graphql-http/lib/use/express');
+var { buildSchema } = require('graphql');
 
-let schema = buildSchema(`
+var schema = buildSchema(`
   type User {
     id: String
     name: String
@@ -26,7 +25,7 @@ let schema = buildSchema(`
 `);
 
 // Maps id to User object
-let fakeDatabase = {
+var fakeDatabase = {
   a: {
     id: 'a',
     name: 'alice',
@@ -37,35 +36,33 @@ let fakeDatabase = {
   },
 };
 
-let root = {
-  user: function ({ id }) {
+var root = {
+  user({ id }) {
     return fakeDatabase[id];
   },
 };
 
-let app = express();
-app.use(
+var app = express();
+app.all(
   '/graphql',
-  graphqlHTTP({
+  createHandler({
     schema: schema,
     rootValue: root,
-    graphiql: true,
   }),
 );
-app.listen(4000, () => {
-  console.log('Running a GraphQL API server at localhost:4000/graphql');
-});
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
 
 We can implement this same API without using GraphQL schema language:
 
 ```js
-let express = require('express');
-let { graphqlHTTP } = require('express-graphql');
-let graphql = require('graphql');
+var express = require('express');
+var { createHandler } = require('graphql-http/lib/use/express');
+var graphql = require('graphql');
 
 // Maps id to User object
-let fakeDatabase = {
+var fakeDatabase = {
   a: {
     id: 'a',
     name: 'alice',
@@ -77,7 +74,7 @@ let fakeDatabase = {
 };
 
 // Define the User type
-let userType = new graphql.GraphQLObjectType({
+var userType = new graphql.GraphQLObjectType({
   name: 'User',
   fields: {
     id: { type: graphql.GraphQLString },
@@ -86,7 +83,7 @@ let userType = new graphql.GraphQLObjectType({
 });
 
 // Define the Query type
-let queryType = new graphql.GraphQLObjectType({
+var queryType = new graphql.GraphQLObjectType({
   name: 'Query',
   fields: {
     user: {
@@ -95,26 +92,24 @@ let queryType = new graphql.GraphQLObjectType({
       args: {
         id: { type: graphql.GraphQLString },
       },
-      resolve: function (_, { id }) {
+      resolve: (_, { id }) => {
         return fakeDatabase[id];
       },
     },
   },
 });
 
-let schema = new graphql.GraphQLSchema({ query: queryType });
+var schema = new graphql.GraphQLSchema({ query: queryType });
 
-let app = express();
-app.use(
+var app = express();
+app.all(
   '/graphql',
-  graphqlHTTP({
+  createHandler({
     schema: schema,
-    graphiql: true,
   }),
 );
-app.listen(4000, () => {
-  console.log('Running a GraphQL API server at localhost:4000/graphql');
-});
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
 
 When we use this method of creating the API, the root level resolvers are implemented on the `Query` and `Mutation` types rather than on a `root` object.
