@@ -1,10 +1,10 @@
 ---
 title: graphql/validation
-layout: ../_core/GraphQLJSLayout
-category: API Reference
-permalink: /graphql-js/validation/
-sublinks: specifiedRules,validate
 ---
+
+{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+
+# `graphql/validation`
 
 The `graphql/validation` module fulfills the Validation phase of fulfilling a
 GraphQL result. You can import either from the `graphql/validation` module, or from the root `graphql` module. For example:
@@ -16,31 +16,30 @@ var { validate } = require('graphql/validation'); // CommonJS
 
 ## Overview
 
-<ul class="apiIndex">
+<ul className="apiIndex">
   <li>
     <a href="#validate">
-      <pre>function validate</pre>
-      Validates an AST against a provided Schema.
+      `function validate` Validates an AST against a provided Schema.
     </a>
   </li>
   <li>
     <a href="#specifiedrules">
-      <pre>var specifiedRules</pre>
-      A list of standard validation rules described in the GraphQL specification.
+      `var specifiedRules` A list of standard validation rules described in the
+      GraphQL specification.
     </a>
   </li>
 </ul>
 
 ## Validation
 
-### validate
+### `validate`
 
-```js
+```ts
 function validate(
   schema: GraphQLSchema,
   ast: Document,
-  rules?: Array<any>
-): Array<GraphQLError>
+  rules?: any[],
+): GraphQLError[];
 ```
 
 Implements the "Validation" section of the spec.
@@ -59,10 +58,10 @@ Visitors can also supply `visitSpreadFragments: true` which will alter the
 behavior of the visitor to skip over top level defined fragments, and instead
 visit those fragments at every point a spread is encountered.
 
-### specifiedRules
+### `specifiedRules`
 
-```js
-var specifiedRules: Array<(context: ValidationContext): any>
+```ts
+let specifiedRules: Array<(context: ValidationContext) => any>;
 ```
 
 This set includes all validation rules defined by the GraphQL spec

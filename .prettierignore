@@ -6,4 +6,6 @@
 /npmDist
 /npmEsmDist
 /denoDist
-/websiteDist
+/website/.next
+/website/out
+.next

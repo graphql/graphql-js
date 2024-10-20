@@ -21,13 +21,13 @@ It's often convenient to have a mutation that maps to a database create or updat
 Both mutations and queries can be handled by root resolvers, so the root that implements this schema can simply be:
 
 ```js
-let fakeDatabase = {};
-let root = {
-  setMessage: function ({ message }) {
+var fakeDatabase = {};
+var root = {
+  setMessage({ message }) {
     fakeDatabase.message = message;
     return message;
   },
-  getMessage: function () {
+  getMessage() {
     return fakeDatabase.message;
   },
 };
@@ -68,12 +68,12 @@ Naming input types with `Input` on the end is a useful convention, because you w
 Here's some runnable code that implements this schema, keeping the data in memory:
 
 ```js
-let express = require('express');
-let { graphqlHTTP } = require('express-graphql');
-let { buildSchema } = require('graphql');
+var express = require('express');
+var { createHandler } = require('graphql-http/lib/use/express');
+var { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
-let schema = buildSchema(`
+var schema = buildSchema(/* GraphQL */ `
   input MessageInput {
     content: String
     author: String
@@ -105,23 +105,23 @@ class Message {
 }
 
 // Maps username to content
-let fakeDatabase = {};
+var fakeDatabase = {};
 
-let root = {
-  getMessage: function ({ id }) {
+var root = {
+  getMessage({ id }) {
     if (!fakeDatabase[id]) {
       throw new Error('no message exists with id ' + id);
     }
     return new Message(id, fakeDatabase[id]);
   },
-  createMessage: function ({ input }) {
+  createMessage({ input }) {
     // Create a random id for our "database".
-    let id = require('crypto').randomBytes(10).toString('hex');
+    var id = require('crypto').randomBytes(10).toString('hex');
 
     fakeDatabase[id] = input;
     return new Message(id, input);
   },
-  updateMessage: function ({ id, input }) {
+  updateMessage({ id, input }) {
     if (!fakeDatabase[id]) {
       throw new Error('no message exists with id ' + id);
     }
@@ -131,13 +131,12 @@ let root = {
   },
 };
 
-let app = express();
-app.use(
+var app = express();
+app.all(
   '/graphql',
-  graphqlHTTP({
+  createHandler({
     schema: schema,
     rootValue: root,
-    graphiql: true,
   }),
 );
 app.listen(4000, () => {
@@ -158,13 +157,15 @@ mutation {
 You can use variables to simplify mutation client logic just like you can with queries. For example, some JavaScript code that calls the server to execute this mutation is:
 
 ```js
-let author = 'andy';
-let content = 'hope is a good thing';
-let query = `mutation CreateMessage($input: MessageInput) {
-  createMessage(input: $input) {
-    id
+var author = 'andy';
+var content = 'hope is a good thing';
+var query = /* GraphQL */ `
+  mutation CreateMessage($input: MessageInput) {
+    createMessage(input: $input) {
+      id
+    }
   }
-}`;
+`;
 
 fetch('/graphql', {
   method: 'POST',
@@ -186,4 +187,4 @@ fetch('/graphql', {
   .then((data) => console.log('data returned:', data));
 ```
 
-One particular type of mutation is operations that change users, like signing up a new user. While you can implement this using GraphQL mutations, you can reuse many existing libraries if you learn about [GraphQL with authentication and Express middleware](./authentication-and-express-middleware.md).
+One particular type of mutation is operations that change users, like signing up a new user. While you can implement this using GraphQL mutations, you can reuse many existing libraries if you learn about [GraphQL with authentication and Express middleware](/authentication-and-express-middleware/).
