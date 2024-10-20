@@ -13,12 +13,12 @@ To use a list type, surround the type in square brackets, so `[Int]` is a list o
 Each of these types maps straightforwardly to JavaScript, so you can just return plain old JavaScript objects in APIs that return these types. Here's an example that shows how to use some of these basic types:
 
 ```js
-let express = require('express');
-let { graphqlHTTP } = require('express-graphql');
-let { buildSchema } = require('graphql');
+var express = require('express');
+var { createHandler } = require('graphql-http/lib/use/express');
+var { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
-let schema = buildSchema(`
+var schema = buildSchema(`
   type Query {
     quoteOfTheDay: String
     random: Float!
@@ -27,32 +27,30 @@ let schema = buildSchema(`
 `);
 
 // The root provides a resolver function for each API endpoint
-let root = {
-  quoteOfTheDay: () => {
+var root = {
+  quoteOfTheDay() {
     return Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within';
   },
-  random: () => {
+  random() {
     return Math.random();
   },
-  rollThreeDice: () => {
+  rollThreeDice() {
     return [1, 2, 3].map((_) => 1 + Math.floor(Math.random() * 6));
   },
 };
 
-let app = express();
-app.use(
+var app = express();
+app.all(
   '/graphql',
-  graphqlHTTP({
+  createHandler({
     schema: schema,
     rootValue: root,
-    graphiql: true,
   }),
 );
-app.listen(4000, () => {
-  console.log('Running a GraphQL API server at localhost:4000/graphql');
-});
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
 ```
 
 If you run this code with `node server.js` and browse to http://localhost:4000/graphql you can try out these APIs.
 
-These examples show you how to call APIs that return different types. To send different types of data into an API, you will also need to learn about [passing arguments to a GraphQL API](./passing-arguments.md).
+These examples show you how to call APIs that return different types. To send different types of data into an API, you will also need to learn about [passing arguments to a GraphQL API](/passing-arguments/).

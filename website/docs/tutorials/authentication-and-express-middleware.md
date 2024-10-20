@@ -10,11 +10,11 @@ To use middleware with a GraphQL resolver, just use the middleware like you woul
 For example, let's say we wanted our server to log the IP address of every request, and we also want to write an API that returns the IP address of the caller. We can do the former with middleware, and the latter by accessing the `request` object in a resolver. Here's server code that implements this:
 
 ```js
-var express = require('express');
-var { graphqlHTTP } = require('express-graphql');
-var { buildSchema } = require('graphql');
+let express = require('express');
+let { graphqlHTTP } = require('express-graphql');
+let { buildSchema } = require('graphql');
 
-var schema = buildSchema(`
+let schema = buildSchema(`
   type Query {
     ip: String
   }
@@ -25,13 +25,13 @@ function loggingMiddleware(req, res, next) {
   next();
 }
 
-var root = {
+let root = {
   ip: function (args, request) {
     return request.ip;
   },
 };
 
-var app = express();
+let app = express();
 app.use(loggingMiddleware);
 app.use(
   '/graphql',

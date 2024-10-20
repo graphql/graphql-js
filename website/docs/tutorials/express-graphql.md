@@ -6,7 +6,7 @@ The `express-graphql` module provides a simple way to create an [Express](https:
 
 ```js
 import { graphqlHTTP } from 'express-graphql'; // ES6
-var { graphqlHTTP } = require('express-graphql'); // CommonJS
+const { graphqlHTTP } = require('express-graphql'); // CommonJS
 ```
 
 ### graphqlHTTP
