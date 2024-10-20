@@ -1,6 +1,11 @@
 ---
 title: Getting Started With GraphQL.js
+sidebarTitle: Getting Started
 ---
+
+{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+
+# Getting Started With GraphQL.js
 
 ## Prerequisites
 
@@ -17,7 +22,7 @@ npm install graphql --save
 
 To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a “resolver” for each API endpoint. For an API that just returns “Hello world!”, we can put this code in a file named `server.js`:
 
-```js
+```javascript
 let { graphql, buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
@@ -27,35 +32,39 @@ let schema = buildSchema(`
   }
 `);
 
-// The root provides a resolver function for each API endpoint
-let root = {
-  hello: () => {
+// The rootValue provides a resolver function for each API endpoint
+let rootValue = {
+  hello() {
     return 'Hello world!';
   },
 };
 
 // Run the GraphQL query '{ hello }' and print out the response
-graphql(schema, '{ hello }', root).then((response) => {
+graphql({
+  schema,
+  source: '{ hello }',
+  rootValue,
+}).then((response) => {
   console.log(response);
 });
 ```
 
 If you run this with:
 
-```bash
+```sh
 node server.js
 ```
 
 You should see the GraphQL response printed out:
 
-```js
+```json
 {
-  data: {
-    hello: 'Hello world!';
+  "data": {
+    "hello": "Hello world!"
   }
 }
 ```
 
 Congratulations - you just executed a GraphQL query!
 
-For practical applications, you'll probably want to run GraphQL queries from an API server, rather than executing GraphQL with a command line tool. To use GraphQL for an API server over HTTP, check out [Running an Express GraphQL Server](./running-an-express-graphql-server.md).
+For practical applications, you'll probably want to run GraphQL queries from an API server, rather than executing GraphQL with a command line tool. To use GraphQL for an API server over HTTP, check out [Running an Express GraphQL Server](/running-an-express-graphql-server/).
