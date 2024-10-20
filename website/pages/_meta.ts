@@ -16,7 +16,13 @@ const meta = {
     title: 'Advanced Guides',
   },
   'constructing-types': '',
+  'defer-stream': '',
   '-- 3': {
+    type: 'separator',
+    title: 'FAQ',
+  },
+  'going-to-production': '',
+  '-- 4': {
     type: 'separator',
     title: 'API Reference',
   },
