@@ -9,8 +9,6 @@ import {
   TwitterIcon,
 } from './icons/index';
 import { useRouter } from 'next/router';
-// import { createElement } from "react"
-// import NextImage from "next-image-export-optimizer"
 
 const graphQLLogo = (
   <GraphQLWordmarkLogo className="h-8 nextra-logo" title="GraphQL" />
@@ -51,12 +49,14 @@ function Footer() {
         <List
           title="Learn"
           items={[
-            { title: 'Introduction to GraphQL', url: '/learn' },
-            { title: 'Best Practices', url: '/learn/best-practices' },
-            { title: 'Frequently Asked Questions', url: '/faq' },
+            { title: 'Introduction to GraphQL', url: '/' },
+            {
+              title: 'Frequently Asked Questions',
+              url: 'https://graphql.org/faq',
+            },
             {
               title: 'Training Courses',
-              url: '/community/resources/training-courses',
+              url: 'https://graphql.org/community/resources/training-courses',
             },
           ]}
         />
@@ -68,8 +68,11 @@ function Footer() {
               title: 'GraphQL Specification',
               url: 'https://spec.graphql.org',
             },
-            { title: 'Libraries & Tools', url: '/code' },
-            { title: 'Services & Vendors', url: '/code/?tags=services' },
+            { title: 'Libraries & Tools', url: 'https://graphql.org/code' },
+            {
+              title: 'Services & Vendors',
+              url: 'https://graphql.org/code/?tags=services',
+            },
           ]}
         />
         <List
@@ -77,12 +80,15 @@ function Footer() {
           items={[
             {
               title: 'Resources',
-              url: '/community/resources/official-channels',
+              url: 'https://graphql.org/community/resources/official-channels',
             },
-            { title: 'Events & Meetups', url: '/community/events' },
+            {
+              title: 'Events & Meetups',
+              url: 'https://graphql.org/community/events',
+            },
             {
               title: 'Contribute to GraphQL',
-              url: '/community/contribute/essential-links',
+              url: 'https://graphql.org/community/contribute/essential-links',
             },
             { title: 'Landscape', url: 'https://landscape.graphql.org' },
             { title: 'Shop', url: 'https://store.graphql.org' },
@@ -91,14 +97,23 @@ function Footer() {
         <List
           title="& More"
           items={[
-            { title: 'Blog', url: '/blog' },
-            { title: 'GraphQL Foundation', url: '/foundation' },
+            { title: 'Blog', url: 'https://graphql.org/blog' },
+            {
+              title: 'GraphQL Foundation',
+              url: 'https://graphql.org/foundation',
+            },
             {
               title: 'GraphQL Community Grant',
-              url: '/foundation/community-grant',
+              url: 'https://graphql.org/foundation/community-grant',
             },
-            { title: 'Logo and Brand Guidelines', url: '/brand' },
-            { title: 'Code of Conduct', url: '/codeofconduct' },
+            {
+              title: 'Logo and Brand Guidelines',
+              url: 'https://graphql.org/brand',
+            },
+            {
+              title: 'Code of Conduct',
+              url: 'https://graphql.org/codeofconduct',
+            },
           ]}
         />
       </div>
@@ -123,7 +138,7 @@ function Footer() {
             {[
               { url: 'https://github.com/graphql', icon: GitHubIcon },
               { url: 'https://discord.graphql.org', icon: DiscordIcon },
-              { url: 'https://twitter.com/graphql', icon: TwitterIcon },
+              { url: 'https://x.com/graphql', icon: TwitterIcon },
               {
                 url: 'http://stackoverflow.com/questions/tagged/graphql',
                 icon: StackOverflowIcon,
@@ -199,7 +214,7 @@ const cfg: DocsThemeConfig = {
       <>
         🎬 That's a Wrap for GraphQLConf 2024! • Watch the Videos •{' '}
         <NextLink
-          href="/conf/2024"
+          href="https://graphql.org/conf/2024"
           className="underline after:content-['_→'] after:font-sans"
         >
           Check out the recorded talks and workshops

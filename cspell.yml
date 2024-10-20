@@ -110,6 +110,7 @@ words:
   - Nextra
   - headlessui
   - Fastify
+  - tailwindcss
   - svgr
   - ruru
 
