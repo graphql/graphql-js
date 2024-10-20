@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app';
 import { Roboto_Flex, Roboto_Mono } from 'next/font/google';
 
 import '../css/globals.css';
+console.log('hi');
 
 const robotoFlex = Roboto_Flex({
   subsets: ['latin'],
