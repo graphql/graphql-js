@@ -228,26 +228,3 @@ jobs:
         with:
           name: denoDist
           path: ./denoDist
-
-  build-website-dist:
-    name: Build website
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          cache: npm
-          # TODO: switch back in v17
-          # node-version-file: '.node-version'
-          node-version: 18
-
-      - name: Install Dependencies
-        run: cd website && npm ci --ignore-scripts
-
-      - name: Build Docs
-        run: cd website && npm run build

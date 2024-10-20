@@ -12,8 +12,6 @@ ignorePaths:
   - website/icons
   - website/css
 overrides:
-  - filename: '**/docs-old/APIReference-*.md'
-    ignoreRegExpList: ['/href="[^"]*"/']
   - filename: 'website/**'
     dictionaries:
       - fullstack
