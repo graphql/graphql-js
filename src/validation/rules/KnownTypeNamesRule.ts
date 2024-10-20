@@ -39,7 +39,7 @@ export function KnownTypeNamesRule(
   ]);
 
   return {
-    NamedType(node, _1, parent, _2, ancestors) {
+    NamedType(node, { parent, ancestors }) {
       const typeName = node.name.value;
       if (!typeNames.has(typeName)) {
         const definitionNode = ancestors[2] ?? parent;
