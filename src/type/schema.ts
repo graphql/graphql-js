@@ -2,7 +2,7 @@ import { inspect } from '../jsutils/inspect.js';
 import { instanceOf } from '../jsutils/instanceOf.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
-import { toObjMap } from '../jsutils/toObjMap.js';
+import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
@@ -61,7 +61,7 @@ export function assertSchema(schema: unknown): GraphQLSchema {
  * an object which can contain all the values you need.
  */
 export interface GraphQLSchemaExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
@@ -162,7 +162,7 @@ export class GraphQLSchema {
     this.__validationErrors = config.assumeValid === true ? [] : undefined;
 
     this.description = config.description;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 

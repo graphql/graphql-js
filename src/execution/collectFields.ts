@@ -39,9 +39,9 @@ export interface FieldDetails {
   fragmentVariableValues?: VariableValues | undefined;
 }
 
-export type FieldGroup = ReadonlyArray<FieldDetails>;
+export type FieldDetailsList = ReadonlyArray<FieldDetails>;
 
-export type GroupedFieldSet = ReadonlyMap<string, FieldGroup>;
+export type GroupedFieldSet = ReadonlyMap<string, FieldDetailsList>;
 
 export interface FragmentDetails {
   definition: FragmentDefinitionNode;
@@ -55,6 +55,7 @@ interface CollectFieldsContext {
   operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
+  hideSuggestions: boolean;
 }
 
 /**
@@ -66,12 +67,14 @@ interface CollectFieldsContext {
  *
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/max-params
 export function collectFields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDetails>,
   variableValues: VariableValues,
   runtimeType: GraphQLObjectType,
   operation: OperationDefinitionNode,
+  hideSuggestions: boolean,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -85,6 +88,7 @@ export function collectFields(
     runtimeType,
     operation,
     visitedFragmentNames: new Set(),
+    hideSuggestions,
   };
 
   collectFieldsImpl(
@@ -113,7 +117,8 @@ export function collectSubfields(
   variableValues: VariableValues,
   operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
-  fieldGroup: FieldGroup,
+  fieldDetailsList: FieldDetailsList,
+  hideSuggestions: boolean,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -125,11 +130,12 @@ export function collectSubfields(
     runtimeType: returnType,
     operation,
     visitedFragmentNames: new Set(),
+    hideSuggestions,
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
 
-  for (const fieldDetail of fieldGroup) {
+  for (const fieldDetail of fieldDetailsList) {
     const selectionSet = fieldDetail.node.selectionSet;
     if (selectionSet) {
       const { deferUsage, fragmentVariableValues } = fieldDetail;
@@ -166,6 +172,7 @@ function collectFieldsImpl(
     runtimeType,
     operation,
     visitedFragmentNames,
+    hideSuggestions,
   } = context;
 
   for (const selection of selectionSet.selections) {
@@ -265,6 +272,7 @@ function collectFieldsImpl(
             fragmentVariableSignatures,
             variableValues,
             fragmentVariableValues,
+            hideSuggestions,
           );
         }
 

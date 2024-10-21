@@ -11,6 +11,8 @@
       "dom" // Workaround for missing web-compatible globals in `@types/node`
     ],
     "target": "es2021",
+    "sourceMap": true,
+    "inlineSources": true,
     "module": "es2022",
     "moduleResolution": "node",
     "noEmit": true,

@@ -140,8 +140,23 @@ function emitTSFiles(options: {
   });
 
   const tsHost = ts.createCompilerHost(tsOptions);
-  tsHost.writeFile = (filepath, body) =>
-    writeGeneratedFile(filepath.replace(/.js$/, extension), body);
+  tsHost.writeFile = (filepath, body) => {
+    if (filepath.match(/.js$/) && extension === '.mjs') {
+      let bodyToWrite = body;
+      bodyToWrite = bodyToWrite.replace(
+        '//# sourceMappingURL=graphql.js.map',
+        '//# sourceMappingURL=graphql.mjs.map',
+      );
+      writeGeneratedFile(filepath.replace(/.js$/, extension), bodyToWrite);
+    } else if (filepath.match(/.js.map$/) && extension === '.mjs') {
+      writeGeneratedFile(
+        filepath.replace(/.js.map$/, extension + '.map'),
+        body,
+      );
+    } else {
+      writeGeneratedFile(filepath, body);
+    }
+  };
 
   const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
   const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {

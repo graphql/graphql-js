@@ -50,6 +50,7 @@ interface CoerceError {
 function coerceValue(
   inputValue: unknown,
   type: GraphQLInputType,
+  hideSuggestions = false,
 ): CoerceResult {
   const errors: Array<CoerceError> = [];
   const value = coerceInputValue(
@@ -58,6 +59,7 @@ function coerceValue(
     (path, invalidValue, error) => {
       errors.push({ path, value: invalidValue, error: error.message });
     },
+    hideSuggestions,
   );
 
   return { errors, value };
@@ -183,6 +185,17 @@ describe('coerceInputValue', () => {
       ]);
     });
 
+    it('returns an error for misspelled enum value (no suggestions)', () => {
+      const result = coerceValue('foo', TestEnum, true);
+      expectErrors(result).to.deep.equal([
+        {
+          error: 'Value "foo" does not exist in "TestEnum" enum.',
+          path: [],
+          value: 'foo',
+        },
+      ]);
+    });
+
     it('returns an error for incorrect value type', () => {
       const result1 = coerceValue(123, TestEnum);
       expectErrors(result1).to.deep.equal([
@@ -194,6 +207,27 @@ describe('coerceInputValue', () => {
       ]);
 
       const result2 = coerceValue({ field: 'value' }, TestEnum);
+      expectErrors(result2).to.deep.equal([
+        {
+          error:
+            'Enum "TestEnum" cannot represent non-string value: { field: "value" }.',
+          path: [],
+          value: { field: 'value' },
+        },
+      ]);
+    });
+
+    it('returns an error for incorrect value type (no suggestions)', () => {
+      const result1 = coerceValue(123, TestEnum, true);
+      expectErrors(result1).to.deep.equal([
+        {
+          error: 'Enum "TestEnum" cannot represent non-string value: 123.',
+          path: [],
+          value: 123,
+        },
+      ]);
+
+      const result2 = coerceValue({ field: 'value' }, TestEnum, false);
       expectErrors(result2).to.deep.equal([
         {
           error:
@@ -400,6 +434,23 @@ describe('coerceInputValue', () => {
         },
       ]);
     });
+
+    it('returns error for a misspelled field without suggestions', () => {
+      const result = coerceValue({ bart: 123 }, TestInputObject, true);
+      expectErrors(result).to.deep.equal([
+        {
+          error: 'Field "bart" is not defined by type "TestInputObject".',
+          path: [],
+          value: { bart: 123 },
+        },
+        {
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
+          path: [],
+          value: { bart: 123 },
+        },
+      ]);
+    });
   });
 
   describe('for GraphQLInputObject with default value', () => {
@@ -538,7 +589,7 @@ describe('coerceInputValue', () => {
   describe('with default onError', () => {
     it('throw error without path', () => {
       expect(() =>
-        coerceInputValue(null, new GraphQLNonNull(GraphQLInt)),
+        coerceInputValue(null, new GraphQLNonNull(GraphQLInt), undefined, true),
       ).to.throw(
         'Invalid value null: Expected non-nullable type "Int!" not to be null.',
       );
@@ -549,6 +600,8 @@ describe('coerceInputValue', () => {
         coerceInputValue(
           [null],
           new GraphQLList(new GraphQLNonNull(GraphQLInt)),
+          undefined,
+          true,
         ),
       ).to.throw(
         'Invalid value null at "value[0]": Expected non-nullable type "Int!" not to be null.',
@@ -565,7 +618,13 @@ describe('coerceInputLiteral', () => {
     variableValues?: VariableValues,
   ) {
     const ast = parseValue(valueText);
-    const value = coerceInputLiteral(ast, type, variableValues);
+    const value = coerceInputLiteral(
+      ast,
+      type,
+      variableValues,
+      undefined,
+      true,
+    );
     expect(value).to.deep.equal(expected);
   }
 
@@ -580,7 +639,7 @@ describe('coerceInputLiteral', () => {
     parser.expectToken(TokenKind.SOF);
     const variableValuesOrErrors = getVariableValues(
       new GraphQLSchema({}),
-      parser.parseVariableDefinitions(),
+      parser.parseVariableDefinitions() ?? [],
       inputs,
     );
     invariant(variableValuesOrErrors.variableValues !== undefined);
@@ -610,10 +669,10 @@ describe('coerceInputLiteral', () => {
     test('123.456', GraphQLID, undefined);
   });
 
-  it('convert using parseConstLiteral from a custom scalar type', () => {
+  it('convert using coerceInputLiteral from a custom scalar type', () => {
     const passthroughScalar = new GraphQLScalarType({
       name: 'PassthroughScalar',
-      parseConstLiteral(node) {
+      coerceInputLiteral(node) {
         invariant(node.kind === 'StringValue');
         return node.value;
       },
@@ -624,7 +683,7 @@ describe('coerceInputLiteral', () => {
 
     const printScalar = new GraphQLScalarType({
       name: 'PrintScalar',
-      parseConstLiteral(node) {
+      coerceInputLiteral(node) {
         return `~~~${print(node)}~~~`;
       },
       parseValue: identityFunc,
@@ -641,7 +700,7 @@ describe('coerceInputLiteral', () => {
 
     const throwScalar = new GraphQLScalarType({
       name: 'ThrowScalar',
-      parseConstLiteral() {
+      coerceInputLiteral() {
         throw new Error('Test');
       },
       parseValue: identityFunc,
@@ -651,7 +710,7 @@ describe('coerceInputLiteral', () => {
 
     const returnUndefinedScalar = new GraphQLScalarType({
       name: 'ReturnUndefinedScalar',
-      parseConstLiteral() {
+      coerceInputLiteral() {
         return undefined;
       },
       parseValue: identityFunc,
@@ -868,6 +927,13 @@ describe('coerceInputLiteral', () => {
     });
     test('{ requiredBool: $foo }', testInputObj, undefined);
     testWithVariables(
+      '',
+      {},
+      '{ requiredBool: $foo }',
+      testInputObj,
+      undefined,
+    );
+    testWithVariables(
       '($foo: Boolean)',
       { foo: true },
       '{ requiredBool: $foo }',
@@ -892,10 +958,14 @@ describe('coerceDefaultValue', () => {
     const defaultValueUsage = {
       literal: { kind: Kind.STRING, value: 'hello' },
     } as const;
-    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+    expect(coerceDefaultValue(defaultValueUsage, spyScalar, true)).to.equal(
+      'hello',
+    );
 
     // Call a second time
-    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+    expect(coerceDefaultValue(defaultValueUsage, spyScalar, true)).to.equal(
+      'hello',
+    );
     expect(parseValueCalls).to.deep.equal(['hello']);
   });
 });

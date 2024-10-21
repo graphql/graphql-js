@@ -19,8 +19,6 @@ export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
       const argumentNameUsed = new Set<string>(
         usages.map(({ node }) => node.name.value),
       );
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      /* c8 ignore next */
       const variableDefinitions = fragment.variableDefinitions ?? [];
       for (const varDef of variableDefinitions) {
         const argName = varDef.variable.name.value;
@@ -44,8 +42,6 @@ export function NoUnusedVariablesRule(context: ValidationContext): ASTVisitor {
         }
       }
 
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      /* c8 ignore next */
       const variableDefinitions = operation.variableDefinitions ?? [];
       for (const variableDef of variableDefinitions) {
         const variableName = variableDef.variable.name.value;

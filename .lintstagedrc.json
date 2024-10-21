@@ -1,0 +1,8 @@
+{
+  "*.{js,ts}": [
+    "eslint --max-warnings 0 --rulesdir resources/eslint-internal-rules/ --fix",
+    "prettier --write"
+  ],
+  "*.json": "prettier --write",
+  "*.md": "prettier --write"
+}

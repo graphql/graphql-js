@@ -35,6 +35,7 @@ type NodeWithSelectionSet = OperationDefinitionNode | FragmentDefinitionNode;
 interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
+  readonly parentType: Maybe<GraphQLInputType>;
   readonly defaultValue: GraphQLDefaultValueUsage | undefined;
   readonly fragmentVariableDefinition: Maybe<VariableDefinitionNode>;
 }
@@ -154,6 +155,10 @@ export class SDLValidationContext extends ASTValidationContext {
     this._schema = schema;
   }
 
+  get hideSuggestions() {
+    return false;
+  }
+
   get [Symbol.toStringTag]() {
     return 'SDLValidationContext';
   }
@@ -177,22 +182,29 @@ export class ValidationContext extends ASTValidationContext {
     OperationDefinitionNode,
     ReadonlyArray<VariableUsage>
   >;
+  private _hideSuggestions: boolean;
 
   constructor(
     schema: GraphQLSchema,
     ast: DocumentNode,
     typeInfo: TypeInfo,
     onError: (error: GraphQLError) => void,
+    hideSuggestions?: Maybe<boolean>,
   ) {
     super(ast, onError);
     this._schema = schema;
     this._typeInfo = typeInfo;
     this._variableUsages = new Map();
     this._recursiveVariableUsages = new Map();
+    this._hideSuggestions = hideSuggestions ?? false;
   }
 
   get [Symbol.toStringTag]() {
     return 'ValidationContext';
+  }
+
+  get hideSuggestions() {
+    return this._hideSuggestions;
   }
 
   getSchema(): GraphQLSchema {
@@ -226,6 +238,7 @@ export class ValidationContext extends ASTValidationContext {
               newUsages.push({
                 node: variable,
                 type: typeInfo.getInputType(),
+                parentType: typeInfo.getParentInputType(),
                 defaultValue: undefined, // fragment variables have a variable default but no location default, which is what this default value represents
                 fragmentVariableDefinition,
               });
@@ -233,6 +246,7 @@ export class ValidationContext extends ASTValidationContext {
               newUsages.push({
                 node: variable,
                 type: typeInfo.getInputType(),
+                parentType: typeInfo.getParentInputType(),
                 defaultValue: typeInfo.getDefaultValue(),
                 fragmentVariableDefinition: undefined,
               });

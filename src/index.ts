@@ -198,7 +198,9 @@ export type {
   GraphQLUnionTypeExtensions,
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
+  /* @deprecated in favor of GraphQLScalarInputLiteralCoercer, will be removed in v18 */
   GraphQLScalarLiteralParser,
+  GraphQLScalarInputLiteralCoercer,
   GraphQLDefaultValueUsage,
 } from './type/index.js';
 
@@ -317,7 +319,10 @@ export type {
 // Execute GraphQL queries.
 export {
   execute,
+  executeQueryOrMutationOrSubscriptionEvent,
+  executeSubscriptionEvent,
   experimentalExecuteIncrementally,
+  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,

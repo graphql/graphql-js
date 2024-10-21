@@ -42,6 +42,7 @@
     "testonly:watch": "npm run testonly -- --watch",
     "prettier": "prettier --cache --cache-strategy metadata --write --list-different .",
     "prettier:check": "prettier --cache --cache-strategy metadata --check .",
+    "precommit": "lint-staged",
     "check:spelling": "cspell --cache --no-progress \"**/*\"",
     "check:integrations": "mocha --full-trace resources/integration-test.ts",
     "serve": "docusaurus serve --dir websiteDist/ --config website/docusaurus.config.cjs",
@@ -52,6 +53,7 @@
     "diff:npm": "node --loader ts-node/esm resources/diff-npm-package.ts",
     "gitpublish:npm": "bash ./resources/gitpublish.sh npm npmDist",
     "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist",
+    "prepare": "husky",
     "postinstall": "patch-package"
   },
   "devDependencies": {
@@ -78,6 +80,8 @@
     "eslint-plugin-simple-import-sort": "12.1.1",
     "eslint-plugin-tsdoc": "0.3.0",
     "file-loader": "6.2.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "mocha": "10.7.3",
     "prettier": "3.3.3",
     "prism-react-renderer": "2.4.0",
