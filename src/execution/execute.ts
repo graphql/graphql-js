@@ -157,12 +157,14 @@ export interface ValidatedExecutionArgs {
   ) => PromiseOrValue<ExecutionResult>;
   enableEarlyExecution: boolean;
   hideSuggestions: boolean;
+  abortSignal: AbortSignal | undefined;
 }
 
 export interface ExecutionContext {
   validatedExecutionArgs: ValidatedExecutionArgs;
   errors: Array<GraphQLError> | undefined;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
+  abortSignal: AbortSignal | undefined;
 }
 
 interface IncrementalContext {
@@ -187,6 +189,7 @@ export interface ExecutionArgs {
   >;
   enableEarlyExecution?: Maybe<boolean>;
   hideSuggestions?: Maybe<boolean>;
+  abortSignal?: Maybe<AbortSignal>;
 }
 
 export interface StreamUsage {
@@ -309,6 +312,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
     validatedExecutionArgs,
     errors: undefined,
     cancellableStreams: undefined,
+    abortSignal: validatedExecutionArgs.abortSignal,
   };
   try {
     const {
@@ -318,7 +322,13 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       operation,
       variableValues,
       hideSuggestions,
+      abortSignal,
     } = validatedExecutionArgs;
+
+    if (abortSignal?.aborted) {
+      throw new GraphQLError(abortSignal.reason);
+    }
+
     const rootType = schema.getRootType(operation.operation);
     if (rootType == null) {
       throw new GraphQLError(
@@ -592,6 +602,7 @@ export function validateExecutionArgs(
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
     hideSuggestions,
+    abortSignal: args.abortSignal ?? undefined,
   };
 }
 
@@ -655,6 +666,10 @@ function executeFieldsSerially(
   return promiseReduce(
     groupedFieldSet,
     (graphqlWrappedResult, [responseName, fieldDetailsList]) => {
+      if (exeContext.abortSignal?.aborted) {
+        throw new GraphQLError(exeContext.abortSignal.reason);
+      }
+
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = executeField(
         exeContext,
@@ -705,6 +720,10 @@ function executeFields(
 
   try {
     for (const [responseName, fieldDetailsList] of groupedFieldSet) {
+      if (exeContext.abortSignal?.aborted) {
+        throw new GraphQLError(exeContext.abortSignal.reason);
+      }
+
       const fieldPath = addPath(path, responseName, parentType.name);
       const result = executeField(
         exeContext,
@@ -730,6 +749,12 @@ function executeFields(
       }
     }
   } catch (error) {
+    if (exeContext.abortSignal?.aborted) {
+      throw new GraphQLError(exeContext.abortSignal.reason, {
+        path: undefined,
+      });
+    }
+
     if (containsPromise) {
       // Ensure that any promises returned by other fields are handled, as they may also reject.
       return promiseForObject(results, () => {
@@ -1069,6 +1094,7 @@ async function completePromisedValue(
     if (isPromise(completed)) {
       completed = await completed;
     }
+
     return completed;
   } catch (rawError) {
     handleFieldError(
