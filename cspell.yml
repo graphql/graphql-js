@@ -7,6 +7,9 @@ ignorePaths:
   - package.json
   - benchmark/github-schema.graphql
   - benchmark/github-schema.json
+  - patches
+  - src/__benchmarks__/github-schema.json
+  - src/__benchmarks__/github-schema.graphql
 overrides:
   - filename: '**/docs-old/APIReference-*.md'
     ignoreRegExpList: ['/href="[^"]*"/']
@@ -34,7 +37,7 @@ ignoreRegExpList:
 
 words:
   - graphiql
-
+  - codspeed
   # Different names used inside tests
   - Skywalker
   - Leia
