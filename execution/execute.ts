@@ -149,6 +149,7 @@ export interface ValidatedExecutionArgs {
   ) => PromiseOrValue<ExecutionResult>;
   enableEarlyExecution: boolean;
   hideSuggestions: boolean;
+  abortSignal: AbortSignal | undefined;
 }
 export interface ExecutionContext {
   validatedExecutionArgs: ValidatedExecutionArgs;
@@ -178,6 +179,7 @@ export interface ExecutionArgs {
   >;
   enableEarlyExecution?: Maybe<boolean>;
   hideSuggestions?: Maybe<boolean>;
+  abortSignal?: Maybe<AbortSignal>;
 }
 export interface StreamUsage {
   label: string | undefined;
@@ -472,7 +474,11 @@ export function validateExecutionArgs(
     subscribeFieldResolver,
     perEventExecutor,
     enableEarlyExecution,
+    abortSignal,
   } = args;
+  if (abortSignal?.aborted) {
+    return [locatedError(new Error(abortSignal.reason), undefined)];
+  }
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
   let operation: OperationDefinitionNode | undefined;
@@ -546,6 +552,7 @@ export function validateExecutionArgs(
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
     hideSuggestions,
+    abortSignal: args.abortSignal ?? undefined,
   };
 }
 function executeRootGroupedFieldSet(
@@ -608,6 +615,19 @@ function executeFieldsSerially(
     groupedFieldSet,
     (graphqlWrappedResult, [responseName, fieldDetailsList]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
+      const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
+      if (abortSignal?.aborted) {
+        handleFieldError(
+          new Error(abortSignal.reason),
+          exeContext,
+          parentType,
+          fieldDetailsList,
+          fieldPath,
+          incrementalContext,
+        );
+        graphqlWrappedResult[0][responseName] = null;
+        return graphqlWrappedResult;
+      }
       const result = executeField(
         exeContext,
         parentType,
@@ -656,6 +676,14 @@ function executeFields(
   try {
     for (const [responseName, fieldDetailsList] of groupedFieldSet) {
       const fieldPath = addPath(path, responseName, parentType.name);
+      const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
+      if (abortSignal?.aborted) {
+        throw locatedError(
+          new Error(abortSignal.reason),
+          toNodes(fieldDetailsList),
+          pathToArray(fieldPath),
+        );
+      }
       const result = executeField(
         exeContext,
         parentType,
