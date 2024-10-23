@@ -312,6 +312,7 @@ export interface DocumentNode {
   readonly kind: Kind.DOCUMENT;
   readonly loc?: Location | undefined;
   readonly definitions: ReadonlyArray<DefinitionNode>;
+  readonly tokenCount?: number | undefined;
 }
 
 export type DefinitionNode =
