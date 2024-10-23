@@ -56,6 +56,7 @@ export interface GraphQLArgs {
     operationName?: Maybe<string>;
     fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
     typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+    abortSignal?: Maybe<AbortSignal>;
 }
 export declare function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
 /**

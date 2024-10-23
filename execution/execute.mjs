@@ -210,7 +210,10 @@ export function executeSync(args) {
  * @internal
  */
 export function validateExecutionArgs(args) {
-    const { schema, document, rootValue, contextValue, variableValues: rawVariableValues, operationName, fieldResolver, typeResolver, subscribeFieldResolver, perEventExecutor, enableEarlyExecution, } = args;
+    const { schema, document, rootValue, contextValue, variableValues: rawVariableValues, operationName, fieldResolver, typeResolver, subscribeFieldResolver, perEventExecutor, enableEarlyExecution, abortSignal, } = args;
+    if (abortSignal?.aborted) {
+        return [locatedError(new Error(abortSignal.reason), undefined)];
+    }
     // If the schema used for execution is invalid, throw an error.
     assertValidSchema(schema);
     let operation;
@@ -277,6 +280,7 @@ export function validateExecutionArgs(args) {
         perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
         enableEarlyExecution: enableEarlyExecution === true,
         hideSuggestions,
+        abortSignal: args.abortSignal ?? undefined,
     };
 }
 function executeRootGroupedFieldSet(exeContext, operation, rootType, rootValue, groupedFieldSet, deferMap) {
@@ -298,6 +302,12 @@ function executeRootGroupedFieldSet(exeContext, operation, rootType, rootValue, 
 function executeFieldsSerially(exeContext, parentType, sourceValue, path, groupedFieldSet, incrementalContext, deferMap) {
     return promiseReduce(groupedFieldSet, (graphqlWrappedResult, [responseName, fieldDetailsList]) => {
         const fieldPath = addPath(path, responseName, parentType.name);
+        const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
+        if (abortSignal?.aborted) {
+            handleFieldError(new Error(abortSignal.reason), exeContext, parentType, fieldDetailsList, fieldPath, incrementalContext);
+            graphqlWrappedResult[0][responseName] = null;
+            return graphqlWrappedResult;
+        }
         const result = executeField(exeContext, parentType, sourceValue, fieldDetailsList, fieldPath, incrementalContext, deferMap);
         if (result === undefined) {
             return graphqlWrappedResult;
@@ -328,6 +338,10 @@ function executeFields(exeContext, parentType, sourceValue, path, groupedFieldSe
     try {
         for (const [responseName, fieldDetailsList] of groupedFieldSet) {
             const fieldPath = addPath(path, responseName, parentType.name);
+            const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
+            if (abortSignal?.aborted) {
+                throw locatedError(new Error(abortSignal.reason), toNodes(fieldDetailsList), pathToArray(fieldPath));
+            }
             const result = executeField(exeContext, parentType, sourceValue, fieldDetailsList, fieldPath, incrementalContext, deferMap);
             if (result !== undefined) {
                 if (isPromise(result)) {

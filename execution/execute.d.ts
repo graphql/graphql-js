@@ -48,6 +48,7 @@ export interface ValidatedExecutionArgs {
     perEventExecutor: (validatedExecutionArgs: ValidatedExecutionArgs) => PromiseOrValue<ExecutionResult>;
     enableEarlyExecution: boolean;
     hideSuggestions: boolean;
+    abortSignal: AbortSignal | undefined;
 }
 export interface ExecutionContext {
     validatedExecutionArgs: ValidatedExecutionArgs;
@@ -69,6 +70,7 @@ export interface ExecutionArgs {
     perEventExecutor?: Maybe<(validatedExecutionArgs: ValidatedExecutionArgs) => PromiseOrValue<ExecutionResult>>;
     enableEarlyExecution?: Maybe<boolean>;
     hideSuggestions?: Maybe<boolean>;
+    abortSignal?: Maybe<AbortSignal>;
 }
 export interface StreamUsage {
     label: string | undefined;
