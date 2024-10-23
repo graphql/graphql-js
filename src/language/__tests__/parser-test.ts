@@ -100,6 +100,11 @@ describe('Parser', () => {
     );
   });
 
+  it('exposes the tokenCount', () => {
+    expect(parse('{ foo }').tokenCount).to.equal(3);
+    expect(parse('{ foo(bar: "baz") }').tokenCount).to.equal(8);
+  });
+
   it('parses variable inline values', () => {
     expect(() =>
       parse('{ field(complex: { a: { b: [ $var ] } }) }'),

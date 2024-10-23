@@ -119,7 +119,12 @@ export function parse(
   options?: ParseOptions | undefined,
 ): DocumentNode {
   const parser = new Parser(source, options);
-  return parser.parseDocument();
+  const document = parser.parseDocument();
+  Object.defineProperty(document, 'tokenCount', {
+    enumerable: false,
+    value: parser.tokenCount,
+  });
+  return document;
 }
 
 /**
@@ -199,6 +204,10 @@ export class Parser {
     this._lexer = new Lexer(sourceObj);
     this._options = options;
     this._tokenCounter = 0;
+  }
+
+  get tokenCount(): number {
+    return this._tokenCounter;
   }
 
   /**
@@ -1601,9 +1610,9 @@ export class Parser {
     const { maxTokens } = this._options;
     const token = this._lexer.advance();
 
-    if (maxTokens !== undefined && token.kind !== TokenKind.EOF) {
+    if (token.kind !== TokenKind.EOF) {
       ++this._tokenCounter;
-      if (this._tokenCounter > maxTokens) {
+      if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
         throw syntaxError(
           this._lexer.source,
           token.start,
