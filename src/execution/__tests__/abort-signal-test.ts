@@ -100,8 +100,6 @@ describe('Execute: Cancellation', () => {
       errors: [
         {
           message: 'Aborted',
-          path: ['todo', 'id'],
-          locations: [{ line: 4, column: 11 }],
         },
       ],
     });
@@ -149,8 +147,6 @@ describe('Execute: Cancellation', () => {
       errors: [
         {
           message: 'Aborted',
-          path: ['todo', 'author', 'id'],
-          locations: [{ line: 6, column: 13 }],
         },
       ],
     });
@@ -198,8 +194,6 @@ describe('Execute: Cancellation', () => {
       errors: [
         {
           message: 'Aborted',
-          path: ['todo', 'id'],
-          locations: [{ line: 4, column: 11 }],
         },
       ],
     });
@@ -261,14 +255,7 @@ describe('Execute: Cancellation', () => {
           {
             errors: [
               {
-                locations: [
-                  {
-                    column: 13,
-                    line: 6,
-                  },
-                ],
                 message: 'Aborted',
-                path: ['todo', 'text'],
               },
             ],
             id: '0',
@@ -304,15 +291,10 @@ describe('Execute: Cancellation', () => {
     const result = await resultPromise;
 
     expectJSON(result).toDeepEqual({
-      data: {
-        foo: 'baz',
-        bar: null,
-      },
+      data: null,
       errors: [
         {
           message: 'Aborted',
-          path: ['bar'],
-          locations: [{ line: 4, column: 9 }],
         },
       ],
     });
