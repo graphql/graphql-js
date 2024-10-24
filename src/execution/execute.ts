@@ -518,7 +518,7 @@ export function validateExecutionArgs(
   } = args;
 
   if (abortSignal?.aborted) {
-    return [locatedError(new Error(abortSignal.reason), undefined)];
+    return [new GraphQLError(abortSignal.reason)];
   }
 
   // If the schema used for execution is invalid, throw an error.
@@ -667,16 +667,9 @@ function executeFieldsSerially(
       const fieldPath = addPath(path, responseName, parentType.name);
       const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
       if (abortSignal?.aborted) {
-        handleFieldError(
-          new Error(abortSignal.reason),
-          exeContext,
-          parentType,
-          fieldDetailsList,
-          fieldPath,
-          incrementalContext,
-        );
-        graphqlWrappedResult[0][responseName] = null;
-        return graphqlWrappedResult;
+        throw new GraphQLError(abortSignal.reason, {
+          path: undefined,
+        });
       }
 
       const result = executeField(
@@ -731,11 +724,9 @@ function executeFields(
       const fieldPath = addPath(path, responseName, parentType.name);
       const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
       if (abortSignal?.aborted) {
-        throw locatedError(
-          new Error(abortSignal.reason),
-          toNodes(fieldDetailsList),
-          pathToArray(fieldPath),
-        );
+        throw new GraphQLError(abortSignal.reason, {
+          path: undefined,
+        });
       }
 
       const result = executeField(
@@ -934,10 +925,11 @@ function handleFieldError(
   path: Path,
   incrementalContext: IncrementalContext | undefined,
 ): void {
+  const isAborted = exeContext.validatedExecutionArgs.abortSignal?.aborted;
   const error = locatedError(
     rawError,
-    toNodes(fieldDetailsList),
-    pathToArray(path),
+    isAborted ? undefined : toNodes(fieldDetailsList),
+    isAborted ? undefined : pathToArray(path),
   );
 
   // If the field type is non-nullable, then it is resolved without any
