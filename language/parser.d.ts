@@ -90,6 +90,7 @@ export declare class Parser {
     protected _lexer: Lexer;
     protected _tokenCounter: number;
     constructor(source: string | Source, options?: ParseOptions);
+    get tokenCount(): number;
     /**
      * Converts a name lex token into a name parse node.
      */

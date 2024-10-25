@@ -14,7 +14,12 @@ const tokenKind_js_1 = require("./tokenKind.js");
  */
 function parse(source, options) {
     const parser = new Parser(source, options);
-    return parser.parseDocument();
+    const document = parser.parseDocument();
+    Object.defineProperty(document, 'tokenCount', {
+        enumerable: false,
+        value: parser.tokenCount,
+    });
+    return document;
 }
 exports.parse = parse;
 /**
@@ -80,6 +85,9 @@ class Parser {
         this._lexer = new lexer_js_1.Lexer(sourceObj);
         this._options = options;
         this._tokenCounter = 0;
+    }
+    get tokenCount() {
+        return this._tokenCounter;
     }
     /**
      * Converts a name lex token into a name parse node.
@@ -1233,9 +1241,9 @@ class Parser {
     advanceLexer() {
         const { maxTokens } = this._options;
         const token = this._lexer.advance();
-        if (maxTokens !== undefined && token.kind !== tokenKind_js_1.TokenKind.EOF) {
+        if (token.kind !== tokenKind_js_1.TokenKind.EOF) {
             ++this._tokenCounter;
-            if (this._tokenCounter > maxTokens) {
+            if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
                 throw (0, syntaxError_js_1.syntaxError)(this._lexer.source, token.start, `Document contains more than ${maxTokens} tokens. Parsing aborted.`);
             }
         }
