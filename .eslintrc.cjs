@@ -638,6 +638,12 @@ module.exports = {
       },
     },
     {
+      files: 'src/**/__benchmarks__/**',
+      rules: {
+        'import/no-nodejs-modules': 'off',
+      },
+    },
+    {
       files: 'integrationTests/*',
       env: {
         node: true,

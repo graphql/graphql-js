@@ -49,16 +49,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-
       - name: Check if commit contains files that should be ignored
         run: |
           git clone --depth 1 https://github.com/github/gitignore.git
-
           rm gitignore/Global/ModelSim.gitignore
           rm gitignore/Global/Images.gitignore
           cat gitignore/Node.gitignore gitignore/Global/*.gitignore > all.gitignore
 
-          IGNORED_FILES=$(git ls-files --cached --ignored --exclude-from=all.gitignore)
+          IGNORED_FILES_UNPROCESSED=$(git ls-files --cached --ignored --exclude-from=all.gitignore)
+          IGNORED_FILES=$(grep -v -F "patches/@codspeed+core+3.1.1.patch" <<< "$IGNORED_FILES_UNPROCESSED" || true)
+          IGNORED_FILES=$(grep -v -F "patches/@codspeed+vitest-plugin+3.1.1.patch" <<< "$IGNORED_FILES_UNPROCESSED" || true)
+
+          echo "IGNORED_FILES: $IGNORED_FILES"
           if  [[ "$IGNORED_FILES" != "" ]]; then
             echo -e "::error::Please remove these files:\n$IGNORED_FILES" | sed -z 's/\n/%0A/g'
             exit 1
