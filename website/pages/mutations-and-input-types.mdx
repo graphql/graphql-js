@@ -21,8 +21,8 @@ It's often convenient to have a mutation that maps to a database create or updat
 Both mutations and queries can be handled by root resolvers, so the root that implements this schema can simply be:
 
 ```js
-var fakeDatabase = {};
-var root = {
+const fakeDatabase = {};
+const root = {
   setMessage({ message }) {
     fakeDatabase.message = message;
     return message;
@@ -68,12 +68,12 @@ Naming input types with `Input` on the end is a useful convention, because you w
 Here's some runnable code that implements this schema, keeping the data in memory:
 
 ```js
-var express = require('express');
-var { createHandler } = require('graphql-http/lib/use/express');
-var { buildSchema } = require('graphql');
+const express = require('express');
+const { createHandler } = require('graphql-http/lib/use/express');
+const { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
-var schema = buildSchema(/* GraphQL */ `
+const schema = buildSchema(/* GraphQL */ `
   input MessageInput {
     content: String
     author: String
@@ -105,9 +105,9 @@ class Message {
 }
 
 // Maps username to content
-var fakeDatabase = {};
+const fakeDatabase = {};
 
-var root = {
+const root = {
   getMessage({ id }) {
     if (!fakeDatabase[id]) {
       throw new Error('no message exists with id ' + id);
@@ -116,7 +116,7 @@ var root = {
   },
   createMessage({ input }) {
     // Create a random id for our "database".
-    var id = require('crypto').randomBytes(10).toString('hex');
+    const id = require('crypto').randomBytes(10).toString('hex');
 
     fakeDatabase[id] = input;
     return new Message(id, input);
@@ -131,7 +131,7 @@ var root = {
   },
 };
 
-var app = express();
+const app = express();
 app.all(
   '/graphql',
   createHandler({
@@ -157,9 +157,9 @@ mutation {
 You can use variables to simplify mutation client logic just like you can with queries. For example, some JavaScript code that calls the server to execute this mutation is:
 
 ```js
-var author = 'andy';
-var content = 'hope is a good thing';
-var query = /* GraphQL */ `
+const author = 'andy';
+const content = 'hope is a good thing';
+const query = /* GraphQL */ `
   mutation CreateMessage($input: MessageInput) {
     createMessage(input: $input) {
       id
