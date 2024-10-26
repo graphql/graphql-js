@@ -733,6 +733,10 @@ module.exports = {
     },
     {
       files: 'website/**',
+      parserOptions: {
+        sourceType: 'module',
+        project: ['./website/tsconfig.json'],
+      },
       env: {
         node: true,
       },
@@ -750,11 +754,12 @@ module.exports = {
         'import/no-commonjs': 'off',
         'import/no-nodejs-modules': 'off',
         'import/no-extraneous-dependencies': 'off',
+        'import/unambiguous': 'off',
         // Ignore docusarus related webpack aliases
         'n/no-missing-import': 'off',
         'import/no-unresolved': [
           'error',
-          { ignore: ['^@theme', '^@docusaurus', '^@generated'] },
+          { ignore: ['^@theme', '^@tailwindcss', '^@generated'] },
         ],
       },
     },
