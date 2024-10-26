@@ -12,25 +12,25 @@ npm install express graphql-http graphql --save
 Let's modify our “hello world” example so that it's an API server rather than a script that runs a single query. We can use the 'express' module to run a webserver, and instead of executing a query directly with the `graphql` function, we can use the `graphql-http` library to mount a GraphQL API server on the “/graphql” HTTP endpoint:
 
 ```js
-var express = require('express');
-var { createHandler } = require('graphql-http/lib/use/express');
-var { buildSchema } = require('graphql');
+const express = require('express');
+const { createHandler } = require('graphql-http/lib/use/express');
+const { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
-var schema = buildSchema(`
+const schema = buildSchema(`
   type Query {
     hello: String
   }
 `);
 
 // The root provides a resolver function for each API endpoint
-var root = {
+const root = {
   hello() {
     return 'Hello world!';
   },
 };
 
-var app = express();
+const app = express();
 
 // Create and use the GraphQL handler.
 app.all(
@@ -59,7 +59,7 @@ One easy way to add it to your server is via the MIT-licensed [ruru](https://git
 To do so, install the `ruru` module with `npm install --save ruru` and then add the following to your `server.js` file, then restart the `node server.js` command:
 
 ```js
-var { ruruHTML } = require('ruru/server');
+const { ruruHTML } = require('ruru/server');
 
 // Serve the GraphiQL IDE.
 app.get('/', (_req, res) => {

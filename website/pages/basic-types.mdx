@@ -13,12 +13,12 @@ To use a list type, surround the type in square brackets, so `[Int]` is a list o
 Each of these types maps straightforwardly to JavaScript, so you can just return plain old JavaScript objects in APIs that return these types. Here's an example that shows how to use some of these basic types:
 
 ```js
-var express = require('express');
-var { createHandler } = require('graphql-http/lib/use/express');
-var { buildSchema } = require('graphql');
+const express = require('express');
+const { createHandler } = require('graphql-http/lib/use/express');
+const { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
-var schema = buildSchema(`
+const schema = buildSchema(`
   type Query {
     quoteOfTheDay: String
     random: Float!
@@ -27,7 +27,7 @@ var schema = buildSchema(`
 `);
 
 // The root provides a resolver function for each API endpoint
-var root = {
+const root = {
   quoteOfTheDay() {
     return Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within';
   },
@@ -39,7 +39,7 @@ var root = {
   },
 };
 
-var app = express();
+const app = express();
 app.all(
   '/graphql',
   createHandler({

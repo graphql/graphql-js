@@ -10,7 +10,7 @@ The `graphql/type` module is responsible for defining GraphQL types and schema. 
 
 ```js
 import { GraphQLSchema } from 'graphql'; // ES6
-var { GraphQLSchema } = require('graphql'); // CommonJS
+const { GraphQLSchema } = require('graphql'); // CommonJS
 ```
 
 ## Overview
@@ -132,26 +132,26 @@ var { GraphQLSchema } = require('graphql'); // CommonJS
 <ul className="apiIndex">
   <li>
     <a href="#graphqlint">
-      `var GraphQLInt` A scalar type representing integers.
+      `const GraphQLInt` A scalar type representing integers.
     </a>
   </li>
   <li>
     <a href="#graphqlfloat">
-      `var GraphQLFloat` A scalar type representing floats.
+      `const GraphQLFloat` A scalar type representing floats.
     </a>
   </li>
   <li>
     <a href="#graphqlstring">
-      `var GraphQLString` A scalar type representing strings.
+      `const GraphQLString` A scalar type representing strings.
     </a>
   </li>
   <li>
     <a href="#graphqlboolean">
-      `var GraphQLBoolean` A scalar type representing booleans.
+      `const GraphQLBoolean` A scalar type representing booleans.
     </a>
   </li>
   <li>
-    <a href="#graphqlid">`var GraphQLID` A scalar type representing IDs.</a>
+    <a href="#graphqlid">`const GraphQLID` A scalar type representing IDs.</a>
   </li>
 </ul>
 
@@ -177,7 +177,7 @@ validator and executor.
 #### Example
 
 ```js
-var MyAppSchema = new GraphQLSchema({
+const MyAppSchema = new GraphQLSchema({
   query: MyAppQueryRootType,
   mutation: MyAppMutationRootType,
 });
@@ -208,7 +208,7 @@ functions used to ensure validity.
 #### Example
 
 ```js
-var OddType = new GraphQLScalarType({
+const OddType = new GraphQLScalarType({
   name: 'Odd',
   serialize: oddValue,
   parseValue: oddValue,
@@ -303,7 +303,7 @@ that value can always be referenced with `this`.
 #### Examples
 
 ```js
-var AddressType = new GraphQLObjectType({
+const AddressType = new GraphQLObjectType({
   name: 'Address',
   fields: {
     street: { type: GraphQLString },
@@ -317,7 +317,7 @@ var AddressType = new GraphQLObjectType({
   },
 });
 
-var PersonType = new GraphQLObjectType({
+const PersonType = new GraphQLObjectType({
   name: 'Person',
   fields: () => ({
     name: { type: GraphQLString },
@@ -349,7 +349,7 @@ when the field is resolved.
 #### Example
 
 ```js
-var EntityType = new GraphQLInterfaceType({
+const EntityType = new GraphQLInterfaceType({
   name: 'Entity',
   fields: {
     name: { type: GraphQLString },
@@ -381,7 +381,7 @@ to determine which type is actually used when the field is resolved.
 ### Example
 
 ```js
-var PetType = new GraphQLUnionType({
+const PetType = new GraphQLUnionType({
   name: 'Pet',
   types: [DogType, CatType],
   resolveType(value) {
@@ -436,7 +436,7 @@ will be used as its internal value.
 #### Example
 
 ```js
-var RGBType = new GraphQLEnumType({
+const RGBType = new GraphQLEnumType({
   name: 'RGB',
   values: {
     RED: { value: 0 },
@@ -494,7 +494,7 @@ Using `NonNull` will ensure that a value must be provided by the query
 #### Example
 
 ```js
-var GeoPoint = new GraphQLInputObjectType({
+const GeoPoint = new GraphQLInputObjectType({
   name: 'GeoPoint',
   fields: {
     lat: { type: new GraphQLNonNull(GraphQLFloat) },
@@ -519,7 +519,7 @@ an object type.
 #### Example
 
 ```js
-var PersonType = new GraphQLObjectType({
+const PersonType = new GraphQLObjectType({
   name: 'Person',
   fields: () => ({
     parents: { type: new GraphQLList(PersonType) },
@@ -545,7 +545,7 @@ usually the id field of a database row will never be null.
 #### Example
 
 ```js
-var RowType = new GraphQLObjectType({
+const RowType = new GraphQLObjectType({
   name: 'Row',
   fields: () => ({
     id: { type: new GraphQLNonNull(String) },
