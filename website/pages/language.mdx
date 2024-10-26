@@ -10,7 +10,7 @@ The `graphql/language` module is responsible for parsing and operating on the Gr
 
 ```js
 import { Source } from 'graphql'; // ES6
-var { Source } = require('graphql'); // CommonJS
+const { Source } = require('graphql'); // CommonJS
 ```
 
 ## Overview
@@ -56,7 +56,7 @@ var { Source } = require('graphql'); // CommonJS
   </li>
   <li>
     <a href="#kind">
-      `var Kind` Represents the various kinds of parsed AST nodes.
+      `const Kind` Represents the various kinds of parsed AST nodes.
     </a>
   </li>
 </ul>
@@ -72,7 +72,7 @@ var { Source } = require('graphql'); // CommonJS
   </li>
   <li>
     <a href="#break">
-      `var BREAK` A token to allow breaking out of the visitor.
+      `const BREAK` A token to allow breaking out of the visitor.
     </a>
   </li>
 </ul>
@@ -198,7 +198,7 @@ a new version of the AST with the changes applied will be returned from the
 visit function.
 
 ```js
-var editedAST = visit(ast, {
+const editedAST = visit(ast, {
   enter(node, key, parent, path, ancestors) {
     // @return
     //   undefined: no action
