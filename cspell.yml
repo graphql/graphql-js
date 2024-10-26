@@ -5,14 +5,13 @@ ignorePaths:
   # Excluded from spelling check
   - cspell.yml
   - package.json
+  - package-lock.json
+  - tsconfig.json
   - benchmark/github-schema.graphql
   - benchmark/github-schema.json
+  - website/icons
+  - website/css
 overrides:
-  - filename: '**/docs-old/APIReference-*.md'
-    ignoreRegExpList: ['/href="[^"]*"/']
-    words:
-      - sublinks
-      - instanceof
   - filename: 'website/**'
     dictionaries:
       - fullstack
@@ -36,6 +35,8 @@ words:
   - graphiql
   - uncoerce
   - uncoerced
+  - sublinks
+  - instanceof
 
   # Different names used inside tests
   - Skywalker
@@ -45,6 +46,7 @@ words:
   - Artoo
   - Threepio
   - Odie
+  - Odie's
   - Damerau
   - Alderaan
   - Tatooine
@@ -52,7 +54,60 @@ words:
 
   # TODO: contribute upstream
   - deno
-  - hashbang
+  - codecov
+
+  # Website tech
+  - Nextra
+  - headlessui
+  - Fastify
+  - tailwindcss
+  - svgr
+  - ruru
+
+  # used as href anchors
+  - graphqlerror
+  - syntaxerror
+  - formaterror
+  - graphqlschema
+  - graphqlscalartype
+  - graphqlobjecttype
+  - graphqlinterfacetype
+  - graphqluniontype
+  - graphqlenumtype
+  - graphqlinputobjecttype
+  - graphqllist
+  - graphqlnonnull
+  - graphqlint
+  - graphqlfloat
+  - graphqlstring
+  - graphqlboolean
+  - graphqlid
+  - getlocation
+  - isinputtype
+  - isoutputtype
+  - isleaftype
+  - iscompositetype
+  - isabstracttype
+  - getnullabletype
+  - getnamedtype
+  - introspectionquery
+  - buildclientschema
+  - buildschema
+  - printschema
+  - printintrospectionschema
+  - buildastschema
+  - typefromast
+  - astfromvalue
+  - typeinfo
+  - isvalidjsvalue
+  - isvalidliteralvalue
+  - specifiedrules
+  - Wordmark
+  - codeofconduct
+  - graphqlconf
+
+  # website words
+  - runtimes
 
   # TODO: remove bellow words
   - QLID # GraphQLID
