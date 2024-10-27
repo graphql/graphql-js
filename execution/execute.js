@@ -347,10 +347,6 @@ function executeFields(exeContext, parentType, sourceValue, path, groupedFieldSe
     try {
         for (const [responseName, fieldDetailsList] of groupedFieldSet) {
             const fieldPath = (0, Path_js_1.addPath)(path, responseName, parentType.name);
-            const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
-            if (abortSignal?.aborted) {
-                throw (0, locatedError_js_1.locatedError)(new Error(abortSignal.reason), toNodes(fieldDetailsList), (0, Path_js_1.pathToArray)(fieldPath));
-            }
             const result = executeField(exeContext, parentType, sourceValue, fieldDetailsList, fieldPath, incrementalContext, deferMap);
             if (result !== undefined) {
                 if ((0, isPromise_js_1.isPromise)(result)) {
@@ -843,11 +839,16 @@ function ensureValidRuntimeType(runtimeTypeName, schema, returnType, fieldDetail
  * Complete an Object value by executing all sub-selections.
  */
 function completeObjectValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap) {
+    const validatedExecutionArgs = exeContext.validatedExecutionArgs;
+    const abortSignal = validatedExecutionArgs.abortSignal;
+    if (abortSignal?.aborted) {
+        throw (0, locatedError_js_1.locatedError)(new Error(abortSignal.reason), toNodes(fieldDetailsList), (0, Path_js_1.pathToArray)(path));
+    }
     // If there is an isTypeOf predicate function, call it with the
     // current result. If isTypeOf returns false, then raise an error rather
     // than continuing execution.
     if (returnType.isTypeOf) {
-        const isTypeOf = returnType.isTypeOf(result, exeContext.validatedExecutionArgs.contextValue, info);
+        const isTypeOf = returnType.isTypeOf(result, validatedExecutionArgs.contextValue, info);
         if ((0, isPromise_js_1.isPromise)(isTypeOf)) {
             return isTypeOf.then((resolvedIsTypeOf) => {
                 if (!resolvedIsTypeOf) {
