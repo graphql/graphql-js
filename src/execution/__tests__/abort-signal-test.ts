@@ -196,7 +196,7 @@ describe('Execute: Cancellation', () => {
       },
       errors: [
         {
-          message: 'Unexpected error value: "Custom abort error message"',
+          message: 'Encountered error: "Custom abort error message"',
           path: ['todo'],
           locations: [{ line: 3, column: 9 }],
         },

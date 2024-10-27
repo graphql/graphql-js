@@ -1,20 +1,21 @@
 import { inspect } from './inspect.js';
 
 /**
- * Sometimes a non-error is thrown, wrap it as an Error instance to ensure a consistent Error interface.
+ * Sometimes a non-error is provided, either thrown within a resolver or as an rejection/abort reason,
+ * wrap it as an Error instance to ensure a consistent Error interface.
  */
-export function toError(thrownValue: unknown): Error {
-  return thrownValue instanceof Error
-    ? thrownValue
-    : new NonErrorThrown(thrownValue);
+export function toError(rawError: unknown): Error {
+  return rawError instanceof Error
+    ? rawError
+    : new WrappedNonErrorValueError(rawError);
 }
 
-class NonErrorThrown extends Error {
-  thrownValue: unknown;
+class WrappedNonErrorValueError extends Error {
+  rawError: unknown;
 
-  constructor(thrownValue: unknown) {
-    super('Unexpected error value: ' + inspect(thrownValue));
-    this.name = 'NonErrorThrown';
-    this.thrownValue = thrownValue;
+  constructor(rawError: unknown) {
+    super('Encountered error: ' + inspect(rawError));
+    this.name = 'WrappedNonErrorValueError';
+    this.rawError = rawError;
   }
 }
