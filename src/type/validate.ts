@@ -342,11 +342,11 @@ function uncoerceDefaultValue(value: unknown, type: GraphQLInputType): unknown {
 
   assertLeafType(type);
 
-  // For most leaf types (Scalars, Enums), result coercion ("serialize") is
+  // For most leaf types (Scalars, Enums), output value coercion ("serialize") is
   // the inverse of input coercion ("parseValue") and will produce an
   // "external" value. Historically, this method was also used as part of the
-  // now-removed "astFromValue" to perform the same behavior.
-  return type.serialize(value);
+  // now-deprecated "astFromValue" to perform the same behavior.
+  return type.coerceOutputValue(value);
 }
 
 function validateName(
