@@ -220,7 +220,7 @@ exports.executeSync = executeSync;
 function validateExecutionArgs(args) {
     const { schema, document, rootValue, contextValue, variableValues: rawVariableValues, operationName, fieldResolver, typeResolver, subscribeFieldResolver, perEventExecutor, enableEarlyExecution, abortSignal, } = args;
     if (abortSignal?.aborted) {
-        return [(0, locatedError_js_1.locatedError)(new Error(abortSignal.reason), undefined)];
+        return [(0, locatedError_js_1.locatedError)(abortSignal.reason, undefined)];
     }
     // If the schema used for execution is invalid, throw an error.
     (0, validate_js_1.assertValidSchema)(schema);
@@ -313,7 +313,7 @@ function executeFieldsSerially(exeContext, parentType, sourceValue, path, groupe
         const fieldPath = (0, Path_js_1.addPath)(path, responseName, parentType.name);
         const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
         if (abortSignal?.aborted) {
-            handleFieldError(new Error(abortSignal.reason), exeContext, parentType, fieldDetailsList, fieldPath, incrementalContext);
+            handleFieldError(abortSignal.reason, exeContext, parentType, fieldDetailsList, fieldPath, incrementalContext);
             graphqlWrappedResult[0][responseName] = null;
             return graphqlWrappedResult;
         }
@@ -842,7 +842,7 @@ function completeObjectValue(exeContext, returnType, fieldDetailsList, info, pat
     const validatedExecutionArgs = exeContext.validatedExecutionArgs;
     const abortSignal = validatedExecutionArgs.abortSignal;
     if (abortSignal?.aborted) {
-        throw (0, locatedError_js_1.locatedError)(new Error(abortSignal.reason), toNodes(fieldDetailsList), (0, Path_js_1.pathToArray)(path));
+        throw (0, locatedError_js_1.locatedError)(abortSignal.reason, toNodes(fieldDetailsList), (0, Path_js_1.pathToArray)(path));
     }
     // If there is an isTypeOf predicate function, call it with the
     // current result. If isTypeOf returns false, then raise an error rather

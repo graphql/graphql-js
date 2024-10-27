@@ -212,7 +212,7 @@ export function executeSync(args) {
 export function validateExecutionArgs(args) {
     const { schema, document, rootValue, contextValue, variableValues: rawVariableValues, operationName, fieldResolver, typeResolver, subscribeFieldResolver, perEventExecutor, enableEarlyExecution, abortSignal, } = args;
     if (abortSignal?.aborted) {
-        return [locatedError(new Error(abortSignal.reason), undefined)];
+        return [locatedError(abortSignal.reason, undefined)];
     }
     // If the schema used for execution is invalid, throw an error.
     assertValidSchema(schema);
@@ -304,7 +304,7 @@ function executeFieldsSerially(exeContext, parentType, sourceValue, path, groupe
         const fieldPath = addPath(path, responseName, parentType.name);
         const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
         if (abortSignal?.aborted) {
-            handleFieldError(new Error(abortSignal.reason), exeContext, parentType, fieldDetailsList, fieldPath, incrementalContext);
+            handleFieldError(abortSignal.reason, exeContext, parentType, fieldDetailsList, fieldPath, incrementalContext);
             graphqlWrappedResult[0][responseName] = null;
             return graphqlWrappedResult;
         }
@@ -832,7 +832,7 @@ function completeObjectValue(exeContext, returnType, fieldDetailsList, info, pat
     const validatedExecutionArgs = exeContext.validatedExecutionArgs;
     const abortSignal = validatedExecutionArgs.abortSignal;
     if (abortSignal?.aborted) {
-        throw locatedError(new Error(abortSignal.reason), toNodes(fieldDetailsList), pathToArray(path));
+        throw locatedError(abortSignal.reason, toNodes(fieldDetailsList), pathToArray(path));
     }
     // If there is an isTypeOf predicate function, call it with the
     // current result. If isTypeOf returns false, then raise an error rather
