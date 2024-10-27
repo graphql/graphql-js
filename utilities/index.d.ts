@@ -13,7 +13,9 @@ export {
 /** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
 valueFromAST, } from './valueFromAST.js';
 export { valueFromASTUntyped } from './valueFromASTUntyped.js';
-export { astFromValue } from './astFromValue.js';
+export { 
+/** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
+astFromValue, } from './astFromValue.js';
 export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';
 export { replaceVariables } from './replaceVariables.js';
 export { valueToLiteral } from './valueToLiteral.js';

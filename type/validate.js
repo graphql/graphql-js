@@ -5,9 +5,17 @@ const AccumulatorMap_js_1 = require("../jsutils/AccumulatorMap.js");
 const capitalize_js_1 = require("../jsutils/capitalize.js");
 const formatList_js_1 = require("../jsutils/formatList.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
+const invariant_js_1 = require("../jsutils/invariant.js");
+const isIterableObject_js_1 = require("../jsutils/isIterableObject.js");
+const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
+const keyMap_js_1 = require("../jsutils/keyMap.js");
+const mapValue_js_1 = require("../jsutils/mapValue.js");
+const printPathArray_js_1 = require("../jsutils/printPathArray.js");
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
 const ast_js_1 = require("../language/ast.js");
+const kinds_js_1 = require("../language/kinds.js");
 const typeComparators_js_1 = require("../utilities/typeComparators.js");
+const validateInputValue_js_1 = require("../utilities/validateInputValue.js");
 const definition_js_1 = require("./definition.js");
 const directives_js_1 = require("./directives.js");
 const introspection_js_1 = require("./introspection.js");
@@ -114,16 +122,95 @@ function validateDirectives(context) {
         for (const arg of directive.args) {
             // Ensure they are named correctly.
             validateName(context, arg);
+            const argStr = `${directive}(${arg.name}:)`;
             // Ensure the type is an input type.
             if (!(0, definition_js_1.isInputType)(arg.type)) {
-                context.reportError(`The type of ${directive}(${arg.name}:) must be Input Type ` +
+                context.reportError(`The type of ${argStr} must be Input Type ` +
                     `but got: ${(0, inspect_js_1.inspect)(arg.type)}.`, arg.astNode);
             }
             if ((0, definition_js_1.isRequiredArgument)(arg) && arg.deprecationReason != null) {
-                context.reportError(`Required argument ${directive}(${arg.name}:) cannot be deprecated.`, [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type]);
+                context.reportError(`Required argument ${argStr} cannot be deprecated.`, [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type]);
             }
+            validateDefaultValue(context, arg, argStr);
         }
     }
+}
+function validateDefaultValue(context, inputValue, argStr) {
+    const defaultValue = inputValue.defaultValue;
+    if (!defaultValue) {
+        return;
+    }
+    if (defaultValue.literal) {
+        (0, validateInputValue_js_1.validateInputLiteral)(defaultValue.literal, inputValue.type, (error, path) => {
+            context.reportError(`${argStr} has invalid default value${(0, printPathArray_js_1.printPathArray)(path)}: ${error.message}`, error.nodes);
+        });
+    }
+    else {
+        const errors = [];
+        (0, validateInputValue_js_1.validateInputValue)(defaultValue.value, inputValue.type, (error, path) => {
+            errors.push([error, path]);
+        });
+        // If there were validation errors, check to see if it can be "uncoerced"
+        // and then correctly validated. If so, report a clear error with a path
+        // to resolution.
+        if (errors.length > 0) {
+            try {
+                const uncoercedValue = uncoerceDefaultValue(defaultValue.value, inputValue.type);
+                const uncoercedErrors = [];
+                (0, validateInputValue_js_1.validateInputValue)(uncoercedValue, inputValue.type, (error, path) => {
+                    uncoercedErrors.push([error, path]);
+                });
+                if (uncoercedErrors.length === 0) {
+                    context.reportError(`${argStr} has invalid default value: ${(0, inspect_js_1.inspect)(defaultValue.value)}. Did you mean: ${(0, inspect_js_1.inspect)(uncoercedValue)}?`, inputValue.astNode?.defaultValue);
+                    return;
+                }
+            }
+            catch (_error) {
+                // ignore
+            }
+        }
+        // Otherwise report the original set of errors.
+        for (const [error, path] of errors) {
+            context.reportError(`${argStr} has invalid default value${(0, printPathArray_js_1.printPathArray)(path)}: ${error.message}`, inputValue.astNode?.defaultValue);
+        }
+    }
+}
+/**
+ * Historically GraphQL.js allowed default values to be provided as
+ * assumed-coerced "internal" values, however default values should be provided
+ * as "external" pre-coerced values. `uncoerceDefaultValue()` will convert such
+ * "internal" values to "external" values to display as part of validation.
+ *
+ * This performs the "opposite" of `coerceInputValue()`. Given an "internal"
+ * coerced value, reverse the process to provide an "external" uncoerced value.
+ */
+function uncoerceDefaultValue(value, type) {
+    if ((0, definition_js_1.isNonNullType)(type)) {
+        return uncoerceDefaultValue(value, type.ofType);
+    }
+    if (value === null) {
+        return null;
+    }
+    if ((0, definition_js_1.isListType)(type)) {
+        if ((0, isIterableObject_js_1.isIterableObject)(value)) {
+            return Array.from(value, (itemValue) => uncoerceDefaultValue(itemValue, type.ofType));
+        }
+        return [uncoerceDefaultValue(value, type.ofType)];
+    }
+    if ((0, definition_js_1.isInputObjectType)(type)) {
+        ((0, isObjectLike_js_1.isObjectLike)(value)) || (0, invariant_js_1.invariant)(false);
+        const fieldDefs = type.getFields();
+        return (0, mapValue_js_1.mapValue)(value, (fieldValue, fieldName) => {
+            (fieldName in fieldDefs) || (0, invariant_js_1.invariant)(false);
+            return uncoerceDefaultValue(fieldValue, fieldDefs[fieldName].type);
+        });
+    }
+    (0, definition_js_1.assertLeafType)(type);
+    // For most leaf types (Scalars, Enums), output value coercion ("serialize") is
+    // the inverse of input coercion ("parseValue") and will produce an
+    // "external" value. Historically, this method was also used as part of the
+    // now-deprecated "astFromValue" to perform the same behavior.
+    return type.coerceOutputValue(value);
 }
 function validateName(context, node) {
     // Ensure names are valid, however introspection types opt out.
@@ -132,7 +219,9 @@ function validateName(context, node) {
     }
 }
 function validateTypes(context) {
-    const validateInputObjectCircularRefs = createInputObjectCircularRefsValidator(context);
+    // Ensure Input Objects do not contain non-nullable circular references.
+    const validateInputObjectNonNullCircularRefs = createInputObjectNonNullCircularRefsValidator(context);
+    const validateInputObjectDefaultValueCircularRefs = createInputObjectDefaultValueCircularRefsValidator(context);
     const typeMap = context.schema.getTypeMap();
     for (const type of Object.values(typeMap)) {
         // Ensure all provided types are in fact GraphQL type.
@@ -167,8 +256,11 @@ function validateTypes(context) {
         else if ((0, definition_js_1.isInputObjectType)(type)) {
             // Ensure Input Object fields are valid.
             validateInputFields(context, type);
-            // Ensure Input Objects do not contain non-nullable circular references
-            validateInputObjectCircularRefs(type);
+            // Ensure Input Objects do not contain invalid field circular references.
+            // Ensure Input Objects do not contain non-nullable circular references.
+            validateInputObjectNonNullCircularRefs(type);
+            // Ensure Input Objects do not contain invalid default value circular references.
+            validateInputObjectDefaultValueCircularRefs(type);
         }
     }
 }
@@ -194,14 +286,15 @@ function validateFields(context, type) {
             const argName = arg.name;
             // Ensure they are named correctly.
             validateName(context, arg);
+            const argStr = `${type}.${field.name}(${argName}:)`;
             // Ensure the type is an input type
             if (!(0, definition_js_1.isInputType)(arg.type)) {
-                context.reportError(`The type of ${type}.${field.name}(${argName}:) must be Input ` +
-                    `Type but got: ${(0, inspect_js_1.inspect)(arg.type)}.`, arg.astNode?.type);
+                context.reportError(`The type of ${argStr} must be Input Type but got: ${(0, inspect_js_1.inspect)(arg.type)}.`, arg.astNode?.type);
             }
             if ((0, definition_js_1.isRequiredArgument)(arg) && arg.deprecationReason != null) {
                 context.reportError(`Required argument ${type}.${field.name}(${argName}:) cannot be deprecated.`, [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type]);
             }
+            validateDefaultValue(context, arg, argStr);
         }
     }
 }
@@ -262,7 +355,6 @@ function validateTypeImplementsInterface(context, type, iface) {
                     `${type}.${fieldName}(${argName}:) is type ` +
                     `${(0, inspect_js_1.inspect)(typeArg.type)}.`, [ifaceArg.astNode?.type, typeArg.astNode?.type]);
             }
-            // TODO: validate default values?
         }
         // Assert additional arguments must not be required.
         for (const typeArg of typeField.args) {
@@ -320,7 +412,7 @@ function validateInputFields(context, inputObj) {
     if (fields.length === 0) {
         context.reportError(`Input Object type ${inputObj.name} must define one or more fields.`, [inputObj.astNode, ...inputObj.extensionASTNodes]);
     }
-    // Ensure the arguments are valid
+    // Ensure the input fields are valid
     for (const field of fields) {
         // Ensure they are named correctly.
         validateName(context, field);
@@ -329,9 +421,11 @@ function validateInputFields(context, inputObj) {
             context.reportError(`The type of ${inputObj.name}.${field.name} must be Input Type ` +
                 `but got: ${(0, inspect_js_1.inspect)(field.type)}.`, field.astNode?.type);
         }
+        const fieldStr = `${inputObj.name}.${field.name}`;
         if ((0, definition_js_1.isRequiredInputField)(field) && field.deprecationReason != null) {
-            context.reportError(`Required input field ${inputObj.name}.${field.name} cannot be deprecated.`, [getDeprecatedDirectiveNode(field.astNode), field.astNode?.type]);
+            context.reportError(`Required input field ${fieldStr} cannot be deprecated.`, [getDeprecatedDirectiveNode(field.astNode), field.astNode?.type]);
         }
+        validateDefaultValue(context, field, fieldStr);
         if (inputObj.isOneOf) {
             validateOneOfInputObjectField(inputObj, field, context);
         }
@@ -345,7 +439,7 @@ function validateOneOfInputObjectField(type, field, context) {
         context.reportError(`OneOf input field ${type}.${field.name} cannot have a default value.`, field.astNode);
     }
 }
-function createInputObjectCircularRefsValidator(context) {
+function createInputObjectNonNullCircularRefsValidator(context) {
     // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
     // Tracks already visited types to maintain O(N) and to ensure that cycles
     // are not redundantly reported.
@@ -369,19 +463,139 @@ function createInputObjectCircularRefsValidator(context) {
             if ((0, definition_js_1.isNonNullType)(field.type) && (0, definition_js_1.isInputObjectType)(field.type.ofType)) {
                 const fieldType = field.type.ofType;
                 const cycleIndex = fieldPathIndexByTypeName[fieldType.name];
-                fieldPath.push(field);
+                fieldPath.push({
+                    fieldStr: `${inputObj}.${field.name}`,
+                    astNode: field.astNode,
+                });
                 if (cycleIndex === undefined) {
                     detectCycleRecursive(fieldType);
                 }
                 else {
                     const cyclePath = fieldPath.slice(cycleIndex);
-                    const pathStr = cyclePath.map((fieldObj) => fieldObj.name).join('.');
-                    context.reportError(`Cannot reference Input Object "${fieldType}" within itself through a series of non-null fields: "${pathStr}".`, cyclePath.map((fieldObj) => fieldObj.astNode));
+                    const pathStr = cyclePath
+                        .map((fieldObj) => fieldObj.fieldStr)
+                        .join(', ');
+                    context.reportError(`Invalid circular reference. The Input Object ${fieldType} references itself ${cyclePath.length > 1
+                        ? 'via the non-null fields:'
+                        : 'in the non-null field'} ${pathStr}.`, cyclePath.map((fieldObj) => fieldObj.astNode));
                 }
                 fieldPath.pop();
             }
         }
         fieldPathIndexByTypeName[inputObj.name] = undefined;
+    }
+}
+function createInputObjectDefaultValueCircularRefsValidator(context) {
+    // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
+    // Tracks already visited types to maintain O(N) and to ensure that cycles
+    // are not redundantly reported.
+    const visitedFields = Object.create(null);
+    // Array of keys for fields and default values used to produce meaningful errors.
+    const fieldPath = [];
+    // Position in the path
+    const fieldPathIndex = Object.create(null);
+    // This does a straight-forward DFS to find cycles.
+    // It does not terminate when a cycle was found but continues to explore
+    // the graph to find all possible cycles.
+    return function validateInputObjectDefaultValueCircularRefs(inputObj) {
+        // Start with an empty object as a way to visit every field in this input
+        // object type and apply every default value.
+        return detectValueDefaultValueCycle(inputObj, {});
+    };
+    function detectValueDefaultValueCycle(inputObj, defaultValue) {
+        // If the value is a List, recursively check each entry for a cycle.
+        // Otherwise, only object values can contain a cycle.
+        if ((0, isIterableObject_js_1.isIterableObject)(defaultValue)) {
+            for (const itemValue of defaultValue) {
+                detectValueDefaultValueCycle(inputObj, itemValue);
+            }
+            return;
+        }
+        else if (!(0, isObjectLike_js_1.isObjectLike)(defaultValue)) {
+            return;
+        }
+        // Check each defined field for a cycle.
+        for (const field of Object.values(inputObj.getFields())) {
+            const namedFieldType = (0, definition_js_1.getNamedType)(field.type);
+            // Only input object type fields can result in a cycle.
+            if (!(0, definition_js_1.isInputObjectType)(namedFieldType)) {
+                continue;
+            }
+            if (Object.hasOwn(defaultValue, field.name)) {
+                // If the provided value has this field defined, recursively check it
+                // for cycles.
+                detectValueDefaultValueCycle(namedFieldType, defaultValue[field.name]);
+            }
+            else {
+                // Otherwise check this field's default value for cycles.
+                detectFieldDefaultValueCycle(field, namedFieldType, `${inputObj}.${field.name}`);
+            }
+        }
+    }
+    function detectLiteralDefaultValueCycle(inputObj, defaultValue) {
+        // If the value is a List, recursively check each entry for a cycle.
+        // Otherwise, only object values can contain a cycle.
+        if (defaultValue.kind === kinds_js_1.Kind.LIST) {
+            for (const itemLiteral of defaultValue.values) {
+                detectLiteralDefaultValueCycle(inputObj, itemLiteral);
+            }
+            return;
+        }
+        else if (defaultValue.kind !== kinds_js_1.Kind.OBJECT) {
+            return;
+        }
+        // Check each defined field for a cycle.
+        const fieldNodes = (0, keyMap_js_1.keyMap)(defaultValue.fields, (field) => field.name.value);
+        for (const field of Object.values(inputObj.getFields())) {
+            const namedFieldType = (0, definition_js_1.getNamedType)(field.type);
+            // Only input object type fields can result in a cycle.
+            if (!(0, definition_js_1.isInputObjectType)(namedFieldType)) {
+                continue;
+            }
+            if (Object.hasOwn(fieldNodes, field.name)) {
+                // If the provided value has this field defined, recursively check it
+                // for cycles.
+                detectLiteralDefaultValueCycle(namedFieldType, fieldNodes[field.name].value);
+            }
+            else {
+                // Otherwise check this field's default value for cycles.
+                detectFieldDefaultValueCycle(field, namedFieldType, `${inputObj}.${field.name}`);
+            }
+        }
+    }
+    function detectFieldDefaultValueCycle(field, fieldType, fieldStr) {
+        // Only a field with a default value can result in a cycle.
+        const defaultValue = field.defaultValue;
+        if (defaultValue === undefined) {
+            return;
+        }
+        // Check to see if there is cycle.
+        const cycleIndex = fieldPathIndex[fieldStr];
+        if (cycleIndex !== undefined && cycleIndex > 0) {
+            context.reportError(`Invalid circular reference. The default value of Input Object field ${fieldStr} references itself${cycleIndex < fieldPath.length
+                ? ` via the default values of: ${fieldPath
+                    .slice(cycleIndex)
+                    .map(([stringForMessage]) => stringForMessage)
+                    .join(', ')}`
+                : ''}.`, fieldPath.slice(cycleIndex - 1).map(([, node]) => node));
+            return;
+        }
+        // Recurse into this field's default value once, tracking the path.
+        if (visitedFields[fieldStr] === undefined) {
+            visitedFields[fieldStr] = true;
+            fieldPathIndex[fieldStr] = fieldPath.push([
+                fieldStr,
+                field.astNode?.defaultValue,
+            ]);
+            if (defaultValue.literal) {
+                detectLiteralDefaultValueCycle(fieldType, defaultValue.literal);
+            }
+            else {
+                detectValueDefaultValueCycle(fieldType, defaultValue.value);
+            }
+            fieldPath.pop();
+            fieldPathIndex[fieldStr] = undefined;
+        }
     }
 }
 function getAllImplementsInterfaceNodes(type, iface) {

@@ -1,3 +1,4 @@
+import { invariant } from "../jsutils/invariant.mjs";
 import { isIterableObject } from "../jsutils/isIterableObject.mjs";
 import { isObjectLike } from "../jsutils/isObjectLike.mjs";
 import { Kind } from "../language/kinds.mjs";
@@ -208,7 +209,8 @@ export function coerceDefaultValue(defaultValue, type) {
     if (coercedValue === undefined) {
         coercedValue = defaultValue.literal
             ? coerceInputLiteral(defaultValue.literal, type)
-            : defaultValue.value;
+            : coerceInputValue(defaultValue.value, type);
+        (coercedValue !== undefined) || invariant(false);
         defaultValue._memoizedCoercedValue = coercedValue;
     }
     return coercedValue;

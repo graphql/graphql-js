@@ -4,8 +4,8 @@ import { keyMap } from "../jsutils/keyMap.mjs";
 import { print } from "../language/printer.mjs";
 import { isEnumType, isInputObjectType, isInterfaceType, isListType, isNamedType, isNonNullType, isObjectType, isRequiredArgument, isRequiredInputField, isScalarType, isUnionType, } from "../type/definition.mjs";
 import { isSpecifiedScalarType } from "../type/scalars.mjs";
-import { astFromValue } from "./astFromValue.mjs";
 import { sortValueNode } from "./sortValueNode.mjs";
+import { valueToLiteral } from "./valueToLiteral.mjs";
 var BreakingChangeType;
 (function (BreakingChangeType) {
     BreakingChangeType["TYPE_REMOVED"] = "TYPE_REMOVED";
@@ -452,7 +452,7 @@ function typeKindName(type) {
     (false) || invariant(false, 'Unexpected type: ' + inspect(type));
 }
 function stringifyValue(defaultValue, type) {
-    const ast = defaultValue.literal ?? astFromValue(defaultValue.value, type);
+    const ast = defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
     (ast != null) || invariant(false);
     return print(sortValueNode(ast));
 }

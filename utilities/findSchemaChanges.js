@@ -7,8 +7,8 @@ const keyMap_js_1 = require("../jsutils/keyMap.js");
 const printer_js_1 = require("../language/printer.js");
 const definition_js_1 = require("../type/definition.js");
 const scalars_js_1 = require("../type/scalars.js");
-const astFromValue_js_1 = require("./astFromValue.js");
 const sortValueNode_js_1 = require("./sortValueNode.js");
+const valueToLiteral_js_1 = require("./valueToLiteral.js");
 var BreakingChangeType;
 (function (BreakingChangeType) {
     BreakingChangeType["TYPE_REMOVED"] = "TYPE_REMOVED";
@@ -455,7 +455,7 @@ function typeKindName(type) {
     (false) || (0, invariant_js_1.invariant)(false, 'Unexpected type: ' + (0, inspect_js_1.inspect)(type));
 }
 function stringifyValue(defaultValue, type) {
-    const ast = defaultValue.literal ?? (0, astFromValue_js_1.astFromValue)(defaultValue.value, type);
+    const ast = defaultValue.literal ?? (0, valueToLiteral_js_1.valueToLiteral)(defaultValue.value, type);
     (ast != null) || (0, invariant_js_1.invariant)(false);
     return (0, printer_js_1.print)((0, sortValueNode_js_1.sortValueNode)(ast));
 }

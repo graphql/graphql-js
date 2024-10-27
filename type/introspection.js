@@ -5,7 +5,7 @@ const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const directiveLocation_js_1 = require("../language/directiveLocation.js");
 const printer_js_1 = require("../language/printer.js");
-const astFromValue_js_1 = require("../utilities/astFromValue.js");
+const valueToLiteral_js_1 = require("../utilities/valueToLiteral.js");
 const definition_js_1 = require("./definition.js");
 const scalars_js_1 = require("./scalars.js");
 exports.__Schema = new definition_js_1.GraphQLObjectType({
@@ -357,7 +357,7 @@ exports.__InputValue = new definition_js_1.GraphQLObjectType({
                 if (!defaultValue) {
                     return null;
                 }
-                const literal = defaultValue.literal ?? (0, astFromValue_js_1.astFromValue)(defaultValue.value, type);
+                const literal = defaultValue.literal ?? (0, valueToLiteral_js_1.valueToLiteral)(defaultValue.value, type);
                 (literal != null) || (0, invariant_js_1.invariant)(false, 'Invalid default value');
                 return (0, printer_js_1.print)(literal);
             },

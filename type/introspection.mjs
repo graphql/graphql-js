@@ -2,7 +2,7 @@ import { inspect } from "../jsutils/inspect.mjs";
 import { invariant } from "../jsutils/invariant.mjs";
 import { DirectiveLocation } from "../language/directiveLocation.mjs";
 import { print } from "../language/printer.mjs";
-import { astFromValue } from "../utilities/astFromValue.mjs";
+import { valueToLiteral } from "../utilities/valueToLiteral.mjs";
 import { GraphQLEnumType, GraphQLList, GraphQLNonNull, GraphQLObjectType, isAbstractType, isEnumType, isInputObjectType, isInterfaceType, isListType, isNonNullType, isObjectType, isScalarType, isUnionType, } from "./definition.mjs";
 import { GraphQLBoolean, GraphQLString } from "./scalars.mjs";
 export const __Schema = new GraphQLObjectType({
@@ -354,7 +354,7 @@ export const __InputValue = new GraphQLObjectType({
                 if (!defaultValue) {
                     return null;
                 }
-                const literal = defaultValue.literal ?? astFromValue(defaultValue.value, type);
+                const literal = defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
                 (literal != null) || invariant(false, 'Invalid default value');
                 return print(literal);
             },

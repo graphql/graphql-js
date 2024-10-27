@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.coerceDefaultValue = exports.coerceInputLiteral = exports.coerceInputValue = void 0;
+const invariant_js_1 = require("../jsutils/invariant.js");
 const isIterableObject_js_1 = require("../jsutils/isIterableObject.js");
 const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
 const kinds_js_1 = require("../language/kinds.js");
@@ -213,7 +214,8 @@ function coerceDefaultValue(defaultValue, type) {
     if (coercedValue === undefined) {
         coercedValue = defaultValue.literal
             ? coerceInputLiteral(defaultValue.literal, type)
-            : defaultValue.value;
+            : coerceInputValue(defaultValue.value, type);
+        (coercedValue !== undefined) || (0, invariant_js_1.invariant)(false);
         defaultValue._memoizedCoercedValue = coercedValue;
     }
     return coercedValue;

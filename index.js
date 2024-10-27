@@ -286,6 +286,7 @@ Object.defineProperty(exports, "valueFromAST", { enumerable: true, get: function
 // Create a JavaScript value from a GraphQL language AST without a Type.
 Object.defineProperty(exports, "valueFromASTUntyped", { enumerable: true, get: function () { return index_js_6.valueFromASTUntyped; } });
 // Create a GraphQL language AST from a JavaScript value.
+/** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
 Object.defineProperty(exports, "astFromValue", { enumerable: true, get: function () { return index_js_6.astFromValue; } });
 // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
 Object.defineProperty(exports, "TypeInfo", { enumerable: true, get: function () { return index_js_6.TypeInfo; } });

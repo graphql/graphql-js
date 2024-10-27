@@ -28,6 +28,7 @@ const scalars_js_1 = require("../type/scalars.js");
  * | Unknown       | Enum Value           |
  * | null          | NullValue            |
  *
+ * @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18
  */
 function astFromValue(value, type) {
     if ((0, definition_js_1.isNonNullType)(type)) {

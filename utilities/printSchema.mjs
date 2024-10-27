@@ -7,7 +7,7 @@ import { isEnumType, isInputObjectType, isInterfaceType, isObjectType, isScalarT
 import { DEFAULT_DEPRECATION_REASON, isSpecifiedDirective, } from "../type/directives.mjs";
 import { isIntrospectionType } from "../type/introspection.mjs";
 import { isSpecifiedScalarType } from "../type/scalars.mjs";
-import { astFromValue } from "./astFromValue.mjs";
+import { valueToLiteral } from "./valueToLiteral.mjs";
 export function printSchema(schema) {
     return printFilteredSchema(schema, (n) => !isSpecifiedDirective(n), isDefinedType);
 }
@@ -175,7 +175,7 @@ function printInputValue(arg) {
     let argDecl = arg.name + ': ' + String(arg.type);
     if (arg.defaultValue) {
         const literal = arg.defaultValue.literal ??
-            astFromValue(arg.defaultValue.value, arg.type);
+            valueToLiteral(arg.defaultValue.value, arg.type);
         (literal != null) || invariant(false, 'Invalid default value');
         argDecl += ` = ${print(literal)}`;
     }

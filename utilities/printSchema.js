@@ -10,7 +10,7 @@ const definition_js_1 = require("../type/definition.js");
 const directives_js_1 = require("../type/directives.js");
 const introspection_js_1 = require("../type/introspection.js");
 const scalars_js_1 = require("../type/scalars.js");
-const astFromValue_js_1 = require("./astFromValue.js");
+const valueToLiteral_js_1 = require("./valueToLiteral.js");
 function printSchema(schema) {
     return printFilteredSchema(schema, (n) => !(0, directives_js_1.isSpecifiedDirective)(n), isDefinedType);
 }
@@ -181,7 +181,7 @@ function printInputValue(arg) {
     let argDecl = arg.name + ': ' + String(arg.type);
     if (arg.defaultValue) {
         const literal = arg.defaultValue.literal ??
-            (0, astFromValue_js_1.astFromValue)(arg.defaultValue.value, arg.type);
+            (0, valueToLiteral_js_1.valueToLiteral)(arg.defaultValue.value, arg.type);
         (literal != null) || (0, invariant_js_1.invariant)(false, 'Invalid default value');
         argDecl += ` = ${(0, printer_js_1.print)(literal)}`;
     }
