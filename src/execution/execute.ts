@@ -729,15 +729,6 @@ function executeFields(
   try {
     for (const [responseName, fieldDetailsList] of groupedFieldSet) {
       const fieldPath = addPath(path, responseName, parentType.name);
-      const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
-      if (abortSignal?.aborted) {
-        throw locatedError(
-          new Error(abortSignal.reason),
-          toNodes(fieldDetailsList),
-          pathToArray(fieldPath),
-        );
-      }
-
       const result = executeField(
         exeContext,
         parentType,
@@ -1737,6 +1728,15 @@ function completeObjectValue(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
+  const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
+  if (abortSignal?.aborted) {
+    throw locatedError(
+      new Error(abortSignal.reason),
+      toNodes(fieldDetailsList),
+      pathToArray(path),
+    );
+  }
+
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.

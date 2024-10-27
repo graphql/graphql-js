@@ -100,8 +100,8 @@ describe('Execute: Cancellation', () => {
       errors: [
         {
           message: 'Aborted',
-          path: ['todo', 'id'],
-          locations: [{ line: 4, column: 11 }],
+          path: ['todo'],
+          locations: [{ line: 3, column: 9 }],
         },
       ],
     });
@@ -149,8 +149,8 @@ describe('Execute: Cancellation', () => {
       errors: [
         {
           message: 'Aborted',
-          path: ['todo', 'author', 'id'],
-          locations: [{ line: 6, column: 13 }],
+          path: ['todo', 'author'],
+          locations: [{ line: 5, column: 11 }],
         },
       ],
     });
@@ -198,8 +198,8 @@ describe('Execute: Cancellation', () => {
       errors: [
         {
           message: 'Aborted',
-          path: ['todo', 'id'],
-          locations: [{ line: 4, column: 11 }],
+          path: ['todo'],
+          locations: [{ line: 3, column: 9 }],
         },
       ],
     });
@@ -257,23 +257,28 @@ describe('Execute: Cancellation', () => {
         hasNext: true,
       },
       {
-        completed: [
+        incremental: [
           {
+            data: {
+              text: 'hello world',
+              author: null,
+            },
             errors: [
               {
                 locations: [
                   {
                     column: 13,
-                    line: 6,
+                    line: 7,
                   },
                 ],
                 message: 'Aborted',
-                path: ['todo', 'text'],
+                path: ['todo', 'author'],
               },
             ],
             id: '0',
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
