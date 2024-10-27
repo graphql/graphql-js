@@ -54,7 +54,10 @@ export {
 // Create a JavaScript value from a GraphQL language AST without a type.
 export { valueFromASTUntyped } from './valueFromASTUntyped.ts';
 // Create a GraphQL language AST from a JavaScript value.
-export { astFromValue } from './astFromValue.ts';
+export {
+  /** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
+  astFromValue,
+} from './astFromValue.ts';
 // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
 export { TypeInfo, visitWithTypeInfo } from './TypeInfo.ts';
 // Converts a value to a const value by replacing variables.

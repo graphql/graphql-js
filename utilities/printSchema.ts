@@ -31,7 +31,7 @@ import {
 import { isIntrospectionType } from '../type/introspection.ts';
 import { isSpecifiedScalarType } from '../type/scalars.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
-import { astFromValue } from './astFromValue.ts';
+import { valueToLiteral } from './valueToLiteral.ts';
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
     schema,
@@ -236,7 +236,7 @@ function printInputValue(arg: GraphQLInputField): string {
   if (arg.defaultValue) {
     const literal =
       arg.defaultValue.literal ??
-      astFromValue(arg.defaultValue.value, arg.type);
+      valueToLiteral(arg.defaultValue.value, arg.type);
     literal != null || invariant(false, 'Invalid default value');
     argDecl += ` = ${print(literal)}`;
   }

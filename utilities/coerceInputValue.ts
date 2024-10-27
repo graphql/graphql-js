@@ -1,3 +1,4 @@
+import { invariant } from '../jsutils/invariant.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
 import { isObjectLike } from '../jsutils/isObjectLike.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
@@ -283,7 +284,8 @@ export function coerceDefaultValue(
   if (coercedValue === undefined) {
     coercedValue = defaultValue.literal
       ? coerceInputLiteral(defaultValue.literal, type)
-      : defaultValue.value;
+      : coerceInputValue(defaultValue.value, type);
+    coercedValue !== undefined || invariant(false);
     (defaultValue as any)._memoizedCoercedValue = coercedValue;
   }
   return coercedValue;

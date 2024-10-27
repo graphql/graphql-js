@@ -2,7 +2,7 @@ import { inspect } from '../jsutils/inspect.ts';
 import { invariant } from '../jsutils/invariant.ts';
 import { DirectiveLocation } from '../language/directiveLocation.ts';
 import { print } from '../language/printer.ts';
-import { astFromValue } from '../utilities/astFromValue.ts';
+import { valueToLiteral } from '../utilities/valueToLiteral.ts';
 import type {
   GraphQLEnumValue,
   GraphQLField,
@@ -402,7 +402,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
             return null;
           }
           const literal =
-            defaultValue.literal ?? astFromValue(defaultValue.value, type);
+            defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
           literal != null || invariant(false, 'Invalid default value');
           return print(literal);
         },
