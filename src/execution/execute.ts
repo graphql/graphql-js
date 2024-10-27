@@ -798,7 +798,7 @@ function executeField(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<unknown>> | undefined {
   const validatedExecutionArgs = exeContext.validatedExecutionArgs;
-  const { schema, contextValue, variableValues, hideSuggestions } =
+  const { schema, contextValue, variableValues, hideSuggestions, abortSignal } =
     validatedExecutionArgs;
   const fieldName = fieldDetailsList[0].node.name.value;
   const fieldDef = schema.getField(parentType, fieldName);
@@ -833,7 +833,7 @@ function executeField(
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
-    const result = resolveFn(source, args, contextValue, info);
+    const result = resolveFn(source, args, contextValue, info, abortSignal);
 
     if (isPromise(result)) {
       return completePromisedValue(
@@ -2115,6 +2115,7 @@ function executeSubscription(
     operation,
     variableValues,
     hideSuggestions,
+    abortSignal,
   } = validatedExecutionArgs;
 
   const rootType = schema.getSubscriptionType();
@@ -2180,7 +2181,7 @@ function executeSubscription(
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
-    const result = resolveFn(rootValue, args, contextValue, info);
+    const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
 
     if (isPromise(result)) {
       return result
