@@ -1728,7 +1728,8 @@ function completeObjectValue(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
-  const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
+  const validatedExecutionArgs = exeContext.validatedExecutionArgs;
+  const abortSignal = validatedExecutionArgs.abortSignal;
   if (abortSignal?.aborted) {
     throw locatedError(
       new Error(abortSignal.reason),
@@ -1743,7 +1744,7 @@ function completeObjectValue(
   if (returnType.isTypeOf) {
     const isTypeOf = returnType.isTypeOf(
       result,
-      exeContext.validatedExecutionArgs.contextValue,
+      validatedExecutionArgs.contextValue,
       info,
     );
 
