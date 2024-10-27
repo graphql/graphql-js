@@ -18,6 +18,7 @@ import {
 
 import { astFromValue } from '../astFromValue.js';
 
+/** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
 describe('astFromValue', () => {
   it('converts boolean values to ASTs', () => {
     expect(astFromValue(true, GraphQLBoolean)).to.deep.equal({

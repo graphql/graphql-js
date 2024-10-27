@@ -2,12 +2,20 @@ import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { capitalize } from '../jsutils/capitalize.js';
 import { andList } from '../jsutils/formatList.js';
 import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { keyMap } from '../jsutils/keyMap.js';
+import { mapValue } from '../jsutils/mapValue.js';
 import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
+import { printPathArray } from '../jsutils/printPathArray.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
   ASTNode,
+  ConstValueNode,
   DirectiveNode,
   InterfaceTypeDefinitionNode,
   InterfaceTypeExtensionNode,
@@ -18,22 +26,32 @@ import type {
   UnionTypeExtensionNode,
 } from '../language/ast.js';
 import { OperationTypeNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 import { isEqualType, isTypeSubTypeOf } from '../utilities/typeComparators.js';
+import {
+  validateInputLiteral,
+  validateInputValue,
+} from '../utilities/validateInputValue.js';
 
 import type {
+  GraphQLArgument,
   GraphQLEnumType,
   GraphQLInputField,
   GraphQLInputObjectType,
+  GraphQLInputType,
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLUnionType,
 } from './definition.js';
 import {
+  assertLeafType,
+  getNamedType,
   isEnumType,
   isInputObjectType,
   isInputType,
   isInterfaceType,
+  isListType,
   isNamedType,
   isNonNullType,
   isObjectType,
@@ -192,10 +210,12 @@ function validateDirectives(context: SchemaValidationContext): void {
       // Ensure they are named correctly.
       validateName(context, arg);
 
+      const argStr = `${directive}(${arg.name}:)`;
+
       // Ensure the type is an input type.
       if (!isInputType(arg.type)) {
         context.reportError(
-          `The type of ${directive}(${arg.name}:) must be Input Type ` +
+          `The type of ${argStr} must be Input Type ` +
             `but got: ${inspect(arg.type)}.`,
           arg.astNode,
         );
@@ -203,12 +223,130 @@ function validateDirectives(context: SchemaValidationContext): void {
 
       if (isRequiredArgument(arg) && arg.deprecationReason != null) {
         context.reportError(
-          `Required argument ${directive}(${arg.name}:) cannot be deprecated.`,
+          `Required argument ${argStr} cannot be deprecated.`,
           [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type],
         );
       }
+
+      validateDefaultValue(context, arg, argStr);
     }
   }
+}
+
+function validateDefaultValue(
+  context: SchemaValidationContext,
+  inputValue: GraphQLArgument | GraphQLInputField,
+  argStr: string,
+): void {
+  const defaultValue = inputValue.defaultValue;
+
+  if (!defaultValue) {
+    return;
+  }
+
+  if (defaultValue.literal) {
+    validateInputLiteral(
+      defaultValue.literal,
+      inputValue.type,
+      (error, path) => {
+        context.reportError(
+          `${argStr} has invalid default value${printPathArray(path)}: ${
+            error.message
+          }`,
+          error.nodes,
+        );
+      },
+    );
+  } else {
+    const errors: Array<[GraphQLError, ReadonlyArray<string | number>]> = [];
+    validateInputValue(defaultValue.value, inputValue.type, (error, path) => {
+      errors.push([error, path]);
+    });
+
+    // If there were validation errors, check to see if it can be "uncoerced"
+    // and then correctly validated. If so, report a clear error with a path
+    // to resolution.
+    if (errors.length > 0) {
+      try {
+        const uncoercedValue = uncoerceDefaultValue(
+          defaultValue.value,
+          inputValue.type,
+        );
+
+        const uncoercedErrors = [];
+        validateInputValue(uncoercedValue, inputValue.type, (error, path) => {
+          uncoercedErrors.push([error, path]);
+        });
+
+        if (uncoercedErrors.length === 0) {
+          context.reportError(
+            `${argStr} has invalid default value: ${inspect(
+              defaultValue.value,
+            )}. Did you mean: ${inspect(uncoercedValue)}?`,
+            inputValue.astNode?.defaultValue,
+          );
+          return;
+        }
+      } catch (_error) {
+        // ignore
+      }
+    }
+
+    // Otherwise report the original set of errors.
+    for (const [error, path] of errors) {
+      context.reportError(
+        `${argStr} has invalid default value${printPathArray(path)}: ${
+          error.message
+        }`,
+        inputValue.astNode?.defaultValue,
+      );
+    }
+  }
+}
+
+/**
+ * Historically GraphQL.js allowed default values to be provided as
+ * assumed-coerced "internal" values, however default values should be provided
+ * as "external" pre-coerced values. `uncoerceDefaultValue()` will convert such
+ * "internal" values to "external" values to display as part of validation.
+ *
+ * This performs the "opposite" of `coerceInputValue()`. Given an "internal"
+ * coerced value, reverse the process to provide an "external" uncoerced value.
+ */
+function uncoerceDefaultValue(value: unknown, type: GraphQLInputType): unknown {
+  if (isNonNullType(type)) {
+    return uncoerceDefaultValue(value, type.ofType);
+  }
+
+  if (value === null) {
+    return null;
+  }
+
+  if (isListType(type)) {
+    if (isIterableObject(value)) {
+      return Array.from(value, (itemValue) =>
+        uncoerceDefaultValue(itemValue, type.ofType),
+      );
+    }
+    return [uncoerceDefaultValue(value, type.ofType)];
+  }
+
+  if (isInputObjectType(type)) {
+    invariant(isObjectLike(value));
+    const fieldDefs = type.getFields();
+    return mapValue(value, (fieldValue, fieldName) => {
+      invariant(fieldName in fieldDefs);
+      return uncoerceDefaultValue(fieldValue, fieldDefs[fieldName].type);
+    });
+  }
+
+  assertLeafType(type);
+
+  // For most leaf types (Scalars, Enums), output value coercion ("serialize") is
+  // the inverse of input coercion ("parseValue") and will produce an
+  // "external" value. Historically, this method was also used as part of the
+  // now-deprecated "astFromValue" to perform the same behavior.
+  return type.coerceOutputValue(value);
 }
 
 function validateName(
@@ -225,8 +363,11 @@ function validateName(
 }
 
 function validateTypes(context: SchemaValidationContext): void {
-  const validateInputObjectCircularRefs =
-    createInputObjectCircularRefsValidator(context);
+  // Ensure Input Objects do not contain non-nullable circular references.
+  const validateInputObjectNonNullCircularRefs =
+    createInputObjectNonNullCircularRefsValidator(context);
+  const validateInputObjectDefaultValueCircularRefs =
+    createInputObjectDefaultValueCircularRefsValidator(context);
   const typeMap = context.schema.getTypeMap();
   for (const type of Object.values(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
@@ -265,8 +406,12 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
 
-      // Ensure Input Objects do not contain non-nullable circular references
-      validateInputObjectCircularRefs(type);
+      // Ensure Input Objects do not contain invalid field circular references.
+      // Ensure Input Objects do not contain non-nullable circular references.
+      validateInputObjectNonNullCircularRefs(type);
+
+      // Ensure Input Objects do not contain invalid default value circular references.
+      validateInputObjectDefaultValueCircularRefs(type);
     }
   }
 }
@@ -305,11 +450,12 @@ function validateFields(
       // Ensure they are named correctly.
       validateName(context, arg);
 
+      const argStr = `${type}.${field.name}(${argName}:)`;
+
       // Ensure the type is an input type
       if (!isInputType(arg.type)) {
         context.reportError(
-          `The type of ${type}.${field.name}(${argName}:) must be Input ` +
-            `Type but got: ${inspect(arg.type)}.`,
+          `The type of ${argStr} must be Input Type but got: ${inspect(arg.type)}.`,
           arg.astNode?.type,
         );
       }
@@ -320,6 +466,8 @@ function validateFields(
           [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type],
         );
       }
+
+      validateDefaultValue(context, arg, argStr);
     }
   }
 }
@@ -420,8 +568,6 @@ function validateTypeImplementsInterface(
           [ifaceArg.astNode?.type, typeArg.astNode?.type],
         );
       }
-
-      // TODO: validate default values?
     }
 
     // Assert additional arguments must not be required.
@@ -528,7 +674,7 @@ function validateInputFields(
     );
   }
 
-  // Ensure the arguments are valid
+  // Ensure the input fields are valid
   for (const field of fields) {
     // Ensure they are named correctly.
     validateName(context, field);
@@ -542,12 +688,16 @@ function validateInputFields(
       );
     }
 
+    const fieldStr = `${inputObj.name}.${field.name}`;
+
     if (isRequiredInputField(field) && field.deprecationReason != null) {
       context.reportError(
-        `Required input field ${inputObj.name}.${field.name} cannot be deprecated.`,
+        `Required input field ${fieldStr} cannot be deprecated.`,
         [getDeprecatedDirectiveNode(field.astNode), field.astNode?.type],
       );
     }
+
+    validateDefaultValue(context, field, fieldStr);
 
     if (inputObj.isOneOf) {
       validateOneOfInputObjectField(inputObj, field, context);
@@ -575,7 +725,7 @@ function validateOneOfInputObjectField(
   }
 }
 
-function createInputObjectCircularRefsValidator(
+function createInputObjectNonNullCircularRefsValidator(
   context: SchemaValidationContext,
 ): (inputObj: GraphQLInputObjectType) => void {
   // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
@@ -584,10 +734,11 @@ function createInputObjectCircularRefsValidator(
   const visitedTypes = new Set<GraphQLInputObjectType>();
 
   // Array of types nodes used to produce meaningful errors
-  const fieldPath: Array<GraphQLInputField> = [];
+  const fieldPath: Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> = [];
 
   // Position in the type path
-  const fieldPathIndexByTypeName = Object.create(null);
+  const fieldPathIndexByTypeName: ObjMap<number | undefined> =
+    Object.create(null);
 
   return detectCycleRecursive;
 
@@ -608,14 +759,23 @@ function createInputObjectCircularRefsValidator(
         const fieldType = field.type.ofType;
         const cycleIndex = fieldPathIndexByTypeName[fieldType.name];
 
-        fieldPath.push(field);
+        fieldPath.push({
+          fieldStr: `${inputObj}.${field.name}`,
+          astNode: field.astNode,
+        });
         if (cycleIndex === undefined) {
           detectCycleRecursive(fieldType);
         } else {
           const cyclePath = fieldPath.slice(cycleIndex);
-          const pathStr = cyclePath.map((fieldObj) => fieldObj.name).join('.');
+          const pathStr = cyclePath
+            .map((fieldObj) => fieldObj.fieldStr)
+            .join(', ');
           context.reportError(
-            `Cannot reference Input Object "${fieldType}" within itself through a series of non-null fields: "${pathStr}".`,
+            `Invalid circular reference. The Input Object ${fieldType} references itself ${
+              cyclePath.length > 1
+                ? 'via the non-null fields:'
+                : 'in the non-null field'
+            } ${pathStr}.`,
             cyclePath.map((fieldObj) => fieldObj.astNode),
           );
         }
@@ -624,6 +784,161 @@ function createInputObjectCircularRefsValidator(
     }
 
     fieldPathIndexByTypeName[inputObj.name] = undefined;
+  }
+}
+
+function createInputObjectDefaultValueCircularRefsValidator(
+  context: SchemaValidationContext,
+): (inputObj: GraphQLInputObjectType) => void {
+  // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
+  // Tracks already visited types to maintain O(N) and to ensure that cycles
+  // are not redundantly reported.
+  const visitedFields = Object.create(null);
+
+  // Array of keys for fields and default values used to produce meaningful errors.
+  const fieldPath: Array<
+    [fieldStr: string, defaultValue: ConstValueNode | undefined]
+  > = [];
+
+  // Position in the path
+  const fieldPathIndex: ObjMap<number | undefined> = Object.create(null);
+
+  // This does a straight-forward DFS to find cycles.
+  // It does not terminate when a cycle was found but continues to explore
+  // the graph to find all possible cycles.
+  return function validateInputObjectDefaultValueCircularRefs(
+    inputObj: GraphQLInputObjectType,
+  ): void {
+    // Start with an empty object as a way to visit every field in this input
+    // object type and apply every default value.
+    return detectValueDefaultValueCycle(inputObj, {});
+  };
+
+  function detectValueDefaultValueCycle(
+    inputObj: GraphQLInputObjectType,
+    defaultValue: unknown,
+  ): void {
+    // If the value is a List, recursively check each entry for a cycle.
+    // Otherwise, only object values can contain a cycle.
+    if (isIterableObject(defaultValue)) {
+      for (const itemValue of defaultValue) {
+        detectValueDefaultValueCycle(inputObj, itemValue);
+      }
+      return;
+    } else if (!isObjectLike(defaultValue)) {
+      return;
+    }
+
+    // Check each defined field for a cycle.
+    for (const field of Object.values(inputObj.getFields())) {
+      const namedFieldType = getNamedType(field.type);
+
+      // Only input object type fields can result in a cycle.
+      if (!isInputObjectType(namedFieldType)) {
+        continue;
+      }
+
+      if (Object.hasOwn(defaultValue, field.name)) {
+        // If the provided value has this field defined, recursively check it
+        // for cycles.
+        detectValueDefaultValueCycle(namedFieldType, defaultValue[field.name]);
+      } else {
+        // Otherwise check this field's default value for cycles.
+        detectFieldDefaultValueCycle(
+          field,
+          namedFieldType,
+          `${inputObj}.${field.name}`,
+        );
+      }
+    }
+  }
+
+  function detectLiteralDefaultValueCycle(
+    inputObj: GraphQLInputObjectType,
+    defaultValue: ConstValueNode,
+  ): void {
+    // If the value is a List, recursively check each entry for a cycle.
+    // Otherwise, only object values can contain a cycle.
+    if (defaultValue.kind === Kind.LIST) {
+      for (const itemLiteral of defaultValue.values) {
+        detectLiteralDefaultValueCycle(inputObj, itemLiteral);
+      }
+      return;
+    } else if (defaultValue.kind !== Kind.OBJECT) {
+      return;
+    }
+
+    // Check each defined field for a cycle.
+    const fieldNodes = keyMap(defaultValue.fields, (field) => field.name.value);
+    for (const field of Object.values(inputObj.getFields())) {
+      const namedFieldType = getNamedType(field.type);
+
+      // Only input object type fields can result in a cycle.
+      if (!isInputObjectType(namedFieldType)) {
+        continue;
+      }
+
+      if (Object.hasOwn(fieldNodes, field.name)) {
+        // If the provided value has this field defined, recursively check it
+        // for cycles.
+        detectLiteralDefaultValueCycle(
+          namedFieldType,
+          fieldNodes[field.name].value,
+        );
+      } else {
+        // Otherwise check this field's default value for cycles.
+        detectFieldDefaultValueCycle(
+          field,
+          namedFieldType,
+          `${inputObj}.${field.name}`,
+        );
+      }
+    }
+  }
+
+  function detectFieldDefaultValueCycle(
+    field: GraphQLInputField,
+    fieldType: GraphQLInputObjectType,
+    fieldStr: string,
+  ): void {
+    // Only a field with a default value can result in a cycle.
+    const defaultValue = field.defaultValue;
+    if (defaultValue === undefined) {
+      return;
+    }
+
+    // Check to see if there is cycle.
+    const cycleIndex = fieldPathIndex[fieldStr];
+    if (cycleIndex !== undefined && cycleIndex > 0) {
+      context.reportError(
+        `Invalid circular reference. The default value of Input Object field ${fieldStr} references itself${
+          cycleIndex < fieldPath.length
+            ? ` via the default values of: ${fieldPath
+                .slice(cycleIndex)
+                .map(([stringForMessage]) => stringForMessage)
+                .join(', ')}`
+            : ''
+        }.`,
+        fieldPath.slice(cycleIndex - 1).map(([, node]) => node),
+      );
+      return;
+    }
+
+    // Recurse into this field's default value once, tracking the path.
+    if (visitedFields[fieldStr] === undefined) {
+      visitedFields[fieldStr] = true;
+      fieldPathIndex[fieldStr] = fieldPath.push([
+        fieldStr,
+        field.astNode?.defaultValue,
+      ]);
+      if (defaultValue.literal) {
+        detectLiteralDefaultValueCycle(fieldType, defaultValue.literal);
+      } else {
+        detectValueDefaultValueCycle(fieldType, defaultValue.value);
+      }
+      fieldPath.pop();
+      fieldPathIndex[fieldStr] = undefined;
+    }
   }
 }
 

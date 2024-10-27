@@ -32,8 +32,8 @@ import {
 import { isSpecifiedScalarType } from '../type/scalars.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import { astFromValue } from './astFromValue.js';
 import { sortValueNode } from './sortValueNode.js';
+import { valueToLiteral } from './valueToLiteral.js';
 
 enum BreakingChangeType {
   TYPE_REMOVED = 'TYPE_REMOVED',
@@ -635,7 +635,7 @@ function stringifyValue(
   defaultValue: GraphQLDefaultValueUsage,
   type: GraphQLInputType,
 ): string {
-  const ast = defaultValue.literal ?? astFromValue(defaultValue.value, type);
+  const ast = defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
   invariant(ast != null);
   return print(sortValueNode(ast));
 }

@@ -37,6 +37,7 @@ import { GraphQLID } from '../type/scalars.js';
  * | Unknown       | Enum Value           |
  * | null          | NullValue            |
  *
+ * @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18
  */
 export function astFromValue(
   value: unknown,
