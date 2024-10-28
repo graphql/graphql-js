@@ -388,7 +388,7 @@ function toNodes(fieldDetailsList) {
  */
 function executeField(exeContext, parentType, source, fieldDetailsList, path, incrementalContext, deferMap) {
     const validatedExecutionArgs = exeContext.validatedExecutionArgs;
-    const { schema, contextValue, variableValues, hideSuggestions } = validatedExecutionArgs;
+    const { schema, contextValue, variableValues, hideSuggestions, abortSignal } = validatedExecutionArgs;
     const fieldName = fieldDetailsList[0].node.name.value;
     const fieldDef = schema.getField(parentType, fieldName);
     if (!fieldDef) {
@@ -406,7 +406,7 @@ function executeField(exeContext, parentType, source, fieldDetailsList, path, in
         // The resolve function's optional third argument is a context value that
         // is provided to every resolve function within an execution. It is commonly
         // used to represent an authenticated user, or request-specific caches.
-        const result = resolveFn(source, args, contextValue, info);
+        const result = resolveFn(source, args, contextValue, info, abortSignal);
         if (isPromise(result)) {
             return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap);
         }
@@ -951,12 +951,12 @@ export const defaultTypeResolver = function (value, contextValue, info, abstract
  * and returns it as the result, or if it's a function, returns the result
  * of calling that function while passing along args and context value.
  */
-export const defaultFieldResolver = function (source, args, contextValue, info) {
+export const defaultFieldResolver = function (source, args, contextValue, info, abortSignal) {
     // ensure source is a value for which property access is acceptable.
     if (isObjectLike(source) || typeof source === 'function') {
         const property = source[info.fieldName];
         if (typeof property === 'function') {
-            return source[info.fieldName](args, contextValue, info);
+            return source[info.fieldName](args, contextValue, info, abortSignal);
         }
         return property;
     }
@@ -1073,7 +1073,7 @@ function createSourceEventStreamImpl(validatedExecutionArgs) {
     }
 }
 function executeSubscription(validatedExecutionArgs) {
-    const { schema, fragments, rootValue, contextValue, operation, variableValues, hideSuggestions, } = validatedExecutionArgs;
+    const { schema, fragments, rootValue, contextValue, operation, variableValues, hideSuggestions, abortSignal, } = validatedExecutionArgs;
     const rootType = schema.getSubscriptionType();
     if (rootType == null) {
         throw new GraphQLError('Schema is not configured to execute subscription operation.', { nodes: operation });
@@ -1101,7 +1101,7 @@ function executeSubscription(validatedExecutionArgs) {
         // The resolve function's optional third argument is a context value that
         // is provided to every resolve function within an execution. It is commonly
         // used to represent an authenticated user, or request-specific caches.
-        const result = resolveFn(rootValue, args, contextValue, info);
+        const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
         if (isPromise(result)) {
             return result
                 .then(assertEventStream)

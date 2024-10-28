@@ -404,7 +404,7 @@ interface GraphQLObjectTypeNormalizedConfig<TSource, TContext> extends GraphQLOb
 }
 export type GraphQLTypeResolver<TSource, TContext> = (value: TSource, context: TContext, info: GraphQLResolveInfo, abstractType: GraphQLAbstractType) => PromiseOrValue<string | undefined>;
 export type GraphQLIsTypeOfFn<TSource, TContext> = (source: TSource, context: TContext, info: GraphQLResolveInfo) => PromiseOrValue<boolean>;
-export type GraphQLFieldResolver<TSource, TContext, TArgs = any, TResult = unknown> = (source: TSource, args: TArgs, context: TContext, info: GraphQLResolveInfo) => TResult;
+export type GraphQLFieldResolver<TSource, TContext, TArgs = any, TResult = unknown> = (source: TSource, args: TArgs, context: TContext, info: GraphQLResolveInfo, abortSignal: AbortSignal | undefined) => TResult;
 export interface GraphQLResolveInfo {
     readonly fieldName: string;
     readonly fieldNodes: ReadonlyArray<FieldNode>;
