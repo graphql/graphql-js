@@ -109,6 +109,53 @@ describe('Execute: Cancellation', () => {
     });
   });
 
+  it('should provide access to the abort signal within resolvers', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        todo {
+          id
+        }
+      }
+    `);
+
+    const cancellableAsyncFn = async (abortSignal: AbortSignal) => {
+      await resolveOnNextTick();
+      abortSignal.throwIfAborted();
+    };
+
+    const resultPromise = execute({
+      document,
+      schema,
+      abortSignal: abortController.signal,
+      rootValue: {
+        todo: {
+          id: (_args: any, _context: any, _info: any, signal: AbortSignal) =>
+            cancellableAsyncFn(signal),
+        },
+      },
+    });
+
+    abortController.abort();
+
+    const result = await resultPromise;
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        todo: {
+          id: null,
+        },
+      },
+      errors: [
+        {
+          message: 'This operation was aborted',
+          path: ['todo', 'id'],
+          locations: [{ line: 4, column: 11 }],
+        },
+      ],
+    });
+  });
+
   it('should stop the execution when aborted during object field completion with a custom error', async () => {
     const abortController = new AbortController();
     const document = parse(`

@@ -990,6 +990,7 @@ export type GraphQLFieldResolver<
   args: TArgs,
   context: TContext,
   info: GraphQLResolveInfo,
+  abortSignal: AbortSignal | undefined,
 ) => TResult;
 
 export interface GraphQLResolveInfo {
