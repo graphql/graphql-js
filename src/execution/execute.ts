@@ -1955,12 +1955,12 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
  * of calling that function while passing along args and context value.
  */
 export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
-  function (source: any, args, contextValue, info) {
+  function (source: any, args, contextValue, info, abortSignal) {
     // ensure source is a value for which property access is acceptable.
     if (isObjectLike(source) || typeof source === 'function') {
       const property = source[info.fieldName];
       if (typeof property === 'function') {
-        return source[info.fieldName](args, contextValue, info);
+        return source[info.fieldName](args, contextValue, info, abortSignal);
       }
       return property;
     }
