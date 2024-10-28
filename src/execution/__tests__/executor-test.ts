@@ -494,7 +494,7 @@ describe('Execute: Handles basic execution tasks', () => {
           path: ['syncError'],
         },
         {
-          message: 'Unexpected error value: "Error getting syncRawError"',
+          message: 'Encountered error: "Error getting syncRawError"',
           locations: [{ line: 5, column: 9 }],
           path: ['syncRawError'],
         },
@@ -519,12 +519,12 @@ describe('Execute: Handles basic execution tasks', () => {
           path: ['asyncReject'],
         },
         {
-          message: 'Unexpected error value: "Error getting asyncRawReject"',
+          message: 'Encountered error: "Error getting asyncRawReject"',
           locations: [{ line: 10, column: 9 }],
           path: ['asyncRawReject'],
         },
         {
-          message: 'Unexpected error value: undefined',
+          message: 'Encountered error: undefined',
           locations: [{ line: 11, column: 9 }],
           path: ['asyncEmptyReject'],
         },
@@ -534,7 +534,7 @@ describe('Execute: Handles basic execution tasks', () => {
           path: ['asyncError'],
         },
         {
-          message: 'Unexpected error value: "Error getting asyncRawError"',
+          message: 'Encountered error: "Error getting asyncRawError"',
           locations: [{ line: 13, column: 9 }],
           path: ['asyncRawError'],
         },

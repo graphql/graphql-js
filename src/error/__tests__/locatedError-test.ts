@@ -17,8 +17,8 @@ describe('locatedError', () => {
 
     expect(error).to.be.instanceOf(GraphQLError);
     expect(error.originalError).to.include({
-      name: 'NonErrorThrown',
-      thrownValue: testObject,
+      name: 'WrappedNonErrorValueError',
+      rawError: testObject,
     });
   });
 
