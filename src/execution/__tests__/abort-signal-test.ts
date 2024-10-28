@@ -110,11 +110,6 @@ describe('Execute: Cancellation', () => {
   });
 
   it('should provide access to the abort signal within resolvers', async () => {
-    const throwIfAborted = async (abortSignal: AbortSignal) => {
-      await resolveOnNextTick();
-      abortSignal.throwIfAborted();
-    };
-
     const abortController = new AbortController();
     const document = parse(`
       query {
@@ -124,6 +119,11 @@ describe('Execute: Cancellation', () => {
       }
     `);
 
+    const cancellableAsyncFn = async (abortSignal: AbortSignal) => {
+      await resolveOnNextTick();
+      abortSignal.throwIfAborted();
+    };
+
     const resultPromise = execute({
       document,
       schema,
@@ -131,7 +131,7 @@ describe('Execute: Cancellation', () => {
       rootValue: {
         todo: {
           id: (_args: any, _context: any, _info: any, signal: AbortSignal) =>
-            throwIfAborted(signal),
+            cancellableAsyncFn(signal),
         },
       },
     });
