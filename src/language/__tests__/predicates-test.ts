@@ -26,54 +26,55 @@ function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
 
 describe('AST node predicates', () => {
   it('isDefinitionNode', () => {
-    expect(filterNodes(isDefinitionNode)).to.deep.equal([
-      'OperationDefinition',
-      'FragmentDefinition',
-      'SchemaDefinition',
-      'ScalarTypeDefinition',
-      'ObjectTypeDefinition',
-      'InterfaceTypeDefinition',
-      'UnionTypeDefinition',
-      'EnumTypeDefinition',
-      'InputObjectTypeDefinition',
-      'DirectiveDefinition',
-      'SchemaExtension',
-      'ScalarTypeExtension',
-      'ObjectTypeExtension',
-      'InterfaceTypeExtension',
-      'UnionTypeExtension',
-      'EnumTypeExtension',
-      'InputObjectTypeExtension',
-    ]);
+    expect(filterNodes(isDefinitionNode)).to.deep.equal(
+      [
+        'OperationDefinition',
+        'FragmentDefinition',
+        'SchemaDefinition',
+        'ScalarTypeDefinition',
+        'ObjectTypeDefinition',
+        'InterfaceTypeDefinition',
+        'UnionTypeDefinition',
+        'EnumTypeDefinition',
+        'InputObjectTypeDefinition',
+        'DirectiveDefinition',
+        'SchemaExtension',
+        'ScalarTypeExtension',
+        'ObjectTypeExtension',
+        'InterfaceTypeExtension',
+        'UnionTypeExtension',
+        'EnumTypeExtension',
+        'InputObjectTypeExtension',
+      ].sort(),
+    );
   });
 
   it('isExecutableDefinitionNode', () => {
-    expect(filterNodes(isExecutableDefinitionNode)).to.deep.equal([
-      'OperationDefinition',
-      'FragmentDefinition',
-    ]);
+    expect(filterNodes(isExecutableDefinitionNode)).to.deep.equal(
+      ['OperationDefinition', 'FragmentDefinition'].sort(),
+    );
   });
 
   it('isSelectionNode', () => {
-    expect(filterNodes(isSelectionNode)).to.deep.equal([
-      'Field',
-      'FragmentSpread',
-      'InlineFragment',
-    ]);
+    expect(filterNodes(isSelectionNode)).to.deep.equal(
+      ['Field', 'FragmentSpread', 'InlineFragment'].sort(),
+    );
   });
 
   it('isValueNode', () => {
-    expect(filterNodes(isValueNode)).to.deep.equal([
-      'Variable',
-      'IntValue',
-      'FloatValue',
-      'StringValue',
-      'BooleanValue',
-      'NullValue',
-      'EnumValue',
-      'ListValue',
-      'ObjectValue',
-    ]);
+    expect(filterNodes(isValueNode)).to.deep.equal(
+      [
+        'Variable',
+        'IntValue',
+        'FloatValue',
+        'StringValue',
+        'BooleanValue',
+        'NullValue',
+        'EnumValue',
+        'ListValue',
+        'ObjectValue',
+      ].sort(),
+    );
   });
 
   it('isConstValueNode', () => {
@@ -88,57 +89,63 @@ describe('AST node predicates', () => {
   });
 
   it('isTypeNode', () => {
-    expect(filterNodes(isTypeNode)).to.deep.equal([
-      'NamedType',
-      'ListType',
-      'NonNullType',
-    ]);
+    expect(filterNodes(isTypeNode)).to.deep.equal(
+      ['NamedType', 'ListType', 'NonNullType'].sort(),
+    );
   });
 
   it('isTypeSystemDefinitionNode', () => {
-    expect(filterNodes(isTypeSystemDefinitionNode)).to.deep.equal([
-      'SchemaDefinition',
-      'ScalarTypeDefinition',
-      'ObjectTypeDefinition',
-      'InterfaceTypeDefinition',
-      'UnionTypeDefinition',
-      'EnumTypeDefinition',
-      'InputObjectTypeDefinition',
-      'DirectiveDefinition',
-    ]);
+    expect(filterNodes(isTypeSystemDefinitionNode)).to.deep.equal(
+      [
+        'SchemaDefinition',
+        'ScalarTypeDefinition',
+        'ObjectTypeDefinition',
+        'InterfaceTypeDefinition',
+        'UnionTypeDefinition',
+        'EnumTypeDefinition',
+        'InputObjectTypeDefinition',
+        'DirectiveDefinition',
+      ].sort(),
+    );
   });
 
   it('isTypeDefinitionNode', () => {
-    expect(filterNodes(isTypeDefinitionNode)).to.deep.equal([
-      'ScalarTypeDefinition',
-      'ObjectTypeDefinition',
-      'InterfaceTypeDefinition',
-      'UnionTypeDefinition',
-      'EnumTypeDefinition',
-      'InputObjectTypeDefinition',
-    ]);
+    expect(filterNodes(isTypeDefinitionNode)).to.deep.equal(
+      [
+        'ScalarTypeDefinition',
+        'ObjectTypeDefinition',
+        'InterfaceTypeDefinition',
+        'UnionTypeDefinition',
+        'EnumTypeDefinition',
+        'InputObjectTypeDefinition',
+      ].sort(),
+    );
   });
 
   it('isTypeSystemExtensionNode', () => {
-    expect(filterNodes(isTypeSystemExtensionNode)).to.deep.equal([
-      'SchemaExtension',
-      'ScalarTypeExtension',
-      'ObjectTypeExtension',
-      'InterfaceTypeExtension',
-      'UnionTypeExtension',
-      'EnumTypeExtension',
-      'InputObjectTypeExtension',
-    ]);
+    expect(filterNodes(isTypeSystemExtensionNode)).to.deep.equal(
+      [
+        'SchemaExtension',
+        'ScalarTypeExtension',
+        'ObjectTypeExtension',
+        'InterfaceTypeExtension',
+        'UnionTypeExtension',
+        'EnumTypeExtension',
+        'InputObjectTypeExtension',
+      ].sort(),
+    );
   });
 
   it('isTypeExtensionNode', () => {
-    expect(filterNodes(isTypeExtensionNode)).to.deep.equal([
-      'ScalarTypeExtension',
-      'ObjectTypeExtension',
-      'InterfaceTypeExtension',
-      'UnionTypeExtension',
-      'EnumTypeExtension',
-      'InputObjectTypeExtension',
-    ]);
+    expect(filterNodes(isTypeExtensionNode)).to.deep.equal(
+      [
+        'ScalarTypeExtension',
+        'ObjectTypeExtension',
+        'InterfaceTypeExtension',
+        'UnionTypeExtension',
+        'EnumTypeExtension',
+        'InputObjectTypeExtension',
+      ].sort(),
+    );
   });
 });

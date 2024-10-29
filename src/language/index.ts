@@ -5,7 +5,7 @@ export type { SourceLocation } from './location.js';
 
 export { printLocation, printSourceLocation } from './printLocation.js';
 
-export { Kind } from './kinds.js';
+export * from './kinds.js';
 
 export { TokenKind } from './tokenKind.js';
 
