@@ -255,14 +255,14 @@ describe('Execute: handles non-nullable types', () => {
             locations: [{ line: 4, column: 11 }],
           },
           {
-            message: syncError.message,
-            path: ['syncNest', 'syncNest', 'sync'],
-            locations: [{ line: 6, column: 22 }],
-          },
-          {
             message: promiseError.message,
             path: ['syncNest', 'promise'],
             locations: [{ line: 5, column: 11 }],
+          },
+          {
+            message: syncError.message,
+            path: ['syncNest', 'syncNest', 'sync'],
+            locations: [{ line: 6, column: 22 }],
           },
           {
             message: promiseError.message,
@@ -275,24 +275,24 @@ describe('Execute: handles non-nullable types', () => {
             locations: [{ line: 7, column: 25 }],
           },
           {
-            message: syncError.message,
-            path: ['promiseNest', 'sync'],
-            locations: [{ line: 10, column: 11 }],
-          },
-          {
-            message: syncError.message,
-            path: ['promiseNest', 'syncNest', 'sync'],
-            locations: [{ line: 12, column: 22 }],
-          },
-          {
             message: promiseError.message,
             path: ['syncNest', 'promiseNest', 'promise'],
             locations: [{ line: 7, column: 30 }],
           },
           {
+            message: syncError.message,
+            path: ['promiseNest', 'sync'],
+            locations: [{ line: 10, column: 11 }],
+          },
+          {
             message: promiseError.message,
             path: ['promiseNest', 'promise'],
             locations: [{ line: 11, column: 11 }],
+          },
+          {
+            message: syncError.message,
+            path: ['promiseNest', 'syncNest', 'sync'],
+            locations: [{ line: 12, column: 22 }],
           },
           {
             message: promiseError.message,

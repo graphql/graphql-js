@@ -680,14 +680,10 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = execute({ schema, document });
 
+    // a bubbling error is allowed to mask the non-bubbling error
     expectJSON(await result).toDeepEqual({
       data: null,
       errors: [
-        {
-          message: 'Oops',
-          locations: [{ line: 3, column: 9 }],
-          path: ['asyncError'],
-        },
         {
           message:
             'Cannot return null for non-nullable field Query.asyncNonNullError.',
