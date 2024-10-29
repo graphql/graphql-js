@@ -1269,7 +1269,6 @@ async function completeAsyncIteratorValue(
         break;
       }
 
-      const itemPath = addPath(path, index, undefined);
       let iteration;
       try {
         // eslint-disable-next-line no-await-in-loop
@@ -1288,44 +1287,19 @@ async function completeAsyncIteratorValue(
         break;
       }
 
-      const item = iteration.value;
-      // TODO: add tests for stream backed by asyncIterator that returns a promise
-      /* c8 ignore start */
-      if (isPromise(item)) {
-        completedResults.push(
-          completePromisedListItemValue(
-            item,
-            graphqlWrappedResult,
-            exeContext,
-            itemType,
-            fieldDetailsList,
-            info,
-            itemPath,
-            incrementalContext,
-            deferMap,
-          ),
-        );
-        containsPromise = true;
-      } else if (
-        /* c8 ignore stop */
-        completeListItemValue(
-          item,
-          completedResults,
-          graphqlWrappedResult,
-          exeContext,
-          itemType,
-          fieldDetailsList,
-          info,
-          itemPath,
-          incrementalContext,
-          deferMap,
-        )
-        // TODO: add tests for stream backed by asyncIterator that completes to a promise
-        /* c8 ignore start */
-      ) {
-        containsPromise = true;
-      }
-      /* c8 ignore stop */
+      containsPromise = completeMaybePromisedListItemValue(
+        iteration.value,
+        completedResults,
+        graphqlWrappedResult,
+        exeContext,
+        itemType,
+        fieldDetailsList,
+        info,
+        addPath(path, index, undefined),
+        incrementalContext,
+        deferMap,
+      );
+
       index++;
     }
   } catch (error) {
@@ -1448,39 +1422,19 @@ function completeIterableValue(
 
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
-    const itemPath = addPath(path, index, undefined);
+    containsPromise = completeMaybePromisedListItemValue(
+      item,
+      completedResults,
+      graphqlWrappedResult,
+      exeContext,
+      itemType,
+      fieldDetailsList,
+      info,
+      addPath(path, index, undefined),
+      incrementalContext,
+      deferMap,
+    );
 
-    if (isPromise(item)) {
-      completedResults.push(
-        completePromisedListItemValue(
-          item,
-          graphqlWrappedResult,
-          exeContext,
-          itemType,
-          fieldDetailsList,
-          info,
-          itemPath,
-          incrementalContext,
-          deferMap,
-        ),
-      );
-      containsPromise = true;
-    } else if (
-      completeListItemValue(
-        item,
-        completedResults,
-        graphqlWrappedResult,
-        exeContext,
-        itemType,
-        fieldDetailsList,
-        info,
-        itemPath,
-        incrementalContext,
-        deferMap,
-      )
-    ) {
-      containsPromise = true;
-    }
     index++;
 
     iteration = iterator.next();
@@ -1500,6 +1454,48 @@ function completeIterableValue(
  *
  * Returns true if the value is a Promise.
  */
+function completeMaybePromisedListItemValue(
+  item: unknown,
+  completedResults: Array<unknown>,
+  parent: GraphQLWrappedResult<Array<unknown>>,
+  exeContext: ExecutionContext,
+  itemType: GraphQLOutputType,
+  fieldDetailsList: FieldDetailsList,
+  info: GraphQLResolveInfo,
+  itemPath: Path,
+  incrementalContext: IncrementalContext | undefined,
+  deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
+): boolean {
+  if (isPromise(item)) {
+    completedResults.push(
+      completePromisedListItemValue(
+        item,
+        parent,
+        exeContext,
+        itemType,
+        fieldDetailsList,
+        info,
+        itemPath,
+        incrementalContext,
+        deferMap,
+      ),
+    );
+    return true;
+  }
+  return completeListItemValue(
+    item,
+    completedResults,
+    parent,
+    exeContext,
+    itemType,
+    fieldDetailsList,
+    info,
+    itemPath,
+    incrementalContext,
+    deferMap,
+  );
+}
+
 function completeListItemValue(
   item: unknown,
   completedResults: Array<unknown>,
