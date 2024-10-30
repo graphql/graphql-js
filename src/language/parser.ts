@@ -104,6 +104,8 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+
+  useSemanticNullability?: boolean;
 }
 
 /**
@@ -250,6 +252,14 @@ export class Parser {
    *   - InputObjectTypeDefinition
    */
   parseDefinition(): DefinitionNode {
+    // TODO: I don't know what isConst represents. Every other callsite has it false
+    let directives = this.parseDirectives(false);
+    for (let directive of directives) {
+      if (directive.name.value == "SemanticNullability") {
+        this._options.useSemanticNullability = true;
+      }
+    }
+
     if (this.peek(TokenKind.BRACE_L)) {
       return this.parseOperationDefinition();
     }
@@ -757,20 +767,30 @@ export class Parser {
       type = this.parseNamedType();
     }
 
-    if (this.expectOptionalToken(TokenKind.BANG)) {
-      return this.node<NonNullTypeNode>(start, {
-        kind: Kind.NON_NULL_TYPE,
-        type,
-      });
-    }
-    if (this.expectOptionalToken(TokenKind.ASTERISK)) {
-      return this.node<SemanticNonNullTypeNode>(start, {
-        kind: Kind.SEMANTIC_NON_NULL_TYPE,
-        type,
-      });
-    }
+    if (this._options.useSemanticNullability) {
+      if (this.expectOptionalToken(TokenKind.BANG)) {
+        return this.node<NonNullTypeNode>(start, {
+          kind: Kind.NON_NULL_TYPE,
+          type,
+        });
+      } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+        return type;
+      } else {
+        return this.node<SemanticNonNullTypeNode>(start, {
+          kind: Kind.SEMANTIC_NON_NULL_TYPE,
+          type,
+        });
+      }
+    } else {
+      if (this.expectOptionalToken(TokenKind.BANG)) {
+        return this.node<NonNullTypeNode>(start, {
+          kind: Kind.NON_NULL_TYPE,
+          type,
+        });
+      }
 
-    return type;
+      return type;
+    }
   }
 
   /**
