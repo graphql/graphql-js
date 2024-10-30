@@ -50,7 +50,6 @@ import { assertValidSchema } from '../type/validate.js';
 
 import type { DeferUsageSet, ExecutionPlan } from './buildExecutionPlan.js';
 import { buildExecutionPlan } from './buildExecutionPlan.js';
-import { Canceller } from './Canceller.js';
 import type {
   DeferUsage,
   FieldDetailsList,
@@ -64,6 +63,7 @@ import {
 import { getVariableSignature } from './getVariableSignature.js';
 import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
+import { PromiseCanceller } from './PromiseCanceller.js';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,
@@ -164,7 +164,7 @@ export interface ValidatedExecutionArgs {
 export interface ExecutionContext {
   validatedExecutionArgs: ValidatedExecutionArgs;
   errors: Array<GraphQLError> | undefined;
-  canceller: Canceller | undefined;
+  promiseCanceller: PromiseCanceller | undefined;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
@@ -316,7 +316,9 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
   const exeContext: ExecutionContext = {
     validatedExecutionArgs,
     errors: undefined,
-    canceller: abortSignal ? new Canceller(abortSignal) : undefined,
+    promiseCanceller: abortSignal
+      ? new PromiseCanceller(abortSignal)
+      : undefined,
     cancellableStreams: undefined,
   };
   try {
@@ -369,7 +371,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       return graphqlWrappedResult.then(
         (resolved) => buildDataResponse(exeContext, resolved),
         (error: unknown) => {
-          exeContext.canceller?.unsubscribe();
+          exeContext.promiseCanceller?.disconnect();
           return {
             data: null,
             errors: withError(exeContext.errors, error as GraphQLError),
@@ -381,7 +383,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
   } catch (error) {
     // TODO: add test case for synchronous null bubbling to root with cancellation
     /* c8 ignore next */
-    exeContext.canceller?.unsubscribe();
+    exeContext.promiseCanceller?.disconnect();
     return { data: null, errors: withError(exeContext.errors, error) };
   }
 }
@@ -472,7 +474,7 @@ function buildDataResponse(
   const { rawResult: data, incrementalDataRecords } = graphqlWrappedResult;
   const errors = exeContext.errors;
   if (incrementalDataRecords === undefined) {
-    exeContext.canceller?.unsubscribe();
+    exeContext.promiseCanceller?.disconnect();
     return errors !== undefined ? { errors, data } : { data };
   }
 
@@ -823,7 +825,7 @@ function executeField(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<unknown>> | undefined {
-  const { validatedExecutionArgs, canceller } = exeContext;
+  const { validatedExecutionArgs, promiseCanceller } = exeContext;
   const { schema, contextValue, variableValues, hideSuggestions, abortSignal } =
     validatedExecutionArgs;
   const fieldName = fieldDetailsList[0].node.name.value;
@@ -868,7 +870,7 @@ function executeField(
         fieldDetailsList,
         info,
         path,
-        canceller?.withCancellation(result) ?? result,
+        promiseCanceller?.withCancellation(result) ?? result,
         incrementalContext,
         deferMap,
       );
@@ -2203,17 +2205,19 @@ function executeSubscription(
     const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
 
     if (isPromise(result)) {
-      const canceller = abortSignal ? new Canceller(abortSignal) : undefined;
-      const promise = canceller?.withCancellation(result) ?? result;
+      const promiseCanceller = abortSignal
+        ? new PromiseCanceller(abortSignal)
+        : undefined;
+      const promise = promiseCanceller?.withCancellation(result) ?? result;
       return promise.then(assertEventStream).then(
         (resolved) => {
           // TODO: add test case
           /* c8 ignore next */
-          canceller?.unsubscribe();
+          promiseCanceller?.disconnect();
           return resolved;
         },
         (error: unknown) => {
-          canceller?.unsubscribe();
+          promiseCanceller?.disconnect();
           throw locatedError(error, fieldNodes, pathToArray(path));
         },
       );
