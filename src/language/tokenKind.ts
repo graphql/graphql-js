@@ -6,7 +6,7 @@ enum TokenKind {
   SOF = '<SOF>',
   EOF = '<EOF>',
   BANG = '!',
-  ASTERISK = '*',
+  QUESTION_MARK = '?',
   DOLLAR = '$',
   AMP = '&',
   PAREN_L = '(',

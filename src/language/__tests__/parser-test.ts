@@ -11,6 +11,7 @@ import { Kind } from '../kinds';
 import { parse, parseConstValue, parseType, parseValue } from '../parser';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
+import { Console } from 'console';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));
@@ -636,23 +637,6 @@ describe('Parser', () => {
       });
     });
 
-    it('parses semantic-non-null types', () => {
-      const result = parseType('MyType*');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.SEMANTIC_NON_NULL_TYPE,
-        loc: { start: 0, end: 7 },
-        type: {
-          kind: Kind.NAMED_TYPE,
-          loc: { start: 0, end: 6 },
-          name: {
-            kind: Kind.NAME,
-            loc: { start: 0, end: 6 },
-            value: 'MyType',
-          },
-        },
-      });
-    });
-
     it('parses nested types', () => {
       const result = parseType('[MyType!]');
       expectJSON(result).toDeepEqual({
@@ -669,6 +653,67 @@ describe('Parser', () => {
               loc: { start: 1, end: 7 },
               value: 'MyType',
             },
+          },
+        },
+      });
+    });
+  });
+
+  describe('parseDocumentDirective', () => {
+    it('doesnt throw on document-level directive', () => {
+      parse(dedent`
+        @SemanticNullability
+
+        type Query {
+          hello: String
+          world: String?
+          foo: String!
+        }
+      `);
+    });
+
+    it('parses semantic-non-null types', () => {
+      const result = parseType('MyType', { useSemanticNullability: true });
+      expectJSON(result).toDeepEqual({
+        kind: Kind.SEMANTIC_NON_NULL_TYPE,
+        loc: { start: 0, end: 6 },
+        type: {
+          kind: Kind.NAMED_TYPE,
+          loc: { start: 0, end: 6 },
+          name: {
+            kind: Kind.NAME,
+            loc: { start: 0, end: 6 },
+            value: 'MyType',
+          },
+        },
+      });
+    });
+
+    it('parses nullable types', () => {
+      const result = parseType('MyType?', { useSemanticNullability: true });
+      expectJSON(result).toDeepEqual({
+        kind: Kind.NAMED_TYPE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+      });
+    });
+
+    it('parses non-nullable types', () => {
+      const result = parseType('MyType!', { useSemanticNullability: true });
+      expectJSON(result).toDeepEqual({
+        kind: Kind.NON_NULL_TYPE,
+        loc: { start: 0, end: 7 },
+        type: {
+          kind: Kind.NAMED_TYPE,
+          loc: { start: 0, end: 6 },
+          name: {
+            kind: Kind.NAME,
+            loc: { start: 0, end: 6 },
+            value: 'MyType',
           },
         },
       });
