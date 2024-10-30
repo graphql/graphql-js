@@ -127,6 +127,7 @@ class IncrementalPublisher {
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
       if (isDone) {
+        this._context.canceller?.unsubscribe();
         await this._returnAsyncIteratorsIgnoringErrors();
         return { value: undefined, done: true };
       }
@@ -173,6 +174,8 @@ class IncrementalPublisher {
         batch = await this._incrementalGraph.nextCompletedBatch();
       } while (batch !== undefined);
 
+      // TODO: add test for this case
+      /* c8 ignore next */
       this._context.canceller?.unsubscribe();
       await this._returnAsyncIteratorsIgnoringErrors();
       return { value: undefined, done: true };

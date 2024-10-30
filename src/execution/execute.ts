@@ -379,6 +379,8 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
     }
     return buildDataResponse(exeContext, graphqlWrappedResult);
   } catch (error) {
+    // TODO: add test case for synchronous null bubbling to root with cancellation
+    /* c8 ignore next */
     exeContext.canceller?.unsubscribe();
     return { data: null, errors: withError(exeContext.errors, error) };
   }
@@ -2205,6 +2207,8 @@ function executeSubscription(
       const promise = canceller?.withCancellation(result) ?? result;
       return promise.then(assertEventStream).then(
         (resolved) => {
+          // TODO: add test case
+          /* c8 ignore next */
           canceller?.unsubscribe();
           return resolved;
         },

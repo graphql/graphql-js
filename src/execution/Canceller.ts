@@ -29,10 +29,6 @@ export class Canceller {
   }
 
   withCancellation<T>(originalPromise: Promise<T>): Promise<T> {
-    if (this.abortSignal === undefined) {
-      return originalPromise;
-    }
-
     const { promise, resolve, reject } = promiseWithResolvers<T>();
     const abort = () => reject(this.abortSignal.reason);
     this._aborts.add(abort);
