@@ -1578,7 +1578,7 @@ function completeListItemValue(
 }
 
 async function completePromisedListItemValue(
-  item: unknown,
+  item: Promise<unknown>,
   parent: GraphQLWrappedResult<Array<unknown>>,
   exeContext: ExecutionContext,
   itemType: GraphQLOutputType,
@@ -1589,7 +1589,9 @@ async function completePromisedListItemValue(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): Promise<unknown> {
   try {
-    const resolved = await item;
+    const resolved = await (exeContext.promiseCanceller?.withCancellation(
+      item,
+    ) ?? item);
     let completed = completeValue(
       exeContext,
       itemType,
@@ -2581,7 +2583,7 @@ function completeStreamItem(
       fieldDetailsList,
       info,
       itemPath,
-      item,
+      exeContext.promiseCanceller?.withCancellation(item) ?? item,
       incrementalContext,
       new Map(),
     ).then(
