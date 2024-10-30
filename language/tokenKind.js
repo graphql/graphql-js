@@ -5,29 +5,28 @@ exports.TokenKind = void 0;
  * An exported enum describing the different kinds of tokens that the
  * lexer emits.
  */
-var TokenKind;
-(function (TokenKind) {
-    TokenKind["SOF"] = "<SOF>";
-    TokenKind["EOF"] = "<EOF>";
-    TokenKind["BANG"] = "!";
-    TokenKind["DOLLAR"] = "$";
-    TokenKind["AMP"] = "&";
-    TokenKind["PAREN_L"] = "(";
-    TokenKind["PAREN_R"] = ")";
-    TokenKind["SPREAD"] = "...";
-    TokenKind["COLON"] = ":";
-    TokenKind["EQUALS"] = "=";
-    TokenKind["AT"] = "@";
-    TokenKind["BRACKET_L"] = "[";
-    TokenKind["BRACKET_R"] = "]";
-    TokenKind["BRACE_L"] = "{";
-    TokenKind["PIPE"] = "|";
-    TokenKind["BRACE_R"] = "}";
-    TokenKind["NAME"] = "Name";
-    TokenKind["INT"] = "Int";
-    TokenKind["FLOAT"] = "Float";
-    TokenKind["STRING"] = "String";
-    TokenKind["BLOCK_STRING"] = "BlockString";
-    TokenKind["COMMENT"] = "Comment";
-})(TokenKind || (exports.TokenKind = TokenKind = {}));
+exports.TokenKind = {
+    SOF: '<SOF>',
+    EOF: '<EOF>',
+    BANG: '!',
+    DOLLAR: '$',
+    AMP: '&',
+    PAREN_L: '(',
+    PAREN_R: ')',
+    SPREAD: '...',
+    COLON: ':',
+    EQUALS: '=',
+    AT: '@',
+    BRACKET_L: '[',
+    BRACKET_R: ']',
+    BRACE_L: '{',
+    PIPE: '|',
+    BRACE_R: '}',
+    NAME: 'Name',
+    INT: 'Int',
+    FLOAT: 'Float',
+    STRING: 'String',
+    BLOCK_STRING: 'BlockString',
+    COMMENT: 'Comment',
+};
 //# sourceMappingURL=tokenKind.js.map

@@ -140,11 +140,9 @@ export function isNode(maybeNode) {
     const maybeKind = maybeNode?.kind;
     return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
-var OperationTypeNode;
-(function (OperationTypeNode) {
-    OperationTypeNode["QUERY"] = "query";
-    OperationTypeNode["MUTATION"] = "mutation";
-    OperationTypeNode["SUBSCRIPTION"] = "subscription";
-})(OperationTypeNode || (OperationTypeNode = {}));
-export { OperationTypeNode };
+export const OperationTypeNode = {
+    QUERY: 'query',
+    MUTATION: 'mutation',
+    SUBSCRIPTION: 'subscription',
+};
 //# sourceMappingURL=ast.js.map

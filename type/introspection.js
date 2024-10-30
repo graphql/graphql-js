@@ -175,28 +175,28 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
             type: new definition_js_1.GraphQLNonNull(exports.__TypeKind),
             resolve(type) {
                 if ((0, definition_js_1.isScalarType)(type)) {
-                    return TypeKind.SCALAR;
+                    return exports.TypeKind.SCALAR;
                 }
                 if ((0, definition_js_1.isObjectType)(type)) {
-                    return TypeKind.OBJECT;
+                    return exports.TypeKind.OBJECT;
                 }
                 if ((0, definition_js_1.isInterfaceType)(type)) {
-                    return TypeKind.INTERFACE;
+                    return exports.TypeKind.INTERFACE;
                 }
                 if ((0, definition_js_1.isUnionType)(type)) {
-                    return TypeKind.UNION;
+                    return exports.TypeKind.UNION;
                 }
                 if ((0, definition_js_1.isEnumType)(type)) {
-                    return TypeKind.ENUM;
+                    return exports.TypeKind.ENUM;
                 }
                 if ((0, definition_js_1.isInputObjectType)(type)) {
-                    return TypeKind.INPUT_OBJECT;
+                    return exports.TypeKind.INPUT_OBJECT;
                 }
                 if ((0, definition_js_1.isListType)(type)) {
-                    return TypeKind.LIST;
+                    return exports.TypeKind.LIST;
                 }
                 if ((0, definition_js_1.isNonNullType)(type)) {
-                    return TypeKind.NON_NULL;
+                    return exports.TypeKind.NON_NULL;
                 }
                 /* c8 ignore next 3 */
                 // Not reachable, all possible types have been considered)
@@ -394,51 +394,50 @@ exports.__EnumValue = new definition_js_1.GraphQLObjectType({
         },
     }),
 });
-var TypeKind;
-(function (TypeKind) {
-    TypeKind["SCALAR"] = "SCALAR";
-    TypeKind["OBJECT"] = "OBJECT";
-    TypeKind["INTERFACE"] = "INTERFACE";
-    TypeKind["UNION"] = "UNION";
-    TypeKind["ENUM"] = "ENUM";
-    TypeKind["INPUT_OBJECT"] = "INPUT_OBJECT";
-    TypeKind["LIST"] = "LIST";
-    TypeKind["NON_NULL"] = "NON_NULL";
-})(TypeKind || (exports.TypeKind = TypeKind = {}));
+exports.TypeKind = {
+    SCALAR: 'SCALAR',
+    OBJECT: 'OBJECT',
+    INTERFACE: 'INTERFACE',
+    UNION: 'UNION',
+    ENUM: 'ENUM',
+    INPUT_OBJECT: 'INPUT_OBJECT',
+    LIST: 'LIST',
+    NON_NULL: 'NON_NULL',
+};
 exports.__TypeKind = new definition_js_1.GraphQLEnumType({
     name: '__TypeKind',
     description: 'An enum describing what kind of type a given `__Type` is.',
     values: {
         SCALAR: {
-            value: TypeKind.SCALAR,
+            value: exports.TypeKind.SCALAR,
             description: 'Indicates this type is a scalar.',
         },
         OBJECT: {
-            value: TypeKind.OBJECT,
+            value: exports.TypeKind.OBJECT,
             description: 'Indicates this type is an object. `fields` and `interfaces` are valid fields.',
         },
         INTERFACE: {
-            value: TypeKind.INTERFACE,
+            value: exports.TypeKind.INTERFACE,
             description: 'Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.',
         },
         UNION: {
-            value: TypeKind.UNION,
+            value: exports.TypeKind.UNION,
             description: 'Indicates this type is a union. `possibleTypes` is a valid field.',
         },
         ENUM: {
-            value: TypeKind.ENUM,
+            value: exports.TypeKind.ENUM,
             description: 'Indicates this type is an enum. `enumValues` is a valid field.',
         },
         INPUT_OBJECT: {
-            value: TypeKind.INPUT_OBJECT,
+            value: exports.TypeKind.INPUT_OBJECT,
             description: 'Indicates this type is an input object. `inputFields` is a valid field.',
         },
         LIST: {
-            value: TypeKind.LIST,
+            value: exports.TypeKind.LIST,
             description: 'Indicates this type is a list. `ofType` is a valid field.',
         },
         NON_NULL: {
-            value: TypeKind.NON_NULL,
+            value: exports.TypeKind.NON_NULL,
             description: 'Indicates this type is a non-null. `ofType` is a valid field.',
         },
     },

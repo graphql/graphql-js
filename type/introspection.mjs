@@ -391,18 +391,16 @@ export const __EnumValue = new GraphQLObjectType({
         },
     }),
 });
-var TypeKind;
-(function (TypeKind) {
-    TypeKind["SCALAR"] = "SCALAR";
-    TypeKind["OBJECT"] = "OBJECT";
-    TypeKind["INTERFACE"] = "INTERFACE";
-    TypeKind["UNION"] = "UNION";
-    TypeKind["ENUM"] = "ENUM";
-    TypeKind["INPUT_OBJECT"] = "INPUT_OBJECT";
-    TypeKind["LIST"] = "LIST";
-    TypeKind["NON_NULL"] = "NON_NULL";
-})(TypeKind || (TypeKind = {}));
-export { TypeKind };
+export const TypeKind = {
+    SCALAR: 'SCALAR',
+    OBJECT: 'OBJECT',
+    INTERFACE: 'INTERFACE',
+    UNION: 'UNION',
+    ENUM: 'ENUM',
+    INPUT_OBJECT: 'INPUT_OBJECT',
+    LIST: 'LIST',
+    NON_NULL: 'NON_NULL',
+};
 export const __TypeKind = new GraphQLEnumType({
     name: '__TypeKind',
     description: 'An enum describing what kind of type a given `__Type` is.',
