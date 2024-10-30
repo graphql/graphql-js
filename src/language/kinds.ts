@@ -45,7 +45,10 @@ import type {
   VARIABLE_DEFINITION,
 } from './_kinds.js';
 
-export type Kind =
+/**
+ * The set of allowed kind values for AST nodes.
+ */
+export type Kind = 
   | typeof NAME
   | typeof DOCUMENT
   | typeof OPERATION_DEFINITION
