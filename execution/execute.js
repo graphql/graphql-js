@@ -24,6 +24,7 @@ const collectFields_js_1 = require("./collectFields.js");
 const getVariableSignature_js_1 = require("./getVariableSignature.js");
 const IncrementalPublisher_js_1 = require("./IncrementalPublisher.js");
 const mapAsyncIterable_js_1 = require("./mapAsyncIterable.js");
+const PromiseCanceller_js_1 = require("./PromiseCanceller.js");
 const types_js_1 = require("./types.js");
 const values_js_1 = require("./values.js");
 /* eslint-disable @typescript-eslint/max-params */
@@ -124,9 +125,13 @@ function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
 }
 exports.executeQueryOrMutationOrSubscriptionEvent = executeQueryOrMutationOrSubscriptionEvent;
 function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
+    const abortSignal = validatedExecutionArgs.abortSignal;
     const exeContext = {
         validatedExecutionArgs,
         errors: undefined,
+        promiseCanceller: abortSignal
+            ? new PromiseCanceller_js_1.PromiseCanceller(abortSignal)
+            : undefined,
         cancellableStreams: undefined,
     };
     try {
@@ -141,14 +146,20 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
             ? executeRootGroupedFieldSet(exeContext, operation.operation, rootType, rootValue, groupedFieldSet, undefined)
             : executeExecutionPlan(exeContext, rootType, rootValue, newDeferUsages, (0, buildExecutionPlan_js_1.buildExecutionPlan)(groupedFieldSet));
         if ((0, isPromise_js_1.isPromise)(graphqlWrappedResult)) {
-            return graphqlWrappedResult.then((resolved) => buildDataResponse(exeContext, resolved), (error) => ({
-                data: null,
-                errors: withError(exeContext.errors, error),
-            }));
+            return graphqlWrappedResult.then((resolved) => buildDataResponse(exeContext, resolved), (error) => {
+                exeContext.promiseCanceller?.disconnect();
+                return {
+                    data: null,
+                    errors: withError(exeContext.errors, error),
+                };
+            });
         }
         return buildDataResponse(exeContext, graphqlWrappedResult);
     }
     catch (error) {
+        // TODO: add test case for synchronous null bubbling to root with cancellation
+        /* c8 ignore next */
+        exeContext.promiseCanceller?.disconnect();
         return { data: null, errors: withError(exeContext.errors, error) };
     }
 }
@@ -191,6 +202,7 @@ function buildDataResponse(exeContext, graphqlWrappedResult) {
     const { rawResult: data, incrementalDataRecords } = graphqlWrappedResult;
     const errors = exeContext.errors;
     if (incrementalDataRecords === undefined) {
+        exeContext.promiseCanceller?.disconnect();
         return errors !== undefined ? { errors, data } : { data };
     }
     return (0, IncrementalPublisher_js_1.buildIncrementalResponse)(exeContext, data, errors, incrementalDataRecords);
@@ -310,9 +322,9 @@ function executeRootGroupedFieldSet(exeContext, operation, rootType, rootValue, 
  * for fields that must be executed serially.
  */
 function executeFieldsSerially(exeContext, parentType, sourceValue, path, groupedFieldSet, incrementalContext, deferMap) {
+    const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
     return (0, promiseReduce_js_1.promiseReduce)(groupedFieldSet, (graphqlWrappedResult, [responseName, fieldDetailsList]) => {
         const fieldPath = (0, Path_js_1.addPath)(path, responseName, parentType.name);
-        const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
         if (abortSignal?.aborted) {
             handleFieldError(abortSignal.reason, exeContext, parentType, fieldDetailsList, fieldPath, incrementalContext);
             graphqlWrappedResult.rawResult[responseName] = null;
@@ -400,7 +412,7 @@ function toNodes(fieldDetailsList) {
  * coercing scalars, or execute the sub-selection-set for objects.
  */
 function executeField(exeContext, parentType, source, fieldDetailsList, path, incrementalContext, deferMap) {
-    const validatedExecutionArgs = exeContext.validatedExecutionArgs;
+    const { validatedExecutionArgs, promiseCanceller } = exeContext;
     const { schema, contextValue, variableValues, hideSuggestions, abortSignal } = validatedExecutionArgs;
     const fieldName = fieldDetailsList[0].node.name.value;
     const fieldDef = schema.getField(parentType, fieldName);
@@ -421,7 +433,7 @@ function executeField(exeContext, parentType, source, fieldDetailsList, path, in
         // used to represent an authenticated user, or request-specific caches.
         const result = resolveFn(source, args, contextValue, info, abortSignal);
         if ((0, isPromise_js_1.isPromise)(result)) {
-            return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap);
+            return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, promiseCanceller?.withCancellation(result) ?? result, incrementalContext, deferMap);
         }
         const completed = completeValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap);
         if ((0, isPromise_js_1.isPromise)(completed)) {
@@ -783,7 +795,7 @@ function completeListItemValue(item, completedResults, parent, exeContext, itemT
 }
 async function completePromisedListItemValue(item, parent, exeContext, itemType, fieldDetailsList, info, itemPath, incrementalContext, deferMap) {
     try {
-        const resolved = await item;
+        const resolved = await (exeContext.promiseCanceller?.withCancellation(item) ?? item);
         let completed = completeValue(exeContext, itemType, fieldDetailsList, info, itemPath, resolved, incrementalContext, deferMap);
         if ((0, isPromise_js_1.isPromise)(completed)) {
             completed = await completed;
@@ -846,16 +858,11 @@ function ensureValidRuntimeType(runtimeTypeName, schema, returnType, fieldDetail
  * Complete an Object value by executing all sub-selections.
  */
 function completeObjectValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap) {
-    const validatedExecutionArgs = exeContext.validatedExecutionArgs;
-    const abortSignal = validatedExecutionArgs.abortSignal;
-    if (abortSignal?.aborted) {
-        throw (0, locatedError_js_1.locatedError)(abortSignal.reason, toNodes(fieldDetailsList), (0, Path_js_1.pathToArray)(path));
-    }
     // If there is an isTypeOf predicate function, call it with the
     // current result. If isTypeOf returns false, then raise an error rather
     // than continuing execution.
     if (returnType.isTypeOf) {
-        const isTypeOf = returnType.isTypeOf(result, validatedExecutionArgs.contextValue, info);
+        const isTypeOf = returnType.isTypeOf(result, exeContext.validatedExecutionArgs.contextValue, info);
         if ((0, isPromise_js_1.isPromise)(isTypeOf)) {
             return isTypeOf.then((resolvedIsTypeOf) => {
                 if (!resolvedIsTypeOf) {
@@ -1125,9 +1132,17 @@ function executeSubscription(validatedExecutionArgs) {
         // used to represent an authenticated user, or request-specific caches.
         const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
         if ((0, isPromise_js_1.isPromise)(result)) {
-            return result
-                .then(assertEventStream)
-                .then(undefined, (error) => {
+            const promiseCanceller = abortSignal
+                ? new PromiseCanceller_js_1.PromiseCanceller(abortSignal)
+                : undefined;
+            const promise = promiseCanceller?.withCancellation(result) ?? result;
+            return promise.then(assertEventStream).then((resolved) => {
+                // TODO: add test case
+                /* c8 ignore next */
+                promiseCanceller?.disconnect();
+                return resolved;
+            }, (error) => {
+                promiseCanceller?.disconnect();
                 throw (0, locatedError_js_1.locatedError)(error, fieldNodes, (0, Path_js_1.pathToArray)(path));
             });
         }
@@ -1282,7 +1297,7 @@ async function getNextAsyncStreamItemResult(streamItemQueue, streamPath, index, 
 }
 function completeStreamItem(itemPath, item, exeContext, incrementalContext, fieldDetailsList, info, itemType) {
     if ((0, isPromise_js_1.isPromise)(item)) {
-        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, item, incrementalContext, new Map()).then((resolvedItem) => buildStreamItemResult(incrementalContext.errors, resolvedItem), (error) => ({
+        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, exeContext.promiseCanceller?.withCancellation(item) ?? item, incrementalContext, new Map()).then((resolvedItem) => buildStreamItemResult(incrementalContext.errors, resolvedItem), (error) => ({
             errors: withError(incrementalContext.errors, error),
         }));
     }

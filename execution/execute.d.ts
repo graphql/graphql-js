@@ -7,6 +7,7 @@ import type { DocumentNode, FieldNode, FragmentDefinitionNode, OperationDefiniti
 import type { GraphQLField, GraphQLFieldResolver, GraphQLObjectType, GraphQLResolveInfo, GraphQLTypeResolver } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
+import { PromiseCanceller } from './PromiseCanceller.js';
 import type { CancellableStreamRecord, ExecutionResult, ExperimentalIncrementalExecutionResults } from './types.js';
 import type { VariableValues } from './values.js';
 /**
@@ -53,6 +54,7 @@ export interface ValidatedExecutionArgs {
 export interface ExecutionContext {
     validatedExecutionArgs: ValidatedExecutionArgs;
     errors: Array<GraphQLError> | undefined;
+    promiseCanceller: PromiseCanceller | undefined;
     cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 export interface ExecutionArgs {

@@ -21,6 +21,7 @@ import { collectFields, collectSubfields as _collectSubfields, } from "./collect
 import { getVariableSignature } from "./getVariableSignature.mjs";
 import { buildIncrementalResponse } from "./IncrementalPublisher.mjs";
 import { mapAsyncIterable } from "./mapAsyncIterable.mjs";
+import { PromiseCanceller } from "./PromiseCanceller.mjs";
 import { DeferredFragmentRecord } from "./types.mjs";
 import { experimentalGetArgumentValues, getArgumentValues, getDirectiveValues, getVariableValues, } from "./values.mjs";
 /* eslint-disable @typescript-eslint/max-params */
@@ -118,9 +119,13 @@ export function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs
     return ensureSinglePayload(result);
 }
 export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
+    const abortSignal = validatedExecutionArgs.abortSignal;
     const exeContext = {
         validatedExecutionArgs,
         errors: undefined,
+        promiseCanceller: abortSignal
+            ? new PromiseCanceller(abortSignal)
+            : undefined,
         cancellableStreams: undefined,
     };
     try {
@@ -135,14 +140,20 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedE
             ? executeRootGroupedFieldSet(exeContext, operation.operation, rootType, rootValue, groupedFieldSet, undefined)
             : executeExecutionPlan(exeContext, rootType, rootValue, newDeferUsages, buildExecutionPlan(groupedFieldSet));
         if (isPromise(graphqlWrappedResult)) {
-            return graphqlWrappedResult.then((resolved) => buildDataResponse(exeContext, resolved), (error) => ({
-                data: null,
-                errors: withError(exeContext.errors, error),
-            }));
+            return graphqlWrappedResult.then((resolved) => buildDataResponse(exeContext, resolved), (error) => {
+                exeContext.promiseCanceller?.disconnect();
+                return {
+                    data: null,
+                    errors: withError(exeContext.errors, error),
+                };
+            });
         }
         return buildDataResponse(exeContext, graphqlWrappedResult);
     }
     catch (error) {
+        // TODO: add test case for synchronous null bubbling to root with cancellation
+        /* c8 ignore next */
+        exeContext.promiseCanceller?.disconnect();
         return { data: null, errors: withError(exeContext.errors, error) };
     }
 }
@@ -184,6 +195,7 @@ function buildDataResponse(exeContext, graphqlWrappedResult) {
     const { rawResult: data, incrementalDataRecords } = graphqlWrappedResult;
     const errors = exeContext.errors;
     if (incrementalDataRecords === undefined) {
+        exeContext.promiseCanceller?.disconnect();
         return errors !== undefined ? { errors, data } : { data };
     }
     return buildIncrementalResponse(exeContext, data, errors, incrementalDataRecords);
@@ -301,9 +313,9 @@ function executeRootGroupedFieldSet(exeContext, operation, rootType, rootValue, 
  * for fields that must be executed serially.
  */
 function executeFieldsSerially(exeContext, parentType, sourceValue, path, groupedFieldSet, incrementalContext, deferMap) {
+    const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
     return promiseReduce(groupedFieldSet, (graphqlWrappedResult, [responseName, fieldDetailsList]) => {
         const fieldPath = addPath(path, responseName, parentType.name);
-        const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
         if (abortSignal?.aborted) {
             handleFieldError(abortSignal.reason, exeContext, parentType, fieldDetailsList, fieldPath, incrementalContext);
             graphqlWrappedResult.rawResult[responseName] = null;
@@ -391,7 +403,7 @@ function toNodes(fieldDetailsList) {
  * coercing scalars, or execute the sub-selection-set for objects.
  */
 function executeField(exeContext, parentType, source, fieldDetailsList, path, incrementalContext, deferMap) {
-    const validatedExecutionArgs = exeContext.validatedExecutionArgs;
+    const { validatedExecutionArgs, promiseCanceller } = exeContext;
     const { schema, contextValue, variableValues, hideSuggestions, abortSignal } = validatedExecutionArgs;
     const fieldName = fieldDetailsList[0].node.name.value;
     const fieldDef = schema.getField(parentType, fieldName);
@@ -412,7 +424,7 @@ function executeField(exeContext, parentType, source, fieldDetailsList, path, in
         // used to represent an authenticated user, or request-specific caches.
         const result = resolveFn(source, args, contextValue, info, abortSignal);
         if (isPromise(result)) {
-            return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap);
+            return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, promiseCanceller?.withCancellation(result) ?? result, incrementalContext, deferMap);
         }
         const completed = completeValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap);
         if (isPromise(completed)) {
@@ -773,7 +785,7 @@ function completeListItemValue(item, completedResults, parent, exeContext, itemT
 }
 async function completePromisedListItemValue(item, parent, exeContext, itemType, fieldDetailsList, info, itemPath, incrementalContext, deferMap) {
     try {
-        const resolved = await item;
+        const resolved = await (exeContext.promiseCanceller?.withCancellation(item) ?? item);
         let completed = completeValue(exeContext, itemType, fieldDetailsList, info, itemPath, resolved, incrementalContext, deferMap);
         if (isPromise(completed)) {
             completed = await completed;
@@ -836,16 +848,11 @@ function ensureValidRuntimeType(runtimeTypeName, schema, returnType, fieldDetail
  * Complete an Object value by executing all sub-selections.
  */
 function completeObjectValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap) {
-    const validatedExecutionArgs = exeContext.validatedExecutionArgs;
-    const abortSignal = validatedExecutionArgs.abortSignal;
-    if (abortSignal?.aborted) {
-        throw locatedError(abortSignal.reason, toNodes(fieldDetailsList), pathToArray(path));
-    }
     // If there is an isTypeOf predicate function, call it with the
     // current result. If isTypeOf returns false, then raise an error rather
     // than continuing execution.
     if (returnType.isTypeOf) {
-        const isTypeOf = returnType.isTypeOf(result, validatedExecutionArgs.contextValue, info);
+        const isTypeOf = returnType.isTypeOf(result, exeContext.validatedExecutionArgs.contextValue, info);
         if (isPromise(isTypeOf)) {
             return isTypeOf.then((resolvedIsTypeOf) => {
                 if (!resolvedIsTypeOf) {
@@ -1110,9 +1117,17 @@ function executeSubscription(validatedExecutionArgs) {
         // used to represent an authenticated user, or request-specific caches.
         const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
         if (isPromise(result)) {
-            return result
-                .then(assertEventStream)
-                .then(undefined, (error) => {
+            const promiseCanceller = abortSignal
+                ? new PromiseCanceller(abortSignal)
+                : undefined;
+            const promise = promiseCanceller?.withCancellation(result) ?? result;
+            return promise.then(assertEventStream).then((resolved) => {
+                // TODO: add test case
+                /* c8 ignore next */
+                promiseCanceller?.disconnect();
+                return resolved;
+            }, (error) => {
+                promiseCanceller?.disconnect();
                 throw locatedError(error, fieldNodes, pathToArray(path));
             });
         }
@@ -1267,7 +1282,7 @@ async function getNextAsyncStreamItemResult(streamItemQueue, streamPath, index, 
 }
 function completeStreamItem(itemPath, item, exeContext, incrementalContext, fieldDetailsList, info, itemType) {
     if (isPromise(item)) {
-        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, item, incrementalContext, new Map()).then((resolvedItem) => buildStreamItemResult(incrementalContext.errors, resolvedItem), (error) => ({
+        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, exeContext.promiseCanceller?.withCancellation(item) ?? item, incrementalContext, new Map()).then((resolvedItem) => buildStreamItemResult(incrementalContext.errors, resolvedItem), (error) => ({
             errors: withError(incrementalContext.errors, error),
         }));
     }
