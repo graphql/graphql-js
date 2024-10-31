@@ -59,6 +59,7 @@ import {
 import { getVariableSignature } from './getVariableSignature.ts';
 import { buildIncrementalResponse } from './IncrementalPublisher.ts';
 import { mapAsyncIterable } from './mapAsyncIterable.ts';
+import { PromiseCanceller } from './PromiseCanceller.ts';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,
@@ -154,6 +155,7 @@ export interface ValidatedExecutionArgs {
 export interface ExecutionContext {
   validatedExecutionArgs: ValidatedExecutionArgs;
   errors: Array<GraphQLError> | undefined;
+  promiseCanceller: PromiseCanceller | undefined;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 interface IncrementalContext {
@@ -289,9 +291,13 @@ export function executeQueryOrMutationOrSubscriptionEvent(
 export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+  const abortSignal = validatedExecutionArgs.abortSignal;
   const exeContext: ExecutionContext = {
     validatedExecutionArgs,
     errors: undefined,
+    promiseCanceller: abortSignal
+      ? new PromiseCanceller(abortSignal)
+      : undefined,
     cancellableStreams: undefined,
   };
   try {
@@ -339,14 +345,20 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
     if (isPromise(graphqlWrappedResult)) {
       return graphqlWrappedResult.then(
         (resolved) => buildDataResponse(exeContext, resolved),
-        (error: unknown) => ({
-          data: null,
-          errors: withError(exeContext.errors, error as GraphQLError),
-        }),
+        (error: unknown) => {
+          exeContext.promiseCanceller?.disconnect();
+          return {
+            data: null,
+            errors: withError(exeContext.errors, error as GraphQLError),
+          };
+        },
       );
     }
     return buildDataResponse(exeContext, graphqlWrappedResult);
   } catch (error) {
+    // TODO: add test case for synchronous null bubbling to root with cancellation
+    /* c8 ignore next */
+    exeContext.promiseCanceller?.disconnect();
     return { data: null, errors: withError(exeContext.errors, error) };
   }
 }
@@ -427,6 +439,7 @@ function buildDataResponse(
   const { rawResult: data, incrementalDataRecords } = graphqlWrappedResult;
   const errors = exeContext.errors;
   if (incrementalDataRecords === undefined) {
+    exeContext.promiseCanceller?.disconnect();
     return errors !== undefined ? { errors, data } : { data };
   }
   return buildIncrementalResponse(
@@ -610,11 +623,11 @@ function executeFieldsSerially(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
+  const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
   return promiseReduce(
     groupedFieldSet,
     (graphqlWrappedResult, [responseName, fieldDetailsList]) => {
       const fieldPath = addPath(path, responseName, parentType.name);
-      const abortSignal = exeContext.validatedExecutionArgs.abortSignal;
       if (abortSignal?.aborted) {
         handleFieldError(
           abortSignal.reason,
@@ -753,7 +766,7 @@ function executeField(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<unknown>> | undefined {
-  const validatedExecutionArgs = exeContext.validatedExecutionArgs;
+  const { validatedExecutionArgs, promiseCanceller } = exeContext;
   const { schema, contextValue, variableValues, hideSuggestions, abortSignal } =
     validatedExecutionArgs;
   const fieldName = fieldDetailsList[0].node.name.value;
@@ -793,7 +806,7 @@ function executeField(
         fieldDetailsList,
         info,
         path,
-        result,
+        promiseCanceller?.withCancellation(result) ?? result,
         incrementalContext,
         deferMap,
       );
@@ -1457,7 +1470,7 @@ function completeListItemValue(
   return false;
 }
 async function completePromisedListItemValue(
-  item: unknown,
+  item: Promise<unknown>,
   parent: GraphQLWrappedResult<Array<unknown>>,
   exeContext: ExecutionContext,
   itemType: GraphQLOutputType,
@@ -1468,7 +1481,9 @@ async function completePromisedListItemValue(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): Promise<unknown> {
   try {
-    const resolved = await item;
+    const resolved = await (exeContext.promiseCanceller?.withCancellation(
+      item,
+    ) ?? item);
     let completed = completeValue(
       exeContext,
       itemType,
@@ -1625,22 +1640,13 @@ function completeObjectValue(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
-  const validatedExecutionArgs = exeContext.validatedExecutionArgs;
-  const abortSignal = validatedExecutionArgs.abortSignal;
-  if (abortSignal?.aborted) {
-    throw locatedError(
-      abortSignal.reason,
-      toNodes(fieldDetailsList),
-      pathToArray(path),
-    );
-  }
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
   // than continuing execution.
   if (returnType.isTypeOf) {
     const isTypeOf = returnType.isTypeOf(
       result,
-      validatedExecutionArgs.contextValue,
+      exeContext.validatedExecutionArgs.contextValue,
       info,
     );
     if (isPromise(isTypeOf)) {
@@ -2039,11 +2045,22 @@ function executeSubscription(
     // used to represent an authenticated user, or request-specific caches.
     const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
     if (isPromise(result)) {
-      return result
-        .then(assertEventStream)
-        .then(undefined, (error: unknown) => {
+      const promiseCanceller = abortSignal
+        ? new PromiseCanceller(abortSignal)
+        : undefined;
+      const promise = promiseCanceller?.withCancellation(result) ?? result;
+      return promise.then(assertEventStream).then(
+        (resolved) => {
+          // TODO: add test case
+          /* c8 ignore next */
+          promiseCanceller?.disconnect();
+          return resolved;
+        },
+        (error: unknown) => {
+          promiseCanceller?.disconnect();
           throw locatedError(error, fieldNodes, pathToArray(path));
-        });
+        },
+      );
     }
     return assertEventStream(result);
   } catch (error) {
@@ -2362,7 +2379,7 @@ function completeStreamItem(
       fieldDetailsList,
       info,
       itemPath,
-      item,
+      exeContext.promiseCanceller?.withCancellation(item) ?? item,
       incrementalContext,
       new Map(),
     ).then(
