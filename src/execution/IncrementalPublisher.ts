@@ -5,6 +5,7 @@ import { pathToArray } from '../jsutils/Path.js';
 import type { GraphQLError } from '../error/GraphQLError.js';
 
 import { IncrementalGraph } from './IncrementalGraph.js';
+import type { PromiseCanceller } from './PromiseCanceller.js';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,
@@ -43,6 +44,7 @@ export function buildIncrementalResponse(
 }
 
 interface IncrementalPublisherContext {
+  promiseCanceller: PromiseCanceller | undefined;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
@@ -125,6 +127,7 @@ class IncrementalPublisher {
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
       if (isDone) {
+        this._context.promiseCanceller?.disconnect();
         await this._returnAsyncIteratorsIgnoringErrors();
         return { value: undefined, done: true };
       }
@@ -171,6 +174,9 @@ class IncrementalPublisher {
         batch = await this._incrementalGraph.nextCompletedBatch();
       } while (batch !== undefined);
 
+      // TODO: add test for this case
+      /* c8 ignore next */
+      this._context.promiseCanceller?.disconnect();
       await this._returnAsyncIteratorsIgnoringErrors();
       return { value: undefined, done: true };
     };
