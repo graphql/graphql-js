@@ -31,6 +31,16 @@ describe('astFromValue', () => {
       value: false,
     });
 
+    expect(astFromValue(0n, GraphQLBoolean)).to.deep.equal({
+      kind: 'BooleanValue',
+      value: false,
+    });
+
+    expect(astFromValue(1n, GraphQLBoolean)).to.deep.equal({
+      kind: 'BooleanValue',
+      value: true,
+    });
+
     expect(astFromValue(undefined, GraphQLBoolean)).to.deep.equal(null);
 
     expect(astFromValue(null, GraphQLBoolean)).to.deep.equal({
@@ -64,6 +74,16 @@ describe('astFromValue', () => {
       kind: 'IntValue',
       value: '123',
     });
+
+    // Note: outside the bounds of 32bit signed int.
+    expect(() => astFromValue(9007199254740991, GraphQLInt)).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 9007199254740991',
+    );
+
+    // Note: outside the bounds of 32bit signed int as BigInt.
+    expect(() => astFromValue(9007199254740991n, GraphQLInt)).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 9007199254740991',
+    );
 
     expect(astFromValue(1e4, GraphQLInt)).to.deep.equal({
       kind: 'IntValue',
@@ -111,6 +131,11 @@ describe('astFromValue', () => {
       kind: 'FloatValue',
       value: '1e+40',
     });
+
+    expect(astFromValue(9007199254740993n, GraphQLFloat)).to.deep.equal({
+      kind: 'IntValue',
+      value: '9007199254740993',
+    });
   });
 
   it('converts String values to String ASTs', () => {
@@ -143,6 +168,11 @@ describe('astFromValue', () => {
       kind: 'NullValue',
     });
 
+    expect(astFromValue(9007199254740993n, GraphQLString)).to.deep.equal({
+      kind: 'StringValue',
+      value: '9007199254740993',
+    });
+
     expect(astFromValue(undefined, GraphQLString)).to.deep.equal(null);
   });
 
@@ -161,6 +191,11 @@ describe('astFromValue', () => {
     expect(astFromValue('VA\nLUE', GraphQLID)).to.deep.equal({
       kind: 'StringValue',
       value: 'VA\nLUE',
+    });
+
+    expect(astFromValue(9007199254740993n, GraphQLID)).to.deep.equal({
+      kind: 'IntValue',
+      value: '9007199254740993',
     });
 
     // Note: IntValues are used when possible.

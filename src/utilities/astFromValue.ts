@@ -119,6 +119,11 @@ export function astFromValue(
         : { kind: Kind.FLOAT, value: stringNum };
     }
 
+    if (typeof coerced === 'bigint') {
+      const stringNum = String(coerced);
+      return { kind: Kind.INT, value: stringNum };
+    }
+
     if (typeof coerced === 'string') {
       // Enum types use Enum literals.
       if (isEnumType(type)) {

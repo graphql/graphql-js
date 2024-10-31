@@ -21,6 +21,7 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceInputValue(1)).to.equal(1);
       expect(coerceInputValue(0)).to.equal(0);
       expect(coerceInputValue(-1)).to.equal(-1);
+      expect(coerceInputValue(1n)).to.equal(1);
 
       expect(() => coerceInputValue(9876504321)).to.throw(
         'Int cannot represent non 32-bit signed integer value: 9876504321',
@@ -119,6 +120,7 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue(1e5)).to.equal(100000);
       expect(coerceOutputValue(false)).to.equal(0);
       expect(coerceOutputValue(true)).to.equal(1);
+      expect(coerceOutputValue(1n)).to.equal(1);
 
       const customValueOfObj = {
         value: 5,
@@ -190,6 +192,7 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceInputValue(-1)).to.equal(-1);
       expect(coerceInputValue(0.1)).to.equal(0.1);
       expect(coerceInputValue(Math.PI)).to.equal(Math.PI);
+      expect(coerceInputValue(1n)).to.equal(1);
 
       expect(() => coerceInputValue(NaN)).to.throw(
         'Float cannot represent non numeric value: NaN',
@@ -280,6 +283,7 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue('-1.1')).to.equal(-1.1);
       expect(coerceOutputValue(false)).to.equal(0.0);
       expect(coerceOutputValue(true)).to.equal(1.0);
+      expect(coerceOutputValue(1n)).to.equal(1n);
 
       const customValueOfObj = {
         value: 5.5,
@@ -380,6 +384,7 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue(-1.1)).to.equal('-1.1');
       expect(coerceOutputValue(true)).to.equal('true');
       expect(coerceOutputValue(false)).to.equal('false');
+      expect(coerceOutputValue(9007199254740993n)).to.equal('9007199254740993');
 
       const valueOf = () => 'valueOf string';
       const toJSON = () => 'toJSON string';
@@ -497,6 +502,8 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue(0)).to.equal(false);
       expect(coerceOutputValue(true)).to.equal(true);
       expect(coerceOutputValue(false)).to.equal(false);
+      expect(coerceOutputValue(1n)).to.equal(true);
+      expect(coerceOutputValue(0n)).to.equal(false);
       expect(
         coerceOutputValue({
           value: true,
@@ -536,6 +543,8 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceInputValue(1)).to.equal('1');
       expect(coerceInputValue(0)).to.equal('0');
       expect(coerceInputValue(-1)).to.equal('-1');
+      // Can handle bigint in JS
+      expect(coerceInputValue(9007199254740993n)).to.equal('9007199254740993');
 
       // Maximum and minimum safe numbers in JS
       expect(coerceInputValue(9007199254740991)).to.equal('9007199254740991');
@@ -620,6 +629,7 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue(123)).to.equal('123');
       expect(coerceOutputValue(0)).to.equal('0');
       expect(coerceOutputValue(-1)).to.equal('-1');
+      expect(coerceOutputValue(9007199254740993n)).to.equal('9007199254740993');
 
       const valueOf = () => 'valueOf ID';
       const toJSON = () => 'toJSON ID';
