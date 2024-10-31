@@ -328,7 +328,7 @@ function findInputObjectTypeChanges(
           `Field ${oldType}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
       });
-    } else {
+    } else if (oldField.type.toString() !== newField.type.toString()) {
       schemaChanges.push({
         type: SafeChangeType.FIELD_CHANGED_KIND_SAFE,
         description:
@@ -368,7 +368,7 @@ function findUnionTypeChanges(
 function findEnumTypeChanges(
   oldType: GraphQLEnumType,
   newType: GraphQLEnumType,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
   const valuesDiff = diff(oldType.getValues(), newType.getValues());
 
@@ -520,7 +520,7 @@ function findArgChanges(
         type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
         description: `${oldType}.${oldField.name}(${oldArg.name}:) added a defaultValue ${newValueStr}.`,
       });
-    } else {
+    } else if (oldArg.type.toString() !== newArg.type.toString()) {
       schemaChanges.push({
         type: SafeChangeType.ARG_CHANGED_KIND_SAFE,
         description:
