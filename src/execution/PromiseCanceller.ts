@@ -1,8 +1,8 @@
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
 /**
- * A PromiseCanceller object can be used to cancel multiple promises
- * using a single AbortSignal.
+ * A PromiseCanceller object can be used to trigger multiple responses
+ * in response to a single AbortSignal.
  *
  * @internal
  */
@@ -28,14 +28,21 @@ export class PromiseCanceller {
     this.abortSignal.removeEventListener('abort', this.abort);
   }
 
-  withCancellation<T>(originalPromise: Promise<T>): Promise<T> {
+  cancellablePromise<T>(
+    originalPromise: Promise<T>,
+    onCancel?: (() => unknown) | undefined,
+  ): Promise<T> {
     if (this.abortSignal.aborted) {
+      onCancel?.();
       // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject(this.abortSignal.reason);
     }
 
     const { promise, resolve, reject } = promiseWithResolvers<T>();
-    const abort = () => reject(this.abortSignal.reason);
+    const abort = () => {
+      onCancel?.();
+      reject(this.abortSignal.reason);
+    };
     this._aborts.add(abort);
     originalPromise.then(
       (resolved) => {
@@ -49,5 +56,34 @@ export class PromiseCanceller {
     );
 
     return promise;
+  }
+
+  cancellableIterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T> {
+    const iterator = iterable[Symbol.asyncIterator]();
+
+    if (iterator.return) {
+      const _return = iterator.return.bind(iterator);
+      const _returnIgnoringErrors = async (): Promise<IteratorResult<T>> => {
+        _return().catch(() => {
+          /* c8 ignore next */
+          // ignore
+        });
+        return Promise.resolve({ value: undefined, done: true });
+      };
+
+      return {
+        [Symbol.asyncIterator]: () => ({
+          next: () =>
+            this.cancellablePromise(iterator.next(), _returnIgnoringErrors),
+          return: () => this.cancellablePromise(_return()),
+        }),
+      };
+    }
+
+    return {
+      [Symbol.asyncIterator]: () => ({
+        next: () => this.cancellablePromise(iterator.next()),
+      }),
+    };
   }
 }

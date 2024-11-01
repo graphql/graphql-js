@@ -878,7 +878,7 @@ function executeField(
         fieldDetailsList,
         info,
         path,
-        promiseCanceller?.withCancellation(result) ?? result,
+        promiseCanceller?.cancellablePromise(result) ?? result,
         incrementalContext,
         deferMap,
       );
@@ -1386,7 +1386,9 @@ function completeListValue(
   const itemType = returnType.ofType;
 
   if (isAsyncIterable(result)) {
-    const asyncIterator = result[Symbol.asyncIterator]();
+    const maybeCancellableIterable =
+      exeContext.promiseCanceller?.cancellableIterable(result) ?? result;
+    const asyncIterator = maybeCancellableIterable[Symbol.asyncIterator]();
 
     return completeAsyncIteratorValue(
       exeContext,
@@ -1597,7 +1599,7 @@ async function completePromisedListItemValue(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): Promise<unknown> {
   try {
-    const resolved = await (exeContext.promiseCanceller?.withCancellation(
+    const resolved = await (exeContext.promiseCanceller?.cancellablePromise(
       item,
     ) ?? item);
     let completed = completeValue(
@@ -2263,17 +2265,16 @@ function executeSubscription(
     // used to represent an authenticated user, or request-specific caches.
     const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
 
+    const promiseCanceller = abortSignal
+      ? new PromiseCanceller(abortSignal)
+      : undefined;
+
     if (isPromise(result)) {
-      const promiseCanceller = abortSignal
-        ? new PromiseCanceller(abortSignal)
-        : undefined;
-      const promise = promiseCanceller?.withCancellation(result) ?? result;
+      const promise = promiseCanceller?.cancellablePromise(result) ?? result;
       return promise.then(assertEventStream).then(
         (resolved) => {
-          // TODO: add test case
-          /* c8 ignore next */
           promiseCanceller?.disconnect();
-          return resolved;
+          return promiseCanceller?.cancellableIterable(resolved) ?? resolved;
         },
         (error: unknown) => {
           promiseCanceller?.disconnect();
@@ -2282,7 +2283,8 @@ function executeSubscription(
       );
     }
 
-    return assertEventStream(result);
+    const eventStream = assertEventStream(result);
+    return promiseCanceller?.cancellableIterable(eventStream) ?? eventStream;
   } catch (error) {
     throw locatedError(error, fieldNodes, pathToArray(path));
   }
@@ -2648,7 +2650,7 @@ function completeStreamItem(
       fieldDetailsList,
       info,
       itemPath,
-      exeContext.promiseCanceller?.withCancellation(item) ?? item,
+      exeContext.promiseCanceller?.cancellablePromise(item) ?? item,
       incrementalContext,
       new Map(),
     ).then(
