@@ -1,3 +1,4 @@
+import { isPromise } from '../jsutils/isPromise.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
@@ -117,7 +118,7 @@ export interface ParseOptions {
 export function parse(
   source: string | Source,
   options?: ParseOptions | undefined,
-): DocumentNode {
+): Promise<DocumentNode> | DocumentNode {
   const parser = new Parser(source, options);
   const document = parser.parseDocument();
   Object.defineProperty(document, 'tokenCount', {
@@ -125,6 +126,18 @@ export function parse(
     value: parser.tokenCount,
   });
   return document;
+}
+
+export function parseSync(
+  source: string | Source,
+  options?: ParseOptions | undefined,
+): DocumentNode {
+  const result = parse(source, options);
+  /* c8 ignore next 3 */
+  if (isPromise(result)) {
+    throw new Error('GraphQL parsing failed to complete synchronously.');
+  }
+  return result;
 }
 
 /**

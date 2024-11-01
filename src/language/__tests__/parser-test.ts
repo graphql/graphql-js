@@ -11,7 +11,13 @@ import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../kinds.js';
-import { parse, parseConstValue, parseType, parseValue } from '../parser.js';
+import {
+  parse,
+  parseConstValue,
+  parseSync,
+  parseType,
+  parseValue,
+} from '../parser.js';
 import { Source } from '../source.js';
 import { TokenKind } from '../tokenKind.js';
 
@@ -23,7 +29,7 @@ describe('Parser', () => {
   it('parse provides useful errors', () => {
     let caughtError;
     try {
-      parse('{');
+      parseSync('{');
     } catch (error) {
       caughtError = error;
     }
@@ -74,7 +80,7 @@ describe('Parser', () => {
   it('parse provides useful error when using source', () => {
     let caughtError;
     try {
-      parse(new Source('query', 'MyQuery.graphql'));
+      parseSync(new Source('query', 'MyQuery.graphql'));
     } catch (error) {
       caughtError = error;
     }
@@ -100,9 +106,10 @@ describe('Parser', () => {
     );
   });
 
-  it('exposes the tokenCount', () => {
-    expect(parse('{ foo }').tokenCount).to.equal(3);
-    expect(parse('{ foo(bar: "baz") }').tokenCount).to.equal(8);
+  it('exposes the tokenCount', async () => {
+    expect(parseSync('{ foo }').tokenCount).to.equal(3);
+    expect((await parse('{ foo }')).tokenCount).to.equal(3);
+    expect((await parse('{ foo(bar: "baz") }')).tokenCount).to.equal(8);
   });
 
   it('parses variable inline values', () => {
@@ -431,8 +438,8 @@ describe('Parser', () => {
     expect(() => parse(document)).to.throw();
   });
 
-  it('contains location that can be Object.toStringified, JSON.stringified, or jsutils.inspected', () => {
-    const { loc } = parse('{ id }');
+  it('contains location that can be Object.toStringified, JSON.stringified, or jsutils.inspected', async () => {
+    const { loc } = await parse('{ id }');
 
     expect(Object.prototype.toString.call(loc)).to.equal('[object Location]');
     expect(JSON.stringify(loc)).to.equal('{"start":0,"end":6}');
