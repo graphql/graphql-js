@@ -28,6 +28,7 @@ export declare const DangerousChangeType: {
 };
 export type DangerousChangeType = (typeof DangerousChangeType)[keyof typeof DangerousChangeType];
 export declare const SafeChangeType: {
+    DESCRIPTION_CHANGED: "DESCRIPTION_CHANGED";
     TYPE_ADDED: "TYPE_ADDED";
     OPTIONAL_INPUT_FIELD_ADDED: "OPTIONAL_INPUT_FIELD_ADDED";
     OPTIONAL_ARG_ADDED: "OPTIONAL_ARG_ADDED";
