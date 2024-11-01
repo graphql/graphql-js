@@ -64,6 +64,7 @@ export const DangerousChangeType = {
 export type DangerousChangeType =
   (typeof DangerousChangeType)[keyof typeof DangerousChangeType];
 export const SafeChangeType = {
+  DESCRIPTION_CHANGED: 'DESCRIPTION_CHANGED' as const,
   TYPE_ADDED: 'TYPE_ADDED' as const,
   OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED' as const,
   OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED' as const,
@@ -173,6 +174,14 @@ function findDirectiveChanges(
         description: `Argument @${oldDirective.name}(${oldArg.name}:) was removed.`,
       });
     }
+    for (const [oldArg, newArg] of argsDiff.persisted) {
+      if (oldArg.description !== newArg.description) {
+        schemaChanges.push({
+          type: SafeChangeType.DESCRIPTION_CHANGED,
+          description: `Description of @${oldDirective.name}(${oldDirective.name}) has changed to "${newArg.description}".`,
+        });
+      }
+    }
     if (oldDirective.isRepeatable && !newDirective.isRepeatable) {
       schemaChanges.push({
         type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
@@ -182,6 +191,12 @@ function findDirectiveChanges(
       schemaChanges.push({
         type: SafeChangeType.DIRECTIVE_REPEATABLE_ADDED,
         description: `Repeatable flag was added to @${oldDirective.name}.`,
+      });
+    }
+    if (oldDirective.description !== newDirective.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of @${oldDirective.name} has changed to "${newDirective.description}".`,
       });
     }
     for (const location of oldDirective.locations) {
@@ -227,6 +242,12 @@ function findTypeChanges(
     });
   }
   for (const [oldType, newType] of typesDiff.persisted) {
+    if (oldType.description !== newType.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of ${oldType.name} has changed to "${newType.description}".`,
+      });
+    }
     if (isEnumType(oldType) && isEnumType(newType)) {
       schemaChanges.push(...findEnumTypeChanges(oldType, newType));
     } else if (isUnionType(oldType) && isUnionType(newType)) {
@@ -294,12 +315,18 @@ function findInputObjectTypeChanges(
           `Field ${oldType}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
       });
-    } else {
+    } else if (oldField.type.toString() !== newField.type.toString()) {
       schemaChanges.push({
         type: SafeChangeType.FIELD_CHANGED_KIND_SAFE,
         description:
           `Field ${oldType}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
+      });
+    }
+    if (oldField.description !== newField.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of input-field ${newType}.${newField.name} has changed to "${newField.description}".`,
       });
     }
   }
@@ -328,7 +355,7 @@ function findUnionTypeChanges(
 function findEnumTypeChanges(
   oldType: GraphQLEnumType,
   newType: GraphQLEnumType,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
   const valuesDiff = diff(oldType.getValues(), newType.getValues());
   for (const newValue of valuesDiff.added) {
@@ -342,6 +369,14 @@ function findEnumTypeChanges(
       type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
       description: `Enum value ${oldType}.${oldValue.name} was removed.`,
     });
+  }
+  for (const [oldValue, newValue] of valuesDiff.persisted) {
+    if (oldValue.description !== newValue.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of enum value ${oldType}.${oldValue.name} has changed to "${newValue.description}".`,
+      });
+    }
   }
   return schemaChanges;
 }
@@ -407,6 +442,12 @@ function findFieldChanges(
           `${String(oldField.type)} to ${String(newField.type)}.`,
       });
     }
+    if (oldField.description !== newField.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of field ${oldType}.${oldField.name} has changed to "${newField.description}".`,
+      });
+    }
   }
   return schemaChanges;
 }
@@ -463,12 +504,18 @@ function findArgChanges(
         type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
         description: `${oldType}.${oldField.name}(${oldArg.name}:) added a defaultValue ${newValueStr}.`,
       });
-    } else {
+    } else if (oldArg.type.toString() !== newArg.type.toString()) {
       schemaChanges.push({
         type: SafeChangeType.ARG_CHANGED_KIND_SAFE,
         description:
           `Argument ${oldType}.${oldField.name}(${oldArg.name}:) has changed type from ` +
           `${String(oldArg.type)} to ${String(newArg.type)}.`,
+      });
+    }
+    if (oldArg.description !== newArg.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of argument ${oldType}.${oldField.name}(${oldArg.name}) has changed to "${newArg.description}".`,
       });
     }
   }
