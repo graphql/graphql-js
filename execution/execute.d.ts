@@ -55,6 +55,7 @@ export interface ExecutionContext {
     validatedExecutionArgs: ValidatedExecutionArgs;
     errors: Array<GraphQLError> | undefined;
     promiseCanceller: PromiseCanceller | undefined;
+    completed: boolean;
     cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 export interface ExecutionArgs {

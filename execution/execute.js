@@ -132,6 +132,7 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
         promiseCanceller: abortSignal
             ? new PromiseCanceller_js_1.PromiseCanceller(abortSignal)
             : undefined,
+        completed: false,
         cancellableStreams: undefined,
     };
     try {
@@ -143,7 +144,11 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
         const { groupedFieldSet, newDeferUsages } = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, rootType, operation, hideSuggestions);
         const graphqlWrappedResult = executeRootExecutionPlan(exeContext, operation.operation, rootType, rootValue, groupedFieldSet, newDeferUsages);
         if ((0, isPromise_js_1.isPromise)(graphqlWrappedResult)) {
-            return graphqlWrappedResult.then((resolved) => buildDataResponse(exeContext, resolved), (error) => {
+            return graphqlWrappedResult.then((resolved) => {
+                exeContext.completed = true;
+                return buildDataResponse(exeContext, resolved);
+            }, (error) => {
+                exeContext.completed = true;
                 exeContext.promiseCanceller?.disconnect();
                 return {
                     data: null,
@@ -151,9 +156,11 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
                 };
             });
         }
+        exeContext.completed = true;
         return buildDataResponse(exeContext, graphqlWrappedResult);
     }
     catch (error) {
+        exeContext.completed = true;
         // TODO: add test case for synchronous null bubbling to root with cancellation
         /* c8 ignore next */
         exeContext.promiseCanceller?.disconnect();
@@ -858,6 +865,9 @@ function ensureValidRuntimeType(runtimeTypeName, schema, returnType, fieldDetail
  * Complete an Object value by executing all sub-selections.
  */
 function completeObjectValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap) {
+    if ((incrementalContext ?? exeContext).completed) {
+        throw new Error('Completed, aborting.');
+    }
     // If there is an isTypeOf predicate function, call it with the
     // current result. If isTypeOf returns false, then raise an error rather
     // than continuing execution.
@@ -1184,6 +1194,7 @@ function collectExecutionGroups(exeContext, parentType, sourceValue, path, paren
         };
         const executor = () => executeExecutionGroup(pendingExecutionGroup, exeContext, parentType, sourceValue, path, groupedFieldSet, {
             errors: undefined,
+            completed: false,
             deferUsageSet,
         }, deferMap);
         if (exeContext.validatedExecutionArgs.enableEarlyExecution) {
@@ -1212,6 +1223,7 @@ function executeExecutionGroup(pendingExecutionGroup, exeContext, parentType, so
         result = executeFields(exeContext, parentType, sourceValue, path, groupedFieldSet, incrementalContext, deferMap);
     }
     catch (error) {
+        incrementalContext.completed = true;
         return {
             pendingExecutionGroup,
             path: (0, Path_js_1.pathToArray)(path),
@@ -1219,12 +1231,19 @@ function executeExecutionGroup(pendingExecutionGroup, exeContext, parentType, so
         };
     }
     if ((0, isPromise_js_1.isPromise)(result)) {
-        return result.then((resolved) => buildCompletedExecutionGroup(incrementalContext.errors, pendingExecutionGroup, path, resolved), (error) => ({
-            pendingExecutionGroup,
-            path: (0, Path_js_1.pathToArray)(path),
-            errors: withError(incrementalContext.errors, error),
-        }));
+        return result.then((resolved) => {
+            incrementalContext.completed = true;
+            return buildCompletedExecutionGroup(incrementalContext.errors, pendingExecutionGroup, path, resolved);
+        }, (error) => {
+            incrementalContext.completed = true;
+            return {
+                pendingExecutionGroup,
+                path: (0, Path_js_1.pathToArray)(path),
+                errors: withError(incrementalContext.errors, error),
+            };
+        });
     }
+    incrementalContext.completed = true;
     return buildCompletedExecutionGroup(incrementalContext.errors, pendingExecutionGroup, path, result);
 }
 function buildCompletedExecutionGroup(errors, pendingExecutionGroup, path, result) {
@@ -1244,7 +1263,7 @@ function buildSyncStreamItemQueue(initialItem, initialIndex, streamPath, iterato
     const enableEarlyExecution = exeContext.validatedExecutionArgs.enableEarlyExecution;
     const firstExecutor = () => {
         const initialPath = (0, Path_js_1.addPath)(streamPath, initialIndex, undefined);
-        const firstStreamItem = new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(completeStreamItem(initialPath, initialItem, exeContext, { errors: undefined }, fieldDetailsList, info, itemType));
+        const firstStreamItem = new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(completeStreamItem(initialPath, initialItem, exeContext, { errors: undefined, completed: false }, fieldDetailsList, info, itemType));
         let iteration = iterator.next();
         let currentIndex = initialIndex + 1;
         let currentStreamItem = firstStreamItem;
@@ -1259,7 +1278,7 @@ function buildSyncStreamItemQueue(initialItem, initialIndex, streamPath, iterato
             }
             const itemPath = (0, Path_js_1.addPath)(streamPath, currentIndex, undefined);
             const value = iteration.value;
-            const currentExecutor = () => completeStreamItem(itemPath, value, exeContext, { errors: undefined }, fieldDetailsList, info, itemType);
+            const currentExecutor = () => completeStreamItem(itemPath, value, exeContext, { errors: undefined, completed: false }, fieldDetailsList, info, itemType);
             currentStreamItem = enableEarlyExecution
                 ? new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(currentExecutor())
                 : () => new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(currentExecutor());
@@ -1299,7 +1318,7 @@ async function getNextAsyncStreamItemResult(streamItemQueue, streamPath, index, 
         return {};
     }
     const itemPath = (0, Path_js_1.addPath)(streamPath, index, undefined);
-    const result = completeStreamItem(itemPath, iteration.value, exeContext, { errors: undefined }, fieldDetailsList, info, itemType);
+    const result = completeStreamItem(itemPath, iteration.value, exeContext, { errors: undefined, completed: false }, fieldDetailsList, info, itemType);
     const executor = () => getNextAsyncStreamItemResult(streamItemQueue, streamPath, index + 1, asyncIterator, exeContext, fieldDetailsList, info, itemType);
     streamItemQueue.push(exeContext.validatedExecutionArgs.enableEarlyExecution
         ? new BoxedPromiseOrValue_js_1.BoxedPromiseOrValue(executor())
@@ -1308,9 +1327,15 @@ async function getNextAsyncStreamItemResult(streamItemQueue, streamPath, index, 
 }
 function completeStreamItem(itemPath, item, exeContext, incrementalContext, fieldDetailsList, info, itemType) {
     if ((0, isPromise_js_1.isPromise)(item)) {
-        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, exeContext.promiseCanceller?.withCancellation(item) ?? item, incrementalContext, new Map()).then((resolvedItem) => buildStreamItemResult(incrementalContext.errors, resolvedItem), (error) => ({
-            errors: withError(incrementalContext.errors, error),
-        }));
+        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, exeContext.promiseCanceller?.withCancellation(item) ?? item, incrementalContext, new Map()).then((resolvedItem) => {
+            incrementalContext.completed = true;
+            return buildStreamItemResult(incrementalContext.errors, resolvedItem);
+        }, (error) => {
+            incrementalContext.completed = true;
+            return {
+                errors: withError(incrementalContext.errors, error),
+            };
+        });
     }
     let result;
     try {
@@ -1323,6 +1348,7 @@ function completeStreamItem(itemPath, item, exeContext, incrementalContext, fiel
         }
     }
     catch (error) {
+        incrementalContext.completed = true;
         return {
             errors: withError(incrementalContext.errors, error),
         };
@@ -1333,10 +1359,17 @@ function completeStreamItem(itemPath, item, exeContext, incrementalContext, fiel
             handleFieldError(rawError, exeContext, itemType, fieldDetailsList, itemPath, incrementalContext);
             return { rawResult: null, incrementalDataRecords: undefined };
         })
-            .then((resolvedItem) => buildStreamItemResult(incrementalContext.errors, resolvedItem), (error) => ({
-            errors: withError(incrementalContext.errors, error),
-        }));
+            .then((resolvedItem) => {
+            incrementalContext.completed = true;
+            return buildStreamItemResult(incrementalContext.errors, resolvedItem);
+        }, (error) => {
+            incrementalContext.completed = true;
+            return {
+                errors: withError(incrementalContext.errors, error),
+            };
+        });
     }
+    incrementalContext.completed = true;
     return buildStreamItemResult(incrementalContext.errors, result);
 }
 function buildStreamItemResult(errors, result) {
