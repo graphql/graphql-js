@@ -140,11 +140,8 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
         if (rootType == null) {
             throw new GraphQLError_js_1.GraphQLError(`Schema is not configured to execute ${operation.operation} operation.`, { nodes: operation });
         }
-        const collectedFields = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, rootType, operation, hideSuggestions);
-        const { groupedFieldSet, newDeferUsages } = collectedFields;
-        const graphqlWrappedResult = newDeferUsages.length === 0
-            ? executeRootGroupedFieldSet(exeContext, operation.operation, rootType, rootValue, groupedFieldSet, undefined)
-            : executeExecutionPlan(exeContext, rootType, rootValue, newDeferUsages, (0, buildExecutionPlan_js_1.buildExecutionPlan)(groupedFieldSet));
+        const { groupedFieldSet, newDeferUsages } = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, rootType, operation, hideSuggestions);
+        const graphqlWrappedResult = executeRootExecutionPlan(exeContext, operation.operation, rootType, rootValue, groupedFieldSet, newDeferUsages);
         if ((0, isPromise_js_1.isPromise)(graphqlWrappedResult)) {
             return graphqlWrappedResult.then((resolved) => buildDataResponse(exeContext, resolved), (error) => {
                 exeContext.promiseCanceller?.disconnect();
@@ -164,37 +161,6 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
     }
 }
 exports.experimentalExecuteQueryOrMutationOrSubscriptionEvent = experimentalExecuteQueryOrMutationOrSubscriptionEvent;
-function executeExecutionPlan(exeContext, returnType, sourceValue, newDeferUsages, executionPlan, path, incrementalContext, deferMap) {
-    const newDeferMap = getNewDeferMap(newDeferUsages, deferMap, path);
-    const { groupedFieldSet, newGroupedFieldSets } = executionPlan;
-    const graphqlWrappedResult = executeFields(exeContext, returnType, sourceValue, path, groupedFieldSet, incrementalContext, newDeferMap);
-    if (newGroupedFieldSets.size > 0) {
-        const newPendingExecutionGroups = collectExecutionGroups(exeContext, returnType, sourceValue, path, incrementalContext?.deferUsageSet, newGroupedFieldSets, newDeferMap);
-        return withNewExecutionGroups(graphqlWrappedResult, newPendingExecutionGroups);
-    }
-    return graphqlWrappedResult;
-}
-function withNewExecutionGroups(result, newPendingExecutionGroups) {
-    if ((0, isPromise_js_1.isPromise)(result)) {
-        return result.then((resolved) => {
-            addIncrementalDataRecords(resolved, newPendingExecutionGroups);
-            return resolved;
-        });
-    }
-    addIncrementalDataRecords(result, newPendingExecutionGroups);
-    return result;
-}
-function addIncrementalDataRecords(graphqlWrappedResult, incrementalDataRecords) {
-    if (incrementalDataRecords === undefined) {
-        return;
-    }
-    if (graphqlWrappedResult.incrementalDataRecords === undefined) {
-        graphqlWrappedResult.incrementalDataRecords = [...incrementalDataRecords];
-    }
-    else {
-        graphqlWrappedResult.incrementalDataRecords.push(...incrementalDataRecords);
-    }
-}
 function withError(errors, error) {
     return errors === undefined ? [error] : [...errors, error];
 }
@@ -305,6 +271,29 @@ function validateExecutionArgs(args) {
     };
 }
 exports.validateExecutionArgs = validateExecutionArgs;
+function executeRootExecutionPlan(exeContext, operation, rootType, rootValue, originalGroupedFieldSet, newDeferUsages) {
+    if (newDeferUsages.length === 0) {
+        return executeRootGroupedFieldSet(exeContext, operation, rootType, rootValue, originalGroupedFieldSet, undefined);
+    }
+    const newDeferMap = getNewDeferMap(newDeferUsages, undefined, undefined);
+    const { groupedFieldSet, newGroupedFieldSets } = (0, buildExecutionPlan_js_1.buildExecutionPlan)(originalGroupedFieldSet);
+    const graphqlWrappedResult = executeRootGroupedFieldSet(exeContext, operation, rootType, rootValue, groupedFieldSet, newDeferMap);
+    if (newGroupedFieldSets.size > 0) {
+        const newPendingExecutionGroups = collectExecutionGroups(exeContext, rootType, rootValue, undefined, undefined, newGroupedFieldSets, newDeferMap);
+        return withNewExecutionGroups(graphqlWrappedResult, newPendingExecutionGroups);
+    }
+    return graphqlWrappedResult;
+}
+function withNewExecutionGroups(result, newPendingExecutionGroups) {
+    if ((0, isPromise_js_1.isPromise)(result)) {
+        return result.then((resolved) => {
+            addIncrementalDataRecords(resolved, newPendingExecutionGroups);
+            return resolved;
+        });
+    }
+    addIncrementalDataRecords(result, newPendingExecutionGroups);
+    return result;
+}
 function executeRootGroupedFieldSet(exeContext, operation, rootType, rootValue, groupedFieldSet, deferMap) {
     switch (operation) {
         case ast_js_1.OperationTypeNode.QUERY:
@@ -348,6 +337,17 @@ function executeFieldsSerially(exeContext, parentType, sourceValue, path, groupe
         rawResult: Object.create(null),
         incrementalDataRecords: undefined,
     });
+}
+function addIncrementalDataRecords(graphqlWrappedResult, incrementalDataRecords) {
+    if (incrementalDataRecords === undefined) {
+        return;
+    }
+    if (graphqlWrappedResult.incrementalDataRecords === undefined) {
+        graphqlWrappedResult.incrementalDataRecords = [...incrementalDataRecords];
+    }
+    else {
+        graphqlWrappedResult.incrementalDataRecords.push(...incrementalDataRecords);
+    }
 }
 /**
  * Implements the "Executing selection sets" section of the spec
@@ -911,9 +911,20 @@ function collectAndExecuteSubfields(exeContext, returnType, fieldDetailsList, pa
     // Collect sub-fields to execute to complete this value.
     const collectedSubfields = collectSubfields(exeContext.validatedExecutionArgs, returnType, fieldDetailsList);
     const { groupedFieldSet, newDeferUsages } = collectedSubfields;
-    return deferMap === undefined && newDeferUsages.length === 0
-        ? executeFields(exeContext, returnType, result, path, groupedFieldSet, incrementalContext, undefined)
-        : executeExecutionPlan(exeContext, returnType, result, newDeferUsages, buildSubExecutionPlan(groupedFieldSet, incrementalContext?.deferUsageSet), path, incrementalContext, deferMap);
+    return executeSubExecutionPlan(exeContext, returnType, result, groupedFieldSet, newDeferUsages, path, incrementalContext, deferMap);
+}
+function executeSubExecutionPlan(exeContext, returnType, sourceValue, originalGroupedFieldSet, newDeferUsages, path, incrementalContext, deferMap) {
+    if (deferMap === undefined && newDeferUsages.length === 0) {
+        return executeFields(exeContext, returnType, sourceValue, path, originalGroupedFieldSet, incrementalContext, deferMap);
+    }
+    const newDeferMap = getNewDeferMap(newDeferUsages, deferMap, path);
+    const { groupedFieldSet, newGroupedFieldSets } = buildSubExecutionPlan(originalGroupedFieldSet, incrementalContext?.deferUsageSet);
+    const graphqlWrappedResult = executeFields(exeContext, returnType, sourceValue, path, groupedFieldSet, incrementalContext, newDeferMap);
+    if (newGroupedFieldSets.size > 0) {
+        const newPendingExecutionGroups = collectExecutionGroups(exeContext, returnType, sourceValue, path, incrementalContext?.deferUsageSet, newGroupedFieldSets, newDeferMap);
+        return withNewExecutionGroups(graphqlWrappedResult, newPendingExecutionGroups);
+    }
+    return graphqlWrappedResult;
 }
 function buildSubExecutionPlan(originalGroupedFieldSet, deferUsageSet) {
     let executionPlan = originalGroupedFieldSet._executionPlan;
