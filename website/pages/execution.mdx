@@ -56,3 +56,25 @@ a GraphQLError will be thrown immediately explaining the invalid input.
 `ExecutionResult` represents the result of execution. `data` is the result of
 executing the query, `errors` is null if no errors occurred, and is a
 non-empty array if an error occurred.
+
+### executeSync
+
+```ts
+export function executeSync(
+  schema: GraphQLSchema,
+  documentAST: Document,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: { [key: string]: mixed },
+  operationName?: string,
+): ExecutionResult;
+
+type ExecutionResult = {
+  data: Object;
+  errors?: GraphQLError[];
+};
+```
+
+This is a short-hand method that will call `execute` and when the response can
+be returned synchronously it will be returned, when a `Promise` is returned this
+method will throw an error.
