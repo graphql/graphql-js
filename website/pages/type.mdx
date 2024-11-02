@@ -188,16 +188,20 @@ const MyAppSchema = new GraphQLSchema({
 ### GraphQLScalarType
 
 ```ts
-class GraphQLScalarType<InternalType> {
-  constructor(config: GraphQLScalarTypeConfig<InternalType>);
+class GraphQLScalarType<InternalType, ExternalType> {
+  constructor(config: GraphQLScalarTypeConfig<InternalType, ExternalType>);
 }
 
-type GraphQLScalarTypeConfig<InternalType> = {
+type GraphQLScalarTypeConfig<InternalType, ExternalType> = {
   name: string;
   description?: string;
-  serialize: (value: mixed) => InternalType;
-  parseValue?: (value: mixed) => InternalType;
-  parseLiteral?: (valueAST: Value) => InternalType;
+  specifiedByURL?: Maybe<string>;
+  serialize: (outputValue: unknown) => ExternalType;
+  parseValue?: (inputValue: unknown) => InternalType;
+  parseLiteral?: (
+    valueAST: Value,
+    variables?: Maybe<Record<string, unknown>>,
+  ) => InternalType;
 };
 ```
 
