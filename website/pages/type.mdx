@@ -214,9 +214,20 @@ functions used to ensure validity.
 ```js
 const OddType = new GraphQLScalarType({
   name: 'Odd',
-  serialize: oddValue,
-  parseValue: oddValue,
+  description:
+    'This custom scalar will only return a value if the passed in value is an odd integer, when it's not it will return null.'
+  serialize: (outputValue) => {
+    // This function gets called for response-data, the application returns data
+    // for a property and in the schema we see that this value has the "Odd" type.
+   return typeof outputValue === 'number' && outputValue % 2 === 1 ? value : null;
+  },
+  parseValue: (inputValue) => {
+    // This function gets called for input-data, i.e. variables being passed in
+    return typeof inputValue === 'number' && outputValue % 2 === 1 ? value : null;
+  },
   parseLiteral(ast) {
+    // This function gets called when the value is passed in as a literal on the
+    // Executable GraphQL Document
     if (ast.kind === Kind.INT) {
       return oddValue(parseInt(ast.value, 10));
     }
