@@ -214,6 +214,10 @@ functions used to ensure validity.
 ```js
 const OddType = new GraphQLScalarType({
   name: 'Odd',
+  // Can be used to link to a specification
+  // for this scalar, for instance the JSON
+  // specification.
+  specifiedByURL: '',
   description:
     'This custom scalar will only return a value if the passed in value is an odd integer, when it's not it will return null.'
   serialize: (outputValue) => {
