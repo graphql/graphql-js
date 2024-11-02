@@ -40,10 +40,14 @@ export function execute(
 
 type MaybePromise<T> = Promise<T> | T;
 
-type ExecutionResult = {
-  data: Object;
-  errors?: GraphQLError[];
-};
+interface ExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: TData | null;
+  extensions?: TExtensions;
+}
 ```
 
 Implements the "Evaluating requests" section of the GraphQL specification.
