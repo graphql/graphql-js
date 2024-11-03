@@ -28,19 +28,14 @@ export class PromiseCanceller {
     this.abortSignal.removeEventListener('abort', this.abort);
   }
 
-  cancellablePromise<T>(
-    originalPromise: Promise<T>,
-    onCancel?: (() => unknown) | undefined,
-  ): Promise<T> {
+  cancellablePromise<T>(originalPromise: Promise<T>): Promise<T> {
     if (this.abortSignal.aborted) {
-      onCancel?.();
       // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject(this.abortSignal.reason);
     }
 
     const { promise, resolve, reject } = promiseWithResolvers<T>();
     const abort = () => {
-      onCancel?.();
       reject(this.abortSignal.reason);
     };
     this._aborts.add(abort);
@@ -62,20 +57,45 @@ export class PromiseCanceller {
     const iterator = iterable[Symbol.asyncIterator]();
 
     if (iterator.return) {
+      const _next = iterator.next.bind(iterator);
       const _return = iterator.return.bind(iterator);
-      const _returnIgnoringErrors = async (): Promise<IteratorResult<T>> => {
+
+      const abort = () => {
         _return().catch(() => {
           /* c8 ignore next */
           // ignore
         });
-        return Promise.resolve({ value: undefined, done: true });
       };
 
+      if (this.abortSignal.aborted) {
+        abort();
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        const onMethod = () => Promise.reject(this.abortSignal.reason);
+        return {
+          [Symbol.asyncIterator]: () => ({
+            next: onMethod,
+            return: onMethod,
+          }),
+        };
+      }
+
+      this._aborts.add(abort);
+      const on = (method: () => Promise<IteratorResult<T>>) => async () => {
+        try {
+          const iteration = await this.cancellablePromise(method());
+          if (iteration.done) {
+            this._aborts.delete(abort);
+          }
+          return iteration;
+        } catch (error) {
+          this._aborts.delete(abort);
+          throw error;
+        }
+      };
       return {
         [Symbol.asyncIterator]: () => ({
-          next: () =>
-            this.cancellablePromise(iterator.next(), _returnIgnoringErrors),
-          return: () => this.cancellablePromise(_return()),
+          next: on(_next),
+          return: on(_return),
         }),
       };
     }

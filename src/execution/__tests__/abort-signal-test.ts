@@ -795,7 +795,7 @@ describe('Execute: Cancellation', () => {
     });
   });
 
-  it('should stop the execution when aborted during subscription', async () => {
+  it('should stop the execution when aborted prior to return of the subscription resolver', async () => {
     const abortController = new AbortController();
     const document = parse(`
       subscription {
@@ -830,7 +830,7 @@ describe('Execute: Cancellation', () => {
     });
   });
 
-  it('should stop the execution when aborted during subscription', async () => {
+  it('should successfully wrap the subscription', async () => {
     const abortController = new AbortController();
     const document = parse(`
       subscription {
@@ -845,6 +845,41 @@ describe('Execute: Cancellation', () => {
       rootValue: {
         async *foo() {
           yield await Promise.resolve({ foo: 'foo' });
+        },
+      },
+    });
+
+    assert(isAsyncIterable(subscription));
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: {
+        data: {
+          foo: 'foo',
+        },
+      },
+      done: false,
+    });
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it('should stop the execution when aborted during subscription', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      subscription {
+        foo
+      }
+    `);
+
+    const subscription = subscribe({
+      document,
+      schema,
+      abortSignal: abortController.signal,
+      rootValue: {
+        async *foo() {
           yield await Promise.resolve({ foo: 'foo' }); /* c8 ignore start */
         } /* c8 ignore stop */,
       },
