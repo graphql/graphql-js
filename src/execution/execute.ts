@@ -2099,6 +2099,13 @@ export function subscribe(
   return mapSourceToResponse(validatedExecutionArgs, resultOrStream);
 }
 
+/**
+ *
+ * For each payload yielded from a subscription, map it over the normal
+ * GraphQL `execute` function, with `payload` as the rootValue.
+ * This implements the "MapSourceToResponseEvent" algorithm described in
+ * the GraphQL specification..
+ */
 function mapSourceToResponse(
   validatedExecutionArgs: ValidatedExecutionArgs,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
@@ -2107,10 +2114,22 @@ function mapSourceToResponse(
     return resultOrStream;
   }
 
-  // For each payload yielded from a subscription, map it over the normal
-  // GraphQL `execute` function, with `payload` as the rootValue.
-  // This implements the "MapSourceToResponseEvent" algorithm described in
-  // the GraphQL specification..
+  const abortSignal = validatedExecutionArgs.abortSignal;
+  if (abortSignal) {
+    const promiseCanceller = new PromiseCanceller(abortSignal);
+    return mapAsyncIterable(
+      promiseCanceller?.cancellableIterable(resultOrStream),
+      (payload: unknown) => {
+        const perEventExecutionArgs: ValidatedExecutionArgs = {
+          ...validatedExecutionArgs,
+          rootValue: payload,
+        };
+        return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
+      },
+      () => promiseCanceller.disconnect(),
+    );
+  }
+
   return mapAsyncIterable(resultOrStream, (payload: unknown) => {
     const perEventExecutionArgs: ValidatedExecutionArgs = {
       ...validatedExecutionArgs,
@@ -2265,16 +2284,16 @@ function executeSubscription(
     // used to represent an authenticated user, or request-specific caches.
     const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
 
-    const promiseCanceller = abortSignal
-      ? new PromiseCanceller(abortSignal)
-      : undefined;
-
     if (isPromise(result)) {
+      const promiseCanceller = abortSignal
+        ? new PromiseCanceller(abortSignal)
+        : undefined;
+
       const promise = promiseCanceller?.cancellablePromise(result) ?? result;
       return promise.then(assertEventStream).then(
         (resolved) => {
           promiseCanceller?.disconnect();
-          return promiseCanceller?.cancellableIterable(resolved) ?? resolved;
+          return resolved;
         },
         (error: unknown) => {
           promiseCanceller?.disconnect();
@@ -2284,7 +2303,7 @@ function executeSubscription(
     }
 
     const eventStream = assertEventStream(result);
-    return promiseCanceller?.cancellableIterable(eventStream) ?? eventStream;
+    return eventStream;
   } catch (error) {
     throw locatedError(error, fieldNodes, pathToArray(path));
   }

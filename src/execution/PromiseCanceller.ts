@@ -28,19 +28,14 @@ export class PromiseCanceller {
     this.abortSignal.removeEventListener('abort', this.abort);
   }
 
-  cancellablePromise<T>(
-    originalPromise: Promise<T>,
-    onCancel?: (() => unknown) | undefined,
-  ): Promise<T> {
+  cancellablePromise<T>(originalPromise: Promise<T>): Promise<T> {
     if (this.abortSignal.aborted) {
-      onCancel?.();
       // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject(this.abortSignal.reason);
     }
 
     const { promise, resolve, reject } = promiseWithResolvers<T>();
     const abort = () => {
-      onCancel?.();
       reject(this.abortSignal.reason);
     };
     this._aborts.add(abort);
@@ -61,20 +56,14 @@ export class PromiseCanceller {
   cancellableIterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T> {
     const iterator = iterable[Symbol.asyncIterator]();
 
+    const _next = iterator.next.bind(iterator);
+
     if (iterator.return) {
       const _return = iterator.return.bind(iterator);
-      const _returnIgnoringErrors = async (): Promise<IteratorResult<T>> => {
-        _return().catch(() => {
-          /* c8 ignore next */
-          // ignore
-        });
-        return Promise.resolve({ value: undefined, done: true });
-      };
 
       return {
         [Symbol.asyncIterator]: () => ({
-          next: () =>
-            this.cancellablePromise(iterator.next(), _returnIgnoringErrors),
+          next: () => this.cancellablePromise(_next()),
           return: () => this.cancellablePromise(_return()),
         }),
       };
@@ -82,7 +71,7 @@ export class PromiseCanceller {
 
     return {
       [Symbol.asyncIterator]: () => ({
-        next: () => this.cancellablePromise(iterator.next()),
+        next: () => this.cancellablePromise(_next()),
       }),
     };
   }

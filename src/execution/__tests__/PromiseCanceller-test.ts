@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
@@ -70,62 +69,6 @@ describe('PromiseCanceller', () => {
 
       await expectPromise(withCancellation).toRejectWith('Cancelled!');
     });
-
-    it('works to trigger onCancel when cancelling a hanging promise', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
-
-      const promiseCanceller = new PromiseCanceller(abortSignal);
-
-      const promise = new Promise(() => {
-        /* never resolves */
-      });
-
-      let onCancelCalled = false;
-      const onCancel = () => {
-        onCancelCalled = true;
-      };
-
-      const withCancellation = promiseCanceller.cancellablePromise(
-        promise,
-        onCancel,
-      );
-
-      expect(onCancelCalled).to.equal(false);
-
-      abortController.abort(new Error('Cancelled!'));
-
-      expect(onCancelCalled).to.equal(true);
-
-      await expectPromise(withCancellation).toRejectWith('Cancelled!');
-    });
-
-    it('works to trigger onCancel when cancelling a hanging promise created after abort signal triggered', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
-
-      abortController.abort(new Error('Cancelled!'));
-
-      const promiseCanceller = new PromiseCanceller(abortSignal);
-
-      const promise = new Promise(() => {
-        /* never resolves */
-      });
-
-      let onCancelCalled = false;
-      const onCancel = () => {
-        onCancelCalled = true;
-      };
-
-      const withCancellation = promiseCanceller.cancellablePromise(
-        promise,
-        onCancel,
-      );
-
-      expect(onCancelCalled).to.equal(true);
-
-      await expectPromise(withCancellation).toRejectWith('Cancelled!');
-    });
   });
 
   describe('cancellableAsyncIterable', () => {
@@ -171,70 +114,6 @@ describe('PromiseCanceller', () => {
 
       const nextPromise =
         cancellableAsyncIterable[Symbol.asyncIterator]().next();
-
-      await expectPromise(nextPromise).toRejectWith('Cancelled!');
-    });
-
-    it('works to call return', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
-
-      const promiseCanceller = new PromiseCanceller(abortSignal);
-
-      let returned = false;
-      const asyncIterable = {
-        [Symbol.asyncIterator]: () => ({
-          next: () => Promise.resolve({ value: 1, done: false }),
-          return: () => {
-            returned = true;
-            return Promise.resolve({ value: undefined, done: true });
-          },
-        }),
-      };
-
-      const cancellableAsyncIterable =
-        promiseCanceller.cancellableIterable(asyncIterable);
-
-      abortController.abort(new Error('Cancelled!'));
-
-      expect(returned).to.equal(false);
-
-      const nextPromise =
-        cancellableAsyncIterable[Symbol.asyncIterator]().next();
-
-      expect(returned).to.equal(true);
-
-      await expectPromise(nextPromise).toRejectWith('Cancelled!');
-    });
-
-    it('works to call return when already aborted', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
-
-      abortController.abort(new Error('Cancelled!'));
-
-      const promiseCanceller = new PromiseCanceller(abortSignal);
-
-      let returned = false;
-      const asyncIterable = {
-        [Symbol.asyncIterator]: () => ({
-          next: () => Promise.resolve({ value: 1, done: false }),
-          return: () => {
-            returned = true;
-            return Promise.resolve({ value: undefined, done: true });
-          },
-        }),
-      };
-
-      const cancellableAsyncIterable =
-        promiseCanceller.cancellableIterable(asyncIterable);
-
-      expect(returned).to.equal(false);
-
-      const nextPromise =
-        cancellableAsyncIterable[Symbol.asyncIterator]().next();
-
-      expect(returned).to.equal(true);
 
       await expectPromise(nextPromise).toRejectWith('Cancelled!');
     });
