@@ -2,7 +2,12 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { buildSchema } from '../buildASTSchema.js';
-import { findSchemaChanges, SafeChangeType } from '../findSchemaChanges.js';
+import {
+  BreakingChangeType,
+  DangerousChangeType,
+  findSchemaChanges,
+  SafeChangeType,
+} from '../findSchemaChanges.js';
 
 describe('findSchemaChanges', () => {
   it('should detect if a type was added', () => {
@@ -169,6 +174,147 @@ describe('findSchemaChanges', () => {
         type: SafeChangeType.DIRECTIVE_ADDED,
       },
     ]);
+  });
+
+  it('should detect if a changes argument safely', () => {
+    const oldSchema = buildSchema(`
+      directive @Foo(foo: String!) on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      directive @Foo(foo: String) on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description:
+          'Argument @Foo(foo:) has changed type from String! to String.',
+        type: SafeChangeType.ARG_CHANGED_KIND_SAFE,
+      },
+    ]);
+  });
+
+  it('should detect if a default value is added to an argument', () => {
+    const oldSchema = buildSchema(`
+      directive @Foo(foo: String) on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      directive @Foo(foo: String = "Foo") on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description: '@Foo(foo:) added a defaultValue "Foo".',
+        type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
+      },
+    ]);
+  });
+
+  it('should detect if a default value is removed from an argument', () => {
+    const newSchema = buildSchema(`
+      directive @Foo(foo: String) on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+
+    const oldSchema = buildSchema(`
+      directive @Foo(foo: String = "Foo") on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description: '@Foo(foo:) defaultValue was removed.',
+        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+      },
+    ]);
+  });
+
+  it('should detect if a default value is changed in an argument', () => {
+    const oldSchema = buildSchema(`
+      directive @Foo(foo: String = "Bar") on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      directive @Foo(foo: String = "Foo") on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description: '@Foo(foo:) has changed defaultValue from "Bar" to "Foo".',
+        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+      },
+    ]);
+  });
+
+  it('should detect if a directive argument does a breaking change', () => {
+    const oldSchema = buildSchema(`
+      directive @Foo(foo: String) on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      directive @Foo(foo: String!) on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description:
+          'Argument @Foo(foo:) has changed type from String to String!.',
+        type: BreakingChangeType.ARG_CHANGED_KIND,
+      },
+    ]);
+  });
+
+  it('should not detect if a directive argument default value does not change', () => {
+    const oldSchema = buildSchema(`
+      directive @Foo(foo: String = "FOO") on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      directive @Foo(foo: String = "FOO") on FIELD_DEFINITION
+
+      type Query {
+        foo: String
+      }
+    `);
+    expect(findSchemaChanges(oldSchema, newSchema)).to.deep.equal([]);
   });
 
   it('should detect if a directive changes description', () => {
