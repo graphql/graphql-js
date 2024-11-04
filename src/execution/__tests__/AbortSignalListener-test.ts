@@ -2,7 +2,7 @@ import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 
-import { PromiseCanceller } from '../PromiseCanceller.js';
+import { PromiseCanceller } from '../AbortSignalListener.js';
 
 describe('PromiseCanceller', () => {
   describe('cancellablePromise', () => {

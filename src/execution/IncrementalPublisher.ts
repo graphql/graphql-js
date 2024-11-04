@@ -4,8 +4,8 @@ import { pathToArray } from '../jsutils/Path.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
+import type { PromiseCanceller } from './AbortSignalListener.js';
 import { IncrementalGraph } from './IncrementalGraph.js';
-import type { PromiseCanceller } from './PromiseCanceller.js';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,

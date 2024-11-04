@@ -48,6 +48,7 @@ import { GraphQLStreamDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import { assertValidSchema } from '../type/validate.js';
 
+import { PromiseCanceller } from './AbortSignalListener.js';
 import type { DeferUsageSet, ExecutionPlan } from './buildExecutionPlan.js';
 import { buildExecutionPlan } from './buildExecutionPlan.js';
 import type {
@@ -63,7 +64,6 @@ import {
 import { getVariableSignature } from './getVariableSignature.js';
 import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
-import { PromiseCanceller } from './PromiseCanceller.js';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,
