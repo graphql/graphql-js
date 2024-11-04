@@ -2292,8 +2292,7 @@ function executeSubscription(
       );
     }
 
-    const eventStream = assertEventStream(result);
-    return eventStream;
+    return assertEventStream(result);
   } catch (error) {
     throw locatedError(error, fieldNodes, pathToArray(path));
   }
