@@ -1,5 +1,5 @@
 const meta = {
-  'index': '',
+  index: '',
   '-- 1': {
     type: 'separator',
     title: 'GraphQL.JS Tutorial',

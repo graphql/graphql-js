@@ -79,12 +79,7 @@ div[id^='headlessui-menu-items'] {
 
 /* Move nav links to the left */
 .nextra-nav-container nav {
-  @apply justify-between;
-
-  @media screen and (max-width: 768px) {
-    @apply justify-between;
-    
-  }
+  @apply justify-start;
 
   > a {
     @apply first:mr-0 hover:!text-primary;
