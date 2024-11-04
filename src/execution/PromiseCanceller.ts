@@ -35,9 +35,7 @@ export class PromiseCanceller {
     }
 
     const { promise, resolve, reject } = promiseWithResolvers<T>();
-    const abort = () => {
-      reject(this.abortSignal.reason);
-    };
+    const abort = () => reject(this.abortSignal.reason);
     this._aborts.add(abort);
     originalPromise.then(
       (resolved) => {
