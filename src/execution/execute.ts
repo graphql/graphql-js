@@ -2108,10 +2108,10 @@ function mapSourceToResponse(
   }
 
   const abortSignal = validatedExecutionArgs.abortSignal;
-
   const promiseCanceller = abortSignal
     ? new PromiseCanceller(abortSignal)
     : undefined;
+
   // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
   // This implements the "MapSourceToResponseEvent" algorithm described in
