@@ -144,6 +144,15 @@ function graphql(
   variableValues?: { [key: string]: any },
   operationName?: string,
 ): Promise<GraphQLResult>;
+
+interface ExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: TData | null;
+  extensions?: TExtensions;
+}
 ```
 
 The `graphql` function lexes, parses, validates and executes a GraphQL request.
