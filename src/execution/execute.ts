@@ -2099,13 +2099,6 @@ export function subscribe(
   return mapSourceToResponse(validatedExecutionArgs, resultOrStream);
 }
 
-/**
- *
- * For each payload yielded from a subscription, map it over the normal
- * GraphQL `execute` function, with `payload` as the rootValue.
- * This implements the "MapSourceToResponseEvent" algorithm described in
- * the GraphQL specification..
- */
 function mapSourceToResponse(
   validatedExecutionArgs: ValidatedExecutionArgs,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
@@ -2115,28 +2108,25 @@ function mapSourceToResponse(
   }
 
   const abortSignal = validatedExecutionArgs.abortSignal;
-  if (abortSignal) {
-    const promiseCanceller = new PromiseCanceller(abortSignal);
-    return mapAsyncIterable(
-      promiseCanceller?.cancellableIterable(resultOrStream),
-      (payload: unknown) => {
-        const perEventExecutionArgs: ValidatedExecutionArgs = {
-          ...validatedExecutionArgs,
-          rootValue: payload,
-        };
-        return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
-      },
-      () => promiseCanceller.disconnect(),
-    );
-  }
 
-  return mapAsyncIterable(resultOrStream, (payload: unknown) => {
-    const perEventExecutionArgs: ValidatedExecutionArgs = {
-      ...validatedExecutionArgs,
-      rootValue: payload,
-    };
-    return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
-  });
+  const promiseCanceller = abortSignal
+    ? new PromiseCanceller(abortSignal)
+    : undefined;
+  // For each payload yielded from a subscription, map it over the normal
+  // GraphQL `execute` function, with `payload` as the rootValue.
+  // This implements the "MapSourceToResponseEvent" algorithm described in
+  // the GraphQL specification..
+  return mapAsyncIterable(
+    promiseCanceller?.cancellableIterable(resultOrStream) ?? resultOrStream,
+    (payload: unknown) => {
+      const perEventExecutionArgs: ValidatedExecutionArgs = {
+        ...validatedExecutionArgs,
+        rootValue: payload,
+      };
+      return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
+    },
+    () => promiseCanceller?.disconnect(),
+  );
 }
 
 export function executeSubscriptionEvent(
