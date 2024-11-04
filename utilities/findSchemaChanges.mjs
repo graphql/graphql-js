@@ -110,6 +110,50 @@ function findDirectiveChanges(oldSchema, newSchema) {
             });
         }
         for (const [oldArg, newArg] of argsDiff.persisted) {
+            const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(oldArg.type, newArg.type);
+            if (!isSafe) {
+                schemaChanges.push({
+                    type: BreakingChangeType.ARG_CHANGED_KIND,
+                    description: `Argument @${oldDirective.name}(${oldArg.name}:) has changed type from ` +
+                        `${String(oldArg.type)} to ${String(newArg.type)}.`,
+                });
+            }
+            else if (oldArg.defaultValue !== undefined) {
+                if (newArg.defaultValue === undefined) {
+                    schemaChanges.push({
+                        type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+                        description: `@${oldDirective.name}(${oldArg.name}:) defaultValue was removed.`,
+                    });
+                }
+                else {
+                    // Since we looking only for client's observable changes we should
+                    // compare default values in the same representation as they are
+                    // represented inside introspection.
+                    const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
+                    const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+                    if (oldValueStr !== newValueStr) {
+                        schemaChanges.push({
+                            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+                            description: `@${oldDirective.name}(${oldArg.name}:) has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
+                        });
+                    }
+                }
+            }
+            else if (newArg.defaultValue !== undefined &&
+                oldArg.defaultValue === undefined) {
+                const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+                schemaChanges.push({
+                    type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
+                    description: `@${oldDirective.name}(${oldArg.name}:) added a defaultValue ${newValueStr}.`,
+                });
+            }
+            else if (oldArg.type.toString() !== newArg.type.toString()) {
+                schemaChanges.push({
+                    type: SafeChangeType.ARG_CHANGED_KIND_SAFE,
+                    description: `Argument @${oldDirective.name}(${oldArg.name}:) has changed type from ` +
+                        `${String(oldArg.type)} to ${String(newArg.type)}.`,
+                });
+            }
             if (oldArg.description !== newArg.description) {
                 schemaChanges.push({
                     type: SafeChangeType.DESCRIPTION_CHANGED,
