@@ -4,7 +4,7 @@ import { pathToArray } from '../jsutils/Path.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
-import type { PromiseCanceller } from './AbortSignalListener.js';
+import type { AbortSignalListener } from './AbortSignalListener.js';
 import { IncrementalGraph } from './IncrementalGraph.js';
 import type {
   CancellableStreamRecord,
@@ -44,7 +44,7 @@ export function buildIncrementalResponse(
 }
 
 interface IncrementalPublisherContext {
-  promiseCanceller: PromiseCanceller | undefined;
+  abortSignalListener: AbortSignalListener | undefined;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
@@ -127,7 +127,7 @@ class IncrementalPublisher {
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
       if (isDone) {
-        this._context.promiseCanceller?.disconnect();
+        this._context.abortSignalListener?.disconnect();
         await this._returnAsyncIteratorsIgnoringErrors();
         return { value: undefined, done: true };
       }
@@ -176,7 +176,7 @@ class IncrementalPublisher {
 
       // TODO: add test for this case
       /* c8 ignore next */
-      this._context.promiseCanceller?.disconnect();
+      this._context.abortSignalListener?.disconnect();
       await this._returnAsyncIteratorsIgnoringErrors();
       return { value: undefined, done: true };
     };

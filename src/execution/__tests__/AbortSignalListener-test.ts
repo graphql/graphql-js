@@ -1,121 +1,170 @@
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 
-import { PromiseCanceller } from '../AbortSignalListener.js';
+import {
+  AbortSignalListener,
+  cancellableIterable,
+  cancellablePromise,
+} from '../AbortSignalListener.js';
 
-describe('PromiseCanceller', () => {
-  describe('cancellablePromise', () => {
-    it('works to cancel an already resolved promise', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
+describe('AbortSignalListener', () => {
+  it('works to add a listener', () => {
+    const abortController = new AbortController();
 
-      const promiseCanceller = new PromiseCanceller(abortSignal);
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
 
-      const promise = Promise.resolve(1);
+    let called = false;
+    const onAbort = () => {
+      called = true;
+    };
+    abortSignalListener.add(onAbort);
 
-      const withCancellation = promiseCanceller.cancellablePromise(promise);
+    abortController.abort();
 
-      abortController.abort(new Error('Cancelled!'));
-
-      await expectPromise(withCancellation).toRejectWith('Cancelled!');
-    });
-
-    it('works to cancel an already resolved promise after abort signal triggered', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
-
-      abortController.abort(new Error('Cancelled!'));
-
-      const promiseCanceller = new PromiseCanceller(abortSignal);
-
-      const promise = Promise.resolve(1);
-
-      const withCancellation = promiseCanceller.cancellablePromise(promise);
-
-      await expectPromise(withCancellation).toRejectWith('Cancelled!');
-    });
-
-    it('works to cancel a hanging promise', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
-
-      const promiseCanceller = new PromiseCanceller(abortSignal);
-
-      const promise = new Promise(() => {
-        /* never resolves */
-      });
-
-      const withCancellation = promiseCanceller.cancellablePromise(promise);
-
-      abortController.abort(new Error('Cancelled!'));
-
-      await expectPromise(withCancellation).toRejectWith('Cancelled!');
-    });
-
-    it('works to cancel a hanging promise created after abort signal triggered', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
-
-      abortController.abort(new Error('Cancelled!'));
-
-      const promiseCanceller = new PromiseCanceller(abortSignal);
-
-      const promise = new Promise(() => {
-        /* never resolves */
-      });
-
-      const withCancellation = promiseCanceller.cancellablePromise(promise);
-
-      await expectPromise(withCancellation).toRejectWith('Cancelled!');
-    });
+    expect(called).to.equal(true);
   });
 
-  describe('cancellableAsyncIterable', () => {
-    it('works to abort a next call', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
+  it('works to delete a listener', () => {
+    const abortController = new AbortController();
 
-      const promiseCanceller = new PromiseCanceller(abortSignal);
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
 
-      const asyncIterable = {
-        [Symbol.asyncIterator]: () => ({
-          next: () => Promise.resolve({ value: 1, done: false }),
-        }),
-      };
+    let called = false;
+    /* c8 ignore next 3 */
+    const onAbort = () => {
+      called = true;
+    };
+    abortSignalListener.add(onAbort);
+    abortSignalListener.delete(onAbort);
 
-      const cancellableAsyncIterable =
-        promiseCanceller.cancellableIterable(asyncIterable);
+    abortController.abort();
 
-      const nextPromise =
-        cancellableAsyncIterable[Symbol.asyncIterator]().next();
+    expect(called).to.equal(false);
+  });
 
-      abortController.abort(new Error('Cancelled!'));
+  it('works to disconnect a listener from the abortSignal', () => {
+    const abortController = new AbortController();
 
-      await expectPromise(nextPromise).toRejectWith('Cancelled!');
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
+
+    let called = false;
+    /* c8 ignore next 3 */
+    const onAbort = () => {
+      called = true;
+    };
+    abortSignalListener.add(onAbort);
+
+    abortSignalListener.disconnect();
+
+    abortController.abort();
+
+    expect(called).to.equal(false);
+  });
+});
+
+describe('cancellablePromise', () => {
+  it('works to cancel an already resolved promise', async () => {
+    const abortController = new AbortController();
+
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
+
+    const promise = Promise.resolve(1);
+
+    const withCancellation = cancellablePromise(promise, abortSignalListener);
+
+    abortController.abort(new Error('Cancelled!'));
+
+    await expectPromise(withCancellation).toRejectWith('Cancelled!');
+  });
+
+  it('works to cancel an already resolved promise after abort signal triggered', async () => {
+    const abortController = new AbortController();
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
+
+    abortController.abort(new Error('Cancelled!'));
+
+    const promise = Promise.resolve(1);
+
+    const withCancellation = cancellablePromise(promise, abortSignalListener);
+
+    await expectPromise(withCancellation).toRejectWith('Cancelled!');
+  });
+
+  it('works to cancel a hanging promise', async () => {
+    const abortController = new AbortController();
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
+
+    const promise = new Promise(() => {
+      /* never resolves */
     });
 
-    it('works to abort a next call when already aborted', async () => {
-      const abortController = new AbortController();
-      const abortSignal = abortController.signal;
+    const withCancellation = cancellablePromise(promise, abortSignalListener);
 
-      abortController.abort(new Error('Cancelled!'));
+    abortController.abort(new Error('Cancelled!'));
 
-      const promiseCanceller = new PromiseCanceller(abortSignal);
+    await expectPromise(withCancellation).toRejectWith('Cancelled!');
+  });
 
-      const asyncIterable = {
-        [Symbol.asyncIterator]: () => ({
-          next: () => Promise.resolve({ value: 1, done: false }),
-        }),
-      };
+  it('works to cancel a hanging promise created after abort signal triggered', async () => {
+    const abortController = new AbortController();
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
 
-      const cancellableAsyncIterable =
-        promiseCanceller.cancellableIterable(asyncIterable);
+    abortController.abort(new Error('Cancelled!'));
 
-      const nextPromise =
-        cancellableAsyncIterable[Symbol.asyncIterator]().next();
-
-      await expectPromise(nextPromise).toRejectWith('Cancelled!');
+    const promise = new Promise(() => {
+      /* never resolves */
     });
+
+    const withCancellation = cancellablePromise(promise, abortSignalListener);
+
+    await expectPromise(withCancellation).toRejectWith('Cancelled!');
+  });
+});
+
+describe('cancellableAsyncIterable', () => {
+  it('works to abort a next call', async () => {
+    const abortController = new AbortController();
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
+
+    const asyncIterable = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => Promise.resolve({ value: 1, done: false }),
+      }),
+    };
+
+    const withCancellation = cancellableIterable(
+      asyncIterable,
+      abortSignalListener,
+    );
+
+    const nextPromise = withCancellation[Symbol.asyncIterator]().next();
+
+    abortController.abort(new Error('Cancelled!'));
+
+    await expectPromise(nextPromise).toRejectWith('Cancelled!');
+  });
+
+  it('works to abort a next call when already aborted', async () => {
+    const abortController = new AbortController();
+    const abortSignalListener = new AbortSignalListener(abortController.signal);
+
+    abortController.abort(new Error('Cancelled!'));
+
+    const asyncIterable = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => Promise.resolve({ value: 1, done: false }),
+      }),
+    };
+
+    const withCancellation = cancellableIterable(
+      asyncIterable,
+      abortSignalListener,
+    );
+
+    const nextPromise = withCancellation[Symbol.asyncIterator]().next();
+
+    await expectPromise(nextPromise).toRejectWith('Cancelled!');
   });
 });

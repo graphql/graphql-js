@@ -1,22 +1,22 @@
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
 /**
- * A PromiseCanceller object can be used to trigger multiple responses
+ * A AbortSignalListener object can be used to trigger multiple responses
  * in response to a single AbortSignal.
  *
  * @internal
  */
-export class PromiseCanceller {
+export class AbortSignalListener {
   abortSignal: AbortSignal;
   abort: () => void;
 
-  private _aborts: Set<() => void>;
+  private _onAborts: Set<() => void>;
 
   constructor(abortSignal: AbortSignal) {
     this.abortSignal = abortSignal;
-    this._aborts = new Set<() => void>();
+    this._onAborts = new Set<() => void>();
     this.abort = () => {
-      for (const abort of this._aborts) {
+      for (const abort of this._onAborts) {
         abort();
       }
     };
@@ -24,53 +24,68 @@ export class PromiseCanceller {
     abortSignal.addEventListener('abort', this.abort);
   }
 
+  add(onAbort: () => void): void {
+    this._onAborts.add(onAbort);
+  }
+
+  delete(onAbort: () => void): void {
+    this._onAborts.delete(onAbort);
+  }
+
   disconnect(): void {
     this.abortSignal.removeEventListener('abort', this.abort);
   }
+}
 
-  cancellablePromise<T>(originalPromise: Promise<T>): Promise<T> {
-    if (this.abortSignal.aborted) {
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-      return Promise.reject(this.abortSignal.reason);
-    }
-
-    const { promise, resolve, reject } = promiseWithResolvers<T>();
-    const abort = () => reject(this.abortSignal.reason);
-    this._aborts.add(abort);
-    originalPromise.then(
-      (resolved) => {
-        this._aborts.delete(abort);
-        resolve(resolved);
-      },
-      (error: unknown) => {
-        this._aborts.delete(abort);
-        reject(error);
-      },
-    );
-
-    return promise;
+export function cancellablePromise<T>(
+  originalPromise: Promise<T>,
+  abortSignalListener: AbortSignalListener,
+): Promise<T> {
+  const abortSignal = abortSignalListener.abortSignal;
+  if (abortSignal.aborted) {
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+    return Promise.reject(abortSignal.reason);
   }
 
-  cancellableIterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T> {
-    const iterator = iterable[Symbol.asyncIterator]();
+  const { promise, resolve, reject } = promiseWithResolvers<T>();
+  const onAbort = () => reject(abortSignal.reason);
+  abortSignalListener.add(onAbort);
+  originalPromise.then(
+    (resolved) => {
+      abortSignalListener.delete(onAbort);
+      resolve(resolved);
+    },
+    (error: unknown) => {
+      abortSignalListener.delete(onAbort);
+      reject(error);
+    },
+  );
 
-    const _next = iterator.next.bind(iterator);
+  return promise;
+}
 
-    if (iterator.return) {
-      const _return = iterator.return.bind(iterator);
+export function cancellableIterable<T>(
+  iterable: AsyncIterable<T>,
+  abortSignalListener: AbortSignalListener,
+): AsyncIterable<T> {
+  const iterator = iterable[Symbol.asyncIterator]();
 
-      return {
-        [Symbol.asyncIterator]: () => ({
-          next: () => this.cancellablePromise(_next()),
-          return: () => this.cancellablePromise(_return()),
-        }),
-      };
-    }
+  const _next = iterator.next.bind(iterator);
+
+  if (iterator.return) {
+    const _return = iterator.return.bind(iterator);
 
     return {
       [Symbol.asyncIterator]: () => ({
-        next: () => this.cancellablePromise(_next()),
+        next: () => cancellablePromise(_next(), abortSignalListener),
+        return: () => cancellablePromise(_return(), abortSignalListener),
       }),
     };
   }
+
+  return {
+    [Symbol.asyncIterator]: () => ({
+      next: () => cancellablePromise(_next(), abortSignalListener),
+    }),
+  };
 }
