@@ -6,7 +6,7 @@ import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 import type { ASTNode, SelectionSetNode } from '../ast.js';
 import { isNode } from '../ast.js';
 import { Kind } from '../kinds.js';
-import { parse } from '../parser.js';
+import { parseSync as parse } from '../parser.js';
 import type { ASTVisitor, ASTVisitorKeyMap } from '../visitor.js';
 import { BREAK, visit, visitInParallel } from '../visitor.js';
 

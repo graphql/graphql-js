@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import {
   GraphQLList,

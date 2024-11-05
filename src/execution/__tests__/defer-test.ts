@@ -8,7 +8,7 @@ import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import type { DocumentNode } from '../../language/ast.js';
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import {
   GraphQLList,

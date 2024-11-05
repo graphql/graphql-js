@@ -8,7 +8,7 @@ import type { Maybe } from '../../jsutils/Maybe.js';
 
 import type { ASTNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 import { print } from '../../language/printer.js';
 
 import {

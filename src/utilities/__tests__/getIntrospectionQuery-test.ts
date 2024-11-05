@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
-import { validate } from '../../validation/validate.js';
+import { validateSync as validate } from '../../validation/validate.js';
 
 import { buildSchema } from '../buildASTSchema.js';
 import type { IntrospectionOptions } from '../getIntrospectionQuery.js';

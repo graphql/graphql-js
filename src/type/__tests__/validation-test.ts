@@ -7,7 +7,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { DirectiveLocation } from '../../language/directiveLocation.js';
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 import { extendSchema } from '../../utilities/extendSchema.js';

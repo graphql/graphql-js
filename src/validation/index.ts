@@ -1,4 +1,5 @@
-export { validate } from './validate.js';
+export { validate, validateSync } from './validate.js';
+export type { ValidateOptions, ValidateCache } from './validate.js';
 
 export { ValidationContext } from './ValidationContext.js';
 export type { ValidationRule } from './ValidationContext.js';

@@ -1,6 +1,6 @@
 import { invariant } from '../jsutils/invariant.js';
 
-import { parse } from '../language/parser.js';
+import { parseSync as parse } from '../language/parser.js';
 
 import type { GraphQLSchema } from '../type/schema.js';
 

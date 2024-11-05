@@ -3,13 +3,13 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import { GraphQLObjectType } from '../../type/definition.js';
 import { GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { validate } from '../../validation/validate.js';
+import { validateSync as validate } from '../../validation/validate.js';
 
 import { graphqlSync } from '../../graphql.js';
 

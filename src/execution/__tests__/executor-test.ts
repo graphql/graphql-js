@@ -7,7 +7,7 @@ import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 import { inspect } from '../../jsutils/inspect.js';
 
 import { Kind } from '../../language/kinds.js';
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import {
   GraphQLInterfaceType,

@@ -9,7 +9,7 @@ import { GraphQLError } from '../../error/GraphQLError.js';
 
 import { DirectiveLocation } from '../../language/directiveLocation.js';
 import { Kind } from '../../language/kinds.js';
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import type {
   GraphQLArgumentConfig,

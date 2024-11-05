@@ -7,7 +7,7 @@ import { OperationTypeNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 
 import { ScalarLeafsRule } from '../rules/ScalarLeafsRule.js';
-import { validate } from '../validate.js';
+import { validateSync as validate } from '../validate.js';
 
 import { expectValidationErrors, testSchema } from './harness.js';
 

@@ -1,6 +1,6 @@
 import type { DocumentNode } from '../language/ast.js';
 import type { ParseOptions } from '../language/parser.js';
-import { parse } from '../language/parser.js';
+import { parseSync as parse } from '../language/parser.js';
 import type { Source } from '../language/source.js';
 
 import { specifiedDirectives } from '../type/directives.js';

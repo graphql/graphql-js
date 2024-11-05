@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 import { dedent } from '../../__testUtils__/dedent.js';
 
 import { Kind } from '../../language/kinds.js';
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 import { Source } from '../../language/source.js';
 
 import { GraphQLError } from '../GraphQLError.js';

@@ -1,4 +1,7 @@
+import { isPromise } from '../jsutils/isPromise.js';
 import type { Maybe } from '../jsutils/Maybe.js';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import { withCache } from '../jsutils/withCache.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
 
@@ -17,11 +20,35 @@ import {
   ValidationContext,
 } from './ValidationContext.js';
 
+export interface ValidateOptions {
+  maxErrors?: number;
+  hideSuggestions?: Maybe<boolean>;
+  cache?: ValidateCache | undefined;
+}
+
+export interface ValidateCache {
+  set: (
+    errors: ReadonlyArray<GraphQLError>,
+    schema: GraphQLSchema,
+    documentAST: DocumentNode,
+    rules?: ReadonlyArray<ValidationRule> | undefined,
+    options?: ValidateOptions | undefined,
+  ) => PromiseOrValue<void>;
+  get: (
+    schema: GraphQLSchema,
+    documentAST: DocumentNode,
+    rules?: ReadonlyArray<ValidationRule> | undefined,
+    options?: ValidateOptions | undefined,
+  ) => PromiseOrValue<ReadonlyArray<GraphQLError> | undefined>;
+}
+
 /**
  * Implements the "Validation" section of the spec.
  *
  * Validation runs synchronously, returning an array of encountered errors, or
  * an empty array if no errors were encountered and the document is valid.
+ *
+ * However, a potentially asynchronous cache will be used, if provided.
  *
  * A list of specific validation rules may be provided. If not provided, the
  * default list of rules defined by the GraphQL specification will be used.
@@ -41,7 +68,21 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
-  options?: { maxErrors?: number; hideSuggestions?: Maybe<boolean> },
+  options?: ValidateOptions | undefined,
+): PromiseOrValue<ReadonlyArray<GraphQLError>> {
+  const cache = options?.cache;
+  if (cache) {
+    return withCache(validateImpl, cache)(schema, documentAST, rules, options);
+  }
+
+  return validateImpl(schema, documentAST, rules, options);
+}
+
+function validateImpl(
+  schema: GraphQLSchema,
+  documentAST: DocumentNode,
+  rules: ReadonlyArray<ValidationRule> = specifiedRules,
+  options?: ValidateOptions | undefined,
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
   const hideSuggestions = options?.hideSuggestions ?? false;
@@ -81,6 +122,26 @@ export function validate(
       throw e;
     }
   }
+  return errors;
+}
+
+/**
+ * Also implements the "Validation" section of the spec.
+ * However, it guarantees to complete synchronously.
+ */
+export function validateSync(
+  schema: GraphQLSchema,
+  documentAST: DocumentNode,
+  rules: ReadonlyArray<ValidationRule> = specifiedRules,
+  options?: ValidateOptions | undefined,
+): ReadonlyArray<GraphQLError> {
+  const errors = validate(schema, documentAST, rules, options);
+
+  // Assert that the execution was synchronous.
+  if (isPromise(errors)) {
+    throw new Error('GraphQL validation failed to complete synchronously.');
+  }
+
   return errors;
 }
 

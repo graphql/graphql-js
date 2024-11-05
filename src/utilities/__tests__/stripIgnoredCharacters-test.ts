@@ -8,7 +8,7 @@ import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
 import type { Maybe } from '../../jsutils/Maybe.js';
 
 import { Lexer } from '../../language/lexer.js';
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 import { Source } from '../../language/source.js';
 
 import { stripIgnoredCharacters } from '../stripIgnoredCharacters.js';

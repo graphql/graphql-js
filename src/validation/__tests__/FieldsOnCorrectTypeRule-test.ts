@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import type { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import { FieldsOnCorrectTypeRule } from '../rules/FieldsOnCorrectTypeRule.js';
-import { validate } from '../validate.js';
+import { validateSync as validate } from '../validate.js';
 
 import { expectValidationErrorsWithSchema } from './harness.js';
 

@@ -1,4 +1,7 @@
+import { isPromise } from '../jsutils/isPromise.js';
 import type { Maybe } from '../jsutils/Maybe.js';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import { withCache } from '../jsutils/withCache.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 import { syntaxError } from '../error/syntaxError.js';
@@ -89,6 +92,11 @@ export interface ParseOptions {
   maxTokens?: number | undefined;
 
   /**
+   * Generic Cache Interface
+   */
+  cache?: ParseCache | undefined;
+
+  /**
    * EXPERIMENTAL:
    *
    * If enabled, the parser will understand and parse fragment variable definitions
@@ -110,11 +118,36 @@ export interface ParseOptions {
   experimentalFragmentArguments?: boolean | undefined;
 }
 
+export interface ParseCache {
+  set: (
+    document: DocumentNode,
+    source: string | Source,
+    options?: ParseOptions | undefined,
+  ) => PromiseOrValue<void> | void;
+  get: (
+    source: string | Source,
+    options?: ParseOptions | undefined,
+  ) => PromiseOrValue<DocumentNode | undefined>;
+}
+
 /**
  * Given a GraphQL source, parses it into a Document.
  * Throws GraphQLError if a syntax error is encountered.
+ * Uses a potentially asynchronous cache if provided to improve performance.
  */
 export function parse(
+  source: string | Source,
+  options?: ParseOptions | undefined,
+): PromiseOrValue<DocumentNode> {
+  const cache = options?.cache;
+  if (cache) {
+    return withCache(parseImpl, cache)(source, options);
+  }
+
+  return parseImpl(source, options);
+}
+
+function parseImpl(
   source: string | Source,
   options?: ParseOptions | undefined,
 ): DocumentNode {
@@ -124,6 +157,25 @@ export function parse(
     enumerable: false,
     value: parser.tokenCount,
   });
+  return document;
+}
+
+/**
+ * Given a GraphQL source, parses it into a Document.
+ * Throws GraphQLError if a syntax error is encountered.
+ * Guarantees to complete synchronously.
+ */
+export function parseSync(
+  source: string | Source,
+  options?: ParseOptions | undefined,
+): DocumentNode {
+  const document = parse(source, options);
+
+  // Assert that the execution was synchronous.
+  if (isPromise(document)) {
+    throw new Error('GraphQL parsing failed to complete synchronously.');
+  }
+
   return document;
 }
 

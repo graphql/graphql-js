@@ -2,7 +2,7 @@ import { isPromise } from './jsutils/isPromise.js';
 import type { Maybe } from './jsutils/Maybe.js';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
 
-import { parse } from './language/parser.js';
+import { parseSync as parse } from './language/parser.js';
 import type { Source } from './language/source.js';
 
 import type {
@@ -12,7 +12,7 @@ import type {
 import type { GraphQLSchema } from './type/schema.js';
 import { validateSchema } from './type/validate.js';
 
-import { validate } from './validation/validate.js';
+import { validateSync as validate } from './validation/validate.js';
 
 import { execute } from './execution/execute.js';
 import type { ExecutionResult } from './execution/types.js';

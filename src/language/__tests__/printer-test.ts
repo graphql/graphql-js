@@ -5,7 +5,7 @@ import { dedent, dedentString } from '../../__testUtils__/dedent.js';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 
 import { Kind } from '../kinds.js';
-import { parse } from '../parser.js';
+import { parseSync as parse } from '../parser.js';
 import { print } from '../printer.js';
 
 describe('Printer: Query document', () => {

@@ -5,7 +5,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import type { GraphQLFieldResolver } from '../../type/definition.js';
 import {

@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import { identityFunc } from '../../jsutils/identityFunc.js';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import { GraphQLSchema } from '../../type/schema.js';
 

@@ -3,14 +3,14 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition.js';
 import { GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
 import { ValuesOfCorrectTypeRule } from '../rules/ValuesOfCorrectTypeRule.js';
-import { validate } from '../validate.js';
+import { validateSync as validate } from '../validate.js';
 
 import {
   expectValidationErrors,

@@ -2,13 +2,13 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
 import type { Maybe } from '../../jsutils/Maybe.js';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 
 import type { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { validate, validateSDL } from '../validate.js';
+import { validateSDL, validateSync as validate } from '../validate.js';
 import type {
   SDLValidationRule,
   ValidationRule,

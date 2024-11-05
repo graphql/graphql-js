@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.js';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 import { print } from '../../language/printer.js';
 import { Source } from '../../language/source.js';
 

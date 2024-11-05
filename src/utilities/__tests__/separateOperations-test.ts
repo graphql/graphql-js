@@ -5,7 +5,7 @@ import { dedent } from '../../__testUtils__/dedent.js';
 
 import { mapValue } from '../../jsutils/mapValue.js';
 
-import { parse } from '../../language/parser.js';
+import { parseSync as parse } from '../../language/parser.js';
 import { print } from '../../language/printer.js';
 
 import { separateOperations } from '../separateOperations.js';

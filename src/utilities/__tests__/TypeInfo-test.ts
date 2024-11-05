@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse, parseValue } from '../../language/parser.js';
+import { parseSync as parse, parseValue } from '../../language/parser.js';
 import { print } from '../../language/printer.js';
 import { visit } from '../../language/visitor.js';
 

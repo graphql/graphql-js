@@ -8,7 +8,7 @@ import {
 } from '../../__testUtils__/expectJSON.js';
 import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
 
-import { parse } from '../parser.js';
+import { parseSync as parse } from '../parser.js';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));

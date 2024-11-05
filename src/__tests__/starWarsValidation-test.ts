@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../language/parser.js';
+import { parseSync as parse } from '../language/parser.js';
 import { Source } from '../language/source.js';
 
-import { validate } from '../validation/validate.js';
+import { validateSync as validate } from '../validation/validate.js';
 
 import { StarWarsSchema } from './starWarsSchema.js';
 

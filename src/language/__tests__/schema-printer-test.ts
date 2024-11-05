@@ -5,7 +5,7 @@ import { dedent } from '../../__testUtils__/dedent.js';
 import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
 
 import { Kind } from '../kinds.js';
-import { parse } from '../parser.js';
+import { parseSync as parse } from '../parser.js';
 import { print } from '../printer.js';
 
 describe('Printer: SDL document', () => {

@@ -220,6 +220,7 @@ export {
   TokenKind,
   // Parse
   parse,
+  parseSync,
   parseValue,
   parseConstValue,
   parseType,
@@ -247,6 +248,7 @@ export {
 
 export type {
   ParseOptions,
+  ParseCache,
   SourceLocation,
   // Visitor utilities
   ASTVisitor,
@@ -356,6 +358,7 @@ export type {
 // Validate GraphQL documents.
 export {
   validate,
+  validateSync,
   ValidationContext,
   // All validation rules in the GraphQL Specification.
   specifiedRules,
@@ -402,7 +405,11 @@ export {
   NoSchemaIntrospectionCustomRule,
 } from './validation/index.js';
 
-export type { ValidationRule } from './validation/index.js';
+export type {
+  ValidationRule,
+  ValidateOptions,
+  ValidateCache,
+} from './validation/index.js';
 
 // Create, format, and print GraphQL errors.
 export { GraphQLError, syntaxError, locatedError } from './error/index.js';
