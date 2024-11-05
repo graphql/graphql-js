@@ -63,7 +63,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    let cachedErrors: ReadonlyArray<GraphQLError> | undefined;
+    let cachedErrors: ReadonlyArray<GraphQLError> | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ValidateCache = {
@@ -119,7 +119,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    let cachedErrors: ReadonlyArray<GraphQLError> | undefined;
+    let cachedErrors: ReadonlyArray<GraphQLError> | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ValidateCache = {
@@ -172,7 +172,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    let cachedErrors: ReadonlyArray<GraphQLError> | undefined;
+    let cachedErrors: ReadonlyArray<GraphQLError> | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ValidateCache = {
@@ -226,7 +226,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    let cachedErrors: ReadonlyArray<GraphQLError> | undefined;
+    let cachedErrors: ReadonlyArray<GraphQLError> | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ValidateCache = {
@@ -276,7 +276,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    let cachedErrors: ReadonlyArray<GraphQLError> | undefined;
+    let cachedErrors: ReadonlyArray<GraphQLError> | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ValidateCache = {
@@ -329,7 +329,7 @@ describe('Validate: Supports full validation', () => {
       }
     `);
 
-    let cachedErrors: ReadonlyArray<GraphQLError> | undefined;
+    let cachedErrors: ReadonlyArray<GraphQLError> | Error | undefined;
     const customCache: ValidateCache = {
       set: async (resultedErrors) => {
         await resolveOnNextTick();

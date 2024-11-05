@@ -28,7 +28,7 @@ export interface ValidateOptions {
 
 export interface ValidateCache {
   set: (
-    errors: ReadonlyArray<GraphQLError>,
+    errors: ReadonlyArray<GraphQLError> | Error,
     schema: GraphQLSchema,
     documentAST: DocumentNode,
     rules?: ReadonlyArray<ValidationRule> | undefined,
@@ -39,7 +39,7 @@ export interface ValidateCache {
     documentAST: DocumentNode,
     rules?: ReadonlyArray<ValidationRule> | undefined,
     options?: ValidateOptions | undefined,
-  ) => PromiseOrValue<ReadonlyArray<GraphQLError> | undefined>;
+  ) => PromiseOrValue<ReadonlyArray<GraphQLError> | Error | undefined>;
 }
 
 /**

@@ -120,14 +120,14 @@ export interface ParseOptions {
 
 export interface ParseCache {
   set: (
-    document: DocumentNode,
+    document: DocumentNode | Error,
     source: string | Source,
     options?: ParseOptions | undefined,
   ) => PromiseOrValue<void> | void;
   get: (
     source: string | Source,
     options?: ParseOptions | undefined,
-  ) => PromiseOrValue<DocumentNode | undefined>;
+  ) => PromiseOrValue<DocumentNode | Error | undefined>;
 }
 
 /**

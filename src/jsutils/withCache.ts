@@ -2,14 +2,19 @@ import { isPromise } from './isPromise.js';
 import type { PromiseOrValue } from './PromiseOrValue.js';
 
 export interface FnCache<
-  T extends (...args: Array<any>) => Exclude<any, undefined>,
+  T extends (...args: Array<any>) => Exclude<any, Error | undefined>,
 > {
-  set: (result: ReturnType<T>, ...args: Parameters<T>) => PromiseOrValue<void>;
-  get: (...args: Parameters<T>) => PromiseOrValue<ReturnType<T> | undefined>;
+  set: (
+    result: ReturnType<T> | Error,
+    ...args: Parameters<T>
+  ) => PromiseOrValue<void>;
+  get: (
+    ...args: Parameters<T>
+  ) => PromiseOrValue<ReturnType<T> | Error | undefined>;
 }
 
 export function withCache<
-  T extends (...args: Array<any>) => Exclude<any, undefined>,
+  T extends (...args: Array<any>) => Exclude<any, Error | undefined>,
 >(
   fn: T,
   cache: FnCache<T>,
@@ -27,23 +32,43 @@ export function withCache<
 }
 
 function handleCacheResult<
-  T extends (...args: Array<any>) => Exclude<any, undefined>,
+  T extends (...args: Array<any>) => Exclude<any, Error | undefined>,
 >(
-  cachedResult: Awaited<ReturnType<T>> | undefined,
+  cachedResult: Awaited<ReturnType<T>> | Error | undefined,
   fn: T,
   cache: FnCache<T>,
   args: Parameters<T>,
 ): Awaited<ReturnType<T>> {
   if (cachedResult !== undefined) {
+    if (cachedResult instanceof Error) {
+      throw cachedResult;
+    }
     return cachedResult;
   }
 
-  const result = fn(...args);
+  let result;
+  try {
+    result = fn(...args);
+  } catch (error) {
+    updateResult(error, cache, args);
+    throw error;
+  }
+
+  updateResult(result, cache, args);
+  return result;
+}
+
+function updateResult<
+  T extends (...args: Array<any>) => Exclude<any, Error | undefined>,
+>(
+  result: Awaited<ReturnType<T>> | Error,
+  cache: FnCache<T>,
+  args: Parameters<T>,
+): void {
   const setResult = cache.set(result, ...args);
   if (isPromise(setResult)) {
     setResult.catch(() => {
       /* c8 ignore next */
     });
   }
-  return result;
 }

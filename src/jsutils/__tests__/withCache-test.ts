@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { isPromise } from '../isPromise.js';
@@ -8,11 +9,11 @@ import { withCache } from '../withCache.js';
 
 describe('withCache', () => {
   it('returns asynchronously using asynchronous cache', async () => {
-    let cached: string | undefined;
+    let cached: string | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache = {
-      set: async (result: string) => {
+      set: async (result: string | Error) => {
         await resolveOnNextTick();
         cached = result;
       },
@@ -46,11 +47,11 @@ describe('withCache', () => {
   });
 
   it('returns synchronously using cache with sync getter and async setter', async () => {
-    let cached: string | undefined;
+    let cached: string | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache = {
-      set: async (result: string) => {
+      set: async (result: string | Error) => {
         await resolveOnNextTick();
         cached = result;
       },
@@ -80,11 +81,11 @@ describe('withCache', () => {
   });
 
   it('returns asynchronously using cache with async getter and sync setter', async () => {
-    let cached: string | undefined;
+    let cached: string | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache = {
-      set: (result: string) => {
+      set: (result: string | Error) => {
         cached = result;
       },
       get: () => {
@@ -150,5 +151,75 @@ describe('withCache', () => {
     expect(secondResult).to.equal('arg');
     expect(getAttempts).to.equal(2);
     expect(cacheHits).to.equal(0);
+  });
+
+  it('caches fn errors with sync cache', () => {
+    let cached: string | Error | undefined;
+    let getAttempts = 0;
+    let cacheHits = 0;
+    const customCache = {
+      set: (result: string | Error) => {
+        cached = result;
+      },
+      get: () => {
+        getAttempts++;
+        if (cached !== undefined) {
+          cacheHits++;
+        }
+        return cached;
+      },
+    };
+
+    const fnWithCache = withCache((): string => {
+      throw new Error('Oops');
+    }, customCache);
+
+    expect(() => fnWithCache()).to.throw('Oops');
+
+    expect(getAttempts).to.equal(1);
+    expect(cacheHits).to.equal(0);
+
+    expect(() => fnWithCache()).to.throw('Oops');
+
+    expect(getAttempts).to.equal(2);
+    expect(cacheHits).to.equal(1);
+  });
+
+  it('caches fn errors with async cache', async () => {
+    let cached: string | Error | undefined;
+    let getAttempts = 0;
+    let cacheHits = 0;
+    const customCache = {
+      set: async (result: string | Error) => {
+        await resolveOnNextTick();
+        cached = result;
+      },
+      get: () => {
+        getAttempts++;
+        if (cached !== undefined) {
+          cacheHits++;
+        }
+        return Promise.resolve(cached);
+      },
+    };
+
+    const fnWithCache = withCache((): string => {
+      throw new Error('Oops');
+    }, customCache);
+
+    const firstResultPromise = fnWithCache();
+    expect(isPromise(firstResultPromise)).to.equal(true);
+
+    await expectPromise(firstResultPromise).toRejectWith('Oops');
+    expect(getAttempts).to.equal(1);
+    expect(cacheHits).to.equal(0);
+
+    const secondResultPromise = fnWithCache();
+
+    expect(isPromise(secondResultPromise)).to.equal(true);
+
+    await expectPromise(secondResultPromise).toRejectWith('Oops');
+    expect(getAttempts).to.equal(2);
+    expect(cacheHits).to.equal(1);
   });
 });

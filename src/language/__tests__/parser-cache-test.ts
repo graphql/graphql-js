@@ -46,7 +46,7 @@ describe('Parser Cache', () => {
   };
 
   it('parses asynchronously using asynchronous cache', async () => {
-    let cachedDocument: DocumentNode | undefined;
+    let cachedDocument: DocumentNode | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ParseCache = {
@@ -86,7 +86,7 @@ describe('Parser Cache', () => {
   });
 
   it('parses synchronously using cache with sync getter and async setter', async () => {
-    let cachedDocument: DocumentNode | undefined;
+    let cachedDocument: DocumentNode | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ParseCache = {
@@ -123,7 +123,7 @@ describe('Parser Cache', () => {
   });
 
   it('parses asynchronously using cache with async getter and sync setter', async () => {
-    let cachedDocument: DocumentNode | undefined;
+    let cachedDocument: DocumentNode | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ParseCache = {
@@ -161,7 +161,7 @@ describe('Parser Cache', () => {
   });
 
   it('parseSync parses synchronously using synchronous cache', () => {
-    let cachedDocument: DocumentNode | undefined;
+    let cachedDocument: DocumentNode | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ParseCache = {
@@ -195,7 +195,7 @@ describe('Parser Cache', () => {
   });
 
   it('parseSync throws using asynchronous cache', () => {
-    let cachedDocument: DocumentNode | undefined;
+    let cachedDocument: DocumentNode | Error | undefined;
     const customCache: ParseCache = {
       set: async (resultedDocument) => {
         await resolveOnNextTick();
@@ -212,7 +212,7 @@ describe('Parser Cache', () => {
   });
 
   it('parseSync parses synchronously using sync getter and async setter', async () => {
-    let cachedDocument: DocumentNode | undefined;
+    let cachedDocument: DocumentNode | Error | undefined;
     let getAttempts = 0;
     let cacheHits = 0;
     const customCache: ParseCache = {
@@ -249,7 +249,7 @@ describe('Parser Cache', () => {
   });
 
   it('parseSync throws using asynchronous cache', () => {
-    let cachedDocument: DocumentNode | undefined;
+    let cachedDocument: DocumentNode | Error | undefined;
     const customCache: ParseCache = {
       set: async (resultedDocument) => {
         await resolveOnNextTick();
