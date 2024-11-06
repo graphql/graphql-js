@@ -275,7 +275,7 @@ export interface GraphQLFormattedError {
    * Reserved for implementors to extend the protocol however they see fit,
    * and hence there are no additional restrictions on its contents.
    */
-  readonly extensions?: { [key: string]: unknown };
+  readonly extensions?: GraphQLErrorExtensions;
 }
 
 /**
