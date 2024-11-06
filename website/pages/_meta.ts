@@ -1,9 +1,10 @@
 const meta = {
+  index: '',
   '-- 1': {
     type: 'separator',
     title: 'GraphQL.JS Tutorial',
   },
-  index: '',
+  'getting-started': '',
   'running-an-express-graphql-server': '',
   'graphql-clients': '',
   'basic-types': '',
