@@ -1,7 +1,7 @@
 import { promiseWithResolvers } from "../jsutils/promiseWithResolvers.mjs";
 /**
- * A PromiseCanceller object can be used to cancel multiple promises
- * using a single AbortSignal.
+ * A PromiseCanceller object can be used to trigger multiple responses
+ * in response to a single AbortSignal.
  *
  * @internal
  */
@@ -19,7 +19,7 @@ export class PromiseCanceller {
     disconnect() {
         this.abortSignal.removeEventListener('abort', this.abort);
     }
-    withCancellation(originalPromise) {
+    cancellablePromise(originalPromise) {
         if (this.abortSignal.aborted) {
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject(this.abortSignal.reason);
@@ -35,6 +35,24 @@ export class PromiseCanceller {
             reject(error);
         });
         return promise;
+    }
+    cancellableIterable(iterable) {
+        const iterator = iterable[Symbol.asyncIterator]();
+        const _next = iterator.next.bind(iterator);
+        if (iterator.return) {
+            const _return = iterator.return.bind(iterator);
+            return {
+                [Symbol.asyncIterator]: () => ({
+                    next: () => this.cancellablePromise(_next()),
+                    return: () => this.cancellablePromise(_return()),
+                }),
+            };
+        }
+        return {
+            [Symbol.asyncIterator]: () => ({
+                next: () => this.cancellablePromise(_next()),
+            }),
+        };
     }
 }
 //# sourceMappingURL=PromiseCanceller.js.map

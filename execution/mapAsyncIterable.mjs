@@ -2,14 +2,24 @@
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
-export function mapAsyncIterable(iterable, callback) {
+export function mapAsyncIterable(iterable, callback, onDone) {
     const iterator = iterable[Symbol.asyncIterator]();
-    async function mapResult(result) {
-        if (result.done) {
-            return result;
+    async function mapResult(promise) {
+        let value;
+        try {
+            const result = await promise;
+            if (result.done) {
+                onDone?.();
+                return result;
+            }
+            value = result.value;
+        }
+        catch (error) {
+            onDone?.();
+            throw error;
         }
         try {
-            return { value: await callback(result.value), done: false };
+            return { value: await callback(value), done: false };
         }
         catch (error) {
             /* c8 ignore start */
@@ -28,17 +38,17 @@ export function mapAsyncIterable(iterable, callback) {
     }
     return {
         async next() {
-            return mapResult(await iterator.next());
+            return mapResult(iterator.next());
         },
         async return() {
             // If iterator.return() does not exist, then type R must be undefined.
             return typeof iterator.return === 'function'
-                ? mapResult(await iterator.return())
+                ? mapResult(iterator.return())
                 : { value: undefined, done: true };
         },
         async throw(error) {
             if (typeof iterator.throw === 'function') {
-                return mapResult(await iterator.throw(error));
+                return mapResult(iterator.throw(error));
             }
             throw error;
         },

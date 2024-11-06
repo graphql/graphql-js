@@ -431,7 +431,7 @@ function executeField(exeContext, parentType, source, fieldDetailsList, path, in
         // used to represent an authenticated user, or request-specific caches.
         const result = resolveFn(source, args, contextValue, info, abortSignal);
         if (isPromise(result)) {
-            return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, promiseCanceller?.withCancellation(result) ?? result, incrementalContext, deferMap);
+            return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, promiseCanceller?.cancellablePromise(result) ?? result, incrementalContext, deferMap);
         }
         const completed = completeValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap);
         if (isPromise(completed)) {
@@ -709,7 +709,8 @@ async function completeAsyncIteratorValue(exeContext, itemType, fieldDetailsList
 function completeListValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap) {
     const itemType = returnType.ofType;
     if (isAsyncIterable(result)) {
-        const asyncIterator = result[Symbol.asyncIterator]();
+        const maybeCancellableIterable = exeContext.promiseCanceller?.cancellableIterable(result) ?? result;
+        const asyncIterator = maybeCancellableIterable[Symbol.asyncIterator]();
         return completeAsyncIteratorValue(exeContext, itemType, fieldDetailsList, info, path, asyncIterator, incrementalContext, deferMap);
     }
     if (!isIterableObject(result)) {
@@ -792,7 +793,7 @@ function completeListItemValue(item, completedResults, parent, exeContext, itemT
 }
 async function completePromisedListItemValue(item, parent, exeContext, itemType, fieldDetailsList, info, itemPath, incrementalContext, deferMap) {
     try {
-        const resolved = await (exeContext.promiseCanceller?.withCancellation(item) ?? item);
+        const resolved = await (exeContext.promiseCanceller?.cancellablePromise(item) ?? item);
         let completed = completeValue(exeContext, itemType, fieldDetailsList, info, itemPath, resolved, incrementalContext, deferMap);
         if (isPromise(completed)) {
             completed = await completed;
@@ -1040,17 +1041,21 @@ function mapSourceToResponse(validatedExecutionArgs, resultOrStream) {
     if (!isAsyncIterable(resultOrStream)) {
         return resultOrStream;
     }
+    const abortSignal = validatedExecutionArgs.abortSignal;
+    const promiseCanceller = abortSignal
+        ? new PromiseCanceller(abortSignal)
+        : undefined;
     // For each payload yielded from a subscription, map it over the normal
     // GraphQL `execute` function, with `payload` as the rootValue.
     // This implements the "MapSourceToResponseEvent" algorithm described in
     // the GraphQL specification..
-    return mapAsyncIterable(resultOrStream, (payload) => {
+    return mapAsyncIterable(promiseCanceller?.cancellableIterable(resultOrStream) ?? resultOrStream, (payload) => {
         const perEventExecutionArgs = {
             ...validatedExecutionArgs,
             rootValue: payload,
         };
         return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
-    });
+    }, () => promiseCanceller?.disconnect());
 }
 export function executeSubscriptionEvent(validatedExecutionArgs) {
     return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
@@ -1141,10 +1146,8 @@ function executeSubscription(validatedExecutionArgs) {
             const promiseCanceller = abortSignal
                 ? new PromiseCanceller(abortSignal)
                 : undefined;
-            const promise = promiseCanceller?.withCancellation(result) ?? result;
+            const promise = promiseCanceller?.cancellablePromise(result) ?? result;
             return promise.then(assertEventStream).then((resolved) => {
-                // TODO: add test case
-                /* c8 ignore next */
                 promiseCanceller?.disconnect();
                 return resolved;
             }, (error) => {
@@ -1312,7 +1315,7 @@ async function getNextAsyncStreamItemResult(streamItemQueue, streamPath, index, 
 }
 function completeStreamItem(itemPath, item, exeContext, incrementalContext, fieldDetailsList, info, itemType) {
     if (isPromise(item)) {
-        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, exeContext.promiseCanceller?.withCancellation(item) ?? item, incrementalContext, new Map()).then((resolvedItem) => {
+        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, exeContext.promiseCanceller?.cancellablePromise(item) ?? item, incrementalContext, new Map()).then((resolvedItem) => {
             incrementalContext.completed = true;
             return buildStreamItemResult(incrementalContext.errors, resolvedItem);
         }, (error) => {

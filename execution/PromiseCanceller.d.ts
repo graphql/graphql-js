@@ -1,6 +1,6 @@
 /**
- * A PromiseCanceller object can be used to cancel multiple promises
- * using a single AbortSignal.
+ * A PromiseCanceller object can be used to trigger multiple responses
+ * in response to a single AbortSignal.
  *
  * @internal
  */
@@ -10,5 +10,6 @@ export declare class PromiseCanceller {
     private _aborts;
     constructor(abortSignal: AbortSignal);
     disconnect(): void;
-    withCancellation<T>(originalPromise: Promise<T>): Promise<T>;
+    cancellablePromise<T>(originalPromise: Promise<T>): Promise<T>;
+    cancellableIterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T>;
 }
