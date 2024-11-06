@@ -814,7 +814,7 @@ function executeField(
         fieldDetailsList,
         info,
         path,
-        promiseCanceller?.withCancellation(result) ?? result,
+        promiseCanceller?.cancellablePromise(result) ?? result,
         incrementalContext,
         deferMap,
       );
@@ -1292,7 +1292,9 @@ function completeListValue(
 ): PromiseOrValue<GraphQLWrappedResult<ReadonlyArray<unknown>>> {
   const itemType = returnType.ofType;
   if (isAsyncIterable(result)) {
-    const asyncIterator = result[Symbol.asyncIterator]();
+    const maybeCancellableIterable =
+      exeContext.promiseCanceller?.cancellableIterable(result) ?? result;
+    const asyncIterator = maybeCancellableIterable[Symbol.asyncIterator]();
     return completeAsyncIteratorValue(
       exeContext,
       itemType,
@@ -1489,7 +1491,7 @@ async function completePromisedListItemValue(
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): Promise<unknown> {
   try {
-    const resolved = await (exeContext.promiseCanceller?.withCancellation(
+    const resolved = await (exeContext.promiseCanceller?.cancellablePromise(
       item,
     ) ?? item);
     let completed = completeValue(
@@ -1953,17 +1955,25 @@ function mapSourceToResponse(
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
   }
+  const abortSignal = validatedExecutionArgs.abortSignal;
+  const promiseCanceller = abortSignal
+    ? new PromiseCanceller(abortSignal)
+    : undefined;
   // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
   // This implements the "MapSourceToResponseEvent" algorithm described in
   // the GraphQL specification..
-  return mapAsyncIterable(resultOrStream, (payload: unknown) => {
-    const perEventExecutionArgs: ValidatedExecutionArgs = {
-      ...validatedExecutionArgs,
-      rootValue: payload,
-    };
-    return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
-  });
+  return mapAsyncIterable(
+    promiseCanceller?.cancellableIterable(resultOrStream) ?? resultOrStream,
+    (payload: unknown) => {
+      const perEventExecutionArgs: ValidatedExecutionArgs = {
+        ...validatedExecutionArgs,
+        rootValue: payload,
+      };
+      return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
+    },
+    () => promiseCanceller?.disconnect(),
+  );
 }
 export function executeSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
@@ -2098,11 +2108,9 @@ function executeSubscription(
       const promiseCanceller = abortSignal
         ? new PromiseCanceller(abortSignal)
         : undefined;
-      const promise = promiseCanceller?.withCancellation(result) ?? result;
+      const promise = promiseCanceller?.cancellablePromise(result) ?? result;
       return promise.then(assertEventStream).then(
         (resolved) => {
-          // TODO: add test case
-          /* c8 ignore next */
           promiseCanceller?.disconnect();
           return resolved;
         },
@@ -2437,7 +2445,7 @@ function completeStreamItem(
       fieldDetailsList,
       info,
       itemPath,
-      exeContext.promiseCanceller?.withCancellation(item) ?? item,
+      exeContext.promiseCanceller?.cancellablePromise(item) ?? item,
       incrementalContext,
       new Map(),
     ).then(
