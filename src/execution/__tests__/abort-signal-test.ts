@@ -1,8 +1,11 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
 
 import type { DocumentNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
@@ -400,6 +403,56 @@ describe('Execute: Cancellation', () => {
     });
   });
 
+  it('should stop the execution when aborted despite a hanging async item', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        todo {
+          id
+          items
+        }
+      }
+    `);
+
+    const resultPromise = execute({
+      document,
+      schema,
+      abortSignal: abortController.signal,
+      rootValue: {
+        todo: () => ({
+          id: '1',
+          async *items() {
+            yield await new Promise(() => {
+              /* will never resolve */
+            }); /* c8 ignore start */
+          } /* c8 ignore stop */,
+        }),
+      },
+    });
+
+    abortController.abort();
+
+    const result = await resultPromise;
+
+    expect(result.errors?.[0].originalError?.name).to.equal('AbortError');
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        todo: {
+          id: '1',
+          items: null,
+        },
+      },
+      errors: [
+        {
+          message: 'This operation was aborted',
+          path: ['todo', 'items'],
+          locations: [{ line: 5, column: 11 }],
+        },
+      ],
+    });
+  });
+
   it('should stop the execution when aborted with proper null bubbling', async () => {
     const abortController = new AbortController();
     const document = parse(`
@@ -610,6 +663,63 @@ describe('Execute: Cancellation', () => {
     ]);
   });
 
+  it('should stop streamed execution when aborted', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        todo {
+          id
+          items @stream
+        }
+      }
+    `);
+
+    const resultPromise = complete(
+      document,
+      {
+        todo: {
+          id: '1',
+          items: [Promise.resolve('item')],
+        },
+      },
+      abortController.signal,
+    );
+
+    abortController.abort();
+
+    const result = await resultPromise;
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          todo: {
+            id: '1',
+            items: [],
+          },
+        },
+        pending: [{ id: '0', path: ['todo', 'items'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            errors: [
+              {
+                message: 'This operation was aborted',
+                path: ['todo', 'items', 0],
+                locations: [{ line: 5, column: 11 }],
+              },
+            ],
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
   it('should stop the execution when aborted mid-mutation', async () => {
     const abortController = new AbortController();
     const document = parse(`
@@ -685,7 +795,7 @@ describe('Execute: Cancellation', () => {
     });
   });
 
-  it('should stop the execution when aborted during subscription', async () => {
+  it('should stop the execution when aborted prior to return of a subscription resolver', async () => {
     const abortController = new AbortController();
     const document = parse(`
       subscription {
@@ -693,7 +803,7 @@ describe('Execute: Cancellation', () => {
       }
     `);
 
-    const resultPromise = subscribe({
+    const subscriptionPromise = subscribe({
       document,
       schema,
       abortSignal: abortController.signal,
@@ -707,7 +817,7 @@ describe('Execute: Cancellation', () => {
 
     abortController.abort();
 
-    const result = await resultPromise;
+    const result = await subscriptionPromise;
 
     expectJSON(result).toDeepEqual({
       errors: [
@@ -718,5 +828,121 @@ describe('Execute: Cancellation', () => {
         },
       ],
     });
+  });
+
+  it('should successfully wrap the subscription', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      subscription {
+        foo
+      }
+    `);
+
+    async function* foo() {
+      yield await Promise.resolve({ foo: 'foo' });
+    }
+
+    const subscription = await subscribe({
+      document,
+      schema,
+      abortSignal: abortController.signal,
+      rootValue: {
+        foo: Promise.resolve(foo()),
+      },
+    });
+
+    assert(isAsyncIterable(subscription));
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: {
+        data: {
+          foo: 'foo',
+        },
+      },
+      done: false,
+    });
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it('should stop the execution when aborted during subscription', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      subscription {
+        foo
+      }
+    `);
+
+    async function* foo() {
+      yield await Promise.resolve({ foo: 'foo' });
+    }
+
+    const subscription = subscribe({
+      document,
+      schema,
+      abortSignal: abortController.signal,
+      rootValue: {
+        foo: foo(),
+      },
+    });
+
+    assert(isAsyncIterable(subscription));
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: {
+        data: {
+          foo: 'foo',
+        },
+      },
+      done: false,
+    });
+
+    abortController.abort();
+
+    await expectPromise(subscription.next()).toRejectWith(
+      'This operation was aborted',
+    );
+  });
+
+  it('should stop the execution when aborted during subscription returned asynchronously', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      subscription {
+        foo
+      }
+    `);
+
+    async function* foo() {
+      yield await Promise.resolve({ foo: 'foo' });
+    }
+
+    const subscription = await subscribe({
+      document,
+      schema,
+      abortSignal: abortController.signal,
+      rootValue: {
+        foo: Promise.resolve(foo()),
+      },
+    });
+
+    assert(isAsyncIterable(subscription));
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: {
+        data: {
+          foo: 'foo',
+        },
+      },
+      done: false,
+    });
+
+    abortController.abort();
+
+    await expectPromise(subscription.next()).toRejectWith(
+      'This operation was aborted',
+    );
   });
 });
