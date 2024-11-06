@@ -1,73 +1,18 @@
 ---
-title: Getting Started With GraphQL.js
-sidebarTitle: Getting Started
+title: Overview
+sidebarTitle: Overview
 ---
 
-{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+GraphQL.JS is the reference implementation to the [GraphQL Specification](https://spec.graphql.org/draft/), it's designed to be simple to use and easy to understand
+while closely following the Specification.
 
-# Getting Started With GraphQL.js
+You can build GraphQL servers, clients, and tools with this library, it's designed so you can choose which parts you use, for example, you can build your own parser
+and use the execution/validation from the library. There also a lot of useful utilities for schema-diffing, working with arguments and [many more](./utilities.mdx).
 
-## Prerequisites
+In the following chapters you'll find out more about the three critical pieces of this library
 
-Before getting started, you should have Node v6 installed, although the examples should mostly work in previous versions of Node as well.
-For this guide, we won't use any language features that require transpilation, but we will use some ES6 features like
-[Promises](http://www.html5rocks.com/en/tutorials/es6/promises/), classes,
-and arrow functions, so if you aren't familiar with them you might want to read up on them first.
+- The GraphQL language
+- Document validation
+- GraphQL Execution
 
-To create a new project and install GraphQL.js in your current directory:
-
-```bash
-npm init
-npm install graphql --save
-```
-
-## Writing Code
-
-To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a “resolver” for each API endpoint. For an API that just returns “Hello world!”, we can put this code in a file named `server.js`:
-
-```javascript
-let { graphql, buildSchema } = require('graphql');
-
-// Construct a schema, using GraphQL schema language
-let schema = buildSchema(`
-  type Query {
-    hello: String
-  }
-`);
-
-// The rootValue provides a resolver function for each API endpoint
-let rootValue = {
-  hello() {
-    return 'Hello world!';
-  },
-};
-
-// Run the GraphQL query '{ hello }' and print out the response
-graphql({
-  schema,
-  source: '{ hello }',
-  rootValue,
-}).then((response) => {
-  console.log(response);
-});
-```
-
-If you run this with:
-
-```sh
-node server.js
-```
-
-You should see the GraphQL response printed out:
-
-```json
-{
-  "data": {
-    "hello": "Hello world!"
-  }
-}
-```
-
-Congratulations - you just executed a GraphQL query!
-
-For practical applications, you'll probably want to run GraphQL queries from an API server, rather than executing GraphQL with a command line tool. To use GraphQL for an API server over HTTP, check out [Running an Express GraphQL Server](/running-an-express-graphql-server/).
+You can also code along on [a tutorial](./getting-started.mdx).
