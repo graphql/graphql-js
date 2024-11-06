@@ -10,7 +10,7 @@ When you are using the `GraphQLSchema` constructor to create a schema, instead o
 
 For example, let's say we are building a simple API that lets you fetch user data for a few hardcoded users based on an id. Using `buildSchema` we could write a server with:
 
-<Tabs items={['Template', 'Classes']}>
+<Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```js
 const express = require('express');
@@ -19,40 +19,40 @@ const { buildSchema } = require('graphql');
 
 const schema = buildSchema(`
 type User {
-id: String
-name: String
+  id: String
+  name: String
 }
 
 type Query {
-user(id: String): User
+  user(id: String): User
 }
 `);
 
 // Maps id to User object
 const fakeDatabase = {
-a: {
-id: 'a',
-name: 'alice',
-},
-b: {
-id: 'b',
-name: 'bob',
-},
+  a: {
+    id: 'a',
+    name: 'alice',
+  },
+  b: {
+    id: 'b',
+    name: 'bob',
+  },
 };
 
 const root = {
-user({ id }) {
-return fakeDatabase[id];
-},
+  user({ id }) {
+    return fakeDatabase[id];
+  },
 };
 
 const app = express();
 app.all(
-'/graphql',
-createHandler({
-schema: schema,
-rootValue: root,
-}),
+  '/graphql',
+  createHandler({
+    schema: schema,
+    rootValue: root,
+  }),
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');

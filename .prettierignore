@@ -7,4 +7,5 @@
 /denoDist
 /websiteDist
 /website/out
+/website/**/*.mdx
 .next

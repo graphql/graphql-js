@@ -14,7 +14,7 @@ type Query {
 
 Instead of hard coding “three”, we might want a more general function that rolls `numDice` dice, each of which have `numSides` sides. We can add arguments to the GraphQL schema language like this:
 
-<Tabs items={['Template', 'Classes']}>
+<Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```graphql
 type Query {
@@ -34,20 +34,20 @@ const {
 } = require('graphql');
 
 new GraphQLObjectType({
-name: 'Query',
-fields: {
-rollDice: {
-type: new GraphQLList(GraphQLFloat),
-args: {
-numDice: {
-type: new GraphQLNonNull(GraphQLInt)
-},
-numSides: {
-type: new GraphQLNonNull(GraphQLInt)
-},
-},
-},
-},
+  name: 'Query',
+  fields: {
+    rollDice: {
+      type: new GraphQLList(GraphQLFloat),
+      args: {
+        numDice: {
+          type: new GraphQLNonNull(GraphQLInt)
+        },
+        numSides: {
+          type: new GraphQLNonNull(GraphQLInt)
+        },
+      },
+    },
+  },
 })
 
 ````
@@ -58,7 +58,7 @@ The exclamation point in `Int!` indicates that `numDice` can't be null, which me
 
 So far, our resolver functions took no arguments. When a resolver takes arguments, they are passed as one “args” object, as the first argument to the function. So rollDice could be implemented as:
 
-```javascript
+```js
 const root = {
   rollDice(args) {
     const output = [];
@@ -72,7 +72,7 @@ const root = {
 
 It's convenient to use [ES6 destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) for these parameters, since you know what format they will be. So we can also write `rollDice` as
 
-```javascript
+```js
 const root = {
   rollDice({ numDice, numSides }) {
     const output = [];
@@ -88,7 +88,7 @@ If you're familiar with destructuring, this is a bit nicer because the line of c
 
 The entire code for a server that hosts this `rollDice` API is:
 
-<Tabs items={['Template', 'Classes']}>
+<Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```js
 const express = require('express');
@@ -100,22 +100,22 @@ const schema = buildSchema(/_ GraphQL _/ ` type Query { rollDice(numDice: Int!, 
 
 // The root provides a resolver function for each API endpoint
 const root = {
-rollDice({ numDice, numSides }) {
-const output = [];
-for (const i = 0; i < numDice; i++) {
-output.push(1 + Math.floor(Math.random() \* (numSides || 6)));
-}
-return output;
-},
+  rollDice({ numDice, numSides }) {
+    const output = [];
+    for (const i = 0; i < numDice; i++) {
+      output.push(1 + Math.floor(Math.random() \* (numSides || 6)));
+    }
+    return output;
+  },
 };
 
 const app = express();
 app.all(
-'/graphql',
-createHandler({
-schema: schema,
-rootValue: root,
-}),
+  '/graphql',
+  createHandler({
+    schema: schema,
+    rootValue: root,
+  }),
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
