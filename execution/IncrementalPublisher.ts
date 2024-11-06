@@ -2,8 +2,8 @@ import { invariant } from '../jsutils/invariant.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import { pathToArray } from '../jsutils/Path.ts';
 import type { GraphQLError } from '../error/GraphQLError.ts';
+import type { AbortSignalListener } from './AbortSignalListener.ts';
 import { IncrementalGraph } from './IncrementalGraph.ts';
-import type { PromiseCanceller } from './PromiseCanceller.ts';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,
@@ -40,7 +40,7 @@ export function buildIncrementalResponse(
   );
 }
 interface IncrementalPublisherContext {
-  promiseCanceller: PromiseCanceller | undefined;
+  abortSignalListener: AbortSignalListener | undefined;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 interface SubsequentIncrementalExecutionResultContext {
@@ -112,7 +112,7 @@ class IncrementalPublisher {
       IteratorResult<SubsequentIncrementalExecutionResult, void>
     > => {
       if (isDone) {
-        this._context.promiseCanceller?.disconnect();
+        this._context.abortSignalListener?.disconnect();
         await this._returnAsyncIteratorsIgnoringErrors();
         return { value: undefined, done: true };
       }
@@ -152,7 +152,7 @@ class IncrementalPublisher {
       } while (batch !== undefined);
       // TODO: add test for this case
       /* c8 ignore next */
-      this._context.promiseCanceller?.disconnect();
+      this._context.abortSignalListener?.disconnect();
       await this._returnAsyncIteratorsIgnoringErrors();
       return { value: undefined, done: true };
     };
