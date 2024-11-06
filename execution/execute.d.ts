@@ -6,8 +6,8 @@ import { GraphQLError } from '../error/GraphQLError.js';
 import type { DocumentNode, FieldNode, FragmentDefinitionNode, OperationDefinitionNode } from '../language/ast.js';
 import type { GraphQLField, GraphQLFieldResolver, GraphQLObjectType, GraphQLResolveInfo, GraphQLTypeResolver } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
+import { AbortSignalListener } from './AbortSignalListener.js';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
-import { PromiseCanceller } from './PromiseCanceller.js';
 import type { CancellableStreamRecord, ExecutionResult, ExperimentalIncrementalExecutionResults } from './types.js';
 import type { VariableValues } from './values.js';
 /**
@@ -54,7 +54,7 @@ export interface ValidatedExecutionArgs {
 export interface ExecutionContext {
     validatedExecutionArgs: ValidatedExecutionArgs;
     errors: Array<GraphQLError> | undefined;
-    promiseCanceller: PromiseCanceller | undefined;
+    abortSignalListener: AbortSignalListener | undefined;
     completed: boolean;
     cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }

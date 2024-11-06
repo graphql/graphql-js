@@ -56,7 +56,7 @@ class IncrementalPublisher {
         let isDone = false;
         const _next = async () => {
             if (isDone) {
-                this._context.promiseCanceller?.disconnect();
+                this._context.abortSignalListener?.disconnect();
                 await this._returnAsyncIteratorsIgnoringErrors();
                 return { value: undefined, done: true };
             }
@@ -94,7 +94,7 @@ class IncrementalPublisher {
             } while (batch !== undefined);
             // TODO: add test for this case
             /* c8 ignore next */
-            this._context.promiseCanceller?.disconnect();
+            this._context.abortSignalListener?.disconnect();
             await this._returnAsyncIteratorsIgnoringErrors();
             return { value: undefined, done: true };
         };

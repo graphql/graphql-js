@@ -19,12 +19,12 @@ const kinds_js_1 = require("../language/kinds.js");
 const definition_js_1 = require("../type/definition.js");
 const directives_js_1 = require("../type/directives.js");
 const validate_js_1 = require("../type/validate.js");
+const AbortSignalListener_js_1 = require("./AbortSignalListener.js");
 const buildExecutionPlan_js_1 = require("./buildExecutionPlan.js");
 const collectFields_js_1 = require("./collectFields.js");
 const getVariableSignature_js_1 = require("./getVariableSignature.js");
 const IncrementalPublisher_js_1 = require("./IncrementalPublisher.js");
 const mapAsyncIterable_js_1 = require("./mapAsyncIterable.js");
-const PromiseCanceller_js_1 = require("./PromiseCanceller.js");
 const types_js_1 = require("./types.js");
 const values_js_1 = require("./values.js");
 /* eslint-disable @typescript-eslint/max-params */
@@ -129,8 +129,8 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
     const exeContext = {
         validatedExecutionArgs,
         errors: undefined,
-        promiseCanceller: abortSignal
-            ? new PromiseCanceller_js_1.PromiseCanceller(abortSignal)
+        abortSignalListener: abortSignal
+            ? new AbortSignalListener_js_1.AbortSignalListener(abortSignal)
             : undefined,
         completed: false,
         cancellableStreams: undefined,
@@ -149,7 +149,7 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
                 return buildDataResponse(exeContext, resolved);
             }, (error) => {
                 exeContext.completed = true;
-                exeContext.promiseCanceller?.disconnect();
+                exeContext.abortSignalListener?.disconnect();
                 return {
                     data: null,
                     errors: withError(exeContext.errors, error),
@@ -163,7 +163,7 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
         exeContext.completed = true;
         // TODO: add test case for synchronous null bubbling to root with cancellation
         /* c8 ignore next */
-        exeContext.promiseCanceller?.disconnect();
+        exeContext.abortSignalListener?.disconnect();
         return { data: null, errors: withError(exeContext.errors, error) };
     }
 }
@@ -175,7 +175,7 @@ function buildDataResponse(exeContext, graphqlWrappedResult) {
     const { rawResult: data, incrementalDataRecords } = graphqlWrappedResult;
     const errors = exeContext.errors;
     if (incrementalDataRecords === undefined) {
-        exeContext.promiseCanceller?.disconnect();
+        exeContext.abortSignalListener?.disconnect();
         return errors !== undefined ? { errors, data } : { data };
     }
     return (0, IncrementalPublisher_js_1.buildIncrementalResponse)(exeContext, data, errors, incrementalDataRecords);
@@ -419,7 +419,7 @@ function toNodes(fieldDetailsList) {
  * coercing scalars, or execute the sub-selection-set for objects.
  */
 function executeField(exeContext, parentType, source, fieldDetailsList, path, incrementalContext, deferMap) {
-    const { validatedExecutionArgs, promiseCanceller } = exeContext;
+    const { validatedExecutionArgs, abortSignalListener } = exeContext;
     const { schema, contextValue, variableValues, hideSuggestions, abortSignal } = validatedExecutionArgs;
     const fieldName = fieldDetailsList[0].node.name.value;
     const fieldDef = schema.getField(parentType, fieldName);
@@ -440,7 +440,9 @@ function executeField(exeContext, parentType, source, fieldDetailsList, path, in
         // used to represent an authenticated user, or request-specific caches.
         const result = resolveFn(source, args, contextValue, info, abortSignal);
         if ((0, isPromise_js_1.isPromise)(result)) {
-            return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, promiseCanceller?.cancellablePromise(result) ?? result, incrementalContext, deferMap);
+            return completePromisedValue(exeContext, returnType, fieldDetailsList, info, path, abortSignalListener
+                ? (0, AbortSignalListener_js_1.cancellablePromise)(result, abortSignalListener)
+                : result, incrementalContext, deferMap);
         }
         const completed = completeValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap);
         if ((0, isPromise_js_1.isPromise)(completed)) {
@@ -719,7 +721,10 @@ async function completeAsyncIteratorValue(exeContext, itemType, fieldDetailsList
 function completeListValue(exeContext, returnType, fieldDetailsList, info, path, result, incrementalContext, deferMap) {
     const itemType = returnType.ofType;
     if ((0, isAsyncIterable_js_1.isAsyncIterable)(result)) {
-        const maybeCancellableIterable = exeContext.promiseCanceller?.cancellableIterable(result) ?? result;
+        const abortSignalListener = exeContext.abortSignalListener;
+        const maybeCancellableIterable = abortSignalListener
+            ? (0, AbortSignalListener_js_1.cancellableIterable)(result, abortSignalListener)
+            : result;
         const asyncIterator = maybeCancellableIterable[Symbol.asyncIterator]();
         return completeAsyncIteratorValue(exeContext, itemType, fieldDetailsList, info, path, asyncIterator, incrementalContext, deferMap);
     }
@@ -803,7 +808,11 @@ function completeListItemValue(item, completedResults, parent, exeContext, itemT
 }
 async function completePromisedListItemValue(item, parent, exeContext, itemType, fieldDetailsList, info, itemPath, incrementalContext, deferMap) {
     try {
-        const resolved = await (exeContext.promiseCanceller?.cancellablePromise(item) ?? item);
+        const abortSignalListener = exeContext.abortSignalListener;
+        const maybeCancellableItem = abortSignalListener
+            ? (0, AbortSignalListener_js_1.cancellablePromise)(item, abortSignalListener)
+            : item;
+        const resolved = await maybeCancellableItem;
         let completed = completeValue(exeContext, itemType, fieldDetailsList, info, itemPath, resolved, incrementalContext, deferMap);
         if ((0, isPromise_js_1.isPromise)(completed)) {
             completed = await completed;
@@ -1055,20 +1064,22 @@ function mapSourceToResponse(validatedExecutionArgs, resultOrStream) {
         return resultOrStream;
     }
     const abortSignal = validatedExecutionArgs.abortSignal;
-    const promiseCanceller = abortSignal
-        ? new PromiseCanceller_js_1.PromiseCanceller(abortSignal)
+    const abortSignalListener = abortSignal
+        ? new AbortSignalListener_js_1.AbortSignalListener(abortSignal)
         : undefined;
     // For each payload yielded from a subscription, map it over the normal
     // GraphQL `execute` function, with `payload` as the rootValue.
     // This implements the "MapSourceToResponseEvent" algorithm described in
     // the GraphQL specification..
-    return (0, mapAsyncIterable_js_1.mapAsyncIterable)(promiseCanceller?.cancellableIterable(resultOrStream) ?? resultOrStream, (payload) => {
+    return (0, mapAsyncIterable_js_1.mapAsyncIterable)(abortSignalListener
+        ? (0, AbortSignalListener_js_1.cancellableIterable)(resultOrStream, abortSignalListener)
+        : resultOrStream, (payload) => {
         const perEventExecutionArgs = {
             ...validatedExecutionArgs,
             rootValue: payload,
         };
         return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
-    }, () => promiseCanceller?.disconnect());
+    }, () => abortSignalListener?.disconnect());
 }
 function executeSubscriptionEvent(validatedExecutionArgs) {
     return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
@@ -1158,15 +1169,17 @@ function executeSubscription(validatedExecutionArgs) {
         // used to represent an authenticated user, or request-specific caches.
         const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
         if ((0, isPromise_js_1.isPromise)(result)) {
-            const promiseCanceller = abortSignal
-                ? new PromiseCanceller_js_1.PromiseCanceller(abortSignal)
+            const abortSignalListener = abortSignal
+                ? new AbortSignalListener_js_1.AbortSignalListener(abortSignal)
                 : undefined;
-            const promise = promiseCanceller?.cancellablePromise(result) ?? result;
+            const promise = abortSignalListener
+                ? (0, AbortSignalListener_js_1.cancellablePromise)(result, abortSignalListener)
+                : result;
             return promise.then(assertEventStream).then((resolved) => {
-                promiseCanceller?.disconnect();
+                abortSignalListener?.disconnect();
                 return resolved;
             }, (error) => {
-                promiseCanceller?.disconnect();
+                abortSignalListener?.disconnect();
                 throw (0, locatedError_js_1.locatedError)(error, fieldNodes, (0, Path_js_1.pathToArray)(path));
             });
         }
@@ -1330,7 +1343,11 @@ async function getNextAsyncStreamItemResult(streamItemQueue, streamPath, index, 
 }
 function completeStreamItem(itemPath, item, exeContext, incrementalContext, fieldDetailsList, info, itemType) {
     if ((0, isPromise_js_1.isPromise)(item)) {
-        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, exeContext.promiseCanceller?.cancellablePromise(item) ?? item, incrementalContext, new Map()).then((resolvedItem) => {
+        const abortSignalListener = exeContext.abortSignalListener;
+        const maybeCancellableItem = abortSignalListener
+            ? (0, AbortSignalListener_js_1.cancellablePromise)(item, abortSignalListener)
+            : item;
+        return completePromisedValue(exeContext, itemType, fieldDetailsList, info, itemPath, maybeCancellableItem, incrementalContext, new Map()).then((resolvedItem) => {
             incrementalContext.completed = true;
             return buildStreamItemResult(incrementalContext.errors, resolvedItem);
         }, (error) => {
