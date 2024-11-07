@@ -2,6 +2,8 @@
 title: Passing Arguments
 ---
 
+import { Tabs } from 'nextra/components';
+
 Just like a REST API, it's common to pass arguments to an endpoint in a GraphQL API. By defining the arguments in the schema language, typechecking happens automatically. Each argument must be named and have a type. For example, in the [Basic Types documentation](/basic-types/) we had an endpoint called `rollThreeDice`:
 
 ```graphql
@@ -12,17 +14,51 @@ type Query {
 
 Instead of hard coding “three”, we might want a more general function that rolls `numDice` dice, each of which have `numSides` sides. We can add arguments to the GraphQL schema language like this:
 
+<Tabs items={['SDL', 'Code']}>
+  <Tabs.Tab>
 ```graphql
 type Query {
   rollDice(numDice: Int!, numSides: Int): [Int]
 }
 ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```js
+const {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLList,
+  GraphQLFloat,
+} = require('graphql');
+
+new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    rollDice: {
+      type: new GraphQLList(GraphQLFloat),
+      args: {
+        numDice: {
+          type: new GraphQLNonNull(GraphQLInt)
+        },
+        numSides: {
+          type: new GraphQLNonNull(GraphQLInt)
+        },
+      },
+    },
+  },
+})
+
+````
+  </Tabs.Tab>
+</Tabs>
 
 The exclamation point in `Int!` indicates that `numDice` can't be null, which means we can skip a bit of validation logic to make our server code simpler. We can let `numSides` be null and assume that by default a die has 6 sides.
 
 So far, our resolver functions took no arguments. When a resolver takes arguments, they are passed as one “args” object, as the first argument to the function. So rollDice could be implemented as:
 
-```javascript
+```js
 const root = {
   rollDice(args) {
     const output = [];
@@ -32,11 +68,11 @@ const root = {
     return output;
   },
 };
-```
+````
 
 It's convenient to use [ES6 destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) for these parameters, since you know what format they will be. So we can also write `rollDice` as
 
-```javascript
+```js
 const root = {
   rollDice({ numDice, numSides }) {
     const output = [];
@@ -52,17 +88,72 @@ If you're familiar with destructuring, this is a bit nicer because the line of c
 
 The entire code for a server that hosts this `rollDice` API is:
 
+<Tabs items={['SDL', 'Code']}>
+  <Tabs.Tab>
 ```js
 const express = require('express');
 const { createHandler } = require('graphql-http/lib/use/express');
 const { buildSchema } = require('graphql');
 
 // Construct a schema, using GraphQL schema language
-const schema = buildSchema(/* GraphQL */ `
-  type Query {
-    rollDice(numDice: Int!, numSides: Int): [Int]
-  }
-`);
+const schema = buildSchema(/_ GraphQL _/ ` type Query { rollDice(numDice: Int!, numSides: Int): [Int] }`);
+
+// The root provides a resolver function for each API endpoint
+const root = {
+  rollDice({ numDice, numSides }) {
+    const output = [];
+    for (const i = 0; i < numDice; i++) {
+      output.push(1 + Math.floor(Math.random() \* (numSides || 6)));
+    }
+    return output;
+  },
+};
+
+const app = express();
+app.all(
+  '/graphql',
+  createHandler({
+    schema: schema,
+    rootValue: root,
+  }),
+);
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
+
+````
+  </Tabs.Tab>
+  <Tabs.Tab>
+```js
+const express = require('express');
+const { createHandler } = require('graphql-http/lib/use/express');
+const {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLList,
+  GraphQLFloat,
+} = require('graphql');
+
+// Construct a schema, using GraphQL schema language
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      rollDice: {
+        type: new GraphQLList(GraphQLFloat),
+        args: {
+          numDice: {
+            type: new GraphQLNonNull(GraphQLInt)
+          },
+          numSides: {
+            type: new GraphQLNonNull(GraphQLInt)
+          },
+        },
+      },
+    },
+  })
+})
 
 // The root provides a resolver function for each API endpoint
 const root = {
@@ -85,7 +176,10 @@ app.all(
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-```
+````
+
+  </Tabs.Tab>
+</Tabs>
 
 When you call this API, you have to pass each argument by name. So for the server above, you could issue this GraphQL query to roll three six-sided dice:
 
