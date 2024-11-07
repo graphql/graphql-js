@@ -284,7 +284,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Argument "input" has invalid value: Expected value of type "TestInputObject" to be an object, found: ["foo", "bar", "baz"].',
+                'Argument "TestType.fieldWithObjectInput(input:)" has invalid value: Expected value of type "TestInputObject" to be an object, found: ["foo", "bar", "baz"].',
               path: ['fieldWithObjectInput'],
               locations: [{ line: 3, column: 41 }],
             },
@@ -320,7 +320,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Argument "input" has invalid value at .e: FaultyScalarErrorMessage',
+                'Argument "TestType.fieldWithObjectInput(input:)" has invalid value at .e: FaultyScalarErrorMessage',
               path: ['fieldWithObjectInput'],
               locations: [{ line: 3, column: 13 }],
               extensions: { code: 'FaultyScalarErrorExtensionCode' },
@@ -477,7 +477,7 @@ describe('Execute: Handles inputs', () => {
           errors: [
             {
               message:
-                'Variable "$input" has invalid value at .e: Argument "input" has invalid value at .e: FaultyScalarErrorMessage',
+                'Variable "$input" has invalid value at .e: Argument "TestType.fieldWithObjectInput(input:)" has invalid value at .e: FaultyScalarErrorMessage',
               locations: [{ line: 2, column: 16 }],
               extensions: { code: 'FaultyScalarErrorExtensionCode' },
             },
@@ -802,7 +802,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Argument "input" of required type "String!" was not provided.',
+              'Argument "TestType.fieldWithNonNullableStringInput(input:)" of required type "String!" was not provided.',
             locations: [{ line: 1, column: 3 }],
             path: ['fieldWithNonNullableStringInput'],
           },
@@ -850,7 +850,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Argument "input" has invalid value: Expected variable "$foo" provided to type "String!" to provide a runtime value.',
+              'Argument "TestType.fieldWithNonNullableStringInput(input:)" has invalid value: Expected variable "$foo" provided to type "String!" to provide a runtime value.',
             locations: [{ line: 3, column: 50 }],
             path: ['fieldWithNonNullableStringInput'],
           },
@@ -1102,7 +1102,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Argument "input" has invalid value: String cannot represent a non string value: WRONG_TYPE',
+              'Argument "TestType.fieldWithDefaultArgumentValue(input:)" has invalid value: String cannot represent a non string value: WRONG_TYPE',
             locations: [{ line: 3, column: 48 }],
             path: ['fieldWithDefaultArgumentValue'],
           },

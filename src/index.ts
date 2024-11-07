@@ -34,10 +34,15 @@ export type { GraphQLArgs } from './graphql.js';
 export { graphql, graphqlSync } from './graphql.js';
 
 // Create and operate on GraphQL type definitions and schema.
+export type {
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
+  GraphQLInputField,
+} from './type/index.js';
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
-  // Definitions
   GraphQLSchema,
   GraphQLDirective,
   GraphQLScalarType,
@@ -48,17 +53,14 @@ export {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
-  // Standard GraphQL Scalars
   specifiedScalarTypes,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
-  // Int boundaries constants
   GRAPHQL_MAX_INT,
   GRAPHQL_MIN_INT,
-  // Built-in Directives defined by the Spec
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
@@ -67,11 +69,8 @@ export {
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
   GraphQLOneOfDirective,
-  // "Enum" of Type Kinds
   TypeKind,
-  // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
-  // GraphQL Types for introspection.
   introspectionTypes,
   __Schema,
   __Directive,
@@ -81,20 +80,22 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
-  // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
-  // Predicates
   isSchema,
   isDirective,
   isType,
   isScalarType,
   isObjectType,
+  isField,
+  isArgument,
   isInterfaceType,
   isUnionType,
   isEnumType,
+  isEnumValue,
   isInputObjectType,
+  isInputField,
   isListType,
   isNonNullType,
   isInputType,
@@ -110,16 +111,19 @@ export {
   isSpecifiedScalarType,
   isIntrospectionType,
   isSpecifiedDirective,
-  // Assertions
   assertSchema,
   assertDirective,
   assertType,
   assertScalarType,
   assertObjectType,
+  assertField,
+  assertArgument,
   assertInterfaceType,
   assertUnionType,
   assertEnumType,
+  assertEnumValue,
   assertInputObjectType,
+  assertInputField,
   assertListType,
   assertNonNullType,
   assertInputType,
@@ -130,13 +134,10 @@ export {
   assertWrappingType,
   assertNullableType,
   assertNamedType,
-  // Un-modifiers
   getNullableType,
   getNamedType,
-  // Validate GraphQL schema.
   validateSchema,
   assertValidSchema,
-  // Upholds the spec rules about naming.
   assertName,
   assertEnumValueName,
 } from './type/index.js';
@@ -161,23 +162,19 @@ export type {
   GraphQLSchemaExtensions,
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
-  GraphQLArgument,
   GraphQLArgumentConfig,
   GraphQLArgumentExtensions,
   GraphQLEnumTypeConfig,
   GraphQLEnumTypeExtensions,
-  GraphQLEnumValue,
   GraphQLEnumValueConfig,
   GraphQLEnumValueConfigMap,
   GraphQLEnumValueExtensions,
-  GraphQLField,
   GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldExtensions,
   GraphQLFieldMap,
   GraphQLFieldResolver,
-  GraphQLInputField,
   GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
   GraphQLInputFieldExtensions,

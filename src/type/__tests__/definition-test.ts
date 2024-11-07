@@ -27,9 +27,18 @@ import {
   GraphQLScalarType,
   GraphQLUnionType,
 } from '../definition.js';
+import { GraphQLString } from '../scalars.js';
 
 const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
-const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
+const ObjectType = new GraphQLObjectType({
+  name: 'Object',
+  fields: {
+    someField: {
+      type: GraphQLString,
+      args: { someArg: { type: GraphQLString } },
+    },
+  },
+});
 const InterfaceType = new GraphQLInterfaceType({
   name: 'Interface',
   fields: {},
@@ -38,7 +47,7 @@ const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
 const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
 const InputObjectType = new GraphQLInputObjectType({
   name: 'InputObject',
-  fields: {},
+  fields: { someInputField: { type: GraphQLString } },
 });
 
 const ListOfScalarsType = new GraphQLList(ScalarType);
@@ -237,7 +246,15 @@ describe('Type System: Objects', () => {
       fields: outputFields,
     });
 
-    expect(testObject1.getFields()).to.deep.equal(testObject2.getFields());
+    const testObject1Fields = testObject1.getFields();
+    const testObject2Fields = testObject2.getFields();
+
+    expect(testObject1Fields.field1.toConfig()).to.deep.equal(
+      testObject2Fields.field1.toConfig(),
+    );
+    expect(testObject1Fields.field2.toConfig()).to.deep.equal(
+      testObject2Fields.field2.toConfig(),
+    );
     expect(outputFields).to.deep.equal({
       field1: {
         type: ScalarType,
@@ -263,8 +280,14 @@ describe('Type System: Objects', () => {
       fields: inputFields,
     });
 
-    expect(testInputObject1.getFields()).to.deep.equal(
-      testInputObject2.getFields(),
+    const testInputObject1Fields = testInputObject1.getFields();
+    const testInputObject2Fields = testInputObject2.getFields();
+
+    expect(testInputObject1Fields.field1.toConfig()).to.deep.equal(
+      testInputObject2Fields.field1.toConfig(),
+    );
+    expect(testInputObject1Fields.field2.toConfig()).to.deep.equal(
+      testInputObject2Fields.field2.toConfig(),
     );
     expect(inputFields).to.deep.equal({
       field1: { type: ScalarType },
@@ -305,18 +328,17 @@ describe('Type System: Objects', () => {
         f: { type: ScalarType },
       }),
     });
-    expect(objType.getFields()).to.deep.equal({
-      f: {
-        name: 'f',
-        description: undefined,
-        type: ScalarType,
-        args: [],
-        resolve: undefined,
-        subscribe: undefined,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
+    expect(objType.getFields().f).to.deep.include({
+      parentType: objType,
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      args: [],
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 
@@ -332,28 +354,32 @@ describe('Type System: Objects', () => {
         },
       },
     });
-    expect(objType.getFields()).to.deep.equal({
-      f: {
-        name: 'f',
-        description: undefined,
-        type: ScalarType,
-        args: [
-          {
-            name: 'arg',
-            description: undefined,
-            type: ScalarType,
-            defaultValue: undefined,
-            deprecationReason: undefined,
-            extensions: {},
-            astNode: undefined,
-          },
-        ],
-        resolve: undefined,
-        subscribe: undefined,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
+
+    const f = objType.getFields().f;
+
+    expect(f).to.deep.include({
+      parentType: objType,
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(f.args).to.have.lengthOf(1);
+
+    expect(f.args[0]).to.deep.include({
+      parent: f,
+      name: 'arg',
+      description: undefined,
+      type: ScalarType,
+      defaultValue: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 
@@ -506,18 +532,16 @@ describe('Type System: Interfaces', () => {
         f: { type: ScalarType },
       }),
     });
-    expect(interfaceType.getFields()).to.deep.equal({
-      f: {
-        name: 'f',
-        description: undefined,
-        type: ScalarType,
-        args: [],
-        resolve: undefined,
-        subscribe: undefined,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
+    expect(interfaceType.getFields().f).to.deep.include({
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      args: [],
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 
@@ -706,32 +730,36 @@ describe('Type System: Enums', () => {
       },
     });
 
-    expect(EnumTypeWithNullishValue.getValues()).to.deep.equal([
-      {
-        name: 'NULL',
-        description: undefined,
-        value: null,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'NAN',
-        description: undefined,
-        value: NaN,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'NO_CUSTOM_VALUE',
-        description: undefined,
-        value: 'NO_CUSTOM_VALUE',
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-    ]);
+    const values = EnumTypeWithNullishValue.getValues();
+
+    expect(values).to.have.lengthOf(3);
+
+    expect(values[0]).to.deep.include({
+      name: 'NULL',
+      description: undefined,
+      value: null,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[1]).to.deep.include({
+      name: 'NAN',
+      description: undefined,
+      value: NaN,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[2]).to.deep.include({
+      name: 'NO_CUSTOM_VALUE',
+      description: undefined,
+      value: 'NO_CUSTOM_VALUE',
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('accepts a well defined Enum type with empty value definition', () => {
@@ -826,16 +854,15 @@ describe('Type System: Input Objects', () => {
           f: { type: ScalarType },
         },
       });
-      expect(inputObjType.getFields()).to.deep.equal({
-        f: {
-          name: 'f',
-          description: undefined,
-          type: ScalarType,
-          defaultValue: undefined,
-          deprecationReason: undefined,
-          extensions: {},
-          astNode: undefined,
-        },
+      expect(inputObjType.getFields().f).to.deep.include({
+        parentType: inputObjType,
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        defaultValue: undefined,
+        deprecationReason: undefined,
+        extensions: {},
+        astNode: undefined,
       });
     });
 
@@ -846,16 +873,15 @@ describe('Type System: Input Objects', () => {
           f: { type: ScalarType },
         }),
       });
-      expect(inputObjType.getFields()).to.deep.equal({
-        f: {
-          name: 'f',
-          description: undefined,
-          type: ScalarType,
-          defaultValue: undefined,
-          extensions: {},
-          deprecationReason: undefined,
-          astNode: undefined,
-        },
+      expect(inputObjType.getFields().f).to.deep.include({
+        parentType: inputObjType,
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        defaultValue: undefined,
+        extensions: {},
+        deprecationReason: undefined,
+        astNode: undefined,
       });
     });
 
@@ -989,13 +1015,22 @@ describe('Type System: Non-Null', () => {
 });
 
 describe('Type System: test utility methods', () => {
-  it('stringifies types', () => {
+  const someField = ObjectType.getFields().someField;
+  const someArg = someField.args[0];
+  const enumValue = EnumType.getValue('foo');
+  const someInputField = InputObjectType.getFields().someInputField;
+
+  it('stringifies schema elements', () => {
     expect(String(ScalarType)).to.equal('Scalar');
     expect(String(ObjectType)).to.equal('Object');
+    expect(String(someField)).to.equal('Object.someField');
+    expect(String(someArg)).to.equal('Object.someField(someArg:)');
     expect(String(InterfaceType)).to.equal('Interface');
     expect(String(UnionType)).to.equal('Union');
     expect(String(EnumType)).to.equal('Enum');
+    expect(String(enumValue)).to.equal('Enum.foo');
     expect(String(InputObjectType)).to.equal('InputObject');
+    expect(String(someInputField)).to.equal('InputObject.someInputField');
 
     expect(String(NonNullScalarType)).to.equal('Scalar!');
     expect(String(ListOfScalarsType)).to.equal('[Scalar]');
@@ -1007,10 +1042,15 @@ describe('Type System: test utility methods', () => {
   it('JSON.stringifies types', () => {
     expect(JSON.stringify(ScalarType)).to.equal('"Scalar"');
     expect(JSON.stringify(ObjectType)).to.equal('"Object"');
-    expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
+    expect(JSON.stringify(someField)).to.equal('"Object.someField"');
+    expect(JSON.stringify(someArg)).to.equal('"Object.someField(someArg:)"');
     expect(JSON.stringify(UnionType)).to.equal('"Union"');
     expect(JSON.stringify(EnumType)).to.equal('"Enum"');
+    expect(JSON.stringify(enumValue)).to.equal('"Enum.foo"');
     expect(JSON.stringify(InputObjectType)).to.equal('"InputObject"');
+    expect(JSON.stringify(someInputField)).to.equal(
+      '"InputObject.someInputField"',
+    );
 
     expect(JSON.stringify(NonNullScalarType)).to.equal('"Scalar!"');
     expect(JSON.stringify(ListOfScalarsType)).to.equal('"[Scalar]"');
