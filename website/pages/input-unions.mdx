@@ -1,0 +1,72 @@
+---
+title: Input Unions
+---
+
+import { Tabs } from 'nextra/components';
+
+Some inputs will behave differently depending on what input we choose. Let's look at the case for
+a field named `product`, we can fetch a `Product` by either its `id` or its `name`. Currently we'd
+make a tradeoff for this by introducing two arguments that are both nullable, now if both are passed
+as null we'd have to handle that in code. To fix this the `@oneOf` directive was introduced so we
+can create these input-unions without sacrificing the strictly typed nature of our GraphQL Schema.
+
+<Tabs items={['SDL', 'Code']}>
+    <Tabs.Tab>
+```js
+const schema = buildSchema(`
+  type Product {
+    id: ID!
+    name: String!
+  }
+
+  input ProductInput @oneOf {
+    id: ID
+    name: String
+  }
+
+  type Query {
+    product(input: ProductInput!): Product
+  }
+`);
+```
+    </Tabs.Tab>
+    <Tabs.Tab>
+```js
+const Product = new GraphQLObjectType({
+  name: 'Product',
+  fields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID),
+    },
+    name: {
+      type: new GraphQLNonNull(GraphQLString),
+    },
+  },
+});
+
+const ProductInput = new GraphQLInputObjectType({
+  name: 'ProductInput',
+  isOneOf: true,
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+  },
+});
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      product: {
+        type: Product,
+        args: { input: { type: ProductInput } },
+      },
+    },
+  }),
+});
+```
+    </Tabs.Tab>
+</Tabs>
+
+It doesn't matter whether you have 2 or more inputs here, all that matters is
+that your user will have to specify one, and only one, for this input to be valid.
