@@ -7,10 +7,17 @@ import type { ASTReducer } from './visitor';
 import { visit } from './visitor';
 
 /**
+ * Configuration options to control parser behavior
+ */
+export interface PrintOptions {
+  useSemanticNullability?: boolean;
+}
+
+/**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
  */
-export function print(ast: ASTNode): string {
+export function print(ast: ASTNode, options: PrintOptions = {}): string {
   return visit(ast, printDocASTReducer);
 }
 
@@ -128,10 +135,13 @@ const printDocASTReducer: ASTReducer<string> = {
 
   // Type
 
-  NamedType: { leave: ({ name }) => name },
+  NamedType: { leave: ({ name }) => 
+    name 
+},
   ListType: { leave: ({ type }) => '[' + type + ']' },
   NonNullType: { leave: ({ type }) => type + '!' },
-  SemanticNonNullType: { leave: ({ type }) => type + '*' },
+  SemanticNonNullType: { leave: ({ type }) => type },
+  SemanticOptionalType: { leave: ({ type }) => type + '?' },
 
   // Type System Definitions
 
