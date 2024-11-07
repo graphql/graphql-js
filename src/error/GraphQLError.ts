@@ -20,6 +20,19 @@ export interface GraphQLErrorExtensions {
   [attributeName: string]: unknown;
 }
 
+/**
+ * Custom formatted extensions
+ *
+ * @remarks
+ * Use a unique identifier name for your extension, for example the name of
+ * your library or project. Do not use a shortened identifier as this increases
+ * the risk of conflicts. We recommend you add at most one extension field,
+ * an object which can contain all the values you need.
+ */
+export interface GraphQLFormattedErrorExtensions {
+  [attributeName: string]: unknown;
+}
+
 export interface GraphQLErrorOptions {
   nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
   source?: Maybe<Source>;
@@ -275,7 +288,7 @@ export interface GraphQLFormattedError {
    * Reserved for implementors to extend the protocol however they see fit,
    * and hence there are no additional restrictions on its contents.
    */
-  readonly extensions?: GraphQLErrorExtensions;
+  readonly extensions?: GraphQLFormattedErrorExtensions;
 }
 
 /**
