@@ -262,8 +262,10 @@ export class Parser {
    *   - InputObjectTypeDefinition
    */
   parseDefinition(): DefinitionNode {
-    // TODO: I don't know what isConst represents. Every other callsite has it false
     const directives = this.parseDirectives(false);
+    // If a document-level SemanticNullability directive exists as
+    // the first element in a document, then all parsing will
+    // happen in SemanticNullability mode.
     for (const directive of directives) {
       if (directive.name.value === 'SemanticNullability') {
         this._options.useSemanticNullability = true;
