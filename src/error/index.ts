@@ -3,6 +3,7 @@ export type {
   GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
+  GraphQLFormattedErrorExtensions,
 } from './GraphQLError';
 
 export { syntaxError } from './syntaxError';
