@@ -180,21 +180,31 @@ describe('Printer: SDL document', () => {
       }
     `);
   });
-  
+
   it('prints NamedType', () => {
-    expect(print(parseType('MyType', { useSemanticNullability: false }))).to.equal(dedent`MyType`);
+    expect(
+      print(parseType('MyType', { useSemanticNullability: false })),
+    ).to.equal(dedent`MyType`);
   });
 
   it('prints SemanticNullableType', () => {
-    expect(print(parseType('MyType?', { useSemanticNullability: true }))).to.equal(dedent`MyType?`);
+    expect(
+      print(parseType('MyType?', { useSemanticNullability: true })),
+    ).to.equal(dedent`MyType?`);
   });
 
   it('prints SemanticNonNullType', () => {
-    expect(print(parseType('MyType', { useSemanticNullability: true }))).to.equal(dedent`MyType`);
+    expect(
+      print(parseType('MyType', { useSemanticNullability: true })),
+    ).to.equal(dedent`MyType`);
   });
 
   it('prints NonNullType', () => {
-    expect(print(parseType('MyType!', { useSemanticNullability: true }))).to.equal(dedent`MyType!`);
-    expect(print(parseType('MyType!', { useSemanticNullability: false }))).to.equal(dedent`MyType!`);
+    expect(
+      print(parseType('MyType!', { useSemanticNullability: true })),
+    ).to.equal(dedent`MyType!`);
+    expect(
+      print(parseType('MyType!', { useSemanticNullability: false })),
+    ).to.equal(dedent`MyType!`);
   });
 });

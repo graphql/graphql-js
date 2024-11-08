@@ -84,7 +84,7 @@ export type GraphQLType =
       | GraphQLEnumType
       | GraphQLInputObjectType
       | GraphQLList<GraphQLType>
-  >;
+    >;
 
 export function isType(type: unknown): type is GraphQLType {
   return (
@@ -561,7 +561,7 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
  *   })
  * })
  * ```
- * Note: This is equivalent to the unadorned named type that is 
+ * Note: This is equivalent to the unadorned named type that is
  * used by GraphQL when it is not operating in SemanticNullability mode.
  *
  * @experimental
@@ -602,7 +602,12 @@ export type GraphQLWrappingType =
   | GraphQLSemanticNullable<GraphQLType>;
 
 export function isWrappingType(type: unknown): type is GraphQLWrappingType {
-  return isListType(type) || isNonNullType(type) || isSemanticNonNullType(type) || isSemanticNullableType(type);
+  return (
+    isListType(type) ||
+    isNonNullType(type) ||
+    isSemanticNonNullType(type) ||
+    isSemanticNullableType(type)
+  );
 }
 
 export function assertWrappingType(type: unknown): GraphQLWrappingType {
