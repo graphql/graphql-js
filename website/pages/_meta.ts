@@ -17,6 +17,7 @@ const meta = {
     title: 'Advanced Guides',
   },
   'constructing-types': '',
+  'oneof-input-objects': 'OneOf input objects',
   'defer-stream': '',
   '-- 3': {
     type: 'separator',
