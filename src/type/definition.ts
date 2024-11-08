@@ -548,12 +548,8 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
 /**
  * Semantic-Nullable Type Wrapper
  *
- * A semantic-non-null is a wrapping type which points to another type.
- * Semantic-non-null types enforce that their values are never null unless
- * caused by an error being raised. It is useful for fields which you can make
- * a guarantee on non-nullability in a no-error case, for example when you know
- * that a related entity must exist (but acknowledge that retrieving it may
- * produce an error).
+ * A semantic-nullable is a wrapping type which points to another type.
+ * Semantic-nullable types allow their values to be null.
  *
  * Example:
  *
@@ -561,11 +557,12 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
  * const RowType = new GraphQLObjectType({
  *   name: 'Row',
  *   fields: () => ({
- *     email: { type: new GraphQLSemanticNonNull(GraphQLString) },
+ *     email: { type: new GraphQLSemanticNullable(GraphQLString) },
  *   })
  * })
  * ```
- * Note: the enforcement of non-nullability occurs within the executor.
+ * Note: This is equivalent to the unadorned named type that is 
+ * used by GraphQL when it is not operating in SemanticNullability mode.
  *
  * @experimental
  */
