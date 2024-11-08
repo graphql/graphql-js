@@ -651,7 +651,7 @@ function completeValue(
     throw result;
   }
 
-  console.log("anything", path);
+  console.log("anything", path, result);
 
   // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
