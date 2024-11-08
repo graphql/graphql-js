@@ -263,9 +263,9 @@ export class Parser {
    */
   parseDefinition(): DefinitionNode {
     // TODO: I don't know what isConst represents. Every other callsite has it false
-    let directives = this.parseDirectives(false);
-    for (let directive of directives) {
-      if (directive.name.value == "SemanticNullability") {
+    const directives = this.parseDirectives(false);
+    for (const directive of directives) {
+      if (directive.name.value === 'SemanticNullability') {
         this._options.useSemanticNullability = true;
       }
     }
@@ -788,22 +788,22 @@ export class Parser {
           kind: Kind.SEMANTIC_NULLABLE_TYPE,
           type,
         });
-      } else {
-        return this.node<SemanticNonNullTypeNode>(start, {
-          kind: Kind.SEMANTIC_NON_NULL_TYPE,
-          type,
-        });
       }
-    } else {
-      if (this.expectOptionalToken(TokenKind.BANG)) {
-        return this.node<NonNullTypeNode>(start, {
-          kind: Kind.NON_NULL_TYPE,
-          type,
-        });
-      }
-
-      return type;
+      
+      return this.node<SemanticNonNullTypeNode>(start, {
+        kind: Kind.SEMANTIC_NON_NULL_TYPE,
+        type,
+      });
+    } 
+    
+    if (this.expectOptionalToken(TokenKind.BANG)) {
+      return this.node<NonNullTypeNode>(start, {
+        kind: Kind.NON_NULL_TYPE,
+        type,
+      });
     }
+
+    return type;
   }
 
   /**

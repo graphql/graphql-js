@@ -1,12 +1,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { parse } from '../../language/parser';
-import { GraphQLNonNull, GraphQLObjectType, GraphQLSemanticNonNull, GraphQLSemanticNullable } from '../../type/definition';
-import { execute } from '../execute';
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
-import { ExecutableDefinitionNode, FieldNode } from '../../language';
+
 import { GraphQLError } from '../../error/GraphQLError';
+
+import type { ExecutableDefinitionNode, FieldNode } from '../../language/ast';
+import { parse } from '../../language/parser';
+
+import { GraphQLNonNull, GraphQLObjectType, GraphQLSemanticNonNull, GraphQLSemanticNullable } from '../../type/definition';
+import { GraphQLString } from '../../type/scalars';
+import { GraphQLSchema } from '../../type/schema';
+
+import { execute } from '../execute';
 
 describe('Execute: Handles Semantic Nullability', () => {
     const DeepDataType = new GraphQLObjectType({
@@ -45,8 +49,8 @@ describe('Execute: Handles Semantic Nullability', () => {
         rootValue: data,
       });
   
-      let executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
-      let selectionSet = executable.selectionSet.selections.values().next().value;
+      const executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
+      const selectionSet = executable.selectionSet.selections.values().next().value;
   
       expect(result).to.deep.equal({
         data: {
@@ -68,7 +72,7 @@ describe('Execute: Handles Semantic Nullability', () => {
       const data = {
         a: () => 'Apple',
         b: () => { throw new Error(
-          `Something went wrong`,
+          'Something went wrong',
         ); },
         c: () => 'Cookie'
       };
@@ -79,8 +83,8 @@ describe('Execute: Handles Semantic Nullability', () => {
         }
       `);
   
-      let executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
-      let selectionSet = executable.selectionSet.selections.values().next().value;
+      const executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
+      const selectionSet = executable.selectionSet.selections.values().next().value;
   
       const result = await execute({
         schema: new GraphQLSchema({ query: DataType }),
@@ -131,9 +135,9 @@ describe('Execute: Handles Semantic Nullability', () => {
         rootValue: data,
       });
   
-      let executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
-      let dSelectionSet = executable.selectionSet.selections.values().next().value as FieldNode;
-      let fSelectionSet = dSelectionSet.selectionSet?.selections.values().next().value;
+      const executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
+      const dSelectionSet = executable.selectionSet.selections.values().next().value as FieldNode;
+      const fSelectionSet = dSelectionSet.selectionSet?.selections.values().next().value;
   
       expect(result).to.deep.equal({
         data: {
