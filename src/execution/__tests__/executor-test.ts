@@ -1425,14 +1425,17 @@ describe('Execute: Handles Semantic Nullability', () => {
   });
 
   it('SemanticNonNull halts null propagation', async () => {
+    const deepData = {
+      f: () => null
+    };
+
     const data = {
       a: () => 'Apple',
       b: () => null,
       c: () => 'Cookie',
-      d: () => {
-        f: () => null
-      }
+      d: () => deepData
     };
+    
   
     const document = parse(`
       query {
