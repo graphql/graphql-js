@@ -84,6 +84,11 @@ describe('Parser', () => {
     `);
   });
 
+  it('exposes the tokenCount', () => {
+    expect(parse('{ foo }').tokenCount).to.equal(3);
+    expect(parse('{ foo(bar: "baz") }').tokenCount).to.equal(8);
+  });
+
   it('limit maximum number of tokens', () => {
     expect(() => parse('{ foo }', { maxTokens: 3 })).to.not.throw();
     expect(() => parse('{ foo }', { maxTokens: 2 })).to.throw(
