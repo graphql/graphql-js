@@ -38,7 +38,7 @@
     "test": "npm run lint && npm run check && npm run testonly && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 .",
     "check": "tsc --pretty",
-    "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts -g 'SemanticNonNull halts null propagation'",
+    "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts -g 'SemanticOptional allows null values'",
     "testonly:cover": "c8 npm run testonly",
     "prettier": "prettier --write --list-different .",
     "prettier:check": "prettier --check .",
