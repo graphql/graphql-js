@@ -75,7 +75,16 @@ export type GraphQLType =
       | GraphQLEnumType
       | GraphQLInputObjectType
       | GraphQLList<GraphQLType>
-    >;
+    >
+  | GraphQLSemanticOptional<
+      | GraphQLScalarType
+      | GraphQLObjectType
+      | GraphQLInterfaceType
+      | GraphQLUnionType
+      | GraphQLEnumType
+      | GraphQLInputObjectType
+      | GraphQLList<GraphQLType>
+  >;
 
 export function isType(type: unknown): type is GraphQLType {
   return (
@@ -232,6 +241,32 @@ export function assertSemanticNonNullType(
   type: unknown,
 ): GraphQLSemanticNonNull<GraphQLType> {
   if (!isSemanticNonNullType(type)) {
+    throw new Error(
+      `Expected ${inspect(type)} to be a GraphQL Semantic-Non-Null type.`,
+    );
+  }
+  return type;
+}
+
+export function isSemanticOptionalType(
+  type: GraphQLInputType,
+): type is GraphQLSemanticOptional<GraphQLInputType>;
+export function isSemanticOptionalType(
+  type: GraphQLOutputType,
+): type is GraphQLSemanticOptional<GraphQLOutputType>;
+export function isSemanticOptionalType(
+  type: unknown,
+): type is GraphQLSemanticOptional<GraphQLType>;
+export function isSemanticOptionalType(
+  type: unknown,
+): type is GraphQLSemanticOptional<GraphQLType> {
+  return instanceOf(type, GraphQLSemanticOptional);
+}
+
+export function assertSemanticOptionalType(
+  type: unknown,
+): GraphQLSemanticOptional<GraphQLType> {
+  if (!isSemanticOptionalType(type)) {
     throw new Error(
       `Expected ${inspect(type)} to be a GraphQL Semantic-Non-Null type.`,
     );
@@ -502,7 +537,56 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
   }
 
   toString(): string {
-    return String(this.ofType) + '*';
+    return String(this.ofType);
+  }
+
+  toJSON(): string {
+    return this.toString();
+  }
+}
+
+/**
+ * Semantic-Non-Null Type Wrapper
+ *
+ * A semantic-non-null is a wrapping type which points to another type.
+ * Semantic-non-null types enforce that their values are never null unless
+ * caused by an error being raised. It is useful for fields which you can make
+ * a guarantee on non-nullability in a no-error case, for example when you know
+ * that a related entity must exist (but acknowledge that retrieving it may
+ * produce an error).
+ *
+ * Example:
+ *
+ * ```ts
+ * const RowType = new GraphQLObjectType({
+ *   name: 'Row',
+ *   fields: () => ({
+ *     email: { type: new GraphQLSemanticNonNull(GraphQLString) },
+ *   })
+ * })
+ * ```
+ * Note: the enforcement of non-nullability occurs within the executor.
+ *
+ * @experimental
+ */
+export class GraphQLSemanticOptional<T extends GraphQLNullableType> {
+  readonly ofType: T;
+
+  constructor(ofType: T) {
+    devAssert(
+      isNullableType(ofType),
+      `Expected ${inspect(ofType)} to be a GraphQL nullable type.`,
+    );
+
+    this.ofType = ofType;
+  }
+
+  get [Symbol.toStringTag]() {
+    return 'GraphQLSemanticOptional';
+  }
+
+  toString(): string {
+    return String(this.ofType) + '?';
   }
 
   toJSON(): string {
@@ -517,10 +601,11 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
 export type GraphQLWrappingType =
   | GraphQLList<GraphQLType>
   | GraphQLNonNull<GraphQLType>
-  | GraphQLSemanticNonNull<GraphQLType>;
+  | GraphQLSemanticNonNull<GraphQLType>
+  | GraphQLSemanticOptional<GraphQLType>;
 
 export function isWrappingType(type: unknown): type is GraphQLWrappingType {
-  return isListType(type) || isNonNullType(type) || isSemanticNonNullType(type);
+  return isListType(type) || isNonNullType(type) || isSemanticNonNullType(type) || isSemanticOptionalType(type);
 }
 
 export function assertWrappingType(type: unknown): GraphQLWrappingType {
