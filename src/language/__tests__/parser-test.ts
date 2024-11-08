@@ -687,7 +687,7 @@ describe('Parser', () => {
     it('parses nullable types', () => {
       const result = parseType('MyType?', { useSemanticNullability: true });
       expectJSON(result).toDeepEqual(
-        { kind: Kind.SEMANTIC_OPTIONAL_TYPE,
+        { kind: Kind.SEMANTIC_NULLABLE_TYPE,
           loc: { start: 0, end: 7 },
           type: {
             kind: Kind.NAMED_TYPE,

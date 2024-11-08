@@ -162,7 +162,7 @@ export type ASTNode =
   | ListTypeNode
   | NonNullTypeNode
   | SemanticNonNullTypeNode
-  | SemanticOptionalTypeNode
+  | SemanticNullableTypeNode
   | SchemaDefinitionNode
   | OperationTypeDefinitionNode
   | ScalarTypeDefinitionNode
@@ -238,7 +238,7 @@ export const QueryDocumentKeys: {
   ListType: ['type'],
   NonNullType: ['type'],
   SemanticNonNullType: ['type'],
-  SemanticOptionalType: ['type'],
+  SemanticNullableType: ['type'],
 
   SchemaDefinition: ['description', 'directives', 'operationTypes'],
   OperationTypeDefinition: ['type'],
@@ -529,7 +529,7 @@ export type TypeNode =
   | ListTypeNode
   | NonNullTypeNode
   | SemanticNonNullTypeNode
-  | SemanticOptionalTypeNode;
+  | SemanticNullableTypeNode;
 
 export interface NamedTypeNode {
   readonly kind: Kind.NAMED_TYPE;
@@ -555,8 +555,8 @@ export interface SemanticNonNullTypeNode {
   readonly type: NamedTypeNode | ListTypeNode;
 }
 
-export interface SemanticOptionalTypeNode {
-  readonly kind: Kind.SEMANTIC_OPTIONAL_TYPE;
+export interface SemanticNullableTypeNode {
+  readonly kind: Kind.SEMANTIC_NULLABLE_TYPE;
   readonly loc?: Location;
   readonly type: NamedTypeNode | ListTypeNode;
 }
