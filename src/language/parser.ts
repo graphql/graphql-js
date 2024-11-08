@@ -789,13 +789,13 @@ export class Parser {
           type,
         });
       }
-      
+
       return this.node<SemanticNonNullTypeNode>(start, {
         kind: Kind.SEMANTIC_NON_NULL_TYPE,
         type,
       });
-    } 
-    
+    }
+
     if (this.expectOptionalToken(TokenKind.BANG)) {
       return this.node<NonNullTypeNode>(start, {
         kind: Kind.NON_NULL_TYPE,

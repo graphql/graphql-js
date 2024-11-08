@@ -259,7 +259,12 @@ function readNextToken(lexer: Lexer, start: number): Token {
       case 0x0029: // )
         return createToken(lexer, TokenKind.PAREN_R, position, position + 1);
       case 0x003f: // ?
-        return createToken(lexer, TokenKind.QUESTION_MARK, position, position + 1);
+        return createToken(
+          lexer,
+          TokenKind.QUESTION_MARK,
+          position,
+          position + 1,
+        );
       case 0x002e: // .
         if (
           body.charCodeAt(position + 1) === 0x002e &&

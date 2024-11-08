@@ -1323,4 +1323,3 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(possibleTypes).to.deep.equal([fooObject]);
   });
 });
-

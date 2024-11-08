@@ -135,9 +135,7 @@ const printDocASTReducer: ASTReducer<string> = {
 
   // Type
 
-  NamedType: { leave: ({ name }) => 
-    name 
-},
+  NamedType: { leave: ({ name }) => name },
   ListType: { leave: ({ type }) => '[' + type + ']' },
   NonNullType: { leave: ({ type }) => type + '!' },
   SemanticNonNullType: { leave: ({ type }) => type },
