@@ -1,0 +1,206 @@
+import { expect } from 'chai';
+import { describe, it } from 'mocha';
+import { parse } from '../../language/parser';
+import { GraphQLNonNull, GraphQLObjectType, GraphQLSemanticNonNull, GraphQLSemanticNullable } from '../../type/definition';
+import { execute } from '../execute';
+import { GraphQLSchema } from '../../type/schema';
+import { GraphQLString } from '../../type/scalars';
+import { ExecutableDefinitionNode, FieldNode } from '../../language';
+import { GraphQLError } from '../../error/GraphQLError';
+
+describe('Execute: Handles Semantic Nullability', () => {
+    const DeepDataType = new GraphQLObjectType({
+      name: 'DeepDataType',
+      fields: {
+        f: { type: new GraphQLNonNull(GraphQLString) }
+      },
+    });
+  
+    const DataType: GraphQLObjectType = new GraphQLObjectType({
+      name: 'DataType',
+      fields: () => ({
+        a: { type: new GraphQLSemanticNullable(GraphQLString) },
+        b: { type: new GraphQLSemanticNonNull(GraphQLString) },
+        c: { type: new GraphQLNonNull(GraphQLString) },
+        d: { type: new GraphQLSemanticNonNull(DeepDataType) }
+      }),
+    });
+  
+    it('SemanticNonNull throws error on null without error', async () => {
+      const data = {
+        a: () => 'Apple',
+        b: () => null,
+        c: () => 'Cookie'
+      };
+    
+      const document = parse(`
+        query {
+          b
+        }
+      `);
+  
+      const result = await execute({
+        schema: new GraphQLSchema({ query: DataType }),
+        document,
+        rootValue: data,
+      });
+  
+      let executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
+      let selectionSet = executable.selectionSet.selections.values().next().value;
+  
+      expect(result).to.deep.equal({
+        data: {
+          b: null
+        },
+        errors: [
+          new GraphQLError(
+            'Cannot return null for semantic-non-nullable field DataType.b.',
+            {
+              nodes: selectionSet,
+              path: ['b']
+            }
+          )
+        ]
+      });
+    });
+  
+    it('SemanticNonNull succeeds on null with error', async () => {
+      const data = {
+        a: () => 'Apple',
+        b: () => { throw new Error(
+          `Something went wrong`,
+        ); },
+        c: () => 'Cookie'
+      };
+    
+      const document = parse(`
+        query {
+          b
+        }
+      `);
+  
+      let executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
+      let selectionSet = executable.selectionSet.selections.values().next().value;
+  
+      const result = await execute({
+        schema: new GraphQLSchema({ query: DataType }),
+        document,
+        rootValue: data,
+      });
+  
+      expect(result).to.deep.equal({
+        data: {
+          b: null
+        },
+        errors: [
+          new GraphQLError(
+            'Something went wrong',
+            {
+              nodes: selectionSet,
+              path: ['b']
+            }
+          )
+        ]
+      });
+    });
+  
+    it('SemanticNonNull halts null propagation', async () => {
+      const deepData = {
+        f: () => null
+      };
+  
+      const data = {
+        a: () => 'Apple',
+        b: () => null,
+        c: () => 'Cookie',
+        d: () => deepData
+      };
+      
+    
+      const document = parse(`
+        query {
+          d {
+            f
+          }
+        }
+      `);
+  
+      const result = await execute({
+        schema: new GraphQLSchema({ query: DataType }),
+        document,
+        rootValue: data,
+      });
+  
+      let executable = document.definitions?.values().next().value as ExecutableDefinitionNode;
+      let dSelectionSet = executable.selectionSet.selections.values().next().value as FieldNode;
+      let fSelectionSet = dSelectionSet.selectionSet?.selections.values().next().value;
+  
+      expect(result).to.deep.equal({
+        data: {
+          d: null
+        },
+        errors: [
+          new GraphQLError(
+            'Cannot return null for non-nullable field DeepDataType.f.',
+            {
+              nodes: fSelectionSet,
+              path: ['d', 'f']
+            }
+          )
+        ]
+      });
+    });
+  
+    it('SemanticNullable allows null values', async () => {
+      const data = {
+        a: () => null,
+        b: () => null,
+        c: () => 'Cookie'
+      };
+    
+      const document = parse(`
+        query {
+          a
+        }
+      `);
+  
+      const result = await execute({
+        schema: new GraphQLSchema({ query: DataType }),
+        document,
+        rootValue: data,
+      });
+  
+      expect(result).to.deep.equal({
+        data: {
+          a: null
+        }
+      });
+    });
+  
+    it('SemanticNullable allows non-null values', async () => {
+      const data = {
+        a: () => 'Apple',
+        b: () => null,
+        c: () => 'Cookie'
+      };
+    
+      const document = parse(`
+        query {
+          a
+        }
+      `);
+  
+      const result = await execute({
+        schema: new GraphQLSchema({ query: DataType }),
+        document,
+        rootValue: data,
+      });
+  
+      expect(result).to.deep.equal({
+        data: {
+          a: 'Apple'
+        }
+      });
+    });
+  });
+  
