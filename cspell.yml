@@ -59,6 +59,7 @@ words:
   - tailwindcss
   - svgr
   - ruru
+  - oneof
 
   # used as href anchors
   - graphqlerror
