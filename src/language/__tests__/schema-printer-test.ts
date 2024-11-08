@@ -185,7 +185,7 @@ describe('Printer: SDL document', () => {
     expect(print(parseType('MyType', { useSemanticNullability: false }))).to.equal(dedent`MyType`);
   });
 
-  it('prints SemanticOptionalType', () => {
+  it('prints SemanticNullableType', () => {
     expect(print(parseType('MyType?', { useSemanticNullability: true }))).to.equal(dedent`MyType?`);
   });
 

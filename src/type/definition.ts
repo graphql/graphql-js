@@ -76,7 +76,7 @@ export type GraphQLType =
       | GraphQLInputObjectType
       | GraphQLList<GraphQLType>
     >
-  | GraphQLSemanticOptional<
+  | GraphQLSemanticNullable<
       | GraphQLScalarType
       | GraphQLObjectType
       | GraphQLInterfaceType
@@ -248,25 +248,25 @@ export function assertSemanticNonNullType(
   return type;
 }
 
-export function isSemanticOptionalType(
+export function isSemanticNullableType(
   type: GraphQLInputType,
-): type is GraphQLSemanticOptional<GraphQLInputType>;
-export function isSemanticOptionalType(
+): type is GraphQLSemanticNullable<GraphQLInputType>;
+export function isSemanticNullableType(
   type: GraphQLOutputType,
-): type is GraphQLSemanticOptional<GraphQLOutputType>;
-export function isSemanticOptionalType(
+): type is GraphQLSemanticNullable<GraphQLOutputType>;
+export function isSemanticNullableType(
   type: unknown,
-): type is GraphQLSemanticOptional<GraphQLType>;
-export function isSemanticOptionalType(
+): type is GraphQLSemanticNullable<GraphQLType>;
+export function isSemanticNullableType(
   type: unknown,
-): type is GraphQLSemanticOptional<GraphQLType> {
-  return instanceOf(type, GraphQLSemanticOptional);
+): type is GraphQLSemanticNullable<GraphQLType> {
+  return instanceOf(type, GraphQLSemanticNullable);
 }
 
-export function assertSemanticOptionalType(
+export function assertSemanticNullableType(
   type: unknown,
-): GraphQLSemanticOptional<GraphQLType> {
-  if (!isSemanticOptionalType(type)) {
+): GraphQLSemanticNullable<GraphQLType> {
+  if (!isSemanticNullableType(type)) {
     throw new Error(
       `Expected ${inspect(type)} to be a GraphQL Semantic-Non-Null type.`,
     );
@@ -546,7 +546,7 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
 }
 
 /**
- * Semantic-Non-Null Type Wrapper
+ * Semantic-Nullable Type Wrapper
  *
  * A semantic-non-null is a wrapping type which points to another type.
  * Semantic-non-null types enforce that their values are never null unless
@@ -569,7 +569,7 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
  *
  * @experimental
  */
-export class GraphQLSemanticOptional<T extends GraphQLNullableType> {
+export class GraphQLSemanticNullable<T extends GraphQLNullableType> {
   readonly ofType: T;
 
   constructor(ofType: T) {
@@ -582,7 +582,7 @@ export class GraphQLSemanticOptional<T extends GraphQLNullableType> {
   }
 
   get [Symbol.toStringTag]() {
-    return 'GraphQLSemanticOptional';
+    return 'GraphQLSemanticNullable';
   }
 
   toString(): string {
@@ -602,10 +602,10 @@ export type GraphQLWrappingType =
   | GraphQLList<GraphQLType>
   | GraphQLNonNull<GraphQLType>
   | GraphQLSemanticNonNull<GraphQLType>
-  | GraphQLSemanticOptional<GraphQLType>;
+  | GraphQLSemanticNullable<GraphQLType>;
 
 export function isWrappingType(type: unknown): type is GraphQLWrappingType {
-  return isListType(type) || isNonNullType(type) || isSemanticNonNullType(type) || isSemanticOptionalType(type);
+  return isListType(type) || isNonNullType(type) || isSemanticNonNullType(type) || isSemanticNullableType(type);
 }
 
 export function assertWrappingType(type: unknown): GraphQLWrappingType {

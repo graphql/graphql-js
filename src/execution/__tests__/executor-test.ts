@@ -17,7 +17,7 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLSemanticNonNull,
-  GraphQLSemanticOptional,
+  GraphQLSemanticNullable,
   GraphQLUnionType,
 } from '../../type/definition';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../../type/scalars';
@@ -1339,7 +1339,7 @@ describe('Execute: Handles Semantic Nullability', () => {
   const DataType: GraphQLObjectType = new GraphQLObjectType({
     name: 'DataType',
     fields: () => ({
-      a: { type: new GraphQLSemanticOptional(GraphQLString) },
+      a: { type: new GraphQLSemanticNullable(GraphQLString) },
       b: { type: new GraphQLSemanticNonNull(GraphQLString) },
       c: { type: new GraphQLNonNull(GraphQLString) },
       d: { type: new GraphQLSemanticNonNull(DeepDataType) }
@@ -1471,7 +1471,7 @@ describe('Execute: Handles Semantic Nullability', () => {
     });
   });
 
-  it('SemanticOptional allows null values', async () => {
+  it('SemanticNullable allows null values', async () => {
     const data = {
       a: () => null,
       b: () => null,
@@ -1497,7 +1497,7 @@ describe('Execute: Handles Semantic Nullability', () => {
     });
   });
 
-  it('SemanticOptional allows non-null values', async () => {
+  it('SemanticNullable allows non-null values', async () => {
     const data = {
       a: () => 'Apple',
       b: () => null,

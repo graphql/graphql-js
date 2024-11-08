@@ -44,7 +44,7 @@ import {
   isNonNullType,
   isObjectType,
   isSemanticNonNullType,
-  isSemanticOptionalType,
+  isSemanticNullableType,
 } from '../type/definition';
 import {
   SchemaMetaFieldDef,
@@ -689,8 +689,8 @@ function completeValue(
     return completed;
   }
 
-  // If field type is SemanticOptional, complete for inner type
-  if (isSemanticOptionalType(returnType)) {
+  // If field type is SemanticNullable, complete for inner type
+  if (isSemanticNullableType(returnType)) {
     return completeValue(
       exeContext,
       returnType.ofType,

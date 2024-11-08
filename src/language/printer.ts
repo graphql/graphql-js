@@ -141,7 +141,7 @@ const printDocASTReducer: ASTReducer<string> = {
   ListType: { leave: ({ type }) => '[' + type + ']' },
   NonNullType: { leave: ({ type }) => type + '!' },
   SemanticNonNullType: { leave: ({ type }) => type },
-  SemanticOptionalType: { leave: ({ type }) => type + '?' },
+  SemanticNullableType: { leave: ({ type }) => type + '?' },
 
   // Type System Definitions
 
