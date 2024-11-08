@@ -11,7 +11,6 @@ import { Kind } from '../kinds';
 import { parse, parseConstValue, parseType, parseValue } from '../parser';
 import { Source } from '../source';
 import { TokenKind } from '../tokenKind';
-import { Console } from 'console';
 
 function expectSyntaxError(text: string) {
   return expectToThrowJSON(() => parse(text));

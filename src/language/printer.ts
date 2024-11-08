@@ -17,7 +17,7 @@ export interface PrintOptions {
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
  */
-export function print(ast: ASTNode, options: PrintOptions = {}): string {
+export function print(ast: ASTNode): string {
   return visit(ast, printDocASTReducer);
 }
 
