@@ -651,12 +651,9 @@ function completeValue(
     throw result;
   }
 
-  console.log("anything", path, result);
-
   // If field type is NonNull, complete for inner type, and throw field error
   // if result is null.
   if (isNonNullType(returnType)) {
-    console.log("is non null");
     const completed = completeValue(
       exeContext,
       returnType.ofType,
@@ -676,7 +673,6 @@ function completeValue(
   // If field type is SemanticNonNull, complete for inner type, and throw field error
   // if result is null and an error doesn't exist.
   if (isSemanticNonNullType(returnType)) {
-    console.log("Is semantic non null")
     const completed = completeValue(
       exeContext,
       returnType.ofType,
@@ -707,7 +703,6 @@ function completeValue(
 
   // If result value is null or undefined then return null.
   if (result == null) {
-    console.log("is null")
     return null;
   }
 
@@ -726,14 +721,12 @@ function completeValue(
   // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
   // returning null if serialization is not possible.
   if (isLeafType(returnType)) {
-    console.log("is leaf")
     return completeLeafValue(returnType, result);
   }
 
   // If field type is an abstract type, Interface or Union, determine the
   // runtime Object type and complete for that type.
   if (isAbstractType(returnType)) {
-    console.log("is abstract")
     return completeAbstractValue(
       exeContext,
       returnType,
@@ -746,7 +739,6 @@ function completeValue(
 
   // If field type is Object, execute and complete all sub-selections.
   if (isObjectType(returnType)) {
-    console.log("is object")
     return completeObjectValue(
       exeContext,
       returnType,
