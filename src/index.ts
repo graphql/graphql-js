@@ -206,10 +206,8 @@ export type {
 } from './type/index.js';
 
 // Parse and operate on GraphQL language source files.
-export {
-  // eslint-disable-line @typescript-eslint/consistent-type-exports
-  Kind,
-} from './language/kinds.js';
+// eslint-disable-next-line @typescript-eslint/consistent-type-exports
+export { Kind } from './language/kinds.js';
 
 export {
   Token,
