@@ -35,50 +35,57 @@ import type { GraphQLSchema } from '../type/schema.js';
 import { sortValueNode } from './sortValueNode.js';
 import { valueToLiteral } from './valueToLiteral.js';
 
-enum BreakingChangeType {
-  TYPE_REMOVED = 'TYPE_REMOVED',
-  TYPE_CHANGED_KIND = 'TYPE_CHANGED_KIND',
-  TYPE_REMOVED_FROM_UNION = 'TYPE_REMOVED_FROM_UNION',
-  VALUE_REMOVED_FROM_ENUM = 'VALUE_REMOVED_FROM_ENUM',
-  REQUIRED_INPUT_FIELD_ADDED = 'REQUIRED_INPUT_FIELD_ADDED',
-  IMPLEMENTED_INTERFACE_REMOVED = 'IMPLEMENTED_INTERFACE_REMOVED',
-  FIELD_REMOVED = 'FIELD_REMOVED',
-  FIELD_CHANGED_KIND = 'FIELD_CHANGED_KIND',
-  REQUIRED_ARG_ADDED = 'REQUIRED_ARG_ADDED',
-  ARG_REMOVED = 'ARG_REMOVED',
-  ARG_CHANGED_KIND = 'ARG_CHANGED_KIND',
-  DIRECTIVE_REMOVED = 'DIRECTIVE_REMOVED',
-  DIRECTIVE_ARG_REMOVED = 'DIRECTIVE_ARG_REMOVED',
-  REQUIRED_DIRECTIVE_ARG_ADDED = 'REQUIRED_DIRECTIVE_ARG_ADDED',
-  DIRECTIVE_REPEATABLE_REMOVED = 'DIRECTIVE_REPEATABLE_REMOVED',
-  DIRECTIVE_LOCATION_REMOVED = 'DIRECTIVE_LOCATION_REMOVED',
-}
-export { BreakingChangeType };
+export const BreakingChangeType = {
+  TYPE_REMOVED: 'TYPE_REMOVED' as const,
+  TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND' as const,
+  TYPE_REMOVED_FROM_UNION: 'TYPE_REMOVED_FROM_UNION' as const,
+  VALUE_REMOVED_FROM_ENUM: 'VALUE_REMOVED_FROM_ENUM' as const,
+  REQUIRED_INPUT_FIELD_ADDED: 'REQUIRED_INPUT_FIELD_ADDED' as const,
+  IMPLEMENTED_INTERFACE_REMOVED: 'IMPLEMENTED_INTERFACE_REMOVED' as const,
+  FIELD_REMOVED: 'FIELD_REMOVED' as const,
+  FIELD_CHANGED_KIND: 'FIELD_CHANGED_KIND' as const,
+  REQUIRED_ARG_ADDED: 'REQUIRED_ARG_ADDED' as const,
+  ARG_REMOVED: 'ARG_REMOVED' as const,
+  ARG_CHANGED_KIND: 'ARG_CHANGED_KIND' as const,
+  DIRECTIVE_REMOVED: 'DIRECTIVE_REMOVED' as const,
+  DIRECTIVE_ARG_REMOVED: 'DIRECTIVE_ARG_REMOVED' as const,
+  REQUIRED_DIRECTIVE_ARG_ADDED: 'REQUIRED_DIRECTIVE_ARG_ADDED' as const,
+  DIRECTIVE_REPEATABLE_REMOVED: 'DIRECTIVE_REPEATABLE_REMOVED' as const,
+  DIRECTIVE_LOCATION_REMOVED: 'DIRECTIVE_LOCATION_REMOVED' as const,
+} as const;
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type BreakingChangeType =
+  (typeof BreakingChangeType)[keyof typeof BreakingChangeType];
 
-enum DangerousChangeType {
-  VALUE_ADDED_TO_ENUM = 'VALUE_ADDED_TO_ENUM',
-  TYPE_ADDED_TO_UNION = 'TYPE_ADDED_TO_UNION',
-  OPTIONAL_INPUT_FIELD_ADDED = 'OPTIONAL_INPUT_FIELD_ADDED',
-  OPTIONAL_ARG_ADDED = 'OPTIONAL_ARG_ADDED',
-  IMPLEMENTED_INTERFACE_ADDED = 'IMPLEMENTED_INTERFACE_ADDED',
-  ARG_DEFAULT_VALUE_CHANGE = 'ARG_DEFAULT_VALUE_CHANGE',
-}
-export { DangerousChangeType };
+export const DangerousChangeType = {
+  VALUE_ADDED_TO_ENUM: 'VALUE_ADDED_TO_ENUM' as const,
+  TYPE_ADDED_TO_UNION: 'TYPE_ADDED_TO_UNION' as const,
+  OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED' as const,
+  OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED' as const,
+  IMPLEMENTED_INTERFACE_ADDED: 'IMPLEMENTED_INTERFACE_ADDED' as const,
+  ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE' as const,
+};
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type DangerousChangeType =
+  (typeof DangerousChangeType)[keyof typeof DangerousChangeType];
 
-enum SafeChangeType {
-  TYPE_ADDED = 'TYPE_ADDED',
-  OPTIONAL_INPUT_FIELD_ADDED = 'OPTIONAL_INPUT_FIELD_ADDED',
-  OPTIONAL_ARG_ADDED = 'OPTIONAL_ARG_ADDED',
-  DIRECTIVE_ADDED = 'DIRECTIVE_ADDED',
-  FIELD_ADDED = 'FIELD_ADDED',
-  DIRECTIVE_REPEATABLE_ADDED = 'DIRECTIVE_REPEATABLE_ADDED',
-  DIRECTIVE_LOCATION_ADDED = 'DIRECTIVE_LOCATION_ADDED',
-  OPTIONAL_DIRECTIVE_ARG_ADDED = 'OPTIONAL_DIRECTIVE_ARG_ADDED',
-  FIELD_CHANGED_KIND_SAFE = 'FIELD_CHANGED_KIND_SAFE',
-  ARG_CHANGED_KIND_SAFE = 'ARG_CHANGED_KIND_SAFE',
-  ARG_DEFAULT_VALUE_ADDED = 'ARG_DEFAULT_VALUE_ADDED',
-}
-export { SafeChangeType };
+export const SafeChangeType = {
+  DESCRIPTION_CHANGED: 'DESCRIPTION_CHANGED' as const,
+  TYPE_ADDED: 'TYPE_ADDED' as const,
+  OPTIONAL_INPUT_FIELD_ADDED: 'OPTIONAL_INPUT_FIELD_ADDED' as const,
+  OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED' as const,
+  DIRECTIVE_ADDED: 'DIRECTIVE_ADDED' as const,
+  FIELD_ADDED: 'FIELD_ADDED' as const,
+  DIRECTIVE_REPEATABLE_ADDED: 'DIRECTIVE_REPEATABLE_ADDED' as const,
+  DIRECTIVE_LOCATION_ADDED: 'DIRECTIVE_LOCATION_ADDED' as const,
+  OPTIONAL_DIRECTIVE_ARG_ADDED: 'OPTIONAL_DIRECTIVE_ARG_ADDED' as const,
+  FIELD_CHANGED_KIND_SAFE: 'FIELD_CHANGED_KIND_SAFE' as const,
+  ARG_CHANGED_KIND_SAFE: 'ARG_CHANGED_KIND_SAFE' as const,
+  ARG_DEFAULT_VALUE_ADDED: 'ARG_DEFAULT_VALUE_ADDED' as const,
+};
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type SafeChangeType =
+  (typeof SafeChangeType)[keyof typeof SafeChangeType];
 
 export interface BreakingChange {
   type: BreakingChangeType;
@@ -188,6 +195,65 @@ function findDirectiveChanges(
       });
     }
 
+    for (const [oldArg, newArg] of argsDiff.persisted) {
+      const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(
+        oldArg.type,
+        newArg.type,
+      );
+
+      if (!isSafe) {
+        schemaChanges.push({
+          type: BreakingChangeType.ARG_CHANGED_KIND,
+          description:
+            `Argument @${oldDirective.name}(${oldArg.name}:) has changed type from ` +
+            `${String(oldArg.type)} to ${String(newArg.type)}.`,
+        });
+      } else if (oldArg.defaultValue !== undefined) {
+        if (newArg.defaultValue === undefined) {
+          schemaChanges.push({
+            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+            description: `@${oldDirective.name}(${oldArg.name}:) defaultValue was removed.`,
+          });
+        } else {
+          // Since we looking only for client's observable changes we should
+          // compare default values in the same representation as they are
+          // represented inside introspection.
+          const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
+          const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+
+          if (oldValueStr !== newValueStr) {
+            schemaChanges.push({
+              type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+              description: `@${oldDirective.name}(${oldArg.name}:) has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
+            });
+          }
+        }
+      } else if (
+        newArg.defaultValue !== undefined &&
+        oldArg.defaultValue === undefined
+      ) {
+        const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+        schemaChanges.push({
+          type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
+          description: `@${oldDirective.name}(${oldArg.name}:) added a defaultValue ${newValueStr}.`,
+        });
+      } else if (oldArg.type.toString() !== newArg.type.toString()) {
+        schemaChanges.push({
+          type: SafeChangeType.ARG_CHANGED_KIND_SAFE,
+          description:
+            `Argument @${oldDirective.name}(${oldArg.name}:) has changed type from ` +
+            `${String(oldArg.type)} to ${String(newArg.type)}.`,
+        });
+      }
+
+      if (oldArg.description !== newArg.description) {
+        schemaChanges.push({
+          type: SafeChangeType.DESCRIPTION_CHANGED,
+          description: `Description of @${oldDirective.name}(${oldDirective.name}) has changed to "${newArg.description}".`,
+        });
+      }
+    }
+
     if (oldDirective.isRepeatable && !newDirective.isRepeatable) {
       schemaChanges.push({
         type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
@@ -197,6 +263,13 @@ function findDirectiveChanges(
       schemaChanges.push({
         type: SafeChangeType.DIRECTIVE_REPEATABLE_ADDED,
         description: `Repeatable flag was added to @${oldDirective.name}.`,
+      });
+    }
+
+    if (oldDirective.description !== newDirective.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of @${oldDirective.name} has changed to "${newDirective.description}".`,
       });
     }
 
@@ -250,6 +323,13 @@ function findTypeChanges(
   }
 
   for (const [oldType, newType] of typesDiff.persisted) {
+    if (oldType.description !== newType.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of ${oldType.name} has changed to "${newType.description}".`,
+      });
+    }
+
     if (isEnumType(oldType) && isEnumType(newType)) {
       schemaChanges.push(...findEnumTypeChanges(oldType, newType));
     } else if (isUnionType(oldType) && isUnionType(newType)) {
@@ -322,12 +402,19 @@ function findInputObjectTypeChanges(
           `Field ${oldType}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
       });
-    } else {
+    } else if (oldField.type.toString() !== newField.type.toString()) {
       schemaChanges.push({
         type: SafeChangeType.FIELD_CHANGED_KIND_SAFE,
         description:
           `Field ${oldType}.${oldField.name} changed type from ` +
           `${String(oldField.type)} to ${String(newField.type)}.`,
+      });
+    }
+
+    if (oldField.description !== newField.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of input-field ${newType}.${newField.name} has changed to "${newField.description}".`,
       });
     }
   }
@@ -362,7 +449,7 @@ function findUnionTypeChanges(
 function findEnumTypeChanges(
   oldType: GraphQLEnumType,
   newType: GraphQLEnumType,
-): Array<BreakingChange | DangerousChange> {
+): Array<SchemaChange> {
   const schemaChanges = [];
   const valuesDiff = diff(oldType.getValues(), newType.getValues());
 
@@ -378,6 +465,15 @@ function findEnumTypeChanges(
       type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
       description: `Enum value ${oldType}.${oldValue.name} was removed.`,
     });
+  }
+
+  for (const [oldValue, newValue] of valuesDiff.persisted) {
+    if (oldValue.description !== newValue.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of enum value ${oldType}.${oldValue.name} has changed to "${newValue.description}".`,
+      });
+    }
   }
 
   return schemaChanges;
@@ -453,6 +549,13 @@ function findFieldChanges(
           `${String(oldField.type)} to ${String(newField.type)}.`,
       });
     }
+
+    if (oldField.description !== newField.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of field ${oldType}.${oldField.name} has changed to "${newField.description}".`,
+      });
+    }
   }
 
   return schemaChanges;
@@ -478,6 +581,7 @@ function findArgChanges(
       oldArg.type,
       newArg.type,
     );
+
     if (!isSafe) {
       schemaChanges.push({
         type: BreakingChangeType.ARG_CHANGED_KIND,
@@ -514,12 +618,19 @@ function findArgChanges(
         type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
         description: `${oldType}.${oldField.name}(${oldArg.name}:) added a defaultValue ${newValueStr}.`,
       });
-    } else {
+    } else if (oldArg.type.toString() !== newArg.type.toString()) {
       schemaChanges.push({
         type: SafeChangeType.ARG_CHANGED_KIND_SAFE,
         description:
           `Argument ${oldType}.${oldField.name}(${oldArg.name}:) has changed type from ` +
           `${String(oldArg.type)} to ${String(newArg.type)}.`,
+      });
+    }
+
+    if (oldArg.description !== newArg.description) {
+      schemaChanges.push({
+        type: SafeChangeType.DESCRIPTION_CHANGED,
+        description: `Description of argument ${oldType}.${oldField.name}(${oldArg.name}) has changed to "${newArg.description}".`,
       });
     }
   }

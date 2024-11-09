@@ -452,17 +452,19 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
     }) as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>,
 });
 
-enum TypeKind {
-  SCALAR = 'SCALAR',
-  OBJECT = 'OBJECT',
-  INTERFACE = 'INTERFACE',
-  UNION = 'UNION',
-  ENUM = 'ENUM',
-  INPUT_OBJECT = 'INPUT_OBJECT',
-  LIST = 'LIST',
-  NON_NULL = 'NON_NULL',
-}
-export { TypeKind };
+export const TypeKind = {
+  SCALAR: 'SCALAR' as const,
+  OBJECT: 'OBJECT' as const,
+  INTERFACE: 'INTERFACE' as const,
+  UNION: 'UNION' as const,
+  ENUM: 'ENUM' as const,
+  INPUT_OBJECT: 'INPUT_OBJECT' as const,
+  LIST: 'LIST' as const,
+  NON_NULL: 'NON_NULL' as const,
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type TypeKind = (typeof TypeKind)[keyof typeof TypeKind];
 
 export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   name: '__TypeKind',
