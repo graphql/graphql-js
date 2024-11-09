@@ -12,6 +12,7 @@ describe('Kind', () => {
     const c: Kind = Kind.ARGUMENT;
     c;
   });
+
   it('is a type level namespace with type level enum members', () => {
     // @ts-expect-error
     const a: Kind.NAME = 'bad';
