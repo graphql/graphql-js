@@ -207,6 +207,11 @@ export type {
 
 // Parse and operate on GraphQL language source files.
 export {
+  // eslint-disable-line @typescript-eslint/consistent-type-exports
+  Kind,
+} from './language/kinds.js';
+
+export {
   Token,
   Source,
   Location,
@@ -230,7 +235,6 @@ export {
   visitInParallel,
   getEnterLeaveForKind,
   BREAK,
-  Kind,
   DirectiveLocation,
   // Predicates
   isDefinitionNode,
