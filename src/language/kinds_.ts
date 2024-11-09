@@ -90,6 +90,7 @@ export type INPUT_OBJECT_TYPE_DEFINITION = typeof INPUT_OBJECT_TYPE_DEFINITION;
 /** Directive Definitions */
 export const DIRECTIVE_DEFINITION = 'DirectiveDefinition';
 export type DIRECTIVE_DEFINITION = typeof DIRECTIVE_DEFINITION;
+
 /** Type System Extensions */
 export const SCHEMA_EXTENSION = 'SchemaExtension';
 export type SCHEMA_EXTENSION = typeof SCHEMA_EXTENSION;
