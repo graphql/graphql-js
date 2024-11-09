@@ -2,6 +2,7 @@
 
 /** Name */
 export const NAME = 'Name';
+export type NAME = typeof NAME;
 
 /** Document */
 export const DOCUMENT = 'Document';
