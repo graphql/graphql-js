@@ -5,7 +5,8 @@ export type { SourceLocation } from './location.js';
 
 export { printLocation, printSourceLocation } from './printLocation.js';
 
-export { Kind } from './kinds.js'; // eslint-disable-line @typescript-eslint/consistent-type-exports
+// eslint-disable-next-line @typescript-eslint/consistent-type-exports
+export { Kind } from './kinds.js';
 
 export { TokenKind } from './tokenKind.js';
 
