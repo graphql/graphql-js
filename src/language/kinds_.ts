@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-redeclare */
+
 /** Name */
 export const NAME = 'Name';
 
