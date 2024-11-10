@@ -66,6 +66,8 @@ export class Lexer {
    */
   lookahead(): Token {
     let token = this.token;
+    const savedLine = this.line;
+    const savedLineStart = this.lineStart;
     if (token.kind !== TokenKind.EOF) {
       do {
         if (token.next) {
@@ -81,6 +83,8 @@ export class Lexer {
         }
       } while (token.kind === TokenKind.COMMENT);
     }
+    this.line = savedLine;
+    this.lineStart = savedLineStart;
     return token;
   }
 }
