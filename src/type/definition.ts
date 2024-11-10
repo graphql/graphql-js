@@ -67,15 +67,6 @@ export type GraphQLType =
       | GraphQLInputObjectType
       | GraphQLList<GraphQLType>
     >
-  | GraphQLSemanticNonNull<
-      | GraphQLScalarType
-      | GraphQLObjectType
-      | GraphQLInterfaceType
-      | GraphQLUnionType
-      | GraphQLEnumType
-      | GraphQLInputObjectType
-      | GraphQLList<GraphQLType>
-    >
   | GraphQLSemanticNullable<
       | GraphQLScalarType
       | GraphQLObjectType
@@ -96,7 +87,7 @@ export function isType(type: unknown): type is GraphQLType {
     isInputObjectType(type) ||
     isListType(type) ||
     isNonNullType(type) ||
-    isSemanticNonNullType(type)
+    isSemanticNullableType(type)
   );
 }
 
@@ -222,32 +213,6 @@ export function assertNonNullType(type: unknown): GraphQLNonNull<GraphQLType> {
   return type;
 }
 
-export function isSemanticNonNullType(
-  type: GraphQLInputType,
-): type is GraphQLSemanticNonNull<GraphQLInputType>;
-export function isSemanticNonNullType(
-  type: GraphQLOutputType,
-): type is GraphQLSemanticNonNull<GraphQLOutputType>;
-export function isSemanticNonNullType(
-  type: unknown,
-): type is GraphQLSemanticNonNull<GraphQLType>;
-export function isSemanticNonNullType(
-  type: unknown,
-): type is GraphQLSemanticNonNull<GraphQLType> {
-  return instanceOf(type, GraphQLSemanticNonNull);
-}
-
-export function assertSemanticNonNullType(
-  type: unknown,
-): GraphQLSemanticNonNull<GraphQLType> {
-  if (!isSemanticNonNullType(type)) {
-    throw new Error(
-      `Expected ${inspect(type)} to be a GraphQL Semantic-Non-Null type.`,
-    );
-  }
-  return type;
-}
-
 export function isSemanticNullableType(
   type: GraphQLInputType,
 ): type is GraphQLSemanticNullable<GraphQLInputType>;
@@ -288,14 +253,14 @@ export type GraphQLInputType =
       | GraphQLInputObjectType
       | GraphQLList<GraphQLInputType>
     >;
-// Note: GraphQLSemanticNonNull is currently not allowed for input types
 
+// Note: GraphQLSemanticNullableType is currently not allowed for input types
 export function isInputType(type: unknown): type is GraphQLInputType {
   return (
     isScalarType(type) ||
     isEnumType(type) ||
     isInputObjectType(type) ||
-    (!isSemanticNonNullType(type) &&
+    (!isSemanticNullableType(type) &&
       isWrappingType(type) &&
       isInputType(type.ofType))
   );
@@ -326,7 +291,7 @@ export type GraphQLOutputType =
       | GraphQLEnumType
       | GraphQLList<GraphQLOutputType>
     >
-  | GraphQLSemanticNonNull<
+  | GraphQLSemanticNullable<
       | GraphQLScalarType
       | GraphQLObjectType
       | GraphQLInterfaceType
@@ -497,55 +462,6 @@ export class GraphQLNonNull<T extends GraphQLNullableType> {
 }
 
 /**
- * Semantic-Non-Null Type Wrapper
- *
- * A semantic-non-null is a wrapping type which points to another type.
- * Semantic-non-null types enforce that their values are never null unless
- * caused by an error being raised. It is useful for fields which you can make
- * a guarantee on non-nullability in a no-error case, for example when you know
- * that a related entity must exist (but acknowledge that retrieving it may
- * produce an error).
- *
- * Example:
- *
- * ```ts
- * const RowType = new GraphQLObjectType({
- *   name: 'Row',
- *   fields: () => ({
- *     email: { type: new GraphQLSemanticNonNull(GraphQLString) },
- *   })
- * })
- * ```
- * Note: the enforcement of non-nullability occurs within the executor.
- *
- * @experimental
- */
-export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
-  readonly ofType: T;
-
-  constructor(ofType: T) {
-    devAssert(
-      isNullableType(ofType),
-      `Expected ${inspect(ofType)} to be a GraphQL nullable type.`,
-    );
-
-    this.ofType = ofType;
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLSemanticNonNull';
-  }
-
-  toString(): string {
-    return String(this.ofType);
-  }
-
-  toJSON(): string {
-    return this.toString();
-  }
-}
-
-/**
  * Semantic-Nullable Type Wrapper
  *
  * A semantic-nullable is a wrapping type which points to another type.
@@ -598,15 +514,11 @@ export class GraphQLSemanticNullable<T extends GraphQLNullableType> {
 export type GraphQLWrappingType =
   | GraphQLList<GraphQLType>
   | GraphQLNonNull<GraphQLType>
-  | GraphQLSemanticNonNull<GraphQLType>
   | GraphQLSemanticNullable<GraphQLType>;
 
 export function isWrappingType(type: unknown): type is GraphQLWrappingType {
   return (
-    isListType(type) ||
-    isNonNullType(type) ||
-    isSemanticNonNullType(type) ||
-    isSemanticNullableType(type)
+    isListType(type) || isNonNullType(type) || isSemanticNullableType(type)
   );
 }
 
@@ -630,7 +542,7 @@ export type GraphQLNullableType =
   | GraphQLList<GraphQLType>;
 
 export function isNullableType(type: unknown): type is GraphQLNullableType {
-  return isType(type) && !isNonNullType(type) && !isSemanticNonNullType(type);
+  return isType(type) && !isNonNullType(type) && !isSemanticNullableType(type);
 }
 
 export function assertNullableType(type: unknown): GraphQLNullableType {
@@ -642,7 +554,7 @@ export function assertNullableType(type: unknown): GraphQLNullableType {
 
 export function getNullableType(type: undefined | null): void;
 export function getNullableType<T extends GraphQLNullableType>(
-  type: T | GraphQLNonNull<T> | GraphQLSemanticNonNull<T>,
+  type: T | GraphQLNonNull<T> | GraphQLSemanticNullable<T>,
 ): T;
 export function getNullableType(
   type: Maybe<GraphQLType>,
@@ -651,14 +563,14 @@ export function getNullableType(
   type: Maybe<GraphQLType>,
 ): GraphQLNullableType | undefined {
   if (type) {
-    return isNonNullType(type) || isSemanticNonNullType(type)
+    return isNonNullType(type) || isSemanticNullableType(type)
       ? type.ofType
       : type;
   }
 }
 
 /**
- * These named types do not include modifiers like List, NonNull, or SemanticNonNull
+ * These named types do not include modifiers like List, NonNull, or SemanticNullable
  */
 export type GraphQLNamedType = GraphQLNamedInputType | GraphQLNamedOutputType;
 
@@ -1258,7 +1170,7 @@ export interface GraphQLArgument {
 }
 
 export function isRequiredArgument(arg: GraphQLArgument): boolean {
-  // Note: input types cannot be SemanticNonNull
+  // Note: input types cannot be SemanticNullable
   return isNonNullType(arg.type) && arg.defaultValue === undefined;
 }
 
@@ -1950,7 +1862,7 @@ export interface GraphQLInputField {
 }
 
 export function isRequiredInputField(field: GraphQLInputField): boolean {
-  // Note: input types cannot be SemanticNonNull
+  // Note: input types cannot be SemanticNullable
   return isNonNullType(field.type) && field.defaultValue === undefined;
 }
 

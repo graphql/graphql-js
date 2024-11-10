@@ -20,7 +20,7 @@ export type {
   IntrospectionNamedTypeRef,
   IntrospectionListTypeRef,
   IntrospectionNonNullTypeRef,
-  IntrospectionSemanticNonNullTypeRef,
+  IntrospectionSemanticNullableTypeRef,
   IntrospectionField,
   IntrospectionInputValue,
   IntrospectionEnumValue,

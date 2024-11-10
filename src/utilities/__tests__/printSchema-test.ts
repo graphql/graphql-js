@@ -771,8 +771,8 @@ describe('Type System Printer', () => {
         """Indicates this type is a non-null. \`ofType\` is a valid field."""
         NON_NULL
 
-        """Indicates this type is a semantic-non-null. \`ofType\` is a valid field."""
-        SEMANTIC_NON_NULL
+        """Indicates this type is a semantic-nullable. \`ofType\` is a valid field."""
+        SEMANTIC_NULLABLE
       }
 
       """

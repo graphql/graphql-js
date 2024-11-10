@@ -438,7 +438,7 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
-                  name: 'SEMANTIC_NON_NULL',
+                  name: 'SEMANTIC_NULLABLE',
                   isDeprecated: false,
                   deprecationReason: null,
                 },

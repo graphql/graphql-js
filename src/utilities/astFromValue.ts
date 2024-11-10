@@ -42,7 +42,7 @@ export function astFromValue(
   value: unknown,
   type: GraphQLInputType,
 ): Maybe<ValueNode> {
-  // Note: input types cannot be SemanticNonNull
+  // Note: input types cannot be SemanticNullable
   if (isNonNullType(type)) {
     const astValue = astFromValue(value, type.ofType);
     if (astValue?.kind === Kind.NULL) {

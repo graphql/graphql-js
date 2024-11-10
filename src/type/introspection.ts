@@ -19,7 +19,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLSemanticNonNull,
+  GraphQLSemanticNullable,
   isAbstractType,
   isEnumType,
   isInputObjectType,
@@ -28,7 +28,7 @@ import {
   isNonNullType,
   isObjectType,
   isScalarType,
-  isSemanticNonNullType,
+  isSemanticNullableType,
   isUnionType,
 } from './definition';
 import type { GraphQLDirective } from './directives';
@@ -42,7 +42,7 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
   fields: () =>
     ({
       description: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (schema) => schema.description,
       },
       types: {
@@ -60,13 +60,13 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
       mutationType: {
         description:
           'If this server supports mutation, the type that mutation operations will be rooted at.',
-        type: __Type,
+        type: new GraphQLSemanticNullable(__Type),
         resolve: (schema) => schema.getMutationType(),
       },
       subscriptionType: {
         description:
           'If this server support subscription, the type that subscription operations will be rooted at.',
-        type: __Type,
+        type: new GraphQLSemanticNullable(__Type),
         resolve: (schema) => schema.getSubscriptionType(),
       },
       directives: {
@@ -90,7 +90,7 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
         resolve: (directive) => directive.name,
       },
       description: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (directive) => directive.description,
       },
       isRepeatable: {
@@ -273,8 +273,8 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
           }
-          if (isSemanticNonNullType(type)) {
-            return TypeKind.SEMANTIC_NON_NULL;
+          if (isSemanticNullableType(type)) {
+            return TypeKind.SEMANTIC_NULLABLE;
           }
           /* c8 ignore next 3 */
           // Not reachable, all possible types have been considered)
@@ -282,23 +282,25 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         },
       },
       name: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (type) => ('name' in type ? type.name : undefined),
       },
       description: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (type) =>
           // FIXME: add test case
           /* c8 ignore next */
           'description' in type ? type.description : undefined,
       },
       specifiedByURL: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (obj) =>
           'specifiedByURL' in obj ? obj.specifiedByURL : undefined,
       },
       fields: {
-        type: new GraphQLList(new GraphQLNonNull(__Field)),
+        type: new GraphQLSemanticNullable(
+          new GraphQLList(new GraphQLNonNull(__Field)),
+        ),
         args: {
           includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
         },
@@ -312,7 +314,9 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         },
       },
       interfaces: {
-        type: new GraphQLList(new GraphQLNonNull(__Type)),
+        type: new GraphQLSemanticNullable(
+          new GraphQLList(new GraphQLNonNull(__Type)),
+        ),
         resolve(type) {
           if (isObjectType(type) || isInterfaceType(type)) {
             return type.getInterfaces();
@@ -320,7 +324,9 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         },
       },
       possibleTypes: {
-        type: new GraphQLList(new GraphQLNonNull(__Type)),
+        type: new GraphQLSemanticNullable(
+          new GraphQLList(new GraphQLNonNull(__Type)),
+        ),
         resolve(type, _args, _context, { schema }) {
           if (isAbstractType(type)) {
             return schema.getPossibleTypes(type);
@@ -328,7 +334,9 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         },
       },
       enumValues: {
-        type: new GraphQLList(new GraphQLNonNull(__EnumValue)),
+        type: new GraphQLSemanticNullable(
+          new GraphQLList(new GraphQLNonNull(__EnumValue)),
+        ),
         args: {
           includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
         },
@@ -342,7 +350,9 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         },
       },
       inputFields: {
-        type: new GraphQLList(new GraphQLNonNull(__InputValue)),
+        type: new GraphQLSemanticNullable(
+          new GraphQLList(new GraphQLNonNull(__InputValue)),
+        ),
         args: {
           includeDeprecated: {
             type: GraphQLBoolean,
@@ -359,11 +369,11 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         },
       },
       ofType: {
-        type: __Type,
+        type: new GraphQLSemanticNullable(__Type),
         resolve: (type) => ('ofType' in type ? type.ofType : undefined),
       },
       isOneOf: {
-        type: GraphQLBoolean,
+        type: new GraphQLSemanticNullable(GraphQLBoolean),
         resolve: (type) => {
           if (isInputObjectType(type)) {
             return type.isOneOf;
@@ -384,7 +394,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         resolve: (field) => field.name,
       },
       description: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (field) => field.description,
       },
       args: {
@@ -429,7 +439,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         resolve: (field) => field.deprecationReason != null,
       },
       deprecationReason: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (field) => field.deprecationReason,
       },
     } as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
@@ -445,7 +455,7 @@ function convertOutputTypeToNullabilityMode(
       return new GraphQLNonNull(
         convertOutputTypeToNullabilityMode(type.ofType, mode),
       );
-    } else if (isSemanticNonNullType(type)) {
+    } else if (isSemanticNullableType(type)) {
       return convertOutputTypeToNullabilityMode(type.ofType, mode);
     } else if (isListType(type)) {
       return new GraphQLList(
@@ -454,10 +464,8 @@ function convertOutputTypeToNullabilityMode(
     }
     return type;
   }
-  if (isNonNullType(type) || isSemanticNonNullType(type)) {
-    return new GraphQLSemanticNonNull(
-      convertOutputTypeToNullabilityMode(type.ofType, mode),
-    );
+  if (isNonNullType(type) || !isSemanticNullableType(type)) {
+    return convertOutputTypeToNullabilityMode(type, mode);
   } else if (isListType(type)) {
     return new GraphQLList(
       convertOutputTypeToNullabilityMode(type.ofType, mode),
@@ -477,7 +485,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
         resolve: (inputValue) => inputValue.name,
       },
       description: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (inputValue) => inputValue.description,
       },
       type: {
@@ -485,7 +493,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
         resolve: (inputValue) => inputValue.type,
       },
       defaultValue: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         description:
           'A GraphQL-formatted string representing the default value for this input value.',
         resolve(inputValue) {
@@ -499,7 +507,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
         resolve: (field) => field.deprecationReason != null,
       },
       deprecationReason: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (obj) => obj.deprecationReason,
       },
     } as GraphQLFieldConfigMap<GraphQLInputField, unknown>),
@@ -516,7 +524,7 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
         resolve: (enumValue) => enumValue.name,
       },
       description: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (enumValue) => enumValue.description,
       },
       isDeprecated: {
@@ -524,7 +532,7 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
         resolve: (enumValue) => enumValue.deprecationReason != null,
       },
       deprecationReason: {
-        type: GraphQLString,
+        type: new GraphQLSemanticNullable(GraphQLString),
         resolve: (enumValue) => enumValue.deprecationReason,
       },
     } as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>),
@@ -539,7 +547,7 @@ enum TypeKind {
   INPUT_OBJECT = 'INPUT_OBJECT',
   LIST = 'LIST',
   NON_NULL = 'NON_NULL',
-  SEMANTIC_NON_NULL = 'SEMANTIC_NON_NULL',
+  SEMANTIC_NULLABLE = 'SEMANTIC_NULLABLE',
 }
 export { TypeKind };
 
@@ -585,10 +593,10 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
       description:
         'Indicates this type is a non-null. `ofType` is a valid field.',
     },
-    SEMANTIC_NON_NULL: {
-      value: TypeKind.SEMANTIC_NON_NULL,
+    SEMANTIC_NULLABLE: {
+      value: TypeKind.SEMANTIC_NULLABLE,
       description:
-        'Indicates this type is a semantic-non-null. `ofType` is a valid field.',
+        'Indicates this type is a semantic-nullable. `ofType` is a valid field.',
     },
   },
 });

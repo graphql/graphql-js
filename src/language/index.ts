@@ -67,7 +67,7 @@ export type {
   NamedTypeNode,
   ListTypeNode,
   NonNullTypeNode,
-  SemanticNonNullTypeNode,
+  SemanticNullableTypeNode,
   TypeSystemDefinitionNode,
   SchemaDefinitionNode,
   OperationTypeDefinitionNode,

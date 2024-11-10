@@ -14,6 +14,7 @@ import type {
   GraphQLInterfaceType,
   GraphQLNamedType,
   GraphQLObjectType,
+  GraphQLOutputType,
   GraphQLScalarType,
   GraphQLUnionType,
 } from '../type/definition';
@@ -23,6 +24,7 @@ import {
   isInterfaceType,
   isObjectType,
   isScalarType,
+  isSemanticNullableType,
   isUnionType,
 } from '../type/definition';
 import type { GraphQLDirective } from '../type/directives';
@@ -60,10 +62,12 @@ function printFilteredSchema(
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
 
+  const usingSemanticNullability = schema.usingSemanticNullability;
+
   return [
     printSchemaDefinition(schema),
     ...directives.map((directive) => printDirective(directive)),
-    ...types.map((type) => printType(type)),
+    ...types.map((type) => printType(type, usingSemanticNullability)),
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -128,15 +132,18 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
-export function printType(type: GraphQLNamedType): string {
+export function printType(
+  type: GraphQLNamedType,
+  usingSemanticNullability: Maybe<boolean>,
+): string {
   if (isScalarType(type)) {
     return printScalar(type);
   }
   if (isObjectType(type)) {
-    return printObject(type);
+    return printObject(type, usingSemanticNullability);
   }
   if (isInterfaceType(type)) {
-    return printInterface(type);
+    return printInterface(type, usingSemanticNullability);
   }
   if (isUnionType(type)) {
     return printUnion(type);
@@ -167,21 +174,27 @@ function printImplementedInterfaces(
     : '';
 }
 
-function printObject(type: GraphQLObjectType): string {
+function printObject(
+  type: GraphQLObjectType,
+  usingSemanticNullability: Maybe<boolean>,
+): string {
   return (
     printDescription(type) +
     `type ${type.name}` +
     printImplementedInterfaces(type) +
-    printFields(type)
+    printFields(type, usingSemanticNullability)
   );
 }
 
-function printInterface(type: GraphQLInterfaceType): string {
+function printInterface(
+  type: GraphQLInterfaceType,
+  usingSemanticNullability: Maybe<boolean>,
+): string {
   return (
     printDescription(type) +
     `interface ${type.name}` +
     printImplementedInterfaces(type) +
-    printFields(type)
+    printFields(type, usingSemanticNullability)
   );
 }
 
@@ -217,7 +230,10 @@ function printInputObject(type: GraphQLInputObjectType): string {
   );
 }
 
-function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
+function printFields(
+  type: GraphQLObjectType | GraphQLInterfaceType,
+  usingSemanticNullability: Maybe<boolean>,
+): string {
   const fields = Object.values(type.getFields()).map(
     (f, i) =>
       printDescription(f, '  ', !i) +
@@ -225,10 +241,23 @@ function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
       f.name +
       printArgs(f.args, '  ') +
       ': ' +
-      String(f.type) +
+      printReturnType(f.type, usingSemanticNullability) +
       printDeprecated(f.deprecationReason),
   );
   return printBlock(fields);
+}
+
+function printReturnType(
+  type: GraphQLOutputType,
+  usingSemanticNullability: Maybe<boolean>,
+): string {
+  if (usingSemanticNullability) {
+    return String(type);
+  }
+  if (isSemanticNullableType(type)) {
+    return String(type.ofType);
+  }
+  return String(type);
 }
 
 function printBlock(items: ReadonlyArray<string>): string {

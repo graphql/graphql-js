@@ -9,7 +9,6 @@ import { parse } from '../../language/parser';
 import {
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLSemanticNonNull,
   GraphQLSemanticNullable,
 } from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
@@ -29,9 +28,9 @@ describe('Execute: Handles Semantic Nullability', () => {
     name: 'DataType',
     fields: () => ({
       a: { type: new GraphQLSemanticNullable(GraphQLString) },
-      b: { type: new GraphQLSemanticNonNull(GraphQLString) },
+      b: { type: GraphQLString },
       c: { type: new GraphQLNonNull(GraphQLString) },
-      d: { type: new GraphQLSemanticNonNull(DeepDataType) },
+      d: { type: DeepDataType },
     }),
   });
 
@@ -49,7 +48,10 @@ describe('Execute: Handles Semantic Nullability', () => {
       `);
 
     const result = await execute({
-      schema: new GraphQLSchema({ query: DataType }),
+      schema: new GraphQLSchema({
+        useSemanticNullability: true,
+        query: DataType,
+      }),
       document,
       rootValue: data,
     });
@@ -98,7 +100,10 @@ describe('Execute: Handles Semantic Nullability', () => {
       .next().value;
 
     const result = await execute({
-      schema: new GraphQLSchema({ query: DataType }),
+      schema: new GraphQLSchema({
+        useSemanticNullability: true,
+        query: DataType,
+      }),
       document,
       rootValue: data,
     });
@@ -137,7 +142,10 @@ describe('Execute: Handles Semantic Nullability', () => {
       `);
 
     const result = await execute({
-      schema: new GraphQLSchema({ query: DataType }),
+      schema: new GraphQLSchema({
+        useSemanticNullability: true,
+        query: DataType,
+      }),
       document,
       rootValue: data,
     });
@@ -180,7 +188,10 @@ describe('Execute: Handles Semantic Nullability', () => {
       `);
 
     const result = await execute({
-      schema: new GraphQLSchema({ query: DataType }),
+      schema: new GraphQLSchema({
+        useSemanticNullability: true,
+        query: DataType,
+      }),
       document,
       rootValue: data,
     });
@@ -206,7 +217,10 @@ describe('Execute: Handles Semantic Nullability', () => {
       `);
 
     const result = await execute({
-      schema: new GraphQLSchema({ query: DataType }),
+      schema: new GraphQLSchema({
+        useSemanticNullability: true,
+        query: DataType,
+      }),
       document,
       rootValue: data,
     });

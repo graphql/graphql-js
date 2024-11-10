@@ -674,16 +674,12 @@ describe('Parser', () => {
     it('parses semantic-non-null types', () => {
       const result = parseType('MyType', { useSemanticNullability: true });
       expectJSON(result).toDeepEqual({
-        kind: Kind.SEMANTIC_NON_NULL_TYPE,
+        kind: Kind.NAMED_TYPE,
         loc: { start: 0, end: 6 },
-        type: {
-          kind: Kind.NAMED_TYPE,
+        name: {
+          kind: Kind.NAME,
           loc: { start: 0, end: 6 },
-          name: {
-            kind: Kind.NAME,
-            loc: { start: 0, end: 6 },
-            value: 'MyType',
-          },
+          value: 'MyType',
         },
       });
     });

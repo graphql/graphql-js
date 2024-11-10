@@ -298,10 +298,10 @@ export interface IntrospectionNonNullTypeRef<
   readonly ofType: T;
 }
 
-export interface IntrospectionSemanticNonNullTypeRef<
+export interface IntrospectionSemanticNullableTypeRef<
   T extends IntrospectionTypeRef = IntrospectionTypeRef,
 > {
-  readonly kind: 'SEMANTIC_NON_NULL';
+  readonly kind: 'SEMANTIC_NULLABLE';
   readonly ofType: T;
 }
 
@@ -311,7 +311,7 @@ export type IntrospectionTypeRef =
   | IntrospectionNonNullTypeRef<
       IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >
-  | IntrospectionSemanticNonNullTypeRef<
+  | IntrospectionSemanticNullableTypeRef<
       IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >;
 

@@ -50,7 +50,6 @@ import type {
   SchemaExtensionNode,
   SelectionNode,
   SelectionSetNode,
-  SemanticNonNullTypeNode,
   SemanticNullableTypeNode,
   StringValueNode,
   Token,
@@ -763,7 +762,7 @@ export class Parser {
    *   - NamedType
    *   - ListType
    *   - NonNullType
-   *   - SemanticNonNullType
+   *   - SemanticNullableType
    */
   parseTypeReference(): TypeNode {
     const start = this._lexer.token;
@@ -779,28 +778,17 @@ export class Parser {
       type = this.parseNamedType();
     }
 
-    if (this._options.useSemanticNullability) {
-      if (this.expectOptionalToken(TokenKind.BANG)) {
-        return this.node<NonNullTypeNode>(start, {
-          kind: Kind.NON_NULL_TYPE,
-          type,
-        });
-      } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-        return this.node<SemanticNullableTypeNode>(start, {
-          kind: Kind.SEMANTIC_NULLABLE_TYPE,
-          type,
-        });
-      }
-
-      return this.node<SemanticNonNullTypeNode>(start, {
-        kind: Kind.SEMANTIC_NON_NULL_TYPE,
-        type,
-      });
-    }
-
     if (this.expectOptionalToken(TokenKind.BANG)) {
       return this.node<NonNullTypeNode>(start, {
         kind: Kind.NON_NULL_TYPE,
+        type,
+      });
+    } else if (
+      this._options.useSemanticNullability &&
+      this.expectOptionalToken(TokenKind.QUESTION_MARK)
+    ) {
+      return this.node<SemanticNullableTypeNode>(start, {
+        kind: Kind.SEMANTIC_NULLABLE_TYPE,
         type,
       });
     }

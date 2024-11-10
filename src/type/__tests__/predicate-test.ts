@@ -23,7 +23,7 @@ import {
   assertObjectType,
   assertOutputType,
   assertScalarType,
-  assertSemanticNonNullType,
+  assertSemanticNullableType,
   assertType,
   assertUnionType,
   assertWrappingType,
@@ -36,7 +36,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
-  GraphQLSemanticNonNull,
+  GraphQLSemanticNullable,
   GraphQLUnionType,
   isAbstractType,
   isCompositeType,
@@ -54,7 +54,7 @@ import {
   isRequiredArgument,
   isRequiredInputField,
   isScalarType,
-  isSemanticNonNullType,
+  isSemanticNullableType,
   isType,
   isUnionType,
   isWrappingType,
@@ -301,46 +301,42 @@ describe('Type predicates', () => {
       expect(() =>
         assertNonNullType(new GraphQLList(new GraphQLNonNull(ObjectType))),
       ).to.throw();
-      expect(isNonNullType(new GraphQLSemanticNonNull(ObjectType))).to.equal(
-        false,
-      );
-      expect(() =>
-        assertNonNullType(new GraphQLSemanticNonNull(ObjectType)),
-      ).to.throw();
+      expect(isNonNullType(ObjectType)).to.equal(false);
+      expect(() => assertNonNullType(ObjectType)).to.throw();
     });
   });
 
-  describe('isSemanticNonNullType', () => {
+  describe('isSemanticNullableType', () => {
     it('returns true for a semantic-non-null wrapped type', () => {
       expect(
-        isSemanticNonNullType(new GraphQLSemanticNonNull(ObjectType)),
+        isSemanticNullableType(new GraphQLSemanticNullable(ObjectType)),
       ).to.equal(true);
       expect(() =>
-        assertSemanticNonNullType(new GraphQLSemanticNonNull(ObjectType)),
+        assertSemanticNullableType(new GraphQLSemanticNullable(ObjectType)),
       ).to.not.throw();
     });
 
     it('returns false for an unwrapped type', () => {
-      expect(isSemanticNonNullType(ObjectType)).to.equal(false);
-      expect(() => assertSemanticNonNullType(ObjectType)).to.throw();
+      expect(isSemanticNullableType(ObjectType)).to.equal(false);
+      expect(() => assertSemanticNullableType(ObjectType)).to.throw();
     });
 
-    it('returns false for a not non-null wrapped type', () => {
+    it('returns false for a not semantic-non-null wrapped type', () => {
       expect(
-        isSemanticNonNullType(
-          new GraphQLList(new GraphQLSemanticNonNull(ObjectType)),
+        isSemanticNullableType(
+          new GraphQLList(new GraphQLSemanticNullable(ObjectType)),
         ),
       ).to.equal(false);
       expect(() =>
-        assertSemanticNonNullType(
-          new GraphQLList(new GraphQLSemanticNonNull(ObjectType)),
+        assertSemanticNullableType(
+          new GraphQLList(new GraphQLSemanticNullable(ObjectType)),
         ),
       ).to.throw();
-      expect(isSemanticNonNullType(new GraphQLNonNull(ObjectType))).to.equal(
+      expect(isSemanticNullableType(new GraphQLNonNull(ObjectType))).to.equal(
         false,
       );
       expect(() =>
-        assertSemanticNonNullType(new GraphQLNonNull(ObjectType)),
+        assertSemanticNullableType(new GraphQLNonNull(ObjectType)),
       ).to.throw();
     });
   });
@@ -520,11 +516,11 @@ describe('Type predicates', () => {
       expect(() =>
         assertWrappingType(new GraphQLNonNull(ObjectType)),
       ).to.not.throw();
-      expect(isWrappingType(new GraphQLSemanticNonNull(ObjectType))).to.equal(
+      expect(isWrappingType(new GraphQLSemanticNullable(ObjectType))).to.equal(
         true,
       );
       expect(() =>
-        assertWrappingType(new GraphQLSemanticNonNull(ObjectType)),
+        assertWrappingType(new GraphQLSemanticNullable(ObjectType)),
       ).to.not.throw();
     });
 
@@ -548,11 +544,13 @@ describe('Type predicates', () => {
         assertNullableType(new GraphQLList(new GraphQLNonNull(ObjectType))),
       ).to.not.throw();
       expect(
-        isNullableType(new GraphQLList(new GraphQLSemanticNonNull(ObjectType))),
+        isNullableType(
+          new GraphQLList(new GraphQLSemanticNullable(ObjectType)),
+        ),
       ).to.equal(true);
       expect(() =>
         assertNullableType(
-          new GraphQLList(new GraphQLSemanticNonNull(ObjectType)),
+          new GraphQLList(new GraphQLSemanticNullable(ObjectType)),
         ),
       ).to.not.throw();
     });
@@ -562,11 +560,11 @@ describe('Type predicates', () => {
       expect(() =>
         assertNullableType(new GraphQLNonNull(ObjectType)),
       ).to.throw();
-      expect(isNullableType(new GraphQLSemanticNonNull(ObjectType))).to.equal(
+      expect(isNullableType(new GraphQLSemanticNullable(ObjectType))).to.equal(
         false,
       );
       expect(() =>
-        assertNullableType(new GraphQLSemanticNonNull(ObjectType)),
+        assertNullableType(new GraphQLSemanticNullable(ObjectType)),
       ).to.throw();
     });
   });

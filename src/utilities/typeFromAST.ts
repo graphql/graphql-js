@@ -10,7 +10,7 @@ import type { GraphQLNamedType, GraphQLType } from '../type/definition';
 import {
   GraphQLList,
   GraphQLNonNull,
-  GraphQLSemanticNonNull,
+  GraphQLSemanticNullable,
 } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
@@ -50,9 +50,9 @@ export function typeFromAST(
       const innerType = typeFromAST(schema, typeNode.type);
       return innerType && new GraphQLNonNull(innerType);
     }
-    case Kind.SEMANTIC_NON_NULL_TYPE: {
+    case Kind.SEMANTIC_NULLABLE_TYPE: {
       const innerType = typeFromAST(schema, typeNode.type);
-      return innerType && new GraphQLSemanticNonNull(innerType);
+      return innerType && new GraphQLSemanticNullable(innerType);
     }
     case Kind.NAMED_TYPE:
       return schema.getType(typeNode.name.value);

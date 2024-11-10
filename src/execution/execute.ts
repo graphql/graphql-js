@@ -43,7 +43,6 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
-  isSemanticNonNullType,
   isSemanticNullableType,
 } from '../type/definition';
 import {
@@ -651,109 +650,83 @@ function completeValue(
     throw result;
   }
 
-  // If field type is NonNull, complete for inner type, and throw field error
-  // if result is null.
+  let nonNull;
+  let semanticNull;
+  let nullableType;
   if (isNonNullType(returnType)) {
-    const completed = completeValue(
+    nonNull = true;
+    nullableType = returnType.ofType;
+  } else if (isSemanticNullableType(returnType)) {
+    semanticNull = true;
+    nullableType = returnType.ofType;
+  } else {
+    nullableType = returnType;
+  }
+
+  let completed;
+  if (result == null) {
+    // If result value is null or undefined then return null.
+    completed = null;
+  } else if (isListType(nullableType)) {
+    // If field type is List, complete each item in the list with the inner type
+    completed = completeListValue(
       exeContext,
-      returnType.ofType,
+      nullableType,
       fieldNodes,
       info,
       path,
       result,
     );
-    if (completed === null) {
+  } else if (isLeafType(nullableType)) {
+    // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
+    // returning null if serialization is not possible.
+    completed = completeLeafValue(nullableType, result);
+  } else if (isAbstractType(nullableType)) {
+    // If field type is an abstract type, Interface or Union, determine the
+    // runtime Object type and complete for that type.
+    completed = completeAbstractValue(
+      exeContext,
+      nullableType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
+  } else if (isObjectType(nullableType)) {
+    // If field type is Object, execute and complete all sub-selections.
+    completed = completeObjectValue(
+      exeContext,
+      nullableType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
+  } else {
+    /* c8 ignore next 6 */
+    // Not reachable, all possible output types have been considered.
+    invariant(
+      false,
+      'Cannot complete value of unexpected output type: ' +
+        inspect(nullableType),
+    );
+  }
+
+  if (completed === null) {
+    if (nonNull) {
       throw new Error(
         `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
     }
-    return completed;
-  }
 
-  // If field type is SemanticNonNull, complete for inner type, and throw field error
-  // if result is null and an error doesn't exist.
-  if (isSemanticNonNullType(returnType)) {
-    const completed = completeValue(
-      exeContext,
-      returnType.ofType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-    if (completed === null) {
+    if (!semanticNull && exeContext.schema.usingSemanticNullability) {
       throw new Error(
         `Cannot return null for semantic-non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
     }
-    return completed;
   }
 
-  // If field type is SemanticNullable, complete for inner type
-  if (isSemanticNullableType(returnType)) {
-    return completeValue(
-      exeContext,
-      returnType.ofType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-
-  // If result value is null or undefined then return null.
-  if (result == null) {
-    return null;
-  }
-
-  // If field type is List, complete each item in the list with the inner type
-  if (isListType(returnType)) {
-    return completeListValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-
-  // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
-  // returning null if serialization is not possible.
-  if (isLeafType(returnType)) {
-    return completeLeafValue(returnType, result);
-  }
-
-  // If field type is an abstract type, Interface or Union, determine the
-  // runtime Object type and complete for that type.
-  if (isAbstractType(returnType)) {
-    return completeAbstractValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-
-  // If field type is Object, execute and complete all sub-selections.
-  if (isObjectType(returnType)) {
-    return completeObjectValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-  /* c8 ignore next 6 */
-  // Not reachable, all possible output types have been considered.
-  invariant(
-    false,
-    'Cannot complete value of unexpected output type: ' + inspect(returnType),
-  );
+  return completed;
 }
 
 /**

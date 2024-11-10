@@ -53,7 +53,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
-  GraphQLSemanticNonNull,
+  GraphQLSemanticNullable,
   GraphQLUnionType,
   isEnumType,
   isInputObjectType,
@@ -62,7 +62,7 @@ import {
   isNonNullType,
   isObjectType,
   isScalarType,
-  isSemanticNonNullType,
+  isSemanticNullableType,
   isUnionType,
 } from '../type/definition';
 import {
@@ -92,6 +92,8 @@ interface Options extends GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValidSDL?: boolean;
+
+  useSemanticNullability?: boolean;
 }
 
 /**
@@ -227,9 +229,9 @@ export function extendSchemaImpl(
       // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
     }
-    if (isSemanticNonNullType(type)) {
+    if (isSemanticNullableType(type)) {
       // @ts-expect-error
-      return new GraphQLSemanticNonNull(replaceType(type.ofType));
+      return new GraphQLSemanticNullable(replaceType(type.ofType));
     }
     // @ts-expect-error FIXME
     return replaceNamedType(type);
@@ -438,8 +440,8 @@ export function extendSchemaImpl(
     if (node.kind === Kind.NON_NULL_TYPE) {
       return new GraphQLNonNull(getWrappedType(node.type));
     }
-    if (node.kind === Kind.SEMANTIC_NON_NULL_TYPE) {
-      return new GraphQLSemanticNonNull(getWrappedType(node.type));
+    if (node.kind === Kind.SEMANTIC_NULLABLE_TYPE) {
+      return new GraphQLSemanticNullable(getWrappedType(node.type));
     }
     return getNamedType(node);
   }

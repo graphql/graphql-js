@@ -23,7 +23,7 @@ export {
   isInputObjectType,
   isListType,
   isNonNullType,
-  isSemanticNonNullType,
+  isSemanticNullableType,
   isInputType,
   isOutputType,
   isLeafType,
@@ -44,7 +44,7 @@ export {
   assertInputObjectType,
   assertListType,
   assertNonNullType,
-  assertSemanticNonNullType,
+  assertSemanticNullableType,
   assertInputType,
   assertOutputType,
   assertLeafType,
@@ -66,7 +66,7 @@ export {
   // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
-  GraphQLSemanticNonNull,
+  GraphQLSemanticNullable,
 } from './definition';
 
 export type {
