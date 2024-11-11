@@ -35,7 +35,7 @@ export declare class Lexer {
     advance(): Token;
     /**
      * Looks ahead and returns the next non-ignored token, but does not change
-     * the state of Lexer.
+     * the current Lexer token.
      */
     lookahead(): Token;
 }
