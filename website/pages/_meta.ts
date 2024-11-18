@@ -24,18 +24,16 @@ const meta = {
     title: 'FAQ',
   },
   'going-to-production': '',
-  '-- 4': {
-    type: 'separator',
-    title: 'API Reference',
+  'api-v16': {
+    type: 'menu',
+    title: 'API',
+    items: {
+      2: {
+        title: 'V16',
+        href: '/api-v16/graphql',
+      },
+    },
   },
-  graphql: '',
-  error: '',
-  execution: '',
-  language: '',
-  type: '',
-  utilities: '',
-  validation: '',
-  'graphql-http': '',
 };
 
 export default meta;

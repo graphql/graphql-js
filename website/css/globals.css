@@ -84,7 +84,7 @@ div[id^='headlessui-menu-items'] {
   @apply justify-start;
 
   > a {
-    @apply first:mr-0 hover:!text-primary;
+    @apply hover:!text-primary;
   }
 
   button[id^='headlessui-menu-button'] {
