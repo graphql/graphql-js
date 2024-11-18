@@ -1044,32 +1044,32 @@ describe('Type System: Input Objects must have fields', () => {
     const AType: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'A',
       fields: () => ({
-        x: { type: AType, defaultValue: null },
-        y: { type: AType, defaultValue: { x: null, y: null } },
-        z: { type: new GraphQLList(AType), defaultValue: [] },
+        x: { type: AType, externalDefaultValue: null },
+        y: { type: AType, externalDefaultValue: { x: null, y: null } },
+        z: { type: new GraphQLList(AType), externalDefaultValue: [] },
       }),
     });
 
     const BType: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'B',
       fields: () => ({
-        x: { type: new GraphQLNonNull(B2Type), defaultValue: {} },
-        y: { type: GraphQLString, defaultValue: 'abc' },
-        z: { type: CustomType, defaultValue: {} },
+        x: { type: new GraphQLNonNull(B2Type), externalDefaultValue: {} },
+        y: { type: GraphQLString, externalDefaultValue: 'abc' },
+        z: { type: CustomType, externalDefaultValue: {} },
       }),
     });
 
     const B2Type: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'B2',
       fields: () => ({
-        x: { type: B3Type, defaultValue: {} },
+        x: { type: B3Type, externalDefaultValue: {} },
       }),
     });
 
     const B3Type: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'B3',
       fields: () => ({
-        x: { type: BType, defaultValue: { x: { x: null } } },
+        x: { type: BType, externalDefaultValue: { x: { x: null } } },
       }),
     });
 
@@ -1182,64 +1182,64 @@ describe('Type System: Input Objects must have fields', () => {
     const AType: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'A',
       fields: () => ({
-        x: { type: AType, defaultValue: {} },
+        x: { type: AType, externalDefaultValue: {} },
       }),
     });
 
     const BType: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'B',
       fields: () => ({
-        x: { type: B2Type, defaultValue: {} },
+        x: { type: B2Type, externalDefaultValue: {} },
       }),
     });
 
     const B2Type: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'B2',
       fields: () => ({
-        x: { type: B3Type, defaultValue: {} },
+        x: { type: B3Type, externalDefaultValue: {} },
       }),
     });
 
     const B3Type: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'B3',
       fields: () => ({
-        x: { type: BType, defaultValue: {} },
+        x: { type: BType, externalDefaultValue: {} },
       }),
     });
 
     const CType: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'C',
       fields: () => ({
-        x: { type: new GraphQLList(CType), defaultValue: [{}] },
+        x: { type: new GraphQLList(CType), externalDefaultValue: [{}] },
       }),
     });
 
     const DType: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'D',
       fields: () => ({
-        x: { type: DType, defaultValue: { x: { x: {} } } },
+        x: { type: DType, externalDefaultValue: { x: { x: {} } } },
       }),
     });
 
     const EType: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'E',
       fields: () => ({
-        x: { type: EType, defaultValue: { x: null } },
-        y: { type: EType, defaultValue: { y: null } },
+        x: { type: EType, externalDefaultValue: { x: null } },
+        y: { type: EType, externalDefaultValue: { y: null } },
       }),
     });
 
     const FType: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'F',
       fields: () => ({
-        x: { type: new GraphQLNonNull(F2Type), defaultValue: {} },
+        x: { type: new GraphQLNonNull(F2Type), externalDefaultValue: {} },
       }),
     });
 
     const F2Type: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'F2',
       fields: () => ({
-        x: { type: FType, defaultValue: { x: {} } },
+        x: { type: FType, externalDefaultValue: { x: {} } },
       }),
     });
 
@@ -2048,7 +2048,7 @@ describe('Type System: Argument default values must be valid', () => {
           field: {
             type: GraphQLInt,
             args: {
-              arg: { type: GraphQLInt, defaultValue: 3.14 },
+              arg: { type: GraphQLInt, externalDefaultValue: 3.14 },
             },
           },
         },
@@ -2057,7 +2057,7 @@ describe('Type System: Argument default values must be valid', () => {
         new GraphQLDirective({
           name: 'bad',
           args: {
-            arg: { type: GraphQLInt, defaultValue: 2.718 },
+            arg: { type: GraphQLInt, externalDefaultValue: 2.718 },
           },
           locations: [DirectiveLocation.FIELD],
         }),
@@ -2105,15 +2105,15 @@ describe('Type System: Argument default values must be valid', () => {
             args: {
               argWithPossibleFix: {
                 type: testInput,
-                defaultValue: { self: null, string: [1], enum: Exotic },
+                externalDefaultValue: { self: null, string: [1], enum: Exotic },
               },
               argWithInvalidPossibleFix: {
                 type: testInput,
-                defaultValue: { string: null },
+                externalDefaultValue: { string: null },
               },
               argWithoutPossibleFix: {
                 type: testInput,
-                defaultValue: { enum: 'Exotic' },
+                externalDefaultValue: { enum: 'Exotic' },
               },
             },
           },
@@ -2185,15 +2185,15 @@ describe('Type System: Argument default values must be valid', () => {
       arg.type = testInput;
       switch (arg.name) {
         case 'argWithPossibleFix':
-          arg.defaultValue = {
+          arg.externalDefaultValue = {
             value: { self: null, string: [1], enum: Exotic },
           };
           break;
         case 'argWithInvalidPossibleFix':
-          arg.defaultValue = { value: { string: null } };
+          arg.externalDefaultValue = { value: { string: null } };
           break;
         case 'argWithoutPossibleFix':
-          arg.defaultValue = { value: { enum: 'Exotic' } };
+          arg.externalDefaultValue = { value: { enum: 'Exotic' } };
           break;
       }
     }
@@ -2342,7 +2342,7 @@ describe('Type System: Input Object field default values must be valid', () => {
       fields: {
         field: {
           type: GraphQLInt,
-          defaultValue: 3.14,
+          externalDefaultValue: 3.14,
         },
       },
     });
