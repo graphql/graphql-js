@@ -7,6 +7,13 @@ import type { ASTReducer } from './visitor';
 import { visit } from './visitor';
 
 /**
+ * Configuration options to control parser behavior
+ */
+export interface PrintOptions {
+  useSemanticNullability?: boolean;
+}
+
+/**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
  */
@@ -131,6 +138,8 @@ const printDocASTReducer: ASTReducer<string> = {
   NamedType: { leave: ({ name }) => name },
   ListType: { leave: ({ type }) => '[' + type + ']' },
   NonNullType: { leave: ({ type }) => type + '!' },
+  SemanticNonNullType: { leave: ({ type }) => type },
+  SemanticNullableType: { leave: ({ type }) => type + '?' },
 
   // Type System Definitions
 
