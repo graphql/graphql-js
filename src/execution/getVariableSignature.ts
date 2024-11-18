@@ -1,14 +1,13 @@
 import { GraphQLError } from '../error/GraphQLError.js';
 
-import type { VariableDefinitionNode } from '../language/ast.js';
+import type {
+  ConstValueNode,
+  VariableDefinitionNode,
+} from '../language/ast.js';
 import { print } from '../language/printer.js';
 
 import { isInputType } from '../type/definition.js';
-import type {
-  GraphQLDefaultValueUsage,
-  GraphQLInputType,
-  GraphQLSchema,
-} from '../type/index.js';
+import type { GraphQLInputType, GraphQLSchema } from '../type/index.js';
 
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
@@ -21,7 +20,8 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 export interface GraphQLVariableSignature {
   name: string;
   type: GraphQLInputType;
-  defaultValue: GraphQLDefaultValueUsage | undefined;
+  defaultValue?: never;
+  externalDefaultValue: { literal: ConstValueNode } | undefined;
 }
 
 export function getVariableSignature(
@@ -46,6 +46,6 @@ export function getVariableSignature(
   return {
     name: varName,
     type: varType,
-    defaultValue: defaultValue ? { literal: defaultValue } : undefined,
+    externalDefaultValue: defaultValue ? { literal: defaultValue } : undefined,
   };
 }

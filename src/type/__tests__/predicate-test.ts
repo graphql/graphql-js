@@ -634,7 +634,7 @@ describe('Type predicates', () => {
   describe('isRequiredArgument', () => {
     function buildArg(config: {
       type: GraphQLInputType;
-      defaultValue?: unknown;
+      externalDefaultValue?: unknown;
     }): GraphQLArgument {
       const objectType = new GraphQLObjectType({
         name: 'SomeType',
@@ -660,7 +660,7 @@ describe('Type predicates', () => {
 
       const optArg2 = buildArg({
         type: GraphQLString,
-        defaultValue: null,
+        externalDefaultValue: null,
       });
       expect(isRequiredArgument(optArg2)).to.equal(false);
 
@@ -671,7 +671,7 @@ describe('Type predicates', () => {
 
       const optArg4 = buildArg({
         type: new GraphQLNonNull(GraphQLString),
-        defaultValue: 'default',
+        externalDefaultValue: 'default',
       });
       expect(isRequiredArgument(optArg4)).to.equal(false);
     });
@@ -680,7 +680,7 @@ describe('Type predicates', () => {
   describe('isRequiredInputField', () => {
     function buildInputField(config: {
       type: GraphQLInputType;
-      defaultValue?: unknown;
+      externalDefaultValue?: unknown;
     }): GraphQLInputField {
       const inputObjectType = new GraphQLInputObjectType({
         name: 'SomeType',
@@ -706,7 +706,7 @@ describe('Type predicates', () => {
 
       const optField2 = buildInputField({
         type: GraphQLString,
-        defaultValue: null,
+        externalDefaultValue: null,
       });
       expect(isRequiredInputField(optField2)).to.equal(false);
 
@@ -717,7 +717,7 @@ describe('Type predicates', () => {
 
       const optField4 = buildInputField({
         type: new GraphQLNonNull(GraphQLString),
-        defaultValue: 'default',
+        externalDefaultValue: 'default',
       });
       expect(isRequiredInputField(optField4)).to.equal(false);
     });

@@ -235,7 +235,7 @@ function validateDefaultValue(
   context: SchemaValidationContext,
   inputValue: GraphQLArgument | GraphQLInputField,
 ): void {
-  const defaultValue = inputValue.defaultValue;
+  const defaultValue = inputValue.externalDefaultValue;
 
   if (!defaultValue) {
     return;
@@ -703,7 +703,10 @@ function validateOneOfInputObjectField(
     );
   }
 
-  if (field.defaultValue !== undefined) {
+  if (
+    field.externalDefaultValue !== undefined ||
+    field.defaultValue !== undefined
+  ) {
     context.reportError(
       `OneOf input field ${type}.${field.name} cannot have a default value.`,
       field.astNode,
@@ -888,7 +891,7 @@ function createInputObjectDefaultValueCircularRefsValidator(
     fieldStr: string,
   ): void {
     // Only a field with a default value can result in a cycle.
-    const defaultValue = field.defaultValue;
+    const defaultValue = field.externalDefaultValue;
     if (defaultValue === undefined) {
       return;
     }

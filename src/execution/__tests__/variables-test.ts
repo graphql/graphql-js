@@ -142,11 +142,11 @@ const TestType = new GraphQLObjectType({
     }),
     fieldWithDefaultArgumentValue: fieldWithInputArg({
       type: GraphQLString,
-      defaultValue: 'Hello World',
+      externalDefaultValue: 'Hello World',
     }),
     fieldWithNonNullableStringInputAndDefaultArgumentValue: fieldWithInputArg({
       type: new GraphQLNonNull(GraphQLString),
-      defaultValue: 'Hello World',
+      externalDefaultValue: 'Hello World',
     }),
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
@@ -187,7 +187,7 @@ const schema = new GraphQLSchema({
           type: new GraphQLNonNull(GraphQLBoolean),
           description: 'Skipped when true.',
           // default values will override operation variables in the setting of defined fragment variables that are not provided
-          defaultValue: true,
+          externalDefaultValue: true,
         },
       },
     }),

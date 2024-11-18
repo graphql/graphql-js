@@ -204,7 +204,8 @@ describe('Type System: Objects', () => {
             input: {
               description: 'Argument description.',
               type: ScalarType,
-              defaultValue: 'DefaultValue',
+              defaultValue: undefined,
+              externalDefaultValue: 'DefaultValue',
               defaultValueLiteral: undefined,
               deprecationReason: 'Argument deprecation reason.',
               extensions: { someExtension: 'extension' },
@@ -377,6 +378,7 @@ describe('Type System: Objects', () => {
       description: undefined,
       type: ScalarType,
       defaultValue: undefined,
+      externalDefaultValue: undefined,
       deprecationReason: undefined,
       extensions: {},
       astNode: undefined,
@@ -493,6 +495,7 @@ describe('Type System: Interfaces', () => {
               description: 'Argument description.',
               type: ScalarType,
               defaultValue: undefined,
+              externalDefaultValue: undefined,
               defaultValueLiteral: dummyAny,
               deprecationReason: 'Argument deprecation reason.',
               extensions: { someExtension: 'extension' },
@@ -830,7 +833,8 @@ describe('Type System: Input Objects', () => {
         input: {
           description: 'Argument description.',
           type: ScalarType,
-          defaultValue: 'DefaultValue',
+          defaultValue: undefined,
+          externalDefaultValue: 'DefaultValue',
           defaultValueLiteral: undefined,
           deprecationReason: 'Argument deprecation reason.',
           extensions: { someExtension: 'extension' },
@@ -860,6 +864,7 @@ describe('Type System: Input Objects', () => {
         description: undefined,
         type: ScalarType,
         defaultValue: undefined,
+        externalDefaultValue: undefined,
         deprecationReason: undefined,
         extensions: {},
         astNode: undefined,
@@ -879,6 +884,7 @@ describe('Type System: Input Objects', () => {
         description: undefined,
         type: ScalarType,
         defaultValue: undefined,
+        externalDefaultValue: undefined,
         extensions: {},
         deprecationReason: undefined,
         astNode: undefined,
@@ -927,14 +933,15 @@ describe('Type System: Input Objects', () => {
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
         fields: {
-          f: { type: ScalarType, defaultValue: 3 },
+          f: { type: ScalarType, externalDefaultValue: 3 },
         },
       });
       expect(inputObjType.getFields().f).to.deep.include({
         name: 'f',
         description: undefined,
         type: ScalarType,
-        defaultValue: { value: 3 },
+        defaultValue: undefined,
+        externalDefaultValue: { value: 3 },
         deprecationReason: undefined,
         extensions: {},
         astNode: undefined,
@@ -955,7 +962,8 @@ describe('Type System: Input Objects', () => {
         name: 'f',
         description: undefined,
         type: ScalarType,
-        defaultValue: { literal: { kind: 'IntValue', value: '3' } },
+        defaultValue: undefined,
+        externalDefaultValue: { literal: { kind: 'IntValue', value: '3' } },
         deprecationReason: undefined,
         extensions: {},
         astNode: undefined,
@@ -968,13 +976,13 @@ describe('Type System: Input Objects', () => {
         fields: {
           f: {
             type: ScalarType,
-            defaultValue: 3,
+            externalDefaultValue: 3,
             defaultValueLiteral: { kind: Kind.INT, value: '3' },
           },
         },
       });
       expect(() => inputObjType.getFields()).to.throw(
-        'Argument "f" has both a defaultValue and a defaultValueLiteral property, but only one must be provided.',
+        'Argument "f" has both an externalDefaultValue and a defaultValueLiteral property, but only one must be provided.',
       );
     });
   });

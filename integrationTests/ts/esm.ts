@@ -15,7 +15,7 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
       args: {
         who: {
           type: GraphQLString,
-          defaultValue: 'World',
+          externalDefaultValue: 'World',
         },
       },
       resolve(_root, args: { who: string }) {
