@@ -1,3 +1,12 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`:
+ * * assertValidSDL @internal
+ * * assertValidSDLExtension @internal
+ * * validateSDL @internal
+ * Should we still expose this file?
+ */
+
 import { devAssert } from '../jsutils/devAssert';
 import type { Maybe } from '../jsutils/Maybe';
 
