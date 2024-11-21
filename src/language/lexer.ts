@@ -95,6 +95,7 @@ export function isPunctuatorTokenKind(kind: TokenKind): boolean {
     kind === TokenKind.AMP ||
     kind === TokenKind.PAREN_L ||
     kind === TokenKind.PAREN_R ||
+    kind === TokenKind.DOT ||
     kind === TokenKind.SPREAD ||
     kind === TokenKind.COLON ||
     kind === TokenKind.EQUALS ||
@@ -246,7 +247,11 @@ function readNextToken(lexer: Lexer, start: number): Token {
       //   - FloatValue
       //   - StringValue
       //
-      // Punctuator :: one of ! $ & ( ) ... : = @ [ ] { | }
+      // Punctuator ::
+      //   - DotPunctuator
+      //   - OtherPunctuator
+      //
+      // OtherPunctuator :: one of ! $ & ( ) ... : = @ [ ] { | }
       case 0x0021: // !
         return createToken(lexer, TokenKind.BANG, position, position + 1);
       case 0x0024: // $
@@ -263,24 +268,7 @@ function readNextToken(lexer: Lexer, start: number): Token {
         if (nextCode === 0x002e && body.charCodeAt(position + 2) === 0x002e) {
           return createToken(lexer, TokenKind.SPREAD, position, position + 3);
         }
-        if (nextCode === 0x002e) {
-          throw syntaxError(
-            lexer.source,
-            position,
-            'Unexpected "..", did you mean "..."?',
-          );
-        } else if (isDigit(nextCode)) {
-          const digits = lexer.source.body.slice(
-            position + 1,
-            readDigits(lexer, position + 1, nextCode),
-          );
-          throw syntaxError(
-            lexer.source,
-            position,
-            `Invalid number, expected digit before ".", did you mean "0.${digits}"?`,
-          );
-        }
-        break;
+        return readDot(lexer, position);
       }
       case 0x003a: // :
         return createToken(lexer, TokenKind.COLON, position, position + 1);
@@ -331,6 +319,37 @@ function readNextToken(lexer: Lexer, start: number): Token {
   }
 
   return createToken(lexer, TokenKind.EOF, bodyLength, bodyLength);
+}
+
+/**
+ * Reads a dot token with helpful messages for negative lookahead.
+ *
+ * ```
+ * DotPunctuator :: `.` [lookahead != {`.`, Digit}]
+ * ```
+ */
+function readDot(lexer: Lexer, start: number): Token {
+  const nextCode = lexer.source.body.charCodeAt(start + 1);
+  // Full Stop (.)
+  if (nextCode === 0x002e) {
+    throw syntaxError(
+      lexer.source,
+      start,
+      'Unexpected "..", did you mean "..."?',
+    );
+  }
+  if (isDigit(nextCode)) {
+    const digits = lexer.source.body.slice(
+      start + 1,
+      readDigits(lexer, start + 1, nextCode),
+    );
+    throw syntaxError(
+      lexer.source,
+      start,
+      `Invalid number, expected digit before ".", did you mean "0.${digits}"?`,
+    );
+  }
+  return createToken(lexer, TokenKind.DOT, start, start + 1);
 }
 
 /**

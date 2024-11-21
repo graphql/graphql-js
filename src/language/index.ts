@@ -11,7 +11,13 @@ export { TokenKind } from './tokenKind.js';
 
 export { Lexer } from './lexer.js';
 
-export { parse, parseValue, parseConstValue, parseType } from './parser.js';
+export {
+  parse,
+  parseValue,
+  parseConstValue,
+  parseType,
+  parseSchemaCoordinate,
+} from './parser.js';
 export type { ParseOptions } from './parser.js';
 
 export { print } from './printer.js';
@@ -88,6 +94,7 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  SchemaCoordinateNode,
 } from './ast.js';
 
 export {
@@ -101,6 +108,7 @@ export {
   isTypeDefinitionNode,
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
+  isSchemaCoordinateNode,
 } from './predicates.js';
 
 export { DirectiveLocation } from './directiveLocation.js';

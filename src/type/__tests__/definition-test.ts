@@ -229,11 +229,11 @@ describe('Type System: Objects', () => {
       },
     };
     const testObject1 = new GraphQLObjectType({
-      name: 'Test1',
+      name: 'Test',
       fields: outputFields,
     });
     const testObject2 = new GraphQLObjectType({
-      name: 'Test2',
+      name: 'Test',
       fields: outputFields,
     });
 
@@ -255,11 +255,11 @@ describe('Type System: Objects', () => {
       field2: { type: ScalarType },
     };
     const testInputObject1 = new GraphQLInputObjectType({
-      name: 'Test1',
+      name: 'Test',
       fields: inputFields,
     });
     const testInputObject2 = new GraphQLInputObjectType({
-      name: 'Test2',
+      name: 'Test',
       fields: inputFields,
     });
 
@@ -305,18 +305,17 @@ describe('Type System: Objects', () => {
         f: { type: ScalarType },
       }),
     });
-    expect(objType.getFields()).to.deep.equal({
-      f: {
-        name: 'f',
-        description: undefined,
-        type: ScalarType,
-        args: [],
-        resolve: undefined,
-        subscribe: undefined,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
+    expect(objType.getFields().f).to.deep.include({
+      coordinate: 'SomeObject.f',
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      args: [],
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 
@@ -332,28 +331,32 @@ describe('Type System: Objects', () => {
         },
       },
     });
-    expect(objType.getFields()).to.deep.equal({
-      f: {
-        name: 'f',
-        description: undefined,
-        type: ScalarType,
-        args: [
-          {
-            name: 'arg',
-            description: undefined,
-            type: ScalarType,
-            defaultValue: undefined,
-            deprecationReason: undefined,
-            extensions: {},
-            astNode: undefined,
-          },
-        ],
-        resolve: undefined,
-        subscribe: undefined,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
+
+    const f = objType.getFields().f;
+
+    expect(f).to.deep.include({
+      coordinate: 'SomeObject.f',
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(f.args).to.have.lengthOf(1);
+
+    expect(f.args[0]).to.deep.include({
+      coordinate: 'SomeObject.f(arg:)',
+      name: 'arg',
+      description: undefined,
+      type: ScalarType,
+      defaultValue: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 
@@ -506,18 +509,16 @@ describe('Type System: Interfaces', () => {
         f: { type: ScalarType },
       }),
     });
-    expect(interfaceType.getFields()).to.deep.equal({
-      f: {
-        name: 'f',
-        description: undefined,
-        type: ScalarType,
-        args: [],
-        resolve: undefined,
-        subscribe: undefined,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
+    expect(interfaceType.getFields().f).to.deep.include({
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      args: [],
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 
@@ -706,32 +707,39 @@ describe('Type System: Enums', () => {
       },
     });
 
-    expect(EnumTypeWithNullishValue.getValues()).to.deep.equal([
-      {
-        name: 'NULL',
-        description: undefined,
-        value: null,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'NAN',
-        description: undefined,
-        value: NaN,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'NO_CUSTOM_VALUE',
-        description: undefined,
-        value: 'NO_CUSTOM_VALUE',
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-    ]);
+    const values = EnumTypeWithNullishValue.getValues();
+
+    expect(values).to.have.lengthOf(3);
+
+    expect(values[0]).to.deep.include({
+      coordinate: 'EnumWithNullishValue.NULL',
+      name: 'NULL',
+      description: undefined,
+      value: null,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[1]).to.deep.include({
+      coordinate: 'EnumWithNullishValue.NAN',
+      name: 'NAN',
+      description: undefined,
+      value: NaN,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[2]).to.deep.include({
+      coordinate: 'EnumWithNullishValue.NO_CUSTOM_VALUE',
+      name: 'NO_CUSTOM_VALUE',
+      description: undefined,
+      value: 'NO_CUSTOM_VALUE',
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('accepts a well defined Enum type with empty value definition', () => {
@@ -826,16 +834,15 @@ describe('Type System: Input Objects', () => {
           f: { type: ScalarType },
         },
       });
-      expect(inputObjType.getFields()).to.deep.equal({
-        f: {
-          name: 'f',
-          description: undefined,
-          type: ScalarType,
-          defaultValue: undefined,
-          deprecationReason: undefined,
-          extensions: {},
-          astNode: undefined,
-        },
+      expect(inputObjType.getFields().f).to.deep.include({
+        coordinate: 'SomeInputObject.f',
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        defaultValue: undefined,
+        deprecationReason: undefined,
+        extensions: {},
+        astNode: undefined,
       });
     });
 
@@ -846,16 +853,15 @@ describe('Type System: Input Objects', () => {
           f: { type: ScalarType },
         }),
       });
-      expect(inputObjType.getFields()).to.deep.equal({
-        f: {
-          name: 'f',
-          description: undefined,
-          type: ScalarType,
-          defaultValue: undefined,
-          extensions: {},
-          deprecationReason: undefined,
-          astNode: undefined,
-        },
+      expect(inputObjType.getFields().f).to.deep.include({
+        coordinate: 'SomeInputObject.f',
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        defaultValue: undefined,
+        extensions: {},
+        deprecationReason: undefined,
+        astNode: undefined,
       });
     });
 
