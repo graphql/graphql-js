@@ -67,6 +67,9 @@ export const Kind = {
   UNION_TYPE_EXTENSION: 'UnionTypeExtension' as const,
   ENUM_TYPE_EXTENSION: 'EnumTypeExtension' as const,
   INPUT_OBJECT_TYPE_EXTENSION: 'InputObjectTypeExtension' as const,
+
+  /** Schema Coordinates */
+  SCHEMA_COORDINATE: 'SchemaCoordinate' as const,
 };
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type Kind = (typeof Kind)[keyof typeof Kind];
