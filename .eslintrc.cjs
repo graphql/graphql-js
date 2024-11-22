@@ -719,6 +719,12 @@ module.exports = {
       },
     },
     {
+      files: 'resources/with-ts-node-esm.js',
+      parserOptions: {
+        sourceType: 'module',
+      },
+    },
+    {
       files: '**/*.jsx',
       parserOptions: {
         sourceType: 'module',
