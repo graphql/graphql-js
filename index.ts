@@ -201,6 +201,9 @@ export type {
   GraphQLDefaultValueUsage,
 } from './type/index.ts';
 // Parse and operate on GraphQL language source files.
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// eslint-disable-next-line @typescript-eslint/consistent-type-exports
+export { Kind } from './language/kinds.ts';
 export {
   Token,
   Source,
@@ -225,7 +228,6 @@ export {
   visitInParallel,
   getEnterLeaveForKind,
   BREAK,
-  Kind,
   DirectiveLocation,
   // Predicates
   isDefinitionNode,
