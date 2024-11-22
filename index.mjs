@@ -57,6 +57,9 @@ validateSchema, assertValidSchema,
 // Upholds the spec rules about naming.
 assertName, assertEnumValueName, } from "./type/index.mjs";
 // Parse and operate on GraphQL language source files.
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// eslint-disable-next-line @typescript-eslint/consistent-type-exports
+export { Kind } from "./language/kinds.mjs";
 export { Token, Source, Location, OperationTypeNode, getLocation, 
 // Print source location.
 printLocation, printSourceLocation, 
@@ -67,7 +70,7 @@ parse, parseValue, parseConstValue, parseType,
 // Print
 print, 
 // Visit
-visit, visitInParallel, getEnterLeaveForKind, BREAK, Kind, DirectiveLocation, 
+visit, visitInParallel, getEnterLeaveForKind, BREAK, DirectiveLocation, 
 // Predicates
 isDefinitionNode, isExecutableDefinitionNode, isSelectionNode, isValueNode, isConstValueNode, isTypeNode, isTypeSystemDefinitionNode, isTypeDefinitionNode, isTypeSystemExtensionNode, isTypeExtensionNode, } from "./language/index.mjs";
 // Execute GraphQL queries.

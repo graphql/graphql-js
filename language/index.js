@@ -8,6 +8,8 @@ Object.defineProperty(exports, "getLocation", { enumerable: true, get: function 
 var printLocation_js_1 = require("./printLocation.js");
 Object.defineProperty(exports, "printLocation", { enumerable: true, get: function () { return printLocation_js_1.printLocation; } });
 Object.defineProperty(exports, "printSourceLocation", { enumerable: true, get: function () { return printLocation_js_1.printSourceLocation; } });
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// eslint-disable-next-line @typescript-eslint/consistent-type-exports
 var kinds_js_1 = require("./kinds.js");
 Object.defineProperty(exports, "Kind", { enumerable: true, get: function () { return kinds_js_1.Kind; } });
 var tokenKind_js_1 = require("./tokenKind.js");

@@ -1,6 +1,8 @@
 export { Source } from "./source.mjs";
 export { getLocation } from "./location.mjs";
 export { printLocation, printSourceLocation } from "./printLocation.mjs";
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// eslint-disable-next-line @typescript-eslint/consistent-type-exports
 export { Kind } from "./kinds.mjs";
 export { TokenKind } from "./tokenKind.mjs";
 export { Lexer } from "./lexer.mjs";
