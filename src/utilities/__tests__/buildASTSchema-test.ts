@@ -1033,6 +1033,22 @@ describe('Schema Builder', () => {
     expect(schema.getSubscriptionType()).to.include({ name: 'Subscription' });
   });
 
+  it('Mixture of default and custom root operation types', () => {
+    const schema = buildSchema(`
+      extend schema {
+        query: SomeQuery
+      }
+      type SomeQuery
+      type Query
+      type Mutation
+      type Subscription
+    `);
+
+    expect(schema.getQueryType()).to.include({ name: 'SomeQuery' });
+    expect(schema.getMutationType()).to.include({ name: 'Mutation' });
+    expect(schema.getSubscriptionType()).to.include({ name: 'Subscription' });
+  });
+
   it('can build invalid schema', () => {
     // Invalid schema, because it is missing query root type
     const schema = buildSchema('type Mutation');
