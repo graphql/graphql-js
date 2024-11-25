@@ -64,6 +64,7 @@ import {
   GraphQLOneOfDirective,
   GraphQLSpecifiedByDirective,
   isSpecifiedDirective,
+  specifiedDirectives,
 } from '../type/directives.js';
 import {
   introspectionTypes,
@@ -116,7 +117,7 @@ export function extendSchema(
   }
 
   const schemaConfig = schema.toConfig();
-  const extendedConfig = extendSchemaImpl(schemaConfig, documentAST, options);
+  const extendedConfig = extendSchemaImpl(documentAST, schemaConfig, options);
   return schemaConfig === extendedConfig
     ? schema
     : new GraphQLSchema(extendedConfig);
@@ -126,10 +127,19 @@ export function extendSchema(
  * @internal
  */
 export function extendSchemaImpl(
-  schemaConfig: GraphQLSchemaNormalizedConfig,
   documentAST: DocumentNode,
+  originalSchemaConfig: GraphQLSchemaNormalizedConfig | undefined,
   options?: Options,
 ): GraphQLSchemaNormalizedConfig {
+  const schemaConfig: GraphQLSchemaNormalizedConfig = originalSchemaConfig ?? {
+    description: undefined,
+    types: [],
+    directives: [...specifiedDirectives],
+    extensions: Object.create(null),
+    extensionASTNodes: [],
+    assumeValid: false,
+  };
+
   // Collect the type definitions and extensions found in the document.
   const typeDefs: Array<TypeDefinitionNode> = [];
 
@@ -211,7 +221,12 @@ export function extendSchemaImpl(
   // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
   if (!isSchemaChanged) {
-    return schemaConfig;
+    return originalSchemaConfig
+      ? originalSchemaConfig
+      : {
+          ...schemaConfig,
+          directives: [...specifiedDirectives],
+        };
   }
 
   const typeMap = new Map<string, GraphQLNamedType>(
@@ -230,19 +245,31 @@ export function extendSchemaImpl(
     subscription:
       schemaConfig.subscription && replaceNamedType(schemaConfig.subscription),
     // Then, incorporate schema definition and all schema extensions.
-    ...(schemaDef && getOperationTypes([schemaDef])),
+    ...(schemaDef
+      ? getOperationTypes([schemaDef])
+      : !originalSchemaConfig && getDefaultOperationTypes()),
     ...getOperationTypes(schemaExtensions),
   };
+
+  const newDirectives = directiveDefs.map(buildDirective);
+  const directives = originalSchemaConfig
+    ? [...schemaConfig.directives.map(replaceDirective), ...newDirectives]
+    : [
+        ...newDirectives,
+        // If specified directives were not explicitly declared, add them.
+        ...specifiedDirectives.filter((stdDirective) =>
+          newDirectives.every(
+            (directive) => directive.name !== stdDirective.name,
+          ),
+        ),
+      ];
 
   // Then produce and return a Schema config with these types.
   return {
     description: schemaDef?.description?.value ?? schemaConfig.description,
     ...operationTypes,
     types: Array.from(typeMap.values()),
-    directives: [
-      ...schemaConfig.directives.map(replaceDirective),
-      ...directiveDefs.map(buildDirective),
-    ],
+    directives,
     extensions: schemaConfig.extensions,
     astNode: schemaDef ?? schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
@@ -429,6 +456,27 @@ export function extendSchemaImpl(
       ...arg,
       type: replaceType(arg.type),
     };
+  }
+
+  function getDefaultOperationTypes(): {
+    query?: Maybe<GraphQLObjectType>;
+    mutation?: Maybe<GraphQLObjectType>;
+    subscription?: Maybe<GraphQLObjectType>;
+  } {
+    const opTypes = {};
+    for (const typeName of ['Query', 'Mutation', 'Subscription']) {
+      const operationType = typeMap.get(typeName);
+
+      if (operationType) {
+        // Note: While this could make early assertions to get the correctly
+        // typed values below, that would throw immediately while type system
+        // validation with validateSchema() will produce more actionable results.
+        // @ts-expect-error
+        opTypes[typeName.toLowerCase()] = operationType;
+      }
+    }
+
+    return opTypes;
   }
 
   function getOperationTypes(

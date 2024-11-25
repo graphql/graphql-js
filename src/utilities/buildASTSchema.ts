@@ -3,7 +3,6 @@ import type { ParseOptions } from '../language/parser.js';
 import { parse } from '../language/parser.js';
 import type { Source } from '../language/source.js';
 
-import { specifiedDirectives } from '../type/directives.js';
 import type { GraphQLSchemaValidationOptions } from '../type/schema.js';
 import { GraphQLSchema } from '../type/schema.js';
 
@@ -38,49 +37,9 @@ export function buildASTSchema(
     assertValidSDL(documentAST);
   }
 
-  const emptySchemaConfig = {
-    description: undefined,
-    types: [],
-    directives: [],
-    extensions: Object.create(null),
-    extensionASTNodes: [],
-    assumeValid: false,
-  };
-  const config = extendSchemaImpl(emptySchemaConfig, documentAST, options);
+  const config = extendSchemaImpl(documentAST, undefined, options);
 
-  if (config.astNode == null) {
-    for (const type of config.types) {
-      switch (type.name) {
-        // Note: While this could make early assertions to get the correctly
-        // typed values below, that would throw immediately while type system
-        // validation with validateSchema() will produce more actionable results.
-        case 'Query':
-          // @ts-expect-error validated in `validateSchema`
-          config.query = type;
-          break;
-        case 'Mutation':
-          // @ts-expect-error validated in `validateSchema`
-          config.mutation = type;
-          break;
-        case 'Subscription':
-          // @ts-expect-error validated in `validateSchema`
-          config.subscription = type;
-          break;
-      }
-    }
-  }
-
-  const directives = [
-    ...config.directives,
-    // If specified directives were not explicitly declared, add them.
-    ...specifiedDirectives.filter((stdDirective) =>
-      config.directives.every(
-        (directive) => directive.name !== stdDirective.name,
-      ),
-    ),
-  ];
-
-  return new GraphQLSchema({ ...config, directives });
+  return new GraphQLSchema(config);
 }
 
 /**
