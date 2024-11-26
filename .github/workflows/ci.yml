@@ -243,32 +243,3 @@ jobs:
         with:
           name: denoDist
           path: ./denoDist
-
-  build-website-dist:
-    name: Build website
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read # for actions/checkout
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          cache: npm
-          node-version-file: '.node-version'
-
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Build Docs
-        run: npm run build:website
-
-      - name: Upload denoDist package
-        uses: actions/upload-artifact@v4
-        with:
-          name: websiteDist
-          path: ./websiteDist
