@@ -222,6 +222,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'variableValuesWithSources',
     );
 
     const operation = document.definitions[0];
@@ -240,7 +241,8 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(resolvedInfo).to.deep.include({
       fieldNodes: [field],
       path: { prev: undefined, key: 'result', typename: 'Test' },
-      variableValues: {
+      variableValues: { var: 'abc' },
+      variableValuesWithSources: {
         sources: {
           var: {
             signature: {

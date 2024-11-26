@@ -955,7 +955,8 @@ export function buildResolveInfo(
     fragments: fragmentDefinitions,
     rootValue,
     operation,
-    variableValues,
+    variableValues: variableValues.coerced,
+    variableValuesWithSources: variableValues,
   };
 }
 

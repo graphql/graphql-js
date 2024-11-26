@@ -1003,7 +1003,8 @@ export interface GraphQLResolveInfo {
   readonly fragments: ObjMap<FragmentDefinitionNode>;
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
-  readonly variableValues: VariableValues;
+  readonly variableValues: { [variable: string]: unknown };
+  readonly variableValuesWithSources: VariableValues;
 }
 
 /**
