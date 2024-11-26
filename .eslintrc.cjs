@@ -420,16 +420,9 @@ module.exports = {
         sourceType: 'module',
         project: ['tsconfig.json'],
       },
-      plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc'],
+      plugins: ['@typescript-eslint'],
       extends: ['plugin:import/typescript'],
       rules: {
-        //////////////////////////////////////////////////////////////////////////
-        // `eslint-plugin-tsdoc` rule list based on `v0.3.x`
-        // https://github.com/microsoft/tsdoc/tree/master/eslint-plugin
-        //////////////////////////////////////////////////////////////////////////
-
-        'tsdoc/syntax': 'error',
-
         //////////////////////////////////////////////////////////////////////////
         // `@typescript-eslint/eslint-plugin` rule list based on `v8.4.x`
         //////////////////////////////////////////////////////////////////////////
@@ -750,12 +743,6 @@ module.exports = {
         'import/no-commonjs': 'off',
         'import/no-nodejs-modules': 'off',
         'import/no-extraneous-dependencies': 'off',
-        // Ignore docusarus related webpack aliases
-        'n/no-missing-import': 'off',
-        'import/no-unresolved': [
-          'error',
-          { ignore: ['^@theme', '^@docusaurus', '^@generated'] },
-        ],
       },
     },
   ],
