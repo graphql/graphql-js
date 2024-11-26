@@ -10,6 +10,7 @@ import { assertName } from './assertName.js';
 import type {
   GraphQLArgument,
   GraphQLFieldConfigArgumentMap,
+  GraphQLFieldNormalizedConfigArgumentMap,
 } from './definition.js';
 import {
   argsToArgsConfig,
@@ -107,8 +108,9 @@ export interface GraphQLDirectiveConfig {
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
 
-interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
-  args: GraphQLFieldConfigArgumentMap;
+export interface GraphQLDirectiveNormalizedConfig
+  extends GraphQLDirectiveConfig {
+  args: GraphQLFieldNormalizedConfigArgumentMap;
   isRepeatable: boolean;
   extensions: Readonly<GraphQLDirectiveExtensions>;
 }
