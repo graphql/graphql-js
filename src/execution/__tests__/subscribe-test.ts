@@ -1013,7 +1013,7 @@ describe('Subscription Publish Phase', () => {
     });
   });
 
-  it('should not trigger when subscription is thrown', async () => {
+  it('should terminate when subscription is thrown', async () => {
     const pubsub = new SimplePubSub<Email>();
     const subscription = createSubscription(pubsub);
     assert(isAsyncIterable(subscription));
@@ -1050,15 +1050,14 @@ describe('Subscription Publish Phase', () => {
 
     payload = subscription.next();
 
-    // Throw error
-    let caughtError;
-    try {
-      /* c8 ignore next 2 */
-      await subscription.throw('ouch');
-    } catch (e) {
-      caughtError = e;
-    }
-    expect(caughtError).to.equal('ouch');
+    const thrown = subscription.throw('ouch');
+
+    expectJSON(await thrown).toDeepEqual({
+      done: false,
+      value: {
+        errors: [{ message: 'Unexpected error value: "ouch"' }],
+      },
+    });
 
     expect(await payload).to.deep.equal({
       done: true,
@@ -1230,7 +1229,16 @@ describe('Subscription Publish Phase', () => {
       },
     });
 
-    await expectPromise(subscription.next()).toRejectWith('test error');
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: false,
+      value: {
+        errors: [
+          {
+            message: 'test error',
+          },
+        ],
+      },
+    });
 
     expect(await subscription.next()).to.deep.equal({
       done: true,
