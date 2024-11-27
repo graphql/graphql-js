@@ -33,41 +33,58 @@
 
 ## New API features
 
-- Use new utility `coerceInputLiteral()` as a replacement for `valueFromAST()`.
-- Use new utility `valueToLiteral()` to convert from an external input value to a literal value. Custom scalars can define custom behavior by implementing an optional new `valueToLiteral()` method, otherwise a default conversion function will be used.
-- Use new utility `replaceVariableValues()` to replace variables within complex scalars uses as inputs. This allows variables embedded within complex scalars to use the correct default values.
-- Use new `parseConstLiteral()` methods on custom scalar types instead of `parseLiteral()` (along with the new `valueToLiteral()` method when required) to automatically convert literals to values, including any variables embedded within complex scalars. Embedded variables will (finally) receive the appropriate default values! Note: `parseLiteral()` has been deprecated; in the next major version, it will be removed and the `parseConstLiteral()` method for custom scalars will be set to a default function when not provided, similar to the current behavior of `parseLiteral()`.
-- Support for resolver functions returning async iterables.
-- Expose `printDirective()` helper function.
+- New `experimentalExecuteIncrementally()` function enables incremental delivery with a schema including the `@defer` and `@stream` directives.
+- New `validateExecutionArgs()`, `executeQueryOrMutationOrSubscriptionEvent()`, or `experimentalExecuteQueryOrMutationOrSubscriptionEvent()` helpers are available to perform GraphQL argument evaluation and/or manipulation and then manually continue with execution.
+- New `perEventExecutor` option allows specification of a custom executor for subscription source stream events, with the default option set to new helper `executeSubscriptionEvent()`.
+- New `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods; the `abortSignal` can also be passed to field resolvers to cancel asynchronous work that they initiate.
+- New `hideSuggestions` option added to `graphql()`, `validate()`, `execute()`, and `subscribe()`; the `getVariableValues()`, `getArgumentValues()`, `getDirectiveValues()`, `coerceInputValue()`, `coerceInputLiteral()`, `collectFields()` helpers; the `ValidationContext` class, as well as the coercion methods for leaf types. The option hides suggestions!
+- New utility `findSchemaChanges()` can be used to find safe changes as well as the breaking and dangerous changes returned by `findBreakingChanges()` and `findDangerousChanges()`. The latter two functions are now deprecated.
+- New utility `coerceInputLiteral()` replaces `valueFromAST()`.
+- New utility `valueToLiteral()` converts from an external input value to a literal value. Custom scalars can define custom behavior by implementing an optional new `valueToLiteral()` method, otherwise a default conversion function will be used.
+- New utilities `validateInputValue()` and `validateInputLiteral()` can be used to validate input values and literals, respectively.
+- New utility `replaceVariableValues()` can be used to replace variables within complex scalars uses as inputs. This allows variables embedded within complex scalars to use the correct default values.
+- New `coerceInputLiteral()` methods on custom scalar types can be used (along with the new `valueToLiteral()` method when required) to automatically convert literals to values, including any variables embedded within complex scalars. Embedded variables will (finally) receive the appropriate default values! The `parseLiteral()` methods have been deprecated.
+- New support for resolver functions returning async iterables.
+- New helper `printDirective()` function introduced.
+- New option to use symbols rather than strings as keys within `extensions` properties of the various GraphQL Schema elements.
 
 ## API Changes:
 
+- Changes to the `execute()` function:
+  - Field resolvers that are still running after the function returns (e.g. when null-bubbling from a rejected asynchronous resolver leads to early return with additional still running asynchronous resolvers) will no longer trigger additional child resolvers.
 - Changes to the `subscribe()` function:
   - `subscribe()` may now return a non-promise.
   - When a subscription root field errors, `subscribe()` now returns a well-formatted `GraphQLError` rather than throwing.
+- Changes to the `coerceInputValue()` helper:
+  - On coercion failure, the function now will return early with `undefined` rather than collecting or throwing errors. If detailed error information is desired, use new utility `validateInputValue()`.
 - Changes to Variable Values throughout the code base:
-  - Variable Values are now a dedicated type containing both the coerced values as before as well as the variable signature and provided source, so that variables embedded within complex scalars will be able to be properly replaced. This is non-spec behavior, but was previously supported by `graphql-js` and will now be sound.
+  - Variable Values are now a dedicated type containing both the coerced values as before as well as the variable signature and provided source, so that variables embedded within complex scalars will be able to be properly replaced.
   - The return type of `getVariableValues()` has been updated, as have the provided arguments to `getArgumentValues()`, `coerceInputLiteral()`, and `collectFields()`, and `getDirectiveValues()`.
-- Changes to default values:
-  - The `defaultValue` property of `GraphQLArgument` and `GraphQLInputField` is now of new type `GraphQLDefaultValueUsage`. A `GraphQLDefaultValueUsage` object contains either a `literal` property, which is as AST node representing the parsed default value included within the SDL, or a `value` property, the default value as specified programmatically.
-  - Introspection now returns the exact original default value included within the SDL rather than attempting to "serialize" input values, avoiding some rare cases in which default values within an introspected schema could differ slightly from the original SDL (e.g. [#3501](https://github.com/graphql/graphql-js/issues/3051)).
-- Other Changes:
-- `IntrospectionType` is now properly typed using `TypeKind` Enum.
+- Changes to AST nodes:
+  - AST node properties have been optimized to use `undefined` rather than empty arrays.
+- Enum Changes:
+  - `IntrospectionType` is now properly typed using `TypeKind` Enum.
+  - The `Kind` enum has been changes from a TypeScript Enum to an object literal. A `Kind` type is still exported, such that `typeof Kind` is not the same as the `Kind` type.
+- Change to `GraphQLSchema` configuration:
+  - The `assumeValid` config property exported by the `GraphQLSchema.toConfig()` method now passes through the original flag passed on creation of the `GraphQLSchema`. Previously, the `assumeValid` property would be to `true` if validation had been run, potentially concealing the original intent.
 
 ## Deprecations
 
 - `valueFromAST()` is deprecated, use `coerceInputLiteral()` instead.
-- `parseLiteral()` methods of custom scalars are deprecated, use `parseConstLiteral()` instead.
+- `parse()` methods of leaf types are deprecated, use `coerceInputValue()` instead.
+- `parseLiteral()` methods of leaf types are deprecated, use `coerceInputLiteral()` instead.
+- `serialize()` methods of leaf types are deprecated, use `coerceOutputValue()` instead.
+- `findBreakingChanges()` and `findDangerousChanges()` are deprecated, use `findSchemaChanges()` instead.
 
 ## Removals
 
-- Removed deprecated `graphql/subscription` module, use `graphql/execution` instead
-- Removed deprecated `getOperationRootType()` #3571, use `schema.getRootType()` instead.
-- Remove deprecated `assertValidName()` and `isValidNameError()`, use `assertName()` instead.
-- Removed deprecated custom `TypeInfo` argument for `validate()`.
-- Remove deprecated custom `getFieldDefFn()` argument for `TypeInfo` constructor. To customize field resolution, one can subclass the `GraphQLSchema` class and override the `getField()` method.
-- Remove deprecated positional arguments for the `GraphQLError` constructor.
-- Remove deprecated distinct Enum types: `KindEnum`, `TokenKindEnum`, and `DirectiveLocationEnum`.
-- Remove deprecated `getVisitFn()` helper function, use `getEnterLeaveForKind()` instead.
-- Remove deprecated `formatError()` and `printError()` helper functions, use `error.toString()` and `error.toJSON()` methods instead.
-- Remove deprecated positional arguments for `createSourceEventStream()`.
+- Deprecated `graphql/subscription` module has been removed, use `graphql/execution` instead
+- Deprecated `getOperationRootType()` #3571 has been removed, use `schema.getRootType()` instead.
+- Deprecated `assertValidName()` and `isValidNameError()` has been removed, use `assertName()` instead.
+- Deprecated custom `TypeInfo` argument for `validate()` has been removed.
+- Deprecated custom `getFieldDefFn()` argument for `TypeInfo` constructor has been removed. To customize field resolution, one can subclass the `GraphQLSchema` class and override the `getField()` method.
+- Deprecated positional arguments for the `GraphQLError` constructor have been removed.
+- Deprecated distinct Enum types `KindEnum`, `TokenKindEnum`, and `DirectiveLocationEnum` have been removed.
+- Deprecated `getVisitFn()` helper function has been removed, use `getEnterLeaveForKind()` instead.
+- Deprecated `formatError()` and `printError()` helper functions have been removed, use `error.toString()` and `error.toJSON()` methods instead.
+- Deprecated positional arguments for `createSourceEventStream()` have been removed.
