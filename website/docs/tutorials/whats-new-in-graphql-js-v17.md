@@ -33,7 +33,6 @@
 
 ## New API features
 
-- New `experimentalExecuteIncrementally()` function enables incremental delivery with a schema including the `@defer` and `@stream` directives.
 - New `validateExecutionArgs()`, `executeQueryOrMutationOrSubscriptionEvent()`, or `experimentalExecuteQueryOrMutationOrSubscriptionEvent()` helpers are available to perform GraphQL argument evaluation and/or manipulation and then manually continue with execution.
 - New `perEventExecutor` option allows specification of a custom executor for subscription source stream events, with the default option set to new helper `executeSubscriptionEvent()`.
 - New `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods; the `abortSignal` can also be passed to field resolvers to cancel asynchronous work that they initiate.
