@@ -31,6 +31,10 @@
 
 - `graphql-js` now properly enforces that the schema's root types must be unique.
 
+#### Default Values
+
+- Use external GraphQL values for the programmatic `defaultValue` property of `GraphQLArgument` and `GraphQLInputField` objects rather than coerced internal default value. Introspection will then present the exact original default value rather than attempting to "uncoerce" internal input values, avoiding some rare cases in which default values within an introspected schema could differ slightly from the original SDL (e.g. [#3501](https://github.com/graphql/graphql-js/issues/3051)).
+
 ## New API features
 
 - New `validateExecutionArgs()`, `executeQueryOrMutationOrSubscriptionEvent()`, or `experimentalExecuteQueryOrMutationOrSubscriptionEvent()` helpers are available to perform GraphQL argument evaluation and/or manipulation and then manually continue with execution.
@@ -87,3 +91,4 @@
 - Deprecated `getVisitFn()` helper function has been removed, use `getEnterLeaveForKind()` instead.
 - Deprecated `formatError()` and `printError()` helper functions have been removed, use `error.toString()` and `error.toJSON()` methods instead.
 - Deprecated positional arguments for `createSourceEventStream()` have been removed.
+  for `createSourceEventStream()`.
