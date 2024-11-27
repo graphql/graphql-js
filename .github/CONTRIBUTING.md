@@ -8,7 +8,7 @@ answers any questions you may have.
 
 We use GitHub issues to track public bugs and requests. Please ensure your bug
 description is clear and has sufficient instructions to be able to reproduce the
-issue. The best way is to add a failing test to our test suite via a pull request.
+issue. The absolute best way to do that is to add a failing test to our test suite via a pull request, but a reduced test case on a site like [StackBlitz](https://stackblitz.com/) or [CodeSandbox](https://codesandbox.io/) is also very helpful.
 
 ## Pull Requests
 
@@ -20,8 +20,8 @@ your [pull requests](https://help.github.com/articles/creating-a-pull-request).
 Since graphql-js is a reference implementation of the
 [GraphQL spec](https://graphql.github.io/graphql-spec/), only changes which comply
 with this spec will be considered. If you have a change in mind which requires a
-change to the spec, please consider opening instead an
-[issue](https://github.com/graphql/graphql-spec/issues/) against the spec and/or attending a [GraphQL Working Group meeting](https://github.com/graphql/graphql-wg) to discuss your proposal. See the [contribution guide for the specification](https://github.com/graphql/graphql-spec/blob/main/CONTRIBUTING.md) for further information. Stage 1 and 2 proposals may be implemented within graphql-js behind a feature flag.
+change to the spec, please consider opening an
+[issue](https://github.com/graphql/graphql-spec/issues/) against the spec and/or attending a [GraphQL Working Group meeting](https://github.com/graphql/graphql-wg) to discuss your proposed change. See the [contribution guide of the specification](https://github.com/graphql/graphql-spec/blob/main/CONTRIBUTING.md) for further information. Stage 1 and 2 proposals may be implemented within graphql-js behind a feature flag.
 
 ### GraphQL Specification Membership Agreement
 
@@ -78,7 +78,7 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 - Pull requests are required to pass all tests and checks before they can be merged.
 - Ideally, pull requests should be reviewed by _at least two_ members of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team before they are merged, preferably from separate organizations. For more complex pull requests, a larger cohort of reviewers is suggested.
 - Any reviewer may request that the topic be brought for more in depth discussion at a [GraphQL JS Working Group meeting](https://github.com/graphql/graphql-js-wg/), where decisions will be made by consensus.
-- A PR that has been merged without discussion at a GraphQL JS Working Group meeting may be reverted if a more in depth discussion is later requested.
+- A PR that has been merged without discussion at a GraphQL JS Working Group meeting can be revisited in any subsequent meeting; the PR may be reverted as a result of that discussion.
 
 ## Discussion
 
