@@ -8,7 +8,7 @@ answers any questions you may have.
 
 We use GitHub issues to track public bugs and requests. Please ensure your bug
 description is clear and has sufficient instructions to be able to reproduce the
-issue. The best way is to provide a reduced test case on jsFiddle or jsBin.
+issue. The best way is to add a failing test to our test suite via a pull request.
 
 ## Pull Requests
 
