@@ -2,8 +2,7 @@
 
 We want to make contributing to this project as easy and transparent as
 possible. Hopefully this document makes the process for contributing clear and
-answers any questions you may have. If not, feel free to open an
-[Issue](https://github.com/graphql/graphql-spec/issues/).
+answers any questions you may have.
 
 ## Issues
 
@@ -21,8 +20,8 @@ your [pull requests](https://help.github.com/articles/creating-a-pull-request).
 Since graphql-js is a reference implementation of the
 [GraphQL spec](https://graphql.github.io/graphql-spec/), only changes which comply
 with this spec will be considered. If you have a change in mind which requires a
-change to the spec, please first open an
-[issue](https://github.com/graphql/graphql-spec/issues/) against the spec.
+change to the spec, please consider opening instead an
+[issue](https://github.com/graphql/graphql-spec/issues/) against the spec and/or attending a [GraphQL Working Group meeting](https://github.com/graphql/graphql-wg) to discuss your proposal. See the [contribution guide for the specification](https://github.com/graphql/graphql-spec/blob/main/CONTRIBUTING.md) for further information. Stage 1 and 2 proposals may be implemented within graphql-js behind a feature flag.
 
 ### GraphQL Specification Membership Agreement
 
