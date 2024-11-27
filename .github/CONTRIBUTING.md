@@ -73,15 +73,13 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 - Trailing commas,
 - Avd abbr wrds.
 
-## Review Process
+## Review and Merge Process
 
 - Pull requests are required to pass all tests and checks before they can be merged.
-- Pull requests should be reviewed by _at least two_ members of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team before they can be merged; ideally reviewers affiliated with different organizations
+- Ideally, pull requests should be reviewed by _at least two_ members of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team before they are merged, preferably from separate organizations. For more complex pull requests, a larger cohort of reviewers is suggested.
 - If a reviewer hasn't responded in 48 hours, feel free to ping them `@graphql/graphql-js-reviewers`.
-
-## Merge Process
-
-Once a pull request has been approved by 2 reviewers from [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team, it may be merged by any member of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers-write) team. For more complex pull requests, a larger cohort of reviewers is suggested. Any reviewer may request that the topic be brought for more in depth discussion at GraphQL JS Working Group meeting, where decisions will be made by consensus. A PR that has been merged without discussion at a GraphQL JS Working Group meeting may be reverted if a more in depth discussion is later requested.
+- Any reviewer may request that the topic be brought for more in depth discussion at a [GraphQL JS Working Group meeting](https://github.com/graphql/graphql-js-wg/), where decisions will be made by consensus.
+- A PR that has been merged without discussion at a GraphQL JS Working Group meeting may be reverted if a more in depth discussion is later requested.
 
 ## Release on NPM
 
