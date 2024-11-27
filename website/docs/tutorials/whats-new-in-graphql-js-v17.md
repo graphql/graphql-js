@@ -91,4 +91,3 @@
 - Deprecated `getVisitFn()` helper function has been removed, use `getEnterLeaveForKind()` instead.
 - Deprecated `formatError()` and `printError()` helper functions have been removed, use `error.toString()` and `error.toJSON()` methods instead.
 - Deprecated positional arguments for `createSourceEventStream()` have been removed.
-  for `createSourceEventStream()`.
