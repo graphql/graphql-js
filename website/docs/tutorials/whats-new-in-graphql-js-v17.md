@@ -37,6 +37,7 @@
 
 ## New API features
 
+- New support for resolver functions returning async iterables.
 - New `validateExecutionArgs()`, `executeQueryOrMutationOrSubscriptionEvent()`, or `experimentalExecuteQueryOrMutationOrSubscriptionEvent()` helpers are available to perform GraphQL argument evaluation and/or manipulation and then manually continue with execution.
 - New `perEventExecutor` option allows specification of a custom executor for subscription source stream events, with the default option set to new helper `executeSubscriptionEvent()`.
 - New `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods; the `abortSignal` can also be passed to field resolvers to cancel asynchronous work that they initiate.
@@ -47,7 +48,6 @@
 - New utilities `validateInputValue()` and `validateInputLiteral()` can be used to validate input values and literals, respectively.
 - New utility `replaceVariableValues()` can be used to replace variables within complex scalars uses as inputs. This allows variables embedded within complex scalars to use the correct default values.
 - New `coerceInputLiteral()` methods on custom scalar types can be used (along with the new `valueToLiteral()` method when required) to automatically convert literals to values, including any variables embedded within complex scalars. Embedded variables will (finally) receive the appropriate default values! The `parseLiteral()` methods have been deprecated.
-- New support for resolver functions returning async iterables.
 - New helper `printDirective()` function introduced.
 - New option to use symbols rather than strings as keys within `extensions` properties of the various GraphQL Schema elements.
 
