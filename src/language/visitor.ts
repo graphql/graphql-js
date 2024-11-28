@@ -214,8 +214,7 @@ export function visit(
           node = node.slice();
 
           let editOffset = 0;
-          for (let i = 0; i < edits.length; i++) {
-            const { 0: editKey, 1: editValue } = edits[i];
+          for (const [editKey, editValue] of edits) {
             const arrayKey = editKey - editOffset;
             if (editValue === null) {
               node.splice(arrayKey, 1);
@@ -225,9 +224,12 @@ export function visit(
             }
           }
         } else {
-          node = { ...node }
-          for (let i = 0; i < edits.length; i++) {
-            node[edits[i][0]] = edits[i][1];
+          node = Object.defineProperties(
+            {},
+            Object.getOwnPropertyDescriptors(node),
+          );
+          for (const [editKey, editValue] of edits) {
+            node[editKey] = editValue;
           }
         }
       }

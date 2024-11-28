@@ -2,9 +2,10 @@
 
 const { parse } = require('graphql/language/parser.js');
 const { print } = require('graphql/language/printer.js');
-const { bigDocument } = require('./fixtures')
 
-const document = parse(bigDocument)
+const { bigDocument } = require('./fixtures.js');
+
+const document = parse(bigDocument);
 
 module.exports = {
   name: 'Print ktichen-sink query',

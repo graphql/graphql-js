@@ -243,7 +243,7 @@ function maxBy(array, fn) {
 
 // Prepare all revisions and run benchmarks matching a pattern against them.
 async function runBenchmarks(benchmarks, benchmarkProjects) {
-  for (const benchmark of benchmarks.filter(x => x.includes('visit-') || x.includes('printer-'))) {
+  for (const benchmark of benchmarks) {
     const results = [];
     for (let i = 0; i < benchmarkProjects.length; ++i) {
       const { revision, projectPath } = benchmarkProjects[i];
