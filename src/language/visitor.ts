@@ -17,6 +17,8 @@ type KindVisitor = {
     | EnterLeaveVisitor<NodeT>;
 };
 
+const ALL_KINDS = Object.values(Kind);
+
 interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
   readonly enter?: ASTVisitFn<TVisitedNode>;
   readonly leave?: ASTVisitFn<TVisitedNode>;
@@ -182,7 +184,7 @@ export function visit(
   visitorKeys: ASTVisitorKeyMap = QueryDocumentKeys,
 ): any {
   const enterLeaveMap = new Map<Kind, EnterLeaveVisitor<ASTNode>>();
-  for (const kind of Object.values(Kind)) {
+  for (const kind of ALL_KINDS) {
     enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
   }
 
@@ -202,7 +204,7 @@ export function visit(
   do {
     index++;
     const isLeaving = index === keys.length;
-    const isEdited = isLeaving && edits.length !== 0;
+    const isEdited = edits.length !== 0;
     if (isLeaving) {
       key = ancestors.length === 0 ? undefined : path[path.length - 1];
       node = parent;
@@ -212,7 +214,8 @@ export function visit(
           node = node.slice();
 
           let editOffset = 0;
-          for (const [editKey, editValue] of edits) {
+          for (let i = 0; i < edits.length; i++) {
+            const { 0: editKey, 1: editValue } = edits[i];
             const arrayKey = editKey - editOffset;
             if (editValue === null) {
               node.splice(arrayKey, 1);
@@ -222,12 +225,9 @@ export function visit(
             }
           }
         } else {
-          node = Object.defineProperties(
-            {},
-            Object.getOwnPropertyDescriptors(node),
-          );
-          for (const [editKey, editValue] of edits) {
-            node[editKey] = editValue;
+          node = { ...node }
+          for (let i = 0; i < edits.length; i++) {
+            node[edits[i][0]] = edits[i][1];
           }
         }
       }
@@ -267,7 +267,7 @@ export function visit(
       } else if (result !== undefined) {
         edits.push([key, result]);
         if (!isLeaving) {
-          if (isNode(result)) {
+          if (isNode(result) && result !== node) {
             node = result;
           } else {
             path.pop();

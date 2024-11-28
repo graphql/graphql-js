@@ -8,6 +8,11 @@ exports.bigSchemaSDL = fs.readFileSync(
   'utf8',
 );
 
+exports.bigDocument = fs.readFileSync(
+  path.join(__dirname, 'kitchen-sink.graphql'),
+  'utf8',
+);
+
 exports.bigSchemaIntrospectionResult = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'github-schema.json'), 'utf8'),
 );

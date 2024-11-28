@@ -1,0 +1,69 @@
+# Copyright (c) 2015-present, Facebook, Inc.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
+  whoever123is: node(id: [123, 456]) {
+    id
+    ... on User @onInlineFragment {
+      field2 {
+        id
+        alias: field1(first: 10, after: $foo) @include(if: $foo) {
+          id
+          ...frag @onFragmentSpread
+        }
+      }
+    }
+    ... @skip(unless: $foo) {
+      id
+    }
+    ... {
+      id
+    }
+  }
+}
+
+mutation likeStory @onMutation {
+  like(story: 123) @onField {
+    story {
+      id @onField
+    }
+  }
+}
+
+subscription StoryLikeSubscription($input: StoryLikeSubscribeInput)
+@onSubscription {
+  storyLikeSubscribe(input: $input) {
+    story {
+      likers {
+        count
+      }
+      likeSentence {
+        text
+      }
+    }
+  }
+}
+
+fragment frag on Friend @onFragmentDefinition {
+  foo(
+    size: $site
+    bar: 12
+    obj: {
+      key: "value"
+      block: """
+      block string uses \"""
+      """
+    }
+  )
+}
+
+query teeny {
+  unnamed(truthy: true, falsey: false, nullish: null)
+  query
+}
+
+query tiny {
+  __typename
+}

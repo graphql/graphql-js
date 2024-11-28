@@ -23,17 +23,18 @@ const printDocASTReducer: ASTReducer<string> = {
   // Document
 
   Document: {
-    leave: (node) => join(node.definitions, '\n\n'),
+    leave: (node) => truthyJoin(node.definitions, '\n\n'),
   },
 
   OperationDefinition: {
     leave(node) {
-      const varDefs = wrap('(', join(node.variableDefinitions, ', '), ')');
+      const varDefs = wrap('(', truthyJoin(node.variableDefinitions, ', '), ')');
       const prefix = join(
         [
           node.operation,
+          // TODO: optimize
           join([node.name, varDefs]),
-          join(node.directives, ' '),
+          truthyJoin(node.directives, ' '),
         ],
         ' ',
       );
@@ -50,20 +51,20 @@ const printDocASTReducer: ASTReducer<string> = {
       ': ' +
       type +
       wrap(' = ', defaultValue) +
-      wrap(' ', join(directives, ' ')),
+      wrap(' ', truthyJoin(directives, ' ')),
   },
   SelectionSet: { leave: ({ selections }) => block(selections) },
 
   Field: {
     leave({ alias, name, arguments: args, directives, selectionSet }) {
       const prefix = wrap('', alias, ': ') + name;
-      let argsLine = prefix + wrap('(', join(args, ', '), ')');
+      let argsLine = prefix + wrap('(', truthyJoin(args, ', '), ')');
 
       if (argsLine.length > MAX_LINE_LENGTH) {
-        argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+        argsLine = prefix + wrap('(\n', indent(truthyJoin(args, '\n')), '\n)');
       }
 
-      return join([argsLine, join(directives, ' '), selectionSet], ' ');
+      return join([argsLine, truthyJoin(directives, ' '), selectionSet], ' ');
     },
   },
 
@@ -73,7 +74,7 @@ const printDocASTReducer: ASTReducer<string> = {
 
   FragmentSpread: {
     leave: ({ name, directives }) =>
-      '...' + name + wrap(' ', join(directives, ' ')),
+      '...' + name + wrap(' ', truthyJoin(directives, ' ')),
   },
 
   InlineFragment: {
@@ -82,7 +83,7 @@ const printDocASTReducer: ASTReducer<string> = {
         [
           '...',
           wrap('on ', typeCondition),
-          join(directives, ' '),
+          truthyJoin(directives, ' '),
           selectionSet,
         ],
         ' ',
@@ -99,8 +100,8 @@ const printDocASTReducer: ASTReducer<string> = {
     }) =>
       // Note: fragment variable definitions are experimental and may be changed
       // or removed in the future.
-      `fragment ${name}${wrap('(', join(variableDefinitions, ', '), ')')} ` +
-      `on ${typeCondition} ${wrap('', join(directives, ' '), ' ')}` +
+      `fragment ${name}${wrap('(', truthyJoin(variableDefinitions, ', '), ')')} ` +
+      `on ${typeCondition} ${wrap('', truthyJoin(directives, ' '), ' ')}` +
       selectionSet,
   },
 
@@ -115,15 +116,15 @@ const printDocASTReducer: ASTReducer<string> = {
   BooleanValue: { leave: ({ value }) => (value ? 'true' : 'false') },
   NullValue: { leave: () => 'null' },
   EnumValue: { leave: ({ value }) => value },
-  ListValue: { leave: ({ values }) => '[' + join(values, ', ') + ']' },
-  ObjectValue: { leave: ({ fields }) => '{' + join(fields, ', ') + '}' },
+  ListValue: { leave: ({ values }) => '[' + truthyJoin(values, ', ') + ']' },
+  ObjectValue: { leave: ({ fields }) => '{' + truthyJoin(fields, ', ') + '}' },
   ObjectField: { leave: ({ name, value }) => name + ': ' + value },
 
   // Directive
 
   Directive: {
     leave: ({ name, arguments: args }) =>
-      '@' + name + wrap('(', join(args, ', '), ')'),
+      '@' + name + wrap('(', truthyJoin(args, ', '), ')'),
   },
 
   // Type
@@ -147,7 +148,7 @@ const printDocASTReducer: ASTReducer<string> = {
   ScalarTypeDefinition: {
     leave: ({ description, name, directives }) =>
       wrap('', description, '\n') +
-      join(['scalar', name, join(directives, ' ')], ' '),
+      join(['scalar', name, truthyJoin(directives, ' ')], ' '),
   },
 
   ObjectTypeDefinition: {
@@ -157,8 +158,8 @@ const printDocASTReducer: ASTReducer<string> = {
         [
           'type',
           name,
-          wrap('implements ', join(interfaces, ' & ')),
-          join(directives, ' '),
+          wrap('implements ', truthyJoin(interfaces, ' & ')),
+          truthyJoin(directives, ' '),
           block(fields),
         ],
         ' ',
@@ -170,18 +171,18 @@ const printDocASTReducer: ASTReducer<string> = {
       wrap('', description, '\n') +
       name +
       (hasMultilineItems(args)
-        ? wrap('(\n', indent(join(args, '\n')), '\n)')
-        : wrap('(', join(args, ', '), ')')) +
+        ? wrap('(\n', indent(truthyJoin(args, '\n')), '\n)')
+        : wrap('(', truthyJoin(args, ', '), ')')) +
       ': ' +
       type +
-      wrap(' ', join(directives, ' ')),
+      wrap(' ', truthyJoin(directives, ' ')),
   },
 
   InputValueDefinition: {
     leave: ({ description, name, type, defaultValue, directives }) =>
       wrap('', description, '\n') +
       join(
-        [name + ': ' + type, wrap('= ', defaultValue), join(directives, ' ')],
+        [name + ': ' + type, wrap('= ', defaultValue), truthyJoin(directives, ' ')],
         ' ',
       ),
   },
@@ -193,8 +194,8 @@ const printDocASTReducer: ASTReducer<string> = {
         [
           'interface',
           name,
-          wrap('implements ', join(interfaces, ' & ')),
-          join(directives, ' '),
+          wrap('implements ', truthyJoin(interfaces, ' & ')),
+          truthyJoin(directives, ' '),
           block(fields),
         ],
         ' ',
@@ -205,7 +206,7 @@ const printDocASTReducer: ASTReducer<string> = {
     leave: ({ description, name, directives, types }) =>
       wrap('', description, '\n') +
       join(
-        ['union', name, join(directives, ' '), wrap('= ', join(types, ' | '))],
+        ['union', name, truthyJoin(directives, ' '), wrap('= ', truthyJoin(types, ' | '))],
         ' ',
       ),
   },
@@ -213,18 +214,18 @@ const printDocASTReducer: ASTReducer<string> = {
   EnumTypeDefinition: {
     leave: ({ description, name, directives, values }) =>
       wrap('', description, '\n') +
-      join(['enum', name, join(directives, ' '), block(values)], ' '),
+      join(['enum', name, truthyJoin(directives, ' '), block(values)], ' '),
   },
 
   EnumValueDefinition: {
     leave: ({ description, name, directives }) =>
-      wrap('', description, '\n') + join([name, join(directives, ' ')], ' '),
+      wrap('', description, '\n') + join([name, truthyJoin(directives, ' ')], ' '),
   },
 
   InputObjectTypeDefinition: {
     leave: ({ description, name, directives, fields }) =>
       wrap('', description, '\n') +
-      join(['input', name, join(directives, ' '), block(fields)], ' '),
+      join(['input', name, truthyJoin(directives, ' '), block(fields)], ' '),
   },
 
   DirectiveDefinition: {
@@ -233,24 +234,24 @@ const printDocASTReducer: ASTReducer<string> = {
       'directive @' +
       name +
       (hasMultilineItems(args)
-        ? wrap('(\n', indent(join(args, '\n')), '\n)')
-        : wrap('(', join(args, ', '), ')')) +
+        ? wrap('(\n', indent(truthyJoin(args, '\n')), '\n)')
+        : wrap('(', truthyJoin(args, ', '), ')')) +
       (repeatable ? ' repeatable' : '') +
       ' on ' +
-      join(locations, ' | '),
+      truthyJoin(locations, ' | '),
   },
 
   SchemaExtension: {
     leave: ({ directives, operationTypes }) =>
       join(
-        ['extend schema', join(directives, ' '), block(operationTypes)],
+        ['extend schema', truthyJoin(directives, ' '), block(operationTypes)],
         ' ',
       ),
   },
 
   ScalarTypeExtension: {
     leave: ({ name, directives }) =>
-      join(['extend scalar', name, join(directives, ' ')], ' '),
+      join(['extend scalar', name, truthyJoin(directives, ' ')], ' '),
   },
 
   ObjectTypeExtension: {
@@ -259,8 +260,8 @@ const printDocASTReducer: ASTReducer<string> = {
         [
           'extend type',
           name,
-          wrap('implements ', join(interfaces, ' & ')),
-          join(directives, ' '),
+          wrap('implements ', truthyJoin(interfaces, ' & ')),
+          truthyJoin(directives, ' '),
           block(fields),
         ],
         ' ',
@@ -273,8 +274,8 @@ const printDocASTReducer: ASTReducer<string> = {
         [
           'extend interface',
           name,
-          wrap('implements ', join(interfaces, ' & ')),
-          join(directives, ' '),
+          wrap('implements ', truthyJoin(interfaces, ' & ')),
+          truthyJoin(directives, ' '),
           block(fields),
         ],
         ' ',
@@ -287,8 +288,8 @@ const printDocASTReducer: ASTReducer<string> = {
         [
           'extend union',
           name,
-          join(directives, ' '),
-          wrap('= ', join(types, ' | ')),
+          truthyJoin(directives, ' '),
+          wrap('= ', truthyJoin(types, ' | ')),
         ],
         ' ',
       ),
@@ -296,12 +297,12 @@ const printDocASTReducer: ASTReducer<string> = {
 
   EnumTypeExtension: {
     leave: ({ name, directives, values }) =>
-      join(['extend enum', name, join(directives, ' '), block(values)], ' '),
+      join(['extend enum', name, truthyJoin(directives, ' '), block(values)], ' '),
   },
 
   InputObjectTypeExtension: {
     leave: ({ name, directives, fields }) =>
-      join(['extend input', name, join(directives, ' '), block(fields)], ' '),
+      join(['extend input', name, truthyJoin(directives, ' '), block(fields)], ' '),
   },
 };
 
@@ -313,7 +314,30 @@ function join(
   maybeArray: Maybe<ReadonlyArray<string | undefined>>,
   separator = '',
 ): string {
-  return maybeArray?.filter((x) => x).join(separator) ?? '';
+  if (!maybeArray) return ''
+
+  const list = maybeArray.filter((x) => x);
+  const listLength = list.length;
+  let result = '';
+  for (let i = 0; i < listLength; i++) {
+    if (i === listLength - 1) return result + list[i];
+    else result += list[i] + separator;
+  }
+  return result
+}
+
+function truthyJoin(
+  list: ReadonlyArray<string> | undefined,
+  separator: string,
+): string {
+  if (!list) return ''
+  const listLength = list.length;
+  let result = '';
+  for (let i = 0; i < listLength; i++) {
+    if (i === listLength - 1) return result + list[i];
+    else result += list[i] + separator;
+  }
+  return result
 }
 
 /**
