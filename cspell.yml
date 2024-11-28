@@ -51,6 +51,7 @@ words:
   # TODO: contribute upstream
   - deno
   - codecov
+  - falsey
 
   # Website tech
   - Nextra
