@@ -137,10 +137,7 @@ const printDocASTReducer: ASTReducer<string> = {
   SchemaDefinition: {
     leave: ({ description, directives, operationTypes }) =>
       wrap('', description, '\n') +
-      maybeJoin(
-        ['schema', maybeJoin(directives, ' '), block(operationTypes)],
-        ' ',
-      ),
+      maybeJoin(['schema', join(directives, ' '), block(operationTypes)], ' '),
   },
 
   OperationTypeDefinition: {
@@ -320,13 +317,9 @@ const printDocASTReducer: ASTReducer<string> = {
  * print all items together separated by separator if provided
  */
 function maybeJoin(
-  maybeArray: Maybe<ReadonlyArray<string | undefined>>,
+  maybeArray: ReadonlyArray<string | undefined>,
   separator = '',
 ): string {
-  if (!maybeArray) {
-    return '';
-  }
-
   const list = maybeArray.filter((x) => x);
   const listLength = list.length;
   let result = '';
