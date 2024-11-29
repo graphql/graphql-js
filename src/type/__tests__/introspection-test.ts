@@ -1656,6 +1656,32 @@ describe('Introspection', () => {
     });
   });
 
+  it('fails as expected on the __directive root field without an arg', () => {
+    const schema = buildSchema(`
+      type Query {
+        someField: String
+      }
+    `);
+
+    const source = `
+      {
+        __directive {
+          name
+        }
+      }
+    `;
+
+    expectJSON(graphqlSync({ schema, source })).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Argument "<meta>.__directive(name:)" of type "String!" is required, but it was not provided.',
+          locations: [{ line: 3, column: 9 }],
+        },
+      ],
+    });
+  });
+
   it('exposes descriptions', () => {
     const schema = buildSchema(`
       """Enum description"""

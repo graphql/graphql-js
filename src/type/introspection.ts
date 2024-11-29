@@ -548,6 +548,28 @@ export const TypeMetaFieldDef: GraphQLField<unknown, unknown> = {
   astNode: undefined,
 };
 
+export const DirectiveMetaFieldDef: GraphQLField<unknown, unknown> = {
+  name: '__directive',
+  type: __Directive,
+  description: 'Request information for a single directive.',
+  args: [
+    {
+      name: 'name',
+      description: undefined,
+      type: new GraphQLNonNull(GraphQLString),
+      defaultValue: undefined,
+      deprecationReason: undefined,
+      extensions: Object.create(null),
+      astNode: undefined,
+    },
+  ],
+  resolve: (_source, { name }, _context, { schema }) =>
+    schema.getDirective(name),
+  deprecationReason: undefined,
+  extensions: Object.create(null),
+  astNode: undefined,
+};
+
 export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown> = {
   name: '__typename',
   type: new GraphQLNonNull(GraphQLString),

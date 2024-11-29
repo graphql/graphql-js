@@ -84,6 +84,7 @@ export {
   // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
+  DirectiveMetaFieldDef,
   TypeNameMetaFieldDef,
   // Predicates
   isSchema,

@@ -185,6 +185,7 @@ export {
   // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
+  DirectiveMetaFieldDef,
   TypeNameMetaFieldDef,
 } from './introspection.js';
 
