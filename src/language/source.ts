@@ -1,5 +1,4 @@
 import { devAssert } from '../jsutils/devAssert.js';
-import { instanceOf } from '../jsutils/instanceOf.js';
 
 interface Location {
   line: number;
@@ -47,5 +46,5 @@ export class Source {
  * @internal
  */
 export function isSource(source: unknown): source is Source {
-  return instanceOf(source, Source);
+  return source instanceof Source;
 }
