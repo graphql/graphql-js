@@ -19,6 +19,7 @@ export type {
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
+  // Predicates
   isType,
   isScalarType,
   isObjectType,
@@ -42,6 +43,7 @@ export {
   isNamedType,
   isRequiredArgument,
   isRequiredInputField,
+  // Assertions
   assertType,
   assertScalarType,
   assertObjectType,
@@ -63,14 +65,17 @@ export {
   assertWrappingType,
   assertNullableType,
   assertNamedType,
+  // Un-modifiers
   getNullableType,
   getNamedType,
+  // Definitions
   GraphQLScalarType,
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
   GraphQLEnumType,
   GraphQLInputObjectType,
+  // Type Wrappers
   GraphQLList,
   GraphQLNonNull,
 } from './definition.js';

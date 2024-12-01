@@ -43,6 +43,7 @@ export type {
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
+  // Definitions
   GraphQLSchema,
   GraphQLDirective,
   GraphQLScalarType,
@@ -53,14 +54,17 @@ export {
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
+  // Standard GraphQL Scalars
   specifiedScalarTypes,
   GraphQLInt,
   GraphQLFloat,
   GraphQLString,
   GraphQLBoolean,
   GraphQLID,
+  // Int boundaries constants
   GRAPHQL_MAX_INT,
   GRAPHQL_MIN_INT,
+  // Built-in Directives defined by the Spec
   specifiedDirectives,
   GraphQLIncludeDirective,
   GraphQLSkipDirective,
@@ -69,8 +73,11 @@ export {
   GraphQLDeprecatedDirective,
   GraphQLSpecifiedByDirective,
   GraphQLOneOfDirective,
+  // "Enum" of Type Kinds
   TypeKind,
+  // Constant Deprecation Reason
   DEFAULT_DEPRECATION_REASON,
+  // GraphQL Types for introspection.
   introspectionTypes,
   __Schema,
   __Directive,
@@ -80,9 +87,11 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
+  // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
+  // Predicates
   isSchema,
   isDirective,
   isType,
@@ -111,6 +120,7 @@ export {
   isSpecifiedScalarType,
   isIntrospectionType,
   isSpecifiedDirective,
+  // Assertions
   assertSchema,
   assertDirective,
   assertType,
@@ -134,10 +144,13 @@ export {
   assertWrappingType,
   assertNullableType,
   assertNamedType,
+  // Un-modifiers
   getNullableType,
   getNamedType,
+  // Validate GraphQL schema.
   validateSchema,
   assertValidSchema,
+  // Upholds the spec rules about naming.
   assertName,
   assertEnumValueName,
 } from './type/index.js';
