@@ -11,13 +11,8 @@ import { print } from '../../language/printer.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
 import type { GraphQLArgument } from '../../type/definition.js';
-import {
-  getNamedType,
-  isRequiredArgument,
-  isType,
-} from '../../type/definition.js';
+import { isRequiredArgument, isType } from '../../type/definition.js';
 import { specifiedDirectives } from '../../type/directives.js';
-import { isIntrospectionType } from '../../type/introspection.js';
 
 import { typeFromAST } from '../../utilities/typeFromAST.js';
 
@@ -51,20 +46,9 @@ export function ProvidedRequiredArgumentsRule(
         );
         for (const argDef of fieldDef.args) {
           if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
-            const fieldType = getNamedType(context.getType());
-            let parentTypeStr: string | undefined;
-            if (fieldType && isIntrospectionType(fieldType)) {
-              parentTypeStr = '<meta>.';
-            } else {
-              const parentType = context.getParentType();
-              if (parentType) {
-                parentTypeStr = `${context.getParentType()}.`;
-              }
-            }
-            const argTypeStr = inspect(argDef.type);
             context.reportError(
               new GraphQLError(
-                `Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`,
+                `Argument "${argDef}" of type "${argDef.type}" is required, but it was not provided.`,
                 { nodes: fieldNode },
               ),
             );

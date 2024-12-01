@@ -14,7 +14,11 @@ import type {
 import { Kind } from '../language/kinds.js';
 
 import type { GraphQLArgument, GraphQLField } from '../type/definition.js';
-import { isNonNullType, isRequiredArgument } from '../type/definition.js';
+import {
+  isArgument,
+  isNonNullType,
+  isRequiredArgument,
+} from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
@@ -222,7 +226,8 @@ export function experimentalGetArgumentValues(
         // execution. This is a runtime check to ensure execution does not
         // continue with an invalid argument value.
         throw new GraphQLError(
-          `Argument "${argDef.name}" of required type "${argType}" was not provided.`,
+          // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+          `Argument "${isArgument(argDef) ? argDef : argDef.name}" of required type "${argType}" was not provided.`,
           { nodes: node },
         );
       }
@@ -272,7 +277,8 @@ export function experimentalGetArgumentValues(
         valueNode,
         argType,
         (error, path) => {
-          error.message = `Argument "${argDef.name}" has invalid value${printPathArray(
+          // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+          error.message = `Argument "${isArgument(argDef) ? argDef : argDef.name}" has invalid value${printPathArray(
             path,
           )}: ${error.message}`;
           throw error;
