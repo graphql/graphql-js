@@ -1,7 +1,7 @@
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { DirectiveDefinitionNode } from '../language/ast.js';
 import { DirectiveLocation } from '../language/directiveLocation.js';
-import type { GraphQLArgument, GraphQLFieldConfigArgumentMap } from './definition.js';
+import type { GraphQLArgument, GraphQLFieldConfigArgumentMap, GraphQLFieldNormalizedConfigArgumentMap } from './definition.js';
 /**
  * Test if the given value is a GraphQL directive.
  */
@@ -46,8 +46,8 @@ export interface GraphQLDirectiveConfig {
     extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
     astNode?: Maybe<DirectiveDefinitionNode>;
 }
-interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
-    args: GraphQLFieldConfigArgumentMap;
+export interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
+    args: GraphQLFieldNormalizedConfigArgumentMap;
     isRepeatable: boolean;
     extensions: Readonly<GraphQLDirectiveExtensions>;
 }
@@ -88,4 +88,3 @@ export declare const GraphQLOneOfDirective: GraphQLDirective;
  */
 export declare const specifiedDirectives: ReadonlyArray<GraphQLDirective>;
 export declare function isSpecifiedDirective(directive: GraphQLDirective): boolean;
-export {};
