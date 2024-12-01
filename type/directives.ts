@@ -8,6 +8,7 @@ import { assertName } from './assertName.ts';
 import type {
   GraphQLArgument,
   GraphQLFieldConfigArgumentMap,
+  GraphQLFieldNormalizedConfigArgumentMap,
 } from './definition.ts';
 import {
   argsToArgsConfig,
@@ -93,8 +94,9 @@ export interface GraphQLDirectiveConfig {
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
-interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
-  args: GraphQLFieldConfigArgumentMap;
+export interface GraphQLDirectiveNormalizedConfig
+  extends GraphQLDirectiveConfig {
+  args: GraphQLFieldNormalizedConfigArgumentMap;
   isRepeatable: boolean;
   extensions: Readonly<GraphQLDirectiveExtensions>;
 }

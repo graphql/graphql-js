@@ -653,7 +653,7 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   astNode?: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
 }
-interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
+export interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
   extends GraphQLScalarTypeConfig<TInternal, TExternal> {
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
@@ -814,7 +814,7 @@ export function defineArguments(
 }
 function fieldsToFieldsConfig<TSource, TContext>(
   fields: GraphQLFieldMap<TSource, TContext>,
-): GraphQLFieldConfigMap<TSource, TContext> {
+): GraphQLFieldNormalizedConfigMap<TSource, TContext> {
   return mapValue(fields, (field) => ({
     description: field.description,
     type: field.type,
@@ -831,7 +831,7 @@ function fieldsToFieldsConfig<TSource, TContext>(
  */
 export function argsToArgsConfig(
   args: ReadonlyArray<GraphQLArgument>,
-): GraphQLFieldConfigArgumentMap {
+): GraphQLFieldNormalizedConfigArgumentMap {
   return keyValMap(
     args,
     (arg) => arg.name,
@@ -856,10 +856,10 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 }
-interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>
+export interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>
   extends GraphQLObjectTypeConfig<any, any> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
-  fields: GraphQLFieldConfigMap<any, any>;
+  fields: GraphQLFieldNormalizedConfigMap<any, any>;
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
 }
@@ -925,7 +925,14 @@ export interface GraphQLFieldConfig<TSource, TContext, TArgs = any> {
   >;
   astNode?: Maybe<FieldDefinitionNode>;
 }
+export interface GraphQLFieldNormalizedConfig<TSource, TContext, TArgs = any>
+  extends GraphQLFieldConfig<TSource, TContext, TArgs> {
+  args: GraphQLFieldNormalizedConfigArgumentMap;
+  extensions: Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>;
+}
 export type GraphQLFieldConfigArgumentMap = ObjMap<GraphQLArgumentConfig>;
+export type GraphQLFieldNormalizedConfigArgumentMap =
+  ObjMap<GraphQLArgumentNormalizedConfig>;
 /**
  * Custom extensions
  *
@@ -947,8 +954,14 @@ export interface GraphQLArgumentConfig {
   extensions?: Maybe<Readonly<GraphQLArgumentExtensions>>;
   astNode?: Maybe<InputValueDefinitionNode>;
 }
+export interface GraphQLArgumentNormalizedConfig extends GraphQLArgumentConfig {
+  extensions: Readonly<GraphQLArgumentExtensions>;
+}
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldConfig<TSource, TContext>
+>;
+export type GraphQLFieldNormalizedConfigMap<TSource, TContext> = ObjMap<
+  GraphQLFieldNormalizedConfig<TSource, TContext>
 >;
 export interface GraphQLField<TSource, TContext, TArgs = any> {
   name: string;
@@ -1105,10 +1118,10 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   astNode?: Maybe<InterfaceTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 }
-interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
+export interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
   extends GraphQLInterfaceTypeConfig<any, any> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
-  fields: GraphQLFieldConfigMap<TSource, TContext>;
+  fields: GraphQLFieldNormalizedConfigMap<TSource, TContext>;
   extensions: Readonly<GraphQLInterfaceTypeExtensions>;
   extensionASTNodes: ReadonlyArray<InterfaceTypeExtensionNode>;
 }
@@ -1211,7 +1224,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
   astNode?: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 }
-interface GraphQLUnionTypeNormalizedConfig
+export interface GraphQLUnionTypeNormalizedConfig
   extends GraphQLUnionTypeConfig<any, any> {
   types: ReadonlyArray<GraphQLObjectType>;
   extensions: Readonly<GraphQLUnionTypeExtensions>;
@@ -1430,13 +1443,15 @@ export interface GraphQLEnumTypeConfig {
   astNode?: Maybe<EnumTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 }
-interface GraphQLEnumTypeNormalizedConfig extends GraphQLEnumTypeConfig {
-  values: ObjMap<GraphQLEnumValueConfig /* <T> */>;
+export interface GraphQLEnumTypeNormalizedConfig extends GraphQLEnumTypeConfig {
+  values: GraphQLEnumValueNormalizedConfigMap;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
   extensionASTNodes: ReadonlyArray<EnumTypeExtensionNode>;
 }
 export type GraphQLEnumValueConfigMap /* <T> */ =
   ObjMap<GraphQLEnumValueConfig /* <T> */>;
+export type GraphQLEnumValueNormalizedConfigMap /* <T> */ =
+  ObjMap<GraphQLEnumValueNormalizedConfig /* <T> */>;
 /**
  * Custom extensions
  *
@@ -1455,6 +1470,10 @@ export interface GraphQLEnumValueConfig {
   deprecationReason?: Maybe<string>;
   extensions?: Maybe<Readonly<GraphQLEnumValueExtensions>>;
   astNode?: Maybe<EnumValueDefinitionNode>;
+}
+export interface GraphQLEnumValueNormalizedConfig
+  extends GraphQLEnumValueConfig {
+  extensions: Readonly<GraphQLEnumValueExtensions>;
 }
 export interface GraphQLEnumValue {
   name: string;
@@ -1573,9 +1592,9 @@ export interface GraphQLInputObjectTypeConfig {
   extensionASTNodes?: Maybe<ReadonlyArray<InputObjectTypeExtensionNode>>;
   isOneOf?: boolean;
 }
-interface GraphQLInputObjectTypeNormalizedConfig
+export interface GraphQLInputObjectTypeNormalizedConfig
   extends GraphQLInputObjectTypeConfig {
-  fields: GraphQLInputFieldConfigMap;
+  fields: GraphQLInputFieldNormalizedConfigMap;
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
   extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
 }
@@ -1601,6 +1620,12 @@ export interface GraphQLInputFieldConfig {
   astNode?: Maybe<InputValueDefinitionNode>;
 }
 export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
+export interface GraphQLInputFieldNormalizedConfig
+  extends GraphQLInputFieldConfig {
+  extensions: Readonly<GraphQLInputFieldExtensions>;
+}
+export type GraphQLInputFieldNormalizedConfigMap =
+  ObjMap<GraphQLInputFieldNormalizedConfig>;
 export interface GraphQLInputField {
   name: string;
   description: Maybe<string>;
