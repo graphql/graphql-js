@@ -7,9 +7,9 @@ assertSchema,
 GraphQLSchema, } from "./schema.mjs";
 export { resolveObjMapThunk, resolveReadonlyArrayThunk, 
 // Predicates
-isType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, 
+isType, isScalarType, isObjectType, isField, isArgument, isInterfaceType, isUnionType, isEnumType, isEnumValue, isInputObjectType, isListType, isNonNullType, isInputType, isInputField, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, 
 // Assertions
-assertType, assertScalarType, assertObjectType, assertInterfaceType, assertUnionType, assertEnumType, assertInputObjectType, assertListType, assertNonNullType, assertInputType, assertOutputType, assertLeafType, assertCompositeType, assertAbstractType, assertWrappingType, assertNullableType, assertNamedType, 
+assertType, assertScalarType, assertObjectType, assertField, assertArgument, assertInterfaceType, assertUnionType, assertEnumType, assertEnumValue, assertInputObjectType, assertInputField, assertListType, assertNonNullType, assertInputType, assertOutputType, assertLeafType, assertCompositeType, assertAbstractType, assertWrappingType, assertNullableType, assertNamedType, 
 // Un-modifiers
 getNullableType, getNamedType, 
 // Definitions

@@ -442,50 +442,22 @@ exports.__TypeKind = new definition_js_1.GraphQLEnumType({
         },
     },
 });
-/**
- * Note that these are GraphQLField and not GraphQLFieldConfig,
- * so the format for args is different.
- */
-exports.SchemaMetaFieldDef = {
-    name: '__schema',
+exports.SchemaMetaFieldDef = new definition_js_1.GraphQLField(undefined, '__schema', {
     type: new definition_js_1.GraphQLNonNull(exports.__Schema),
     description: 'Access the current type schema of this server.',
-    args: [],
     resolve: (_source, _args, _context, { schema }) => schema,
-    deprecationReason: undefined,
-    extensions: Object.create(null),
-    astNode: undefined,
-};
-exports.TypeMetaFieldDef = {
-    name: '__type',
+});
+exports.TypeMetaFieldDef = new definition_js_1.GraphQLField(undefined, '__type', {
     type: exports.__Type,
     description: 'Request the type information of a single type.',
-    args: [
-        {
-            name: 'name',
-            description: undefined,
-            type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLString),
-            defaultValue: undefined,
-            deprecationReason: undefined,
-            extensions: Object.create(null),
-            astNode: undefined,
-        },
-    ],
+    args: { name: { type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLString) } },
     resolve: (_source, { name }, _context, { schema }) => schema.getType(name),
-    deprecationReason: undefined,
-    extensions: Object.create(null),
-    astNode: undefined,
-};
-exports.TypeNameMetaFieldDef = {
-    name: '__typename',
+});
+exports.TypeNameMetaFieldDef = new definition_js_1.GraphQLField(undefined, '__typename', {
     type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLString),
     description: 'The name of the current Object type at runtime.',
-    args: [],
     resolve: (_source, _args, _context, { parentType }) => parentType.name,
-    deprecationReason: undefined,
-    extensions: Object.create(null),
-    astNode: undefined,
-};
+});
 exports.introspectionTypes = Object.freeze([
     exports.__Schema,
     exports.__Directive,

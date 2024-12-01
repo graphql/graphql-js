@@ -28,7 +28,6 @@
 // The GraphQL.js version info.
 export { version, versionInfo } from "./version.mjs";
 export { graphql, graphqlSync } from "./graphql.mjs";
-// Create and operate on GraphQL type definitions and schema.
 export { resolveObjMapThunk, resolveReadonlyArrayThunk, 
 // Definitions
 GraphQLSchema, GraphQLDirective, GraphQLScalarType, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType, GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, 
@@ -47,9 +46,9 @@ introspectionTypes, __Schema, __Directive, __DirectiveLocation, __Type, __Field,
 // Meta-field definitions.
 SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef, 
 // Predicates
-isSchema, isDirective, isType, isScalarType, isObjectType, isInterfaceType, isUnionType, isEnumType, isInputObjectType, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, isSpecifiedScalarType, isIntrospectionType, isSpecifiedDirective, 
+isSchema, isDirective, isType, isScalarType, isObjectType, isField, isArgument, isInterfaceType, isUnionType, isEnumType, isEnumValue, isInputObjectType, isInputField, isListType, isNonNullType, isInputType, isOutputType, isLeafType, isCompositeType, isAbstractType, isWrappingType, isNullableType, isNamedType, isRequiredArgument, isRequiredInputField, isSpecifiedScalarType, isIntrospectionType, isSpecifiedDirective, 
 // Assertions
-assertSchema, assertDirective, assertType, assertScalarType, assertObjectType, assertInterfaceType, assertUnionType, assertEnumType, assertInputObjectType, assertListType, assertNonNullType, assertInputType, assertOutputType, assertLeafType, assertCompositeType, assertAbstractType, assertWrappingType, assertNullableType, assertNamedType, 
+assertSchema, assertDirective, assertType, assertScalarType, assertObjectType, assertField, assertArgument, assertInterfaceType, assertUnionType, assertEnumType, assertEnumValue, assertInputObjectType, assertInputField, assertListType, assertNonNullType, assertInputType, assertOutputType, assertLeafType, assertCompositeType, assertAbstractType, assertWrappingType, assertNullableType, assertNamedType, 
 // Un-modifiers
 getNullableType, getNamedType, 
 // Validate GraphQL schema.

@@ -36,13 +36,12 @@ function KnownArgumentNamesRule(context) {
         Argument(argNode) {
             const argDef = context.getArgument();
             const fieldDef = context.getFieldDef();
-            const parentType = context.getParentType();
-            if (!argDef && fieldDef && parentType) {
+            if (!argDef && fieldDef) {
                 const argName = argNode.name.value;
                 const suggestions = context.hideSuggestions
                     ? []
                     : (0, suggestionList_js_1.suggestionList)(argName, fieldDef.args.map((arg) => arg.name));
-                context.reportError(new GraphQLError_js_1.GraphQLError(`Unknown argument "${argName}" on field "${parentType}.${fieldDef.name}".` +
+                context.reportError(new GraphQLError_js_1.GraphQLError(`Unknown argument "${argName}" on field "${fieldDef}".` +
                     (0, didYouMean_js_1.didYouMean)(suggestions), { nodes: argNode }));
             }
         },

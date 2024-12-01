@@ -1,8 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isSpecifiedDirective = exports.specifiedDirectives = exports.GraphQLOneOfDirective = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLStreamDirective = exports.GraphQLDeferDirective = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = exports.assertDirective = exports.isDirective = void 0;
+const devAssert_js_1 = require("../jsutils/devAssert.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const instanceOf_js_1 = require("../jsutils/instanceOf.js");
+const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
+const keyValMap_js_1 = require("../jsutils/keyValMap.js");
 const toObjMap_js_1 = require("../jsutils/toObjMap.js");
 const directiveLocation_js_1 = require("../language/directiveLocation.js");
 const assertName_js_1 = require("./assertName.js");
@@ -34,8 +37,10 @@ class GraphQLDirective {
         this.isRepeatable = config.isRepeatable ?? false;
         this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
+        (Array.isArray(config.locations)) || (0, devAssert_js_1.devAssert)(false, `@${this.name} locations must be an Array.`);
         const args = config.args ?? {};
-        this.args = (0, definition_js_1.defineArguments)(args);
+        ((0, isObjectLike_js_1.isObjectLike)(args) && !Array.isArray(args)) || (0, devAssert_js_1.devAssert)(false, `@${this.name} args must be an object with argument names as keys.`);
+        this.args = Object.entries(args).map(([argName, argConfig]) => new definition_js_1.GraphQLArgument(this, argName, argConfig));
     }
     get [Symbol.toStringTag]() {
         return 'GraphQLDirective';
@@ -45,7 +50,7 @@ class GraphQLDirective {
             name: this.name,
             description: this.description,
             locations: this.locations,
-            args: (0, definition_js_1.argsToArgsConfig)(this.args),
+            args: (0, keyValMap_js_1.keyValMap)(this.args, (arg) => arg.name, (arg) => arg.toConfig()),
             isRepeatable: this.isRepeatable,
             extensions: this.extensions,
             astNode: this.astNode,

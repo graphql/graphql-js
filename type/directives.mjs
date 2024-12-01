@@ -1,9 +1,12 @@
+import { devAssert } from "../jsutils/devAssert.mjs";
 import { inspect } from "../jsutils/inspect.mjs";
 import { instanceOf } from "../jsutils/instanceOf.mjs";
+import { isObjectLike } from "../jsutils/isObjectLike.mjs";
+import { keyValMap } from "../jsutils/keyValMap.mjs";
 import { toObjMapWithSymbols } from "../jsutils/toObjMap.mjs";
 import { DirectiveLocation } from "../language/directiveLocation.mjs";
 import { assertName } from "./assertName.mjs";
-import { argsToArgsConfig, defineArguments, GraphQLNonNull, } from "./definition.mjs";
+import { GraphQLArgument, GraphQLNonNull } from "./definition.mjs";
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from "./scalars.mjs";
 /**
  * Test if the given value is a GraphQL directive.
@@ -29,8 +32,10 @@ export class GraphQLDirective {
         this.isRepeatable = config.isRepeatable ?? false;
         this.extensions = toObjMapWithSymbols(config.extensions);
         this.astNode = config.astNode;
+        (Array.isArray(config.locations)) || devAssert(false, `@${this.name} locations must be an Array.`);
         const args = config.args ?? {};
-        this.args = defineArguments(args);
+        (isObjectLike(args) && !Array.isArray(args)) || devAssert(false, `@${this.name} args must be an object with argument names as keys.`);
+        this.args = Object.entries(args).map(([argName, argConfig]) => new GraphQLArgument(this, argName, argConfig));
     }
     get [Symbol.toStringTag]() {
         return 'GraphQLDirective';
@@ -40,7 +45,7 @@ export class GraphQLDirective {
             name: this.name,
             description: this.description,
             locations: this.locations,
-            args: argsToArgsConfig(this.args),
+            args: keyValMap(this.args, (arg) => arg.name, (arg) => arg.toConfig()),
             isRepeatable: this.isRepeatable,
             extensions: this.extensions,
             astNode: this.astNode,

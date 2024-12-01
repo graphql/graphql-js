@@ -1,7 +1,9 @@
 import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { DirectiveDefinitionNode } from '../language/ast.js';
 import { DirectiveLocation } from '../language/directiveLocation.js';
-import type { GraphQLArgument, GraphQLFieldConfigArgumentMap, GraphQLFieldNormalizedConfigArgumentMap } from './definition.js';
+import type { GraphQLArgumentConfig, GraphQLFieldNormalizedConfigArgumentMap, GraphQLSchemaElement } from './definition.js';
+import { GraphQLArgument } from './definition.js';
 /**
  * Test if the given value is a GraphQL directive.
  */
@@ -23,7 +25,7 @@ export interface GraphQLDirectiveExtensions {
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
-export declare class GraphQLDirective {
+export declare class GraphQLDirective implements GraphQLSchemaElement {
     name: string;
     description: Maybe<string>;
     locations: ReadonlyArray<DirectiveLocation>;
@@ -41,7 +43,7 @@ export interface GraphQLDirectiveConfig {
     name: string;
     description?: Maybe<string>;
     locations: ReadonlyArray<DirectiveLocation>;
-    args?: Maybe<GraphQLFieldConfigArgumentMap>;
+    args?: Maybe<ObjMap<GraphQLArgumentConfig>>;
     isRepeatable?: Maybe<boolean>;
     extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
     astNode?: Maybe<DirectiveDefinitionNode>;

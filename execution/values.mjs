@@ -2,7 +2,7 @@ import { invariant } from "../jsutils/invariant.mjs";
 import { printPathArray } from "../jsutils/printPathArray.mjs";
 import { GraphQLError } from "../error/GraphQLError.mjs";
 import { Kind } from "../language/kinds.mjs";
-import { isNonNullType, isRequiredArgument } from "../type/definition.mjs";
+import { isArgument, isNonNullType, isRequiredArgument, } from "../type/definition.mjs";
 import { coerceDefaultValue, coerceInputLiteral, coerceInputValue, } from "../utilities/coerceInputValue.mjs";
 import { validateInputLiteral, validateInputValue, } from "../utilities/validateInputValue.mjs";
 import { getVariableSignature } from "./getVariableSignature.mjs";
@@ -110,7 +110,9 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
                 // Note: ProvidedRequiredArgumentsRule validation should catch this before
                 // execution. This is a runtime check to ensure execution does not
                 // continue with an invalid argument value.
-                throw new GraphQLError(`Argument "${argDef.name}" of required type "${argType}" was not provided.`, { nodes: node });
+                throw new GraphQLError(
+                // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+                `Argument "${isArgument(argDef) ? argDef : argDef.name}" of required type "${argType}" was not provided.`, { nodes: node });
             }
             if (argDef.defaultValue) {
                 coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type);
@@ -140,7 +142,8 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
             // execution. This is a runtime check to ensure execution does not
             // continue with an invalid argument value.
             validateInputLiteral(valueNode, argType, (error, path) => {
-                error.message = `Argument "${argDef.name}" has invalid value${printPathArray(path)}: ${error.message}`;
+                // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+                error.message = `Argument "${isArgument(argDef) ? argDef : argDef.name}" has invalid value${printPathArray(path)}: ${error.message}`;
                 throw error;
             }, variableValues, fragmentVariableValues, hideSuggestions);
             /* c8 ignore next */

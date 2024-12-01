@@ -7,7 +7,6 @@ const kinds_js_1 = require("../../language/kinds.js");
 const printer_js_1 = require("../../language/printer.js");
 const definition_js_1 = require("../../type/definition.js");
 const directives_js_1 = require("../../type/directives.js");
-const introspection_js_1 = require("../../type/introspection.js");
 const typeFromAST_js_1 = require("../../utilities/typeFromAST.js");
 /**
  * Provided required arguments
@@ -29,19 +28,7 @@ function ProvidedRequiredArgumentsRule(context) {
                 const providedArgs = new Set(fieldNode.arguments?.map((arg) => arg.name.value));
                 for (const argDef of fieldDef.args) {
                     if (!providedArgs.has(argDef.name) && (0, definition_js_1.isRequiredArgument)(argDef)) {
-                        const fieldType = (0, definition_js_1.getNamedType)(context.getType());
-                        let parentTypeStr;
-                        if (fieldType && (0, introspection_js_1.isIntrospectionType)(fieldType)) {
-                            parentTypeStr = '<meta>.';
-                        }
-                        else {
-                            const parentType = context.getParentType();
-                            if (parentType) {
-                                parentTypeStr = `${context.getParentType()}.`;
-                            }
-                        }
-                        const argTypeStr = (0, inspect_js_1.inspect)(argDef.type);
-                        context.reportError(new GraphQLError_js_1.GraphQLError(`Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`, { nodes: fieldNode }));
+                        context.reportError(new GraphQLError_js_1.GraphQLError(`Argument "${argDef}" of type "${argDef.type}" is required, but it was not provided.`, { nodes: fieldNode }));
                     }
                 }
             },

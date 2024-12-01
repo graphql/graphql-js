@@ -116,7 +116,9 @@ function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVa
                 // Note: ProvidedRequiredArgumentsRule validation should catch this before
                 // execution. This is a runtime check to ensure execution does not
                 // continue with an invalid argument value.
-                throw new GraphQLError_js_1.GraphQLError(`Argument "${argDef.name}" of required type "${argType}" was not provided.`, { nodes: node });
+                throw new GraphQLError_js_1.GraphQLError(
+                // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+                `Argument "${(0, definition_js_1.isArgument)(argDef) ? argDef : argDef.name}" of required type "${argType}" was not provided.`, { nodes: node });
             }
             if (argDef.defaultValue) {
                 coercedValues[name] = (0, coerceInputValue_js_1.coerceDefaultValue)(argDef.defaultValue, argDef.type);
@@ -146,7 +148,8 @@ function experimentalGetArgumentValues(node, argDefs, variableValues, fragmentVa
             // execution. This is a runtime check to ensure execution does not
             // continue with an invalid argument value.
             (0, validateInputValue_js_1.validateInputLiteral)(valueNode, argType, (error, path) => {
-                error.message = `Argument "${argDef.name}" has invalid value${(0, printPathArray_js_1.printPathArray)(path)}: ${error.message}`;
+                // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+                error.message = `Argument "${(0, definition_js_1.isArgument)(argDef) ? argDef : argDef.name}" has invalid value${(0, printPathArray_js_1.printPathArray)(path)}: ${error.message}`;
                 throw error;
             }, variableValues, fragmentVariableValues, hideSuggestions);
             /* c8 ignore next */

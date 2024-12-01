@@ -1,5 +1,5 @@
-import type { GraphQLField, GraphQLNamedType } from './definition.js';
-import { GraphQLEnumType, GraphQLObjectType } from './definition.js';
+import type { GraphQLNamedType } from './definition.js';
+import { GraphQLEnumType, GraphQLField, GraphQLObjectType } from './definition.js';
 export declare const __Schema: GraphQLObjectType;
 export declare const __Directive: GraphQLObjectType;
 export declare const __DirectiveLocation: GraphQLEnumType;
@@ -19,12 +19,8 @@ export declare const TypeKind: {
 };
 export type TypeKind = (typeof TypeKind)[keyof typeof TypeKind];
 export declare const __TypeKind: GraphQLEnumType;
-/**
- * Note that these are GraphQLField and not GraphQLFieldConfig,
- * so the format for args is different.
- */
-export declare const SchemaMetaFieldDef: GraphQLField<unknown, unknown>;
-export declare const TypeMetaFieldDef: GraphQLField<unknown, unknown>;
-export declare const TypeNameMetaFieldDef: GraphQLField<unknown, unknown>;
+export declare const SchemaMetaFieldDef: GraphQLField<any, any, any>;
+export declare const TypeMetaFieldDef: GraphQLField<any, any, any>;
+export declare const TypeNameMetaFieldDef: GraphQLField<any, any, any>;
 export declare const introspectionTypes: ReadonlyArray<GraphQLNamedType>;
 export declare function isIntrospectionType(type: GraphQLNamedType): boolean;

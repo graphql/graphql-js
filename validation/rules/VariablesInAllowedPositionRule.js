@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VariablesInAllowedPositionRule = void 0;
-const inspect_js_1 = require("../../jsutils/inspect.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 const definition_js_1 = require("../../type/definition.js");
@@ -39,16 +38,12 @@ function VariablesInAllowedPositionRule(context) {
                         const varType = (0, typeFromAST_js_1.typeFromAST)(schema, varDef.type);
                         if (varType &&
                             !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
-                            const varTypeStr = (0, inspect_js_1.inspect)(varType);
-                            const typeStr = (0, inspect_js_1.inspect)(type);
-                            context.reportError(new GraphQLError_js_1.GraphQLError(`Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`, { nodes: [varDef, node] }));
+                            context.reportError(new GraphQLError_js_1.GraphQLError(`Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`, { nodes: [varDef, node] }));
                         }
                         if ((0, definition_js_1.isInputObjectType)(parentType) &&
                             parentType.isOneOf &&
                             (0, definition_js_1.isNullableType)(varType)) {
-                            const varTypeStr = (0, inspect_js_1.inspect)(varType);
-                            const parentTypeStr = (0, inspect_js_1.inspect)(parentType);
-                            context.reportError(new GraphQLError_js_1.GraphQLError(`Variable "$${varName}" is of type "${varTypeStr}" but must be non-nullable to be used for OneOf Input Object "${parentTypeStr}".`, { nodes: [varDef, node] }));
+                            context.reportError(new GraphQLError_js_1.GraphQLError(`Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentType}".`, { nodes: [varDef, node] }));
                         }
                     }
                 }

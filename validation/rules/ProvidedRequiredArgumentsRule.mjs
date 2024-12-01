@@ -2,9 +2,8 @@ import { inspect } from "../../jsutils/inspect.mjs";
 import { GraphQLError } from "../../error/GraphQLError.mjs";
 import { Kind } from "../../language/kinds.mjs";
 import { print } from "../../language/printer.mjs";
-import { getNamedType, isRequiredArgument, isType, } from "../../type/definition.mjs";
+import { isRequiredArgument, isType } from "../../type/definition.mjs";
 import { specifiedDirectives } from "../../type/directives.mjs";
-import { isIntrospectionType } from "../../type/introspection.mjs";
 import { typeFromAST } from "../../utilities/typeFromAST.mjs";
 /**
  * Provided required arguments
@@ -26,19 +25,7 @@ export function ProvidedRequiredArgumentsRule(context) {
                 const providedArgs = new Set(fieldNode.arguments?.map((arg) => arg.name.value));
                 for (const argDef of fieldDef.args) {
                     if (!providedArgs.has(argDef.name) && isRequiredArgument(argDef)) {
-                        const fieldType = getNamedType(context.getType());
-                        let parentTypeStr;
-                        if (fieldType && isIntrospectionType(fieldType)) {
-                            parentTypeStr = '<meta>.';
-                        }
-                        else {
-                            const parentType = context.getParentType();
-                            if (parentType) {
-                                parentTypeStr = `${context.getParentType()}.`;
-                            }
-                        }
-                        const argTypeStr = inspect(argDef.type);
-                        context.reportError(new GraphQLError(`Argument "${parentTypeStr}${fieldDef.name}(${argDef.name}:)" of type "${argTypeStr}" is required, but it was not provided.`, { nodes: fieldNode }));
+                        context.reportError(new GraphQLError(`Argument "${argDef}" of type "${argDef.type}" is required, but it was not provided.`, { nodes: fieldNode }));
                     }
                 }
             },
