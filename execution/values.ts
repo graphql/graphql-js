@@ -11,7 +11,11 @@ import type {
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import type { GraphQLArgument, GraphQLField } from '../type/definition.ts';
-import { isNonNullType, isRequiredArgument } from '../type/definition.ts';
+import {
+  isArgument,
+  isNonNullType,
+  isRequiredArgument,
+} from '../type/definition.ts';
 import type { GraphQLDirective } from '../type/directives.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 import {
@@ -215,7 +219,8 @@ export function experimentalGetArgumentValues(
         // execution. This is a runtime check to ensure execution does not
         // continue with an invalid argument value.
         throw new GraphQLError(
-          `Argument "${argDef.name}" of required type "${argType}" was not provided.`,
+          // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+          `Argument "${isArgument(argDef) ? argDef : argDef.name}" of required type "${argType}" was not provided.`,
           { nodes: node },
         );
       }
@@ -263,7 +268,8 @@ export function experimentalGetArgumentValues(
         valueNode,
         argType,
         (error, path) => {
-          error.message = `Argument "${argDef.name}" has invalid value${printPathArray(path)}: ${error.message}`;
+          // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+          error.message = `Argument "${isArgument(argDef) ? argDef : argDef.name}" has invalid value${printPathArray(path)}: ${error.message}`;
           throw error;
         },
         variableValues,

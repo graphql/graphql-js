@@ -1,4 +1,3 @@
-import { inspect } from '../../jsutils/inspect.ts';
 import type { Maybe } from '../../jsutils/Maybe.ts';
 import { GraphQLError } from '../../error/GraphQLError.ts';
 import type { ValueNode, VariableDefinitionNode } from '../../language/ast.ts';
@@ -65,11 +64,9 @@ export function VariablesInAllowedPositionRule(
                 defaultValue,
               )
             ) {
-              const varTypeStr = inspect(varType);
-              const typeStr = inspect(type);
               context.reportError(
                 new GraphQLError(
-                  `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
+                  `Variable "$${varName}" of type "${varType}" used in position expecting type "${type}".`,
                   { nodes: [varDef, node] },
                 ),
               );
@@ -79,11 +76,9 @@ export function VariablesInAllowedPositionRule(
               parentType.isOneOf &&
               isNullableType(varType)
             ) {
-              const varTypeStr = inspect(varType);
-              const parentTypeStr = inspect(parentType);
               context.reportError(
                 new GraphQLError(
-                  `Variable "$${varName}" is of type "${varTypeStr}" but must be non-nullable to be used for OneOf Input Object "${parentTypeStr}".`,
+                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentType}".`,
                   { nodes: [varDef, node] },
                 ),
               );

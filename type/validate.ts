@@ -186,29 +186,27 @@ function validateDirectives(context: SchemaValidationContext): void {
     for (const arg of directive.args) {
       // Ensure they are named correctly.
       validateName(context, arg);
-      const argStr = `${directive}(${arg.name}:)`;
       // Ensure the type is an input type.
       if (!isInputType(arg.type)) {
         context.reportError(
-          `The type of ${argStr} must be Input Type ` +
+          `The type of ${arg} must be Input Type ` +
             `but got: ${inspect(arg.type)}.`,
           arg.astNode,
         );
       }
       if (isRequiredArgument(arg) && arg.deprecationReason != null) {
-        context.reportError(
-          `Required argument ${argStr} cannot be deprecated.`,
-          [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type],
-        );
+        context.reportError(`Required argument ${arg} cannot be deprecated.`, [
+          getDeprecatedDirectiveNode(arg.astNode),
+          arg.astNode?.type,
+        ]);
       }
-      validateDefaultValue(context, arg, argStr);
+      validateDefaultValue(context, arg);
     }
   }
 }
 function validateDefaultValue(
   context: SchemaValidationContext,
   inputValue: GraphQLArgument | GraphQLInputField,
-  argStr: string,
 ): void {
   const defaultValue = inputValue.defaultValue;
   if (!defaultValue) {
@@ -220,7 +218,7 @@ function validateDefaultValue(
       inputValue.type,
       (error, path) => {
         context.reportError(
-          `${argStr} has invalid default value${printPathArray(path)}: ${error.message}`,
+          `${inputValue} has invalid default value${printPathArray(path)}: ${error.message}`,
           error.nodes,
         );
       },
@@ -245,7 +243,7 @@ function validateDefaultValue(
         });
         if (uncoercedErrors.length === 0) {
           context.reportError(
-            `${argStr} has invalid default value: ${inspect(defaultValue.value)}. Did you mean: ${inspect(uncoercedValue)}?`,
+            `${inputValue} has invalid default value: ${inspect(defaultValue.value)}. Did you mean: ${inspect(uncoercedValue)}?`,
             inputValue.astNode?.defaultValue,
           );
           return;
@@ -257,7 +255,7 @@ function validateDefaultValue(
     // Otherwise report the original set of errors.
     for (const [error, path] of errors) {
       context.reportError(
-        `${argStr} has invalid default value${printPathArray(path)}: ${error.message}`,
+        `${inputValue} has invalid default value${printPathArray(path)}: ${error.message}`,
         inputValue.astNode?.defaultValue,
       );
     }
@@ -382,31 +380,29 @@ function validateFields(
     // Ensure the type is an output type
     if (!isOutputType(field.type)) {
       context.reportError(
-        `The type of ${type}.${field.name} must be Output Type ` +
+        `The type of ${field} must be Output Type ` +
           `but got: ${inspect(field.type)}.`,
         field.astNode?.type,
       );
     }
     // Ensure the arguments are valid
     for (const arg of field.args) {
-      const argName = arg.name;
       // Ensure they are named correctly.
       validateName(context, arg);
-      const argStr = `${type}.${field.name}(${argName}:)`;
       // Ensure the type is an input type
       if (!isInputType(arg.type)) {
         context.reportError(
-          `The type of ${argStr} must be Input Type but got: ${inspect(arg.type)}.`,
+          `The type of ${arg} must be Input Type but got: ${inspect(arg.type)}.`,
           arg.astNode?.type,
         );
       }
       if (isRequiredArgument(arg) && arg.deprecationReason != null) {
-        context.reportError(
-          `Required argument ${type}.${field.name}(${argName}:) cannot be deprecated.`,
-          [getDeprecatedDirectiveNode(arg.astNode), arg.astNode?.type],
-        );
+        context.reportError(`Required argument ${arg} cannot be deprecated.`, [
+          getDeprecatedDirectiveNode(arg.astNode),
+          arg.astNode?.type,
+        ]);
       }
-      validateDefaultValue(context, arg, argStr);
+      validateDefaultValue(context, arg);
     }
   }
 }
@@ -418,7 +414,7 @@ function validateInterfaces(
   for (const iface of type.getInterfaces()) {
     if (!isInterfaceType(iface)) {
       context.reportError(
-        `Type ${inspect(type)} must only implement Interface types, ` +
+        `Type ${type} must only implement Interface types, ` +
           `it cannot implement ${inspect(iface)}.`,
         getAllImplementsInterfaceNodes(type, iface),
       );
@@ -433,7 +429,7 @@ function validateInterfaces(
     }
     if (ifaceTypeNames.has(iface.name)) {
       context.reportError(
-        `Type ${type} can only implement ${iface.name} once.`,
+        `Type ${type} can only implement ${iface} once.`,
         getAllImplementsInterfaceNodes(type, iface),
       );
       continue;
@@ -451,12 +447,11 @@ function validateTypeImplementsInterface(
   const typeFieldMap = type.getFields();
   // Assert each interface field is implemented.
   for (const ifaceField of Object.values(iface.getFields())) {
-    const fieldName = ifaceField.name;
-    const typeField = typeFieldMap[fieldName];
+    const typeField = typeFieldMap[ifaceField.name];
     // Assert interface field exists on type.
     if (typeField == null) {
       context.reportError(
-        `Interface field ${iface.name}.${fieldName} expected but ${type} does not provide it.`,
+        `Interface field ${ifaceField} expected but ${type} does not provide it.`,
         [ifaceField.astNode, type.astNode, ...type.extensionASTNodes],
       );
       continue;
@@ -465,20 +460,18 @@ function validateTypeImplementsInterface(
     // a valid subtype. (covariant)
     if (!isTypeSubTypeOf(context.schema, typeField.type, ifaceField.type)) {
       context.reportError(
-        `Interface field ${iface.name}.${fieldName} expects type ` +
-          `${inspect(ifaceField.type)} but ${type}.${fieldName} ` +
-          `is type ${inspect(typeField.type)}.`,
+        `Interface field ${ifaceField} expects type ${ifaceField.type} ` +
+          `but ${typeField} is type ${typeField.type}.`,
         [ifaceField.astNode?.type, typeField.astNode?.type],
       );
     }
     // Assert each interface field arg is implemented.
     for (const ifaceArg of ifaceField.args) {
-      const argName = ifaceArg.name;
-      const typeArg = typeField.args.find((arg) => arg.name === argName);
+      const typeArg = typeField.args.find((arg) => arg.name === ifaceArg.name);
       // Assert interface field arg exists on object field.
       if (!typeArg) {
         context.reportError(
-          `Interface field argument ${iface.name}.${fieldName}(${argName}:) expected but ${type}.${fieldName} does not provide it.`,
+          `Interface field argument ${ifaceArg} expected but ${typeField} does not provide it.`,
           [ifaceArg.astNode, typeField.astNode],
         );
         continue;
@@ -488,23 +481,25 @@ function validateTypeImplementsInterface(
       // TODO: change to contravariant?
       if (!isEqualType(ifaceArg.type, typeArg.type)) {
         context.reportError(
-          `Interface field argument ${iface.name}.${fieldName}(${argName}:) ` +
-            `expects type ${inspect(ifaceArg.type)} but ` +
-            `${type}.${fieldName}(${argName}:) is type ` +
-            `${inspect(typeArg.type)}.`,
+          `Interface field argument ${ifaceArg} expects type ${ifaceArg.type} ` +
+            `but ${typeArg} is type ${typeArg.type}.`,
           [ifaceArg.astNode?.type, typeArg.astNode?.type],
         );
       }
     }
     // Assert additional arguments must not be required.
     for (const typeArg of typeField.args) {
-      const argName = typeArg.name;
-      const ifaceArg = ifaceField.args.find((arg) => arg.name === argName);
-      if (!ifaceArg && isRequiredArgument(typeArg)) {
-        context.reportError(
-          `Argument "${type}.${fieldName}(${argName}:)" must not be required type "${inspect(typeArg.type)}" if not provided by the Interface field "${iface.name}.${fieldName}".`,
-          [typeArg.astNode, ifaceField.astNode],
+      if (isRequiredArgument(typeArg)) {
+        const ifaceArg = ifaceField.args.find(
+          (arg) => arg.name === typeArg.name,
         );
+        if (!ifaceArg) {
+          context.reportError(
+            `Argument "${typeArg}" must not be required type "${typeArg.type}" ` +
+              `if not provided by the Interface field "${ifaceField}".`,
+            [typeArg.astNode, ifaceField.astNode],
+          );
+        }
       }
     }
   }
@@ -519,8 +514,8 @@ function validateTypeImplementsAncestors(
     if (!ifaceInterfaces.includes(transitive)) {
       context.reportError(
         transitive === type
-          ? `Type ${type} cannot implement ${iface.name} because it would create a circular reference.`
-          : `Type ${type} must implement ${transitive.name} because it is implemented by ${iface.name}.`,
+          ? `Type ${type} cannot implement ${iface} because it would create a circular reference.`
+          : `Type ${type} must implement ${transitive} because it is implemented by ${iface}.`,
         [
           ...getAllImplementsInterfaceNodes(iface, transitive),
           ...getAllImplementsInterfaceNodes(type, iface),
@@ -536,7 +531,7 @@ function validateUnionMembers(
   const memberTypes = union.getTypes();
   if (memberTypes.length === 0) {
     context.reportError(
-      `Union type ${union.name} must define one or more member types.`,
+      `Union type ${union} must define one or more member types.`,
       [union.astNode, ...union.extensionASTNodes],
     );
   }
@@ -544,7 +539,7 @@ function validateUnionMembers(
   for (const memberType of memberTypes) {
     if (includedTypeNames.has(memberType.name)) {
       context.reportError(
-        `Union type ${union.name} can only include type ${memberType} once.`,
+        `Union type ${union} can only include type ${memberType} once.`,
         getUnionMemberTypeNodes(union, memberType.name),
       );
       continue;
@@ -552,7 +547,7 @@ function validateUnionMembers(
     includedTypeNames.add(memberType.name);
     if (!isObjectType(memberType)) {
       context.reportError(
-        `Union type ${union.name} can only include Object types, ` +
+        `Union type ${union} can only include Object types, ` +
           `it cannot include ${inspect(memberType)}.`,
         getUnionMemberTypeNodes(union, String(memberType)),
       );
@@ -582,7 +577,7 @@ function validateInputFields(
   const fields = Object.values(inputObj.getFields());
   if (fields.length === 0) {
     context.reportError(
-      `Input Object type ${inputObj.name} must define one or more fields.`,
+      `Input Object type ${inputObj} must define one or more fields.`,
       [inputObj.astNode, ...inputObj.extensionASTNodes],
     );
   }
@@ -593,19 +588,18 @@ function validateInputFields(
     // Ensure the type is an input type
     if (!isInputType(field.type)) {
       context.reportError(
-        `The type of ${inputObj.name}.${field.name} must be Input Type ` +
+        `The type of ${field} must be Input Type ` +
           `but got: ${inspect(field.type)}.`,
         field.astNode?.type,
       );
     }
-    const fieldStr = `${inputObj.name}.${field.name}`;
     if (isRequiredInputField(field) && field.deprecationReason != null) {
       context.reportError(
-        `Required input field ${fieldStr} cannot be deprecated.`,
+        `Required input field ${field} cannot be deprecated.`,
         [getDeprecatedDirectiveNode(field.astNode), field.astNode?.type],
       );
     }
-    validateDefaultValue(context, field, fieldStr);
+    validateDefaultValue(context, field);
     if (inputObj.isOneOf) {
       validateOneOfInputObjectField(inputObj, field, context);
     }

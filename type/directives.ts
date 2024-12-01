@@ -1,20 +1,20 @@
+import { devAssert } from '../jsutils/devAssert.ts';
 import { inspect } from '../jsutils/inspect.ts';
 import { instanceOf } from '../jsutils/instanceOf.ts';
+import { isObjectLike } from '../jsutils/isObjectLike.ts';
+import { keyValMap } from '../jsutils/keyValMap.ts';
 import type { Maybe } from '../jsutils/Maybe.ts';
+import type { ObjMap } from '../jsutils/ObjMap.ts';
 import { toObjMapWithSymbols } from '../jsutils/toObjMap.ts';
 import type { DirectiveDefinitionNode } from '../language/ast.ts';
 import { DirectiveLocation } from '../language/directiveLocation.ts';
 import { assertName } from './assertName.ts';
 import type {
-  GraphQLArgument,
-  GraphQLFieldConfigArgumentMap,
+  GraphQLArgumentConfig,
   GraphQLFieldNormalizedConfigArgumentMap,
+  GraphQLSchemaElement,
 } from './definition.ts';
-import {
-  argsToArgsConfig,
-  defineArguments,
-  GraphQLNonNull,
-} from './definition.ts';
+import { GraphQLArgument, GraphQLNonNull } from './definition.ts';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.ts';
 /**
  * Test if the given value is a GraphQL directive.
@@ -46,7 +46,7 @@ export interface GraphQLDirectiveExtensions {
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
-export class GraphQLDirective {
+export class GraphQLDirective implements GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
@@ -61,8 +61,17 @@ export class GraphQLDirective {
     this.isRepeatable = config.isRepeatable ?? false;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
+    Array.isArray(config.locations) ||
+      devAssert(false, `@${this.name} locations must be an Array.`);
     const args = config.args ?? {};
-    this.args = defineArguments(args);
+    (isObjectLike(args) && !Array.isArray(args)) ||
+      devAssert(
+        false,
+        `@${this.name} args must be an object with argument names as keys.`,
+      );
+    this.args = Object.entries(args).map(
+      ([argName, argConfig]) => new GraphQLArgument(this, argName, argConfig),
+    );
   }
   get [Symbol.toStringTag]() {
     return 'GraphQLDirective';
@@ -72,7 +81,11 @@ export class GraphQLDirective {
       name: this.name,
       description: this.description,
       locations: this.locations,
-      args: argsToArgsConfig(this.args),
+      args: keyValMap(
+        this.args,
+        (arg) => arg.name,
+        (arg) => arg.toConfig(),
+      ),
       isRepeatable: this.isRepeatable,
       extensions: this.extensions,
       astNode: this.astNode,
@@ -89,7 +102,7 @@ export interface GraphQLDirectiveConfig {
   name: string;
   description?: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
-  args?: Maybe<GraphQLFieldConfigArgumentMap>;
+  args?: Maybe<ObjMap<GraphQLArgumentConfig>>;
   isRepeatable?: Maybe<boolean>;
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
