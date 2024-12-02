@@ -55,7 +55,7 @@ export default tsConfig(
       'internal-rules/require-to-string-tag': 'off',
 
       //////////////////////////////////////////////////////////////////////////////
-      // `eslint-plugin-n` rule list based on `v17.10.x`
+      // `eslint-plugin-n` rule list based on `v17.14.x`
       //////////////////////////////////////////////////////////////////////////////
 
       // Rules
@@ -71,6 +71,7 @@ export default tsConfig(
       'n/no-exports-assign': 'error',
       'n/no-extraneous-import': 'error',
       'n/no-extraneous-require': 'error',
+      'n/no-hide-core-modules': 'error',
       'n/no-missing-import': 'error',
       'n/no-missing-require': 'error',
       'n/no-mixed-requires': 'error',
@@ -104,7 +105,7 @@ export default tsConfig(
       'n/shebang': 'error',
 
       //////////////////////////////////////////////////////////////////////////////
-      // `eslint-plugin-import` rule list based on `v2.29.x`
+      // `eslint-plugin-import` rule list based on `v2.31.x`
       //////////////////////////////////////////////////////////////////////////////
 
       // Static analysis
@@ -227,7 +228,7 @@ export default tsConfig(
       'simple-import-sort/exports': 'off', // TODO: error
 
       //////////////////////////////////////////////////////////////////////////////
-      // ESLint builtin rules list based on `v8.57.x`
+      // ESLint builtin rules list based on `v9.16.x`
       //////////////////////////////////////////////////////////////////////////////
 
       // Possible Errors
@@ -265,7 +266,6 @@ export default tsConfig(
       'no-loss-of-precision': 'error',
       'no-misleading-character-class': 'error',
       'no-new-native-nonconstructor': 'error',
-      'no-new-symbol': 'error',
       'no-obj-calls': 'error',
       'no-promise-executor-return': 'off', // TODO: error
       'no-prototype-builtins': 'error',
@@ -298,6 +298,7 @@ export default tsConfig(
         },
       ],
       'no-use-before-define': 'off',
+      'no-useless-assignment': 'error',
       'no-useless-backreference': 'error',
       'require-atomic-updates': 'error',
       'use-isnan': 'error',
@@ -342,14 +343,12 @@ export default tsConfig(
         },
       ],
       'max-statements': 'off',
-      'multiline-comment-style': 'off',
       'new-cap': 'error',
       'no-alert': 'error',
       'no-array-constructor': 'error',
       'no-bitwise': 'off',
       'no-caller': 'error',
       'no-case-declarations': 'error',
-      'no-confusing-arrow': 'off',
       'no-console': 'warn',
       'no-continue': 'off',
       'no-delete-var': 'error',
@@ -383,9 +382,9 @@ export default tsConfig(
       'no-nested-ternary': 'off',
       'no-new': 'error',
       'no-new-func': 'error',
-      'no-new-object': 'error',
       'no-new-wrappers': 'error',
       'no-nonoctal-decimal-escape': 'error',
+      'no-object-constructor': 'error',
       'no-octal': 'error',
       'no-octal-escape': 'error',
       'no-param-reassign': 'error',
@@ -493,7 +492,7 @@ export default tsConfig(
     },
     rules: {
       //////////////////////////////////////////////////////////////////////////
-      // `@typescript-eslint/eslint-plugin` rule list based on `v8.4.x`
+      // `@typescript-eslint/eslint-plugin` rule list based on `v8.16.x`
       //////////////////////////////////////////////////////////////////////////
 
       // Supported Rules
@@ -513,7 +512,6 @@ export default tsConfig(
         },
       ],
       '@typescript-eslint/ban-tslint-comment': 'error',
-      '@typescript-eslint/ban-types': 'off', // TODO: temporarily disabled
       '@typescript-eslint/class-literal-property-style': 'off', // TODO: enable after TS conversion
       '@typescript-eslint/class-methods-use-this': 'off',
       '@typescript-eslint/consistent-generic-constructors': 'error',
@@ -584,8 +582,8 @@ export default tsConfig(
       '@typescript-eslint/no-require-imports': 'error',
       '@typescript-eslint/no-restricted-imports': 'error',
       '@typescript-eslint/no-restricted-types': 'error',
-      '@typescript-eslint/no-this-alias': 'error',
       '@typescript-eslint/no-shadow': 'error',
+      '@typescript-eslint/no-this-alias': 'error',
       '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'error',
       '@typescript-eslint/no-unnecessary-condition': 'off', // TODO: temporary disable
       '@typescript-eslint/no-unnecessary-parameter-property-assignment':
@@ -601,8 +599,10 @@ export default tsConfig(
       '@typescript-eslint/no-unsafe-call': 'off', // TODO: consider
       '@typescript-eslint/no-unsafe-declaration-merging': 'error',
       '@typescript-eslint/no-unsafe-enum-comparison': 'off', // TODO: consider
+      '@typescript-eslint/no-unsafe-function-type': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'off', // TODO: consider
       '@typescript-eslint/no-unsafe-return': 'off', // TODO: consider
+      '@typescript-eslint/no-unsafe-type-assertion': 'off', // TODO: consider
       '@typescript-eslint/no-unsafe-unary-minus': 'error',
       '@typescript-eslint/no-unused-expressions': 'error',
       '@typescript-eslint/no-unused-vars': [
@@ -620,7 +620,6 @@ export default tsConfig(
       '@typescript-eslint/no-use-before-define': 'off',
       '@typescript-eslint/no-useless-constructor': 'error',
       '@typescript-eslint/no-useless-empty-export': 'error',
-      '@typescript-eslint/no-var-requires': 'error',
       '@typescript-eslint/no-wrapper-object-types': 'error',
       '@typescript-eslint/non-nullable-type-assertion-style': 'off', //TODO: temporarily disabled
       '@typescript-eslint/only-throw-error': 'error',
@@ -644,6 +643,7 @@ export default tsConfig(
       '@typescript-eslint/prefer-return-this-type': 'error',
       '@typescript-eslint/prefer-string-starts-ends-with': 'error',
       '@typescript-eslint/promise-function-async': 'off',
+      '@typescript-eslint/related-getter-setter-pairs': 'error',
       '@typescript-eslint/require-array-sort-compare': 'error',
       '@typescript-eslint/require-await': 'error',
       '@typescript-eslint/restrict-plus-operands': 'off', // TODO: temporarily disabled
