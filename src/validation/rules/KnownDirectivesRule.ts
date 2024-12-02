@@ -48,7 +48,7 @@ export function KnownDirectivesRule(
   }
 
   return {
-    Directive(node, _key, _parent, _path, ancestors) {
+    Directive(node, { ancestors }) {
       const name = node.name.value;
       const locations = locationsMap.get(name);
 

@@ -215,7 +215,7 @@ visit function.
 
 ```js
 var editedAST = visit(ast, {
-  enter(node, key, parent, path, ancestors) {
+  enter(node, { key, parent, path, ancestors }) {
     // @return
     //   undefined: no action
     //   false: skip visiting this node
@@ -223,7 +223,7 @@ var editedAST = visit(ast, {
     //   null: delete this node
     //   any value: replace this node with the returned value
   },
-  leave(node, key, parent, path, ancestors) {
+  leave(node, { key, parent, path, ancestors }) {
     // @return
     //   undefined: no action
     //   false: no action

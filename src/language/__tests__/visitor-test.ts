@@ -11,7 +11,7 @@ import type { ASTVisitor, ASTVisitorKeyMap } from '../visitor.js';
 import { BREAK, visit, visitInParallel } from '../visitor.js';
 
 function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
-  const [node, key, parent, path, ancestors] = args;
+  const [node, { key, parent, path, ancestors }] = args;
 
   expect(node).to.be.an.instanceof(Object);
   expect(node.kind).to.be.oneOf(Object.values(Kind));
@@ -67,11 +67,11 @@ describe('Visitor', () => {
     const ast = parse('{ a }', { noLocation: true });
 
     visit(ast, {
-      enter(_node, _key, _parent, path) {
+      enter(_node, { path }) {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['enter', path.slice()]);
       },
-      leave(_node, _key, _parent, path) {
+      leave(_node, { path }) {
         checkVisitorFnArgs(ast, arguments);
         visited.push(['leave', path.slice()]);
       },
@@ -96,7 +96,7 @@ describe('Visitor', () => {
     const visitedNodes: Array<any> = [];
 
     visit(ast, {
-      enter(node, key, parent, _path, ancestors) {
+      enter(node, { key, parent, ancestors }) {
         const inArray = typeof key === 'number';
         if (inArray) {
           visitedNodes.push(parent);
@@ -106,7 +106,7 @@ describe('Visitor', () => {
         const expectedAncestors = visitedNodes.slice(0, -2);
         expect(ancestors).to.deep.equal(expectedAncestors);
       },
-      leave(_node, key, _parent, _path, ancestors) {
+      leave(_node, { key, ancestors }) {
         const expectedAncestors = visitedNodes.slice(0, -2);
         expect(ancestors).to.deep.equal(expectedAncestors);
 
@@ -555,7 +555,7 @@ describe('Visitor', () => {
     const argsStack: Array<any> = [];
 
     visit(ast, {
-      enter(node, key, parent) {
+      enter(node, { key, parent }) {
         visited.push([
           'enter',
           node.kind,
@@ -567,7 +567,7 @@ describe('Visitor', () => {
         argsStack.push([...arguments]);
       },
 
-      leave(node, key, parent) {
+      leave(node, { key, parent }) {
         visited.push([
           'leave',
           node.kind,

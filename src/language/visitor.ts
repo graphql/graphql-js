@@ -22,6 +22,21 @@ interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
   readonly leave?: ASTVisitFn<TVisitedNode> | undefined;
 }
 
+interface VisitContext {
+  /** The index or key to this node from the parent node or Array. */
+  key: string | number | undefined;
+  /** The parent immediately above this node, which may be an Array. */
+  parent: ASTNode | ReadonlyArray<ASTNode> | undefined;
+  /** The key path to get to this node from the root node. */
+  path: ReadonlyArray<string | number>;
+  /**
+   * All nodes and Arrays visited before reaching parent of this node.
+   * These correspond to array indices in `path`.
+   * Note: ancestors includes arrays which contain the parent of visited node.
+   */
+  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>;
+}
+
 /**
  * A visitor is comprised of visit functions, which are called on each node
  * during the visitor's traversal.
@@ -29,18 +44,7 @@ interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
 export type ASTVisitFn<TVisitedNode extends ASTNode> = (
   /** The current node being visiting. */
   node: TVisitedNode,
-  /** The index or key to this node from the parent node or Array. */
-  key: string | number | undefined,
-  /** The parent immediately above this node, which may be an Array. */
-  parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
-  /** The key path to get to this node from the root node. */
-  path: ReadonlyArray<string | number>,
-  /**
-   * All nodes and Arrays visited before reaching parent of this node.
-   * These correspond to array indices in `path`.
-   * Note: ancestors includes arrays which contain the parent of visited node.
-   */
-  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+  context: VisitContext,
 ) => any;
 
 /**
@@ -57,18 +61,7 @@ export type ASTReducer<R> = {
 type ASTReducerFn<TReducedNode extends ASTNode, R> = (
   /** The current node being visiting. */
   node: { [K in keyof TReducedNode]: ReducedField<TReducedNode[K], R> },
-  /** The index or key to this node from the parent node or Array. */
-  key: string | number | undefined,
-  /** The parent immediately above this node, which may be an Array. */
-  parent: ASTNode | ReadonlyArray<ASTNode> | undefined,
-  /** The key path to get to this node from the root node. */
-  path: ReadonlyArray<string | number>,
-  /**
-   * All nodes and Arrays visited before reaching parent of this node.
-   * These correspond to array indices in `path`.
-   * Note: ancestors includes arrays which contain the parent of visited node.
-   */
-  ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
+  context: VisitContext,
 ) => R;
 
 type ReducedField<T, R> = T extends ASTNode
@@ -102,7 +95,7 @@ export const BREAK: unknown = Object.freeze({});
  *
  * ```ts
  * const editedAST = visit(ast, {
- *   enter(node, key, parent, path, ancestors) {
+ *   enter(node, { key, parent, path, ancestors }) {
  *     // @return
  *     //   undefined: no action
  *     //   false: skip visiting this node
@@ -110,7 +103,7 @@ export const BREAK: unknown = Object.freeze({});
  *     //   null: delete this node
  *     //   any value: replace this node with the returned value
  *   },
- *   leave(node, key, parent, path, ancestors) {
+ *   leave(node, { key, parent, path, ancestors }) {
  *     // @return
  *     //   undefined: no action
  *     //   false: no action
@@ -251,7 +244,7 @@ export function visit(
         ? enterLeaveMap.get(node.kind)?.leave
         : enterLeaveMap.get(node.kind)?.enter;
 
-      result = visitFn?.call(visitor, node, key, parent, path, ancestors);
+      result = visitFn?.call(visitor, node, { key, parent, path, ancestors });
 
       if (result === BREAK) {
         break;
