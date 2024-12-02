@@ -871,7 +871,7 @@ export class GraphQLObjectType<TSource = any, TContext = any>
 {
   name: string;
   description: Maybe<string>;
-  isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
+  isTypeOf: Maybe<GraphQLIsTypeOfFn<unknown, TContext>>;
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
@@ -960,7 +960,7 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
   description?: Maybe<string>;
   interfaces?: ThunkReadonlyArray<GraphQLInterfaceType> | undefined;
   fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
-  isTypeOf?: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
+  isTypeOf?: Maybe<GraphQLIsTypeOfFn<unknown, TContext>>;
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
