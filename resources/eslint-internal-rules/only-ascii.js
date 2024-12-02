@@ -1,21 +1,23 @@
-'use strict';
-
-module.exports = {
-  meta: {
-    schema: [
-      {
-        type: 'object',
-        properties: {
-          allowEmoji: {
-            type: 'boolean',
+const onlyAsciiRule = {
+  'only-ascii': {
+    meta: {
+      schema: [
+        {
+          type: 'object',
+          properties: {
+            allowEmoji: {
+              type: 'boolean',
+            },
           },
+          additionalProperties: false,
         },
-        additionalProperties: false,
-      },
-    ],
+      ],
+    },
+    create: onlyASCII,
   },
-  create: onlyASCII,
 };
+
+export { onlyAsciiRule };
 
 function onlyASCII(context) {
   const regExp =
