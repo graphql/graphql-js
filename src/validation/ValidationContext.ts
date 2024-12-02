@@ -158,7 +158,7 @@ export class SDLValidationContext extends ASTValidationContext {
     return false;
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'SDLValidationContext';
   }
 
@@ -198,7 +198,7 @@ export class ValidationContext extends ASTValidationContext {
     this._hideSuggestions = hideSuggestions ?? false;
   }
 
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'ValidationContext';
   }
 
