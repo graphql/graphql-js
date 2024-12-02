@@ -52,8 +52,9 @@ spurious results.`,
         return false;
       };
 
-interface Constructor extends Function {
+interface Constructor {
   prototype: {
     [Symbol.toStringTag]: string;
   };
+  new (...args: Array<any>): any;
 }
