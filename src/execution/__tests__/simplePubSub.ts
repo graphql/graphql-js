@@ -3,6 +3,8 @@ import { assert } from 'chai';
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
  * PubSub system for tests.
+ *
+ * @internal
  */
 export class SimplePubSub<T> {
   private _subscribers: Set<(value: T) => void>;

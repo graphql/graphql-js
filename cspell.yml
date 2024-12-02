@@ -8,6 +8,11 @@ ignorePaths:
   - benchmark/github-schema.graphql
   - benchmark/github-schema.json
 overrides:
+  - filename: 'eslint.config.*'
+    words:
+      - chunkname
+      - nonconstructor
+      - nonoctal
   - filename: '**/docs-old/APIReference-*.md'
     ignoreRegExpList: ['/href="[^"]*"/']
     words:

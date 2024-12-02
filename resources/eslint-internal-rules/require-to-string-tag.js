@@ -1,6 +1,12 @@
-'use strict';
+const requireToStringTagRule = {
+  'require-to-string-tag': {
+    create: requireToStringTag,
+  },
+};
 
-module.exports = function requireToStringTag(context) {
+export { requireToStringTagRule };
+
+function requireToStringTag(context) {
   const sourceCode = context.getSourceCode();
 
   return {
@@ -10,7 +16,7 @@ module.exports = function requireToStringTag(context) {
         return;
       }
 
-      const jsDoc = context.getJSDocComment(classNode)?.value;
+      const jsDoc = context.getSourceCode().getJSDocComment(classNode)?.value;
       // FIXME: use proper TSDoc parser instead of includes once we fix TSDoc comments
       if (jsDoc?.includes('@internal') === true) {
         return;
@@ -34,4 +40,4 @@ module.exports = function requireToStringTag(context) {
     const keyText = sourceCode.getText(propertyNode.key);
     return keyText === 'Symbol.toStringTag';
   }
-};
+}
