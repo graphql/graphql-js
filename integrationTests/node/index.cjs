@@ -1,5 +1,7 @@
-const assert = require('assert');
-const { readFileSync } = require('fs');
+'use strict';
+
+const assert = require('node:assert');
+const { readFileSync } = require('node:fs');
 
 const {
   experimentalExecuteIncrementally,

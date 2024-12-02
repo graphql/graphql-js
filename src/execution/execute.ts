@@ -1262,7 +1262,6 @@ async function completeAsyncIteratorValue(
       ? undefined
       : asyncIterator.return.bind(asyncIterator);
   try {
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       if (streamUsage && index >= streamUsage.initialCount) {
         const streamItemQueue = buildAsyncStreamItemQueue(
@@ -1850,8 +1849,8 @@ function invalidReturnTypeError(
  */
 function getNewDeferMap(
   newDeferUsages: ReadonlyArray<DeferUsage>,
-  deferMap?: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
-  path?: Path | undefined,
+  deferMap?: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
+  path?: Path,
 ): ReadonlyMap<DeferUsage, DeferredFragmentRecord> {
   const newDeferMap = new Map(deferMap);
 
@@ -1931,9 +1930,9 @@ function executeSubExecutionPlan(
   sourceValue: unknown,
   originalGroupedFieldSet: GroupedFieldSet,
   newDeferUsages: ReadonlyArray<DeferUsage>,
-  path?: Path | undefined,
-  incrementalContext?: IncrementalContext | undefined,
-  deferMap?: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
+  path?: Path,
+  incrementalContext?: IncrementalContext,
+  deferMap?: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   if (deferMap === undefined && newDeferUsages.length === 0) {
     return executeFields(

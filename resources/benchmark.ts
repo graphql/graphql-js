@@ -329,27 +329,27 @@ function findAllBenchmarks() {
     .map((name) => path.join('benchmark', name));
 }
 
-function bold(str: string | number) {
+function bold(str: number | string) {
   return '\u001b[1m' + str + '\u001b[0m';
 }
 
-function red(str: string | number) {
+function red(str: number | string) {
   return '\u001b[31m' + str + '\u001b[0m';
 }
 
-function green(str: string | number) {
+function green(str: number | string) {
   return '\u001b[32m' + str + '\u001b[0m';
 }
 
-function yellow(str: string | number) {
+function yellow(str: number | string) {
   return '\u001b[33m' + str + '\u001b[0m';
 }
 
-function cyan(str: string | number) {
+function cyan(str: number | string) {
   return '\u001b[36m' + str + '\u001b[0m';
 }
 
-function grey(str: string | number) {
+function grey(str: number | string) {
   return '\u001b[90m' + str + '\u001b[0m';
 }
 
