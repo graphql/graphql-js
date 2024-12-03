@@ -2,6 +2,7 @@
   "name": "website",
   "version": "0.0.0",
   "description": "The GraphQL.JS documentation website",
+  "type": "module",
   "private": true,
   "directories": {
     "doc": "docs"

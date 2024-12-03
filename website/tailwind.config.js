@@ -1,6 +1,6 @@
 import typography from '@tailwindcss/typography';
 
-module.exports = {
+const config = {
   content: [
     './pages/**/*.{ts,tsx,mdx}',
     './icons/**/*.{ts,tsx,mdx}',
@@ -39,3 +39,5 @@ module.exports = {
   plugins: [typography],
   darkMode: ['class', 'html[class~="dark"]'],
 };
+
+export default config;
