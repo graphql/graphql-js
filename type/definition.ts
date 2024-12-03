@@ -691,9 +691,9 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   /** Parses an externally provided literal value to use as an input. */
   /** @deprecated use `replaceVariables()` and `coerceInputLiteral()` instead, `parseLiteral()` will be removed in v18 */
   parseLiteral?: GraphQLScalarLiteralParser<TInternal> | undefined;
-  /** Coerces an externally provided value to use as an input. */
-  coerceOutputValue?: GraphQLScalarOutputValueCoercer<TExternal> | undefined;
   /** Coerces an internal value to include in a response. */
+  coerceOutputValue?: GraphQLScalarOutputValueCoercer<TExternal> | undefined;
+  /** Coerces an externally provided value to use as an input. */
   coerceInputValue?: GraphQLScalarInputValueCoercer<TInternal> | undefined;
   /** Coerces an externally provided const literal value to use as an input. */
   coerceInputLiteral?: GraphQLScalarInputLiteralCoercer<TInternal> | undefined;
