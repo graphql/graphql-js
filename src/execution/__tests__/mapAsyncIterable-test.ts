@@ -89,6 +89,26 @@ describe('mapAsyncIterable', () => {
     });
   });
 
+  it('calls onError with iterator errors', async () => {
+    async function* source() {
+      yield 1;
+      throw new Error('Oops');
+    }
+
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => Promise.resolve(x + x),
+      () => Promise.resolve(0),
+    );
+
+    expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 0, done: false });
+    expect(await doubles.next()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+  });
+
   it('calls done when completes', async () => {
     async function* source() {
       yield 1;
@@ -100,6 +120,7 @@ describe('mapAsyncIterable', () => {
     const doubles = mapAsyncIterable(
       source(),
       (x) => Promise.resolve(x + x),
+      undefined,
       () => {
         done = true;
       },
@@ -126,6 +147,7 @@ describe('mapAsyncIterable', () => {
     const doubles = mapAsyncIterable(
       source(),
       (x) => Promise.resolve(x + x),
+      undefined,
       () => {
         done = true;
       },
