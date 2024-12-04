@@ -185,7 +185,7 @@ function validateInputValueImpl(
     let caughtError;
 
     try {
-      result = type.parseValue(inputValue, hideSuggestions);
+      result = type.coerceInputValue(inputValue, hideSuggestions);
     } catch (error) {
       if (error instanceof GraphQLError) {
         onError(error, pathToArray(path));
