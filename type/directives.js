@@ -164,7 +164,7 @@ exports.GraphQLDeprecatedDirective = new GraphQLDirective({
     ],
     args: {
         reason: {
-            type: scalars_js_1.GraphQLString,
+            type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLString),
             description: 'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).',
             defaultValue: exports.DEFAULT_DEPRECATION_REASON,
         },
