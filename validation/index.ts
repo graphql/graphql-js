@@ -21,6 +21,8 @@ export { KnownArgumentNamesRule } from './rules/KnownArgumentNamesRule.ts';
 export { KnownDirectivesRule } from './rules/KnownDirectivesRule.ts';
 // Spec Section: "Fragment spread target defined"
 export { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.ts';
+// Spec Section: "Operation Type Existence"
+export { KnownOperationTypesRule } from './rules/KnownOperationTypesRule.ts';
 // Spec Section: "Fragment Spread Type Existence"
 export { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.ts';
 // Spec Section: "Lone Anonymous Operation"
