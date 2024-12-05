@@ -978,9 +978,13 @@ describe('Introspection', () => {
                   defaultValue: '"No longer supported"',
                   name: 'reason',
                   type: {
-                    kind: 'SCALAR',
-                    name: 'String',
-                    ofType: null,
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'String',
+                      ofType: null,
+                    },
                   },
                 },
               ],
