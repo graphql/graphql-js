@@ -187,13 +187,13 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject with default value', () => {
-    const makeTestInputObject = (defaultValue: any) =>
+    const makeTestInputObject = (externalDefaultValue: any) =>
       new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            defaultValue,
+            externalDefaultValue,
           },
         },
       });
@@ -473,7 +473,7 @@ describe('coerceInputLiteral', () => {
     const type = new GraphQLInputObjectType({
       name: 'TestInput',
       fields: {
-        int: { type: GraphQLInt, defaultValue: 42 },
+        int: { type: GraphQLInt, externalDefaultValue: 42 },
         float: {
           type: GraphQLFloat,
           defaultValueLiteral: { kind: Kind.FLOAT, value: '3.14' },
@@ -487,7 +487,7 @@ describe('coerceInputLiteral', () => {
   const testInputObj = new GraphQLInputObjectType({
     name: 'TestInput',
     fields: {
-      int: { type: GraphQLInt, defaultValue: 42 },
+      int: { type: GraphQLInt, externalDefaultValue: 42 },
       bool: { type: GraphQLBoolean },
       requiredBool: { type: nonNullBool },
     },
@@ -631,10 +631,16 @@ describe('coerceDefaultValue', () => {
     const defaultValueUsage = {
       literal: { kind: Kind.STRING, value: 'hello' },
     } as const;
-    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+
+    const inputValue = {
+      externalDefaultValue: defaultValueUsage,
+      type: spyScalar,
+    };
+
+    expect(coerceDefaultValue(inputValue)).to.equal('hello');
 
     // Call a second time
-    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+    expect(coerceDefaultValue(inputValue)).to.equal('hello');
     expect(coerceInputValueCalls).to.deep.equal(['hello']);
   });
 });
