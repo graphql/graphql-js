@@ -20,6 +20,8 @@ export { KnownArgumentNamesRule } from "./rules/KnownArgumentNamesRule.mjs";
 export { KnownDirectivesRule } from "./rules/KnownDirectivesRule.mjs";
 // Spec Section: "Fragment spread target defined"
 export { KnownFragmentNamesRule } from "./rules/KnownFragmentNamesRule.mjs";
+// Spec Section: "Operation Type Existence"
+export { KnownOperationTypesRule } from "./rules/KnownOperationTypesRule.mjs";
 // Spec Section: "Fragment Spread Type Existence"
 export { KnownTypeNamesRule } from "./rules/KnownTypeNamesRule.mjs";
 // Spec Section: "Lone Anonymous Operation"

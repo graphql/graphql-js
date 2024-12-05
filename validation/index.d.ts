@@ -11,6 +11,7 @@ export { FragmentsOnCompositeTypesRule } from './rules/FragmentsOnCompositeTypes
 export { KnownArgumentNamesRule } from './rules/KnownArgumentNamesRule.js';
 export { KnownDirectivesRule } from './rules/KnownDirectivesRule.js';
 export { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.js';
+export { KnownOperationTypesRule } from './rules/KnownOperationTypesRule.js';
 export { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js';
 export { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.js';
 export { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.js';

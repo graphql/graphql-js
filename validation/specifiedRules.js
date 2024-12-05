@@ -19,6 +19,8 @@ const KnownArgumentNamesRule_js_1 = require("./rules/KnownArgumentNamesRule.js")
 const KnownDirectivesRule_js_1 = require("./rules/KnownDirectivesRule.js");
 // Spec Section: "Fragment spread target defined"
 const KnownFragmentNamesRule_js_1 = require("./rules/KnownFragmentNamesRule.js");
+// Spec Section: "Operation Type Existence"
+const KnownOperationTypesRule_js_1 = require("./rules/KnownOperationTypesRule.js");
 // Spec Section: "Fragment Spread Type Existence"
 const KnownTypeNamesRule_js_1 = require("./rules/KnownTypeNamesRule.js");
 // Spec Section: "Lone Anonymous Operation"
@@ -85,6 +87,7 @@ exports.recommendedRules = Object.freeze([MaxIntrospectionDepthRule_js_1.MaxIntr
  */
 exports.specifiedRules = Object.freeze([
     ExecutableDefinitionsRule_js_1.ExecutableDefinitionsRule,
+    KnownOperationTypesRule_js_1.KnownOperationTypesRule,
     UniqueOperationNamesRule_js_1.UniqueOperationNamesRule,
     LoneAnonymousOperationRule_js_1.LoneAnonymousOperationRule,
     SingleFieldSubscriptionsRule_js_1.SingleFieldSubscriptionsRule,

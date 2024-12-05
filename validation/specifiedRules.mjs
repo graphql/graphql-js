@@ -16,6 +16,8 @@ import { KnownArgumentNamesOnDirectivesRule, KnownArgumentNamesRule, } from "./r
 import { KnownDirectivesRule } from "./rules/KnownDirectivesRule.mjs";
 // Spec Section: "Fragment spread target defined"
 import { KnownFragmentNamesRule } from "./rules/KnownFragmentNamesRule.mjs";
+// Spec Section: "Operation Type Existence"
+import { KnownOperationTypesRule } from "./rules/KnownOperationTypesRule.mjs";
 // Spec Section: "Fragment Spread Type Existence"
 import { KnownTypeNamesRule } from "./rules/KnownTypeNamesRule.mjs";
 // Spec Section: "Lone Anonymous Operation"
@@ -82,6 +84,7 @@ export const recommendedRules = Object.freeze([MaxIntrospectionDepthRule]);
  */
 export const specifiedRules = Object.freeze([
     ExecutableDefinitionsRule,
+    KnownOperationTypesRule,
     UniqueOperationNamesRule,
     LoneAnonymousOperationRule,
     SingleFieldSubscriptionsRule,
