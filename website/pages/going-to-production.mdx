@@ -1,0 +1,126 @@
+---
+title: Going to Production
+---
+
+GraphQL.JS contains a few development checks which in production will cause slower performance and
+an increase in bundle-size. Every bundler goes about these changes different, in here we'll list
+out the most popular ones.
+
+## Bundler-specific configuration
+
+Here are some bundler-specific suggestions for configuring your bundler to remove `globalThis.process` and `process.env.NODE_ENV` on build time.
+
+### Vite
+
+```js
+export default defineConfig({
+  // ...
+  define: {
+    'globalThis.process': JSON.stringify(true),
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
+});
+```
+
+### Next.js
+
+```js
+// ...
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack(config, { webpack }) {
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'globalThis.process': JSON.stringify(true),
+        'process.env.NODE_ENV': JSON.stringify('production'),
+      }),
+    );
+    return config;
+  },
+};
+
+module.exports = nextConfig;
+```
+
+### create-react-app
+
+With `create-react-app`, you need to use a third-party package like [`craco`](https://craco.js.org/) to modify the bundler configuration.
+
+```js
+const webpack = require('webpack');
+module.exports = {
+  webpack: {
+    plugins: [
+      new webpack.DefinePlugin({
+        'globalThis.process': JSON.stringify(true),
+        'process.env.NODE_ENV': JSON.stringify('production'),
+      }),
+    ],
+  },
+};
+```
+
+### esbuild
+
+```json
+{
+  "define": {
+    "globalThis.process": true,
+    "process.env.NODE_ENV": "production"
+  }
+}
+```
+
+### Webpack
+
+```js
+config.plugins.push(
+  new webpack.DefinePlugin({
+    'globalThis.process': JSON.stringify(true),
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  }),
+);
+```
+
+### Rollup
+
+```js
+export default [
+  {
+    // ... input, output, etc.
+    plugins: [
+      minify({
+        mangle: {
+          toplevel: true,
+        },
+        compress: {
+          toplevel: true,
+          global_defs: {
+            '@globalThis.process': JSON.stringify(true),
+            '@process.env.NODE_ENV': JSON.stringify('production'),
+          },
+        },
+      }),
+    ],
+  },
+];
+```
+
+### SWC
+
+```json filename=".swcrc"
+{
+  "jsc": {
+    "transform": {
+      "optimizer": {
+        "globals": {
+          "vars": {
+            "globalThis.process": true,
+            "process.env.NODE_ENV": "production"
+          }
+        }
+      }
+    }
+  }
+}
+```

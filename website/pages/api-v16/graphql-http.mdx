@@ -1,0 +1,39 @@
+---
+title: graphql-http
+---
+
+{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+
+# `graphql-http`
+
+The [official `graphql-http` package](https://github.com/graphql/graphql-http) provides a simple way to create a fully compliant GraphQL server. It has a handler for Node.js native [`http`](https://nodejs.org/api/http.html), together with handlers for well-known frameworks like [Express](https://expressjs.com/), [Fastify](https://www.fastify.io/) and [Koa](https://koajs.com/); as well as handlers for different runtimes like [Deno](https://deno.land/) and [Bun](https://bun.sh/).
+
+## Express
+
+```js
+import { createHandler } from 'graphql-http/lib/use/express'; // ES6
+const { createHandler } = require('graphql-http/lib/use/express'); // CommonJS
+```
+
+### createHandler
+
+```ts
+function createHandler({
+  schema,
+  rootValue,
+  context,
+  formatError,
+  validationRules,
+}: {
+  rootValue?: any;
+  context?: any;
+  formatError?: Function;
+  validationRules?: any[];
+}): Handler;
+```
+
+Constructs an Express handler based on a GraphQL schema.
+
+See the [tutorial](/running-an-express-graphql-server/) for sample usage.
+
+See the [GitHub README](https://github.com/graphql/graphql-http) for more extensive documentation, including how to use `graphql-http` with other server frameworks and runtimes.
