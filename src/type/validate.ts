@@ -436,8 +436,8 @@ function validateTypeImplementsInterface(
 
     // Asserts that field is not deprecated unless interface field is
     if (
-      ifaceField.deprecationReason == null &&
-      typeField.deprecationReason != null
+      typeField.deprecationReason != null &&
+      ifaceField.deprecationReason == null
     ) {
       context.reportError(
         `Interface field ${iface.name}.${fieldName} is not deprecated, so ` +
