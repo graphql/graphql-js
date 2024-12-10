@@ -315,10 +315,11 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       variableValues,
       hideSuggestions,
     } = validatedExecutionArgs;
-    const rootType = schema.getRootType(operation.operation);
+    const { operation: operationType, selectionSet } = operation;
+    const rootType = schema.getRootType(operationType);
     if (rootType == null) {
       throw new GraphQLError(
-        `Schema is not configured to execute ${operation.operation} operation.`,
+        `Schema is not configured to execute ${operationType} operation.`,
         { nodes: operation },
       );
     }
@@ -327,7 +328,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       fragments,
       variableValues,
       rootType,
-      operation,
+      selectionSet,
       hideSuggestions,
     );
     const graphqlWrappedResult = executeRootExecutionPlan(
@@ -2080,7 +2081,7 @@ function executeSubscription(
     fragments,
     variableValues,
     rootType,
-    operation,
+    operation.selectionSet,
     hideSuggestions,
   );
   const firstRootField = groupedFieldSet.entries().next().value as [

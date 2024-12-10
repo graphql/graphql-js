@@ -5,7 +5,6 @@ import type {
   FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
-  OperationDefinitionNode,
   SelectionSetNode,
 } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
@@ -59,7 +58,7 @@ export function collectFields(
   fragments: ObjMap<FragmentDetails>,
   variableValues: VariableValues,
   runtimeType: GraphQLObjectType,
-  operation: OperationDefinitionNode,
+  selectionSet: SelectionSetNode,
   hideSuggestions: boolean,
 ): {
   groupedFieldSet: GroupedFieldSet;
@@ -75,12 +74,7 @@ export function collectFields(
     visitedFragmentNames: new Set(),
     hideSuggestions,
   };
-  collectFieldsImpl(
-    context,
-    operation.selectionSet,
-    groupedFieldSet,
-    newDeferUsages,
-  );
+  collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
   return { groupedFieldSet, newDeferUsages };
 }
 /**

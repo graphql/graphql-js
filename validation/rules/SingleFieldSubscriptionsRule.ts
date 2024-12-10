@@ -44,7 +44,7 @@ export function SingleFieldSubscriptionsRule(
             fragments,
             variableValues,
             subscriptionType,
-            node,
+            node.selectionSet,
             context.hideSuggestions,
           );
           if (groupedFieldSet.size > 1) {
