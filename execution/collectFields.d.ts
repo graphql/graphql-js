@@ -42,7 +42,7 @@ export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<F
  *
  * @internal
  */
-export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, operation: OperationDefinitionNode, returnType: GraphQLObjectType, fieldDetailsList: FieldDetailsList, hideSuggestions: boolean): {
+export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, returnType: GraphQLObjectType, fieldDetailsList: FieldDetailsList, hideSuggestions: boolean): {
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };

@@ -2,8 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.collectSubfields = exports.collectFields = void 0;
 const AccumulatorMap_js_1 = require("../jsutils/AccumulatorMap.js");
-const invariant_js_1 = require("../jsutils/invariant.js");
-const ast_js_1 = require("../language/ast.js");
 const kinds_js_1 = require("../language/kinds.js");
 const definition_js_1 = require("../type/definition.js");
 const directives_js_1 = require("../type/directives.js");
@@ -27,7 +25,6 @@ function collectFields(schema, fragments, variableValues, runtimeType, operation
         fragments,
         variableValues,
         runtimeType,
-        operation,
         visitedFragmentNames: new Set(),
         hideSuggestions,
     };
@@ -46,13 +43,12 @@ exports.collectFields = collectFields;
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/max-params
-function collectSubfields(schema, fragments, variableValues, operation, returnType, fieldDetailsList, hideSuggestions) {
+function collectSubfields(schema, fragments, variableValues, returnType, fieldDetailsList, hideSuggestions) {
     const context = {
         schema,
         fragments,
         variableValues,
         runtimeType: returnType,
-        operation,
         visitedFragmentNames: new Set(),
         hideSuggestions,
     };
@@ -73,7 +69,7 @@ function collectSubfields(schema, fragments, variableValues, operation, returnTy
 exports.collectSubfields = collectSubfields;
 // eslint-disable-next-line @typescript-eslint/max-params
 function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues) {
-    const { schema, fragments, variableValues, runtimeType, operation, visitedFragmentNames, hideSuggestions, } = context;
+    const { schema, fragments, variableValues, runtimeType, visitedFragmentNames, hideSuggestions, } = context;
     for (const selection of selectionSet.selections) {
         switch (selection.kind) {
             case kinds_js_1.Kind.FIELD: {
@@ -92,7 +88,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
                     !doesFragmentConditionMatch(schema, selection, runtimeType)) {
                     continue;
                 }
-                const newDeferUsage = getDeferUsage(operation, variableValues, fragmentVariableValues, selection, deferUsage);
+                const newDeferUsage = getDeferUsage(variableValues, fragmentVariableValues, selection, deferUsage);
                 if (!newDeferUsage) {
                     collectFieldsImpl(context, selection.selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues);
                 }
@@ -104,7 +100,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
             }
             case kinds_js_1.Kind.FRAGMENT_SPREAD: {
                 const fragName = selection.name.value;
-                const newDeferUsage = getDeferUsage(operation, variableValues, fragmentVariableValues, selection, deferUsage);
+                const newDeferUsage = getDeferUsage(variableValues, fragmentVariableValues, selection, deferUsage);
                 if (!newDeferUsage &&
                     (visitedFragmentNames.has(fragName) ||
                         !shouldIncludeNode(selection, variableValues, fragmentVariableValues))) {
@@ -138,7 +134,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
  * deferred based on the experimental flag, defer directive present and
  * not disabled by the "if" argument.
  */
-function getDeferUsage(operation, variableValues, fragmentVariableValues, node, parentDeferUsage) {
+function getDeferUsage(variableValues, fragmentVariableValues, node, parentDeferUsage) {
     const defer = (0, values_js_1.getDirectiveValues)(directives_js_1.GraphQLDeferDirective, node, variableValues, fragmentVariableValues);
     if (!defer) {
         return;
@@ -146,7 +142,6 @@ function getDeferUsage(operation, variableValues, fragmentVariableValues, node, 
     if (defer.if === false) {
         return;
     }
-    (operation.operation !== ast_js_1.OperationTypeNode.SUBSCRIPTION) || (0, invariant_js_1.invariant)(false, '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.');
     return {
         label: typeof defer.label === 'string' ? defer.label : undefined,
         parentDeferUsage,

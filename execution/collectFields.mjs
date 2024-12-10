@@ -1,6 +1,4 @@
 import { AccumulatorMap } from "../jsutils/AccumulatorMap.mjs";
-import { invariant } from "../jsutils/invariant.mjs";
-import { OperationTypeNode } from "../language/ast.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { isAbstractType } from "../type/definition.mjs";
 import { GraphQLDeferDirective, GraphQLIncludeDirective, GraphQLSkipDirective, } from "../type/directives.mjs";
@@ -24,7 +22,6 @@ export function collectFields(schema, fragments, variableValues, runtimeType, op
         fragments,
         variableValues,
         runtimeType,
-        operation,
         visitedFragmentNames: new Set(),
         hideSuggestions,
     };
@@ -42,13 +39,12 @@ export function collectFields(schema, fragments, variableValues, runtimeType, op
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/max-params
-export function collectSubfields(schema, fragments, variableValues, operation, returnType, fieldDetailsList, hideSuggestions) {
+export function collectSubfields(schema, fragments, variableValues, returnType, fieldDetailsList, hideSuggestions) {
     const context = {
         schema,
         fragments,
         variableValues,
         runtimeType: returnType,
-        operation,
         visitedFragmentNames: new Set(),
         hideSuggestions,
     };
@@ -68,7 +64,7 @@ export function collectSubfields(schema, fragments, variableValues, operation, r
 }
 // eslint-disable-next-line @typescript-eslint/max-params
 function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues) {
-    const { schema, fragments, variableValues, runtimeType, operation, visitedFragmentNames, hideSuggestions, } = context;
+    const { schema, fragments, variableValues, runtimeType, visitedFragmentNames, hideSuggestions, } = context;
     for (const selection of selectionSet.selections) {
         switch (selection.kind) {
             case Kind.FIELD: {
@@ -87,7 +83,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
                     !doesFragmentConditionMatch(schema, selection, runtimeType)) {
                     continue;
                 }
-                const newDeferUsage = getDeferUsage(operation, variableValues, fragmentVariableValues, selection, deferUsage);
+                const newDeferUsage = getDeferUsage(variableValues, fragmentVariableValues, selection, deferUsage);
                 if (!newDeferUsage) {
                     collectFieldsImpl(context, selection.selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues);
                 }
@@ -99,7 +95,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
             }
             case Kind.FRAGMENT_SPREAD: {
                 const fragName = selection.name.value;
-                const newDeferUsage = getDeferUsage(operation, variableValues, fragmentVariableValues, selection, deferUsage);
+                const newDeferUsage = getDeferUsage(variableValues, fragmentVariableValues, selection, deferUsage);
                 if (!newDeferUsage &&
                     (visitedFragmentNames.has(fragName) ||
                         !shouldIncludeNode(selection, variableValues, fragmentVariableValues))) {
@@ -133,7 +129,7 @@ function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsage
  * deferred based on the experimental flag, defer directive present and
  * not disabled by the "if" argument.
  */
-function getDeferUsage(operation, variableValues, fragmentVariableValues, node, parentDeferUsage) {
+function getDeferUsage(variableValues, fragmentVariableValues, node, parentDeferUsage) {
     const defer = getDirectiveValues(GraphQLDeferDirective, node, variableValues, fragmentVariableValues);
     if (!defer) {
         return;
@@ -141,7 +137,6 @@ function getDeferUsage(operation, variableValues, fragmentVariableValues, node, 
     if (defer.if === false) {
         return;
     }
-    (operation.operation !== OperationTypeNode.SUBSCRIPTION) || invariant(false, '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.');
     return {
         label: typeof defer.label === 'string' ? defer.label : undefined,
         parentDeferUsage,

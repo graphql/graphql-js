@@ -33,8 +33,8 @@ import { experimentalGetArgumentValues, getArgumentValues, getDirectiveValues, g
  * saves overhead when resolving lists of values.
  */
 const collectSubfields = memoize3((validatedExecutionArgs, returnType, fieldDetailsList) => {
-    const { schema, fragments, operation, variableValues, hideSuggestions } = validatedExecutionArgs;
-    return _collectSubfields(schema, fragments, variableValues, operation, returnType, fieldDetailsList, hideSuggestions);
+    const { schema, fragments, variableValues, hideSuggestions } = validatedExecutionArgs;
+    return _collectSubfields(schema, fragments, variableValues, returnType, fieldDetailsList, hideSuggestions);
 });
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES = 'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
 const UNEXPECTED_MULTIPLE_PAYLOADS = 'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
@@ -918,9 +918,14 @@ function deferredFragmentRecordFromDeferUsage(deferUsage, deferMap) {
     return deferMap.get(deferUsage);
 }
 function collectAndExecuteSubfields(exeContext, returnType, fieldDetailsList, path, result, incrementalContext, deferMap) {
+    const validatedExecutionArgs = exeContext.validatedExecutionArgs;
     // Collect sub-fields to execute to complete this value.
-    const collectedSubfields = collectSubfields(exeContext.validatedExecutionArgs, returnType, fieldDetailsList);
+    const collectedSubfields = collectSubfields(validatedExecutionArgs, returnType, fieldDetailsList);
     const { groupedFieldSet, newDeferUsages } = collectedSubfields;
+    if (newDeferUsages.length > 0) {
+        (validatedExecutionArgs.operation.operation !==
+            OperationTypeNode.SUBSCRIPTION) || invariant(false, '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.');
+    }
     return executeSubExecutionPlan(exeContext, returnType, result, groupedFieldSet, newDeferUsages, path, incrementalContext, deferMap);
 }
 function executeSubExecutionPlan(exeContext, returnType, sourceValue, originalGroupedFieldSet, newDeferUsages, path, incrementalContext, deferMap) {
