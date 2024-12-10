@@ -2149,6 +2149,7 @@ function mapSourceToResponse(
       };
       return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
     },
+    (error) => ({ errors: [locatedError(error, undefined)] }),
     () => abortSignalListener?.disconnect(),
   );
 }
