@@ -16,7 +16,7 @@ import {
   execute,
   experimentalExecuteIncrementally,
   subscribe,
-} from '../execute.js';
+} from '../Executor.js';
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,

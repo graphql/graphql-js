@@ -11,9 +11,9 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   subscribe,
-} from './execute.js';
+} from './Executor.js';
 
-export type { ExecutionArgs, ValidatedExecutionArgs } from './execute.js';
+export type { ExecutionArgs, ValidatedExecutionArgs } from './Executor.js';
 
 export type {
   ExecutionResult,

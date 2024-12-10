@@ -7,7 +7,7 @@ import { GraphQLObjectType } from '../../type/definition.js';
 import { GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { executeSync } from '../execute.js';
+import { executeSync } from '../Executor.js';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({

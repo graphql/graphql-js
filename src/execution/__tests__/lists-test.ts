@@ -18,7 +18,7 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { execute, executeSync } from '../execute.js';
+import { execute, executeSync } from '../Executor.js';
 import type { ExecutionResult } from '../types.js';
 
 describe('Execute: Accepts any iterable as list value', () => {
