@@ -213,7 +213,7 @@ function reportInvalidValue(
   onError: (error: GraphQLError, path: ReadonlyArray<string | number>) => void,
   message: string,
   path: Path | undefined,
-  originalError?: GraphQLError | undefined,
+  originalError?: GraphQLError,
 ): void {
   onError(new GraphQLError(message, { originalError }), pathToArray(path));
 }
@@ -498,7 +498,7 @@ function reportInvalidLiteral(
   message: string,
   valueNode: ASTNode,
   path: Path | undefined,
-  originalError?: GraphQLError | undefined,
+  originalError?: GraphQLError,
 ): void {
   onError(
     new GraphQLError(message, { nodes: valueNode, originalError }),

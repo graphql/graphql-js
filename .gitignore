@@ -8,10 +8,10 @@
 /diff-npm-package.html
 /.eslintcache
 /.cspellcache
-/.docusaurus
-/node_modules
+node_modules
 /reports
 /npmDist
 /npmEsmDist
 /denoDist
-/websiteDist
+/website/.next
+/website/out

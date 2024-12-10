@@ -1,0 +1,372 @@
+---
+title: Object Types
+---
+
+import { Tabs } from 'nextra/components';
+
+In many cases, you don't want to return a number or a string from an API. You want to return an object that has its own complex behavior. GraphQL is a perfect fit for this.
+
+In GraphQL schema language, the way you define a new object type is the same way we have been defining the `Query` type in our examples. Each object can have fields that return a particular type, and methods that take arguments. For example, in the [Passing Arguments](/passing-arguments/) documentation, we had a method to roll some random dice:
+
+<Tabs items={['SDL', 'Code']}>
+  <Tabs.Tab>
+```graphql
+type Query {
+  rollDice(numDice: Int!, numSides: Int): [Int]
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+```js
+const {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLList,
+  GraphQLFloat,
+} = require('graphql');
+
+new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    rollDice: {
+      type: new GraphQLList(GraphQLFloat),
+      args: {
+        numDice: {
+          type: new GraphQLNonNull(GraphQLInt)
+        },
+        numSides: {
+          type: new GraphQLNonNull(GraphQLInt)
+        },
+      },
+    },
+  },
+})
+
+````
+  </Tabs.Tab>
+</Tabs>
+
+If we wanted to have more and more methods based on a random die over time, we could implement this with a `RandomDie` object type instead.
+
+<Tabs items={['SDL', 'Code']}>
+  <Tabs.Tab>
+```graphql
+type RandomDie {
+  roll(numRolls: Int!): [Int]
+}
+
+type Query {
+  getDie(numSides: Int): RandomDie
+}
+````
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+```js
+const {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLList,
+  GraphQLFloat,
+} = require('graphql');
+
+const RandomDie = new GraphQLObjectType({
+  name: 'RandomDie',
+  fields: {
+    roll: {
+      type: new GraphQLList(GraphQLInt),
+      args: {
+        numRolls: {
+          type: new GraphQLNonNull(GraphQLInt)
+        }
+      }
+    }
+  }
+});
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      getDie: {
+        type: RandomDie,
+        args: {
+          numSides: {
+            type: GraphQLInt
+          }
+        }
+      }
+    }
+  })
+});
+
+````
+  </Tabs.Tab>
+</Tabs>
+
+Instead of a root-level resolver for the `RandomDie` type, we can instead use an ES6 class, where the resolvers are instance methods. This code shows how the `RandomDie` schema above can be implemented:
+
+```js
+class RandomDie {
+  constructor(numSides) {
+    this.numSides = numSides;
+  }
+
+  rollOnce() {
+    return 1 + Math.floor(Math.random() * this.numSides);
+  }
+
+  roll({ numRolls }) {
+    const output = [];
+    for (const i = 0; i < numRolls; i++) {
+      output.push(this.rollOnce());
+    }
+    return output;
+  }
+}
+
+const root = {
+  getDie({ numSides }) {
+    return new RandomDie(numSides || 6);
+  },
+};
+````
+
+For fields that don't use any arguments, you can use either properties on the object or instance methods. So for the example code above, both `numSides` and `rollOnce` can actually be used to implement GraphQL fields, so that code also implements the schema of:
+
+<Tabs items={['SDL', 'Code']}>
+  <Tabs.Tab>
+```graphql
+type RandomDie {
+  numSides: Int!
+  rollOnce: Int!
+  roll(numRolls: Int!): [Int]
+}
+
+type Query {
+getDie(numSides: Int): RandomDie
+}
+
+````
+  </Tabs.Tab>
+  <Tabs.Tab>
+```js
+const {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLList,
+  GraphQLFloat,
+} = require('graphql');
+
+const RandomDie = new GraphQLObjectType({
+  name: 'RandomDie',
+  fields: {
+    numSides: {
+      type: new GraphQLNonNull(GraphQLInt),
+    },
+    rollOnce: {
+      type: new GraphQLNonNull(GraphQLInt),
+    },
+    roll: {
+      type: new GraphQLList(GraphQLInt),
+      args: {
+        numRolls: {
+          type: new GraphQLNonNull(GraphQLInt)
+        },
+      }
+    }
+  }
+});
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      getDie: {
+        type: RandomDie,
+        args: {
+          numSides: {
+            type: GraphQLInt
+          }
+        }
+      }
+    }
+  })
+});
+````
+
+  </Tabs.Tab>
+</Tabs>
+
+Putting this all together, here is some sample code that runs a server with this GraphQL API:
+
+<Tabs items={['SDL', 'Code']}>
+  <Tabs.Tab>
+```js
+const express = require('express');
+const { createHandler } = require('graphql-http/lib/use/express');
+const { buildSchema } = require('graphql');
+
+// Construct a schema, using GraphQL schema language
+const schema = buildSchema(`
+type RandomDie {
+  numSides: Int!
+  rollOnce: Int!
+  roll(numRolls: Int!): [Int]
+}
+
+type Query {
+  getDie(numSides: Int): RandomDie
+}
+`);
+
+// This class implements the RandomDie GraphQL type
+class RandomDie {
+  constructor(numSides) {
+    this.numSides = numSides;
+  }
+
+  rollOnce() {
+    return 1 + Math.floor(Math.random() \* this.numSides);
+  }
+
+  roll({ numRolls }) {
+    const output = [];
+    for (const i = 0; i < numRolls; i++) {
+    output.push(this.rollOnce());
+    }
+    return output;
+  }
+}
+
+// The root provides the top-level API endpoints
+const root = {
+  getDie({ numSides }) {
+    return new RandomDie(numSides || 6);
+  },
+};
+
+const app = express();
+app.all(
+  '/graphql',
+  createHandler({
+    schema: schema,
+    rootValue: root,
+  }),
+);
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
+````
+  </Tabs.Tab>
+  <Tabs.Tab>
+```js
+const express = require('express');
+const { createHandler } = require('graphql-http/lib/use/express');
+const {
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLInt,
+  GraphQLString,
+  GraphQLList,
+  GraphQLFloat,
+} = require('graphql');
+
+const RandomDie = new GraphQLObjectType({
+  name: 'RandomDie',
+  fields: {
+    numSides: {
+      type: new GraphQLNonNull(GraphQLInt),
+    },
+    rollOnce: {
+      type: new GraphQLNonNull(GraphQLInt),
+    },
+    roll: {
+      type: new GraphQLList(GraphQLInt),
+      args: {
+        numRolls: {
+          type: new GraphQLNonNull(GraphQLInt)
+        },
+      }
+    }
+  }
+});
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      getDie: {
+        type: RandomDie,
+        args: {
+          numSides: {
+            type: GraphQLInt
+          }
+        }
+      }
+    }
+  })
+});
+
+// This class implements the RandomDie GraphQL type
+class RandomDie {
+  constructor(numSides) {
+    this.numSides = numSides;
+  }
+
+  rollOnce() {
+    return 1 + Math.floor(Math.random() * this.numSides);
+  }
+
+  roll({ numRolls }) {
+    const output = [];
+    for (const i = 0; i < numRolls; i++) {
+      output.push(this.rollOnce());
+    }
+    return output;
+  }
+}
+
+// The root provides the top-level API endpoints
+const root = {
+  getDie({ numSides }) {
+    return new RandomDie(numSides || 6);
+  },
+};
+
+const app = express();
+app.all(
+  '/graphql',
+  createHandler({
+    schema: schema,
+    rootValue: root,
+  }),
+);
+app.listen(4000);
+console.log('Running a GraphQL API server at localhost:4000/graphql');
+````
+
+  </Tabs.Tab>
+</Tabs>
+
+When you issue a GraphQL query against an API that returns object types, you can call multiple methods on the object at once by nesting the GraphQL field names. For example, if you wanted to call both `rollOnce` to roll a die once, and `roll` to roll a die three times, you could do it with this query:
+
+```graphql
+{
+  getDie(numSides: 6) {
+    rollOnce
+    roll(numRolls: 3)
+  }
+}
+```
+
+If you run this code with `node server.js` and browse to http://localhost:4000/graphql you can try out these APIs with [GraphiQL](https://github.com/graphql/graphiql).
+
+This way of defining object types often provides advantages over a traditional REST API. Instead of doing one API request to get basic information about an object, and then multiple subsequent API requests to find out more information about that object, you can get all of that information in one API request. That saves bandwidth, makes your app run faster, and simplifies your client-side logic.
+
+So far, every API we've looked at is designed for returning data. In order to modify stored data or handle complex input, it helps to [learn about mutations and input types](/mutations-and-input-types/).

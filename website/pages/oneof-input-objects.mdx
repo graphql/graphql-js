@@ -1,0 +1,91 @@
+---
+title: OneOf input objects
+---
+
+import { Tabs } from 'nextra/components';
+
+Some inputs will behave differently depending on what input we choose. Let's look at the case for
+a field named `product`, we can fetch a `Product` by either its `id` or its `name`. Currently we'd
+make a tradeoff for this by introducing two arguments that are both nullable, now if both are passed
+as null (or both non-null) we'd have to handle that in code - the type system wouldn't indicate that exactly one was required. To fix this, the `@oneOf` directive was introduced so we
+can create this "exactly one option" constraint without sacrificing the strictly typed nature of our GraphQL Schema.
+
+<Tabs items={['SDL', 'Code']}>
+    <Tabs.Tab>
+```js
+const schema = buildSchema(`
+  type Product {
+    id: ID!
+    name: String!
+  }
+
+  input ProductLocation {
+    aisleNumber: Int!
+    shelfNumber: Int!
+    positionOnShelf: Int!
+  }
+  
+  input ProductSpecifier @oneOf {
+    id: ID
+    name: String
+    location: ProductLocation
+  }
+
+  type Query {
+    product(by: ProductSpecifier!): Product
+  }
+`);
+```
+    </Tabs.Tab>
+    <Tabs.Tab>
+```js
+const Product = new GraphQLObjectType({
+  name: 'Product',
+  fields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID),
+    },
+    name: {
+      type: new GraphQLNonNull(GraphQLString),
+    },
+  },
+});
+
+const ProductLocation = new GraphQLInputObjectType({
+  name: 'ProductLocation',
+  isOneOf: true,
+  fields: {
+    aisleNumber: { type: GraphQLInt },
+    shelfNumber: { type: GraphQLInt },
+    positionOnShelf: { type: GraphQLInt },
+  },
+});
+
+const ProductSpecifier = new GraphQLInputObjectType({
+  name: 'ProductSpecifier',
+  isOneOf: true,
+  fields: {
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    location: { type: ProductLocation },
+  },
+});
+
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      product: {
+        type: Product,
+        args: { by: { type: ProductSpecifier } },
+      },
+    },
+  }),
+});
+```
+    </Tabs.Tab>
+</Tabs>
+
+It doesn't matter whether you have 2 or more inputs here, all that matters is
+that your user will have to specify one, and only one, for this input to be valid.
+The values are not limited to scalars, lists and other input object types are also allowed.

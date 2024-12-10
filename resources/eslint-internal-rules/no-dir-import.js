@@ -1,9 +1,15 @@
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const fs = require('node:fs');
-const path = require('node:path');
+const noDirImportRule = {
+  'no-dir-import': {
+    create: noDirImport,
+  },
+};
 
-module.exports = function noDirImportRule(context) {
+export { noDirImportRule };
+
+function noDirImport(context) {
   return {
     ImportDeclaration: checkImportPath,
     ExportNamedDeclaration: checkImportPath,
@@ -33,4 +39,4 @@ module.exports = function noDirImportRule(context) {
       }
     }
   }
-};
+}
