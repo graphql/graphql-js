@@ -1,5 +1,5 @@
 import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { FieldNode, FragmentDefinitionNode, OperationDefinitionNode } from '../language/ast.js';
+import type { FieldNode, FragmentDefinitionNode, SelectionSetNode } from '../language/ast.js';
 import type { GraphQLObjectType } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
@@ -28,7 +28,7 @@ export interface FragmentDetails {
  *
  * @internal
  */
-export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, runtimeType: GraphQLObjectType, operation: OperationDefinitionNode, hideSuggestions: boolean): {
+export declare function collectFields(schema: GraphQLSchema, fragments: ObjMap<FragmentDetails>, variableValues: VariableValues, runtimeType: GraphQLObjectType, selectionSet: SelectionSetNode, hideSuggestions: boolean): {
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };

@@ -17,7 +17,7 @@ const values_js_1 = require("./values.js");
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/max-params
-function collectFields(schema, fragments, variableValues, runtimeType, operation, hideSuggestions) {
+function collectFields(schema, fragments, variableValues, runtimeType, selectionSet, hideSuggestions) {
     const groupedFieldSet = new AccumulatorMap_js_1.AccumulatorMap();
     const newDeferUsages = [];
     const context = {
@@ -28,7 +28,7 @@ function collectFields(schema, fragments, variableValues, runtimeType, operation
         visitedFragmentNames: new Set(),
         hideSuggestions,
     };
-    collectFieldsImpl(context, operation.selectionSet, groupedFieldSet, newDeferUsages);
+    collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
     return { groupedFieldSet, newDeferUsages };
 }
 exports.collectFields = collectFields;

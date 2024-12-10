@@ -137,11 +137,12 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
     };
     try {
         const { schema, fragments, rootValue, operation, variableValues, hideSuggestions, } = validatedExecutionArgs;
-        const rootType = schema.getRootType(operation.operation);
+        const { operation: operationType, selectionSet } = operation;
+        const rootType = schema.getRootType(operationType);
         if (rootType == null) {
-            throw new GraphQLError_js_1.GraphQLError(`Schema is not configured to execute ${operation.operation} operation.`, { nodes: operation });
+            throw new GraphQLError_js_1.GraphQLError(`Schema is not configured to execute ${operationType} operation.`, { nodes: operation });
         }
-        const { groupedFieldSet, newDeferUsages } = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, rootType, operation, hideSuggestions);
+        const { groupedFieldSet, newDeferUsages } = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, rootType, selectionSet, hideSuggestions);
         const graphqlWrappedResult = executeRootExecutionPlan(exeContext, operation.operation, rootType, rootValue, groupedFieldSet, newDeferUsages);
         if ((0, isPromise_js_1.isPromise)(graphqlWrappedResult)) {
             return graphqlWrappedResult.then((resolved) => {
@@ -1149,7 +1150,7 @@ function executeSubscription(validatedExecutionArgs) {
     if (rootType == null) {
         throw new GraphQLError_js_1.GraphQLError('Schema is not configured to execute subscription operation.', { nodes: operation });
     }
-    const { groupedFieldSet } = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, rootType, operation, hideSuggestions);
+    const { groupedFieldSet } = (0, collectFields_js_1.collectFields)(schema, fragments, variableValues, rootType, operation.selectionSet, hideSuggestions);
     const firstRootField = groupedFieldSet.entries().next().value;
     const [responseName, fieldDetailsList] = firstRootField;
     const fieldName = fieldDetailsList[0].node.name.value;

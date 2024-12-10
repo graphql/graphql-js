@@ -131,11 +131,12 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedE
     };
     try {
         const { schema, fragments, rootValue, operation, variableValues, hideSuggestions, } = validatedExecutionArgs;
-        const rootType = schema.getRootType(operation.operation);
+        const { operation: operationType, selectionSet } = operation;
+        const rootType = schema.getRootType(operationType);
         if (rootType == null) {
-            throw new GraphQLError(`Schema is not configured to execute ${operation.operation} operation.`, { nodes: operation });
+            throw new GraphQLError(`Schema is not configured to execute ${operationType} operation.`, { nodes: operation });
         }
-        const { groupedFieldSet, newDeferUsages } = collectFields(schema, fragments, variableValues, rootType, operation, hideSuggestions);
+        const { groupedFieldSet, newDeferUsages } = collectFields(schema, fragments, variableValues, rootType, selectionSet, hideSuggestions);
         const graphqlWrappedResult = executeRootExecutionPlan(exeContext, operation.operation, rootType, rootValue, groupedFieldSet, newDeferUsages);
         if (isPromise(graphqlWrappedResult)) {
             return graphqlWrappedResult.then((resolved) => {
@@ -1134,7 +1135,7 @@ function executeSubscription(validatedExecutionArgs) {
     if (rootType == null) {
         throw new GraphQLError('Schema is not configured to execute subscription operation.', { nodes: operation });
     }
-    const { groupedFieldSet } = collectFields(schema, fragments, variableValues, rootType, operation, hideSuggestions);
+    const { groupedFieldSet } = collectFields(schema, fragments, variableValues, rootType, operation.selectionSet, hideSuggestions);
     const firstRootField = groupedFieldSet.entries().next().value;
     const [responseName, fieldDetailsList] = firstRootField;
     const fieldName = fieldDetailsList[0].node.name.value;

@@ -14,7 +14,7 @@ import { getDirectiveValues, getFragmentVariableValues } from "./values.mjs";
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/max-params
-export function collectFields(schema, fragments, variableValues, runtimeType, operation, hideSuggestions) {
+export function collectFields(schema, fragments, variableValues, runtimeType, selectionSet, hideSuggestions) {
     const groupedFieldSet = new AccumulatorMap();
     const newDeferUsages = [];
     const context = {
@@ -25,7 +25,7 @@ export function collectFields(schema, fragments, variableValues, runtimeType, op
         visitedFragmentNames: new Set(),
         hideSuggestions,
     };
-    collectFieldsImpl(context, operation.selectionSet, groupedFieldSet, newDeferUsages);
+    collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
     return { groupedFieldSet, newDeferUsages };
 }
 /**
