@@ -91,7 +91,7 @@ function validateInputValueImpl(inputValue, type, onError, hideSuggestions, path
         let result;
         let caughtError;
         try {
-            result = type.parseValue(inputValue, hideSuggestions);
+            result = type.coerceInputValue(inputValue, hideSuggestions);
         }
         catch (error) {
             if (error instanceof GraphQLError_js_1.GraphQLError) {
