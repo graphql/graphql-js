@@ -97,13 +97,12 @@ const collectSubfields = memoize3(
     returnType: GraphQLObjectType,
     fieldDetailsList: FieldDetailsList,
   ) => {
-    const { schema, fragments, operation, variableValues, hideSuggestions } =
+    const { schema, fragments, variableValues, hideSuggestions } =
       validatedExecutionArgs;
     return _collectSubfields(
       schema,
       fragments,
       variableValues,
-      operation,
       returnType,
       fieldDetailsList,
       hideSuggestions,
@@ -1760,13 +1759,22 @@ function collectAndExecuteSubfields(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
+  const validatedExecutionArgs = exeContext.validatedExecutionArgs;
   // Collect sub-fields to execute to complete this value.
   const collectedSubfields = collectSubfields(
-    exeContext.validatedExecutionArgs,
+    validatedExecutionArgs,
     returnType,
     fieldDetailsList,
   );
   const { groupedFieldSet, newDeferUsages } = collectedSubfields;
+  if (newDeferUsages.length > 0) {
+    validatedExecutionArgs.operation.operation !==
+      OperationTypeNode.SUBSCRIPTION ||
+      invariant(
+        false,
+        '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+      );
+  }
   return executeSubExecutionPlan(
     exeContext,
     returnType,

@@ -1,5 +1,4 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
-import { invariant } from '../jsutils/invariant.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type {
   FieldNode,
@@ -9,7 +8,6 @@ import type {
   OperationDefinitionNode,
   SelectionSetNode,
 } from '../language/ast.ts';
-import { OperationTypeNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import type { GraphQLObjectType } from '../type/definition.ts';
 import { isAbstractType } from '../type/definition.ts';
@@ -42,7 +40,6 @@ interface CollectFieldsContext {
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDetails>;
   variableValues: VariableValues;
-  operation: OperationDefinitionNode;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
   hideSuggestions: boolean;
@@ -75,7 +72,6 @@ export function collectFields(
     fragments,
     variableValues,
     runtimeType,
-    operation,
     visitedFragmentNames: new Set(),
     hideSuggestions,
   };
@@ -102,7 +98,6 @@ export function collectSubfields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDetails>,
   variableValues: VariableValues,
-  operation: OperationDefinitionNode,
   returnType: GraphQLObjectType,
   fieldDetailsList: FieldDetailsList,
   hideSuggestions: boolean,
@@ -115,7 +110,6 @@ export function collectSubfields(
     fragments,
     variableValues,
     runtimeType: returnType,
-    operation,
     visitedFragmentNames: new Set(),
     hideSuggestions,
   };
@@ -154,7 +148,6 @@ function collectFieldsImpl(
     fragments,
     variableValues,
     runtimeType,
-    operation,
     visitedFragmentNames,
     hideSuggestions,
   } = context;
@@ -185,7 +178,6 @@ function collectFieldsImpl(
           continue;
         }
         const newDeferUsage = getDeferUsage(
-          operation,
           variableValues,
           fragmentVariableValues,
           selection,
@@ -216,7 +208,6 @@ function collectFieldsImpl(
       case Kind.FRAGMENT_SPREAD: {
         const fragName = selection.name.value;
         const newDeferUsage = getDeferUsage(
-          operation,
           variableValues,
           fragmentVariableValues,
           selection,
@@ -283,7 +274,6 @@ function collectFieldsImpl(
  * not disabled by the "if" argument.
  */
 function getDeferUsage(
-  operation: OperationDefinitionNode,
   variableValues: VariableValues,
   fragmentVariableValues: VariableValues | undefined,
   node: FragmentSpreadNode | InlineFragmentNode,
@@ -301,11 +291,6 @@ function getDeferUsage(
   if (defer.if === false) {
     return;
   }
-  operation.operation !== OperationTypeNode.SUBSCRIPTION ||
-    invariant(
-      false,
-      '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
-    );
   return {
     label: typeof defer.label === 'string' ? defer.label : undefined,
     parentDeferUsage,
