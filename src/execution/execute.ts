@@ -29,6 +29,7 @@ import {
   cancellableIterable,
   cancellablePromise,
 } from './AbortSignalListener.js';
+import { buildExecutionPlan } from './buildExecutionPlan.js';
 import { buildResolveInfo } from './buildResolveInfo.js';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
 import { collectFields } from './collectFields.js';
@@ -36,6 +37,7 @@ import type { ValidatedExecutionArgs } from './Executor.js';
 import { Executor } from './Executor.js';
 import { getVariableSignature } from './getVariableSignature.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
+import { getPayloadPublisher } from './PayloadPublisher.js';
 import type {
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
@@ -170,7 +172,11 @@ export function executeQueryOrMutationOrSubscriptionEvent(
 export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  const executor = new Executor(validatedExecutionArgs);
+  const executor = new Executor(
+    validatedExecutionArgs,
+    buildExecutionPlan,
+    getPayloadPublisher,
+  );
   return executor.executeQueryOrMutationOrSubscriptionEvent();
 }
 

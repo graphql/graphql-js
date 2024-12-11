@@ -114,7 +114,7 @@ export interface FormattedIncrementalDeferResult<
   extensions?: TExtensions;
 }
 
-interface StreamItemsRecordResult<TData = ReadonlyArray<unknown>> {
+export interface StreamItemsRecordResult<TData = ReadonlyArray<unknown>> {
   errors?: ReadonlyArray<GraphQLError>;
   items: TData;
 }
@@ -191,7 +191,7 @@ export interface SuccessfulExecutionGroup {
   errors?: never;
 }
 
-interface FailedExecutionGroup {
+export interface FailedExecutionGroup {
   pendingExecutionGroup: PendingExecutionGroup;
   path: Array<string | number>;
   errors: ReadonlyArray<GraphQLError>;
@@ -219,7 +219,6 @@ export type DeliveryGroup = DeferredFragmentRecord | StreamRecord;
 export class DeferredFragmentRecord {
   path: Path | undefined;
   label: string | undefined;
-  id?: string | undefined;
   parent: DeferredFragmentRecord | undefined;
   pendingExecutionGroups: Set<PendingExecutionGroup>;
   successfulExecutionGroups: Set<SuccessfulExecutionGroup>;
@@ -256,7 +255,6 @@ export type StreamItemRecord = ThunkIncrementalResult<StreamItemResult>;
 export interface StreamRecord {
   path: Path;
   label: string | undefined;
-  id?: string | undefined;
   streamItemQueue: Array<StreamItemRecord>;
 }
 

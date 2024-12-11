@@ -48,7 +48,6 @@ import {
   cancellablePromise,
 } from './AbortSignalListener.js';
 import type { DeferUsageSet, ExecutionPlan } from './buildExecutionPlan.js';
-import { buildExecutionPlan } from './buildExecutionPlan.js';
 import { buildResolveInfo } from './buildResolveInfo.js';
 import type {
   DeferUsage,
@@ -57,17 +56,20 @@ import type {
   GroupedFieldSet,
 } from './collectFields.js';
 import { collectFields, collectSubfields } from './collectFields.js';
+import type { ExperimentalIncrementalExecutionResults } from './IncrementalPublisher.js';
 import { buildIncrementalResponse } from './IncrementalPublisher.js';
+import type { PayloadPublisher } from './PayloadPublisher.js';
 import type {
   CancellableStreamRecord,
   CompletedExecutionGroup,
   ExecutionResult,
-  ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
+  InitialIncrementalExecutionResult,
   PendingExecutionGroup,
   StreamItemRecord,
   StreamItemResult,
   StreamRecord,
+  SubsequentIncrementalExecutionResult,
 } from './types.js';
 import { DeferredFragmentRecord } from './types.js';
 import type { VariableValues } from './values.js';
@@ -150,8 +152,22 @@ interface GraphQLWrappedResult<T> {
 }
 
 /** @internal */
-export class Executor {
+export class Executor<
+  TInitialPayload = InitialIncrementalExecutionResult,
+  TSubsequentPayload = SubsequentIncrementalExecutionResult,
+> {
   validatedExecutionArgs: ValidatedExecutionArgs;
+
+  buildExecutionPlan: (
+    originalGroupedFieldSet: GroupedFieldSet,
+    parentDeferUsages?: DeferUsageSet | undefined,
+  ) => ExecutionPlan;
+
+  getPayloadPublisher: () => PayloadPublisher<
+    TInitialPayload,
+    TSubsequentPayload
+  >;
+
   exeContext: ExecutionContext;
 
   /**
@@ -167,8 +183,21 @@ export class Executor {
     newDeferUsages: ReadonlyArray<DeferUsage>;
   };
 
-  constructor(validatedExecutionArgs: ValidatedExecutionArgs) {
+  constructor(
+    validatedExecutionArgs: ValidatedExecutionArgs,
+    buildExecutionPlan: (
+      originalGroupedFieldSet: GroupedFieldSet,
+      parentDeferUsages?: DeferUsageSet | undefined,
+    ) => ExecutionPlan,
+    getPayloadPublisher: () => PayloadPublisher<
+      TInitialPayload,
+      TSubsequentPayload
+    >,
+  ) {
     this.validatedExecutionArgs = validatedExecutionArgs;
+    this.buildExecutionPlan = buildExecutionPlan;
+    this.getPayloadPublisher = getPayloadPublisher;
+
     const abortSignal = validatedExecutionArgs.abortSignal;
     this.exeContext = {
       errors: undefined,
@@ -196,7 +225,11 @@ export class Executor {
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
-    ExecutionResult | ExperimentalIncrementalExecutionResults
+    | ExecutionResult
+    | ExperimentalIncrementalExecutionResults<
+        TInitialPayload,
+        TSubsequentPayload
+      >
   > {
     try {
       const {
@@ -277,7 +310,12 @@ export class Executor {
 
   buildDataResponse(
     graphqlWrappedResult: GraphQLWrappedResult<ObjMap<unknown>>,
-  ): ExecutionResult | ExperimentalIncrementalExecutionResults {
+  ):
+    | ExecutionResult
+    | ExperimentalIncrementalExecutionResults<
+        TInitialPayload,
+        TSubsequentPayload
+      > {
     const { rawResult: data, incrementalDataRecords } = graphqlWrappedResult;
     const errors = this.exeContext.errors;
     if (incrementalDataRecords === undefined) {
@@ -285,11 +323,23 @@ export class Executor {
       return errors !== undefined ? { errors, data } : { data };
     }
 
+    return this.buildIncrementalResponse(data, errors, incrementalDataRecords);
+  }
+
+  buildIncrementalResponse(
+    data: ObjMap<unknown>,
+    errors: ReadonlyArray<GraphQLError> | undefined,
+    incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
+  ): ExperimentalIncrementalExecutionResults<
+    TInitialPayload,
+    TSubsequentPayload
+  > {
     return buildIncrementalResponse(
       this.exeContext,
       data,
       errors,
       incrementalDataRecords,
+      this.getPayloadPublisher(),
     );
   }
 
@@ -315,7 +365,7 @@ export class Executor {
       undefined,
     );
 
-    const { groupedFieldSet, newGroupedFieldSets } = buildExecutionPlan(
+    const { groupedFieldSet, newGroupedFieldSets } = this.buildExecutionPlan(
       originalGroupedFieldSet,
     );
 
@@ -1582,13 +1632,7 @@ export class Executor {
     );
     const { groupedFieldSet, newDeferUsages } = collectedSubfields;
 
-    if (newDeferUsages.length > 0) {
-      invariant(
-        this.validatedExecutionArgs.operation.operation !==
-          OperationTypeNode.SUBSCRIPTION,
-        '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
-      );
-    }
+    this.assertValidOperationTypeForDefer(newDeferUsages);
 
     return this.executeSubExecutionPlan(
       returnType,
@@ -1599,6 +1643,18 @@ export class Executor {
       incrementalContext,
       deferMap,
     );
+  }
+
+  assertValidOperationTypeForDefer(
+    newDeferUsages: ReadonlyArray<DeferUsage>,
+  ): void {
+    if (newDeferUsages.length > 0) {
+      invariant(
+        this.validatedExecutionArgs.operation.operation !==
+          OperationTypeNode.SUBSCRIPTION,
+        '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
+      );
+    }
   }
 
   executeSubExecutionPlan(
@@ -1665,7 +1721,10 @@ export class Executor {
     if (executionPlan !== undefined) {
       return executionPlan;
     }
-    executionPlan = buildExecutionPlan(originalGroupedFieldSet, deferUsageSet);
+    executionPlan = this.buildExecutionPlan(
+      originalGroupedFieldSet,
+      deferUsageSet,
+    );
     (
       originalGroupedFieldSet as unknown as { _executionPlan: ExecutionPlan }
     )._executionPlan = executionPlan;
