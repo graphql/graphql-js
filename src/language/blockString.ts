@@ -31,12 +31,19 @@ export function dedentBlockStringLines(
     }
   }
 
+  if (lastNonEmptyLine === -1) {
+    return [];
+  }
+
+  firstNonEmptyLine = firstNonEmptyLine ?? 0;
+
+  const removeCommonIndentation = (line: string, i: number) =>
+    i === 0 ? line : commonIndent && line ? line.substring(commonIndent) : line;
   return (
     lines
       // Remove common indentation from all lines but first.
-      .map((line, i) => (i === 0 ? line : line.slice(commonIndent)))
-      // Remove leading and trailing blank lines.
-      .slice(firstNonEmptyLine ?? 0, lastNonEmptyLine + 1)
+      .map(removeCommonIndentation)
+      .slice(firstNonEmptyLine, lastNonEmptyLine + 1)
   );
 }
 

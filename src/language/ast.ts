@@ -85,7 +85,7 @@ export class Token {
    * Note: is undefined for punctuation tokens, but typed as string for
    * convenience in the parser.
    */
-  readonly value: string;
+  readonly value: string | undefined;
 
   /**
    * Tokens exist as nodes in a double-linked-list amongst all tokens
@@ -101,15 +101,14 @@ export class Token {
     end: number,
     line: number,
     column: number,
-    value?: string,
+    value: string | undefined,
   ) {
     this.kind = kind;
     this.start = start;
     this.end = end;
     this.line = line;
     this.column = column;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    this.value = value!;
+    this.value = value;
     this.prev = null;
     this.next = null;
   }

@@ -269,6 +269,7 @@ export class Parser {
       : this._lexer.token;
 
     if (keywordToken.kind === TokenKind.NAME) {
+      // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
       switch (keywordToken.value) {
         case 'schema':
           return this.parseSchemaDefinition();
@@ -296,6 +297,7 @@ export class Parser {
         );
       }
 
+      // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
       switch (keywordToken.value) {
         case 'query':
         case 'mutation':
