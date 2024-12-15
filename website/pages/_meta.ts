@@ -21,6 +21,11 @@ const meta = {
   'defer-stream': '',
   '-- 3': {
     type: 'separator',
+    title: 'Upgrade guides',
+  },
+  'v16-v17': '',
+  '-- 4': {
+    type: 'separator',
     title: 'FAQ',
   },
   'going-to-production': '',
