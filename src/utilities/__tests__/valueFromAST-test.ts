@@ -191,7 +191,7 @@ describe('valueFromAST', () => {
   const testInputObj = new GraphQLInputObjectType({
     name: 'TestInput',
     fields: {
-      int: { type: GraphQLInt, externalDefaultValue: 42 },
+      int: { type: GraphQLInt, defaultValue: 42 },
       bool: { type: GraphQLBoolean },
       requiredBool: { type: nonNullBool },
     },

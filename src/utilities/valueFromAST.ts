@@ -114,8 +114,8 @@ export function valueFromAST(
     for (const field of Object.values(type.getFields())) {
       const fieldNode = fieldNodes.get(field.name);
       if (fieldNode == null || isMissingVariable(fieldNode.value, variables)) {
-        if (field.externalDefaultValue !== undefined) {
-          coercedObj[field.name] = field.externalDefaultValue.value;
+        if (field.defaultValue !== undefined) {
+          coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
           return; // Invalid: intentionally return no value.
         }
