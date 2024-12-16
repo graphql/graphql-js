@@ -222,12 +222,23 @@ export function visit(
             }
           }
         } else {
-          node = Object.defineProperties(
-            {},
-            Object.getOwnPropertyDescriptors(node),
-          );
-          for (const [editKey, editValue] of edits) {
-            node[editKey] = editValue;
+          const descriptors = Object.getOwnPropertyDescriptors(node);
+          node = { ...node };
+          for (const nodeKey of Object.keys(descriptors)) {
+            if (!(nodeKey in node)) {
+              const descriptor = descriptors[nodeKey];
+              if (
+                descriptor.enumerable &&
+                descriptor.configurable &&
+                descriptor.writable &&
+                !descriptor.get &&
+                !descriptor.set
+              ) {
+                // We already own this by means of the spread
+              } else {
+                Object.defineProperty(node, nodeKey, descriptor);
+              }
+            }
           }
         }
       }
