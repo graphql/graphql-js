@@ -1,3 +1,9 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`: none
+ * Should we still expose this file?
+ */
+
 import { inspect } from '../jsutils/inspect';
 import { keyMap } from '../jsutils/keyMap';
 import type { Maybe } from '../jsutils/Maybe';

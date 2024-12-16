@@ -4,8 +4,11 @@
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "private": true,
-  "main": "index",
+  "main": "index.js",
   "module": "index.mjs",
+  "exports": {
+    "./package.json": "./package.json"
+  },
   "typesVersions": {
     ">=4.1.0": {
       "*": [
