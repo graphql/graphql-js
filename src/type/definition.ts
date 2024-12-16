@@ -1069,7 +1069,7 @@ export interface GraphQLArgumentExtensions {
 export interface GraphQLArgumentConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
-  /** @deprecated use default instead, defaultValue will be removed in v17 **/
+  /** @deprecated use default instead, defaultValue will be removed in v18 **/
   defaultValue?: unknown;
   default?: GraphQLDefaultInput | undefined;
   deprecationReason?: Maybe<string>;
@@ -1919,7 +1919,7 @@ export interface GraphQLInputFieldExtensions {
 export interface GraphQLInputFieldConfig {
   description?: Maybe<string>;
   type: GraphQLInputType;
-  /** @deprecated use default instead, defaultValue will be removed in v17 **/
+  /** @deprecated use default instead, defaultValue will be removed in v18 **/
   defaultValue?: unknown;
   default?: GraphQLDefaultInput | undefined;
   deprecationReason?: Maybe<string>;
