@@ -376,9 +376,9 @@ export function buildClientSchema(
     return {
       description: inputValueIntrospection.description,
       type,
-      defaultValueLiteral:
+      default:
         inputValueIntrospection.defaultValue != null
-          ? parseConstValue(inputValueIntrospection.defaultValue)
+          ? { literal: parseConstValue(inputValueIntrospection.defaultValue) }
           : undefined,
       deprecationReason: inputValueIntrospection.deprecationReason,
     };

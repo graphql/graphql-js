@@ -11,11 +11,10 @@ export function getDefaultValueAST(
   argOrInputField: GraphQLArgument | GraphQLInputField,
 ): ConstValueNode | undefined {
   const type = argOrInputField.type;
-  const externalDefaultValue = argOrInputField.externalDefaultValue;
-  if (externalDefaultValue) {
+  const defaultInput = argOrInputField.default;
+  if (defaultInput) {
     const literal =
-      externalDefaultValue.literal ??
-      valueToLiteral(externalDefaultValue.value, type);
+      defaultInput.literal ?? valueToLiteral(defaultInput.value, type);
     invariant(literal != null, 'Invalid default value');
     return literal;
   }

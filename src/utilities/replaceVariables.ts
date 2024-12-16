@@ -37,8 +37,7 @@ export function replaceVariables(
       }
 
       if (scopedVariableSource.value === undefined) {
-        const defaultValue =
-          scopedVariableSource.signature.externalDefaultValue;
+        const defaultValue = scopedVariableSource.signature.default;
         if (defaultValue !== undefined) {
           return defaultValue.literal;
         }
@@ -59,7 +58,7 @@ export function replaceVariables(
 
           if (
             scopedVariableSource?.value === undefined &&
-            scopedVariableSource?.signature.externalDefaultValue === undefined
+            scopedVariableSource?.signature.default === undefined
           ) {
             continue;
           }

@@ -232,7 +232,7 @@ export class TypeInfo {
         }
         this._argument = argDef;
         this._defaultValueStack.push(
-          argDef?.externalDefaultValue ?? argDef?.defaultValue ?? undefined,
+          argDef?.default ?? argDef?.defaultValue ?? undefined,
         );
         this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
         break;
@@ -271,9 +271,7 @@ export class TypeInfo {
           }
         }
         this._defaultValueStack.push(
-          inputField?.externalDefaultValue ??
-            inputField?.defaultValue ??
-            undefined,
+          inputField?.default ?? inputField?.defaultValue ?? undefined,
         );
         this._inputTypeStack.push(
           isInputType(inputFieldType) ? inputFieldType : undefined,

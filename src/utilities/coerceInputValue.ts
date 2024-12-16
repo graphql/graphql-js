@@ -7,7 +7,7 @@ import type { ValueNode, VariableNode } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 
 import type {
-  GraphQLDefaultValueUsage,
+  GraphQLDefaultInput,
   GraphQLInputType,
 } from '../type/definition.js';
 import {
@@ -295,7 +295,7 @@ function getCoercedVariableValue(
 
 interface InputValue {
   type: GraphQLInputType;
-  externalDefaultValue?: GraphQLDefaultValueUsage | undefined;
+  default?: GraphQLDefaultInput | undefined;
   defaultValue?: unknown;
 }
 
@@ -309,11 +309,11 @@ export function coerceDefaultValue(inputValue: InputValue): unknown {
     return coercedDefaultValue;
   }
 
-  const externalDefaultValue = inputValue.externalDefaultValue;
-  if (externalDefaultValue !== undefined) {
-    coercedDefaultValue = externalDefaultValue.literal
-      ? coerceInputLiteral(externalDefaultValue.literal, inputValue.type)
-      : coerceInputValue(externalDefaultValue.value, inputValue.type);
+  const defaultInput = inputValue.default;
+  if (defaultInput !== undefined) {
+    coercedDefaultValue = defaultInput.literal
+      ? coerceInputLiteral(defaultInput.literal, inputValue.type)
+      : coerceInputValue(defaultInput.value, inputValue.type);
     invariant(coercedDefaultValue !== undefined);
     (inputValue as any)._memoizedCoercedDefaultValue = coercedDefaultValue;
     return coercedDefaultValue;

@@ -319,13 +319,14 @@ describe('validateInputValue', () => {
   });
 
   describe('for GraphQLInputObject with default value', () => {
-    function makeTestInputObject(externalDefaultValue: unknown) {
+    function makeTestInputObject(defaultValue: unknown) {
       return new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            externalDefaultValue,
+            default:
+              defaultValue === undefined ? undefined : { value: defaultValue },
           },
         },
       });
@@ -661,7 +662,7 @@ describe('validateInputLiteral', () => {
         bar: { type: GraphQLInt },
         optional: {
           type: new GraphQLNonNull(GraphQLInt),
-          externalDefaultValue: 42,
+          default: { value: 42 },
         },
       },
     });
@@ -795,13 +796,14 @@ describe('validateInputLiteral', () => {
   });
 
   describe('for GraphQLInputObject with default value', () => {
-    function makeTestInputObject(externalDefaultValue: unknown) {
+    function makeTestInputObject(defaultValue: unknown) {
       return new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            externalDefaultValue,
+            default:
+              defaultValue === undefined ? undefined : { value: defaultValue },
           },
         },
       });

@@ -132,7 +132,7 @@ export type {
   GraphQLScalarOutputValueCoercer,
   GraphQLScalarInputValueCoercer,
   GraphQLScalarInputLiteralCoercer,
-  GraphQLDefaultValueUsage,
+  GraphQLDefaultInput,
 } from './definition.js';
 
 export {

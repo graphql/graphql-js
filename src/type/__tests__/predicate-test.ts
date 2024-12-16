@@ -5,6 +5,7 @@ import { DirectiveLocation } from '../../language/directiveLocation.js';
 
 import type {
   GraphQLArgument,
+  GraphQLDefaultInput,
   GraphQLInputField,
   GraphQLInputType,
 } from '../definition.js';
@@ -634,7 +635,7 @@ describe('Type predicates', () => {
   describe('isRequiredArgument', () => {
     function buildArg(config: {
       type: GraphQLInputType;
-      externalDefaultValue?: unknown;
+      default?: GraphQLDefaultInput;
     }): GraphQLArgument {
       const objectType = new GraphQLObjectType({
         name: 'SomeType',
@@ -660,7 +661,7 @@ describe('Type predicates', () => {
 
       const optArg2 = buildArg({
         type: GraphQLString,
-        externalDefaultValue: null,
+        default: { value: null },
       });
       expect(isRequiredArgument(optArg2)).to.equal(false);
 
@@ -671,7 +672,7 @@ describe('Type predicates', () => {
 
       const optArg4 = buildArg({
         type: new GraphQLNonNull(GraphQLString),
-        externalDefaultValue: 'default',
+        default: { value: 'default' },
       });
       expect(isRequiredArgument(optArg4)).to.equal(false);
     });
@@ -680,7 +681,7 @@ describe('Type predicates', () => {
   describe('isRequiredInputField', () => {
     function buildInputField(config: {
       type: GraphQLInputType;
-      externalDefaultValue?: unknown;
+      default?: GraphQLDefaultInput;
     }): GraphQLInputField {
       const inputObjectType = new GraphQLInputObjectType({
         name: 'SomeType',
@@ -706,7 +707,7 @@ describe('Type predicates', () => {
 
       const optField2 = buildInputField({
         type: GraphQLString,
-        externalDefaultValue: null,
+        default: { value: null },
       });
       expect(isRequiredInputField(optField2)).to.equal(false);
 
@@ -717,7 +718,7 @@ describe('Type predicates', () => {
 
       const optField4 = buildInputField({
         type: new GraphQLNonNull(GraphQLString),
-        externalDefaultValue: 'default',
+        default: { value: 'default' },
       });
       expect(isRequiredInputField(optField4)).to.equal(false);
     });

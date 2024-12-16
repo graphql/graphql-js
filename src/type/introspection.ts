@@ -108,7 +108,7 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
         args: {
           includeDeprecated: {
             type: GraphQLBoolean,
-            externalDefaultValue: false,
+            default: { value: false },
           },
         },
         resolve(field, { includeDeprecated }) {
@@ -267,7 +267,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         args: {
           includeDeprecated: {
             type: GraphQLBoolean,
-            externalDefaultValue: false,
+            default: { value: false },
           },
         },
         resolve(type, { includeDeprecated }) {
@@ -300,7 +300,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         args: {
           includeDeprecated: {
             type: GraphQLBoolean,
-            externalDefaultValue: false,
+            default: { value: false },
           },
         },
         resolve(type, { includeDeprecated }) {
@@ -317,7 +317,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         args: {
           includeDeprecated: {
             type: GraphQLBoolean,
-            externalDefaultValue: false,
+            default: { value: false },
           },
         },
         resolve(type, { includeDeprecated }) {
@@ -365,7 +365,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         args: {
           includeDeprecated: {
             type: GraphQLBoolean,
-            externalDefaultValue: false,
+            default: { value: false },
           },
         },
         resolve(field, { includeDeprecated }) {

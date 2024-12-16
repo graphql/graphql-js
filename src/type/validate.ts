@@ -235,15 +235,15 @@ function validateDefaultValue(
   context: SchemaValidationContext,
   inputValue: GraphQLArgument | GraphQLInputField,
 ): void {
-  const defaultValue = inputValue.externalDefaultValue;
+  const defaultInput = inputValue.default;
 
-  if (!defaultValue) {
+  if (!defaultInput) {
     return;
   }
 
-  if (defaultValue.literal) {
+  if (defaultInput.literal) {
     validateInputLiteral(
-      defaultValue.literal,
+      defaultInput.literal,
       inputValue.type,
       (error, path) => {
         context.reportError(
@@ -256,7 +256,7 @@ function validateDefaultValue(
     );
   } else {
     const errors: Array<[GraphQLError, ReadonlyArray<string | number>]> = [];
-    validateInputValue(defaultValue.value, inputValue.type, (error, path) => {
+    validateInputValue(defaultInput.value, inputValue.type, (error, path) => {
       errors.push([error, path]);
     });
 
@@ -266,7 +266,7 @@ function validateDefaultValue(
     if (errors.length > 0) {
       try {
         const uncoercedValue = uncoerceDefaultValue(
-          defaultValue.value,
+          defaultInput.value,
           inputValue.type,
         );
 
@@ -278,7 +278,7 @@ function validateDefaultValue(
         if (uncoercedErrors.length === 0) {
           context.reportError(
             `${inputValue} has invalid default value: ${inspect(
-              defaultValue.value,
+              defaultInput.value,
             )}. Did you mean: ${inspect(uncoercedValue)}?`,
             inputValue.astNode?.defaultValue,
           );
@@ -703,10 +703,7 @@ function validateOneOfInputObjectField(
     );
   }
 
-  if (
-    field.externalDefaultValue !== undefined ||
-    field.defaultValue !== undefined
-  ) {
+  if (field.default !== undefined || field.defaultValue !== undefined) {
     context.reportError(
       `OneOf input field ${type}.${field.name} cannot have a default value.`,
       field.astNode,
@@ -891,8 +888,8 @@ function createInputObjectDefaultValueCircularRefsValidator(
     fieldStr: string,
   ): void {
     // Only a field with a default value can result in a cycle.
-    const defaultValue = field.externalDefaultValue;
-    if (defaultValue === undefined) {
+    const defaultInput = field.default;
+    if (defaultInput === undefined) {
       return;
     }
 
@@ -920,10 +917,10 @@ function createInputObjectDefaultValueCircularRefsValidator(
         fieldStr,
         field.astNode?.defaultValue,
       ]);
-      if (defaultValue.literal) {
-        detectLiteralDefaultValueCycle(fieldType, defaultValue.literal);
+      if (defaultInput.literal) {
+        detectLiteralDefaultValueCycle(fieldType, defaultInput.literal);
       } else {
-        detectValueDefaultValueCycle(fieldType, defaultValue.value);
+        detectValueDefaultValueCycle(fieldType, defaultInput.value);
       }
       fieldPath.pop();
       fieldPathIndex[fieldStr] = undefined;

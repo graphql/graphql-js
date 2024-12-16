@@ -21,7 +21,7 @@ export interface GraphQLVariableSignature {
   name: string;
   type: GraphQLInputType;
   defaultValue?: never;
-  externalDefaultValue: { literal: ConstValueNode } | undefined;
+  default: { literal: ConstValueNode } | undefined;
 }
 
 export function getVariableSignature(
@@ -46,6 +46,6 @@ export function getVariableSignature(
   return {
     name: varName,
     type: varType,
-    externalDefaultValue: defaultValue ? { literal: defaultValue } : undefined,
+    default: defaultValue && { literal: defaultValue },
   };
 }

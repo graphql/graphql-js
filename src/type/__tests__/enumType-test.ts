@@ -71,7 +71,7 @@ const QueryType = new GraphQLObjectType({
       args: {
         fromEnum: {
           type: ComplexEnum,
-          externalDefaultValue: 'ONE',
+          default: { value: 'ONE' },
         },
         provideGoodValue: { type: GraphQLBoolean },
         provideBadValue: { type: GraphQLBoolean },
