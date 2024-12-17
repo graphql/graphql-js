@@ -4,7 +4,7 @@ import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isPromise } from '../jsutils/isPromise.js';
-import { memoize3 } from '../jsutils/memoize3.js';
+import { memoize2 } from '../jsutils/memoize2.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
@@ -56,10 +56,7 @@ import type {
   FragmentDetails,
   GroupedFieldSet,
 } from './collectFields.js';
-import {
-  collectFields,
-  collectSubfields as _collectSubfields,
-} from './collectFields.js';
+import { collectFields, collectSubfields } from './collectFields.js';
 import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import type {
   CancellableStreamRecord,
@@ -79,30 +76,6 @@ import { experimentalGetArgumentValues, getDirectiveValues } from './values.js';
 /* eslint-disable @typescript-eslint/max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
-
-/**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
- * saves overhead when resolving lists of values.
- */
-const collectSubfields = memoize3(
-  (
-    validatedExecutionArgs: ValidatedExecutionArgs,
-    returnType: GraphQLObjectType,
-    fieldDetailsList: FieldDetailsList,
-  ) => {
-    const { schema, fragments, variableValues, hideSuggestions } =
-      validatedExecutionArgs;
-    return _collectSubfields(
-      schema,
-      fragments,
-      variableValues,
-      returnType,
-      fieldDetailsList,
-      hideSuggestions,
-    );
-  },
-);
 
 /**
  * Terminology
@@ -181,6 +154,19 @@ export class Executor {
   validatedExecutionArgs: ValidatedExecutionArgs;
   exeContext: ExecutionContext;
 
+  /**
+   * A memoized collection of relevant subfields with regard to the return
+   * type. Memoizing ensures the subfields are not repeatedly calculated, which
+   * saves overhead when resolving lists of values.
+   */
+  collectSubfields: (
+    returnType: GraphQLObjectType,
+    fieldDetailsList: FieldDetailsList,
+  ) => {
+    groupedFieldSet: GroupedFieldSet;
+    newDeferUsages: ReadonlyArray<DeferUsage>;
+  };
+
   constructor(validatedExecutionArgs: ValidatedExecutionArgs) {
     this.validatedExecutionArgs = validatedExecutionArgs;
     const abortSignal = validatedExecutionArgs.abortSignal;
@@ -192,6 +178,21 @@ export class Executor {
       completed: false,
       cancellableStreams: undefined,
     };
+
+    const { schema, fragments, variableValues, hideSuggestions } =
+      validatedExecutionArgs;
+
+    this.collectSubfields = memoize2(
+      (returnType: GraphQLObjectType, fieldDetailsList: FieldDetailsList) =>
+        collectSubfields(
+          schema,
+          fragments,
+          variableValues,
+          returnType,
+          fieldDetailsList,
+          hideSuggestions,
+        ),
+    );
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
@@ -1575,8 +1576,7 @@ export class Executor {
     deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
   ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
     // Collect sub-fields to execute to complete this value.
-    const collectedSubfields = collectSubfields(
-      this.validatedExecutionArgs,
+    const collectedSubfields = this.collectSubfields(
       returnType,
       fieldDetailsList,
     );
