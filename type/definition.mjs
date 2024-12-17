@@ -583,7 +583,8 @@ export class GraphQLArgument {
         this.name = assertName(name);
         this.description = config.description;
         this.type = config.type;
-        this.defaultValue = defineDefaultValue(name, config);
+        this.defaultValue = config.defaultValue;
+        this.default = config.default;
         this.deprecationReason = config.deprecationReason;
         this.extensions = toObjMapWithSymbols(config.extensions);
         this.astNode = config.astNode;
@@ -595,8 +596,8 @@ export class GraphQLArgument {
         return {
             description: this.description,
             type: this.type,
-            defaultValue: this.defaultValue?.value,
-            defaultValueLiteral: this.defaultValue?.literal,
+            defaultValue: this.defaultValue,
+            default: this.default,
             deprecationReason: this.deprecationReason,
             extensions: this.extensions,
             astNode: this.astNode,
@@ -610,16 +611,9 @@ export class GraphQLArgument {
     }
 }
 export function isRequiredArgument(arg) {
-    return isNonNullType(arg.type) && arg.defaultValue === undefined;
-}
-export function defineDefaultValue(argName, config) {
-    if (config.defaultValue === undefined && !config.defaultValueLiteral) {
-        return;
-    }
-    (!(config.defaultValue !== undefined && config.defaultValueLiteral)) || devAssert(false, `Argument "${argName}" has both a defaultValue and a defaultValueLiteral property, but only one must be provided.`);
-    return config.defaultValueLiteral
-        ? { literal: config.defaultValueLiteral }
-        : { value: config.defaultValue };
+    return (isNonNullType(arg.type) &&
+        arg.default === undefined &&
+        arg.defaultValue === undefined);
 }
 /**
  * Interface Type Definition
@@ -976,7 +970,8 @@ export class GraphQLInputField {
         this.name = assertName(name);
         this.description = config.description;
         this.type = config.type;
-        this.defaultValue = defineDefaultValue(name, config);
+        this.defaultValue = config.defaultValue;
+        this.default = config.default;
         this.deprecationReason = config.deprecationReason;
         this.extensions = toObjMapWithSymbols(config.extensions);
         this.astNode = config.astNode;
@@ -988,8 +983,8 @@ export class GraphQLInputField {
         return {
             description: this.description,
             type: this.type,
-            defaultValue: this.defaultValue?.value,
-            defaultValueLiteral: this.defaultValue?.literal,
+            defaultValue: this.defaultValue,
+            default: this.default,
             deprecationReason: this.deprecationReason,
             extensions: this.extensions,
             astNode: this.astNode,
@@ -1003,6 +998,8 @@ export class GraphQLInputField {
     }
 }
 export function isRequiredInputField(field) {
-    return isNonNullType(field.type) && field.defaultValue === undefined;
+    return (isNonNullType(field.type) &&
+        field.defaultValue === undefined &&
+        field.default === undefined);
 }
 //# sourceMappingURL=definition.js.map

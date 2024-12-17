@@ -7,7 +7,7 @@ import { isEnumType, isInputObjectType, isInterfaceType, isObjectType, isScalarT
 import { DEFAULT_DEPRECATION_REASON, isSpecifiedDirective, } from "../type/directives.mjs";
 import { isIntrospectionType } from "../type/introspection.mjs";
 import { isSpecifiedScalarType } from "../type/scalars.mjs";
-import { valueToLiteral } from "./valueToLiteral.mjs";
+import { getDefaultValueAST } from "./getDefaultValueAST.mjs";
 export function printSchema(schema) {
     return printFilteredSchema(schema, (n) => !isSpecifiedDirective(n), isDefinedType);
 }
@@ -171,15 +171,13 @@ function printArgs(args, indentation = '') {
         indentation +
         ')');
 }
-function printInputValue(arg) {
-    let argDecl = arg.name + ': ' + String(arg.type);
-    if (arg.defaultValue) {
-        const literal = arg.defaultValue.literal ??
-            valueToLiteral(arg.defaultValue.value, arg.type);
-        (literal != null) || invariant(false, 'Invalid default value');
-        argDecl += ` = ${print(literal)}`;
+function printInputValue(argOrInputField) {
+    let argDecl = argOrInputField.name + ': ' + String(argOrInputField.type);
+    const defaultValueAST = getDefaultValueAST(argOrInputField);
+    if (defaultValueAST) {
+        argDecl += ` = ${print(defaultValueAST)}`;
     }
-    return argDecl + printDeprecated(arg.deprecationReason);
+    return argDecl + printDeprecated(argOrInputField.deprecationReason);
 }
 export function printDirective(directive) {
     return (printDescription(directive) +

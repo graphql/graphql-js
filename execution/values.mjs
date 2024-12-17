@@ -114,8 +114,9 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
                 // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
                 `Argument "${isArgument(argDef) ? argDef : argDef.name}" of required type "${argType}" was not provided.`, { nodes: node });
             }
-            if (argDef.defaultValue) {
-                coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type);
+            const coercedDefaultValue = coerceDefaultValue(argDef);
+            if (coercedDefaultValue !== undefined) {
+                coercedValues[name] = coercedDefaultValue;
             }
             continue;
         }
@@ -130,8 +131,9 @@ export function experimentalGetArgumentValues(node, argDefs, variableValues, fra
             if ((scopedVariableValues == null ||
                 !Object.hasOwn(scopedVariableValues.coerced, variableName)) &&
                 !isRequiredArgument(argDef)) {
-                if (argDef.defaultValue) {
-                    coercedValues[name] = coerceDefaultValue(argDef.defaultValue, argDef.type);
+                const coercedDefaultValue = coerceDefaultValue(argDef);
+                if (coercedDefaultValue !== undefined) {
+                    coercedValues[name] = coercedDefaultValue;
                 }
                 continue;
             }

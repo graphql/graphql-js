@@ -2,7 +2,7 @@ import { inspect } from "../jsutils/inspect.mjs";
 import { invariant } from "../jsutils/invariant.mjs";
 import { DirectiveLocation } from "../language/directiveLocation.mjs";
 import { print } from "../language/printer.mjs";
-import { valueToLiteral } from "../utilities/valueToLiteral.mjs";
+import { getDefaultValueAST } from "../utilities/getDefaultValueAST.mjs";
 import { GraphQLEnumType, GraphQLField, GraphQLList, GraphQLNonNull, GraphQLObjectType, isAbstractType, isEnumType, isInputObjectType, isInterfaceType, isListType, isNonNullType, isObjectType, isScalarType, isUnionType, } from "./definition.mjs";
 import { GraphQLBoolean, GraphQLString } from "./scalars.mjs";
 export const __Schema = new GraphQLObjectType({
@@ -67,7 +67,7 @@ export const __Directive = new GraphQLObjectType({
             args: {
                 includeDeprecated: {
                     type: GraphQLBoolean,
-                    defaultValue: false,
+                    default: { value: false },
                 },
             },
             resolve(field, { includeDeprecated }) {
@@ -218,7 +218,10 @@ export const __Type = new GraphQLObjectType({
         fields: {
             type: new GraphQLList(new GraphQLNonNull(__Field)),
             args: {
-                includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
+                includeDeprecated: {
+                    type: GraphQLBoolean,
+                    default: { value: false },
+                },
             },
             resolve(type, { includeDeprecated }) {
                 if (isObjectType(type) || isInterfaceType(type)) {
@@ -248,7 +251,10 @@ export const __Type = new GraphQLObjectType({
         enumValues: {
             type: new GraphQLList(new GraphQLNonNull(__EnumValue)),
             args: {
-                includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
+                includeDeprecated: {
+                    type: GraphQLBoolean,
+                    default: { value: false },
+                },
             },
             resolve(type, { includeDeprecated }) {
                 if (isEnumType(type)) {
@@ -264,7 +270,7 @@ export const __Type = new GraphQLObjectType({
             args: {
                 includeDeprecated: {
                     type: GraphQLBoolean,
-                    defaultValue: false,
+                    default: { value: false },
                 },
             },
             resolve(type, { includeDeprecated }) {
@@ -307,7 +313,7 @@ export const __Field = new GraphQLObjectType({
             args: {
                 includeDeprecated: {
                     type: GraphQLBoolean,
-                    defaultValue: false,
+                    default: { value: false },
                 },
             },
             resolve(field, { includeDeprecated }) {
@@ -350,13 +356,11 @@ export const __InputValue = new GraphQLObjectType({
             type: GraphQLString,
             description: 'A GraphQL-formatted string representing the default value for this input value.',
             resolve(inputValue) {
-                const { type, defaultValue } = inputValue;
-                if (!defaultValue) {
-                    return null;
+                const ast = getDefaultValueAST(inputValue);
+                if (ast) {
+                    return print(ast);
                 }
-                const literal = defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
-                (literal != null) || invariant(false, 'Invalid default value');
-                return print(literal);
+                return null;
             },
         },
         isDeprecated: {

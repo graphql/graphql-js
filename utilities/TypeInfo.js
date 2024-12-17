@@ -149,7 +149,7 @@ class TypeInfo {
                     }
                 }
                 this._argument = argDef;
-                this._defaultValueStack.push(argDef ? argDef.defaultValue : undefined);
+                this._defaultValueStack.push(argDef?.default ?? argDef?.defaultValue ?? undefined);
                 this._inputTypeStack.push((0, definition_js_1.isInputType)(argType) ? argType : undefined);
                 break;
             }
@@ -184,7 +184,7 @@ class TypeInfo {
                         inputFieldType = inputField.type;
                     }
                 }
-                this._defaultValueStack.push(inputField ? inputField.defaultValue : undefined);
+                this._defaultValueStack.push(inputField?.default ?? inputField?.defaultValue ?? undefined);
                 this._inputTypeStack.push((0, definition_js_1.isInputType)(inputFieldType) ? inputFieldType : undefined);
                 break;
             }

@@ -58,8 +58,9 @@ function coerceInputValue(inputValue, type) {
                 if ((0, definition_js_1.isRequiredInputField)(field)) {
                     return; // Invalid: intentionally return no value.
                 }
-                if (field.defaultValue) {
-                    coercedValue[field.name] = coerceDefaultValue(field.defaultValue, field.type);
+                const coercedDefaultValue = coerceDefaultValue(field);
+                if (coercedDefaultValue !== undefined) {
+                    coercedValue[field.name] = coercedDefaultValue;
                 }
             }
             else {
@@ -163,8 +164,9 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
                 if ((0, definition_js_1.isRequiredInputField)(field)) {
                     return; // Invalid: intentionally return no value.
                 }
-                if (field.defaultValue) {
-                    coercedValue[field.name] = coerceDefaultValue(field.defaultValue, field.type);
+                const coercedDefaultValue = coerceDefaultValue(field);
+                if (coercedDefaultValue !== undefined) {
+                    coercedValue[field.name] = coercedDefaultValue;
                 }
             }
             else {
@@ -208,17 +210,26 @@ function getCoercedVariableValue(variableNode, variableValues, fragmentVariableV
 /**
  * @internal
  */
-function coerceDefaultValue(defaultValue, type) {
+function coerceDefaultValue(inputValue) {
     // Memoize the result of coercing the default value in a hidden field.
-    let coercedValue = defaultValue._memoizedCoercedValue;
-    if (coercedValue === undefined) {
-        coercedValue = defaultValue.literal
-            ? coerceInputLiteral(defaultValue.literal, type)
-            : coerceInputValue(defaultValue.value, type);
-        (coercedValue !== undefined) || (0, invariant_js_1.invariant)(false);
-        defaultValue._memoizedCoercedValue = coercedValue;
+    let coercedDefaultValue = inputValue._memoizedCoercedDefaultValue;
+    if (coercedDefaultValue !== undefined) {
+        return coercedDefaultValue;
     }
-    return coercedValue;
+    const defaultInput = inputValue.default;
+    if (defaultInput !== undefined) {
+        coercedDefaultValue = defaultInput.literal
+            ? coerceInputLiteral(defaultInput.literal, inputValue.type)
+            : coerceInputValue(defaultInput.value, inputValue.type);
+        (coercedDefaultValue !== undefined) || (0, invariant_js_1.invariant)(false);
+        inputValue._memoizedCoercedDefaultValue = coercedDefaultValue;
+        return coercedDefaultValue;
+    }
+    const defaultValue = inputValue.defaultValue;
+    if (defaultValue !== undefined) {
+        inputValue._memoizedCoercedDefaultValue = defaultValue;
+    }
+    return defaultValue;
 }
 exports.coerceDefaultValue = coerceDefaultValue;
 //# sourceMappingURL=coerceInputValue.js.map

@@ -20,7 +20,7 @@ export function replaceVariables(valueNode, variableValues, fragmentVariableValu
                 return { kind: Kind.NULL };
             }
             if (scopedVariableSource.value === undefined) {
-                const defaultValue = scopedVariableSource.signature.defaultValue;
+                const defaultValue = scopedVariableSource.signature.default;
                 if (defaultValue !== undefined) {
                     return defaultValue.literal;
                 }
@@ -34,7 +34,7 @@ export function replaceVariables(valueNode, variableValues, fragmentVariableValu
                     const scopedVariableSource = fragmentVariableValues?.sources[field.value.name.value] ??
                         variableValues?.sources[field.value.name.value];
                     if (scopedVariableSource?.value === undefined &&
-                        scopedVariableSource?.signature.defaultValue === undefined) {
+                        scopedVariableSource?.signature.default === undefined) {
                         continue;
                     }
                 }

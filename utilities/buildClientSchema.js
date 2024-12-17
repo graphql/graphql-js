@@ -231,8 +231,8 @@ function buildClientSchema(introspection, options) {
         return {
             description: inputValueIntrospection.description,
             type,
-            defaultValueLiteral: inputValueIntrospection.defaultValue != null
-                ? (0, parser_js_1.parseConstValue)(inputValueIntrospection.defaultValue)
+            default: inputValueIntrospection.defaultValue != null
+                ? { literal: (0, parser_js_1.parseConstValue)(inputValueIntrospection.defaultValue) }
                 : undefined,
             deprecationReason: inputValueIntrospection.deprecationReason,
         };

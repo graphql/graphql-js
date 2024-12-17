@@ -133,18 +133,18 @@ function validateDirectives(context) {
     }
 }
 function validateDefaultValue(context, inputValue) {
-    const defaultValue = inputValue.defaultValue;
-    if (!defaultValue) {
+    const defaultInput = inputValue.default;
+    if (!defaultInput) {
         return;
     }
-    if (defaultValue.literal) {
-        validateInputLiteral(defaultValue.literal, inputValue.type, (error, path) => {
+    if (defaultInput.literal) {
+        validateInputLiteral(defaultInput.literal, inputValue.type, (error, path) => {
             context.reportError(`${inputValue} has invalid default value${printPathArray(path)}: ${error.message}`, error.nodes);
         });
     }
     else {
         const errors = [];
-        validateInputValue(defaultValue.value, inputValue.type, (error, path) => {
+        validateInputValue(defaultInput.value, inputValue.type, (error, path) => {
             errors.push([error, path]);
         });
         // If there were validation errors, check to see if it can be "uncoerced"
@@ -152,13 +152,13 @@ function validateDefaultValue(context, inputValue) {
         // to resolution.
         if (errors.length > 0) {
             try {
-                const uncoercedValue = uncoerceDefaultValue(defaultValue.value, inputValue.type);
+                const uncoercedValue = uncoerceDefaultValue(defaultInput.value, inputValue.type);
                 const uncoercedErrors = [];
                 validateInputValue(uncoercedValue, inputValue.type, (error, path) => {
                     uncoercedErrors.push([error, path]);
                 });
                 if (uncoercedErrors.length === 0) {
-                    context.reportError(`${inputValue} has invalid default value: ${inspect(defaultValue.value)}. Did you mean: ${inspect(uncoercedValue)}?`, inputValue.astNode?.defaultValue);
+                    context.reportError(`${inputValue} has invalid default value: ${inspect(defaultInput.value)}. Did you mean: ${inspect(uncoercedValue)}?`, inputValue.astNode?.defaultValue);
                     return;
                 }
             }
@@ -429,7 +429,7 @@ function validateOneOfInputObjectField(type, field, context) {
     if (isNonNullType(field.type)) {
         context.reportError(`OneOf input field ${type}.${field.name} must be nullable.`, field.astNode?.type);
     }
-    if (field.defaultValue !== undefined) {
+    if (field.default !== undefined || field.defaultValue !== undefined) {
         context.reportError(`OneOf input field ${type}.${field.name} cannot have a default value.`, field.astNode);
     }
 }
@@ -559,8 +559,8 @@ function createInputObjectDefaultValueCircularRefsValidator(context) {
     }
     function detectFieldDefaultValueCycle(field, fieldType, fieldStr) {
         // Only a field with a default value can result in a cycle.
-        const defaultValue = field.defaultValue;
-        if (defaultValue === undefined) {
+        const defaultInput = field.default;
+        if (defaultInput === undefined) {
             return;
         }
         // Check to see if there is cycle.
@@ -581,11 +581,11 @@ function createInputObjectDefaultValueCircularRefsValidator(context) {
                 fieldStr,
                 field.astNode?.defaultValue,
             ]);
-            if (defaultValue.literal) {
-                detectLiteralDefaultValueCycle(fieldType, defaultValue.literal);
+            if (defaultInput.literal) {
+                detectLiteralDefaultValueCycle(fieldType, defaultInput.literal);
             }
             else {
-                detectValueDefaultValueCycle(fieldType, defaultValue.value);
+                detectValueDefaultValueCycle(fieldType, defaultInput.value);
             }
             fieldPath.pop();
             fieldPathIndex[fieldStr] = undefined;

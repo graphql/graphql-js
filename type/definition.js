@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GraphQLObjectType = exports.GraphQLScalarType = exports.resolveObjMapThunk = exports.resolveReadonlyArrayThunk = exports.getNamedType = exports.assertNamedType = exports.isNamedType = exports.getNullableType = exports.assertNullableType = exports.isNullableType = exports.assertWrappingType = exports.isWrappingType = exports.GraphQLNonNull = exports.GraphQLList = exports.assertAbstractType = exports.isAbstractType = exports.assertCompositeType = exports.isCompositeType = exports.assertLeafType = exports.isLeafType = exports.assertOutputType = exports.isOutputType = exports.assertInputType = exports.isInputType = exports.assertNonNullType = exports.isNonNullType = exports.assertListType = exports.isListType = exports.assertInputField = exports.isInputField = exports.assertInputObjectType = exports.isInputObjectType = exports.assertEnumValue = exports.isEnumValue = exports.assertEnumType = exports.isEnumType = exports.assertUnionType = exports.isUnionType = exports.assertInterfaceType = exports.isInterfaceType = exports.assertArgument = exports.isArgument = exports.assertField = exports.isField = exports.assertObjectType = exports.isObjectType = exports.assertScalarType = exports.isScalarType = exports.assertType = exports.isType = void 0;
-exports.isRequiredInputField = exports.GraphQLInputField = exports.GraphQLInputObjectType = exports.GraphQLEnumValue = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.defineDefaultValue = exports.isRequiredArgument = exports.GraphQLArgument = exports.GraphQLField = void 0;
+exports.isRequiredInputField = exports.GraphQLInputField = exports.GraphQLInputObjectType = exports.GraphQLEnumValue = exports.GraphQLEnumType = exports.GraphQLUnionType = exports.GraphQLInterfaceType = exports.isRequiredArgument = exports.GraphQLArgument = exports.GraphQLField = void 0;
 const devAssert_js_1 = require("../jsutils/devAssert.js");
 const didYouMean_js_1 = require("../jsutils/didYouMean.js");
 const identityFunc_js_1 = require("../jsutils/identityFunc.js");
@@ -638,7 +638,8 @@ class GraphQLArgument {
         this.name = (0, assertName_js_1.assertName)(name);
         this.description = config.description;
         this.type = config.type;
-        this.defaultValue = defineDefaultValue(name, config);
+        this.defaultValue = config.defaultValue;
+        this.default = config.default;
         this.deprecationReason = config.deprecationReason;
         this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
@@ -650,8 +651,8 @@ class GraphQLArgument {
         return {
             description: this.description,
             type: this.type,
-            defaultValue: this.defaultValue?.value,
-            defaultValueLiteral: this.defaultValue?.literal,
+            defaultValue: this.defaultValue,
+            default: this.default,
             deprecationReason: this.deprecationReason,
             extensions: this.extensions,
             astNode: this.astNode,
@@ -666,19 +667,11 @@ class GraphQLArgument {
 }
 exports.GraphQLArgument = GraphQLArgument;
 function isRequiredArgument(arg) {
-    return isNonNullType(arg.type) && arg.defaultValue === undefined;
+    return (isNonNullType(arg.type) &&
+        arg.default === undefined &&
+        arg.defaultValue === undefined);
 }
 exports.isRequiredArgument = isRequiredArgument;
-function defineDefaultValue(argName, config) {
-    if (config.defaultValue === undefined && !config.defaultValueLiteral) {
-        return;
-    }
-    (!(config.defaultValue !== undefined && config.defaultValueLiteral)) || (0, devAssert_js_1.devAssert)(false, `Argument "${argName}" has both a defaultValue and a defaultValueLiteral property, but only one must be provided.`);
-    return config.defaultValueLiteral
-        ? { literal: config.defaultValueLiteral }
-        : { value: config.defaultValue };
-}
-exports.defineDefaultValue = defineDefaultValue;
 /**
  * Interface Type Definition
  *
@@ -1039,7 +1032,8 @@ class GraphQLInputField {
         this.name = (0, assertName_js_1.assertName)(name);
         this.description = config.description;
         this.type = config.type;
-        this.defaultValue = defineDefaultValue(name, config);
+        this.defaultValue = config.defaultValue;
+        this.default = config.default;
         this.deprecationReason = config.deprecationReason;
         this.extensions = (0, toObjMap_js_1.toObjMapWithSymbols)(config.extensions);
         this.astNode = config.astNode;
@@ -1051,8 +1045,8 @@ class GraphQLInputField {
         return {
             description: this.description,
             type: this.type,
-            defaultValue: this.defaultValue?.value,
-            defaultValueLiteral: this.defaultValue?.literal,
+            defaultValue: this.defaultValue,
+            default: this.default,
             deprecationReason: this.deprecationReason,
             extensions: this.extensions,
             astNode: this.astNode,
@@ -1067,7 +1061,9 @@ class GraphQLInputField {
 }
 exports.GraphQLInputField = GraphQLInputField;
 function isRequiredInputField(field) {
-    return isNonNullType(field.type) && field.defaultValue === undefined;
+    return (isNonNullType(field.type) &&
+        field.defaultValue === undefined &&
+        field.default === undefined);
 }
 exports.isRequiredInputField = isRequiredInputField;
 //# sourceMappingURL=definition.js.map

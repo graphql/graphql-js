@@ -474,13 +474,15 @@ export interface GraphQLArgumentExtensions {
 export interface GraphQLArgumentConfig {
     description?: Maybe<string>;
     type: GraphQLInputType;
+    /** @deprecated use default instead, defaultValue will be removed in v18 **/
     defaultValue?: unknown;
-    defaultValueLiteral?: ConstValueNode | undefined;
+    default?: GraphQLDefaultInput | undefined;
     deprecationReason?: Maybe<string>;
     extensions?: Maybe<Readonly<GraphQLArgumentExtensions>>;
     astNode?: Maybe<InputValueDefinitionNode>;
 }
 export interface GraphQLArgumentNormalizedConfig extends GraphQLArgumentConfig {
+    default: GraphQLDefaultInput | undefined;
     extensions: Readonly<GraphQLArgumentExtensions>;
 }
 export type GraphQLFieldConfigMap<TSource, TContext> = ObjMap<GraphQLFieldConfig<TSource, TContext>>;
@@ -507,7 +509,8 @@ export declare class GraphQLArgument implements GraphQLSchemaElement {
     name: string;
     description: Maybe<string>;
     type: GraphQLInputType;
-    defaultValue: GraphQLDefaultValueUsage | undefined;
+    defaultValue: unknown;
+    default: GraphQLDefaultInput | undefined;
     deprecationReason: Maybe<string>;
     extensions: Readonly<GraphQLArgumentExtensions>;
     astNode: Maybe<InputValueDefinitionNode>;
@@ -519,14 +522,13 @@ export declare class GraphQLArgument implements GraphQLSchemaElement {
 }
 export declare function isRequiredArgument(arg: GraphQLArgument | GraphQLVariableSignature): boolean;
 export type GraphQLFieldMap<TSource, TContext> = ObjMap<GraphQLField<TSource, TContext>>;
-export type GraphQLDefaultValueUsage = {
+export type GraphQLDefaultInput = {
     value: unknown;
     literal?: never;
 } | {
     literal: ConstValueNode;
     value?: never;
 };
-export declare function defineDefaultValue(argName: string, config: GraphQLArgumentConfig | GraphQLInputFieldConfig): GraphQLDefaultValueUsage | undefined;
 /**
  * Custom extensions
  *
@@ -856,14 +858,16 @@ export interface GraphQLInputFieldExtensions {
 export interface GraphQLInputFieldConfig {
     description?: Maybe<string>;
     type: GraphQLInputType;
+    /** @deprecated use default instead, defaultValue will be removed in v18 **/
     defaultValue?: unknown;
-    defaultValueLiteral?: ConstValueNode | undefined;
+    default?: GraphQLDefaultInput | undefined;
     deprecationReason?: Maybe<string>;
     extensions?: Maybe<Readonly<GraphQLInputFieldExtensions>>;
     astNode?: Maybe<InputValueDefinitionNode>;
 }
 export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 export interface GraphQLInputFieldNormalizedConfig extends GraphQLInputFieldConfig {
+    default: GraphQLDefaultInput | undefined;
     extensions: Readonly<GraphQLInputFieldExtensions>;
 }
 export type GraphQLInputFieldNormalizedConfigMap = ObjMap<GraphQLInputFieldNormalizedConfig>;
@@ -872,7 +876,8 @@ export declare class GraphQLInputField implements GraphQLSchemaElement {
     name: string;
     description: Maybe<string>;
     type: GraphQLInputType;
-    defaultValue: GraphQLDefaultValueUsage | undefined;
+    defaultValue: unknown;
+    default: GraphQLDefaultInput | undefined;
     deprecationReason: Maybe<string>;
     extensions: Readonly<GraphQLInputFieldExtensions>;
     astNode: Maybe<InputValueDefinitionNode>;

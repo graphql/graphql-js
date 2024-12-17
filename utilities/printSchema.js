@@ -10,7 +10,7 @@ const definition_js_1 = require("../type/definition.js");
 const directives_js_1 = require("../type/directives.js");
 const introspection_js_1 = require("../type/introspection.js");
 const scalars_js_1 = require("../type/scalars.js");
-const valueToLiteral_js_1 = require("./valueToLiteral.js");
+const getDefaultValueAST_js_1 = require("./getDefaultValueAST.js");
 function printSchema(schema) {
     return printFilteredSchema(schema, (n) => !(0, directives_js_1.isSpecifiedDirective)(n), isDefinedType);
 }
@@ -177,15 +177,13 @@ function printArgs(args, indentation = '') {
         indentation +
         ')');
 }
-function printInputValue(arg) {
-    let argDecl = arg.name + ': ' + String(arg.type);
-    if (arg.defaultValue) {
-        const literal = arg.defaultValue.literal ??
-            (0, valueToLiteral_js_1.valueToLiteral)(arg.defaultValue.value, arg.type);
-        (literal != null) || (0, invariant_js_1.invariant)(false, 'Invalid default value');
-        argDecl += ` = ${(0, printer_js_1.print)(literal)}`;
+function printInputValue(argOrInputField) {
+    let argDecl = argOrInputField.name + ': ' + String(argOrInputField.type);
+    const defaultValueAST = (0, getDefaultValueAST_js_1.getDefaultValueAST)(argOrInputField);
+    if (defaultValueAST) {
+        argDecl += ` = ${(0, printer_js_1.print)(defaultValueAST)}`;
     }
-    return argDecl + printDeprecated(arg.deprecationReason);
+    return argDecl + printDeprecated(argOrInputField.deprecationReason);
 }
 function printDirective(directive) {
     return (printDescription(directive) +

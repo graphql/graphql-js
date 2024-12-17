@@ -1,7 +1,7 @@
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ASTNode, FragmentDefinitionNode, VariableDefinitionNode } from '../language/ast.js';
 import type { ASTVisitor } from '../language/visitor.js';
-import type { GraphQLArgument, GraphQLCompositeType, GraphQLDefaultValueUsage, GraphQLEnumValue, GraphQLField, GraphQLInputType, GraphQLOutputType, GraphQLType } from '../type/definition.js';
+import type { GraphQLArgument, GraphQLCompositeType, GraphQLEnumValue, GraphQLField, GraphQLInputType, GraphQLOutputType, GraphQLType } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 export interface FragmentSignature {
@@ -38,7 +38,7 @@ export declare class TypeInfo {
     getInputType(): Maybe<GraphQLInputType>;
     getParentInputType(): Maybe<GraphQLInputType>;
     getFieldDef(): Maybe<GraphQLField<unknown, unknown>>;
-    getDefaultValue(): GraphQLDefaultValueUsage | undefined;
+    getDefaultValue(): unknown;
     getDirective(): Maybe<GraphQLDirective>;
     getArgument(): Maybe<GraphQLArgument>;
     getFragmentSignature(): Maybe<FragmentSignature>;

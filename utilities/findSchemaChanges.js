@@ -7,8 +7,8 @@ const keyMap_js_1 = require("../jsutils/keyMap.js");
 const printer_js_1 = require("../language/printer.js");
 const definition_js_1 = require("../type/definition.js");
 const scalars_js_1 = require("../type/scalars.js");
+const getDefaultValueAST_js_1 = require("./getDefaultValueAST.js");
 const sortValueNode_js_1 = require("./sortValueNode.js");
-const valueToLiteral_js_1 = require("./valueToLiteral.js");
 exports.BreakingChangeType = {
     TYPE_REMOVED: 'TYPE_REMOVED',
     TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND',
@@ -117,6 +117,8 @@ function findDirectiveChanges(oldSchema, newSchema) {
         }
         for (const [oldArg, newArg] of argsDiff.persisted) {
             const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(oldArg.type, newArg.type);
+            const oldDefaultValueStr = getDefaultValue(oldArg);
+            const newDefaultValueStr = getDefaultValue(newArg);
             if (!isSafe) {
                 schemaChanges.push({
                     type: exports.BreakingChangeType.ARG_CHANGED_KIND,
@@ -124,33 +126,25 @@ function findDirectiveChanges(oldSchema, newSchema) {
                         `${String(oldArg.type)} to ${String(newArg.type)}.`,
                 });
             }
-            else if (oldArg.defaultValue !== undefined) {
-                if (newArg.defaultValue === undefined) {
+            else if (oldDefaultValueStr !== undefined) {
+                if (newDefaultValueStr === undefined) {
                     schemaChanges.push({
                         type: exports.DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
                         description: `@${oldDirective.name}(${oldArg.name}:) defaultValue was removed.`,
                     });
                 }
-                else {
-                    // Since we looking only for client's observable changes we should
-                    // compare default values in the same representation as they are
-                    // represented inside introspection.
-                    const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
-                    const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
-                    if (oldValueStr !== newValueStr) {
-                        schemaChanges.push({
-                            type: exports.DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-                            description: `@${oldDirective.name}(${oldArg.name}:) has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
-                        });
-                    }
+                else if (oldDefaultValueStr !== newDefaultValueStr) {
+                    schemaChanges.push({
+                        type: exports.DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+                        description: `@${oldDirective.name}(${oldArg.name}:) has changed defaultValue from ${oldDefaultValueStr} to ${newDefaultValueStr}.`,
+                    });
                 }
             }
-            else if (newArg.defaultValue !== undefined &&
-                oldArg.defaultValue === undefined) {
-                const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+            else if (newDefaultValueStr !== undefined &&
+                oldDefaultValueStr === undefined) {
                 schemaChanges.push({
                     type: exports.SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
-                    description: `@${oldDirective.name}(${oldArg.name}:) added a defaultValue ${newValueStr}.`,
+                    description: `@${oldDirective.name}(${oldArg.name}:) added a defaultValue ${newDefaultValueStr}.`,
                 });
             }
             else if (oldArg.type.toString() !== newArg.type.toString()) {
@@ -409,39 +403,33 @@ function findArgChanges(oldField, newField) {
     }
     for (const [oldArg, newArg] of argsDiff.persisted) {
         const isSafe = isChangeSafeForInputObjectFieldOrFieldArg(oldArg.type, newArg.type);
+        const oldDefaultValueStr = getDefaultValue(oldArg);
+        const newDefaultValueStr = getDefaultValue(newArg);
         if (!isSafe) {
             schemaChanges.push({
                 type: exports.BreakingChangeType.ARG_CHANGED_KIND,
                 description: `Argument ${newArg} has changed type from ${oldArg.type} to ${newArg.type}.`,
             });
         }
-        else if (oldArg.defaultValue !== undefined) {
-            if (newArg.defaultValue === undefined) {
+        else if (oldDefaultValueStr !== undefined) {
+            if (newDefaultValueStr === undefined) {
                 schemaChanges.push({
                     type: exports.DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
                     description: `${oldArg} defaultValue was removed.`,
                 });
             }
-            else {
-                // Since we looking only for client's observable changes we should
-                // compare default values in the same representation as they are
-                // represented inside introspection.
-                const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
-                const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
-                if (oldValueStr !== newValueStr) {
-                    schemaChanges.push({
-                        type: exports.DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-                        description: `${oldArg} has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
-                    });
-                }
+            else if (oldDefaultValueStr !== newDefaultValueStr) {
+                schemaChanges.push({
+                    type: exports.DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+                    description: `${oldArg} has changed defaultValue from ${oldDefaultValueStr} to ${newDefaultValueStr}.`,
+                });
             }
         }
-        else if (newArg.defaultValue !== undefined &&
-            oldArg.defaultValue === undefined) {
-            const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
+        else if (newDefaultValueStr !== undefined &&
+            oldDefaultValueStr === undefined) {
             schemaChanges.push({
                 type: exports.SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
-                description: `${oldArg} added a defaultValue ${newValueStr}.`,
+                description: `${oldArg} added a defaultValue ${newDefaultValueStr}.`,
             });
         }
         else if (oldArg.type.toString() !== newArg.type.toString()) {
@@ -538,10 +526,14 @@ function typeKindName(type) {
     // Not reachable, all possible types have been considered.
     (false) || (0, invariant_js_1.invariant)(false, 'Unexpected type: ' + (0, inspect_js_1.inspect)(type));
 }
-function stringifyValue(defaultValue, type) {
-    const ast = defaultValue.literal ?? (0, valueToLiteral_js_1.valueToLiteral)(defaultValue.value, type);
-    (ast != null) || (0, invariant_js_1.invariant)(false);
-    return (0, printer_js_1.print)((0, sortValueNode_js_1.sortValueNode)(ast));
+// Since we looking only for client's observable changes we should
+// compare default values in the same representation as they are
+// represented inside introspection.
+function getDefaultValue(argOrInputField) {
+    const ast = (0, getDefaultValueAST_js_1.getDefaultValueAST)(argOrInputField);
+    if (ast) {
+        return (0, printer_js_1.print)((0, sortValueNode_js_1.sortValueNode)(ast));
+    }
 }
 function diff(oldArray, newArray) {
     const added = [];

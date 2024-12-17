@@ -138,18 +138,18 @@ function validateDirectives(context) {
     }
 }
 function validateDefaultValue(context, inputValue) {
-    const defaultValue = inputValue.defaultValue;
-    if (!defaultValue) {
+    const defaultInput = inputValue.default;
+    if (!defaultInput) {
         return;
     }
-    if (defaultValue.literal) {
-        (0, validateInputValue_js_1.validateInputLiteral)(defaultValue.literal, inputValue.type, (error, path) => {
+    if (defaultInput.literal) {
+        (0, validateInputValue_js_1.validateInputLiteral)(defaultInput.literal, inputValue.type, (error, path) => {
             context.reportError(`${inputValue} has invalid default value${(0, printPathArray_js_1.printPathArray)(path)}: ${error.message}`, error.nodes);
         });
     }
     else {
         const errors = [];
-        (0, validateInputValue_js_1.validateInputValue)(defaultValue.value, inputValue.type, (error, path) => {
+        (0, validateInputValue_js_1.validateInputValue)(defaultInput.value, inputValue.type, (error, path) => {
             errors.push([error, path]);
         });
         // If there were validation errors, check to see if it can be "uncoerced"
@@ -157,13 +157,13 @@ function validateDefaultValue(context, inputValue) {
         // to resolution.
         if (errors.length > 0) {
             try {
-                const uncoercedValue = uncoerceDefaultValue(defaultValue.value, inputValue.type);
+                const uncoercedValue = uncoerceDefaultValue(defaultInput.value, inputValue.type);
                 const uncoercedErrors = [];
                 (0, validateInputValue_js_1.validateInputValue)(uncoercedValue, inputValue.type, (error, path) => {
                     uncoercedErrors.push([error, path]);
                 });
                 if (uncoercedErrors.length === 0) {
-                    context.reportError(`${inputValue} has invalid default value: ${(0, inspect_js_1.inspect)(defaultValue.value)}. Did you mean: ${(0, inspect_js_1.inspect)(uncoercedValue)}?`, inputValue.astNode?.defaultValue);
+                    context.reportError(`${inputValue} has invalid default value: ${(0, inspect_js_1.inspect)(defaultInput.value)}. Did you mean: ${(0, inspect_js_1.inspect)(uncoercedValue)}?`, inputValue.astNode?.defaultValue);
                     return;
                 }
             }
@@ -434,7 +434,7 @@ function validateOneOfInputObjectField(type, field, context) {
     if ((0, definition_js_1.isNonNullType)(field.type)) {
         context.reportError(`OneOf input field ${type}.${field.name} must be nullable.`, field.astNode?.type);
     }
-    if (field.defaultValue !== undefined) {
+    if (field.default !== undefined || field.defaultValue !== undefined) {
         context.reportError(`OneOf input field ${type}.${field.name} cannot have a default value.`, field.astNode);
     }
 }
@@ -564,8 +564,8 @@ function createInputObjectDefaultValueCircularRefsValidator(context) {
     }
     function detectFieldDefaultValueCycle(field, fieldType, fieldStr) {
         // Only a field with a default value can result in a cycle.
-        const defaultValue = field.defaultValue;
-        if (defaultValue === undefined) {
+        const defaultInput = field.default;
+        if (defaultInput === undefined) {
             return;
         }
         // Check to see if there is cycle.
@@ -586,11 +586,11 @@ function createInputObjectDefaultValueCircularRefsValidator(context) {
                 fieldStr,
                 field.astNode?.defaultValue,
             ]);
-            if (defaultValue.literal) {
-                detectLiteralDefaultValueCycle(fieldType, defaultValue.literal);
+            if (defaultInput.literal) {
+                detectLiteralDefaultValueCycle(fieldType, defaultInput.literal);
             }
             else {
-                detectValueDefaultValueCycle(fieldType, defaultValue.value);
+                detectValueDefaultValueCycle(fieldType, defaultInput.value);
             }
             fieldPath.pop();
             fieldPathIndex[fieldStr] = undefined;

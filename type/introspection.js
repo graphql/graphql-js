@@ -5,7 +5,7 @@ const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const directiveLocation_js_1 = require("../language/directiveLocation.js");
 const printer_js_1 = require("../language/printer.js");
-const valueToLiteral_js_1 = require("../utilities/valueToLiteral.js");
+const getDefaultValueAST_js_1 = require("../utilities/getDefaultValueAST.js");
 const definition_js_1 = require("./definition.js");
 const scalars_js_1 = require("./scalars.js");
 exports.__Schema = new definition_js_1.GraphQLObjectType({
@@ -70,7 +70,7 @@ exports.__Directive = new definition_js_1.GraphQLObjectType({
             args: {
                 includeDeprecated: {
                     type: scalars_js_1.GraphQLBoolean,
-                    defaultValue: false,
+                    default: { value: false },
                 },
             },
             resolve(field, { includeDeprecated }) {
@@ -221,7 +221,10 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
         fields: {
             type: new definition_js_1.GraphQLList(new definition_js_1.GraphQLNonNull(exports.__Field)),
             args: {
-                includeDeprecated: { type: scalars_js_1.GraphQLBoolean, defaultValue: false },
+                includeDeprecated: {
+                    type: scalars_js_1.GraphQLBoolean,
+                    default: { value: false },
+                },
             },
             resolve(type, { includeDeprecated }) {
                 if ((0, definition_js_1.isObjectType)(type) || (0, definition_js_1.isInterfaceType)(type)) {
@@ -251,7 +254,10 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
         enumValues: {
             type: new definition_js_1.GraphQLList(new definition_js_1.GraphQLNonNull(exports.__EnumValue)),
             args: {
-                includeDeprecated: { type: scalars_js_1.GraphQLBoolean, defaultValue: false },
+                includeDeprecated: {
+                    type: scalars_js_1.GraphQLBoolean,
+                    default: { value: false },
+                },
             },
             resolve(type, { includeDeprecated }) {
                 if ((0, definition_js_1.isEnumType)(type)) {
@@ -267,7 +273,7 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
             args: {
                 includeDeprecated: {
                     type: scalars_js_1.GraphQLBoolean,
-                    defaultValue: false,
+                    default: { value: false },
                 },
             },
             resolve(type, { includeDeprecated }) {
@@ -310,7 +316,7 @@ exports.__Field = new definition_js_1.GraphQLObjectType({
             args: {
                 includeDeprecated: {
                     type: scalars_js_1.GraphQLBoolean,
-                    defaultValue: false,
+                    default: { value: false },
                 },
             },
             resolve(field, { includeDeprecated }) {
@@ -353,13 +359,11 @@ exports.__InputValue = new definition_js_1.GraphQLObjectType({
             type: scalars_js_1.GraphQLString,
             description: 'A GraphQL-formatted string representing the default value for this input value.',
             resolve(inputValue) {
-                const { type, defaultValue } = inputValue;
-                if (!defaultValue) {
-                    return null;
+                const ast = (0, getDefaultValueAST_js_1.getDefaultValueAST)(inputValue);
+                if (ast) {
+                    return (0, printer_js_1.print)(ast);
                 }
-                const literal = defaultValue.literal ?? (0, valueToLiteral_js_1.valueToLiteral)(defaultValue.value, type);
-                (literal != null) || (0, invariant_js_1.invariant)(false, 'Invalid default value');
-                return (0, printer_js_1.print)(literal);
+                return null;
             },
         },
         isDeprecated: {
