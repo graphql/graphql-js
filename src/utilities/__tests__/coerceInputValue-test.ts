@@ -187,14 +187,13 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject with default value', () => {
-    const makeTestInputObject = (defaultValue: any) =>
+    const makeTestInputObject = (defaultValue: unknown) =>
       new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            default:
-              defaultValue === undefined ? undefined : { value: defaultValue },
+            default: { value: defaultValue },
           },
         },
       });

@@ -325,8 +325,7 @@ describe('validateInputValue', () => {
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            default:
-              defaultValue === undefined ? undefined : { value: defaultValue },
+            default: { value: defaultValue },
           },
         },
       });
@@ -802,8 +801,7 @@ describe('validateInputLiteral', () => {
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            default:
-              defaultValue === undefined ? undefined : { value: defaultValue },
+            default: { value: defaultValue },
           },
         },
       });
