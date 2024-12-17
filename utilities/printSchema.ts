@@ -31,7 +31,7 @@ import {
 import { isIntrospectionType } from '../type/introspection.ts';
 import { isSpecifiedScalarType } from '../type/scalars.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
-import { valueToLiteral } from './valueToLiteral.ts';
+import { getDefaultValueAST } from './getDefaultValueAST.ts';
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
     schema,
@@ -231,16 +231,15 @@ function printArgs(
     ')'
   );
 }
-function printInputValue(arg: GraphQLArgument | GraphQLInputField): string {
-  let argDecl = arg.name + ': ' + String(arg.type);
-  if (arg.defaultValue) {
-    const literal =
-      arg.defaultValue.literal ??
-      valueToLiteral(arg.defaultValue.value, arg.type);
-    literal != null || invariant(false, 'Invalid default value');
-    argDecl += ` = ${print(literal)}`;
+function printInputValue(
+  argOrInputField: GraphQLArgument | GraphQLInputField,
+): string {
+  let argDecl = argOrInputField.name + ': ' + String(argOrInputField.type);
+  const defaultValueAST = getDefaultValueAST(argOrInputField);
+  if (defaultValueAST) {
+    argDecl += ` = ${print(defaultValueAST)}`;
   }
-  return argDecl + printDeprecated(arg.deprecationReason);
+  return argDecl + printDeprecated(argOrInputField.deprecationReason);
 }
 export function printDirective(directive: GraphQLDirective): string {
   return (

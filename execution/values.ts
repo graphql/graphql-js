@@ -224,11 +224,9 @@ export function experimentalGetArgumentValues(
           { nodes: node },
         );
       }
-      if (argDef.defaultValue) {
-        coercedValues[name] = coerceDefaultValue(
-          argDef.defaultValue,
-          argDef.type,
-        );
+      const coercedDefaultValue = coerceDefaultValue(argDef);
+      if (coercedDefaultValue !== undefined) {
+        coercedValues[name] = coercedDefaultValue;
       }
       continue;
     }
@@ -245,11 +243,9 @@ export function experimentalGetArgumentValues(
           !Object.hasOwn(scopedVariableValues.coerced, variableName)) &&
         !isRequiredArgument(argDef)
       ) {
-        if (argDef.defaultValue) {
-          coercedValues[name] = coerceDefaultValue(
-            argDef.defaultValue,
-            argDef.type,
-          );
+        const coercedDefaultValue = coerceDefaultValue(argDef);
+        if (coercedDefaultValue !== undefined) {
+          coercedValues[name] = coercedDefaultValue;
         }
         continue;
       }

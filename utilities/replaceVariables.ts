@@ -31,9 +31,9 @@ export function replaceVariables(
         return { kind: Kind.NULL };
       }
       if (scopedVariableSource.value === undefined) {
-        const defaultValue = scopedVariableSource.signature.defaultValue;
+        const defaultValue = scopedVariableSource.signature.default;
         if (defaultValue !== undefined) {
-          return defaultValue.literal as ConstValueNode;
+          return defaultValue.literal;
         }
       }
       return valueToLiteral(
@@ -50,7 +50,7 @@ export function replaceVariables(
             variableValues?.sources[field.value.name.value];
           if (
             scopedVariableSource?.value === undefined &&
-            scopedVariableSource?.signature.defaultValue === undefined
+            scopedVariableSource?.signature.default === undefined
           ) {
             continue;
           }

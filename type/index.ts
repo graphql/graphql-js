@@ -129,7 +129,7 @@ export type {
   GraphQLScalarOutputValueCoercer,
   GraphQLScalarInputValueCoercer,
   GraphQLScalarInputLiteralCoercer,
-  GraphQLDefaultValueUsage,
+  GraphQLDefaultInput,
 } from './definition.ts';
 export {
   // Predicate

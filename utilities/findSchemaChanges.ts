@@ -3,11 +3,11 @@ import { invariant } from '../jsutils/invariant.ts';
 import { keyMap } from '../jsutils/keyMap.ts';
 import { print } from '../language/printer.ts';
 import type {
-  GraphQLDefaultValueUsage,
+  GraphQLArgument,
   GraphQLEnumType,
   GraphQLField,
+  GraphQLInputField,
   GraphQLInputObjectType,
-  GraphQLInputType,
   GraphQLInterfaceType,
   GraphQLNamedType,
   GraphQLObjectType,
@@ -29,8 +29,8 @@ import {
 } from '../type/definition.ts';
 import { isSpecifiedScalarType } from '../type/scalars.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
+import { getDefaultValueAST } from './getDefaultValueAST.ts';
 import { sortValueNode } from './sortValueNode.ts';
-import { valueToLiteral } from './valueToLiteral.ts';
 export const BreakingChangeType = {
   TYPE_REMOVED: 'TYPE_REMOVED' as const,
   TYPE_CHANGED_KIND: 'TYPE_CHANGED_KIND' as const,
@@ -179,6 +179,8 @@ function findDirectiveChanges(
         oldArg.type,
         newArg.type,
       );
+      const oldDefaultValueStr = getDefaultValue(oldArg);
+      const newDefaultValueStr = getDefaultValue(newArg);
       if (!isSafe) {
         schemaChanges.push({
           type: BreakingChangeType.ARG_CHANGED_KIND,
@@ -186,33 +188,25 @@ function findDirectiveChanges(
             `Argument @${oldDirective.name}(${oldArg.name}:) has changed type from ` +
             `${String(oldArg.type)} to ${String(newArg.type)}.`,
         });
-      } else if (oldArg.defaultValue !== undefined) {
-        if (newArg.defaultValue === undefined) {
+      } else if (oldDefaultValueStr !== undefined) {
+        if (newDefaultValueStr === undefined) {
           schemaChanges.push({
             type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
             description: `@${oldDirective.name}(${oldArg.name}:) defaultValue was removed.`,
           });
-        } else {
-          // Since we looking only for client's observable changes we should
-          // compare default values in the same representation as they are
-          // represented inside introspection.
-          const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
-          const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
-          if (oldValueStr !== newValueStr) {
-            schemaChanges.push({
-              type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-              description: `@${oldDirective.name}(${oldArg.name}:) has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
-            });
-          }
+        } else if (oldDefaultValueStr !== newDefaultValueStr) {
+          schemaChanges.push({
+            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+            description: `@${oldDirective.name}(${oldArg.name}:) has changed defaultValue from ${oldDefaultValueStr} to ${newDefaultValueStr}.`,
+          });
         }
       } else if (
-        newArg.defaultValue !== undefined &&
-        oldArg.defaultValue === undefined
+        newDefaultValueStr !== undefined &&
+        oldDefaultValueStr === undefined
       ) {
-        const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
         schemaChanges.push({
           type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
-          description: `@${oldDirective.name}(${oldArg.name}:) added a defaultValue ${newValueStr}.`,
+          description: `@${oldDirective.name}(${oldArg.name}:) added a defaultValue ${newDefaultValueStr}.`,
         });
       } else if (oldArg.type.toString() !== newArg.type.toString()) {
         schemaChanges.push({
@@ -509,38 +503,32 @@ function findArgChanges(
       oldArg.type,
       newArg.type,
     );
+    const oldDefaultValueStr = getDefaultValue(oldArg);
+    const newDefaultValueStr = getDefaultValue(newArg);
     if (!isSafe) {
       schemaChanges.push({
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description: `Argument ${newArg} has changed type from ${oldArg.type} to ${newArg.type}.`,
       });
-    } else if (oldArg.defaultValue !== undefined) {
-      if (newArg.defaultValue === undefined) {
+    } else if (oldDefaultValueStr !== undefined) {
+      if (newDefaultValueStr === undefined) {
         schemaChanges.push({
           type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
           description: `${oldArg} defaultValue was removed.`,
         });
-      } else {
-        // Since we looking only for client's observable changes we should
-        // compare default values in the same representation as they are
-        // represented inside introspection.
-        const oldValueStr = stringifyValue(oldArg.defaultValue, oldArg.type);
-        const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
-        if (oldValueStr !== newValueStr) {
-          schemaChanges.push({
-            type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-            description: `${oldArg} has changed defaultValue from ${oldValueStr} to ${newValueStr}.`,
-          });
-        }
+      } else if (oldDefaultValueStr !== newDefaultValueStr) {
+        schemaChanges.push({
+          type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
+          description: `${oldArg} has changed defaultValue from ${oldDefaultValueStr} to ${newDefaultValueStr}.`,
+        });
       }
     } else if (
-      newArg.defaultValue !== undefined &&
-      oldArg.defaultValue === undefined
+      newDefaultValueStr !== undefined &&
+      oldDefaultValueStr === undefined
     ) {
-      const newValueStr = stringifyValue(newArg.defaultValue, newArg.type);
       schemaChanges.push({
         type: SafeChangeType.ARG_DEFAULT_VALUE_ADDED,
-        description: `${oldArg} added a defaultValue ${newValueStr}.`,
+        description: `${oldArg} added a defaultValue ${newDefaultValueStr}.`,
       });
     } else if (oldArg.type.toString() !== newArg.type.toString()) {
       schemaChanges.push({
@@ -655,13 +643,16 @@ function typeKindName(type: GraphQLNamedType): string {
   // Not reachable, all possible types have been considered.
   false || invariant(false, 'Unexpected type: ' + inspect(type));
 }
-function stringifyValue(
-  defaultValue: GraphQLDefaultValueUsage,
-  type: GraphQLInputType,
-): string {
-  const ast = defaultValue.literal ?? valueToLiteral(defaultValue.value, type);
-  ast != null || invariant(false);
-  return print(sortValueNode(ast));
+// Since we looking only for client's observable changes we should
+// compare default values in the same representation as they are
+// represented inside introspection.
+function getDefaultValue(
+  argOrInputField: GraphQLArgument | GraphQLInputField,
+): string | undefined {
+  const ast = getDefaultValueAST(argOrInputField);
+  if (ast) {
+    return print(sortValueNode(ast));
+  }
 }
 function diff<
   T extends {

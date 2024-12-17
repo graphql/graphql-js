@@ -5,7 +5,7 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 import type { ValueNode, VariableNode } from '../language/ast.ts';
 import { Kind } from '../language/kinds.ts';
 import type {
-  GraphQLDefaultValueUsage,
+  GraphQLDefaultInput,
   GraphQLInputType,
 } from '../type/definition.ts';
 import {
@@ -73,11 +73,9 @@ export function coerceInputValue(
         if (isRequiredInputField(field)) {
           return; // Invalid: intentionally return no value.
         }
-        if (field.defaultValue) {
-          coercedValue[field.name] = coerceDefaultValue(
-            field.defaultValue,
-            field.type,
-          );
+        const coercedDefaultValue = coerceDefaultValue(field);
+        if (coercedDefaultValue !== undefined) {
+          coercedValue[field.name] = coercedDefaultValue;
         }
       } else {
         const coercedField = coerceInputValue(fieldValue, field.type);
@@ -219,11 +217,9 @@ export function coerceInputLiteral(
         if (isRequiredInputField(field)) {
           return; // Invalid: intentionally return no value.
         }
-        if (field.defaultValue) {
-          coercedValue[field.name] = coerceDefaultValue(
-            field.defaultValue,
-            field.type,
-          );
+        const coercedDefaultValue = coerceDefaultValue(field);
+        if (coercedDefaultValue !== undefined) {
+          coercedValue[field.name] = coercedDefaultValue;
         }
       } else {
         const fieldValue = coerceInputLiteral(
@@ -272,21 +268,32 @@ function getCoercedVariableValue(
   }
   return variableValues?.coerced[varName];
 }
+interface InputValue {
+  type: GraphQLInputType;
+  default?: GraphQLDefaultInput | undefined;
+  defaultValue?: unknown;
+}
 /**
  * @internal
  */
-export function coerceDefaultValue(
-  defaultValue: GraphQLDefaultValueUsage,
-  type: GraphQLInputType,
-): unknown {
+export function coerceDefaultValue(inputValue: InputValue): unknown {
   // Memoize the result of coercing the default value in a hidden field.
-  let coercedValue = (defaultValue as any)._memoizedCoercedValue;
-  if (coercedValue === undefined) {
-    coercedValue = defaultValue.literal
-      ? coerceInputLiteral(defaultValue.literal, type)
-      : coerceInputValue(defaultValue.value, type);
-    coercedValue !== undefined || invariant(false);
-    (defaultValue as any)._memoizedCoercedValue = coercedValue;
+  let coercedDefaultValue = (inputValue as any)._memoizedCoercedDefaultValue;
+  if (coercedDefaultValue !== undefined) {
+    return coercedDefaultValue;
   }
-  return coercedValue;
+  const defaultInput = inputValue.default;
+  if (defaultInput !== undefined) {
+    coercedDefaultValue = defaultInput.literal
+      ? coerceInputLiteral(defaultInput.literal, inputValue.type)
+      : coerceInputValue(defaultInput.value, inputValue.type);
+    coercedDefaultValue !== undefined || invariant(false);
+    (inputValue as any)._memoizedCoercedDefaultValue = coercedDefaultValue;
+    return coercedDefaultValue;
+  }
+  const defaultValue = inputValue.defaultValue;
+  if (defaultValue !== undefined) {
+    (inputValue as any)._memoizedCoercedDefaultValue = defaultValue;
+  }
+  return defaultValue;
 }

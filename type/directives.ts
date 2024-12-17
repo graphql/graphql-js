@@ -166,7 +166,7 @@ export const GraphQLDeferDirective = new GraphQLDirective({
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Deferred when true or undefined.',
-      defaultValue: true,
+      default: { value: true },
     },
     label: {
       type: GraphQLString,
@@ -186,14 +186,14 @@ export const GraphQLStreamDirective = new GraphQLDirective({
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Stream when true or undefined.',
-      defaultValue: true,
+      default: { value: true },
     },
     label: {
       type: GraphQLString,
       description: 'Unique name',
     },
     initialCount: {
-      defaultValue: 0,
+      default: { value: 0 },
       type: GraphQLInt,
       description: 'Number of items to return immediately',
     },
@@ -221,7 +221,7 @@ export const GraphQLDeprecatedDirective: GraphQLDirective =
         type: new GraphQLNonNull(GraphQLString),
         description:
           'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).',
-        defaultValue: DEFAULT_DEPRECATION_REASON,
+        default: { value: DEFAULT_DEPRECATION_REASON },
       },
     },
   });

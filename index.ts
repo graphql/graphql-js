@@ -208,7 +208,7 @@ export type {
   GraphQLScalarOutputValueCoercer,
   GraphQLScalarInputValueCoercer,
   GraphQLScalarInputLiteralCoercer,
-  GraphQLDefaultValueUsage,
+  GraphQLDefaultInput,
 } from './type/index.ts';
 // Parse and operate on GraphQL language source files.
 // @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
