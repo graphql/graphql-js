@@ -14,7 +14,6 @@ import { getEnterLeaveForKind } from '../language/visitor.js';
 import type {
   GraphQLArgument,
   GraphQLCompositeType,
-  GraphQLDefaultValueUsage,
   GraphQLEnumValue,
   GraphQLField,
   GraphQLInputField,
@@ -54,7 +53,7 @@ export class TypeInfo {
   private _parentTypeStack: Array<Maybe<GraphQLCompositeType>>;
   private _inputTypeStack: Array<Maybe<GraphQLInputType>>;
   private _fieldDefStack: Array<Maybe<GraphQLField<unknown, unknown>>>;
-  private _defaultValueStack: Array<GraphQLDefaultValueUsage | undefined>;
+  private _defaultValueStack: Array<unknown>;
   private _directive: Maybe<GraphQLDirective>;
   private _argument: Maybe<GraphQLArgument>;
   private _enumValue: Maybe<GraphQLEnumValue>;
@@ -125,7 +124,7 @@ export class TypeInfo {
     return this._fieldDefStack.at(-1);
   }
 
-  getDefaultValue(): GraphQLDefaultValueUsage | undefined {
+  getDefaultValue(): unknown {
     return this._defaultValueStack.at(-1);
   }
 
@@ -232,7 +231,9 @@ export class TypeInfo {
           }
         }
         this._argument = argDef;
-        this._defaultValueStack.push(argDef ? argDef.defaultValue : undefined);
+        this._defaultValueStack.push(
+          argDef?.default ?? argDef?.defaultValue ?? undefined,
+        );
         this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
         break;
       }
@@ -270,7 +271,7 @@ export class TypeInfo {
           }
         }
         this._defaultValueStack.push(
-          inputField ? inputField.defaultValue : undefined,
+          inputField?.default ?? inputField?.defaultValue ?? undefined,
         );
         this._inputTypeStack.push(
           isInputType(inputFieldType) ? inputFieldType : undefined,

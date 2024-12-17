@@ -71,7 +71,7 @@ const QueryType = new GraphQLObjectType({
       args: {
         fromEnum: {
           type: ComplexEnum,
-          defaultValue: 'ONE',
+          default: { value: 'ONE' },
         },
         provideGoodValue: { type: GraphQLBoolean },
         provideBadValue: { type: GraphQLBoolean },
@@ -87,6 +87,18 @@ const QueryType = new GraphQLObjectType({
           // as Complex2 above. Enum internal values require === equality.
           return { someRandomValue: 123 };
         }
+        return fromEnum;
+      },
+    },
+    complexEnumWithLegacyDefault: {
+      type: ComplexEnum,
+      args: {
+        fromEnum: {
+          type: ComplexEnum,
+          defaultValue: Complex1,
+        },
+      },
+      resolve(_source, { fromEnum }) {
         return fromEnum;
       },
     },
@@ -439,6 +451,20 @@ describe('Type System: Enum Values', () => {
           path: ['bad'],
         },
       ],
+    });
+  });
+
+  it('may be internally represented with complex values using legacy internal defaults', () => {
+    const result = executeQuery(`
+      {
+        complexEnumWithLegacyDefault
+      }
+    `);
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        complexEnumWithLegacyDefault: 'ONE',
+      },
     });
   });
 

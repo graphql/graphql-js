@@ -187,13 +187,13 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject with default value', () => {
-    const makeTestInputObject = (defaultValue: any) =>
+    const makeTestInputObject = (defaultValue: unknown) =>
       new GraphQLInputObjectType({
         name: 'TestInputObject',
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            defaultValue,
+            default: { value: defaultValue },
           },
         },
       });
@@ -473,10 +473,10 @@ describe('coerceInputLiteral', () => {
     const type = new GraphQLInputObjectType({
       name: 'TestInput',
       fields: {
-        int: { type: GraphQLInt, defaultValue: 42 },
+        int: { type: GraphQLInt, default: { value: 42 } },
         float: {
           type: GraphQLFloat,
-          defaultValueLiteral: { kind: Kind.FLOAT, value: '3.14' },
+          default: { literal: { kind: Kind.FLOAT, value: '3.14' } },
         },
       },
     });
@@ -487,7 +487,7 @@ describe('coerceInputLiteral', () => {
   const testInputObj = new GraphQLInputObjectType({
     name: 'TestInput',
     fields: {
-      int: { type: GraphQLInt, defaultValue: 42 },
+      int: { type: GraphQLInt, default: { value: 42 } },
       bool: { type: GraphQLBoolean },
       requiredBool: { type: nonNullBool },
     },
@@ -628,13 +628,19 @@ describe('coerceDefaultValue', () => {
       },
     });
 
-    const defaultValueUsage = {
+    const inputDefault = {
       literal: { kind: Kind.STRING, value: 'hello' },
     } as const;
-    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+
+    const inputValue = {
+      default: inputDefault,
+      type: spyScalar,
+    };
+
+    expect(coerceDefaultValue(inputValue)).to.equal('hello');
 
     // Call a second time
-    expect(coerceDefaultValue(defaultValueUsage, spyScalar)).to.equal('hello');
+    expect(coerceDefaultValue(inputValue)).to.equal('hello');
     expect(coerceInputValueCalls).to.deep.equal(['hello']);
   });
 });

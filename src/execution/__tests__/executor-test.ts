@@ -246,7 +246,7 @@ describe('Execute: Handles basic execution tasks', () => {
             signature: {
               name: 'var',
               type: GraphQLString,
-              defaultValue: undefined,
+              default: undefined,
             },
             value: 'abc',
           },

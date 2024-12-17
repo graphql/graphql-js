@@ -409,7 +409,7 @@ export function extendSchemaImpl(
         argConfigMap[arg.name.value] = {
           type,
           description: arg.description?.value,
-          defaultValueLiteral: arg.defaultValue,
+          default: arg.defaultValue && { literal: arg.defaultValue },
           deprecationReason: getDeprecationReason(arg),
           astNode: arg,
         };
@@ -435,7 +435,7 @@ export function extendSchemaImpl(
           inputFieldMap[field.name.value] = {
             type,
             description: field.description?.value,
-            defaultValueLiteral: field.defaultValue,
+            default: field.defaultValue && { literal: field.defaultValue },
             deprecationReason: getDeprecationReason(field),
             astNode: field,
           };

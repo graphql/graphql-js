@@ -6,10 +6,7 @@ import type { ValueNode, VariableDefinitionNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
-import type {
-  GraphQLDefaultValueUsage,
-  GraphQLType,
-} from '../../type/definition.js';
+import type { GraphQLType } from '../../type/definition.js';
 import {
   isInputObjectType,
   isNonNullType,
@@ -116,7 +113,7 @@ function allowedVariableUsage(
   varType: GraphQLType,
   varDefaultValue: Maybe<ValueNode>,
   locationType: GraphQLType,
-  locationDefaultValue: GraphQLDefaultValueUsage | undefined,
+  locationDefaultValue: unknown,
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue =

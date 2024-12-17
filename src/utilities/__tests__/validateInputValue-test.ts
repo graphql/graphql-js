@@ -325,7 +325,7 @@ describe('validateInputValue', () => {
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            defaultValue,
+            default: { value: defaultValue },
           },
         },
       });
@@ -659,7 +659,10 @@ describe('validateInputLiteral', () => {
       fields: {
         foo: { type: new GraphQLNonNull(GraphQLInt) },
         bar: { type: GraphQLInt },
-        optional: { type: new GraphQLNonNull(GraphQLInt), defaultValue: 42 },
+        optional: {
+          type: new GraphQLNonNull(GraphQLInt),
+          default: { value: 42 },
+        },
       },
     });
 
@@ -798,7 +801,7 @@ describe('validateInputLiteral', () => {
         fields: {
           foo: {
             type: new GraphQLScalarType({ name: 'TestScalar' }),
-            defaultValue,
+            default: { value: defaultValue },
           },
         },
       });

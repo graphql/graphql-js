@@ -148,7 +148,7 @@ describe('Type System Printer', () => {
   it('Prints String Field With Int Arg With Default', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
-      args: { argOne: { type: GraphQLInt, defaultValue: 2 } },
+      args: { argOne: { type: GraphQLInt, default: { value: 2 } } },
     });
 
     expectPrintedSchema(schema).to.equal(dedent`
@@ -161,7 +161,9 @@ describe('Type System Printer', () => {
   it('Prints String Field With String Arg With Default', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
-      args: { argOne: { type: GraphQLString, defaultValue: 'tes\t de\fault' } },
+      args: {
+        argOne: { type: GraphQLString, default: { value: 'tes\t de\fault' } },
+      },
     });
 
     expectPrintedSchema(schema).to.equal(
@@ -176,7 +178,7 @@ describe('Type System Printer', () => {
   it('Prints String Field With Int Arg With Default Null', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
-      args: { argOne: { type: GraphQLInt, defaultValue: null } },
+      args: { argOne: { type: GraphQLInt, default: { value: null } } },
     });
 
     expectPrintedSchema(schema).to.equal(dedent`
@@ -219,7 +221,7 @@ describe('Type System Printer', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
       args: {
-        argOne: { type: GraphQLInt, defaultValue: 1 },
+        argOne: { type: GraphQLInt, default: { value: 1 } },
         argTwo: { type: GraphQLString },
         argThree: { type: GraphQLBoolean },
       },
@@ -237,7 +239,7 @@ describe('Type System Printer', () => {
       type: GraphQLString,
       args: {
         argOne: { type: GraphQLInt },
-        argTwo: { type: GraphQLString, defaultValue: 'foo' },
+        argTwo: { type: GraphQLString, default: { value: 'foo' } },
         argThree: { type: GraphQLBoolean },
       },
     });
@@ -255,7 +257,7 @@ describe('Type System Printer', () => {
       args: {
         argOne: { type: GraphQLInt },
         argTwo: { type: GraphQLString },
-        argThree: { type: GraphQLBoolean, defaultValue: false },
+        argThree: { type: GraphQLBoolean, default: { value: false } },
       },
     });
 
@@ -601,7 +603,7 @@ describe('Type System Printer', () => {
       description: 'Complex Directive',
       args: {
         stringArg: { type: GraphQLString },
-        intArg: { type: GraphQLInt, defaultValue: -1 },
+        intArg: { type: GraphQLInt, default: { value: -1 } },
       },
       isRepeatable: true,
       locations: [DirectiveLocation.FIELD, DirectiveLocation.QUERY],
