@@ -24,6 +24,7 @@ import type { ExecutionArgs } from '../execute.js';
 import {
   createSourceEventStream,
   executeSubscriptionEvent,
+  legacyExperimentalSubscribeIncrementally,
   subscribe,
 } from '../execute.js';
 import type { ExecutionResult } from '../types.js';
@@ -100,6 +101,7 @@ const emailSchema = new GraphQLSchema({
 function createSubscription(
   pubsub: SimplePubSub<Email>,
   variableValues?: { readonly [variable: string]: unknown },
+  useExperimentalSubscribeIncrementally = false,
 ) {
   const document = parse(`
     subscription (
@@ -151,7 +153,11 @@ function createSubscription(
     }),
   };
 
-  return subscribe({
+  const subscribeFn = useExperimentalSubscribeIncrementally
+    ? legacyExperimentalSubscribeIncrementally
+    : subscribe;
+
+  return subscribeFn({
     schema: emailSchema,
     document,
     rootValue: data,
@@ -810,6 +816,109 @@ describe('Subscription Publish Phase', () => {
     });
   });
 
+  it('legacyExperimentalSubscribeIncrementally function works with @defer', async () => {
+    const pubsub = new SimplePubSub<Email>();
+    const subscription = await createSubscription(
+      pubsub,
+      {
+        shouldDefer: true,
+      },
+      true,
+    );
+    assert(isAsyncIterable(subscription));
+    // Wait for the next subscription payload.
+    const payload = subscription.next();
+
+    // A new email arrives!
+    expect(
+      pubsub.emit({
+        from: 'yuzhi@graphql.org',
+        subject: 'Alright',
+        message: 'Tests are good',
+        unread: true,
+      }),
+    ).to.equal(true);
+
+    // The previously waited on payload now has a value.
+    expectJSON(await payload).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: { from: 'yuzhi@graphql.org', subject: 'Alright' },
+          },
+        },
+        pending: [{ id: '0', path: ['importantEmail'] }],
+        hasNext: true,
+      },
+    });
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            data: {
+              inbox: { unread: 1, total: 2 },
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    });
+
+    // Another new email arrives, after all incrementally delivered payloads are received.
+    expect(
+      pubsub.emit({
+        from: 'hyo@graphql.org',
+        subject: 'Tools',
+        message: 'I <3 making things',
+        unread: true,
+      }),
+    ).to.equal(true);
+
+    // The next waited on payload will have a value.
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: { from: 'hyo@graphql.org', subject: 'Tools' },
+          },
+        },
+        pending: [{ id: '0', path: ['importantEmail'] }],
+        hasNext: true,
+      },
+    });
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            data: { inbox: { unread: 2, total: 3 } },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    });
+
+    expectJSON(await subscription.return()).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+
+    // Awaiting a subscription after closing it results in completed results.
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+  });
+
   it('subscribe function returns errors with @stream', async () => {
     const pubsub = new SimplePubSub<Email>();
     const subscription = await createSubscription(pubsub, {
@@ -878,6 +987,99 @@ describe('Subscription Publish Phase', () => {
             inbox: { emails: null, unread: 2, total: 3 },
           },
         },
+      },
+    });
+
+    expectJSON(await subscription.return()).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+
+    // Awaiting a subscription after closing it results in completed results.
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+  });
+
+  it('legacyExperimentalSubscribeIncrementally function works with @stream', async () => {
+    const pubsub = new SimplePubSub<Email>();
+    const subscription = await createSubscription(
+      pubsub,
+      {
+        shouldStream: true,
+      },
+      true,
+    );
+    assert(isAsyncIterable(subscription));
+    // Wait for the next subscription payload.
+    const payload = subscription.next();
+
+    // A new email arrives!
+    expect(
+      pubsub.emit({
+        from: 'yuzhi@graphql.org',
+        subject: 'Alright',
+        message: 'Tests are good',
+        unread: true,
+      }),
+    ).to.equal(true);
+
+    // The previously waited on payload now has a value.
+    expectJSON(await payload).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: { from: 'yuzhi@graphql.org', subject: 'Alright' },
+            inbox: { emails: [], unread: 1, total: 2 },
+          },
+        },
+        pending: [{ id: '0', path: ['importantEmail', 'inbox', 'emails'] }],
+        hasNext: true,
+      },
+    });
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [{ id: '0', items: [{}, {}] }],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    });
+
+    // Another new email arrives, after all incrementally delivered payloads are received.
+    expect(
+      pubsub.emit({
+        from: 'hyo@graphql.org',
+        subject: 'Tools',
+        message: 'I <3 making things',
+        unread: true,
+      }),
+    ).to.equal(true);
+
+    // The next waited on payload will have a value.
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: false,
+      value: {
+        data: {
+          importantEmail: {
+            email: { from: 'hyo@graphql.org', subject: 'Tools' },
+            inbox: { emails: [], unread: 2, total: 3 },
+          },
+        },
+        pending: [{ id: '0', path: ['importantEmail', 'inbox', 'emails'] }],
+        hasNext: true,
+      },
+    });
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [{ id: '0', items: [{}, {}, {}] }],
+        completed: [{ id: '0' }],
+        hasNext: false,
       },
     });
 

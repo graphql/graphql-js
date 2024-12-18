@@ -65,6 +65,7 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
+import { flattenAsyncIterable } from './flattenAsyncIterable.js';
 import { getVariableSignature } from './getVariableSignature.js';
 import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
@@ -74,10 +75,12 @@ import type {
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
+  InitialIncrementalExecutionResult,
   PendingExecutionGroup,
   StreamItemRecord,
   StreamItemResult,
   StreamRecord,
+  SubsequentIncrementalExecutionResult,
 } from './types.js';
 import { DeferredFragmentRecord } from './types.js';
 import type { VariableValues } from './values.js';
@@ -158,8 +161,11 @@ export interface ValidatedExecutionArgs {
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   perEventExecutor: (
     validatedExecutionArgs: ValidatedExecutionArgs,
-  ) => PromiseOrValue<ExecutionResult>;
+  ) => PromiseOrValue<
+    ExecutionResult | ExperimentalIncrementalExecutionResults
+  >;
   enableEarlyExecution: boolean;
+  allowIncrementalSubscriptions: boolean;
   hideSuggestions: boolean;
   abortSignal: AbortSignal | undefined;
 }
@@ -445,6 +451,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
  */
 export function validateExecutionArgs(
   args: ExecutionArgs,
+  allowIncrementalSubscriptions = false,
 ): ReadonlyArray<GraphQLError> | ValidatedExecutionArgs {
   const {
     schema,
@@ -541,8 +548,10 @@ export function validateExecutionArgs(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
+    perEventExecutor:
+      perEventExecutor ?? experimentalExecuteQueryOrMutationOrSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
+    allowIncrementalSubscriptions,
     hideSuggestions,
     abortSignal: args.abortSignal ?? undefined,
   };
@@ -1178,7 +1187,8 @@ function getStreamUsage(
       ._streamUsage;
   }
 
-  const { operation, variableValues } = validatedExecutionArgs;
+  const { operation, variableValues, allowIncrementalSubscriptions } =
+    validatedExecutionArgs;
   // validation only allows equivalent streams on multiple fields, so it is
   // safe to only check the first fieldNode for the stream directive
   const stream = getDirectiveValues(
@@ -1207,7 +1217,8 @@ function getStreamUsage(
   );
 
   invariant(
-    operation.operation !== OperationTypeNode.SUBSCRIPTION,
+    allowIncrementalSubscriptions ||
+      operation.operation !== OperationTypeNode.SUBSCRIPTION,
     '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
   );
 
@@ -1907,8 +1918,9 @@ function collectAndExecuteSubfields(
 
   if (newDeferUsages.length > 0) {
     invariant(
-      validatedExecutionArgs.operation.operation !==
-        OperationTypeNode.SUBSCRIPTION,
+      validatedExecutionArgs.allowIncrementalSubscriptions ||
+        validatedExecutionArgs.operation.operation !==
+          OperationTypeNode.SUBSCRIPTION,
       '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
     );
   }
@@ -2101,9 +2113,56 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
+  const resultOrStream = legacyExperimentalSubscribeIncrementally(args, false);
+
+  if (isPromise(resultOrStream)) {
+    return resultOrStream.then(handleMaybeResponseStream);
+  }
+
+  return handleMaybeResponseStream(resultOrStream);
+}
+
+function handleMaybeResponseStream(
+  maybeSubscription:
+    | ExecutionResult
+    | AsyncGenerator<
+        | ExecutionResult
+        | InitialIncrementalExecutionResult
+        | SubsequentIncrementalExecutionResult,
+        void,
+        void
+      >,
+): AsyncGenerator<ExecutionResult, void, void> | ExecutionResult {
+  // Return early errors.
+  if (!isAsyncIterable(maybeSubscription)) {
+    return maybeSubscription;
+  }
+
+  return mapAsyncIterable(maybeSubscription, (result) => {
+    invariant(!('hasNext' in result), UNEXPECTED_MULTIPLE_PAYLOADS);
+    return result;
+  });
+}
+
+export function legacyExperimentalSubscribeIncrementally(
+  args: ExecutionArgs,
+  allowIncrementalSubscriptions = true,
+): PromiseOrValue<
+  | AsyncGenerator<
+      | ExecutionResult
+      | InitialIncrementalExecutionResult
+      | SubsequentIncrementalExecutionResult,
+      void,
+      void
+    >
+  | ExecutionResult
+> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const validatedExecutionArgs = validateExecutionArgs(args);
+  const validatedExecutionArgs = validateExecutionArgs(
+    args,
+    allowIncrementalSubscriptions,
+  );
 
   // Return early errors if execution context failed.
   if (!('schema' in validatedExecutionArgs)) {
@@ -2114,21 +2173,52 @@ export function subscribe(
 
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(validatedExecutionArgs, resolvedResultOrStream),
+      handleMaybeEventStream(validatedExecutionArgs, resolvedResultOrStream),
     );
   }
 
-  return mapSourceToResponse(validatedExecutionArgs, resultOrStream);
+  return handleMaybeEventStream(validatedExecutionArgs, resultOrStream);
 }
 
-function mapSourceToResponse(
+function handleMaybeEventStream(
   validatedExecutionArgs: ValidatedExecutionArgs,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
-): AsyncGenerator<ExecutionResult, void, void> | ExecutionResult {
+):
+  | ExecutionResult
+  | AsyncGenerator<
+      | ExecutionResult
+      | InitialIncrementalExecutionResult
+      | SubsequentIncrementalExecutionResult,
+      void,
+      void
+    > {
   if (!isAsyncIterable(resultOrStream)) {
     return resultOrStream;
   }
 
+  return flattenAsyncIterable(
+    mapSourceToResponse(validatedExecutionArgs, resultOrStream),
+    (result) =>
+      'initialResult' in result
+        ? {
+            value: result.initialResult,
+            nestedIterable: result.subsequentResults,
+          }
+        : {
+            value: result,
+            nestedIterable: undefined,
+          },
+  );
+}
+
+function mapSourceToResponse(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+  stream: AsyncIterable<unknown>,
+): AsyncGenerator<
+  ExecutionResult | ExperimentalIncrementalExecutionResults,
+  void,
+  void
+> {
   const abortSignal = validatedExecutionArgs.abortSignal;
   const abortSignalListener = abortSignal
     ? new AbortSignalListener(abortSignal)
@@ -2140,8 +2230,8 @@ function mapSourceToResponse(
   // the GraphQL specification..
   return mapAsyncIterable(
     abortSignalListener
-      ? cancellableIterable(resultOrStream, abortSignalListener)
-      : resultOrStream,
+      ? cancellableIterable(stream, abortSignalListener)
+      : stream,
     (payload: unknown) => {
       const perEventExecutionArgs: ValidatedExecutionArgs = {
         ...validatedExecutionArgs,
