@@ -18,7 +18,7 @@ import {
 import { GraphQLID, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { execute, experimentalExecuteIncrementally } from '../Executor.js';
+import { execute, experimentalExecuteIncrementally } from '../execute.js';
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,

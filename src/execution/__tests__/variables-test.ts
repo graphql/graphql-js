@@ -30,7 +30,7 @@ import {
 import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { executeSync, experimentalExecuteIncrementally } from '../Executor.js';
+import { executeSync, experimentalExecuteIncrementally } from '../execute.js';
 import { getVariableValues } from '../values.js';
 
 const TestFaultyScalarGraphQLError = new GraphQLError(

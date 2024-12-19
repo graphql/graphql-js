@@ -16,7 +16,7 @@ import {
 } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { executeSync } from '../Executor.js';
+import { executeSync } from '../execute.js';
 
 describe('Execute: Handles execution with a complex schema', () => {
   it('executes using a schema', () => {

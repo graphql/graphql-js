@@ -8,7 +8,7 @@ import { GraphQLObjectType } from '../../type/definition.js';
 import { GraphQLInt, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { executeSync } from '../Executor.js';
+import { executeSync } from '../execute.js';
 
 describe('Execute: resolve function', () => {
   function testSchema(testField: GraphQLFieldConfig<any, any>) {

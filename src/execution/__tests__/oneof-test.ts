@@ -6,7 +6,7 @@ import { parse } from '../../language/parser.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { execute } from '../Executor.js';
+import { execute } from '../execute.js';
 import type { ExecutionResult } from '../types.js';
 
 const schema = buildSchema(`

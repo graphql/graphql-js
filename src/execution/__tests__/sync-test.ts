@@ -13,7 +13,7 @@ import { validate } from '../../validation/validate.js';
 
 import { graphqlSync } from '../../graphql.js';
 
-import { execute, executeSync } from '../Executor.js';
+import { execute, executeSync } from '../execute.js';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({

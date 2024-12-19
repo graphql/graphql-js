@@ -17,7 +17,7 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { execute, executeSync } from '../Executor.js';
+import { execute, executeSync } from '../execute.js';
 
 interface Context {
   async: boolean;

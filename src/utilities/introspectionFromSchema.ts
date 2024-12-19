@@ -4,7 +4,7 @@ import { parse } from '../language/parser.js';
 
 import type { GraphQLSchema } from '../type/schema.js';
 
-import { executeSync } from '../execution/Executor.js';
+import { executeSync } from '../execution/execute.js';
 
 import type {
   IntrospectionOptions,

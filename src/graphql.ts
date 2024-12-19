@@ -14,7 +14,7 @@ import { validateSchema } from './type/validate.js';
 
 import { validate } from './validation/validate.js';
 
-import { execute } from './execution/Executor.js';
+import { execute } from './execution/execute.js';
 import type { ExecutionResult } from './execution/types.js';
 
 /**

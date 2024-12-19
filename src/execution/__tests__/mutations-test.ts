@@ -14,7 +14,7 @@ import {
   execute,
   executeSync,
   experimentalExecuteIncrementally,
-} from '../Executor.js';
+} from '../execute.js';
 
 class NumberHolder {
   theNumber: number;
