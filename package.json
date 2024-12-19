@@ -37,7 +37,7 @@
     "test": "npm run lint && npm run check && npm run testonly:cover && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 --rulesdir resources/eslint-internal-rules/ .",
     "check": "tsc --pretty",
-    "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts",
+    "testonly": "dotenvx run --quiet --env NODE_ENV=development -- mocha --full-trace src/**/__tests__/**/*-test.ts",
     "testonly:cover": "c8 npm run testonly",
     "testonly:watch": "npm run testonly -- --watch",
     "prettier": "prettier --cache --cache-strategy metadata --write --list-different .",
@@ -58,6 +58,7 @@
   "devDependencies": {
     "@docusaurus/core": "3.5.2",
     "@docusaurus/preset-classic": "3.5.2",
+    "@dotenvx/dotenvx": "^1.14.0",
     "@mdx-js/react": "3.0.1",
     "@svgr/webpack": "8.1.0",
     "@types/chai": "4.3.19",

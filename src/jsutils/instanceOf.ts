@@ -1,10 +1,12 @@
 import { inspect } from './inspect.js';
 
-/* c8 ignore next 3 */
+/* c8 ignore next 6 */
 const isProduction =
-  globalThis.process != null &&
+  globalThis.process == null ||
   // eslint-disable-next-line no-undef
-  process.env.NODE_ENV === 'production';
+  (process.env.NODE_ENV !== 'development' &&
+    // eslint-disable-next-line no-undef
+    process.env.NODE_ENV !== 'test');
 
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
