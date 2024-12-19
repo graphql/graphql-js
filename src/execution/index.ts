@@ -13,6 +13,11 @@ export {
   subscribe,
 } from './execute.js';
 
+export {
+  legacyExperimentalExecuteIncrementally,
+  legacyExperimentalExecuteQueryOrMutationOrSubscriptionEvent,
+} from './legacyExperimentalExecuteIncrementally.js';
+
 export type { ExecutionArgs } from './execute.js';
 
 export type { ValidatedExecutionArgs } from './Executor.js';
