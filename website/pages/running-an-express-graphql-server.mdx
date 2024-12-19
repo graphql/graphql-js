@@ -1,0 +1,117 @@
+---
+title: Running an Express GraphQL Server
+sidebarTitle: Running Express + GraphQL
+---
+
+import { Tabs } from 'nextra/components';
+
+The simplest way to run a GraphQL API server is to use [Express](https://expressjs.com), a popular web application framework for Node.js. You will need to install two additional dependencies:
+
+```sh npm2yarn
+npm install express graphql-http graphql --save
+```
+
+Let's modify our “hello world” example so that it's an API server rather than a script that runs a single query. We can use the 'express' module to run a web server, and instead of executing a query directly with the `graphql` function, we can use the `graphql-http` library to mount a GraphQL API server on the “/graphql” HTTP endpoint:
+
+<Tabs items={['SDL', 'Code']}>
+  <Tabs.Tab>
+```javascript
+const { buildSchema } = require('graphql');
+const { createHandler } = require('graphql-http/lib/use/express');
+const express = require('express');
+
+// Construct a schema, using GraphQL schema language
+const schema = buildSchema(`type Query { hello: String } `);
+
+// The rootValue provides a resolver function for each API endpoint
+const rootValue = {
+  hello() {
+    return 'Hello world!';
+  },
+};
+
+const app = express();
+
+// Create and use the GraphQL handler.
+app.all(
+  '/graphql',
+  createHandler({
+    schema: schema,
+    rootValue: root,
+  }),
+);
+
+// Start the server at port
+app.listen(4000);
+console.log('Running a GraphQL API server at http://localhost:4000/graphql');
+
+````
+</Tabs.Tab>
+<Tabs.Tab>
+```javascript
+const { GraphQLObjectType, GraphQLSchema } = require('graphql');
+const { createHandler } = require('graphql-http/lib/use/express');
+const express = require('express');
+
+// Construct a schema
+const schema = new GraphQLSchema({
+  query: new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      hello: { type: GraphQLString },
+    },
+  }),
+});
+
+// The rootValue provides a resolver function for each API endpoint
+const rootValue = {
+  hello() {
+    return 'Hello world!';
+  },
+};
+
+const app = express();
+
+// Create and use the GraphQL handler.
+app.all(
+  '/graphql',
+  createHandler({
+    schema: schema,
+    rootValue: root,
+  }),
+);
+
+// Start the server at port
+app.listen(4000);
+console.log('Running a GraphQL API server at http://localhost:4000/graphql');
+````
+
+  </Tabs.Tab>
+</Tabs>
+
+You can run this GraphQL server with:
+
+```sh
+node server.js
+```
+
+## Using GraphiQL
+
+[GraphiQL](https://github.com/graphql/graphiql) is GraphQL's IDE; a great way of querying and exploring your GraphQL API.
+One easy way to add it to your server is via the MIT-licensed [ruru](https://github.com/graphile/crystal/blob/main/grafast/ruru/README.md) package which bundles a prebuilt GraphiQL with some popular enhancements.
+To do so, install the `ruru` module with `npm install --save ruru` and then add the following to your `server.js` file, then restart the `node server.js` command:
+
+```js
+const { ruruHTML } = require('ruru/server');
+
+// Serve the GraphiQL IDE.
+app.get('/', (_req, res) => {
+  res.type('html');
+  res.end(ruruHTML({ endpoint: '/graphql' }));
+});
+```
+
+If you navigate to [http://localhost:4000](http://localhost:4000), you should see an interface that lets you enter queries;
+now you can use the GraphiQL IDE tool to issue GraphQL queries directly in the browser.
+
+At this point you have learned how to run a GraphQL server. The next step is to learn how to [issue GraphQL queries from client code](/graphql-clients/).
