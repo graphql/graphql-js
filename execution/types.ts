@@ -31,12 +31,13 @@ export interface FormattedExecutionResult<
   extensions?: TExtensions;
 }
 export interface ExperimentalIncrementalExecutionResults<
-  TData = unknown,
+  TInitial = ObjMap<unknown>,
+  TSubsequent = unknown,
   TExtensions = ObjMap<unknown>,
 > {
-  initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
+  initialResult: InitialIncrementalExecutionResult<TInitial, TExtensions>;
   subsequentResults: AsyncGenerator<
-    SubsequentIncrementalExecutionResult<TData, TExtensions>,
+    SubsequentIncrementalExecutionResult<TSubsequent, TExtensions>,
     void,
     void
   >;
