@@ -21,9 +21,9 @@ export interface FormattedExecutionResult<TData = ObjMap<unknown>, TExtensions =
     data?: TData | null;
     extensions?: TExtensions;
 }
-export interface ExperimentalIncrementalExecutionResults<TData = unknown, TExtensions = ObjMap<unknown>> {
-    initialResult: InitialIncrementalExecutionResult<TData, TExtensions>;
-    subsequentResults: AsyncGenerator<SubsequentIncrementalExecutionResult<TData, TExtensions>, void, void>;
+export interface ExperimentalIncrementalExecutionResults<TInitial = ObjMap<unknown>, TSubsequent = unknown, TExtensions = ObjMap<unknown>> {
+    initialResult: InitialIncrementalExecutionResult<TInitial, TExtensions>;
+    subsequentResults: AsyncGenerator<SubsequentIncrementalExecutionResult<TSubsequent, TExtensions>, void, void>;
 }
 export interface InitialIncrementalExecutionResult<TData = ObjMap<unknown>, TExtensions = ObjMap<unknown>> extends ExecutionResult<TData, TExtensions> {
     data: TData;
