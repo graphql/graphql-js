@@ -11,6 +11,7 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   subscribe,
+  legacyExperimentalSubscribeIncrementally,
 } from './execute.js';
 
 export type { ExecutionArgs, ValidatedExecutionArgs } from './execute.js';
