@@ -38,6 +38,15 @@ export interface IntrospectionOptions {
    * Default: false
    */
   oneOf?: boolean;
+
+  /**
+   * How deep to recurse into nested types. Larger values will result in more
+   * accurate results, but have a higher load. Some servers might restrict the
+   * maximum query depth. If thats the case, try decreasing this value.
+   *
+   * Default: 9
+   */
+  typeDepth?: number;
 }
 
 /**
@@ -52,6 +61,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     schemaDescription: false,
     inputValueDeprecation: false,
     oneOf: false,
+    typeDepth: 9,
     ...options,
   };
 
@@ -70,6 +80,17 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
   const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
+  function ofType(level = 9): string {
+    if (level <= 0) {
+      return '';
+    }
+    return `
+            ofType {
+              name
+              kind
+              ${ofType(level - 1)}
+            }`;
+  }
 
   return `
     query IntrospectionQuery {
@@ -140,42 +161,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     fragment TypeRef on __Type {
       kind
       name
-      ofType {
-        kind
-        name
-        ofType {
-          kind
-          name
-          ofType {
-            kind
-            name
-            ofType {
-              kind
-              name
-              ofType {
-                kind
-                name
-                ofType {
-                  kind
-                  name
-                  ofType {
-                    kind
-                    name
-                    ofType {
-                      kind
-                      name
-                      ofType {
-                        kind
-                        name
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      ${ofType(optionsWithDefault.typeDepth)}
     }
   `;
 }
