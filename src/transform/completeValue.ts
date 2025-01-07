@@ -2,9 +2,11 @@ import { invariant } from '../jsutils/invariant.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
-import { addPath } from '../jsutils/Path.js';
+import { addPath, pathToArray } from '../jsutils/Path.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
+
+import { Kind } from '../language/kinds.js';
 
 import type {
   GraphQLObjectType,
@@ -16,9 +18,10 @@ import {
   isNonNullType,
   isObjectType,
 } from '../type/definition.js';
+import { GraphQLStreamDirective } from '../type/directives.js';
 
 import type { TransformationContext } from './buildTransformationContext.js';
-import type { FieldDetailsList, GroupedFieldSet } from './collectFields.js';
+import type { FieldDetails, GroupedFieldSet } from './collectFields.js';
 import { collectSubfields as _collectSubfields } from './collectFields.js';
 import { memoize3of4 } from './memoize3of4.js';
 
@@ -26,7 +29,7 @@ const collectSubfields = memoize3of4(
   (
     context: TransformationContext,
     returnType: GraphQLObjectType,
-    fieldDetailsList: FieldDetailsList,
+    fieldDetailsList: ReadonlyArray<FieldDetails>,
     path: Path | undefined,
   ) => _collectSubfields(context, returnType, fieldDetailsList, path),
 );
@@ -67,13 +70,14 @@ export function completeValue(
 }
 
 // eslint-disable-next-line @typescript-eslint/max-params
-function completeSubValue(
+export function completeSubValue(
   context: TransformationContext,
   errors: Array<GraphQLError>,
   returnType: GraphQLOutputType,
-  fieldDetailsList: FieldDetailsList,
+  fieldDetailsList: ReadonlyArray<FieldDetails>,
   result: unknown,
   path: Path,
+  listDepth = 0,
 ): unknown {
   if (isNonNullType(returnType)) {
     return completeSubValue(
@@ -110,6 +114,7 @@ function completeSubValue(
       fieldDetailsList,
       result,
       path,
+      listDepth,
     );
   }
 
@@ -120,7 +125,7 @@ function completeSubValue(
 function completeObjectType(
   context: TransformationContext,
   errors: Array<GraphQLError>,
-  fieldDetailsList: FieldDetailsList,
+  fieldDetailsList: ReadonlyArray<FieldDetails>,
   result: ObjMap<unknown>,
   path: Path,
 ): ObjMap<unknown> {
@@ -172,22 +177,87 @@ function completeObjectType(
 function completeListValue(
   context: TransformationContext,
   errors: Array<GraphQLError>,
-  returnType: GraphQLOutputType,
-  fieldDetailsList: FieldDetailsList,
+  itemType: GraphQLOutputType,
+  fieldDetailsList: ReadonlyArray<FieldDetails>,
   result: Array<unknown>,
   path: Path,
+  listDepth: number,
 ): Array<unknown> {
   const completedItems = [];
+
   for (let index = 0; index < result.length; index++) {
     const completed = completeSubValue(
       context,
       errors,
-      returnType,
+      itemType,
       fieldDetailsList,
       result[index],
       addPath(path, index, undefined),
+      listDepth + 1,
     );
     completedItems.push(completed);
   }
+
+  maybeAddStream(
+    context,
+    itemType,
+    fieldDetailsList,
+    listDepth,
+    path,
+    result.length,
+  );
+
   return completedItems;
+}
+
+// eslint-disable-next-line @typescript-eslint/max-params
+function maybeAddStream(
+  context: TransformationContext,
+  itemType: GraphQLOutputType,
+  fieldDetailsList: ReadonlyArray<FieldDetails>,
+  listDepth: number,
+  path: Path,
+  nextIndex: number,
+): void {
+  if (listDepth > 0) {
+    return;
+  }
+
+  let stream;
+  for (const fieldDetails of fieldDetailsList) {
+    const directives = fieldDetails.node.directives;
+    if (!directives) {
+      continue;
+    }
+    stream = directives.find(
+      (directive) => directive.name.value === GraphQLStreamDirective.name,
+    );
+    if (stream != null) {
+      break;
+    }
+  }
+
+  if (stream == null) {
+    return;
+  }
+
+  const labelArg = stream.arguments?.find((arg) => arg.name.value === 'label');
+  invariant(labelArg != null);
+  const labelValue = labelArg.value;
+  invariant(labelValue.kind === Kind.STRING);
+  const label = labelValue.value;
+  invariant(label != null);
+  const pendingLabels = context.pendingLabelsByPath.get(
+    pathToArray(path).join('.'),
+  );
+  if (pendingLabels?.has(label)) {
+    const streamUsage = context.streamUsageMap.get(label);
+    invariant(streamUsage != null);
+    streamUsage.nextIndex = nextIndex;
+    streamUsage.streams.add({
+      path,
+      itemType,
+      fieldDetailsList,
+    });
+  }
 }

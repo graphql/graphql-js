@@ -2,7 +2,7 @@ import { invariant } from '../jsutils/invariant.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
-import { addPath } from '../jsutils/Path.js';
+import { addPath, pathToArray } from '../jsutils/Path.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
@@ -24,7 +24,7 @@ import type {
 
 import type { TransformationContext } from './buildTransformationContext.js';
 import { collectFields as _collectFields } from './collectFields.js';
-import { completeValue } from './completeValue.js';
+import { completeSubValue, completeValue } from './completeValue.js';
 import { embedErrors } from './embedErrors.js';
 import { getObjectAtPath } from './getObjectAtPath.js';
 import { memoize3of4 } from './memoize3of4.js';
@@ -102,20 +102,25 @@ function transformSubsequent(
   if (result.pending) {
     processPending(context, result.pending);
   }
+
   if (result.incremental) {
-    newResult.incremental = transformIncremental(context, result.incremental);
-  }
-  if (result.completed) {
-    const transformedCompleted = transformCompleted(context, result.completed);
-    if (newResult.incremental) {
-      newResult.incremental = [
-        ...newResult.incremental,
-        ...transformedCompleted,
-      ];
-    } else if (transformedCompleted.length > 0) {
-      newResult.incremental = transformedCompleted;
+    const incremental = processIncremental(context, result.incremental);
+    if (incremental.length > 0) {
+      newResult.incremental = incremental;
     }
   }
+
+  if (result.completed) {
+    const incremental = processCompleted(context, result.completed);
+    if (incremental.length > 0) {
+      if (newResult.incremental) {
+        newResult.incremental = [...newResult.incremental, ...incremental];
+      } else {
+        newResult.incremental = incremental;
+      }
+    }
+  }
+
   return newResult;
 }
 
@@ -137,11 +142,11 @@ function processPending(
   }
 }
 
-function transformIncremental(
+function processIncremental(
   context: TransformationContext,
   incrementalResults: ReadonlyArray<IncrementalResult>,
 ): ReadonlyArray<LegacyIncrementalStreamResult> {
-  const newIncremental: Array<LegacyIncrementalStreamResult> = [];
+  const streamLabels = new Set<string>();
   for (const incrementalResult of incrementalResults) {
     const id = incrementalResult.id;
     const pendingResult = context.pendingResultsById.get(id);
@@ -152,7 +157,6 @@ function transformIncremental(
 
     const incompleteAtPath = getObjectAtPath(context.mergedResult, path);
     if (Array.isArray(incompleteAtPath)) {
-      const index = incompleteAtPath.length;
       invariant('items' in incrementalResult);
       const items = incrementalResult.items as ReadonlyArray<unknown>;
       const errors = incrementalResult.errors;
@@ -160,65 +164,7 @@ function transformIncremental(
       embedErrors(context.mergedResult, errors);
       const label = pendingResult.label;
       invariant(label != null);
-      const streamUsageContext = context.streamUsageMap.get(label);
-      invariant(streamUsageContext != null);
-      const { originalLabel, selectionSet } = streamUsageContext;
-      let newIncrementalResult: LegacyIncrementalStreamResult;
-      if (selectionSet == null) {
-        newIncrementalResult = {
-          items,
-          path: [...path, index],
-        };
-        if (errors != null) {
-          newIncrementalResult.errors = errors;
-        }
-      } else {
-        const embeddedErrors: Array<GraphQLError> = [];
-        const listPath = pathFromArray(path);
-        newIncrementalResult = {
-          items: items.map((item, itemIndex) => {
-            if (item === null) {
-              const aggregate = incompleteAtPath[index + itemIndex];
-              invariant(aggregate instanceof AggregateError);
-              embeddedErrors.push(...aggregate.errors);
-              return null;
-            }
-
-            invariant(isObjectLike(item));
-            const typeName = item[context.prefix];
-            invariant(typeof typeName === 'string');
-
-            const runtimeType =
-              context.transformedArgs.schema.getType(typeName);
-            invariant(isObjectType(runtimeType));
-
-            const itemPath = addPath(listPath, index + itemIndex, undefined);
-            const groupedFieldSet = collectFields(
-              context,
-              runtimeType,
-              selectionSet,
-              itemPath,
-            );
-
-            return completeValue(
-              context,
-              item,
-              runtimeType,
-              groupedFieldSet,
-              embeddedErrors,
-              itemPath,
-            );
-          }),
-          path: [...path, index],
-        };
-        if (embeddedErrors.length > 0) {
-          newIncrementalResult.errors = embeddedErrors;
-        }
-      }
-      if (originalLabel != null) {
-        newIncrementalResult.label = originalLabel;
-      }
-      newIncremental.push(newIncrementalResult);
+      streamLabels.add(label);
     } else {
       invariant('data' in incrementalResult);
       for (const [key, value] of Object.entries(
@@ -229,10 +175,48 @@ function transformIncremental(
       embedErrors(context.mergedResult, incrementalResult.errors);
     }
   }
-  return newIncremental;
+
+  const incremental: Array<LegacyIncrementalStreamResult> = [];
+  for (const label of streamLabels) {
+    const streamUsageContext = context.streamUsageMap.get(label);
+    invariant(streamUsageContext != null);
+    const { originalLabel, nextIndex, streams } = streamUsageContext;
+    for (const stream of streams) {
+      const { path, itemType, fieldDetailsList } = stream;
+      const list = getObjectAtPath(context.mergedResult, pathToArray(path));
+      invariant(Array.isArray(list));
+      const items: Array<unknown> = [];
+      const errors: Array<GraphQLError> = [];
+      for (let i = nextIndex; i < list.length; i++) {
+        const item = completeSubValue(
+          context,
+          errors,
+          itemType,
+          fieldDetailsList,
+          list[i],
+          addPath(path, i, undefined),
+          1,
+        );
+        items.push(item);
+      }
+      streamUsageContext.nextIndex = list.length;
+      const newIncrementalResult: LegacyIncrementalStreamResult = {
+        items,
+        path: [...pathToArray(path), nextIndex],
+      };
+      if (errors.length > 0) {
+        newIncrementalResult.errors = errors;
+      }
+      if (originalLabel != null) {
+        newIncrementalResult.label = originalLabel;
+      }
+      incremental.push(newIncrementalResult);
+    }
+  }
+  return incremental;
 }
 
-function transformCompleted(
+function processCompleted(
   context: TransformationContext,
   completedResults: ReadonlyArray<CompletedResult>,
 ): ReadonlyArray<LegacyIncrementalResult> {
@@ -243,7 +227,8 @@ function transformCompleted(
     const label = pendingResult.label;
     invariant(label != null);
 
-    if (context.streamUsageMap.has(label)) {
+    const streamUsageContext = context.streamUsageMap.get(label);
+    if (streamUsageContext) {
       context.streamUsageMap.delete(label);
       if ('errors' in completedResult) {
         const list = getObjectAtPath(context.mergedResult, pendingResult.path);

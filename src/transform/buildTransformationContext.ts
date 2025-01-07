@@ -1,6 +1,7 @@
 import { invariant } from '../jsutils/invariant.js';
 import { mapValue } from '../jsutils/mapValue.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { Path } from '../jsutils/Path.js';
 
 import type {
   ArgumentNode,
@@ -14,11 +15,14 @@ import {
   GraphQLDeferDirective,
   GraphQLStreamDirective,
 } from '../type/directives.js';
+import type { GraphQLOutputType } from '../type/index.js';
 import { TypeNameMetaFieldDef } from '../type/introspection.js';
 
 import { collectSubfields as _collectSubfields } from '../execution/collectFields.js';
 import type { ValidatedExecutionArgs } from '../execution/execute.js';
 import type { PendingResult } from '../execution/types.js';
+
+import type { FieldDetails } from './collectFields.js';
 
 type SelectionSetNodeOrFragmentName =
   | { node: SelectionSetNode; fragmentName?: never }
@@ -29,9 +33,16 @@ interface DeferUsageContext {
   selectionSet: SelectionSetNodeOrFragmentName;
 }
 
+export interface Stream {
+  path: Path;
+  itemType: GraphQLOutputType;
+  fieldDetailsList: ReadonlyArray<FieldDetails>;
+}
+
 interface StreamUsageContext {
   originalLabel: string | undefined;
-  selectionSet: SelectionSetNode | undefined;
+  streams: Set<Stream>;
+  nextIndex: number;
 }
 
 export interface TransformationContext {
@@ -145,26 +156,18 @@ function transformSelection(
   if (selection.kind === Kind.FIELD) {
     const selectionSet = selection.selectionSet;
     if (selectionSet) {
-      const transformedSelectionSet = transformNestedSelectionSet(
-        context,
-        selectionSet,
-      );
       return {
         ...selection,
-        selectionSet: transformedSelectionSet,
+        selectionSet: transformNestedSelectionSet(context, selectionSet),
         directives: selection.directives?.map((directive) =>
-          transformMaybeStreamDirective(
-            context,
-            directive,
-            transformedSelectionSet,
-          ),
+          transformMaybeStreamDirective(context, directive),
         ),
       };
     }
     return {
       ...selection,
       directives: selection.directives?.map((directive) =>
-        transformMaybeStreamDirective(context, directive, undefined),
+        transformMaybeStreamDirective(context, directive),
       ),
     };
   } else if (selection.kind === Kind.INLINE_FRAGMENT) {
@@ -263,7 +266,6 @@ function transformMaybeDeferDirective(
 function transformMaybeStreamDirective(
   context: RequestTransformationContext,
   directive: DirectiveNode,
-  selectionSet: SelectionSetNode | undefined,
 ): DirectiveNode {
   const name = directive.name.value;
 
@@ -286,7 +288,8 @@ function transformMaybeStreamDirective(
         const prefixedLabel = `${context.prefix}stream${context.incrementalCounter++}__${originalLabel}`;
         context.streamUsageMap.set(prefixedLabel, {
           originalLabel,
-          selectionSet,
+          streams: new Set(),
+          nextIndex: 0,
         });
         newArgs.push({
           ...arg,
@@ -305,7 +308,8 @@ function transformMaybeStreamDirective(
     const newLabel = `${context.prefix}stream${context.incrementalCounter++}`;
     context.streamUsageMap.set(newLabel, {
       originalLabel: undefined,
-      selectionSet,
+      streams: new Set(),
+      nextIndex: 0,
     });
     newArgs.push({
       kind: Kind.ARGUMENT,
