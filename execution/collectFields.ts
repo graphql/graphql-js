@@ -201,20 +201,9 @@ function collectFieldsImpl(
       }
       case Kind.FRAGMENT_SPREAD: {
         const fragName = selection.name.value;
-        const newDeferUsage = getDeferUsage(
-          variableValues,
-          fragmentVariableValues,
-          selection,
-          deferUsage,
-        );
         if (
-          !newDeferUsage &&
-          (visitedFragmentNames.has(fragName) ||
-            !shouldIncludeNode(
-              selection,
-              variableValues,
-              fragmentVariableValues,
-            ))
+          visitedFragmentNames.has(fragName) ||
+          !shouldIncludeNode(selection, variableValues, fragmentVariableValues)
         ) {
           continue;
         }
@@ -225,6 +214,12 @@ function collectFieldsImpl(
         ) {
           continue;
         }
+        const newDeferUsage = getDeferUsage(
+          variableValues,
+          fragmentVariableValues,
+          selection,
+          deferUsage,
+        );
         const fragmentVariableSignatures = fragment.variableSignatures;
         let newFragmentVariableValues: VariableValues | undefined;
         if (fragmentVariableSignatures) {
