@@ -1,5 +1,6 @@
 import { invariant } from '../jsutils/invariant.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { memoize3 } from '../jsutils/memoize3.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
@@ -20,18 +21,20 @@ import {
 } from '../type/definition.js';
 import { GraphQLStreamDirective } from '../type/directives.js';
 
-import type { TransformationContext } from './buildTransformationContext.js';
-import type { FieldDetails, GroupedFieldSet } from './collectFields.js';
-import { collectSubfields as _collectSubfields } from './collectFields.js';
-import { memoize3of4 } from './memoize3of4.js';
+import type { GroupedFieldSet } from '../execution/collectFields.js';
+import type { ValidatedExecutionArgs } from '../execution/execute.js';
 
-const collectSubfields = memoize3of4(
+import type { TransformationContext } from './buildTransformationContext.js';
+import type { FieldDetails } from './collectFields.js';
+import { collectSubfields as _collectSubfields } from './collectFields.js';
+import { groupedFieldSetFromTree } from './groupedFieldSetFromTree.js';
+
+const collectSubfields = memoize3(
   (
-    context: TransformationContext,
+    validatedExecutionArgs: ValidatedExecutionArgs,
     returnType: GraphQLObjectType,
     fieldDetailsList: ReadonlyArray<FieldDetails>,
-    path: Path | undefined,
-  ) => _collectSubfields(context, returnType, fieldDetailsList, path),
+  ) => _collectSubfields(validatedExecutionArgs, returnType, fieldDetailsList),
 );
 
 // eslint-disable-next-line @typescript-eslint/max-params
@@ -141,10 +144,15 @@ function completeObjectType(
 
   const completed = Object.create(null);
 
-  const groupedFieldSet = collectSubfields(
-    context,
+  const groupedFieldSetTree = collectSubfields(
+    context.transformedArgs,
     runtimeType,
     fieldDetailsList,
+  );
+
+  const groupedFieldSet = groupedFieldSetFromTree(
+    context,
+    groupedFieldSetTree,
     path,
   );
 

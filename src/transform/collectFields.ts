@@ -1,8 +1,6 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { invariant } from '../jsutils/invariant.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { Path } from '../jsutils/Path.js';
-import { pathToArray } from '../jsutils/Path.js';
 
 import type {
   FieldNode,
@@ -22,7 +20,11 @@ import {
 } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import type { GraphQLVariableSignature } from '../execution/getVariableSignature.js';
+import type {
+  FragmentDetails,
+  GroupedFieldSet,
+} from '../execution/collectFields.js';
+import type { ValidatedExecutionArgs } from '../execution/execute.js';
 import type { VariableValues } from '../execution/values.js';
 import {
   getDirectiveValues,
@@ -31,20 +33,9 @@ import {
 
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
-import type { TransformationContext } from './buildTransformationContext.js';
-
 export interface FieldDetails {
   node: FieldNode;
   fragmentVariableValues?: VariableValues | undefined;
-}
-
-export type FieldDetailsList = ReadonlyArray<FieldDetails>;
-
-export type GroupedFieldSet = ReadonlyMap<string, FieldDetailsList>;
-
-export interface FragmentDetails {
-  definition: FragmentDefinitionNode;
-  variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
 }
 
 interface CollectFieldsContext {
@@ -53,10 +44,13 @@ interface CollectFieldsContext {
   variableValues: VariableValues;
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
-  pendingLabelsByPath: Map<string, Set<string>>;
   hideSuggestions: boolean;
 }
 
+export interface GroupedFieldSetTree {
+  groupedFieldSet: GroupedFieldSet;
+  deferredGroupedFieldSets: Map<string, GroupedFieldSetTree>;
+}
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -68,28 +62,25 @@ interface CollectFieldsContext {
  */
 
 export function collectFields(
-  transformationContext: TransformationContext,
+  validateExecutionArgs: ValidatedExecutionArgs,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-  path: Path | undefined,
-): GroupedFieldSet {
-  const {
-    transformedArgs: { schema, fragments, variableValues, hideSuggestions },
-    pendingLabelsByPath,
-  } = transformationContext;
-  const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
+): GroupedFieldSetTree {
   const context: CollectFieldsContext = {
-    schema,
-    fragments,
-    variableValues,
+    ...validateExecutionArgs,
     runtimeType,
     visitedFragmentNames: new Set(),
-    pendingLabelsByPath,
-    hideSuggestions,
   };
 
-  collectFieldsImpl(context, selectionSet, groupedFieldSet, path);
-  return groupedFieldSet;
+  const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
+  const deferredGroupedFieldSets = new Map<string, GroupedFieldSetTree>();
+  collectFieldsImpl(
+    context,
+    selectionSet,
+    groupedFieldSet,
+    deferredGroupedFieldSets,
+  );
+  return { groupedFieldSet, deferredGroupedFieldSets };
 }
 
 /**
@@ -103,25 +94,17 @@ export function collectFields(
  * @internal
  */
 export function collectSubfields(
-  transformationContext: TransformationContext,
+  validatedExecutionArgs: ValidatedExecutionArgs,
   returnType: GraphQLObjectType,
-  fieldDetailsList: FieldDetailsList,
-  path: Path | undefined,
-): GroupedFieldSet {
-  const {
-    transformedArgs: { schema, fragments, variableValues, hideSuggestions },
-    pendingLabelsByPath,
-  } = transformationContext;
+  fieldDetailsList: ReadonlyArray<FieldDetails>,
+): GroupedFieldSetTree {
   const context: CollectFieldsContext = {
-    schema,
-    fragments,
-    variableValues,
+    ...validatedExecutionArgs,
     runtimeType: returnType,
     visitedFragmentNames: new Set(),
-    pendingLabelsByPath,
-    hideSuggestions,
   };
-  const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
+  const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
+  const deferredGroupedFieldSets = new Map<string, GroupedFieldSetTree>();
 
   for (const fieldDetail of fieldDetailsList) {
     const selectionSet = fieldDetail.node.selectionSet;
@@ -130,21 +113,21 @@ export function collectSubfields(
       collectFieldsImpl(
         context,
         selectionSet,
-        subGroupedFieldSet,
-        path,
+        groupedFieldSet,
+        deferredGroupedFieldSets,
         fragmentVariableValues,
       );
     }
   }
 
-  return subGroupedFieldSet;
+  return { groupedFieldSet, deferredGroupedFieldSets };
 }
 
 function collectFieldsImpl(
   context: CollectFieldsContext,
   selectionSet: SelectionSetNode,
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
-  path?: Path | undefined,
+  deferredGroupedFieldSets: Map<string, GroupedFieldSetTree>,
   fragmentVariableValues?: VariableValues,
 ): void {
   const {
@@ -153,7 +136,6 @@ function collectFieldsImpl(
     variableValues,
     runtimeType,
     visitedFragmentNames,
-    pendingLabelsByPath,
     hideSuggestions,
   } = context;
 
@@ -172,8 +154,30 @@ function collectFieldsImpl(
         break;
       }
       case Kind.INLINE_FRAGMENT: {
+        const deferLabel = isDeferred(selection);
+        if (deferLabel !== undefined) {
+          const deferredGroupedFieldSet = new AccumulatorMap<
+            string,
+            FieldDetails
+          >();
+          const nestedDeferredGroupedFieldSets = new Map<
+            string,
+            GroupedFieldSetTree
+          >();
+          collectFieldsImpl(
+            context,
+            selection.selectionSet,
+            deferredGroupedFieldSet,
+            nestedDeferredGroupedFieldSets,
+          );
+          deferredGroupedFieldSets.set(deferLabel, {
+            groupedFieldSet: deferredGroupedFieldSet,
+            deferredGroupedFieldSets: nestedDeferredGroupedFieldSets,
+          });
+          continue;
+        }
+
         if (
-          isDeferred(selection, path, pendingLabelsByPath) ||
           !shouldIncludeNode(
             selection,
             variableValues,
@@ -188,7 +192,7 @@ function collectFieldsImpl(
           context,
           selection.selectionSet,
           groupedFieldSet,
-          path,
+          deferredGroupedFieldSets,
           fragmentVariableValues,
         );
 
@@ -199,7 +203,6 @@ function collectFieldsImpl(
 
         if (
           visitedFragmentNames.has(fragName) ||
-          isDeferred(selection, path, pendingLabelsByPath) ||
           !shouldIncludeNode(selection, variableValues, fragmentVariableValues)
         ) {
           continue;
@@ -210,6 +213,29 @@ function collectFieldsImpl(
           fragment == null ||
           !doesFragmentConditionMatch(schema, fragment.definition, runtimeType)
         ) {
+          continue;
+        }
+
+        const deferLabel = isDeferred(selection);
+        if (deferLabel !== undefined) {
+          const deferredGroupedFieldSet = new AccumulatorMap<
+            string,
+            FieldDetails
+          >();
+          const nestedDeferredGroupedFieldSets = new Map<
+            string,
+            GroupedFieldSetTree
+          >();
+          collectFieldsImpl(
+            context,
+            fragment.definition.selectionSet,
+            deferredGroupedFieldSet,
+            nestedDeferredGroupedFieldSets,
+          );
+          deferredGroupedFieldSets.set(deferLabel, {
+            groupedFieldSet: deferredGroupedFieldSet,
+            deferredGroupedFieldSets: nestedDeferredGroupedFieldSets,
+          });
           continue;
         }
 
@@ -230,7 +256,7 @@ function collectFieldsImpl(
           context,
           fragment.definition.selectionSet,
           groupedFieldSet,
-          path,
+          deferredGroupedFieldSets,
           newFragmentVariableValues,
         );
         break;
@@ -305,19 +331,12 @@ function getFieldEntryKey(node: FieldNode): string {
  */
 function isDeferred(
   selection: FragmentSpreadNode | InlineFragmentNode,
-  path: Path | undefined,
-  pendingLabelsByPath: Map<string, Set<string>>,
-): boolean {
+): string | undefined {
   const deferDirective = selection.directives?.find(
     (directive) => directive.name.value === GraphQLDeferDirective.name,
   );
   if (!deferDirective) {
-    return false;
-  }
-  const pathStr = pathToArray(path).join('.');
-  const labels = pendingLabelsByPath.get(pathStr);
-  if (labels == null) {
-    return false;
+    return;
   }
   const labelArg = deferDirective.arguments?.find(
     (arg) => arg.name.value === 'label',
@@ -325,6 +344,5 @@ function isDeferred(
   invariant(labelArg != null);
   const labelValue = labelArg.value;
   invariant(labelValue.kind === Kind.STRING);
-  const label = labelValue.value;
-  return labels.has(label);
+  return labelValue.value;
 }

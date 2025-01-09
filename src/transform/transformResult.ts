@@ -1,5 +1,6 @@
 import { invariant } from '../jsutils/invariant.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { memoize3 } from '../jsutils/memoize3.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
@@ -11,6 +12,7 @@ import type { SelectionSetNode } from '../language/ast.js';
 import type { GraphQLObjectType } from '../type/definition.js';
 import { isObjectType } from '../type/definition.js';
 
+import type { ValidatedExecutionArgs } from '../execution/execute.js';
 import { mapAsyncIterable } from '../execution/mapAsyncIterable.js';
 import type {
   CompletedResult,
@@ -27,7 +29,7 @@ import { collectFields as _collectFields } from './collectFields.js';
 import { completeSubValue, completeValue } from './completeValue.js';
 import { embedErrors } from './embedErrors.js';
 import { getObjectAtPath } from './getObjectAtPath.js';
-import { memoize3of4 } from './memoize3of4.js';
+import { groupedFieldSetFromTree } from './groupedFieldSetFromTree.js';
 
 export interface LegacyExperimentalIncrementalExecutionResults {
   initialResult: LegacyInitialIncrementalExecutionResult;
@@ -65,13 +67,12 @@ type LegacyIncrementalResult =
   | LegacyIncrementalDeferResult
   | LegacyIncrementalStreamResult;
 
-const collectFields = memoize3of4(
+const collectFields = memoize3(
   (
-    context: TransformationContext,
+    validatedExecutionArgs: ValidatedExecutionArgs,
     returnType: GraphQLObjectType,
     selectionSet: SelectionSetNode,
-    path: Path | undefined,
-  ) => _collectFields(context, returnType, selectionSet, path),
+  ) => _collectFields(validatedExecutionArgs, returnType, selectionSet),
 );
 
 export function transformResult(
@@ -280,10 +281,15 @@ function processCompleted(
 
       const objectPath = pathFromArray(pendingResult.path);
 
-      const groupedFieldSet = collectFields(
-        context,
+      const groupedFieldSetTree = collectFields(
+        context.transformedArgs,
         runtimeType,
         selectionSetNode,
+      );
+
+      const groupedFieldSet = groupedFieldSetFromTree(
+        context,
+        groupedFieldSetTree,
         objectPath,
       );
 
@@ -348,12 +354,18 @@ function transformInitialResult<
   }
 
   // no need to memoize for the initial result as will be called only once
-  const groupedFieldSet = _collectFields(
-    context,
+  const groupedFieldSetTree = _collectFields(
+    context.transformedArgs,
     rootType,
     operation.selectionSet,
+  );
+
+  const groupedFieldSet = groupedFieldSetFromTree(
+    context,
+    groupedFieldSetTree,
     undefined,
   );
+
   const data = completeValue(
     context,
     originalData,
