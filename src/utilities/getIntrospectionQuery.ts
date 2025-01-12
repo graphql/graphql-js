@@ -40,9 +40,10 @@ export interface IntrospectionOptions {
   oneOf?: boolean;
 
   /**
-   * How deep to recurse into nested types. Larger values will result in more
-   * accurate results, but have a higher load. Some servers might restrict the
-   * maximum query depth. If thats the case, try decreasing this value.
+   * How deep to recurse into nested types, larger values will result in more
+   * accurate results, but have a higher load on the server.
+   * Some servers might restrict the maximum query depth or complexity.
+   * If that's the case, try decreasing this value.
    *
    * Default: 9
    */
@@ -85,12 +86,12 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       return '';
     }
     if (level > 100) {
-      throw new Error("Please set typeDepth to a reasonable value; the default is 9.");
+      throw new Error('Please set typeDepth to a reasonable value; the default is 9.');
     }
     return `
 ${indent}ofType {
 ${indent}  name
-${indent}  kind${ofType(level - 1, indent + "  ")}
+${indent}  kind${ofType(level - 1, indent + '  ')}
 ${indent}}`;
   }
 
@@ -162,7 +163,7 @@ ${indent}}`;
 
     fragment TypeRef on __Type {
       kind
-      name${ofType(optionsWithDefault.typeDepth ?? 9, "      ")}
+      name${ofType(optionsWithDefault.typeDepth ?? 9, '      ')}
     }
   `;
 }
