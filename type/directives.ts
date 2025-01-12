@@ -183,6 +183,11 @@ export const GraphQLStreamDirective = new GraphQLDirective({
     'Directs the executor to stream plural fields when the `if` argument is true or undefined.',
   locations: [DirectiveLocation.FIELD],
   args: {
+    initialCount: {
+      default: { value: 0 },
+      type: new GraphQLNonNull(GraphQLInt),
+      description: 'Number of items to return immediately',
+    },
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Stream when true or undefined.',
@@ -191,11 +196,6 @@ export const GraphQLStreamDirective = new GraphQLDirective({
     label: {
       type: GraphQLString,
       description: 'Unique name',
-    },
-    initialCount: {
-      default: { value: 0 },
-      type: GraphQLInt,
-      description: 'Number of items to return immediately',
     },
   },
 });
