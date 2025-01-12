@@ -86,7 +86,9 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
       return '';
     }
     if (level > 100) {
-      throw new Error('Please set typeDepth to a reasonable value; the default is 9.');
+      throw new Error(
+        'Please set typeDepth to a reasonable value between 0 and 100; the default is 9.',
+      );
     }
     return `
 ${indent}ofType {
