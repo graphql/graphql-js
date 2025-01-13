@@ -3,6 +3,8 @@ import { Maybe } from '../jsutils/Maybe';
 import { ASTNode } from '../language/ast';
 import { Source } from '../language/source';
 import { SourceLocation } from '../language/location';
+
+// eslint-disable-next-line import/no-cycle
 import { GraphQLFormattedError } from './formatError';
 
 /**

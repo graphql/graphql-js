@@ -6,6 +6,7 @@ import type { Source } from '../language/source';
 import type { SourceLocation } from '../language/location';
 import { getLocation } from '../language/location';
 import { printLocation, printSourceLocation } from '../language/printLocation';
+
 import { formatError } from './formatError';
 import type { GraphQLFormattedError } from './formatError';
 

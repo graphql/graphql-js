@@ -1,5 +1,6 @@
 import { SourceLocation } from '../language/location';
 
+// eslint-disable-next-line import/no-cycle
 import { GraphQLError } from './GraphQLError';
 
 /**
