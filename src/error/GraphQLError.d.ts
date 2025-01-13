@@ -3,6 +3,7 @@ import { Maybe } from '../jsutils/Maybe';
 import { ASTNode } from '../language/ast';
 import { Source } from '../language/source';
 import { SourceLocation } from '../language/location';
+import { GraphQLFormattedError } from './formatError';
 
 /**
  * Custom extensions
@@ -82,6 +83,10 @@ export class GraphQLError extends Error {
    * Extension fields to add to the formatted error.
    */
   readonly extensions: { [key: string]: any };
+
+  toString(): string;
+
+  toJSON(): GraphQLFormattedError;
 }
 
 /**
