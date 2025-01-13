@@ -22,10 +22,11 @@ export function getObjectAtPath(
       current = current[key];
       continue;
     }
-    invariant(false);
-  }
+    invariant(false); /* c8 ignore start */
+  } /* c8 ignore stop */
 
-  invariant(isObjectLike(current) || Array.isArray(current));
+  // arrays are object-like, so no need to check twice
+  invariant(isObjectLike(current));
 
   return current;
 }

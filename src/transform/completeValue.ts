@@ -48,10 +48,6 @@ export function completeValue(
 ): ObjMap<unknown> {
   const data = Object.create(null);
   for (const [responseName, fieldDetailsList] of groupedFieldSet) {
-    if (responseName === context.prefix) {
-      continue;
-    }
-
     const fieldName = fieldDetailsList[0].node.name.value;
     const fieldDef = context.transformedArgs.schema.getField(
       rootType,
