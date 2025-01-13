@@ -6,14 +6,14 @@
 /**
  * A string containing the version of the GraphQL.js library
  */
-export const version = '15.9.0';
+export const version = '15.10.0';
 
 /**
  * An object containing the components of the GraphQL.js version string
  */
 export const versionInfo = Object.freeze({
   major: 15,
-  minor: 9,
+  minor: 10,
   patch: 0,
   preReleaseTag: null,
 });
