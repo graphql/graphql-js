@@ -305,6 +305,7 @@ describe('toJSON', () => {
 
     expect(error.toJSON()).to.deep.equal({
       message: 'msg',
+      locations: undefined,
       path: ['path', 3, 'to', 'field'],
     });
   });
@@ -316,6 +317,8 @@ describe('toJSON', () => {
 
     expect(error.toJSON()).to.deep.equal({
       message: 'msg',
+      locations: undefined,
+      path: undefined,
       extensions: { foo: 'bar' },
     });
   });
