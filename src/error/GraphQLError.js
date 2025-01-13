@@ -7,6 +7,9 @@ import type { SourceLocation } from '../language/location';
 import { getLocation } from '../language/location';
 import { printLocation, printSourceLocation } from '../language/printLocation';
 
+import { formatError } from './formatError';
+import type { GraphQLFormattedError } from './formatError';
+
 /**
  * A GraphQLError describes an Error found during the parse, validate, or
  * execute phases of performing a GraphQL operation. In addition to a message
@@ -155,6 +158,10 @@ export class GraphQLError extends Error {
 
   toString(): string {
     return printError(this);
+  }
+
+  toJSON(): GraphQLFormattedError {
+    return formatError(this);
   }
 
   // FIXME: workaround to not break chai comparisons, should be remove in v16
