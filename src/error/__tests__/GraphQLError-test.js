@@ -293,3 +293,49 @@ describe('printError', () => {
     `);
   });
 });
+
+describe('toJSON', () => {
+  it('includes path', () => {
+    const error = new GraphQLError('msg', null, null, null, [
+      'path',
+      3,
+      'to',
+      'field',
+    ]);
+
+    expect(error.toJSON()).to.deep.equal({
+      message: 'msg',
+      path: ['path', 3, 'to', 'field'],
+    });
+  });
+
+  it('includes extension fields', () => {
+    const error = new GraphQLError('msg', null, null, null, null, null, {
+      foo: 'bar',
+    });
+
+    expect(error.toJSON()).to.deep.equal({
+      message: 'msg',
+      extensions: { foo: 'bar' },
+    });
+  });
+
+  it('can be created with full argument list', () => {
+    const error = new GraphQLError(
+      'msg',
+      [operationNode],
+      source,
+      [6],
+      ['path', 2, 'a'],
+      new Error('I like turtles'),
+      { hee: 'I like turtles' },
+    );
+
+    expect(error.toJSON()).to.deep.equal({
+      message: 'msg',
+      locations: [{ column: 5, line: 2 }],
+      path: ['path', 2, 'a'],
+      extensions: { hee: 'I like turtles' },
+    });
+  });
+});
