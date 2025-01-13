@@ -2,7 +2,6 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
@@ -902,9 +901,15 @@ describe('Execute: Cancellation', () => {
 
     abortController.abort();
 
-    await expectPromise(subscription.next()).toRejectWith(
-      'This operation was aborted',
-    );
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: { errors: [{ message: 'This operation was aborted' }] },
+      done: false,
+    });
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
   });
 
   it('should stop the execution when aborted during subscription returned asynchronously', async () => {
@@ -941,8 +946,14 @@ describe('Execute: Cancellation', () => {
 
     abortController.abort();
 
-    await expectPromise(subscription.next()).toRejectWith(
-      'This operation was aborted',
-    );
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: { errors: [{ message: 'This operation was aborted' }] },
+      done: false,
+    });
+
+    expectJSON(await subscription.next()).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
   });
 });
