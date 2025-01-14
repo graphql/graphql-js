@@ -129,7 +129,7 @@ describe('legacyExecuteIncrementally', () => {
               {
                 message:
                   'Cannot return null for non-nullable field SomeObject.nonNullableField.',
-                locations: [{ line: 5, column: 11 }],
+                locations: [{ line: 5, column: 34 }],
                 path: ['someObjectField', 'nonNullableField'],
               },
             ],
