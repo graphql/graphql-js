@@ -1,1 +1,2 @@
-export { formatError, GraphQLFormattedError } from './GraphQLError';
+export { formatError } from './GraphQLError';
+export type { GraphQLFormattedError } from './GraphQLError';
