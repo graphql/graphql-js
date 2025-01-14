@@ -19,11 +19,12 @@ import {
 import { GraphQLID, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { legacyExecuteIncrementally } from '../legacyExecuteIncrementally.js';
 import type {
   LegacyInitialIncrementalExecutionResult,
   LegacySubsequentIncrementalExecutionResult,
 } from '../transformResult.js';
+
+import { execute } from './execute.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -90,7 +91,7 @@ async function complete(
   rootValue: unknown = {},
   enableEarlyExecution = false,
 ) {
-  const result = await legacyExecuteIncrementally({
+  const result = await execute({
     schema,
     document,
     rootValue,
@@ -115,7 +116,7 @@ async function completeAsync(
   numCalls: number,
   rootValue: unknown = {},
 ) {
-  const result = await legacyExecuteIncrementally({
+  const result = await execute({
     schema,
     document,
     rootValue,
@@ -1791,7 +1792,7 @@ describe('Execute: legacy stream directive', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await execute({
       schema,
       document,
       rootValue: {
@@ -1971,7 +1972,7 @@ describe('Execute: legacy stream directive', () => {
         }
       }
     `);
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await execute({
       schema,
       document,
       rootValue: {
@@ -2072,7 +2073,7 @@ describe('Execute: legacy stream directive', () => {
     }
   `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await execute({
       schema,
       document,
       rootValue: {
@@ -2182,7 +2183,7 @@ describe('Execute: legacy stream directive', () => {
     }
   `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await execute({
       schema,
       document,
       rootValue: {
@@ -2292,7 +2293,7 @@ describe('Execute: legacy stream directive', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await execute({
       schema,
       document,
       rootValue: {
@@ -2344,7 +2345,7 @@ describe('Execute: legacy stream directive', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await execute({
       schema,
       document,
       rootValue: {
@@ -2404,7 +2405,7 @@ describe('Execute: legacy stream directive', () => {
       }
     `);
 
-    const executeResult = await legacyExecuteIncrementally({
+    const executeResult = await execute({
       schema,
       document,
       rootValue: {
