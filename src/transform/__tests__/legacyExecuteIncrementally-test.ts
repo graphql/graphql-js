@@ -47,18 +47,16 @@ async function complete(document: DocumentNode, rootValue: ObjMap<unknown>) {
   });
 
   invariant(!isPromise(result));
+  invariant('initialResult' in result);
 
-  if ('initialResult' in result) {
-    const results: Array<
-      | LegacyInitialIncrementalExecutionResult
-      | LegacySubsequentIncrementalExecutionResult
-    > = [result.initialResult];
-    for await (const patch of result.subsequentResults) {
-      results.push(patch);
-    }
-    return results;
+  const results: Array<
+    | LegacyInitialIncrementalExecutionResult
+    | LegacySubsequentIncrementalExecutionResult
+  > = [result.initialResult];
+  for await (const patch of result.subsequentResults) {
+    results.push(patch);
   }
-  return result;
+  return results;
 }
 
 describe('legacyExecuteIncrementally', () => {
