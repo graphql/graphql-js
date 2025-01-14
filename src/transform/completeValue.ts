@@ -119,10 +119,10 @@ export function completeSubValue(
   }
 
   invariant(isObjectLike(result));
-  return completeObjectType(context, errors, fieldDetailsList, result, path);
+  return completeObjectValue(context, errors, fieldDetailsList, result, path);
 }
 
-function completeObjectType(
+function completeObjectValue(
   context: TransformationContext,
   errors: Array<GraphQLError>,
   fieldDetailsList: ReadonlyArray<FieldDetails>,
