@@ -111,7 +111,7 @@ type FieldConfigMapper = (
 type ArgumentConfigMapper = (
   argConfig: GraphQLArgumentNormalizedConfig,
   fieldOrDirectiveName: string,
-  parentTypeName?: string | undefined,
+  parentTypeName?: string,
 ) => GraphQLArgumentNormalizedConfig;
 type InterfaceTypeConfigMapper = (
   interfaceConfig: GraphQLInterfaceTypeMappedConfig,
@@ -294,7 +294,7 @@ export function mapSchemaConfig(
   function mapArgs(
     argumentMap: GraphQLFieldNormalizedConfigArgumentMap,
     fieldOrDirectiveName: string,
-    parentTypeName?: string | undefined,
+    parentTypeName?: string,
   ): GraphQLFieldNormalizedConfigArgumentMap {
     const newArgumentMap = Object.create(null);
     for (const [argName, arg] of Object.entries(argumentMap)) {

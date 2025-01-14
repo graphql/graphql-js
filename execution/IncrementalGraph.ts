@@ -131,7 +131,7 @@ export class IncrementalGraph {
   private _addIncrementalDataRecords(
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
     parents: ReadonlyArray<DeferredFragmentRecord> | undefined,
-    initialResultChildren?: Set<DeliveryGroup> | undefined,
+    initialResultChildren?: Set<DeliveryGroup>,
   ): void {
     for (const incrementalDataRecord of incrementalDataRecords) {
       if (isPendingExecutionGroup(incrementalDataRecord)) {

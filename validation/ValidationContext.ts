@@ -140,7 +140,7 @@ export class SDLValidationContext extends ASTValidationContext {
   get hideSuggestions() {
     return false;
   }
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'SDLValidationContext';
   }
   getSchema(): Maybe<GraphQLSchema> {
@@ -174,7 +174,7 @@ export class ValidationContext extends ASTValidationContext {
     this._recursiveVariableUsages = new Map();
     this._hideSuggestions = hideSuggestions ?? false;
   }
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'ValidationContext';
   }
   get hideSuggestions() {

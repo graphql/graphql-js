@@ -110,7 +110,7 @@ export interface ParseOptions {
  */
 export function parse(
   source: string | Source,
-  options?: ParseOptions | undefined,
+  options?: ParseOptions,
 ): DocumentNode {
   const parser = new Parser(source, options);
   const document = parser.parseDocument();
@@ -130,7 +130,7 @@ export function parse(
  */
 export function parseValue(
   source: string | Source,
-  options?: ParseOptions | undefined,
+  options?: ParseOptions,
 ): ValueNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
@@ -144,7 +144,7 @@ export function parseValue(
  */
 export function parseConstValue(
   source: string | Source,
-  options?: ParseOptions | undefined,
+  options?: ParseOptions,
 ): ConstValueNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
@@ -164,7 +164,7 @@ export function parseConstValue(
  */
 export function parseType(
   source: string | Source,
-  options?: ParseOptions | undefined,
+  options?: ParseOptions,
 ): TypeNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);

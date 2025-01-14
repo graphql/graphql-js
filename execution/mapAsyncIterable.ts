@@ -6,7 +6,7 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 export function mapAsyncIterable<T, U, R = undefined>(
   iterable: AsyncGenerator<T, R, void> | AsyncIterable<T>,
   callback: (value: T) => PromiseOrValue<U>,
-  onDone?: (() => void) | undefined,
+  onDone?: () => void,
 ): AsyncGenerator<U, R, void> {
   const iterator = iterable[Symbol.asyncIterator]();
   async function mapResult(
