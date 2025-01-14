@@ -17,11 +17,12 @@ import {
 import { GraphQLID, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { legacyExecuteIncrementally } from '../legacyExecuteIncrementally.js';
 import type {
   LegacyInitialIncrementalExecutionResult,
   LegacySubsequentIncrementalExecutionResult,
 } from '../transformResult.js';
+
+import { execute } from './execute.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -141,7 +142,7 @@ async function complete(
   rootValue: unknown = { hero },
   enableEarlyExecution = false,
 ) {
-  const result = await legacyExecuteIncrementally({
+  const result = await execute({
     schema,
     document,
     rootValue,
@@ -848,7 +849,7 @@ describe('Execute: legacy defer directive format', () => {
       promiseWithResolvers();
     let cResolverCalled = false;
     let eResolverCalled = false;
-    const executeResult = legacyExecuteIncrementally({
+    const executeResult = execute({
       schema,
       document,
       rootValue: {
@@ -964,7 +965,7 @@ describe('Execute: legacy defer directive format', () => {
       promiseWithResolvers<void>();
     let cResolverCalled = false;
     let eResolverCalled = false;
-    const executeResult = legacyExecuteIncrementally({
+    const executeResult = execute({
       schema,
       document,
       rootValue: {

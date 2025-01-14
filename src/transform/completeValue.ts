@@ -53,16 +53,17 @@ export function completeValue(
       rootType,
       fieldName,
     );
-    invariant(fieldDef != null);
 
-    data[responseName] = completeSubValue(
-      context,
-      errors,
-      fieldDef.type,
-      fieldDetailsList,
-      rootValue[responseName],
-      addPath(path, responseName, undefined),
-    );
+    if (fieldDef) {
+      data[responseName] = completeSubValue(
+        context,
+        errors,
+        fieldDef.type,
+        fieldDetailsList,
+        rootValue[responseName],
+        addPath(path, responseName, undefined),
+      );
+    }
   }
 
   return data;
@@ -132,46 +133,49 @@ function completeObjectType(
 
   const typeName = result[prefix];
 
-  invariant(typeof typeName === 'string');
-
-  const runtimeType = context.transformedArgs.schema.getType(typeName);
-
-  invariant(isObjectType(runtimeType));
-
   const completed = Object.create(null);
 
-  const groupedFieldSetTree = collectSubfields(
-    context.transformedArgs,
-    runtimeType,
-    fieldDetailsList,
-  );
+  if (typeName != null) {
+    invariant(typeof typeName === 'string');
 
-  const groupedFieldSet = groupedFieldSetFromTree(
-    context,
-    groupedFieldSetTree,
-    path,
-  );
+    const runtimeType = context.transformedArgs.schema.getType(typeName);
 
-  for (const [responseName, subFieldDetailsList] of groupedFieldSet) {
-    if (responseName === context.prefix) {
-      continue;
-    }
+    invariant(isObjectType(runtimeType));
 
-    const fieldName = subFieldDetailsList[0].node.name.value;
-    const fieldDef = context.transformedArgs.schema.getField(
+    const groupedFieldSetTree = collectSubfields(
+      context.transformedArgs,
       runtimeType,
-      fieldName,
+      fieldDetailsList,
     );
-    invariant(fieldDef != null);
 
-    completed[responseName] = completeSubValue(
+    const groupedFieldSet = groupedFieldSetFromTree(
       context,
-      errors,
-      fieldDef.type,
-      subFieldDetailsList,
-      result[responseName],
-      addPath(path, responseName, undefined),
+      groupedFieldSetTree,
+      path,
     );
+
+    for (const [responseName, subFieldDetailsList] of groupedFieldSet) {
+      if (responseName === context.prefix) {
+        continue;
+      }
+
+      const fieldName = subFieldDetailsList[0].node.name.value;
+      const fieldDef = context.transformedArgs.schema.getField(
+        runtimeType,
+        fieldName,
+      );
+
+      if (fieldDef) {
+        completed[responseName] = completeSubValue(
+          context,
+          errors,
+          fieldDef.type,
+          subFieldDetailsList,
+          result[responseName],
+          addPath(path, responseName, undefined),
+        );
+      }
+    }
   }
 
   return completed;
