@@ -36,7 +36,7 @@ type GraphQLInputObjectTypeMappedConfig = EnsureThunks<GraphQLInputObjectTypeNor
 type ScalarTypeConfigMapper = (scalarConfig: GraphQLScalarTypeMappedConfig) => GraphQLScalarTypeMappedConfig;
 type ObjectTypeConfigMapper = (objectConfig: GraphQLObjectTypeMappedConfig) => GraphQLObjectTypeMappedConfig;
 type FieldConfigMapper = (fieldConfig: GraphQLFieldNormalizedConfig<any, any>, parentTypeName: string) => GraphQLFieldNormalizedConfig<any, any>;
-type ArgumentConfigMapper = (argConfig: GraphQLArgumentNormalizedConfig, fieldOrDirectiveName: string, parentTypeName?: string | undefined) => GraphQLArgumentNormalizedConfig;
+type ArgumentConfigMapper = (argConfig: GraphQLArgumentNormalizedConfig, fieldOrDirectiveName: string, parentTypeName?: string) => GraphQLArgumentNormalizedConfig;
 type InterfaceTypeConfigMapper = (interfaceConfig: GraphQLInterfaceTypeMappedConfig) => GraphQLInterfaceTypeMappedConfig;
 type UnionTypeConfigMapper = (unionConfig: GraphQLUnionTypeMappedConfig) => GraphQLUnionTypeMappedConfig;
 type EnumTypeConfigMapper = (enumConfig: GraphQLEnumTypeMappedConfig) => GraphQLEnumTypeMappedConfig;

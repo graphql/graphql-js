@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.graphqlSync = exports.graphql = void 0;
+exports.graphql = graphql;
+exports.graphqlSync = graphqlSync;
 const isPromise_js_1 = require("./jsutils/isPromise.js");
 const parser_js_1 = require("./language/parser.js");
 const validate_js_1 = require("./type/validate.js");
@@ -10,7 +11,6 @@ function graphql(args) {
     // Always return a Promise for a consistent API.
     return new Promise((resolve) => resolve(graphqlImpl(args)));
 }
-exports.graphql = graphql;
 /**
  * The graphqlSync function also fulfills GraphQL operations by parsing,
  * validating, and executing a GraphQL document along side a GraphQL schema.
@@ -25,7 +25,6 @@ function graphqlSync(args) {
     }
     return result;
 }
-exports.graphqlSync = graphqlSync;
 function graphqlImpl(args) {
     const { schema, source, rootValue, contextValue, variableValues, operationName, fieldResolver, typeResolver, hideSuggestions, } = args;
     // Validate Schema

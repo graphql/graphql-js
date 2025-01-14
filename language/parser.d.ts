@@ -48,7 +48,7 @@ export interface ParseOptions {
  * Given a GraphQL source, parses it into a Document.
  * Throws GraphQLError if a syntax error is encountered.
  */
-export declare function parse(source: string | Source, options?: ParseOptions | undefined): DocumentNode;
+export declare function parse(source: string | Source, options?: ParseOptions): DocumentNode;
 /**
  * Given a string containing a GraphQL value (ex. `[42]`), parse the AST for
  * that value.
@@ -57,12 +57,12 @@ export declare function parse(source: string | Source, options?: ParseOptions | 
  * This is useful within tools that operate upon GraphQL Values directly and
  * in isolation of complete GraphQL documents.
  */
-export declare function parseValue(source: string | Source, options?: ParseOptions | undefined): ValueNode;
+export declare function parseValue(source: string | Source, options?: ParseOptions): ValueNode;
 /**
  * Similar to parseValue(), but raises a parse error if it encounters a
  * variable. The return type will be a constant value.
  */
-export declare function parseConstValue(source: string | Source, options?: ParseOptions | undefined): ConstValueNode;
+export declare function parseConstValue(source: string | Source, options?: ParseOptions): ConstValueNode;
 /**
  * Given a string containing a GraphQL Type (ex. `[Int!]`), parse the AST for
  * that type.
@@ -73,7 +73,7 @@ export declare function parseConstValue(source: string | Source, options?: Parse
  *
  * Consider providing the results to the utility function: typeFromAST().
  */
-export declare function parseType(source: string | Source, options?: ParseOptions | undefined): TypeNode;
+export declare function parseType(source: string | Source, options?: ParseOptions): TypeNode;
 /**
  * This class is exported only to assist people in implementing their own parsers
  * without duplicating too much code and should be used only as last resort for cases

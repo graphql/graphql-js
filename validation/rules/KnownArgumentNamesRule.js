@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KnownArgumentNamesOnDirectivesRule = exports.KnownArgumentNamesRule = void 0;
+exports.KnownArgumentNamesRule = KnownArgumentNamesRule;
+exports.KnownArgumentNamesOnDirectivesRule = KnownArgumentNamesOnDirectivesRule;
 const didYouMean_js_1 = require("../../jsutils/didYouMean.js");
 const suggestionList_js_1 = require("../../jsutils/suggestionList.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
@@ -47,7 +48,6 @@ function KnownArgumentNamesRule(context) {
         },
     };
 }
-exports.KnownArgumentNamesRule = KnownArgumentNamesRule;
 /**
  * @internal
  */
@@ -85,5 +85,4 @@ function KnownArgumentNamesOnDirectivesRule(context) {
         },
     };
 }
-exports.KnownArgumentNamesOnDirectivesRule = KnownArgumentNamesOnDirectivesRule;
 //# sourceMappingURL=KnownArgumentNamesRule.js.map

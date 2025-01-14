@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.concatAST = void 0;
+exports.concatAST = concatAST;
 const kinds_js_1 = require("../language/kinds.js");
 /**
  * Provided a collection of ASTs, presumably each from different files,
@@ -14,5 +14,4 @@ function concatAST(documents) {
     }
     return { kind: kinds_js_1.Kind.DOCUMENT, definitions };
 }
-exports.concatAST = concatAST;
 //# sourceMappingURL=concatAST.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NoUnusedFragmentsRule = void 0;
+exports.NoUnusedFragmentsRule = NoUnusedFragmentsRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * No unused fragments
@@ -38,5 +38,4 @@ function NoUnusedFragmentsRule(context) {
         },
     };
 }
-exports.NoUnusedFragmentsRule = NoUnusedFragmentsRule;
 //# sourceMappingURL=NoUnusedFragmentsRule.js.map

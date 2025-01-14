@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.coerceDefaultValue = exports.coerceInputLiteral = exports.coerceInputValue = void 0;
+exports.coerceInputValue = coerceInputValue;
+exports.coerceInputLiteral = coerceInputLiteral;
+exports.coerceDefaultValue = coerceDefaultValue;
 const invariant_js_1 = require("../jsutils/invariant.js");
 const isIterableObject_js_1 = require("../jsutils/isIterableObject.js");
 const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
@@ -92,7 +94,6 @@ function coerceInputValue(inputValue, type) {
         // Invalid: ignore error and intentionally return no value.
     }
 }
-exports.coerceInputValue = coerceInputValue;
 /**
  * Produces a coerced "internal" JavaScript value given a GraphQL Value AST.
  *
@@ -198,7 +199,6 @@ function coerceInputLiteral(valueNode, type, variableValues, fragmentVariableVal
         // Invalid: ignore error and intentionally return no value.
     }
 }
-exports.coerceInputLiteral = coerceInputLiteral;
 // Retrieves the variable value for the given variable node.
 function getCoercedVariableValue(variableNode, variableValues, fragmentVariableValues) {
     const varName = variableNode.name.value;
@@ -231,5 +231,4 @@ function coerceDefaultValue(inputValue) {
     }
     return defaultValue;
 }
-exports.coerceDefaultValue = coerceDefaultValue;
 //# sourceMappingURL=coerceInputValue.js.map

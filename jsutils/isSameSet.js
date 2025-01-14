@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isSameSet = void 0;
+exports.isSameSet = isSameSet;
 function isSameSet(setA, setB) {
     if (setA.size !== setB.size) {
         return false;
@@ -12,5 +12,4 @@ function isSameSet(setA, setB) {
     }
     return true;
 }
-exports.isSameSet = isSameSet;
 //# sourceMappingURL=isSameSet.js.map

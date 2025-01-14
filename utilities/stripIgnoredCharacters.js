@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.stripIgnoredCharacters = void 0;
+exports.stripIgnoredCharacters = stripIgnoredCharacters;
 const blockString_js_1 = require("../language/blockString.js");
 const lexer_js_1 = require("../language/lexer.js");
 const source_js_1 = require("../language/source.js");
@@ -96,5 +96,4 @@ function stripIgnoredCharacters(source) {
     }
     return strippedBody;
 }
-exports.stripIgnoredCharacters = stripIgnoredCharacters;
 //# sourceMappingURL=stripIgnoredCharacters.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueDirectivesPerLocationRule = void 0;
+exports.UniqueDirectivesPerLocationRule = UniqueDirectivesPerLocationRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 const predicates_js_1 = require("../../language/predicates.js");
@@ -69,5 +69,4 @@ function UniqueDirectivesPerLocationRule(context) {
         },
     };
 }
-exports.UniqueDirectivesPerLocationRule = UniqueDirectivesPerLocationRule;
 //# sourceMappingURL=UniqueDirectivesPerLocationRule.js.map

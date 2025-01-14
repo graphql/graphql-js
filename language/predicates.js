@@ -1,24 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isTypeExtensionNode = exports.isTypeSystemExtensionNode = exports.isTypeDefinitionNode = exports.isTypeSystemDefinitionNode = exports.isTypeNode = exports.isConstValueNode = exports.isValueNode = exports.isSelectionNode = exports.isExecutableDefinitionNode = exports.isDefinitionNode = void 0;
+exports.isDefinitionNode = isDefinitionNode;
+exports.isExecutableDefinitionNode = isExecutableDefinitionNode;
+exports.isSelectionNode = isSelectionNode;
+exports.isValueNode = isValueNode;
+exports.isConstValueNode = isConstValueNode;
+exports.isTypeNode = isTypeNode;
+exports.isTypeSystemDefinitionNode = isTypeSystemDefinitionNode;
+exports.isTypeDefinitionNode = isTypeDefinitionNode;
+exports.isTypeSystemExtensionNode = isTypeSystemExtensionNode;
+exports.isTypeExtensionNode = isTypeExtensionNode;
 const kinds_js_1 = require("./kinds.js");
 function isDefinitionNode(node) {
     return (isExecutableDefinitionNode(node) ||
         isTypeSystemDefinitionNode(node) ||
         isTypeSystemExtensionNode(node));
 }
-exports.isDefinitionNode = isDefinitionNode;
 function isExecutableDefinitionNode(node) {
     return (node.kind === kinds_js_1.Kind.OPERATION_DEFINITION ||
         node.kind === kinds_js_1.Kind.FRAGMENT_DEFINITION);
 }
-exports.isExecutableDefinitionNode = isExecutableDefinitionNode;
 function isSelectionNode(node) {
     return (node.kind === kinds_js_1.Kind.FIELD ||
         node.kind === kinds_js_1.Kind.FRAGMENT_SPREAD ||
         node.kind === kinds_js_1.Kind.INLINE_FRAGMENT);
 }
-exports.isSelectionNode = isSelectionNode;
 function isValueNode(node) {
     return (node.kind === kinds_js_1.Kind.VARIABLE ||
         node.kind === kinds_js_1.Kind.INT ||
@@ -30,7 +36,6 @@ function isValueNode(node) {
         node.kind === kinds_js_1.Kind.LIST ||
         node.kind === kinds_js_1.Kind.OBJECT);
 }
-exports.isValueNode = isValueNode;
 function isConstValueNode(node) {
     return (isValueNode(node) &&
         (node.kind === kinds_js_1.Kind.LIST
@@ -39,19 +44,16 @@ function isConstValueNode(node) {
                 ? node.fields.some((field) => isConstValueNode(field.value))
                 : node.kind !== kinds_js_1.Kind.VARIABLE));
 }
-exports.isConstValueNode = isConstValueNode;
 function isTypeNode(node) {
     return (node.kind === kinds_js_1.Kind.NAMED_TYPE ||
         node.kind === kinds_js_1.Kind.LIST_TYPE ||
         node.kind === kinds_js_1.Kind.NON_NULL_TYPE);
 }
-exports.isTypeNode = isTypeNode;
 function isTypeSystemDefinitionNode(node) {
     return (node.kind === kinds_js_1.Kind.SCHEMA_DEFINITION ||
         isTypeDefinitionNode(node) ||
         node.kind === kinds_js_1.Kind.DIRECTIVE_DEFINITION);
 }
-exports.isTypeSystemDefinitionNode = isTypeSystemDefinitionNode;
 function isTypeDefinitionNode(node) {
     return (node.kind === kinds_js_1.Kind.SCALAR_TYPE_DEFINITION ||
         node.kind === kinds_js_1.Kind.OBJECT_TYPE_DEFINITION ||
@@ -60,11 +62,9 @@ function isTypeDefinitionNode(node) {
         node.kind === kinds_js_1.Kind.ENUM_TYPE_DEFINITION ||
         node.kind === kinds_js_1.Kind.INPUT_OBJECT_TYPE_DEFINITION);
 }
-exports.isTypeDefinitionNode = isTypeDefinitionNode;
 function isTypeSystemExtensionNode(node) {
     return node.kind === kinds_js_1.Kind.SCHEMA_EXTENSION || isTypeExtensionNode(node);
 }
-exports.isTypeSystemExtensionNode = isTypeSystemExtensionNode;
 function isTypeExtensionNode(node) {
     return (node.kind === kinds_js_1.Kind.SCALAR_TYPE_EXTENSION ||
         node.kind === kinds_js_1.Kind.OBJECT_TYPE_EXTENSION ||
@@ -73,5 +73,4 @@ function isTypeExtensionNode(node) {
         node.kind === kinds_js_1.Kind.ENUM_TYPE_EXTENSION ||
         node.kind === kinds_js_1.Kind.INPUT_OBJECT_TYPE_EXTENSION);
 }
-exports.isTypeExtensionNode = isTypeExtensionNode;
 //# sourceMappingURL=predicates.js.map

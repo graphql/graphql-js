@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.didYouMean = void 0;
+exports.didYouMean = didYouMean;
 const formatList_js_1 = require("./formatList.js");
 const MAX_SUGGESTIONS = 5;
 function didYouMean(firstArg, secondArg) {
@@ -17,5 +17,4 @@ function didYouMean(firstArg, secondArg) {
     const suggestionList = (0, formatList_js_1.orList)(suggestions.slice(0, MAX_SUGGESTIONS).map((x) => `"${x}"`));
     return message + suggestionList + '?';
 }
-exports.didYouMean = didYouMean;
 //# sourceMappingURL=didYouMean.js.map

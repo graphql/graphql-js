@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ValuesOfCorrectTypeRule = void 0;
+exports.ValuesOfCorrectTypeRule = ValuesOfCorrectTypeRule;
 const validateInputValue_js_1 = require("../../utilities/validateInputValue.js");
 /**
  * Value literals of correct type
@@ -25,7 +25,6 @@ function ValuesOfCorrectTypeRule(context) {
         BooleanValue: (node) => isValidValueNode(context, node, context.getInputType()),
     };
 }
-exports.ValuesOfCorrectTypeRule = ValuesOfCorrectTypeRule;
 /**
  * Any value literal may be a valid representation of a Scalar, depending on
  * that scalar type.

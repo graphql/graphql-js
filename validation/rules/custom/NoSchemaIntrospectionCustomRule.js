@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NoSchemaIntrospectionCustomRule = void 0;
+exports.NoSchemaIntrospectionCustomRule = NoSchemaIntrospectionCustomRule;
 const GraphQLError_js_1 = require("../../../error/GraphQLError.js");
 const definition_js_1 = require("../../../type/definition.js");
 const introspection_js_1 = require("../../../type/introspection.js");
@@ -24,5 +24,4 @@ function NoSchemaIntrospectionCustomRule(context) {
         },
     };
 }
-exports.NoSchemaIntrospectionCustomRule = NoSchemaIntrospectionCustomRule;
 //# sourceMappingURL=NoSchemaIntrospectionCustomRule.js.map

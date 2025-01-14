@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toObjMapWithSymbols = exports.toObjMap = void 0;
+exports.toObjMap = toObjMap;
+exports.toObjMapWithSymbols = toObjMapWithSymbols;
 function toObjMap(obj) {
     if (obj == null) {
         return Object.create(null);
@@ -14,7 +15,6 @@ function toObjMap(obj) {
     }
     return map;
 }
-exports.toObjMap = toObjMap;
 function toObjMapWithSymbols(obj) {
     if (obj == null) {
         return Object.create(null);
@@ -31,5 +31,4 @@ function toObjMapWithSymbols(obj) {
     }
     return map;
 }
-exports.toObjMapWithSymbols = toObjMapWithSymbols;
 //# sourceMappingURL=toObjMap.js.map

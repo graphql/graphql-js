@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueFragmentNamesRule = void 0;
+exports.UniqueFragmentNamesRule = UniqueFragmentNamesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * Unique fragment names
@@ -26,5 +26,4 @@ function UniqueFragmentNamesRule(context) {
         },
     };
 }
-exports.UniqueFragmentNamesRule = UniqueFragmentNamesRule;
 //# sourceMappingURL=UniqueFragmentNamesRule.js.map

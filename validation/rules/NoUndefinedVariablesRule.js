@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NoUndefinedVariablesRule = void 0;
+exports.NoUndefinedVariablesRule = NoUndefinedVariablesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * No undefined variables
@@ -29,5 +29,4 @@ function NoUndefinedVariablesRule(context) {
         },
     };
 }
-exports.NoUndefinedVariablesRule = NoUndefinedVariablesRule;
 //# sourceMappingURL=NoUndefinedVariablesRule.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FieldsOnCorrectTypeRule = void 0;
+exports.FieldsOnCorrectTypeRule = FieldsOnCorrectTypeRule;
 const didYouMean_js_1 = require("../../jsutils/didYouMean.js");
 const naturalCompare_js_1 = require("../../jsutils/naturalCompare.js");
 const suggestionList_js_1 = require("../../jsutils/suggestionList.js");
@@ -42,7 +42,6 @@ function FieldsOnCorrectTypeRule(context) {
         },
     };
 }
-exports.FieldsOnCorrectTypeRule = FieldsOnCorrectTypeRule;
 /**
  * Go through all of the implementations of type, as well as the interfaces that
  * they implement. If any of those types include the provided field, suggest them,

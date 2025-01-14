@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.collectSubfields = exports.collectFields = void 0;
+exports.collectFields = collectFields;
+exports.collectSubfields = collectSubfields;
 const AccumulatorMap_js_1 = require("../jsutils/AccumulatorMap.js");
 const kinds_js_1 = require("../language/kinds.js");
 const definition_js_1 = require("../type/definition.js");
@@ -31,7 +32,6 @@ function collectFields(schema, fragments, variableValues, runtimeType, selection
     collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
     return { groupedFieldSet, newDeferUsages };
 }
-exports.collectFields = collectFields;
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
  * in fields, and returns them at the end.
@@ -66,7 +66,6 @@ function collectSubfields(schema, fragments, variableValues, returnType, fieldDe
         newDeferUsages,
     };
 }
-exports.collectSubfields = collectSubfields;
 // eslint-disable-next-line @typescript-eslint/max-params
 function collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages, deferUsage, fragmentVariableValues) {
     const { schema, fragments, variableValues, runtimeType, visitedFragmentNames, hideSuggestions, } = context;

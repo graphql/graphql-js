@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildExecutionPlan = void 0;
+exports.buildExecutionPlan = buildExecutionPlan;
 const getBySet_js_1 = require("../jsutils/getBySet.js");
 const isSameSet_js_1 = require("../jsutils/isSameSet.js");
 function buildExecutionPlan(originalGroupedFieldSet, parentDeferUsages = new Set()) {
@@ -24,7 +24,6 @@ function buildExecutionPlan(originalGroupedFieldSet, parentDeferUsages = new Set
         newGroupedFieldSets,
     };
 }
-exports.buildExecutionPlan = buildExecutionPlan;
 function getFilteredDeferUsageSet(fieldDetailsList) {
     const filteredDeferUsageSet = new Set();
     for (const fieldDetails of fieldDetailsList) {

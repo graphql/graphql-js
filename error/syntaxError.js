@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.syntaxError = void 0;
+exports.syntaxError = syntaxError;
 const GraphQLError_js_1 = require("./GraphQLError.js");
 /**
  * Produces a GraphQLError representing a syntax error, containing useful
@@ -12,5 +12,4 @@ function syntaxError(source, position, description) {
         positions: [position],
     });
 }
-exports.syntaxError = syntaxError;
 //# sourceMappingURL=syntaxError.js.map

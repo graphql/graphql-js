@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProvidedRequiredArgumentsOnDirectivesRule = exports.ProvidedRequiredArgumentsRule = void 0;
+exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
+exports.ProvidedRequiredArgumentsOnDirectivesRule = ProvidedRequiredArgumentsOnDirectivesRule;
 const inspect_js_1 = require("../../jsutils/inspect.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
@@ -53,7 +54,6 @@ function ProvidedRequiredArgumentsRule(context) {
         },
     };
 }
-exports.ProvidedRequiredArgumentsRule = ProvidedRequiredArgumentsRule;
 /**
  * @internal
  */
@@ -95,7 +95,6 @@ function ProvidedRequiredArgumentsOnDirectivesRule(context) {
         },
     };
 }
-exports.ProvidedRequiredArgumentsOnDirectivesRule = ProvidedRequiredArgumentsOnDirectivesRule;
 function isRequiredArgumentNode(arg) {
     return arg.type.kind === kinds_js_1.Kind.NON_NULL_TYPE && arg.defaultValue == null;
 }

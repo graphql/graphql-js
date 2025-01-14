@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOperationAST = void 0;
+exports.getOperationAST = getOperationAST;
 const kinds_js_1 = require("../language/kinds.js");
 /**
  * Returns an operation AST given a document AST and optionally an operation
@@ -27,5 +27,4 @@ function getOperationAST(documentAST, operationName) {
     }
     return operation;
 }
-exports.getOperationAST = getOperationAST;
 //# sourceMappingURL=getOperationAST.js.map

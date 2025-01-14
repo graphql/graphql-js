@@ -1,6 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSourceEventStream = exports.executeSubscriptionEvent = exports.subscribe = exports.defaultFieldResolver = exports.defaultTypeResolver = exports.buildResolveInfo = exports.validateExecutionArgs = exports.executeSync = exports.experimentalExecuteQueryOrMutationOrSubscriptionEvent = exports.executeQueryOrMutationOrSubscriptionEvent = exports.experimentalExecuteIncrementally = exports.execute = void 0;
+exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
+exports.execute = execute;
+exports.experimentalExecuteIncrementally = experimentalExecuteIncrementally;
+exports.executeQueryOrMutationOrSubscriptionEvent = executeQueryOrMutationOrSubscriptionEvent;
+exports.experimentalExecuteQueryOrMutationOrSubscriptionEvent = experimentalExecuteQueryOrMutationOrSubscriptionEvent;
+exports.executeSync = executeSync;
+exports.validateExecutionArgs = validateExecutionArgs;
+exports.buildResolveInfo = buildResolveInfo;
+exports.subscribe = subscribe;
+exports.executeSubscriptionEvent = executeSubscriptionEvent;
+exports.createSourceEventStream = createSourceEventStream;
 const BoxedPromiseOrValue_js_1 = require("../jsutils/BoxedPromiseOrValue.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
@@ -66,7 +76,6 @@ function execute(args) {
     // @stream directives and is not validated prior to execution
     return ensureSinglePayload(result);
 }
-exports.execute = execute;
 function ensureSinglePayload(result) {
     if ((0, isPromise_js_1.isPromise)(result)) {
         return result.then((resolved) => {
@@ -103,7 +112,6 @@ function experimentalExecuteIncrementally(args) {
     }
     return experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
-exports.experimentalExecuteIncrementally = experimentalExecuteIncrementally;
 /**
  * Implements the "Executing operations" section of the spec.
  *
@@ -123,7 +131,6 @@ function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
     const result = experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
     return ensureSinglePayload(result);
 }
-exports.executeQueryOrMutationOrSubscriptionEvent = executeQueryOrMutationOrSubscriptionEvent;
 function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
     const abortSignal = validatedExecutionArgs.abortSignal;
     const exeContext = {
@@ -168,7 +175,6 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
         return { data: null, errors: withError(exeContext.errors, error) };
     }
 }
-exports.experimentalExecuteQueryOrMutationOrSubscriptionEvent = experimentalExecuteQueryOrMutationOrSubscriptionEvent;
 function withError(errors, error) {
     return errors === undefined ? [error] : [...errors, error];
 }
@@ -194,7 +200,6 @@ function executeSync(args) {
     }
     return result;
 }
-exports.executeSync = executeSync;
 /**
  * Constructs a ExecutionContext object from the arguments passed to
  * execute, which we will pass throughout the other execution methods.
@@ -278,7 +283,6 @@ function validateExecutionArgs(args) {
         abortSignal: args.abortSignal ?? undefined,
     };
 }
-exports.validateExecutionArgs = validateExecutionArgs;
 function executeRootExecutionPlan(exeContext, operation, rootType, rootValue, originalGroupedFieldSet, newDeferUsages) {
     if (newDeferUsages.length === 0) {
         return executeRootGroupedFieldSet(exeContext, operation, rootType, rootValue, originalGroupedFieldSet, undefined);
@@ -482,7 +486,6 @@ function buildResolveInfo(validatedExecutionArgs, fieldDef, fieldNodes, parentTy
         variableValues,
     };
 }
-exports.buildResolveInfo = buildResolveInfo;
 function handleFieldError(rawError, exeContext, returnType, fieldDetailsList, path, incrementalContext) {
     const error = (0, locatedError_js_1.locatedError)(rawError, toNodes(fieldDetailsList), (0, Path_js_1.pathToArray)(path));
     // If the field type is non-nullable, then it is resolved without any
@@ -639,7 +642,6 @@ async function completeAsyncIteratorValue(exeContext, itemType, fieldDetailsList
         ? undefined
         : asyncIterator.return.bind(asyncIterator);
     try {
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             if (streamUsage && index >= streamUsage.initialCount) {
                 const streamItemQueue = buildAsyncStreamItemQueue(index, path, asyncIterator, exeContext, streamUsage.fieldDetailsList, info, itemType);
@@ -1064,7 +1066,6 @@ function subscribe(args) {
     }
     return mapSourceToResponse(validatedExecutionArgs, resultOrStream);
 }
-exports.subscribe = subscribe;
 function mapSourceToResponse(validatedExecutionArgs, resultOrStream) {
     if (!(0, isAsyncIterable_js_1.isAsyncIterable)(resultOrStream)) {
         return resultOrStream;
@@ -1090,7 +1091,6 @@ function mapSourceToResponse(validatedExecutionArgs, resultOrStream) {
 function executeSubscriptionEvent(validatedExecutionArgs) {
     return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
-exports.executeSubscriptionEvent = executeSubscriptionEvent;
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
  * GraphQL specification, resolving the subscription source event stream.
@@ -1129,7 +1129,6 @@ function createSourceEventStream(args) {
     }
     return createSourceEventStreamImpl(validatedExecutionArgs);
 }
-exports.createSourceEventStream = createSourceEventStream;
 function createSourceEventStreamImpl(validatedExecutionArgs) {
     try {
         const eventStream = executeSubscription(validatedExecutionArgs);

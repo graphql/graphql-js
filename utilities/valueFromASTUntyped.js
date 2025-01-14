@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.valueFromASTUntyped = void 0;
+exports.valueFromASTUntyped = valueFromASTUntyped;
 const keyValMap_js_1 = require("../jsutils/keyValMap.js");
 const kinds_js_1 = require("../language/kinds.js");
 /**
@@ -39,5 +39,4 @@ function valueFromASTUntyped(valueNode, variables) {
             return variables?.[valueNode.name.value];
     }
 }
-exports.valueFromASTUntyped = valueFromASTUntyped;
 //# sourceMappingURL=valueFromASTUntyped.js.map

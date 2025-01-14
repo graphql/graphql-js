@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OverlappingFieldsCanBeMergedRule = void 0;
+exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 const inspect_js_1 = require("../../jsutils/inspect.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
@@ -49,7 +49,6 @@ function OverlappingFieldsCanBeMergedRule(context) {
         },
     };
 }
-exports.OverlappingFieldsCanBeMergedRule = OverlappingFieldsCanBeMergedRule;
 /**
  * Algorithm:
  *

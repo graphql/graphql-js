@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.suggestionList = void 0;
+exports.suggestionList = suggestionList;
 const naturalCompare_js_1 = require("./naturalCompare.js");
 /**
  * Given an invalid input string and a list of valid options, returns a filtered
@@ -21,7 +21,6 @@ function suggestionList(input, options) {
         return distanceDiff !== 0 ? distanceDiff : (0, naturalCompare_js_1.naturalCompare)(a, b);
     });
 }
-exports.suggestionList = suggestionList;
 /**
  * Computes the lexical distance between strings A and B.
  *

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildClientSchema = void 0;
+exports.buildClientSchema = buildClientSchema;
 const devAssert_js_1 = require("../jsutils/devAssert.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
@@ -255,5 +255,4 @@ function buildClientSchema(introspection, options) {
         });
     }
 }
-exports.buildClientSchema = buildClientSchema;
 //# sourceMappingURL=buildClientSchema.js.map

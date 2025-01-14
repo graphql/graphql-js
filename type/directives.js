@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isSpecifiedDirective = exports.specifiedDirectives = exports.GraphQLOneOfDirective = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLStreamDirective = exports.GraphQLDeferDirective = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = exports.assertDirective = exports.isDirective = void 0;
+exports.specifiedDirectives = exports.GraphQLOneOfDirective = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLStreamDirective = exports.GraphQLDeferDirective = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
+exports.isDirective = isDirective;
+exports.assertDirective = assertDirective;
+exports.isSpecifiedDirective = isSpecifiedDirective;
 const devAssert_js_1 = require("../jsutils/devAssert.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const instanceOf_js_1 = require("../jsutils/instanceOf.js");
@@ -17,14 +20,12 @@ const scalars_js_1 = require("./scalars.js");
 function isDirective(directive) {
     return (0, instanceOf_js_1.instanceOf)(directive, GraphQLDirective);
 }
-exports.isDirective = isDirective;
 function assertDirective(directive) {
     if (!isDirective(directive)) {
         throw new Error(`Expected ${(0, inspect_js_1.inspect)(directive)} to be a GraphQL directive.`);
     }
     return directive;
 }
-exports.assertDirective = assertDirective;
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
@@ -206,5 +207,4 @@ exports.specifiedDirectives = Object.freeze([
 function isSpecifiedDirective(directive) {
     return exports.specifiedDirectives.some(({ name }) => name === directive.name);
 }
-exports.isSpecifiedDirective = isSpecifiedDirective;
 //# sourceMappingURL=directives.js.map

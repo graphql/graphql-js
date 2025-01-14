@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ScalarLeafsRule = void 0;
+exports.ScalarLeafsRule = ScalarLeafsRule;
 const inspect_js_1 = require("../../jsutils/inspect.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const definition_js_1 = require("../../type/definition.js");
@@ -37,5 +37,4 @@ function ScalarLeafsRule(context) {
         },
     };
 }
-exports.ScalarLeafsRule = ScalarLeafsRule;
 //# sourceMappingURL=ScalarLeafsRule.js.map

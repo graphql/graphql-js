@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVariableSignature = void 0;
+exports.getVariableSignature = getVariableSignature;
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
 const printer_js_1 = require("../language/printer.js");
 const definition_js_1 = require("../type/definition.js");
@@ -21,5 +21,4 @@ function getVariableSignature(schema, varDefNode) {
         default: defaultValue && { literal: defaultValue },
     };
 }
-exports.getVariableSignature = getVariableSignature;
 //# sourceMappingURL=getVariableSignature.js.map

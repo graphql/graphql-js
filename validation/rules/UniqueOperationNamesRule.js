@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueOperationNamesRule = void 0;
+exports.UniqueOperationNamesRule = UniqueOperationNamesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * Unique operation names
@@ -28,5 +28,4 @@ function UniqueOperationNamesRule(context) {
         FragmentDefinition: () => false,
     };
 }
-exports.UniqueOperationNamesRule = UniqueOperationNamesRule;
 //# sourceMappingURL=UniqueOperationNamesRule.js.map

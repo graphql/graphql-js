@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueFieldDefinitionNamesRule = void 0;
+exports.UniqueFieldDefinitionNamesRule = UniqueFieldDefinitionNamesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const definition_js_1 = require("../../type/definition.js");
 /**
@@ -45,7 +45,6 @@ function UniqueFieldDefinitionNamesRule(context) {
         return false;
     }
 }
-exports.UniqueFieldDefinitionNamesRule = UniqueFieldDefinitionNamesRule;
 function hasField(type, fieldName) {
     if ((0, definition_js_1.isObjectType)(type) || (0, definition_js_1.isInterfaceType)(type) || (0, definition_js_1.isInputObjectType)(type)) {
         return type.getFields()[fieldName] != null;

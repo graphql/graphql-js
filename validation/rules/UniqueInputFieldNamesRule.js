@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueInputFieldNamesRule = void 0;
+exports.UniqueInputFieldNamesRule = UniqueInputFieldNamesRule;
 const invariant_js_1 = require("../../jsutils/invariant.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
@@ -38,5 +38,4 @@ function UniqueInputFieldNamesRule(context) {
         },
     };
 }
-exports.UniqueInputFieldNamesRule = UniqueInputFieldNamesRule;
 //# sourceMappingURL=UniqueInputFieldNamesRule.js.map

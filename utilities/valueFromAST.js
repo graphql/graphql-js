@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.valueFromAST = void 0;
+exports.valueFromAST = valueFromAST;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const kinds_js_1 = require("../language/kinds.js");
@@ -140,7 +140,6 @@ function valueFromAST(valueNode, type, variables) {
     // Not reachable, all possible input types have been considered.
     (false) || (0, invariant_js_1.invariant)(false, 'Unexpected input type: ' + (0, inspect_js_1.inspect)(type));
 }
-exports.valueFromAST = valueFromAST;
 // Returns true if the provided valueNode is a variable which is not defined
 // in the set of variables.
 function isMissingVariable(valueNode, variables) {

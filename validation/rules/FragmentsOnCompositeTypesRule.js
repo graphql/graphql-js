@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FragmentsOnCompositeTypesRule = void 0;
+exports.FragmentsOnCompositeTypesRule = FragmentsOnCompositeTypesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const printer_js_1 = require("../../language/printer.js");
 const definition_js_1 = require("../../type/definition.js");
@@ -35,5 +35,4 @@ function FragmentsOnCompositeTypesRule(context) {
         },
     };
 }
-exports.FragmentsOnCompositeTypesRule = FragmentsOnCompositeTypesRule;
 //# sourceMappingURL=FragmentsOnCompositeTypesRule.js.map

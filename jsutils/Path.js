@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pathToArray = exports.addPath = void 0;
+exports.addPath = addPath;
+exports.pathToArray = pathToArray;
 /**
  * Given a Path and a key, return a new Path containing the new key.
  */
 function addPath(prev, key, typename) {
     return { prev, key, typename };
 }
-exports.addPath = addPath;
 /**
  * Given a Path, return an Array of the path keys.
  */
@@ -20,5 +20,4 @@ function pathToArray(path) {
     }
     return flattened.reverse();
 }
-exports.pathToArray = pathToArray;
 //# sourceMappingURL=Path.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KnownTypeNamesRule = void 0;
+exports.KnownTypeNamesRule = KnownTypeNamesRule;
 const didYouMean_js_1 = require("../../jsutils/didYouMean.js");
 const suggestionList_js_1 = require("../../jsutils/suggestionList.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
@@ -39,7 +39,6 @@ function KnownTypeNamesRule(context) {
         },
     };
 }
-exports.KnownTypeNamesRule = KnownTypeNamesRule;
 const standardTypeNames = new Set([...scalars_js_1.specifiedScalarTypes, ...introspection_js_1.introspectionTypes].map((type) => type.name));
 function isSDLNode(value) {
     return ('kind' in value &&

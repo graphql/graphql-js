@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.introspectionFromSchema = void 0;
+exports.introspectionFromSchema = introspectionFromSchema;
 const invariant_js_1 = require("../jsutils/invariant.js");
 const parser_js_1 = require("../language/parser.js");
 const execute_js_1 = require("../execution/execute.js");
@@ -28,5 +28,4 @@ function introspectionFromSchema(schema, options) {
     (result.errors == null && result.data != null) || (0, invariant_js_1.invariant)(false);
     return result.data;
 }
-exports.introspectionFromSchema = introspectionFromSchema;
 //# sourceMappingURL=introspectionFromSchema.js.map

@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GraphQLSchema = exports.assertSchema = exports.isSchema = void 0;
+exports.GraphQLSchema = void 0;
+exports.isSchema = isSchema;
+exports.assertSchema = assertSchema;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const instanceOf_js_1 = require("../jsutils/instanceOf.js");
 const toObjMap_js_1 = require("../jsutils/toObjMap.js");
@@ -14,14 +16,12 @@ const introspection_js_1 = require("./introspection.js");
 function isSchema(schema) {
     return (0, instanceOf_js_1.instanceOf)(schema, GraphQLSchema);
 }
-exports.isSchema = isSchema;
 function assertSchema(schema) {
     if (!isSchema(schema)) {
         throw new Error(`Expected ${(0, inspect_js_1.inspect)(schema)} to be a GraphQL schema.`);
     }
     return schema;
 }
-exports.assertSchema = assertSchema;
 /**
  * Schema Definition
  *

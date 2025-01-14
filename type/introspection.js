@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isIntrospectionType = exports.introspectionTypes = exports.TypeNameMetaFieldDef = exports.TypeMetaFieldDef = exports.SchemaMetaFieldDef = exports.__TypeKind = exports.TypeKind = exports.__EnumValue = exports.__InputValue = exports.__Field = exports.__Type = exports.__DirectiveLocation = exports.__Directive = exports.__Schema = void 0;
+exports.introspectionTypes = exports.TypeNameMetaFieldDef = exports.TypeMetaFieldDef = exports.SchemaMetaFieldDef = exports.__TypeKind = exports.TypeKind = exports.__EnumValue = exports.__InputValue = exports.__Field = exports.__Type = exports.__DirectiveLocation = exports.__Directive = exports.__Schema = void 0;
+exports.isIntrospectionType = isIntrospectionType;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const directiveLocation_js_1 = require("../language/directiveLocation.js");
@@ -475,5 +476,4 @@ exports.introspectionTypes = Object.freeze([
 function isIntrospectionType(type) {
     return exports.introspectionTypes.some(({ name }) => type.name === name);
 }
-exports.isIntrospectionType = isIntrospectionType;
 //# sourceMappingURL=introspection.js.map

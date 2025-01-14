@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MaxIntrospectionDepthRule = void 0;
+exports.MaxIntrospectionDepthRule = MaxIntrospectionDepthRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 const MAX_LISTS_DEPTH = 3;
@@ -70,5 +70,4 @@ function MaxIntrospectionDepthRule(context) {
         },
     };
 }
-exports.MaxIntrospectionDepthRule = MaxIntrospectionDepthRule;
 //# sourceMappingURL=MaxIntrospectionDepthRule.js.map

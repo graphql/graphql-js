@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extendSchemaImpl = exports.extendSchema = void 0;
+exports.extendSchema = extendSchema;
+exports.extendSchemaImpl = extendSchemaImpl;
 const AccumulatorMap_js_1 = require("../jsutils/AccumulatorMap.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const kinds_js_1 = require("../language/kinds.js");
@@ -35,7 +36,6 @@ function extendSchema(schema, documentAST, options) {
         ? schema
         : new schema_js_1.GraphQLSchema(extendedConfig);
 }
-exports.extendSchema = extendSchema;
 /**
  * @internal
  */
@@ -412,7 +412,6 @@ function extendSchemaImpl(schemaConfig, documentAST, options) {
         }
     });
 }
-exports.extendSchemaImpl = extendSchemaImpl;
 const stdTypeMap = new Map([...scalars_js_1.specifiedScalarTypes, ...introspection_js_1.introspectionTypes].map((type) => [
     type.name,
     type,

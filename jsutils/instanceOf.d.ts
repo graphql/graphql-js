@@ -5,9 +5,10 @@
  * See: https://webpack.js.org/guides/production/
  */
 export declare const instanceOf: (value: unknown, constructor: Constructor) => boolean;
-interface Constructor extends Function {
+interface Constructor {
     prototype: {
         [Symbol.toStringTag]: string;
     };
+    new (...args: Array<any>): any;
 }
 export {};

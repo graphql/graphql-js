@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assertEnumValueName = exports.assertName = void 0;
+exports.assertName = assertName;
+exports.assertEnumValueName = assertEnumValueName;
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
 const characterClasses_js_1 = require("../language/characterClasses.js");
 /**
@@ -20,7 +21,6 @@ function assertName(name) {
     }
     return name;
 }
-exports.assertName = assertName;
 /**
  * Upholds the spec rules about naming enum values.
  *
@@ -32,5 +32,4 @@ function assertEnumValueName(name) {
     }
     return assertName(name);
 }
-exports.assertEnumValueName = assertEnumValueName;
 //# sourceMappingURL=assertName.js.map

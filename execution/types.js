@@ -1,18 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isCancellableStreamRecord = exports.isDeferredFragmentRecord = exports.DeferredFragmentRecord = exports.isFailedExecutionGroup = exports.isCompletedExecutionGroup = exports.isPendingExecutionGroup = void 0;
+exports.DeferredFragmentRecord = void 0;
+exports.isPendingExecutionGroup = isPendingExecutionGroup;
+exports.isCompletedExecutionGroup = isCompletedExecutionGroup;
+exports.isFailedExecutionGroup = isFailedExecutionGroup;
+exports.isDeferredFragmentRecord = isDeferredFragmentRecord;
+exports.isCancellableStreamRecord = isCancellableStreamRecord;
 function isPendingExecutionGroup(incrementalDataRecord) {
     return 'deferredFragmentRecords' in incrementalDataRecord;
 }
-exports.isPendingExecutionGroup = isPendingExecutionGroup;
 function isCompletedExecutionGroup(incrementalDataRecordResult) {
     return 'pendingExecutionGroup' in incrementalDataRecordResult;
 }
-exports.isCompletedExecutionGroup = isCompletedExecutionGroup;
 function isFailedExecutionGroup(completedExecutionGroup) {
     return completedExecutionGroup.errors !== undefined;
 }
-exports.isFailedExecutionGroup = isFailedExecutionGroup;
 /** @internal */
 class DeferredFragmentRecord {
     constructor(path, label, parent) {
@@ -28,9 +30,7 @@ exports.DeferredFragmentRecord = DeferredFragmentRecord;
 function isDeferredFragmentRecord(deliveryGroup) {
     return deliveryGroup instanceof DeferredFragmentRecord;
 }
-exports.isDeferredFragmentRecord = isDeferredFragmentRecord;
 function isCancellableStreamRecord(deliveryGroup) {
     return 'earlyReturn' in deliveryGroup;
 }
-exports.isCancellableStreamRecord = isCancellableStreamRecord;
 //# sourceMappingURL=types.js.map

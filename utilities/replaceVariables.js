@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replaceVariables = void 0;
+exports.replaceVariables = replaceVariables;
 const kinds_js_1 = require("../language/kinds.js");
 const valueToLiteral_js_1 = require("./valueToLiteral.js");
 /**
@@ -68,5 +68,4 @@ function replaceVariables(valueNode, variableValues, fragmentVariableValues) {
         }
     }
 }
-exports.replaceVariables = replaceVariables;
 //# sourceMappingURL=replaceVariables.js.map

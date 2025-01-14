@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VariablesInAllowedPositionRule = void 0;
+exports.VariablesInAllowedPositionRule = VariablesInAllowedPositionRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 const definition_js_1 = require("../../type/definition.js");
@@ -54,7 +54,6 @@ function VariablesInAllowedPositionRule(context) {
         },
     };
 }
-exports.VariablesInAllowedPositionRule = VariablesInAllowedPositionRule;
 /**
  * Returns true if the variable is allowed in the location it was found,
  * including considering if default values exist for either the variable

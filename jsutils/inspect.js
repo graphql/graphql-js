@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.inspect = void 0;
+exports.inspect = inspect;
 const MAX_ARRAY_LENGTH = 10;
 const MAX_RECURSIVE_DEPTH = 2;
 /**
@@ -9,7 +9,6 @@ const MAX_RECURSIVE_DEPTH = 2;
 function inspect(value) {
     return formatValue(value, []);
 }
-exports.inspect = inspect;
 function formatValue(value, seenValues) {
     switch (typeof value) {
         case 'string':

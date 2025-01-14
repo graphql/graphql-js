@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Parser = exports.parseType = exports.parseConstValue = exports.parseValue = exports.parse = void 0;
+exports.Parser = void 0;
+exports.parse = parse;
+exports.parseValue = parseValue;
+exports.parseConstValue = parseConstValue;
+exports.parseType = parseType;
 const syntaxError_js_1 = require("../error/syntaxError.js");
 const ast_js_1 = require("./ast.js");
 const directiveLocation_js_1 = require("./directiveLocation.js");
@@ -21,7 +25,6 @@ function parse(source, options) {
     });
     return document;
 }
-exports.parse = parse;
 /**
  * Given a string containing a GraphQL value (ex. `[42]`), parse the AST for
  * that value.
@@ -37,7 +40,6 @@ function parseValue(source, options) {
     parser.expectToken(tokenKind_js_1.TokenKind.EOF);
     return value;
 }
-exports.parseValue = parseValue;
 /**
  * Similar to parseValue(), but raises a parse error if it encounters a
  * variable. The return type will be a constant value.
@@ -49,7 +51,6 @@ function parseConstValue(source, options) {
     parser.expectToken(tokenKind_js_1.TokenKind.EOF);
     return value;
 }
-exports.parseConstValue = parseConstValue;
 /**
  * Given a string containing a GraphQL Type (ex. `[Int!]`), parse the AST for
  * that type.
@@ -67,7 +68,6 @@ function parseType(source, options) {
     parser.expectToken(tokenKind_js_1.TokenKind.EOF);
     return type;
 }
-exports.parseType = parseType;
 /**
  * This class is exported only to assist people in implementing their own parsers
  * without duplicating too much code and should be used only as last resort for cases

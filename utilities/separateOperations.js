@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.separateOperations = void 0;
+exports.separateOperations = separateOperations;
 const kinds_js_1 = require("../language/kinds.js");
 const visitor_js_1 = require("../language/visitor.js");
 /**
@@ -46,7 +46,6 @@ function separateOperations(documentAST) {
     }
     return separatedDocumentASTs;
 }
-exports.separateOperations = separateOperations;
 // From a dependency graph, collects a list of transitive dependencies by
 // recursing through a dependency graph.
 function collectTransitiveDependencies(collected, depGraph, fromName) {

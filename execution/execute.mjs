@@ -629,7 +629,6 @@ async function completeAsyncIteratorValue(exeContext, itemType, fieldDetailsList
         ? undefined
         : asyncIterator.return.bind(asyncIterator);
     try {
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             if (streamUsage && index >= streamUsage.initialCount) {
                 const streamItemQueue = buildAsyncStreamItemQueue(index, path, asyncIterator, exeContext, streamUsage.fieldDetailsList, info, itemType);

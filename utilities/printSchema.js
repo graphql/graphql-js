@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.printDirective = exports.printType = exports.printIntrospectionSchema = exports.printSchema = void 0;
+exports.printSchema = printSchema;
+exports.printIntrospectionSchema = printIntrospectionSchema;
+exports.printType = printType;
+exports.printDirective = printDirective;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const blockString_js_1 = require("../language/blockString.js");
@@ -14,11 +17,9 @@ const getDefaultValueAST_js_1 = require("./getDefaultValueAST.js");
 function printSchema(schema) {
     return printFilteredSchema(schema, (n) => !(0, directives_js_1.isSpecifiedDirective)(n), isDefinedType);
 }
-exports.printSchema = printSchema;
 function printIntrospectionSchema(schema) {
     return printFilteredSchema(schema, directives_js_1.isSpecifiedDirective, introspection_js_1.isIntrospectionType);
 }
-exports.printIntrospectionSchema = printIntrospectionSchema;
 function isDefinedType(type) {
     return !(0, scalars_js_1.isSpecifiedScalarType)(type) && !(0, introspection_js_1.isIntrospectionType)(type);
 }
@@ -102,7 +103,6 @@ function printType(type) {
     // Not reachable, all possible types have been considered.
     (false) || (0, invariant_js_1.invariant)(false, 'Unexpected type: ' + (0, inspect_js_1.inspect)(type));
 }
-exports.printType = printType;
 function printScalar(type) {
     return printDescription(type) + `scalar ${type}` + printSpecifiedByURL(type);
 }
@@ -193,7 +193,6 @@ function printDirective(directive) {
         ' on ' +
         directive.locations.join(' | '));
 }
-exports.printDirective = printDirective;
 function printDeprecated(reason) {
     if (reason == null) {
         return '';

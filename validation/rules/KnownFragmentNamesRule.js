@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KnownFragmentNamesRule = void 0;
+exports.KnownFragmentNamesRule = KnownFragmentNamesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * Known fragment names
@@ -23,5 +23,4 @@ function KnownFragmentNamesRule(context) {
         },
     };
 }
-exports.KnownFragmentNamesRule = KnownFragmentNamesRule;
 //# sourceMappingURL=KnownFragmentNamesRule.js.map

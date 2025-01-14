@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.visitWithTypeInfo = exports.TypeInfo = void 0;
+exports.TypeInfo = void 0;
+exports.visitWithTypeInfo = visitWithTypeInfo;
 const ast_js_1 = require("../language/ast.js");
 const kinds_js_1 = require("../language/kinds.js");
 const visitor_js_1 = require("../language/visitor.js");
@@ -301,5 +302,4 @@ function visitWithTypeInfo(typeInfo, visitor) {
         },
     };
 }
-exports.visitWithTypeInfo = visitWithTypeInfo;
 //# sourceMappingURL=TypeInfo.js.map

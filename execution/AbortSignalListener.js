@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cancellableIterable = exports.cancellablePromise = exports.AbortSignalListener = void 0;
+exports.AbortSignalListener = void 0;
+exports.cancellablePromise = cancellablePromise;
+exports.cancellableIterable = cancellableIterable;
 const promiseWithResolvers_js_1 = require("../jsutils/promiseWithResolvers.js");
 /**
  * A AbortSignalListener object can be used to trigger multiple responses
@@ -48,7 +50,6 @@ function cancellablePromise(originalPromise, abortSignalListener) {
     });
     return promise;
 }
-exports.cancellablePromise = cancellablePromise;
 function cancellableIterable(iterable, abortSignalListener) {
     const iterator = iterable[Symbol.asyncIterator]();
     const _next = iterator.next.bind(iterator);
@@ -67,5 +68,4 @@ function cancellableIterable(iterable, abortSignalListener) {
         }),
     };
 }
-exports.cancellableIterable = cancellableIterable;
 //# sourceMappingURL=AbortSignalListener.js.map

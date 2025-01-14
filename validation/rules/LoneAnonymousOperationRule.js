@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LoneAnonymousOperationRule = void 0;
+exports.LoneAnonymousOperationRule = LoneAnonymousOperationRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 /**
@@ -24,5 +24,4 @@ function LoneAnonymousOperationRule(context) {
         },
     };
 }
-exports.LoneAnonymousOperationRule = LoneAnonymousOperationRule;
 //# sourceMappingURL=LoneAnonymousOperationRule.js.map

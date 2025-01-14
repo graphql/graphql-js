@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LoneSchemaDefinitionRule = void 0;
+exports.LoneSchemaDefinitionRule = LoneSchemaDefinitionRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * Lone Schema definition
@@ -29,5 +29,4 @@ function LoneSchemaDefinitionRule(context) {
         },
     };
 }
-exports.LoneSchemaDefinitionRule = LoneSchemaDefinitionRule;
 //# sourceMappingURL=LoneSchemaDefinitionRule.js.map

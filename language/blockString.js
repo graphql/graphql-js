@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.printBlockString = exports.isPrintableAsBlockString = exports.dedentBlockStringLines = void 0;
+exports.dedentBlockStringLines = dedentBlockStringLines;
+exports.isPrintableAsBlockString = isPrintableAsBlockString;
+exports.printBlockString = printBlockString;
 const characterClasses_js_1 = require("./characterClasses.js");
 /**
  * Produces the value of a block string from its parsed raw value, similar to
@@ -32,7 +34,6 @@ function dedentBlockStringLines(lines) {
         // Remove leading and trailing blank lines.
         .slice(firstNonEmptyLine ?? 0, lastNonEmptyLine + 1));
 }
-exports.dedentBlockStringLines = dedentBlockStringLines;
 function leadingWhitespace(str) {
     let i = 0;
     while (i < str.length && (0, characterClasses_js_1.isWhiteSpace)(str.charCodeAt(i))) {
@@ -94,7 +95,6 @@ function isPrintableAsBlockString(value) {
     }
     return true;
 }
-exports.isPrintableAsBlockString = isPrintableAsBlockString;
 /**
  * Print a block string in the indented block form by adding a leading and
  * trailing blank line. However, if a block string starts with whitespace and is
@@ -137,5 +137,4 @@ function printBlockString(value, options) {
     }
     return '"""' + result + '"""';
 }
-exports.printBlockString = printBlockString;
 //# sourceMappingURL=blockString.js.map

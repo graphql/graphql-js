@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildSchema = exports.buildASTSchema = void 0;
+exports.buildASTSchema = buildASTSchema;
+exports.buildSchema = buildSchema;
 const parser_js_1 = require("../language/parser.js");
 const directives_js_1 = require("../type/directives.js");
 const schema_js_1 = require("../type/schema.js");
@@ -57,7 +58,6 @@ function buildASTSchema(documentAST, options) {
     ];
     return new schema_js_1.GraphQLSchema({ ...config, directives });
 }
-exports.buildASTSchema = buildASTSchema;
 /**
  * A helper function to build a GraphQLSchema directly from a source
  * document.
@@ -72,5 +72,4 @@ function buildSchema(source, options) {
         assumeValid: options?.assumeValid,
     });
 }
-exports.buildSchema = buildSchema;
 //# sourceMappingURL=buildASTSchema.js.map

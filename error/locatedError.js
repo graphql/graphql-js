@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.locatedError = void 0;
+exports.locatedError = locatedError;
 const toError_js_1 = require("../jsutils/toError.js");
 const GraphQLError_js_1 = require("./GraphQLError.js");
 /**
@@ -22,7 +22,6 @@ function locatedError(rawOriginalError, nodes, path) {
         originalError,
     });
 }
-exports.locatedError = locatedError;
 function isLocatedGraphQLError(error) {
     return Array.isArray(error.path);
 }

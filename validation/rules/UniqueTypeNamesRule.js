@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueTypeNamesRule = void 0;
+exports.UniqueTypeNamesRule = UniqueTypeNamesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * Unique type names
@@ -36,5 +36,4 @@ function UniqueTypeNamesRule(context) {
         return false;
     }
 }
-exports.UniqueTypeNamesRule = UniqueTypeNamesRule;
 //# sourceMappingURL=UniqueTypeNamesRule.js.map

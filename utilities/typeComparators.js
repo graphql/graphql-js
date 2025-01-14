@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doTypesOverlap = exports.isTypeSubTypeOf = exports.isEqualType = void 0;
+exports.isEqualType = isEqualType;
+exports.isTypeSubTypeOf = isTypeSubTypeOf;
+exports.doTypesOverlap = doTypesOverlap;
 const definition_js_1 = require("../type/definition.js");
 /**
  * Provided two types, return true if the types are equal (invariant).
@@ -21,7 +23,6 @@ function isEqualType(typeA, typeB) {
     // Otherwise the types are not equal.
     return false;
 }
-exports.isEqualType = isEqualType;
 /**
  * Provided a type and a super type, return true if the first type is either
  * equal or a subset of the second super type (covariant).
@@ -59,7 +60,6 @@ function isTypeSubTypeOf(schema, maybeSubType, superType) {
         ((0, definition_js_1.isInterfaceType)(maybeSubType) || (0, definition_js_1.isObjectType)(maybeSubType)) &&
         schema.isSubType(superType, maybeSubType));
 }
-exports.isTypeSubTypeOf = isTypeSubTypeOf;
 /**
  * Provided two composite types, determine if they "overlap". Two composite
  * types overlap when the Sets of possible concrete types for each intersect.
@@ -92,5 +92,4 @@ function doTypesOverlap(schema, typeA, typeB) {
     // Otherwise the types do not overlap.
     return false;
 }
-exports.doTypesOverlap = doTypesOverlap;
 //# sourceMappingURL=typeComparators.js.map

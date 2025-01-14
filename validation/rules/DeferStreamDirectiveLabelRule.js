@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DeferStreamDirectiveLabelRule = void 0;
+exports.DeferStreamDirectiveLabelRule = DeferStreamDirectiveLabelRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 const directives_js_1 = require("../../type/directives.js");
@@ -35,5 +35,4 @@ function DeferStreamDirectiveLabelRule(context) {
         },
     };
 }
-exports.DeferStreamDirectiveLabelRule = DeferStreamDirectiveLabelRule;
 //# sourceMappingURL=DeferStreamDirectiveLabelRule.js.map

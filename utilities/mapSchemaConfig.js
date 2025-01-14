@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mapSchemaConfig = exports.SchemaElementKind = void 0;
+exports.SchemaElementKind = void 0;
+exports.mapSchemaConfig = mapSchemaConfig;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const definition_js_1 = require("../type/definition.js");
@@ -244,7 +245,6 @@ function mapSchemaConfig(schemaConfig, configMapperMapFn) {
         return mapper == null ? mappedConfig : mapper(mappedConfig);
     }
 }
-exports.mapSchemaConfig = mapSchemaConfig;
 const stdTypeMap = new Map([...scalars_js_1.specifiedScalarTypes, ...introspection_js_1.introspectionTypes].map((type) => [
     type.name,
     type,

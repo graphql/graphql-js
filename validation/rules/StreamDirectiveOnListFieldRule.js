@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StreamDirectiveOnListFieldRule = void 0;
+exports.StreamDirectiveOnListFieldRule = StreamDirectiveOnListFieldRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const definition_js_1 = require("../../type/definition.js");
 const directives_js_1 = require("../../type/directives.js");
@@ -24,5 +24,4 @@ function StreamDirectiveOnListFieldRule(context) {
         },
     };
 }
-exports.StreamDirectiveOnListFieldRule = StreamDirectiveOnListFieldRule;
 //# sourceMappingURL=StreamDirectiveOnListFieldRule.js.map

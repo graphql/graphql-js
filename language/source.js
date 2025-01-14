@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isSource = exports.Source = void 0;
+exports.Source = void 0;
+exports.isSource = isSource;
 const devAssert_js_1 = require("../jsutils/devAssert.js");
 const instanceOf_js_1 = require("../jsutils/instanceOf.js");
 /**
@@ -31,5 +32,4 @@ exports.Source = Source;
 function isSource(source) {
     return (0, instanceOf_js_1.instanceOf)(source, Source);
 }
-exports.isSource = isSource;
 //# sourceMappingURL=source.js.map

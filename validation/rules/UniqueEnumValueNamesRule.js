@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueEnumValueNamesRule = void 0;
+exports.UniqueEnumValueNamesRule = UniqueEnumValueNamesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const definition_js_1 = require("../../type/definition.js");
 /**
@@ -42,5 +42,4 @@ function UniqueEnumValueNamesRule(context) {
         return false;
     }
 }
-exports.UniqueEnumValueNamesRule = UniqueEnumValueNamesRule;
 //# sourceMappingURL=UniqueEnumValueNamesRule.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NoUnusedVariablesRule = void 0;
+exports.NoUnusedVariablesRule = NoUnusedVariablesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * No unused variables
@@ -44,5 +44,4 @@ function NoUnusedVariablesRule(context) {
         },
     };
 }
-exports.NoUnusedVariablesRule = NoUnusedVariablesRule;
 //# sourceMappingURL=NoUnusedVariablesRule.js.map

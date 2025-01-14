@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DeferStreamDirectiveOnValidOperationsRule = void 0;
+exports.DeferStreamDirectiveOnValidOperationsRule = DeferStreamDirectiveOnValidOperationsRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const ast_js_1 = require("../../language/ast.js");
 const kinds_js_1 = require("../../language/kinds.js");
@@ -56,5 +56,4 @@ function DeferStreamDirectiveOnValidOperationsRule(context) {
         },
     };
 }
-exports.DeferStreamDirectiveOnValidOperationsRule = DeferStreamDirectiveOnValidOperationsRule;
 //# sourceMappingURL=DeferStreamDirectiveOnValidOperationsRule.js.map

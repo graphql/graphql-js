@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLocation = void 0;
+exports.getLocation = getLocation;
 const invariant_js_1 = require("../jsutils/invariant.js");
 const LineRegExp = /\r\n|[\n\r]/g;
 /**
@@ -20,5 +20,4 @@ function getLocation(source, position) {
     }
     return { line, column: position + 1 - lastLineStart };
 }
-exports.getLocation = getLocation;
 //# sourceMappingURL=location.js.map

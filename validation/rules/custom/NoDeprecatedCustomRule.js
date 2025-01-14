@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NoDeprecatedCustomRule = void 0;
+exports.NoDeprecatedCustomRule = NoDeprecatedCustomRule;
 const GraphQLError_js_1 = require("../../../error/GraphQLError.js");
 const definition_js_1 = require("../../../type/definition.js");
 /**
@@ -48,5 +48,4 @@ function NoDeprecatedCustomRule(context) {
         },
     };
 }
-exports.NoDeprecatedCustomRule = NoDeprecatedCustomRule;
 //# sourceMappingURL=NoDeprecatedCustomRule.js.map

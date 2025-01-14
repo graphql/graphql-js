@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isAsyncIterable = void 0;
+exports.isAsyncIterable = isAsyncIterable;
 /**
  * Returns true if the provided object implements the AsyncIterator protocol via
  * implementing a `Symbol.asyncIterator` method.
@@ -8,5 +8,4 @@ exports.isAsyncIterable = void 0;
 function isAsyncIterable(maybeAsyncIterable) {
     return typeof maybeAsyncIterable?.[Symbol.asyncIterator] === 'function';
 }
-exports.isAsyncIterable = isAsyncIterable;
 //# sourceMappingURL=isAsyncIterable.js.map

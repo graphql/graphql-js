@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueArgumentNamesRule = void 0;
+exports.UniqueArgumentNamesRule = UniqueArgumentNamesRule;
 const groupBy_js_1 = require("../../jsutils/groupBy.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
@@ -26,5 +26,4 @@ function UniqueArgumentNamesRule(context) {
         }
     }
 }
-exports.UniqueArgumentNamesRule = UniqueArgumentNamesRule;
 //# sourceMappingURL=UniqueArgumentNamesRule.js.map

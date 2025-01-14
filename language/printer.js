@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.print = void 0;
+exports.print = print;
 const blockString_js_1 = require("./blockString.js");
 const printString_js_1 = require("./printString.js");
 const visitor_js_1 = require("./visitor.js");
@@ -11,7 +11,6 @@ const visitor_js_1 = require("./visitor.js");
 function print(ast) {
     return (0, visitor_js_1.visit)(ast, printDocASTReducer);
 }
-exports.print = print;
 const MAX_LINE_LENGTH = 80;
 const printDocASTReducer = {
     Name: { leave: (node) => node.value },

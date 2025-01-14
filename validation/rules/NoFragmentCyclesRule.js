@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NoFragmentCyclesRule = void 0;
+exports.NoFragmentCyclesRule = NoFragmentCyclesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * No fragment cycles
@@ -63,5 +63,4 @@ function NoFragmentCyclesRule(context) {
         spreadPathIndexByName[fragmentName] = undefined;
     }
 }
-exports.NoFragmentCyclesRule = NoFragmentCyclesRule;
 //# sourceMappingURL=NoFragmentCyclesRule.js.map

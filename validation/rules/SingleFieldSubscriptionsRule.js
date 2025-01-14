@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SingleFieldSubscriptionsRule = void 0;
+exports.SingleFieldSubscriptionsRule = SingleFieldSubscriptionsRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 const collectFields_js_1 = require("../../execution/collectFields.js");
@@ -53,5 +53,4 @@ function SingleFieldSubscriptionsRule(context) {
         },
     };
 }
-exports.SingleFieldSubscriptionsRule = SingleFieldSubscriptionsRule;
 //# sourceMappingURL=SingleFieldSubscriptionsRule.js.map

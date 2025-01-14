@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExecutableDefinitionsRule = void 0;
+exports.ExecutableDefinitionsRule = ExecutableDefinitionsRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const kinds_js_1 = require("../../language/kinds.js");
 const predicates_js_1 = require("../../language/predicates.js");
@@ -30,5 +30,4 @@ function ExecutableDefinitionsRule(context) {
         },
     };
 }
-exports.ExecutableDefinitionsRule = ExecutableDefinitionsRule;
 //# sourceMappingURL=ExecutableDefinitionsRule.js.map

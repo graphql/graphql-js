@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defaultScalarValueToLiteral = exports.valueToLiteral = void 0;
+exports.valueToLiteral = valueToLiteral;
+exports.defaultScalarValueToLiteral = defaultScalarValueToLiteral;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const isIterableObject_js_1 = require("../jsutils/isIterableObject.js");
 const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
@@ -85,7 +86,6 @@ function valueToLiteral(value, type) {
     }
     return defaultScalarValueToLiteral(value);
 }
-exports.valueToLiteral = valueToLiteral;
 /**
  * The default implementation to convert scalar values to literals.
  *
@@ -147,5 +147,4 @@ function defaultScalarValueToLiteral(value) {
     }
     throw new TypeError(`Cannot convert value to AST: ${(0, inspect_js_1.inspect)(value)}.`);
 }
-exports.defaultScalarValueToLiteral = defaultScalarValueToLiteral;
 //# sourceMappingURL=valueToLiteral.js.map

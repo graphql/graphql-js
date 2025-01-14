@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isSpecifiedScalarType = exports.specifiedScalarTypes = exports.GraphQLID = exports.GraphQLBoolean = exports.GraphQLString = exports.GraphQLFloat = exports.GraphQLInt = exports.GRAPHQL_MIN_INT = exports.GRAPHQL_MAX_INT = void 0;
+exports.specifiedScalarTypes = exports.GraphQLID = exports.GraphQLBoolean = exports.GraphQLString = exports.GraphQLFloat = exports.GraphQLInt = exports.GRAPHQL_MIN_INT = exports.GRAPHQL_MAX_INT = void 0;
+exports.isSpecifiedScalarType = isSpecifiedScalarType;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const isObjectLike_js_1 = require("../jsutils/isObjectLike.js");
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
@@ -222,7 +223,6 @@ exports.specifiedScalarTypes = Object.freeze([
 function isSpecifiedScalarType(type) {
     return exports.specifiedScalarTypes.some(({ name }) => type.name === name);
 }
-exports.isSpecifiedScalarType = isSpecifiedScalarType;
 // Support coercing objects with custom valueOf() or toJSON() functions -
 // a common way to represent a complex value which can be represented as
 // a string (ex: MongoDB id objects).

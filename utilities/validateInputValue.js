@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateInputLiteral = exports.validateInputValue = void 0;
+exports.validateInputValue = validateInputValue;
+exports.validateInputLiteral = validateInputLiteral;
 const didYouMean_js_1 = require("../jsutils/didYouMean.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const isIterableObject_js_1 = require("../jsutils/isIterableObject.js");
@@ -20,7 +21,6 @@ const replaceVariables_js_1 = require("./replaceVariables.js");
 function validateInputValue(inputValue, type, onError, hideSuggestions) {
     return validateInputValueImpl(inputValue, type, onError, hideSuggestions, undefined);
 }
-exports.validateInputValue = validateInputValue;
 function validateInputValueImpl(inputValue, type, onError, hideSuggestions, path) {
     if ((0, definition_js_1.isNonNullType)(type)) {
         if (inputValue === undefined) {
@@ -127,7 +127,6 @@ function validateInputLiteral(valueNode, type, onError, variables, fragmentVaria
     };
     return validateInputLiteralImpl(context, valueNode, type, hideSuggestions, undefined);
 }
-exports.validateInputLiteral = validateInputLiteral;
 function validateInputLiteralImpl(context, valueNode, type, hideSuggestions, path) {
     if (valueNode.kind === kinds_js_1.Kind.VARIABLE) {
         if (context.static) {

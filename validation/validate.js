@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assertValidSDLExtension = exports.assertValidSDL = exports.validateSDL = exports.validate = void 0;
+exports.validate = validate;
+exports.validateSDL = validateSDL;
+exports.assertValidSDL = assertValidSDL;
+exports.assertValidSDLExtension = assertValidSDLExtension;
 const GraphQLError_js_1 = require("../error/GraphQLError.js");
 const visitor_js_1 = require("../language/visitor.js");
 const validate_js_1 = require("../type/validate.js");
@@ -58,7 +61,6 @@ function validate(schema, documentAST, rules = specifiedRules_js_1.specifiedRule
     }
     return errors;
 }
-exports.validate = validate;
 /**
  * @internal
  */
@@ -71,7 +73,6 @@ function validateSDL(documentAST, schemaToExtend, rules = specifiedRules_js_1.sp
     (0, visitor_js_1.visit)(documentAST, (0, visitor_js_1.visitInParallel)(visitors));
     return errors;
 }
-exports.validateSDL = validateSDL;
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
  * if it is invalid.
@@ -84,7 +85,6 @@ function assertValidSDL(documentAST) {
         throw new Error(errors.map((error) => error.message).join('\n\n'));
     }
 }
-exports.assertValidSDL = assertValidSDL;
 /**
  * Utility function which asserts a SDL document is valid by throwing an error
  * if it is invalid.
@@ -97,5 +97,4 @@ function assertValidSDLExtension(documentAST, schema) {
         throw new Error(errors.map((error) => error.message).join('\n\n'));
     }
 }
-exports.assertValidSDLExtension = assertValidSDLExtension;
 //# sourceMappingURL=validate.js.map

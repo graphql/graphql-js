@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assertValidSchema = exports.validateSchema = void 0;
+exports.validateSchema = validateSchema;
+exports.assertValidSchema = assertValidSchema;
 const AccumulatorMap_js_1 = require("../jsutils/AccumulatorMap.js");
 const capitalize_js_1 = require("../jsutils/capitalize.js");
 const formatList_js_1 = require("../jsutils/formatList.js");
@@ -45,7 +46,6 @@ function validateSchema(schema) {
     schema.__validationErrors = errors;
     return errors;
 }
-exports.validateSchema = validateSchema;
 /**
  * Utility function which asserts a schema is valid by throwing an error if
  * it is invalid.
@@ -56,7 +56,6 @@ function assertValidSchema(schema) {
         throw new Error(errors.map((error) => error.message).join('\n\n'));
     }
 }
-exports.assertValidSchema = assertValidSchema;
 class SchemaValidationContext {
     constructor(schema) {
         this._errors = [];

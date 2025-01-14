@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KnownDirectivesRule = void 0;
+exports.KnownDirectivesRule = KnownDirectivesRule;
 const inspect_js_1 = require("../../jsutils/inspect.js");
 const invariant_js_1 = require("../../jsutils/invariant.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
@@ -46,7 +46,6 @@ function KnownDirectivesRule(context) {
         },
     };
 }
-exports.KnownDirectivesRule = KnownDirectivesRule;
 function getDirectiveLocationForASTPath(ancestors) {
     const appliedTo = ancestors.at(-1);
     (appliedTo != null && 'kind' in appliedTo) || (0, invariant_js_1.invariant)(false);

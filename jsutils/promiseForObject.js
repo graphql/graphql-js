@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.promiseForObject = void 0;
+exports.promiseForObject = promiseForObject;
 /**
  * This function transforms a JS object `ObjMap<Promise<T>>` into
  * a `Promise<ObjMap<T>>`
@@ -18,5 +18,4 @@ async function promiseForObject(object, callback) {
     }
     return callback(resolvedObject);
 }
-exports.promiseForObject = promiseForObject;
 //# sourceMappingURL=promiseForObject.js.map

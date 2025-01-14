@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PossibleTypeExtensionsRule = void 0;
+exports.PossibleTypeExtensionsRule = PossibleTypeExtensionsRule;
 const didYouMean_js_1 = require("../../jsutils/didYouMean.js");
 const inspect_js_1 = require("../../jsutils/inspect.js");
 const invariant_js_1 = require("../../jsutils/invariant.js");
@@ -59,7 +59,6 @@ function PossibleTypeExtensionsRule(context) {
         }
     }
 }
-exports.PossibleTypeExtensionsRule = PossibleTypeExtensionsRule;
 const defKindToExtKind = {
     [kinds_js_1.Kind.SCALAR_TYPE_DEFINITION]: kinds_js_1.Kind.SCALAR_TYPE_EXTENSION,
     [kinds_js_1.Kind.OBJECT_TYPE_DEFINITION]: kinds_js_1.Kind.OBJECT_TYPE_EXTENSION,

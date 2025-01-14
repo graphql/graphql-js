@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.andList = exports.orList = void 0;
+exports.orList = orList;
+exports.andList = andList;
 const invariant_js_1 = require("./invariant.js");
 /**
  * Given [ A, B, C ] return 'A, B, or C'.
@@ -8,14 +9,12 @@ const invariant_js_1 = require("./invariant.js");
 function orList(items) {
     return formatList('or', items);
 }
-exports.orList = orList;
 /**
  * Given [ A, B, C ] return 'A, B, and C'.
  */
 function andList(items) {
     return formatList('and', items);
 }
-exports.andList = andList;
 function formatList(conjunction, items) {
     (items.length !== 0) || (0, invariant_js_1.invariant)(false);
     switch (items.length) {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VariablesAreInputTypesRule = void 0;
+exports.VariablesAreInputTypesRule = VariablesAreInputTypesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const printer_js_1 = require("../../language/printer.js");
 const definition_js_1 = require("../../type/definition.js");
@@ -25,5 +25,4 @@ function VariablesAreInputTypesRule(context) {
         },
     };
 }
-exports.VariablesAreInputTypesRule = VariablesAreInputTypesRule;
 //# sourceMappingURL=VariablesAreInputTypesRule.js.map

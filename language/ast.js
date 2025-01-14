@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OperationTypeNode = exports.isNode = exports.QueryDocumentKeys = exports.Token = exports.Location = void 0;
+exports.OperationTypeNode = exports.QueryDocumentKeys = exports.Token = exports.Location = void 0;
+exports.isNode = isNode;
 /**
  * Contains a range of UTF-8 character offsets and token references that
  * identify the region of the source from which the AST derived.
@@ -145,7 +146,6 @@ function isNode(maybeNode) {
     const maybeKind = maybeNode?.kind;
     return typeof maybeKind === 'string' && kindValues.has(maybeKind);
 }
-exports.isNode = isNode;
 exports.OperationTypeNode = {
     QUERY: 'query',
     MUTATION: 'mutation',

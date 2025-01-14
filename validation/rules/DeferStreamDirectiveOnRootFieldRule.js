@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DeferStreamDirectiveOnRootFieldRule = void 0;
+exports.DeferStreamDirectiveOnRootFieldRule = DeferStreamDirectiveOnRootFieldRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const directives_js_1 = require("../../type/directives.js");
 /**
@@ -33,5 +33,4 @@ function DeferStreamDirectiveOnRootFieldRule(context) {
         },
     };
 }
-exports.DeferStreamDirectiveOnRootFieldRule = DeferStreamDirectiveOnRootFieldRule;
 //# sourceMappingURL=DeferStreamDirectiveOnRootFieldRule.js.map

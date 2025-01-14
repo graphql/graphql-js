@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mapAsyncIterable = void 0;
+exports.mapAsyncIterable = mapAsyncIterable;
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
@@ -60,5 +60,4 @@ function mapAsyncIterable(iterable, callback, onDone) {
         },
     };
 }
-exports.mapAsyncIterable = mapAsyncIterable;
 //# sourceMappingURL=mapAsyncIterable.js.map

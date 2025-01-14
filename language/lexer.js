@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isPunctuatorTokenKind = exports.Lexer = void 0;
+exports.Lexer = void 0;
+exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
 const syntaxError_js_1 = require("../error/syntaxError.js");
 const ast_js_1 = require("./ast.js");
 const blockString_js_1 = require("./blockString.js");
@@ -79,7 +80,6 @@ function isPunctuatorTokenKind(kind) {
         kind === tokenKind_js_1.TokenKind.PIPE ||
         kind === tokenKind_js_1.TokenKind.BRACE_R);
 }
-exports.isPunctuatorTokenKind = isPunctuatorTokenKind;
 /**
  * A Unicode scalar value is any Unicode code point except surrogate code
  * points. In other words, the inclusive ranges of values 0x0000 to 0xD7FF and

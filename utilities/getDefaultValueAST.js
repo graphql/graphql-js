@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDefaultValueAST = void 0;
+exports.getDefaultValueAST = getDefaultValueAST;
 const invariant_js_1 = require("../jsutils/invariant.js");
 const astFromValue_js_1 = require("./astFromValue.js");
 const valueToLiteral_js_1 = require("./valueToLiteral.js");
@@ -20,5 +20,4 @@ function getDefaultValueAST(argOrInputField) {
     }
     return undefined;
 }
-exports.getDefaultValueAST = getDefaultValueAST;
 //# sourceMappingURL=getDefaultValueAST.js.map

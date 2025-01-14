@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KnownOperationTypesRule = void 0;
+exports.KnownOperationTypesRule = KnownOperationTypesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * Known Operation Types
@@ -21,5 +21,4 @@ function KnownOperationTypesRule(context) {
         },
     };
 }
-exports.KnownOperationTypesRule = KnownOperationTypesRule;
 //# sourceMappingURL=KnownOperationTypesRule.js.map

@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEnterLeaveForKind = exports.visitInParallel = exports.visit = exports.BREAK = void 0;
+exports.BREAK = void 0;
+exports.visit = visit;
+exports.visitInParallel = visitInParallel;
+exports.getEnterLeaveForKind = getEnterLeaveForKind;
 const devAssert_js_1 = require("../jsutils/devAssert.js");
 const inspect_js_1 = require("../jsutils/inspect.js");
 const ast_js_1 = require("./ast.js");
@@ -120,7 +123,6 @@ function visit(root, visitor, visitorKeys = ast_js_1.QueryDocumentKeys) {
     }
     return root;
 }
-exports.visit = visit;
 /**
  * Creates a new visitor instance which delegates to many visitors to run in
  * parallel. Each visitor will be visited for each node before moving on.
@@ -183,7 +185,6 @@ function visitInParallel(visitors) {
     }
     return mergedVisitor;
 }
-exports.visitInParallel = visitInParallel;
 /**
  * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
  */
@@ -200,5 +201,4 @@ function getEnterLeaveForKind(visitor, kind) {
     // { enter() {}, leave() {} }
     return { enter: visitor.enter, leave: visitor.leave };
 }
-exports.getEnterLeaveForKind = getEnterLeaveForKind;
 //# sourceMappingURL=visitor.js.map

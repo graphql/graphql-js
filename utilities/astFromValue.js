@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.astFromValue = void 0;
+exports.astFromValue = astFromValue;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const isIterableObject_js_1 = require("../jsutils/isIterableObject.js");
@@ -119,7 +119,6 @@ function astFromValue(value, type) {
     // Not reachable, all possible types have been considered.
     (false) || (0, invariant_js_1.invariant)(false, 'Unexpected input type: ' + (0, inspect_js_1.inspect)(type));
 }
-exports.astFromValue = astFromValue;
 /**
  * IntValue:
  *   - NegativeSign? 0

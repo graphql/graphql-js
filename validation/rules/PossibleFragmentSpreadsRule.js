@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PossibleFragmentSpreadsRule = void 0;
+exports.PossibleFragmentSpreadsRule = PossibleFragmentSpreadsRule;
 const inspect_js_1 = require("../../jsutils/inspect.js");
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 const definition_js_1 = require("../../type/definition.js");
@@ -40,7 +40,6 @@ function PossibleFragmentSpreadsRule(context) {
         },
     };
 }
-exports.PossibleFragmentSpreadsRule = PossibleFragmentSpreadsRule;
 function getFragmentType(context, name) {
     const frag = context.getFragment(name);
     if (frag) {

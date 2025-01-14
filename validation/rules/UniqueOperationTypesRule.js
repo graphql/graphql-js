@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueOperationTypesRule = void 0;
+exports.UniqueOperationTypesRule = UniqueOperationTypesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * Unique operation types
@@ -39,5 +39,4 @@ function UniqueOperationTypesRule(context) {
         return false;
     }
 }
-exports.UniqueOperationTypesRule = UniqueOperationTypesRule;
 //# sourceMappingURL=UniqueOperationTypesRule.js.map

@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findSchemaChanges = exports.findDangerousChanges = exports.findBreakingChanges = exports.SafeChangeType = exports.DangerousChangeType = exports.BreakingChangeType = void 0;
+exports.SafeChangeType = exports.DangerousChangeType = exports.BreakingChangeType = void 0;
+exports.findBreakingChanges = findBreakingChanges;
+exports.findDangerousChanges = findDangerousChanges;
+exports.findSchemaChanges = findSchemaChanges;
 const inspect_js_1 = require("../jsutils/inspect.js");
 const invariant_js_1 = require("../jsutils/invariant.js");
 const keyMap_js_1 = require("../jsutils/keyMap.js");
@@ -59,7 +62,6 @@ function findBreakingChanges(oldSchema, newSchema) {
     // @ts-expect-error
     return findSchemaChanges(oldSchema, newSchema).filter((change) => change.type in exports.BreakingChangeType);
 }
-exports.findBreakingChanges = findBreakingChanges;
 /**
  * Given two schemas, returns an Array containing descriptions of all the types
  * of potentially dangerous changes covered by the other functions down below.
@@ -70,14 +72,12 @@ function findDangerousChanges(oldSchema, newSchema) {
     // @ts-expect-error
     return findSchemaChanges(oldSchema, newSchema).filter((change) => change.type in exports.DangerousChangeType);
 }
-exports.findDangerousChanges = findDangerousChanges;
 function findSchemaChanges(oldSchema, newSchema) {
     return [
         ...findTypeChanges(oldSchema, newSchema),
         ...findDirectiveChanges(oldSchema, newSchema),
     ];
 }
-exports.findSchemaChanges = findSchemaChanges;
 function findDirectiveChanges(oldSchema, newSchema) {
     const schemaChanges = [];
     const directivesDiff = diff(oldSchema.getDirectives(), newSchema.getDirectives());

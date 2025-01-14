@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildIncrementalResponse = void 0;
+exports.buildIncrementalResponse = buildIncrementalResponse;
 const invariant_js_1 = require("../jsutils/invariant.js");
 const Path_js_1 = require("../jsutils/Path.js");
 const IncrementalGraph_js_1 = require("./IncrementalGraph.js");
@@ -9,7 +9,6 @@ function buildIncrementalResponse(context, result, errors, incrementalDataRecord
     const incrementalPublisher = new IncrementalPublisher(context);
     return incrementalPublisher.buildResponse(result, errors, incrementalDataRecords);
 }
-exports.buildIncrementalResponse = buildIncrementalResponse;
 /**
  * This class is used to publish incremental results to the client, enabling semi-concurrent
  * execution while preserving result order.

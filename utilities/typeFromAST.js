@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.typeFromAST = void 0;
+exports.typeFromAST = typeFromAST;
 const kinds_js_1 = require("../language/kinds.js");
 const definition_js_1 = require("../type/definition.js");
 function typeFromAST(schema, typeNode) {
@@ -17,5 +17,4 @@ function typeFromAST(schema, typeNode) {
             return schema.getType(typeNode.name.value);
     }
 }
-exports.typeFromAST = typeFromAST;
 //# sourceMappingURL=typeFromAST.js.map

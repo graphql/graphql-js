@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.lexicographicSortSchema = void 0;
+exports.lexicographicSortSchema = lexicographicSortSchema;
 const naturalCompare_js_1 = require("../jsutils/naturalCompare.js");
 const schema_js_1 = require("../type/schema.js");
 const mapSchemaConfig_js_1 = require("./mapSchemaConfig.js");
@@ -49,7 +49,6 @@ function lexicographicSortSchema(schema) {
         }),
     })));
 }
-exports.lexicographicSortSchema = lexicographicSortSchema;
 function sortObjMap(map) {
     const sortedMap = Object.create(null);
     for (const key of Object.keys(map).sort(naturalCompare_js_1.naturalCompare)) {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.promiseWithResolvers = void 0;
+exports.promiseWithResolvers = promiseWithResolvers;
 /**
  * Based on Promise.withResolvers proposal
  * https://github.com/tc39/proposal-promise-with-resolvers
@@ -15,5 +15,4 @@ function promiseWithResolvers() {
     });
     return { promise, resolve, reject };
 }
-exports.promiseWithResolvers = promiseWithResolvers;
 //# sourceMappingURL=promiseWithResolvers.js.map

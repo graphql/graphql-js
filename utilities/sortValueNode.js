@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sortValueNode = void 0;
+exports.sortValueNode = sortValueNode;
 const naturalCompare_js_1 = require("../jsutils/naturalCompare.js");
 const kinds_js_1 = require("../language/kinds.js");
 /**
@@ -32,7 +32,6 @@ function sortValueNode(valueNode) {
             return valueNode;
     }
 }
-exports.sortValueNode = sortValueNode;
 function sortFields(fields) {
     return fields
         .map((fieldNode) => ({

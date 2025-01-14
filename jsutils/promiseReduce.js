@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.promiseReduce = void 0;
+exports.promiseReduce = promiseReduce;
 const isPromise_js_1 = require("./isPromise.js");
 /**
  * Similar to Array.prototype.reduce(), however the reducing callback may return
@@ -18,5 +18,4 @@ function promiseReduce(values, callbackFn, initialValue) {
     }
     return accumulator;
 }
-exports.promiseReduce = promiseReduce;
 //# sourceMappingURL=promiseReduce.js.map

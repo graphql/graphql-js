@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UniqueDirectiveNamesRule = void 0;
+exports.UniqueDirectiveNamesRule = UniqueDirectiveNamesRule;
 const GraphQLError_js_1 = require("../../error/GraphQLError.js");
 /**
  * Unique directive names
@@ -28,5 +28,4 @@ function UniqueDirectiveNamesRule(context) {
         },
     };
 }
-exports.UniqueDirectiveNamesRule = UniqueDirectiveNamesRule;
 //# sourceMappingURL=UniqueDirectiveNamesRule.js.map
