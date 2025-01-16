@@ -118,6 +118,7 @@ export function ValuesOfCorrectTypeRule(
           ),
         );
       }
+      // Note: SemanticNonNull cannot happen on input.
     },
     EnumValue: (node) => isValidValueNode(context, node),
     IntValue: (node) => isValidValueNode(context, node),
