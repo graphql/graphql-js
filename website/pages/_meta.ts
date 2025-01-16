@@ -21,10 +21,15 @@ const meta = {
   'defer-stream': '',
   '-- 3': {
     type: 'separator',
+    title: 'API',
+  },
+  'api-v16': 'v16',
+  '-- 4': {
+    type: 'separator',
     title: 'FAQ',
   },
   'going-to-production': '',
-  'api-v16': {
+  'api-menu': {
     type: 'menu',
     title: 'API',
     items: {
