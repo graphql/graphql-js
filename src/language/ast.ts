@@ -1,3 +1,10 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`:
+ * * isNode @internal
+ * * QueryDocumentKeys @internal
+ * Should we still expose this file?
+ */
 import type { Kind } from './kinds';
 import type { Source } from './source';
 import type { TokenKind } from './tokenKind';
