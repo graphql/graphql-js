@@ -142,7 +142,7 @@ custom build configurations look for `.mjs` files!
 ### Usage Trend
 
 [Usage Trend of graphql](https://npm-compare.com/graphql#timeRange=FIVE_YEARS)
-  
+
 <a href="https://npm-compare.com/graphql#timeRange=FIVE_YEARS" target="_blank">
   <img src="https://npm-compare.com/img/npm-trend/FIVE_YEARS/graphql.png" width="100%" alt="NPM Usage Trend of graphql" />
 </a>
