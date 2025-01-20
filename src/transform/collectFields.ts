@@ -141,7 +141,7 @@ function collectFieldsImpl(
   selectionSet: SelectionSetNode,
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   deferredFragmentTree: DeferredFragmentTree,
-  deferLabel?: string | undefined,
+  deferLabel?: string,
   fragmentVariableValues?: VariableValues,
 ): void {
   const {
