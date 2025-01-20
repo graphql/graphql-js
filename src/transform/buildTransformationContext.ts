@@ -24,11 +24,6 @@ import type { PendingResult } from '../execution/types.js';
 
 import type { FieldDetails } from './collectFields.js';
 
-export interface DeferUsageContext {
-  originalLabel: string | undefined;
-  groupedFieldSet?: GroupedFieldSet | undefined;
-}
-
 export interface Stream {
   path: Path;
   itemType: GraphQLOutputType;
@@ -43,7 +38,8 @@ interface StreamUsageContext {
 
 export interface TransformationContext {
   transformedArgs: ValidatedExecutionArgs;
-  deferUsageMap: Map<string, DeferUsageContext>;
+  originalDeferLabels: Map<string, string | undefined>;
+  deferredGroupedFieldSets: Map<string, GroupedFieldSet>;
   streamUsageMap: Map<string, StreamUsageContext>;
   prefix: string;
   pendingResultsById: Map<string, PendingResult>;
@@ -54,7 +50,7 @@ export interface TransformationContext {
 interface RequestTransformationContext {
   prefix: string;
   incrementalCounter: number;
-  deferUsageMap: Map<string, DeferUsageContext>;
+  originalDeferLabels: Map<string, string | undefined>;
   streamUsageMap: Map<string, StreamUsageContext>;
 }
 
@@ -67,7 +63,7 @@ export function buildTransformationContext(
   const context: RequestTransformationContext = {
     prefix,
     incrementalCounter: 0,
-    deferUsageMap: new Map(),
+    originalDeferLabels: new Map(),
     streamUsageMap: new Map(),
   };
 
@@ -97,7 +93,8 @@ export function buildTransformationContext(
 
   return {
     transformedArgs,
-    deferUsageMap: context.deferUsageMap,
+    originalDeferLabels: context.originalDeferLabels,
+    deferredGroupedFieldSets: new Map(),
     streamUsageMap: context.streamUsageMap,
     prefix,
     pendingResultsById: new Map(),
@@ -207,9 +204,7 @@ function transformMaybeDeferDirective(
 
         const originalLabel = value.value;
         const prefixedLabel = `${context.prefix}defer${context.incrementalCounter++}__${originalLabel}`;
-        context.deferUsageMap.set(prefixedLabel, {
-          originalLabel,
-        });
+        context.originalDeferLabels.set(prefixedLabel, originalLabel);
         newArgs.push({
           ...arg,
           value: {
@@ -225,9 +220,7 @@ function transformMaybeDeferDirective(
 
   if (!foundLabel) {
     const newLabel = `${context.prefix}defer${context.incrementalCounter++}`;
-    context.deferUsageMap.set(newLabel, {
-      originalLabel: undefined,
-    });
+    context.originalDeferLabels.set(newLabel, undefined);
     newArgs.push({
       kind: Kind.ARGUMENT,
       name: {

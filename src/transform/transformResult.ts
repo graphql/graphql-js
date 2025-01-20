@@ -240,9 +240,6 @@ function processCompleted(
       continue;
     }
 
-    const deferUsageContext = context.deferUsageMap.get(label);
-    invariant(deferUsageContext != null);
-
     let incrementalResult: LegacyIncrementalDeferResult;
     if ('errors' in completedResult) {
       incrementalResult = {
@@ -260,7 +257,7 @@ function processCompleted(
 
       const errors: Array<GraphQLError> = [];
 
-      const groupedFieldSet = deferUsageContext.groupedFieldSet;
+      const groupedFieldSet = context.deferredGroupedFieldSets.get(label);
       invariant(groupedFieldSet != null);
 
       const objectPath = pathFromArray(pendingResult.path);
@@ -284,7 +281,7 @@ function processCompleted(
       }
     }
 
-    const originalLabel = deferUsageContext.originalLabel;
+    const originalLabel = context.originalDeferLabels.get(label);
     if (originalLabel != null) {
       incrementalResult.label = originalLabel;
     }

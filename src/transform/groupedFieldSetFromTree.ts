@@ -51,9 +51,7 @@ function maybeAddDefers(
       continue;
     }
 
-    const deferUsageContext = context.deferUsageMap.get(label);
-    invariant(deferUsageContext != null);
-    const groupedFieldSet = deferUsageContext.groupedFieldSet;
+    const groupedFieldSet = context.deferredGroupedFieldSets.get(label);
     invariant(groupedFieldSet != null);
 
     for (const [responseName, fieldDetailsList] of groupedFieldSet) {
