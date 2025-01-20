@@ -224,14 +224,7 @@ function processCompleted(
         incremental.push(incrementalResult);
       }
 
-      context.pendingResultsById.delete(completedResult.id);
-      const path = pendingResult.path.join('.');
-      const labels = context.pendingLabelsByPath.get(path);
-      invariant(labels != null);
-      labels.delete(label);
-      if (labels.size === 0) {
-        context.pendingLabelsByPath.delete(path);
-      }
+      deletePendingResult(context, pendingResult, label);
       continue;
     }
 
@@ -283,16 +276,24 @@ function processCompleted(
 
     incremental.push(incrementalResult);
 
-    context.pendingResultsById.delete(completedResult.id);
-    const path = pendingResult.path.join('.');
-    const labels = context.pendingLabelsByPath.get(path);
-    invariant(labels != null);
-    labels.delete(label);
-    if (labels.size === 0) {
-      context.pendingLabelsByPath.delete(path);
-    }
+    deletePendingResult(context, pendingResult, label);
   }
   return incremental;
+}
+
+function deletePendingResult(
+  context: TransformationContext,
+  pendingResult: PendingResult,
+  label: string,
+): void {
+  context.pendingResultsById.delete(pendingResult.id);
+  const path = pendingResult.path.join('.');
+  const labels = context.pendingLabelsByPath.get(path);
+  invariant(labels != null);
+  labels.delete(label);
+  if (labels.size === 0) {
+    context.pendingLabelsByPath.delete(path);
+  }
 }
 
 function transformInitialResult<
