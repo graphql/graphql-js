@@ -35,8 +35,9 @@ describe('buildTransformationContext', () => {
     );
 
     expect(context.originalDeferLabels instanceof Map).to.equal(true);
+    expect(context.originalStreamLabels instanceof Map).to.equal(true);
     expect(context.deferredGroupedFieldSets instanceof Map).to.equal(true);
-    expect(context.streamUsageMap instanceof Map).to.equal(true);
+    expect(context.streams instanceof Map).to.equal(true);
     expect(context.prefix).to.equal('__prefix__');
     expect(context.pendingLabelsByPath instanceof Map).to.equal(true);
     expect(context.pendingResultsById instanceof Map).to.equal(true);

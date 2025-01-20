@@ -28,19 +28,15 @@ export interface Stream {
   path: Path;
   itemType: GraphQLOutputType;
   fieldDetailsList: ReadonlyArray<FieldDetails>;
-}
-
-interface StreamUsageContext {
-  originalLabel: string | undefined;
-  streams: Set<Stream>;
   nextIndex: number;
 }
 
 export interface TransformationContext {
   transformedArgs: ValidatedExecutionArgs;
   originalDeferLabels: Map<string, string | undefined>;
+  originalStreamLabels: Map<string, string | undefined>;
   deferredGroupedFieldSets: Map<string, GroupedFieldSet>;
-  streamUsageMap: Map<string, StreamUsageContext>;
+  streams: Map<string, Stream>;
   prefix: string;
   pendingResultsById: Map<string, PendingResult>;
   pendingLabelsByPath: Map<string, Set<string>>;
@@ -51,7 +47,7 @@ interface RequestTransformationContext {
   prefix: string;
   incrementalCounter: number;
   originalDeferLabels: Map<string, string | undefined>;
-  streamUsageMap: Map<string, StreamUsageContext>;
+  originalStreamLabels: Map<string, string | undefined>;
 }
 
 export function buildTransformationContext(
@@ -64,7 +60,7 @@ export function buildTransformationContext(
     prefix,
     incrementalCounter: 0,
     originalDeferLabels: new Map(),
-    streamUsageMap: new Map(),
+    originalStreamLabels: new Map(),
   };
 
   const transformedFragments = mapValue(fragments, (details) => ({
@@ -94,8 +90,9 @@ export function buildTransformationContext(
   return {
     transformedArgs,
     originalDeferLabels: context.originalDeferLabels,
+    originalStreamLabels: context.originalStreamLabels,
     deferredGroupedFieldSets: new Map(),
-    streamUsageMap: context.streamUsageMap,
+    streams: new Map(),
     prefix,
     pendingResultsById: new Map(),
     pendingLabelsByPath: new Map(),
@@ -263,11 +260,7 @@ function transformMaybeStreamDirective(
 
         const originalLabel = value.value;
         const prefixedLabel = `${context.prefix}stream${context.incrementalCounter++}__${originalLabel}`;
-        context.streamUsageMap.set(prefixedLabel, {
-          originalLabel,
-          streams: new Set(),
-          nextIndex: 0,
-        });
+        context.originalStreamLabels.set(prefixedLabel, originalLabel);
         newArgs.push({
           ...arg,
           value: {
@@ -283,11 +276,7 @@ function transformMaybeStreamDirective(
 
   if (!foundLabel) {
     const newLabel = `${context.prefix}stream${context.incrementalCounter++}`;
-    context.streamUsageMap.set(newLabel, {
-      originalLabel: undefined,
-      streams: new Set(),
-      nextIndex: 0,
-    });
+    context.originalStreamLabels.set(newLabel, undefined);
     newArgs.push({
       kind: Kind.ARGUMENT,
       name: {

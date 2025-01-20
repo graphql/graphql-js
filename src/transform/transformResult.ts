@@ -166,40 +166,38 @@ function processIncremental(
 
   const incremental: Array<LegacyIncrementalStreamResult> = [];
   for (const label of streamLabels) {
-    const streamUsageContext = context.streamUsageMap.get(label);
-    invariant(streamUsageContext != null);
-    const { originalLabel, nextIndex, streams } = streamUsageContext;
-    for (const stream of streams) {
-      const { path, itemType, fieldDetailsList } = stream;
-      const list = getObjectAtPath(context.mergedResult, pathToArray(path));
-      invariant(Array.isArray(list));
-      const items: Array<unknown> = [];
-      const errors: Array<GraphQLError> = [];
-      for (let i = nextIndex; i < list.length; i++) {
-        const item = completeSubValue(
-          context,
-          errors,
-          itemType,
-          fieldDetailsList,
-          list[i],
-          addPath(path, i, undefined),
-          1,
-        );
-        items.push(item);
-      }
-      streamUsageContext.nextIndex = list.length;
-      const newIncrementalResult: LegacyIncrementalStreamResult = {
-        items,
-        path: [...pathToArray(path), nextIndex],
-      };
-      if (errors.length > 0) {
-        newIncrementalResult.errors = errors;
-      }
-      if (originalLabel != null) {
-        newIncrementalResult.label = originalLabel;
-      }
-      incremental.push(newIncrementalResult);
+    const stream = context.streams.get(label);
+    invariant(stream != null);
+    const { path, itemType, fieldDetailsList, nextIndex } = stream;
+    const list = getObjectAtPath(context.mergedResult, pathToArray(path));
+    invariant(Array.isArray(list));
+    const items: Array<unknown> = [];
+    const errors: Array<GraphQLError> = [];
+    for (let i = nextIndex; i < list.length; i++) {
+      const item = completeSubValue(
+        context,
+        errors,
+        itemType,
+        fieldDetailsList,
+        list[i],
+        addPath(path, i, undefined),
+        1,
+      );
+      items.push(item);
     }
+    stream.nextIndex = list.length;
+    const newIncrementalResult: LegacyIncrementalStreamResult = {
+      items,
+      path: [...pathToArray(path), nextIndex],
+    };
+    if (errors.length > 0) {
+      newIncrementalResult.errors = errors;
+    }
+    const originalLabel = context.originalStreamLabels.get(label);
+    if (originalLabel != null) {
+      newIncrementalResult.label = originalLabel;
+    }
+    incremental.push(newIncrementalResult);
   }
   return incremental;
 }
@@ -215,9 +213,9 @@ function processCompleted(
     const label = pendingResult.label;
     invariant(label != null);
 
-    const streamUsageContext = context.streamUsageMap.get(label);
-    if (streamUsageContext) {
-      context.streamUsageMap.delete(label);
+    const stream = context.streams.get(label);
+    if (stream) {
+      context.streams.delete(label);
       if ('errors' in completedResult) {
         const list = getObjectAtPath(context.mergedResult, pendingResult.path);
         invariant(Array.isArray(list));

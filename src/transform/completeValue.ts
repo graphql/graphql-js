@@ -230,41 +230,41 @@ function maybeAddStream(
     return;
   }
 
-  let stream;
+  let pendingStreamLabel;
   for (const fieldDetails of fieldDetailsList) {
     const directives = fieldDetails.node.directives;
     if (!directives) {
       continue;
     }
-    stream = directives.find(
+    const stream = directives.find(
       (directive) => directive.name.value === GraphQLStreamDirective.name,
     );
-    if (stream != null) {
-      break;
+    if (stream == null) {
+      continue;
+    }
+
+    const labelArg = stream.arguments?.find(
+      (arg) => arg.name.value === 'label',
+    );
+    invariant(labelArg != null);
+    const labelValue = labelArg.value;
+    invariant(labelValue.kind === Kind.STRING);
+    const label = labelValue.value;
+    invariant(label != null);
+    const pendingLabels = context.pendingLabelsByPath.get(
+      pathToArray(path).join('.'),
+    );
+    if (pendingLabels?.has(label)) {
+      pendingStreamLabel = label;
     }
   }
 
-  if (stream == null) {
-    return;
-  }
-
-  const labelArg = stream.arguments?.find((arg) => arg.name.value === 'label');
-  invariant(labelArg != null);
-  const labelValue = labelArg.value;
-  invariant(labelValue.kind === Kind.STRING);
-  const label = labelValue.value;
-  invariant(label != null);
-  const pendingLabels = context.pendingLabelsByPath.get(
-    pathToArray(path).join('.'),
-  );
-  if (pendingLabels?.has(label)) {
-    const streamUsage = context.streamUsageMap.get(label);
-    invariant(streamUsage != null);
-    streamUsage.nextIndex = nextIndex;
-    streamUsage.streams.add({
+  if (pendingStreamLabel != null) {
+    context.streams.set(pendingStreamLabel, {
       path,
       itemType,
       fieldDetailsList,
+      nextIndex,
     });
   }
 }
