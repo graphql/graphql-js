@@ -69,6 +69,7 @@ describe('collectFields', () => {
     expect(groupedFieldSet.get('someField')).to.deep.equal([
       {
         node: validatedExecutionArgs.operation.selectionSet.selections[0],
+        deferLabel: undefined,
         fragmentVariableValues: undefined,
       },
     ]);
@@ -151,6 +152,7 @@ describe('collectFields', () => {
     expect(groupedFieldSet.get('someField')).to.deep.equal([
       {
         node: inlineFragment.selectionSet.selections[0],
+        deferLabel: undefined,
         fragmentVariableValues: undefined,
       },
     ]);
@@ -212,6 +214,7 @@ describe('collectFields', () => {
     expect(groupedFieldSet.get('someField')).to.deep.equal([
       {
         node: inlineFragment.selectionSet.selections[0],
+        deferLabel: undefined,
         fragmentVariableValues: undefined,
       },
     ]);
@@ -261,6 +264,7 @@ describe('collectFields', () => {
     expect(nestedGroupedFieldSet.get('someField')).to.deep.equal([
       {
         node: inlineFragment.selectionSet.selections[0],
+        deferLabel: undefined,
         fragmentVariableValues: undefined,
       },
     ]);

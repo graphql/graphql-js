@@ -1936,6 +1936,10 @@ describe('Execute: legacy stream directive', () => {
       {
         incremental: [
           {
+            items: [{ id: '1' }],
+            path: ['nestedObject', 'nestedFriendList', 0],
+          },
+          {
             items: [{ id: '1', name: 'Luke' }],
             path: ['nestedObject', 'nestedFriendList', 0],
           },
@@ -1944,6 +1948,72 @@ describe('Execute: legacy stream directive', () => {
       },
       {
         incremental: [
+          {
+            items: [{ id: '2' }],
+            path: ['nestedObject', 'nestedFriendList', 1],
+          },
+          {
+            items: [{ id: '2', name: 'Han' }],
+            path: ['nestedObject', 'nestedFriendList', 1],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Handles overlapping deferred and non-deferred streams with a non-zero initial count', async () => {
+    const document = parse(`
+      query {
+        nestedObject {
+          nestedFriendList @stream(initialCount: 1) {
+            id
+          }
+        }
+        nestedObject {
+          ... @defer {
+            nestedFriendList @stream(initialCount: 1) {
+              id
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedObject: {
+        async *nestedFriendList() {
+          yield await Promise.resolve(friends[0]);
+          yield await Promise.resolve(friends[1]);
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nestedObject: {
+            nestedFriendList: [{ id: '1' }],
+          },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { nestedFriendList: [{ id: '1', name: 'Luke' }] },
+            path: ['nestedObject'],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ id: '2' }],
+            path: ['nestedObject', 'nestedFriendList', 1],
+          },
           {
             items: [{ id: '2', name: 'Han' }],
             path: ['nestedObject', 'nestedFriendList', 1],

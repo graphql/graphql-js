@@ -21,7 +21,7 @@ import type {
 
 import type { TransformationContext } from './buildTransformationContext.js';
 import { collectFields } from './collectFields.js';
-import { completeSubValue, completeValue } from './completeValue.js';
+import { completeListValue, completeValue } from './completeValue.js';
 import { embedErrors } from './embedErrors.js';
 import { getObjectAtPath } from './getObjectAtPath.js';
 import { groupedFieldSetFromTree } from './groupedFieldSetFromTree.js';
@@ -168,36 +168,33 @@ function processIncremental(
   for (const label of streamLabels) {
     const stream = context.streams.get(label);
     invariant(stream != null);
-    const { path, itemType, fieldDetailsList, nextIndex } = stream;
+    const { path, itemType, originalStreams, nextIndex } = stream;
     const list = getObjectAtPath(context.mergedResult, pathToArray(path));
     invariant(Array.isArray(list));
-    const items: Array<unknown> = [];
-    const errors: Array<GraphQLError> = [];
-    for (let i = nextIndex; i < list.length; i++) {
-      const item = completeSubValue(
+    for (const { originalLabel, fieldDetailsList } of originalStreams) {
+      const errors: Array<GraphQLError> = [];
+      const items = completeListValue(
         context,
         errors,
         itemType,
         fieldDetailsList,
-        list[i],
-        addPath(path, i, undefined),
-        1,
+        list,
+        path,
+        nextIndex,
       );
-      items.push(item);
+      stream.nextIndex = list.length;
+      const newIncrementalResult: LegacyIncrementalStreamResult = {
+        items,
+        path: [...pathToArray(path), nextIndex],
+      };
+      if (errors.length > 0) {
+        newIncrementalResult.errors = errors;
+      }
+      if (originalLabel != null) {
+        newIncrementalResult.label = originalLabel;
+      }
+      incremental.push(newIncrementalResult);
     }
-    stream.nextIndex = list.length;
-    const newIncrementalResult: LegacyIncrementalStreamResult = {
-      items,
-      path: [...pathToArray(path), nextIndex],
-    };
-    if (errors.length > 0) {
-      newIncrementalResult.errors = errors;
-    }
-    const originalLabel = context.originalStreamLabels.get(label);
-    if (originalLabel != null) {
-      newIncrementalResult.label = originalLabel;
-    }
-    incremental.push(newIncrementalResult);
   }
   return incremental;
 }

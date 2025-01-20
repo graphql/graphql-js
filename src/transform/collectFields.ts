@@ -20,10 +20,7 @@ import {
 } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import type {
-  FragmentDetails,
-  GroupedFieldSet,
-} from '../execution/collectFields.js';
+import type { FragmentDetails } from '../execution/collectFields.js';
 import type { VariableValues } from '../execution/values.js';
 import {
   getDirectiveValues,
@@ -36,8 +33,11 @@ import type { TransformationContext } from './buildTransformationContext.js';
 
 export interface FieldDetails {
   node: FieldNode;
+  deferLabel: string | undefined;
   fragmentVariableValues?: VariableValues | undefined;
 }
+
+export type GroupedFieldSet = Map<string, ReadonlyArray<FieldDetails>>;
 
 interface CollectFieldsContext {
   deferredGroupedFieldSets: Map<string, GroupedFieldSet>;
@@ -117,6 +117,7 @@ export function collectSubfields(
   const deferredFragmentTree = new Map<string, DeferredFragmentTree>();
 
   for (const fieldDetail of fieldDetailsList) {
+    const deferLabel = fieldDetail.deferLabel;
     const selectionSet = fieldDetail.node.selectionSet;
     if (selectionSet) {
       const { fragmentVariableValues } = fieldDetail;
@@ -125,6 +126,7 @@ export function collectSubfields(
         selectionSet,
         groupedFieldSet,
         deferredFragmentTree,
+        deferLabel,
         fragmentVariableValues,
       );
     }
@@ -133,11 +135,13 @@ export function collectSubfields(
   return { groupedFieldSet, deferredFragmentTree };
 }
 
+// eslint-disable-next-line @typescript-eslint/max-params
 function collectFieldsImpl(
   context: CollectFieldsContext,
   selectionSet: SelectionSetNode,
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   deferredFragmentTree: DeferredFragmentTree,
+  deferLabel?: string | undefined,
   fragmentVariableValues?: VariableValues,
 ): void {
   const {
@@ -160,13 +164,14 @@ function collectFieldsImpl(
         }
         groupedFieldSet.add(getFieldEntryKey(selection), {
           node: selection,
+          deferLabel,
           fragmentVariableValues,
         });
         break;
       }
       case Kind.INLINE_FRAGMENT: {
-        const deferLabel = isDeferred(selection);
-        if (deferLabel !== undefined) {
+        const newDeferLabel = isDeferred(selection);
+        if (newDeferLabel !== undefined) {
           const deferredGroupedFieldSet = new AccumulatorMap<
             string,
             FieldDetails
@@ -180,9 +185,11 @@ function collectFieldsImpl(
             selection.selectionSet,
             deferredGroupedFieldSet,
             nestedDeferredFragmentTree,
+            newDeferLabel,
+            fragmentVariableValues,
           );
-          deferredGroupedFieldSets.set(deferLabel, deferredGroupedFieldSet);
-          deferredFragmentTree.set(deferLabel, nestedDeferredFragmentTree);
+          deferredGroupedFieldSets.set(newDeferLabel, deferredGroupedFieldSet);
+          deferredFragmentTree.set(newDeferLabel, nestedDeferredFragmentTree);
           continue;
         }
 
@@ -202,6 +209,7 @@ function collectFieldsImpl(
           selection.selectionSet,
           groupedFieldSet,
           deferredFragmentTree,
+          deferLabel,
           fragmentVariableValues,
         );
 
@@ -225,8 +233,20 @@ function collectFieldsImpl(
           continue;
         }
 
-        const deferLabel = isDeferred(selection);
-        if (deferLabel !== undefined) {
+        const fragmentVariableSignatures = fragment.variableSignatures;
+        let newFragmentVariableValues: VariableValues | undefined;
+        if (fragmentVariableSignatures) {
+          newFragmentVariableValues = getFragmentVariableValues(
+            selection,
+            fragmentVariableSignatures,
+            variableValues,
+            fragmentVariableValues,
+            hideSuggestions,
+          );
+        }
+
+        const newDeferLabel = isDeferred(selection);
+        if (newDeferLabel !== undefined) {
           const deferredGroupedFieldSet = new AccumulatorMap<
             string,
             FieldDetails
@@ -240,22 +260,12 @@ function collectFieldsImpl(
             fragment.definition.selectionSet,
             deferredGroupedFieldSet,
             nestedDeferredFragmentTree,
+            newDeferLabel,
+            newFragmentVariableValues,
           );
-          deferredGroupedFieldSets.set(deferLabel, deferredGroupedFieldSet);
-          deferredFragmentTree.set(deferLabel, nestedDeferredFragmentTree);
+          deferredGroupedFieldSets.set(newDeferLabel, deferredGroupedFieldSet);
+          deferredFragmentTree.set(newDeferLabel, nestedDeferredFragmentTree);
           continue;
-        }
-
-        const fragmentVariableSignatures = fragment.variableSignatures;
-        let newFragmentVariableValues: VariableValues | undefined;
-        if (fragmentVariableSignatures) {
-          newFragmentVariableValues = getFragmentVariableValues(
-            selection,
-            fragmentVariableSignatures,
-            variableValues,
-            fragmentVariableValues,
-            hideSuggestions,
-          );
         }
 
         visitedFragmentNames.add(fragName);
@@ -264,6 +274,7 @@ function collectFieldsImpl(
           fragment.definition.selectionSet,
           groupedFieldSet,
           deferredFragmentTree,
+          deferLabel,
           newFragmentVariableValues,
         );
         break;

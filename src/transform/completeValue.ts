@@ -1,3 +1,4 @@
+import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import { memoize3 } from '../jsutils/memoize3.js';
@@ -21,10 +22,11 @@ import {
 } from '../type/definition.js';
 import { GraphQLStreamDirective } from '../type/directives.js';
 
-import type { GroupedFieldSet } from '../execution/collectFields.js';
-
-import type { TransformationContext } from './buildTransformationContext.js';
-import type { FieldDetails } from './collectFields.js';
+import type {
+  OriginalStream,
+  TransformationContext,
+} from './buildTransformationContext.js';
+import type { FieldDetails, GroupedFieldSet } from './collectFields.js';
 import { collectSubfields as _collectSubfields } from './collectFields.js';
 import { groupedFieldSetFromTree } from './groupedFieldSetFromTree.js';
 
@@ -69,14 +71,13 @@ export function completeValue(
 }
 
 // eslint-disable-next-line @typescript-eslint/max-params
-export function completeSubValue(
+function completeSubValue(
   context: TransformationContext,
   errors: Array<GraphQLError>,
   returnType: GraphQLOutputType,
   fieldDetailsList: ReadonlyArray<FieldDetails>,
   result: unknown,
   path: Path,
-  listDepth = 0,
 ): unknown {
   if (isNonNullType(returnType)) {
     return completeSubValue(
@@ -106,15 +107,21 @@ export function completeSubValue(
 
   if (isListType(returnType)) {
     invariant(Array.isArray(result));
-    return completeListValue(
+
+    const itemType = returnType.ofType;
+
+    const completed = completeListValue(
       context,
       errors,
-      returnType.ofType,
+      itemType,
       fieldDetailsList,
       result,
       path,
-      listDepth,
     );
+
+    maybeAddStream(context, itemType, fieldDetailsList, path, result.length);
+
+    return completed;
   }
 
   invariant(isObjectLike(result));
@@ -181,18 +188,18 @@ function completeObjectValue(
 }
 
 // eslint-disable-next-line @typescript-eslint/max-params
-function completeListValue(
+export function completeListValue(
   context: TransformationContext,
   errors: Array<GraphQLError>,
   itemType: GraphQLOutputType,
   fieldDetailsList: ReadonlyArray<FieldDetails>,
   result: Array<unknown>,
   path: Path,
-  listDepth: number,
+  initialIndex = 0,
 ): Array<unknown> {
   const completedItems = [];
 
-  for (let index = 0; index < result.length; index++) {
+  for (let index = initialIndex; index < result.length; index++) {
     const completed = completeSubValue(
       context,
       errors,
@@ -200,71 +207,81 @@ function completeListValue(
       fieldDetailsList,
       result[index],
       addPath(path, index, undefined),
-      listDepth + 1,
     );
     completedItems.push(completed);
   }
 
-  maybeAddStream(
-    context,
-    itemType,
-    fieldDetailsList,
-    listDepth,
-    path,
-    result.length,
-  );
-
   return completedItems;
 }
 
-// eslint-disable-next-line @typescript-eslint/max-params
 function maybeAddStream(
   context: TransformationContext,
   itemType: GraphQLOutputType,
   fieldDetailsList: ReadonlyArray<FieldDetails>,
-  listDepth: number,
   path: Path,
   nextIndex: number,
 ): void {
-  if (listDepth > 0) {
+  const pendingLabels = context.pendingLabelsByPath.get(
+    pathToArray(path).join('.'),
+  );
+  if (pendingLabels == null) {
     return;
   }
+  const pendingLabel = pendingLabels.values().next().value;
+  invariant(pendingLabel != null);
 
-  let pendingStreamLabel;
+  const streamLabelByDeferLabel = new Map<
+    string | undefined,
+    string | undefined
+  >();
+  const fieldDetailsListByDeferLabel = new AccumulatorMap<
+    string | undefined,
+    FieldDetails
+  >();
   for (const fieldDetails of fieldDetailsList) {
     const directives = fieldDetails.node.directives;
-    if (!directives) {
-      continue;
-    }
-    const stream = directives.find(
-      (directive) => directive.name.value === GraphQLStreamDirective.name,
-    );
-    if (stream == null) {
-      continue;
-    }
-
-    const labelArg = stream.arguments?.find(
-      (arg) => arg.name.value === 'label',
-    );
-    invariant(labelArg != null);
-    const labelValue = labelArg.value;
-    invariant(labelValue.kind === Kind.STRING);
-    const label = labelValue.value;
-    invariant(label != null);
-    const pendingLabels = context.pendingLabelsByPath.get(
-      pathToArray(path).join('.'),
-    );
-    if (pendingLabels?.has(label)) {
-      pendingStreamLabel = label;
+    if (directives) {
+      const stream = directives.find(
+        (directive) => directive.name.value === GraphQLStreamDirective.name,
+      );
+      if (stream != null) {
+        const labelArg = stream.arguments?.find(
+          (arg) => arg.name.value === 'label',
+        );
+        invariant(labelArg != null);
+        const labelValue = labelArg.value;
+        invariant(labelValue.kind === Kind.STRING);
+        const label = labelValue.value;
+        const originalLabel = context.originalStreamLabels.get(label);
+        const deferLabel = fieldDetails.deferLabel;
+        streamLabelByDeferLabel.set(deferLabel, originalLabel);
+        fieldDetailsListByDeferLabel.add(deferLabel, fieldDetails);
+      }
     }
   }
 
-  if (pendingStreamLabel != null) {
-    context.streams.set(pendingStreamLabel, {
-      path,
-      itemType,
-      fieldDetailsList,
-      nextIndex,
-    });
+  if (fieldDetailsListByDeferLabel.size > 0) {
+    const originalStreams: Array<OriginalStream> = [];
+    for (const [
+      deferLabel,
+      fieldDetailsListForDeferLabel,
+    ] of fieldDetailsListByDeferLabel) {
+      const originalLabel = streamLabelByDeferLabel.get(deferLabel);
+      originalStreams.push({
+        originalLabel,
+        fieldDetailsList: fieldDetailsListForDeferLabel,
+      });
+    }
+    const streamsForPendingLabel = context.streams.get(pendingLabel);
+    if (streamsForPendingLabel == null) {
+      context.streams.set(pendingLabel, {
+        path,
+        itemType,
+        originalStreams,
+        nextIndex,
+      });
+    } else {
+      streamsForPendingLabel.originalStreams.push(...originalStreams);
+    }
   }
 }

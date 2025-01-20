@@ -3,13 +3,12 @@ import { invariant } from '../jsutils/invariant.js';
 import type { Path } from '../jsutils/Path.js';
 import { pathToArray } from '../jsutils/Path.js';
 
+import type { TransformationContext } from './buildTransformationContext.js';
 import type {
+  DeferredFragmentTree,
   FieldDetails,
   GroupedFieldSet,
-} from '../execution/collectFields.js';
-
-import type { TransformationContext } from './buildTransformationContext.js';
-import type { DeferredFragmentTree } from './collectFields.js';
+} from './collectFields.js';
 
 export function groupedFieldSetFromTree(
   context: TransformationContext,

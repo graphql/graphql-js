@@ -18,16 +18,20 @@ import {
 import type { GraphQLOutputType } from '../type/index.js';
 import { TypeNameMetaFieldDef } from '../type/introspection.js';
 
-import type { GroupedFieldSet } from '../execution/collectFields.js';
 import type { ValidatedExecutionArgs } from '../execution/execute.js';
 import type { PendingResult } from '../execution/types.js';
 
-import type { FieldDetails } from './collectFields.js';
+import type { FieldDetails, GroupedFieldSet } from './collectFields.js';
+
+export interface OriginalStream {
+  originalLabel: string | undefined;
+  fieldDetailsList: ReadonlyArray<FieldDetails>;
+}
 
 export interface Stream {
   path: Path;
   itemType: GraphQLOutputType;
-  fieldDetailsList: ReadonlyArray<FieldDetails>;
+  originalStreams: Array<OriginalStream>;
   nextIndex: number;
 }
 
