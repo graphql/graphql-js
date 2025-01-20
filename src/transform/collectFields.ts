@@ -24,7 +24,6 @@ import type {
   FragmentDetails,
   GroupedFieldSet,
 } from '../execution/collectFields.js';
-import type { ValidatedExecutionArgs } from '../execution/execute.js';
 import type { VariableValues } from '../execution/values.js';
 import {
   getDirectiveValues,
@@ -33,12 +32,18 @@ import {
 
 import { typeFromAST } from '../utilities/typeFromAST.js';
 
+import type {
+  DeferUsageContext,
+  TransformationContext,
+} from './buildTransformationContext.js';
+
 export interface FieldDetails {
   node: FieldNode;
   fragmentVariableValues?: VariableValues | undefined;
 }
 
 interface CollectFieldsContext {
+  deferUsageMap: Map<string, DeferUsageContext>;
   schema: GraphQLSchema;
   fragments: ObjMap<FragmentDetails>;
   variableValues: VariableValues;
@@ -47,10 +52,8 @@ interface CollectFieldsContext {
   hideSuggestions: boolean;
 }
 
-export interface GroupedFieldSetTree {
-  groupedFieldSet: GroupedFieldSet;
-  deferredGroupedFieldSets: Map<string, GroupedFieldSetTree>;
-}
+export type DeferredFragmentTree = Map<string, DeferredFragmentTree>;
+
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -62,25 +65,29 @@ export interface GroupedFieldSetTree {
  */
 
 export function collectFields(
-  validateExecutionArgs: ValidatedExecutionArgs,
+  transformationContext: TransformationContext,
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
-): GroupedFieldSetTree {
+): {
+  groupedFieldSet: GroupedFieldSet;
+  deferredFragmentTree: DeferredFragmentTree;
+} {
   const context: CollectFieldsContext = {
-    ...validateExecutionArgs,
+    deferUsageMap: transformationContext.deferUsageMap,
+    ...transformationContext.transformedArgs,
     runtimeType,
     visitedFragmentNames: new Set(),
   };
 
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
-  const deferredGroupedFieldSets = new Map<string, GroupedFieldSetTree>();
+  const deferredFragmentTree = new Map<string, DeferredFragmentTree>();
   collectFieldsImpl(
     context,
     selectionSet,
     groupedFieldSet,
-    deferredGroupedFieldSets,
+    deferredFragmentTree,
   );
-  return { groupedFieldSet, deferredGroupedFieldSets };
+  return { groupedFieldSet, deferredFragmentTree };
 }
 
 /**
@@ -94,17 +101,21 @@ export function collectFields(
  * @internal
  */
 export function collectSubfields(
-  validatedExecutionArgs: ValidatedExecutionArgs,
+  transformationContext: TransformationContext,
   returnType: GraphQLObjectType,
   fieldDetailsList: ReadonlyArray<FieldDetails>,
-): GroupedFieldSetTree {
+): {
+  groupedFieldSet: GroupedFieldSet;
+  deferredFragmentTree: DeferredFragmentTree;
+} {
   const context: CollectFieldsContext = {
-    ...validatedExecutionArgs,
+    deferUsageMap: transformationContext.deferUsageMap,
+    ...transformationContext.transformedArgs,
     runtimeType: returnType,
     visitedFragmentNames: new Set(),
   };
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
-  const deferredGroupedFieldSets = new Map<string, GroupedFieldSetTree>();
+  const deferredFragmentTree = new Map<string, DeferredFragmentTree>();
 
   for (const fieldDetail of fieldDetailsList) {
     const selectionSet = fieldDetail.node.selectionSet;
@@ -114,23 +125,24 @@ export function collectSubfields(
         context,
         selectionSet,
         groupedFieldSet,
-        deferredGroupedFieldSets,
+        deferredFragmentTree,
         fragmentVariableValues,
       );
     }
   }
 
-  return { groupedFieldSet, deferredGroupedFieldSets };
+  return { groupedFieldSet, deferredFragmentTree };
 }
 
 function collectFieldsImpl(
   context: CollectFieldsContext,
   selectionSet: SelectionSetNode,
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
-  deferredGroupedFieldSets: Map<string, GroupedFieldSetTree>,
+  deferredFragmentTree: DeferredFragmentTree,
   fragmentVariableValues?: VariableValues,
 ): void {
   const {
+    deferUsageMap,
     schema,
     fragments,
     variableValues,
@@ -160,20 +172,20 @@ function collectFieldsImpl(
             string,
             FieldDetails
           >();
-          const nestedDeferredGroupedFieldSets = new Map<
+          const nestedDeferredFragmentTree = new Map<
             string,
-            GroupedFieldSetTree
+            DeferredFragmentTree
           >();
           collectFieldsImpl(
             context,
             selection.selectionSet,
             deferredGroupedFieldSet,
-            nestedDeferredGroupedFieldSets,
+            nestedDeferredFragmentTree,
           );
-          deferredGroupedFieldSets.set(deferLabel, {
-            groupedFieldSet: deferredGroupedFieldSet,
-            deferredGroupedFieldSets: nestedDeferredGroupedFieldSets,
-          });
+          const deferUsageContext = deferUsageMap.get(deferLabel);
+          invariant(deferUsageContext != null);
+          deferUsageContext.groupedFieldSet = deferredGroupedFieldSet;
+          deferredFragmentTree.set(deferLabel, nestedDeferredFragmentTree);
           continue;
         }
 
@@ -192,7 +204,7 @@ function collectFieldsImpl(
           context,
           selection.selectionSet,
           groupedFieldSet,
-          deferredGroupedFieldSets,
+          deferredFragmentTree,
           fragmentVariableValues,
         );
 
@@ -222,20 +234,21 @@ function collectFieldsImpl(
             string,
             FieldDetails
           >();
-          const nestedDeferredGroupedFieldSets = new Map<
+          const nestedDeferredFragmentTree = new Map<
             string,
-            GroupedFieldSetTree
+            DeferredFragmentTree
           >();
           collectFieldsImpl(
             context,
             fragment.definition.selectionSet,
             deferredGroupedFieldSet,
-            nestedDeferredGroupedFieldSets,
+            nestedDeferredFragmentTree,
           );
-          deferredGroupedFieldSets.set(deferLabel, {
-            groupedFieldSet: deferredGroupedFieldSet,
-            deferredGroupedFieldSets: nestedDeferredGroupedFieldSets,
-          });
+          const deferUsageContext = deferUsageMap.get(deferLabel);
+          invariant(deferUsageContext != null);
+          deferUsageContext.groupedFieldSet = deferredGroupedFieldSet;
+          invariant(deferUsageContext != null);
+          deferredFragmentTree.set(deferLabel, nestedDeferredFragmentTree);
           continue;
         }
 
@@ -256,7 +269,7 @@ function collectFieldsImpl(
           context,
           fragment.definition.selectionSet,
           groupedFieldSet,
-          deferredGroupedFieldSets,
+          deferredFragmentTree,
           newFragmentVariableValues,
         );
         break;

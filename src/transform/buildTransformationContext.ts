@@ -18,19 +18,15 @@ import {
 import type { GraphQLOutputType } from '../type/index.js';
 import { TypeNameMetaFieldDef } from '../type/introspection.js';
 
-import { collectSubfields as _collectSubfields } from '../execution/collectFields.js';
+import type { GroupedFieldSet } from '../execution/collectFields.js';
 import type { ValidatedExecutionArgs } from '../execution/execute.js';
 import type { PendingResult } from '../execution/types.js';
 
 import type { FieldDetails } from './collectFields.js';
 
-type SelectionSetNodeOrFragmentName =
-  | { node: SelectionSetNode; fragmentName?: never }
-  | { node?: never; fragmentName: string };
-
-interface DeferUsageContext {
+export interface DeferUsageContext {
   originalLabel: string | undefined;
-  selectionSet: SelectionSetNodeOrFragmentName;
+  groupedFieldSet?: GroupedFieldSet | undefined;
 }
 
 export interface Stream {
@@ -171,18 +167,11 @@ function transformSelection(
       ),
     };
   } else if (selection.kind === Kind.INLINE_FRAGMENT) {
-    const transformedSelectionSet = transformRootSelectionSet(
-      context,
-      selection.selectionSet,
-    );
-
     return {
       ...selection,
-      selectionSet: transformedSelectionSet,
+      selectionSet: transformRootSelectionSet(context, selection.selectionSet),
       directives: selection.directives?.map((directive) =>
-        transformMaybeDeferDirective(context, directive, {
-          node: transformedSelectionSet,
-        }),
+        transformMaybeDeferDirective(context, directive),
       ),
     };
   }
@@ -190,9 +179,7 @@ function transformSelection(
   return {
     ...selection,
     directives: selection.directives?.map((directive) =>
-      transformMaybeDeferDirective(context, directive, {
-        fragmentName: selection.name.value,
-      }),
+      transformMaybeDeferDirective(context, directive),
     ),
   };
 }
@@ -200,7 +187,6 @@ function transformSelection(
 function transformMaybeDeferDirective(
   context: RequestTransformationContext,
   directive: DirectiveNode,
-  selectionSet: SelectionSetNodeOrFragmentName,
 ): DirectiveNode {
   const name = directive.name.value;
 
@@ -223,7 +209,6 @@ function transformMaybeDeferDirective(
         const prefixedLabel = `${context.prefix}defer${context.incrementalCounter++}__${originalLabel}`;
         context.deferUsageMap.set(prefixedLabel, {
           originalLabel,
-          selectionSet,
         });
         newArgs.push({
           ...arg,
@@ -242,7 +227,6 @@ function transformMaybeDeferDirective(
     const newLabel = `${context.prefix}defer${context.incrementalCounter++}`;
     context.deferUsageMap.set(newLabel, {
       originalLabel: undefined,
-      selectionSet,
     });
     newArgs.push({
       kind: Kind.ARGUMENT,

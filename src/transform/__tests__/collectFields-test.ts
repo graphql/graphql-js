@@ -15,6 +15,7 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import { validateExecutionArgs } from '../../execution/execute.js';
 
+import { buildTransformationContext } from '../buildTransformationContext.js';
 import { collectFields, collectSubfields } from '../collectFields.js';
 
 describe('collectFields', () => {
@@ -54,8 +55,13 @@ describe('collectFields', () => {
 
     invariant('schema' in validatedExecutionArgs);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );
@@ -78,8 +84,13 @@ describe('collectFields', () => {
 
     invariant('schema' in validatedExecutionArgs);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );
@@ -97,8 +108,13 @@ describe('collectFields', () => {
 
     invariant('schema' in validatedExecutionArgs);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );
@@ -121,8 +137,13 @@ describe('collectFields', () => {
 
     invariant(inlineFragment.kind === Kind.INLINE_FRAGMENT);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );
@@ -148,8 +169,13 @@ describe('collectFields', () => {
 
     invariant('schema' in validatedExecutionArgs);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );
@@ -172,8 +198,13 @@ describe('collectFields', () => {
 
     invariant(inlineFragment.kind === Kind.INLINE_FRAGMENT);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );
@@ -198,8 +229,13 @@ describe('collectFields', () => {
 
     invariant('schema' in validatedExecutionArgs);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );
@@ -209,7 +245,7 @@ describe('collectFields', () => {
     invariant(fieldDetailsList != null);
 
     const { groupedFieldSet: nestedGroupedFieldSet } = collectSubfields(
-      validatedExecutionArgs,
+      transformationContext,
       someObjectType,
       fieldDetailsList,
     );
@@ -240,8 +276,13 @@ describe('collectFields', () => {
 
     invariant('schema' in validatedExecutionArgs);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );
@@ -267,8 +308,13 @@ describe('collectFields', () => {
 
     invariant('schema' in validatedExecutionArgs);
 
-    const { groupedFieldSet } = collectFields(
+    const transformationContext = buildTransformationContext(
       validatedExecutionArgs,
+      '__prefix__',
+    );
+
+    const { groupedFieldSet } = collectFields(
+      transformationContext,
       query,
       validatedExecutionArgs.operation.selectionSet,
     );

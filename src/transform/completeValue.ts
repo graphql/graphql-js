@@ -22,7 +22,6 @@ import {
 import { GraphQLStreamDirective } from '../type/directives.js';
 
 import type { GroupedFieldSet } from '../execution/collectFields.js';
-import type { ValidatedExecutionArgs } from '../execution/execute.js';
 
 import type { TransformationContext } from './buildTransformationContext.js';
 import type { FieldDetails } from './collectFields.js';
@@ -31,10 +30,10 @@ import { groupedFieldSetFromTree } from './groupedFieldSetFromTree.js';
 
 const collectSubfields = memoize3(
   (
-    validatedExecutionArgs: ValidatedExecutionArgs,
+    transformationContext: TransformationContext,
     returnType: GraphQLObjectType,
     fieldDetailsList: ReadonlyArray<FieldDetails>,
-  ) => _collectSubfields(validatedExecutionArgs, returnType, fieldDetailsList),
+  ) => _collectSubfields(transformationContext, returnType, fieldDetailsList),
 );
 
 // eslint-disable-next-line @typescript-eslint/max-params
@@ -142,15 +141,15 @@ function completeObjectValue(
 
     invariant(isObjectType(runtimeType));
 
-    const groupedFieldSetTree = collectSubfields(
-      context.transformedArgs,
-      runtimeType,
-      fieldDetailsList,
-    );
+    const {
+      groupedFieldSet: groupedFieldSetWithoutInlinedDefers,
+      deferredFragmentTree,
+    } = collectSubfields(context, runtimeType, fieldDetailsList);
 
     const groupedFieldSet = groupedFieldSetFromTree(
       context,
-      groupedFieldSetTree,
+      groupedFieldSetWithoutInlinedDefers,
+      deferredFragmentTree,
       path,
     );
 
