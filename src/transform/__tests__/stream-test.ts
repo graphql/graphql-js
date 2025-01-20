@@ -2026,6 +2026,81 @@ describe('Execute: legacy stream directive', () => {
       },
     ]);
   });
+  it('Handles overlapping deferred and non-deferred streams with a non-zero initial count with a slow defer', async () => {
+    const document = parse(`
+      query {
+        nestedObject {
+          nestedFriendList @stream(initialCount: 1) {
+            id
+          }
+        }
+        nestedObject {
+          ... @defer {
+            nestedFriendList @stream(initialCount: 1) {
+              id
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      nestedObject: {
+        async *nestedFriendList() {
+          yield await Promise.resolve({
+            ...friends[0],
+            name: Promise.resolve(friends[0].name),
+          });
+          yield await Promise.resolve(friends[1]);
+          yield await Promise.resolve(friends[2]);
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nestedObject: {
+            nestedFriendList: [{ id: '1' }],
+          },
+        },
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ id: '2' }],
+            path: ['nestedObject', 'nestedFriendList', 1],
+          },
+          {
+            data: {
+              nestedFriendList: [
+                { id: '1', name: 'Luke' },
+                { id: '2', name: 'Han' },
+              ],
+            },
+            path: ['nestedObject'],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ id: '3' }],
+            path: ['nestedObject', 'nestedFriendList', 2],
+          },
+          {
+            items: [{ id: '3', name: 'Leia' }],
+            path: ['nestedObject', 'nestedFriendList', 2],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        hasNext: false,
+      },
+    ]);
+  });
   it('Returns payloads in correct order when parent deferred fragment resolves slower than stream', async () => {
     const { promise: slowFieldPromise, resolve: resolveSlowField } =
       promiseWithResolvers();
