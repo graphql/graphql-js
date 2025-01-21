@@ -1,5 +1,6 @@
 import nextra from 'nextra';
 import path from 'node:path';
+import vercel from './vercel.json' with { type: 'json' }
 
 const withNextra = nextra({
   theme: 'nextra-theme-docs',
@@ -27,6 +28,7 @@ export default withNextra({
     });
     return config;
   },
+  redirects: async () => vercel.redirects,
   output: 'export',
   images: {
     loader: 'custom',
