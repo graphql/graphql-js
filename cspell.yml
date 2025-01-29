@@ -60,6 +60,7 @@ words:
   - svgr
   - ruru
   - oneof
+  - vercel
 
   # used as href anchors
   - graphqlerror
