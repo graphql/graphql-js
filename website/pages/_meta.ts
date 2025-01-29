@@ -1,7 +1,7 @@
 const meta = {
   docs: {
     type: 'page',
-    title: 'Documentation'
+    title: 'Documentation',
   },
   'api-v16': {
     type: 'menu',
