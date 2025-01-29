@@ -1,6 +1,9 @@
 import nextra from 'nextra';
 import path from 'node:path';
-import vercel from './vercel.json';
+import fs from 'node:fs';
+
+const fileContents = fs.readFileSync('./vercel.json', 'utf-8');
+const vercel = JSON.parse(fileContents);
 
 const withNextra = nextra({
   theme: 'nextra-theme-docs',
