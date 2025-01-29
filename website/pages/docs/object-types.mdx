@@ -6,7 +6,7 @@ import { Tabs } from 'nextra/components';
 
 In many cases, you don't want to return a number or a string from an API. You want to return an object that has its own complex behavior. GraphQL is a perfect fit for this.
 
-In GraphQL schema language, the way you define a new object type is the same way we have been defining the `Query` type in our examples. Each object can have fields that return a particular type, and methods that take arguments. For example, in the [Passing Arguments](/passing-arguments/) documentation, we had a method to roll some random dice:
+In GraphQL schema language, the way you define a new object type is the same way we have been defining the `Query` type in our examples. Each object can have fields that return a particular type, and methods that take arguments. For example, in the [Passing Arguments](./passing-arguments) documentation, we had a method to roll some random dice:
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
@@ -369,4 +369,4 @@ If you run this code with `node server.js` and browse to http://localhost:4000/g
 
 This way of defining object types often provides advantages over a traditional REST API. Instead of doing one API request to get basic information about an object, and then multiple subsequent API requests to find out more information about that object, you can get all of that information in one API request. That saves bandwidth, makes your app run faster, and simplifies your client-side logic.
 
-So far, every API we've looked at is designed for returning data. In order to modify stored data or handle complex input, it helps to [learn about mutations and input types](/mutations-and-input-types/).
+So far, every API we've looked at is designed for returning data. In order to modify stored data or handle complex input, it helps to [learn about mutations and input types](./mutations-and-input-types).
