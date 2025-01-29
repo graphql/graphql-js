@@ -1,6 +1,6 @@
 import nextra from 'nextra';
 import path from 'node:path';
-import vercel from './vercel.json' with { type: 'json' }
+import vercel from './vercel.json';
 
 const withNextra = nextra({
   theme: 'nextra-theme-docs',
