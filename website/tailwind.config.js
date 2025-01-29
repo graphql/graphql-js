@@ -4,7 +4,6 @@ module.exports = {
   content: [
     './pages/**/*.{ts,tsx,mdx}',
     './icons/**/*.{ts,tsx,mdx}',
-    './css/**/*.css',
     './theme.config.tsx',
   ],
   theme: {
