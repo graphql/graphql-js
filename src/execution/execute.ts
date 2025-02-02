@@ -43,6 +43,8 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
+  isSemanticNonNullType,
+  isSemanticNullableType,
 } from '../type/definition';
 import {
   SchemaMetaFieldDef,
@@ -115,6 +117,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
+  errorPropagation: boolean;
 }
 
 /**
@@ -152,6 +155,13 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  /**
+   * Set to `false` to disable error propagation. Experimental.
+   * TODO: describe what this does
+   *
+   * @experimental
+   */
+    errorPropagation?: boolean;
 }
 
 /**
@@ -286,6 +296,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    errorPropagation
   } = args;
 
   let operation: OperationDefinitionNode | undefined;
@@ -347,6 +358,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
+    errorPropagation: errorPropagation ?? true,
   };
 }
 
@@ -585,6 +597,7 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    errorPropagation: exeContext.errorPropagation,
   };
 }
 
@@ -656,6 +669,37 @@ function completeValue(
       );
     }
     return completed;
+  }
+
+    // If field type is SemanticNonNull, complete for inner type, and throw field error
+  // if result is null and an error doesn't exist.
+  if (isSemanticNonNullType(returnType)) {
+    const completed = completeValue(
+      exeContext,
+      returnType.ofType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
+    if (completed === null) {
+      throw new Error(
+        `Cannot return null for semantic-non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+      );
+    }
+    return completed;
+  }
+
+  // If field type is SemanticNullable, complete for inner type
+  if (isSemanticNullableType(returnType)) {
+    return completeValue(
+      exeContext,
+      returnType.ofType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
   }
 
   // If result value is null or undefined then return null.

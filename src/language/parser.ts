@@ -51,6 +51,8 @@ import type {
   SelectionNode,
   SelectionSetNode,
   StringValueNode,
+  SemanticNonNullTypeNode,
+  SemanticNullableTypeNode,
   Token,
   TypeNode,
   TypeSystemExtensionNode,
@@ -103,6 +105,18 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+
+  /**
+   * When enabled, the parser will understand and parse semantic nullability
+   * annotations. This means that every type suffixed with `!` will remain
+   * non-nulllable, every type suffxed with `?` will be the classic nullable, and
+   * types without a suffix will be semantically nullable. Semantic nullability
+   * will be the new default when this is enabled. A semantically nullable type
+   * can only be null when there's an error assocaited with the field.
+   *
+   * @experimental
+   */
+  allowSemanticNullability?: boolean;
 }
 
 /**
@@ -258,6 +272,16 @@ export class Parser {
    *   - InputObjectTypeDefinition
    */
   parseDefinition(): DefinitionNode {
+    const directives = this.parseDirectives(false);
+    // If a document-level SemanticNullability directive exists as
+    // the first element in a document, then all parsing will
+    // happen in SemanticNullability mode.
+    for (const directive of directives) {
+      if (directive.name.value === 'SemanticNullability') {
+        this._options.allowSemanticNullability = true;
+      }
+    }
+
     if (this.peek(TokenKind.BRACE_L)) {
       return this.parseOperationDefinition();
     }

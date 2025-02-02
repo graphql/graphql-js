@@ -67,7 +67,9 @@ export function isTypeNode(node: ASTNode): node is TypeNode {
   return (
     node.kind === Kind.NAMED_TYPE ||
     node.kind === Kind.LIST_TYPE ||
-    node.kind === Kind.NON_NULL_TYPE
+    node.kind === Kind.NON_NULL_TYPE ||
+    node.kind === Kind.SEMANTIC_NON_NULL_TYPE ||
+    node.kind === Kind.SEMANTIC_NULLABLE_TYPE
   );
 }
 
