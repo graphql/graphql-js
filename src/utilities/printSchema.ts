@@ -38,16 +38,32 @@ import type { GraphQLSchema } from '../type/schema';
 
 import { astFromValue } from './astFromValue';
 
-export function printSchema(schema: GraphQLSchema): string {
+interface PrintOptions {
+  usingSemanticNullability?: boolean;
+}
+
+export function printSchema(
+  schema: GraphQLSchema,
+  options: PrintOptions = {},
+): string {
   return printFilteredSchema(
     schema,
     (n) => !isSpecifiedDirective(n),
     isDefinedType,
+    options,
   );
 }
 
-export function printIntrospectionSchema(schema: GraphQLSchema): string {
-  return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
+export function printIntrospectionSchema(
+  schema: GraphQLSchema,
+  options: PrintOptions = {},
+): string {
+  return printFilteredSchema(
+    schema,
+    isSpecifiedDirective,
+    isIntrospectionType,
+    options,
+  );
 }
 
 function isDefinedType(type: GraphQLNamedType): boolean {
@@ -58,13 +74,16 @@ function printFilteredSchema(
   schema: GraphQLSchema,
   directiveFilter: (type: GraphQLDirective) => boolean,
   typeFilter: (type: GraphQLNamedType) => boolean,
+  options: PrintOptions,
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
 
-  const usingSemanticNullability = schema.usingSemanticNullability;
+  const usingSemanticNullability =
+    options.usingSemanticNullability ?? schema.usingSemanticNullability;
 
   return [
+    usingSemanticNullability ? '@SemanticNullability' : undefined,
     printSchemaDefinition(schema),
     ...directives.map((directive) => printDirective(directive)),
     ...types.map((type) => printType(type, usingSemanticNullability)),
