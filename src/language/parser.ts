@@ -51,7 +51,6 @@ import type {
   SelectionNode,
   SelectionSetNode,
   SemanticNonNullTypeNode,
-  SemanticNullableTypeNode,
   StringValueNode,
   Token,
   TypeNode,
@@ -795,10 +794,7 @@ export class Parser {
           type,
         });
       } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-        return this.node<SemanticNullableTypeNode>(start, {
-          kind: Kind.SEMANTIC_NULLABLE_TYPE,
-          type,
-        });
+        return type;
       }
 
       return this.node<SemanticNonNullTypeNode>(start, {

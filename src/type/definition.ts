@@ -75,15 +75,6 @@ export type GraphQLType =
       | GraphQLEnumType
       | GraphQLInputObjectType
       | GraphQLList<GraphQLType>
-    >
-  | GraphQLSemanticNullable<
-      | GraphQLScalarType
-      | GraphQLObjectType
-      | GraphQLInterfaceType
-      | GraphQLUnionType
-      | GraphQLEnumType
-      | GraphQLInputObjectType
-      | GraphQLList<GraphQLType>
     >;
 
 export function isType(type: unknown): type is GraphQLType {
@@ -242,32 +233,6 @@ export function assertSemanticNonNullType(
   type: unknown,
 ): GraphQLSemanticNonNull<GraphQLType> {
   if (!isSemanticNonNullType(type)) {
-    throw new Error(
-      `Expected ${inspect(type)} to be a GraphQL Semantic-Non-Null type.`,
-    );
-  }
-  return type;
-}
-
-export function isSemanticNullableType(
-  type: GraphQLInputType,
-): type is GraphQLSemanticNullable<GraphQLInputType>;
-export function isSemanticNullableType(
-  type: GraphQLOutputType,
-): type is GraphQLSemanticNullable<GraphQLOutputType>;
-export function isSemanticNullableType(
-  type: unknown,
-): type is GraphQLSemanticNullable<GraphQLType>;
-export function isSemanticNullableType(
-  type: unknown,
-): type is GraphQLSemanticNullable<GraphQLType> {
-  return instanceOf(type, GraphQLSemanticNullable);
-}
-
-export function assertSemanticNullableType(
-  type: unknown,
-): GraphQLSemanticNullable<GraphQLType> {
-  if (!isSemanticNullableType(type)) {
     throw new Error(
       `Expected ${inspect(type)} to be a GraphQL Semantic-Non-Null type.`,
     );
@@ -546,68 +511,16 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
 }
 
 /**
- * Semantic-Nullable Type Wrapper
- *
- * A semantic-nullable is a wrapping type which points to another type.
- * Semantic-nullable types allow their values to be null.
- *
- * Example:
- *
- * ```ts
- * const RowType = new GraphQLObjectType({
- *   name: 'Row',
- *   fields: () => ({
- *     email: { type: new GraphQLSemanticNullable(GraphQLString) },
- *   })
- * })
- * ```
- * Note: This is equivalent to the unadorned named type that is
- * used by GraphQL when it is not operating in SemanticNullability mode.
- *
- * @experimental
- */
-export class GraphQLSemanticNullable<T extends GraphQLNullableType> {
-  readonly ofType: T;
-
-  constructor(ofType: T) {
-    devAssert(
-      isNullableType(ofType),
-      `Expected ${inspect(ofType)} to be a GraphQL nullable type.`,
-    );
-
-    this.ofType = ofType;
-  }
-
-  get [Symbol.toStringTag]() {
-    return 'GraphQLSemanticNullable';
-  }
-
-  toString(): string {
-    return String(this.ofType) + '?';
-  }
-
-  toJSON(): string {
-    return this.toString();
-  }
-}
-
-/**
  * These types wrap and modify other types
  */
 
 export type GraphQLWrappingType =
   | GraphQLList<GraphQLType>
   | GraphQLNonNull<GraphQLType>
-  | GraphQLSemanticNonNull<GraphQLType>
-  | GraphQLSemanticNullable<GraphQLType>;
+  | GraphQLSemanticNonNull<GraphQLType>;
 
 export function isWrappingType(type: unknown): type is GraphQLWrappingType {
-  return (
-    isListType(type) ||
-    isNonNullType(type) ||
-    isSemanticNonNullType(type) ||
-    isSemanticNullableType(type)
-  );
+  return isListType(type) || isNonNullType(type) || isSemanticNonNullType(type);
 }
 
 export function assertWrappingType(type: unknown): GraphQLWrappingType {
