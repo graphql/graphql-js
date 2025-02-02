@@ -134,7 +134,7 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
 
 export function printType(
   type: GraphQLNamedType,
-  usingSemanticNullability: Maybe<boolean>,
+  usingSemanticNullability?: Maybe<boolean>,
 ): string {
   if (isScalarType(type)) {
     return printScalar(type);
