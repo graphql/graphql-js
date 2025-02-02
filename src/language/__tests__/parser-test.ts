@@ -659,7 +659,7 @@ describe('Parser', () => {
   });
 
   describe('parseDocumentDirective', () => {
-    it('doesnt throw on document-level directive', () => {
+    it('does not throw on document-level directive', () => {
       parse(dedent`
         @SemanticNullability
 
