@@ -161,7 +161,7 @@ export interface ExecutionArgs {
    *
    * @experimental
    */
-    errorPropagation?: boolean;
+  errorPropagation?: boolean;
 }
 
 /**
@@ -296,7 +296,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
-    errorPropagation
+    errorPropagation,
   } = args;
 
   let operation: OperationDefinitionNode | undefined;
@@ -671,7 +671,7 @@ function completeValue(
     return completed;
   }
 
-    // If field type is SemanticNonNull, complete for inner type, and throw field error
+  // If field type is SemanticNonNull, complete for inner type, and throw field error
   // if result is null and an error doesn't exist.
   if (isSemanticNonNullType(returnType)) {
     const completed = completeValue(

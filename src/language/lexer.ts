@@ -251,7 +251,12 @@ function readNextToken(lexer: Lexer, start: number): Token {
       case 0x0021: // !
         return createToken(lexer, TokenKind.BANG, position, position + 1);
       case 0x003f: // ?
-        return createToken(lexer, TokenKind.QUESTION_MARK, position, position + 1);
+        return createToken(
+          lexer,
+          TokenKind.QUESTION_MARK,
+          position,
+          position + 1,
+        );
       case 0x0024: // $
         return createToken(lexer, TokenKind.DOLLAR, position, position + 1);
       case 0x0026: // &

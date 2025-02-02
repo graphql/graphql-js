@@ -417,10 +417,10 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
           }
 
           const mode =
-          nullability === TypeNullability.AUTO
-            ? info.errorPropagation
-              ? TypeNullability.TRADITIONAL
-              : TypeNullability.SEMANTIC
+            nullability === TypeNullability.AUTO
+              ? info.errorPropagation
+                ? TypeNullability.TRADITIONAL
+                : TypeNullability.SEMANTIC
               : nullability;
           return convertOutputTypeToNullabilityMode(field.type, mode);
         },

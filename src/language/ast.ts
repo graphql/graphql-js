@@ -523,7 +523,6 @@ export interface ConstDirectiveNode {
   readonly arguments?: ReadonlyArray<ConstArgumentNode>;
 }
 
-
 export interface SemanticNonNullTypeNode {
   readonly kind: Kind.SEMANTIC_NON_NULL_TYPE;
   readonly loc?: Location;

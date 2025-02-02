@@ -50,9 +50,9 @@ import type {
   SchemaExtensionNode,
   SelectionNode,
   SelectionSetNode,
-  StringValueNode,
   SemanticNonNullTypeNode,
   SemanticNullableTypeNode,
+  StringValueNode,
   Token,
   TypeNode,
   TypeSystemExtensionNode,
@@ -109,10 +109,10 @@ export interface ParseOptions {
   /**
    * When enabled, the parser will understand and parse semantic nullability
    * annotations. This means that every type suffixed with `!` will remain
-   * non-nulllable, every type suffxed with `?` will be the classic nullable, and
+   * non-nullable, every type suffixed with `?` will be the classic nullable, and
    * types without a suffix will be semantically nullable. Semantic nullability
    * will be the new default when this is enabled. A semantically nullable type
-   * can only be null when there's an error assocaited with the field.
+   * can only be null when there's an error associated with the field.
    *
    * @experimental
    */
@@ -786,6 +786,25 @@ export class Parser {
       });
     } else {
       type = this.parseNamedType();
+    }
+
+    if (this._options.allowSemanticNullability) {
+      if (this.expectOptionalToken(TokenKind.BANG)) {
+        return this.node<NonNullTypeNode>(start, {
+          kind: Kind.NON_NULL_TYPE,
+          type,
+        });
+      } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+        return this.node<SemanticNullableTypeNode>(start, {
+          kind: Kind.SEMANTIC_NULLABLE_TYPE,
+          type,
+        });
+      }
+
+      return this.node<SemanticNonNullTypeNode>(start, {
+        kind: Kind.SEMANTIC_NON_NULL_TYPE,
+        type,
+      });
     }
 
     if (this.expectOptionalToken(TokenKind.BANG)) {

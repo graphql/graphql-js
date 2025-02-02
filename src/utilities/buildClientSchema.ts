@@ -22,8 +22,8 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
-  GraphQLUnionType,
   GraphQLSemanticNonNull,
+  GraphQLUnionType,
   isInputType,
   isOutputType,
 } from '../type/definition';

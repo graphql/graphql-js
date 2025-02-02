@@ -32,7 +32,7 @@ describe('Introspection', () => {
     expect(result).to.deep.equal({
       data: {
         __schema: {
-          queryType: { name: 'SomeObject' },
+          queryType: { kind: 'OBJECT', name: 'SomeObject' },
           mutationType: null,
           subscriptionType: null,
           types: [

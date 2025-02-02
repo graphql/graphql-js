@@ -67,24 +67,24 @@ export type GraphQLType =
       | GraphQLInputObjectType
       | GraphQLList<GraphQLType>
     >
-  |  GraphQLSemanticNonNull<
-    | GraphQLScalarType
-    | GraphQLObjectType
-    | GraphQLInterfaceType
-    | GraphQLUnionType
-    | GraphQLEnumType
-    | GraphQLInputObjectType
-    | GraphQLList<GraphQLType>
-  >
+  | GraphQLSemanticNonNull<
+      | GraphQLScalarType
+      | GraphQLObjectType
+      | GraphQLInterfaceType
+      | GraphQLUnionType
+      | GraphQLEnumType
+      | GraphQLInputObjectType
+      | GraphQLList<GraphQLType>
+    >
   | GraphQLSemanticNullable<
-    | GraphQLScalarType
-    | GraphQLObjectType
-    | GraphQLInterfaceType
-    | GraphQLUnionType
-    | GraphQLEnumType
-    | GraphQLInputObjectType
-    | GraphQLList<GraphQLType>
-  >;
+      | GraphQLScalarType
+      | GraphQLObjectType
+      | GraphQLInterfaceType
+      | GraphQLUnionType
+      | GraphQLEnumType
+      | GraphQLInputObjectType
+      | GraphQLList<GraphQLType>
+    >;
 
 export function isType(type: unknown): type is GraphQLType {
   return (
@@ -325,13 +325,15 @@ export type GraphQLOutputType =
       | GraphQLUnionType
       | GraphQLEnumType
       | GraphQLList<GraphQLOutputType>
-    >   | GraphQLSemanticNonNull<
-    | GraphQLScalarType
-    | GraphQLObjectType
-    | GraphQLInterfaceType
-    | GraphQLUnionType
-    | GraphQLEnumType
-    | GraphQLList<GraphQLOutputType> >;
+    >
+  | GraphQLSemanticNonNull<
+      | GraphQLScalarType
+      | GraphQLObjectType
+      | GraphQLInterfaceType
+      | GraphQLUnionType
+      | GraphQLEnumType
+      | GraphQLList<GraphQLOutputType>
+    >;
 
 export function isOutputType(type: unknown): type is GraphQLOutputType {
   return (
