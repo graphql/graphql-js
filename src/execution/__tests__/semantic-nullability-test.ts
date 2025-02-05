@@ -10,7 +10,6 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLSemanticNonNull,
-  GraphQLSemanticNullable,
 } from '../../type/definition';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
@@ -28,7 +27,7 @@ describe('Execute: Handles Semantic Nullability', () => {
   const DataType: GraphQLObjectType = new GraphQLObjectType({
     name: 'DataType',
     fields: () => ({
-      a: { type: new GraphQLSemanticNullable(GraphQLString) },
+      a: { type: GraphQLString },
       b: { type: new GraphQLSemanticNonNull(GraphQLString) },
       c: { type: new GraphQLNonNull(GraphQLString) },
       d: { type: new GraphQLSemanticNonNull(DeepDataType) },

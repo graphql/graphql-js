@@ -54,7 +54,6 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLSemanticNonNull,
-  GraphQLSemanticNullable,
   GraphQLUnionType,
   isEnumType,
   isInputObjectType,
@@ -441,9 +440,6 @@ export function extendSchemaImpl(
     }
     if (node.kind === Kind.SEMANTIC_NON_NULL_TYPE) {
       return new GraphQLSemanticNonNull(getWrappedType(node.type));
-    }
-    if (node.kind === Kind.SEMANTIC_NULLABLE_TYPE) {
-      return new GraphQLSemanticNullable(getWrappedType(node.type));
     }
     return getNamedType(node);
   }

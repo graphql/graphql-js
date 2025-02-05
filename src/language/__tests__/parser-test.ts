@@ -659,7 +659,7 @@ describe('Parser', () => {
   });
 
   describe('parseDocumentDirective', () => {
-    it('doesn\'t throw on document-level directive', () => {
+    it("doesn't throw on document-level directive", () => {
       parse(dedent`
         @SemanticNullability
         type Query {
@@ -690,16 +690,12 @@ describe('Parser', () => {
     it('parses nullable types', () => {
       const result = parseType('MyType?', { allowSemanticNullability: true });
       expectJSON(result).toDeepEqual({
-        kind: Kind.SEMANTIC_NULLABLE_TYPE,
-        loc: { start: 0, end: 7 },
-        type: {
-          kind: Kind.NAMED_TYPE,
+        kind: Kind.NAMED_TYPE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
           loc: { start: 0, end: 6 },
-          name: {
-            kind: Kind.NAME,
-            loc: { start: 0, end: 6 },
-            value: 'MyType',
-          },
+          value: 'MyType',
         },
       });
     });
