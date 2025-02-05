@@ -4,7 +4,6 @@ import type { ASTNode } from './ast';
 import { printBlockString } from './blockString';
 import { Kind } from './kinds';
 import { printString } from './printString';
-import type { ASTReducer } from './visitor';
 import { visit } from './visitor';
 
 /**
