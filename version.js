@@ -6,7 +6,7 @@ exports.versionInfo = exports.version = void 0;
 /**
  * A string containing the version of the GraphQL.js library
  */
-exports.version = '17.0.0-alpha.7';
+exports.version = '17.0.0-alpha.8';
 /**
  * An object containing the components of the GraphQL.js version string
  */
@@ -14,6 +14,6 @@ exports.versionInfo = Object.freeze({
     major: 17,
     minor: 0,
     patch: 0,
-    preReleaseTag: 'alpha.7',
+    preReleaseTag: 'alpha.8',
 });
 //# sourceMappingURL=version.js.map
