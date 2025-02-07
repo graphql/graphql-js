@@ -39,7 +39,7 @@ import { printSchema } from '../printSchema';
 function expectExtensionASTNodes(obj: {
   readonly extensionASTNodes: ReadonlyArray<ASTNode>;
 }) {
-  return expect(obj.extensionASTNodes.map(print).join('\n\n'));
+  return expect(obj.extensionASTNodes.map((node) => print(node)).join('\n\n'));
 }
 
 function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
@@ -51,10 +51,12 @@ function expectSchemaChanges(
   schema: GraphQLSchema,
   extendedSchema: GraphQLSchema,
 ) {
-  const schemaDefinitions = parse(printSchema(schema)).definitions.map(print);
+  const schemaDefinitions = parse(printSchema(schema)).definitions.map((node) =>
+    print(node),
+  );
   return expect(
     parse(printSchema(extendedSchema))
-      .definitions.map(print)
+      .definitions.map((node) => print(node))
       .filter((def) => !schemaDefinitions.includes(def))
       .join('\n\n'),
   );
