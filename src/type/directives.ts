@@ -166,6 +166,17 @@ export const GraphQLSkipDirective: GraphQLDirective = new GraphQLDirective({
 });
 
 /**
+ * Used to indicate that the nullability of the document will be parsed as semantic-non-null types.
+ */
+export const GraphQLSemanticNullabilityDirective: GraphQLDirective =
+  new GraphQLDirective({
+    name: 'SemanticNullability',
+    description:
+      'Indicates that the nullability of the document will be parsed as semantic-non-null types.',
+    locations: [DirectiveLocation.SCHEMA],
+  });
+
+/**
  * Constant string used for default reason for a deprecation.
  */
 export const DEFAULT_DEPRECATION_REASON = 'No longer supported';

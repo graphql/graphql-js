@@ -53,7 +53,7 @@ export function isTypeSubTypeOf(
 
   // If superType is non-null, maybeSubType must also be non-null.
   if (isNonNullType(superType)) {
-    if (isNonNullType(maybeSubType)) {
+    if (isNonNullType(maybeSubType) || isSemanticNonNullType(maybeSubType)) {
       return isTypeSubTypeOf(schema, maybeSubType.ofType, superType.ofType);
     }
     return false;

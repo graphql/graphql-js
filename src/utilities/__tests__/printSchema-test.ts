@@ -782,7 +782,7 @@ describe('Type System Printer', () => {
         name: String!
         description: String
         args(includeDeprecated: Boolean = false): [__InputValue!]!
-        type(nullability: __TypeNullability! = AUTO): __Type!
+        type(nullability: __TypeNullability! = TRADITIONAL): __Type!
         isDeprecated: Boolean!
         deprecationReason: String
       }
@@ -803,20 +803,14 @@ describe('Type System Printer', () => {
         deprecationReason: String
       }
 
-      """TODO"""
+      """
+      This represents the type of nullability we want to return as part of the introspection.
+      """
       enum __TypeNullability {
-        """Determines nullability mode based on errorPropagation mode."""
-        AUTO
-      
         """Turn semantic-non-null types into nullable types."""
         TRADITIONAL
       
-        """Turn non-null types into semantic-non-null types."""
-        SEMANTIC
-      
-        """
-        Render the true nullability in the schema; be prepared for new types of nullability in future!
-        """
+        """Allow for returning semantic-non-null types."""
         FULL
       }
 

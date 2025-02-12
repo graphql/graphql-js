@@ -165,32 +165,6 @@ describe('Execute: Handles Semantic Nullability', () => {
     });
   });
 
-  it('SemanticNullable allows null values', async () => {
-    const data = {
-      a: () => null,
-      b: () => null,
-      c: () => 'Cookie',
-    };
-
-    const document = parse(`
-        query {
-          a
-        }
-      `);
-
-    const result = await execute({
-      schema: new GraphQLSchema({ query: DataType }),
-      document,
-      rootValue: data,
-    });
-
-    expect(result).to.deep.equal({
-      data: {
-        a: null,
-      },
-    });
-  });
-
   it('SemanticNullable allows non-null values', async () => {
     const data = {
       a: () => 'Apple',

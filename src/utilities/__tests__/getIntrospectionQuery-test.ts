@@ -125,6 +125,15 @@ describe('getIntrospectionQuery', () => {
     expectIntrospectionQuery({ oneOf: false }).toNotMatch('isOneOf');
   });
 
+  it('include "nullability" argument on object fields', () => {
+    expect(
+      getIntrospectionQuery({ nullability: 'TRADITIONAL' }),
+    ).to.not.contain('type(nullability:');
+    expect(getIntrospectionQuery({ nullability: 'FULL' })).to.contain(
+      'type(nullability:',
+    );
+  });
+
   it('include deprecated input field and args', () => {
     expectIntrospectionQuery().toMatch('includeDeprecated: true', 2);
 

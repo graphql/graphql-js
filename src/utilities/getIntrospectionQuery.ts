@@ -42,13 +42,11 @@ export interface IntrospectionOptions {
   /**
    * Choose the type of nullability you would like to see.
    *
-   * - AUTO: SEMANTIC if errorPropagation is set to false, otherwise TRADITIONAL
    * - TRADITIONAL: all GraphQLSemanticNonNull will be unwrapped
-   * - SEMANTIC: all GraphQLNonNull will be converted to GraphQLSemanticNonNull
    * - FULL: the true nullability will be returned
    *
    */
-  nullability?: 'AUTO' | 'TRADITIONAL' | 'SEMANTIC' | 'FULL';
+  nullability?: 'TRADITIONAL' | 'FULL';
 }
 
 /**
@@ -63,7 +61,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     schemaDescription: false,
     inputValueDeprecation: false,
     oneOf: false,
-    nullability: null,
+    nullability: 'TRADITIONAL',
     ...options,
   };
 
@@ -118,7 +116,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         args${inputDeprecation('(includeDeprecated: true)')} {
           ...InputValue
         }
-        type${nullability ? `(nullability: ${nullability})` : ''} {
+        type${nullability === 'FULL' ? `(nullability: ${nullability})` : ''} {
           ...TypeRef
         }
         isDeprecated

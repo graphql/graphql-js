@@ -63,6 +63,60 @@ describe('lexicographicSortSchema', () => {
     `);
   });
 
+  it('sort fields w/ semanticNonNull', () => {
+    const sorted = sortSDL(`
+      @SemanticNullability
+
+      input Bar {
+        barB: String!
+        barA: String
+        barC: [String]
+      }
+
+      interface FooInterface {
+        fooB: String!
+        fooA: String
+        fooC: [String]
+      }
+
+      type FooType implements FooInterface {
+        fooC: [String]
+        fooA: String
+        fooB: String!
+      }
+
+      type Query {
+        dummy(arg: Bar): FooType?
+      }
+    `);
+
+    expect(sorted).to.equal(dedent`
+      @SemanticNullability
+
+      input Bar {
+        barA: String
+        barB: String!
+        barC: [String]
+      }
+
+      interface FooInterface {
+        fooA: String
+        fooB: String!
+        fooC: [String]
+      }
+
+      type FooType implements FooInterface {
+        fooA: String
+        fooB: String!
+        fooC: [String]
+      }
+
+      type Query {
+        dummy(arg: Bar): FooType?
+      }
+    `);
+  });
+
   it('sort implemented interfaces', () => {
     const sorted = sortSDL(`
       interface FooA {

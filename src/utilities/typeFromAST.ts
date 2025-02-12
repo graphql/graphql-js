@@ -50,10 +50,12 @@ export function typeFromAST(
       const innerType = typeFromAST(schema, typeNode.type);
       return innerType && new GraphQLNonNull(innerType);
     }
-    case Kind.SEMANTIC_NON_NULL_TYPE: {
-      const innerType = typeFromAST(schema, typeNode.type);
-      return innerType && new GraphQLSemanticNonNull(innerType);
-    }
+    // We only use typeFromAST for fragment/variable type inference
+    // which should not be affected by semantic non-null types
+    // case Kind.SEMANTIC_NON_NULL_TYPE: {
+    //   const innerType = typeFromAST(schema, typeNode.type);
+    //   return innerType && new GraphQLSemanticNonNull(innerType);
+    // }
     case Kind.NAMED_TYPE:
       return schema.getType(typeNode.name.value);
   }

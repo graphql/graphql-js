@@ -206,36 +206,23 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
   },
 });
 
-// TODO: rename enum and options
 enum TypeNullability {
-  AUTO = 'AUTO',
   TRADITIONAL = 'TRADITIONAL',
-  SEMANTIC = 'SEMANTIC',
   FULL = 'FULL',
 }
 
-// TODO: rename
 export const __TypeNullability: GraphQLEnumType = new GraphQLEnumType({
   name: '__TypeNullability',
-  description: 'TODO',
+  description:
+    'This represents the type of nullability we want to return as part of the introspection.',
   values: {
-    AUTO: {
-      value: TypeNullability.AUTO,
-      description:
-        'Determines nullability mode based on errorPropagation mode.',
-    },
     TRADITIONAL: {
       value: TypeNullability.TRADITIONAL,
       description: 'Turn semantic-non-null types into nullable types.',
     },
-    SEMANTIC: {
-      value: TypeNullability.SEMANTIC,
-      description: 'Turn non-null types into semantic-non-null types.',
-    },
     FULL: {
       value: TypeNullability.FULL,
-      description:
-        'Render the true nullability in the schema; be prepared for new types of nullability in future!',
+      description: 'Allow for returning semantic-non-null types.',
     },
   },
 });
@@ -408,22 +395,11 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         args: {
           nullability: {
             type: new GraphQLNonNull(__TypeNullability),
-            defaultValue: TypeNullability.AUTO,
+            defaultValue: TypeNullability.TRADITIONAL,
           },
         },
-        resolve: (field, { nullability }, _context, info) => {
-          if (nullability === TypeNullability.FULL) {
-            return field.type;
-          }
-
-          const mode =
-            nullability === TypeNullability.AUTO
-              ? info.errorPropagation
-                ? TypeNullability.TRADITIONAL
-                : TypeNullability.SEMANTIC
-              : nullability;
-          return convertOutputTypeToNullabilityMode(field.type, mode);
-        },
+        resolve: (field, { nullability }, _context) =>
+          convertOutputTypeToNullabilityMode(field.type, nullability),
       },
       isDeprecated: {
         type: new GraphQLNonNull(GraphQLBoolean),
@@ -436,10 +412,9 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
     } as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
 });
 
-// TODO: move this elsewhere, rename, memoize
 function convertOutputTypeToNullabilityMode(
   type: GraphQLType,
-  mode: TypeNullability.TRADITIONAL | TypeNullability.SEMANTIC,
+  mode: TypeNullability,
 ): GraphQLType {
   if (mode === TypeNullability.TRADITIONAL) {
     if (isNonNullType(type)) {
@@ -455,7 +430,12 @@ function convertOutputTypeToNullabilityMode(
     }
     return type;
   }
-  if (isNonNullType(type) || isSemanticNonNullType(type)) {
+
+  if (isNonNullType(type)) {
+    return new GraphQLNonNull(
+      convertOutputTypeToNullabilityMode(type.ofType, mode),
+    );
+  } else if (isSemanticNonNullType(type)) {
     return new GraphQLSemanticNonNull(
       convertOutputTypeToNullabilityMode(type.ofType, mode),
     );
@@ -464,6 +444,7 @@ function convertOutputTypeToNullabilityMode(
       convertOutputTypeToNullabilityMode(type.ofType, mode),
     );
   }
+
   return type;
 }
 

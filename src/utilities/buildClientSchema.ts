@@ -138,6 +138,7 @@ export function buildClientSchema(
       const nullableType = getType(nullableRef);
       return new GraphQLNonNull(assertNullableType(nullableType));
     }
+
     if (typeRef.kind === TypeKind.SEMANTIC_NON_NULL) {
       const nullableRef = typeRef.ofType;
       if (!nullableRef) {
