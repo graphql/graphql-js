@@ -151,8 +151,6 @@ describe('Execute: Handles Semantic Nullability', () => {
   it('SemanticNullable allows non-null values', async () => {
     const data = {
       a: () => 'Apple',
-      b: () => null,
-      c: () => 'Cookie',
     };
 
     const document = parse(`
