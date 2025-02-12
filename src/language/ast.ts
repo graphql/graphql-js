@@ -529,11 +529,7 @@ export interface SemanticNonNullTypeNode {
 
 /** Type Reference */
 
-export type TypeNode =
-  | NamedTypeNode
-  | ListTypeNode
-  | NonNullTypeNode
-  | SemanticNonNullTypeNode;
+export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 
 export interface NamedTypeNode {
   readonly kind: Kind.NAMED_TYPE;
@@ -544,7 +540,7 @@ export interface NamedTypeNode {
 export interface ListTypeNode {
   readonly kind: Kind.LIST_TYPE;
   readonly loc?: Location;
-  readonly type: TypeNode;
+  readonly type: TypeNode | SemanticNonNullTypeNode;
 }
 
 export interface NonNullTypeNode {
@@ -609,7 +605,7 @@ export interface FieldDefinitionNode {
   readonly description?: StringValueNode;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<InputValueDefinitionNode>;
-  readonly type: TypeNode;
+  readonly type: TypeNode | SemanticNonNullTypeNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
 }
 

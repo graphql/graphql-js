@@ -36,9 +36,7 @@ describe('Execute: Handles Semantic Nullability', () => {
 
   it('SemanticNonNull throws error on null without error', async () => {
     const data = {
-      a: () => 'Apple',
       b: () => null,
-      c: () => 'Cookie',
     };
 
     const document = parse(`
@@ -53,11 +51,8 @@ describe('Execute: Handles Semantic Nullability', () => {
       rootValue: data,
     });
 
-    const executable = document.definitions?.values().next()
-      .value as ExecutableDefinitionNode;
-    const selectionSet = executable.selectionSet.selections
-      .values()
-      .next().value;
+    const executable = document.definitions[0] as ExecutableDefinitionNode;
+    const selectionSet = executable.selectionSet.selections[0];
 
     expect(result).to.deep.equal({
       data: {
@@ -77,11 +72,9 @@ describe('Execute: Handles Semantic Nullability', () => {
 
   it('SemanticNonNull succeeds on null with error', async () => {
     const data = {
-      a: () => 'Apple',
       b: () => {
         throw new Error('Something went wrong');
       },
-      c: () => 'Cookie',
     };
 
     const document = parse(`
@@ -90,11 +83,8 @@ describe('Execute: Handles Semantic Nullability', () => {
         }
       `);
 
-    const executable = document.definitions?.values().next()
-      .value as ExecutableDefinitionNode;
-    const selectionSet = executable.selectionSet.selections
-      .values()
-      .next().value;
+    const executable = document.definitions[0] as ExecutableDefinitionNode;
+    const selectionSet = executable.selectionSet.selections[0];
 
     const result = await execute({
       schema: new GraphQLSchema({ query: DataType }),
@@ -121,9 +111,6 @@ describe('Execute: Handles Semantic Nullability', () => {
     };
 
     const data = {
-      a: () => 'Apple',
-      b: () => null,
-      c: () => 'Cookie',
       d: () => deepData,
     };
 
@@ -141,13 +128,9 @@ describe('Execute: Handles Semantic Nullability', () => {
       rootValue: data,
     });
 
-    const executable = document.definitions?.values().next()
-      .value as ExecutableDefinitionNode;
-    const dSelectionSet = executable.selectionSet.selections.values().next()
-      .value as FieldNode;
-    const fSelectionSet = dSelectionSet.selectionSet?.selections
-      .values()
-      .next().value;
+    const executable = document.definitions[0] as ExecutableDefinitionNode;
+    const dSelectionSet = executable.selectionSet.selections[0] as FieldNode;
+    const fSelectionSet = dSelectionSet.selectionSet?.selections[0];
 
     expect(result).to.deep.equal({
       data: {

@@ -7,11 +7,7 @@ import type {
 import { Kind } from '../language/kinds';
 
 import type { GraphQLNamedType, GraphQLType } from '../type/definition';
-import {
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLSemanticNonNull,
-} from '../type/definition';
+import { GraphQLList, GraphQLNonNull } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
 /**
@@ -43,19 +39,13 @@ export function typeFromAST(
 ): GraphQLType | undefined {
   switch (typeNode.kind) {
     case Kind.LIST_TYPE: {
-      const innerType = typeFromAST(schema, typeNode.type);
+      const innerType = typeFromAST(schema, typeNode.type as TypeNode);
       return innerType && new GraphQLList(innerType);
     }
     case Kind.NON_NULL_TYPE: {
       const innerType = typeFromAST(schema, typeNode.type);
       return innerType && new GraphQLNonNull(innerType);
     }
-    // We only use typeFromAST for fragment/variable type inference
-    // which should not be affected by semantic non-null types
-    // case Kind.SEMANTIC_NON_NULL_TYPE: {
-    //   const innerType = typeFromAST(schema, typeNode.type);
-    //   return innerType && new GraphQLSemanticNonNull(innerType);
-    // }
     case Kind.NAMED_TYPE:
       return schema.getType(typeNode.name.value);
   }

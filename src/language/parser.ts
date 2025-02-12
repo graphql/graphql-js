@@ -184,7 +184,7 @@ export function parseConstValue(
 export function parseType(
   source: string | Source,
   options?: ParseOptions | undefined,
-): TypeNode {
+): TypeNode | SemanticNonNullTypeNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
   const type = parser.parseTypeReference();
@@ -403,7 +403,8 @@ export class Parser {
     return this.node<VariableDefinitionNode>(this._lexer.token, {
       kind: Kind.VARIABLE_DEFINITION,
       variable: this.parseVariable(),
-      type: (this.expectToken(TokenKind.COLON), this.parseTypeReference()),
+      type: (this.expectToken(TokenKind.COLON),
+      this.parseTypeReference()) as TypeNode,
       defaultValue: this.expectOptionalToken(TokenKind.EQUALS)
         ? this.parseConstValueLiteral()
         : undefined,
@@ -773,7 +774,7 @@ export class Parser {
    *   - ListType
    *   - NonNullType
    */
-  parseTypeReference(): TypeNode {
+  parseTypeReference(): TypeNode | SemanticNonNullTypeNode {
     const start = this._lexer.token;
     let type;
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
@@ -781,7 +782,7 @@ export class Parser {
       this.expectToken(TokenKind.BRACKET_R);
       type = this.node<ListTypeNode>(start, {
         kind: Kind.LIST_TYPE,
-        type: innerType,
+        type: innerType as TypeNode,
       });
     } else {
       type = this.parseNamedType();
@@ -992,7 +993,7 @@ export class Parser {
       kind: Kind.INPUT_VALUE_DEFINITION,
       description,
       name,
-      type,
+      type: type as TypeNode,
       defaultValue,
       directives,
     });
