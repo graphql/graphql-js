@@ -39,7 +39,7 @@ export function typeFromAST(
 ): GraphQLType | undefined {
   switch (typeNode.kind) {
     case Kind.LIST_TYPE: {
-      const innerType = typeFromAST(schema, typeNode.type as TypeNode);
+      const innerType = typeFromAST(schema, typeNode.type);
       return innerType && new GraphQLList(innerType);
     }
     case Kind.NON_NULL_TYPE: {

@@ -24,9 +24,8 @@ import type {
   ScalarTypeExtensionNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
-  SemanticNonNullTypeNode,
+  SchemaOutputTypeNode,
   TypeDefinitionNode,
-  TypeNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
 } from '../language/ast';
@@ -432,9 +431,7 @@ export function extendSchemaImpl(
     return type;
   }
 
-  function getWrappedType(
-    node: TypeNode | SemanticNonNullTypeNode,
-  ): GraphQLType {
+  function getWrappedType(node: SchemaOutputTypeNode): GraphQLType {
     if (node.kind === Kind.LIST_TYPE) {
       return new GraphQLList(getWrappedType(node.type));
     }
