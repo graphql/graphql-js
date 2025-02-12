@@ -664,12 +664,14 @@ function findConflict(
   }
   const directives1 = node1.directives ?? [];
   const directives2 = node2.directives ?? [];
-  if (!sameStreams(directives1, varMap1, directives2, varMap2)) {
-    return [
-      [responseName, 'they have differing stream directives'],
-      [node1],
-      [node2],
-    ];
+  const overlappingStreamReason = hasNoOverlappingStreams(
+    directives1,
+    varMap1,
+    directives2,
+    varMap2,
+  );
+  if (overlappingStreamReason !== undefined) {
+    return [[responseName, overlappingStreamReason], [node1], [node2]];
   }
   // The return type for each field.
   const type1 = def1?.type;
@@ -774,28 +776,27 @@ function getStreamDirective(
 ): DirectiveNode | undefined {
   return directives.find((directive) => directive.name.value === 'stream');
 }
-function sameStreams(
+function hasNoOverlappingStreams(
   directives1: ReadonlyArray<DirectiveNode>,
   varMap1: Map<string, ValueNode> | undefined,
   directives2: ReadonlyArray<DirectiveNode>,
   varMap2: Map<string, ValueNode> | undefined,
-): boolean {
+): string | undefined {
   const stream1 = getStreamDirective(directives1);
   const stream2 = getStreamDirective(directives2);
   if (!stream1 && !stream2) {
     // both fields do not have streams
-    return true;
+    return;
   } else if (stream1 && stream2) {
     // check if both fields have equivalent streams
-    return sameArguments(
-      stream1.arguments,
-      varMap1,
-      stream2.arguments,
-      varMap2,
-    );
+    if (sameArguments(stream1.arguments, varMap1, stream2.arguments, varMap2)) {
+      // This was allowed in previous alpha versions of `graphql-js`.
+      return 'they have overlapping stream directives. See https://github.com/graphql/defer-stream-wg/discussions/100';
+    }
+    return 'they have overlapping stream directives';
   }
   // fields have a mix of stream and no stream
-  return false;
+  return 'they have overlapping stream directives';
 }
 // Two types conflict if both types could not apply to a value simultaneously.
 // Composite types are ignored as their individual field types will be compared
