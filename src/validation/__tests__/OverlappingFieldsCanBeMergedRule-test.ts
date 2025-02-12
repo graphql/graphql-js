@@ -98,13 +98,22 @@ describe('Validate: Overlapping fields can be merged', () => {
     `);
   });
 
-  it('Same stream directives supported', () => {
-    expectValid(`
+  it('stream directive used on different instances of the same field', () => {
+    expectErrors(`
       fragment differentDirectivesWithDifferentAliases on Dog {
         name @stream(label: "streamLabel", initialCount: 1)
         name @stream(label: "streamLabel", initialCount: 1)
       }
-    `);
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have overlapping stream directives. See https://github.com/graphql/defer-stream-wg/discussions/100. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
   });
 
   it('different stream directive label', () => {
@@ -116,7 +125,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "name" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },
@@ -134,7 +143,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "name" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },
@@ -152,7 +161,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "name" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },
@@ -170,7 +179,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "name" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },
@@ -188,7 +197,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "name" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },
@@ -206,7 +215,7 @@ describe('Validate: Overlapping fields can be merged', () => {
     `).toDeepEqual([
       {
         message:
-          'Fields "name" conflict because they have differing stream directives. Use different aliases on the fields to fetch both if this was intentional.',
+          'Fields "name" conflict because they have overlapping stream directives. Use different aliases on the fields to fetch both if this was intentional.',
         locations: [
           { line: 3, column: 9 },
           { line: 4, column: 9 },
@@ -216,12 +225,21 @@ describe('Validate: Overlapping fields can be merged', () => {
   });
 
   it('different stream directive both missing args', () => {
-    expectValid(`
+    expectErrors(`
       fragment conflictingArgs on Dog {
         name @stream
         name @stream
       }
-    `);
+    `).toDeepEqual([
+      {
+        message:
+          'Fields "name" conflict because they have overlapping stream directives. See https://github.com/graphql/defer-stream-wg/discussions/100. Use different aliases on the fields to fetch both if this was intentional.',
+        locations: [
+          { line: 3, column: 9 },
+          { line: 4, column: 9 },
+        ],
+      },
+    ]);
   });
 
   it('Same aliases with different field targets', () => {
