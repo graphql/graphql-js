@@ -502,7 +502,7 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableType> {
   }
 
   toString(): string {
-    return String(this.ofType);
+    return String(this.ofType) + '*';
   }
 
   toJSON(): string {

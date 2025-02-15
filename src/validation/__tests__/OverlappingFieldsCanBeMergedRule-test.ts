@@ -1195,27 +1195,26 @@ describe('Validate: Overlapping fields can be merged', () => {
 
   describe('semantic non-null', () => {
     const schema = buildSchema(`
-      @SemanticNullability
       type Query {
-        box: Box
+        box: Box*
       }
 
       interface Box {
-        id: String
+        id: String*
       }
 
       type IntBox implements Box {
-        id: String
-        field: Int
-        field2: Int?
-        field3: Int
+        id: String*
+        field: Int*
+        field2: Int
+        field3: Int*
       }
 
       type StringBox implements Box {
-        id: String
-        field: String
-        field2: Int
-        field3: Int
+        id: String*
+        field: String*
+        field2: Int*
+        field3: Int*
       }
     `);
 
@@ -1273,7 +1272,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       ).toDeepEqual([
         {
           message:
-            'Fields "field" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+            'Fields "field" conflict because they return conflicting types "Int*" and "String*". Use different aliases on the fields to fetch both if this was intentional.',
           locations: [
             { line: 5, column: 17 },
             { line: 8, column: 17 },
@@ -1300,7 +1299,7 @@ describe('Validate: Overlapping fields can be merged', () => {
       ).toDeepEqual([
         {
           message:
-            'Fields "field2" conflict because they return conflicting types "Int" and "Int". Use different aliases on the fields to fetch both if this was intentional.',
+            'Fields "field2" conflict because they return conflicting types "Int*" and "Int". Use different aliases on the fields to fetch both if this was intentional.',
           locations: [
             { line: 5, column: 17 },
             { line: 8, column: 17 },
@@ -1326,9 +1325,8 @@ describe('Validate: Overlapping fields can be merged', () => {
         `,
       ).toDeepEqual([
         {
-          // TODO: inspect currently returns "Int" for both types
           message:
-            'Fields "field2" conflict because they return conflicting types "Int" and "Int". Use different aliases on the fields to fetch both if this was intentional.',
+            'Fields "field2" conflict because they return conflicting types "Int" and "Int*". Use different aliases on the fields to fetch both if this was intentional.',
           locations: [
             { line: 5, column: 17 },
             { line: 8, column: 17 },

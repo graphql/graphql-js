@@ -18,11 +18,9 @@ import type {
   GraphQLUnionType,
 } from '../type/definition';
 import {
-  GraphQLSemanticNonNull,
   isEnumType,
   isInputObjectType,
   isInterfaceType,
-  isNullableType,
   isObjectType,
   isScalarType,
   isUnionType,
@@ -61,19 +59,11 @@ function printFilteredSchema(
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
-  const hasSemanticNonNull = types.some(
-    (type) =>
-      (isObjectType(type) || isInterfaceType(type)) &&
-      Object.values(type.getFields()).some(
-        (field) => field.type instanceof GraphQLSemanticNonNull,
-      ),
-  );
 
   return [
-    hasSemanticNonNull ? '@SemanticNullability' : '',
     printSchemaDefinition(schema),
     ...directives.map((directive) => printDirective(directive)),
-    ...types.map((type) => printType(type, hasSemanticNonNull)),
+    ...types.map((type) => printType(type)),
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -138,18 +128,15 @@ function isSchemaOfCommonNames(schema: GraphQLSchema): boolean {
   return true;
 }
 
-export function printType(
-  type: GraphQLNamedType,
-  hasSemanticNonNull: boolean = false,
-): string {
+export function printType(type: GraphQLNamedType): string {
   if (isScalarType(type)) {
     return printScalar(type);
   }
   if (isObjectType(type)) {
-    return printObject(type, hasSemanticNonNull);
+    return printObject(type);
   }
   if (isInterfaceType(type)) {
-    return printInterface(type, hasSemanticNonNull);
+    return printInterface(type);
   }
   if (isUnionType(type)) {
     return printUnion(type);
@@ -180,27 +167,21 @@ function printImplementedInterfaces(
     : '';
 }
 
-function printObject(
-  type: GraphQLObjectType,
-  hasSemanticNonNull: boolean,
-): string {
+function printObject(type: GraphQLObjectType): string {
   return (
     printDescription(type) +
     `type ${type.name}` +
     printImplementedInterfaces(type) +
-    printFields(type, hasSemanticNonNull)
+    printFields(type)
   );
 }
 
-function printInterface(
-  type: GraphQLInterfaceType,
-  hasSemanticNonNull: boolean,
-): string {
+function printInterface(type: GraphQLInterfaceType): string {
   return (
     printDescription(type) +
     `interface ${type.name}` +
     printImplementedInterfaces(type) +
-    printFields(type, hasSemanticNonNull)
+    printFields(type)
   );
 }
 
@@ -236,10 +217,7 @@ function printInputObject(type: GraphQLInputObjectType): string {
   );
 }
 
-function printFields(
-  type: GraphQLObjectType | GraphQLInterfaceType,
-  hasSemanticNonNull: boolean,
-): string {
+function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
   const fields = Object.values(type.getFields()).map(
     (f, i) =>
       printDescription(f, '  ', !i) +
@@ -247,9 +225,7 @@ function printFields(
       f.name +
       printArgs(f.args, '  ') +
       ': ' +
-      (hasSemanticNonNull && isNullableType(f.type)
-        ? `${f.type}?`
-        : String(f.type)) +
+      String(f.type) +
       printDeprecated(f.deprecationReason),
   );
   return printBlock(fields);

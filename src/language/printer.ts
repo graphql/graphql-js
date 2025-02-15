@@ -2,22 +2,14 @@ import type { Maybe } from '../jsutils/Maybe';
 
 import type { ASTNode } from './ast';
 import { printBlockString } from './blockString';
-import { Kind } from './kinds';
 import { printString } from './printString';
 import { visit } from './visitor';
-
-/**
- * Configuration options to control parser behavior
- */
-export interface PrintOptions {
-  useSemanticNullability?: boolean;
-}
 
 /**
  * Converts an AST into a string, using one set of reasonable
  * formatting rules.
  */
-export function print(ast: ASTNode, options: PrintOptions = {}): string {
+export function print(ast: ASTNode): string {
   return visit<string>(ast, {
     Name: { leave: (node) => node.value },
     Variable: { leave: (node) => '$' + node.name },
@@ -131,19 +123,11 @@ export function print(ast: ASTNode, options: PrintOptions = {}): string {
     // Type
 
     NamedType: {
-      leave: ({ name }, _, parent) =>
-        parent &&
-        !Array.isArray(parent) &&
-        ((parent as ASTNode).kind === Kind.SEMANTIC_NON_NULL_TYPE ||
-          (parent as ASTNode).kind === Kind.NON_NULL_TYPE)
-          ? name
-          : options?.useSemanticNullability
-          ? `${name}?`
-          : name,
+      leave: ({ name }) => name,
     },
     ListType: { leave: ({ type }) => '[' + type + ']' },
     NonNullType: { leave: ({ type }) => type + '!' },
-    SemanticNonNullType: { leave: ({ type }) => type },
+    SemanticNonNullType: { leave: ({ type }) => type + '*' },
 
     // Type System Definitions
 

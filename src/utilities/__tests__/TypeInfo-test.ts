@@ -460,11 +460,10 @@ describe('visitWithTypeInfo', () => {
 
   it('supports traversals of semantic non-null types', () => {
     const schema = buildSchema(`
-      @SemanticNullability
       type Query {
         id: String!
-        name: String
-        something: String?
+        name: String*
+        something: String
       }
     `);
 
@@ -506,10 +505,10 @@ describe('visitWithTypeInfo', () => {
       ['enter', 'Name', 'id', 'String!'],
       ['leave', 'Name', 'id', 'String!'],
       ['leave', 'Field', null, 'String!'],
-      ['enter', 'Field', null, 'String'],
-      ['enter', 'Name', 'name', 'String'],
-      ['leave', 'Name', 'name', 'String'],
-      ['leave', 'Field', null, 'String'],
+      ['enter', 'Field', null, 'String*'],
+      ['enter', 'Name', 'name', 'String*'],
+      ['leave', 'Name', 'name', 'String*'],
+      ['leave', 'Field', null, 'String*'],
       ['enter', 'Field', null, 'String'],
       ['enter', 'Name', 'something', 'String'],
       ['leave', 'Name', 'something', 'String'],

@@ -1798,11 +1798,10 @@ describe('Introspection', () => {
   describe('semantic nullability', () => {
     it('casts semantic-non-null types to nullable types in traditional mode', () => {
       const schema = buildSchema(`
-        @SemanticNullability
         type Query {
           someField: String!
-          someField2: String
-          someField3: String?
+          someField2: String*
+          someField3: String
         }
       `);
 
@@ -1847,11 +1846,10 @@ describe('Introspection', () => {
 
     it('returns semantic-non-null types in full mode', () => {
       const schema = buildSchema(`
-        @SemanticNullability
         type Query {
           someField: String!
-          someField2: String
-          someField3: String?
+          someField2: String*
+          someField3: String
         }
       `);
 

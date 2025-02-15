@@ -104,18 +104,6 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
-
-  /**
-   * When enabled, the parser will understand and parse semantic nullability
-   * annotations. This means that every type suffixed with `!` will remain
-   * non-nullable, every type suffixed with `?` will be the classic nullable, and
-   * types without a suffix will be semantically nullable. Semantic nullability
-   * will be the new default when this is enabled. A semantically nullable type
-   * can only be null when there's an error associated with the field.
-   *
-   * @experimental
-   */
-  allowSemanticNullability?: boolean;
 }
 
 /**
@@ -187,7 +175,7 @@ export function parseType(
 ): TypeNode | SemanticNonNullTypeNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
-  const type = parser.parseTypeReference();
+  const type = parser.parseTypeReference(true);
   parser.expectToken(TokenKind.EOF);
   return type;
 }
@@ -271,16 +259,6 @@ export class Parser {
    *   - InputObjectTypeDefinition
    */
   parseDefinition(): DefinitionNode {
-    const directives = this.parseDirectives(false);
-    // If a document-level SemanticNullability directive exists as
-    // the first element in a document, then all parsing will
-    // happen in SemanticNullability mode.
-    for (const directive of directives) {
-      if (directive.name.value === 'SemanticNullability') {
-        this._options.allowSemanticNullability = true;
-      }
-    }
-
     if (this.peek(TokenKind.BRACE_L)) {
       return this.parseOperationDefinition();
     }
@@ -404,7 +382,7 @@ export class Parser {
       kind: Kind.VARIABLE_DEFINITION,
       variable: this.parseVariable(),
       type: (this.expectToken(TokenKind.COLON),
-      this.parseTypeReference()) as TypeNode,
+      this.parseTypeReference(false)) as TypeNode,
       defaultValue: this.expectOptionalToken(TokenKind.EQUALS)
         ? this.parseConstValueLiteral()
         : undefined,
@@ -774,11 +752,13 @@ export class Parser {
    *   - ListType
    *   - NonNullType
    */
-  parseTypeReference(): TypeNode | SemanticNonNullTypeNode {
+  parseTypeReference(
+    allowSemanticNonNull: boolean,
+  ): TypeNode | SemanticNonNullTypeNode {
     const start = this._lexer.token;
     let type;
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
-      const innerType = this.parseTypeReference();
+      const innerType = this.parseTypeReference(allowSemanticNonNull);
       this.expectToken(TokenKind.BRACKET_R);
       type = this.node<ListTypeNode>(start, {
         kind: Kind.LIST_TYPE,
@@ -788,25 +768,17 @@ export class Parser {
       type = this.parseNamedType();
     }
 
-    if (this._options.allowSemanticNullability) {
-      if (this.expectOptionalToken(TokenKind.BANG)) {
-        return this.node<NonNullTypeNode>(start, {
-          kind: Kind.NON_NULL_TYPE,
-          type,
-        });
-      } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
-        return type;
-      }
-
-      return this.node<SemanticNonNullTypeNode>(start, {
-        kind: Kind.SEMANTIC_NON_NULL_TYPE,
-        type,
-      });
-    }
-
     if (this.expectOptionalToken(TokenKind.BANG)) {
       return this.node<NonNullTypeNode>(start, {
         kind: Kind.NON_NULL_TYPE,
+        type,
+      });
+    } else if (
+      allowSemanticNonNull &&
+      this.expectOptionalToken(TokenKind.STAR)
+    ) {
+      return this.node<SemanticNonNullTypeNode>(start, {
+        kind: Kind.SEMANTIC_NON_NULL_TYPE,
         type,
       });
     }
@@ -951,7 +923,7 @@ export class Parser {
     const name = this.parseName();
     const args = this.parseArgumentDefs();
     this.expectToken(TokenKind.COLON);
-    const type = this.parseTypeReference();
+    const type = this.parseTypeReference(true);
     const directives = this.parseConstDirectives();
     return this.node<FieldDefinitionNode>(start, {
       kind: Kind.FIELD_DEFINITION,
@@ -983,7 +955,7 @@ export class Parser {
     const description = this.parseDescription();
     const name = this.parseName();
     this.expectToken(TokenKind.COLON);
-    const type = this.parseTypeReference();
+    const type = this.parseTypeReference(false);
     let defaultValue;
     if (this.expectOptionalToken(TokenKind.EQUALS)) {
       defaultValue = this.parseConstValueLiteral();

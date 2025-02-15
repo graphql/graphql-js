@@ -988,11 +988,9 @@ describe('Type System: build schema from introspection', () => {
   describe('SemanticNullability', () => {
     it('should build a client schema with semantic-non-null types', () => {
       const sdl = dedent`
-        @SemanticNullability
-
         type Query {
-          foo: String
-          bar: String?
+          foo: String*
+          bar: String
         }
       `;
       const schema = buildSchema(sdl, { assumeValid: true });
@@ -1027,10 +1025,8 @@ describe('Type System: build schema from introspection', () => {
 
     it('should throw when semantic-non-null types are too deep', () => {
       const sdl = dedent`
-        @SemanticNullability
-
         type Query {
-          bar: [[[[[[String?]]]]]]?
+          bar: [[[[[[String]*]*]*]*]*]
         }
       `;
       const schema = buildSchema(sdl, { assumeValid: true });
