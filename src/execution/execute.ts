@@ -116,7 +116,6 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  errorPropagation: boolean;
 }
 
 /**
@@ -154,13 +153,6 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  /**
-   * Set to `false` to disable error propagation. Experimental.
-   * TODO: describe what this does
-   *
-   * @experimental
-   */
-  errorPropagation?: boolean;
 }
 
 /**
@@ -295,7 +287,6 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
-    errorPropagation,
   } = args;
 
   let operation: OperationDefinitionNode | undefined;
@@ -357,7 +348,6 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
-    errorPropagation: errorPropagation ?? true,
   };
 }
 
@@ -596,7 +586,6 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    errorPropagation: exeContext.errorPropagation,
   };
 }
 
