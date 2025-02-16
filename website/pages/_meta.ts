@@ -24,6 +24,7 @@ const meta = {
     title: 'FAQ',
   },
   'going-to-production': '',
+  errors: '',
   'api-v16': {
     type: 'menu',
     title: 'API',

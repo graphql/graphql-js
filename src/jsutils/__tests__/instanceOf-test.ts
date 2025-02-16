@@ -70,10 +70,10 @@ describe('instanceOf', () => {
     const Foo2 = getFoo();
 
     expect(() => instanceOf(new Foo1(), Foo2)).to.throw(
-      /^Cannot use Foo "{}" from another module or realm./m,
+      /Cannot use Foo from another module or realm/m,
     );
     expect(() => instanceOf(new Foo2(), Foo1)).to.throw(
-      /^Cannot use Foo "{}" from another module or realm./m,
+      /Cannot use Foo from another module or realm/m,
     );
   });
 });

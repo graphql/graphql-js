@@ -1,5 +1,8 @@
 {
-  "*.{js,ts}": ["eslint --max-warnings 0 --fix", "prettier --write"],
+  "*.{js,ts}": [
+    "eslint --max-warnings 0 --fix --no-warn-ignored",
+    "prettier --write"
+  ],
   "*.json": "prettier --write",
   "*.md": "prettier --write"
 }
