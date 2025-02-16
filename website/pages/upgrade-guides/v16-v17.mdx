@@ -1,0 +1,162 @@
+---
+title: Upgrading from v16 to v17
+sidebarTitle: v16 to v17
+---
+
+import { Tabs } from 'nextra/components';
+
+# Breaking changes
+
+## Default values
+
+GraphQL schemas allow default values for input fields and arguments. Historically, GraphQL.js did not rigorously validate or coerce these
+defaults during schema construction, leading to potential runtime errors or inconsistencies. For example:
+
+- A default value of "5" (string) for an Int-type argument would pass schema validation but fail at runtime.
+- Internal serialization methods like astFromValue could produce invalid ASTs if inputs were not properly coerced.
+
+With the new changes default values will be validated and coerced during schema construction.
+
+```graphql
+input ExampleInput {
+  value: Int = "invalid"  # Now triggers a validation error
+}
+```
+
+This goes hand-in-hand with the deprecation of `astFromValue` in favor of `valueToLiteral`.
+
+```ts
+// Before (deprecated)
+const defaultValue = astFromValue(internalValue, type);
+// After
+const defaultValue = valueToLiteral(externalValue, type);
+```
+
+If you want to continue using the old behavior, you can use `externalDefaultValue` rather than `defaultValue` in your schema definitions.
+
+## GraphQLError constructor arguments
+
+The `GraphQLError` constructor now only accepts a message and options object as arguments. Previously, it also accepted positional arguments.
+
+```diff
+- new GraphQLError('message', 'source', 'positions', 'path', 'originalError', 'extensions');
++ new GraphQLError('message', { source, positions, path, originalError, extensions });
+```
+
+## `createSourceEventStream` arguments
+
+The `createSourceEventStream` function now only accepts an object as an argument. Previously, it also accepted positional arguments.
+
+```diff
+- createSourceEventStream(schema, document, rootValue, contextValue, variableValues, operationName);
++ createSourceEventStream({ schema, document, rootValue, contextValue, variableValues, operationName });
+```
+
+## `execute` will error for incremental delivery
+
+The `execute` function will now throw an error if it sees a `@defer` or `@stream` directive. Use `experimentalExecuteIncrementally` instead.
+If you know you are dealing with incremental delivery requests, you can replace the import.
+
+```diff
+- import { execute } from 'graphql';
++ import { experimentalExecuteIncrementally as execute } from 'graphql';
+```
+
+## Remove incremental delivery support from `subscribe`
+
+In case you have fragments that you use with `defer/stream` that end up in a subscription,
+use the `if` argument of the directive to disable it in your subscription operation
+
+## `subscribe` return type
+
+The `subscribe` function can now also return a non-Promise value, previously this was only a Promise.
+This shouldn't change a lot as `await value` will still work as expected. This could lead to
+some typing inconsistencies though.
+
+## Remove `singleResult` from incremental results
+
+You can remove branches that check for `singleResult` in your code, as it is no longer used.
+
+## Node support
+
+Dropped support for Node 14 (subject to change)
+
+## Removed `TokenKindEnum`, `KindEnum` and `DirectiveLocationEnum` types
+
+We have removed the `TokenKindEnum`, `KindEnum` and `DirectiveLocationEnum` types,
+use `Kind`, `TokenKind` and `DirectiveLocation` instead. https://github.com/graphql/graphql-js/pull/3579
+
+## Removed `graphql/subscription` module
+
+use `graphql/execution` instead for subscriptions, all execution related exports have been
+unified there.
+
+## Removed `GraphQLInterfaceTypeNormalizedConfig` export
+
+Use `ReturnType<GraphQLInterfaceType['toConfig']>` if you really need this
+
+## Empty AST collections will be undefined
+
+Empty AST collections will be presented by `undefined` rather than an empty array.
+
+## `Info.variableValues`
+
+The shape of `Info.variableValues` has changed to be an object containing
+`sources` and `coerced` as keys.
+
+A Source contains the `signature` and provided `value` pre-coercion for the
+variable. A `signature` is an object containing the `name`, `input-type` and
+`defaultValue` for the variable.
+
+## Stream directive can't be on multiple instances of the same field
+
+The `@stream` directive can't be on multiple instances of the same field,
+this won't pass `validate` anymore.
+
+See https://github.com/graphql/graphql-js/pull/4342
+
+## Stream initialCount becomes non-nullable
+
+The `initialCount` argument of the `@stream` directive is now non-nullable.
+
+See https://github.com/graphql/graphql-js/pull/4322
+
+
+## Removals
+
+- Removed deprecated `getOperationType` function, use `getRootType` on the `GraphQLSchema` instance instead
+- Removed deprecated `getVisitFn` function, use `getEnterLeaveForKind` instead
+- Removed deprecated `printError` and `formatError` utilities, you can use `toString` or `toJSON` on the error as a replacement
+- Removed deprecated `assertValidName` and `isValidNameError` utilities, use `assertName` instead
+- Removed deprecated `assertValidExecutionArguments` function, use `assertValidSchema` instead
+- Removed deprecated `getFieldDefFn` from `TypeInfo`
+- Removed deprecated `TypeInfo` from `validate` https://github.com/graphql/graphql-js/pull/4187
+
+## Deprecations
+
+- Deprecated  `astFromValue` use `valueToLiteral` instead, when leveraging `valueToLiteral` ensure
+  that you are working with externally provided values i.e. the SDL provided defaultValue to a variable.
+- Deprecated `valueFormAST` use `coerceInputLiteral` instead
+
+## New Features
+
+- Added `hideSuggestions` option to `execute`/`validate`/`subscribe`/... to hide schema-suggestions in error messages
+- Added `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods;
+  the `abortSignal` can also be passed to field resolvers to cancel asynchronous work that they initiate.
+- `extensions` support `symbol` keys, in addition to the normal string keys.
+
+## New Experimental Features
+
+### Experimental Support for Incremental Delivery
+
+- [Spec PR](https://github.com/graphql/graphql-spec/pull/1110) / [RFC](https://github.com/graphql/graphql-wg/blob/main/rfcs/DeferStream.md)
+- enabled only when using `experimentalExecuteIncrementally()`, use of a schema or operation with `@defer`/`@stream` directives within `execute()` will now throw.
+- enable early execution with the new `enableEarlyExecution` configuration option for `experimentalExecuteIncrementally()`.
+
+### Experimental Support for Fragment Arguments
+
+- [Spec PR](https://github.com/graphql/graphql-spec/pull/1081)
+- enable with the new `experimentalFragmentArguments` configuration option for `parse()`.
+- new experimental `Kind.FRAGMENT_ARGUMENT` for visiting
+- new experimental `TypeInfo` methods and options for handling fragment arguments.
+- coerce AST via new function `coerceInputLiteral()` with experimental fragment variables argument (as opposed to deprecated `valueFromAST()` function).
