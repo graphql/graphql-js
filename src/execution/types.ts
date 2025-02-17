@@ -37,12 +37,12 @@ export interface FormattedExecutionResult<
 export interface ExperimentalIncrementalExecutionResults<
   TInitial = ObjMap<unknown>,
   TData = ObjMap<unknown>,
-  TItems = ReadonlyArray<unknown>,
+  TIncrementalItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   initialResult: InitialIncrementalExecutionResult<TInitial, TExtensions>;
   subsequentResults: AsyncGenerator<
-    SubsequentIncrementalExecutionResult<TData, TItems, TExtensions>,
+    SubsequentIncrementalExecutionResult<TData, TIncrementalItem, TExtensions>,
     void,
     void
   >;
@@ -70,11 +70,13 @@ export interface FormattedInitialIncrementalExecutionResult<
 
 export interface SubsequentIncrementalExecutionResult<
   TData = ObjMap<unknown>,
-  TItems = ReadonlyArray<unknown>,
+  TIncrementalItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   pending?: ReadonlyArray<PendingResult>;
-  incremental?: ReadonlyArray<IncrementalResult<TData, TItems, TExtensions>>;
+  incremental?: ReadonlyArray<
+    IncrementalResult<TData, TIncrementalItem, TExtensions>
+  >;
   completed?: ReadonlyArray<CompletedResult>;
   hasNext: boolean;
   extensions?: TExtensions;
@@ -82,13 +84,13 @@ export interface SubsequentIncrementalExecutionResult<
 
 export interface FormattedSubsequentIncrementalExecutionResult<
   TData = ObjMap<unknown>,
-  TItems = ReadonlyArray<unknown>,
+  TIncrementalItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   hasNext: boolean;
   pending?: ReadonlyArray<PendingResult>;
   incremental?: ReadonlyArray<
-    FormattedIncrementalResult<TData, TItems, TExtensions>
+    FormattedIncrementalResult<TData, TIncrementalItem, TExtensions>
   >;
   completed?: ReadonlyArray<FormattedCompletedResult>;
   extensions?: TExtensions;
@@ -119,26 +121,26 @@ export interface FormattedIncrementalDeferResult<
   extensions?: TExtensions;
 }
 
-interface StreamItemsRecordResult<TItems = ReadonlyArray<unknown>> {
+interface StreamItemsRecordResult<TIncrementalItem = unknown> {
   errors?: ReadonlyArray<GraphQLError>;
-  items: TItems;
+  items: ReadonlyArray<TIncrementalItem>;
 }
 
 export interface IncrementalStreamResult<
-  TItems = ReadonlyArray<unknown>,
+  TIncrementalItem = unknown,
   TExtensions = ObjMap<unknown>,
-> extends StreamItemsRecordResult<TItems> {
+> extends StreamItemsRecordResult<TIncrementalItem> {
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
 
 export interface FormattedIncrementalStreamResult<
-  TItems = Array<unknown>,
+  TIncrementalItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
-  items: TItems;
+  items: ReadonlyArray<TIncrementalItem>;
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
@@ -146,19 +148,19 @@ export interface FormattedIncrementalStreamResult<
 
 export type IncrementalResult<
   TData = ObjMap<unknown>,
-  TItems = ReadonlyArray<unknown>,
+  TIncrementalItem = unknown,
   TExtensions = ObjMap<unknown>,
 > =
   | IncrementalDeferResult<TData, TExtensions>
-  | IncrementalStreamResult<TItems, TExtensions>;
+  | IncrementalStreamResult<TIncrementalItem, TExtensions>;
 
 export type FormattedIncrementalResult<
   TData = ObjMap<unknown>,
-  TItems = ReadonlyArray<unknown>,
+  TIncrementalItem = unknown,
   TExtensions = ObjMap<unknown>,
 > =
   | FormattedIncrementalDeferResult<TData, TExtensions>
-  | FormattedIncrementalStreamResult<TItems, TExtensions>;
+  | FormattedIncrementalStreamResult<TIncrementalItem, TExtensions>;
 
 export interface PendingResult {
   id: string;
