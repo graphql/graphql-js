@@ -4,6 +4,11 @@ sidebarTitle: v16 to v17
 ---
 
 import { Tabs } from 'nextra/components';
+import { Callout } from 'nextra/components'
+ 
+<Callout type="info" emoji="ℹ️">
+  Currently GraphQL v17 is in alpha, this guide is based on the alpha release and is subject to change.
+</Callout>
 
 # Breaking changes
 
@@ -32,7 +37,8 @@ const defaultValue = astFromValue(internalValue, type);
 const defaultValue = valueToLiteral(externalValue, type);
 ```
 
-If you want to continue using the old behavior, you can use `externalDefaultValue` rather than `defaultValue` in your schema definitions.
+If you want to continue using the old behavior, you can use `defaultValue` in your schema definitions. The new
+behavior will be exposed as `default: { literal: <literal> }`.
 
 ## GraphQLError constructor arguments
 
