@@ -28,7 +28,7 @@ input ExampleInput {
 }
 ```
 
-This goes hand-in-hand with the deprecation of `astFromValue` in favor of `valueToLiteral`.
+This goes hand-in-hand with the deprecation of `astFromValue` in favor of `valueToLiteral` or `default: { value: <externalValue> }`.
 
 ```ts
 // Before (deprecated)
@@ -127,6 +127,18 @@ The `initialCount` argument of the `@stream` directive is now non-nullable.
 
 See https://github.com/graphql/graphql-js/pull/4322
 
+## GraphQLSchemas converted to configuration may no longer be assumed valid
+
+The `assumeValid` config property exported by the `GraphQLSchema.toConfig()` method now passes through the original
+flag passed on creation of the `GraphQLSchema`.
+Previously, the `assumeValid` property would be to `true` if validation had been run, potentially concealing the original intent.
+
+See https://github.com/graphql/graphql-js/pull/4244 and https://github.com/graphql/graphql-js/issues/3448
+
+## `coerceInputValue` returns `undefined` on error
+
+`coerceInputValue` now aborts early when an error occurs, to optimize execution speed on the happy path.
+Use the `validateInputValue` helper to retrieve the actual errors.
 
 ## Removals
 
@@ -143,15 +155,10 @@ See https://github.com/graphql/graphql-js/pull/4322
 - Deprecated  `astFromValue` use `valueToLiteral` instead, when leveraging `valueToLiteral` ensure
   that you are working with externally provided values i.e. the SDL provided defaultValue to a variable.
 - Deprecated `valueFromAST` use `coerceInputLiteral` instead
+- Deprecated `findBreakingChanges()` and `findDangerousChanges()`. Use `findSchemaChanges()` instead, which can also be used to find safe changes.
+- Deprecated `serialize`. `parseValue`, and `parseLiteral` properties on scalar type configuration. Use `coerceOutputValue`, `coerceInputValue`, and `coerceInputLiteral` instead.
 
-## New Features
-
-- Added `hideSuggestions` option to `execute`/`validate`/`subscribe`/... to hide schema-suggestions in error messages
-- Added `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods;
-  the `abortSignal` can also be passed to field resolvers to cancel asynchronous work that they initiate.
-- `extensions` support `symbol` keys, in addition to the normal string keys.
-
-## New Experimental Features
+## Experimental Features
 
 ### Experimental Support for Incremental Delivery
 
@@ -166,3 +173,15 @@ See https://github.com/graphql/graphql-js/pull/4322
 - new experimental `Kind.FRAGMENT_ARGUMENT` for visiting
 - new experimental `TypeInfo` methods and options for handling fragment arguments.
 - coerce AST via new function `coerceInputLiteral()` with experimental fragment variables argument (as opposed to deprecated `valueFromAST()` function).
+
+## Features
+
+- Added `hideSuggestions` option to `execute`/`validate`/`subscribe`/... to hide schema-suggestions in error messages
+- Added `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods;
+  the `abortSignal` can also be passed to field resolvers to cancel asynchronous work that they initiate.
+- `extensions` support `symbol` keys, in addition to the normal string keys.
+- Added ability for resolver functions to return async iterables.
+- Added `perEventExecutor` execution option to allows specifying a custom executor for subscription source stream events, which can be useful for preparing a per event execution context argument.
+- Added `validateInputValue` and `validateInputLiteral` helpers to validate input values and literals, respectively.
+- Added `replaceVariableValues` helper to replace variables within complex scalars uses as inputs. Internally, this allows variables embedded within complex scalars to finally use the correct default values.
+- Added new `printDirective` helper.
