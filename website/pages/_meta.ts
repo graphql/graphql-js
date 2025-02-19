@@ -3,6 +3,16 @@ const meta = {
     type: 'page',
     title: 'Documentation',
   },
+  'upgrade-guides': {
+    type: 'menu',
+    title: 'Upgrade Guides',
+    items: {
+      'v16-v17': {
+        title: 'v16 to v17',
+        href: '/upgrade-guides/v16-v17',
+      },
+    },
+  },
   'api-v16': {
     type: 'menu',
     title: 'API',
