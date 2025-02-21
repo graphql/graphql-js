@@ -45,8 +45,7 @@ import {
   isObjectType,
 } from '../type/definition.js';
 import {
-  ErrorAction,
-  GraphQLOnErrorDirective,
+  GraphQLDisableErrorPropagationDirective,
   GraphQLStreamDirective,
 } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
@@ -320,9 +319,12 @@ export function executeQueryOrMutationOrSubscriptionEvent(
 }
 
 function errorPropagation(operation: OperationDefinitionNode): boolean {
-  const value = getDirectiveValues(GraphQLOnErrorDirective, operation);
+  const directiveNode = operation.directives?.find(
+    (directive) =>
+      directive.name.value === GraphQLDisableErrorPropagationDirective.name,
+  );
 
-  return value?.action !== ErrorAction.NULL;
+  return directiveNode === undefined;
 }
 
 export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(

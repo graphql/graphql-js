@@ -9,7 +9,6 @@ import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
 
 import type { DirectiveDefinitionNode } from '../language/ast.js';
 import { DirectiveLocation } from '../language/directiveLocation.js';
-import { Kind } from '../language/kinds.js';
 
 import { assertName } from './assertName.js';
 import type {
@@ -17,11 +16,7 @@ import type {
   GraphQLFieldNormalizedConfigArgumentMap,
   GraphQLSchemaElement,
 } from './definition.js';
-import {
-  GraphQLArgument,
-  GraphQLEnumType,
-  GraphQLNonNull,
-} from './definition.js';
+import { GraphQLArgument, GraphQLNonNull } from './definition.js';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
 
 /**
@@ -282,51 +277,16 @@ export const GraphQLOneOfDirective: GraphQLDirective = new GraphQLDirective({
 });
 
 /**
- * Possible error handling actions.
+ * Disables error propagation (experimental).
  */
-export const ErrorAction = {
-  PROPAGATE: 'PROPAGATE' as const,
-  NULL: 'NULL' as const,
-} as const;
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export type ErrorAction = (typeof ErrorAction)[keyof typeof ErrorAction];
-
-export const _ErrorAction = new GraphQLEnumType({
-  name: '_ErrorAction',
-  description: 'Possible error handling actions.',
-  values: {
-    PROPAGATE: {
-      value: ErrorAction.PROPAGATE,
-      description:
-        'Non-nullable positions that error cause the error to propagate to the nearest nullable ancestor position. The error is added to the "errors" list.',
-    },
-    NULL: {
-      value: ErrorAction.NULL,
-      description:
-        'Positions that error are replaced with a `null` and an error is added to the "errors" list.',
-    },
-  },
-});
-
-/**
- * Controls how the executor handles errors.
- */
-export const GraphQLOnErrorDirective = new GraphQLDirective({
-  name: 'onError',
-  description: 'Controls how the executor handles errors.',
+export const GraphQLDisableErrorPropagationDirective = new GraphQLDirective({
+  name: 'experimental_disableErrorPropagation',
+  description: 'Disables error propagation.',
   locations: [
     DirectiveLocation.QUERY,
     DirectiveLocation.MUTATION,
     DirectiveLocation.SUBSCRIPTION,
   ],
-  args: {
-    action: {
-      type: new GraphQLNonNull(_ErrorAction),
-      description: 'The action to execute when a field error is encountered.',
-      default: { literal: { kind: Kind.ENUM, value: 'PROPAGATE' } },
-    },
-  },
 });
 
 /**
