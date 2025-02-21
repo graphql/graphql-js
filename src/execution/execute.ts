@@ -44,7 +44,11 @@ import {
   isNonNullType,
   isObjectType,
 } from '../type/definition.js';
-import { GraphQLStreamDirective } from '../type/directives.js';
+import {
+  ErrorAction,
+  GraphQLOnErrorDirective,
+  GraphQLStreamDirective,
+} from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import { assertValidSchema } from '../type/validate.js';
 
@@ -170,6 +174,7 @@ export interface ExecutionContext {
   abortSignalListener: AbortSignalListener | undefined;
   completed: boolean;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
+  propagateErrors: boolean;
 }
 
 interface IncrementalContext {
@@ -314,6 +319,12 @@ export function executeQueryOrMutationOrSubscriptionEvent(
   return ensureSinglePayload(result);
 }
 
+function propagateErrors(operation: OperationDefinitionNode): boolean {
+  const value = getDirectiveValues(GraphQLOnErrorDirective, operation);
+
+  return value?.action !== ErrorAction.NULL;
+}
+
 export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
@@ -326,6 +337,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       : undefined,
     completed: false,
     cancellableStreams: undefined,
+    propagateErrors: propagateErrors(validatedExecutionArgs.operation),
   };
   try {
     const {
@@ -976,7 +988,7 @@ function handleFieldError(
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType)) {
+  if (exeContext.propagateErrors && isNonNullType(returnType)) {
     throw error;
   }
 
