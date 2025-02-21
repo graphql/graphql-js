@@ -174,7 +174,7 @@ export interface ExecutionContext {
   abortSignalListener: AbortSignalListener | undefined;
   completed: boolean;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
-  propagateErrors: boolean;
+  errorPropagation: boolean;
 }
 
 interface IncrementalContext {
@@ -319,7 +319,7 @@ export function executeQueryOrMutationOrSubscriptionEvent(
   return ensureSinglePayload(result);
 }
 
-function propagateErrors(operation: OperationDefinitionNode): boolean {
+function errorPropagation(operation: OperationDefinitionNode): boolean {
   const value = getDirectiveValues(GraphQLOnErrorDirective, operation);
 
   return value?.action !== ErrorAction.NULL;
@@ -337,7 +337,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       : undefined,
     completed: false,
     cancellableStreams: undefined,
-    propagateErrors: propagateErrors(validatedExecutionArgs.operation),
+    errorPropagation: errorPropagation(validatedExecutionArgs.operation),
   };
   try {
     const {
@@ -988,7 +988,7 @@ function handleFieldError(
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-  if (exeContext.propagateErrors && isNonNullType(returnType)) {
+  if (exeContext.errorPropagation && isNonNullType(returnType)) {
     throw error;
   }
 
