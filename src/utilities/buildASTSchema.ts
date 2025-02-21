@@ -46,7 +46,17 @@ export function buildASTSchema(
     assertValidSDL(documentAST);
   }
 
+  let useSemanticNullability;
+  for (const definition of documentAST.definitions) {
+    if (definition.kind === Kind.DIRECTIVE_DEFINITION) {
+      if (definition.name.value === 'SemanticNullability') {
+        useSemanticNullability = true;
+      }
+    }
+  }
+
   const emptySchemaConfig = {
+    useSemanticNullability,
     description: undefined,
     types: [],
     directives: [],
@@ -102,6 +112,7 @@ export function buildSchema(
   const document = parse(source, {
     noLocation: options?.noLocation,
     allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
+    useSemanticNullability: options?.useSemanticNullability,
   });
 
   return buildASTSchema(document, {
