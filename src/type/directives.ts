@@ -304,7 +304,7 @@ export const _ErrorAction = new GraphQLEnumType({
     NULL: {
       value: ErrorAction.NULL,
       description:
-        'Positions that error are replaced with a `null` and an error is added to the "errors list.',
+        'Positions that error are replaced with a `null` and an error is added to the "errors" list.',
     },
   },
 });
