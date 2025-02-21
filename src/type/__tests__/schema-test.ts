@@ -301,6 +301,7 @@ describe('Type System: Schema', () => {
       '__TypeKind',
       '__Field',
       '__InputValue',
+      '__TypeNullability',
       '__EnumValue',
       '__Directive',
       '__DirectiveLocation',
