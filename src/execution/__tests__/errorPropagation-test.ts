@@ -1,13 +1,9 @@
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
-
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
-
 import { parse } from '../../language/parser.js';
-
 import { buildSchema } from '../../utilities/buildASTSchema.js';
-
 import { execute } from '../execute.js';
 import type { ExecutionResult } from '../types.js';
 
