@@ -277,6 +277,19 @@ export const GraphQLOneOfDirective: GraphQLDirective = new GraphQLDirective({
 });
 
 /**
+ * Disables error propagation (experimental).
+ */
+export const GraphQLDisableErrorPropagationDirective = new GraphQLDirective({
+  name: 'experimental_disableErrorPropagation',
+  description: 'Disables error propagation.',
+  locations: [
+    DirectiveLocation.QUERY,
+    DirectiveLocation.MUTATION,
+    DirectiveLocation.SUBSCRIPTION,
+  ],
+});
+
+/**
  * The full list of specified directives.
  */
 export const specifiedDirectives: ReadonlyArray<GraphQLDirective> =
