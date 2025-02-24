@@ -14,7 +14,7 @@ import { locatedError } from "../error/locatedError.mjs";
 import { OperationTypeNode } from "../language/ast.mjs";
 import { Kind } from "../language/kinds.mjs";
 import { isAbstractType, isLeafType, isListType, isNonNullType, isObjectType, } from "../type/definition.mjs";
-import { GraphQLStreamDirective } from "../type/directives.mjs";
+import { GraphQLDisableErrorPropagationDirective, GraphQLStreamDirective, } from "../type/directives.mjs";
 import { assertValidSchema } from "../type/validate.mjs";
 import { AbortSignalListener, cancellableIterable, cancellablePromise, } from "./AbortSignalListener.mjs";
 import { buildExecutionPlan } from "./buildExecutionPlan.mjs";
@@ -118,6 +118,10 @@ export function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs
     const result = experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
     return ensureSinglePayload(result);
 }
+function errorPropagation(operation) {
+    const directiveNode = operation.directives?.find((directive) => directive.name.value === GraphQLDisableErrorPropagationDirective.name);
+    return directiveNode === undefined;
+}
 export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
     const abortSignal = validatedExecutionArgs.abortSignal;
     const exeContext = {
@@ -128,6 +132,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedE
             : undefined,
         completed: false,
         cancellableStreams: undefined,
+        errorPropagation: errorPropagation(validatedExecutionArgs.operation),
     };
     try {
         const { schema, fragments, rootValue, operation, variableValues, hideSuggestions, } = validatedExecutionArgs;
@@ -477,7 +482,7 @@ function handleFieldError(rawError, exeContext, returnType, fieldDetailsList, pa
     const error = locatedError(rawError, toNodes(fieldDetailsList), pathToArray(path));
     // If the field type is non-nullable, then it is resolved without any
     // protection from errors, however it still properly locates the error.
-    if (isNonNullType(returnType)) {
+    if (exeContext.errorPropagation && isNonNullType(returnType)) {
         throw error;
     }
     // Otherwise, error protection is applied, logging the error and resolving

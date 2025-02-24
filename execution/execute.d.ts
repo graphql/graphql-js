@@ -57,6 +57,7 @@ export interface ExecutionContext {
     abortSignalListener: AbortSignalListener | undefined;
     completed: boolean;
     cancellableStreams: Set<CancellableStreamRecord> | undefined;
+    errorPropagation: boolean;
 }
 export interface ExecutionArgs {
     schema: GraphQLSchema;

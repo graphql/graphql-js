@@ -131,6 +131,10 @@ function executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
     const result = experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
     return ensureSinglePayload(result);
 }
+function errorPropagation(operation) {
+    const directiveNode = operation.directives?.find((directive) => directive.name.value === directives_js_1.GraphQLDisableErrorPropagationDirective.name);
+    return directiveNode === undefined;
+}
 function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs) {
     const abortSignal = validatedExecutionArgs.abortSignal;
     const exeContext = {
@@ -141,6 +145,7 @@ function experimentalExecuteQueryOrMutationOrSubscriptionEvent(validatedExecutio
             : undefined,
         completed: false,
         cancellableStreams: undefined,
+        errorPropagation: errorPropagation(validatedExecutionArgs.operation),
     };
     try {
         const { schema, fragments, rootValue, operation, variableValues, hideSuggestions, } = validatedExecutionArgs;
@@ -490,7 +495,7 @@ function handleFieldError(rawError, exeContext, returnType, fieldDetailsList, pa
     const error = (0, locatedError_js_1.locatedError)(rawError, toNodes(fieldDetailsList), (0, Path_js_1.pathToArray)(path));
     // If the field type is non-nullable, then it is resolved without any
     // protection from errors, however it still properly locates the error.
-    if ((0, definition_js_1.isNonNullType)(returnType)) {
+    if (exeContext.errorPropagation && (0, definition_js_1.isNonNullType)(returnType)) {
         throw error;
     }
     // Otherwise, error protection is applied, logging the error and resolving

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.specifiedDirectives = exports.GraphQLOneOfDirective = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLStreamDirective = exports.GraphQLDeferDirective = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
+exports.specifiedDirectives = exports.GraphQLDisableErrorPropagationDirective = exports.GraphQLOneOfDirective = exports.GraphQLSpecifiedByDirective = exports.GraphQLDeprecatedDirective = exports.DEFAULT_DEPRECATION_REASON = exports.GraphQLStreamDirective = exports.GraphQLDeferDirective = exports.GraphQLSkipDirective = exports.GraphQLIncludeDirective = exports.GraphQLDirective = void 0;
 exports.isDirective = isDirective;
 exports.assertDirective = assertDirective;
 exports.isSpecifiedDirective = isSpecifiedDirective;
@@ -193,6 +193,18 @@ exports.GraphQLOneOfDirective = new GraphQLDirective({
     description: 'Indicates exactly one field must be supplied and this field must not be `null`.',
     locations: [directiveLocation_js_1.DirectiveLocation.INPUT_OBJECT],
     args: {},
+});
+/**
+ * Disables error propagation (experimental).
+ */
+exports.GraphQLDisableErrorPropagationDirective = new GraphQLDirective({
+    name: 'experimental_disableErrorPropagation',
+    description: 'Disables error propagation.',
+    locations: [
+        directiveLocation_js_1.DirectiveLocation.QUERY,
+        directiveLocation_js_1.DirectiveLocation.MUTATION,
+        directiveLocation_js_1.DirectiveLocation.SUBSCRIPTION,
+    ],
 });
 /**
  * The full list of specified directives.

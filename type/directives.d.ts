@@ -86,6 +86,10 @@ export declare const GraphQLSpecifiedByDirective: GraphQLDirective;
  */
 export declare const GraphQLOneOfDirective: GraphQLDirective;
 /**
+ * Disables error propagation (experimental).
+ */
+export declare const GraphQLDisableErrorPropagationDirective: GraphQLDirective;
+/**
  * The full list of specified directives.
  */
 export declare const specifiedDirectives: ReadonlyArray<GraphQLDirective>;
