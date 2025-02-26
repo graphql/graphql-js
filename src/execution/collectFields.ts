@@ -78,6 +78,7 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
   hideSuggestions: boolean,
+  forbidSkipInclude = false,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -95,23 +96,21 @@ export function collectFields(
     forbiddenDirectiveInstances: [],
   };
 
-  collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
+  collectFieldsImpl(
+    context,
+    selectionSet,
+    groupedFieldSet,
+    newDeferUsages,
+    undefined,
+    undefined,
+    forbidSkipInclude,
+  );
   return {
     groupedFieldSet,
     newDeferUsages,
     forbiddenDirectiveInstances: context.forbiddenDirectiveInstances,
   };
 }
-
-/**
- * This variable is the empty variables used during the validation phase (where
- * no variables exist) for field collection; if a `@skip` or `@include`
- * directive is ever seen when `variableValues` is set to this, it should
- * throw.
- */
-export const VALIDATION_PHASE_EMPTY_VARIABLES: VariableValues = Object.freeze(
-  Object.create(null),
-);
 
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
@@ -134,6 +133,7 @@ export function collectSubfields(
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
+  forbiddenDirectiveInstances: ReadonlyArray<DirectiveNode>;
 } {
   const context: CollectFieldsContext = {
     schema,
@@ -177,6 +177,7 @@ function collectFieldsImpl(
   newDeferUsages: Array<DeferUsage>,
   deferUsage?: DeferUsage,
   fragmentVariableValues?: VariableValues,
+  forbidSkipInclude = false,
 ): void {
   const {
     schema,
@@ -197,6 +198,7 @@ function collectFieldsImpl(
             variableValues,
             fragmentVariableValues,
             hideSuggestions,
+            forbidSkipInclude,
           )
         ) {
           continue;
@@ -216,6 +218,7 @@ function collectFieldsImpl(
             variableValues,
             fragmentVariableValues,
             hideSuggestions,
+            forbidSkipInclude,
           ) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
@@ -263,6 +266,7 @@ function collectFieldsImpl(
             variableValues,
             fragmentVariableValues,
             hideSuggestions,
+            forbidSkipInclude,
           )
         ) {
           continue;
@@ -364,14 +368,12 @@ function shouldIncludeNode(
   variableValues: VariableValues,
   fragmentVariableValues: VariableValues | undefined,
   hideSuggestions: Maybe<boolean>,
+  forbidSkipInclude: boolean,
 ): boolean {
   const skipDirectiveNode = node.directives?.find(
     (directive) => directive.name.value === GraphQLSkipDirective.name,
   );
-  if (
-    skipDirectiveNode &&
-    variableValues === VALIDATION_PHASE_EMPTY_VARIABLES
-  ) {
+  if (skipDirectiveNode && forbidSkipInclude) {
     context.forbiddenDirectiveInstances.push(skipDirectiveNode);
     return false;
   }
@@ -391,10 +393,7 @@ function shouldIncludeNode(
   const includeDirectiveNode = node.directives?.find(
     (directive) => directive.name.value === GraphQLIncludeDirective.name,
   );
-  if (
-    includeDirectiveNode &&
-    variableValues === VALIDATION_PHASE_EMPTY_VARIABLES
-  ) {
+  if (includeDirectiveNode && forbidSkipInclude) {
     context.forbiddenDirectiveInstances.push(includeDirectiveNode);
     return false;
   }

@@ -10,10 +10,8 @@ import type {
   FieldDetailsList,
   FragmentDetails,
 } from '../../execution/collectFields.js';
-import {
-  collectFields,
-  VALIDATION_PHASE_EMPTY_VARIABLES,
-} from '../../execution/collectFields.js';
+import { collectFields } from '../../execution/collectFields.js';
+import type { VariableValues } from '../../execution/values.js';
 
 import type { ValidationContext } from '../ValidationContext.js';
 
@@ -40,7 +38,7 @@ export function SingleFieldSubscriptionsRule(
         const subscriptionType = schema.getSubscriptionType();
         if (subscriptionType) {
           const operationName = node.name ? node.name.value : null;
-          const variableValues = VALIDATION_PHASE_EMPTY_VARIABLES;
+          const variableValues: VariableValues = Object.create(null);
           const document = context.getDocument();
           const fragments: ObjMap<FragmentDetails> = Object.create(null);
           for (const definition of document.definitions) {
@@ -56,6 +54,7 @@ export function SingleFieldSubscriptionsRule(
               subscriptionType,
               node.selectionSet,
               context.hideSuggestions,
+              true,
             );
           if (forbiddenDirectiveInstances.length > 0) {
             context.reportError(
