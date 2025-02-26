@@ -23,8 +23,8 @@ const express = require('express');
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`type Query { hello: String } `);
 
-// The rootValue provides a resolver function for each API endpoint
-const rootValue = {
+// The root provides a resolver function for each API endpoint
+const root = {
   hello() {
     return 'Hello world!';
   },
@@ -63,8 +63,8 @@ const schema = new GraphQLSchema({
   }),
 });
 
-// The rootValue provides a resolver function for each API endpoint
-const rootValue = {
+// The root provides a resolver function for each API endpoint
+const root = {
   hello() {
     return 'Hello world!';
   },
