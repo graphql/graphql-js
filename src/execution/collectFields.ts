@@ -59,6 +59,7 @@ interface CollectFieldsContext {
   visitedFragmentNames: Set<string>;
   hideSuggestions: boolean;
   forbiddenDirectiveInstances: Array<DirectiveNode>;
+  forbidSkipAndInclude: boolean;
 }
 
 /**
@@ -78,7 +79,7 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
   hideSuggestions: boolean,
-  forbidSkipInclude = false,
+  forbidSkipAndInclude = false,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
@@ -94,17 +95,10 @@ export function collectFields(
     visitedFragmentNames: new Set(),
     hideSuggestions,
     forbiddenDirectiveInstances: [],
+    forbidSkipAndInclude,
   };
 
-  collectFieldsImpl(
-    context,
-    selectionSet,
-    groupedFieldSet,
-    newDeferUsages,
-    undefined,
-    undefined,
-    forbidSkipInclude,
-  );
+  collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
   return {
     groupedFieldSet,
     newDeferUsages,
@@ -143,6 +137,7 @@ export function collectSubfields(
     visitedFragmentNames: new Set(),
     hideSuggestions,
     forbiddenDirectiveInstances: [],
+    forbidSkipAndInclude: false,
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
@@ -177,7 +172,6 @@ function collectFieldsImpl(
   newDeferUsages: Array<DeferUsage>,
   deferUsage?: DeferUsage,
   fragmentVariableValues?: VariableValues,
-  forbidSkipInclude = false,
 ): void {
   const {
     schema,
@@ -198,7 +192,6 @@ function collectFieldsImpl(
             variableValues,
             fragmentVariableValues,
             hideSuggestions,
-            forbidSkipInclude,
           )
         ) {
           continue;
@@ -218,7 +211,6 @@ function collectFieldsImpl(
             variableValues,
             fragmentVariableValues,
             hideSuggestions,
-            forbidSkipInclude,
           ) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
@@ -266,7 +258,6 @@ function collectFieldsImpl(
             variableValues,
             fragmentVariableValues,
             hideSuggestions,
-            forbidSkipInclude,
           )
         ) {
           continue;
@@ -368,12 +359,11 @@ function shouldIncludeNode(
   variableValues: VariableValues,
   fragmentVariableValues: VariableValues | undefined,
   hideSuggestions: Maybe<boolean>,
-  forbidSkipInclude: boolean,
 ): boolean {
   const skipDirectiveNode = node.directives?.find(
     (directive) => directive.name.value === GraphQLSkipDirective.name,
   );
-  if (skipDirectiveNode && forbidSkipInclude) {
+  if (skipDirectiveNode && context.forbidSkipAndInclude) {
     context.forbiddenDirectiveInstances.push(skipDirectiveNode);
     return false;
   }
@@ -393,7 +383,7 @@ function shouldIncludeNode(
   const includeDirectiveNode = node.directives?.find(
     (directive) => directive.name.value === GraphQLIncludeDirective.name,
   );
-  if (includeDirectiveNode && forbidSkipInclude) {
+  if (includeDirectiveNode && context.forbidSkipAndInclude) {
     context.forbiddenDirectiveInstances.push(includeDirectiveNode);
     return false;
   }
