@@ -7,7 +7,7 @@ import { parse } from '../../language/parser.js';
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import { execute } from '../execute.js';
-import type { ExecutionResult } from '../IncrementalPublisher.js';
+import type { ExecutionResult } from '../types.js';
 
 const schema = buildSchema(`
   type Query {
@@ -30,7 +30,12 @@ function executeQuery(
   rootValue: unknown,
   variableValues?: { [variable: string]: unknown },
 ): ExecutionResult | Promise<ExecutionResult> {
-  return execute({ schema, document: parse(query), rootValue, variableValues });
+  return execute({
+    schema,
+    document: parse(query, { experimentalFragmentArguments: true }),
+    rootValue,
+    variableValues,
+  });
 }
 
 describe('Execute: Handles OneOf Input Objects', () => {
@@ -83,7 +88,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
             message:
               // This type of error would be caught at validation-time
               // hence the vague error message here.
-              'Argument "input" of non-null type "TestInputObject!" must not be null.',
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$input" provided to type "TestInputObject!" to provide a runtime value.',
             path: ['test'],
           },
         ],
@@ -134,6 +139,28 @@ describe('Execute: Handles OneOf Input Objects', () => {
       });
     });
 
+    it('rejects a variable with a nulled key', () => {
+      const query = `
+        query ($input: TestInputObject!) {
+          test(input: $input) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue, { input: { a: null } });
+
+      expectJSON(result).toDeepEqual({
+        errors: [
+          {
+            message:
+              'Variable "$input" has invalid value: Field "a" for OneOf type "TestInputObject" must be non-null.',
+            locations: [{ line: 2, column: 16 }],
+          },
+        ],
+      });
+    });
+
     it('rejects a variable with multiple non-null keys', () => {
       const query = `
         query ($input: TestInputObject!) {
@@ -152,7 +179,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" got invalid value { a: "abc", b: 123 }; Exactly one key must be specified for OneOf type "TestInputObject".',
+              'Variable "$input" has invalid value: Exactly one key must be specified for OneOf type "TestInputObject".',
           },
         ],
       });
@@ -176,7 +203,125 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" got invalid value { a: "abc", b: null }; Exactly one key must be specified for OneOf type "TestInputObject".',
+              'Variable "$input" has invalid value: Exactly one key must be specified for OneOf type "TestInputObject".',
+          },
+        ],
+      });
+    });
+
+    it('errors with nulled variable for field', () => {
+      const query = `
+        query ($a: String) {
+          test(input: { a: $a }) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue, { a: null });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          test: null,
+        },
+        errors: [
+          {
+            // A nullable variable in a oneOf field position would be caught at validation-time
+            // hence the vague error message here.
+            message:
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" not to be null.',
+            locations: [{ line: 3, column: 23 }],
+            path: ['test'],
+          },
+        ],
+      });
+    });
+
+    it('errors with missing variable for field', () => {
+      const query = `
+        query ($a: String) {
+          test(input: { a: $a }) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue);
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          test: null,
+        },
+        errors: [
+          {
+            // A nullable variable in a oneOf field position would be caught at validation-time
+            // hence the vague error message here.
+            message:
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
+            locations: [{ line: 3, column: 23 }],
+            path: ['test'],
+          },
+        ],
+      });
+    });
+
+    it('errors with nulled fragment variable for field', () => {
+      const query = `
+        query {
+          ...TestFragment(a: null)
+        }
+        fragment TestFragment($a: String) on Query {
+          test(input: { a: $a }) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue, { a: null });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          test: null,
+        },
+        errors: [
+          {
+            // A nullable variable in a oneOf field position would be caught at validation-time
+            // hence the vague error message here.
+            message:
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" not to be null.',
+            locations: [{ line: 6, column: 23 }],
+            path: ['test'],
+          },
+        ],
+      });
+    });
+
+    it('errors with missing fragment variable for field', () => {
+      const query = `
+        query {
+          ...TestFragment
+        }
+        fragment TestFragment($a: String) on Query {
+          test(input: { a: $a }) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue);
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          test: null,
+        },
+        errors: [
+          {
+            // A nullable variable in a oneOf field position would be caught at validation-time
+            // hence the vague error message here.
+            message:
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$a" provided to field "a" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
+            locations: [{ line: 6, column: 23 }],
+            path: ['test'],
           },
         ],
       });

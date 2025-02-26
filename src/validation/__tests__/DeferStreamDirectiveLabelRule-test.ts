@@ -63,7 +63,7 @@ describe('Validate: Defer/Stream directive labels', () => {
     }
     `).toDeepEqual([
       {
-        message: 'Directive "defer"\'s label argument must be a static string.',
+        message: 'Argument "@defer(label:)" must be a static string.',
         locations: [{ line: 4, column: 25 }],
       },
     ]);
@@ -101,7 +101,8 @@ describe('Validate: Defer/Stream directive labels', () => {
     }
     `).toDeepEqual([
       {
-        message: 'Defer/Stream directive label argument must be unique.',
+        message:
+          'Value for arguments "defer(label:)" and "stream(label:)" must be unique across all Defer/Stream directive usages.',
         locations: [
           { line: 4, column: 25 },
           { line: 5, column: 25 },
@@ -139,8 +140,7 @@ describe('Validate: Defer/Stream directive labels', () => {
       }
       `).toDeepEqual([
       {
-        message:
-          'Directive "stream"\'s label argument must be a static string.',
+        message: 'Argument "@stream(label:)" must be a static string.',
         locations: [{ line: 6, column: 39 }],
       },
     ]);
@@ -160,7 +160,8 @@ describe('Validate: Defer/Stream directive labels', () => {
       }
       `).toDeepEqual([
       {
-        message: 'Defer/Stream directive label argument must be unique.',
+        message:
+          'Value for arguments "defer(label:)" and "stream(label:)" must be unique across all Defer/Stream directive usages.',
         locations: [
           { line: 4, column: 26 },
           { line: 6, column: 39 },

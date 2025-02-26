@@ -3,7 +3,7 @@ import { inspect } from '../jsutils/inspect.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import { keyValMap } from '../jsutils/keyValMap.js';
 
-import { parseValue } from '../language/parser.js';
+import { parseConstValue } from '../language/parser.js';
 
 import type {
   GraphQLFieldConfig,
@@ -47,7 +47,6 @@ import type {
   IntrospectionTypeRef,
   IntrospectionUnionType,
 } from './getIntrospectionQuery.js';
-import { valueFromAST } from './valueFromAST.js';
 
 /**
  * Build a GraphQLSchema for use by client tools.
@@ -55,8 +54,8 @@ import { valueFromAST } from './valueFromAST.js';
  * Given the result of a client running the introspection query, creates and
  * returns a GraphQLSchema instance which can be then used with all graphql-js
  * tools, but cannot be used to execute a query, as introspection does not
- * represent the "resolver", "parse" or "serialize" functions or any other
- * server-internal mechanisms.
+ * represent the "resolver", "coerceInputValue" or "coerceOutputValue"
+ * functions or any other server-internal mechanisms.
  *
  * This function expects a complete introspection result. Don't forget to check
  * the "errors" field of a server response before calling this function.
@@ -178,28 +177,26 @@ export function buildClientSchema(
   // Given a type's introspection result, construct the correct
   // GraphQLType instance.
   function buildType(type: IntrospectionType): GraphQLNamedType {
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    if (type != null && type.name != null && type.kind != null) {
-      // FIXME: Properly type IntrospectionType, it's a breaking change so fix in v17
-      // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-      switch (type.kind) {
-        case TypeKind.SCALAR:
-          return buildScalarDef(type);
-        case TypeKind.OBJECT:
-          return buildObjectDef(type);
-        case TypeKind.INTERFACE:
-          return buildInterfaceDef(type);
-        case TypeKind.UNION:
-          return buildUnionDef(type);
-        case TypeKind.ENUM:
-          return buildEnumDef(type);
-        case TypeKind.INPUT_OBJECT:
-          return buildInputObjectDef(type);
-      }
+    switch (type.kind) {
+      case TypeKind.SCALAR:
+        return buildScalarDef(type);
+      case TypeKind.OBJECT:
+        return buildObjectDef(type);
+      case TypeKind.INTERFACE:
+        return buildInterfaceDef(type);
+      case TypeKind.UNION:
+        return buildUnionDef(type);
+      case TypeKind.ENUM:
+        return buildEnumDef(type);
+      case TypeKind.INPUT_OBJECT:
+        return buildInputObjectDef(type);
     }
-    const typeStr = inspect(type);
+    // Unreachable.
+    // @ts-expect-error
     throw new Error(
-      `Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${typeStr}.`,
+      `Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${inspect(
+        type,
+      )}.`,
     );
   }
 
@@ -311,6 +308,7 @@ export function buildClientSchema(
       name: inputObjectIntrospection.name,
       description: inputObjectIntrospection.description,
       fields: () => buildInputValueDefMap(inputObjectIntrospection.inputFields),
+      isOneOf: inputObjectIntrospection.isOneOf,
     });
   }
 
@@ -375,14 +373,13 @@ export function buildClientSchema(
       );
     }
 
-    const defaultValue =
-      inputValueIntrospection.defaultValue != null
-        ? valueFromAST(parseValue(inputValueIntrospection.defaultValue), type)
-        : undefined;
     return {
       description: inputValueIntrospection.description,
       type,
-      defaultValue,
+      default:
+        inputValueIntrospection.defaultValue != null
+          ? { literal: parseConstValue(inputValueIntrospection.defaultValue) }
+          : undefined,
       deprecationReason: inputValueIntrospection.deprecationReason,
     };
   }

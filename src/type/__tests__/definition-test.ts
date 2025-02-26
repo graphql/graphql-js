@@ -4,9 +4,19 @@ import { describe, it } from 'mocha';
 import { identityFunc } from '../../jsutils/identityFunc.js';
 import { inspect } from '../../jsutils/inspect.js';
 
-import { parseValue } from '../../language/parser.js';
+import { Kind } from '../../language/kinds.js';
+import { parseConstValue } from '../../language/parser.js';
 
-import type { GraphQLNullableType, GraphQLType } from '../definition.js';
+import type {
+  GraphQLEnumTypeConfig,
+  GraphQLInputObjectTypeConfig,
+  GraphQLInterfaceTypeConfig,
+  GraphQLNullableType,
+  GraphQLObjectTypeConfig,
+  GraphQLScalarTypeConfig,
+  GraphQLType,
+  GraphQLUnionTypeConfig,
+} from '../definition.js';
 import {
   GraphQLEnumType,
   GraphQLInputObjectType,
@@ -17,9 +27,18 @@ import {
   GraphQLScalarType,
   GraphQLUnionType,
 } from '../definition.js';
+import { GraphQLString } from '../scalars.js';
 
 const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
-const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
+const ObjectType = new GraphQLObjectType({
+  name: 'Object',
+  fields: {
+    someField: {
+      type: GraphQLString,
+      args: { someArg: { type: GraphQLString } },
+    },
+  },
+});
 const InterfaceType = new GraphQLInterfaceType({
   name: 'Interface',
   fields: {},
@@ -28,7 +47,7 @@ const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
 const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
 const InputObjectType = new GraphQLInputObjectType({
   name: 'InputObject',
-  fields: {},
+  fields: { someInputField: { type: GraphQLString } },
 });
 
 const ListOfScalarsType = new GraphQLList(ScalarType);
@@ -37,32 +56,68 @@ const ListOfNonNullScalarsType = new GraphQLList(NonNullScalarType);
 const NonNullListOfScalars = new GraphQLNonNull(ListOfScalarsType);
 
 /* c8 ignore next */
-const dummyFunc = () => expect.fail('Never called and used as a placeholder');
+const passThroughFunc = (arg: any) => arg;
+const dummyAny = {} as any;
 
 describe('Type System: Scalars', () => {
-  it('accepts a Scalar type defining serialize', () => {
-    expect(() => new GraphQLScalarType({ name: 'SomeScalar' })).to.not.throw();
+  it('can be converted from a minimal configuration object', () => {
+    const someScalar = new GraphQLScalarType({ name: 'SomeScalar' });
+    expect(someScalar.toConfig()).to.deep.equal({
+      name: 'SomeScalar',
+      description: undefined,
+      specifiedByURL: undefined,
+      serialize: someScalar.serialize,
+      parseValue: someScalar.parseValue,
+      parseLiteral: someScalar.parseLiteral,
+      coerceOutputValue: someScalar.coerceOutputValue,
+      coerceInputValue: someScalar.coerceInputValue,
+      coerceInputLiteral: undefined,
+      valueToLiteral: undefined,
+      extensions: {},
+      astNode: undefined,
+      extensionASTNodes: [],
+    });
   });
 
-  it('accepts a Scalar type defining specifiedByURL', () => {
-    expect(
-      () =>
-        new GraphQLScalarType({
-          name: 'SomeScalar',
-          specifiedByURL: 'https://example.com/foo_spec',
-        }),
-    ).not.to.throw();
+  it('can be converted to a configuration object', () => {
+    const someScalarConfig: GraphQLScalarTypeConfig<unknown, unknown> = {
+      name: 'SomeScalar',
+      description: 'SomeScalar description.',
+      specifiedByURL: 'https://example.com/foo_spec',
+      serialize: passThroughFunc,
+      parseValue: passThroughFunc,
+      parseLiteral: passThroughFunc,
+      coerceOutputValue: passThroughFunc,
+      coerceInputValue: passThroughFunc,
+      coerceInputLiteral: passThroughFunc,
+      valueToLiteral: passThroughFunc,
+      extensions: { someExtension: 'extension' },
+      astNode: dummyAny,
+      extensionASTNodes: [dummyAny],
+    };
+    const someScalar = new GraphQLScalarType(someScalarConfig);
+    expect(someScalar.toConfig()).to.deep.equal(someScalarConfig);
   });
 
-  it('accepts a Scalar type defining parseValue and parseLiteral', () => {
-    expect(
-      () =>
-        new GraphQLScalarType({
-          name: 'SomeScalar',
-          parseValue: dummyFunc,
-          parseLiteral: dummyFunc,
-        }),
-    ).to.not.throw();
+  it('supports symbol extensions', () => {
+    const test = Symbol.for('test');
+    const someScalarConfig: GraphQLScalarTypeConfig<unknown, unknown> = {
+      name: 'SomeScalar',
+      description: 'SomeScalar description.',
+      specifiedByURL: 'https://example.com/foo_spec',
+      serialize: passThroughFunc,
+      parseValue: passThroughFunc,
+      parseLiteral: passThroughFunc,
+      coerceOutputValue: passThroughFunc,
+      coerceInputValue: passThroughFunc,
+      coerceInputLiteral: passThroughFunc,
+      valueToLiteral: passThroughFunc,
+      extensions: { [test]: 'extension' },
+      astNode: dummyAny,
+      extensionASTNodes: [dummyAny],
+    };
+    const someScalar = new GraphQLScalarType(someScalarConfig);
+    expect(someScalar.toConfig()).to.deep.equal(someScalarConfig);
   });
 
   it('provides default methods if omitted', () => {
@@ -70,7 +125,11 @@ describe('Type System: Scalars', () => {
 
     expect(scalar.serialize).to.equal(identityFunc);
     expect(scalar.parseValue).to.equal(identityFunc);
+    expect(scalar.coerceOutputValue).to.equal(identityFunc);
+    expect(scalar.coerceInputValue).to.equal(identityFunc);
     expect(scalar.parseLiteral).to.be.a('function');
+    /* default will be provided in v18 when parseLiteral is removed */
+    // expect(scalar.coerceInputLiteral).to.be.a('function');
   });
 
   it('use parseValue for parsing literals if parseLiteral omitted', () => {
@@ -81,15 +140,12 @@ describe('Type System: Scalars', () => {
       },
     });
 
-    expect(scalar.parseLiteral(parseValue('null'))).to.equal(
+    expect(scalar.parseLiteral(parseConstValue('null'), undefined)).to.equal(
       'parseValue: null',
     );
-    expect(scalar.parseLiteral(parseValue('{ foo: "bar" }'))).to.equal(
-      'parseValue: { foo: "bar" }',
-    );
     expect(
-      scalar.parseLiteral(parseValue('{ foo: { bar: $var } }'), { var: 'baz' }),
-    ).to.equal('parseValue: { foo: { bar: "baz" } }');
+      scalar.parseLiteral(parseConstValue('{ foo: "bar" }'), undefined),
+    ).to.equal('parseValue: { foo: "bar" }');
   });
 
   it('rejects a Scalar type defining parseLiteral but not parseValue', () => {
@@ -97,15 +153,80 @@ describe('Type System: Scalars', () => {
       () =>
         new GraphQLScalarType({
           name: 'SomeScalar',
-          parseLiteral: dummyFunc,
+          parseLiteral: passThroughFunc,
         }),
     ).to.throw(
       'SomeScalar must provide both "parseValue" and "parseLiteral" functions.',
     );
   });
+
+  it('rejects a Scalar type defining coerceInputLiteral but not coerceInputValue', () => {
+    expect(
+      () =>
+        new GraphQLScalarType({
+          name: 'SomeScalar',
+          coerceInputLiteral: passThroughFunc,
+        }),
+    ).to.throw(
+      'SomeScalar must provide both "coerceInputValue" and "coerceInputLiteral" functions.',
+    );
+  });
 });
 
 describe('Type System: Objects', () => {
+  it('can be converted from a minimal configuration object', () => {
+    const someObject = new GraphQLObjectType({
+      name: 'SomeObject',
+      fields: {},
+    });
+    expect(someObject.toConfig()).to.deep.equal({
+      name: 'SomeObject',
+      description: undefined,
+      interfaces: [],
+      fields: {},
+      isTypeOf: undefined,
+      extensions: {},
+      astNode: undefined,
+      extensionASTNodes: [],
+    });
+  });
+
+  it('can be converted to a configuration object', () => {
+    const someObjectConfig: GraphQLObjectTypeConfig<unknown, unknown> = {
+      name: 'SomeObject',
+      description: 'SomeObject description.',
+      interfaces: [InterfaceType],
+      fields: {
+        f: {
+          description: 'Field description.',
+          type: ScalarType,
+          args: {
+            input: {
+              description: 'Argument description.',
+              type: ScalarType,
+              defaultValue: undefined,
+              default: { value: 'DefaultValue' },
+              deprecationReason: 'Argument deprecation reason.',
+              extensions: { someExtension: 'extension' },
+              astNode: dummyAny,
+            },
+          },
+          resolve: passThroughFunc,
+          subscribe: passThroughFunc,
+          deprecationReason: 'Field deprecation reason.',
+          extensions: { someExtension: 'extension' },
+          astNode: dummyAny,
+        },
+      },
+      isTypeOf: passThroughFunc,
+      extensions: { someExtension: 'extension' },
+      astNode: dummyAny,
+      extensionASTNodes: [dummyAny],
+    };
+    const someObject = new GraphQLObjectType(someObjectConfig);
+    expect(someObject.toConfig()).to.deep.equal(someObjectConfig);
+  });
+
   it('does not mutate passed field definitions', () => {
     const outputFields = {
       field1: { type: ScalarType },
@@ -125,7 +246,15 @@ describe('Type System: Objects', () => {
       fields: outputFields,
     });
 
-    expect(testObject1.getFields()).to.deep.equal(testObject2.getFields());
+    const testObject1Fields = testObject1.getFields();
+    const testObject2Fields = testObject2.getFields();
+
+    expect(testObject1Fields.field1.toConfig()).to.deep.equal(
+      testObject2Fields.field1.toConfig(),
+    );
+    expect(testObject1Fields.field2.toConfig()).to.deep.equal(
+      testObject2Fields.field2.toConfig(),
+    );
     expect(outputFields).to.deep.equal({
       field1: {
         type: ScalarType,
@@ -151,8 +280,14 @@ describe('Type System: Objects', () => {
       fields: inputFields,
     });
 
-    expect(testInputObject1.getFields()).to.deep.equal(
-      testInputObject2.getFields(),
+    const testInputObject1Fields = testInputObject1.getFields();
+    const testInputObject2Fields = testInputObject2.getFields();
+
+    expect(testInputObject1Fields.field1.toConfig()).to.deep.equal(
+      testInputObject2Fields.field1.toConfig(),
+    );
+    expect(testInputObject1Fields.field2.toConfig()).to.deep.equal(
+      testInputObject2Fields.field2.toConfig(),
     );
     expect(inputFields).to.deep.equal({
       field1: { type: ScalarType },
@@ -193,18 +328,17 @@ describe('Type System: Objects', () => {
         f: { type: ScalarType },
       }),
     });
-    expect(objType.getFields()).to.deep.equal({
-      f: {
-        name: 'f',
-        description: undefined,
-        type: ScalarType,
-        args: [],
-        resolve: undefined,
-        subscribe: undefined,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
+    expect(objType.getFields().f).to.deep.include({
+      parentType: objType,
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      args: [],
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 
@@ -220,28 +354,33 @@ describe('Type System: Objects', () => {
         },
       },
     });
-    expect(objType.getFields()).to.deep.equal({
-      f: {
-        name: 'f',
-        description: undefined,
-        type: ScalarType,
-        args: [
-          {
-            name: 'arg',
-            description: undefined,
-            type: ScalarType,
-            defaultValue: undefined,
-            deprecationReason: undefined,
-            extensions: {},
-            astNode: undefined,
-          },
-        ],
-        resolve: undefined,
-        subscribe: undefined,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
+
+    const f = objType.getFields().f;
+
+    expect(f).to.deep.include({
+      parentType: objType,
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(f.args).to.have.lengthOf(1);
+
+    expect(f.args[0]).to.deep.include({
+      parent: f,
+      name: 'arg',
+      description: undefined,
+      type: ScalarType,
+      defaultValue: undefined,
+      default: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 
@@ -269,7 +408,7 @@ describe('Type System: Objects', () => {
       fields: {
         f: {
           type: ScalarType,
-          resolve: dummyFunc,
+          resolve: passThroughFunc,
         },
       },
     });
@@ -324,7 +463,60 @@ describe('Type System: Objects', () => {
 });
 
 describe('Type System: Interfaces', () => {
-  it('accepts an Interface type defining resolveType', () => {
+  it('can be converted from a minimal configuration object', () => {
+    const someInterface = new GraphQLInterfaceType({
+      name: 'SomeInterface',
+      fields: {},
+    });
+    expect(someInterface.toConfig()).to.deep.equal({
+      name: 'SomeInterface',
+      description: undefined,
+      interfaces: [],
+      fields: {},
+      resolveType: undefined,
+      extensions: {},
+      astNode: undefined,
+      extensionASTNodes: [],
+    });
+  });
+
+  it('can be converted to a configuration object', () => {
+    const someInterfaceConfig: GraphQLInterfaceTypeConfig<unknown, unknown> = {
+      name: 'SomeInterface',
+      description: 'SomeInterface description.',
+      interfaces: [InterfaceType],
+      fields: {
+        f: {
+          description: 'Field description.',
+          type: ScalarType,
+          args: {
+            input: {
+              description: 'Argument description.',
+              type: ScalarType,
+              defaultValue: undefined,
+              default: { literal: dummyAny },
+              deprecationReason: 'Argument deprecation reason.',
+              extensions: { someExtension: 'extension' },
+              astNode: dummyAny,
+            },
+          },
+          resolve: passThroughFunc,
+          subscribe: passThroughFunc,
+          deprecationReason: 'Field deprecation reason.',
+          extensions: { someExtension: 'extension' },
+          astNode: dummyAny,
+        },
+      },
+      resolveType: passThroughFunc,
+      extensions: {},
+      astNode: {} as any,
+      extensionASTNodes: [],
+    };
+    const someInterface = new GraphQLInterfaceType(someInterfaceConfig);
+    expect(someInterface.toConfig()).to.deep.equal(someInterfaceConfig);
+  });
+
+  it('accepts an Interface type defining a field', () => {
     expect(
       () =>
         new GraphQLInterfaceType({
@@ -332,6 +524,26 @@ describe('Type System: Interfaces', () => {
           fields: { f: { type: ScalarType } },
         }),
     ).to.not.throw();
+  });
+
+  it('accepts an Interface type with a field function', () => {
+    const interfaceType = new GraphQLInterfaceType({
+      name: 'SomeInterface',
+      fields: () => ({
+        f: { type: ScalarType },
+      }),
+    });
+    expect(interfaceType.getFields().f).to.deep.include({
+      name: 'f',
+      description: undefined,
+      type: ScalarType,
+      args: [],
+      resolve: undefined,
+      subscribe: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('accepts an Interface type with an array of interfaces', () => {
@@ -360,6 +572,36 @@ describe('Type System: Interfaces', () => {
 });
 
 describe('Type System: Unions', () => {
+  it('can be converted from a minimal configuration object', () => {
+    const someUnion = new GraphQLUnionType({
+      name: 'SomeUnion',
+      types: [],
+    });
+    expect(someUnion.toConfig()).to.deep.equal({
+      name: 'SomeUnion',
+      description: undefined,
+      types: [],
+      resolveType: undefined,
+      extensions: {},
+      astNode: undefined,
+      extensionASTNodes: [],
+    });
+  });
+
+  it('can be converted to a configuration object', () => {
+    const someUnionConfig: GraphQLUnionTypeConfig<unknown, unknown> = {
+      name: 'SomeUnion',
+      description: 'SomeUnion description.',
+      types: [ObjectType],
+      resolveType: passThroughFunc,
+      extensions: {},
+      astNode: {} as any,
+      extensionASTNodes: [],
+    };
+    const someUnion = new GraphQLUnionType(someUnionConfig);
+    expect(someUnion.toConfig()).to.deep.equal(someUnionConfig);
+  });
+
   it('accepts a Union type defining resolveType', () => {
     expect(
       () =>
@@ -402,6 +644,63 @@ describe('Type System: Unions', () => {
 });
 
 describe('Type System: Enums', () => {
+  it('can be converted from a minimal configuration object', () => {
+    const someEnum = new GraphQLEnumType({ name: 'SomeEnum', values: {} });
+    expect(someEnum.toConfig()).to.deep.equal({
+      name: 'SomeEnum',
+      description: undefined,
+      values: {},
+      extensions: {},
+      astNode: undefined,
+      extensionASTNodes: [],
+    });
+  });
+
+  it('can be converted to a configuration object', () => {
+    const someEnumConfig: GraphQLEnumTypeConfig = {
+      name: 'SomeEnum',
+      description: 'SomeEnum description.',
+      values: {
+        FOO: {
+          description: 'FOO description.',
+          value: 'foo',
+          deprecationReason: 'Value deprecation reason.',
+          extensions: { someExtension: 'extension' },
+          astNode: dummyAny,
+        },
+      },
+      extensions: { someExtension: 'extension' },
+      astNode: dummyAny,
+      extensionASTNodes: [dummyAny],
+    };
+    const someEnum = new GraphQLEnumType(someEnumConfig);
+    expect(someEnum.toConfig()).to.deep.equal(someEnumConfig);
+  });
+
+  it('can be coerced to an output value via serialize() method', () => {
+    const someEnum = new GraphQLEnumType({
+      name: 'SomeEnum',
+      values: {
+        FOO: {
+          value: 'foo',
+        },
+      },
+    });
+    expect(someEnum.serialize('foo')).to.equal('FOO');
+  });
+
+  it('can be coerced to an input value via parseValue() method', () => {
+    const someEnum = new GraphQLEnumType({
+      name: 'SomeEnum',
+      values: {
+        FOO: {
+          value: 'foo',
+        },
+      },
+    });
+    expect(someEnum.parseValue('FOO')).to.equal('foo');
+  });
+
   it('defines an enum type with deprecated value', () => {
     const EnumTypeWithDeprecatedValue = new GraphQLEnumType({
       name: 'EnumWithDeprecatedValue',
@@ -432,32 +731,36 @@ describe('Type System: Enums', () => {
       },
     });
 
-    expect(EnumTypeWithNullishValue.getValues()).to.deep.equal([
-      {
-        name: 'NULL',
-        description: undefined,
-        value: null,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'NAN',
-        description: undefined,
-        value: NaN,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'NO_CUSTOM_VALUE',
-        description: undefined,
-        value: 'NO_CUSTOM_VALUE',
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-    ]);
+    const values = EnumTypeWithNullishValue.getValues();
+
+    expect(values).to.have.lengthOf(3);
+
+    expect(values[0]).to.deep.include({
+      name: 'NULL',
+      description: undefined,
+      value: null,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[1]).to.deep.include({
+      name: 'NAN',
+      description: undefined,
+      value: NaN,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[2]).to.deep.include({
+      name: 'NO_CUSTOM_VALUE',
+      description: undefined,
+      value: 'NO_CUSTOM_VALUE',
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('accepts a well defined Enum type with empty value definition', () => {
@@ -504,6 +807,46 @@ describe('Type System: Enums', () => {
 });
 
 describe('Type System: Input Objects', () => {
+  it('can be converted from a minimal configuration object', () => {
+    const inputObject = new GraphQLInputObjectType({
+      name: 'SomeInputObject',
+      fields: {},
+    });
+    expect(inputObject.toConfig()).to.deep.equal({
+      name: 'SomeInputObject',
+      description: undefined,
+      fields: {},
+      isOneOf: false,
+      extensions: {},
+      astNode: undefined,
+      extensionASTNodes: [],
+    });
+  });
+
+  it('can be converted to a configuration object', () => {
+    const someInputObjectConfig: GraphQLInputObjectTypeConfig = {
+      name: 'SomeInputObject',
+      description: 'SomeObject description.',
+      fields: {
+        input: {
+          description: 'Argument description.',
+          type: ScalarType,
+          defaultValue: undefined,
+          default: { value: 'DefaultValue' },
+          deprecationReason: 'Argument deprecation reason.',
+          extensions: { someExtension: 'extension' },
+          astNode: dummyAny,
+        },
+      },
+      isOneOf: true,
+      extensions: { someExtension: 'extension' },
+      astNode: dummyAny,
+      extensionASTNodes: [dummyAny],
+    };
+    const someInputObject = new GraphQLInputObjectType(someInputObjectConfig);
+    expect(someInputObject.toConfig()).to.deep.equal(someInputObjectConfig);
+  });
+
   describe('Input Objects must have fields', () => {
     it('accepts an Input Object type with fields', () => {
       const inputObjType = new GraphQLInputObjectType({
@@ -512,16 +855,16 @@ describe('Type System: Input Objects', () => {
           f: { type: ScalarType },
         },
       });
-      expect(inputObjType.getFields()).to.deep.equal({
-        f: {
-          name: 'f',
-          description: undefined,
-          type: ScalarType,
-          defaultValue: undefined,
-          deprecationReason: undefined,
-          extensions: {},
-          astNode: undefined,
-        },
+      expect(inputObjType.getFields().f).to.deep.include({
+        parentType: inputObjType,
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        defaultValue: undefined,
+        default: undefined,
+        deprecationReason: undefined,
+        extensions: {},
+        astNode: undefined,
       });
     });
 
@@ -532,16 +875,16 @@ describe('Type System: Input Objects', () => {
           f: { type: ScalarType },
         }),
       });
-      expect(inputObjType.getFields()).to.deep.equal({
-        f: {
-          name: 'f',
-          description: undefined,
-          type: ScalarType,
-          defaultValue: undefined,
-          extensions: {},
-          deprecationReason: undefined,
-          astNode: undefined,
-        },
+      expect(inputObjType.getFields().f).to.deep.include({
+        parentType: inputObjType,
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        defaultValue: undefined,
+        default: undefined,
+        extensions: {},
+        deprecationReason: undefined,
+        astNode: undefined,
       });
     });
 
@@ -581,6 +924,49 @@ describe('Type System: Input Objects', () => {
       'not used anymore',
     );
   });
+
+  describe('Input Object fields may have default values', () => {
+    it('accepts an Input Object type with a default value', () => {
+      const inputObjType = new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: { type: ScalarType, default: { value: 3 } },
+        },
+      });
+      expect(inputObjType.getFields().f).to.deep.include({
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        defaultValue: undefined,
+        default: { value: 3 },
+        deprecationReason: undefined,
+        extensions: {},
+        astNode: undefined,
+      });
+    });
+
+    it('accepts an Input Object type with a default value literal', () => {
+      const inputObjType = new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          f: {
+            type: ScalarType,
+            default: { literal: { kind: Kind.INT, value: '3' } },
+          },
+        },
+      });
+      expect(inputObjType.getFields().f).to.deep.include({
+        name: 'f',
+        description: undefined,
+        type: ScalarType,
+        defaultValue: undefined,
+        default: { literal: { kind: 'IntValue', value: '3' } },
+        deprecationReason: undefined,
+        extensions: {},
+        astNode: undefined,
+      });
+    });
+  });
 });
 
 describe('Type System: List', () => {
@@ -618,13 +1004,22 @@ describe('Type System: Non-Null', () => {
 });
 
 describe('Type System: test utility methods', () => {
-  it('stringifies types', () => {
+  const someField = ObjectType.getFields().someField;
+  const someArg = someField.args[0];
+  const enumValue = EnumType.getValue('foo');
+  const someInputField = InputObjectType.getFields().someInputField;
+
+  it('stringifies schema elements', () => {
     expect(String(ScalarType)).to.equal('Scalar');
     expect(String(ObjectType)).to.equal('Object');
+    expect(String(someField)).to.equal('Object.someField');
+    expect(String(someArg)).to.equal('Object.someField(someArg:)');
     expect(String(InterfaceType)).to.equal('Interface');
     expect(String(UnionType)).to.equal('Union');
     expect(String(EnumType)).to.equal('Enum');
+    expect(String(enumValue)).to.equal('Enum.foo');
     expect(String(InputObjectType)).to.equal('InputObject');
+    expect(String(someInputField)).to.equal('InputObject.someInputField');
 
     expect(String(NonNullScalarType)).to.equal('Scalar!');
     expect(String(ListOfScalarsType)).to.equal('[Scalar]');
@@ -636,10 +1031,15 @@ describe('Type System: test utility methods', () => {
   it('JSON.stringifies types', () => {
     expect(JSON.stringify(ScalarType)).to.equal('"Scalar"');
     expect(JSON.stringify(ObjectType)).to.equal('"Object"');
-    expect(JSON.stringify(InterfaceType)).to.equal('"Interface"');
+    expect(JSON.stringify(someField)).to.equal('"Object.someField"');
+    expect(JSON.stringify(someArg)).to.equal('"Object.someField(someArg:)"');
     expect(JSON.stringify(UnionType)).to.equal('"Union"');
     expect(JSON.stringify(EnumType)).to.equal('"Enum"');
+    expect(JSON.stringify(enumValue)).to.equal('"Enum.foo"');
     expect(JSON.stringify(InputObjectType)).to.equal('"InputObject"');
+    expect(JSON.stringify(someInputField)).to.equal(
+      '"InputObject.someInputField"',
+    );
 
     expect(JSON.stringify(NonNullScalarType)).to.equal('"Scalar!"');
     expect(JSON.stringify(ListOfScalarsType)).to.equal('"[Scalar]"');

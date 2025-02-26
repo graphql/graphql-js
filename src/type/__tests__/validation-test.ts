@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.js';
@@ -33,10 +33,11 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLScalarType,
   GraphQLUnionType,
 } from '../definition.js';
 import { assertDirective, GraphQLDirective } from '../directives.js';
-import { GraphQLString } from '../scalars.js';
+import { GraphQLInt, GraphQLString } from '../scalars.js';
 import { GraphQLSchema } from '../schema.js';
 import { assertValidSchema, validateSchema } from '../validate.js';
 
@@ -431,6 +432,23 @@ describe('Type System: A Schema must have Object root types', () => {
       },
     ]);
   });
+
+  it('rejects a Schema whose directives have empty locations', () => {
+    const badDirective = new GraphQLDirective({
+      name: 'BadDirective',
+      args: {},
+      locations: [],
+    });
+    const schema = new GraphQLSchema({
+      query: SomeObjectType,
+      directives: [badDirective],
+    });
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message: 'Directive @BadDirective must include 1 or more locations.',
+      },
+    ]);
+  });
 });
 
 describe('Type System: Root types must all be different if provided', () => {
@@ -790,6 +808,40 @@ describe('Type System: Union types must be valid', () => {
       ]);
     }
   });
+
+  it('rejects a Union type with non-Object members types with malformed AST', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: BadUnion
+      }
+
+      type TypeA {
+        field: String
+      }
+
+      type TypeB {
+        field: String
+      }
+
+      union BadUnion =
+        | TypeA
+        | String
+        | TypeB
+    `);
+
+    const badUnionNode = (schema.getType('BadUnion') as GraphQLUnionType)
+      ?.astNode;
+    assert(badUnionNode);
+    /* @ts-expect-error */
+    badUnionNode.types = undefined;
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Union type BadUnion can only include Object types, it cannot include String.',
+      },
+    ]);
+  });
 });
 
 describe('Type System: Input Objects must have fields', () => {
@@ -872,7 +924,7 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Cannot reference Input Object "SomeInputObject" within itself through a series of non-null fields: "nonNullSelf".',
+          'Invalid circular reference. The Input Object SomeInputObject references itself in the non-null field SomeInputObject.nonNullSelf.',
         locations: [{ line: 7, column: 9 }],
       },
     ]);
@@ -900,7 +952,7 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Cannot reference Input Object "SomeInputObject" within itself through a series of non-null fields: "startLoop.nextInLoop.closeLoop".',
+          'Invalid circular reference. The Input Object SomeInputObject references itself via the non-null fields: SomeInputObject.startLoop, AnotherInputObject.nextInLoop, YetAnotherInputObject.closeLoop.',
         locations: [
           { line: 7, column: 9 },
           { line: 11, column: 9 },
@@ -934,7 +986,7 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Cannot reference Input Object "SomeInputObject" within itself through a series of non-null fields: "startLoop.closeLoop".',
+          'Invalid circular reference. The Input Object SomeInputObject references itself via the non-null fields: SomeInputObject.startLoop, AnotherInputObject.closeLoop.',
         locations: [
           { line: 7, column: 9 },
           { line: 11, column: 9 },
@@ -942,7 +994,7 @@ describe('Type System: Input Objects must have fields', () => {
       },
       {
         message:
-          'Cannot reference Input Object "AnotherInputObject" within itself through a series of non-null fields: "startSecondLoop.closeSecondLoop".',
+          'Invalid circular reference. The Input Object AnotherInputObject references itself via the non-null fields: AnotherInputObject.startSecondLoop, YetAnotherInputObject.closeSecondLoop.',
         locations: [
           { line: 12, column: 9 },
           { line: 16, column: 9 },
@@ -950,8 +1002,290 @@ describe('Type System: Input Objects must have fields', () => {
       },
       {
         message:
-          'Cannot reference Input Object "YetAnotherInputObject" within itself through a series of non-null fields: "nonNullSelf".',
+          'Invalid circular reference. The Input Object YetAnotherInputObject references itself in the non-null field YetAnotherInputObject.nonNullSelf.',
         locations: [{ line: 17, column: 9 }],
+      },
+    ]);
+  });
+
+  it('accepts Input Objects with default values without circular references (SDL)', () => {
+    const validSchema = buildSchema(`
+      type Query {
+        field(arg1: A, arg2: B): String
+      }
+
+      input A {
+        x: A = null
+        y: A = { x: null, y: null }
+        z: [A] = []
+      }
+
+      input B {
+        x: B2! = {}
+        y: String = "abc"
+        z: Custom = {}
+      }
+
+      input B2 {
+        x: B3 = {}
+      }
+
+      input B3 {
+        x: B = { x: { x: null } }
+      }
+
+      scalar Custom
+    `);
+
+    expect(validateSchema(validSchema)).to.deep.equal([]);
+  });
+
+  it('accepts Input Objects with default values without circular references (programmatic)', () => {
+    const AType: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'A',
+      fields: () => ({
+        x: { type: AType, default: { value: null } },
+        y: { type: AType, default: { value: { x: null, y: null } } },
+        z: { type: new GraphQLList(AType), default: { value: [] } },
+      }),
+    });
+
+    const BType: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'B',
+      fields: () => ({
+        x: { type: new GraphQLNonNull(B2Type), default: { value: {} } },
+        y: { type: GraphQLString, default: { value: 'abc' } },
+        z: { type: CustomType, default: { value: {} } },
+      }),
+    });
+
+    const B2Type: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'B2',
+      fields: () => ({
+        x: { type: B3Type, default: { value: {} } },
+      }),
+    });
+
+    const B3Type: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'B3',
+      fields: () => ({
+        x: { type: BType, default: { value: { x: { x: null } } } },
+      }),
+    });
+
+    const CustomType = new GraphQLScalarType({ name: 'Custom' });
+
+    const validSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              arg1: { type: AType },
+              arg2: { type: BType },
+            },
+          },
+        },
+      }),
+    });
+
+    expect(validateSchema(validSchema)).to.deep.equal([]);
+  });
+
+  it('rejects Input Objects with default value circular reference (SDL)', () => {
+    const invalidSchema = buildSchema(`
+      type Query {
+        field(arg1: A, arg2: B, arg3: C, arg4: D, arg5: E): String
+      }
+
+      input A {
+        x: A = {}
+      }
+
+      input B {
+        x: B2 = {}
+      }
+
+      input B2 {
+        x: B3 = {}
+      }
+
+      input B3 {
+        x: B = {}
+      }
+
+      input C {
+        x: [C] = [{}]
+      }
+
+      input D {
+        x: D = { x: { x: {} } }
+      }
+
+      input E {
+        x: E = { x: null }
+        y: E = { y: null }
+      }
+
+      input F {
+        x: F2! = {}
+      }
+
+      input F2 {
+        x: F = { x: {} }
+      }
+    `);
+
+    expectJSON(validateSchema(invalidSchema)).toDeepEqual([
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field A.x references itself.',
+        locations: [{ line: 7, column: 16 }],
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field B.x references itself via the default values of: B2.x, B3.x.',
+        locations: [
+          { line: 11, column: 17 },
+          { line: 15, column: 17 },
+          { line: 19, column: 16 },
+        ],
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field C.x references itself.',
+        locations: [{ line: 23, column: 18 }],
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field D.x references itself.',
+        locations: [{ line: 27, column: 16 }],
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field E.x references itself via the default values of: E.y.',
+        locations: [
+          { line: 31, column: 16 },
+          { line: 32, column: 16 },
+        ],
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field F2.x references itself.',
+        locations: [{ line: 40, column: 16 }],
+      },
+    ]);
+  });
+
+  it('rejects Input Objects with default value circular reference (programmatic)', () => {
+    const AType: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'A',
+      fields: () => ({
+        x: { type: AType, default: { value: {} } },
+      }),
+    });
+
+    const BType: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'B',
+      fields: () => ({
+        x: { type: B2Type, default: { value: {} } },
+      }),
+    });
+
+    const B2Type: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'B2',
+      fields: () => ({
+        x: { type: B3Type, default: { value: {} } },
+      }),
+    });
+
+    const B3Type: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'B3',
+      fields: () => ({
+        x: { type: BType, default: { value: {} } },
+      }),
+    });
+
+    const CType: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'C',
+      fields: () => ({
+        x: { type: new GraphQLList(CType), default: { value: [{}] } },
+      }),
+    });
+
+    const DType: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'D',
+      fields: () => ({
+        x: { type: DType, default: { value: { x: { x: {} } } } },
+      }),
+    });
+
+    const EType: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'E',
+      fields: () => ({
+        x: { type: EType, default: { value: { x: null } } },
+        y: { type: EType, default: { value: { y: null } } },
+      }),
+    });
+
+    const FType: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'F',
+      fields: () => ({
+        x: { type: new GraphQLNonNull(F2Type), default: { value: {} } },
+      }),
+    });
+
+    const F2Type: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'F2',
+      fields: () => ({
+        x: { type: FType, default: { value: { x: {} } } },
+      }),
+    });
+
+    const invalidSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          field: {
+            type: GraphQLString,
+            args: {
+              arg1: { type: AType },
+              arg2: { type: BType },
+              arg3: { type: CType },
+              arg4: { type: DType },
+              arg5: { type: EType },
+              arg6: { type: FType },
+            },
+          },
+        },
+      }),
+    });
+
+    expectJSON(validateSchema(invalidSchema)).toDeepEqual([
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field A.x references itself.',
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field B.x references itself via the default values of: B2.x, B3.x.',
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field C.x references itself.',
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field D.x references itself.',
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field E.x references itself via the default values of: E.y.',
+      },
+      {
+        message:
+          'Invalid circular reference. The default value of Input Object field F2.x references itself.',
       },
     ]);
   });
@@ -988,7 +1322,7 @@ describe('Type System: Input Objects must have fields', () => {
     ]);
   });
 
-  it('rejects an Input Object type with required argument that is deprecated', () => {
+  it('rejects an Input Object type with required field that is deprecated', () => {
     const schema = buildSchema(`
       type Query {
         field(arg: SomeInputObject): String
@@ -1188,6 +1522,35 @@ describe('Type System: Objects can only implement unique interfaces', () => {
         message:
           'Type BadObject must only implement Interface types, it cannot implement SomeInputObject.',
         locations: [{ line: 10, column: 33 }],
+      },
+    ]);
+  });
+
+  it('rejects an Object implementing a non-Interface type with malformed AST', () => {
+    const schema = buildSchema(`
+      type Query {
+        test: BadObject
+      }
+
+      input SomeInputObject {
+        field: String
+      }
+
+      type BadObject implements SomeInputObject {
+        field: String
+      }
+    `);
+
+    const badObjectNode = (schema.getType('BadObject') as GraphQLObjectType)
+      ?.astNode;
+    assert(badObjectNode);
+    /* @ts-expect-error */
+    badObjectNode.interfaces = undefined;
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Type BadObject must only implement Interface types, it cannot implement SomeInputObject.',
       },
     ]);
   });
@@ -1653,6 +2016,207 @@ describe('Type System: Arguments must have input types', () => {
   });
 });
 
+describe('Type System: Argument default values must be valid', () => {
+  it('rejects an argument with invalid default values (SDL)', () => {
+    const schema = buildSchema(`
+      type Query {
+        field(arg: Int = 3.14): Int
+      }
+
+      directive @bad(arg: Int = 2.718) on FIELD
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          '@bad(arg:) has invalid default value: Int cannot represent non-integer value: 2.718',
+        locations: [{ line: 6, column: 33 }],
+      },
+      {
+        message:
+          'Query.field(arg:) has invalid default value: Int cannot represent non-integer value: 3.14',
+        locations: [{ line: 3, column: 26 }],
+      },
+    ]);
+  });
+
+  it('rejects an argument with invalid default values (programmatic)', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          field: {
+            type: GraphQLInt,
+            args: {
+              arg: { type: GraphQLInt, default: { value: 3.14 } },
+            },
+          },
+        },
+      }),
+      directives: [
+        new GraphQLDirective({
+          name: 'bad',
+          args: {
+            arg: { type: GraphQLInt, default: { value: 2.718 } },
+          },
+          locations: [DirectiveLocation.FIELD],
+        }),
+      ],
+    });
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          '@bad(arg:) has invalid default value: Int cannot represent non-integer value: 2.718',
+      },
+      {
+        message:
+          'Query.field(arg:) has invalid default value: Int cannot represent non-integer value: 3.14',
+      },
+    ]);
+  });
+
+  it('Attempts to offer a suggested fix if possible (programmatic)', () => {
+    const Exotic = Symbol('Exotic');
+
+    const testEnum = new GraphQLEnumType({
+      name: 'TestEnum',
+      values: {
+        ONE: { value: 1 },
+        TWO: { value: Exotic },
+      },
+    });
+
+    const testInput: GraphQLInputObjectType = new GraphQLInputObjectType({
+      name: 'TestInput',
+      fields: () => ({
+        self: { type: testInput },
+        string: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
+        enum: { type: new GraphQLList(testEnum) },
+      }),
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          field: {
+            type: GraphQLInt,
+            args: {
+              argWithPossibleFix: {
+                type: testInput,
+                default: { value: { self: null, string: [1], enum: Exotic } },
+              },
+              argWithInvalidPossibleFix: {
+                type: testInput,
+                default: { value: { string: null } },
+              },
+              argWithoutPossibleFix: {
+                type: testInput,
+                default: { value: { enum: 'Exotic' } },
+              },
+            },
+          },
+        },
+      }),
+    });
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Query.field(argWithPossibleFix:) has invalid default value: { self: null, string: [1], enum: Symbol(Exotic) }. Did you mean: { self: null, string: ["1"], enum: ["TWO"] }?',
+      },
+      {
+        message:
+          'Query.field(argWithInvalidPossibleFix:) has invalid default value at .string: Expected value of non-null type "[String]!" not to be null.',
+      },
+      {
+        message:
+          'Query.field(argWithoutPossibleFix:) has invalid default value: Expected value of type "TestInput" to include required field "string", found: { enum: "Exotic" }.',
+      },
+      {
+        message:
+          'Query.field(argWithoutPossibleFix:) has invalid default value at .enum: Value "Exotic" does not exist in "TestEnum" enum.',
+      },
+    ]);
+  });
+
+  it('Attempts to offer a suggested fix if possible (SDL)', () => {
+    const originalSchema = buildSchema(`
+      enum TestEnum {
+        ONE
+        TWO
+      }
+
+      input TestInput {
+        self: TestInput
+        string: [String]!
+        enum: [TestEnum]
+      }
+
+      type Query {
+        field(
+          argWithPossibleFix: TestInput
+          argWithInvalidPossibleFix: TestInput
+          argWithoutPossibleFix: TestInput
+        ): Int
+      }
+    `);
+
+    const Exotic = Symbol('Exotic');
+
+    // workaround as we cannot inject custom internal values into enums defined in SDL
+    const testEnum = new GraphQLEnumType({
+      name: 'TestEnum',
+      values: {
+        ONE: { value: 1 },
+        TWO: { value: Exotic },
+      },
+    });
+
+    const testInput = assertInputObjectType(
+      originalSchema.getType('TestInput'),
+    );
+    testInput.getFields().enum.type = new GraphQLList(testEnum);
+
+    // workaround as we cannot inject exotic default values into arguments defined in SDL
+    const QueryType = assertObjectType(originalSchema.getType('Query'));
+    for (const arg of QueryType.getFields().field.args) {
+      arg.type = testInput;
+      switch (arg.name) {
+        case 'argWithPossibleFix':
+          arg.default = { value: { self: null, string: [1], enum: Exotic } };
+          break;
+        case 'argWithInvalidPossibleFix':
+          arg.default = { value: { string: null } };
+          break;
+        case 'argWithoutPossibleFix':
+          arg.default = { value: { enum: 'Exotic' } };
+          break;
+      }
+    }
+
+    expectJSON(validateSchema(originalSchema)).toDeepEqual([
+      {
+        message:
+          'Query.field(argWithPossibleFix:) has invalid default value: { self: null, string: [1], enum: Symbol(Exotic) }. Did you mean: { self: null, string: ["1"], enum: ["TWO"] }?',
+      },
+      {
+        message:
+          'Query.field(argWithInvalidPossibleFix:) has invalid default value at .string: Expected value of non-null type "[String]!" not to be null.',
+      },
+      {
+        message:
+          'Query.field(argWithoutPossibleFix:) has invalid default value: Expected value of type "TestInput" to include required field "string", found: { enum: "Exotic" }.',
+      },
+      {
+        message:
+          'Query.field(argWithoutPossibleFix:) has invalid default value at .enum: Value "Exotic" does not exist in "TestEnum" enum.',
+      },
+    ]);
+  });
+});
+
 describe('Type System: Input Object fields must have input types', () => {
   function schemaWithInputField(
     inputFieldConfig: GraphQLInputFieldConfig,
@@ -1744,6 +2308,61 @@ describe('Type System: Input Object fields must have input types', () => {
         message:
           'The type of SomeInputObject.foo must be Input Type but got: SomeObject.',
         locations: [{ line: 7, column: 14 }],
+      },
+    ]);
+  });
+});
+
+describe('Type System: Input Object field default values must be valid', () => {
+  it('rejects an Input Object field with invalid default values (SDL)', () => {
+    const schema = buildSchema(`
+    type Query {
+      field(arg: SomeInputObject): Int
+    }
+
+    input SomeInputObject {
+      field: Int = 3.14
+    }
+  `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'SomeInputObject.field has invalid default value: Int cannot represent non-integer value: 3.14',
+        locations: [{ line: 7, column: 20 }],
+      },
+    ]);
+  });
+
+  it('rejects an Input Object field with invalid default values (programmatic)', () => {
+    const someInputObject = new GraphQLInputObjectType({
+      name: 'SomeInputObject',
+      fields: {
+        field: {
+          type: GraphQLInt,
+          default: { value: 3.14 },
+        },
+      },
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          field: {
+            type: GraphQLInt,
+            args: {
+              arg: { type: someInputObject },
+            },
+          },
+        },
+      }),
+    });
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'SomeInputObject.field has invalid default value: Int cannot represent non-integer value: 3.14',
       },
     ]);
   });
@@ -2072,7 +2691,7 @@ describe('Objects must adhere to Interface they implement', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Object field AnotherObject.field includes required argument requiredArg that is missing from the Interface field AnotherInterface.field.',
+          'Argument "AnotherObject.field(requiredArg:)" must not be required type "String!" if not provided by the Interface field "AnotherInterface.field".',
         locations: [
           { line: 13, column: 11 },
           { line: 7, column: 9 },
@@ -2529,7 +3148,7 @@ describe('Interfaces must adhere to Interface they implement', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Object field ChildInterface.field includes required argument requiredArg that is missing from the Interface field ParentInterface.field.',
+          'Argument "ChildInterface.field(requiredArg:)" must not be required type "String!" if not provided by the Interface field "ParentInterface.field".',
         locations: [
           { line: 13, column: 11 },
           { line: 7, column: 9 },

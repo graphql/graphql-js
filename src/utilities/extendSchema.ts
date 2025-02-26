@@ -1,7 +1,5 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
-import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
-import { mapValue } from '../jsutils/mapValue.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 
 import type {
@@ -31,12 +29,10 @@ import type {
 import { Kind } from '../language/kinds.js';
 
 import type {
-  GraphQLArgumentConfig,
-  GraphQLEnumValueConfigMap,
-  GraphQLFieldConfig,
+  GraphQLEnumValueNormalizedConfigMap,
   GraphQLFieldConfigArgumentMap,
-  GraphQLFieldConfigMap,
-  GraphQLInputFieldConfigMap,
+  GraphQLFieldNormalizedConfigMap,
+  GraphQLInputFieldNormalizedConfigMap,
   GraphQLNamedType,
   GraphQLType,
 } from '../type/definition.js';
@@ -49,30 +45,15 @@ import {
   GraphQLObjectType,
   GraphQLScalarType,
   GraphQLUnionType,
-  isEnumType,
-  isInputObjectType,
-  isInterfaceType,
-  isListType,
-  isNonNullType,
-  isObjectType,
-  isScalarType,
-  isUnionType,
 } from '../type/definition.js';
 import {
   GraphQLDeprecatedDirective,
   GraphQLDirective,
   GraphQLOneOfDirective,
   GraphQLSpecifiedByDirective,
-  isSpecifiedDirective,
 } from '../type/directives.js';
-import {
-  introspectionTypes,
-  isIntrospectionType,
-} from '../type/introspection.js';
-import {
-  isSpecifiedScalarType,
-  specifiedScalarTypes,
-} from '../type/scalars.js';
+import { introspectionTypes } from '../type/introspection.js';
+import { specifiedScalarTypes } from '../type/scalars.js';
 import type {
   GraphQLSchemaNormalizedConfig,
   GraphQLSchemaValidationOptions,
@@ -83,7 +64,7 @@ import { assertValidSDLExtension } from '../validation/validate.js';
 
 import { getDirectiveValues } from '../execution/values.js';
 
-import { valueFromAST } from './valueFromAST.js';
+import { mapSchemaConfig, SchemaElementKind } from './mapSchemaConfig.js';
 
 interface Options extends GraphQLSchemaValidationOptions {
   /**
@@ -216,490 +197,378 @@ export function extendSchemaImpl(
     return schemaConfig;
   }
 
-  const typeMap = new Map<string, GraphQLNamedType>(
-    schemaConfig.types.map((type) => [type.name, extendNamedType(type)]),
-  );
+  return mapSchemaConfig(schemaConfig, (context) => {
+    const { getNamedType, setNamedType, getNamedTypes } = context;
+    return {
+      [SchemaElementKind.SCHEMA]: (config) => {
+        for (const typeNode of typeDefs) {
+          const type =
+            stdTypeMap.get(typeNode.name.value) ?? buildNamedType(typeNode);
+          setNamedType(type);
+        }
 
-  for (const typeNode of typeDefs) {
-    const name = typeNode.name.value;
-    typeMap.set(name, stdTypeMap.get(name) ?? buildType(typeNode));
-  }
+        const operationTypes = {
+          // Get the extended root operation types.
+          query:
+            config.query &&
+            (getNamedType(config.query.name) as GraphQLObjectType),
+          mutation:
+            config.mutation &&
+            (getNamedType(config.mutation.name) as GraphQLObjectType),
+          subscription:
+            config.subscription &&
+            (getNamedType(config.subscription.name) as GraphQLObjectType),
+          // Then, incorporate schema definition and all schema extensions.
+          ...(schemaDef && getOperationTypes([schemaDef])),
+          ...getOperationTypes(schemaExtensions),
+        };
 
-  const operationTypes = {
-    // Get the extended root operation types.
-    query: schemaConfig.query && replaceNamedType(schemaConfig.query),
-    mutation: schemaConfig.mutation && replaceNamedType(schemaConfig.mutation),
-    subscription:
-      schemaConfig.subscription && replaceNamedType(schemaConfig.subscription),
-    // Then, incorporate schema definition and all schema extensions.
-    ...(schemaDef && getOperationTypes([schemaDef])),
-    ...getOperationTypes(schemaExtensions),
-  };
+        // Then produce and return a Schema config with these types.
+        return {
+          description: schemaDef?.description?.value ?? config.description,
+          ...operationTypes,
+          types: getNamedTypes(),
+          directives: [
+            ...config.directives,
+            ...directiveDefs.map(buildDirective),
+          ],
+          extensions: config.extensions,
+          astNode: schemaDef ?? config.astNode,
+          extensionASTNodes: config.extensionASTNodes.concat(schemaExtensions),
+          assumeValid: options?.assumeValid ?? false,
+        };
+      },
+      [SchemaElementKind.INPUT_OBJECT]: (config) => {
+        const extensions = inputObjectExtensions.get(config.name) ?? [];
+        return {
+          ...config,
+          fields: () => ({
+            ...config.fields(),
+            ...buildInputFieldMap(extensions),
+          }),
+          extensionASTNodes: config.extensionASTNodes.concat(extensions),
+        };
+      },
+      [SchemaElementKind.ENUM]: (config) => {
+        const extensions = enumExtensions.get(config.name) ?? [];
+        return {
+          ...config,
+          values: () => ({
+            ...config.values(),
+            ...buildEnumValueMap(extensions),
+          }),
+          extensionASTNodes: config.extensionASTNodes.concat(extensions),
+        };
+      },
+      [SchemaElementKind.SCALAR]: (config) => {
+        const extensions = scalarExtensions.get(config.name) ?? [];
+        let specifiedByURL = config.specifiedByURL;
+        for (const extensionNode of extensions) {
+          specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
+        }
+        return {
+          ...config,
+          specifiedByURL,
+          extensionASTNodes: config.extensionASTNodes.concat(extensions),
+        };
+      },
+      [SchemaElementKind.OBJECT]: (config) => {
+        const extensions = objectExtensions.get(config.name) ?? [];
+        return {
+          ...config,
+          interfaces: () => [
+            ...config.interfaces(),
+            ...buildInterfaces(extensions),
+          ],
+          fields: () => ({
+            ...config.fields(),
+            ...buildFieldMap(extensions),
+          }),
+          extensionASTNodes: config.extensionASTNodes.concat(extensions),
+        };
+      },
+      [SchemaElementKind.INTERFACE]: (config) => {
+        const extensions = interfaceExtensions.get(config.name) ?? [];
+        return {
+          ...config,
+          interfaces: () => [
+            ...config.interfaces(),
+            ...buildInterfaces(extensions),
+          ],
+          fields: () => ({
+            ...config.fields(),
+            ...buildFieldMap(extensions),
+          }),
+          extensionASTNodes: config.extensionASTNodes.concat(extensions),
+        };
+      },
+      [SchemaElementKind.UNION]: (config) => {
+        const extensions = unionExtensions.get(config.name) ?? [];
+        return {
+          ...config,
+          types: () => [...config.types(), ...buildUnionTypes(extensions)],
+          extensionASTNodes: config.extensionASTNodes.concat(extensions),
+        };
+      },
+    };
 
-  // Then produce and return a Schema config with these types.
-  return {
-    description: schemaDef?.description?.value ?? schemaConfig.description,
-    ...operationTypes,
-    types: Array.from(typeMap.values()),
-    directives: [
-      ...schemaConfig.directives.map(replaceDirective),
-      ...directiveDefs.map(buildDirective),
-    ],
-    extensions: schemaConfig.extensions,
-    astNode: schemaDef ?? schemaConfig.astNode,
-    extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
-    assumeValid: options?.assumeValid ?? false,
-  };
+    function getOperationTypes(
+      nodes: ReadonlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
+    ): {
+      query?: Maybe<GraphQLObjectType>;
+      mutation?: Maybe<GraphQLObjectType>;
+      subscription?: Maybe<GraphQLObjectType>;
+    } {
+      const opTypes = {};
+      for (const node of nodes) {
+        const operationTypesNodes = node.operationTypes ?? [];
 
-  // Below are functions used for producing this schema that have closed over
-  // this scope and have access to the schema, cache, and newly defined types.
+        for (const operationType of operationTypesNodes) {
+          // Note: While this could make early assertions to get the correctly
+          // typed values below, that would throw immediately while type system
+          // validation with validateSchema() will produce more actionable results.
+          // @ts-expect-error
+          opTypes[operationType.operation] = namedTypeFromAST(
+            operationType.type,
+          );
+        }
+      }
 
-  function replaceType<T extends GraphQLType>(type: T): T {
-    if (isListType(type)) {
-      // @ts-expect-error
-      return new GraphQLList(replaceType(type.ofType));
+      return opTypes;
     }
-    if (isNonNullType(type)) {
-      // @ts-expect-error
-      return new GraphQLNonNull(replaceType(type.ofType));
-    }
-    // @ts-expect-error FIXME
-    return replaceNamedType(type);
-  }
 
-  function replaceNamedType<T extends GraphQLNamedType>(type: T): T {
-    // Note: While this could make early assertions to get the correctly
-    // typed values, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    return typeMap.get(type.name) as T;
-  }
-
-  function replaceDirective(directive: GraphQLDirective): GraphQLDirective {
-    if (isSpecifiedDirective(directive)) {
-      // Builtin directives are not extended.
-      return directive;
-    }
-
-    const config = directive.toConfig();
-    return new GraphQLDirective({
-      ...config,
-      args: mapValue(config.args, extendArg),
-    });
-  }
-
-  function extendNamedType(type: GraphQLNamedType): GraphQLNamedType {
-    if (isIntrospectionType(type) || isSpecifiedScalarType(type)) {
-      // Builtin types are not extended.
+    function namedTypeFromAST(node: NamedTypeNode): GraphQLNamedType {
+      const name = node.name.value;
+      const type = getNamedType(name);
+      invariant(type !== undefined, `Unknown type: "${name}".`);
       return type;
     }
-    if (isScalarType(type)) {
-      return extendScalarType(type);
-    }
-    if (isObjectType(type)) {
-      return extendObjectType(type);
-    }
-    if (isInterfaceType(type)) {
-      return extendInterfaceType(type);
-    }
-    if (isUnionType(type)) {
-      return extendUnionType(type);
-    }
-    if (isEnumType(type)) {
-      return extendEnumType(type);
-    }
-    if (isInputObjectType(type)) {
-      return extendInputObjectType(type);
-    }
-    /* c8 ignore next 3 */
-    // Not reachable, all possible type definition nodes have been considered.
-    invariant(false, 'Unexpected type: ' + inspect(type));
-  }
 
-  function extendInputObjectType(
-    type: GraphQLInputObjectType,
-  ): GraphQLInputObjectType {
-    const config = type.toConfig();
-    const extensions = inputObjectExtensions.get(config.name) ?? [];
-
-    return new GraphQLInputObjectType({
-      ...config,
-      fields: () => ({
-        ...mapValue(config.fields, (field) => ({
-          ...field,
-          type: replaceType(field.type),
-        })),
-        ...buildInputFieldMap(extensions),
-      }),
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
-    });
-  }
-
-  function extendEnumType(type: GraphQLEnumType): GraphQLEnumType {
-    const config = type.toConfig();
-    const extensions = enumExtensions.get(type.name) ?? [];
-
-    return new GraphQLEnumType({
-      ...config,
-      values: {
-        ...config.values,
-        ...buildEnumValueMap(extensions),
-      },
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
-    });
-  }
-
-  function extendScalarType(type: GraphQLScalarType): GraphQLScalarType {
-    const config = type.toConfig();
-    const extensions = scalarExtensions.get(config.name) ?? [];
-
-    let specifiedByURL = config.specifiedByURL;
-    for (const extensionNode of extensions) {
-      specifiedByURL = getSpecifiedByURL(extensionNode) ?? specifiedByURL;
+    function typeFromAST(node: TypeNode): GraphQLType {
+      if (node.kind === Kind.LIST_TYPE) {
+        return new GraphQLList(typeFromAST(node.type));
+      }
+      if (node.kind === Kind.NON_NULL_TYPE) {
+        return new GraphQLNonNull(typeFromAST(node.type));
+      }
+      return namedTypeFromAST(node);
     }
 
-    return new GraphQLScalarType({
-      ...config,
-      specifiedByURL,
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
-    });
-  }
-
-  function extendObjectType(type: GraphQLObjectType): GraphQLObjectType {
-    const config = type.toConfig();
-    const extensions = objectExtensions.get(config.name) ?? [];
-
-    return new GraphQLObjectType({
-      ...config,
-      interfaces: () => [
-        ...type.getInterfaces().map(replaceNamedType),
-        ...buildInterfaces(extensions),
-      ],
-      fields: () => ({
-        ...mapValue(config.fields, extendField),
-        ...buildFieldMap(extensions),
-      }),
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
-    });
-  }
-
-  function extendInterfaceType(
-    type: GraphQLInterfaceType,
-  ): GraphQLInterfaceType {
-    const config = type.toConfig();
-    const extensions = interfaceExtensions.get(config.name) ?? [];
-
-    return new GraphQLInterfaceType({
-      ...config,
-      interfaces: () => [
-        ...type.getInterfaces().map(replaceNamedType),
-        ...buildInterfaces(extensions),
-      ],
-      fields: () => ({
-        ...mapValue(config.fields, extendField),
-        ...buildFieldMap(extensions),
-      }),
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
-    });
-  }
-
-  function extendUnionType(type: GraphQLUnionType): GraphQLUnionType {
-    const config = type.toConfig();
-    const extensions = unionExtensions.get(config.name) ?? [];
-
-    return new GraphQLUnionType({
-      ...config,
-      types: () => [
-        ...type.getTypes().map(replaceNamedType),
-        ...buildUnionTypes(extensions),
-      ],
-      extensionASTNodes: config.extensionASTNodes.concat(extensions),
-    });
-  }
-
-  function extendField(
-    field: GraphQLFieldConfig<unknown, unknown>,
-  ): GraphQLFieldConfig<unknown, unknown> {
-    return {
-      ...field,
-      type: replaceType(field.type),
-      args: field.args && mapValue(field.args, extendArg),
-    };
-  }
-
-  function extendArg(arg: GraphQLArgumentConfig) {
-    return {
-      ...arg,
-      type: replaceType(arg.type),
-    };
-  }
-
-  function getOperationTypes(
-    nodes: ReadonlyArray<SchemaDefinitionNode | SchemaExtensionNode>,
-  ): {
-    query?: Maybe<GraphQLObjectType>;
-    mutation?: Maybe<GraphQLObjectType>;
-    subscription?: Maybe<GraphQLObjectType>;
-  } {
-    const opTypes = {};
-    for (const node of nodes) {
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      const operationTypesNodes =
-        /* c8 ignore next */ node.operationTypes ?? [];
-
-      for (const operationType of operationTypesNodes) {
-        // Note: While this could make early assertions to get the correctly
-        // typed values below, that would throw immediately while type system
-        // validation with validateSchema() will produce more actionable results.
+    function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
+      return new GraphQLDirective({
+        name: node.name.value,
+        description: node.description?.value,
         // @ts-expect-error
-        opTypes[operationType.operation] = getNamedType(operationType.type);
+        locations: node.locations.map(({ value }) => value),
+        isRepeatable: node.repeatable,
+        args: buildArgumentMap(node.arguments),
+        astNode: node,
+      });
+    }
+
+    function buildFieldMap(
+      nodes: ReadonlyArray<
+        | InterfaceTypeDefinitionNode
+        | InterfaceTypeExtensionNode
+        | ObjectTypeDefinitionNode
+        | ObjectTypeExtensionNode
+      >,
+    ): GraphQLFieldNormalizedConfigMap<unknown, unknown> {
+      const fieldConfigMap = Object.create(null);
+      for (const node of nodes) {
+        const nodeFields = node.fields ?? [];
+
+        for (const field of nodeFields) {
+          fieldConfigMap[field.name.value] = {
+            // Note: While this could make assertions to get the correctly typed
+            // value, that would throw immediately while type system validation
+            // with validateSchema() will produce more actionable results.
+            type: typeFromAST(field.type),
+            description: field.description?.value,
+            args: buildArgumentMap(field.arguments),
+            deprecationReason: getDeprecationReason(field),
+            astNode: field,
+          };
+        }
       }
+      return fieldConfigMap;
     }
 
-    return opTypes;
-  }
+    function buildArgumentMap(
+      args: Maybe<ReadonlyArray<InputValueDefinitionNode>>,
+    ): GraphQLFieldConfigArgumentMap {
+      const argsNodes = args ?? [];
 
-  function getNamedType(node: NamedTypeNode): GraphQLNamedType {
-    const name = node.name.value;
-    const type = stdTypeMap.get(name) ?? typeMap.get(name);
-
-    if (type === undefined) {
-      throw new Error(`Unknown type: "${name}".`);
-    }
-    return type;
-  }
-
-  function getWrappedType(node: TypeNode): GraphQLType {
-    if (node.kind === Kind.LIST_TYPE) {
-      return new GraphQLList(getWrappedType(node.type));
-    }
-    if (node.kind === Kind.NON_NULL_TYPE) {
-      return new GraphQLNonNull(getWrappedType(node.type));
-    }
-    return getNamedType(node);
-  }
-
-  function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
-    return new GraphQLDirective({
-      name: node.name.value,
-      description: node.description?.value,
-      // @ts-expect-error
-      locations: node.locations.map(({ value }) => value),
-      isRepeatable: node.repeatable,
-      args: buildArgumentMap(node.arguments),
-      astNode: node,
-    });
-  }
-
-  function buildFieldMap(
-    nodes: ReadonlyArray<
-      | InterfaceTypeDefinitionNode
-      | InterfaceTypeExtensionNode
-      | ObjectTypeDefinitionNode
-      | ObjectTypeExtensionNode
-    >,
-  ): GraphQLFieldConfigMap<unknown, unknown> {
-    const fieldConfigMap = Object.create(null);
-    for (const node of nodes) {
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      const nodeFields = /* c8 ignore next */ node.fields ?? [];
-
-      for (const field of nodeFields) {
-        fieldConfigMap[field.name.value] = {
-          // Note: While this could make assertions to get the correctly typed
-          // value, that would throw immediately while type system validation
-          // with validateSchema() will produce more actionable results.
-          type: getWrappedType(field.type),
-          description: field.description?.value,
-          args: buildArgumentMap(field.arguments),
-          deprecationReason: getDeprecationReason(field),
-          astNode: field,
-        };
-      }
-    }
-    return fieldConfigMap;
-  }
-
-  function buildArgumentMap(
-    args: Maybe<ReadonlyArray<InputValueDefinitionNode>>,
-  ): GraphQLFieldConfigArgumentMap {
-    // FIXME: https://github.com/graphql/graphql-js/issues/2203
-    const argsNodes = /* c8 ignore next */ args ?? [];
-
-    const argConfigMap = Object.create(null);
-    for (const arg of argsNodes) {
-      // Note: While this could make assertions to get the correctly typed
-      // value, that would throw immediately while type system validation
-      // with validateSchema() will produce more actionable results.
-      const type: any = getWrappedType(arg.type);
-
-      argConfigMap[arg.name.value] = {
-        type,
-        description: arg.description?.value,
-        defaultValue: valueFromAST(arg.defaultValue, type),
-        deprecationReason: getDeprecationReason(arg),
-        astNode: arg,
-      };
-    }
-    return argConfigMap;
-  }
-
-  function buildInputFieldMap(
-    nodes: ReadonlyArray<
-      InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode
-    >,
-  ): GraphQLInputFieldConfigMap {
-    const inputFieldMap = Object.create(null);
-    for (const node of nodes) {
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      const fieldsNodes = /* c8 ignore next */ node.fields ?? [];
-
-      for (const field of fieldsNodes) {
+      const argConfigMap = Object.create(null);
+      for (const arg of argsNodes) {
         // Note: While this could make assertions to get the correctly typed
         // value, that would throw immediately while type system validation
         // with validateSchema() will produce more actionable results.
-        const type: any = getWrappedType(field.type);
+        const type: any = typeFromAST(arg.type);
 
-        inputFieldMap[field.name.value] = {
+        argConfigMap[arg.name.value] = {
           type,
-          description: field.description?.value,
-          defaultValue: valueFromAST(field.defaultValue, type),
-          deprecationReason: getDeprecationReason(field),
-          astNode: field,
+          description: arg.description?.value,
+          default: arg.defaultValue && { literal: arg.defaultValue },
+          deprecationReason: getDeprecationReason(arg),
+          astNode: arg,
         };
       }
+      return argConfigMap;
     }
-    return inputFieldMap;
-  }
 
-  function buildEnumValueMap(
-    nodes: ReadonlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
-  ): GraphQLEnumValueConfigMap {
-    const enumValueMap = Object.create(null);
-    for (const node of nodes) {
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      const valuesNodes = /* c8 ignore next */ node.values ?? [];
+    function buildInputFieldMap(
+      nodes: ReadonlyArray<
+        InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode
+      >,
+    ): GraphQLInputFieldNormalizedConfigMap {
+      const inputFieldMap = Object.create(null);
+      for (const node of nodes) {
+        const fieldsNodes = node.fields ?? [];
 
-      for (const value of valuesNodes) {
-        enumValueMap[value.name.value] = {
-          description: value.description?.value,
-          deprecationReason: getDeprecationReason(value),
-          astNode: value,
-        };
+        for (const field of fieldsNodes) {
+          // Note: While this could make assertions to get the correctly typed
+          // value, that would throw immediately while type system validation
+          // with validateSchema() will produce more actionable results.
+          const type: any = typeFromAST(field.type);
+
+          inputFieldMap[field.name.value] = {
+            type,
+            description: field.description?.value,
+            default: field.defaultValue && { literal: field.defaultValue },
+            deprecationReason: getDeprecationReason(field),
+            astNode: field,
+          };
+        }
+      }
+      return inputFieldMap;
+    }
+
+    function buildEnumValueMap(
+      nodes: ReadonlyArray<EnumTypeDefinitionNode | EnumTypeExtensionNode>,
+    ): GraphQLEnumValueNormalizedConfigMap {
+      const enumValueMap = Object.create(null);
+      for (const node of nodes) {
+        const valuesNodes = node.values ?? [];
+
+        for (const value of valuesNodes) {
+          enumValueMap[value.name.value] = {
+            description: value.description?.value,
+            deprecationReason: getDeprecationReason(value),
+            astNode: value,
+          };
+        }
+      }
+      return enumValueMap;
+    }
+
+    function buildInterfaces(
+      nodes: ReadonlyArray<
+        | InterfaceTypeDefinitionNode
+        | InterfaceTypeExtensionNode
+        | ObjectTypeDefinitionNode
+        | ObjectTypeExtensionNode
+      >,
+    ): Array<GraphQLInterfaceType> {
+      // Note: While this could make assertions to get the correctly typed
+      // values below, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      // @ts-expect-error
+      return nodes.flatMap(
+        (node) => node.interfaces?.map(namedTypeFromAST) ?? [],
+      );
+    }
+
+    function buildUnionTypes(
+      nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
+    ): Array<GraphQLObjectType> {
+      // Note: While this could make assertions to get the correctly typed
+      // values below, that would throw immediately while type system
+      // validation with validateSchema() will produce more actionable results.
+      // @ts-expect-error
+      return nodes.flatMap((node) => node.types?.map(namedTypeFromAST) ?? []);
+    }
+
+    function buildNamedType(astNode: TypeDefinitionNode): GraphQLNamedType {
+      const name = astNode.name.value;
+
+      switch (astNode.kind) {
+        case Kind.OBJECT_TYPE_DEFINITION: {
+          const extensionASTNodes = objectExtensions.get(name) ?? [];
+          const allNodes = [astNode, ...extensionASTNodes];
+
+          return new GraphQLObjectType({
+            name,
+            description: astNode.description?.value,
+            interfaces: () => buildInterfaces(allNodes),
+            fields: () => buildFieldMap(allNodes),
+            astNode,
+            extensionASTNodes,
+          });
+        }
+        case Kind.INTERFACE_TYPE_DEFINITION: {
+          const extensionASTNodes = interfaceExtensions.get(name) ?? [];
+          const allNodes = [astNode, ...extensionASTNodes];
+
+          return new GraphQLInterfaceType({
+            name,
+            description: astNode.description?.value,
+            interfaces: () => buildInterfaces(allNodes),
+            fields: () => buildFieldMap(allNodes),
+            astNode,
+            extensionASTNodes,
+          });
+        }
+        case Kind.ENUM_TYPE_DEFINITION: {
+          const extensionASTNodes = enumExtensions.get(name) ?? [];
+          const allNodes = [astNode, ...extensionASTNodes];
+
+          return new GraphQLEnumType({
+            name,
+            description: astNode.description?.value,
+            values: () => buildEnumValueMap(allNodes),
+            astNode,
+            extensionASTNodes,
+          });
+        }
+        case Kind.UNION_TYPE_DEFINITION: {
+          const extensionASTNodes = unionExtensions.get(name) ?? [];
+          const allNodes = [astNode, ...extensionASTNodes];
+
+          return new GraphQLUnionType({
+            name,
+            description: astNode.description?.value,
+            types: () => buildUnionTypes(allNodes),
+            astNode,
+            extensionASTNodes,
+          });
+        }
+        case Kind.SCALAR_TYPE_DEFINITION: {
+          const extensionASTNodes = scalarExtensions.get(name) ?? [];
+          return new GraphQLScalarType({
+            name,
+            description: astNode.description?.value,
+            specifiedByURL: getSpecifiedByURL(astNode),
+            astNode,
+            extensionASTNodes,
+          });
+        }
+        case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
+          const extensionASTNodes = inputObjectExtensions.get(name) ?? [];
+          const allNodes = [astNode, ...extensionASTNodes];
+
+          return new GraphQLInputObjectType({
+            name,
+            description: astNode.description?.value,
+            fields: () => buildInputFieldMap(allNodes),
+            astNode,
+            extensionASTNodes,
+            isOneOf: isOneOf(astNode),
+          });
+        }
       }
     }
-    return enumValueMap;
-  }
-
-  function buildInterfaces(
-    nodes: ReadonlyArray<
-      | InterfaceTypeDefinitionNode
-      | InterfaceTypeExtensionNode
-      | ObjectTypeDefinitionNode
-      | ObjectTypeExtensionNode
-    >,
-  ): Array<GraphQLInterfaceType> {
-    // Note: While this could make assertions to get the correctly typed
-    // values below, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    // @ts-expect-error
-    return nodes.flatMap(
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      (node) => /* c8 ignore next */ node.interfaces?.map(getNamedType) ?? [],
-    );
-  }
-
-  function buildUnionTypes(
-    nodes: ReadonlyArray<UnionTypeDefinitionNode | UnionTypeExtensionNode>,
-  ): Array<GraphQLObjectType> {
-    // Note: While this could make assertions to get the correctly typed
-    // values below, that would throw immediately while type system
-    // validation with validateSchema() will produce more actionable results.
-    // @ts-expect-error
-    return nodes.flatMap(
-      // FIXME: https://github.com/graphql/graphql-js/issues/2203
-      (node) => /* c8 ignore next */ node.types?.map(getNamedType) ?? [],
-    );
-  }
-
-  function buildType(astNode: TypeDefinitionNode): GraphQLNamedType {
-    const name = astNode.name.value;
-
-    switch (astNode.kind) {
-      case Kind.OBJECT_TYPE_DEFINITION: {
-        const extensionASTNodes = objectExtensions.get(name) ?? [];
-        const allNodes = [astNode, ...extensionASTNodes];
-
-        return new GraphQLObjectType({
-          name,
-          description: astNode.description?.value,
-          interfaces: () => buildInterfaces(allNodes),
-          fields: () => buildFieldMap(allNodes),
-          astNode,
-          extensionASTNodes,
-        });
-      }
-      case Kind.INTERFACE_TYPE_DEFINITION: {
-        const extensionASTNodes = interfaceExtensions.get(name) ?? [];
-        const allNodes = [astNode, ...extensionASTNodes];
-
-        return new GraphQLInterfaceType({
-          name,
-          description: astNode.description?.value,
-          interfaces: () => buildInterfaces(allNodes),
-          fields: () => buildFieldMap(allNodes),
-          astNode,
-          extensionASTNodes,
-        });
-      }
-      case Kind.ENUM_TYPE_DEFINITION: {
-        const extensionASTNodes = enumExtensions.get(name) ?? [];
-        const allNodes = [astNode, ...extensionASTNodes];
-
-        return new GraphQLEnumType({
-          name,
-          description: astNode.description?.value,
-          values: buildEnumValueMap(allNodes),
-          astNode,
-          extensionASTNodes,
-        });
-      }
-      case Kind.UNION_TYPE_DEFINITION: {
-        const extensionASTNodes = unionExtensions.get(name) ?? [];
-        const allNodes = [astNode, ...extensionASTNodes];
-
-        return new GraphQLUnionType({
-          name,
-          description: astNode.description?.value,
-          types: () => buildUnionTypes(allNodes),
-          astNode,
-          extensionASTNodes,
-        });
-      }
-      case Kind.SCALAR_TYPE_DEFINITION: {
-        const extensionASTNodes = scalarExtensions.get(name) ?? [];
-        return new GraphQLScalarType({
-          name,
-          description: astNode.description?.value,
-          specifiedByURL: getSpecifiedByURL(astNode),
-          astNode,
-          extensionASTNodes,
-        });
-      }
-      case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
-        const extensionASTNodes = inputObjectExtensions.get(name) ?? [];
-        const allNodes = [astNode, ...extensionASTNodes];
-
-        return new GraphQLInputObjectType({
-          name,
-          description: astNode.description?.value,
-          fields: () => buildInputFieldMap(allNodes),
-          astNode,
-          extensionASTNodes,
-          isOneOf: isOneOf(astNode),
-        });
-      }
-    }
-  }
+  });
 }
 
 const stdTypeMap = new Map(

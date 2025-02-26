@@ -15,7 +15,7 @@ import { validateSchema } from './type/validate.js';
 import { validate } from './validation/validate.js';
 
 import { execute } from './execution/execute.js';
-import type { ExecutionResult } from './execution/IncrementalPublisher.js';
+import type { ExecutionResult } from './execution/types.js';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -61,12 +61,14 @@ import type { ExecutionResult } from './execution/IncrementalPublisher.js';
 export interface GraphQLArgs {
   schema: GraphQLSchema;
   source: string | Source;
+  hideSuggestions?: Maybe<boolean>;
   rootValue?: unknown;
   contextValue?: unknown;
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  abortSignal?: Maybe<AbortSignal>;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -101,6 +103,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    hideSuggestions,
   } = args;
 
   // Validate Schema
@@ -118,7 +121,9 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   }
 
   // Validate
-  const validationErrors = validate(schema, document);
+  const validationErrors = validate(schema, document, undefined, {
+    hideSuggestions,
+  });
   if (validationErrors.length > 0) {
     return { errors: validationErrors };
   }
@@ -133,5 +138,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    hideSuggestions,
   });
 }

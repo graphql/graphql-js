@@ -1,0 +1,38 @@
+---
+title: Enabling Defer & Stream
+---
+
+import { Callout } from 'nextra/components'
+ 
+<Callout type="info" emoji="ℹ️">
+  These exports are only available in v17 and beyond.
+</Callout>
+
+The `@defer` and `@stream` directives are not enabled by default.
+In order to use these directives, you must add them to your GraphQL Schema and
+use the `experimentalExecuteIncrementally` function instead of `execute`.
+
+```js
+import {
+  GraphQLSchema,
+  GraphQLDeferDirective,
+  GraphQLStreamDirective,
+  specifiedDirectives,
+} from 'graphql';
+
+const schema = new GraphQLSchema({
+  query,
+  directives: [
+    ...specifiedDirectives,
+    GraphQLDeferDirective,
+    GraphQLStreamDirective,
+  ],
+});
+
+const result = experimentalExecuteIncrementally({
+  schema,
+  document,
+});
+```
+
+If the `directives` option is passed to `GraphQLSchema`, the default directives will not be included. `specifiedDirectives` must be passed to ensure all standard directives are added in addition to `defer` & `stream`.

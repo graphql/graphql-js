@@ -356,5 +356,140 @@ describe('Validate: Variables are in allowed positions', () => {
           dog @include(if: $boolVar)
         }`);
     });
+
+    it('undefined in directive with default value with option', () => {
+      expectValid(`
+        {
+          dog @include(if: $x)
+        }`);
+    });
+  });
+
+  describe('Validates OneOf Input Objects', () => {
+    it('Allows exactly one non-nullable variable', () => {
+      expectValid(`
+        query ($string: String!) {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: $string })
+          }
+        }
+      `);
+    });
+
+    it('Forbids one nullable variable', () => {
+      expectErrors(`
+        query ($string: String) {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: $string })
+          }
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Variable "$string" is of type "String" but must be non-nullable to be used for OneOf Input Object "OneOfInput".',
+          locations: [
+            { line: 2, column: 16 },
+            { line: 4, column: 52 },
+          ],
+        },
+      ]);
+    });
+  });
+
+  describe('Fragment arguments are validated', () => {
+    it('Boolean => Boolean', () => {
+      expectValid(`
+        query Query($booleanArg: Boolean)
+        {
+          complicatedArgs {
+            ...A(b: $booleanArg)
+          }
+        }
+        fragment A($b: Boolean) on ComplicatedArgs {
+          booleanArgField(booleanArg: $b)
+        }
+      `);
+    });
+
+    it('Boolean => Boolean with default value', () => {
+      expectValid(`
+        query Query($booleanArg: Boolean)
+        {
+          complicatedArgs {
+            ...A(b: $booleanArg)
+          }
+        }
+        fragment A($b: Boolean = true) on ComplicatedArgs {
+          booleanArgField(booleanArg: $b)
+        }
+      `);
+    });
+
+    it('Boolean => Boolean!', () => {
+      expectErrors(`
+        query Query($ab: Boolean)
+        {
+          complicatedArgs {
+            ...A(b: $ab)
+          }
+        }
+        fragment A($b: Boolean!) on ComplicatedArgs {
+          booleanArgField(booleanArg: $b)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Variable "$ab" of type "Boolean" used in position expecting type "Boolean!".',
+          locations: [
+            { line: 2, column: 21 },
+            { line: 5, column: 21 },
+          ],
+        },
+      ]);
+    });
+
+    it('Int => Int! fails when variable provides null default value', () => {
+      expectErrors(`
+        query Query($intVar: Int = null) {
+          complicatedArgs {
+            ...A(i: $intVar)
+          }
+        }
+        fragment A($i: Int!) on ComplicatedArgs {
+          nonNullIntArgField(nonNullIntArg: $i)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Variable "$intVar" of type "Int" used in position expecting type "Int!".',
+          locations: [
+            { line: 2, column: 21 },
+            { line: 4, column: 21 },
+          ],
+        },
+      ]);
+    });
+
+    it('Int fragment arg => Int! field arg fails even when shadowed by Int! variable', () => {
+      expectErrors(`
+        query Query($intVar: Int!) {
+          complicatedArgs {
+            ...A(i: $intVar)
+          }
+        }
+        fragment A($intVar: Int) on ComplicatedArgs {
+          nonNullIntArgField(nonNullIntArg: $intVar)
+        }
+      `).toDeepEqual([
+        {
+          message:
+            'Variable "$intVar" of type "Int" used in position expecting type "Int!".',
+          locations: [
+            { line: 7, column: 20 },
+            { line: 8, column: 45 },
+          ],
+        },
+      ]);
+    });
   });
 });

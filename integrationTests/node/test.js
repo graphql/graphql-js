@@ -1,5 +1,5 @@
-import childProcess from 'child_process';
-import fs from 'fs';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
 
 const graphqlPackageJSON = JSON.parse(
   fs.readFileSync('./node_modules/graphql/package.json', 'utf-8'),

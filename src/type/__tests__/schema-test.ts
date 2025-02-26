@@ -24,6 +24,7 @@ import {
 } from '../introspection.js';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars.js';
 import { GraphQLSchema } from '../schema.js';
+import { validateSchema } from '../validate.js';
 
 describe('Type System: Schema', () => {
   it('Define sample schema', () => {
@@ -432,11 +433,21 @@ describe('Type System: Schema', () => {
   describe('Validity', () => {
     describe('when not assumed valid', () => {
       it('configures the schema to still needing validation', () => {
-        expect(
-          new GraphQLSchema({
-            assumeValid: false,
-          }).__validationErrors,
-        ).to.equal(undefined);
+        const schema = new GraphQLSchema({
+          assumeValid: false,
+        });
+        expect(schema.assumeValid).to.equal(false);
+        expect(schema.__validationErrors).to.equal(undefined);
+      });
+
+      it('configures the schema to have required validation even once validated', () => {
+        const schema = new GraphQLSchema({
+          assumeValid: false,
+        });
+        const validationErrors = validateSchema(schema);
+        expect(validationErrors.length).to.be.greaterThan(0);
+        expect(validationErrors).to.equal(schema.__validationErrors);
+        expect(schema.assumeValid).to.equal(false);
       });
     });
 
@@ -486,11 +497,11 @@ describe('Type System: Schema', () => {
 
     describe('when assumed valid', () => {
       it('configures the schema to have no errors', () => {
-        expect(
-          new GraphQLSchema({
-            assumeValid: true,
-          }).__validationErrors,
-        ).to.deep.equal([]);
+        const schema = new GraphQLSchema({
+          assumeValid: true,
+        });
+        expect(schema.assumeValid).to.equal(true);
+        expect(schema.__validationErrors).to.deep.equal([]);
       });
     });
   });

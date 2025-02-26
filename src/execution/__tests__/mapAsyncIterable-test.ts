@@ -89,6 +89,54 @@ describe('mapAsyncIterable', () => {
     });
   });
 
+  it('calls done when completes', async () => {
+    async function* source() {
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+
+    let done = false;
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => Promise.resolve(x + x),
+      () => {
+        done = true;
+      },
+    );
+
+    expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 6, done: false });
+    expect(done).to.equal(false);
+    expect(await doubles.next()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+    expect(done).to.equal(true);
+  });
+
+  it('calls done when completes with error', async () => {
+    async function* source() {
+      yield 1;
+      throw new Error('Oops');
+    }
+
+    let done = false;
+    const doubles = mapAsyncIterable(
+      source(),
+      (x) => Promise.resolve(x + x),
+      () => {
+        done = true;
+      },
+    );
+
+    expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+    expect(done).to.equal(false);
+    await expectPromise(doubles.next()).toRejectWith('Oops');
+    expect(done).to.equal(true);
+  });
+
   it('allows returning early from mapped async generator', async () => {
     async function* source() {
       try {
@@ -265,6 +313,7 @@ describe('mapAsyncIterable', () => {
     await expectPromise(doubles.next()).toRejectWith('Goodbye');
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   async function testClosesSourceWithMapper<T>(mapper: (value: number) => T) {
     let didVisitFinally = false;
 

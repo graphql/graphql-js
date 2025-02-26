@@ -3363,7 +3363,7 @@ type CreatedIssueContributionEdge {
 Represents either a issue the viewer can access or a restricted contribution.
 """
 union CreatedIssueOrRestrictedContribution =
-    CreatedIssueContribution
+  | CreatedIssueContribution
   | RestrictedContribution
 
 """
@@ -3447,7 +3447,7 @@ type CreatedPullRequestContributionEdge {
 Represents either a pull request the viewer can access or a restricted contribution.
 """
 union CreatedPullRequestOrRestrictedContribution =
-    CreatedPullRequestContribution
+  | CreatedPullRequestContribution
   | RestrictedContribution
 
 """
@@ -3618,7 +3618,7 @@ type CreatedRepositoryContributionEdge {
 Represents either a repository the viewer can access or a restricted contribution.
 """
 union CreatedRepositoryOrRestrictedContribution =
-    CreatedRepositoryContribution
+  | CreatedRepositoryContribution
   | RestrictedContribution
 
 """
@@ -6635,7 +6635,7 @@ type IssueTimelineConnection {
 An item in an issue timeline
 """
 union IssueTimelineItem =
-    Commit
+  | Commit
   | IssueComment
   | CrossReferencedEvent
   | ClosedEvent
@@ -6674,7 +6674,7 @@ type IssueTimelineItemEdge {
 An item in an issue timeline
 """
 union IssueTimelineItems =
-    IssueComment
+  | IssueComment
   | CrossReferencedEvent
   | AddedToProjectEvent
   | AssignedEvent
@@ -12534,7 +12534,7 @@ type PullRequestTimelineConnection {
 An item in an pull request timeline
 """
 union PullRequestTimelineItem =
-    Commit
+  | Commit
   | CommitCommentThread
   | PullRequestReview
   | PullRequestReviewThread
@@ -12586,7 +12586,7 @@ type PullRequestTimelineItemEdge {
 An item in a pull request timeline
 """
 union PullRequestTimelineItems =
-    PullRequestCommit
+  | PullRequestCommit
   | PullRequestCommitCommentThread
   | PullRequestReview
   | PullRequestReviewThread
@@ -16467,7 +16467,7 @@ type ReviewRequestRemovedEvent implements Node {
 The results of a search.
 """
 union SearchResultItem =
-    Issue
+  | Issue
   | PullRequest
   | Repository
   | User

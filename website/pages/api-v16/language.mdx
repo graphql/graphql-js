@@ -1,0 +1,295 @@
+---
+title: graphql/language
+---
+
+{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+
+# `graphql/language`
+
+The `graphql/language` module is responsible for parsing and operating on the GraphQL language. You can import either from the `graphql/language` module, or from the root `graphql` module. For example:
+
+```js
+import { Source } from 'graphql'; // ES6
+const { Source } = require('graphql'); // CommonJS
+```
+
+## Overview
+
+### Source
+
+<ul className="apiIndex">
+  <li>
+    <a href="#source">
+      `class Source` Represents the input string to the GraphQL server
+    </a>
+  </li>
+  <li>
+    <a href="#getlocation">
+      `function getLocation` Converts a character offset to a row and column in
+      the Source
+    </a>
+  </li>
+</ul>
+
+### Lexer
+
+<ul className="apiIndex">
+  <li>
+    <a href="#lex">
+      `function lex` Lexes a GraphQL Source according to the GraphQL Grammar
+    </a>
+  </li>
+</ul>
+
+### Parser
+
+<ul className="apiIndex">
+  <li>
+    <a href="#parse">
+      `function parse` Parses a GraphQL Source according to the GraphQL Grammar
+    </a>
+  </li>
+  <li>
+    <a href="#parseValue">
+      `function parseValue` Parses a value according to the GraphQL Grammar
+    </a>
+  </li>
+  <li>
+    <a href="#kind">
+      `const Kind` Represents the various kinds of parsed AST nodes.
+    </a>
+  </li>
+</ul>
+
+### Visitor
+
+<ul className="apiIndex">
+  <li>
+    <a href="#visit">
+      `function visit` A general-purpose visitor to traverse a parsed GraphQL
+      AST
+    </a>
+  </li>
+  <li>
+    <a href="#break">
+      `const BREAK` A token to allow breaking out of the visitor.
+    </a>
+  </li>
+</ul>
+
+### Printer
+
+<ul className="apiIndex">
+  <li>
+    <a href="#print">`function print` Prints an AST in a standard format.</a>
+  </li>
+</ul>
+
+## Source
+
+### Source
+
+```ts
+export class Source {
+  constructor(body: string, name?: string);
+}
+```
+
+A representation of source input to GraphQL. The name is optional,
+but is mostly useful for clients who store GraphQL documents in
+source files; for example, if the GraphQL input is in a file Foo.graphql,
+it might be useful for name to be "Foo.graphql".
+
+### getLocation
+
+```ts
+function getLocation(source: Source, position: number): SourceLocation;
+
+type SourceLocation = {
+  line: number;
+  column: number;
+};
+```
+
+Takes a Source and a UTF-8 character offset, and returns the corresponding
+line and column as a SourceLocation.
+
+## Lexer
+
+### `lex`
+
+```ts
+function lex(source: Source): Lexer;
+
+type Lexer = (resetPosition?: number) => Token;
+
+export type Token = {
+  kind: number;
+  start: number;
+  end: number;
+  value: string;
+};
+```
+
+Given a Source object, this returns a Lexer for that source.
+A Lexer is a function that acts like a generator in that every time
+it is called, it returns the next token in the Source. Assuming the
+source lexes, the final Token emitted by the lexer will be of kind
+EOF, after which the lexer will repeatedly return EOF tokens whenever
+called.
+
+The argument to the lexer function is optional, and can be used to
+rewind or fast forward the lexer to a new position in the source.
+
+## Parser
+
+### `parse`
+
+```ts
+export function parse(
+  source: Source | string,
+  options?: ParseOptions,
+): Document;
+```
+
+Given a GraphQL source, parses it into a Document.
+
+Throws GraphQLError if a syntax error is encountered.
+
+### `parseValue`
+
+```ts
+export function parseValue(
+  source: Source | string,
+  options?: ParseOptions,
+): Value;
+```
+
+Given a string containing a GraphQL value, parse the AST for that value.
+
+Throws GraphQLError if a syntax error is encountered.
+
+This is useful within tools that operate upon GraphQL Values directly and
+in isolation of complete GraphQL documents.
+
+### `Kind`
+
+An enum that describes the different kinds of AST nodes.
+
+## Visitor
+
+### `visit`
+
+```ts
+function visit(root, visitor, keyMap);
+```
+
+visit() will walk through an AST using a depth first traversal, calling
+the visitor's enter function at each node in the traversal, and calling the
+leave function after visiting that node and all of its child nodes.
+
+By returning different values from the enter and leave functions, the
+behavior of the visitor can be altered, including skipping over a sub-tree of
+the AST (by returning false), editing the AST by returning a value or null
+to remove the value, or to stop the whole traversal by returning BREAK.
+
+When using visit() to edit an AST, the original AST will not be modified, and
+a new version of the AST with the changes applied will be returned from the
+visit function.
+
+```js
+const editedAST = visit(ast, {
+  enter(node, key, parent, path, ancestors) {
+    // @return
+    //   undefined: no action
+    //   false: skip visiting this node
+    //   visitor.BREAK: stop visiting altogether
+    //   null: delete this node
+    //   any value: replace this node with the returned value
+  },
+  leave(node, key, parent, path, ancestors) {
+    // @return
+    //   undefined: no action
+    //   false: no action
+    //   visitor.BREAK: stop visiting altogether
+    //   null: delete this node
+    //   any value: replace this node with the returned value
+  },
+});
+```
+
+Alternatively to providing enter() and leave() functions, a visitor can
+instead provide functions named the same as the kinds of AST nodes, or
+enter/leave visitors at a named key, leading to four permutations of
+visitor API:
+
+1. Named visitors triggered when entering a node a specific kind.
+
+```js
+visit(ast, {
+  Kind(node) {
+    // enter the "Kind" node
+  },
+});
+```
+
+2. Named visitors that trigger upon entering and leaving a node of
+   a specific kind.
+
+```js
+visit(ast, {
+  Kind: {
+    enter(node) {
+      // enter the "Kind" node
+    },
+    leave(node) {
+      // leave the "Kind" node
+    },
+  },
+});
+```
+
+3. Generic visitors that trigger upon entering and leaving any node.
+
+```js
+visit(ast, {
+  enter(node) {
+    // enter any node
+  },
+  leave(node) {
+    // leave any node
+  },
+});
+```
+
+4. Parallel visitors for entering and leaving nodes of a specific kind.
+
+```js
+visit(ast, {
+  enter: {
+    Kind(node) {
+      // enter the "Kind" node
+    },
+  },
+  leave: {
+    Kind(node) {
+      // leave the "Kind" node
+    },
+  },
+});
+```
+
+### `BREAK`
+
+The sentinel `BREAK` value described in the documentation of `visitor`.
+
+## Printer
+
+### `print`
+
+```ts
+function print(ast): string;
+```
+
+Converts an AST into a string, using one set of reasonable
+formatting rules.

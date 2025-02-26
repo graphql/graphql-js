@@ -2,15 +2,14 @@ import type { ObjMap } from '../../jsutils/ObjMap.js';
 
 import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type {
-  FieldNode,
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
-} from '../../language/ast.js';
+import type { FieldNode, OperationDefinitionNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { FieldGroup } from '../../execution/collectFields.js';
+import type {
+  FieldDetailsList,
+  FragmentDetails,
+} from '../../execution/collectFields.js';
 import {
   collectFields,
   VALIDATION_PHASE_EMPTY_VARIABLES,
@@ -18,8 +17,8 @@ import {
 
 import type { ValidationContext } from '../ValidationContext.js';
 
-function toNodes(fieldGroup: FieldGroup): ReadonlyArray<FieldNode> {
-  return fieldGroup.fields.map((fieldDetails) => fieldDetails.node);
+function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
+  return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
 }
 
 /**
@@ -43,10 +42,10 @@ export function SingleFieldSubscriptionsRule(
           const operationName = node.name ? node.name.value : null;
           const variableValues = VALIDATION_PHASE_EMPTY_VARIABLES;
           const document = context.getDocument();
-          const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
+          const fragments: ObjMap<FragmentDetails> = Object.create(null);
           for (const definition of document.definitions) {
             if (definition.kind === Kind.FRAGMENT_DEFINITION) {
-              fragments[definition.name.value] = definition;
+              fragments[definition.name.value] = { definition };
             }
           }
           const { groupedFieldSet, forbiddenDirectiveInstances } =
@@ -55,7 +54,8 @@ export function SingleFieldSubscriptionsRule(
               fragments,
               variableValues,
               subscriptionType,
-              node,
+              node.selectionSet,
+              context.hideSuggestions,
             );
           if (forbiddenDirectiveInstances.length > 0) {
             context.reportError(
@@ -69,10 +69,10 @@ export function SingleFieldSubscriptionsRule(
             return;
           }
           if (groupedFieldSet.size > 1) {
-            const fieldGroups = [...groupedFieldSet.values()];
-            const extraFieldGroups = fieldGroups.slice(1);
-            const extraFieldSelections = extraFieldGroups.flatMap(
-              (fieldGroup) => toNodes(fieldGroup),
+            const fieldDetailsLists = [...groupedFieldSet.values()];
+            const extraFieldDetailsLists = fieldDetailsLists.slice(1);
+            const extraFieldSelections = extraFieldDetailsLists.flatMap(
+              (fieldDetailsList) => toNodes(fieldDetailsList),
             );
             context.reportError(
               new GraphQLError(
@@ -83,15 +83,15 @@ export function SingleFieldSubscriptionsRule(
               ),
             );
           }
-          for (const fieldGroup of groupedFieldSet.values()) {
-            const fieldName = toNodes(fieldGroup)[0].name.value;
+          for (const fieldDetailsList of groupedFieldSet.values()) {
+            const fieldName = toNodes(fieldDetailsList)[0].name.value;
             if (fieldName.startsWith('__')) {
               context.reportError(
                 new GraphQLError(
                   operationName != null
                     ? `Subscription "${operationName}" must not select an introspection top level field.`
                     : 'Anonymous Subscription must not select an introspection top level field.',
-                  { nodes: toNodes(fieldGroup) },
+                  { nodes: toNodes(fieldDetailsList) },
                 ),
               );
             }

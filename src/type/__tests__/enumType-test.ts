@@ -31,6 +31,14 @@ const ComplexEnum = new GraphQLEnumType({
   },
 });
 
+const ThunkValuesEnum = new GraphQLEnumType({
+  name: 'ThunkValues',
+  values: () => ({
+    A: { value: 'a' },
+    B: { value: 'b' },
+  }),
+});
+
 const QueryType = new GraphQLObjectType({
   name: 'Query',
   fields: {
@@ -45,8 +53,8 @@ const QueryType = new GraphQLObjectType({
         return fromInt !== undefined
           ? fromInt
           : fromString !== undefined
-          ? fromString
-          : fromEnum;
+            ? fromString
+            : fromEnum;
       },
     },
     colorInt: {
@@ -63,9 +71,7 @@ const QueryType = new GraphQLObjectType({
       args: {
         fromEnum: {
           type: ComplexEnum,
-          // Note: defaultValue is provided an *internal* representation for
-          // Enums, rather than the string name.
-          defaultValue: Complex1,
+          default: { value: 'ONE' },
         },
         provideGoodValue: { type: GraphQLBoolean },
         provideBadValue: { type: GraphQLBoolean },
@@ -81,6 +87,27 @@ const QueryType = new GraphQLObjectType({
           // as Complex2 above. Enum internal values require === equality.
           return { someRandomValue: 123 };
         }
+        return fromEnum;
+      },
+    },
+    complexEnumWithLegacyDefault: {
+      type: ComplexEnum,
+      args: {
+        fromEnum: {
+          type: ComplexEnum,
+          defaultValue: Complex1,
+        },
+      },
+      resolve(_source, { fromEnum }) {
+        return fromEnum;
+      },
+    },
+    thunkValuesString: {
+      type: GraphQLString,
+      args: {
+        fromEnum: { type: ThunkValuesEnum },
+      },
+      resolve(_source, { fromEnum }) {
         return fromEnum;
       },
     },
@@ -118,8 +145,14 @@ const schema = new GraphQLSchema({
 function executeQuery(
   source: string,
   variableValues?: { readonly [variable: string]: unknown },
+  hideSuggestions = false,
 ) {
-  return graphqlSync({ schema, source, variableValues });
+  return graphqlSync({
+    schema,
+    source,
+    variableValues,
+    hideSuggestions,
+  });
 }
 
 describe('Type System: Enum Values', () => {
@@ -169,6 +202,23 @@ describe('Type System: Enum Values', () => {
         {
           message:
             'Value "GREENISH" does not exist in "Color" enum. Did you mean the enum value "GREEN"?',
+          locations: [{ line: 1, column: 23 }],
+        },
+      ],
+    });
+  });
+
+  it('does not accept values not in the enum (no suggestions)', () => {
+    const result = executeQuery(
+      '{ colorEnum(fromEnum: GREENISH) }',
+      undefined,
+      true,
+    );
+
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message: 'Value "GREENISH" does not exist in "Color" enum.',
           locations: [{ line: 1, column: 23 }],
         },
       ],
@@ -266,7 +316,7 @@ describe('Type System: Enum Values', () => {
       errors: [
         {
           message:
-            'Variable "$color" got invalid value 2; Enum "Color" cannot represent non-string value: 2.',
+            'Variable "$color" has invalid value: Enum "Color" cannot represent non-string value: 2.',
           locations: [{ line: 1, column: 8 }],
         },
       ],
@@ -343,24 +393,28 @@ describe('Type System: Enum Values', () => {
 
   it('presents a getValues() API for complex enums', () => {
     const values = ComplexEnum.getValues();
-    expect(values).to.have.deep.ordered.members([
-      {
-        name: 'ONE',
-        description: undefined,
-        value: Complex1,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-      {
-        name: 'TWO',
-        description: undefined,
-        value: Complex2,
-        deprecationReason: undefined,
-        extensions: {},
-        astNode: undefined,
-      },
-    ]);
+
+    expect(values).to.have.lengthOf(2);
+
+    expect(values[0]).to.deep.include({
+      parentEnum: ComplexEnum,
+      name: 'ONE',
+      description: undefined,
+      value: Complex1,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[1]).to.deep.include({
+      parentEnum: ComplexEnum,
+      name: 'TWO',
+      description: undefined,
+      value: Complex2,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('presents a getValue() API for complex enums', () => {
@@ -397,6 +451,28 @@ describe('Type System: Enum Values', () => {
           path: ['bad'],
         },
       ],
+    });
+  });
+
+  it('may be internally represented with complex values using legacy internal defaults', () => {
+    const result = executeQuery(`
+      {
+        complexEnumWithLegacyDefault
+      }
+    `);
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        complexEnumWithLegacyDefault: 'ONE',
+      },
+    });
+  });
+
+  it('may have values specified via a callback', () => {
+    const result = executeQuery('{ thunkValuesString(fromEnum: B) }');
+
+    expect(result).to.deep.equal({
+      data: { thunkValuesString: 'b' },
     });
   });
 

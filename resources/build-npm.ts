@@ -7,6 +7,7 @@ import ts from 'typescript';
 import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
 import { inlineInvariant } from './inline-invariant.js';
 import {
+  prettify,
   readPackageJSON,
   readTSConfig,
   showDirStats,
@@ -14,14 +15,14 @@ import {
 } from './utils.js';
 
 console.log('\n./npmDist');
-buildPackage('./npmDist', false);
+await buildPackage('./npmDist', false);
 showDirStats('./npmDist');
 
 console.log('\n./npmEsmDist');
-buildPackage('./npmEsmDist', true);
+await buildPackage('./npmEsmDist', true);
 showDirStats('./npmEsmDist');
 
-function buildPackage(outDir: string, isESMOnly: boolean): void {
+async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir);
 
@@ -111,8 +112,13 @@ function buildPackage(outDir: string, isESMOnly: boolean): void {
     emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
   }
 
+  const packageJsonPath = `./${outDir}/package.json`;
+  const prettified = await prettify(
+    packageJsonPath,
+    JSON.stringify(packageJSON),
+  );
   // Should be done as the last step so only valid packages can be published
-  writeGeneratedFile(`./${outDir}/package.json`, JSON.stringify(packageJSON));
+  writeGeneratedFile(packageJsonPath, prettified);
 }
 
 // Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
@@ -134,8 +140,23 @@ function emitTSFiles(options: {
   });
 
   const tsHost = ts.createCompilerHost(tsOptions);
-  tsHost.writeFile = (filepath, body) =>
-    writeGeneratedFile(filepath.replace(/.js$/, extension), body);
+  tsHost.writeFile = (filepath, body) => {
+    if (filepath.match(/.js$/) && extension === '.mjs') {
+      let bodyToWrite = body;
+      bodyToWrite = bodyToWrite.replace(
+        '//# sourceMappingURL=graphql.js.map',
+        '//# sourceMappingURL=graphql.mjs.map',
+      );
+      writeGeneratedFile(filepath.replace(/.js$/, extension), bodyToWrite);
+    } else if (filepath.match(/.js.map$/) && extension === '.mjs') {
+      writeGeneratedFile(
+        filepath.replace(/.js.map$/, extension + '.map'),
+        body,
+      );
+    } else {
+      writeGeneratedFile(filepath, body);
+    }
+  };
 
   const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
   const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {

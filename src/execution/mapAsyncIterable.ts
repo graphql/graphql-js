@@ -7,18 +7,28 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 export function mapAsyncIterable<T, U, R = undefined>(
   iterable: AsyncGenerator<T, R, void> | AsyncIterable<T>,
   callback: (value: T) => PromiseOrValue<U>,
+  onDone?: () => void,
 ): AsyncGenerator<U, R, void> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   async function mapResult(
-    result: IteratorResult<T, R>,
+    promise: Promise<IteratorResult<T, R>>,
   ): Promise<IteratorResult<U, R>> {
-    if (result.done) {
-      return result;
+    let value: T;
+    try {
+      const result = await promise;
+      if (result.done) {
+        onDone?.();
+        return result;
+      }
+      value = result.value;
+    } catch (error) {
+      onDone?.();
+      throw error;
     }
 
     try {
-      return { value: await callback(result.value), done: false };
+      return { value: await callback(value), done: false };
     } catch (error) {
       /* c8 ignore start */
       // FIXME: add test case
@@ -36,17 +46,17 @@ export function mapAsyncIterable<T, U, R = undefined>(
 
   return {
     async next() {
-      return mapResult(await iterator.next());
+      return mapResult(iterator.next());
     },
     async return(): Promise<IteratorResult<U, R>> {
       // If iterator.return() does not exist, then type R must be undefined.
       return typeof iterator.return === 'function'
-        ? mapResult(await iterator.return())
+        ? mapResult(iterator.return())
         : { value: undefined as any, done: true };
     },
     async throw(error?: unknown) {
       if (typeof iterator.throw === 'function') {
-        return mapResult(await iterator.throw(error));
+        return mapResult(iterator.throw(error));
       }
       throw error;
     },

@@ -1,5 +1,3 @@
-import { invariant } from '../../../jsutils/invariant.js';
-
 import { GraphQLError } from '../../../error/GraphQLError.js';
 
 import type { ASTVisitor } from '../../../language/visitor.js';
@@ -24,11 +22,9 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
       const fieldDef = context.getFieldDef();
       const deprecationReason = fieldDef?.deprecationReason;
       if (fieldDef && deprecationReason != null) {
-        const parentType = context.getParentType();
-        invariant(parentType != null);
         context.reportError(
           new GraphQLError(
-            `The field ${parentType.name}.${fieldDef.name} is deprecated. ${deprecationReason}`,
+            `The field ${fieldDef} is deprecated. ${deprecationReason}`,
             { nodes: node },
           ),
         );
@@ -38,25 +34,12 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
       const argDef = context.getArgument();
       const deprecationReason = argDef?.deprecationReason;
       if (argDef && deprecationReason != null) {
-        const directiveDef = context.getDirective();
-        if (directiveDef != null) {
-          context.reportError(
-            new GraphQLError(
-              `Directive "@${directiveDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
-              { nodes: node },
-            ),
-          );
-        } else {
-          const parentType = context.getParentType();
-          const fieldDef = context.getFieldDef();
-          invariant(parentType != null && fieldDef != null);
-          context.reportError(
-            new GraphQLError(
-              `Field "${parentType.name}.${fieldDef.name}" argument "${argDef.name}" is deprecated. ${deprecationReason}`,
-              { nodes: node },
-            ),
-          );
-        }
+        context.reportError(
+          new GraphQLError(
+            `The argument "${argDef}" is deprecated. ${deprecationReason}`,
+            { nodes: node },
+          ),
+        );
       }
     },
     ObjectField(node) {
@@ -67,7 +50,7 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
         if (deprecationReason != null) {
           context.reportError(
             new GraphQLError(
-              `The input field ${inputObjectDef.name}.${inputFieldDef.name} is deprecated. ${deprecationReason}`,
+              `The input field ${inputFieldDef} is deprecated. ${deprecationReason}`,
               { nodes: node },
             ),
           );
@@ -78,11 +61,9 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
       const enumValueDef = context.getEnumValue();
       const deprecationReason = enumValueDef?.deprecationReason;
       if (enumValueDef && deprecationReason != null) {
-        const enumTypeDef = getNamedType(context.getInputType());
-        invariant(enumTypeDef != null);
         context.reportError(
           new GraphQLError(
-            `The enum value "${enumTypeDef.name}.${enumValueDef.name}" is deprecated. ${deprecationReason}`,
+            `The enum value "${enumValueDef}" is deprecated. ${deprecationReason}`,
             { nodes: node },
           ),
         );

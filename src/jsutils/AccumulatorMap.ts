@@ -2,7 +2,7 @@
  * ES6 Map with additional `add` method to accumulate items.
  */
 export class AccumulatorMap<K, T> extends Map<K, Array<T>> {
-  get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag]() {
     return 'AccumulatorMap';
   }
 

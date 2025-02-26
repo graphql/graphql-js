@@ -4,7 +4,7 @@ export { ValidationContext } from './ValidationContext.js';
 export type { ValidationRule } from './ValidationContext.js';
 
 // All validation rules in the GraphQL Specification.
-export { specifiedRules } from './specifiedRules.js';
+export { specifiedRules, recommendedRules } from './specifiedRules.js';
 
 // Spec Section: "Defer And Stream Directive Labels Are Unique"
 export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.js';
@@ -32,6 +32,9 @@ export { KnownDirectivesRule } from './rules/KnownDirectivesRule.js';
 
 // Spec Section: "Fragment spread target defined"
 export { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.js';
+
+// Spec Section: "Operation Type Existence"
+export { KnownOperationTypesRule } from './rules/KnownOperationTypesRule.js';
 
 // Spec Section: "Fragment Spread Type Existence"
 export { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js';
@@ -95,6 +98,8 @@ export { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule.j
 
 // Spec Section: "All Variable Usages Are Allowed"
 export { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositionRule.js';
+
+export { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.js';
 
 // SDL-specific validation rules
 export { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js';

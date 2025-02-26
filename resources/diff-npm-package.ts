@@ -8,6 +8,7 @@ import {
   localRepoPath,
   makeTmpDir,
   npm,
+  prettify,
   writeGeneratedFile,
 } from './utils.js';
 
@@ -37,7 +38,8 @@ if (diff === '') {
   console.log('No changes found!');
 } else {
   const reportPath = localRepoPath('reports', 'npm-dist-diff.html');
-  writeGeneratedFile(reportPath, generateReport(diff));
+  const prettified = await prettify(reportPath, generateReport(diff));
+  writeGeneratedFile(reportPath, prettified);
   console.log('Report saved to: ', reportPath);
 }
 

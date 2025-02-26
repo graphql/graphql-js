@@ -16,7 +16,7 @@ import {
   DangerousChangeType,
   findBreakingChanges,
   findDangerousChanges,
-} from '../findBreakingChanges.js';
+} from '../findSchemaChanges.js';
 
 describe('findBreakingChanges', () => {
   it('should detect if a type was removed or not', () => {
@@ -57,7 +57,7 @@ describe('findBreakingChanges', () => {
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Query.foo changed type from Float to String.',
+        description: 'Field Query.foo changed type from Float to String.',
       },
     ]);
     expect(findBreakingChanges(oldSchema, oldSchema)).to.deep.equal([]);
@@ -149,55 +149,56 @@ describe('findBreakingChanges', () => {
     expect(changes).to.deep.equal([
       {
         type: BreakingChangeType.FIELD_REMOVED,
-        description: 'Type1.field2 was removed.',
+        description: 'Field Type1.field2 was removed.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field3 changed type from String to Boolean.',
+        description: 'Field Type1.field3 changed type from String to Boolean.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field4 changed type from TypeA to TypeB.',
+        description: 'Field Type1.field4 changed type from TypeA to TypeB.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field6 changed type from String to [String].',
+        description: 'Field Type1.field6 changed type from String to [String].',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field7 changed type from [String] to String.',
+        description: 'Field Type1.field7 changed type from [String] to String.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field9 changed type from Int! to Int.',
+        description: 'Field Type1.field9 changed type from Int! to Int.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field10 changed type from [Int]! to [Int].',
+        description: 'Field Type1.field10 changed type from [Int]! to [Int].',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field11 changed type from Int to [Int]!.',
+        description: 'Field Type1.field11 changed type from Int to [Int]!.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field13 changed type from [Int!] to [Int].',
+        description: 'Field Type1.field13 changed type from [Int!] to [Int].',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field14 changed type from [Int] to [[Int]].',
+        description: 'Field Type1.field14 changed type from [Int] to [[Int]].',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field15 changed type from [[Int]] to [Int].',
+        description: 'Field Type1.field15 changed type from [[Int]] to [Int].',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field16 changed type from Int! to [Int]!.',
+        description: 'Field Type1.field16 changed type from Int! to [Int]!.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'Type1.field18 changed type from [[Int!]!] to [[Int!]].',
+        description:
+          'Field Type1.field18 changed type from [[Int!]!] to [[Int!]].',
       },
     ]);
   });
@@ -245,48 +246,55 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.FIELD_REMOVED,
-        description: 'InputType1.field2 was removed.',
+        description: 'Field InputType1.field2 was removed.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field1 changed type from String to Int.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field3 changed type from [String] to String.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field5 changed type from String to String!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field6 changed type from [Int] to [Int]!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field8 changed type from Int to [Int]!.',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field9 changed type from [Int] to [Int!].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field11 changed type from [Int] to [[Int]].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field12 changed type from [[Int]] to [Int].',
-      },
-      {
-        type: BreakingChangeType.FIELD_CHANGED_KIND,
-        description: 'InputType1.field13 changed type from Int! to [Int]!.',
+        description: 'Field InputType1.field1 changed type from String to Int.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
-          'InputType1.field15 changed type from [[Int]!] to [[Int!]!].',
+          'Field InputType1.field3 changed type from [String] to String.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description:
+          'Field InputType1.field5 changed type from String to String!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description:
+          'Field InputType1.field6 changed type from [Int] to [Int]!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description: 'Field InputType1.field8 changed type from Int to [Int]!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description:
+          'Field InputType1.field9 changed type from [Int] to [Int!].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description:
+          'Field InputType1.field11 changed type from [Int] to [[Int]].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description:
+          'Field InputType1.field12 changed type from [[Int]] to [Int].',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description:
+          'Field InputType1.field13 changed type from Int! to [Int]!.',
+      },
+      {
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+        description:
+          'Field InputType1.field15 changed type from [[Int]!] to [[Int!]!].',
       },
     ]);
   });
@@ -310,8 +318,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
-        description:
-          'A required field requiredField on input type InputType1 was added.',
+        description: 'A required field InputType1.requiredField was added.',
       },
     ]);
   });
@@ -360,7 +367,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-        description: 'VALUE1 was removed from enum type EnumType1.',
+        description: 'Enum value EnumType1.VALUE1 was removed.',
       },
     ]);
   });
@@ -389,15 +396,15 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.ARG_REMOVED,
-        description: 'Interface1.field1 arg arg1 was removed.',
+        description: 'Argument Interface1.field1(arg1:) was removed.',
       },
       {
         type: BreakingChangeType.ARG_REMOVED,
-        description: 'Interface1.field1 arg objectArg was removed.',
+        description: 'Argument Interface1.field1(objectArg:) was removed.',
       },
       {
         type: BreakingChangeType.ARG_REMOVED,
-        description: 'Type1.field1 arg name was removed.',
+        description: 'Argument Type1.field1(name:) was removed.',
       },
     ]);
   });
@@ -451,62 +458,62 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg1 has changed type from String to Int.',
+          'Argument Type1.field1(arg1:) has changed type from String to Int.',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg2 has changed type from String to [String].',
+          'Argument Type1.field1(arg2:) has changed type from String to [String].',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg3 has changed type from [String] to String.',
+          'Argument Type1.field1(arg3:) has changed type from [String] to String.',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg4 has changed type from String to String!.',
+          'Argument Type1.field1(arg4:) has changed type from String to String!.',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg5 has changed type from String! to Int.',
+          'Argument Type1.field1(arg5:) has changed type from String! to Int.',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg6 has changed type from String! to Int!.',
+          'Argument Type1.field1(arg6:) has changed type from String! to Int!.',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg8 has changed type from Int to [Int]!.',
+          'Argument Type1.field1(arg8:) has changed type from Int to [Int]!.',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg9 has changed type from [Int] to [Int!].',
+          'Argument Type1.field1(arg9:) has changed type from [Int] to [Int!].',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg11 has changed type from [Int] to [[Int]].',
+          'Argument Type1.field1(arg11:) has changed type from [Int] to [[Int]].',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg12 has changed type from [[Int]] to [Int].',
+          'Argument Type1.field1(arg12:) has changed type from [[Int]] to [Int].',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg13 has changed type from Int! to [Int]!.',
+          'Argument Type1.field1(arg13:) has changed type from Int! to [Int]!.',
       },
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'Type1.field1 arg arg15 has changed type from [[Int]!] to [[Int!]!].',
+          'Argument Type1.field1(arg15:) has changed type from [[Int]!] to [[Int!]!].',
       },
     ]);
   });
@@ -532,7 +539,8 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.REQUIRED_ARG_ADDED,
-        description: 'A required arg newRequiredArg on Type1.field1 was added.',
+        description:
+          'A required argument Type1.field1(newRequiredArg:) was added.',
       },
     ]);
   });
@@ -721,12 +729,11 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.ARG_CHANGED_KIND,
         description:
-          'ArgThatChanges.field1 arg id has changed type from Float to String.',
+          'Argument ArgThatChanges.field1(id:) has changed type from Float to String.',
       },
       {
         type: BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-        description:
-          'VALUE0 was removed from enum type EnumTypeThatLosesAValue.',
+        description: 'Enum value EnumTypeThatLosesAValue.VALUE0 was removed.',
       },
       {
         type: BreakingChangeType.IMPLEMENTED_INTERFACE_REMOVED,
@@ -745,34 +752,35 @@ describe('findBreakingChanges', () => {
       },
       {
         type: BreakingChangeType.FIELD_REMOVED,
-        description: 'TypeThatHasBreakingFieldChanges.field1 was removed.',
+        description:
+          'Field TypeThatHasBreakingFieldChanges.field1 was removed.',
       },
       {
         type: BreakingChangeType.FIELD_CHANGED_KIND,
         description:
-          'TypeThatHasBreakingFieldChanges.field2 changed type from String to Boolean.',
+          'Field TypeThatHasBreakingFieldChanges.field2 changed type from String to Boolean.',
       },
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: 'DirectiveThatIsRemoved was removed.',
+        description: 'Directive @DirectiveThatIsRemoved was removed.',
       },
       {
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
-        description: 'arg1 was removed from DirectiveThatRemovesArg.',
+        description: 'Argument @DirectiveThatRemovesArg(arg1:) was removed.',
       },
       {
         type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
         description:
-          'A required arg arg1 on directive NonNullDirectiveAdded was added.',
+          'A required argument @NonNullDirectiveAdded(arg1:) was added.',
       },
       {
         type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
         description:
-          'Repeatable flag was removed from DirectiveThatWasRepeatable.',
+          'Repeatable flag was removed from @DirectiveThatWasRepeatable.',
       },
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-        description: 'QUERY was removed from DirectiveName.',
+        description: 'QUERY was removed from @DirectiveName.',
       },
     ]);
   });
@@ -790,7 +798,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: 'DirectiveThatIsRemoved was removed.',
+        description: 'Directive @DirectiveThatIsRemoved was removed.',
       },
     ]);
   });
@@ -810,7 +818,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_REMOVED,
-        description: `${GraphQLDeprecatedDirective.name} was removed.`,
+        description: `Directive ${GraphQLDeprecatedDirective} was removed.`,
       },
     ]);
   });
@@ -827,7 +835,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_ARG_REMOVED,
-        description: 'arg1 was removed from DirectiveWithArg.',
+        description: 'Argument @DirectiveWithArg(arg1:) was removed.',
       },
     ]);
   });
@@ -849,7 +857,7 @@ describe('findBreakingChanges', () => {
       {
         type: BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
         description:
-          'A required arg newRequiredArg on directive DirectiveName was added.',
+          'A required argument @DirectiveName(newRequiredArg:) was added.',
       },
     ]);
   });
@@ -866,7 +874,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_REPEATABLE_REMOVED,
-        description: 'Repeatable flag was removed from DirectiveName.',
+        description: 'Repeatable flag was removed from @DirectiveName.',
       },
     ]);
   });
@@ -883,7 +891,7 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-        description: 'QUERY was removed from DirectiveName.',
+        description: 'QUERY was removed from @DirectiveName.',
       },
     ]);
   });
@@ -943,27 +951,27 @@ describe('findDangerousChanges', () => {
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
-          'Type1.field1 arg withDefaultValue defaultValue was removed.',
+          'Type1.field1(withDefaultValue:) defaultValue was removed.',
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
-          'Type1.field1 arg stringArg has changed defaultValue from "test" to "Test".',
+          'Type1.field1(stringArg:) has changed defaultValue from "test" to "Test".',
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
-          'Type1.field1 arg emptyArray has changed defaultValue from [] to [7].',
+          'Type1.field1(emptyArray:) has changed defaultValue from [] to [7].',
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
-          'Type1.field1 arg valueArray has changed defaultValue from [["a", "b"], ["c"]] to [["b", "a"], ["d"]].',
+          'Type1.field1(valueArray:) has changed defaultValue from [["a", "b"], ["c"]] to [["b", "a"], ["d"]].',
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
-          'Type1.field1 arg complexObject has changed defaultValue from { innerInputArray: [{ arrayField: [1, 2, 3] }] } to { innerInputArray: [{ arrayField: [3, 2, 1] }] }.',
+          'Type1.field1(complexObject:) has changed defaultValue from { innerInputArray: [{ arrayField: [1, 2, 3] }] } to { innerInputArray: [{ arrayField: [3, 2, 1] }] }.',
       },
     ]);
   });
@@ -1051,7 +1059,7 @@ describe('findDangerousChanges', () => {
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
-        description: 'VALUE2 was added to enum type EnumType1.',
+        description: 'Enum value EnumType1.VALUE2 was added.',
       },
     ]);
   });
@@ -1143,8 +1151,7 @@ describe('findDangerousChanges', () => {
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
-        description:
-          'An optional field field2 on input type InputType1 was added.',
+        description: 'An optional field InputType1.field2 was added.',
       },
     ]);
   });
@@ -1189,12 +1196,12 @@ describe('findDangerousChanges', () => {
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: DangerousChangeType.VALUE_ADDED_TO_ENUM,
-        description: 'VALUE2 was added to enum type EnumType1.',
+        description: 'Enum value EnumType1.VALUE2 was added.',
       },
       {
         type: DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
         description:
-          'Type1.field1 arg argThatChangesDefaultValue has changed defaultValue from "test" to "Test".',
+          'Type1.field1(argThatChangesDefaultValue:) has changed defaultValue from "test" to "Test".',
       },
       {
         type: DangerousChangeType.IMPLEMENTED_INTERFACE_ADDED,
@@ -1225,7 +1232,7 @@ describe('findDangerousChanges', () => {
     expect(findDangerousChanges(oldSchema, newSchema)).to.deep.equal([
       {
         type: DangerousChangeType.OPTIONAL_ARG_ADDED,
-        description: 'An optional arg arg2 on Type1.field1 was added.',
+        description: 'An optional argument Type1.field1(arg2:) was added.',
       },
     ]);
   });

@@ -165,6 +165,13 @@ describe('Lexer', () => {
     });
   });
 
+  it('reports unexpected characters', () => {
+    expectSyntaxError('.').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: ".".',
+      locations: [{ line: 1, column: 1 }],
+    });
+  });
+
   it('errors respect whitespace', () => {
     let caughtError;
     try {
@@ -852,7 +859,8 @@ describe('Lexer', () => {
     });
 
     expectSyntaxError('.123').to.deep.equal({
-      message: 'Syntax Error: Unexpected character: ".".',
+      message:
+        'Syntax Error: Invalid number, expected digit before ".", did you mean "0.123"?',
       locations: [{ line: 1, column: 1 }],
     });
 
@@ -931,13 +939,6 @@ describe('Lexer', () => {
   it('lexes punctuation', () => {
     expect(lexOne('!')).to.contain({
       kind: TokenKind.BANG,
-      start: 0,
-      end: 1,
-      value: undefined,
-    });
-
-    expect(lexOne('?')).to.contain({
-      kind: TokenKind.QUESTION_MARK,
       start: 0,
       end: 1,
       value: undefined,
@@ -1030,7 +1031,7 @@ describe('Lexer', () => {
 
   it('lex reports useful unknown character error', () => {
     expectSyntaxError('..').to.deep.equal({
-      message: 'Syntax Error: Unexpected character: ".".',
+      message: 'Syntax Error: Unexpected "..", did you mean "..."?',
       locations: [{ line: 1, column: 1 }],
     });
 
@@ -1188,7 +1189,6 @@ describe('isPunctuatorTokenKind', () => {
 
   it('returns true for punctuator tokens', () => {
     expect(isPunctuatorToken('!')).to.equal(true);
-    expect(isPunctuatorToken('?')).to.equal(true);
     expect(isPunctuatorToken('$')).to.equal(true);
     expect(isPunctuatorToken('&')).to.equal(true);
     expect(isPunctuatorToken('(')).to.equal(true);

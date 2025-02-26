@@ -19,12 +19,16 @@ import {
 import { KnownDirectivesRule } from './rules/KnownDirectivesRule.js';
 // Spec Section: "Fragment spread target defined"
 import { KnownFragmentNamesRule } from './rules/KnownFragmentNamesRule.js';
+// Spec Section: "Operation Type Existence"
+import { KnownOperationTypesRule } from './rules/KnownOperationTypesRule.js';
 // Spec Section: "Fragment Spread Type Existence"
 import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule.js';
 // Spec Section: "Lone Anonymous Operation"
 import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule.js';
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule.js';
+// TODO: Spec Section
+import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule.js';
 // Spec Section: "Fragments must not form cycles"
 import { NoFragmentCyclesRule } from './rules/NoFragmentCyclesRule.js';
 // Spec Section: "All Variable Used Defined"
@@ -76,6 +80,12 @@ import { VariablesInAllowedPositionRule } from './rules/VariablesInAllowedPositi
 import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
 
 /**
+ * Technically these aren't part of the spec but they are strongly encouraged
+ * validation rules.
+ */
+export const recommendedRules = Object.freeze([MaxIntrospectionDepthRule]);
+
+/**
  * This set includes all validation rules defined by the GraphQL spec.
  *
  * The order of the rules in this list has been adjusted to lead to the
@@ -83,6 +93,7 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
  */
 export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   ExecutableDefinitionsRule,
+  KnownOperationTypesRule,
   UniqueOperationNamesRule,
   LoneAnonymousOperationRule,
   SingleFieldSubscriptionsRule,
@@ -112,6 +123,7 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
   VariablesInAllowedPositionRule,
   OverlappingFieldsCanBeMergedRule,
   UniqueInputFieldNamesRule,
+  ...recommendedRules,
 ]);
 
 /**

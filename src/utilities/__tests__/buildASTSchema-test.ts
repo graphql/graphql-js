@@ -339,7 +339,7 @@ describe('Schema Builder', () => {
     const definition = parse(sdl).definitions[0];
     expect(
       definition.kind === 'InterfaceTypeDefinition' && definition.interfaces,
-    ).to.deep.equal([], 'The interfaces property must be an empty array.');
+    ).to.deep.equal(undefined, 'The interfaces property must not be defined.');
 
     expect(cycleSDL(sdl)).to.equal(sdl);
   });

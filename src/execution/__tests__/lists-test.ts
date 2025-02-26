@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
@@ -19,7 +19,7 @@ import { GraphQLSchema } from '../../type/schema.js';
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import { execute, executeSync } from '../execute.js';
-import type { ExecutionResult } from '../IncrementalPublisher.js';
+import type { ExecutionResult } from '../types.js';
 
 describe('Execute: Accepts any iterable as list value', () => {
   function complete(rootValue: unknown) {
@@ -244,6 +244,34 @@ describe('Execute: Accepts async iterables as list value', () => {
       data: null,
       errors,
     });
+  });
+
+  it('Returns async iterable when list nulls', async () => {
+    const values = [1, null, 2];
+    let i = 0;
+    let returned = false;
+    const listField = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => Promise.resolve({ value: values[i++], done: false }),
+        return: () => {
+          returned = true;
+          return Promise.resolve({ value: undefined, done: true });
+        },
+      }),
+    };
+    const errors = [
+      {
+        message: 'Cannot return null for non-nullable field Query.listField.',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField', 1],
+      },
+    ];
+
+    expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
+      data: { listField: null },
+      errors,
+    });
+    assert(returned);
   });
 });
 

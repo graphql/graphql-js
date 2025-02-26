@@ -1,8 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { ScalarLeafsRule } from '../rules/ScalarLeafsRule.js';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { expectValidationErrors } from './harness.js';
+import type { DocumentNode } from '../../language/ast.js';
+import { OperationTypeNode } from '../../language/ast.js';
+import { Kind } from '../../language/kinds.js';
+
+import { ScalarLeafsRule } from '../rules/ScalarLeafsRule.js';
+import { validate } from '../validate.js';
+
+import { expectValidationErrors, testSchema } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(ScalarLeafsRule, queryStr);
@@ -31,6 +38,39 @@ describe('Validate: Scalar leafs', () => {
         message:
           'Field "human" of type "Human" must have a selection of subfields. Did you mean "human { ... }"?',
         locations: [{ line: 3, column: 9 }],
+      },
+    ]);
+  });
+
+  it('object type having only one selection', () => {
+    const doc: DocumentNode = {
+      kind: Kind.DOCUMENT,
+      definitions: [
+        {
+          kind: Kind.OPERATION_DEFINITION,
+          operation: OperationTypeNode.QUERY,
+          selectionSet: {
+            kind: Kind.SELECTION_SET,
+            selections: [
+              {
+                kind: Kind.FIELD,
+                name: { kind: Kind.NAME, value: 'human' },
+                selectionSet: { kind: Kind.SELECTION_SET, selections: [] },
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    // We can't leverage expectErrors since it doesn't support passing in the
+    // documentNode directly. We have to do this because this is technically
+    // an invalid document.
+    const errors = validate(testSchema, doc, [ScalarLeafsRule]);
+    expectJSON(errors).toDeepEqual([
+      {
+        message:
+          'Field "human" of type "Human" must have at least one field selected.',
       },
     ]);
   });

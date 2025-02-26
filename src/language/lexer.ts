@@ -62,7 +62,7 @@ export class Lexer {
 
   /**
    * Looks ahead and returns the next non-ignored token, but does not change
-   * the state of Lexer.
+   * the current Lexer token.
    */
   lookahead(): Token {
     let token = this.token;
@@ -91,7 +91,6 @@ export class Lexer {
 export function isPunctuatorTokenKind(kind: TokenKind): boolean {
   return (
     kind === TokenKind.BANG ||
-    kind === TokenKind.QUESTION_MARK ||
     kind === TokenKind.DOLLAR ||
     kind === TokenKind.AMP ||
     kind === TokenKind.PAREN_L ||
@@ -258,14 +257,31 @@ function readNextToken(lexer: Lexer, start: number): Token {
         return createToken(lexer, TokenKind.PAREN_L, position, position + 1);
       case 0x0029: // )
         return createToken(lexer, TokenKind.PAREN_R, position, position + 1);
-      case 0x002e: // .
-        if (
-          body.charCodeAt(position + 1) === 0x002e &&
-          body.charCodeAt(position + 2) === 0x002e
-        ) {
+      case 0x002e: {
+        // .
+        const nextCode = body.charCodeAt(position + 1);
+        if (nextCode === 0x002e && body.charCodeAt(position + 2) === 0x002e) {
           return createToken(lexer, TokenKind.SPREAD, position, position + 3);
         }
+        if (nextCode === 0x002e) {
+          throw syntaxError(
+            lexer.source,
+            position,
+            'Unexpected "..", did you mean "..."?',
+          );
+        } else if (isDigit(nextCode)) {
+          const digits = lexer.source.body.slice(
+            position + 1,
+            readDigits(lexer, position + 1, nextCode),
+          );
+          throw syntaxError(
+            lexer.source,
+            position,
+            `Invalid number, expected digit before ".", did you mean "0.${digits}"?`,
+          );
+        }
         break;
+      }
       case 0x003a: // :
         return createToken(lexer, TokenKind.COLON, position, position + 1);
       case 0x003d: // =
@@ -282,13 +298,6 @@ function readNextToken(lexer: Lexer, start: number): Token {
         return createToken(lexer, TokenKind.PIPE, position, position + 1);
       case 0x007d: // }
         return createToken(lexer, TokenKind.BRACE_R, position, position + 1);
-      case 0x003f: // ?
-        return createToken(
-          lexer,
-          TokenKind.QUESTION_MARK,
-          position,
-          position + 1,
-        );
       // StringValue
       case 0x0022: // "
         if (
@@ -316,8 +325,8 @@ function readNextToken(lexer: Lexer, start: number): Token {
       code === 0x0027
         ? 'Unexpected single quote character (\'), did you mean to use a double quote (")?'
         : isUnicodeScalarValue(code) || isSupplementaryCodePoint(body, position)
-        ? `Unexpected character: ${printCodePointAt(lexer, position)}.`
-        : `Invalid character: ${printCodePointAt(lexer, position)}.`,
+          ? `Unexpected character: ${printCodePointAt(lexer, position)}.`
+          : `Invalid character: ${printCodePointAt(lexer, position)}.`,
     );
   }
 
@@ -683,10 +692,10 @@ function readHexDigit(code: number): number {
   return code >= 0x0030 && code <= 0x0039 // 0-9
     ? code - 0x0030
     : code >= 0x0041 && code <= 0x0046 // A-F
-    ? code - 0x0037
-    : code >= 0x0061 && code <= 0x0066 // a-f
-    ? code - 0x0057
-    : -1;
+      ? code - 0x0037
+      : code >= 0x0061 && code <= 0x0066 // a-f
+        ? code - 0x0057
+        : -1;
 }
 
 /**

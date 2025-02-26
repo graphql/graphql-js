@@ -3,7 +3,6 @@ import type {
   ConstValueNode,
   DefinitionNode,
   ExecutableDefinitionNode,
-  NullabilityAssertionNode,
   SelectionNode,
   TypeDefinitionNode,
   TypeExtensionNode,
@@ -39,16 +38,6 @@ export function isSelectionNode(node: ASTNode): node is SelectionNode {
   );
 }
 
-export function isNullabilityAssertionNode(
-  node: ASTNode,
-): node is NullabilityAssertionNode {
-  return (
-    node.kind === Kind.LIST_NULLABILITY_OPERATOR ||
-    node.kind === Kind.NON_NULL_ASSERTION ||
-    node.kind === Kind.ERROR_BOUNDARY
-  );
-}
-
 export function isValueNode(node: ASTNode): node is ValueNode {
   return (
     node.kind === Kind.VARIABLE ||
@@ -69,8 +58,8 @@ export function isConstValueNode(node: ASTNode): node is ConstValueNode {
     (node.kind === Kind.LIST
       ? node.values.some(isConstValueNode)
       : node.kind === Kind.OBJECT
-      ? node.fields.some((field) => isConstValueNode(field.value))
-      : node.kind !== Kind.VARIABLE)
+        ? node.fields.some((field) => isConstValueNode(field.value))
+        : node.kind !== Kind.VARIABLE)
   );
 }
 

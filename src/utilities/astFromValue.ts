@@ -37,6 +37,7 @@ import { GraphQLID } from '../type/scalars.js';
  * | Unknown       | Enum Value           |
  * | null          | NullValue            |
  *
+ * @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18
  */
 export function astFromValue(
   value: unknown,
@@ -98,44 +99,44 @@ export function astFromValue(
   }
 
   if (isLeafType(type)) {
-    // Since value is an internally represented value, it must be serialized
+    // Since value is an internally represented value, it must be coerced
     // to an externally represented value before converting into an AST.
-    const serialized = type.serialize(value);
-    if (serialized == null) {
+    const coerced = type.coerceOutputValue(value);
+    if (coerced == null) {
       return null;
     }
 
-    // Others serialize based on their corresponding JavaScript scalar types.
-    if (typeof serialized === 'boolean') {
-      return { kind: Kind.BOOLEAN, value: serialized };
+    // Others coerce based on their corresponding JavaScript scalar types.
+    if (typeof coerced === 'boolean') {
+      return { kind: Kind.BOOLEAN, value: coerced };
     }
 
     // JavaScript numbers can be Int or Float values.
-    if (typeof serialized === 'number' && Number.isFinite(serialized)) {
-      const stringNum = String(serialized);
+    if (typeof coerced === 'number' && Number.isFinite(coerced)) {
+      const stringNum = String(coerced);
       return integerStringRegExp.test(stringNum)
         ? { kind: Kind.INT, value: stringNum }
         : { kind: Kind.FLOAT, value: stringNum };
     }
 
-    if (typeof serialized === 'string') {
+    if (typeof coerced === 'string') {
       // Enum types use Enum literals.
       if (isEnumType(type)) {
-        return { kind: Kind.ENUM, value: serialized };
+        return { kind: Kind.ENUM, value: coerced };
       }
 
       // ID types can use Int literals.
-      if (type === GraphQLID && integerStringRegExp.test(serialized)) {
-        return { kind: Kind.INT, value: serialized };
+      if (type === GraphQLID && integerStringRegExp.test(coerced)) {
+        return { kind: Kind.INT, value: coerced };
       }
 
       return {
         kind: Kind.STRING,
-        value: serialized,
+        value: coerced,
       };
     }
 
-    throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}.`);
+    throw new TypeError(`Cannot convert value to AST: ${inspect(coerced)}.`);
   }
   /* c8 ignore next 3 */
   // Not reachable, all possible types have been considered.

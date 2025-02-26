@@ -33,28 +33,34 @@ describe('Type System: Directive', () => {
 
     expect(directive).to.deep.include({
       name: 'Foo',
-      args: [
-        {
-          name: 'foo',
-          description: undefined,
-          type: GraphQLString,
-          defaultValue: undefined,
-          deprecationReason: undefined,
-          extensions: {},
-          astNode: undefined,
-        },
-        {
-          name: 'bar',
-          description: undefined,
-          type: GraphQLInt,
-          defaultValue: undefined,
-          deprecationReason: undefined,
-          extensions: {},
-          astNode: undefined,
-        },
-      ],
       isRepeatable: false,
       locations: ['QUERY'],
+    });
+
+    expect(directive.args).to.have.lengthOf(2);
+
+    expect(directive.args[0]).to.deep.include({
+      parent: directive,
+      name: 'foo',
+      description: undefined,
+      type: GraphQLString,
+      defaultValue: undefined,
+      default: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(directive.args[1]).to.deep.include({
+      parent: directive,
+      name: 'bar',
+      description: undefined,
+      type: GraphQLInt,
+      defaultValue: undefined,
+      default: undefined,
+      deprecationReason: undefined,
+      extensions: {},
+      astNode: undefined,
     });
   });
 

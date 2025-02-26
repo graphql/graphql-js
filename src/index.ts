@@ -34,6 +34,12 @@ export type { GraphQLArgs } from './graphql.js';
 export { graphql, graphqlSync } from './graphql.js';
 
 // Create and operate on GraphQL type definitions and schema.
+export type {
+  GraphQLField,
+  GraphQLArgument,
+  GraphQLEnumValue,
+  GraphQLInputField,
+} from './type/index.js';
 export {
   resolveObjMapThunk,
   resolveReadonlyArrayThunk,
@@ -91,10 +97,14 @@ export {
   isType,
   isScalarType,
   isObjectType,
+  isField,
+  isArgument,
   isInterfaceType,
   isUnionType,
   isEnumType,
+  isEnumValue,
   isInputObjectType,
+  isInputField,
   isListType,
   isNonNullType,
   isInputType,
@@ -116,10 +126,14 @@ export {
   assertType,
   assertScalarType,
   assertObjectType,
+  assertField,
+  assertArgument,
   assertInterfaceType,
   assertUnionType,
   assertEnumType,
+  assertEnumValue,
   assertInputObjectType,
+  assertInputField,
   assertListType,
   assertNonNullType,
   assertInputType,
@@ -161,23 +175,19 @@ export type {
   GraphQLSchemaExtensions,
   GraphQLDirectiveConfig,
   GraphQLDirectiveExtensions,
-  GraphQLArgument,
   GraphQLArgumentConfig,
   GraphQLArgumentExtensions,
   GraphQLEnumTypeConfig,
   GraphQLEnumTypeExtensions,
-  GraphQLEnumValue,
   GraphQLEnumValueConfig,
   GraphQLEnumValueConfigMap,
   GraphQLEnumValueExtensions,
-  GraphQLField,
   GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLFieldExtensions,
   GraphQLFieldMap,
   GraphQLFieldResolver,
-  GraphQLInputField,
   GraphQLInputFieldConfig,
   GraphQLInputFieldConfigMap,
   GraphQLInputFieldExtensions,
@@ -199,9 +209,16 @@ export type {
   GraphQLScalarSerializer,
   GraphQLScalarValueParser,
   GraphQLScalarLiteralParser,
+  GraphQLScalarOutputValueCoercer,
+  GraphQLScalarInputValueCoercer,
+  GraphQLScalarInputLiteralCoercer,
+  GraphQLDefaultInput,
 } from './type/index.js';
 
 // Parse and operate on GraphQL language source files.
+// @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
+// eslint-disable-next-line @typescript-eslint/consistent-type-exports
+export { Kind } from './language/kinds.js';
 export {
   Token,
   Source,
@@ -226,13 +243,11 @@ export {
   visitInParallel,
   getEnterLeaveForKind,
   BREAK,
-  Kind,
   DirectiveLocation,
   // Predicates
   isDefinitionNode,
   isExecutableDefinitionNode,
   isSelectionNode,
-  isNullabilityAssertionNode,
   isValueNode,
   isConstValueNode,
   isTypeNode,
@@ -264,10 +279,7 @@ export type {
   SelectionNode,
   FieldNode,
   ArgumentNode,
-  NullabilityAssertionNode,
-  NonNullAssertionNode,
-  ErrorBoundaryNode,
-  ListNullabilityOperatorNode,
+  FragmentArgumentNode,
   ConstArgumentNode,
   FragmentSpreadNode,
   InlineFragmentNode,
@@ -320,7 +332,10 @@ export type {
 // Execute GraphQL queries.
 export {
   execute,
+  executeQueryOrMutationOrSubscriptionEvent,
+  executeSubscriptionEvent,
   experimentalExecuteIncrementally,
+  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,
@@ -334,6 +349,7 @@ export {
 
 export type {
   ExecutionArgs,
+  ValidatedExecutionArgs,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,
@@ -355,6 +371,7 @@ export {
   ValidationContext,
   // All validation rules in the GraphQL Specification.
   specifiedRules,
+  recommendedRules,
   // Individual validation rules.
   ExecutableDefinitionsRule,
   FieldsOnCorrectTypeRule,
@@ -362,6 +379,7 @@ export {
   KnownArgumentNamesRule,
   KnownDirectivesRule,
   KnownFragmentNamesRule,
+  KnownOperationTypesRule,
   KnownTypeNamesRule,
   LoneAnonymousOperationRule,
   NoFragmentCyclesRule,
@@ -382,6 +400,7 @@ export {
   ValuesOfCorrectTypeRule,
   VariablesAreInputTypesRule,
   VariablesInAllowedPositionRule,
+  MaxIntrospectionDepthRule,
   // SDL-specific validation rules
   LoneSchemaDefinitionRule,
   UniqueOperationTypesRule,
@@ -405,6 +424,7 @@ export type {
   GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
+  GraphQLFormattedErrorExtensions,
 } from './error/index.js';
 
 // Utilities for operating on GraphQL type schema and parsed sources.
@@ -437,16 +457,28 @@ export {
   // Create a GraphQLType from a GraphQL language AST.
   typeFromAST,
   // Create a JavaScript value from a GraphQL language AST with a Type.
+  /** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
   valueFromAST,
   // Create a JavaScript value from a GraphQL language AST without a Type.
   valueFromASTUntyped,
   // Create a GraphQL language AST from a JavaScript value.
+  /** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
   astFromValue,
   // A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
   TypeInfo,
   visitWithTypeInfo,
-  // Coerces a JavaScript value to a GraphQL type, or produces errors.
+  // Converts a value to a const value by replacing variables.
+  replaceVariables,
+  // Create a GraphQL literal (AST) from a JavaScript input value.
+  valueToLiteral,
+  // Coerces a JavaScript value to a GraphQL type, or returns undefined.
   coerceInputValue,
+  // Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
+  coerceInputLiteral,
+  // Validate a JavaScript value with a GraphQL type, collecting all errors.
+  validateInputValue,
+  // Validate a GraphQL literal (AST) with a GraphQL type, collecting all errors.
+  validateInputLiteral,
   // Concatenates multiple AST together.
   concatAST,
   // Separates an AST into an AST per Operation.
@@ -460,8 +492,10 @@ export {
   // Compares two GraphQLSchemas and detects breaking changes.
   BreakingChangeType,
   DangerousChangeType,
+  SafeChangeType,
   findBreakingChanges,
   findDangerousChanges,
+  findSchemaChanges,
 } from './utilities/index.js';
 
 export type {
@@ -489,6 +523,7 @@ export type {
   IntrospectionDirective,
   BuildSchemaOptions,
   BreakingChange,
+  SafeChange,
   DangerousChange,
   TypedQueryDocumentNode,
 } from './utilities/index.js';
