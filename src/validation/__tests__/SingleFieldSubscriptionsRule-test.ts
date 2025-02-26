@@ -286,6 +286,48 @@ describe('Validate: Subscriptions with single field', () => {
     ]);
   });
 
+  it('fails with @skip or @include directive', () => {
+    expectErrors(`
+      subscription RequiredRuntimeValidation($bool: Boolean!) {
+        newMessage @include(if: $bool) {
+          body
+          sender
+        }
+        disallowedSecondRootField @skip(if: $bool)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Subscription "RequiredRuntimeValidation" must not use `@skip` or `@include` directives in the top level selection.',
+        locations: [
+          { line: 3, column: 20 },
+          { line: 7, column: 35 },
+        ],
+      },
+    ]);
+  });
+
+  it('fails with @skip or @include directive in anonymous subscription', () => {
+    expectErrors(`
+      subscription ($bool: Boolean!) {
+        newMessage @include(if: $bool) {
+          body
+          sender
+        }
+        disallowedSecondRootField @skip(if: $bool)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Anonymous Subscription must not use `@skip` or `@include` directives in the top level selection.',
+        locations: [
+          { line: 3, column: 20 },
+          { line: 7, column: 35 },
+        ],
+      },
+    ]);
+  });
+
   it('skips if not subscription type', () => {
     const emptySchema = buildSchema(`
       type Query {
