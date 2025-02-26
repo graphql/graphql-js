@@ -1,5 +1,4 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
-import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 
 import type {
@@ -189,7 +188,6 @@ function collectFieldsImpl(
             selection,
             variableValues,
             fragmentVariableValues,
-            hideSuggestions,
           )
         ) {
           continue;
@@ -208,7 +206,6 @@ function collectFieldsImpl(
             selection,
             variableValues,
             fragmentVariableValues,
-            hideSuggestions,
           ) ||
           !doesFragmentConditionMatch(schema, selection, runtimeType)
         ) {
@@ -255,7 +252,6 @@ function collectFieldsImpl(
             selection,
             variableValues,
             fragmentVariableValues,
-            hideSuggestions,
           )
         ) {
           continue;
@@ -356,7 +352,6 @@ function shouldIncludeNode(
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
   variableValues: VariableValues,
   fragmentVariableValues: VariableValues | undefined,
-  hideSuggestions: Maybe<boolean>,
 ): boolean {
   const skipDirectiveNode = node.directives?.find(
     (directive) => directive.name.value === GraphQLSkipDirective.name,
@@ -371,7 +366,7 @@ function shouldIncludeNode(
         GraphQLSkipDirective.args,
         variableValues,
         fragmentVariableValues,
-        hideSuggestions,
+        context.hideSuggestions,
       )
     : undefined;
   if (skip?.if === true) {
@@ -391,7 +386,7 @@ function shouldIncludeNode(
         GraphQLIncludeDirective.args,
         variableValues,
         fragmentVariableValues,
-        hideSuggestions,
+        context.hideSuggestions,
       )
     : undefined;
   if (include?.if === false) {
