@@ -24,7 +24,7 @@ const express = require('express');
 const schema = buildSchema(`type Query { hello: String } `);
 
 // The rootValue provides a resolver function for each API endpoint
-const rootValue = {
+const root = {
   hello() {
     return 'Hello world!';
   },
