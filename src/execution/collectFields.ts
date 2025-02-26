@@ -127,7 +127,6 @@ export function collectSubfields(
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
-  forbiddenDirectiveInstances: ReadonlyArray<DirectiveNode>;
 } {
   const context: CollectFieldsContext = {
     schema,
@@ -160,7 +159,6 @@ export function collectSubfields(
   return {
     groupedFieldSet: subGroupedFieldSet,
     newDeferUsages,
-    forbiddenDirectiveInstances: context.forbiddenDirectiveInstances,
   };
 }
 
