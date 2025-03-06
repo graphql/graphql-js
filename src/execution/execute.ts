@@ -43,6 +43,7 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
+  isSemanticNullableType,
 } from '../type/definition';
 import {
   SchemaMetaFieldDef,
@@ -115,6 +116,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
+  errorPropagation: boolean;
 }
 
 /**
@@ -152,6 +154,12 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  /**
+   * Set to `false` to disable error propagation. Experimental.
+   *
+   * @experimental
+   */
+  errorPropagation?: boolean;
 }
 
 /**
@@ -286,6 +294,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    errorPropagation,
   } = args;
 
   let operation: OperationDefinitionNode | undefined;
@@ -347,6 +356,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
+    errorPropagation: errorPropagation ?? true,
   };
 }
 
@@ -585,6 +595,7 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    errorPropagation: exeContext.errorPropagation,
   };
 }
 
@@ -595,7 +606,7 @@ function handleFieldError(
 ): null {
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType)) {
+  if (exeContext.errorPropagation && isNonNullType(returnType)) {
     throw error;
   }
 
@@ -639,78 +650,83 @@ function completeValue(
     throw result;
   }
 
-  // If field type is NonNull, complete for inner type, and throw field error
-  // if result is null.
+  let nonNull;
+  let semanticNull;
+  let nullableType;
   if (isNonNullType(returnType)) {
-    const completed = completeValue(
+    nonNull = true;
+    nullableType = returnType.ofType;
+  } else if (isSemanticNullableType(returnType)) {
+    semanticNull = true;
+    nullableType = returnType.ofType;
+  } else {
+    nullableType = returnType;
+  }
+
+  let completed;
+  if (result == null) {
+    // If result value is null or undefined then return null.
+    completed = null;
+  } else if (isListType(nullableType)) {
+    // If field type is List, complete each item in the list with the inner type
+    completed = completeListValue(
       exeContext,
-      returnType.ofType,
+      nullableType,
       fieldNodes,
       info,
       path,
       result,
     );
-    if (completed === null) {
+  } else if (isLeafType(nullableType)) {
+    // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
+    // returning null if serialization is not possible.
+    completed = completeLeafValue(nullableType, result);
+  } else if (isAbstractType(nullableType)) {
+    // If field type is an abstract type, Interface or Union, determine the
+    // runtime Object type and complete for that type.
+    completed = completeAbstractValue(
+      exeContext,
+      nullableType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
+  } else if (isObjectType(nullableType)) {
+    // If field type is Object, execute and complete all sub-selections.
+    completed = completeObjectValue(
+      exeContext,
+      nullableType,
+      fieldNodes,
+      info,
+      path,
+      result,
+    );
+  } else {
+    /* c8 ignore next 6 */
+    // Not reachable, all possible output types have been considered.
+    invariant(
+      false,
+      'Cannot complete value of unexpected output type: ' +
+        inspect(nullableType),
+    );
+  }
+
+  if (completed === null) {
+    if (nonNull) {
       throw new Error(
         `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
     }
-    return completed;
+
+    if (!semanticNull && exeContext.schema.usingSemanticNullability) {
+      throw new Error(
+        `Cannot return null for semantic-non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+      );
+    }
   }
 
-  // If result value is null or undefined then return null.
-  if (result == null) {
-    return null;
-  }
-
-  // If field type is List, complete each item in the list with the inner type
-  if (isListType(returnType)) {
-    return completeListValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-
-  // If field type is a leaf type, Scalar or Enum, serialize to a valid value,
-  // returning null if serialization is not possible.
-  if (isLeafType(returnType)) {
-    return completeLeafValue(returnType, result);
-  }
-
-  // If field type is an abstract type, Interface or Union, determine the
-  // runtime Object type and complete for that type.
-  if (isAbstractType(returnType)) {
-    return completeAbstractValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-
-  // If field type is Object, execute and complete all sub-selections.
-  if (isObjectType(returnType)) {
-    return completeObjectValue(
-      exeContext,
-      returnType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-  }
-  /* c8 ignore next 6 */
-  // Not reachable, all possible output types have been considered.
-  invariant(
-    false,
-    'Cannot complete value of unexpected output type: ' + inspect(returnType),
-  );
+  return completed;
 }
 
 /**

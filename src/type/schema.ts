@@ -128,6 +128,7 @@ export interface GraphQLSchemaExtensions {
  * ```
  */
 export class GraphQLSchema {
+  usingSemanticNullability: Maybe<boolean>;
   description: Maybe<string>;
   extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
@@ -164,6 +165,7 @@ export class GraphQLSchema {
         `${inspect(config.directives)}.`,
     );
 
+    this.usingSemanticNullability = config.useSemanticNullability;
     this.description = config.description;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
@@ -352,6 +354,7 @@ export class GraphQLSchema {
 
   toConfig(): GraphQLSchemaNormalizedConfig {
     return {
+      useSemanticNullability: this.usingSemanticNullability,
       description: this.description,
       query: this.getQueryType(),
       mutation: this.getMutationType(),
@@ -380,6 +383,7 @@ export interface GraphQLSchemaValidationOptions {
 }
 
 export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
+  useSemanticNullability?: Maybe<boolean>;
   description?: Maybe<string>;
   query?: Maybe<GraphQLObjectType>;
   mutation?: Maybe<GraphQLObjectType>;
@@ -395,6 +399,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
  * @internal
  */
 export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
+  useSemanticNullability?: Maybe<boolean>;
   description: Maybe<string>;
   types: ReadonlyArray<GraphQLNamedType>;
   directives: ReadonlyArray<GraphQLDirective>;
