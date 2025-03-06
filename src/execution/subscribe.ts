@@ -19,6 +19,7 @@ import type {
   ExecutionResult,
 } from './execute';
 import {
+  // eslint-disable-next-line import/no-deprecated
   assertValidExecutionArguments,
   buildExecutionContext,
   buildResolveInfo,
@@ -160,6 +161,7 @@ export async function createSourceEventStream(
 
   // If arguments are missing or incorrectly typed, this is an internal
   // developer mistake which should throw an early error.
+  // eslint-disable-next-line import/no-deprecated
   assertValidExecutionArguments(schema, document, variableValues);
 
   // If a valid execution context cannot be created due to incorrect arguments,
