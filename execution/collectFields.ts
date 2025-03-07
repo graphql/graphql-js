@@ -1,6 +1,7 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
 import type {
+  DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
   FragmentSpreadNode,
@@ -19,7 +20,11 @@ import type { GraphQLSchema } from '../type/schema.ts';
 import { typeFromAST } from '../utilities/typeFromAST.ts';
 import type { GraphQLVariableSignature } from './getVariableSignature.ts';
 import type { VariableValues } from './values.ts';
-import { getDirectiveValues, getFragmentVariableValues } from './values.ts';
+import {
+  experimentalGetArgumentValues,
+  getDirectiveValues,
+  getFragmentVariableValues,
+} from './values.ts';
 export interface DeferUsage {
   label: string | undefined;
   parentDeferUsage: DeferUsage | undefined;
@@ -42,6 +47,8 @@ interface CollectFieldsContext {
   runtimeType: GraphQLObjectType;
   visitedFragmentNames: Set<string>;
   hideSuggestions: boolean;
+  forbiddenDirectiveInstances: Array<DirectiveNode>;
+  forbidSkipAndInclude: boolean;
 }
 /**
  * Given a selectionSet, collects all of the fields and returns them.
@@ -60,9 +67,11 @@ export function collectFields(
   runtimeType: GraphQLObjectType,
   selectionSet: SelectionSetNode,
   hideSuggestions: boolean,
+  forbidSkipAndInclude = false,
 ): {
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
+  forbiddenDirectiveInstances: ReadonlyArray<DirectiveNode>;
 } {
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
@@ -73,9 +82,15 @@ export function collectFields(
     runtimeType,
     visitedFragmentNames: new Set(),
     hideSuggestions,
+    forbiddenDirectiveInstances: [],
+    forbidSkipAndInclude,
   };
   collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
-  return { groupedFieldSet, newDeferUsages };
+  return {
+    groupedFieldSet,
+    newDeferUsages,
+    forbiddenDirectiveInstances: context.forbiddenDirectiveInstances,
+  };
 }
 /**
  * Given an array of field nodes, collects all of the subfields of the passed
@@ -106,6 +121,8 @@ export function collectSubfields(
     runtimeType: returnType,
     visitedFragmentNames: new Set(),
     hideSuggestions,
+    forbiddenDirectiveInstances: [],
+    forbidSkipAndInclude: false,
   };
   const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
@@ -149,7 +166,12 @@ function collectFieldsImpl(
     switch (selection.kind) {
       case Kind.FIELD: {
         if (
-          !shouldIncludeNode(selection, variableValues, fragmentVariableValues)
+          !shouldIncludeNode(
+            context,
+            selection,
+            variableValues,
+            fragmentVariableValues,
+          )
         ) {
           continue;
         }
@@ -163,6 +185,7 @@ function collectFieldsImpl(
       case Kind.INLINE_FRAGMENT: {
         if (
           !shouldIncludeNode(
+            context,
             selection,
             variableValues,
             fragmentVariableValues,
@@ -203,7 +226,12 @@ function collectFieldsImpl(
         const fragName = selection.name.value;
         if (
           visitedFragmentNames.has(fragName) ||
-          !shouldIncludeNode(selection, variableValues, fragmentVariableValues)
+          !shouldIncludeNode(
+            context,
+            selection,
+            variableValues,
+            fragmentVariableValues,
+          )
         ) {
           continue;
         }
@@ -290,25 +318,46 @@ function getDeferUsage(
  * directives, where `@skip` has higher precedence than `@include`.
  */
 function shouldIncludeNode(
+  context: CollectFieldsContext,
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
   variableValues: VariableValues,
   fragmentVariableValues: VariableValues | undefined,
 ): boolean {
-  const skip = getDirectiveValues(
-    GraphQLSkipDirective,
-    node,
-    variableValues,
-    fragmentVariableValues,
+  const skipDirectiveNode = node.directives?.find(
+    (directive) => directive.name.value === GraphQLSkipDirective.name,
   );
+  if (skipDirectiveNode && context.forbidSkipAndInclude) {
+    context.forbiddenDirectiveInstances.push(skipDirectiveNode);
+    return false;
+  }
+  const skip = skipDirectiveNode
+    ? experimentalGetArgumentValues(
+        skipDirectiveNode,
+        GraphQLSkipDirective.args,
+        variableValues,
+        fragmentVariableValues,
+        context.hideSuggestions,
+      )
+    : undefined;
   if (skip?.if === true) {
     return false;
   }
-  const include = getDirectiveValues(
-    GraphQLIncludeDirective,
-    node,
-    variableValues,
-    fragmentVariableValues,
+  const includeDirectiveNode = node.directives?.find(
+    (directive) => directive.name.value === GraphQLIncludeDirective.name,
   );
+  if (includeDirectiveNode && context.forbidSkipAndInclude) {
+    context.forbiddenDirectiveInstances.push(includeDirectiveNode);
+    return false;
+  }
+  const include = includeDirectiveNode
+    ? experimentalGetArgumentValues(
+        includeDirectiveNode,
+        GraphQLIncludeDirective.args,
+        variableValues,
+        fragmentVariableValues,
+        context.hideSuggestions,
+      )
+    : undefined;
   if (include?.if === false) {
     return false;
   }
