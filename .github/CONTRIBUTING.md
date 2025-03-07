@@ -2,14 +2,13 @@
 
 We want to make contributing to this project as easy and transparent as
 possible. Hopefully this document makes the process for contributing clear and
-answers any questions you may have. If not, feel free to open an
-[Issue](https://github.com/graphql/graphql-spec/issues/).
+answers any questions you may have.
 
 ## Issues
 
 We use GitHub issues to track public bugs and requests. Please ensure your bug
 description is clear and has sufficient instructions to be able to reproduce the
-issue. The best way is to provide a reduced test case on jsFiddle or jsBin.
+issue. The absolute best way to do that is to add a failing test to our test suite via a pull request, but a reduced test case on a site like [StackBlitz](https://stackblitz.com/) or [CodeSandbox](https://codesandbox.io/) is also very helpful.
 
 ## Pull Requests
 
@@ -21,8 +20,8 @@ your [pull requests](https://help.github.com/articles/creating-a-pull-request).
 Since graphql-js is a reference implementation of the
 [GraphQL spec](https://graphql.github.io/graphql-spec/), only changes which comply
 with this spec will be considered. If you have a change in mind which requires a
-change to the spec, please first open an
-[issue](https://github.com/graphql/graphql-spec/issues/) against the spec.
+change to the spec, please consider opening an
+[issue](https://github.com/graphql/graphql-spec/issues/) against the spec and/or attending a [GraphQL Working Group meeting](https://github.com/graphql/graphql-wg) to discuss your proposed change. See the [contribution guide of the specification](https://github.com/graphql/graphql-spec/blob/main/CONTRIBUTING.md) for further information. Stage 1 and 2 proposals may be implemented within graphql-js behind a feature flag.
 
 ### GraphQL Specification Membership Agreement
 
@@ -74,6 +73,17 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 - Trailing commas,
 - Avd abbr wrds.
 
+## Review and Merge Process
+
+- Pull requests are required to pass all tests and checks before they can be merged.
+- Ideally, pull requests should be reviewed by _at least two_ members of the [`@graphql/graphql-js-reviewers`](https://github.com/orgs/graphql/teams/graphql-js-reviewers) team before they are merged, preferably from separate organizations. For more complex pull requests, a larger cohort of reviewers is suggested.
+- Any reviewer may request that the topic be brought for more in depth discussion at a [GraphQL JS Working Group meeting](https://github.com/graphql/graphql-js-wg/), where decisions will be made by consensus.
+- A PR that has been merged without discussion at a GraphQL JS Working Group meeting can be revisited in any subsequent meeting; the PR may be reverted as a result of that discussion.
+
+## Discussion
+
+Feel free to reach out via the [graphql-js channel](https://discord.com/channels/625400653321076807/862957336082645006) on the [official Discord server](https://discord.graphql.org/) to discuss issues, pull requests, or anything graphql-js related.
+
 ## Release on NPM
 
 _Only core contributors may release to NPM._
@@ -83,17 +93,21 @@ then use `npm version patch|minor|major` in order to increment the version in
 package.json and tag and commit a release. Then `git push && git push --tags`
 to sync this change with source control. Then `npm publish npmDist` to actually
 publish the release to NPM.
-Once published, add [release notes](https://github.com/graphql/graphql-js/tags).
+Once published, add [release notes](https://github.com/graphql/graphql-js/releases).
 Use [semver](https://semver.org/) to determine which version part to increment.
 
 Example for a patch release:
 
 ```sh
+npm ci
 npm test
 npm version patch
 git push --follow-tags
-npm publish npmDist
+cd npmDist && npm publish
+npm run changelog
 ```
+
+Then upload the changelog to [https://github.com/graphql/graphql-js/releases](https://github.com/graphql/graphql-js/releases).
 
 ## License
 

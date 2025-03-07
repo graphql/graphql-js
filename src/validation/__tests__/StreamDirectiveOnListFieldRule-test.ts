@@ -71,7 +71,7 @@ describe('Validate: Stream directive on list field', () => {
     `).toDeepEqual([
       {
         message:
-          'Stream directive cannot be used on non-list field "name" on type "Human".',
+          'Directive "@stream" cannot be used on non-list field "Human.name".',
         locations: [{ line: 3, column: 14 }],
       },
     ]);

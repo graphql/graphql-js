@@ -44,6 +44,7 @@ const schemaWithDirectives = buildSchema(`
   directive @onFragmentSpread on FRAGMENT_SPREAD
   directive @onInlineFragment on INLINE_FRAGMENT
   directive @onVariableDefinition on VARIABLE_DEFINITION
+  directive @onFragmentVariableDefinition on FRAGMENT_VARIABLE_DEFINITION
 `);
 
 const schemaWithSDLDirectives = buildSchema(`
@@ -150,7 +151,9 @@ describe('Validate: Known directives', () => {
         someField @onField
       }
 
-      fragment Frag on Human @onFragmentDefinition {
+      fragment Frag(
+        $arg: Int @onFragmentVariableDefinition
+      ) on Human @onFragmentDefinition {
         name @onField
       }
     `);
@@ -175,7 +178,7 @@ describe('Validate: Known directives', () => {
         someField @onQuery
       }
 
-      fragment Frag on Human @onQuery {
+      fragment Frag($arg: Int @onVariableDefinition) on Human @onQuery {
         name @onQuery
       }
     `).toDeepEqual([
@@ -220,8 +223,13 @@ describe('Validate: Known directives', () => {
         locations: [{ column: 19, line: 16 }],
       },
       {
+        message:
+          'Directive "@onVariableDefinition" may not be used on FRAGMENT_VARIABLE_DEFINITION.',
+        locations: [{ column: 31, line: 19 }],
+      },
+      {
         message: 'Directive "@onQuery" may not be used on FRAGMENT_DEFINITION.',
-        locations: [{ column: 30, line: 19 }],
+        locations: [{ column: 63, line: 19 }],
       },
       {
         message: 'Directive "@onQuery" may not be used on FIELD.',
@@ -347,6 +355,9 @@ describe('Validate: Known directives', () => {
           schema @onSchema {
             query: MyQuery
           }
+
+          directive @myDirective(arg:String) on ARGUMENT_DEFINITION
+          directive @myDirective2(arg:String @myDirective) on FIELD
 
           extend schema @onSchema
         `,

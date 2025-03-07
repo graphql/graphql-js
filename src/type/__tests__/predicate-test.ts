@@ -5,13 +5,18 @@ import { DirectiveLocation } from '../../language/directiveLocation.js';
 
 import type {
   GraphQLArgument,
+  GraphQLDefaultInput,
   GraphQLInputField,
   GraphQLInputType,
 } from '../definition.js';
 import {
   assertAbstractType,
+  assertArgument,
   assertCompositeType,
   assertEnumType,
+  assertEnumValue,
+  assertField,
+  assertInputField,
   assertInputObjectType,
   assertInputType,
   assertInterfaceType,
@@ -37,8 +42,12 @@ import {
   GraphQLScalarType,
   GraphQLUnionType,
   isAbstractType,
+  isArgument,
   isCompositeType,
   isEnumType,
+  isEnumValue,
+  isField,
+  isInputField,
   isInputObjectType,
   isInputType,
   isInterfaceType,
@@ -75,7 +84,10 @@ import {
 } from '../scalars.js';
 import { assertSchema, GraphQLSchema, isSchema } from '../schema.js';
 
-const ObjectType = new GraphQLObjectType({ name: 'Object', fields: {} });
+const ObjectType = new GraphQLObjectType({
+  name: 'Object',
+  fields: { f: { type: GraphQLString, args: { a: { type: GraphQLString } } } },
+});
 const InterfaceType = new GraphQLInterfaceType({
   name: 'Interface',
   fields: {},
@@ -84,7 +96,7 @@ const UnionType = new GraphQLUnionType({ name: 'Union', types: [ObjectType] });
 const EnumType = new GraphQLEnumType({ name: 'Enum', values: { foo: {} } });
 const InputObjectType = new GraphQLInputObjectType({
   name: 'InputObject',
-  fields: {},
+  fields: { f: { type: GraphQLString } },
 });
 const ScalarType = new GraphQLScalarType({ name: 'Scalar' });
 const Directive = new GraphQLDirective({
@@ -184,6 +196,34 @@ describe('Type predicates', () => {
     });
   });
 
+  describe('isField', () => {
+    it('returns true for fields', () => {
+      const f = ObjectType.getFields().f;
+      expect(isField(f)).to.equal(true);
+      expect(() => assertField(f)).to.not.throw();
+    });
+
+    it('returns false for non-field', () => {
+      const inputField = InputObjectType.getFields().f;
+      expect(isField(inputField)).to.equal(false);
+      expect(() => assertField(inputField)).to.throw();
+    });
+  });
+
+  describe('isArgument', () => {
+    it('returns true for arguments', () => {
+      const a = ObjectType.getFields().f.args[0];
+      expect(isArgument(a)).to.equal(true);
+      expect(() => assertArgument(a)).to.not.throw();
+    });
+
+    it('returns false for non-arguments', () => {
+      const f = ObjectType.getFields().f;
+      expect(isArgument(f)).to.equal(false);
+      expect(() => assertArgument(f)).to.throw();
+    });
+  });
+
   describe('isInterfaceType', () => {
     it('returns true for interface type', () => {
       expect(isInterfaceType(InterfaceType)).to.equal(true);
@@ -237,6 +277,19 @@ describe('Type predicates', () => {
     });
   });
 
+  describe('isEnumValue', () => {
+    it('returns true for enum value', () => {
+      const value = EnumType.getValue('foo');
+      expect(isEnumValue(value)).to.equal(true);
+      expect(() => assertEnumValue(value)).to.not.throw();
+    });
+
+    it('returns false for non-enum type', () => {
+      expect(isEnumValue(EnumType)).to.equal(false);
+      expect(() => assertEnumValue(EnumType)).to.throw();
+    });
+  });
+
   describe('isInputObjectType', () => {
     it('returns true for input object type', () => {
       expect(isInputObjectType(InputObjectType)).to.equal(true);
@@ -255,6 +308,20 @@ describe('Type predicates', () => {
     it('returns false for non-input-object type', () => {
       expect(isInputObjectType(ObjectType)).to.equal(false);
       expect(() => assertInputObjectType(ObjectType)).to.throw();
+    });
+  });
+
+  describe('isInputField', () => {
+    it('returns true for input fields', () => {
+      const f = InputObjectType.getFields().f;
+      expect(isInputField(f)).to.equal(true);
+      expect(() => assertInputField(f)).to.not.throw();
+    });
+
+    it('returns false for non-input fields', () => {
+      const f = ObjectType.getFields().f;
+      expect(isInputField(f)).to.equal(false);
+      expect(() => assertInputField(f)).to.throw();
     });
   });
 
@@ -568,17 +635,15 @@ describe('Type predicates', () => {
   describe('isRequiredArgument', () => {
     function buildArg(config: {
       type: GraphQLInputType;
-      defaultValue?: unknown;
+      default?: GraphQLDefaultInput;
     }): GraphQLArgument {
-      return {
-        name: 'someArg',
-        type: config.type,
-        description: undefined,
-        defaultValue: config.defaultValue,
-        deprecationReason: null,
-        extensions: Object.create(null),
-        astNode: undefined,
-      };
+      const objectType = new GraphQLObjectType({
+        name: 'SomeType',
+        fields: {
+          someField: { type: GraphQLString, args: { someArg: config } },
+        },
+      });
+      return objectType.getFields().someField.args[0];
     }
 
     it('returns true for required arguments', () => {
@@ -596,7 +661,7 @@ describe('Type predicates', () => {
 
       const optArg2 = buildArg({
         type: GraphQLString,
-        defaultValue: null,
+        default: { value: null },
       });
       expect(isRequiredArgument(optArg2)).to.equal(false);
 
@@ -607,7 +672,7 @@ describe('Type predicates', () => {
 
       const optArg4 = buildArg({
         type: new GraphQLNonNull(GraphQLString),
-        defaultValue: 'default',
+        default: { value: 'default' },
       });
       expect(isRequiredArgument(optArg4)).to.equal(false);
     });
@@ -616,17 +681,15 @@ describe('Type predicates', () => {
   describe('isRequiredInputField', () => {
     function buildInputField(config: {
       type: GraphQLInputType;
-      defaultValue?: unknown;
+      default?: GraphQLDefaultInput;
     }): GraphQLInputField {
-      return {
-        name: 'someInputField',
-        type: config.type,
-        description: undefined,
-        defaultValue: config.defaultValue,
-        deprecationReason: null,
-        extensions: Object.create(null),
-        astNode: undefined,
-      };
+      const inputObjectType = new GraphQLInputObjectType({
+        name: 'SomeType',
+        fields: {
+          someInputField: config,
+        },
+      });
+      return inputObjectType.getFields().someInputField;
     }
 
     it('returns true for required input field', () => {
@@ -644,7 +707,7 @@ describe('Type predicates', () => {
 
       const optField2 = buildInputField({
         type: GraphQLString,
-        defaultValue: null,
+        default: { value: null },
       });
       expect(isRequiredInputField(optField2)).to.equal(false);
 
@@ -655,7 +718,7 @@ describe('Type predicates', () => {
 
       const optField4 = buildInputField({
         type: new GraphQLNonNull(GraphQLString),
-        defaultValue: 'default',
+        default: { value: 'default' },
       });
       expect(isRequiredInputField(optField4)).to.equal(false);
     });

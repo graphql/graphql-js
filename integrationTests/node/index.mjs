@@ -1,6 +1,5 @@
-/* eslint-disable simple-import-sort/imports */
-import assert from 'assert';
-import { readFileSync } from 'fs';
+import assert from 'node:assert';
+import { readFileSync } from 'node:fs';
 
 import {
   experimentalExecuteIncrementally,

@@ -34,7 +34,7 @@ import { isIntrospectionType } from '../type/introspection.js';
 import { isSpecifiedScalarType } from '../type/scalars.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import { astFromValue } from './astFromValue.js';
+import { getDefaultValueAST } from './getDefaultValueAST.js';
 
 export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
@@ -86,9 +86,9 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
     return (
       printDescription(schema) +
       'schema {\n' +
-      (queryType ? `  query: ${queryType.name}\n` : '') +
-      (mutationType ? `  mutation: ${mutationType.name}\n` : '') +
-      (subscriptionType ? `  subscription: ${subscriptionType.name}\n` : '') +
+      (queryType ? `  query: ${queryType}\n` : '') +
+      (mutationType ? `  mutation: ${mutationType}\n` : '') +
+      (subscriptionType ? `  subscription: ${subscriptionType}\n` : '') +
       '}'
     );
   }
@@ -148,9 +148,7 @@ export function printType(type: GraphQLNamedType): string {
 }
 
 function printScalar(type: GraphQLScalarType): string {
-  return (
-    printDescription(type) + `scalar ${type.name}` + printSpecifiedByURL(type)
-  );
+  return printDescription(type) + `scalar ${type}` + printSpecifiedByURL(type);
 }
 
 function printImplementedInterfaces(
@@ -165,7 +163,7 @@ function printImplementedInterfaces(
 function printObject(type: GraphQLObjectType): string {
   return (
     printDescription(type) +
-    `type ${type.name}` +
+    `type ${type}` +
     printImplementedInterfaces(type) +
     printFields(type)
   );
@@ -174,7 +172,7 @@ function printObject(type: GraphQLObjectType): string {
 function printInterface(type: GraphQLInterfaceType): string {
   return (
     printDescription(type) +
-    `interface ${type.name}` +
+    `interface ${type}` +
     printImplementedInterfaces(type) +
     printFields(type)
   );
@@ -183,7 +181,7 @@ function printInterface(type: GraphQLInterfaceType): string {
 function printUnion(type: GraphQLUnionType): string {
   const types = type.getTypes();
   const possibleTypes = types.length ? ' = ' + types.join(' | ') : '';
-  return printDescription(type) + 'union ' + type.name + possibleTypes;
+  return printDescription(type) + `union ${type.name}` + possibleTypes;
 }
 
 function printEnum(type: GraphQLEnumType): string {
@@ -197,14 +195,19 @@ function printEnum(type: GraphQLEnumType): string {
         printDeprecated(value.deprecationReason),
     );
 
-  return printDescription(type) + `enum ${type.name}` + printBlock(values);
+  return printDescription(type) + `enum ${type}` + printBlock(values);
 }
 
 function printInputObject(type: GraphQLInputObjectType): string {
   const fields = Object.values(type.getFields()).map(
     (f, i) => printDescription(f, '  ', !i) + '  ' + printInputValue(f),
   );
-  return printDescription(type) + `input ${type.name}` + printBlock(fields);
+  return (
+    printDescription(type) +
+    `input ${type}` +
+    (type.isOneOf ? ' @oneOf' : '') +
+    printBlock(fields)
+  );
 }
 
 function printFields(type: GraphQLObjectType | GraphQLInterfaceType): string {
@@ -255,20 +258,21 @@ function printArgs(
   );
 }
 
-function printInputValue(arg: GraphQLInputField): string {
-  const defaultAST = astFromValue(arg.defaultValue, arg.type);
-  let argDecl = arg.name + ': ' + String(arg.type);
-  if (defaultAST) {
-    argDecl += ` = ${print(defaultAST)}`;
+function printInputValue(
+  argOrInputField: GraphQLArgument | GraphQLInputField,
+): string {
+  let argDecl = argOrInputField.name + ': ' + String(argOrInputField.type);
+  const defaultValueAST = getDefaultValueAST(argOrInputField);
+  if (defaultValueAST) {
+    argDecl += ` = ${print(defaultValueAST)}`;
   }
-  return argDecl + printDeprecated(arg.deprecationReason);
+  return argDecl + printDeprecated(argOrInputField.deprecationReason);
 }
 
 export function printDirective(directive: GraphQLDirective): string {
   return (
     printDescription(directive) +
-    'directive @' +
-    directive.name +
+    `directive ${directive}` +
     printArgs(directive.args) +
     (directive.isRepeatable ? ' repeatable' : '') +
     ' on ' +

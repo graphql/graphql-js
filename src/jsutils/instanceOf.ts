@@ -1,5 +1,11 @@
 import { inspect } from './inspect.js';
 
+/* c8 ignore next 3 */
+const isProduction =
+  globalThis.process != null &&
+  // eslint-disable-next-line no-undef
+  process.env.NODE_ENV === 'production';
+
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
  * constructors are detected.
@@ -9,7 +15,7 @@ import { inspect } from './inspect.js';
 export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
   /* c8 ignore next 6 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
-  globalThis.process != null && globalThis.process.env.NODE_ENV === 'production'
+  isProduction
     ? function instanceOf(value: unknown, constructor: Constructor): boolean {
         return value instanceof constructor;
       }
@@ -46,8 +52,9 @@ spurious results.`,
         return false;
       };
 
-interface Constructor extends Function {
+interface Constructor {
   prototype: {
     [Symbol.toStringTag]: string;
   };
+  new (...args: Array<any>): any;
 }

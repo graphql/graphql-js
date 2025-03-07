@@ -455,10 +455,10 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('Legacy: visits variables defined in fragments', () => {
+  it('visits arguments defined on fragments', () => {
     const ast = parse('fragment a($v: Boolean = false) on t { f }', {
       noLocation: true,
-      allowLegacyFragmentVariables: true,
+      experimentalFragmentArguments: true,
     });
     const visited: Array<any> = [];
 
@@ -505,10 +505,52 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('properly visits the kitchen sink query', () => {
-    const ast = parse(kitchenSinkQuery, {
-      experimentalClientControlledNullability: true,
+  it('visits arguments on fragment spreads', () => {
+    const ast = parse('fragment a on t { ...s(v: false) }', {
+      noLocation: true,
+      experimentalFragmentArguments: true,
     });
+    const visited: Array<any> = [];
+
+    visit(ast, {
+      enter(node) {
+        checkVisitorFnArgs(ast, arguments);
+        visited.push(['enter', node.kind, getValue(node)]);
+      },
+      leave(node) {
+        checkVisitorFnArgs(ast, arguments);
+        visited.push(['leave', node.kind, getValue(node)]);
+      },
+    });
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', undefined],
+      ['enter', 'FragmentDefinition', undefined],
+      ['enter', 'Name', 'a'],
+      ['leave', 'Name', 'a'],
+      ['enter', 'NamedType', undefined],
+      ['enter', 'Name', 't'],
+      ['leave', 'Name', 't'],
+      ['leave', 'NamedType', undefined],
+      ['enter', 'SelectionSet', undefined],
+      ['enter', 'FragmentSpread', undefined],
+      ['enter', 'Name', 's'],
+      ['leave', 'Name', 's'],
+      ['enter', 'FragmentArgument', { kind: 'BooleanValue', value: false }],
+      ['enter', 'Name', 'v'],
+      ['leave', 'Name', 'v'],
+      ['enter', 'BooleanValue', false],
+      ['leave', 'BooleanValue', false],
+      ['leave', 'FragmentArgument', { kind: 'BooleanValue', value: false }],
+      ['leave', 'FragmentSpread', undefined],
+      ['leave', 'SelectionSet', undefined],
+      ['leave', 'FragmentDefinition', undefined],
+      ['leave', 'Document', undefined],
+    ]);
+  });
+
+  it('properly visits the kitchen sink query', () => {
+    const ast = parse(kitchenSinkQuery);
     const visited: Array<any> = [];
     const argsStack: Array<any> = [];
 
@@ -656,272 +698,6 @@ describe('Visitor', () => {
       ['leave', 'Field', 1, undefined],
       ['leave', 'SelectionSet', 'selectionSet', 'Field'],
       ['leave', 'Field', 0, undefined],
-      ['enter', 'Field', 1, undefined],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 1, undefined],
-      ['enter', 'Field', 2, undefined],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'ErrorBoundary', 'nullabilityAssertion', 'Field'],
-      ['leave', 'ErrorBoundary', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 2, undefined],
-      ['enter', 'Field', 3, undefined],
-      ['enter', 'Name', 'alias', 'Field'],
-      ['leave', 'Name', 'alias', 'Field'],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 3, undefined],
-      ['enter', 'Field', 4, undefined],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'Argument', 0, undefined],
-      ['enter', 'Name', 'name', 'Argument'],
-      ['leave', 'Name', 'name', 'Argument'],
-      ['enter', 'IntValue', 'value', 'Argument'],
-      ['leave', 'IntValue', 'value', 'Argument'],
-      ['leave', 'Argument', 0, undefined],
-      ['enter', 'Directive', 0, undefined],
-      ['enter', 'Name', 'name', 'Directive'],
-      ['leave', 'Name', 'name', 'Directive'],
-      ['leave', 'Directive', 0, undefined],
-      ['enter', 'SelectionSet', 'selectionSet', 'Field'],
-      ['enter', 'Field', 0, undefined],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['leave', 'Field', 0, undefined],
-      ['leave', 'SelectionSet', 'selectionSet', 'Field'],
-      ['enter', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 4, undefined],
-      ['enter', 'Field', 5, undefined],
-      ['enter', 'Name', 'alias', 'Field'],
-      ['leave', 'Name', 'alias', 'Field'],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      [
-        'enter',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      [
-        'leave',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      ['leave', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 5, undefined],
-      ['enter', 'Field', 6, undefined],
-      ['enter', 'Name', 'alias', 'Field'],
-      ['leave', 'Name', 'alias', 'Field'],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'ListNullabilityOperator', 'nullabilityAssertion', 'Field'],
-      [
-        'enter',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      ['leave', 'ListNullabilityOperator', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 6, undefined],
-      ['enter', 'Field', 7, undefined],
-      ['enter', 'Name', 'alias', 'Field'],
-      ['leave', 'Name', 'alias', 'Field'],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      [
-        'enter',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      [
-        'enter',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      ['leave', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 7, undefined],
-      ['enter', 'Field', 8, undefined],
-      ['enter', 'Name', 'alias', 'Field'],
-      ['leave', 'Name', 'alias', 'Field'],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'ErrorBoundary', 'nullabilityAssertion', 'Field'],
-      [
-        'enter',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'ErrorBoundary',
-      ],
-      [
-        'leave',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'ErrorBoundary',
-      ],
-      ['leave', 'ErrorBoundary', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 8, undefined],
-      ['enter', 'Field', 9, undefined],
-      ['enter', 'Name', 'alias', 'Field'],
-      ['leave', 'Name', 'alias', 'Field'],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'ListNullabilityOperator', 'nullabilityAssertion', 'Field'],
-      [
-        'enter',
-        'ErrorBoundary',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'ErrorBoundary',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      ['leave', 'ListNullabilityOperator', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 9, undefined],
-      ['enter', 'Field', 10, undefined],
-      ['enter', 'Name', 'alias', 'Field'],
-      ['leave', 'Name', 'alias', 'Field'],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'ErrorBoundary', 'nullabilityAssertion', 'Field'],
-      [
-        'enter',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'ErrorBoundary',
-      ],
-      [
-        'enter',
-        'ErrorBoundary',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'ErrorBoundary',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'ErrorBoundary',
-      ],
-      ['leave', 'ErrorBoundary', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 10, undefined],
-      ['enter', 'Field', 11, undefined],
-      ['enter', 'Name', 'alias', 'Field'],
-      ['leave', 'Name', 'alias', 'Field'],
-      ['enter', 'Name', 'name', 'Field'],
-      ['leave', 'Name', 'name', 'Field'],
-      ['enter', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      [
-        'enter',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      [
-        'enter',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'enter',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      [
-        'enter',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'enter',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      [
-        'enter',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      [
-        'leave',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      [
-        'leave',
-        'NonNullAssertion',
-        'nullabilityAssertion',
-        'ListNullabilityOperator',
-      ],
-      [
-        'leave',
-        'ListNullabilityOperator',
-        'nullabilityAssertion',
-        'NonNullAssertion',
-      ],
-      ['leave', 'NonNullAssertion', 'nullabilityAssertion', 'Field'],
-      ['leave', 'Field', 11, undefined],
       ['leave', 'SelectionSet', 'selectionSet', 'InlineFragment'],
       ['leave', 'InlineFragment', 1, undefined],
       ['enter', 'InlineFragment', 2, undefined],

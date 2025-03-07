@@ -18,6 +18,7 @@ import {
 
 import { astFromValue } from '../astFromValue.js';
 
+/** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
 describe('astFromValue', () => {
   it('converts boolean values to ASTs', () => {
     expect(astFromValue(true, GraphQLBoolean)).to.deep.equal({
@@ -192,10 +193,10 @@ describe('astFromValue', () => {
     expect(astFromValue(undefined, GraphQLID)).to.deep.equal(null);
   });
 
-  it('converts using serialize from a custom scalar type', () => {
+  it('converts using coerceOutputValue from a custom scalar type', () => {
     const passthroughScalar = new GraphQLScalarType({
       name: 'PassthroughScalar',
-      serialize(value) {
+      coerceOutputValue(value) {
         return value;
       },
     });
@@ -214,7 +215,7 @@ describe('astFromValue', () => {
 
     const returnNullScalar = new GraphQLScalarType({
       name: 'ReturnNullScalar',
-      serialize() {
+      coerceOutputValue() {
         return null;
       },
     });
@@ -225,7 +226,7 @@ describe('astFromValue', () => {
 
     const returnCustomClassScalar = new GraphQLScalarType({
       name: 'ReturnCustomClassScalar',
-      serialize() {
+      coerceOutputValue() {
         return new SomeClass();
       },
     });

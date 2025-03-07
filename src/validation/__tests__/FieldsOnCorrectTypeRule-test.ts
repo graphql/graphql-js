@@ -12,11 +12,12 @@ import { validate } from '../validate.js';
 
 import { expectValidationErrorsWithSchema } from './harness.js';
 
-function expectErrors(queryStr: string) {
+function expectErrors(queryStr: string, hideSuggestions = false) {
   return expectValidationErrorsWithSchema(
     testSchema,
     FieldsOnCorrectTypeRule,
     queryStr,
+    hideSuggestions,
   );
 }
 
@@ -135,6 +136,22 @@ describe('Validate: Fields on correct type', () => {
       {
         message:
           'Cannot query field "meowVolume" on type "Dog". Did you mean "barkVolume"?',
+        locations: [{ line: 3, column: 9 }],
+      },
+    ]);
+  });
+
+  it('Field not defined on fragment (no suggestions)', () => {
+    expectErrors(
+      `
+      fragment fieldNotDefined on Dog {
+        meowVolume
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message: 'Cannot query field "meowVolume" on type "Dog".',
         locations: [{ line: 3, column: 9 }],
       },
     ]);

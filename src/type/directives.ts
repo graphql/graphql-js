@@ -1,21 +1,22 @@
+import { devAssert } from '../jsutils/devAssert.js';
 import { inspect } from '../jsutils/inspect.js';
 import { instanceOf } from '../jsutils/instanceOf.js';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import { keyValMap } from '../jsutils/keyValMap.js';
 import type { Maybe } from '../jsutils/Maybe.js';
-import { toObjMap } from '../jsutils/toObjMap.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
+import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
 
 import type { DirectiveDefinitionNode } from '../language/ast.js';
 import { DirectiveLocation } from '../language/directiveLocation.js';
 
 import { assertName } from './assertName.js';
 import type {
-  GraphQLArgument,
-  GraphQLFieldConfigArgumentMap,
+  GraphQLArgumentConfig,
+  GraphQLFieldNormalizedConfigArgumentMap,
+  GraphQLSchemaElement,
 } from './definition.js';
-import {
-  argsToArgsConfig,
-  defineArguments,
-  GraphQLNonNull,
-} from './definition.js';
+import { GraphQLArgument, GraphQLNonNull } from './definition.js';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
 
 /**
@@ -44,14 +45,14 @@ export function assertDirective(directive: unknown): GraphQLDirective {
  * an object which can contain all the values you need.
  */
 export interface GraphQLDirectiveExtensions {
-  [attributeName: string]: unknown;
+  [attributeName: string | symbol]: unknown;
 }
 
 /**
  * Directives are used by the GraphQL runtime as a way of modifying execution
  * behavior. Type system creators will usually not create these directly.
  */
-export class GraphQLDirective {
+export class GraphQLDirective implements GraphQLSchemaElement {
   name: string;
   description: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
@@ -65,11 +66,23 @@ export class GraphQLDirective {
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
-    this.extensions = toObjMap(config.extensions);
+    this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
 
+    devAssert(
+      Array.isArray(config.locations),
+      `@${this.name} locations must be an Array.`,
+    );
+
     const args = config.args ?? {};
-    this.args = defineArguments(args);
+    devAssert(
+      isObjectLike(args) && !Array.isArray(args),
+      `@${this.name} args must be an object with argument names as keys.`,
+    );
+
+    this.args = Object.entries(args).map(
+      ([argName, argConfig]) => new GraphQLArgument(this, argName, argConfig),
+    );
   }
 
   get [Symbol.toStringTag]() {
@@ -81,7 +94,11 @@ export class GraphQLDirective {
       name: this.name,
       description: this.description,
       locations: this.locations,
-      args: argsToArgsConfig(this.args),
+      args: keyValMap(
+        this.args,
+        (arg) => arg.name,
+        (arg) => arg.toConfig(),
+      ),
       isRepeatable: this.isRepeatable,
       extensions: this.extensions,
       astNode: this.astNode,
@@ -101,14 +118,15 @@ export interface GraphQLDirectiveConfig {
   name: string;
   description?: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
-  args?: Maybe<GraphQLFieldConfigArgumentMap>;
+  args?: Maybe<ObjMap<GraphQLArgumentConfig>>;
   isRepeatable?: Maybe<boolean>;
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
 
-interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
-  args: GraphQLFieldConfigArgumentMap;
+export interface GraphQLDirectiveNormalizedConfig
+  extends GraphQLDirectiveConfig {
+  args: GraphQLFieldNormalizedConfigArgumentMap;
   isRepeatable: boolean;
   extensions: Readonly<GraphQLDirectiveExtensions>;
 }
@@ -168,7 +186,7 @@ export const GraphQLDeferDirective = new GraphQLDirective({
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Deferred when true or undefined.',
-      defaultValue: true,
+      default: { value: true },
     },
     label: {
       type: GraphQLString,
@@ -186,19 +204,19 @@ export const GraphQLStreamDirective = new GraphQLDirective({
     'Directs the executor to stream plural fields when the `if` argument is true or undefined.',
   locations: [DirectiveLocation.FIELD],
   args: {
+    initialCount: {
+      default: { value: 0 },
+      type: new GraphQLNonNull(GraphQLInt),
+      description: 'Number of items to return immediately',
+    },
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Stream when true or undefined.',
-      defaultValue: true,
+      default: { value: true },
     },
     label: {
       type: GraphQLString,
       description: 'Unique name',
-    },
-    initialCount: {
-      defaultValue: 0,
-      type: GraphQLInt,
-      description: 'Number of items to return immediately',
     },
   },
 });
@@ -223,10 +241,10 @@ export const GraphQLDeprecatedDirective: GraphQLDirective =
     ],
     args: {
       reason: {
-        type: GraphQLString,
+        type: new GraphQLNonNull(GraphQLString),
         description:
           'Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).',
-        defaultValue: DEFAULT_DEPRECATION_REASON,
+        default: { value: DEFAULT_DEPRECATION_REASON },
       },
     },
   });
@@ -256,6 +274,19 @@ export const GraphQLOneOfDirective: GraphQLDirective = new GraphQLDirective({
     'Indicates exactly one field must be supplied and this field must not be `null`.',
   locations: [DirectiveLocation.INPUT_OBJECT],
   args: {},
+});
+
+/**
+ * Disables error propagation (experimental).
+ */
+export const GraphQLDisableErrorPropagationDirective = new GraphQLDirective({
+  name: 'experimental_disableErrorPropagation',
+  description: 'Disables error propagation.',
+  locations: [
+    DirectiveLocation.QUERY,
+    DirectiveLocation.MUTATION,
+    DirectiveLocation.SUBSCRIPTION,
+  ],
 });
 
 /**

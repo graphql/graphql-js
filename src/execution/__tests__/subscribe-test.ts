@@ -21,8 +21,12 @@ import {
 import { GraphQLSchema } from '../../type/schema.js';
 
 import type { ExecutionArgs } from '../execute.js';
-import { createSourceEventStream, subscribe } from '../execute.js';
-import type { ExecutionResult } from '../IncrementalPublisher.js';
+import {
+  createSourceEventStream,
+  executeSubscriptionEvent,
+  subscribe,
+} from '../execute.js';
+import type { ExecutionResult } from '../types.js';
 
 import { SimplePubSub } from './simplePubSub.js';
 
@@ -335,6 +339,45 @@ describe('Subscription Initialization Phase', () => {
     });
   });
 
+  it('uses a custom default perEventExecutor', async () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+
+    async function* fooGenerator() {
+      yield { foo: 'FooValue' };
+    }
+
+    let count = 0;
+    const subscription = subscribe({
+      schema,
+      document: parse('subscription { foo }'),
+      rootValue: { foo: fooGenerator },
+      perEventExecutor: (validatedArgs) => {
+        count++;
+        return executeSubscriptionEvent(validatedArgs);
+      },
+    });
+    assert(isAsyncIterable(subscription));
+
+    expect(await subscription.next()).to.deep.equal({
+      done: false,
+      value: { data: { foo: 'FooValue' } },
+    });
+
+    expect(await subscription.next()).to.deep.equal({
+      done: true,
+      value: undefined,
+    });
+    expect(count).to.equal(1);
+  });
+
   it('should only resolve the first field of invalid multi-field', async () => {
     async function* fooGenerator() {
       yield { foo: 'FooValue' };
@@ -524,7 +567,7 @@ describe('Subscription Initialization Phase', () => {
       errors: [
         {
           message:
-            'Variable "$arg" got invalid value "meow"; Int cannot represent non-integer value: "meow"',
+            'Variable "$arg" has invalid value: Int cannot represent non-integer value: "meow"',
           locations: [{ line: 2, column: 21 }],
         },
       ],

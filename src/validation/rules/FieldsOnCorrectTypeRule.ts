@@ -45,18 +45,24 @@ export function FieldsOnCorrectTypeRule(
           // First determine if there are any suggested types to condition on.
           let suggestion = didYouMean(
             'to use an inline fragment on',
-            getSuggestedTypeNames(schema, type, fieldName),
+            context.hideSuggestions
+              ? []
+              : getSuggestedTypeNames(schema, type, fieldName),
           );
 
           // If there are no suggested types, then perhaps this was a typo?
           if (suggestion === '') {
-            suggestion = didYouMean(getSuggestedFieldNames(type, fieldName));
+            suggestion = didYouMean(
+              context.hideSuggestions
+                ? []
+                : getSuggestedFieldNames(type, fieldName),
+            );
           }
 
           // Report an error, including helpful suggestions.
           context.reportError(
             new GraphQLError(
-              `Cannot query field "${fieldName}" on type "${type.name}".` +
+              `Cannot query field "${fieldName}" on type "${type}".` +
                 suggestion,
               { nodes: node },
             ),

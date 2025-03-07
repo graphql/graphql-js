@@ -3,8 +3,6 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { inspect } from '../../jsutils/inspect.js';
-
 import { parse } from '../../language/parser.js';
 
 import { GraphQLObjectType, GraphQLScalarType } from '../../type/definition.js';
@@ -19,8 +17,12 @@ import {
   expectValidationErrorsWithSchema,
 } from './harness.js';
 
-function expectErrors(queryStr: string) {
-  return expectValidationErrors(ValuesOfCorrectTypeRule, queryStr);
+function expectErrors(queryStr: string, hideSuggestions = false) {
+  return expectValidationErrors(
+    ValuesOfCorrectTypeRule,
+    queryStr,
+    hideSuggestions,
+  );
 }
 
 function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
@@ -526,6 +528,24 @@ describe('Validate: Values of correct type', () => {
       ]);
     });
 
+    it('String into Enum (no suggestion)', () => {
+      expectErrors(
+        `
+        {
+          dog {
+            doesKnowCommand(dogCommand: "SIT")
+          }
+        }
+      `,
+        true,
+      ).toDeepEqual([
+        {
+          message: 'Enum "DogCommand" cannot represent non-enum value: "SIT".',
+          locations: [{ line: 4, column: 41 }],
+        },
+      ]);
+    });
+
     it('Boolean into Enum', () => {
       expectErrors(`
         {
@@ -567,6 +587,24 @@ describe('Validate: Values of correct type', () => {
         {
           message:
             'Value "sit" does not exist in "DogCommand" enum. Did you mean the enum value "SIT"?',
+          locations: [{ line: 4, column: 41 }],
+        },
+      ]);
+    });
+
+    it('Different case Enum Value into Enum (no suggestion)', () => {
+      expectErrors(
+        `
+        {
+          dog {
+            doesKnowCommand(dogCommand: sit)
+          }
+        }
+      `,
+        true,
+      ).toDeepEqual([
+        {
+          message: 'Value "sit" does not exist in "DogCommand" enum.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -793,7 +831,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).toDeepEqual([
         {
-          message: 'Expected value of type "Int!", found null.',
+          message: 'Expected value of non-null type "Int!" not to be null.',
           locations: [{ line: 4, column: 32 }],
         },
       ]);
@@ -907,7 +945,7 @@ describe('Validate: Values of correct type', () => {
       `).toDeepEqual([
         {
           message:
-            'Field "ComplexInput.requiredField" of required type "Boolean!" was not provided.',
+            'Expected value of type "ComplexInput" to include required field "requiredField", found: { intField: 4 }.',
           locations: [{ line: 4, column: 41 }],
         },
       ]);
@@ -943,7 +981,7 @@ describe('Validate: Values of correct type', () => {
         }
       `).toDeepEqual([
         {
-          message: 'Expected value of type "Boolean!", found null.',
+          message: 'Expected value of non-null type "Boolean!" not to be null.',
           locations: [{ line: 6, column: 29 }],
         },
       ]);
@@ -962,7 +1000,29 @@ describe('Validate: Values of correct type', () => {
       `).toDeepEqual([
         {
           message:
-            'Field "invalidField" is not defined by type "ComplexInput". Did you mean "intField"?',
+            'Expected value of type "ComplexInput" not to include unknown field "invalidField". Did you mean "intField"? Found: { requiredField: true, invalidField: "value" }.',
+          locations: [{ line: 6, column: 15 }],
+        },
+      ]);
+    });
+
+    it('Partial object, unknown field arg (no suggestions)', () => {
+      expectErrors(
+        `
+        {
+          complicatedArgs {
+            complexArgField(complexArg: {
+              requiredField: true,
+              invalidField: "value"
+            })
+          }
+        }
+      `,
+        true,
+      ).toDeepEqual([
+        {
+          message:
+            'Expected value of type "ComplexInput" not to include unknown field "invalidField", found: { requiredField: true, invalidField: "value" }.',
           locations: [{ line: 6, column: 15 }],
         },
       ]);
@@ -971,10 +1031,8 @@ describe('Validate: Values of correct type', () => {
     it('reports original error for custom scalar which throws', () => {
       const customScalar = new GraphQLScalarType({
         name: 'Invalid',
-        parseValue(value) {
-          throw new Error(
-            `Invalid scalar is always invalid: ${inspect(value)}`,
-          );
+        coerceInputValue() {
+          throw new Error('Invalid scalar is always invalid.');
         },
       });
 
@@ -996,21 +1054,21 @@ describe('Validate: Values of correct type', () => {
       expectJSON(errors).toDeepEqual([
         {
           message:
-            'Expected value of type "Invalid", found 123; Invalid scalar is always invalid: 123',
+            'Expected value of type "Invalid", but encountered error "Invalid scalar is always invalid."; found: 123.',
           locations: [{ line: 1, column: 19 }],
         },
       ]);
 
       expect(errors[0]).to.have.nested.property(
         'originalError.message',
-        'Invalid scalar is always invalid: 123',
+        'Invalid scalar is always invalid.',
       );
     });
 
     it('reports error for custom scalar that returns undefined', () => {
       const customScalar = new GraphQLScalarType({
         name: 'CustomScalar',
-        parseValue() {
+        coerceInputValue() {
           return undefined;
         },
       });
@@ -1029,7 +1087,7 @@ describe('Validate: Values of correct type', () => {
 
       expectErrorsWithSchema(schema, '{ invalidArg(arg: 123) }').toDeepEqual([
         {
-          message: 'Expected value of type "CustomScalar", found 123.',
+          message: 'Expected value of type "CustomScalar", found: 123.',
           locations: [{ line: 1, column: 19 }],
         },
       ]);
@@ -1088,23 +1146,8 @@ describe('Validate: Values of correct type', () => {
         }
       `).toDeepEqual([
         {
-          message: 'Field "OneOfInput.stringField" must be non-null.',
-          locations: [{ line: 4, column: 37 }],
-        },
-      ]);
-    });
-
-    it('Exactly one nullable variable', () => {
-      expectErrors(`
-        query ($string: String) {
-          complicatedArgs {
-            oneOfArgField(oneOfArg: { stringField: $string })
-          }
-        }
-      `).toDeepEqual([
-        {
           message:
-            'Variable "string" must be non-nullable to be used for OneOf Input Object "OneOfInput".',
+            'Field "OneOfInput.stringField" used for OneOf Input Object must be non-null.',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -1198,15 +1241,15 @@ describe('Validate: Values of correct type', () => {
         }
       `).toDeepEqual([
         {
-          message: 'Expected value of type "Int!", found null.',
+          message: 'Expected value of non-null type "Int!" not to be null.',
           locations: [{ line: 3, column: 22 }],
         },
         {
-          message: 'Expected value of type "String!", found null.',
+          message: 'Expected value of non-null type "String!" not to be null.',
           locations: [{ line: 4, column: 25 }],
         },
         {
-          message: 'Expected value of type "Boolean!", found null.',
+          message: 'Expected value of non-null type "Boolean!" not to be null.',
           locations: [{ line: 5, column: 47 }],
         },
       ]);
@@ -1232,7 +1275,7 @@ describe('Validate: Values of correct type', () => {
         },
         {
           message:
-            'Expected value of type "ComplexInput", found "NotVeryComplex".',
+            'Expected value of type "ComplexInput" to be an object, found: "NotVeryComplex".',
           locations: [{ line: 5, column: 30 }],
         },
       ]);
@@ -1265,7 +1308,7 @@ describe('Validate: Values of correct type', () => {
       `).toDeepEqual([
         {
           message:
-            'Field "ComplexInput.requiredField" of required type "Boolean!" was not provided.',
+            'Expected value of type "ComplexInput" to include required field "requiredField", found: { intField: 3 }.',
           locations: [{ line: 2, column: 55 }],
         },
       ]);
@@ -1280,6 +1323,37 @@ describe('Validate: Values of correct type', () => {
         {
           message: 'String cannot represent a non string value: 2',
           locations: [{ line: 2, column: 50 }],
+        },
+      ]);
+    });
+  });
+
+  describe('Fragment argument values', () => {
+    it('list variables with invalid item', () => {
+      expectErrors(`
+        fragment InvalidItem($a: [String] = ["one", 2]) on Query {
+          dog { name }
+        }
+      `).toDeepEqual([
+        {
+          message: 'String cannot represent a non string value: 2',
+          locations: [{ line: 2, column: 53 }],
+        },
+      ]);
+    });
+
+    it('fragment spread with invalid argument value', () => {
+      expectErrors(`
+        fragment GivesString on Query {
+          ...ExpectsInt(a: "three")
+        }
+        fragment ExpectsInt($a: Int) on Query {
+          dog { name }
+        }
+      `).toDeepEqual([
+        {
+          message: 'Int cannot represent non-integer value: "three"',
+          locations: [{ line: 3, column: 28 }],
         },
       ]);
     });

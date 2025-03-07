@@ -8,12 +8,12 @@
   "dependencies": {
     "graphql": "file:../graphql.tgz",
     "graphql-esm": "file:../graphql-esm.tgz",
-    "typescript-4.4": "npm:typescript@4.4.x",
-    "typescript-4.5": "npm:typescript@4.5.x",
-    "typescript-4.6": "npm:typescript@4.6.x",
-    "typescript-4.7": "npm:typescript@4.7.x",
-    "typescript-4.8": "npm:typescript@4.8.x",
     "typescript-4.9": "npm:typescript@4.9.x",
-    "typescript-4.9": "npm:typescript@5.0.x"
+    "typescript-5.0": "npm:typescript@5.0.x",
+    "typescript-5.1": "npm:typescript@5.1.x",
+    "typescript-5.2": "npm:typescript@5.2.x",
+    "typescript-5.3": "npm:typescript@5.3.x",
+    "typescript-5.4": "npm:typescript@5.4.x",
+    "typescript-5.5": "npm:typescript@5.5.x"
   }
 }

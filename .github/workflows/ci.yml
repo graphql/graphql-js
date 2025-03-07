@@ -9,12 +9,12 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -46,7 +46,7 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -71,12 +71,12 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -100,12 +100,12 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.node-version'
           # We install bunch of packages during integration tests without locking them
@@ -124,12 +124,12 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -150,12 +150,12 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup Node.js v${{ matrix.node_version_to_setup }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version: ${{ matrix.node_version_to_setup }}
@@ -174,17 +174,17 @@ jobs:
       security-events: write # for codeql-action
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: 'javascript, typescript'
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
   build-npm-dist:
     name: Build 'npmDist' artifact
@@ -193,12 +193,12 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -210,7 +210,7 @@ jobs:
         run: npm run build:npm
 
       - name: Upload npmDist package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: npmDist
           path: ./npmDist
@@ -222,12 +222,12 @@ jobs:
       contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -239,36 +239,7 @@ jobs:
         run: npm run build:deno
 
       - name: Upload denoDist package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: denoDist
           path: ./denoDist
-
-  build-website-dist:
-    name: Build website
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read # for actions/checkout
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          cache: npm
-          node-version-file: '.node-version'
-
-      - name: Install Dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Build Docs
-        run: npm run build:website
-
-      - name: Upload denoDist package
-        uses: actions/upload-artifact@v3
-        with:
-          name: websiteDist
-          path: ./websiteDist

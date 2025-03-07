@@ -33,6 +33,7 @@ import {
  * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
+ * @deprecated use `coerceInputLiteral()` instead - will be removed in v18
  */
 export function valueFromAST(
   valueNode: Maybe<ValueNode>,
@@ -47,11 +48,11 @@ export function valueFromAST(
 
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    if (variables == null || variables[variableName] === undefined) {
+    const variableValue = variables?.[variableName];
+    if (variableValue === undefined) {
       // No valid return value.
       return;
     }
-    const variableValue = variables[variableName];
     if (variableValue === null && isNonNullType(type)) {
       return; // Invalid: intentionally return no value.
     }

@@ -1,9 +1,11 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import type { DocumentNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
@@ -20,7 +22,7 @@ import { execute, experimentalExecuteIncrementally } from '../execute.js';
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../IncrementalPublisher.js';
+} from '../types.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -135,11 +137,16 @@ const query = new GraphQLObjectType({
 
 const schema = new GraphQLSchema({ query });
 
-async function complete(document: DocumentNode, rootValue: unknown = { hero }) {
+async function complete(
+  document: DocumentNode,
+  rootValue: unknown = { hero },
+  enableEarlyExecution = false,
+) {
   const result = await experimentalExecuteIncrementally({
     schema,
     document,
     rootValue,
+    enableEarlyExecution,
   });
 
   if ('initialResult' in result) {
@@ -246,6 +253,118 @@ describe('Execute: defer directive', () => {
         hasNext: false,
       },
     ]);
+  });
+  it('Does not execute deferred fragments early when not specified', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          id
+          ...NameFragment @defer
+        }
+      }
+      fragment NameFragment on Hero {
+        name
+      }
+    `);
+    const order: Array<string> = [];
+    const result = await complete(document, {
+      hero: {
+        ...hero,
+        id: async () => {
+          await resolveOnNextTick();
+          await resolveOnNextTick();
+          order.push('slow-id');
+          return hero.id;
+        },
+        name: () => {
+          order.push('fast-name');
+          return hero.name;
+        },
+      },
+    });
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            id: '1',
+          },
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              name: 'Luke',
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+    expect(order).to.deep.equal(['slow-id', 'fast-name']);
+  });
+  it('Does execute deferred fragments early when specified', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          id
+          ...NameFragment @defer
+        }
+      }
+      fragment NameFragment on Hero {
+        name
+      }
+    `);
+    const order: Array<string> = [];
+    const result = await complete(
+      document,
+      {
+        hero: {
+          ...hero,
+          id: async () => {
+            await resolveOnNextTick();
+            await resolveOnNextTick();
+            order.push('slow-id');
+            return hero.id;
+          },
+          name: () => {
+            order.push('fast-name');
+            return hero.name;
+          },
+        },
+      },
+      true,
+    );
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            id: '1',
+          },
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              name: 'Luke',
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+    expect(order).to.deep.equal(['fast-name', 'slow-id']);
   });
   it('Can defer fragments on the top level Query field', async () => {
     const document = parse(`
@@ -355,13 +474,11 @@ describe('Execute: defer directive', () => {
         data: {
           hero: {},
         },
-        pending: [
-          { id: '0', path: ['hero'], label: 'DeferTop' },
-          { id: '1', path: ['hero'], label: 'DeferNested' },
-        ],
+        pending: [{ id: '0', path: ['hero'], label: 'DeferTop' }],
         hasNext: true,
       },
       {
+        pending: [{ id: '1', path: ['hero'], label: 'DeferNested' }],
         incremental: [
           {
             data: {
@@ -470,6 +587,35 @@ describe('Execute: defer directive', () => {
         hero: {},
       },
     });
+  });
+
+  it('Emits children of empty defer fragments', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          ... @defer {
+            ... @defer {
+              name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {},
+        },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [{ data: { name: 'Luke' }, id: '0' }],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
   });
 
   it('Can separately emit defer fragments with different labels with varying fields', async () => {
@@ -641,8 +787,8 @@ describe('Execute: defer directive', () => {
           hero: {},
         },
         pending: [
-          { id: '0', path: [], label: 'DeferName' },
-          { id: '1', path: ['hero'], label: 'DeferID' },
+          { id: '0', path: ['hero'], label: 'DeferID' },
+          { id: '1', path: [], label: 'DeferName' },
         ],
         hasNext: true,
       },
@@ -652,17 +798,17 @@ describe('Execute: defer directive', () => {
             data: {
               id: '1',
             },
-            id: '1',
+            id: '0',
           },
           {
             data: {
               name: 'Luke',
             },
-            id: '0',
+            id: '1',
             subPath: ['hero'],
           },
         ],
-        completed: [{ id: '1' }, { id: '0' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -699,12 +845,6 @@ describe('Execute: defer directive', () => {
             },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             data: {
               id: '1',
@@ -712,10 +852,257 @@ describe('Execute: defer directive', () => {
             id: '1',
           },
         ],
-        completed: [{ id: '1' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
+  });
+
+  it('Initiates deferred grouped field sets only if they have been released as pending', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            ... @defer {
+              b {
+                c { d }
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            someField
+            ... @defer {
+              b {
+                e { f }
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const { promise: slowFieldPromise, resolve: resolveSlowField } =
+      promiseWithResolvers();
+    let cResolverCalled = false;
+    let eResolverCalled = false;
+    const executeResult = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        a: {
+          someField: slowFieldPromise,
+          b: {
+            c: () => {
+              cResolverCalled = true;
+              return { d: 'd' };
+            },
+            e: () => {
+              eResolverCalled = true;
+              return { f: 'f' };
+            },
+          },
+        },
+      },
+      enableEarlyExecution: false,
+    });
+
+    assert('initialResult' in executeResult);
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {},
+      pending: [
+        { id: '0', path: [] },
+        { id: '1', path: [] },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    expect(cResolverCalled).to.equal(false);
+    expect(eResolverCalled).to.equal(false);
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      value: {
+        pending: [{ id: '2', path: ['a'] }],
+        incremental: [
+          {
+            data: { a: {} },
+            id: '0',
+          },
+          {
+            data: { b: {} },
+            id: '2',
+          },
+          {
+            data: { c: { d: 'd' } },
+            id: '2',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '2' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    expect(cResolverCalled).to.equal(true);
+    expect(eResolverCalled).to.equal(false);
+
+    resolveSlowField('someField');
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      value: {
+        pending: [{ id: '3', path: ['a'] }],
+        incremental: [
+          {
+            data: { someField: 'someField' },
+            id: '1',
+            subPath: ['a'],
+          },
+          {
+            data: { e: { f: 'f' } },
+            id: '3',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '1' }, { id: '3' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+
+    expect(eResolverCalled).to.equal(true);
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it('Initiates unique deferred grouped field sets after those that are common to sibling defers', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            ... @defer {
+              b {
+                c { d }
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            ... @defer {
+              b {
+                c { d }
+                e { f }
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const { promise: cPromise, resolve: resolveC } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let cResolverCalled = false;
+    let eResolverCalled = false;
+    const executeResult = experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        a: {
+          b: {
+            c: async () => {
+              cResolverCalled = true;
+              await cPromise;
+              return { d: 'd' };
+            },
+            e: () => {
+              eResolverCalled = true;
+              return { f: 'f' };
+            },
+          },
+        },
+      },
+      enableEarlyExecution: false,
+    });
+
+    assert('initialResult' in executeResult);
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {},
+      pending: [
+        { id: '0', path: [] },
+        { id: '1', path: [] },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    expect(cResolverCalled).to.equal(false);
+    expect(eResolverCalled).to.equal(false);
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      value: {
+        pending: [
+          { id: '2', path: ['a'] },
+          { id: '3', path: ['a'] },
+        ],
+        incremental: [
+          {
+            data: { a: {} },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveC();
+
+    expect(cResolverCalled).to.equal(true);
+    expect(eResolverCalled).to.equal(false);
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      value: {
+        incremental: [
+          {
+            data: { b: { c: { d: 'd' } } },
+            id: '2',
+          },
+          {
+            data: { e: { f: 'f' } },
+            id: '3',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '2' }, { id: '3' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
   });
 
   it('Can deduplicate multiple defers on the same object', async () => {
@@ -876,12 +1263,6 @@ describe('Execute: defer directive', () => {
             },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             data: {
               bar: 'bar',
@@ -889,7 +1270,7 @@ describe('Execute: defer directive', () => {
             id: '1',
           },
         ],
-        completed: [{ id: '1' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -950,37 +1331,27 @@ describe('Execute: defer directive', () => {
         hasNext: true,
       },
       {
-        pending: [{ id: '1', path: ['hero', 'nestedObject'] }],
+        pending: [
+          { id: '1', path: ['hero', 'nestedObject'] },
+          { id: '2', path: ['hero', 'nestedObject', 'deeperObject'] },
+        ],
         incremental: [
           {
             data: { bar: 'bar' },
             id: '0',
             subPath: ['nestedObject', 'deeperObject'],
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        pending: [{ id: '2', path: ['hero', 'nestedObject', 'deeperObject'] }],
-        incremental: [
           {
             data: { baz: 'baz' },
             id: '1',
             subPath: ['deeperObject'],
           },
-        ],
-        hasNext: true,
-        completed: [{ id: '1' }],
-      },
-      {
-        incremental: [
           {
             data: { bak: 'bak' },
             id: '2',
           },
         ],
-        completed: [{ id: '2' }],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }],
         hasNext: false,
       },
     ]);
@@ -1023,34 +1394,27 @@ describe('Execute: defer directive', () => {
           },
         },
         pending: [
-          { id: '0', path: ['hero'] },
+          { id: '0', path: ['hero', 'nestedObject', 'deeperObject'] },
           { id: '1', path: ['hero', 'nestedObject', 'deeperObject'] },
         ],
         hasNext: true,
       },
       {
-        pending: [{ id: '2', path: ['hero', 'nestedObject', 'deeperObject'] }],
         incremental: [
           {
             data: {
               foo: 'foo',
             },
-            id: '1',
+            id: '0',
           },
-        ],
-        completed: [{ id: '0' }, { id: '1' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           {
             data: {
               bar: 'bar',
             },
-            id: '2',
+            id: '1',
           },
         ],
-        completed: [{ id: '2' }],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -1106,8 +1470,8 @@ describe('Execute: defer directive', () => {
           },
         },
         pending: [
-          { id: '0', path: [] },
-          { id: '1', path: ['a', 'b'] },
+          { id: '0', path: ['a', 'b'] },
+          { id: '1', path: [] },
         ],
         hasNext: true,
       },
@@ -1115,14 +1479,69 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { e: { f: 'f' } },
-            id: '1',
+            id: '0',
           },
           {
             data: { g: { h: 'h' } },
-            id: '0',
+            id: '1',
           },
         ],
-        completed: [{ id: '1' }, { id: '0' }],
+        completed: [{ id: '0' }, { id: '1' }],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Correctly bundles varying subfields into incremental data records unique by defer combination, ignoring fields in a fragment masked by a parent defer', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        ... @defer {
+          hero {
+            id
+          }
+        }
+        ... @defer {
+          hero {
+            name
+            shouldBeWithNameDespiteAdditionalDefer: name
+            ... @defer {
+              shouldBeWithNameDespiteAdditionalDefer: name
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document);
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: [] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { hero: {} },
+            id: '0',
+          },
+          {
+            data: { id: '1' },
+            id: '0',
+            subPath: ['hero'],
+          },
+          {
+            data: {
+              name: 'Luke',
+              shouldBeWithNameDespiteAdditionalDefer: 'Luke',
+            },
+            id: '1',
+            subPath: ['hero'],
+          },
+        ],
+        completed: [{ id: '0' }, { id: '1' }],
         hasNext: false,
       },
     ]);
@@ -1251,6 +1670,7 @@ describe('Execute: defer directive', () => {
           },
         ],
         completed: [
+          { id: '0' },
           {
             id: '1',
             errors: [
@@ -1259,6 +1679,151 @@ describe('Execute: defer directive', () => {
                   'Cannot return null for non-nullable field c.nonNullErrorField.',
                 locations: [{ line: 17, column: 17 }],
                 path: ['a', 'b', 'c', 'nonNullErrorField'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Handles multiple erroring deferred grouped field sets', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            b {
+              c {
+                someError: nonNullErrorField
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            b {
+              c {
+                anotherError: nonNullErrorField
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: {
+        b: { c: { nonNullErrorField: null } },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: [] },
+        ],
+        hasNext: true,
+      },
+      {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
+                locations: [{ line: 7, column: 17 }],
+                path: ['a', 'b', 'c', 'someError'],
+              },
+            ],
+          },
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
+                locations: [{ line: 16, column: 17 }],
+                path: ['a', 'b', 'c', 'anotherError'],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Handles multiple erroring deferred grouped field sets for the same fragment', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            b {
+              someC: c {
+                d: d
+              }
+              anotherC: c {
+                d: d
+              }
+            }
+          }
+        }
+        ... @defer {
+          a {
+            b {
+              someC: c {
+                someError: nonNullErrorField
+              }
+              anotherC: c {
+                anotherError: nonNullErrorField
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: {
+        b: { c: { d: 'd', nonNullErrorField: null } },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {},
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: [] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { a: { b: { someC: {}, anotherC: {} } } },
+            id: '0',
+          },
+          {
+            data: { d: 'd' },
+            id: '0',
+            subPath: ['a', 'b', 'someC'],
+          },
+          {
+            data: { d: 'd' },
+            id: '0',
+            subPath: ['a', 'b', 'anotherC'],
+          },
+        ],
+        completed: [
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
+                locations: [{ line: 19, column: 17 }],
+                path: ['a', 'b', 'someC', 'someError'],
               },
             ],
           },
@@ -1293,20 +1858,24 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document, {
-      a: {
-        b: {
-          c: {
-            d: 'd',
-            nonNullErrorField: async () => {
-              await resolveOnNextTick();
-              return null;
+    const result = await complete(
+      document,
+      {
+        a: {
+          b: {
+            c: {
+              d: 'd',
+              nonNullErrorField: async () => {
+                await resolveOnNextTick();
+                return null;
+              },
             },
           },
+          someField: 'someField',
         },
-        someField: 'someField',
       },
-    });
+      true,
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -1365,12 +1934,16 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document, {
-      hero: {
-        ...hero,
-        nonNullName: () => null,
+    const result = await complete(
+      document,
+      {
+        hero: {
+          ...hero,
+          nonNullName: () => null,
+        },
       },
-    });
+      true,
+    );
     expectJSON(result).toDeepEqual({
       data: {
         hero: null,
@@ -1397,12 +1970,16 @@ describe('Execute: defer directive', () => {
         }
       }
     `);
-    const result = await complete(document, {
-      hero: {
-        ...hero,
-        nonNullName: () => null,
+    const result = await complete(
+      document,
+      {
+        hero: {
+          ...hero,
+          nonNullName: () => null,
+        },
       },
-    });
+      true,
+    );
     expectJSON(result).toDeepEqual([
       {
         data: {},
@@ -1853,17 +2430,11 @@ describe('Execute: defer directive', () => {
             data: { name: 'slow', friends: [{}, {}, {}] },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           { data: { name: 'Han' }, id: '1' },
           { data: { name: 'Leia' }, id: '2' },
           { data: { name: 'C-3PO' }, id: '3' },
         ],
-        completed: [{ id: '1' }, { id: '2' }, { id: '3' }],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }, { id: '3' }],
         hasNext: false,
       },
     ]);
@@ -1909,17 +2480,11 @@ describe('Execute: defer directive', () => {
             },
             id: '0',
           },
-        ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        incremental: [
           { data: { name: 'Han' }, id: '1' },
           { data: { name: 'Leia' }, id: '2' },
           { data: { name: 'C-3PO' }, id: '3' },
         ],
-        completed: [{ id: '1' }, { id: '2' }, { id: '3' }],
+        completed: [{ id: '0' }, { id: '1' }, { id: '2' }, { id: '3' }],
         hasNext: false,
       },
     ]);
