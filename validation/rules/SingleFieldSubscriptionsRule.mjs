@@ -8,7 +8,8 @@ function toNodes(fieldDetailsList) {
  * Subscriptions must only include a non-introspection field.
  *
  * A GraphQL subscription is valid only if it contains a single root field and
- * that root field is not an introspection field.
+ * that root field is not an introspection field. `@skip` and `@include`
+ * directives are forbidden.
  *
  * See https://spec.graphql.org/draft/#sec-Single-root-field
  */
@@ -28,7 +29,13 @@ export function SingleFieldSubscriptionsRule(context) {
                             fragments[definition.name.value] = { definition };
                         }
                     }
-                    const { groupedFieldSet } = collectFields(schema, fragments, variableValues, subscriptionType, node.selectionSet, context.hideSuggestions);
+                    const { groupedFieldSet, forbiddenDirectiveInstances } = collectFields(schema, fragments, variableValues, subscriptionType, node.selectionSet, context.hideSuggestions, true);
+                    if (forbiddenDirectiveInstances.length > 0) {
+                        context.reportError(new GraphQLError(operationName != null
+                            ? `Subscription "${operationName}" must not use \`@skip\` or \`@include\` directives in the top level selection.`
+                            : 'Anonymous Subscription must not use `@skip` or `@include` directives in the top level selection.', { nodes: forbiddenDirectiveInstances }));
+                        return;
+                    }
                     if (groupedFieldSet.size > 1) {
                         const fieldDetailsLists = [...groupedFieldSet.values()];
                         const extraFieldDetailsLists = fieldDetailsLists.slice(1);

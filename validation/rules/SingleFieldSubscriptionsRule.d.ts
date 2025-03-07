@@ -4,7 +4,8 @@ import type { ValidationContext } from '../ValidationContext.js';
  * Subscriptions must only include a non-introspection field.
  *
  * A GraphQL subscription is valid only if it contains a single root field and
- * that root field is not an introspection field.
+ * that root field is not an introspection field. `@skip` and `@include`
+ * directives are forbidden.
  *
  * See https://spec.graphql.org/draft/#sec-Single-root-field
  */
