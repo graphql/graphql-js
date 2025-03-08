@@ -359,6 +359,15 @@ function validateTypeImplementsInterface(context, type, iface) {
                 }
             }
         }
+        // Asserts that field is not deprecated unless interface field is
+        if (typeField.deprecationReason != null &&
+            ifaceField.deprecationReason == null) {
+            context.reportError(`Interface field ${iface.name}.${ifaceField.name} is not deprecated, so ` +
+                `implementation field ${type.name}.${typeField.name} must not be deprecated.`, [
+                getDeprecatedDirectiveNode(typeField.astNode),
+                typeField.astNode?.type,
+            ]);
+        }
     }
 }
 function validateTypeImplementsAncestors(context, type, iface) {
