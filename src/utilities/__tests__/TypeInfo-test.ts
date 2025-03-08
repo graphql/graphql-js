@@ -457,4 +457,66 @@ describe('visitWithTypeInfo', () => {
       ['leave', 'SelectionSet', null, 'Human', 'Human'],
     ]);
   });
+
+  it('supports traversals of semantic non-null types', () => {
+    const schema = buildSchema(`
+      @SemanticNullability
+      type Query {
+        id: String!
+        name: String
+        something: String?
+      }
+    `);
+
+    const typeInfo = new TypeInfo(schema);
+
+    const visited: Array<any> = [];
+    const ast = parse('{ id name something }');
+
+    visit(
+      ast,
+      visitWithTypeInfo(typeInfo, {
+        enter(node) {
+          const type = typeInfo.getType();
+          visited.push([
+            'enter',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+          ]);
+        },
+        leave(node) {
+          const type = typeInfo.getType();
+          visited.push([
+            'leave',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            // TODO: inspect currently returns "String" for a nullable type
+            String(type),
+          ]);
+        },
+      }),
+    );
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', null, 'undefined'],
+      ['enter', 'OperationDefinition', null, 'Query'],
+      ['enter', 'SelectionSet', null, 'Query'],
+      ['enter', 'Field', null, 'String!'],
+      ['enter', 'Name', 'id', 'String!'],
+      ['leave', 'Name', 'id', 'String!'],
+      ['leave', 'Field', null, 'String!'],
+      ['enter', 'Field', null, 'String'],
+      ['enter', 'Name', 'name', 'String'],
+      ['leave', 'Name', 'name', 'String'],
+      ['leave', 'Field', null, 'String'],
+      ['enter', 'Field', null, 'String'],
+      ['enter', 'Name', 'something', 'String'],
+      ['leave', 'Name', 'something', 'String'],
+      ['leave', 'Field', null, 'String'],
+      ['leave', 'SelectionSet', null, 'Query'],
+      ['leave', 'OperationDefinition', null, 'Query'],
+      ['leave', 'Document', null, 'undefined'],
+    ]);
+  });
 });
