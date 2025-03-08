@@ -580,8 +580,8 @@ function validateTypeImplementsInterface(
       ifaceField.deprecationReason == null
     ) {
       context.reportError(
-        `Interface field ${iface.name}.${fieldName} is not deprecated, so ` +
-          `implementation field ${type.name}.${fieldName} must not be deprecated.`,
+        `Interface field ${iface.name}.${ifaceField.name} is not deprecated, so ` +
+          `implementation field ${type.name}.${typeField.name} must not be deprecated.`,
         [
           getDeprecatedDirectiveNode(typeField.astNode),
           typeField.astNode?.type,
