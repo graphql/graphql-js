@@ -3353,6 +3353,33 @@ describe('Interfaces must adhere to Interface they implement', () => {
       },
     ]);
   });
+
+  it('rejects deprecated implementation field when interface field is not deprecated', () => {
+    const schema = buildSchema(`
+      interface Node {
+        id: ID!
+      }
+
+      type Foo implements Node {
+        id: ID! @deprecated
+      }
+
+      type Query {
+        foo: Foo
+      }
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Interface field Node.id is not deprecated, so implementation field Foo.id must not be deprecated.',
+        locations: [
+          { line: 7, column: 17 },
+          { line: 7, column: 13 },
+        ],
+      },
+    ]);
+  });
 });
 
 describe('assertValidSchema', () => {
