@@ -50,6 +50,7 @@ import type {
   SchemaExtensionNode,
   SelectionNode,
   SelectionSetNode,
+  SemanticNullableTypeNode,
   StringValueNode,
   Token,
   TypeNode,
@@ -103,6 +104,8 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+
+  useSemanticNullability?: boolean;
 }
 
 /**
@@ -258,6 +261,16 @@ export class Parser {
    *   - InputObjectTypeDefinition
    */
   parseDefinition(): DefinitionNode {
+    const directives = this.parseDirectives(false);
+    // If a document-level SemanticNullability directive exists as
+    // the first element in a document, then all parsing will
+    // happen in SemanticNullability mode.
+    for (const directive of directives) {
+      if (directive.name.value === 'SemanticNullability') {
+        this._options.useSemanticNullability = true;
+      }
+    }
+
     if (this.peek(TokenKind.BRACE_L)) {
       return this.parseOperationDefinition();
     }
@@ -749,6 +762,7 @@ export class Parser {
    *   - NamedType
    *   - ListType
    *   - NonNullType
+   *   - SemanticNullableType
    */
   parseTypeReference(): TypeNode {
     const start = this._lexer.token;
@@ -767,6 +781,14 @@ export class Parser {
     if (this.expectOptionalToken(TokenKind.BANG)) {
       return this.node<NonNullTypeNode>(start, {
         kind: Kind.NON_NULL_TYPE,
+        type,
+      });
+    } else if (
+      this._options.useSemanticNullability &&
+      this.expectOptionalToken(TokenKind.QUESTION_MARK)
+    ) {
+      return this.node<SemanticNullableTypeNode>(start, {
+        kind: Kind.SEMANTIC_NULLABLE_TYPE,
         type,
       });
     }
