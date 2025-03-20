@@ -99,6 +99,7 @@ const a = new GraphQLObjectType({
   fields: {
     b: { type: b },
     someField: { type: GraphQLString },
+    nonNullErrorField: { type: new GraphQLNonNull(GraphQLString) },
   },
   name: 'a',
 });
@@ -1683,6 +1684,83 @@ describe('Execute: defer directive', () => {
             ],
           },
         ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Nulls cross defer boundaries, failed fragment with slower shared child execution groups', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            someField
+            nonNullErrorField
+            b {
+              c {
+                d
+              }
+            }
+          }
+        }
+        a {
+          ... @defer {
+            someField
+            b {
+              e {
+                f
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: {
+        b: { c: { d: 'd' }, e: { f: 'f' } },
+        someField: Promise.resolve('someField'),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {},
+        },
+        pending: [
+          { id: '0', path: [] },
+          { id: '1', path: ['a'] },
+        ],
+        hasNext: true,
+      },
+      {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field a.nonNullErrorField.',
+                locations: [{ line: 6, column: 13 }],
+                path: ['a', 'nonNullErrorField'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { b: {}, someField: 'someField' },
+            id: '1',
+          },
+          {
+            data: { e: { f: 'f' } },
+            id: '1',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '1' }],
         hasNext: false,
       },
     ]);
