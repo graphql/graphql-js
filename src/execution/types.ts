@@ -187,6 +187,7 @@ export interface SuccessfulExecutionGroup {
   pendingExecutionGroup: PendingExecutionGroup;
   path: Array<string | number>;
   result: ExecutionGroupResult;
+  newDeferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord> | undefined;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   errors?: never;
 }
@@ -224,7 +225,6 @@ export class DeferredFragmentRecord {
   pendingExecutionGroups: Set<PendingExecutionGroup>;
   successfulExecutionGroups: Set<SuccessfulExecutionGroup>;
   children: Set<DeliveryGroup>;
-  failed: true | undefined;
 
   constructor(
     path: Path | undefined,
@@ -248,6 +248,9 @@ export function isDeferredFragmentRecord(
 
 export interface StreamItemResult {
   item?: unknown;
+  newDeferredFragmentRecords?:
+    | ReadonlyArray<DeferredFragmentRecord>
+    | undefined;
   incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
   errors?: ReadonlyArray<GraphQLError> | undefined;
 }
@@ -265,6 +268,9 @@ export interface StreamItemsResult {
   streamRecord: StreamRecord;
   errors?: ReadonlyArray<GraphQLError>;
   result?: StreamItemsRecordResult;
+  newDeferredFragmentRecords?:
+    | ReadonlyArray<DeferredFragmentRecord>
+    | undefined;
   incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
 }
 

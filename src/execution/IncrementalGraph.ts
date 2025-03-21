@@ -35,9 +35,22 @@ export class IncrementalGraph {
   }
 
   getNewRootNodes(
+    newDeferredFragmentRecords:
+      | ReadonlyArray<DeferredFragmentRecord>
+      | undefined,
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ReadonlyArray<DeliveryGroup> {
     const initialResultChildren = new Set<DeliveryGroup>();
+
+    if (newDeferredFragmentRecords !== undefined) {
+      for (const deferredFragmentRecord of newDeferredFragmentRecords) {
+        this._addDeferredFragment(
+          deferredFragmentRecord,
+          initialResultChildren,
+        );
+      }
+    }
+
     this._addIncrementalDataRecords(
       incrementalDataRecords,
       undefined,
@@ -49,8 +62,17 @@ export class IncrementalGraph {
   addCompletedSuccessfulExecutionGroup(
     successfulExecutionGroup: SuccessfulExecutionGroup,
   ): void {
-    const { pendingExecutionGroup, incrementalDataRecords } =
-      successfulExecutionGroup;
+    const {
+      pendingExecutionGroup,
+      newDeferredFragmentRecords,
+      incrementalDataRecords,
+    } = successfulExecutionGroup;
+
+    if (newDeferredFragmentRecords !== undefined) {
+      for (const deferredFragmentRecord of newDeferredFragmentRecords) {
+        this._addDeferredFragment(deferredFragmentRecord, undefined);
+      }
+    }
 
     const deferredFragmentRecords =
       pendingExecutionGroup.deferredFragmentRecords;
@@ -132,8 +154,10 @@ export class IncrementalGraph {
     return { newRootNodes, successfulExecutionGroups };
   }
 
-  removeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord): void {
-    this._rootNodes.delete(deferredFragmentRecord);
+  removeDeferredFragment(
+    deferredFragmentRecord: DeferredFragmentRecord,
+  ): boolean {
+    return this._rootNodes.delete(deferredFragmentRecord);
   }
 
   removeStream(streamRecord: StreamRecord): void {
@@ -148,10 +172,6 @@ export class IncrementalGraph {
     for (const incrementalDataRecord of incrementalDataRecords) {
       if (isPendingExecutionGroup(incrementalDataRecord)) {
         for (const deferredFragmentRecord of incrementalDataRecord.deferredFragmentRecords) {
-          this._addDeferredFragment(
-            deferredFragmentRecord,
-            initialResultChildren,
-          );
           deferredFragmentRecord.pendingExecutionGroups.add(
             incrementalDataRecord,
           );
@@ -164,7 +184,6 @@ export class IncrementalGraph {
         initialResultChildren.add(incrementalDataRecord);
       } else {
         for (const parent of parents) {
-          this._addDeferredFragment(parent, initialResultChildren);
           parent.children.add(incrementalDataRecord);
         }
       }
@@ -213,12 +232,6 @@ export class IncrementalGraph {
     deferredFragmentRecord: DeferredFragmentRecord,
     initialResultChildren: Set<DeliveryGroup> | undefined,
   ): void {
-    if (
-      deferredFragmentRecord.failed ||
-      this._rootNodes.has(deferredFragmentRecord)
-    ) {
-      return;
-    }
     const parent = deferredFragmentRecord.parent;
     if (parent === undefined) {
       invariant(initialResultChildren !== undefined);
@@ -226,7 +239,6 @@ export class IncrementalGraph {
       return;
     }
     parent.children.add(deferredFragmentRecord);
-    this._addDeferredFragment(parent, initialResultChildren);
   }
 
   private _onExecutionGroup(
@@ -248,6 +260,7 @@ export class IncrementalGraph {
   private async _onStreamItems(streamRecord: StreamRecord): Promise<void> {
     let items: Array<unknown> = [];
     let errors: Array<GraphQLError> = [];
+    let newDeferredFragmentRecords: Array<DeferredFragmentRecord> = [];
     let incrementalDataRecords: Array<IncrementalDataRecord> = [];
     const streamItemQueue = streamRecord.streamItemQueue;
     let streamItemRecord: StreamItemRecord | undefined;
@@ -265,10 +278,12 @@ export class IncrementalGraph {
               errors.length > 0 /* c8 ignore start */
                 ? { items, errors } /* c8 ignore stop */
                 : { items },
+            newDeferredFragmentRecords,
             incrementalDataRecords,
           });
           items = [];
           errors = [];
+          newDeferredFragmentRecords = [];
           incrementalDataRecords = [];
         }
         // eslint-disable-next-line no-await-in-loop
@@ -283,6 +298,7 @@ export class IncrementalGraph {
           this._enqueue({
             streamRecord,
             result: errors.length > 0 ? { items, errors } : { items },
+            newDeferredFragmentRecords,
             incrementalDataRecords,
           });
         }
@@ -299,6 +315,9 @@ export class IncrementalGraph {
       items.push(result.item);
       if (result.errors !== undefined) {
         errors.push(...result.errors);
+      }
+      if (result.newDeferredFragmentRecords !== undefined) {
+        newDeferredFragmentRecords.push(...result.newDeferredFragmentRecords);
       }
       if (result.incrementalDataRecords !== undefined) {
         incrementalDataRecords.push(...result.incrementalDataRecords);

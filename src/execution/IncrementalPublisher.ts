@@ -33,12 +33,14 @@ export function buildIncrementalResponse(
   context: IncrementalPublisherContext,
   result: ObjMap<unknown>,
   errors: ReadonlyArray<GraphQLError> | undefined,
+  newDeferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord> | undefined,
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
 ): ExperimentalIncrementalExecutionResults {
   const incrementalPublisher = new IncrementalPublisher(context);
   return incrementalPublisher.buildResponse(
     result,
     errors,
+    newDeferredFragmentRecords,
     incrementalDataRecords,
   );
 }
@@ -74,9 +76,13 @@ class IncrementalPublisher {
   buildResponse(
     data: ObjMap<unknown>,
     errors: ReadonlyArray<GraphQLError> | undefined,
+    newDeferredFragmentRecords:
+      | ReadonlyArray<DeferredFragmentRecord>
+      | undefined,
     incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
   ): ExperimentalIncrementalExecutionResults {
     const newRootNodes = this._incrementalGraph.getNewRootNodes(
+      newDeferredFragmentRecords,
       incrementalDataRecords,
     );
 
@@ -228,18 +234,16 @@ class IncrementalPublisher {
     if (isFailedExecutionGroup(completedExecutionGroup)) {
       for (const deferredFragmentRecord of completedExecutionGroup
         .pendingExecutionGroup.deferredFragmentRecords) {
-        const failed = deferredFragmentRecord.failed;
-        if (failed) {
-          continue;
+        if (
+          this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
+        ) {
+          const id = deferredFragmentRecord.id;
+          invariant(id !== undefined);
+          context.completed.push({
+            id,
+            errors: completedExecutionGroup.errors,
+          });
         }
-        deferredFragmentRecord.failed = true;
-        const id = deferredFragmentRecord.id;
-        this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord);
-        invariant(id !== undefined);
-        context.completed.push({
-          id,
-          errors: completedExecutionGroup.errors,
-        });
       }
       return;
     }
@@ -316,9 +320,11 @@ class IncrementalPublisher {
 
       context.incremental.push(incrementalEntry);
 
-      const incrementalDataRecords = streamItemsResult.incrementalDataRecords;
+      const { newDeferredFragmentRecords, incrementalDataRecords } =
+        streamItemsResult;
       if (incrementalDataRecords !== undefined) {
         const newRootNodes = this._incrementalGraph.getNewRootNodes(
+          newDeferredFragmentRecords,
           incrementalDataRecords,
         );
         context.pending.push(...this._toPendingResults(newRootNodes));
