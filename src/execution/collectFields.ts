@@ -62,17 +62,6 @@ export interface FragmentDetails {
   variableSignatures?: ObjMap<GraphQLVariableSignature> | undefined;
 }
 
-interface CollectFieldsContext {
-  schema: GraphQLSchema;
-  fragments: ObjMap<FragmentDetails>;
-  variableValues: VariableValues;
-  runtimeType: GraphQLObjectType;
-  visitedFragmentNames: Map<string, boolean>;
-  hideSuggestions: boolean;
-  forbiddenDirectiveInstances: Array<DirectiveNode>;
-  forbidSkipAndInclude: boolean;
-}
-
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -98,22 +87,26 @@ export function collectFields(
 } {
   const groupedFieldSet = new AccumulatorMap<string, FieldDetails>();
   const newDeferUsages: Array<DeferUsage> = [];
-  const context: CollectFieldsContext = {
+  const forbiddenDirectiveInstances: Array<DirectiveNode> = [];
+
+  const selectionSetVisitor = buildSelectionSetVisitor(
     schema,
     fragments,
     variableValues,
     runtimeType,
-    visitedFragmentNames: new Map(),
     hideSuggestions,
-    forbiddenDirectiveInstances: [],
     forbidSkipAndInclude,
-  };
+    groupedFieldSet,
+    newDeferUsages,
+    forbiddenDirectiveInstances,
+  );
 
-  collectFieldsImpl(context, selectionSet, groupedFieldSet, newDeferUsages);
+  selectionSetVisitor(selectionSet);
+
   return {
     groupedFieldSet,
     newDeferUsages,
-    forbiddenDirectiveInstances: context.forbiddenDirectiveInstances,
+    forbiddenDirectiveInstances,
   };
 }
 
@@ -139,31 +132,26 @@ export function collectSubfields(
   groupedFieldSet: GroupedFieldSet;
   newDeferUsages: ReadonlyArray<DeferUsage>;
 } {
-  const context: CollectFieldsContext = {
+  const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
+  const newDeferUsages: Array<DeferUsage> = [];
+
+  const selectionSetVisitor = buildSelectionSetVisitor(
     schema,
     fragments,
     variableValues,
-    runtimeType: returnType,
-    visitedFragmentNames: new Map(),
+    returnType,
     hideSuggestions,
-    forbiddenDirectiveInstances: [],
-    forbidSkipAndInclude: false,
-  };
-  const subGroupedFieldSet = new AccumulatorMap<string, FieldDetails>();
-  const newDeferUsages: Array<DeferUsage> = [];
+    false,
+    subGroupedFieldSet,
+    newDeferUsages,
+    [],
+  );
 
   for (const fieldDetail of fieldDetailsList) {
     const selectionSet = fieldDetail.node.selectionSet;
     if (selectionSet) {
       const { deferUsage, fragmentVariableValues } = fieldDetail;
-      collectFieldsImpl(
-        context,
-        selectionSet,
-        subGroupedFieldSet,
-        newDeferUsages,
-        deferUsage,
-        fragmentVariableValues,
-      );
+      selectionSetVisitor(selectionSet, deferUsage, fragmentVariableValues);
     }
   }
 
@@ -174,267 +162,228 @@ export function collectSubfields(
 }
 
 // eslint-disable-next-line max-params
-function collectFieldsImpl(
-  context: CollectFieldsContext,
-  selectionSet: SelectionSetNode,
+function buildSelectionSetVisitor(
+  schema: GraphQLSchema,
+  fragments: ObjMap<FragmentDetails>,
+  variableValues: VariableValues,
+  runtimeType: GraphQLObjectType,
+  hideSuggestions: boolean,
+  forbidSkipAndInclude: boolean,
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   newDeferUsages: Array<DeferUsage>,
+  forbiddenDirectiveInstances: Array<DirectiveNode>,
+): (
+  node: SelectionSetNode,
   deferUsage?: DeferUsage,
   fragmentVariableValues?: FragmentVariableValues,
-): void {
-  const {
-    schema,
-    fragments,
-    variableValues,
-    runtimeType,
-    visitedFragmentNames,
-    hideSuggestions,
-  } = context;
+) => void {
+  const visitedFragmentNames = new Map<string, boolean>();
 
-  for (const selection of selectionSet.selections) {
-    switch (selection.kind) {
-      case Kind.FIELD: {
-        if (
-          !shouldIncludeNode(
-            context,
-            selection,
-            variableValues,
-            fragmentVariableValues,
-          )
-        ) {
-          continue;
-        }
-        groupedFieldSet.add(getFieldEntryKey(selection), {
-          node: selection,
-          deferUsage,
-          fragmentVariableValues,
-        });
-        break;
-      }
-      case Kind.INLINE_FRAGMENT: {
-        if (
-          !shouldIncludeNode(
-            context,
-            selection,
-            variableValues,
-            fragmentVariableValues,
-          ) ||
-          !doesFragmentConditionMatch(schema, selection, runtimeType)
-        ) {
-          continue;
-        }
-
-        const newDeferUsage = getDeferUsage(
-          variableValues,
-          fragmentVariableValues,
-          selection,
-          deferUsage,
-        );
-
-        if (!newDeferUsage) {
-          collectFieldsImpl(
-            context,
-            selection.selectionSet,
-            groupedFieldSet,
-            newDeferUsages,
+  function selectionSetVisitor(
+    selectionSet: SelectionSetNode,
+    deferUsage?: DeferUsage,
+    fragmentVariableValues?: FragmentVariableValues,
+  ): void {
+    for (const selection of selectionSet.selections) {
+      switch (selection.kind) {
+        case Kind.FIELD: {
+          if (!shouldIncludeNode(selection)) {
+            continue;
+          }
+          groupedFieldSet.add(getFieldEntryKey(selection), {
+            node: selection,
             deferUsage,
             fragmentVariableValues,
-          );
-        } else {
-          newDeferUsages.push(newDeferUsage);
-          collectFieldsImpl(
-            context,
-            selection.selectionSet,
-            groupedFieldSet,
-            newDeferUsages,
-            newDeferUsage,
-            fragmentVariableValues,
-          );
+          });
+          break;
         }
+        case Kind.INLINE_FRAGMENT: {
+          if (
+            !shouldIncludeNode(selection) ||
+            !doesFragmentConditionMatch(selection)
+          ) {
+            continue;
+          }
 
-        break;
+          const newDeferUsage = getDeferUsage(selection);
+
+          if (!newDeferUsage) {
+            selectionSetVisitor(
+              selection.selectionSet,
+              deferUsage,
+              fragmentVariableValues,
+            );
+          } else {
+            newDeferUsages.push(newDeferUsage);
+            selectionSetVisitor(
+              selection.selectionSet,
+              newDeferUsage,
+              fragmentVariableValues,
+            );
+          }
+          break;
+        }
+        case Kind.FRAGMENT_SPREAD: {
+          const fragName = selection.name.value;
+
+          if (!shouldIncludeNode(selection)) {
+            continue;
+          }
+
+          const fragment = fragments[fragName];
+          if (
+            fragment == null ||
+            !doesFragmentConditionMatch(fragment.definition)
+          ) {
+            continue;
+          }
+
+          const newDeferUsage = getDeferUsage(selection);
+
+          const fragmentVariableSignatures = fragment.variableSignatures;
+          let newFragmentVariableValues: FragmentVariableValues | undefined;
+          if (fragmentVariableSignatures) {
+            newFragmentVariableValues = getFragmentVariableValues(
+              selection,
+              fragmentVariableSignatures,
+              variableValues,
+              fragmentVariableValues,
+              hideSuggestions,
+            );
+          }
+
+          const visitedAsDeferred = visitedFragmentNames.get(fragName);
+
+          let maybeNewDeferUsage: DeferUsage | undefined;
+          if (!newDeferUsage) {
+            // If this spread is not deferred, it may be skipped when already visited
+            // as a non-deferred spread. If it was previously visited as a deferred spread,
+            // it must be revisited.
+            if (visitedAsDeferred === false) {
+              continue;
+            }
+            visitedFragmentNames.set(fragName, false);
+            maybeNewDeferUsage = deferUsage;
+          } else {
+            // If this spread is deferred, it can be skipped if it has already been visited.
+            if (visitedAsDeferred !== undefined) {
+              continue;
+            }
+            visitedFragmentNames.set(fragName, true);
+            newDeferUsages.push(newDeferUsage);
+            maybeNewDeferUsage = newDeferUsage;
+          }
+
+          selectionSetVisitor(
+            fragment.definition.selectionSet,
+            maybeNewDeferUsage,
+            newFragmentVariableValues,
+          );
+          break;
+        }
       }
-      case Kind.FRAGMENT_SPREAD: {
-        const fragName = selection.name.value;
+    }
 
-        if (
-          !shouldIncludeNode(
-            context,
-            selection,
-            variableValues,
-            fragmentVariableValues,
-          )
-        ) {
-          continue;
-        }
+    /**
+     * Returns an object containing the `@defer` arguments if a field should be
+     * deferred based on the experimental flag, defer directive present and
+     * not disabled by the "if" argument.
+     */
+    function getDeferUsage(
+      node: FragmentSpreadNode | InlineFragmentNode,
+    ): DeferUsage | undefined {
+      const defer = getDirectiveValues(
+        GraphQLDeferDirective,
+        node,
+        variableValues,
+        fragmentVariableValues,
+      );
 
-        const fragment = fragments[fragName];
-        if (
-          fragment == null ||
-          !doesFragmentConditionMatch(schema, fragment.definition, runtimeType)
-        ) {
-          continue;
-        }
+      if (!defer) {
+        return;
+      }
 
-        const newDeferUsage = getDeferUsage(
-          variableValues,
-          fragmentVariableValues,
-          selection,
-          deferUsage,
-        );
+      if (defer.if === false) {
+        return;
+      }
 
-        const visitedAsDeferred = visitedFragmentNames.get(fragName);
+      return {
+        label: typeof defer.label === 'string' ? defer.label : undefined,
+        parentDeferUsage: deferUsage,
+      };
+    }
 
-        let maybeNewDeferUsage: DeferUsage | undefined;
-        if (!newDeferUsage) {
-          // If this spread is not deferred, it may be skipped when already visited
-          // as a non-deferred spread. If it was previously visited as a deferred spread,
-          // it must be revisited.
-          if (visitedAsDeferred === false) {
-            continue;
-          }
-          visitedFragmentNames.set(fragName, false);
-          maybeNewDeferUsage = deferUsage;
-        } else {
-          // If this spread is deferred, it can be skipped if it has already been visited.
-          if (visitedAsDeferred !== undefined) {
-            continue;
-          }
-          visitedFragmentNames.set(fragName, true);
-          newDeferUsages.push(newDeferUsage);
-          maybeNewDeferUsage = newDeferUsage;
-        }
-
-        const fragmentVariableSignatures = fragment.variableSignatures;
-        let newFragmentVariableValues: FragmentVariableValues | undefined;
-        if (fragmentVariableSignatures) {
-          newFragmentVariableValues = getFragmentVariableValues(
-            selection,
-            fragmentVariableSignatures,
+    /**
+     * Determines if a field should be included based on the `@include` and `@skip`
+     * directives, where `@skip` has higher precedence than `@include`.
+     */
+    function shouldIncludeNode(
+      node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
+    ): boolean {
+      const skipDirectiveNode = node.directives?.find(
+        (directive) => directive.name.value === GraphQLSkipDirective.name,
+      );
+      if (skipDirectiveNode && forbidSkipAndInclude) {
+        forbiddenDirectiveInstances.push(skipDirectiveNode);
+        return false;
+      }
+      const skip = skipDirectiveNode
+        ? getArgumentValues(
+            GraphQLSkipDirective,
+            skipDirectiveNode,
             variableValues,
             fragmentVariableValues,
             hideSuggestions,
-          );
-        }
-
-        collectFieldsImpl(
-          context,
-          fragment.definition.selectionSet,
-          groupedFieldSet,
-          newDeferUsages,
-          maybeNewDeferUsage,
-          newFragmentVariableValues,
-        );
-        break;
+          )
+        : undefined;
+      if (skip?.if === true) {
+        return false;
       }
+
+      const includeDirectiveNode = node.directives?.find(
+        (directive) => directive.name.value === GraphQLIncludeDirective.name,
+      );
+      if (includeDirectiveNode && forbidSkipAndInclude) {
+        forbiddenDirectiveInstances.push(includeDirectiveNode);
+        return false;
+      }
+      const include = includeDirectiveNode
+        ? getArgumentValues(
+            GraphQLIncludeDirective,
+            includeDirectiveNode,
+            variableValues,
+            fragmentVariableValues,
+            hideSuggestions,
+          )
+        : undefined;
+      if (include?.if === false) {
+        return false;
+      }
+      return true;
     }
   }
-}
 
-/**
- * Returns an object containing the `@defer` arguments if a field should be
- * deferred based on the experimental flag, defer directive present and
- * not disabled by the "if" argument.
- */
-function getDeferUsage(
-  variableValues: VariableValues,
-  fragmentVariableValues: FragmentVariableValues | undefined,
-  node: FragmentSpreadNode | InlineFragmentNode,
-  parentDeferUsage: DeferUsage | undefined,
-): DeferUsage | undefined {
-  const defer = getDirectiveValues(
-    GraphQLDeferDirective,
-    node,
-    variableValues,
-    fragmentVariableValues,
-  );
-
-  if (!defer) {
-    return;
-  }
-
-  if (defer.if === false) {
-    return;
-  }
-
-  return {
-    label: typeof defer.label === 'string' ? defer.label : undefined,
-    parentDeferUsage,
-  };
-}
-
-/**
- * Determines if a field should be included based on the `@include` and `@skip`
- * directives, where `@skip` has higher precedence than `@include`.
- */
-function shouldIncludeNode(
-  context: CollectFieldsContext,
-  node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
-  variableValues: VariableValues,
-  fragmentVariableValues: FragmentVariableValues | undefined,
-): boolean {
-  const skipDirectiveNode = node.directives?.find(
-    (directive) => directive.name.value === GraphQLSkipDirective.name,
-  );
-  if (skipDirectiveNode && context.forbidSkipAndInclude) {
-    context.forbiddenDirectiveInstances.push(skipDirectiveNode);
-    return false;
-  }
-  const skip = skipDirectiveNode
-    ? getArgumentValues(
-        GraphQLSkipDirective,
-        skipDirectiveNode,
-        variableValues,
-        fragmentVariableValues,
-        context.hideSuggestions,
-      )
-    : undefined;
-  if (skip?.if === true) {
+  /**
+   * Determines if a fragment is applicable to the given type.
+   */
+  function doesFragmentConditionMatch(
+    fragment: FragmentDefinitionNode | InlineFragmentNode,
+  ): boolean {
+    const typeConditionNode = fragment.typeCondition;
+    if (!typeConditionNode) {
+      return true;
+    }
+    const conditionalType = typeFromAST(schema, typeConditionNode);
+    if (conditionalType === runtimeType) {
+      return true;
+    }
+    if (isAbstractType(conditionalType)) {
+      return schema.isSubType(conditionalType, runtimeType);
+    }
     return false;
   }
 
-  const includeDirectiveNode = node.directives?.find(
-    (directive) => directive.name.value === GraphQLIncludeDirective.name,
-  );
-  if (includeDirectiveNode && context.forbidSkipAndInclude) {
-    context.forbiddenDirectiveInstances.push(includeDirectiveNode);
-    return false;
-  }
-  const include = includeDirectiveNode
-    ? getArgumentValues(
-        GraphQLIncludeDirective,
-        includeDirectiveNode,
-        variableValues,
-        fragmentVariableValues,
-        context.hideSuggestions,
-      )
-    : undefined;
-  if (include?.if === false) {
-    return false;
-  }
-  return true;
-}
-
-/**
- * Determines if a fragment is applicable to the given type.
- */
-function doesFragmentConditionMatch(
-  schema: GraphQLSchema,
-  fragment: FragmentDefinitionNode | InlineFragmentNode,
-  type: GraphQLObjectType,
-): boolean {
-  const typeConditionNode = fragment.typeCondition;
-  if (!typeConditionNode) {
-    return true;
-  }
-  const conditionalType = typeFromAST(schema, typeConditionNode);
-  if (conditionalType === type) {
-    return true;
-  }
-  if (isAbstractType(conditionalType)) {
-    return schema.isSubType(conditionalType, type);
-  }
-  return false;
+  return selectionSetVisitor;
 }
 
 /**
