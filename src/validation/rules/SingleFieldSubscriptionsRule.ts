@@ -2,9 +2,18 @@ import type { ObjMap } from '../../jsutils/ObjMap.js';
 
 import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { FieldNode, OperationDefinitionNode } from '../../language/ast.js';
+import type {
+  DirectiveNode,
+  FieldNode,
+  OperationDefinitionNode,
+} from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
+
+import {
+  GraphQLIncludeDirective,
+  GraphQLSkipDirective,
+} from '../../type/directives.js';
 
 import type {
   FieldDetailsList,
@@ -46,16 +55,30 @@ export function SingleFieldSubscriptionsRule(
               fragments[definition.name.value] = { definition };
             }
           }
-          const { groupedFieldSet, forbiddenDirectiveInstances } =
-            collectFields(
-              schema,
-              fragments,
-              variableValues,
-              subscriptionType,
-              node.selectionSet,
-              context.hideSuggestions,
-              true,
-            );
+          const forbiddenDirectiveInstances: Array<DirectiveNode> = [];
+          const { groupedFieldSet } = collectFields(
+            schema,
+            fragments,
+            variableValues,
+            subscriptionType,
+            node.selectionSet,
+            context.hideSuggestions,
+            (selection) => {
+              for (const directive of [
+                GraphQLSkipDirective,
+                GraphQLIncludeDirective,
+              ]) {
+                const directiveNode = selection.directives?.find(
+                  (d) => d.name.value === directive.name,
+                );
+                if (directiveNode !== undefined) {
+                  forbiddenDirectiveInstances.push(directiveNode);
+                  return false;
+                }
+              }
+              return true;
+            },
+          );
           if (forbiddenDirectiveInstances.length > 0) {
             context.reportError(
               new GraphQLError(
