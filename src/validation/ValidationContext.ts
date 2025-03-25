@@ -33,6 +33,7 @@ interface VariableUsage {
   readonly node: VariableNode;
   readonly type: Maybe<GraphQLInputType>;
   readonly defaultValue: Maybe<unknown>;
+  readonly parentType: Maybe<GraphQLInputType>;
 }
 
 /**
@@ -209,6 +210,7 @@ export class ValidationContext extends ASTValidationContext {
               node: variable,
               type: typeInfo.getInputType(),
               defaultValue: typeInfo.getDefaultValue(),
+              parentType: typeInfo.getParentInputType(),
             });
           },
         }),
