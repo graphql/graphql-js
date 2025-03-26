@@ -61,6 +61,7 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
+  isOutputType,
   isScalarType,
   isSemanticNonNullType,
   isUnionType,
@@ -439,7 +440,11 @@ export function extendSchemaImpl(
       return new GraphQLNonNull(getWrappedType(node.type));
     }
     if (node.kind === Kind.SEMANTIC_NON_NULL_TYPE) {
-      return new GraphQLSemanticNonNull(getWrappedType(node.type));
+      const wrapped = getWrappedType(node.type);
+      if (!isOutputType(wrapped)) {
+        throw new Error('A semantic non-null type cannot wrap an input type.');
+      }
+      return new GraphQLSemanticNonNull(wrapped);
     }
     return getNamedType(node);
   }

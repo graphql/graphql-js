@@ -143,8 +143,13 @@ export function buildClientSchema(
       if (!nullableRef) {
         throw new Error('Decorated type deeper than introspection query.');
       }
-      const nullableType = getType(nullableRef);
-      return new GraphQLSemanticNonNull(assertNullableType(nullableType));
+      const nullableType = assertNullableType(getType(nullableRef));
+      if (!isOutputType(nullableType)) {
+        throw new Error(
+          'A semantic non-null wrapper must wrap an output type.',
+        );
+      }
+      return new GraphQLSemanticNonNull(nullableType);
     }
     return getNamedType(typeRef);
   }
