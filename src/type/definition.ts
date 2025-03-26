@@ -555,11 +555,12 @@ export function assertNullableType(type: unknown): GraphQLNullableType {
 }
 
 export function getNullableType(type: undefined | null): void;
+export function getNullableType<T extends GraphQLNullableOutputType>(
+  type: T | GraphQLNonNull<T> | GraphQLSemanticNonNull<T>,
+): T;
 export function getNullableType<T extends GraphQLNullableType>(
-  type:
-    | T
-    | GraphQLNonNull<T>
-    | GraphQLSemanticNonNull<T extends GraphQLOutputType ? T : never>,
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  type: T | GraphQLNonNull<T>,
 ): T;
 export function getNullableType(
   type: Maybe<GraphQLType>,
