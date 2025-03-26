@@ -483,6 +483,10 @@ export class GraphQLSemanticNonNull<T extends GraphQLNullableOutputType> {
       isNullableType(ofType),
       `Expected ${inspect(ofType)} to be a GraphQL nullable type.`,
     );
+    devAssert(
+      isOutputType(ofType),
+      `Expected ${inspect(ofType)} to be a GraphQL output type.`,
+    );
 
     this.ofType = ofType;
   }
