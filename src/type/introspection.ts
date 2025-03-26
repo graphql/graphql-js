@@ -377,7 +377,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
             defaultValue: false,
           },
         },
-        resolve: (field, { includeSemanticNonNull }, _context) => {
+        resolve: (field, { includeSemanticNonNull }) => {
           if (includeSemanticNonNull) {
             return field.type;
           }
