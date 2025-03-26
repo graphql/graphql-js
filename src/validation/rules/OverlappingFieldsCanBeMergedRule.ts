@@ -60,10 +60,14 @@ function reasonMessage(reason: ConflictReasonMessage): string {
 export function OverlappingFieldsCanBeMergedRule(
   context: ValidationContext,
 ): ASTVisitor {
-  // A memoization for when two fragments are compared "between" each other for
-  // conflicts. Two fragments may be compared many times, so memoizing this can
-  // dramatically improve the performance of this validator.
-  const comparedFragmentPairs = new PairSet();
+  // A memoization for when fields and a fragment or two fragments are compared
+  // "between" each other for conflicts. Comparisons made be made many times,
+  // so memoizing this can dramatically improve the performance of this validator.
+  const comparedFieldsAndFragmentPairs = new OrderedPairSet<
+    NodeAndDefCollection,
+    string
+  >();
+  const comparedFragmentPairs = new PairSet<string>();
 
   // A cache for the "field map" and list of fragment names found in any given
   // selection set. Selection sets may be asked for this information multiple
@@ -75,6 +79,7 @@ export function OverlappingFieldsCanBeMergedRule(
       const conflicts = findConflictsWithinSelectionSet(
         context,
         cachedFieldsAndFragmentNames,
+        comparedFieldsAndFragmentPairs,
         comparedFragmentPairs,
         context.getParentType(),
         selectionSet,
@@ -169,7 +174,8 @@ type FieldsAndFragmentNames = readonly [NodeAndDefCollection, FragmentNames];
 function findConflictsWithinSelectionSet(
   context: ValidationContext,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFragmentPairs: PairSet,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   parentType: Maybe<GraphQLNamedType>,
   selectionSet: SelectionSetNode,
 ): Array<Conflict> {
@@ -188,6 +194,7 @@ function findConflictsWithinSelectionSet(
     context,
     conflicts,
     cachedFieldsAndFragmentNames,
+    comparedFieldsAndFragmentPairs,
     comparedFragmentPairs,
     fieldMap,
   );
@@ -200,6 +207,7 @@ function findConflictsWithinSelectionSet(
         context,
         conflicts,
         cachedFieldsAndFragmentNames,
+        comparedFieldsAndFragmentPairs,
         comparedFragmentPairs,
         false,
         fieldMap,
@@ -214,6 +222,7 @@ function findConflictsWithinSelectionSet(
           context,
           conflicts,
           cachedFieldsAndFragmentNames,
+          comparedFieldsAndFragmentPairs,
           comparedFragmentPairs,
           false,
           fragmentNames[i],
@@ -231,11 +240,29 @@ function collectConflictsBetweenFieldsAndFragment(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFragmentPairs: PairSet,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   areMutuallyExclusive: boolean,
   fieldMap: NodeAndDefCollection,
   fragmentName: string,
 ): void {
+  // Memoize so the fields and fragments are not compared for conflicts more
+  // than once.
+  if (
+    comparedFieldsAndFragmentPairs.has(
+      fieldMap,
+      fragmentName,
+      areMutuallyExclusive,
+    )
+  ) {
+    return;
+  }
+  comparedFieldsAndFragmentPairs.add(
+    fieldMap,
+    fragmentName,
+    areMutuallyExclusive,
+  );
+
   const fragment = context.getFragment(fragmentName);
   if (!fragment) {
     return;
@@ -259,6 +286,7 @@ function collectConflictsBetweenFieldsAndFragment(
     context,
     conflicts,
     cachedFieldsAndFragmentNames,
+    comparedFieldsAndFragmentPairs,
     comparedFragmentPairs,
     areMutuallyExclusive,
     fieldMap,
@@ -268,26 +296,11 @@ function collectConflictsBetweenFieldsAndFragment(
   // (E) Then collect any conflicts between the provided collection of fields
   // and any fragment names found in the given fragment.
   for (const referencedFragmentName of referencedFragmentNames) {
-    // Memoize so two fragments are not compared for conflicts more than once.
-    if (
-      comparedFragmentPairs.has(
-        referencedFragmentName,
-        fragmentName,
-        areMutuallyExclusive,
-      )
-    ) {
-      continue;
-    }
-    comparedFragmentPairs.add(
-      referencedFragmentName,
-      fragmentName,
-      areMutuallyExclusive,
-    );
-
     collectConflictsBetweenFieldsAndFragment(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap,
@@ -302,7 +315,8 @@ function collectConflictsBetweenFragments(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFragmentPairs: PairSet,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   areMutuallyExclusive: boolean,
   fragmentName1: string,
   fragmentName2: string,
@@ -349,6 +363,7 @@ function collectConflictsBetweenFragments(
     context,
     conflicts,
     cachedFieldsAndFragmentNames,
+    comparedFieldsAndFragmentPairs,
     comparedFragmentPairs,
     areMutuallyExclusive,
     fieldMap1,
@@ -362,6 +377,7 @@ function collectConflictsBetweenFragments(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fragmentName1,
@@ -376,6 +392,7 @@ function collectConflictsBetweenFragments(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       referencedFragmentName1,
@@ -390,7 +407,8 @@ function collectConflictsBetweenFragments(
 function findConflictsBetweenSubSelectionSets(
   context: ValidationContext,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFragmentPairs: PairSet,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   areMutuallyExclusive: boolean,
   parentType1: Maybe<GraphQLNamedType>,
   selectionSet1: SelectionSetNode,
@@ -417,6 +435,7 @@ function findConflictsBetweenSubSelectionSets(
     context,
     conflicts,
     cachedFieldsAndFragmentNames,
+    comparedFieldsAndFragmentPairs,
     comparedFragmentPairs,
     areMutuallyExclusive,
     fieldMap1,
@@ -430,6 +449,7 @@ function findConflictsBetweenSubSelectionSets(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap1,
@@ -444,6 +464,7 @@ function findConflictsBetweenSubSelectionSets(
       context,
       conflicts,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       fieldMap2,
@@ -460,6 +481,7 @@ function findConflictsBetweenSubSelectionSets(
         context,
         conflicts,
         cachedFieldsAndFragmentNames,
+        comparedFieldsAndFragmentPairs,
         comparedFragmentPairs,
         areMutuallyExclusive,
         fragmentName1,
@@ -475,7 +497,8 @@ function collectConflictsWithin(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFragmentPairs: PairSet,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   fieldMap: NodeAndDefCollection,
 ): void {
   // A field map is a keyed collection, where each key represents a response
@@ -492,6 +515,7 @@ function collectConflictsWithin(
           const conflict = findConflict(
             context,
             cachedFieldsAndFragmentNames,
+            comparedFieldsAndFragmentPairs,
             comparedFragmentPairs,
             false, // within one collection is never mutually exclusive
             responseName,
@@ -516,7 +540,8 @@ function collectConflictsBetween(
   context: ValidationContext,
   conflicts: Array<Conflict>,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFragmentPairs: PairSet,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   parentFieldsAreMutuallyExclusive: boolean,
   fieldMap1: NodeAndDefCollection,
   fieldMap2: NodeAndDefCollection,
@@ -534,6 +559,7 @@ function collectConflictsBetween(
           const conflict = findConflict(
             context,
             cachedFieldsAndFragmentNames,
+            comparedFieldsAndFragmentPairs,
             comparedFragmentPairs,
             parentFieldsAreMutuallyExclusive,
             responseName,
@@ -554,7 +580,8 @@ function collectConflictsBetween(
 function findConflict(
   context: ValidationContext,
   cachedFieldsAndFragmentNames: Map<SelectionSetNode, FieldsAndFragmentNames>,
-  comparedFragmentPairs: PairSet,
+  comparedFieldsAndFragmentPairs: OrderedPairSet<NodeAndDefCollection, string>,
+  comparedFragmentPairs: PairSet<string>,
   parentFieldsAreMutuallyExclusive: boolean,
   responseName: string,
   field1: NodeAndDef,
@@ -625,6 +652,7 @@ function findConflict(
     const conflicts = findConflictsBetweenSubSelectionSets(
       context,
       cachedFieldsAndFragmentNames,
+      comparedFieldsAndFragmentPairs,
       comparedFragmentPairs,
       areMutuallyExclusive,
       getNamedType(type1),
@@ -822,37 +850,60 @@ function subfieldConflicts(
 }
 
 /**
- * A way to keep track of pairs of things when the ordering of the pair does not matter.
+ * A way to keep track of pairs of things where the ordering of the pair
+ * matters.
+ *
+ * Provides a third argument for has/set to allow flagging the pair as
+ * weakly or strongly present within the collection.
  */
-class PairSet {
-  _data: Map<string, Map<string, boolean>>;
+class OrderedPairSet<T, U> {
+  _data: Map<T, Map<U, boolean>>;
 
   constructor() {
     this._data = new Map();
   }
 
-  has(a: string, b: string, areMutuallyExclusive: boolean): boolean {
-    const [key1, key2] = a < b ? [a, b] : [b, a];
-
-    const result = this._data.get(key1)?.get(key2);
+  has(a: T, b: U, weaklyPresent: boolean): boolean {
+    const result = this._data.get(a)?.get(b);
     if (result === undefined) {
       return false;
     }
 
-    // areMutuallyExclusive being false is a superset of being true, hence if
-    // we want to know if this PairSet "has" these two with no exclusivity,
-    // we have to ensure it was added as such.
-    return areMutuallyExclusive ? true : areMutuallyExclusive === result;
+    return weaklyPresent ? true : weaklyPresent === result;
   }
 
-  add(a: string, b: string, areMutuallyExclusive: boolean): void {
-    const [key1, key2] = a < b ? [a, b] : [b, a];
-
-    const map = this._data.get(key1);
+  add(a: T, b: U, weaklyPresent: boolean): void {
+    const map = this._data.get(a);
     if (map === undefined) {
-      this._data.set(key1, new Map([[key2, areMutuallyExclusive]]));
+      this._data.set(a, new Map([[b, weaklyPresent]]));
     } else {
-      map.set(key2, areMutuallyExclusive);
+      map.set(b, weaklyPresent);
+    }
+  }
+}
+
+/**
+ * A way to keep track of pairs of similar things when the ordering of the pair
+ * does not matter.
+ */
+class PairSet<T> {
+  _orderedPairSet: OrderedPairSet<T, T>;
+
+  constructor() {
+    this._orderedPairSet = new OrderedPairSet();
+  }
+
+  has(a: T, b: T, weaklyPresent: boolean): boolean {
+    return a < b
+      ? this._orderedPairSet.has(a, b, weaklyPresent)
+      : this._orderedPairSet.has(b, a, weaklyPresent);
+  }
+
+  add(a: T, b: T, weaklyPresent: boolean): void {
+    if (a < b) {
+      this._orderedPairSet.add(a, b, weaklyPresent);
+    } else {
+      this._orderedPairSet.add(b, a, weaklyPresent);
     }
   }
 }

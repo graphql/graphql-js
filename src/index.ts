@@ -403,6 +403,7 @@ export type {
   GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
+  GraphQLFormattedErrorExtensions,
 } from './error/index';
 
 // Utilities for operating on GraphQL type schema and parsed sources.

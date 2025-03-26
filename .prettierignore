@@ -1,9 +1,11 @@
 # Copied from '.gitignore', please keep it in sync.
 /diff-npm-package.html
 /.eslintcache
-/.docusaurus
 /node_modules
 /coverage
 /npmDist
 /denoDist
 /websiteDist
+/website/out
+/website/**/*.mdx
+.next

@@ -41,6 +41,15 @@ export function ScalarLeafsRule(context: ValidationContext): ASTVisitor {
               { nodes: node },
             ),
           );
+        } else if (selectionSet.selections.length === 0) {
+          const fieldName = node.name.value;
+          const typeStr = inspect(type);
+          context.reportError(
+            new GraphQLError(
+              `Field "${fieldName}" of type "${typeStr}" must have at least one field selected.`,
+              { nodes: node },
+            ),
+          );
         }
       }
     },

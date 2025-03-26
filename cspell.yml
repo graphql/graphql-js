@@ -9,9 +9,9 @@ ignorePaths:
   - tsconfig.json
   - benchmark/github-schema.graphql
   - benchmark/github-schema.json
+  - website/icons
+  - website/css
 overrides:
-  - filename: '**/docs-old/APIReference-*.md'
-    ignoreRegExpList: ['/href="[^"]*"/']
   - filename: 'website/**'
     dictionaries:
       - fullstack
@@ -51,6 +51,61 @@ words:
   # TODO: contribute upstream
   - deno
   - codecov
+
+  # Website tech
+  - Nextra
+  - headlessui
+  - Fastify
+  - tailwindcss
+  - svgr
+  - ruru
+  - oneof
+  - vercel
+
+  # used as href anchors
+  - graphqlerror
+  - syntaxerror
+  - formaterror
+  - graphqlschema
+  - graphqlscalartype
+  - graphqlobjecttype
+  - graphqlinterfacetype
+  - graphqluniontype
+  - graphqlenumtype
+  - graphqlinputobjecttype
+  - graphqllist
+  - graphqlnonnull
+  - graphqlint
+  - graphqlfloat
+  - graphqlstring
+  - graphqlboolean
+  - graphqlid
+  - getlocation
+  - isinputtype
+  - isoutputtype
+  - isleaftype
+  - iscompositetype
+  - isabstracttype
+  - getnullabletype
+  - getnamedtype
+  - introspectionquery
+  - buildclientschema
+  - buildschema
+  - printschema
+  - printintrospectionschema
+  - buildastschema
+  - typefromast
+  - astfromvalue
+  - typeinfo
+  - isvalidjsvalue
+  - isvalidliteralvalue
+  - specifiedrules
+  - Wordmark
+  - codeofconduct
+  - graphqlconf
+
+  # website words
+  - runtimes
 
   # TODO: remove bellow words
   - QLID # GraphQLID

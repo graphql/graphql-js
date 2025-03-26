@@ -1,11 +1,11 @@
 # Copied from '.gitignore', please keep it in sync.
 /.eslintcache
-/.docusaurus
 /node_modules
 /coverage
 /npmDist
 /denoDist
 /websiteDist
+/website
 
 # Ignore TS files inside integration test
 /integrationTests/ts/*.ts
