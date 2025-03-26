@@ -1,5 +1,6 @@
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
+import { memoize1 } from '../jsutils/memoize1';
 
 import { DirectiveLocation } from '../language/directiveLocation';
 import { print } from '../language/printer';
@@ -381,7 +382,6 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
           if (includeSemanticNonNull) {
             return field.type;
           }
-          // TODO: memoize
           return stripSemanticNonNullTypes(field.type);
         },
       },
@@ -396,8 +396,10 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
     } as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
 });
 
-// TODO: move this elsewhere, rename, memoize
-function stripSemanticNonNullTypes(type: GraphQLOutputType): GraphQLOutputType {
+const stripSemanticNonNullTypes = memoize1(_stripSemanticNonNullTypes);
+function _stripSemanticNonNullTypes(
+  type: GraphQLOutputType,
+): GraphQLOutputType {
   if (isNonNullType(type)) {
     const convertedInner = stripSemanticNonNullTypes(type.ofType);
     if (convertedInner === type.ofType) {
