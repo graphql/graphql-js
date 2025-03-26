@@ -40,15 +40,10 @@ export interface IntrospectionOptions {
   oneOf?: boolean;
 
   /**
-   * Choose the type of nullability you would like to see.
-   *
-   * - AUTO: SEMANTIC if errorPropagation is set to false, otherwise TRADITIONAL
-   * - TRADITIONAL: all GraphQLSemanticNonNull will be unwrapped
-   * - SEMANTIC: all GraphQLNonNull will be converted to GraphQLSemanticNonNull
-   * - FULL: the true nullability will be returned
-   *
+   * Whether semantic non-null type wrappers should be included in the result.
+   * Default: false
    */
-  nullability?: 'AUTO' | 'TRADITIONAL' | 'SEMANTIC' | 'FULL';
+  includeSemanticNonNull?: boolean;
 }
 
 /**
@@ -63,7 +58,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     schemaDescription: false,
     inputValueDeprecation: false,
     oneOf: false,
-    nullability: null,
+    includeSemanticNonNull: false,
     ...options,
   };
 
@@ -82,7 +77,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
   const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
-  const nullability = optionsWithDefault.nullability;
+  const includeSemanticNonNull = optionsWithDefault.includeSemanticNonNull;
 
   return `
     query IntrospectionQuery {
@@ -118,7 +113,11 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         args${inputDeprecation('(includeDeprecated: true)')} {
           ...InputValue
         }
-        type${nullability ? `(nullability: ${nullability})` : ''} {
+        type${
+          includeSemanticNonNull
+            ? `(includeSemanticNonNull: ${includeSemanticNonNull})`
+            : ''
+        } {
           ...TypeRef
         }
         isDeprecated

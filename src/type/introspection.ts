@@ -12,6 +12,7 @@ import type {
   GraphQLFieldConfigMap,
   GraphQLInputField,
   GraphQLNamedType,
+  GraphQLOutputType,
   GraphQLType,
 } from './definition';
 import {
@@ -19,7 +20,6 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLSemanticNonNull,
   isAbstractType,
   isEnumType,
   isInputObjectType,
@@ -206,40 +206,6 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
   },
 });
 
-// TODO: rename enum and options
-enum TypeNullability {
-  AUTO = 'AUTO',
-  TRADITIONAL = 'TRADITIONAL',
-  SEMANTIC = 'SEMANTIC',
-  FULL = 'FULL',
-}
-
-// TODO: rename
-export const __TypeNullability: GraphQLEnumType = new GraphQLEnumType({
-  name: '__TypeNullability',
-  description: 'TODO',
-  values: {
-    AUTO: {
-      value: TypeNullability.AUTO,
-      description:
-        'Determines nullability mode based on errorPropagation mode.',
-    },
-    TRADITIONAL: {
-      value: TypeNullability.TRADITIONAL,
-      description: 'Turn semantic-non-null types into nullable types.',
-    },
-    SEMANTIC: {
-      value: TypeNullability.SEMANTIC,
-      description: 'Turn non-null types into semantic-non-null types.',
-    },
-    FULL: {
-      value: TypeNullability.FULL,
-      description:
-        'Render the true nullability in the schema; be prepared for new types of nullability in future!',
-    },
-  },
-});
-
 export const __Type: GraphQLObjectType = new GraphQLObjectType({
   name: '__Type',
   description:
@@ -406,22 +372,17 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
       type: {
         type: new GraphQLNonNull(__Type),
         args: {
-          nullability: {
-            type: new GraphQLNonNull(__TypeNullability),
-            defaultValue: TypeNullability.AUTO,
+          includeSemanticNonNull: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            defaultValue: false,
           },
         },
-        resolve: (field, { nullability }, _context, info) => {
-          if (nullability === TypeNullability.FULL) {
+        resolve: (field, { includeSemanticNonNull }, _context) => {
+          if (includeSemanticNonNull) {
             return field.type;
           }
-          const mode =
-            nullability === TypeNullability.AUTO
-              ? info.errorPropagation
-                ? TypeNullability.TRADITIONAL
-                : TypeNullability.SEMANTIC
-              : nullability;
-          return convertOutputTypeToNullabilityMode(field.type, mode);
+          // TODO: memoize
+          return stripSemanticNonNullTypes(field.type);
         },
       },
       isDeprecated: {
@@ -436,32 +397,21 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
 });
 
 // TODO: move this elsewhere, rename, memoize
-function convertOutputTypeToNullabilityMode(
-  type: GraphQLType,
-  mode: TypeNullability.TRADITIONAL | TypeNullability.SEMANTIC,
-): GraphQLType {
-  if (mode === TypeNullability.TRADITIONAL) {
-    if (isNonNullType(type)) {
-      return new GraphQLNonNull(
-        convertOutputTypeToNullabilityMode(type.ofType, mode),
-      );
-    } else if (isSemanticNonNullType(type)) {
-      return convertOutputTypeToNullabilityMode(type.ofType, mode);
-    } else if (isListType(type)) {
-      return new GraphQLList(
-        convertOutputTypeToNullabilityMode(type.ofType, mode),
-      );
+function stripSemanticNonNullTypes(type: GraphQLOutputType): GraphQLOutputType {
+  if (isNonNullType(type)) {
+    const convertedInner = stripSemanticNonNullTypes(type.ofType);
+    if (convertedInner === type.ofType) {
+      return type; // No change needed
     }
-    return type;
-  }
-  if (isNonNullType(type) || isSemanticNonNullType(type)) {
-    return new GraphQLSemanticNonNull(
-      convertOutputTypeToNullabilityMode(type.ofType, mode),
-    );
+    return new GraphQLNonNull(convertedInner);
   } else if (isListType(type)) {
-    return new GraphQLList(
-      convertOutputTypeToNullabilityMode(type.ofType, mode),
-    );
+    const convertedInner = stripSemanticNonNullTypes(type.ofType);
+    if (convertedInner === type.ofType) {
+      return type; // No change needed
+    }
+    return new GraphQLList(convertedInner);
+  } else if (isSemanticNonNullType(type)) {
+    return stripSemanticNonNullTypes(type.ofType);
   }
   return type;
 }
@@ -646,7 +596,6 @@ export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
     __Schema,
     __Directive,
     __DirectiveLocation,
-    __TypeNullability,
     __Type,
     __Field,
     __InputValue,

@@ -116,7 +116,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  errorPropagation: boolean;
+  errorBehavior: 'PROPAGATE' | 'NULL' | 'ABORT';
 }
 
 /**
@@ -155,11 +155,14 @@ export interface ExecutionArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   /**
-   * Set to `false` to disable error propagation. Experimental.
+   * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
+   * abort a request when any error occurs.
+   *
+   * Default: PROPAGATE
    *
    * @experimental
    */
-  errorPropagation?: boolean;
+  errorBehavior?: 'PROPAGATE' | 'NULL' | 'ABORT';
 }
 
 /**
@@ -294,7 +297,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
-    errorPropagation,
+    errorBehavior,
   } = args;
 
   let operation: OperationDefinitionNode | undefined;
@@ -356,7 +359,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
-    errorPropagation: errorPropagation ?? true,
+    errorBehavior: errorBehavior ?? 'PROPAGATE',
   };
 }
 
@@ -595,7 +598,7 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
-    errorPropagation: exeContext.errorPropagation,
+    errorBehavior: exeContext.errorBehavior,
   };
 }
 
@@ -604,10 +607,25 @@ function handleFieldError(
   returnType: GraphQLOutputType,
   exeContext: ExecutionContext,
 ): null {
-  // If the field type is non-nullable, then it is resolved without any
-  // protection from errors, however it still properly locates the error.
-  if (exeContext.errorPropagation && isNonNullType(returnType)) {
+  if (exeContext.errorBehavior === 'PROPAGATE') {
+    // If the field type is non-nullable, then it is resolved without any
+    // protection from errors, however it still properly locates the error.
+    // Note: semantic non-null types are treated as nullable for the purposes
+    // of error handling.
+    if (isNonNullType(returnType)) {
+      throw error;
+    }
+  } else if (exeContext.errorBehavior === 'ABORT') {
+    // In this mode, any error aborts the request
     throw error;
+  } else if (exeContext.errorBehavior === 'NULL') {
+    // In this mode, the client takes responsibility for error handling, so we
+    // treat the field as if it were nullable.
+  } else {
+    invariant(
+      false,
+      'Unexpected errorBehavior setting: ' + inspect(exeContext.errorBehavior),
+    );
   }
 
   // Otherwise, error protection is applied, logging the error and resolving

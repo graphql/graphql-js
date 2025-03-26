@@ -513,17 +513,17 @@ describe('Introspection', () => {
                   name: 'type',
                   args: [
                     {
-                      name: 'nullability',
+                      name: 'includeSemanticNonNull',
                       type: {
                         kind: 'NON_NULL',
                         name: null,
                         ofType: {
-                          kind: 'ENUM',
-                          name: '__TypeNullability',
+                          kind: 'SCALAR',
+                          name: 'Boolean',
                           ofType: null,
                         },
                       },
-                      defaultValue: 'AUTO',
+                      defaultValue: 'false',
                     },
                   ],
                   type: {
@@ -657,37 +657,6 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
-              possibleTypes: null,
-            },
-            {
-              kind: 'ENUM',
-              name: '__TypeNullability',
-              specifiedByURL: null,
-              fields: null,
-              inputFields: null,
-              interfaces: null,
-              enumValues: [
-                {
-                  name: 'AUTO',
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-                {
-                  name: 'TRADITIONAL',
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-                {
-                  name: 'SEMANTIC',
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-                {
-                  name: 'FULL',
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-              ],
               possibleTypes: null,
             },
             {
