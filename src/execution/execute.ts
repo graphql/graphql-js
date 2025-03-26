@@ -668,9 +668,9 @@ function completeValue(
     throw result;
   }
 
-  // If field type is NonNull, complete for inner type, and throw field error
+  // If field type is non-nullable, complete for inner type, and throw field error
   // if result is null.
-  if (isNonNullType(returnType)) {
+  if (isNonNullType(returnType) || isSemanticNonNullType(returnType)) {
     const completed = completeValue(
       exeContext,
       returnType.ofType,
@@ -681,26 +681,9 @@ function completeValue(
     );
     if (completed === null) {
       throw new Error(
-        `Cannot return null for non-nullable field ${info.parentType.name}.${info.fieldName}.`,
-      );
-    }
-    return completed;
-  }
-
-  // If field type is SemanticNonNull, complete for inner type, and throw field error
-  // if result is null.
-  if (isSemanticNonNullType(returnType)) {
-    const completed = completeValue(
-      exeContext,
-      returnType.ofType,
-      fieldNodes,
-      info,
-      path,
-      result,
-    );
-    if (completed === null) {
-      throw new Error(
-        `Cannot return null for semantic-non-nullable field ${info.parentType.name}.${info.fieldName}.`,
+        `Cannot return null for ${
+          isSemanticNonNullType(returnType) ? 'semantically ' : ''
+        }non-nullable field ${info.parentType.name}.${info.fieldName}.`,
       );
     }
     return completed;
