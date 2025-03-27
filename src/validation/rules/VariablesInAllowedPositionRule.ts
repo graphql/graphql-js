@@ -8,7 +8,11 @@ import { Kind } from '../../language/kinds';
 import type { ASTVisitor } from '../../language/visitor';
 
 import type { GraphQLType } from '../../type/definition';
-import { isNonNullType } from '../../type/definition';
+import {
+  isInputObjectType,
+  isNonNullType,
+  isNullableType,
+} from '../../type/definition';
 import type { GraphQLSchema } from '../../type/schema';
 
 import { isTypeSubTypeOf } from '../../utilities/typeComparators';
@@ -36,7 +40,7 @@ export function VariablesInAllowedPositionRule(
       leave(operation) {
         const usages = context.getRecursiveVariableUsages(operation);
 
-        for (const { node, type, defaultValue } of usages) {
+        for (const { node, type, defaultValue, parentType } of usages) {
           const varName = node.name.value;
           const varDef = varDefMap[varName];
           if (varDef && type) {
@@ -62,6 +66,19 @@ export function VariablesInAllowedPositionRule(
               context.reportError(
                 new GraphQLError(
                   `Variable "$${varName}" of type "${varTypeStr}" used in position expecting type "${typeStr}".`,
+                  { nodes: [varDef, node] },
+                ),
+              );
+            }
+
+            if (
+              isInputObjectType(parentType) &&
+              parentType.isOneOf &&
+              isNullableType(varType)
+            ) {
+              context.reportError(
+                new GraphQLError(
+                  `Variable "$${varName}" is of type "${varType}" but must be non-nullable to be used for OneOf Input Object "${parentType}".`,
                   { nodes: [varDef, node] },
                 ),
               );
