@@ -934,6 +934,36 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('raises request error with invalid onError', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          a: {
+            type: GraphQLInt,
+            resolve: () => ({}),
+          },
+        }),
+      }),
+    });
+
+    const document = parse('{ a }');
+    const result = executeSync({
+      schema,
+      document,
+      // @ts-expect-error
+      onError: 'DANCE',
+    });
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Unsupported `onError` value; supported values are `PROPAGATE`, `NO_PROPAGATE` and `ABORT`.',
+        },
+      ],
+    });
+  });
+
   it('uses the inline operation if no operation name is provided', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
