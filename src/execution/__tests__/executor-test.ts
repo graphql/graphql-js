@@ -263,6 +263,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'errorBehavior',
     );
 
     const operation = document.definitions[0];
@@ -275,6 +276,7 @@ describe('Execute: Handles basic execution tasks', () => {
       schema,
       rootValue,
       operation,
+      errorBehavior: 'PROPAGATE',
     });
 
     const field = operation.selectionSet.selections[0];
