@@ -941,7 +941,6 @@ describe('Execute: Handles basic execution tasks', () => {
         fields: () => ({
           a: {
             type: GraphQLInt,
-            resolve: () => ({}),
           },
         }),
       }),
