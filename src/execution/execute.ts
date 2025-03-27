@@ -632,6 +632,7 @@ function handleFieldError(
   } else if (exeContext.errorBehavior === 'NO_PROPAGATE') {
     // In this mode, the client takes responsibility for error handling, so we
     // treat the field as if it were nullable.
+    /* c8 ignore next 6 */
   } else {
     invariant(
       false,
