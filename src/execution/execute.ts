@@ -13,6 +13,8 @@ import { promiseForObject } from '../jsutils/promiseForObject';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { promiseReduce } from '../jsutils/promiseReduce';
 
+import type { GraphQLErrorBehavior} from '../error/ErrorBehavior';
+import { isErrorBehavior } from '../error/ErrorBehavior';
 import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -58,7 +60,6 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
-import { GraphQLErrorBehavior, isErrorBehavior } from '../error/ErrorBehavior';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
