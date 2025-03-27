@@ -19,6 +19,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLSemanticNullable,
   GraphQLUnionType,
   isEnumType,
   isInputObjectType,
@@ -27,6 +28,7 @@ import {
   isNonNullType,
   isObjectType,
   isScalarType,
+  isSemanticNullableType,
   isUnionType,
 } from '../type/definition';
 import { GraphQLDirective } from '../type/directives';
@@ -62,6 +64,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
     } else if (isNonNullType(type)) {
       // @ts-expect-error
       return new GraphQLNonNull(replaceType(type.ofType));
+    } else if (isSemanticNullableType(type)) {
+      // @ts-expect-error
+      return new GraphQLSemanticNullable(replaceType(type.ofType));
     }
     // @ts-expect-error FIXME: TS Conversion
     return replaceNamedType<GraphQLNamedType>(type);

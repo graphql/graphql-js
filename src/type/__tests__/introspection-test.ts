@@ -437,6 +437,11 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'SEMANTIC_NULLABLE',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               possibleTypes: null,
             },
@@ -506,7 +511,21 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'type',
-                  args: [],
+                  args: [
+                    {
+                      name: 'nullability',
+                      type: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'ENUM',
+                          name: '__TypeNullability',
+                          ofType: null,
+                        },
+                      },
+                      defaultValue: 'AUTO',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -638,6 +657,37 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              possibleTypes: null,
+            },
+            {
+              kind: 'ENUM',
+              name: '__TypeNullability',
+              specifiedByURL: null,
+              fields: null,
+              inputFields: null,
+              interfaces: null,
+              enumValues: [
+                {
+                  name: 'AUTO',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'TRADITIONAL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'SEMANTIC',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'FULL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+              ],
               possibleTypes: null,
             },
             {

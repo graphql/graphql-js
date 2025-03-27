@@ -22,6 +22,7 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLScalarType,
+  GraphQLSemanticNullable,
   GraphQLUnionType,
   isInputType,
   isOutputType,
@@ -136,6 +137,14 @@ export function buildClientSchema(
       }
       const nullableType = getType(nullableRef);
       return new GraphQLNonNull(assertNullableType(nullableType));
+    }
+    if (typeRef.kind === TypeKind.SEMANTIC_NULLABLE) {
+      const nonSemanticNullableRef = typeRef.ofType;
+      if (!nonSemanticNullableRef) {
+        throw new Error('Decorated type deeper than introspection query.');
+      }
+      const nullableType = getType(nonSemanticNullableRef);
+      return new GraphQLSemanticNullable(assertNullableType(nullableType));
     }
     return getNamedType(typeRef);
   }

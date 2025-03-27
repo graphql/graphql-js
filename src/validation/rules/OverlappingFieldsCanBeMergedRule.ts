@@ -27,6 +27,7 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
+  isSemanticNullableType,
 } from '../../type/definition';
 
 import { sortValueNode } from '../../utilities/sortValueNode';
@@ -721,6 +722,14 @@ function doTypesConflict(
       : true;
   }
   if (isNonNullType(type2)) {
+    return true;
+  }
+  if (isSemanticNullableType(type1)) {
+    return isSemanticNullableType(type2)
+      ? doTypesConflict(type1.ofType, type2.ofType)
+      : true;
+  }
+  if (isSemanticNullableType(type2)) {
     return true;
   }
   if (isLeafType(type1) || isLeafType(type2)) {

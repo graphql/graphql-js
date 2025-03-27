@@ -92,6 +92,7 @@ describe('AST node predicates', () => {
       'NamedType',
       'ListType',
       'NonNullType',
+      'SemanticNullableType',
     ]);
   });
 
