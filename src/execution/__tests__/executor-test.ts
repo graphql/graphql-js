@@ -287,6 +287,70 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
+  it('reflects onError:NO_PROPAGATE via errorBehavior', () => {
+    let resolvedInfo;
+    const testType = new GraphQLObjectType({
+      name: 'Test',
+      fields: {
+        test: {
+          type: GraphQLString,
+          resolve(_val, _args, _ctx, info) {
+            resolvedInfo = info;
+          },
+        },
+      },
+    });
+    const schema = new GraphQLSchema({ query: testType });
+
+    const document = parse('query ($var: String) { result: test }');
+    const rootValue = { root: 'val' };
+    const variableValues = { var: 'abc' };
+
+    executeSync({
+      schema,
+      document,
+      rootValue,
+      variableValues,
+      onError: 'NO_PROPAGATE',
+    });
+
+    expect(resolvedInfo).to.include({
+      errorBehavior: 'NO_PROPAGATE',
+    });
+  });
+
+  it('reflects onError:ABORT via errorBehavior', () => {
+    let resolvedInfo;
+    const testType = new GraphQLObjectType({
+      name: 'Test',
+      fields: {
+        test: {
+          type: GraphQLString,
+          resolve(_val, _args, _ctx, info) {
+            resolvedInfo = info;
+          },
+        },
+      },
+    });
+    const schema = new GraphQLSchema({ query: testType });
+
+    const document = parse('query ($var: String) { result: test }');
+    const rootValue = { root: 'val' };
+    const variableValues = { var: 'abc' };
+
+    executeSync({
+      schema,
+      document,
+      rootValue,
+      variableValues,
+      onError: 'ABORT',
+    });
+
+    expect(resolvedInfo).to.include({
+      errorBehavior: 'ABORT',
+    });
+  });
+
   it('populates path correctly with complex types', () => {
     let path;
     const someObject = new GraphQLObjectType({
@@ -731,6 +795,134 @@ describe('Execute: Handles basic execution tasks', () => {
           aliasedA: null,
         },
       },
+      errors: [
+        {
+          message: 'Catch me if you can',
+          locations: [{ line: 7, column: 17 }],
+          path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+        },
+      ],
+    });
+  });
+
+  it('Full response path is included for non-nullable fields with onError:NO_PROPAGATE', () => {
+    const A: GraphQLObjectType = new GraphQLObjectType({
+      name: 'A',
+      fields: () => ({
+        nullableA: {
+          type: A,
+          resolve: () => ({}),
+        },
+        nonNullA: {
+          type: new GraphQLNonNull(A),
+          resolve: () => ({}),
+        },
+        throws: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => {
+            throw new Error('Catch me if you can');
+          },
+        },
+      }),
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          nullableA: {
+            type: A,
+            resolve: () => ({}),
+          },
+        }),
+      }),
+    });
+
+    const document = parse(`
+      query {
+        nullableA {
+          aliasedA: nullableA {
+            nonNullA {
+              anotherA: nonNullA {
+                throws
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const result = executeSync({ schema, document, onError: 'NO_PROPAGATE' });
+    expectJSON(result).toDeepEqual({
+      data: {
+        nullableA: {
+          aliasedA: {
+            nonNullA: {
+              anotherA: {
+                throws: null,
+              },
+            },
+          },
+        },
+      },
+      errors: [
+        {
+          message: 'Catch me if you can',
+          locations: [{ line: 7, column: 17 }],
+          path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+        },
+      ],
+    });
+  });
+
+  it('Full response path is included for non-nullable fields with onError:ABORT', () => {
+    const A: GraphQLObjectType = new GraphQLObjectType({
+      name: 'A',
+      fields: () => ({
+        nullableA: {
+          type: A,
+          resolve: () => ({}),
+        },
+        nonNullA: {
+          type: new GraphQLNonNull(A),
+          resolve: () => ({}),
+        },
+        throws: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => {
+            throw new Error('Catch me if you can');
+          },
+        },
+      }),
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          nullableA: {
+            type: A,
+            resolve: () => ({}),
+          },
+        }),
+      }),
+    });
+
+    const document = parse(`
+      query {
+        nullableA {
+          aliasedA: nullableA {
+            nonNullA {
+              anotherA: nonNullA {
+                throws
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const result = executeSync({ schema, document, onError: 'ABORT' });
+    expectJSON(result).toDeepEqual({
+      data: null,
       errors: [
         {
           message: 'Catch me if you can',
