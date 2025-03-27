@@ -1097,7 +1097,7 @@ export interface GraphQLResolveInfo {
   readonly operation: OperationDefinitionNode;
   readonly variableValues: { [variable: string]: unknown };
   /** @experimental */
-  readonly errorBehavior: 'PROPAGATE' | 'NULL' | 'ABORT';
+  readonly errorBehavior: 'PROPAGATE' | 'NO_PROPAGATE' | 'ABORT';
 }
 
 /**

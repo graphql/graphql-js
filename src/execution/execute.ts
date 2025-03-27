@@ -116,7 +116,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  errorBehavior: 'PROPAGATE' | 'NULL' | 'ABORT';
+  errorBehavior: 'PROPAGATE' | 'NO_PROPAGATE' | 'ABORT';
 }
 
 /**
@@ -155,14 +155,14 @@ export interface ExecutionArgs {
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   /**
-   * Experimental. Set to NULL to prevent error propagation. Set to ABORT to
+   * Experimental. Set to NO_PROPAGATE to prevent error propagation. Set to ABORT to
    * abort a request when any error occurs.
    *
    * Default: PROPAGATE
    *
    * @experimental
    */
-  errorBehavior?: 'PROPAGATE' | 'NULL' | 'ABORT';
+  onError?: 'PROPAGATE' | 'NO_PROPAGATE' | 'ABORT';
 }
 
 /**
@@ -297,8 +297,21 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
-    errorBehavior,
+    onError,
   } = args;
+
+  if (
+    onError != null &&
+    onError !== 'PROPAGATE' &&
+    onError !== 'NO_PROPAGATE' &&
+    onError !== 'ABORT'
+  ) {
+    return [
+      new GraphQLError(
+        'Unsupported `onError` value; supported values are `PROPAGATE`, `NO_PROPAGATE` and `ABORT`.',
+      ),
+    ];
+  }
 
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -359,7 +372,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
-    errorBehavior: errorBehavior ?? 'PROPAGATE',
+    errorBehavior: onError ?? 'PROPAGATE',
   };
 }
 
@@ -618,7 +631,7 @@ function handleFieldError(
   } else if (exeContext.errorBehavior === 'ABORT') {
     // In this mode, any error aborts the request
     throw error;
-  } else if (exeContext.errorBehavior === 'NULL') {
+  } else if (exeContext.errorBehavior === 'NO_PROPAGATE') {
     // In this mode, the client takes responsibility for error handling, so we
     // treat the field as if it were nullable.
   } else {
