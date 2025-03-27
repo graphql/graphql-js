@@ -9,6 +9,7 @@ import {
   assertEnumType,
   GraphQLEnumType,
   GraphQLObjectType,
+  GraphQLSemanticNonNull,
 } from '../../type/definition';
 import {
   GraphQLBoolean,
@@ -980,6 +981,65 @@ describe('Type System: build schema from introspection', () => {
 
       expect(() => buildClientSchema(introspection)).to.throw(
         'Expected Foo to be a GraphQL Object type.',
+      );
+    });
+  });
+
+  describe('SemanticNullability', () => {
+    it('should build a client schema with semantic-non-null types', () => {
+      const sdl = dedent`
+        @SemanticNullability
+
+        type Query {
+          foo: String
+          bar: String?
+        }
+      `;
+      const schema = buildSchema(sdl, { assumeValid: true });
+      const introspection = introspectionFromSchema(schema, {
+        nullability: 'FULL',
+      });
+
+      const clientSchema = buildClientSchema(introspection);
+      expect(printSchema(clientSchema)).to.equal(sdl);
+
+      const defaults = {
+        args: [],
+        astNode: undefined,
+        deprecationReason: null,
+        description: null,
+        extensions: {},
+        resolve: undefined,
+        subscribe: undefined,
+      };
+      expect(clientSchema.getType('Query')).to.deep.include({
+        name: 'Query',
+        _fields: {
+          foo: {
+            ...defaults,
+            name: 'foo',
+            type: new GraphQLSemanticNonNull(GraphQLString),
+          },
+          bar: { ...defaults, name: 'bar', type: GraphQLString },
+        },
+      });
+    });
+
+    it('should throw when semantic-non-null types are too deep', () => {
+      const sdl = dedent`
+        @SemanticNullability
+
+        type Query {
+          bar: [[[[[[String?]]]]]]?
+        }
+      `;
+      const schema = buildSchema(sdl, { assumeValid: true });
+      const introspection = introspectionFromSchema(schema, {
+        nullability: 'FULL',
+      });
+
+      expect(() => buildClientSchema(introspection)).to.throw(
+        'Decorated type deeper than introspection query.',
       );
     });
   });
