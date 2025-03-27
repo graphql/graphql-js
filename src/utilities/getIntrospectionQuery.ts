@@ -38,6 +38,12 @@ export interface IntrospectionOptions {
    * Default: false
    */
   oneOf?: boolean;
+
+  /**
+   * Whether semantic non-null type wrappers should be included in the result.
+   * Default: false
+   */
+  includeSemanticNonNull?: boolean;
 }
 
 /**
@@ -52,6 +58,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     schemaDescription: false,
     inputValueDeprecation: false,
     oneOf: false,
+    includeSemanticNonNull: false,
     ...options,
   };
 
@@ -70,6 +77,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
   const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
+  const includeSemanticNonNull = optionsWithDefault.includeSemanticNonNull;
 
   return `
     query IntrospectionQuery {
@@ -105,7 +113,11 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         args${inputDeprecation('(includeDeprecated: true)')} {
           ...InputValue
         }
-        type {
+        type${
+          includeSemanticNonNull
+            ? `(includeSemanticNonNull: ${includeSemanticNonNull})`
+            : ''
+        } {
           ...TypeRef
         }
         isDeprecated
@@ -285,10 +297,20 @@ export interface IntrospectionNonNullTypeRef<
   readonly ofType: T;
 }
 
+export interface IntrospectionSemanticNonNullTypeRef<
+  T extends IntrospectionTypeRef = IntrospectionTypeRef,
+> {
+  readonly kind: 'SEMANTIC_NON_NULL';
+  readonly ofType: T;
+}
+
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef
   | IntrospectionListTypeRef
   | IntrospectionNonNullTypeRef<
+      IntrospectionNamedTypeRef | IntrospectionListTypeRef
+    >
+  | IntrospectionSemanticNonNullTypeRef<
       IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >;
 

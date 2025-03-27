@@ -161,6 +161,7 @@ export type ASTNode =
   | NamedTypeNode
   | ListTypeNode
   | NonNullTypeNode
+  | SemanticNonNullTypeNode
   | SchemaDefinitionNode
   | OperationTypeDefinitionNode
   | ScalarTypeDefinitionNode
@@ -235,6 +236,7 @@ export const QueryDocumentKeys: {
   NamedType: ['name'],
   ListType: ['type'],
   NonNullType: ['type'],
+  SemanticNonNullType: ['type'],
 
   SchemaDefinition: ['description', 'directives', 'operationTypes'],
   OperationTypeDefinition: ['type'],
@@ -521,7 +523,11 @@ export interface ConstDirectiveNode {
 
 /** Type Reference */
 
-export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
+export type TypeNode =
+  | NamedTypeNode
+  | ListTypeNode
+  | NonNullTypeNode
+  | SemanticNonNullTypeNode;
 
 export interface NamedTypeNode {
   readonly kind: Kind.NAMED_TYPE;
@@ -537,6 +543,12 @@ export interface ListTypeNode {
 
 export interface NonNullTypeNode {
   readonly kind: Kind.NON_NULL_TYPE;
+  readonly loc?: Location;
+  readonly type: NamedTypeNode | ListTypeNode;
+}
+
+export interface SemanticNonNullTypeNode {
+  readonly kind: Kind.SEMANTIC_NON_NULL_TYPE;
   readonly loc?: Location;
   readonly type: NamedTypeNode | ListTypeNode;
 }

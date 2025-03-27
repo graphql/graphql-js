@@ -1,5 +1,6 @@
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
+import { memoize1 } from '../jsutils/memoize1';
 
 import { DirectiveLocation } from '../language/directiveLocation';
 import { print } from '../language/printer';
@@ -12,6 +13,7 @@ import type {
   GraphQLFieldConfigMap,
   GraphQLInputField,
   GraphQLNamedType,
+  GraphQLOutputType,
   GraphQLType,
 } from './definition';
 import {
@@ -27,6 +29,7 @@ import {
   isNonNullType,
   isObjectType,
   isScalarType,
+  isSemanticNonNullType,
   isUnionType,
 } from './definition';
 import type { GraphQLDirective } from './directives';
@@ -237,6 +240,9 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
           }
+          if (isSemanticNonNullType(type)) {
+            return TypeKind.SEMANTIC_NON_NULL;
+          }
           /* c8 ignore next 3 */
           // Not reachable, all possible types have been considered)
           invariant(false, `Unexpected type: "${inspect(type)}".`);
@@ -366,7 +372,18 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
       },
       type: {
         type: new GraphQLNonNull(__Type),
-        resolve: (field) => field.type,
+        args: {
+          includeSemanticNonNull: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            defaultValue: false,
+          },
+        },
+        resolve: (field, { includeSemanticNonNull }) => {
+          if (includeSemanticNonNull) {
+            return field.type;
+          }
+          return stripSemanticNonNullTypes(field.type);
+        },
       },
       isDeprecated: {
         type: new GraphQLNonNull(GraphQLBoolean),
@@ -378,6 +395,28 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
       },
     } as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
 });
+
+const stripSemanticNonNullTypes = memoize1(_stripSemanticNonNullTypes);
+function _stripSemanticNonNullTypes(
+  type: GraphQLOutputType,
+): GraphQLOutputType {
+  if (isNonNullType(type)) {
+    const convertedInner = stripSemanticNonNullTypes(type.ofType);
+    if (convertedInner === type.ofType) {
+      return type; // No change needed
+    }
+    return new GraphQLNonNull(convertedInner);
+  } else if (isListType(type)) {
+    const convertedInner = stripSemanticNonNullTypes(type.ofType);
+    if (convertedInner === type.ofType) {
+      return type; // No change needed
+    }
+    return new GraphQLList(convertedInner);
+  } else if (isSemanticNonNullType(type)) {
+    return stripSemanticNonNullTypes(type.ofType);
+  }
+  return type;
+}
 
 export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
   name: '__InputValue',
@@ -452,6 +491,7 @@ enum TypeKind {
   INPUT_OBJECT = 'INPUT_OBJECT',
   LIST = 'LIST',
   NON_NULL = 'NON_NULL',
+  SEMANTIC_NON_NULL = 'SEMANTIC_NON_NULL',
 }
 export { TypeKind };
 
@@ -496,6 +536,11 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
       value: TypeKind.NON_NULL,
       description:
         'Indicates this type is a non-null. `ofType` is a valid field.',
+    },
+    SEMANTIC_NON_NULL: {
+      value: TypeKind.SEMANTIC_NON_NULL,
+      description:
+        'Indicates this type is a semantic-non-null. `ofType` is a valid field.',
     },
   },
 });

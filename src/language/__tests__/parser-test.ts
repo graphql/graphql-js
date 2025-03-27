@@ -636,6 +636,23 @@ describe('Parser', () => {
       });
     });
 
+    it('parses semantic-non-null types', () => {
+      const result = parseType('MyType*');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.SEMANTIC_NON_NULL_TYPE,
+        loc: { start: 0, end: 7 },
+        type: {
+          kind: Kind.NAMED_TYPE,
+          loc: { start: 0, end: 6 },
+          name: {
+            kind: Kind.NAME,
+            loc: { start: 0, end: 6 },
+            value: 'MyType',
+          },
+        },
+      });
+    });
+
     it('parses nested types', () => {
       const result = parseType('[MyType!]');
       expectJSON(result).toDeepEqual({

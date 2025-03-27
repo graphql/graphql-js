@@ -770,6 +770,9 @@ describe('Type System Printer', () => {
 
         """Indicates this type is a non-null. \`ofType\` is a valid field."""
         NON_NULL
+
+        """Indicates this type is a semantic-non-null. \`ofType\` is a valid field."""
+        SEMANTIC_NON_NULL
       }
 
       """
@@ -779,7 +782,7 @@ describe('Type System Printer', () => {
         name: String!
         description: String
         args(includeDeprecated: Boolean = false): [__InputValue!]!
-        type: __Type!
+        type(includeSemanticNonNull: Boolean! = false): __Type!
         isDeprecated: Boolean!
         deprecationReason: String
       }

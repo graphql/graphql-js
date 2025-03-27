@@ -437,6 +437,11 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'SEMANTIC_NON_NULL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               possibleTypes: null,
             },
@@ -506,7 +511,21 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'type',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeSemanticNonNull',
+                      type: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,

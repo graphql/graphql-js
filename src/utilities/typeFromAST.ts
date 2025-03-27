@@ -7,7 +7,12 @@ import type {
 import { Kind } from '../language/kinds';
 
 import type { GraphQLNamedType, GraphQLType } from '../type/definition';
-import { GraphQLList, GraphQLNonNull } from '../type/definition';
+import {
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLSemanticNonNull,
+  isOutputType,
+} from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
 /**
@@ -45,6 +50,13 @@ export function typeFromAST(
     case Kind.NON_NULL_TYPE: {
       const innerType = typeFromAST(schema, typeNode.type);
       return innerType && new GraphQLNonNull(innerType);
+    }
+    case Kind.SEMANTIC_NON_NULL_TYPE: {
+      const innerType = typeFromAST(schema, typeNode.type);
+      if (!isOutputType(innerType)) {
+        throw new Error('A semantic non-null type must wrap an output type.');
+      }
+      return innerType && new GraphQLSemanticNonNull(innerType);
     }
     case Kind.NAMED_TYPE:
       return schema.getType(typeNode.name.value);
