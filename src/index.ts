@@ -400,6 +400,7 @@ export {
 } from './error/index';
 
 export type {
+  GraphQLErrorBehavior,
   GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,

@@ -14,6 +14,7 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { suggestionList } from '../jsutils/suggestionList';
 import { toObjMap } from '../jsutils/toObjMap';
 
+import type { GraphQLErrorBehavior } from '../error/ErrorBehavior';
 import { GraphQLError } from '../error/GraphQLError';
 
 import type {
@@ -1097,7 +1098,7 @@ export interface GraphQLResolveInfo {
   readonly operation: OperationDefinitionNode;
   readonly variableValues: { [variable: string]: unknown };
   /** @experimental */
-  readonly errorBehavior: 'PROPAGATE' | 'NO_PROPAGATE' | 'ABORT';
+  readonly errorBehavior: GraphQLErrorBehavior;
 }
 
 /**

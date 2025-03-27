@@ -17,6 +17,7 @@ import { validate } from './validation/validate';
 
 import type { ExecutionResult } from './execution/execute';
 import { execute } from './execution/execute';
+import type { GraphQLErrorBehavior } from './error/ErrorBehavior';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -74,7 +75,7 @@ export interface GraphQLArgs {
    *
    * @experimental
    */
-  onError?: 'PROPAGATE' | 'NO_PROPAGATE' | 'ABORT';
+  onError?: GraphQLErrorBehavior;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {

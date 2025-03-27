@@ -58,6 +58,7 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields';
 import { getArgumentValues, getVariableValues } from './values';
+import { GraphQLErrorBehavior, isErrorBehavior } from '../error/ErrorBehavior';
 
 /**
  * A memoized collection of relevant subfields with regard to the return
@@ -116,7 +117,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  errorBehavior: 'PROPAGATE' | 'NO_PROPAGATE' | 'ABORT';
+  errorBehavior: GraphQLErrorBehavior;
 }
 
 /**
@@ -132,6 +133,7 @@ export interface ExecutionResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   data?: TData | null;
+  onError?: GraphQLErrorBehavior;
   extensions?: TExtensions;
 }
 
@@ -162,7 +164,7 @@ export interface ExecutionArgs {
    *
    * @experimental
    */
-  onError?: 'PROPAGATE' | 'NO_PROPAGATE' | 'ABORT';
+  onError?: GraphQLErrorBehavior;
 }
 
 /**
@@ -300,12 +302,7 @@ export function buildExecutionContext(
     onError,
   } = args;
 
-  if (
-    onError != null &&
-    onError !== 'PROPAGATE' &&
-    onError !== 'NO_PROPAGATE' &&
-    onError !== 'ABORT'
-  ) {
+  if (onError != null && !isErrorBehavior(onError)) {
     return [
       new GraphQLError(
         'Unsupported `onError` value; supported values are `PROPAGATE`, `NO_PROPAGATE` and `ABORT`.',
