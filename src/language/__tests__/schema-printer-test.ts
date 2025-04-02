@@ -5,7 +5,7 @@ import { dedent } from '../../__testUtils__/dedent';
 import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
 
 import { Kind } from '../kinds';
-import { parse } from '../parser';
+import { parse, parseType } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: SDL document', () => {
@@ -179,5 +179,32 @@ describe('Printer: SDL document', () => {
         subscription: SubscriptionType
       }
     `);
+  });
+
+  it('prints NamedType', () => {
+    expect(
+      print(parseType('MyType', { useSemanticNullability: false })),
+    ).to.equal(dedent`MyType`);
+  });
+
+  it('prints SemanticNullableType', () => {
+    expect(
+      print(parseType('MyType?', { useSemanticNullability: true })),
+    ).to.equal(dedent`MyType?`);
+  });
+
+  it('prints SemanticNonNullType', () => {
+    expect(
+      print(parseType('MyType', { useSemanticNullability: true })),
+    ).to.equal(dedent`MyType`);
+  });
+
+  it('prints NonNullType', () => {
+    expect(
+      print(parseType('MyType!', { useSemanticNullability: true })),
+    ).to.equal(dedent`MyType!`);
+    expect(
+      print(parseType('MyType!', { useSemanticNullability: false })),
+    ).to.equal(dedent`MyType!`);
   });
 });

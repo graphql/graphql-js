@@ -66,6 +66,12 @@ export interface GraphQLArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  /**
+   * Set to `false` to disable error propagation. Experimental.
+   *
+   * @experimental
+   */
+  errorPropagation?: boolean;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -106,6 +112,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    errorPropagation,
   } = args;
 
   // Validate Schema
@@ -138,5 +145,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    errorPropagation,
   });
 }
