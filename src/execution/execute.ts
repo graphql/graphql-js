@@ -152,6 +152,9 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  executionOptions?: {
+    maxCoercionErrors?: number;
+  };
 }
 
 /**
@@ -286,6 +289,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    executionOptions,
   } = args;
 
   let operation: OperationDefinitionNode | undefined;
@@ -329,7 +333,7 @@ export function buildExecutionContext(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
-    { maxErrors: 50 },
+    { maxErrors: executionOptions?.maxCoercionErrors ?? 50 },
   );
 
   if (coercedVariableValues.errors) {
