@@ -86,7 +86,7 @@ function coerceInputValueImpl(
   }
 
   if (isInputObjectType(type)) {
-    if (!isObjectLike(inputValue)) {
+    if (!isObjectLike(inputValue) || Array.isArray(inputValue)) {
       onError(
         pathToArray(path),
         inputValue,
