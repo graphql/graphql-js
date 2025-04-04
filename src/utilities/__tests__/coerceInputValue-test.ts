@@ -182,7 +182,7 @@ describe('coerceInputValue', () => {
     });
   });
 
-  describe.only('for GraphQLInputObject', () => {
+  describe('for GraphQLInputObject', () => {
     const DeepObject = new GraphQLInputObjectType({
       name: 'DeepObject',
       fields: {
