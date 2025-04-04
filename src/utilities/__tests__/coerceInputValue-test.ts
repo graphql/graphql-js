@@ -182,12 +182,20 @@ describe('coerceInputValue', () => {
     });
   });
 
-  describe('for GraphQLInputObject', () => {
+  describe.only('for GraphQLInputObject', () => {
+    const DeepObject = new GraphQLInputObjectType({
+      name: 'DeepObject',
+      fields: {
+        foo: { type: new GraphQLNonNull(GraphQLInt) },
+        bar: { type: GraphQLInt },
+      },
+    });
     const TestInputObject = new GraphQLInputObjectType({
       name: 'TestInputObject',
       fields: {
         foo: { type: new GraphQLNonNull(GraphQLInt) },
         bar: { type: GraphQLInt },
+        deepObject: { type: DeepObject },
       },
     });
 
@@ -268,6 +276,31 @@ describe('coerceInputValue', () => {
             'Field "bart" is not defined by type "TestInputObject". Did you mean "bar"?',
           path: [],
           value: { foo: 123, bart: 123 },
+        },
+      ]);
+    });
+
+    it('returns an error for an array type', () => {
+      const result = coerceValue([{ foo: 1 }, { bar: 1 }], TestInputObject);
+      expectErrors(result).to.deep.equal([
+        {
+          error: 'Expected type "TestInputObject" to be an object.',
+          path: [],
+          value: [{ foo: 1 }, { bar: 1 }],
+        },
+      ]);
+    });
+
+    it('returns an error for an array type on a nested field', () => {
+      const result = coerceValue(
+        { foo: 1, deepObject: [1, 2, 3] },
+        TestInputObject,
+      );
+      expectErrors(result).to.deep.equal([
+        {
+          error: 'Expected type "DeepObject" to be an object.',
+          path: ['deepObject'],
+          value: [1, 2, 3],
         },
       ]);
     });

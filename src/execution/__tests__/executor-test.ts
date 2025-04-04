@@ -11,7 +11,6 @@ import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
 import {
-  GraphQLInputObjectType,
   GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
@@ -1320,120 +1319,5 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(result).to.deep.equal({ data: { foo: { bar: 'bar' } } });
     expect(possibleTypes).to.deep.equal([fooObject]);
-  });
-});
-
-describe('Execute: Input coercion', () => {
-  it('should reject an array directly when input is an object', () => {
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          dummy: { type: GraphQLString },
-        },
-      }),
-      mutation: new GraphQLObjectType({
-        name: 'Mutation',
-        fields: {
-          updateUser: {
-            type: GraphQLString,
-            args: {
-              data: {
-                type: new GraphQLInputObjectType({
-                  name: 'User',
-                  fields: {
-                    email: { type: new GraphQLNonNull(GraphQLString) },
-                  },
-                }),
-              },
-            },
-          },
-        },
-      }),
-    });
-
-    const document = parse(`
-      mutation ($data: User) {
-        updateUser(data: $data)
-      }
-    `);
-
-    const result = executeSync({
-      schema,
-      document,
-      variableValues: {
-        data: [
-          { email: 'test@email.com' },
-          { email: 'test1@email.com' },
-          { email: 'test2@email.com' },
-        ],
-      },
-    });
-
-    expect(result.errors).to.have.lengthOf(1);
-    expect(
-      result.errors && result.errors.length > 0
-        ? result.errors[result.errors.length - 1].message
-        : undefined,
-    ).to.contain('Expected type "User" to be an object.');
-  });
-
-  it('should not process an array when variable is an object', () => {
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: {
-          dummy: { type: GraphQLString },
-        },
-      }),
-      mutation: new GraphQLObjectType({
-        name: 'Mutation',
-        fields: {
-          updateUser: {
-            type: GraphQLString,
-            args: {
-              data: {
-                type: new GraphQLInputObjectType({
-                  name: 'User',
-                  fields: {
-                    metadata: {
-                      type: new GraphQLInputObjectType({
-                        name: 'Metadata',
-                        fields: {
-                          location: { type: GraphQLString },
-                        },
-                      }),
-                    },
-                  },
-                }),
-              },
-            },
-          },
-        },
-      }),
-    });
-
-    const document = parse(`
-      mutation ($data: User) {
-        updateUser(data: $data)
-      }
-    `);
-
-    const result = executeSync({
-      schema,
-      document,
-      variableValues: {
-        data: {
-          metadata: [{ location: 'USA' }, { location: 'USA' }],
-        },
-      },
-    });
-
-    expect(result.errors).to.have.lengthOf(1);
-    expect(
-      result.errors && result.errors.length > 0
-        ? result.errors[result.errors.length - 1].message
-        : undefined,
-    ).to.contain('Expected type "Metadata" to be an object.');
   });
 });
