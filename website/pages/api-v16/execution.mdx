@@ -29,16 +29,20 @@ const { execute } = require('graphql'); // CommonJS
 ### execute
 
 ```ts
-export function execute(
+export function execute({
   schema: GraphQLSchema,
-  documentAST: Document,
-  rootValue?: mixed,
-  contextValue?: mixed,
+  document: DocumentNode,
+  rootValue?: unknown,
+  contextValue?: unknown,
   variableValues?: { [key: string]: mixed },
   operationName?: string,
-): MaybePromise<ExecutionResult>;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  options?: { maxCoercionErrors?: number };
+}): PromiseOrValue<ExecutionResult>;
 
-type MaybePromise<T> = Promise<T> | T;
+type PromiseOrValue<T> = Promise<T> | T;
 
 interface ExecutionResult<
   TData = ObjMap<unknown>,
@@ -61,21 +65,32 @@ a GraphQLError will be thrown immediately explaining the invalid input.
 executing the query, `errors` is null if no errors occurred, and is a
 non-empty array if an error occurred.
 
+#### options
+
+##### maxCoercionErrors
+
+Set the maximum number of errors allowed for coercing (defaults to 50).
+
 ### executeSync
 
 ```ts
-export function executeSync(
+export function executeSync({
   schema: GraphQLSchema,
-  documentAST: Document,
-  rootValue?: mixed,
-  contextValue?: mixed,
+  document: DocumentNode,
+  rootValue?: unknown,
+  contextValue?: unknown,
   variableValues?: { [key: string]: mixed },
   operationName?: string,
-): ExecutionResult;
+  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  options?: { maxCoercionErrors?: number };
+}): ExecutionResult;
 
 type ExecutionResult = {
-  data: Object;
-  errors?: GraphQLError[];
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: TData | null;
+  extensions?: TExtensions;
 };
 ```
 

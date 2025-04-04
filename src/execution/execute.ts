@@ -152,7 +152,9 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  executionOptions?: {
+  /** Additional execution options. */
+  options?: {
+    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
     maxCoercionErrors?: number;
   };
 }
@@ -289,7 +291,7 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
-    executionOptions,
+    options,
   } = args;
 
   let operation: OperationDefinitionNode | undefined;
@@ -333,7 +335,7 @@ export function buildExecutionContext(
     schema,
     variableDefinitions,
     rawVariableValues ?? {},
-    { maxErrors: executionOptions?.maxCoercionErrors ?? 50 },
+    { maxErrors: options?.maxCoercionErrors ?? 50 },
   );
 
   if (coercedVariableValues.errors) {

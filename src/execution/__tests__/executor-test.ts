@@ -1356,7 +1356,7 @@ describe('Execute: Handles basic execution tasks', () => {
       }
     `);
 
-    const executionOptions = {
+    const options = {
       maxCoercionErrors: 1,
     };
 
@@ -1371,13 +1371,11 @@ describe('Execute: Handles basic execution tasks', () => {
           wrongArg3: 'wrong',
         },
       },
-      executionOptions,
+      options,
     });
 
     // Returns at least 2 errors, one for the first 'wrongArg', and one for coercion limit
-    expect(result.errors).to.have.lengthOf(
-      executionOptions.maxCoercionErrors + 1,
-    );
+    expect(result.errors).to.have.lengthOf(options.maxCoercionErrors + 1);
     expect(
       result.errors && result.errors.length > 0
         ? result.errors[result.errors.length - 1].message
