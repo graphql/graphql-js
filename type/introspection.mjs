@@ -66,7 +66,7 @@ export const __Directive = new GraphQLObjectType({
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
             args: {
                 includeDeprecated: {
-                    type: GraphQLBoolean,
+                    type: new GraphQLNonNull(GraphQLBoolean),
                     default: { value: false },
                 },
             },
@@ -219,7 +219,7 @@ export const __Type = new GraphQLObjectType({
             type: new GraphQLList(new GraphQLNonNull(__Field)),
             args: {
                 includeDeprecated: {
-                    type: GraphQLBoolean,
+                    type: new GraphQLNonNull(GraphQLBoolean),
                     default: { value: false },
                 },
             },
@@ -252,7 +252,7 @@ export const __Type = new GraphQLObjectType({
             type: new GraphQLList(new GraphQLNonNull(__EnumValue)),
             args: {
                 includeDeprecated: {
-                    type: GraphQLBoolean,
+                    type: new GraphQLNonNull(GraphQLBoolean),
                     default: { value: false },
                 },
             },
@@ -269,7 +269,7 @@ export const __Type = new GraphQLObjectType({
             type: new GraphQLList(new GraphQLNonNull(__InputValue)),
             args: {
                 includeDeprecated: {
-                    type: GraphQLBoolean,
+                    type: new GraphQLNonNull(GraphQLBoolean),
                     default: { value: false },
                 },
             },
@@ -312,7 +312,7 @@ export const __Field = new GraphQLObjectType({
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__InputValue))),
             args: {
                 includeDeprecated: {
-                    type: GraphQLBoolean,
+                    type: new GraphQLNonNull(GraphQLBoolean),
                     default: { value: false },
                 },
             },

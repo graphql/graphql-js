@@ -70,7 +70,7 @@ exports.__Directive = new definition_js_1.GraphQLObjectType({
             type: new definition_js_1.GraphQLNonNull(new definition_js_1.GraphQLList(new definition_js_1.GraphQLNonNull(exports.__InputValue))),
             args: {
                 includeDeprecated: {
-                    type: scalars_js_1.GraphQLBoolean,
+                    type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLBoolean),
                     default: { value: false },
                 },
             },
@@ -223,7 +223,7 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
             type: new definition_js_1.GraphQLList(new definition_js_1.GraphQLNonNull(exports.__Field)),
             args: {
                 includeDeprecated: {
-                    type: scalars_js_1.GraphQLBoolean,
+                    type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLBoolean),
                     default: { value: false },
                 },
             },
@@ -256,7 +256,7 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
             type: new definition_js_1.GraphQLList(new definition_js_1.GraphQLNonNull(exports.__EnumValue)),
             args: {
                 includeDeprecated: {
-                    type: scalars_js_1.GraphQLBoolean,
+                    type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLBoolean),
                     default: { value: false },
                 },
             },
@@ -273,7 +273,7 @@ exports.__Type = new definition_js_1.GraphQLObjectType({
             type: new definition_js_1.GraphQLList(new definition_js_1.GraphQLNonNull(exports.__InputValue)),
             args: {
                 includeDeprecated: {
-                    type: scalars_js_1.GraphQLBoolean,
+                    type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLBoolean),
                     default: { value: false },
                 },
             },
@@ -316,7 +316,7 @@ exports.__Field = new definition_js_1.GraphQLObjectType({
             type: new definition_js_1.GraphQLNonNull(new definition_js_1.GraphQLList(new definition_js_1.GraphQLNonNull(exports.__InputValue))),
             args: {
                 includeDeprecated: {
-                    type: scalars_js_1.GraphQLBoolean,
+                    type: new definition_js_1.GraphQLNonNull(scalars_js_1.GraphQLBoolean),
                     default: { value: false },
                 },
             },
