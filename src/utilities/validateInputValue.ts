@@ -107,7 +107,7 @@ function validateInputValueImpl(
       }
     }
   } else if (isInputObjectType(type)) {
-    if (!isObjectLike(inputValue)) {
+    if (!isObjectLike(inputValue) || Array.isArray(inputValue)) {
       reportInvalidValue(
         onError,
         `Expected value of type "${type}" to be an object, found: ${inspect(

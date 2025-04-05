@@ -228,12 +228,13 @@ describe('validateInputValue', () => {
   });
 
   describe('for GraphQLInputObject', () => {
-    const TestInputObject = new GraphQLInputObjectType({
+    const TestInputObject: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'TestInputObject',
-      fields: {
+      fields: () => ({
         foo: { type: new GraphQLNonNull(GraphQLInt) },
         bar: { type: GraphQLInt },
-      },
+        nested: { type: TestInputObject },
+      }),
     });
 
     it('returns no error for a valid input', () => {
@@ -290,6 +291,30 @@ describe('validateInputValue', () => {
           path: [],
         },
       ]);
+    });
+
+    it('returns error when supplied with an array', () => {
+      test([{ foo: 123 }, { bar: 456 }], TestInputObject, [
+        {
+          error:
+            'Expected value of type "TestInputObject" to be an object, found: [{ foo: 123 }, { bar: 456 }].',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns error when a nested input object is supplied with an array', () => {
+      test(
+        { foo: 123, nested: [{ foo: 123 }, { bar: 456 }] },
+        TestInputObject,
+        [
+          {
+            error:
+              'Expected value of type "TestInputObject" to be an object, found: [{ foo: 123 }, { bar: 456 }].',
+            path: ['nested'],
+          },
+        ],
+      );
     });
 
     it('returns error for a misspelled field', () => {

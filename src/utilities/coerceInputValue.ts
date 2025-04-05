@@ -65,7 +65,7 @@ export function coerceInputValue(
   }
 
   if (isInputObjectType(type)) {
-    if (!isObjectLike(inputValue)) {
+    if (!isObjectLike(inputValue) || Array.isArray(inputValue)) {
       return; // Invalid: intentionally return no value.
     }
 

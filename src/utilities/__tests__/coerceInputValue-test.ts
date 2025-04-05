@@ -122,12 +122,13 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject', () => {
-    const TestInputObject = new GraphQLInputObjectType({
+    const TestInputObject: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'TestInputObject',
-      fields: {
+      fields: () => ({
         foo: { type: new GraphQLNonNull(GraphQLInt) },
         bar: { type: GraphQLInt },
-      },
+        nestedObject: { type: TestInputObject },
+      }),
     });
 
     it('returns no error for a valid input', () => {
@@ -152,6 +153,18 @@ describe('coerceInputValue', () => {
 
     it('invalid for an unknown field', () => {
       test({ foo: 123, unknownField: 123 }, TestInputObject, undefined);
+    });
+
+    it('invalid when supplied with an array', () => {
+      test([{ foo: 123 }, { bar: 456 }], TestInputObject, undefined);
+    });
+
+    it('invalid when a nested input object is supplied with an array', () => {
+      test(
+        { foo: 123, nested: [{ foo: 123 }, { bar: 456 }] },
+        TestInputObject,
+        undefined,
+      );
     });
   });
 
