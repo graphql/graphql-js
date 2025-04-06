@@ -24,7 +24,7 @@ import { GraphQLSchema } from '../../type/schema';
 
 import { execute, executeSync } from '../execute';
 
-describe('Execute: Handles basic execution tasks', () => {
+describe.only('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
@@ -1376,12 +1376,19 @@ describe('Execute: Handles basic execution tasks', () => {
 
     // Returns at least 2 errors, one for the first 'wrongArg', and one for coercion limit
     expect(result.errors).to.have.lengthOf(options.maxCoercionErrors + 1);
-    expect(
-      result.errors && result.errors.length > 0
-        ? result.errors[result.errors.length - 1].message
-        : undefined,
-    ).to.equal(
-      'Too many errors processing variables, error limit reached. Execution aborted.',
-    );
+
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Variable "$data" got invalid value { email: "", wrongArg: "wrong", wrongArg2: "wrong", wrongArg3: "wrong" }; Field "wrongArg" is not defined by type "User".',
+          locations: [{ line: 2, column: 17 }],
+        },
+        {
+          message:
+            'Too many errors processing variables, error limit reached. Execution aborted.',
+        },
+      ],
+    });
   });
 });
