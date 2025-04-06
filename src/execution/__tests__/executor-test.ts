@@ -24,7 +24,7 @@ import { GraphQLSchema } from '../../type/schema';
 
 import { execute, executeSync } from '../execute';
 
-describe.only('Execute: Handles basic execution tasks', () => {
+describe('Execute: Handles basic execution tasks', () => {
   it('throws if no document is provided', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
