@@ -29,14 +29,28 @@ const { execute } = require('graphql'); // CommonJS
 ### execute
 
 ```ts
-export function execute(
-  schema: GraphQLSchema,
-  documentAST: Document,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: { [key: string]: mixed },
-  operationName?: string,
-): MaybePromise<ExecutionResult>;
+export function execute({
+  schema,
+  documentAST,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  options,
+}: ExecutionParams): MaybePromise<ExecutionResult>;
+
+type ExecutionParams = {
+  schema: GraphQLSchema;
+  document: Document;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Record<string, unknown>;
+  operationName?: string;
+  options?: {
+    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
+    maxCoercionErrors?: number;
+  }
+};
 
 type MaybePromise<T> = Promise<T> | T;
 
@@ -48,6 +62,20 @@ interface ExecutionResult<
   data?: TData | null;
   extensions?: TExtensions;
 }
+```
+
+We have another approach with positional arguments, this is however deprecated and set
+to be removed in v17.
+
+```ts
+export function execute(
+  schema: GraphQLSchema,
+  documentAST: Document,
+  rootValue?: mixed,
+  contextValue?: mixed,
+  variableValues?: { [key: string]: mixed },
+  operationName?: string,
+): MaybePromise<ExecutionResult>;
 ```
 
 Implements the "Evaluating requests" section of the GraphQL specification.
@@ -63,6 +91,49 @@ non-empty array if an error occurred.
 
 ### executeSync
 
+This is a short-hand method that will call `execute` and when the response can
+be returned synchronously it will be returned, when a `Promise` is returned this
+method will throw an error.
+
+```ts
+export function executeSync({
+  schema,
+  documentAST,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  options,
+}: ExecutionParams): MaybePromise<ExecutionResult>;
+
+type ExecutionParams = {
+  schema: GraphQLSchema;
+  document: Document;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: Record<string, unknown>;
+  operationName?: string;
+  options?: {
+    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
+    maxCoercionErrors?: number;
+  }
+};
+
+type MaybePromise<T> = Promise<T> | T;
+
+interface ExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLError>;
+  data?: TData | null;
+  extensions?: TExtensions;
+}
+```
+
+We have another approach with positional arguments, this is however deprecated and set
+to be removed in v17.
+
 ```ts
 export function executeSync(
   schema: GraphQLSchema,
@@ -72,13 +143,10 @@ export function executeSync(
   variableValues?: { [key: string]: mixed },
   operationName?: string,
 ): ExecutionResult;
-
-type ExecutionResult = {
-  data: Object;
-  errors?: GraphQLError[];
-};
 ```
 
-This is a short-hand method that will call `execute` and when the response can
-be returned synchronously it will be returned, when a `Promise` is returned this
-method will throw an error.
+#### Execution options
+
+##### maxCoercionErrors
+
+Set the maximum number of errors allowed for coercing variables, this implements a default limit of 50 errors.
