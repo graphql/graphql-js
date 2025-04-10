@@ -1,3 +1,9 @@
+/**
+ * Quoted as "used by external libraries".
+ * All of these could be replaced by Record\<string, T\> or Readonly\<Record\<string, T\>\>
+ * Should we still expose these?
+ */
+
 export interface ObjMap<T> {
   [key: string]: T;
 }
