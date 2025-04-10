@@ -71,9 +71,9 @@ to be removed in v17.
 export function execute(
   schema: GraphQLSchema,
   documentAST: Document,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: { [key: string]: mixed },
+  rootValue?: unknown,
+  contextValue?: unknown,
+  variableValues?: Record<string, unknown>,
   operationName?: string,
 ): MaybePromise<ExecutionResult>;
 ```
@@ -138,9 +138,9 @@ to be removed in v17.
 export function executeSync(
   schema: GraphQLSchema,
   documentAST: Document,
-  rootValue?: mixed,
-  contextValue?: mixed,
-  variableValues?: { [key: string]: mixed },
+  rootValue?: unknown,
+  contextValue?: unknown,
+  variableValues?: Record<string, unknown>,
   operationName?: string,
 ): ExecutionResult;
 ```
