@@ -62,7 +62,7 @@ So far, our resolver functions took no arguments. When a resolver takes argument
 const root = {
   rollDice(args) {
     const output = [];
-    for (const i = 0; i < args.numDice; i++) {
+    for (let i = 0; i < args.numDice; i++) {
       output.push(1 + Math.floor(Math.random() * (args.numSides || 6)));
     }
     return output;
@@ -76,7 +76,7 @@ It's convenient to use [ES6 destructuring assignment](https://developer.mozilla.
 const root = {
   rollDice({ numDice, numSides }) {
     const output = [];
-    for (const i = 0; i < numDice; i++) {
+    for (let i = 0; i < numDice; i++) {
       output.push(1 + Math.floor(Math.random() * (numSides || 6)));
     }
     return output;
@@ -102,8 +102,8 @@ const schema = buildSchema(/_ GraphQL _/ ` type Query { rollDice(numDice: Int!, 
 const root = {
   rollDice({ numDice, numSides }) {
     const output = [];
-    for (const i = 0; i < numDice; i++) {
-      output.push(1 + Math.floor(Math.random() \* (numSides || 6)));
+    for (let i = 0; i < numDice; i++) {
+      output.push(1 + Math.floor(Math.random() * (numSides || 6)));
     }
     return output;
   },
@@ -159,7 +159,7 @@ const schema = new GraphQLSchema({
 const root = {
   rollDice({ numDice, numSides }) {
     const output = [];
-    for (const i = 0; i < numDice; i++) {
+    for (let i = 0; i < numDice; i++) {
       output.push(1 + Math.floor(Math.random() * (numSides || 6)));
     }
     return output;
