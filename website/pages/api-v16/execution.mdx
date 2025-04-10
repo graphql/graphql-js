@@ -31,7 +31,7 @@ const { execute } = require('graphql'); // CommonJS
 ```ts
 export function execute({
   schema,
-  documentAST,
+  document
   rootValue,
   contextValue,
   variableValues,
@@ -98,7 +98,7 @@ method will throw an error.
 ```ts
 export function executeSync({
   schema,
-  documentAST,
+  document,
   rootValue,
   contextValue,
   variableValues,
