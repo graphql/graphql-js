@@ -122,7 +122,7 @@ class RandomDie {
 
   roll({ numRolls }) {
     const output = [];
-    for (const i = 0; i < numRolls; i++) {
+    for (let i = 0; i < numRolls; i++) {
       output.push(this.rollOnce());
     }
     return output;
@@ -238,8 +238,8 @@ class RandomDie {
 
   roll({ numRolls }) {
     const output = [];
-    for (const i = 0; i < numRolls; i++) {
-    output.push(this.rollOnce());
+    for (let i = 0; i < numRolls; i++) {
+      output.push(this.rollOnce());
     }
     return output;
   }
@@ -325,7 +325,7 @@ class RandomDie {
 
   roll({ numRolls }) {
     const output = [];
-    for (const i = 0; i < numRolls; i++) {
+    for (let i = 0; i < numRolls; i++) {
       output.push(this.rollOnce());
     }
     return output;
