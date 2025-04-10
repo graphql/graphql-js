@@ -199,6 +199,11 @@ export interface ExecutionArgs {
   enableEarlyExecution?: Maybe<boolean>;
   hideSuggestions?: Maybe<boolean>;
   abortSignal?: Maybe<AbortSignal>;
+  /** Additional execution options. */
+  options?: {
+    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
+    maxCoercionErrors?: number;
+  };
 }
 
 export interface StreamUsage {
@@ -472,6 +477,7 @@ export function validateExecutionArgs(
     perEventExecutor,
     enableEarlyExecution,
     abortSignal,
+    options,
   } = args;
 
   if (abortSignal?.aborted) {
@@ -534,7 +540,7 @@ export function validateExecutionArgs(
     variableDefinitions,
     rawVariableValues ?? {},
     {
-      maxErrors: 50,
+      maxErrors: options?.maxCoercionErrors ?? 50,
       hideSuggestions,
     },
   );
