@@ -59,24 +59,29 @@ graphql({
 <Tabs.Tab>
 ```javascript
 const { graphql, GraphQLSchema, GraphQLObjectType, GraphQLString } = require('graphql');
- 
-// Construct a schema and resolver
+
+// Construct a schema
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      hello: {
-        type: GraphQLString,
-        resolve: () => 'Hello world!'
-      },
+      hello: { type: GraphQLString },
     },
   }),
 });
- 
+
+// The rootValue provides a resolver function for each API endpoint
+const rootValue = {
+  hello() {
+    return 'Hello world!';
+  },
+};
+
 // Run the GraphQL query '{ hello }' and print out the response
 graphql({
   schema,
   source: '{ hello }',
+  rootValue,
 }).then((response) => {
   console.log(response);
 });
