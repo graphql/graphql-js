@@ -39,7 +39,7 @@ const root = {
     return Math.random();
   },
   rollThreeDice() {
-    return [1, 2, 3].map((\_) => 1 + Math.floor(Math.random() \* 6));
+    return [1, 2, 3].map((_) => 1 + Math.floor(Math.random() * 6));
   },
 };
 
@@ -73,33 +73,27 @@ const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      quoteOfTheDay: { type: GraphQLString },
-      random: { type: GraphQLFloat },
-      rollThreeDice: { type: new GraphQLList(GraphQLFloat) },
+      quoteOfTheDay: { 
+        type: GraphQLString,
+        resolve: () => Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within'
+      },
+      random: { 
+        type: GraphQLFloat,
+        resolve: () => Math.random()
+      },
+      rollThreeDice: { 
+        type: new GraphQLList(GraphQLFloat),
+        resolve: () => [1, 2, 3].map((_) => 1 + Math.floor(Math.random() * 6))
+      },
     },
   }),
 });
 
-// The root provides a resolver function for each API endpoint
-const root = {
-  quoteOfTheDay() {
-    return Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within';
-  },
-  random() {
-    return Math.random();
-  },
-  rollThreeDice() {
-    return [1, 2, 3].map((_) => 1 + Math.floor(Math.random() * 6));
-  },
-};
-
 const app = express();
-
 app.all(
   '/graphql',
   createHandler({
     schema: schema,
-    rootValue: root,
   }),
 );
 
