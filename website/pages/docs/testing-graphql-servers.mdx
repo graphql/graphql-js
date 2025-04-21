@@ -1,0 +1,80 @@
+---
+title: Testing GraphQL Servers
+sidebarTitle: Testing GraphQL Servers
+---
+
+import { Tabs } from 'nextra/components';
+
+# Testing GraphQL Servers
+
+## Why testing matters
+
+GraphQL's type system provides strong safety guarantees, but it
+all reliable APIs need testing. The GraphQL compiler and runtime
+enforce type correctness, and schema introspection helps clients
+understand valid queries.
+
+What GraphQL can't protect you from is:
+
+- Databases returning incorrect data
+- Resolvers throwing unexpected errors
+- Integrations returning unexpected `null` values
+- Schema changes breaking client applications
+
+A robust testing strategy helps you scale and maintain your API in production.
+Combining static and dynamic tests gives you confidence that your GraphQL server
+behaves as expected.
+
+## Risks of schema-first development
+
+Schema-first development starts with designing your API upfront and letting
+the schema drive implementation. This is a solid foundation, but treating 
+the schema as the only source of truth creates risks as your API evolves.
+
+For example, if you rename a field, any client still expecting the original name
+will break. Changing a field's type (like from `String` to `Int`) can also cause
+unexpected failures in downstream clients. While GraphQL tooling, like schema
+validation, helps enforce structure, it won't stop you from making breaking changes.
+
+Schema changes may feel safe, but clients depend on that schema to remain
+stable over time. Without tests or tracking, these changes can quickly go
+unnoticed.
+
+By testing schema changes and integrating schema tracking into your workflow,
+you can catch breaking changes before they reach production. A strong testing strategy treats your schema as part of your system's contract.
+
+## Common resolver issues
+
+A correct schema doesn't guarantee safe execution. Resolvers are still a risk surface. Resolvers connect the schema to your business logic and data sources. They decide how data is fetched, transformed, and returned to clients.
+
+Resolver errors are dangerous because failures often return `null` in part of the response, without failing the entire operation. Errors at the resolver level 
+don't necessarily break the whole response. Clients may receive incomplete data without realizing something went wrong. Tests should assert on complete and correct responses, not just that there was a response.
+
+Unit tests of resolver ensure:
+
+- Resolvers pass the correct inputs to your business logic.
+- Resolvers return the expected outputs to the schema.
+- Errors are surfaced clearly and handled predictably.
+
+## Handling external dependencies
+
+GraphQL servers often feel like the source of truth, but they're rarely the system of record. Your server talks to databases, internal APIs, and external third-party services.
+
+External dependencies add complexity and risk. Even with a correct schema and resolvers, failures in upstream systems can disrupt your API. For
+example:
+
+- An unavailable database can cause the resolver to fail.
+- A slow third-party API can lead to timeouts.
+- An external service returning incomplete data can result in `null` values or
+errors in your response.
+
+APIs should fail in predictable ways. Good tests don't just check happy paths, they simulate timeouts, network failures, corrupted data, and empty responses. Building these scenarios into your testing strategy helps you catch issues early and keep your API reliable.
+
+Beyond simulating failures, consider testing resilience patterns like retries or circuit breakers. These strategies help your API recover from transient failures and prevent cascading issues, especially in production environments.
+
+## Next steps
+
+- Learn different types of tests for GraphQL servers to choose the right strategy for your project.
+- Explore how to test operations without running a server.
+- Understand how to unit test resolvers to catch logic errors early.
+- Apply best practices to scale testing to production.

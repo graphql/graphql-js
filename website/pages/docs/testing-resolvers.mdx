@@ -1,0 +1,193 @@
+---
+title: Testing Resolvers
+sidebarTitle: Testing Resolvers
+---
+
+# Testing Resolvers
+
+Resolvers are the core of GraphQL execution. They bridge the schema with 
+your application logic and data sources. Unit testing resolvers helps you 
+validate the behavior of individual resolver functions in isolation, without 
+needing to run GraphQL operations or construct a full schema.
+
+Resolvers are good candidates for unit testing when they:
+
+- Contain business logic
+- Handle conditional behavior or error states
+- Call external services or APIs
+- Perform transformations or mappings
+
+Unit tests for resolvers are fast, focused, and easy to debug. 
+They help you verify logic at the function level before wiring everything 
+together in integration tests.
+
+> **Tip:** Keep resolvers thin. Move heavy logic into service functions or 
+utilities that can also be tested independently.
+
+## Setup
+
+You don't need a schema or GraphQL server to test resolvers. You just need 
+a test runner and a function.
+
+### Test runners
+
+You can use any JavaScript or TypeScript test runner. Two popular options are:
+
+- `node:test` (built-in)
+    - Native test runner in Node.js 18 and later
+    - Use `--experimental-strip-types` if you're using TypeScript without
+    a transpiler
+    - Minimal setup
+
+```bash
+node --test --experimental-strip-types
+```
+- Jest
+    - Widely used across JavaScript applications
+    - Built-in support for mocks, timers, and coverage
+    - Better ecosystem support for mocking and configuration
+
+Choose the runner that best fits your tooling and workflow. 
+Both options support testing resolvers effectively.
+
+## Writing resolver tests
+
+Unit tests for resolvers treat the resolver as a plain function. 
+You provide the `args`, `context`, and `info`, then assert on the result.
+
+### Basic resolver function test
+
+You do not need the GraphQL schema or `graphql()` to write a basic resolver 
+function test, just call the resolver directly:
+
+```ts
+function getUser(_, { id }, context) {
+  return context.db.findUserById(id);
+}
+
+test('returns the expected user', async () => {
+  const context = {
+    db: { findUserById: jest.fn().mockResolvedValue({ id: '1', name: 'Alice' }) },
+  };
+
+  const result = await getUser(null, { id: '1' }, context);
+
+  expect(result).toEqual({ id: '1', name: 'Alice' });
+});
+```
+
+### Async resolvers and Promises
+
+Always `await` the result of async resolvers or return the Promise from your test:
+
+```ts
+test('resolves a user from async function', async () => {
+  const context = {
+    db: { find: async () => ({ name: 'Bob' }) },
+  };
+
+  const result = await resolver(null, {}, context);
+
+  expect(result.name).toBe('Bob');
+});
+```
+
+### Error handling
+
+Resolvers often throw errors intentionally. Use `expect(...).rejects` to 
+test these cases:
+
+```ts
+test('throws an error for missing user', async () => {
+  const context = {
+    db: { findUserById: jest.fn().mockResolvedValue(null) },
+  };
+
+  await expect(getUser(null, { id: 'missing' }, context))
+    .rejects
+    .toThrow('User not found');
+});
+```
+
+Also consider testing custom error classes or error extensions.
+
+### Custom scalars
+
+Custom scalars often include serialization, parsing, and validation logic. 
+You can test them directly:
+
+```ts
+import { GraphQLDate } from '../scalars/date.js';
+
+test('parses ISO string to Date', () => {
+  expect(GraphQLDate.parseValue('2023-10-10')).toEqual(new Date('2023-10-10'));
+});
+
+test('serializes Date to ISO string', () => {
+  expect(GraphQLDate.serialize(new Date('2023-10-10')))
+    .toBe('2023-10-10T00:00:00.000Z');
+});
+```
+
+You can also test how your resolver behaves when working with scalar values:
+
+```ts
+test('returns a serialized date string', async () => {
+  const result = await getPost(null, { id: '1' }, {
+    db: {
+      findPostById: () => ({ createdAt: new Date('2023-10-10') }),
+    },
+  });
+
+  expect(result.createdAt).toBe('2023-10-10T00:00:00.000Z');
+});
+```
+
+## Best practices for unit testing resolvers
+
+### Use dependency injection
+
+Resolvers often rely on a `context` object. In tests, treat it as an injected
+dependency, not a global.
+
+Inject mock services, database clients, or loaders into `context`. This pattern 
+makes resolvers easy to isolate and test:
+
+```ts
+const context = {
+  db: {
+    findUserById: jest.fn().mockResolvedValue(mockUser),
+  },
+};
+```
+
+### Mocking vs. real data
+
+Use mocks to unit test logic without external systems. If you're testing logic 
+that depends on specific external behavior, use a stub or fake—but avoid hitting 
+real services in unit tests. Unit tests should not make real database or API 
+calls. Save real data for integration tests.
+
+### Testing resolver-level batching
+
+If you use `DataLoader` or a custom batching layer, test that batching works as
+expected: 
+
+```ts
+const userLoader = {
+  load: jest.fn().mockResolvedValue({ id: '1', name: 'Alice' }),
+};
+
+const context = { loaders: { user: userLoader } };
+
+// Make multiple resolver calls
+await Promise.all([
+  getUser(null, { id: '1' }, context),
+  getUser(null, { id: '1' }, context),
+]);
+
+expect(userLoader.load).toHaveBeenCalledTimes(1);
+```
+
+You can also simulate timing conditions by resolving batches manually
+or using fake timers in Jest.
