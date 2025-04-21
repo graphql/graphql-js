@@ -33,6 +33,19 @@ optional variables, and context.
 5. **Validate the result:** Assert that the `data` is correct and `errors` 
 is either `undefined` or matches expected failure cases.
 
+## What you can test with operations
+
+Use integration tests to verify:
+
+- Query and mutation flows
+- Variable handling and input validation
+- Nested field resolution
+- Error states and nullability
+- Real vs. mocked resolver behavior
+
+These tests help ensure your GraphQL operations behave as expected across a wide 
+range of scenarios.
+
 ## Writing tests
 
 ### Queries and mutations

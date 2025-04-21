@@ -5,28 +5,37 @@ sidebarTitle: Testing Approaches
 
 # Testing Approaches
 
-Testing is essential for building reliable GraphQL servers. But not every test gives you the same kind of feedback, and not every test belongs at every stage of development. This guide explains the differences between unit tests, integration tests, and end-to-end (E2E) tests, so you can choose the right approach for your project.
+Testing is essential for building reliable GraphQL servers. But not every test 
+gives you the same kind of feedback, and not every test belongs at every stage of development. 
+This guide explains the differences between unit tests, integration tests, and 
+end-to-end (E2E) tests, so you can choose the right approach for your project.
 
 ## Unit tests
 
-Unit tests focus on testing resolver functions in isolation. You run the resolver directly with mocked arguments and context. These tests do not involve your schema or run actual GraphQL queries.
+Unit tests focus on testing resolver functions in isolation. You run the resolver directly 
+with mocked arguments and context. These tests do not involve your schema or run actual 
+GraphQL queries.
 
 When you write unit tests, you’re checking that the resolver:
+
 - Receives input arguments and context as expected
 - Calls the correct business logic
 - Handles errors properly
 - Returns the correct result
 
 Unit tests are fast and provide tight feedback loops. They're especially useful when:
+
 - Developing new resolvers
 - Validating error handling and edge cases
 - Refactoring resolver logic and needing immediate verification
 
-However, unit tests have limitations. Because you're mocking inputs and skipping the schema entirely, you won’t catch issues with how your schema connects to your resolver functions. There's also a risk of false positives if your mocks drift from real usage over time.
+However, unit tests have limitations. Because you're mocking inputs and skipping the schema 
+entirely, you won’t catch issues with how your schema connects to your resolver functions. 
+There's also a risk of false positives if your mocks drift from real usage over time.
 
 ### Example: Unit test for a resolver
 
-This test verifies that the resolver produces the expected result, using mocked inputs.
+This test verifies that the resolver produces the expected result using mocked inputs.
 
 ```javascript
 const result = await myResolver(parent, args, context);
@@ -37,13 +46,13 @@ expect(result).toEqual(expectedResult);
 
 Integration tests go a step further by testing resolvers and the schema together. 
 You can run actual GraphQL queries and verify the end-to-end behavior within your
-appliaction's boundaries.
+application's boundaries.
 
-You can use the `graphql()` function from the GraphQL pacakage, no HTTP server 
+You can use the `graphql()` function from the GraphQL package, no HTTP server 
 needed. With the `graphql()` function, you can test the full flow: query > schema > 
 resolver >  data source (mocked or real).
 
-With integration tests, you are verifiying that: 
+Integration tests confirm that:
 
 - The schema is correctly wired to resolvers
 - Resolvers behave as expected when called through a query
@@ -51,7 +60,7 @@ With integration tests, you are verifiying that:
 
 ### When to use integration tests
 
-Integration tests are valuable when:
+Use integration tests when:
 
 - You want to test the full operation flow from query to result
 - You're testing how resolvers handle variables, fragments, and nested queries
@@ -74,8 +83,7 @@ Trade-offs to consider:
 
 ### Example: Integration test with `graphql()`
 
-This test validates that your schema, resolver, and data sources work together
-as expected:
+This test validates a user query with variables and mocked context.
 
 ```js
 const query = `
@@ -91,7 +99,7 @@ const result = await graphql({
   schema,
   source: query,
   variableValues: { id: '123' },
-  contextValue: mockedContext,
+  contextValue: mockedContext, // mock database, authorization, loaders, etc.
 });
 
 expect(result.data).toEqual(expectedData);
@@ -100,7 +108,7 @@ expect(result.data).toEqual(expectedData);
 ## End-to-End (E2E) tests
 
 E2E tests exercise the entire stack. With your server running and real HTTP
-requests in play, you validate not just schema and resolver behvaior, but also:
+requests in play, you validate not just schema and resolver behavior, but also:
 
 - HTTP transport
 - Middleware such as authentication and logging
@@ -140,27 +148,26 @@ Unit and integration tests are complementary, not competing.
 | Setup  | Minimal             | Schema, mocks, context   |
 | Best for | Isolated business logic, fast development loops | Verifying resolver wiring, operation flow |
 
-When starting a new project or feature, use unit tests to validate resolver 
-logic quickly. As your schema grows and you onboard consumers, add integration 
-tests to confirm that everything works end to end within your application.
+Start with unit tests when building new features, then layer in integration tests 
+to validate schema wiring and catch regressions as your API grows.
 
 ## When E2E tests add value
 
-E2E tests are slower and require a full environment setup, but they are essential when:
+E2E tests simulate full-stack conditions. Use them when:
+
 - Testing authentication and authorization flows
 - Validating infrastructure behavior such as networking and retries
 - Coordinating between multiple services and APIs
 
-Think of E2E tests as final rehearsals for your API. They’re not your first 
-line of defense, but they provide high confidence before deploying to production.
+E2E tests are slower and require full setup, so reserve them for critical flows.
 
 ## Choosing the right balance
 
-There is no one-size-fits-all approach to testing. Instead, a layered approach
+There is no single correct approach to testing. Instead, a layered approach
 works best. In general:
 
 - Start with unit tests to move quickly and catch logic errors early
-- Add integration tests to ensure scehma and resolver wiring is correct
+- Add integration tests to ensure schema and resolver wiring is correct
 - Use E2E tests sparingly for high-confidence checks on critical flows
 
 The goal is to build a safety net of tests that gives you fast feedback during

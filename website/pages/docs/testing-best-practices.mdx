@@ -64,11 +64,14 @@ maintain.
 ### Best practices
 
 - Use factories instead of hardcoding:
+
   ```ts
   function createUser(overrides = {}) {
     return { id: '1', name: 'Test User', ...overrides };
   }
+
 - Share fixtures:
+
     ```ts
     export function createTestContext(overrides = {}) {
   return {
@@ -76,16 +79,17 @@ maintain.
     ...overrides,
   };
 }
-    ```
-- Keep test data small and expressive.
-- Avoid coupling test data to real database structures 
-unless explicitly testing integration.
 
-## Keep test fast and isolated
+- Keep test data small and expressive
+- Avoid coupling test data to real database structures 
+unless explicitly testing integration
+
+## Keep tests fast and isolated
 
 Slow tests kill iteration speed. Fast tests build confidence.
 
 To keep tests lean:
+
 - Use `graphql()` instead of spinning up a server
 - Use in-memory or mock data—avoid real databases in most tests
 - Group tests by concern: resolver, operation, schema
@@ -93,6 +97,7 @@ To keep tests lean:
 - Avoid shared state or global mocks that leak across test files
 
 For large test suites:
+
 - Split tests by service or domain
 - Cache expensive steps where possible
 
@@ -113,15 +118,17 @@ Tests are only useful if they run consistently and early.
 
 ## Lint your schema
 
-Testing behavior is only half the battle—clean, consistent schemas are 
+Testing behavior is only the start. Clean, consistent schemas are 
 easier to maintain and consume.
 
 Use schema linting to enforce:
+
 - Descriptions on public fields and types
 - Consistent naming and casing
 - Deprecation patterns
 - Nullability rules
 
 Tools:
+
 - `graphql-schema-linter`
 - `eslint-plugin-graphql`
