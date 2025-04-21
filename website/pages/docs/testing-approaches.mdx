@@ -23,6 +23,8 @@ When you write unit tests, you’re checking that the resolver:
 - Handles errors properly
 - Returns the correct result
 
+### When to use unit tests
+
 Unit tests are fast and provide tight feedback loops. They're especially useful when:
 
 - Developing new resolvers
@@ -151,17 +153,7 @@ Unit and integration tests are complementary, not competing.
 Start with unit tests when building new features, then layer in integration tests 
 to validate schema wiring and catch regressions as your API grows.
 
-## When E2E tests add value
-
-E2E tests simulate full-stack conditions. Use them when:
-
-- Testing authentication and authorization flows
-- Validating infrastructure behavior such as networking and retries
-- Coordinating between multiple services and APIs
-
-E2E tests are slower and require full setup, so reserve them for critical flows.
-
-## Choosing the right balance
+## Choose a testing approach
 
 There is no single correct approach to testing. Instead, a layered approach
 works best. In general:

@@ -19,6 +19,15 @@ const meta = {
   'constructing-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
+  '-- 2.5': {
+    type: 'separator',
+    title: 'Testing',
+  },
+  'testing-graphql-servers': '',
+  'testing-approaches': '',
+  'testing-operations': '',
+  'testing-resolvers': '',
+  'testing-best-practices': '',
   '-- 3': {
     type: 'separator',
     title: 'FAQ',
