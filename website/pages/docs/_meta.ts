@@ -19,7 +19,12 @@ const meta = {
   'constructing-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
+  'type-generation': '',
   '-- 3': {
+    type: 'separator',
+    title: 'Testing',
+  },
+  '-- 4': {
     type: 'separator',
     title: 'FAQ',
   },
