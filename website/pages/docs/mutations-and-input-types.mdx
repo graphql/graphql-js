@@ -6,7 +6,7 @@ import { Tabs } from 'nextra/components';
 
 If you have an API endpoint that alters data, like inserting data into a database or altering data already in a database, you should make this endpoint a `Mutation` rather than a `Query`. This is as simple as making the API endpoint part of the top-level `Mutation` type instead of the top-level `Query` type.
 
-Let's say we have a “message of the day” server, where anyone can update the message of the day, and anyone can read the current one. The GraphQL schema for this is simply:
+Let's say we have a "message of the day" server, where anyone can update the message of the day, and anyone can read the current one. The GraphQL schema for this is simply:
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
@@ -18,7 +18,7 @@ type Mutation {
 type Query {
   getMessage: String
 }
-````
+```
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
@@ -42,7 +42,7 @@ const schema = new GraphQLSchema({
     },
   }),
 });
-````
+```
 
   </Tabs.Tab>
 </Tabs>
@@ -64,7 +64,7 @@ const root = {
 };
 ```
 
-You don't need anything more than this to implement mutations. But in many cases, you will find a number of different mutations that all accept the same input parameters. A common example is that creating an object in a database and updating an object in a database often take the same parameters. To make your schema simpler, you can use “input types” for this, by using the `input` keyword instead of the `type` keyword.
+You don't need anything more than this to implement mutations. But in many cases, you will find a number of different mutations that all accept the same input parameters. A common example is that creating an object in a database and updating an object in a database often take the same parameters. To make your schema simpler, you can use "input types" for this, by using the `input` keyword instead of the `type` keyword.
 
 For example, instead of a single message of the day, let's say we have many messages, indexed in a database by the `id` field, and each message has both a `content` string and an `author` string. We want a mutation API both for creating a new message and for updating an old message. We could use the schema:
 
@@ -91,7 +91,7 @@ type Mutation {
   updateMessage(id: ID!, input: MessageInput): Message
 }
 
-````
+```
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
@@ -103,6 +103,9 @@ const {
   GraphQLInputObjectType,
   GraphQLNonNull,
 } = require('graphql');
+
+// Maps username to content
+const fakeDatabase = {};
 
 const MessageInput = new GraphQLInputObjectType({
   name: 'MessageInput',
@@ -130,6 +133,16 @@ const schema = new GraphQLSchema({
         args: {
           id: { type: new GraphQLNonNull(GraphQLID) },
         },
+        resolve: (_, { id }) => {
+          if (!fakeDatabase[id]) {
+            throw new Error('no message exists with id ' + id);
+          }
+          return fakeDatabase[id] ? {
+            id,
+            content: fakeDatabase[id].content,
+            author: fakeDatabase[id].author,
+          } : null;
+        }
       },
     },
   }),
@@ -141,6 +154,16 @@ const schema = new GraphQLSchema({
         args: {
           input: { type: new GraphQLNonNull(MessageInput) },
         },
+        resolve: (_, { input }) => {
+          // Create a random id for our "database".
+          const id = require('crypto').randomBytes(10).toString('hex');
+          fakeDatabase[id] = input;
+          return {
+            id,
+            content: input.content,
+            author: input.author,
+          };
+        }
       },
       updateMessage: {
         type: Message,
@@ -148,11 +171,23 @@ const schema = new GraphQLSchema({
           id: { type: new GraphQLNonNull(GraphQLID) },
           input: { type: new GraphQLNonNull(MessageInput) },
         },
+        resolve: (_, { id, input }) => {
+          if (!fakeDatabase[id]) {
+            throw new Error('no message exists with id ' + id);
+          }
+          // This replaces all old data, but some apps might want partial update.
+          fakeDatabase[id] = input;
+          return {
+            id,
+            content: input.content,
+            author: input.author,
+          };
+        }
       },
     },
   }),
 });
-````
+```
 
   </Tabs.Tab>
 </Tabs>
@@ -204,46 +239,18 @@ class Message {
   }
 }
 
-// Maps username to content
-const fakeDatabase = {};
-
-const root = {
-  getMessage({ id }) {
-    if (!fakeDatabase[id]) {
-      throw new Error('no message exists with id ' + id);
-    }
-    return new Message(id, fakeDatabase[id]);
-  },
-  createMessage({ input }) {
-    // Create a random id for our "database".
-    const id = require('crypto').randomBytes(10).toString('hex');
-
-    fakeDatabase[id] = input;
-    return new Message(id, input);
-  },
-  updateMessage({ id, input }) {
-    if (!fakeDatabase[id]) {
-      throw new Error('no message exists with id ' + id);
-    }
-    // This replaces all old data, but some apps might want partial update.
-    fakeDatabase[id] = input;
-    return new Message(id, input);
-  },
-};
-
 const app = express();
 app.all(
   '/graphql',
   createHandler({
     schema: schema,
-    rootValue: root,
   }),
 );
 app.listen(4000, () => {
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 });
 
-````
+```
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
@@ -257,6 +264,18 @@ const {
   GraphQLInputObjectType,
   GraphQLNonNull,
 } = require('graphql');
+
+// If Message had any complex fields, we'd put them on this object.
+class Message {
+  constructor(id, { content, author }) {
+    this.id = id;
+    this.content = content;
+    this.author = author;
+  }
+}
+
+// Maps username to content
+const fakeDatabase = {};
 
 const MessageInput = new GraphQLInputObjectType({
   name: 'MessageInput',
@@ -284,6 +303,16 @@ const schema = new GraphQLSchema({
         args: {
           id: { type: new GraphQLNonNull(GraphQLID) },
         },
+        resolve: (_, { id }) => {
+          if (!fakeDatabase[id]) {
+            throw new Error('no message exists with id ' + id);
+          }
+          return fakeDatabase[id] ? {
+            id,
+            content: fakeDatabase[id].content,
+            author: fakeDatabase[id].author,
+          } : null;
+        }
       },
     },
   }),
@@ -295,6 +324,16 @@ const schema = new GraphQLSchema({
         args: {
           input: { type: new GraphQLNonNull(MessageInput) },
         },
+        resolve: (_, { input }) => {
+          // Create a random id for our "database".
+          const id = require('crypto').randomBytes(10).toString('hex');
+          fakeDatabase[id] = input;
+          return {
+            id,
+            content: input.content,
+            author: input.author,
+          };
+        }
       },
       updateMessage: {
         type: Message,
@@ -302,59 +341,34 @@ const schema = new GraphQLSchema({
           id: { type: new GraphQLNonNull(GraphQLID) },
           input: { type: new GraphQLNonNull(MessageInput) },
         },
+        resolve: (_, { id, input }) => {
+          if (!fakeDatabase[id]) {
+            throw new Error('no message exists with id ' + id);
+          }
+          // This replaces all old data, but some apps might want partial update.
+          fakeDatabase[id] = input;
+          return {
+            id,
+            content: input.content,
+            author: input.author,
+          };
+        }
       },
     },
   }),
 });
-
-// If Message had any complex fields, we'd put them on this object.
-class Message {
-  constructor(id, { content, author }) {
-    this.id = id;
-    this.content = content;
-    this.author = author;
-  }
-}
-
-// Maps username to content
-const fakeDatabase = {};
-
-const root = {
-  getMessage({ id }) {
-    if (!fakeDatabase[id]) {
-      throw new Error('no message exists with id ' + id);
-    }
-    return new Message(id, fakeDatabase[id]);
-  },
-  createMessage({ input }) {
-    // Create a random id for our "database".
-    const id = require('crypto').randomBytes(10).toString('hex');
-
-    fakeDatabase[id] = input;
-    return new Message(id, input);
-  },
-  updateMessage({ id, input }) {
-    if (!fakeDatabase[id]) {
-      throw new Error('no message exists with id ' + id);
-    }
-    // This replaces all old data, but some apps might want partial update.
-    fakeDatabase[id] = input;
-    return new Message(id, input);
-  },
-};
 
 const app = express();
 app.all(
   '/graphql',
   createHandler({
     schema: schema,
-    rootValue: root,
   }),
 );
 app.listen(4000, () => {
   console.log('Running a GraphQL API server at localhost:4000/graphql');
 });
-````
+```
 
   </Tabs.Tab>
 </Tabs>
