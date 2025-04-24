@@ -22,7 +22,7 @@ jobs:
         run: 'git fetch --depth=1 origin $BASE_SHA:refs/tags/BASE'
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
