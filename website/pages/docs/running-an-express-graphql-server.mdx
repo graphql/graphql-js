@@ -11,7 +11,7 @@ The simplest way to run a GraphQL API server is to use [Express](https://express
 npm install express graphql-http graphql --save
 ```
 
-Let's modify our “hello world” example so that it's an API server rather than a script that runs a single query. We can use the 'express' module to run a webserver, and instead of executing a query directly with the `graphql` function, we can use the `graphql-http` library to mount a GraphQL API server on the “/graphql” HTTP endpoint:
+Let's modify our "hello world" example so that it's an API server rather than a script that runs a single query. We can use the 'express' module to run a webserver, and instead of executing a query directly with the `graphql` function, we can use the `graphql-http` library to mount a GraphQL API server on the "/graphql" HTTP endpoint:
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
@@ -45,7 +45,7 @@ app.all(
 app.listen(4000);
 console.log('Running a GraphQL API server at http://localhost:4000/graphql');
 
-````
+```
 </Tabs.Tab>
 <Tabs.Tab>
 ```javascript
@@ -58,17 +58,13 @@ const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      hello: { type: GraphQLString },
+      hello: { 
+        type: GraphQLString,
+        resolve: () => 'Hello world!'
+      },
     },
   }),
 });
-
-// The root provides a resolver function for each API endpoint
-const root = {
-  hello() {
-    return 'Hello world!';
-  },
-};
 
 const app = express();
 
@@ -77,16 +73,15 @@ app.all(
   '/graphql',
   createHandler({
     schema: schema,
-    rootValue: root,
   }),
 );
 
 // Start the server at port
 app.listen(4000);
 console.log('Running a GraphQL API server at http://localhost:4000/graphql');
-````
 
-  </Tabs.Tab>
+```
+</Tabs.Tab>
 </Tabs>
 
 You can run this GraphQL server with:
