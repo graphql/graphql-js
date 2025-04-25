@@ -1,4 +1,4 @@
-[![GraphQLConf 2025 Banner: September 08-10, Amsterdam. Hosted by the GraphQL Foundation](./assets/graphql-conf-2025.png](https://graphql.org/conf/2025/?utm_source=github&utm_medium=graphql_js&utm_campaign=readme)
+[![GraphQLConf 2025 Banner: September 08-10, Amsterdam. Hosted by the GraphQL Foundation](./assets/graphql-conf-2025.png)](https://graphql.org/conf/2025/?utm_source=github&utm_medium=graphql_js&utm_campaign=readme)
 
 # GraphQL.js
 
