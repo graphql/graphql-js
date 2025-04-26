@@ -1,0 +1,138 @@
+---
+title: Anatomy of a Resolver
+---
+
+# Anatomy of a Resolver
+
+In GraphQL.js, a resolver is a function that returns the value for a 
+specific field in a schema. Resolvers connect a GraphQL query to the 
+underlying data or logic needed to fulfill it.
+
+This guide breaks down the anatomy of a resolver, how GraphQL.js uses 
+them during query execution, and best practices for writing them effectively.
+
+## What is a resolver?
+
+A resolver is responsible for returning the value for a specific field in a 
+GraphQL query. During execution, GraphQL.js calls a resolver for each field, 
+either using a custom function you provide or falling back to a default 
+behavior.
+
+If no resolver is provided, GraphQL.js tries to retrieve a property from the 
+parent object that matches the field name. If the property is a function, it 
+calls the function and uses the result. Otherwise, it returns the property 
+value directly.
+
+You can think of a resolver as a translator between the schema and the 
+actual data. The schema defines what can be queried, while resolvers 
+determine how to fetch or compute the data at runtime.
+
+## Resolver function signature
+
+When GraphQL.js executes a resolver, it calls the resolver function 
+with four arguments:
+
+```js
+function resolver(source, args, context, info) { ... }
+```
+
+Each argument provides information that can help the resolver return the
+correct value:
+
+- `source`: The result from the parent field's resolver. In nested fields,
+`source` contains the value returned by the parent object. For root fields,
+it is often `undefined`.
+- `args`: An object containing the arguments passed to the field in the
+query. For example, if a field is defined to accept an `id` argument, you can
+access it as `args.id`.
+- `context`: A shared object available to every resolver in an operation. 
+It is commonly used to store per-request state like authentication
+information, database connections, or caching utilities.
+- `info`: Information about the current execution state, including
+the field name, path to the field from the root, the return type, the parent
+type, and the full schema. It is mainly useful for advanced scenarios such
+as query optimization or logging.
+
+Resolvers can use any combination of these arguments, depending on the needs
+of the field they are resolving.
+
+## Default resolvers
+
+If you do not provide a resolver for a field, GraphQL.js uses a built-in
+default resolver called `defaultFieldResolver`.
+
+The default behavior is simple:
+
+- It looks for a property on the `source` object that matches the name of
+the field.
+- If the property exists and is a function, it calls the function and uses the
+result.
+- Otherwise, it returns the property value directly.
+
+This default resolution makes it easy to build simple schemas without 
+writing custom resolvers for every field. For example, if your `source` object 
+already contains fields with matching names, GraphQL.js can resolve them 
+automatically.
+
+You can override the default behavior by specifying a `resolve` function when 
+defining a field in the schema. This is necessary when the field’s value 
+needs to be computed dynamically, fetched from an external service, or 
+otherwise requires custom logic.
+
+## Writing a custom resolver
+
+A custom resolver is a function you define to control exactly how a field's 
+value is fetched or computed. You can add a resolver by specifying a `resolve` 
+function when defining a field in your schema:
+
+```js
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    fullName: {
+      type: GraphQLString,
+      resolve(source) {
+        return `${source.firstName} ${source.lastName}`;
+      },
+    },
+  },
+});
+```
+
+Resolvers can be synchronous or asynchronous. If a resolver returns a 
+Promise, GraphQL.js automatically waits for the Promise to resolve before 
+continuing execution:
+
+```js
+resolve(source, args, context) {
+  return database.getUserById(args.id);
+}
+```
+
+Custom resolvers are often used to implement patterns such as batching, 
+caching, or delegation. For example, a resolver might use a batching utility 
+like DataLoader to fetch multiple related records efficiently, or delegate 
+part of the query to another API or service.
+
+## Best practices
+
+When writing resolvers, it's important to keep them focused and maintainable:
+
+- Keep business logic separate. A resolver should focus on fetching or 
+computing the value for a field, not on implementing business rules or 
+complex workflows. Move business logic into separate service layers 
+whenever possible.
+- Handle errors carefully. Resolvers should catch and handle errors 
+appropriately, either by throwing GraphQL errors or returning `null` values 
+when fields are nullable. Avoid letting unhandled errors crash the server.
+- Use context effectively. Store shared per-request information, such as 
+authentication data or database connections, in the `context` object rather 
+than passing it manually between resolvers.
+- Prefer batching over nested requests. For fields that trigger multiple 
+database or API calls, use batching strategies to minimize round trips and 
+improve performance.
+- Keep resolvers simple. Aim for resolvers to be small, composable functions 
+that are easy to read, test, and reuse.
+
+Following these practices helps keep your GraphQL server reliable, efficient, 
+and easy to maintain as your schema grows.
