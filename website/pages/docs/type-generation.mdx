@@ -1,9 +1,9 @@
 ---
-title: Type Generation for GraphQL Servers
+title: Type Generation for GraphQL
 sidebarTitle: Type Generation
 ---
 
-# Type Generation for GraphQL Servers
+# Type Generation for GraphQL
 
 Writing a GraphQL server in JavaScript or TypeScript often involves managing complex 
 types. As your API grows, keeping these types accurate and aligned with your schema 
@@ -70,7 +70,7 @@ or `.gql` files. This serves as the source of truth for your server. This approa
 emphasizes clarity because your schema is defined independently from your business logic.
 
 Schema-first development pairs well with type generation because the schema is 
-serializable and can be directly used by tools like GraphQL Code Generator.
+serializable and can be directly used by tools like [GraphQL Code Generator](https://the-guild.dev/graphql/codegen).
 
 With a schema-first workflow, you can:
 
@@ -80,9 +80,9 @@ With a schema-first workflow, you can:
 
 ## Generating resolver types
 
-GraphQL Code Generator can generate resolver scaffolding based on your schema. These
-types help you implement resolvers with full type safety, including parent types, 
-argument shapes, return values, and context. 
+We recommend using the [GraphQL Code Generator Server Preset](https://the-guild.dev/graphql/codegen/docs/guides/graphql-server-apollo-yoga-with-server-preset)
+to generate resolver types. It automatically generates resolver types based on your schema, including parent types, 
+arguments, return values, and context, without needing extra plugin setup.
 
 Example `codegen.ts` config:
 
@@ -140,6 +140,10 @@ In addition to resolver types, you can generate types for GraphQL operations suc
 as queries, mutations, and fragments. This is especially useful for shared integration tests
 or client logic that needs to match the schema precisely.
 
+We recommend using the GraphQL Code Generator Server Preset for generating operation types.
+The server preset generates both resolver and operation types, without needing to install
+or configure additional plugins.
+
 Suppose you have a query in `./src/operations/getUser.graphql`: 
 
 ```graphql
@@ -154,15 +158,18 @@ query GetUser($id: ID!) {
 Update your codegen config:
 
 ```ts
-const config = {
+import type { CodegenConfig } from '@graphql-codegen/cli';
+
+const config: CodegenConfig = {
   schema: './schema.graphql',
   documents: './src/operations/**/*.graphql',
   generates: {
-    './src/generated/operations.ts': {
-      plugins: ['typescript', 'typescript-operations'],
+    './src/generated/': {
+      preset: 'graphql-codegen-preset-server',
     },
   },
 };
+export default config;
 ```
 
 This produces types like `GetUserQuery` and `GetUserQueryVariables`, which you can
