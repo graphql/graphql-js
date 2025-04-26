@@ -1,0 +1,134 @@
+---
+title: Testing Best Practices
+sidebarTitle: Testing Best Practices
+---
+
+# Testing Best Practices
+
+As your GraphQL server grows, so does the risk of regressions, inconsistencies, 
+and slow development feedback. A thoughtful testing strategy helps you catch 
+problems early and ship with confidence—without overwhelming your team with 
+redundant or brittle tests.
+
+This guide outlines practical testing patterns for GraphQL servers, 
+including schema safety, test coverage, data management, performance, and 
+continuous integration.
+
+## Schema stability
+
+Your schema is a contract with every client and consumer. Changes should 
+be intentional and reviewed.
+
+### Best practices
+
+- Use snapshot tests to catch unintended schema changes  
+  – Tool: [`jest-serializer-graphql-schema`](https://github.com/kamilkisiela/jest-serializer-graphql-schema)  
+  – Example:
+    ```ts
+    expect(printSchema(schema)).toMatchSnapshot();
+    ```
+- Use schema diff tools in CI:
+  - `graphql-inspector`
+  - Apollo Rover
+  - GraphQL Hive
+- Require review or approval for breaking changes
+- Treat schema changes like semver: breaking changes should be explicit and 
+intentional
+
+## Focus test coverage
+
+You don’t need 100% coverage, you need meaningful coverage. Prioritize 
+behavior that matters.
+
+### Best practices
+
+- Test high-value paths:
+    - Business logic and custom resolver behavior
+    - Error cases: invalid input, auth failures, fallback logic
+    - Nullable fields and partial success cases
+    - Integration between fields, arguments, and data dependencies
+- Coverage strategy:
+    - Unit test resolvers with significant logic
+    - Integration test operations end-to-end
+    - Avoid duplicating tests across layers
+    - Use tools to identify gaps:
+        - `graphql-coverage`
+        - Jest `--coverage`
+        - Static analysis for unused fields/resolvers
+
+## Managing test data
+
+Clean, flexible test data makes your tests easier to write, read, and 
+maintain.
+
+### Best practices
+
+- Use factories instead of hardcoding:
+
+  ```ts
+  function createUser(overrides = {}) {
+    return { id: '1', name: 'Test User', ...overrides };
+  }
+
+- Share fixtures:
+
+    ```ts
+    export function createTestContext(overrides = {}) {
+  return {
+    db: { findUser: jest.fn() },
+    ...overrides,
+  };
+}
+
+- Keep test data small and expressive
+- Avoid coupling test data to real database structures 
+unless explicitly testing integration
+
+## Keep tests fast and isolated
+
+Slow tests kill iteration speed. Fast tests build confidence.
+
+To keep tests lean:
+
+- Use `graphql()` instead of spinning up a server
+- Use in-memory or mock data—avoid real databases in most tests
+- Group tests by concern: resolver, operation, schema
+- Use parallelization (e.g., Jest, Vitest)
+- Avoid shared state or global mocks that leak across test files
+
+For large test suites:
+
+- Split tests by service or domain
+- Cache expensive steps where possible
+
+## Integrate tests into CI
+
+Tests are only useful if they run consistently and early.
+
+### Best practices
+
+- Run tests on every push or PR:
+    - Lint GraphQL files and scalars
+    - Run resolver and operation tests
+    - Validate schema via snapshot or diff
+- Fail fast:
+    - Break the build on schema snapshot diffs
+    - Block breaking changes without a migration plan
+- Use GitHub annotations or reporters to surface failures in PRs
+
+## Lint your schema
+
+Testing behavior is only the start. Clean, consistent schemas are 
+easier to maintain and consume.
+
+Use schema linting to enforce:
+
+- Descriptions on public fields and types
+- Consistent naming and casing
+- Deprecation patterns
+- Nullability rules
+
+Tools:
+
+- `graphql-schema-linter`
+- `eslint-plugin-graphql`
