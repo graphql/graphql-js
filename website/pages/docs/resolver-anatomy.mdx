@@ -130,7 +130,7 @@ authentication data or database connections, in the `context` object rather
 than passing it manually between resolvers.
 - Prefer batching over nested requests. For fields that trigger multiple 
 database or API calls, use batching strategies to minimize round trips and 
-improve performance.
+improve performance. A common solution for batching in GraphQL is [dataloader](https://github.com/graphql/dataloader).
 - Keep resolvers simple. Aim for resolvers to be small, composable functions 
 that are easy to read, test, and reuse.
 
