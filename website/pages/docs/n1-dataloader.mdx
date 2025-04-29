@@ -2,7 +2,7 @@
 title: Solving the N+1 Problem with `DataLoader`
 ---
 
-When building a GraphQL API with `graphql-js`, it's common to
+When building a server with GraphQL.js, it's common to
 run into performance issues caused by the N+1 problem: a pattern that 
 leads to a large number of unnecessary database or service calls, 
 especially in nested query structures.
@@ -42,7 +42,7 @@ duplicate queries unless you implement deduplication or batching manually.
 
 ## Why this happens in GraphQL.js
 
-In `graphql-js`, each field resolver runs independently. There's no built-in
+In GraphQL.js, each field resolver runs independently. There's no built-in
 coordination between resolvers, and no automatic batching. This makes field
 resolvers composable and predictable, but it also creates the N+1 problem.
 Nested resolutions, such as fetching an author for each post in the previous
