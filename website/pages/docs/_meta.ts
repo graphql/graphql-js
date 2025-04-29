@@ -19,6 +19,7 @@ const meta = {
   'constructing-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
+  'n1-dataloader': '',
   '-- 3': {
     type: 'separator',
     title: 'FAQ',
