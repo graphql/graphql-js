@@ -1,0 +1,145 @@
+---
+title: Solving the N+1 Problem with `DataLoader`
+---
+
+When building a GraphQL API with `graphql-js`, it's common to
+run into performance issues caused by the N+1 problem: a pattern that 
+leads to a large number of unnecessary database or service calls, 
+especially in nested query structures.
+
+This guide explains what the N+1 problem is, why it's relevant in
+GraphQL field resolution, and how to address it using
+[`DataLoader`](https://github.com/graphql/dataloader).
+
+## What is the N+1 problem?
+
+The N+1 problem happens when your API fetches a list of items using one
+query, and then issues an additional query for each item in the list.
+In GraphQL, this ususally occurs in nested field resolvers.
+
+For example, in the following query:
+
+```graphql
+{
+  posts {
+    id
+    title
+    author {
+      name
+    }
+  }
+}
+```
+
+If the `posts` field returns 10 items, and each `author` field fetches
+the author by ID with a separate database call, the server performs
+11 total queries: one to fetch the posts, and one for each post's author
+(10 total authors). This doesn't scale well as the number of parent items
+increases.
+
+Even if several posts share the same author, the server will still issue
+duplicate queries unless you implement deduplication or batching manually.
+
+## Why this happens in GraphQL.js
+
+In `graphql-js`, each field resolver runs independently. There's no built-in
+coordination between resolvers, and no automatic batching. This makes field
+resolvers composable and predictable, but it also creates the N+1 problem.
+Nested resolutions, such as fetching an author for each post in the previous
+example, will each call their own data-fetching logic, even if those calls
+could be grouped.
+
+## Solving the problem with `DataLoader`
+
+[`DataLoader`](https://github.com/graphql/dataloader) is a utility library designed
+to solver this problem. It batches multiple `.load(key)` calls into a single `batchLoadFn(keys)` 
+call and caches results during the life of a request. This means you can reduce redundant data
+fetches and group related lookups into efficient operations.
+
+To use `DataLoader` in a `graphpql-js` server:
+
+1. Create `DataLoader` instances for each request.
+2. Attach the instance to the `contextValue` passed to GraphQL execution.
+3. Use `.load(id)` in resolvers to fetch data through the loader.
+
+### Example: Batching author lookups
+
+Suppose each `Post` has an `authorId`, and you have a `getUsersByIds(ids)`
+function that can fetch multiple users in a single call:
+
+```js
+import {
+  graphql,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+  GraphQLList,
+  GraphQLID
+} from 'graphql';
+import DataLoader from 'dataloader';
+import { getPosts, getUsersByIds } from './db.js';
+
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+  }),
+});
+
+const PostType = new GraphQLObjectType({
+  name: 'Post',
+  fields: () => ({
+    id: { type: GraphQLID },
+    title: { type: GraphQLString },
+    author: {
+      type: UserType,
+      resolve(post, args, context) {
+        return context.userLoader.load(post.authorId);
+      },
+    },
+  }),
+});
+
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: () => ({
+    posts: {
+      type: GraphQLList(PostType),
+      resolve: () => getPosts(),
+    },
+  }),
+});
+
+const schema = new GraphQLSchema({ query: QueryType });
+
+function createContext() {
+  return {
+    userLoader: new DataLoader(async (userIds) => {
+      const users = await getUsersByIds(userIds);
+      return userIds.map(id => users.find(user => user.id === id));
+    }),
+  };
+}
+```
+
+With this setup, all `.load(authorId)` calls are automatically collected and batched
+into a single call to `getUsersByIds`. `DataLoader` also caches results for the duration
+of the request, so repeated `.loads(id)` calls for the same ID don't trigger
+additional fetches.
+
+## Best practices
+
+- Create a new `DataLoader` instance per request. This ensures that caching is scoped
+correctly and avoids leaking data between users.
+- Always return results in the same order as the input keys. This is required by the
+`DataLoader` contract. If a key is not found, return `null` or throw depending on
+your policy.
+- Keep batch functions focused. Each loader should handle a specific data access pattern.
+- Use `.loadMany()` sparingly. While it's useful in some cases, you usually don't need it
+in field resolvers. `.load()` is typically enough, and batching happens automatically.
+
+## Additional resources
+
+- [`DataLoader` GitHub repository](https://github.com/graphql/dataloader): Includes full API docs and usage examples
+- [GraphQL field resovlers](https://graphql.org/graphql-js/resolvers/): Background on how field resolution works.
