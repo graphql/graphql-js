@@ -31,6 +31,8 @@ import {
 import type { GraphQLDirective } from './directives';
 import { isDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
+import type { GraphQLErrorBehavior } from '../error';
+import { isErrorBehavior } from '../error/ErrorBehavior';
 
 /**
  * Test if the given value is a GraphQL schema.
@@ -129,6 +131,8 @@ export interface GraphQLSchemaExtensions {
  */
 export class GraphQLSchema {
   description: Maybe<string>;
+  /** @experimental */
+  readonly defaultErrorBehavior: GraphQLErrorBehavior;
   extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
@@ -163,8 +167,15 @@ export class GraphQLSchema {
       '"directives" must be Array if provided but got: ' +
         `${inspect(config.directives)}.`,
     );
+    devAssert(
+      !config.defaultErrorBehavior ||
+        isErrorBehavior(config.defaultErrorBehavior),
+      '"defaultErrorBehavior" must be one of "NO_PROPAGATE", "PROPAGATE" or "ABORT", but got: ' +
+        `${inspect(config.defaultErrorBehavior)}.`,
+    );
 
     this.description = config.description;
+    this.defaultErrorBehavior = config.defaultErrorBehavior ?? 'PROPAGATE';
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
@@ -386,6 +397,20 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
   subscription?: Maybe<GraphQLObjectType>;
   types?: Maybe<ReadonlyArray<GraphQLNamedType>>;
   directives?: Maybe<ReadonlyArray<GraphQLDirective>>;
+  /**
+   * Experimental. Defines the default GraphQL error behavior when the
+   * GraphQLArgs does not include an `onError` property.
+   *
+   * Set to NO_PROPAGATE if your schema only needs to support modern
+   * "error-handling" clients.
+   *
+   * It is not recommended to set this to ABORT.
+   *
+   * Default: PROPAGATE
+   *
+   * @experimental
+   */
+  defaultErrorBehavior?: GraphQLErrorBehavior;
   extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;

@@ -375,7 +375,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
-    errorBehavior: onError ?? 'PROPAGATE',
+    errorBehavior: onError ?? schema.defaultErrorBehavior,
   };
 }
 
