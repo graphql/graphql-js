@@ -311,7 +311,7 @@ export function buildExecutionContext(
   if (onError != null && !isErrorBehavior(onError)) {
     return [
       new GraphQLError(
-        'Unsupported `onError` value; supported values are `PROPAGATE`, `NO_PROPAGATE` and `ABORT`.',
+        'Unsupported `onError` value; supported values are `NO_PROPAGATE`, `PROPAGATE` and `ABORT`.',
       ),
     ];
   }

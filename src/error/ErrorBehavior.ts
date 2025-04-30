@@ -1,9 +1,9 @@
-export type GraphQLErrorBehavior = 'PROPAGATE' | 'NO_PROPAGATE' | 'ABORT';
+export type GraphQLErrorBehavior = 'NO_PROPAGATE' | 'PROPAGATE' | 'ABORT';
 
 export function isErrorBehavior(
   onError: unknown,
 ): onError is GraphQLErrorBehavior {
   return (
-    onError === 'PROPAGATE' || onError === 'NO_PROPAGATE' || onError === 'ABORT'
+    onError === 'NO_PROPAGATE' || onError === 'PROPAGATE' || onError === 'ABORT'
   );
 }
