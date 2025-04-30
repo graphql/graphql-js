@@ -97,7 +97,7 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
   const directives =
     schema.defaultErrorBehavior !== 'PROPAGATE'
       ? `@behavior(onError: ${schema.defaultErrorBehavior}) `
-      : ``;
+      : '';
 
   return (
     printDescription(schema) +

@@ -6,6 +6,8 @@ import type { Maybe } from '../jsutils/Maybe';
 import type { ObjMap } from '../jsutils/ObjMap';
 import { toObjMap } from '../jsutils/toObjMap';
 
+import type { GraphQLErrorBehavior } from '../error/ErrorBehavior';
+import { isErrorBehavior } from '../error/ErrorBehavior';
 import type { GraphQLError } from '../error/GraphQLError';
 
 import type {
@@ -31,8 +33,6 @@ import {
 import type { GraphQLDirective } from './directives';
 import { isDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
-import type { GraphQLErrorBehavior } from '../error';
-import { isErrorBehavior } from '../error/ErrorBehavior';
 
 /**
  * Test if the given value is a GraphQL schema.

@@ -5,6 +5,8 @@ import { keyMap } from '../jsutils/keyMap';
 import { mapValue } from '../jsutils/mapValue';
 import type { Maybe } from '../jsutils/Maybe';
 
+import type { GraphQLErrorBehavior } from '../error/ErrorBehavior';
+
 import type {
   DirectiveDefinitionNode,
   DocumentNode,
@@ -83,7 +85,6 @@ import { assertValidSDLExtension } from '../validation/validate';
 import { getDirectiveValues } from '../execution/values';
 
 import { valueFromAST } from './valueFromAST';
-import type { GraphQLErrorBehavior } from '../error';
 
 interface Options extends GraphQLSchemaValidationOptions {
   /**
