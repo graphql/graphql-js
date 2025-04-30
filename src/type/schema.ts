@@ -410,7 +410,7 @@ export interface GraphQLSchemaConfig extends GraphQLSchemaValidationOptions {
    *
    * @experimental
    */
-  defaultErrorBehavior?: GraphQLErrorBehavior;
+  defaultErrorBehavior?: Maybe<GraphQLErrorBehavior>;
   extensions?: Maybe<Readonly<GraphQLSchemaExtensions>>;
   astNode?: Maybe<SchemaDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<SchemaExtensionNode>>;
