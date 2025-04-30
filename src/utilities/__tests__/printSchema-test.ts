@@ -276,6 +276,21 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints schema with NO_PROPAGATE error behavior', () => {
+    const schema = new GraphQLSchema({
+      defaultErrorBehavior: 'NO_PROPAGATE',
+      query: new GraphQLObjectType({ name: 'Query', fields: {} }),
+    });
+
+    expectPrintedSchema(schema).to.equal(dedent`
+      schema @behavior(onError: NO_PROPAGATE) {
+        query: Query
+      }
+
+      type Query
+    `);
+  });
+
   it('Omits schema of common names', () => {
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({ name: 'Query', fields: {} }),
