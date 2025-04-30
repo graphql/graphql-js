@@ -81,6 +81,32 @@ describe('Introspection', () => {
               possibleTypes: null,
             },
             {
+              enumValues: [
+                {
+                  deprecationReason: null,
+                  isDeprecated: false,
+                  name: 'NO_PROPAGATE',
+                },
+                {
+                  deprecationReason: null,
+                  isDeprecated: false,
+                  name: 'PROPAGATE',
+                },
+                {
+                  deprecationReason: null,
+                  isDeprecated: false,
+                  name: 'ABORT',
+                },
+              ],
+              fields: null,
+              inputFields: null,
+              interfaces: null,
+              kind: 'ENUM',
+              name: '__ErrorBehavior',
+              possibleTypes: null,
+              specifiedByURL: null,
+            },
+            {
               kind: 'OBJECT',
               name: '__Schema',
               specifiedByURL: null,
@@ -174,6 +200,21 @@ describe('Introspection', () => {
                           ofType: null,
                         },
                       },
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'defaultErrorBehavior',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'ENUM',
+                      name: '__ErrorBehavior',
+                      ofType: null,
                     },
                   },
                   isDeprecated: false,
@@ -1008,6 +1049,26 @@ describe('Introspection', () => {
               locations: ['INPUT_OBJECT'],
               args: [],
             },
+            {
+              args: [
+                {
+                  defaultValue: 'PROPAGATE',
+                  name: 'onError',
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'ENUM',
+                      name: '__ErrorBehavior',
+                      ofType: null,
+                    },
+                  },
+                },
+              ],
+              isRepeatable: false,
+              locations: ['SCHEMA'],
+              name: 'behavior',
+            },
           ],
         },
       },
@@ -1768,11 +1829,13 @@ describe('Introspection', () => {
       }
     `);
 
-    const source = getIntrospectionQuery({
-      descriptions: false,
-      specifiedByUrl: true,
-      directiveIsRepeatable: true,
-    });
+    const source = /* GraphQL */ `
+      {
+        __schema {
+          defaultErrorBehavior
+        }
+      }
+    `;
 
     const result = graphqlSync({ schema, source });
     expect(result).to.deep.equal({

@@ -64,6 +64,7 @@ import {
   isUnionType,
 } from '../type/definition';
 import {
+  GraphQLBehaviorDirective,
   GraphQLDeprecatedDirective,
   GraphQLDirective,
   GraphQLOneOfDirective,
@@ -82,6 +83,7 @@ import { assertValidSDLExtension } from '../validation/validate';
 import { getDirectiveValues } from '../execution/values';
 
 import { valueFromAST } from './valueFromAST';
+import type { GraphQLErrorBehavior } from '../error';
 
 interface Options extends GraphQLSchemaValidationOptions {
   /**
@@ -165,6 +167,14 @@ export function extendSchemaImpl(
     }
   }
 
+  let defaultErrorBehavior: Maybe<GraphQLErrorBehavior> = schemaDef
+    ? getDefaultErrorBehavior(schemaDef)
+    : null;
+  for (const extensionNode of schemaExtensions) {
+    defaultErrorBehavior =
+      getDefaultErrorBehavior(extensionNode) ?? defaultErrorBehavior;
+  }
+
   // If this document contains no new types, extensions, or directives then
   // return the same unmodified GraphQLSchema instance.
   if (
@@ -201,6 +211,7 @@ export function extendSchemaImpl(
   // Then produce and return a Schema config with these types.
   return {
     description: schemaDef?.description?.value,
+    defaultErrorBehavior,
     ...operationTypes,
     types: Object.values(typeMap),
     directives: [
@@ -690,4 +701,15 @@ function getSpecifiedByURL(
  */
 function isOneOf(node: InputObjectTypeDefinitionNode): boolean {
   return Boolean(getDirectiveValues(GraphQLOneOfDirective, node));
+}
+
+/**
+ * Given a schema node, returns the GraphQL error behavior from the `@behavior(onError:)` argument.
+ */
+function getDefaultErrorBehavior(
+  node: SchemaDefinitionNode | SchemaExtensionNode,
+): Maybe<GraphQLErrorBehavior> {
+  const behavior = getDirectiveValues(GraphQLBehaviorDirective, node);
+  // @ts-expect-error validated by `getDirectiveValues`
+  return behavior?.onError;
 }

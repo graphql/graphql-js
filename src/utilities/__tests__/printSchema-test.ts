@@ -694,6 +694,27 @@ describe('Type System Printer', () => {
       """
       directive @oneOf on INPUT_OBJECT
 
+      """Indicates the default error behavior of the schema."""
+      directive @behavior(onError: __ErrorBehavior! = PROPAGATE) on SCHEMA
+      
+      """An enum detailing the error behavior a GraphQL request should use."""
+      enum __ErrorBehavior {
+        """
+        Indicates that an error should result in the response position becoming null, even if it is marked as non-null.
+        """
+        NO_PROPAGATE
+      
+        """
+        Indicates that an error that occurs in a non-null position should propagate to the nearest nullable response position.
+        """
+        PROPAGATE
+      
+        """
+        Indicates execution should cease when the first error occurs, and that the response data should be null.
+        """
+        ABORT
+      }
+
       """
       A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
       """
@@ -718,6 +739,11 @@ describe('Type System Printer', () => {
 
         """A list of all directives supported by this server."""
         directives: [__Directive!]!
+
+        """
+        The default error behavior that will be used for requests which do not specify \`onError\`.
+        """
+        defaultErrorBehavior: __ErrorBehavior!
       }
 
       """
