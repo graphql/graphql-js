@@ -26,6 +26,7 @@ describe('Introspection', () => {
       descriptions: false,
       specifiedByUrl: true,
       directiveIsRepeatable: true,
+      errorBehavior: true,
     });
 
     const result = graphqlSync({ schema, source });
@@ -35,6 +36,7 @@ describe('Introspection', () => {
           queryType: { name: 'SomeObject', kind: 'OBJECT' },
           mutationType: null,
           subscriptionType: null,
+          defaultErrorBehavior: 'PROPAGATE',
           types: [
             {
               kind: 'OBJECT',
@@ -1753,5 +1755,61 @@ describe('Introspection', () => {
       typeResolver,
     });
     expect(result).to.not.have.property('errors');
+  });
+
+  it('reflects the default error behavior (default)', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        someField: String
+      }
+
+      schema {
+        query: SomeObject
+      }
+    `);
+
+    const source = getIntrospectionQuery({
+      descriptions: false,
+      specifiedByUrl: true,
+      directiveIsRepeatable: true,
+    });
+
+    const result = graphqlSync({ schema, source });
+    expect(result).to.deep.equal({
+      data: {
+        __schema: {
+          defaultErrorBehavior: 'PROPAGATE',
+        },
+      },
+    });
+  });
+
+  it('reflects the default error behavior (NO_PROPAGATE)', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        someField: String
+      }
+
+      schema @behavior(onError: NO_PROPAGATE) {
+        query: SomeObject
+      }
+    `);
+
+    const source = /* GraphQL */ `
+      {
+        __schema {
+          defaultErrorBehavior
+        }
+      }
+    `;
+
+    const result = graphqlSync({ schema, source });
+    expect(result).to.deep.equal({
+      data: {
+        __schema: {
+          defaultErrorBehavior: 'NO_PROPAGATE',
+        },
+      },
+    });
   });
 });
