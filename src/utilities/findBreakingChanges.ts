@@ -184,10 +184,10 @@ function findTypeChanges(
   for (const oldType of typesDiff.removed) {
     schemaChanges.push({
       type: BreakingChangeType.TYPE_REMOVED,
+      /* c8 ignore next 5 */
       description: isSpecifiedScalarType(oldType)
         ? `Standard scalar ${oldType.name} was removed because it is not referenced anymore.`
-        : /* c8 ignore next 2 */
-        isSpecifiedEnumType(oldType)
+        : isSpecifiedEnumType(oldType)
         ? `Standard enum ${oldType.name} was removed because it is not referenced anymore.`
         : `${oldType.name} was removed.`,
     });
