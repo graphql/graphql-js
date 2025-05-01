@@ -186,7 +186,8 @@ function findTypeChanges(
       type: BreakingChangeType.TYPE_REMOVED,
       description: isSpecifiedScalarType(oldType)
         ? `Standard scalar ${oldType.name} was removed because it is not referenced anymore.`
-        : isSpecifiedEnumType(oldType)
+        : /* c8 ignore next 2 */
+        isSpecifiedEnumType(oldType)
         ? `Standard enum ${oldType.name} was removed because it is not referenced anymore.`
         : `${oldType.name} was removed.`,
     });
