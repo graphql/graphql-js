@@ -1,5 +1,7 @@
 import type { Maybe } from '../jsutils/Maybe';
 
+import type { GraphQLErrorBehavior } from '../error/ErrorBehavior';
+
 import type { DirectiveLocation } from '../language/directiveLocation';
 
 export interface IntrospectionOptions {
@@ -206,6 +208,7 @@ export interface IntrospectionSchema {
   >;
   readonly types: ReadonlyArray<IntrospectionType>;
   readonly directives: ReadonlyArray<IntrospectionDirective>;
+  readonly defaultErrorBehavior?: Maybe<GraphQLErrorBehavior>;
 }
 
 export type IntrospectionType =
