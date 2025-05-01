@@ -28,6 +28,7 @@ import {
   isScalarType,
   isUnionType,
 } from '../type/definition';
+import { isSpecifiedEnumType } from '../type/enums';
 import { isSpecifiedScalarType } from '../type/scalars';
 import type { GraphQLSchema } from '../type/schema';
 
@@ -185,6 +186,8 @@ function findTypeChanges(
       type: BreakingChangeType.TYPE_REMOVED,
       description: isSpecifiedScalarType(oldType)
         ? `Standard scalar ${oldType.name} was removed because it is not referenced anymore.`
+        : isSpecifiedEnumType(oldType)
+        ? `Standard enum ${oldType.name} was removed because it is not referenced anymore.`
         : `${oldType.name} was removed.`,
     });
   }

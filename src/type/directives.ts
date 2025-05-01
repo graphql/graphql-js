@@ -18,7 +18,7 @@ import {
   defineArguments,
   GraphQLNonNull,
 } from './definition';
-import { __ErrorBehavior } from './introspection';
+import { GraphQLErrorBehavior } from './enums';
 import { GraphQLBoolean, GraphQLString } from './scalars';
 
 /**
@@ -230,7 +230,7 @@ export const GraphQLBehaviorDirective: GraphQLDirective = new GraphQLDirective({
   locations: [DirectiveLocation.SCHEMA],
   args: {
     onError: {
-      type: new GraphQLNonNull(__ErrorBehavior),
+      type: new GraphQLNonNull(GraphQLErrorBehavior),
       defaultValue: 'PROPAGATE',
     },
   },

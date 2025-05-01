@@ -158,6 +158,13 @@ export {
   GRAPHQL_MAX_INT,
   GRAPHQL_MIN_INT,
 } from './scalars';
+export {
+  // Predicate
+  isSpecifiedEnumType,
+  // Standard GraphQL Enums
+  specifiedEnumTypes,
+  GraphQLErrorBehavior,
+} from './enums';
 
 export {
   // Predicate
@@ -172,7 +179,6 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
-  __ErrorBehavior,
   // "Enum" of Type Kinds
   TypeKind,
   // Meta-field definitions.

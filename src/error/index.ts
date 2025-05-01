@@ -9,4 +9,4 @@ export type {
 export { syntaxError } from './syntaxError';
 
 export { locatedError } from './locatedError';
-export type { GraphQLErrorBehavior } from './ErrorBehavior';
+export type { ErrorBehavior } from './ErrorBehavior';

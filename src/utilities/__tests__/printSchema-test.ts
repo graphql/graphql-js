@@ -710,10 +710,10 @@ describe('Type System Printer', () => {
       directive @oneOf on INPUT_OBJECT
 
       """Indicates the default error behavior of the schema."""
-      directive @behavior(onError: __ErrorBehavior! = PROPAGATE) on SCHEMA
+      directive @behavior(onError: ErrorBehavior! = PROPAGATE) on SCHEMA
       
       """An enum detailing the error behavior a GraphQL request should use."""
-      enum __ErrorBehavior {
+      enum ErrorBehavior {
         """
         Indicates that an error should result in the response position becoming null, even if it is marked as non-null.
         """
@@ -758,7 +758,7 @@ describe('Type System Printer', () => {
         """
         The default error behavior that will be used for requests which do not specify \`onError\`.
         """
-        defaultErrorBehavior: __ErrorBehavior!
+        defaultErrorBehavior: ErrorBehavior!
       }
 
       """

@@ -102,7 +102,7 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: null,
               kind: 'ENUM',
-              name: '__ErrorBehavior',
+              name: 'ErrorBehavior',
               possibleTypes: null,
               specifiedByURL: null,
             },
@@ -213,7 +213,7 @@ describe('Introspection', () => {
                     name: null,
                     ofType: {
                       kind: 'ENUM',
-                      name: '__ErrorBehavior',
+                      name: 'ErrorBehavior',
                       ofType: null,
                     },
                   },
@@ -1059,7 +1059,7 @@ describe('Introspection', () => {
                     name: null,
                     ofType: {
                       kind: 'ENUM',
-                      name: '__ErrorBehavior',
+                      name: 'ErrorBehavior',
                       ofType: null,
                     },
                   },

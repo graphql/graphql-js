@@ -13,7 +13,7 @@ import { promiseForObject } from '../jsutils/promiseForObject';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { promiseReduce } from '../jsutils/promiseReduce';
 
-import type { GraphQLErrorBehavior } from '../error/ErrorBehavior';
+import type { ErrorBehavior } from '../error/ErrorBehavior';
 import { isErrorBehavior } from '../error/ErrorBehavior';
 import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
@@ -117,7 +117,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
-  errorBehavior: GraphQLErrorBehavior;
+  errorBehavior: ErrorBehavior;
 }
 
 /**
@@ -133,7 +133,6 @@ export interface ExecutionResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   data?: TData | null;
-  onError?: GraphQLErrorBehavior;
   extensions?: TExtensions;
 }
 
@@ -164,7 +163,7 @@ export interface ExecutionArgs {
    *
    * @experimental
    */
-  onError?: GraphQLErrorBehavior;
+  onError?: ErrorBehavior;
   /** Additional execution options. */
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
