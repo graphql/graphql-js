@@ -20,6 +20,7 @@ const meta = {
   'oneof-input-objects': '',
   'defer-stream': '',
   'resolver-anatomy': '',
+  'graphql-errors': '',
   '-- 3': {
     type: 'separator',
     title: 'FAQ',
