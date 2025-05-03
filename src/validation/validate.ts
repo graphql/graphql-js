@@ -108,6 +108,28 @@ export function validateSDL(
 }
 
 /**
+ * Combine multiple errors into a single error, whose message
+ * contains the error messages and their line:column on separate lines.
+ */
+function combineErrorsWithLocation(errors: ReadonlyArray<GraphQLError>): Error {
+  const errorMessageWithLocations = errors
+    .map((error) => {
+      if (!error.locations?.length) {
+        return error.message;
+      }
+
+      const locations =
+        error.locations
+          .map(({ line, column }) => `${line}:${column}`)
+          .join(', ') ?? '';
+      return `${error.message} (${locations})`;
+    })
+    .join('\n\n');
+
+  return new Error(errorMessageWithLocations);
+}
+
+/**
  * Utility function which asserts a SDL document is valid by throwing an error
  * if it is invalid.
  *
@@ -116,7 +138,7 @@ export function validateSDL(
 export function assertValidSDL(documentAST: DocumentNode): void {
   const errors = validateSDL(documentAST);
   if (errors.length !== 0) {
-    throw new Error(errors.map((error) => error.message).join('\n\n'));
+    throw combineErrorsWithLocation(errors);
   }
 }
 
@@ -132,6 +154,6 @@ export function assertValidSDLExtension(
 ): void {
   const errors = validateSDL(documentAST, schema);
   if (errors.length !== 0) {
-    throw new Error(errors.map((error) => error.message).join('\n\n'));
+    throw combineErrorsWithLocation(errors);
   }
 }
