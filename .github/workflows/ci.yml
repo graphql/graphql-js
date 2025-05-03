@@ -15,7 +15,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -64,7 +64,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -88,7 +88,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.node-version'
           # We install bunch of packages during integration tests without locking them
@@ -110,7 +110,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -131,7 +131,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -163,7 +163,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js v${{ matrix.node_version_to_setup }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version: ${{ matrix.node_version_to_setup }}
@@ -185,7 +185,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -213,7 +213,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.node-version'
 

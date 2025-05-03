@@ -21,6 +21,8 @@ const meta = {
   'defer-stream': '',
   'custom-scalars': '',
   'advanced-custom-scalars': '',
+  'resolver-anatomy': '',
+  'graphql-errors': '',
   '-- 3': {
     type: 'separator',
     title: 'FAQ',
