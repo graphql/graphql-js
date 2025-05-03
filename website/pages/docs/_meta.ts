@@ -19,6 +19,7 @@ const meta = {
   'constructing-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
+  'resolver-anatomy': '',
   '-- 3': {
     type: 'separator',
     title: 'FAQ',
