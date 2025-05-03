@@ -11,6 +11,7 @@ import { Kind } from '../../language/kinds';
 import { parse } from '../../language/parser';
 
 import {
+  GraphQLInputObjectType,
   GraphQLInterfaceType,
   GraphQLList,
   GraphQLNonNull,
@@ -1319,5 +1320,75 @@ describe('Execute: Handles basic execution tasks', () => {
 
     expect(result).to.deep.equal({ data: { foo: { bar: 'bar' } } });
     expect(possibleTypes).to.deep.equal([fooObject]);
+  });
+
+  it('uses a different number of max coercion errors', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          dummy: { type: GraphQLString },
+        },
+      }),
+      mutation: new GraphQLObjectType({
+        name: 'Mutation',
+        fields: {
+          updateUser: {
+            type: GraphQLString,
+            args: {
+              data: {
+                type: new GraphQLInputObjectType({
+                  name: 'User',
+                  fields: {
+                    email: { type: new GraphQLNonNull(GraphQLString) },
+                  },
+                }),
+              },
+            },
+          },
+        },
+      }),
+    });
+
+    const document = parse(`
+      mutation ($data: User) {
+        updateUser(data: $data)
+      }
+    `);
+
+    const options = {
+      maxCoercionErrors: 1,
+    };
+
+    const result = executeSync({
+      schema,
+      document,
+      variableValues: {
+        data: {
+          email: '',
+          wrongArg: 'wrong',
+          wrongArg2: 'wrong',
+          wrongArg3: 'wrong',
+        },
+      },
+      options,
+    });
+
+    // Returns at least 2 errors, one for the first 'wrongArg', and one for coercion limit
+    expect(result.errors).to.have.lengthOf(options.maxCoercionErrors + 1);
+
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Variable "$data" got invalid value { email: "", wrongArg: "wrong", wrongArg2: "wrong", wrongArg3: "wrong" }; Field "wrongArg" is not defined by type "User".',
+          locations: [{ line: 2, column: 17 }],
+        },
+        {
+          message:
+            'Too many errors processing variables, error limit reached. Execution aborted.',
+        },
+      ],
+    });
   });
 });

@@ -19,7 +19,7 @@ jobs:
           ref: ${{ fromJSON(inputs.pullRequestJSON).merge_commit_sha }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
@@ -48,7 +48,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: npm
           node-version-file: '.node-version'
