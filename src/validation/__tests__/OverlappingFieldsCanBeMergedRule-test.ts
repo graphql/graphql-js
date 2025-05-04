@@ -1192,4 +1192,149 @@ describe('Validate: Overlapping fields can be merged', () => {
       }
     `);
   });
+
+  describe('semantic non-null', () => {
+    const schema = buildSchema(`
+      @SemanticNullability
+      type Query {
+        box: Box
+      }
+
+      interface Box {
+        id: String
+      }
+
+      type IntBox implements Box {
+        id: String
+        field: Int
+        field2: Int?
+        field3: Int
+      }
+
+      type StringBox implements Box {
+        id: String
+        field: String
+        field2: Int
+        field3: Int
+      }
+    `);
+
+    it('does not error when non-null and semantic non-null overlap with same type', () => {
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            box {
+              ... on IntBox {
+                id
+              }
+              ... on StringBox {
+                id
+              }
+            }
+          }
+        `,
+      ).toDeepEqual([]);
+    });
+
+    it('does not error when two semantic non-null fields overlap with same type', () => {
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            box {
+              ... on IntBox {
+                field3
+              }
+              ... on StringBox {
+                field3
+              }
+            }
+          }
+        `,
+      ).toDeepEqual([]);
+    });
+
+    it('errors when 2 semantic non-null fields overlap with different types', () => {
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            box {
+              ... on IntBox {
+                field
+              }
+              ... on StringBox {
+                field
+              }
+            }
+          }
+        `,
+      ).toDeepEqual([
+        {
+          message:
+            'Fields "field" conflict because they return conflicting types "Int" and "String". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
+        },
+      ]);
+    });
+
+    it('errors when semantic non-null and nullable fields overlap with different types', () => {
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            box {
+               ... on StringBox {
+                field2
+              }
+              ... on IntBox {
+                field2
+              }
+            }
+          }
+        `,
+      ).toDeepEqual([
+        {
+          message:
+            'Fields "field2" conflict because they return conflicting types "Int" and "Int". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
+        },
+      ]);
+    });
+
+    it('errors when non-null and semantic non-null overlap with different types', () => {
+      expectErrorsWithSchema(
+        schema,
+        `
+          {
+            box {
+              ... on IntBox {
+                field2
+              }
+              ... on StringBox {
+                field2
+              }
+            }
+          }
+        `,
+      ).toDeepEqual([
+        {
+          // TODO: inspect currently returns "Int" for both types
+          message:
+            'Fields "field2" conflict because they return conflicting types "Int" and "Int". Use different aliases on the fields to fetch both if this was intentional.',
+          locations: [
+            { line: 5, column: 17 },
+            { line: 8, column: 17 },
+          ],
+        },
+      ]);
+    });
+  });
 });

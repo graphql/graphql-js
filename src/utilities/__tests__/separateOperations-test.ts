@@ -49,7 +49,9 @@ describe('separateOperations', () => {
       }
     `);
 
-    const separatedASTs = mapValue(separateOperations(ast), print);
+    const separatedASTs = mapValue(separateOperations(ast), (node) =>
+      print(node),
+    );
     expect(separatedASTs).to.deep.equal({
       '': dedent`
         {
@@ -128,7 +130,9 @@ describe('separateOperations', () => {
       }
     `);
 
-    const separatedASTs = mapValue(separateOperations(ast), print);
+    const separatedASTs = mapValue(separateOperations(ast), (node) =>
+      print(node),
+    );
     expect(separatedASTs).to.deep.equal({
       One: dedent`
         query One {
@@ -178,7 +182,9 @@ describe('separateOperations', () => {
       }
     `);
 
-    const separatedASTs = mapValue(separateOperations(ast), print);
+    const separatedASTs = mapValue(separateOperations(ast), (node) =>
+      print(node),
+    );
     expect(separatedASTs).to.deep.equal({
       '': dedent`
         {
@@ -215,7 +221,9 @@ describe('separateOperations', () => {
       type Bar
     `);
 
-    const separatedASTs = mapValue(separateOperations(ast), print);
+    const separatedASTs = mapValue(separateOperations(ast), (node) =>
+      print(node),
+    );
     expect(separatedASTs).to.deep.equal({
       Foo: dedent`
         query Foo {
@@ -241,7 +249,9 @@ describe('separateOperations', () => {
       }
     `);
 
-    const separatedASTs = mapValue(separateOperations(ast), print);
+    const separatedASTs = mapValue(separateOperations(ast), (node) =>
+      print(node),
+    );
     expect(separatedASTs).to.deep.equal({
       '': dedent`
         {

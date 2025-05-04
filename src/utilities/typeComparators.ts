@@ -5,6 +5,7 @@ import {
   isListType,
   isNonNullType,
   isObjectType,
+  isSemanticNonNullType,
 } from '../type/definition';
 import type { GraphQLSchema } from '../type/schema';
 
@@ -19,6 +20,11 @@ export function isEqualType(typeA: GraphQLType, typeB: GraphQLType): boolean {
 
   // If either type is non-null, the other must also be non-null.
   if (isNonNullType(typeA) && isNonNullType(typeB)) {
+    return isEqualType(typeA.ofType, typeB.ofType);
+  }
+
+  // If either type is semantic-non-null, the other must also be semantic-non-null.
+  if (isSemanticNonNullType(typeA) && isSemanticNonNullType(typeB)) {
     return isEqualType(typeA.ofType, typeB.ofType);
   }
 
@@ -47,13 +53,22 @@ export function isTypeSubTypeOf(
 
   // If superType is non-null, maybeSubType must also be non-null.
   if (isNonNullType(superType)) {
-    if (isNonNullType(maybeSubType)) {
+    if (isNonNullType(maybeSubType) || isSemanticNonNullType(maybeSubType)) {
       return isTypeSubTypeOf(schema, maybeSubType.ofType, superType.ofType);
     }
     return false;
   }
-  if (isNonNullType(maybeSubType)) {
-    // If superType is nullable, maybeSubType may be non-null or nullable.
+
+  // If superType is semantic-non-null, maybeSubType must be semantic-non-null or non-null.
+  if (isSemanticNonNullType(superType)) {
+    if (isNonNullType(maybeSubType) || isSemanticNonNullType(maybeSubType)) {
+      return isTypeSubTypeOf(schema, maybeSubType.ofType, superType.ofType);
+    }
+    return false;
+  }
+
+  if (isNonNullType(maybeSubType) || isSemanticNonNullType(maybeSubType)) {
+    // If superType is nullable, maybeSubType may be non-null, semantic-non-null, or nullable.
     return isTypeSubTypeOf(schema, maybeSubType.ofType, superType);
   }
 

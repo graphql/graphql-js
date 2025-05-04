@@ -7,6 +7,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLSemanticNonNull,
   GraphQLUnionType,
 } from '../../type/definition';
 import { GraphQLFloat, GraphQLInt, GraphQLString } from '../../type/scalars';
@@ -18,6 +19,15 @@ describe('typeComparators', () => {
   describe('isEqualType', () => {
     it('same reference are equal', () => {
       expect(isEqualType(GraphQLString, GraphQLString)).to.equal(true);
+    });
+
+    it('semantic non-null is equal to semantic non-null', () => {
+      expect(
+        isEqualType(
+          new GraphQLSemanticNonNull(GraphQLString),
+          new GraphQLSemanticNonNull(GraphQLString),
+        ),
+      ).to.equal(true);
     });
 
     it('int and float are not equal', () => {
@@ -78,6 +88,50 @@ describe('typeComparators', () => {
       const schema = testSchema({ field: { type: GraphQLString } });
       expect(
         isTypeSubTypeOf(schema, new GraphQLNonNull(GraphQLInt), GraphQLInt),
+      ).to.equal(true);
+    });
+
+    it('semantic non-null is subtype of nullable', () => {
+      const schema = testSchema({ field: { type: GraphQLString } });
+      expect(
+        isTypeSubTypeOf(
+          schema,
+          new GraphQLSemanticNonNull(GraphQLInt),
+          GraphQLInt,
+        ),
+      ).to.equal(true);
+    });
+
+    it('semantic non-null is subtype of semantic non-null', () => {
+      const schema = testSchema({ field: { type: GraphQLString } });
+      expect(
+        isTypeSubTypeOf(
+          schema,
+          new GraphQLSemanticNonNull(GraphQLInt),
+          new GraphQLSemanticNonNull(GraphQLInt),
+        ),
+      ).to.equal(true);
+    });
+
+    it('semantic non-null is a subtype of non-null', () => {
+      const schema = testSchema({ field: { type: GraphQLString } });
+      expect(
+        isTypeSubTypeOf(
+          schema,
+          new GraphQLSemanticNonNull(GraphQLInt),
+          new GraphQLNonNull(GraphQLInt),
+        ),
+      ).to.equal(true);
+    });
+
+    it('non-null is a subtype of semantic non-null', () => {
+      const schema = testSchema({ field: { type: GraphQLString } });
+      expect(
+        isTypeSubTypeOf(
+          schema,
+          new GraphQLNonNull(GraphQLInt),
+          new GraphQLSemanticNonNull(GraphQLInt),
+        ),
       ).to.equal(true);
     });
 
