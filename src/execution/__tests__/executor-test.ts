@@ -1441,7 +1441,7 @@ describe('Execute: Handles basic execution tasks', () => {
       errors: [
         {
           message:
-            'Variable "$data" got invalid value { email: "", wrongArg: "wrong", wrongArg2: "wrong", wrongArg3: "wrong" }; Field "wrongArg" is not defined by type "User".',
+            'Variable "$data" has invalid value: Expected value of type "User" not to include unknown field "wrongArg", found: { email: "", wrongArg: "wrong", wrongArg2: "wrong", wrongArg3: "wrong" }.',
           locations: [{ line: 2, column: 17 }],
         },
         {
