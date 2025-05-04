@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz",
-    "graphql-esm": "file:../graphql-esm.tgz",
     "typescript-4.9": "npm:typescript@4.9.x",
     "typescript-5.0": "npm:typescript@5.0.x",
     "typescript-5.1": "npm:typescript@5.1.x",

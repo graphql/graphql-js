@@ -1,15 +1,9 @@
-'use strict';
+import assert from 'node:assert';
+import { readFileSync } from 'node:fs';
 
-const assert = require('node:assert');
-const { readFileSync } = require('node:fs');
-
-const {
-  experimentalExecuteIncrementally,
-  graphqlSync,
-  parse,
-} = require('graphql');
-const { buildSchema } = require('graphql/utilities');
-const { version } = require('graphql/version');
+import { experimentalExecuteIncrementally, graphqlSync, parse } from 'graphql';
+import { buildSchema } from 'graphql/utilities';
+import { version } from 'graphql/version';
 
 assert.deepStrictEqual(
   version,

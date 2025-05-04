@@ -764,7 +764,7 @@ export default tsConfig(
       'n/no-missing-import': [
         'error',
         {
-          allowModules: ['graphql', 'graphql-esm'],
+          allowModules: ['graphql'],
         },
       ],
       'n/no-missing-require': [

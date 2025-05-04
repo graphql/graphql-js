@@ -1,13 +1,15 @@
 {
+  "experiments": {
+    "outputModule": true
+  },
   "mode": "production",
   "entry": {
-    "cjs": "./entry.js",
-    "mjs": "./entry-esm.mjs"
+    "js": "./entry.js"
   },
   "output": {
-    "filename": "main-[name].cjs",
+    "filename": "main-[name].js",
     "library": {
-      "type": "commonjs2"
+      "type": "module"
     }
   }
 }

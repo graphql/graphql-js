@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz",
-    "graphql-esm": "file:../graphql-esm.tgz",
     "webpack": "5.x.x",
     "webpack-cli": "4.x.x"
   }
