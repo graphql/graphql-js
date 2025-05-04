@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/api",
+      "destination": "/api-v16/graphql",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "destination": "/docs",
+      "permanent": true
+    }
+  ]
+}

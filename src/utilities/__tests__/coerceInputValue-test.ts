@@ -122,11 +122,19 @@ describe('coerceInputValue', () => {
   });
 
   describe('for GraphQLInputObject', () => {
+    const DeepObject = new GraphQLInputObjectType({
+      name: 'DeepObject',
+      fields: {
+        foo: { type: new GraphQLNonNull(GraphQLInt) },
+        bar: { type: GraphQLInt },
+      },
+    });
     const TestInputObject = new GraphQLInputObjectType({
       name: 'TestInputObject',
       fields: {
         foo: { type: new GraphQLNonNull(GraphQLInt) },
         bar: { type: GraphQLInt },
+        deepObject: { type: DeepObject },
       },
     });
 
@@ -152,6 +160,14 @@ describe('coerceInputValue', () => {
 
     it('invalid for an unknown field', () => {
       test({ foo: 123, unknownField: 123 }, TestInputObject, undefined);
+    });
+
+    it('invalid for an array type', () => {
+      test([{ foo: 1 }, { bar: 1 }], TestInputObject, undefined);
+    });
+
+    it('invalid for an array type on a nested field', () => {
+      test({ foo: 1, deepObject: [1, 2, 3] }, TestInputObject, undefined);
     });
   });
 

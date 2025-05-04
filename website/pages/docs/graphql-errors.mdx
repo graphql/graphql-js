@@ -1,0 +1,188 @@
+---
+title: Understanding GraphQL.js Errors
+---
+
+# Understanding GraphQL.js Errors
+
+When executing a GraphQL operation, a server might encounter problems, such as failing to fetch 
+data, encountering invalid arguments, or running into unexpected internal issues. Instead of 
+crashing or halting execution, GraphQL.js collects these problems as structured errors 
+and includes them in the response.
+
+This guide explains how GraphQL.js represents errors internally, how errors propagate through a 
+query, and how you can customize error behavior.
+
+## How GraphQL.js represents errors in a response
+
+If an error occurs during execution, GraphQL.js includes it in a top-level `errors` array in the
+response, alongside any successfully returned data.
+
+For example:
+
+```json
+{
+  "data": {
+    "user": null
+  },
+  "errors": [
+    {
+      "message": "User not found",
+      "locations": [{ "line": 2, "column": 3 }],
+      "path": ["user"]
+    }
+  ]
+}
+```
+
+Each error object can include the following fields:
+
+- `message`: A human-readable description of the error.
+- `locations` (optional): Where the error occurred in the operation.
+- `path` (optional): The path to the field that caused the error.
+- `extensions` (optional): Additional error metadata, often used for error codes, HTTP status
+codes or debugging information.
+
+The GraphQL specification only requires the `message` field. All others are optional, but 
+recommended to help clients understand and react to errors.
+
+## Creating and handling errors with `GraphQLError`
+
+Internally, GraphQL.js represents errors with the `GraphQLError` class, found in the
+`graphql/error` module.
+
+You can create a `GraphQLError` manually:
+
+```js
+import { GraphQLError } from 'graphql';
+
+throw new GraphQLError('Something went wrong');
+```
+
+To provide more context about an error, you can pass additional options:
+
+```js
+throw new GraphQLError('Invalid input', {
+  nodes,
+  source,
+  positions,
+  path,
+  originalError,
+  extensions,
+});
+```
+
+Each option helps tie the error to specific parts of the GraphQL execution:
+
+- `nodes`: The AST nodes associated with the error.
+- `source` and `positions`: The source document and character offsets.
+- `path`: The field path leading to the error.
+- `originalError`: The underlying JavaScript error, if available.
+- `extensions`: Any custom metadata you want to include.
+
+When a resolver throws an error:
+
+- If the thrown value is already a `GraphQLError`, GraphQL.js uses it as-is.
+- If it is another type of error (such as a built-in `Error`), GraphQL.js wraps it into a
+`GraphQLError`.
+
+This ensures that all errors returned to the client follow a consistent structure.
+
+## How errors propagate during execution
+
+Errors in GraphQL don't necessarily abort the entire operation. How an error affects the response
+depends on the nullability of the field where the error occurs.
+
+- **Nullable fields**: If a resolver for a nullable field throws an error, GraphQL.js records
+the error and sets the field's value to `null` in the `data` payload.
+- **Non-nullable fields**: If a resolver for a non-nullable field throws an error, GraphQL.js
+records the error and then sets the nearest parent nullable field to `null`.
+
+For example, consider the following schema:
+
+```graphql
+type Query {
+  user: User
+}
+
+type User {
+  id: ID!
+  name: String!
+}
+```
+
+If the `name` resolver throws an error during execution:
+
+- Because `name` is non-nullable (`String!`), GraphQL.js can't return `null` for just that field.
+- Instead, the `user` field itself becomes `null`.
+- The error is recorded and included in the response.
+
+The result looks like:
+
+```json
+{
+  "data": {
+    "user": null
+  },
+  "errors": [
+    {
+      "message": "Failed to fetch user's name",
+      "path": ["user", "name"]
+    }
+  ]
+}
+```
+
+This behavior ensures that non-nullability guarantees are respected even in the presence of errors.
+
+For more detailed rules, see the [GraphQL Specification on error handling](https://spec.graphql.org/October2021/#sec-Errors).
+
+## Customizing errors with `extensions`
+
+You can add additional information to errors using the `extensions` field. This is useful for
+passing structured metadata like error codes, HTTP status codes, or debugging hints.
+
+For example:
+
+```js
+throw new GraphQLError('Unauthorized', {
+  extensions: {
+    code: 'UNAUTHORIZED',
+    http: {
+      status: 401
+    }
+  }
+});
+```
+
+Clients can inspect the `extensions` field instead of relying on parsing `message` strings.
+
+Common use cases for `extensions` include:
+
+- Assigning machine-readable error codes (`code: 'BAD_USER_INPUT'`)
+- Specifying HTTP status codes
+- Including internal debug information (hidden from production clients)
+
+Libraries like [Apollo Server](https://www.apollographql.com/docs/apollo-server/data/errors/) and 
+[Envelop](https://the-guild.dev/graphql/envelop/plugins/use-error-handler) offer conventions for 
+structured error extensions, if you want to adopt standardized patterns.
+
+## Best practices for error handling
+
+- Write clear, actionable messages. Error messages should help developers understand what went 
+wrong and how to fix it.
+- Use error codes in extensions. Define a set of stable, documented error codes for your API 
+to make client-side error handling easier.
+- Avoid leaking internal details. Do not expose stack traces, database errors, or other 
+sensitive information to clients.
+- Wrap unexpected errors. Catch and wrap low-level exceptions to ensure that all errors passed 
+through your GraphQL server follow the `GraphQLError` structure.
+
+In larger servers, you might centralize error handling with a custom error formatting function
+to enforce these best practices consistently.
+
+## Additional resources
+
+- [GraphQLError reference](https://graphql.org/graphql-js/error/#graphqlerror)
+- [GraphQL Specification: Error handling](https://spec.graphql.org/October2021/#sec-Errors)
+- [Apollo Server: Error handling](https://www.apollographql.com/docs/apollo-server/data/errors/)
+- [Envelop: Error plugins](https://the-guild.dev/graphql/envelop/plugins/use-error-handler)
