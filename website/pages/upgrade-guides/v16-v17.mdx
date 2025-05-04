@@ -12,6 +12,26 @@ import { Callout } from 'nextra/components'
 
 # Breaking changes
 
+## ESM only
+
+GraphQL.js is now an ESM only library, for CJS builds use GraphQL v16 instead. This decision was made in light
+of `require(esm)` becoming a mainline feature in Node.js 20. This removes the dual package hazard from GraphQL.JS as
+we stop publishing two distinct versions for CJS and ESM.
+
+## `setEnv`
+
+We've removed the `process.env` check in favor of a more explicit `setEnv` function. By default we'll assume
+we are in `production` mode, if you need to run in `development` mode you can do so by calling `setEnv('development')`.
+
+The main check that gets added is the `instanceOf` check, this is used to determine if a value is an instance of
+a given type but originates from a different version of the library.
+
+```ts
+import { setEnv } from 'graphql';
+
+setEnv('development');
+```
+
 ## Default values
 
 GraphQL schemas allow default values for input fields and arguments. Historically, GraphQL.js did not rigorously validate or coerce these
