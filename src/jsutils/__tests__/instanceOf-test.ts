@@ -1,9 +1,15 @@
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { beforeEach, describe, it } from 'mocha';
+
+import { setEnv } from '../../utilities/env.js';
 
 import { instanceOf } from '../instanceOf.js';
 
 describe('instanceOf', () => {
+  beforeEach(() => {
+    setEnv('development');
+  });
+
   it('do not throw on values without prototype', () => {
     class Foo {
       get [Symbol.toStringTag]() {
