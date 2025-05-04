@@ -220,10 +220,7 @@ export function visit(
             }
           }
         } else {
-          node = Object.defineProperties(
-            {},
-            Object.getOwnPropertyDescriptors(node),
-          );
+          node = { ...node };
           for (const [editKey, editValue] of edits) {
             node[editKey] = editValue;
           }
