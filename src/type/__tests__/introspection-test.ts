@@ -26,6 +26,7 @@ describe('Introspection', () => {
       descriptions: false,
       specifiedByUrl: true,
       directiveIsRepeatable: true,
+      errorBehavior: true,
     });
 
     const result = graphqlSync({ schema, source });
@@ -35,6 +36,7 @@ describe('Introspection', () => {
           queryType: { name: 'SomeObject', kind: 'OBJECT' },
           mutationType: null,
           subscriptionType: null,
+          defaultErrorBehavior: 'PROPAGATE',
           types: [
             {
               kind: 'OBJECT',
@@ -77,6 +79,32 @@ describe('Introspection', () => {
               interfaces: null,
               enumValues: null,
               possibleTypes: null,
+            },
+            {
+              enumValues: [
+                {
+                  deprecationReason: null,
+                  isDeprecated: false,
+                  name: 'NO_PROPAGATE',
+                },
+                {
+                  deprecationReason: null,
+                  isDeprecated: false,
+                  name: 'PROPAGATE',
+                },
+                {
+                  deprecationReason: null,
+                  isDeprecated: false,
+                  name: 'ABORT',
+                },
+              ],
+              fields: null,
+              inputFields: null,
+              interfaces: null,
+              kind: 'ENUM',
+              name: '__ErrorBehavior',
+              possibleTypes: null,
+              specifiedByURL: null,
             },
             {
               kind: 'OBJECT',
@@ -172,6 +200,21 @@ describe('Introspection', () => {
                           ofType: null,
                         },
                       },
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'defaultErrorBehavior',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'ENUM',
+                      name: '__ErrorBehavior',
+                      ofType: null,
                     },
                   },
                   isDeprecated: false,
@@ -1006,6 +1049,26 @@ describe('Introspection', () => {
               locations: ['INPUT_OBJECT'],
               args: [],
             },
+            {
+              args: [
+                {
+                  defaultValue: 'PROPAGATE',
+                  name: 'onError',
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'ENUM',
+                      name: '__ErrorBehavior',
+                      ofType: null,
+                    },
+                  },
+                },
+              ],
+              isRepeatable: false,
+              locations: ['SCHEMA'],
+              name: 'behavior',
+            },
           ],
         },
       },
@@ -1753,5 +1816,63 @@ describe('Introspection', () => {
       typeResolver,
     });
     expect(result).to.not.have.property('errors');
+  });
+
+  it('reflects the default error behavior (default)', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        someField: String
+      }
+
+      schema {
+        query: SomeObject
+      }
+    `);
+
+    const source = /* GraphQL */ `
+      {
+        __schema {
+          defaultErrorBehavior
+        }
+      }
+    `;
+
+    const result = graphqlSync({ schema, source });
+    expect(result).to.deep.equal({
+      data: {
+        __schema: {
+          defaultErrorBehavior: 'PROPAGATE',
+        },
+      },
+    });
+  });
+
+  it('reflects the default error behavior (NO_PROPAGATE)', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        someField: String
+      }
+
+      schema @behavior(onError: NO_PROPAGATE) {
+        query: SomeObject
+      }
+    `);
+
+    const source = /* GraphQL */ `
+      {
+        __schema {
+          defaultErrorBehavior
+        }
+      }
+    `;
+
+    const result = graphqlSync({ schema, source });
+    expect(result).to.deep.equal({
+      data: {
+        __schema: {
+          defaultErrorBehavior: 'NO_PROPAGATE',
+        },
+      },
+    });
   });
 });

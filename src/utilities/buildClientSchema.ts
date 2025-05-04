@@ -108,6 +108,8 @@ export function buildClientSchema(
     ? schemaIntrospection.directives.map(buildDirective)
     : [];
 
+  const defaultErrorBehavior = schemaIntrospection.defaultErrorBehavior;
+
   // Then produce and return a Schema with these types.
   return new GraphQLSchema({
     description: schemaIntrospection.description,
@@ -116,6 +118,7 @@ export function buildClientSchema(
     subscription: subscriptionType,
     types: Object.values(typeMap),
     directives,
+    defaultErrorBehavior,
     assumeValid: options?.assumeValid,
   });
 

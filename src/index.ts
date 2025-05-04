@@ -79,6 +79,7 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
+  __ErrorBehavior,
   // Meta-field definitions.
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
@@ -395,6 +396,7 @@ export {
 } from './error/index';
 
 export type {
+  GraphQLErrorBehavior,
   GraphQLErrorOptions,
   GraphQLFormattedError,
   GraphQLErrorExtensions,
