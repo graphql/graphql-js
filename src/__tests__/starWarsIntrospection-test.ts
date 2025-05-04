@@ -37,6 +37,7 @@ describe('Star Wars Introspection Tests', () => {
             { name: 'Droid' },
             { name: 'Query' },
             { name: 'Boolean' },
+            { name: 'ErrorBehavior' },
             { name: '__Schema' },
             { name: '__Type' },
             { name: '__TypeKind' },

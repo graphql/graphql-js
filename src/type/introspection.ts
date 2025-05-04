@@ -30,6 +30,7 @@ import {
   isUnionType,
 } from './definition';
 import type { GraphQLDirective } from './directives';
+import { GraphQLErrorBehavior } from './enums';
 import { GraphQLBoolean, GraphQLString } from './scalars';
 import type { GraphQLSchema } from './schema';
 
@@ -73,6 +74,12 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
           new GraphQLList(new GraphQLNonNull(__Directive)),
         ),
         resolve: (schema) => schema.getDirectives(),
+      },
+      defaultErrorBehavior: {
+        description:
+          'The default error behavior that will be used for requests which do not specify `onError`.',
+        type: new GraphQLNonNull(GraphQLErrorBehavior),
+        resolve: (schema) => schema.defaultErrorBehavior,
       },
     } as GraphQLFieldConfigMap<GraphQLSchema, unknown>),
 });
@@ -558,6 +565,7 @@ export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
     __InputValue,
     __EnumValue,
     __TypeKind,
+    // ErrorBehavior,
   ]);
 
 export function isIntrospectionType(type: GraphQLNamedType): boolean {

@@ -30,6 +30,7 @@ import {
   isUnionType,
 } from '../type/definition';
 import { GraphQLDirective } from '../type/directives';
+import { isSpecifiedEnumType } from '../type/enums';
 import { isIntrospectionType } from '../type/introspection';
 import { GraphQLSchema } from '../type/schema';
 
@@ -115,7 +116,12 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 
   function sortNamedType(type: GraphQLNamedType): GraphQLNamedType {
-    if (isScalarType(type) || isIntrospectionType(type)) {
+    if (
+      isScalarType(type) ||
+      isIntrospectionType(type) ||
+      isIntrospectionType(type) ||
+      isSpecifiedEnumType(type)
+    ) {
       return type;
     }
     if (isObjectType(type)) {

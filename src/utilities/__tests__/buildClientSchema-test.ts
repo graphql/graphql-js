@@ -18,6 +18,7 @@ import {
   GraphQLString,
 } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
+import { validateSchema } from '../../type/validate';
 
 import { graphqlSync } from '../../graphql';
 
@@ -156,6 +157,26 @@ describe('Type System: build schema from introspection', () => {
     expect(clientSchema.getType('Int')).to.equal(undefined);
     expect(clientSchema.getType('Float')).to.equal(undefined);
     expect(clientSchema.getType('ID')).to.equal(undefined);
+  });
+
+  it('reflects defaultErrorBehavior', () => {
+    const schema = buildSchema(`
+      schema @behavior(onError: NO_PROPAGATE) {
+        query: Query
+      }
+      type Query {
+        foo: String
+      }
+    `);
+    const introspection = introspectionFromSchema(schema, {
+      errorBehavior: true,
+    });
+    const clientSchema = buildClientSchema(introspection);
+
+    expect(clientSchema.defaultErrorBehavior).to.equal('NO_PROPAGATE');
+
+    const errors = validateSchema(clientSchema);
+    expect(errors).to.have.length(0);
   });
 
   it('builds a schema with a recursive type reference', () => {
