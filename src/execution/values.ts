@@ -32,6 +32,7 @@ import {
   validateInputValue,
 } from '../utilities/validateInputValue.js';
 
+import type { FragmentVariableValues } from './collectFields.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
 import { getVariableSignature } from './getVariableSignature.js';
 
@@ -154,9 +155,9 @@ export function getFragmentVariableValues(
   fragmentSpreadNode: FragmentSpreadNode,
   fragmentSignatures: ReadOnlyObjMap<GraphQLVariableSignature>,
   variableValues: VariableValues,
-  fragmentVariableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
-): VariableValues {
+): FragmentVariableValues {
   const varSignatures: Array<GraphQLVariableSignature> = [];
   const sources = Object.create(null);
   for (const [varName, varSignature] of Object.entries(fragmentSignatures)) {
@@ -207,7 +208,7 @@ export function experimentalGetArgumentValues(
   node: FieldNode | DirectiveNode | FragmentSpreadNode,
   argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
   variableValues: Maybe<VariableValues>,
-  fragmentVariableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
 ): { [argument: string]: unknown } {
   const coercedValues: { [argument: string]: unknown } = {};
@@ -306,7 +307,7 @@ export function getDirectiveValues(
   directiveDef: GraphQLDirective,
   node: { readonly directives?: ReadonlyArray<DirectiveNode> | undefined },
   variableValues?: Maybe<VariableValues>,
-  fragmentVariableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
 ): undefined | { [argument: string]: unknown } {
   const directiveNode = node.directives?.find(

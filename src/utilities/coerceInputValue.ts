@@ -18,6 +18,7 @@ import {
   isRequiredInputField,
 } from '../type/definition.js';
 
+import type { FragmentVariableValues } from '../execution/collectFields.js';
 import type { VariableValues } from '../execution/values.js';
 
 import { replaceVariables } from './replaceVariables.js';
@@ -130,7 +131,7 @@ export function coerceInputLiteral(
   valueNode: ValueNode,
   type: GraphQLInputType,
   variableValues?: Maybe<VariableValues>,
-  fragmentVariableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<FragmentVariableValues>,
 ): unknown {
   if (valueNode.kind === Kind.VARIABLE) {
     const coercedVariableValue = getCoercedVariableValue(
@@ -283,7 +284,7 @@ export function coerceInputLiteral(
 function getCoercedVariableValue(
   variableNode: VariableNode,
   variableValues: Maybe<VariableValues>,
-  fragmentVariableValues: Maybe<VariableValues>,
+  fragmentVariableValues: Maybe<FragmentVariableValues>,
 ): unknown {
   const varName = variableNode.name.value;
   if (fragmentVariableValues?.sources[varName] !== undefined) {

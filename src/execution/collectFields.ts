@@ -1,5 +1,5 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
-import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.js';
 
 import type {
   DirectiveNode,
@@ -35,10 +35,20 @@ export interface DeferUsage {
   parentDeferUsage: DeferUsage | undefined;
 }
 
+export interface FragmentVariableValues {
+  readonly sources: ReadOnlyObjMap<FragmentVariableValueSource>;
+  readonly coerced: ReadOnlyObjMap<unknown>;
+}
+
+interface FragmentVariableValueSource {
+  readonly signature: GraphQLVariableSignature;
+  readonly value?: unknown;
+}
+
 export interface FieldDetails {
   node: FieldNode;
   deferUsage?: DeferUsage | undefined;
-  fragmentVariableValues?: VariableValues | undefined;
+  fragmentVariableValues?: FragmentVariableValues | undefined;
 }
 
 export type FieldDetailsList = ReadonlyArray<FieldDetails>;
@@ -168,7 +178,7 @@ function collectFieldsImpl(
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   newDeferUsages: Array<DeferUsage>,
   deferUsage?: DeferUsage,
-  fragmentVariableValues?: VariableValues,
+  fragmentVariableValues?: FragmentVariableValues,
 ): void {
   const {
     schema,
@@ -318,7 +328,7 @@ function collectFieldsImpl(
  */
 function getDeferUsage(
   variableValues: VariableValues,
-  fragmentVariableValues: VariableValues | undefined,
+  fragmentVariableValues: FragmentVariableValues | undefined,
   node: FragmentSpreadNode | InlineFragmentNode,
   parentDeferUsage: DeferUsage | undefined,
 ): DeferUsage | undefined {
@@ -351,7 +361,7 @@ function shouldIncludeNode(
   context: CollectFieldsContext,
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
   variableValues: VariableValues,
-  fragmentVariableValues: VariableValues | undefined,
+  fragmentVariableValues: FragmentVariableValues | undefined,
 ): boolean {
   const skipDirectiveNode = node.directives?.find(
     (directive) => directive.name.value === GraphQLSkipDirective.name,

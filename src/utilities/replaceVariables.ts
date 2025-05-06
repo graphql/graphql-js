@@ -7,6 +7,7 @@ import type {
 } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 
+import type { FragmentVariableValues } from '../execution/collectFields.js';
 import type { VariableValues } from '../execution/values.js';
 
 import { valueToLiteral } from './valueToLiteral.js';
@@ -22,7 +23,7 @@ import { valueToLiteral } from './valueToLiteral.js';
 export function replaceVariables(
   valueNode: ValueNode,
   variableValues?: Maybe<VariableValues>,
-  fragmentVariableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<FragmentVariableValues>,
 ): ConstValueNode {
   switch (valueNode.kind) {
     case Kind.VARIABLE: {
