@@ -457,7 +457,14 @@ function validateInputLiteralImpl(
     let caughtError;
     try {
       result = type.coerceInputLiteral
-        ? type.coerceInputLiteral(replaceVariables(valueNode), hideSuggestions)
+        ? type.coerceInputLiteral(
+            replaceVariables(
+              valueNode,
+              context.variables,
+              context.fragmentVariableValues,
+            ),
+            hideSuggestions,
+          )
         : type.parseLiteral(valueNode, undefined, hideSuggestions);
     } catch (error) {
       if (error instanceof GraphQLError) {
