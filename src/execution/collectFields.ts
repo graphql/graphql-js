@@ -26,7 +26,7 @@ import { typeFromAST } from '../utilities/typeFromAST.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
 import type { VariableValues } from './values.js';
 import {
-  experimentalGetArgumentValues,
+  getArgumentValues,
   getDirectiveValues,
   getFragmentVariableValues,
 } from './values.js';
@@ -373,9 +373,9 @@ function shouldIncludeNode(
     return false;
   }
   const skip = skipDirectiveNode
-    ? experimentalGetArgumentValues(
+    ? getArgumentValues(
+        GraphQLSkipDirective,
         skipDirectiveNode,
-        GraphQLSkipDirective.args,
         variableValues,
         fragmentVariableValues,
         context.hideSuggestions,
@@ -393,9 +393,9 @@ function shouldIncludeNode(
     return false;
   }
   const include = includeDirectiveNode
-    ? experimentalGetArgumentValues(
+    ? getArgumentValues(
+        GraphQLIncludeDirective,
         includeDirectiveNode,
-        GraphQLIncludeDirective.args,
         variableValues,
         fragmentVariableValues,
         context.hideSuggestions,

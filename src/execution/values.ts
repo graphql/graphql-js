@@ -1,5 +1,4 @@
 import { invariant } from '../jsutils/invariant.js';
-import { keyMap } from '../jsutils/keyMap.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.js';
 import { printPathArray } from '../jsutils/printPathArray.js';
@@ -7,8 +6,10 @@ import { printPathArray } from '../jsutils/printPathArray.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
+  ArgumentNode,
   DirectiveNode,
   FieldNode,
+  FragmentArgumentNode,
   FragmentSpreadNode,
   VariableDefinitionNode,
 } from '../language/ast.js';
@@ -159,32 +160,32 @@ export function getFragmentVariableValues(
   fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
 ): FragmentVariableValues {
-  const args = keyMap(
-    fragmentSpreadNode.arguments ?? [],
-    (arg) => arg.name.value,
-  );
-  const varSignatures: Array<GraphQLVariableSignature> = [];
+  const argumentNodes = fragmentSpreadNode.arguments ?? [];
+  const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
   const sources = Object.create(null);
+  const coerced = Object.create(null);
   for (const [varName, varSignature] of Object.entries(fragmentSignatures)) {
-    varSignatures.push(varSignature);
     sources[varName] = {
       signature: varSignature,
     };
-    const arg = args[varName];
-    if (arg !== undefined) {
+    const argumentNode = argNodeMap.get(varName);
+    if (argumentNode !== undefined) {
       const source = sources[varName];
-      source.value = arg.value;
+      source.value = argumentNode.value;
       source.fragmentVariableValues = fragmentVariableValues;
     }
-  }
 
-  const coerced = experimentalGetArgumentValues(
-    fragmentSpreadNode,
-    varSignatures,
-    variableValues,
-    fragmentVariableValues,
-    hideSuggestions,
-  );
+    coerceArgument(
+      coerced,
+      fragmentSpreadNode,
+      varName,
+      varSignature,
+      argumentNode,
+      variableValues,
+      fragmentVariableValues,
+      hideSuggestions,
+    );
+  }
 
   return { sources, coerced };
 }
@@ -201,21 +202,6 @@ export function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
   node: FieldNode | DirectiveNode,
   variableValues?: Maybe<VariableValues>,
-  hideSuggestions?: Maybe<boolean>,
-): { [argument: string]: unknown } {
-  return experimentalGetArgumentValues(
-    node,
-    def.args,
-    variableValues,
-    undefined,
-    hideSuggestions,
-  );
-}
-
-export function experimentalGetArgumentValues(
-  node: FieldNode | DirectiveNode | FragmentSpreadNode,
-  argDefs: ReadonlyArray<GraphQLArgument | GraphQLVariableSignature>,
-  variableValues: Maybe<VariableValues>,
   fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
 ): { [argument: string]: unknown } {
@@ -224,80 +210,102 @@ export function experimentalGetArgumentValues(
   const argumentNodes = node.arguments ?? [];
   const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
 
-  for (const argDef of argDefs) {
+  for (const argDef of def.args) {
     const name = argDef.name;
-    const argType = argDef.type;
-    const argumentNode = argNodeMap.get(name);
-
-    if (!argumentNode) {
-      if (isRequiredArgument(argDef)) {
-        // Note: ProvidedRequiredArgumentsRule validation should catch this before
-        // execution. This is a runtime check to ensure execution does not
-        // continue with an invalid argument value.
-        throw new GraphQLError(
-          // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
-          `Argument "${isArgument(argDef) ? argDef : argDef.name}" of required type "${argType}" was not provided.`,
-          { nodes: node },
-        );
-      }
-      const coercedDefaultValue = coerceDefaultValue(argDef);
-      if (coercedDefaultValue !== undefined) {
-        coercedValues[name] = coercedDefaultValue;
-      }
-      continue;
-    }
-
-    const valueNode = argumentNode.value;
-
-    // Variables without a value are treated as if no argument was provided if
-    // the argument is not required.
-    if (valueNode.kind === Kind.VARIABLE) {
-      const variableName = valueNode.name.value;
-      const scopedVariableValues = fragmentVariableValues?.sources[variableName]
-        ? fragmentVariableValues
-        : variableValues;
-      if (
-        (scopedVariableValues == null ||
-          !Object.hasOwn(scopedVariableValues.coerced, variableName)) &&
-        !isRequiredArgument(argDef)
-      ) {
-        const coercedDefaultValue = coerceDefaultValue(argDef);
-        if (coercedDefaultValue !== undefined) {
-          coercedValues[name] = coercedDefaultValue;
-        }
-        continue;
-      }
-    }
-    const coercedValue = coerceInputLiteral(
-      valueNode,
-      argType,
+    coerceArgument(
+      coercedValues,
+      node,
+      name,
+      argDef,
+      argNodeMap.get(argDef.name),
       variableValues,
       fragmentVariableValues,
+      hideSuggestions,
     );
-    if (coercedValue === undefined) {
-      // Note: ValuesOfCorrectTypeRule validation should catch this before
-      // execution. This is a runtime check to ensure execution does not
-      // continue with an invalid argument value.
-      validateInputLiteral(
-        valueNode,
-        argType,
-        (error, path) => {
-          // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
-          error.message = `Argument "${isArgument(argDef) ? argDef : argDef.name}" has invalid value${printPathArray(
-            path,
-          )}: ${error.message}`;
-          throw error;
-        },
-        variableValues,
-        fragmentVariableValues,
-        hideSuggestions,
-      );
-      /* c8 ignore next */
-      invariant(false, 'Invalid argument');
-    }
-    coercedValues[name] = coercedValue;
   }
   return coercedValues;
+}
+
+// eslint-disable-next-line @typescript-eslint/max-params
+function coerceArgument(
+  coercedValues: ObjMap<unknown>,
+  node: FieldNode | DirectiveNode | FragmentSpreadNode,
+  argName: string,
+  argDef: GraphQLArgument | GraphQLVariableSignature,
+  argumentNode: ArgumentNode | FragmentArgumentNode | undefined,
+  variableValues: Maybe<VariableValues>,
+  fragmentVariableValues: Maybe<FragmentVariableValues>,
+  hideSuggestions?: Maybe<boolean>,
+): void {
+  const argType = argDef.type;
+
+  if (!argumentNode) {
+    if (isRequiredArgument(argDef)) {
+      // Note: ProvidedRequiredArgumentsRule validation should catch this before
+      // execution. This is a runtime check to ensure execution does not
+      // continue with an invalid argument value.
+      throw new GraphQLError(
+        // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+        `Argument "${isArgument(argDef) ? argDef : argName}" of required type "${argType}" was not provided.`,
+        { nodes: node },
+      );
+    }
+    const coercedDefaultValue = coerceDefaultValue(argDef);
+    if (coercedDefaultValue !== undefined) {
+      coercedValues[argName] = coercedDefaultValue;
+    }
+    return;
+  }
+
+  const valueNode = argumentNode.value;
+
+  // Variables without a value are treated as if no argument was provided if
+  // the argument is not required.
+  if (valueNode.kind === Kind.VARIABLE) {
+    const variableName = valueNode.name.value;
+    const scopedVariableValues = fragmentVariableValues?.sources[variableName]
+      ? fragmentVariableValues
+      : variableValues;
+    if (
+      (scopedVariableValues == null ||
+        !Object.hasOwn(scopedVariableValues.coerced, variableName)) &&
+      !isRequiredArgument(argDef)
+    ) {
+      const coercedDefaultValue = coerceDefaultValue(argDef);
+      if (coercedDefaultValue !== undefined) {
+        coercedValues[argName] = coercedDefaultValue;
+      }
+      return;
+    }
+  }
+  const coercedValue = coerceInputLiteral(
+    valueNode,
+    argType,
+    variableValues,
+    fragmentVariableValues,
+  );
+  if (coercedValue === undefined) {
+    // Note: ValuesOfCorrectTypeRule validation should catch this before
+    // execution. This is a runtime check to ensure execution does not
+    // continue with an invalid argument value.
+    validateInputLiteral(
+      valueNode,
+      argType,
+      (error, path) => {
+        // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+        error.message = `Argument "${isArgument(argDef) ? argDef : argDef.name}" has invalid value${printPathArray(
+          path,
+        )}: ${error.message}`;
+        throw error;
+      },
+      variableValues,
+      fragmentVariableValues,
+      hideSuggestions,
+    );
+    /* c8 ignore next */
+    invariant(false, 'Invalid argument');
+  }
+  coercedValues[argName] = coercedValue;
 }
 
 /**
@@ -323,9 +331,9 @@ export function getDirectiveValues(
   );
 
   if (directiveNode) {
-    return experimentalGetArgumentValues(
+    return getArgumentValues(
+      directiveDef,
       directiveNode,
-      directiveDef.args,
       variableValues,
       fragmentVariableValues,
       hideSuggestions,
