@@ -30,6 +30,8 @@ import {
 import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
+import { valueFromASTUntyped } from '../../utilities/valueFromASTUntyped.js';
+
 import { executeSync, experimentalExecuteIncrementally } from '../execute.js';
 import { getVariableValues } from '../values.js';
 
@@ -61,6 +63,16 @@ const TestComplexScalar = new GraphQLScalarType({
   coerceInputLiteral(ast) {
     expect(ast).to.include({ kind: 'StringValue', value: 'ExternalValue' });
     return 'InternalValue';
+  },
+});
+
+const TestJSONScalar = new GraphQLScalarType({
+  name: 'JSONScalar',
+  coerceInputValue(value) {
+    return value;
+  },
+  coerceInputLiteral(value) {
+    return valueFromASTUntyped(value);
   },
 });
 
@@ -151,6 +163,7 @@ const TestType = new GraphQLObjectType({
     fieldWithNestedInputObject: fieldWithInputArg({
       type: TestNestedInputObject,
     }),
+    fieldWithJSONScalarInput: fieldWithInputArg({ type: TestJSONScalar }),
     list: fieldWithInputArg({ type: new GraphQLList(GraphQLString) }),
     nested: {
       type: NestedType,
@@ -855,6 +868,94 @@ describe('Execute: Handles inputs', () => {
             path: ['fieldWithNonNullableStringInput'],
           },
         ],
+      });
+    });
+  });
+
+  // Note: the below is non-specified custom graphql-js behavior.
+  describe('Handles custom scalars with embedded variables', () => {
+    it('allows custom scalars', () => {
+      const result = executeQuery(`
+        {
+          fieldWithJSONScalarInput(input: { a: "foo", b: ["bar"], c: "baz" })
+        }
+      `);
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithJSONScalarInput: '{ a: "foo", b: ["bar"], c: "baz" }',
+        },
+      });
+    });
+
+    it('allows custom scalars with non-embedded variables', () => {
+      const result = executeQuery(
+        `
+          query ($input: JSONScalar) {
+            fieldWithJSONScalarInput(input: $input)
+          }
+        `,
+        { input: { a: 'foo', b: ['bar'], c: 'baz' } },
+      );
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithJSONScalarInput: '{ a: "foo", b: ["bar"], c: "baz" }',
+        },
+      });
+    });
+
+    it('allows custom scalars with embedded operation variables', () => {
+      const result = executeQuery(
+        `
+          query ($input: String) {
+            fieldWithJSONScalarInput(input: { a: $input, b: ["bar"], c: "baz" })
+          }
+        `,
+        { input: 'foo' },
+      );
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithJSONScalarInput: '{ a: "foo", b: ["bar"], c: "baz" }',
+        },
+      });
+    });
+
+    it('allows custom scalars with embedded fragment variables', () => {
+      const result = executeQueryWithFragmentArguments(`
+        {
+          ...JSONFragment(input: "foo")
+        }
+        fragment JSONFragment($input: String) on TestType {
+          fieldWithJSONScalarInput(input: { a: $input, b: ["bar"], c: "baz" })
+        }
+      `);
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithJSONScalarInput: '{ a: "foo", b: ["bar"], c: "baz" }',
+        },
+      });
+    });
+
+    it('allows custom scalars with embedded nested fragment variables', () => {
+      const result = executeQueryWithFragmentArguments(`
+        {
+          ...JSONFragment(input1: "foo")
+        }
+        fragment JSONFragment($input1: String) on TestType {
+          ...JSONNestedFragment(input2: $input1)
+        }
+        fragment JSONNestedFragment($input2: String) on TestType {
+          fieldWithJSONScalarInput(input: { a: $input2, b: ["bar"], c: "baz" })
+        }
+      `);
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithJSONScalarInput: '{ a: "foo", b: ["bar"], c: "baz" }',
+        },
       });
     });
   });
