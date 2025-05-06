@@ -40,7 +40,11 @@ export function replaceVariables(
           }
           return { kind: Kind.NULL };
         }
-        return value;
+        return replaceVariables(
+          value,
+          variableValues,
+          fragmentVariableValueSource.fragmentVariableValues,
+        );
       }
 
       const variableValueSource = variableValues?.sources[varName];

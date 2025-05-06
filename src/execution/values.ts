@@ -28,7 +28,6 @@ import {
   coerceInputLiteral,
   coerceInputValue,
 } from '../utilities/coerceInputValue.js';
-import { replaceVariables } from '../utilities/replaceVariables.js';
 import {
   validateInputLiteral,
   validateInputValue,
@@ -173,12 +172,9 @@ export function getFragmentVariableValues(
     };
     const arg = args[varName];
     if (arg !== undefined) {
-      const value = arg.value;
-      sources[varName].value = replaceVariables(
-        value,
-        variableValues,
-        fragmentVariableValues,
-      );
+      const source = sources[varName];
+      source.value = arg.value;
+      source.fragmentVariableValues = fragmentVariableValues;
     }
   }
 

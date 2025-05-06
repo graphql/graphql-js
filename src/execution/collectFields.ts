@@ -44,6 +44,7 @@ export interface FragmentVariableValues {
 interface FragmentVariableValueSource {
   readonly signature: GraphQLVariableSignature;
   readonly value?: ConstValueNode;
+  readonly fragmentVariableValues?: FragmentVariableValues;
 }
 
 export interface FieldDetails {

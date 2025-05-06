@@ -938,6 +938,26 @@ describe('Execute: Handles inputs', () => {
         },
       });
     });
+
+    it('allows custom scalars with embedded nested fragment variables', () => {
+      const result = executeQueryWithFragmentArguments(`
+        {
+          ...JSONFragment(input1: "foo")
+        }
+        fragment JSONFragment($input1: String) on TestType {
+          ...JSONNestedFragment(input2: $input1)
+        }
+        fragment JSONNestedFragment($input2: String) on TestType {
+          fieldWithJSONScalarInput(input: { a: $input2, b: ["bar"], c: "baz" })
+        }
+      `);
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithJSONScalarInput: '{ a: "foo", b: ["bar"], c: "baz" }',
+        },
+      });
+    });
   });
 
   describe('Handles lists and nullability', () => {
