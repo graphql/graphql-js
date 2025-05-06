@@ -2,6 +2,7 @@ import { AccumulatorMap } from '../jsutils/AccumulatorMap.js';
 import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.js';
 
 import type {
+  ConstValueNode,
   DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
@@ -42,7 +43,7 @@ export interface FragmentVariableValues {
 
 interface FragmentVariableValueSource {
   readonly signature: GraphQLVariableSignature;
-  readonly value?: unknown;
+  readonly value?: ConstValueNode;
 }
 
 export interface FieldDetails {
@@ -283,7 +284,7 @@ function collectFieldsImpl(
         );
 
         const fragmentVariableSignatures = fragment.variableSignatures;
-        let newFragmentVariableValues: VariableValues | undefined;
+        let newFragmentVariableValues: FragmentVariableValues | undefined;
         if (fragmentVariableSignatures) {
           newFragmentVariableValues = getFragmentVariableValues(
             selection,

@@ -1,4 +1,5 @@
 import { invariant } from '../jsutils/invariant.js';
+import { keyMap } from '../jsutils/keyMap.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.js';
 import { printPathArray } from '../jsutils/printPathArray.js';
@@ -27,6 +28,7 @@ import {
   coerceInputLiteral,
   coerceInputValue,
 } from '../utilities/coerceInputValue.js';
+import { replaceVariables } from '../utilities/replaceVariables.js';
 import {
   validateInputLiteral,
   validateInputValue,
@@ -158,16 +160,26 @@ export function getFragmentVariableValues(
   fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
 ): FragmentVariableValues {
+  const args = keyMap(
+    fragmentSpreadNode.arguments ?? [],
+    (arg) => arg.name.value,
+  );
   const varSignatures: Array<GraphQLVariableSignature> = [];
   const sources = Object.create(null);
   for (const [varName, varSignature] of Object.entries(fragmentSignatures)) {
     varSignatures.push(varSignature);
     sources[varName] = {
       signature: varSignature,
-      value:
-        fragmentVariableValues?.sources[varName]?.value ??
-        variableValues.sources[varName]?.value,
     };
+    const arg = args[varName];
+    if (arg !== undefined) {
+      const value = arg.value;
+      sources[varName].value = replaceVariables(
+        value,
+        variableValues,
+        fragmentVariableValues,
+      );
+    }
   }
 
   const coerced = experimentalGetArgumentValues(
