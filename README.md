@@ -194,7 +194,7 @@ To assist users in upgrading to newer versions:
 
 We prioritize the security of GraphQL.JS:
 
-- Critical security updates will be backported to the current and previous major version.
+- Critical security updates will be applied to both the current and previous major version.
 - For versions that have reached EOL, we strongly recommend upgrading to a supported version to receive security updates.
 
 ### Community Contributions
