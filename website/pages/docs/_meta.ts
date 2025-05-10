@@ -19,6 +19,7 @@ const meta = {
   'constructing-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
+  'n1-dataloader': '',
   'resolver-anatomy': '',
   'graphql-errors': '',
   '-- 3': {
