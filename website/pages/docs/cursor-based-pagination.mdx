@@ -1,0 +1,234 @@
+---
+title: Implementing Cursor-based Pagination
+---
+
+When a GraphQL API returns a list of data, pagination helps avoid
+fetching too must data at once. Cursor-based pagination fetches items
+relative to a specific point in the list, rather than using numeric offsets.
+This pattern works well with dyanmic datasets, where users frequently add or
+remove items between requests.
+
+GraphQL.js doesn't include cursor pagination out of the box, but you can implement
+it using custom types and resolvers. This guide shows how to build a paginated field
+using the connection pattern popularized by Relay. By the end of this guide, you will
+be able to define cursors and return results in a consistent structure that works well
+with clients.
+
+## The connection pattern
+
+Cursor-based pagination typically uses a structured format that separates
+pagination metadata from the actual data. The most widely adopted pattern follows the
+[Relay Cursor Connections Specification](https://relay.dev/graphql/connections.htm). While
+this format originated in Relay, many GraphQL APIs use it independently because of its
+clarity and flexibility.
+
+This pattern wraps your list of items in a connection type, which includes the following fields:
+
+- `edges`: A list of edge objects, each representing an item in the list.
+- `node`: The actual object you want to retrieve, such as user, post, or comment.
+- `cursor`: An opaque string that identifies the position of the item in the list.
+- `pageInfo`: Metadata about the list, such as whether more items are available.
+
+The following query and response show how this structure works:
+
+```graphql
+query {
+  users(first: 2) {
+    edges {
+      node {
+        id
+        name
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "users": {
+      "edges": [
+        {
+          "node": {
+            "id": "1",
+            "name": "Ada Lovelace"
+          },
+          "cursor": "cursor-1"
+        },
+        {
+          "node": {
+            "id": "2",
+            "name": "Alan Turing"
+          },
+          "cursor": "cursor-2"
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "cursor-2"
+      }
+    }
+  }
+}
+```
+
+This structure gives clients everything they need to paginate. It provides the actual data (`node`),
+the cursor the continue from (`endCursor`), and a flag (`hasNextPage`) that indicates whether
+more data is available.
+
+## Defining connection types in GraphQL.js
+
+To support this structure in your schema, define a few custom types:
+
+```js
+const PageInfoType = new GraphQLObjectType({
+  name: 'PageInfo',
+  fields: {
+    hasNextPage: { type: new GraphQLNonNull(GraphQLBoolean) },
+    endCursor: { type: GraphQLString },
+  },
+});
+
+const UserEdgeType = new GraphQLObjectType({
+  name: 'UserEdge',
+  fields: {
+    node: { type: UserType },
+    cursor: { type: new GraphQLNonNull(GraphQLString) },
+  },
+});
+
+const UserConnectionType = new GraphQLObjectType({
+  name: 'UserConnection',
+  fields: {
+    edges: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(UserEdgeType))
+      ),
+    },
+    pageInfo: { type: new GraphQLNonNull(PageInfoType) },
+  },
+});
+```
+
+Paginated fields typically accept the following arguments:
+
+```js
+const connectionArgs = {
+  first: { type: GraphQLInt },
+  after: { type: GraphQLString },
+  last: { type: GraphQLInt },
+  before: { type: GraphQLString },
+};
+```
+
+In most cases, you'll use `first` and `after` for forward pagination. The `last` and `before`
+arguments enable backward pagination if needed.
+
+## Writing a paginated resolver
+
+Once you've defined your connection types and pagination arguments, you can write a resolver
+that slices your data and returns a connection object. The key steps are:
+
+1. Decode the incoming cursor.
+2. Slice the data based on the decoded index.
+3. Generate cursors for each returned item.
+4. Build the `edges` and `pageInfo` objects.
+
+The exact logic will vary depending on how your data is stored. The following example uses an 
+in-memory list of users. The same logic applies to database queries with indexed data.
+
+```js
+const {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLList,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLBoolean,
+} = require('graphql');
+
+// Sample data
+const users = [
+  { id: '1', name: 'Ada Lovelace' },
+  { id: '2', name: 'Alan Turing' },
+  { id: '3', name: 'Grace Hopper' },
+  { id: '4', name: 'Katherine Johnson' },
+];
+
+// Encode/decode cursors
+function encodeCursor(index) {
+  return Buffer.from(`cursor:${index}`).toString('base64');
+}
+
+function decodeCursor(cursor) {
+  const decoded = Buffer.from(cursor, 'base64').toString('ascii');
+  const match = decoded.match(/^cursor:(\d+)$/);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+// Connection resolver
+const usersField = {
+  type: UserConnectionType,
+  args: connectionArgs,
+  resolve: (_, args) => {
+    let start = 0;
+    if (args.after) {
+      const index = decodeCursor(args.after);
+      if (index != null) {
+        start = index + 1;
+      }
+    }
+
+    const slice = users.slice(start, start + (args.first || users.length));
+
+    const edges = slice.map((user, i) => ({
+      node: user,
+      cursor: encodeCursor(start + i),
+    }));
+
+    const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
+    const hasNextPage = start + slice.length < users.length;
+
+    return {
+      edges,
+      pageInfo: {
+        endCursor,
+        hasNextPage,
+      },
+    };
+  },
+};
+```
+
+This resolver handles forward pagination using `first` and `after`. You can extend it to
+support `last` and `before` by reversing the logic.
+
+## Handling edge cases
+
+When implementing pagination, consider how your resolver should handle the following scenarios:
+
+- **Empty result sets**: Return an empty `edges` array and a `pageInfo` object with
+`hasNextPage: false` and `endCursor: null`.
+- **Invalid cursors**: If decoding a cursor fails, treat it as a `null` or return an error,
+depending on your API's behavior.
+- **End of list**: If the requested `first` exceeds the available data, return all remaining
+items and set `hasNextPage: false`.
+
+Always test your pagination with multiple boundaries: beginning, middle, end, and out-of-bounds
+errors.
+
+## Additional resources
+
+To learn more about cursor-based pagination patterns and best practices, see:
+
+- [Relay Cursor Connections Specification](https://relay.dev/graphql/connections.htm)
+- [Pagination](https://graphql.org/learn/pagination/) guide on graphql.org
+- [`graphql-relay-js`](https://github.com/graphql/graphql-relay-js): Utility library for
+building Relay-compatible GraphQL servers using GraphQL.js
