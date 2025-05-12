@@ -81,7 +81,6 @@ import type {
 import { DeferredFragmentRecord } from './types.ts';
 import type { VariableValues } from './values.ts';
 import {
-  experimentalGetArgumentValues,
   getArgumentValues,
   getDirectiveValues,
   getVariableValues,
@@ -812,9 +811,9 @@ function executeField(
     // Build a JS object of arguments from the field.arguments AST, using the
     // variables scope to fulfill any variable references.
     // TODO: find a way to memoize, in case this field is within a List type.
-    const args = experimentalGetArgumentValues(
+    const args = getArgumentValues(
+      fieldDef,
       fieldDetailsList[0].node,
-      fieldDef.args,
       variableValues,
       fieldDetailsList[0].fragmentVariableValues,
       hideSuggestions,
@@ -2126,6 +2125,7 @@ function executeSubscription(
       fieldDef,
       fieldNodes[0],
       variableValues,
+      fieldDetailsList[0].fragmentVariableValues,
       hideSuggestions,
     );
     // Call the `subscribe()` resolver or the default resolver to produce an

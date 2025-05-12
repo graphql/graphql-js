@@ -1,6 +1,7 @@
 import { AccumulatorMap } from '../jsutils/AccumulatorMap.ts';
-import type { ObjMap } from '../jsutils/ObjMap.ts';
+import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.ts';
 import type {
+  ConstValueNode,
   DirectiveNode,
   FieldNode,
   FragmentDefinitionNode,
@@ -21,7 +22,7 @@ import { typeFromAST } from '../utilities/typeFromAST.ts';
 import type { GraphQLVariableSignature } from './getVariableSignature.ts';
 import type { VariableValues } from './values.ts';
 import {
-  experimentalGetArgumentValues,
+  getArgumentValues,
   getDirectiveValues,
   getFragmentVariableValues,
 } from './values.ts';
@@ -29,10 +30,19 @@ export interface DeferUsage {
   label: string | undefined;
   parentDeferUsage: DeferUsage | undefined;
 }
+export interface FragmentVariableValues {
+  readonly sources: ReadOnlyObjMap<FragmentVariableValueSource>;
+  readonly coerced: ReadOnlyObjMap<unknown>;
+}
+interface FragmentVariableValueSource {
+  readonly signature: GraphQLVariableSignature;
+  readonly value?: ConstValueNode;
+  readonly fragmentVariableValues?: FragmentVariableValues;
+}
 export interface FieldDetails {
   node: FieldNode;
   deferUsage?: DeferUsage | undefined;
-  fragmentVariableValues?: VariableValues | undefined;
+  fragmentVariableValues?: FragmentVariableValues | undefined;
 }
 export type FieldDetailsList = ReadonlyArray<FieldDetails>;
 export type GroupedFieldSet = ReadonlyMap<string, FieldDetailsList>;
@@ -152,7 +162,7 @@ function collectFieldsImpl(
   groupedFieldSet: AccumulatorMap<string, FieldDetails>,
   newDeferUsages: Array<DeferUsage>,
   deferUsage?: DeferUsage,
-  fragmentVariableValues?: VariableValues,
+  fragmentVariableValues?: FragmentVariableValues,
 ): void {
   const {
     schema,
@@ -249,7 +259,7 @@ function collectFieldsImpl(
           deferUsage,
         );
         const fragmentVariableSignatures = fragment.variableSignatures;
-        let newFragmentVariableValues: VariableValues | undefined;
+        let newFragmentVariableValues: FragmentVariableValues | undefined;
         if (fragmentVariableSignatures) {
           newFragmentVariableValues = getFragmentVariableValues(
             selection,
@@ -292,7 +302,7 @@ function collectFieldsImpl(
  */
 function getDeferUsage(
   variableValues: VariableValues,
-  fragmentVariableValues: VariableValues | undefined,
+  fragmentVariableValues: FragmentVariableValues | undefined,
   node: FragmentSpreadNode | InlineFragmentNode,
   parentDeferUsage: DeferUsage | undefined,
 ): DeferUsage | undefined {
@@ -321,7 +331,7 @@ function shouldIncludeNode(
   context: CollectFieldsContext,
   node: FragmentSpreadNode | FieldNode | InlineFragmentNode,
   variableValues: VariableValues,
-  fragmentVariableValues: VariableValues | undefined,
+  fragmentVariableValues: FragmentVariableValues | undefined,
 ): boolean {
   const skipDirectiveNode = node.directives?.find(
     (directive) => directive.name.value === GraphQLSkipDirective.name,
@@ -331,9 +341,9 @@ function shouldIncludeNode(
     return false;
   }
   const skip = skipDirectiveNode
-    ? experimentalGetArgumentValues(
+    ? getArgumentValues(
+        GraphQLSkipDirective,
         skipDirectiveNode,
-        GraphQLSkipDirective.args,
         variableValues,
         fragmentVariableValues,
         context.hideSuggestions,
@@ -350,9 +360,9 @@ function shouldIncludeNode(
     return false;
   }
   const include = includeDirectiveNode
-    ? experimentalGetArgumentValues(
+    ? getArgumentValues(
+        GraphQLIncludeDirective,
         includeDirectiveNode,
-        GraphQLIncludeDirective.args,
         variableValues,
         fragmentVariableValues,
         context.hideSuggestions,
