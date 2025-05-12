@@ -1,6 +1,7 @@
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ValueNode } from '../language/ast.js';
 import type { GraphQLDefaultInput, GraphQLInputType } from '../type/definition.js';
+import type { FragmentVariableValues } from '../execution/collectFields.js';
 import type { VariableValues } from '../execution/values.js';
 /**
  * Coerces a JavaScript value given a GraphQL Input Type.
@@ -15,7 +16,7 @@ export declare function coerceInputValue(inputValue: unknown, type: GraphQLInput
  * Returns `undefined` when the value could not be validly coerced according to
  * the provided type.
  */
-export declare function coerceInputLiteral(valueNode: ValueNode, type: GraphQLInputType, variableValues?: Maybe<VariableValues>, fragmentVariableValues?: Maybe<VariableValues>): unknown;
+export declare function coerceInputLiteral(valueNode: ValueNode, type: GraphQLInputType, variableValues?: Maybe<VariableValues>, fragmentVariableValues?: Maybe<FragmentVariableValues>): unknown;
 interface InputValue {
     type: GraphQLInputType;
     default?: GraphQLDefaultInput | undefined;

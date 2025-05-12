@@ -164,7 +164,7 @@ function shouldIncludeNode(context, node, variableValues, fragmentVariableValues
         return false;
     }
     const skip = skipDirectiveNode
-        ? (0, values_js_1.experimentalGetArgumentValues)(skipDirectiveNode, directives_js_1.GraphQLSkipDirective.args, variableValues, fragmentVariableValues, context.hideSuggestions)
+        ? (0, values_js_1.getArgumentValues)(directives_js_1.GraphQLSkipDirective, skipDirectiveNode, variableValues, fragmentVariableValues, context.hideSuggestions)
         : undefined;
     if (skip?.if === true) {
         return false;
@@ -175,7 +175,7 @@ function shouldIncludeNode(context, node, variableValues, fragmentVariableValues
         return false;
     }
     const include = includeDirectiveNode
-        ? (0, values_js_1.experimentalGetArgumentValues)(includeDirectiveNode, directives_js_1.GraphQLIncludeDirective.args, variableValues, fragmentVariableValues, context.hideSuggestions)
+        ? (0, values_js_1.getArgumentValues)(directives_js_1.GraphQLIncludeDirective, includeDirectiveNode, variableValues, fragmentVariableValues, context.hideSuggestions)
         : undefined;
     if (include?.if === false) {
         return false;

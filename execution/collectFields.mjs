@@ -3,7 +3,7 @@ import { Kind } from "../language/kinds.mjs";
 import { isAbstractType } from "../type/definition.mjs";
 import { GraphQLDeferDirective, GraphQLIncludeDirective, GraphQLSkipDirective, } from "../type/directives.mjs";
 import { typeFromAST } from "../utilities/typeFromAST.mjs";
-import { experimentalGetArgumentValues, getDirectiveValues, getFragmentVariableValues, } from "./values.mjs";
+import { getArgumentValues, getDirectiveValues, getFragmentVariableValues, } from "./values.mjs";
 /**
  * Given a selectionSet, collects all of the fields and returns them.
  *
@@ -160,7 +160,7 @@ function shouldIncludeNode(context, node, variableValues, fragmentVariableValues
         return false;
     }
     const skip = skipDirectiveNode
-        ? experimentalGetArgumentValues(skipDirectiveNode, GraphQLSkipDirective.args, variableValues, fragmentVariableValues, context.hideSuggestions)
+        ? getArgumentValues(GraphQLSkipDirective, skipDirectiveNode, variableValues, fragmentVariableValues, context.hideSuggestions)
         : undefined;
     if (skip?.if === true) {
         return false;
@@ -171,7 +171,7 @@ function shouldIncludeNode(context, node, variableValues, fragmentVariableValues
         return false;
     }
     const include = includeDirectiveNode
-        ? experimentalGetArgumentValues(includeDirectiveNode, GraphQLIncludeDirective.args, variableValues, fragmentVariableValues, context.hideSuggestions)
+        ? getArgumentValues(GraphQLIncludeDirective, includeDirectiveNode, variableValues, fragmentVariableValues, context.hideSuggestions)
         : undefined;
     if (include?.if === false) {
         return false;

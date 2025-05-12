@@ -23,7 +23,7 @@ import { getVariableSignature } from "./getVariableSignature.mjs";
 import { buildIncrementalResponse } from "./IncrementalPublisher.mjs";
 import { mapAsyncIterable } from "./mapAsyncIterable.mjs";
 import { DeferredFragmentRecord } from "./types.mjs";
-import { experimentalGetArgumentValues, getArgumentValues, getDirectiveValues, getVariableValues, } from "./values.mjs";
+import { getArgumentValues, getDirectiveValues, getVariableValues, } from "./values.mjs";
 /* eslint-disable @typescript-eslint/max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
@@ -431,7 +431,7 @@ function executeField(exeContext, parentType, source, fieldDetailsList, path, in
         // Build a JS object of arguments from the field.arguments AST, using the
         // variables scope to fulfill any variable references.
         // TODO: find a way to memoize, in case this field is within a List type.
-        const args = experimentalGetArgumentValues(fieldDetailsList[0].node, fieldDef.args, variableValues, fieldDetailsList[0].fragmentVariableValues, hideSuggestions);
+        const args = getArgumentValues(fieldDef, fieldDetailsList[0].node, variableValues, fieldDetailsList[0].fragmentVariableValues, hideSuggestions);
         // The resolve function's optional third argument is a context value that
         // is provided to every resolve function within an execution. It is commonly
         // used to represent an authenticated user, or request-specific caches.
@@ -1155,7 +1155,7 @@ function executeSubscription(validatedExecutionArgs) {
         // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
         // Build a JS object of arguments from the field.arguments AST, using the
         // variables scope to fulfill any variable references.
-        const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues, hideSuggestions);
+        const args = getArgumentValues(fieldDef, fieldNodes[0], variableValues, fieldDetailsList[0].fragmentVariableValues, hideSuggestions);
         // Call the `subscribe()` resolver or the default resolver to produce an
         // AsyncIterable yielding raw payloads.
         const resolveFn = fieldDef.subscribe ?? validatedExecutionArgs.subscribeFieldResolver;

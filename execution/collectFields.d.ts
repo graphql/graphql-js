@@ -1,5 +1,5 @@
-import type { ObjMap } from '../jsutils/ObjMap.js';
-import type { DirectiveNode, FieldNode, FragmentDefinitionNode, SelectionSetNode } from '../language/ast.js';
+import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.js';
+import type { ConstValueNode, DirectiveNode, FieldNode, FragmentDefinitionNode, SelectionSetNode } from '../language/ast.js';
 import type { GraphQLObjectType } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 import type { GraphQLVariableSignature } from './getVariableSignature.js';
@@ -8,10 +8,19 @@ export interface DeferUsage {
     label: string | undefined;
     parentDeferUsage: DeferUsage | undefined;
 }
+export interface FragmentVariableValues {
+    readonly sources: ReadOnlyObjMap<FragmentVariableValueSource>;
+    readonly coerced: ReadOnlyObjMap<unknown>;
+}
+interface FragmentVariableValueSource {
+    readonly signature: GraphQLVariableSignature;
+    readonly value?: ConstValueNode;
+    readonly fragmentVariableValues?: FragmentVariableValues;
+}
 export interface FieldDetails {
     node: FieldNode;
     deferUsage?: DeferUsage | undefined;
-    fragmentVariableValues?: VariableValues | undefined;
+    fragmentVariableValues?: FragmentVariableValues | undefined;
 }
 export type FieldDetailsList = ReadonlyArray<FieldDetails>;
 export type GroupedFieldSet = ReadonlyMap<string, FieldDetailsList>;
@@ -47,3 +56,4 @@ export declare function collectSubfields(schema: GraphQLSchema, fragments: ObjMa
     groupedFieldSet: GroupedFieldSet;
     newDeferUsages: ReadonlyArray<DeferUsage>;
 };
+export {};

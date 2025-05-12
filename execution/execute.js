@@ -444,7 +444,7 @@ function executeField(exeContext, parentType, source, fieldDetailsList, path, in
         // Build a JS object of arguments from the field.arguments AST, using the
         // variables scope to fulfill any variable references.
         // TODO: find a way to memoize, in case this field is within a List type.
-        const args = (0, values_js_1.experimentalGetArgumentValues)(fieldDetailsList[0].node, fieldDef.args, variableValues, fieldDetailsList[0].fragmentVariableValues, hideSuggestions);
+        const args = (0, values_js_1.getArgumentValues)(fieldDef, fieldDetailsList[0].node, variableValues, fieldDetailsList[0].fragmentVariableValues, hideSuggestions);
         // The resolve function's optional third argument is a context value that
         // is provided to every resolve function within an execution. It is commonly
         // used to represent an authenticated user, or request-specific caches.
@@ -1170,7 +1170,7 @@ function executeSubscription(validatedExecutionArgs) {
         // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
         // Build a JS object of arguments from the field.arguments AST, using the
         // variables scope to fulfill any variable references.
-        const args = (0, values_js_1.getArgumentValues)(fieldDef, fieldNodes[0], variableValues, hideSuggestions);
+        const args = (0, values_js_1.getArgumentValues)(fieldDef, fieldNodes[0], variableValues, fieldDetailsList[0].fragmentVariableValues, hideSuggestions);
         // Call the `subscribe()` resolver or the default resolver to produce an
         // AsyncIterable yielding raw payloads.
         const resolveFn = fieldDef.subscribe ?? validatedExecutionArgs.subscribeFieldResolver;

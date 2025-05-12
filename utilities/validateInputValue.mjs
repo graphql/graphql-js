@@ -231,7 +231,7 @@ function validateInputLiteralImpl(context, valueNode, type, hideSuggestions, pat
         let caughtError;
         try {
             result = type.coerceInputLiteral
-                ? type.coerceInputLiteral(replaceVariables(valueNode), hideSuggestions)
+                ? type.coerceInputLiteral(replaceVariables(valueNode, context.variables, context.fragmentVariableValues), hideSuggestions)
                 : type.parseLiteral(valueNode, undefined, hideSuggestions);
         }
         catch (error) {

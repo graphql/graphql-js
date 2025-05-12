@@ -12,20 +12,29 @@ export function replaceVariables(valueNode, variableValues, fragmentVariableValu
     switch (valueNode.kind) {
         case Kind.VARIABLE: {
             const varName = valueNode.name.value;
-            const scopedVariableValues = fragmentVariableValues?.sources[varName]
-                ? fragmentVariableValues
-                : variableValues;
-            const scopedVariableSource = scopedVariableValues?.sources[varName];
-            if (scopedVariableSource == null) {
+            const fragmentVariableValueSource = fragmentVariableValues?.sources[varName];
+            if (fragmentVariableValueSource) {
+                const value = fragmentVariableValueSource.value;
+                if (value === undefined) {
+                    const defaultValue = fragmentVariableValueSource.signature.default;
+                    if (defaultValue !== undefined) {
+                        return defaultValue.literal;
+                    }
+                    return { kind: Kind.NULL };
+                }
+                return replaceVariables(value, variableValues, fragmentVariableValueSource.fragmentVariableValues);
+            }
+            const variableValueSource = variableValues?.sources[varName];
+            if (variableValueSource == null) {
                 return { kind: Kind.NULL };
             }
-            if (scopedVariableSource.value === undefined) {
-                const defaultValue = scopedVariableSource.signature.default;
+            if (variableValueSource.value === undefined) {
+                const defaultValue = variableValueSource.signature.default;
                 if (defaultValue !== undefined) {
                     return defaultValue.literal;
                 }
             }
-            return valueToLiteral(scopedVariableSource.value, scopedVariableSource.signature.type);
+            return valueToLiteral(variableValueSource.value, variableValueSource.signature.type);
         }
         case Kind.OBJECT: {
             const newFields = [];
