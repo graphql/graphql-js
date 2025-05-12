@@ -7,6 +7,7 @@ import type {
 } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 
+import type { FragmentVariableValues } from '../execution/collectFields.js';
 import type { VariableValues } from '../execution/values.js';
 
 import { valueToLiteral } from './valueToLiteral.js';
@@ -22,30 +23,45 @@ import { valueToLiteral } from './valueToLiteral.js';
 export function replaceVariables(
   valueNode: ValueNode,
   variableValues?: Maybe<VariableValues>,
-  fragmentVariableValues?: Maybe<VariableValues>,
+  fragmentVariableValues?: Maybe<FragmentVariableValues>,
 ): ConstValueNode {
   switch (valueNode.kind) {
     case Kind.VARIABLE: {
       const varName = valueNode.name.value;
-      const scopedVariableValues = fragmentVariableValues?.sources[varName]
-        ? fragmentVariableValues
-        : variableValues;
+      const fragmentVariableValueSource =
+        fragmentVariableValues?.sources[varName];
 
-      const scopedVariableSource = scopedVariableValues?.sources[varName];
-      if (scopedVariableSource == null) {
+      if (fragmentVariableValueSource) {
+        const value = fragmentVariableValueSource.value;
+        if (value === undefined) {
+          const defaultValue = fragmentVariableValueSource.signature.default;
+          if (defaultValue !== undefined) {
+            return defaultValue.literal;
+          }
+          return { kind: Kind.NULL };
+        }
+        return replaceVariables(
+          value,
+          variableValues,
+          fragmentVariableValueSource.fragmentVariableValues,
+        );
+      }
+
+      const variableValueSource = variableValues?.sources[varName];
+      if (variableValueSource == null) {
         return { kind: Kind.NULL };
       }
 
-      if (scopedVariableSource.value === undefined) {
-        const defaultValue = scopedVariableSource.signature.default;
+      if (variableValueSource.value === undefined) {
+        const defaultValue = variableValueSource.signature.default;
         if (defaultValue !== undefined) {
           return defaultValue.literal;
         }
       }
 
       return valueToLiteral(
-        scopedVariableSource.value,
-        scopedVariableSource.signature.type,
+        variableValueSource.value,
+        variableValueSource.signature.type,
       ) as ConstValueNode;
     }
     case Kind.OBJECT: {
