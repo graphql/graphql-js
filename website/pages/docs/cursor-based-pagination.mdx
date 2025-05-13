@@ -5,14 +5,14 @@ title: Implementing Cursor-based Pagination
 When a GraphQL API returns a list of data, pagination helps avoid
 fetching too much data at once. Cursor-based pagination fetches items
 relative to a specific point in the list, rather than using numeric offsets.
-This pattern works well with dyanmic datasets, where users frequently add or
+This pattern works well with dynamic datasets, where users frequently add or
 remove items between requests.
 
 GraphQL.js doesn't include cursor pagination out of the box, but you can implement
 it using custom types and resolvers. This guide shows how to build a paginated field
-using the connection pattern popularized by Relay. By the end of this guide, you will
-be able to define cursors and return results in a consistent structure that works well
-with clients.
+using the connection pattern popularized by [Relay](https://relay.dev). By the end of this 
+guide, you will be able to define cursors and return results in a consistent structure 
+that works well with clients.
 
 ## The connection pattern
 
@@ -79,7 +79,7 @@ query {
 ```
 
 This structure gives clients everything they need to paginate. It provides the actual data (`node`),
-the cursor the continue from (`endCursor`), and a flag (`hasNextPage`) that indicates whether
+the cursor to continue from (`endCursor`), and a flag (`hasNextPage`) that indicates whether
 more data is available.
 
 ## Defining connection types in GraphQL.js
@@ -91,10 +91,21 @@ const PageInfoType = new GraphQLObjectType({
   name: 'PageInfo',
   fields: {
     hasNextPage: { type: new GraphQLNonNull(GraphQLBoolean) },
+    hasPreviousPage: { type: new GraphQLNonNull(GraphQLBoolean) },
+    startCursor: { type: GraphQLString },
     endCursor: { type: GraphQLString },
   },
 });
+```
 
+The `PageInfo` type provides metadata about the current page of results.
+The `hasNextPage` and `hasPreviousPage` fields indicate whether more
+results are available in either direction. The `startCursor` and `endCursor`
+fields help clients resume pagination from a specific point.
+
+Next, define an edge type to represent individual items in the connection:
+
+```js
 const UserEdgeType = new GraphQLObjectType({
   name: 'UserEdge',
   fields: {
@@ -102,7 +113,14 @@ const UserEdgeType = new GraphQLObjectType({
     cursor: { type: new GraphQLNonNull(GraphQLString) },
   },
 });
+```
 
+Each edge includes a `node` and a `cursor`, which marks its position in
+the list.
+
+Then, define the connection type itself:
+
+```js
 const UserConnectionType = new GraphQLObjectType({
   name: 'UserConnection',
   fields: {
@@ -116,6 +134,9 @@ const UserConnectionType = new GraphQLObjectType({
 });
 ```
 
+The connection type wraps a list of edges and includes the pagination
+metadata.
+
 Paginated fields typically accept the following arguments:
 
 ```js
@@ -127,7 +148,7 @@ const connectionArgs = {
 };
 ```
 
-In most cases, you'll use `first` and `after` for forward pagination. The `last` and `before`
+Use `first` and `after` for forward pagination. The `last` and `before`
 arguments enable backward pagination if needed.
 
 ## Writing a paginated resolver
@@ -140,20 +161,10 @@ that slices your data and returns a connection object. The key steps are:
 3. Generate cursors for each returned item.
 4. Build the `edges` and `pageInfo` objects.
 
-The exact logic will vary depending on how your data is stored. The following example uses an 
-in-memory list of users. The same logic applies to database queries with indexed data.
+The exact logic will vary depending on how your data is stored. The following example uses an
+in-memory list of users:
 
 ```js
-const {
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLString,
-  GraphQLInt,
-  GraphQLNonNull,
-  GraphQLBoolean,
-} = require('graphql');
-
 // Sample data
 const users = [
   { id: '1', name: 'Ada Lovelace' },
@@ -173,7 +184,7 @@ function decodeCursor(cursor) {
   return match ? parseInt(match[1], 10) : null;
 }
 
-// Connection resolver
+// Resolver for paginated users
 const usersField = {
   type: UserConnectionType,
   args: connectionArgs,
@@ -193,14 +204,18 @@ const usersField = {
       cursor: encodeCursor(start + i),
     }));
 
+    const startCursor = edges.length > 0 ? edges[0].cursor : null;
     const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
     const hasNextPage = start + slice.length < users.length;
+    const hasPreviousPage = start > 0;
 
     return {
       edges,
       pageInfo: {
+        startCursor,
         endCursor,
         hasNextPage,
+        hasPreviousPage,
       },
     };
   },
@@ -209,6 +224,60 @@ const usersField = {
 
 This resolver handles forward pagination using `first` and `after`. You can extend it to
 support `last` and `before` by reversing the logic.
+
+## Using a database for pagination
+
+In production, you'll usually paginate data stored in a database. The same cursor-based
+logic applies, but you'll translate cursors into SQL query parameters, typically
+as an `OFFSET`.
+
+The following example shows how to paginate a list of users using PostgreSQL and a Node.js
+client like `pg`:
+
+```js
+const db = require('./db');
+
+async function resolveUsers(_, args) {
+  const limit = args.first ?? 10;
+  let offset = 0;
+
+  if (args.after) {
+    const index = decodeCursor(args.after);
+    if (index != null) {
+      offset = index + 1;
+    }
+  }
+
+  const result = await db.query(
+    'SELECT id, name FROM users ORDER BY id ASC LIMIT $1 OFFSET $2',
+    [limit + 1, offset] // Fetch one extra row to compute hasNextPage
+  );
+
+  const slice = result.rows.slice(0, limit);
+  const edges = slice.map((user, i) => ({
+    node: user,
+    cursor: encodeCursor(offset + i),
+  }));
+
+  const startCursor = edges.length > 0 ? edges[0].cursor : null;
+  const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : null;
+
+  return {
+    edges,
+    pageInfo: {
+      startCursor,
+      endCursor,
+      hasNextPage: result.rows.length > limit,
+      hasPreviousPage: offset > 0,
+    },
+  };
+}
+```
+
+This approach supports forward pagination by translating the decoded cursor into
+an `OFFSET`. To paginate backward, you can reverse the sort order and slice the
+results accordingly, or use keyset pagination for improved performance on large
+datasets.
 
 ## Handling edge cases
 
