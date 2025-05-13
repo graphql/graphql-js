@@ -105,7 +105,7 @@ graphql({ schema, source }).then((result) => {
 
 **Note**: Please don't forget to set `NODE_ENV=production` if you are running a production server. It will disable some checks that can be useful during development but will significantly improve performance.
 
-### Want to ride the bleeding edge?
+## Want to ride the bleeding edge?
 
 The `npm` branch in this repository is automatically maintained to be the last
 commit to `main` to pass all tests, in the same form found on npm. It is
@@ -127,7 +127,7 @@ Each release of GraphQL.js will be accompanied by an experimental release contai
 
 Community feedback on this experimental release is much appreciated and can be provided on the [issue created for this purpose](https://github.com/graphql/graphql-js/issues/2848).
 
-### Using in a Browser
+## Using in a Browser
 
 GraphQL.js is a general-purpose library and can be used both in a Node server
 and in the browser. As an example, the [GraphiQL](https://github.com/graphql/graphiql/)
@@ -139,7 +139,7 @@ the portions of the library you use. This works because GraphQL.js is distribute
 with both CommonJS (`require()`) and ESModule (`import`) files. Ensure that any
 custom build configurations look for `.mjs` files!
 
-### Contributing
+## Contributing
 
 We actively welcome pull requests. Learn how to [contribute](./.github/CONTRIBUTING.md).
 
@@ -151,10 +151,53 @@ You can find [detailed information here](https://github.com/graphql/graphql-wg/t
 
 If your company benefits from GraphQL and you would like to provide essential financial support for the systems and people that power our community, please also consider membership in the [GraphQL Foundation](https://foundation.graphql.org/join).
 
-### Changelog
+## Changelog
 
 Changes are tracked as [GitHub releases](https://github.com/graphql/graphql-js/releases).
 
-### License
+## License
 
 GraphQL.js is [MIT-licensed](./LICENSE).
+
+## Version Support
+
+GraphQL.JS follows Semantic Versioning (SemVer) for its releases. Our version support policy is as follows:
+
+- Latest Major Version: We provide full support, including bug fixes and security updates, for the latest major version of GraphQL.JS.
+- Previous Major Version: We offer feature support for the previous major version for 12 months after the release of the newest major version.
+  This means that for 12 months we can backport features for specification changes _if_ they don't cause any breaking changes. We'll continue
+  supporting the previous major version with bug and security fixes.
+- Older Versions: Versions older than the previous major release are considered unsupported. While the code remains available,
+  we do not actively maintain or provide updates for these versions.
+  One exception to this rule is when the older version has been released < 1 year ago, in that case we
+  will treat it like the "Previous Major Version".
+
+### Long-Term Support (LTS)
+
+We do not currently offer a Long-Term Support version of GraphQL.JS. Users are encouraged to upgrade to the latest stable version
+to receive the most up-to-date features, performance improvements, and security updates.
+
+### End-of-Life (EOL) Schedule
+
+We will announce the EOL date for a major version at least 6 months in advance.
+After a version reaches its EOL, it will no longer receive updates, even for critical security issues.
+
+### Upgrade Assistance
+
+To assist users in upgrading to newer versions:
+
+- We maintain detailed release notes for each version, highlighting new features, breaking changes, and deprecations.
+- [Our documentation](https://www.graphql-js.org/) includes migration guides for moving between major versions.
+- The [community forum (Discord channel #graphql-js)](https://discord.graphql.org) is available for users who need additional assistance with upgrades.
+
+### Security Updates
+
+We prioritize the security of GraphQL.JS:
+
+- Critical security updates will be applied to both the current and previous major version.
+- For versions that have reached EOL, we strongly recommend upgrading to a supported version to receive security updates.
+
+### Community Contributions
+
+We welcome community contributions for all versions of GraphQL.JS. However, our maintainers will primarily focus on reviewing
+and merging contributions for supported versions.

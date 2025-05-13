@@ -21,6 +21,7 @@ const meta = {
   'defer-stream': '',
   'custom-scalars': '',
   'advanced-custom-scalars': '',
+  'n1-dataloader': '',
   'resolver-anatomy': '',
   'graphql-errors': '',
   '-- 3': {
