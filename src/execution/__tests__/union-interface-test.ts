@@ -168,12 +168,14 @@ const TypeA = new GraphQLObjectType({
     id: { type: GraphQLString },
     nameA: { type: GraphQLString },
   }),
-  isTypeOf: (_value, _context, _info) => {
-    return new Promise((_resolve, reject) => {
-      setTimeout(() => {
-        reject(new Error('TypeA_isTypeOf_rejected'));
-      }, 10);
-    });
+  isTypeOf: (_value, _context, _info) =>
+    new Promise(
+      (_resolve, reject) =>
+        void setTimeout(
+          () => void reject(new Error("TypeA_isTypeOf_rejected")),
+          10,
+        ),
+    ),
   },
 });
 
