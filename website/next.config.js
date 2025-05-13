@@ -1,5 +1,9 @@
 /* eslint-disable camelcase */
 import path from 'node:path';
+import fs from 'node:fs';
+
+const fileContents = fs.readFileSync('./vercel.json', 'utf-8');
+const vercel = JSON.parse(fileContents);
 
 import nextra from 'nextra';
 
@@ -29,6 +33,7 @@ export default withNextra({
     });
     return config;
   },
+  redirects: async () => vercel.redirects,
   output: 'export',
   images: {
     loader: 'custom',

@@ -13,7 +13,7 @@ import { Tabs } from 'nextra/components';
 
 Before getting started, you should have Node v6 installed, although the examples should mostly work in previous versions of Node as well.
 For this guide, we won't use any language features that require transpilation, but we will use some ES6 features like
-[Promises](http://www.html5rocks.com/en/tutorials/es6/promises/), classes,
+[Promises](http://web.dev/articles/promises/), classes,
 and arrow functions, so if you aren't familiar with them you might want to read up on them first.
 
 > Alternatively you can start from [this StackBlitz](https://stackblitz.com/edit/stackblitz-starters-znvgwr) - if you choose
@@ -28,7 +28,7 @@ npm install graphql --save
 
 ## Writing Code
 
-To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a “resolver” for each API endpoint. For an API that just returns “Hello world!”, we can put this code in a file named `server.js`:
+To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a "resolver" for each API endpoint. For an API that just returns "Hello world!", we can put this code in a file named `server.js`:
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
@@ -53,42 +53,34 @@ graphql({
   }).then((response) => {
     console.log(response);
   });
-});
 
-````
+```
 </Tabs.Tab>
 <Tabs.Tab>
 ```javascript
-const { graphql, GraphQLSchema, GraphQLObjectType } = require('graphql');
+const { graphql, GraphQLSchema, GraphQLObjectType, GraphQLString } = require('graphql');
 
 // Construct a schema
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      hello: { type: GraphQLString },
+      hello: { 
+        type: GraphQLString,
+        resolve: () => 'Hello world!'
+      },
     },
   }),
 });
 
-// The rootValue provides a resolver function for each API endpoint
-const rootValue = {
-  hello() {
-    return 'Hello world!';
-  },
-};
-
-// Run the GraphQL query '{ hello }' and print out the response
 graphql({
   schema,
   source: '{ hello }',
-  rootValue,
 }).then((response) => {
   console.log(JSON.stringify(response, null, 2));
 });
-````
-
-  </Tabs.Tab>
+```
+</Tabs.Tab>
 </Tabs>
 
 If you run this with:
@@ -109,4 +101,4 @@ You should see the GraphQL response printed out:
 
 Congratulations - you just executed a GraphQL query!
 
-For practical applications, you'll probably want to run GraphQL queries from an API server, rather than executing GraphQL with a command line tool. To use GraphQL for an API server over HTTP, check out [Running an Express GraphQL Server](/running-an-express-graphql-server/).
+For practical applications, you'll probably want to run GraphQL queries from an API server, rather than executing GraphQL with a command line tool. To use GraphQL for an API server over HTTP, check out [Running an Express GraphQL Server](./running-an-express-graphql-server).

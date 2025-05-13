@@ -23,8 +23,8 @@ const express = require('express');
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`type Query { hello: String } `);
 
-// The rootValue provides a resolver function for each API endpoint
-const rootValue = {
+// The root provides a resolver function for each API endpoint
+const root = {
   hello() {
     return 'Hello world!';
   },
@@ -45,11 +45,11 @@ app.all(
 app.listen(4000);
 console.log('Running a GraphQL API server at http://localhost:4000/graphql');
 
-````
+```
 </Tabs.Tab>
 <Tabs.Tab>
 ```javascript
-const { GraphQLObjectType, GraphQLSchema } = require('graphql');
+const { GraphQLObjectType, GraphQLSchema, GraphQLString } = require('graphql');
 const { createHandler } = require('graphql-http/lib/use/express');
 const express = require('express');
 
@@ -58,17 +58,13 @@ const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      hello: { type: GraphQLString },
+      hello: { 
+        type: GraphQLString,
+        resolve: () => 'Hello world!'
+      },
     },
   }),
 });
-
-// The rootValue provides a resolver function for each API endpoint
-const rootValue = {
-  hello() {
-    return 'Hello world!';
-  },
-};
 
 const app = express();
 
@@ -77,16 +73,15 @@ app.all(
   '/graphql',
   createHandler({
     schema: schema,
-    rootValue: root,
   }),
 );
 
 // Start the server at port
 app.listen(4000);
 console.log('Running a GraphQL API server at http://localhost:4000/graphql');
-````
 
-  </Tabs.Tab>
+```
+</Tabs.Tab>
 </Tabs>
 
 You can run this GraphQL server with:
@@ -94,6 +89,8 @@ You can run this GraphQL server with:
 ```sh
 node server.js
 ```
+
+At this point you will have a running GraphQL API; but you can't just visit it in your web browser to use it - you need a GraphQL client to issue GraphQL queries to the API. Let's take a look at how to add the GraphiQL (GraphQL with an `i` in the middle) integrated development environment to your server.
 
 ## Using GraphiQL
 
@@ -114,4 +111,4 @@ app.get('/', (_req, res) => {
 If you navigate to [http://localhost:4000](http://localhost:4000), you should see an interface that lets you enter queries;
 now you can use the GraphiQL IDE tool to issue GraphQL queries directly in the browser.
 
-At this point you have learned how to run a GraphQL server. The next step is to learn how to [issue GraphQL queries from client code](/graphql-clients/).
+At this point you have learned how to run a GraphQL server. The next step is to learn how to [issue GraphQL queries from client code](./graphql-clients).
