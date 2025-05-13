@@ -43,7 +43,6 @@ new GraphQLObjectType({
     },
   },
 })
-
 ````
   </Tabs.Tab>
 </Tabs>
@@ -60,7 +59,7 @@ type RandomDie {
 type Query {
   getDie(numSides: Int): RandomDie
 }
-````
+```
 
   </Tabs.Tab>
   <Tabs.Tab>
@@ -72,17 +71,37 @@ const {
   GraphQLString,
   GraphQLList,
   GraphQLFloat,
+  GraphQLSchema,
 } = require('graphql');
 
 const RandomDie = new GraphQLObjectType({
   name: 'RandomDie',
   fields: {
+    numSides: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: function(die) {
+        return die.numSides;
+      }
+    },
+    rollOnce: {
+      type: new GraphQLNonNull(GraphQLInt),
+      resolve: function(die) {
+        return 1 + Math.floor(Math.random() * die.numSides);
+      }
+    },
     roll: {
       type: new GraphQLList(GraphQLInt),
       args: {
         numRolls: {
           type: new GraphQLNonNull(GraphQLInt)
+        },
+      },
+      resolve: function(die, { numRolls }) {
+        const output = [];
+        for (let i = 0; i < numRolls; i++) {
+          output.push(1 + Math.floor(Math.random() * die.numSides));
         }
+        return output;
       }
     }
   }
@@ -98,13 +117,17 @@ const schema = new GraphQLSchema({
           numSides: {
             type: GraphQLInt
           }
+        },
+        resolve: (_, { numSides }) => {
+          return {
+            numSides: numSides || 6,
+          }
         }
       }
     }
   })
 });
-
-````
+```
   </Tabs.Tab>
 </Tabs>
 
@@ -122,7 +145,7 @@ class RandomDie {
 
   roll({ numRolls }) {
     const output = [];
-    for (const i = 0; i < numRolls; i++) {
+    for (let i = 0; i < numRolls; i++) {
       output.push(this.rollOnce());
     }
     return output;
@@ -134,7 +157,7 @@ const root = {
     return new RandomDie(numSides || 6);
   },
 };
-````
+```
 
 For fields that don't use any arguments, you can use either properties on the object or instance methods. So for the example code above, both `numSides` and `rollOnce` can actually be used to implement GraphQL fields, so that code also implements the schema of:
 
@@ -148,9 +171,8 @@ type RandomDie {
 }
 
 type Query {
-getDie(numSides: Int): RandomDie
+  getDie(numSides: Int): RandomDie
 }
-
 ````
   </Tabs.Tab>
   <Tabs.Tab>
@@ -162,6 +184,7 @@ const {
   GraphQLString,
   GraphQLList,
   GraphQLFloat,
+  GraphQLSchema,
 } = require('graphql');
 
 const RandomDie = new GraphQLObjectType({
@@ -169,9 +192,11 @@ const RandomDie = new GraphQLObjectType({
   fields: {
     numSides: {
       type: new GraphQLNonNull(GraphQLInt),
+      resolve: (die) => die.numSides
     },
     rollOnce: {
       type: new GraphQLNonNull(GraphQLInt),
+      resolve: (die) => 1 + Math.floor(Math.random() * die.numSides)
     },
     roll: {
       type: new GraphQLList(GraphQLInt),
@@ -179,6 +204,13 @@ const RandomDie = new GraphQLObjectType({
         numRolls: {
           type: new GraphQLNonNull(GraphQLInt)
         },
+      },
+      resolve: (die, { numRolls }) => {
+        const output = [];
+        for (let i = 0; i < numRolls; i++) {
+          output.push(1 + Math.floor(Math.random() * die.numSides));
+        }
+        return output;
       }
     }
   }
@@ -193,6 +225,11 @@ const schema = new GraphQLSchema({
         args: {
           numSides: {
             type: GraphQLInt
+          }
+        },
+        resolve: (_, { numSides }) => {
+          return {
+            numSides: numSides || 6,
           }
         }
       }
@@ -233,13 +270,13 @@ class RandomDie {
   }
 
   rollOnce() {
-    return 1 + Math.floor(Math.random() \* this.numSides);
+    return 1 + Math.floor(Math.random() * this.numSides);
   }
 
   roll({ numRolls }) {
     const output = [];
-    for (const i = 0; i < numRolls; i++) {
-    output.push(this.rollOnce());
+    for (let i = 0; i < numRolls; i++) {
+      output.push(this.rollOnce());
     }
     return output;
   }
@@ -282,9 +319,11 @@ const RandomDie = new GraphQLObjectType({
   fields: {
     numSides: {
       type: new GraphQLNonNull(GraphQLInt),
+      resolve: (die) => die.numSides
     },
     rollOnce: {
       type: new GraphQLNonNull(GraphQLInt),
+      resolve: (die) => 1 + Math.floor(Math.random() * die.numSides)
     },
     roll: {
       type: new GraphQLList(GraphQLInt),
@@ -292,6 +331,13 @@ const RandomDie = new GraphQLObjectType({
         numRolls: {
           type: new GraphQLNonNull(GraphQLInt)
         },
+      },
+      resolve: (die, { numRolls }) => {
+        const output = [];
+        for (let i = 0; i < numRolls; i++) {
+          output.push(1 + Math.floor(Math.random() * die.numSides));
+        }
+        return output;
       }
     }
   }
@@ -305,7 +351,12 @@ const schema = new GraphQLSchema({
         type: RandomDie,
         args: {
           numSides: {
-            type: GraphQLInt
+            type: GraphQLInt,
+          }
+        },
+        resolve: (_, { numSides }) => {
+          return {
+            numSides: numSides || 6,
           }
         }
       }
@@ -313,44 +364,16 @@ const schema = new GraphQLSchema({
   })
 });
 
-// This class implements the RandomDie GraphQL type
-class RandomDie {
-  constructor(numSides) {
-    this.numSides = numSides;
-  }
-
-  rollOnce() {
-    return 1 + Math.floor(Math.random() * this.numSides);
-  }
-
-  roll({ numRolls }) {
-    const output = [];
-    for (const i = 0; i < numRolls; i++) {
-      output.push(this.rollOnce());
-    }
-    return output;
-  }
-}
-
-// The root provides the top-level API endpoints
-const root = {
-  getDie({ numSides }) {
-    return new RandomDie(numSides || 6);
-  },
-};
-
 const app = express();
 app.all(
   '/graphql',
   createHandler({
     schema: schema,
-    rootValue: root,
   }),
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-````
-
+```
   </Tabs.Tab>
 </Tabs>
 

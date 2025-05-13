@@ -28,7 +28,7 @@ npm install graphql --save
 
 ## Writing Code
 
-To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a “resolver” for each API endpoint. For an API that just returns “Hello world!”, we can put this code in a file named `server.js`:
+To handle GraphQL queries, we need a schema that defines the `Query` type, and we need an API root with a function called a "resolver" for each API endpoint. For an API that just returns "Hello world!", we can put this code in a file named `server.js`:
 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
@@ -54,40 +54,33 @@ graphql({
     console.log(response);
   });
 
-````
+```
 </Tabs.Tab>
 <Tabs.Tab>
 ```javascript
-const { graphql, GraphQLSchema, GraphQLObjectType } = require('graphql');
+const { graphql, GraphQLSchema, GraphQLObjectType, GraphQLString } = require('graphql');
 
 // Construct a schema
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      hello: { type: GraphQLString },
+      hello: { 
+        type: GraphQLString,
+        resolve: () => 'Hello world!'
+      },
     },
   }),
 });
 
-// The rootValue provides a resolver function for each API endpoint
-const rootValue = {
-  hello() {
-    return 'Hello world!';
-  },
-};
-
-// Run the GraphQL query '{ hello }' and print out the response
 graphql({
   schema,
   source: '{ hello }',
-  rootValue,
 }).then((response) => {
   console.log(response);
 });
-````
-
-  </Tabs.Tab>
+```
+</Tabs.Tab>
 </Tabs>
 
 If you run this with:

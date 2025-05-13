@@ -20,6 +20,12 @@ const meta = {
   'oneof-input-objects': '',
   'defer-stream': '',
   'type-generation': '',
+  'cursor-based-pagination': '',
+  'custom-scalars': '',
+  'advanced-custom-scalars': '',
+  'n1-dataloader': '',
+  'resolver-anatomy': '',
+  'graphql-errors': '',
   '-- 3': {
     type: 'separator',
     title: 'Testing',
