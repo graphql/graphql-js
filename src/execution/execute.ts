@@ -1002,6 +1002,9 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
         if (isPromise(isTypeOfResult)) {
           promisedIsTypeOfResults[i] = isTypeOfResult;
         } else if (isTypeOfResult) {
+          if (promisedIsTypeOfResults.length) {
+            Promise.allSettled(promisedIsTypeOfResults);
+          }
           return type.name;
         }
       }
