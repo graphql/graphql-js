@@ -27,6 +27,7 @@ overrides:
       - swcrc
       - noreferrer
       - xlink
+      - composability
       - deduplication
 
 validateDirectives: true
