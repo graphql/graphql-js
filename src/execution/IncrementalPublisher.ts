@@ -228,13 +228,13 @@ class IncrementalPublisher {
     if (isFailedExecutionGroup(completedExecutionGroup)) {
       for (const deferredFragmentRecord of completedExecutionGroup
         .pendingExecutionGroup.deferredFragmentRecords) {
-        const id = deferredFragmentRecord.id;
-        if (
-          !this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
-        ) {
-          // This can occur if multiple deferred grouped field sets error for a fragment.
+        const failed = deferredFragmentRecord.failed;
+        if (failed) {
           continue;
         }
+        deferredFragmentRecord.failed = true;
+        const id = deferredFragmentRecord.id;
+        this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord);
         invariant(id !== undefined);
         context.completed.push({
           id,

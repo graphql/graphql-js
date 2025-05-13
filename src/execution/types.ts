@@ -224,6 +224,7 @@ export class DeferredFragmentRecord {
   pendingExecutionGroups: Set<PendingExecutionGroup>;
   successfulExecutionGroups: Set<SuccessfulExecutionGroup>;
   children: Set<DeliveryGroup>;
+  failed: true | undefined;
 
   constructor(
     path: Path | undefined,

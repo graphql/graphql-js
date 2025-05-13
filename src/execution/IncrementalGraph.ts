@@ -132,14 +132,8 @@ export class IncrementalGraph {
     return { newRootNodes, successfulExecutionGroups };
   }
 
-  removeDeferredFragment(
-    deferredFragmentRecord: DeferredFragmentRecord,
-  ): boolean {
-    if (!this._rootNodes.has(deferredFragmentRecord)) {
-      return false;
-    }
+  removeDeferredFragment(deferredFragmentRecord: DeferredFragmentRecord): void {
     this._rootNodes.delete(deferredFragmentRecord);
-    return true;
   }
 
   removeStream(streamRecord: StreamRecord): void {
@@ -219,7 +213,10 @@ export class IncrementalGraph {
     deferredFragmentRecord: DeferredFragmentRecord,
     initialResultChildren: Set<DeliveryGroup> | undefined,
   ): void {
-    if (this._rootNodes.has(deferredFragmentRecord)) {
+    if (
+      deferredFragmentRecord.failed ||
+      this._rootNodes.has(deferredFragmentRecord)
+    ) {
       return;
     }
     const parent = deferredFragmentRecord.parent;
