@@ -25,6 +25,7 @@ overrides:
       - swcrc
       - noreferrer
       - xlink
+      - composability
       - deduplication
 
 ignoreRegExpList:

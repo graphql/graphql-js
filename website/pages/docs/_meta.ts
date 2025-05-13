@@ -19,6 +19,8 @@ const meta = {
   'constructing-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
+  'custom-scalars': '',
+  'advanced-custom-scalars': '',
   'n1-dataloader': '',
   'resolver-anatomy': '',
   'graphql-errors': '',
