@@ -72,7 +72,7 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
     const versionTag = splittedTag[2] ?? splittedTag[0];
     assert(
       ['alpha', 'beta', 'rc'].includes(versionTag) ||
-        versionTag.startsWith('experimental-'),
+      versionTag.startsWith('experimental-'),
       `"${versionTag}" tag is not supported.`,
     );
     assert.equal(
@@ -106,8 +106,201 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
     packageJSON.version += '+esm';
   } else {
     delete packageJSON.type;
-    packageJSON.main = 'index';
+    packageJSON.main = 'index.js';
     packageJSON.module = 'index.mjs';
+    packageJSON.types = 'index.d.ts';
+    packageJSON.exports = {
+      '.': {
+        import: {
+          types: './index.d.ts',
+          default: './index.mjs'
+        },
+        require: {
+          types: './index.d.ts',
+          default: './index.js'
+        }
+      },
+      './graphql': {
+        import: {
+          types: './graphql.d.ts',
+          default: './graphql.mjs'
+        },
+        require: {
+          types: './graphql.d.ts',
+          default: './graphql.js'
+        }
+      },
+      './version': {
+        import: {
+          types: './version.d.ts',
+          default: './version.mjs'
+        },
+        require: {
+          types: './version.d.ts',
+          default: './version.js'
+        }
+      },
+      './error': {
+        import: {
+          types: './error/index.d.ts',
+          default: './error/index.mjs'
+        },
+        require: {
+          types: './error/index.d.ts',
+          default: './error/index.js'
+        }
+      },
+      './error/*': {
+        import: {
+          types: './error/*.d.ts',
+          default: './error/*.mjs'
+        },
+        require: {
+          types: './error/*.d.ts',
+          default: './error/*.js'
+        }
+      },
+      './execution': {
+        import: {
+          types: './execution/index.d.ts',
+          default: './execution/index.mjs'
+        },
+        require: {
+          types: './execution/index.d.ts',
+          default: './execution/index.js'
+        }
+      },
+      './execution/*': {
+        import: {
+          types: './execution/*.d.ts',
+          default: './execution/*.mjs'
+        },
+        require: {
+          types: './execution/*.d.ts',
+          default: './execution/*.js'
+        }
+      },
+      './jsutils': {
+        import: {
+          types: './jsutils/index.d.ts',
+          default: './jsutils/index.mjs'
+        },
+        require: {
+          types: './jsutils/index.d.ts',
+          default: './jsutils/index.js'
+        }
+      },
+      './jsutils/*': {
+        import: {
+          types: './jsutils/*.d.ts',
+          default: './jsutils/*.mjs'
+        },
+        require: {
+          types: './jsutils/*.d.ts',
+          default: './jsutils/*.js'
+        }
+      },
+      './language': {
+        import: {
+          types: './language/index.d.ts',
+          default: './language/index.mjs'
+        },
+        require: {
+          types: './language/index.d.ts',
+          default: './language/index.js'
+        }
+      },
+      './language/*': {
+        import: {
+          types: './language/*.d.ts',
+          default: './language/*.mjs'
+        },
+        require: {
+          types: './language/*.d.ts',
+          default: './language/*.js'
+        }
+      },
+      './subscription': {
+        import: {
+          types: './subscription/index.d.ts',
+          default: './subscription/index.mjs'
+        },
+        require: {
+          types: './subscription/index.d.ts',
+          default: './subscription/index.js'
+        }
+      },
+      './subscription/*': {
+        import: {
+          types: './subscription/*.d.ts',
+          default: './subscription/*.mjs'
+        },
+        require: {
+          types: './subscription/*.d.ts',
+          default: './subscription/*.js'
+        }
+      },
+      './type': {
+        import: {
+          types: './type/index.d.ts',
+          default: './type/index.mjs'
+        },
+        require: {
+          types: './type/index.d.ts',
+          default: './type/index.js'
+        }
+      },
+      './type/*': {
+        import: {
+          types: './type/*.d.ts',
+          default: './type/*.mjs'
+        },
+        require: {
+          types: './type/*.d.ts',
+          default: './type/*.js'
+        }
+      },
+      './utilities': {
+        import: {
+          types: './utilities/index.d.ts',
+          default: './utilities/index.mjs'
+        },
+        require: {
+          types: './utilities/index.d.ts',
+          default: './utilities/index.js'
+        }
+      },
+      './utilities/*': {
+        import: {
+          types: './utilities/*.d.ts',
+          default: './utilities/*.mjs'
+        },
+        require: {
+          types: './utilities/*.d.ts',
+          default: './utilities/*.js'
+        }
+      },
+      './validation': {
+        import: {
+          types: './validation/index.d.ts',
+          default: './validation/index.mjs'
+        },
+        require: {
+          types: './validation/index.d.ts',
+          default: './validation/index.js'
+        }
+      },
+      './validation/*': {
+        import: {
+          types: './validation/*.d.ts',
+          default: './validation/*.mjs'
+        },
+        require: {
+          types: './validation/*.d.ts',
+          default: './validation/*.js'
+        }
+      }
+    }
     emitTSFiles({ outDir, module: 'commonjs', extension: '.js' });
     emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
   }
