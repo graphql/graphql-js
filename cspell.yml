@@ -25,6 +25,7 @@ overrides:
       - swcrc
       - noreferrer
       - xlink
+      - codegen
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
