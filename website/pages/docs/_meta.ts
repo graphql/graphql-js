@@ -19,6 +19,7 @@ const meta = {
   'constructing-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
+  'cursor-based-pagination': '',
   'custom-scalars': '',
   'advanced-custom-scalars': '',
   'n1-dataloader': '',
