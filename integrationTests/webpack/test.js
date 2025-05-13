@@ -1,18 +1,10 @@
 import assert from 'node:assert';
 
 /* eslint-disable n/no-missing-import */
-import cjs from './dist/main-cjs.cjs';
-import mjs from './dist/main-mjs.cjs';
+import { result } from './dist/main-js.js';
 /* eslint-enable n/no-missing-import */
 
-assert.deepStrictEqual(cjs.result, {
-  data: {
-    __proto__: null,
-    hello: 'world',
-  },
-});
-
-assert.deepStrictEqual(mjs.result, {
+assert.deepStrictEqual(result, {
   data: {
     __proto__: null,
     hello: 'world',

@@ -15,14 +15,10 @@ import {
 } from './utils.js';
 
 console.log('\n./npmDist');
-await buildPackage('./npmDist', false);
+await buildPackage('./npmDist');
 showDirStats('./npmDist');
 
-console.log('\n./npmEsmDist');
-await buildPackage('./npmEsmDist', true);
-showDirStats('./npmEsmDist');
-
-async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
+async function buildPackage(outDir: string): Promise<void> {
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir);
 
@@ -82,35 +78,24 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
     );
   }
 
-  if (isESMOnly) {
-    packageJSON.exports = {};
+  packageJSON.exports = {};
 
-    const { emittedTSFiles } = emitTSFiles({
-      outDir,
-      module: 'es2020',
-      extension: '.js',
-    });
+  const { emittedTSFiles } = emitTSFiles({
+    outDir,
+    module: 'es2020',
+    extension: '.js',
+  });
 
-    for (const filepath of emittedTSFiles) {
-      if (path.basename(filepath) === 'index.js') {
-        const relativePath = './' + path.relative('./npmEsmDist', filepath);
-        packageJSON.exports[path.dirname(relativePath)] = relativePath;
-      }
+  for (const filepath of emittedTSFiles) {
+    if (path.basename(filepath) === 'index.js') {
+      const relativePath = './' + path.relative('./npmDist', filepath);
+      packageJSON.exports[path.dirname(relativePath)] = relativePath;
     }
-
-    // Temporary workaround to allow "internal" imports, no grantees provided
-    packageJSON.exports['./*.js'] = './*.js';
-    packageJSON.exports['./*'] = './*.js';
-
-    packageJSON.publishConfig.tag += '-esm';
-    packageJSON.version += '+esm';
-  } else {
-    delete packageJSON.type;
-    packageJSON.main = 'index';
-    packageJSON.module = 'index.mjs';
-    emitTSFiles({ outDir, module: 'commonjs', extension: '.js' });
-    emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
   }
+
+  // Temporary workaround to allow "internal" imports, no grantees provided
+  packageJSON.exports['./*.js'] = './*.js';
+  packageJSON.exports['./*'] = './*.js';
 
   const packageJsonPath = `./${outDir}/package.json`;
   const prettified = await prettify(

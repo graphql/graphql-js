@@ -16,12 +16,6 @@ describe('Integration Tests', () => {
   const archiveName = npm({ cwd: tmpDirPath(), quiet: true }).pack(distDir);
   fs.renameSync(tmpDirPath(archiveName), tmpDirPath('graphql.tgz'));
 
-  const esmDistDir = localRepoPath('npmEsmDist');
-  const archiveEsmName = npm({ cwd: tmpDirPath(), quiet: true }).pack(
-    esmDistDir,
-  );
-  fs.renameSync(tmpDirPath(archiveEsmName), tmpDirPath('graphql-esm.tgz'));
-
   npm().run('build:deno');
 
   function testOnNodeProject(projectName: string) {
