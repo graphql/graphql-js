@@ -118,7 +118,6 @@ const PetType = new GraphQLUnionType({
     if (value instanceof Cat) {
       return CatType.name;
     }
-    /* c8 ignore next 3 */
     // Not reachable, all possible types have been considered.
     expect.fail('Not reachable');
   },
@@ -169,14 +168,10 @@ const TypeA = new GraphQLObjectType({
     nameA: { type: GraphQLString },
   }),
   isTypeOf: (_value, _context, _info) =>
-    new Promise(
-      (_resolve, reject) =>
-        void setTimeout(
-          () => void reject(new Error("TypeA_isTypeOf_rejected")),
-          10,
-        ),
+    new Promise((_resolve, reject) =>
+      // eslint-disable-next-line
+      setTimeout(() => reject(new Error('TypeA_isTypeOf_rejected')), 10),
     ),
-  },
 });
 
 const TypeB = new GraphQLObjectType({
@@ -186,9 +181,7 @@ const TypeB = new GraphQLObjectType({
     id: { type: GraphQLString },
     nameB: { type: GraphQLString },
   }),
-  isTypeOf: (value: any, _context, _info) => {
-    return value.id === 'b';
-  },
+  isTypeOf: (value: any, _context, _info) => value.id === 'b',
 });
 
 const queryTypeWithSearchable = new GraphQLObjectType({
@@ -202,10 +195,8 @@ const queryTypeWithSearchable = new GraphQLObjectType({
       type: SearchableInterface,
       args: { id: { type: GraphQLString } },
       resolve: (_source, { id }) => {
-        /* c8 ignore start */
         if (id === 'a') {
           return { id: 'a', nameA: 'Object A' };
-          /* c8 ignore end */
         } else if (id === 'b') {
           return { id: 'b', nameB: 'Object B' };
         }
@@ -636,19 +627,18 @@ describe('Execute: Union and intersection types', () => {
     `);
 
     let unhandledRejection: any = null;
-    /* c8 ignore start */
     const unhandledRejectionListener = (reason: any) => {
       unhandledRejection = reason;
     };
+    // eslint-disable-next-line
     process.on('unhandledRejection', unhandledRejectionListener);
-    /* c8 ignore end */
 
     const result = await execute({
       schema: schemaWithSearchable,
       document,
     });
 
-    expect(result.errors).to.be.undefined;
+    expect(result.errors).to.equal(undefined);
     expect(result.data).to.deep.equal({
       search: {
         __typename: 'TypeB',
@@ -658,10 +648,12 @@ describe('Execute: Union and intersection types', () => {
     });
 
     // Give the TypeA promise a chance to reject and the listener to fire
+    // eslint-disable-next-line
     await new Promise((resolve) => setTimeout(resolve, 20));
 
+    // eslint-disable-next-line
     process.removeListener('unhandledRejection', unhandledRejectionListener);
 
-    expect(unhandledRejection).to.be.null;
+    expect(unhandledRejection).to.equal(null);
   });
 });
