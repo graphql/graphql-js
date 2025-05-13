@@ -27,6 +27,7 @@ overrides:
       - swcrc
       - noreferrer
       - xlink
+      - deduplication
 
 validateDirectives: true
 ignoreRegExpList:
