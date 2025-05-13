@@ -1,0 +1,203 @@
+---
+title: Best Practices for Custom Scalars
+---
+
+# Custom Scalars: Best Practices and Testing
+
+Custom scalars must behave predictably and clearly. To maintain a consistent, reliable 
+schema, follow these best practices.
+
+### Document expected formats and validation
+
+Provide a clear description of the scalar’s accepted input and output formats. For example, a 
+`DateTime` scalar should explain that it expects [ISO-8601](https://www.iso.org/iso-8601-date-and-time-format.html) strings ending with `Z`.
+
+Clear descriptions help clients understand valid input and reduce mistakes.
+
+### Validate consistently across `parseValue` and `parseLiteral`
+
+Clients can send values either through variables or inline literals.
+Your `parseValue` and `parseLiteral` functions should apply the same validation logic in 
+both cases.
+
+Use a shared helper to avoid duplication:
+
+```js
+function parseDate(value) {
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    throw new TypeError(`DateTime cannot represent an invalid date: ${value}`);
+  }
+  return date;
+}
+```
+
+Both `parseValue` and `parseLiteral` should call this function.
+
+### Return clear errors
+
+When validation fails, throw descriptive errors. Avoid generic messages like "Invalid input."
+Instead, use targeted messages that explain the problem, such as:
+
+```text
+DateTime cannot represent an invalid date: `abc123`
+```
+
+Clear error messages speed up debugging and make mistakes easier to fix.
+
+### Serialize consistently
+
+Always serialize internal values into a predictable format.
+For example, a `DateTime` scalar should always produce an ISO string, even if its 
+internal value is a `Date` object.
+
+```js
+serialize(value) {
+  if (!(value instanceof Date)) {
+    throw new TypeError('DateTime can only serialize Date instances');
+  }
+  return value.toISOString();
+}
+```
+
+Serialization consistency prevents surprises on the client side.
+
+## Testing custom scalars
+
+Testing ensures your custom scalars work reliably with both valid and invalid inputs.
+Tests should cover three areas: coercion functions, schema integration, and error handling.
+
+### Unit test serialization and parsing
+
+Write unit tests for each function: `serialize`, `parseValue`, and `parseLiteral`.
+Test with both valid and invalid inputs.
+
+```js
+describe('DateTime scalar', () => {
+  it('serializes Date instances to ISO strings', () => {
+    const date = new Date('2024-01-01T00:00:00Z');
+    expect(DateTime.serialize(date)).toBe('2024-01-01T00:00:00.000Z');
+  });
+
+  it('throws if serializing a non-Date value', () => {
+    expect(() => DateTime.serialize('not a date')).toThrow(TypeError);
+  });
+
+  it('parses ISO strings into Date instances', () => {
+    const result = DateTime.parseValue('2024-01-01T00:00:00Z');
+    expect(result).toBeInstanceOf(Date);
+    expect(result.toISOString()).toBe('2024-01-01T00:00:00.000Z');
+  });
+
+  it('throws if parsing an invalid date string', () => {
+    expect(() => DateTime.parseValue('invalid-date')).toThrow(TypeError);
+  });
+});
+```
+
+### Test custom scalars in a schema
+
+Integrate the scalar into a schema and run real GraphQL queries to validate end-to-end behavior.
+
+```js
+const { graphql, buildSchema } = require('graphql');
+
+const schema = buildSchema(`
+  scalar DateTime
+
+  type Query {
+    now: DateTime
+  }
+`);
+
+const rootValue = {
+  now: () => new Date('2024-01-01T00:00:00Z'),
+};
+
+async function testQuery() {
+  const response = await graphql({
+    schema,
+    source: '{ now }',
+    rootValue,
+  });
+  console.log(response);
+}
+
+testQuery();
+```
+
+Schema-level tests verify that the scalar behaves correctly during execution, not just 
+in isolation.
+
+## Common use cases for custom scalars
+
+Custom scalars solve real-world needs by handling types that built-in scalars don't cover.
+
+- `DateTime`: Serializes and parses ISO-8601 date-time strings.
+- `Email`: Validates syntactically correct email addresses.
+
+```js
+function validateEmail(value) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(value)) {
+    throw new TypeError(`Email cannot represent invalid email address: ${value}`);
+  }
+  return value;
+}
+```
+
+- `URL`: Ensures well-formatted, absolute URLs.
+
+```js
+function validateURL(value) {
+  try {
+    new URL(value);
+    return value;
+  } catch {
+    throw new TypeError(`URL cannot represent an invalid URL: ${value}`);
+  }
+}
+```
+
+- `JSON`: Represents arbitrary JSON structures, but use carefully because it bypasses 
+GraphQL's strict type checking.
+
+## When to use existing libraries
+
+Writing scalars is deceptively tricky. Validation edge cases can lead to subtle bugs if 
+not handled carefully.
+
+Whenever possible, use trusted libraries like [`graphql-scalars`](https://www.npmjs.com/package/graphql-scalars). They offer production-ready 
+scalars for DateTime, EmailAddress, URL, UUID, and many others.
+
+### Example: Handling email validation
+
+Handling email validation correctly requires dealing with Unicode, quoted local parts, and 
+domain validation. Rather than writing your own regex, it’s better to use a library scalar 
+that's already validated against standards.
+
+If you need domain-specific behavior, you can wrap an existing scalar with custom rules:
+
+```js
+const { EmailAddressResolver } = require('graphql-scalars');
+
+const StrictEmail = new GraphQLScalarType({
+  ...EmailAddressResolver,
+  parseValue(value) {
+    if (!value.endsWith('@example.com')) {
+      throw new TypeError('Only example.com emails are allowed.');
+    }
+    return EmailAddressResolver.parseValue(value);
+  },
+});
+```
+
+By following these best practices and using trusted tools where needed, you can build custom 
+scalars that are reliable, maintainable, and easy for clients to work with.
+
+## Additional resources
+
+- [GraphQL Scalars by The Guild](https://the-guild.dev/graphql/scalars): A production-ready 
+library of common custom scalars.
+- [GraphQL Scalars Specification](https://github.com/graphql/graphql-scalars): This 
+specification is no longer actively maintained, but useful for historical context.

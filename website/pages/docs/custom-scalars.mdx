@@ -1,0 +1,126 @@
+---
+title: Using Custom Scalars
+---
+
+# Custom Scalars: When and How to Use Them
+
+In GraphQL, scalar types represent primitive data like strings, numbers, and booleans. 
+The GraphQL specification defines five built-in scalars: `Int`, `Float`, 
+`String`, `Boolean`, and `ID`.
+
+However, these default types don't cover all the formats or domain-specific values real-world
+APIs often need. For example, you might want to represent a timestamp as an ISO 8601 string, or
+ensure a user-submitted field is a valid email address. In these cases, you can define a custom
+scalar type.
+
+In GraphQL.js, custom scalars are created using the `GraphQLScalarType` class. This gives you
+full control over how values are serialized, parsed, and validated.
+
+Here’s a simple example of a custom scalar that handles date-time strings:
+
+```js
+const { GraphQLScalarType, Kind } = require('graphql');
+
+const DateTime = new GraphQLScalarType({
+  name: 'DateTime',
+  description: 'An ISO-8601 encoded UTC date string.',
+  serialize(value) {
+    return value instanceof Date ? value.toISOString() : null;
+  },
+  parseValue(value) {
+    return typeof value === 'string' ? new Date(value) : null;
+  },
+  parseLiteral(ast) {
+    return ast.kind === Kind.STRING ? new Date(ast.value) : null;
+  },
+});
+```
+Custom scalars offer flexibility, but they also shift responsibility onto you. You're 
+defining not just the format of a value, but also how it is validated and how it moves 
+through your schema.
+
+This guide covers when to use custom scalars and how to define them in GraphQL.js.
+
+## When to use custom scalars
+
+Define a custom scalar when you need to enforce a specific format, encapsulate domain-specific 
+logic, or standardize a primitive value across your schema. For example:
+
+- Validation: Ensure that inputs like email addresses, URLs, or date strings match a 
+strict format.
+- Serialization and parsing: Normalize how values are converted between internal and 
+client-facing formats.
+- Domain primitives: Represent domain-specific values that behave like scalars, such as 
+UUIDs or currency codes.
+
+Common examples of useful custom scalars include:
+
+- `DateTime`: An ISO 8601 timestamp string
+- `Email`: A syntactically valid email address
+- `URL`: A well-formed web address
+- `BigInt`: An integer that exceeds the range of GraphQL's built-in `Int`
+- `UUID`: A string that follows a specific identifier format
+
+## When not to use a custom scalar
+
+Custom scalars are not a substitute for object types. Avoid using a custom scalar if:
+
+- The value naturally contains multiple fields or nested data (even if serialized as a string).
+- Validation depends on relationships between fields or requires complex cross-checks.
+- You're tempted to bypass GraphQL’s type system using a catch-all scalar like `JSON` or `Any`.
+
+Custom scalars reduce introspection and composability. Use them to extend GraphQL's scalar
+system, not to replace structured types altogether.
+
+## How to define a custom scalar in GraphQL.js
+
+In GraphQL.js, a custom scalar is defined by creating an instance of `GraphQLScalarType`, 
+providing a name, description, and three functions:
+
+- `serialize`: How the server sends internal values to clients.
+- `parseValue`: How the server parses incoming variable values.
+- `parseLiteral`: How the server parses inline values in queries.
+
+The following example is a custom `DateTime` scalar that handles ISO-8601 encoded
+date strings:
+
+```js
+const { GraphQLScalarType, Kind } = require('graphql');
+
+const DateTime = new GraphQLScalarType({
+  name: 'DateTime',
+  description: 'An ISO-8601 encoded UTC date string.',
+  
+  serialize(value) {
+    if (!(value instanceof Date)) {
+      throw new TypeError('DateTime can only serialize Date instances');
+    }
+    return value.toISOString();
+  },
+
+  parseValue(value) {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) {
+      throw new TypeError(`DateTime cannot represent an invalid date: ${value}`);
+    }
+    return date;
+  },
+
+  parseLiteral(ast) {
+    if (ast.kind !== Kind.STRING) {
+      throw new TypeError(`DateTime can only parse string values, but got: ${ast.kind}`);
+    }
+    const date = new Date(ast.value);
+    if (isNaN(date.getTime())) {
+      throw new TypeError(`DateTime cannot represent an invalid date: ${ast.value}`);
+    }
+    return date;
+  },
+});
+```
+
+These functions give you full control over validation and data flow.
+
+## Learn more
+
+- [Custom Scalars: Best Practices and Testing](./advanced-custom-scalars): Dive deeper into validation, testing, and building production-grade custom scalars.

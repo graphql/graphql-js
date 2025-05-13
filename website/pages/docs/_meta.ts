@@ -20,6 +20,9 @@ const meta = {
   'oneof-input-objects': '',
   'defer-stream': '',
   'cursor-based-pagination': '',
+  'custom-scalars': '',
+  'advanced-custom-scalars': '',
+  'n1-dataloader': '',
   'resolver-anatomy': '',
   'graphql-errors': '',
   '-- 3': {
