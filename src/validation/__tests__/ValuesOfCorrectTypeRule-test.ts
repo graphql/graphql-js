@@ -1204,6 +1204,31 @@ describe('Validate: Values of correct type', () => {
     });
   });
 
+  describe('Type system directive arguments', () => {
+    it('with directives of valid types', () => {
+      expectValid(`
+        interface Mammal {
+          mother: Mammal @deprecated(reason: "Some reason.")
+          father: Mammal
+        }
+      `);
+    });
+
+    it('with directive with incorrect types', () => {
+      expectErrors(`
+        interface Mammal {
+          mother: Mammal @deprecated(reason: 5)
+          father: Mammal
+        }
+      `).toDeepEqual([
+        {
+          message: 'String cannot represent a non string value: 5',
+          locations: [{ line: 3, column: 46 }],
+        },
+      ]);
+    });
+  });
+
   describe('Variable default values', () => {
     it('variables with valid default values', () => {
       expectValid(`
