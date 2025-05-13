@@ -25,6 +25,8 @@ overrides:
       - swcrc
       - noreferrer
       - xlink
+      - composability
+      - deduplication
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}

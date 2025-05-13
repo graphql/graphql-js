@@ -28,6 +28,12 @@ const meta = {
   'testing-operations': '',
   'testing-resolvers': '',
   'testing-best-practices': '',
+  'cursor-based-pagination': '',
+  'custom-scalars': '',
+  'advanced-custom-scalars': '',
+  'n1-dataloader': '',
+  'resolver-anatomy': '',
+  'graphql-errors': '',
   '-- 3': {
     type: 'separator',
     title: 'FAQ',
