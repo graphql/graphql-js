@@ -21,6 +21,7 @@ import {
 } from '../../type/definition';
 import {
   assertDirective,
+  GraphQLBehaviorDirective,
   GraphQLDeprecatedDirective,
   GraphQLIncludeDirective,
   GraphQLOneOfDirective,
@@ -223,7 +224,7 @@ describe('Schema Builder', () => {
   it('Maintains @include, @skip & @specifiedBy', () => {
     const schema = buildSchema('type Query');
 
-    expect(schema.getDirectives()).to.have.lengthOf(5);
+    expect(schema.getDirectives()).to.have.lengthOf(6);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
     expect(schema.getDirective('deprecated')).to.equal(
@@ -232,6 +233,7 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('specifiedBy')).to.equal(
       GraphQLSpecifiedByDirective,
     );
+    expect(schema.getDirective('behavior')).to.equal(GraphQLBehaviorDirective);
     expect(schema.getDirective('oneOf')).to.equal(GraphQLOneOfDirective);
   });
 
@@ -241,10 +243,11 @@ describe('Schema Builder', () => {
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
       directive @specifiedBy on FIELD_DEFINITION
+      directive @behavior on SCHEMA
       directive @oneOf on OBJECT
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(5);
+    expect(schema.getDirectives()).to.have.lengthOf(6);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
       GraphQLIncludeDirective,
@@ -255,19 +258,23 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('specifiedBy')).to.not.equal(
       GraphQLSpecifiedByDirective,
     );
+    expect(schema.getDirective('behavior')).to.not.equal(
+      GraphQLBehaviorDirective,
+    );
     expect(schema.getDirective('oneOf')).to.not.equal(GraphQLOneOfDirective);
   });
 
-  it('Adding directives maintains @include, @skip, @deprecated, @specifiedBy, and @oneOf', () => {
+  it('Adding directives maintains @include, @skip, @deprecated, @specifiedBy, @behavior and @oneOf', () => {
     const schema = buildSchema(`
       directive @foo(arg: Int) on FIELD
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(6);
+    expect(schema.getDirectives()).to.have.lengthOf(7);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
     expect(schema.getDirective('include')).to.not.equal(undefined);
     expect(schema.getDirective('deprecated')).to.not.equal(undefined);
     expect(schema.getDirective('specifiedBy')).to.not.equal(undefined);
+    expect(schema.getDirective('behavior')).to.not.equal(undefined);
     expect(schema.getDirective('oneOf')).to.not.equal(undefined);
   });
 

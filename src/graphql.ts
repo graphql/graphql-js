@@ -3,6 +3,8 @@ import { isPromise } from './jsutils/isPromise';
 import type { Maybe } from './jsutils/Maybe';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue';
 
+import type { GraphQLErrorBehavior } from './error/ErrorBehavior';
+
 import { parse } from './language/parser';
 import type { Source } from './language/source';
 
@@ -66,6 +68,15 @@ export interface GraphQLArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  /**
+   * Experimental. Set to NO_PROPAGATE to prevent error propagation. Set to ABORT to
+   * abort a request when any error occurs.
+   *
+   * Default: PROPAGATE
+   *
+   * @experimental
+   */
+  onError?: GraphQLErrorBehavior;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -106,6 +117,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    onError,
   } = args;
 
   // Validate Schema
@@ -138,5 +150,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    onError,
   });
 }

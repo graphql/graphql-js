@@ -74,6 +74,12 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
         ),
         resolve: (schema) => schema.getDirectives(),
       },
+      defaultErrorBehavior: {
+        description:
+          'The default error behavior that will be used for requests which do not specify `onError`.',
+        type: new GraphQLNonNull(__ErrorBehavior),
+        resolve: (schema) => schema.defaultErrorBehavior,
+      },
     } as GraphQLFieldConfigMap<GraphQLSchema, unknown>),
 });
 
@@ -500,6 +506,29 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   },
 });
 
+export const __ErrorBehavior: GraphQLEnumType = new GraphQLEnumType({
+  name: '__ErrorBehavior',
+  description:
+    'An enum detailing the error behavior a GraphQL request should use.',
+  values: {
+    NO_PROPAGATE: {
+      value: 'NO_PROPAGATE',
+      description:
+        'Indicates that an error should result in the response position becoming null, even if it is marked as non-null.',
+    },
+    PROPAGATE: {
+      value: 'PROPAGATE',
+      description:
+        'Indicates that an error that occurs in a non-null position should propagate to the nearest nullable response position.',
+    },
+    ABORT: {
+      value: 'ABORT',
+      description:
+        'Indicates execution should cease when the first error occurs, and that the response data should be null.',
+    },
+  },
+});
+
 /**
  * Note that these are GraphQLField and not GraphQLFieldConfig,
  * so the format for args is different.
@@ -558,6 +587,7 @@ export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
     __InputValue,
     __EnumValue,
     __TypeKind,
+    __ErrorBehavior,
   ]);
 
 export function isIntrospectionType(type: GraphQLNamedType): boolean {

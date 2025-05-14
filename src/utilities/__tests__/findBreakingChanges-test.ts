@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import {
+  GraphQLBehaviorDirective,
   GraphQLDeprecatedDirective,
   GraphQLIncludeDirective,
   GraphQLOneOfDirective,
@@ -803,6 +804,7 @@ describe('findBreakingChanges', () => {
         GraphQLSkipDirective,
         GraphQLIncludeDirective,
         GraphQLSpecifiedByDirective,
+        GraphQLBehaviorDirective,
         GraphQLOneOfDirective,
       ],
     });

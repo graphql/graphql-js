@@ -13,6 +13,8 @@ import { promiseForObject } from '../jsutils/promiseForObject';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue';
 import { promiseReduce } from '../jsutils/promiseReduce';
 
+import type { GraphQLErrorBehavior } from '../error/ErrorBehavior';
+import { isErrorBehavior } from '../error/ErrorBehavior';
 import type { GraphQLFormattedError } from '../error/GraphQLError';
 import { GraphQLError } from '../error/GraphQLError';
 import { locatedError } from '../error/locatedError';
@@ -115,6 +117,7 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   errors: Array<GraphQLError>;
+  errorBehavior: GraphQLErrorBehavior;
 }
 
 /**
@@ -130,6 +133,7 @@ export interface ExecutionResult<
 > {
   errors?: ReadonlyArray<GraphQLError>;
   data?: TData | null;
+  onError?: GraphQLErrorBehavior;
   extensions?: TExtensions;
 }
 
@@ -152,6 +156,15 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
+  /**
+   * Experimental. Set to NO_PROPAGATE to prevent error propagation. Set to ABORT to
+   * abort a request when any error occurs.
+   *
+   * Default: PROPAGATE
+   *
+   * @experimental
+   */
+  onError?: GraphQLErrorBehavior;
   /** Additional execution options. */
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
@@ -291,8 +304,17 @@ export function buildExecutionContext(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
+    onError,
     options,
   } = args;
+
+  if (onError != null && !isErrorBehavior(onError)) {
+    return [
+      new GraphQLError(
+        'Unsupported `onError` value; supported values are `NO_PROPAGATE`, `PROPAGATE` and `ABORT`.',
+      ),
+    ];
+  }
 
   let operation: OperationDefinitionNode | undefined;
   const fragments: ObjMap<FragmentDefinitionNode> = Object.create(null);
@@ -353,6 +375,7 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     errors: [],
+    errorBehavior: onError ?? schema.defaultErrorBehavior,
   };
 }
 
@@ -591,6 +614,7 @@ export function buildResolveInfo(
     rootValue: exeContext.rootValue,
     operation: exeContext.operation,
     variableValues: exeContext.variableValues,
+    errorBehavior: exeContext.errorBehavior,
   };
 }
 
@@ -599,10 +623,26 @@ function handleFieldError(
   returnType: GraphQLOutputType,
   exeContext: ExecutionContext,
 ): null {
-  // If the field type is non-nullable, then it is resolved without any
-  // protection from errors, however it still properly locates the error.
-  if (isNonNullType(returnType)) {
+  if (exeContext.errorBehavior === 'PROPAGATE') {
+    // If the field type is non-nullable, then it is resolved without any
+    // protection from errors, however it still properly locates the error.
+    // Note: semantic non-null types are treated as nullable for the purposes
+    // of error handling.
+    if (isNonNullType(returnType)) {
+      throw error;
+    }
+  } else if (exeContext.errorBehavior === 'ABORT') {
+    // In this mode, any error aborts the request
     throw error;
+  } else if (exeContext.errorBehavior === 'NO_PROPAGATE') {
+    // In this mode, the client takes responsibility for error handling, so we
+    // treat the field as if it were nullable.
+    /* c8 ignore next 6 */
+  } else {
+    invariant(
+      false,
+      'Unexpected errorBehavior setting: ' + inspect(exeContext.errorBehavior),
+    );
   }
 
   // Otherwise, error protection is applied, logging the error and resolving

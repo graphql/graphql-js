@@ -172,6 +172,7 @@ export {
   __InputValue,
   __EnumValue,
   __TypeKind,
+  __ErrorBehavior,
   // "Enum" of Type Kinds
   TypeKind,
   // Meta-field definitions.
