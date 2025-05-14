@@ -192,8 +192,8 @@ enables code generation and editor tooling to provide type-aware completions.
 - Return the `GraphQLObjectType` instance when possible for better clarity and static analysis.
 - Keep `resolveType` logic simple, using consistent field shapes or tags to distinguish
 types.
-- Test `resolveType` logic carefully. Misresolution often causes runtime errors that can be hard 
-to trace.
+- Test `resolveType` logic carefully. Errors in `resolveType` can cause runtime errors that can 
+be hard to trace.
 - Use interfaces when types share fields and unions when types are structurally unrelated.
 
 ## Additional resources
