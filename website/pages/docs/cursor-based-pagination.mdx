@@ -2,6 +2,8 @@
 title: Implementing Cursor-based Pagination
 ---
 
+import { Callout } from "nextra/components";
+
 When a GraphQL API returns a list of data, pagination helps avoid
 fetching too much data at once. Cursor-based pagination fetches items
 relative to a specific point in the list, rather than using numeric offsets.
@@ -18,15 +20,15 @@ that works well with clients.
 
 Cursor-based pagination typically uses a structured format that separates
 pagination metadata from the actual data. The most widely adopted pattern follows the
-[Relay Cursor Connections Specification](https://relay.dev/graphql/connections.htm). While
+[GraphQL Cursor Connections Specification](https://relay.dev/graphql/connections.htm). While
 this format originated in Relay, many GraphQL APIs use it independently because of its
 clarity and flexibility.
 
 This pattern wraps your list of items in a connection type, which includes the following fields:
 
-- `edges`: A list of edge objects, each representing an item in the list.
-- `node`: The actual object you want to retrieve, such as user, post, or comment.
-- `cursor`: An opaque string that identifies the position of the item in the list.
+- `edges`: A list of edge objects, representing for each item in the list:
+  - `node`: The actual object you want to retrieve, such as user, post, or comment.
+  - `cursor`: An opaque string that identifies the position of the item in the list.
 - `pageInfo`: Metadata about the list, such as whether more items are available.
 
 The following query and response show how this structure works:
@@ -192,7 +194,7 @@ const usersField = {
     let start = 0;
     if (args.after) {
       const index = decodeCursor(args.after);
-      if (index != null) {
+      if (Number.isFinite(index)) {
         start = index + 1;
       }
     }
@@ -243,7 +245,7 @@ async function resolveUsers(_, args) {
 
   if (args.after) {
     const index = decodeCursor(args.after);
-    if (index != null) {
+    if (Number.isFinite(index)) {
       offset = index + 1;
     }
   }
@@ -279,6 +281,25 @@ an `OFFSET`. To paginate backward, you can reverse the sort order and slice the
 results accordingly, or use keyset pagination for improved performance on large
 datasets.
 
+<Callout type='info'>
+
+The above is just an example to aid understanding; in a production application,
+for most databases it is better to use `WHERE` clauses to implement cursor
+pagination rather than using `OFFSET`. Using `WHERE` can leverage indicies
+(indexes) to jump directly to the relevant records, whereas `OFFSET` typically
+must scan over and discard that number of records. When paginating very large
+datasets, `OFFSET` can become more expensive as the value grows, whereas using
+`WHERE` tends to have fixed cost. Using `WHERE` can also typically handle the
+addition or removal of data more gracefully.
+
+For example, if you were ordering a collection of users by username, you could
+use the username itself as the `cursor`, thus GraphQL's `allUsers(first: 10,
+after: $cursor)` could become SQL's `WHERE username > $1 LIMIT 10`. Even if
+that user was deleted, you could still continue to paginate from that position
+onwards.
+
+</Callout>
+
 ## Handling edge cases
 
 When implementing pagination, consider how your resolver should handle the following scenarios:
@@ -297,7 +318,7 @@ errors.
 
 To learn more about cursor-based pagination patterns and best practices, see:
 
-- [Relay Cursor Connections Specification](https://relay.dev/graphql/connections.htm)
+- [GraphQL Cursor Connections Specification](https://relay.dev/graphql/connections.htm)
 - [Pagination](https://graphql.org/learn/pagination/) guide on graphql.org
 - [`graphql-relay-js`](https://github.com/graphql/graphql-relay-js): Utility library for
 building Relay-compatible GraphQL servers using GraphQL.js
