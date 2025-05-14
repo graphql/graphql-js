@@ -5,7 +5,7 @@ title: Abstract types in GraphQL.js
 GraphQL includes two kinds of abstract types: interfaces and unions. These types let a single
 field return values of different object types, while keeping your schema type-safe.
 
-This guide covers how to define and resolve abstract types using GraphQL.js. It focuses on 
+This guide covers how to define and resolve abstract types using GraphQL.js. It focuses on
 constructing types in JavaScript using the GraphQL.js type system, not the schema definition
 language (SDL).
 
@@ -22,21 +22,25 @@ flexibility while preserving validation, introspection, and tool support.
 GraphQL provides two kinds of abstract types:
 
 - Interfaces define a set of fields that multiple object types must implement.
-    - Use case: A `ContentItem` interface with fields like `id`, `title`, and `publishedAt`,
+  - Use case: A `ContentItem` interface with fields like `id`, `title`, and `publishedAt`,
     implemented by types such as `Article` and `PodcastEpisode`.
 - Unions group together unrelated types that don't share any fields.
-    - Use case: A `SearchResult` union that includes `Book`, `Author`, and `Publisher` types.
+  - Use case: A `SearchResult` union that includes `Book`, `Author`, and `Publisher` types.
 
 ## Defining interfaces
 
 To define an interface in GraphQL.js, use the `GraphQLInterfaceType` constructor. An interface
-must include a `name`, a `fields` function, and a `resolveType` function, which tells GraphQL which
-concrete type a given value corresponds to.
+must include a `name`, definition of the shared `fields`, and should include a `resolveType`
+function telling GraphQL which concrete type a given value corresponds to.
 
 The following example defines a `ContentItem` interface for a publishing platform:
 
-```js
-const { GraphQLInterfaceType, GraphQLString, GraphQLNonNull } = require('graphql');
+```js filename="ContentItemInterface.js"
+const {
+  GraphQLInterfaceType,
+  GraphQLString,
+  GraphQLNonNull,
+} = require('graphql');
 
 const ContentItemInterface = new GraphQLInterfaceType({
   name: 'ContentItem',
@@ -55,10 +59,13 @@ const ContentItemInterface = new GraphQLInterfaceType({
     return null;
   },
 });
+
+exports.ContentItemInterface = ContentItemInterface;
 ```
 
-You can return either the type name as a string or the corresponding `GraphQLObjectType` instance.
-Returning the instance is recommended when possible for better type safety and tooling support.
+The `resolveType` function must return either the string type name corresponding
+to the `GraphQLObjectType` of the given `value`, or `null` if the type could not
+be determined.
 
 ## Implementing interfaces with object types
 
@@ -70,6 +77,7 @@ conform to the `ContentItem` interface:
 
 ```js
 const { GraphQLObjectType, GraphQLString, GraphQLNonNull } = require('graphql');
+const { ContentItemInterface } = require('./ContentItemInterface.js');
 
 const ArticleType = new GraphQLObjectType({
   name: 'Article',
@@ -105,11 +113,8 @@ GraphQL uses `resolveType`.
 Use the `GraphQLUnionType` constructor to define a union. A union allows a field to return one
 of several object types that don't need to share fields.
 
-A union requires:
-
-- A `name`
-- A list of object types (`types`)
-- A `resolveType` function
+A union requires a name and a list of object types (`types`). It should also be
+provided a `resolveType` function the same as explained for interfaces above.
 
 The following example defines a `SearchResult` union:
 
@@ -134,39 +139,42 @@ const SearchResultType = new GraphQLUnionType({
 });
 ```
 
-Unlike interfaces, unions don’t declare any fields of their own. Clients use inline fragments 
-to query fields from the concrete types.
+Unlike interfaces, unions don’t declare any fields their members must implement.
+Clients use a fragment with a type condition to query fields from a concrete type.
 
 ## Resolving abstract types at runtime
 
-GraphQL resolves abstract types dynamically during execution using the `resolveType` function.
+GraphQL resolves abstract types dynamically during execution using the `resolveType` function, if
+present.
 
 This function receives the following arguments:
 
+<!-- prettier-ignore -->
 ```js
 resolveType(value, context, info)
 ```
 
 It can return:
 
-- A `GraphQLObjectType` instance (recommended)
 - The name of a type as a string
+- `null` if the type could not be determined
 - A `Promise` resolving to either of the above
 
-If `resolveType` isn't defined, GraphQL falls back to checking each possible type's `isTypeOf` 
+If `resolveType` isn't defined, GraphQL falls back to checking each possible type's `isTypeOf`
 function. This fallback is less efficient and makes type resolution harder to debug. For most cases,
 explicitly defining `resolveType` is recommended.
 
 ## Querying abstract types
 
-To query a field that returns an abstract type, use inline fragments to select fields from the 
-possible concrete types. GraphQL evaluates each fragment based on the runtime type of the result.
+To query a field that returns an abstract type, use fragments to select fields from the possible
+concrete types. GraphQL evaluates each fragment based on the runtime type of the result.
 
 For example:
 
 ```graphql
-{
-  search(term: "deep learning") {
+query Search($term: String! = "deep learning") {
+  search(term: $term) {
+    # Inline fragments with type condition:
     ... on Book {
       title
       isbn
@@ -175,30 +183,34 @@ For example:
       name
       bio
     }
-    ... on Publisher {
-      name
-      catalogSize
-    }
+    # Named fragment:
+    ...publisherFrag
   }
+}
+
+fragment publisherFrag on Publisher {
+  name
+  catalogSize
 }
 ```
 
 GraphQL's introspection system lists all possible types for each interface and union, which
-enables code generation and editor tooling to provide type-aware completions.
+enables code generation and editor tooling to provide type-aware completions; however you should
+keep in mind the possibility that more types will implement the interface or be included in the
+union in future, and thus ensure that you have a default case to handle additional types.
 
 ## Best practices
 
 - Always implement `resolveType` for interfaces and unions to handle runtime type resolution.
-- Return the `GraphQLObjectType` instance when possible for better clarity and static analysis.
 - Keep `resolveType` logic simple, using consistent field shapes or tags to distinguish
-types.
-- Test `resolveType` logic carefully. Errors in `resolveType` can cause runtime errors that can 
-be hard to trace.
+  types.
+- Test `resolveType` logic carefully. Errors in `resolveType` can cause runtime errors that can
+  be hard to trace.
 - Use interfaces when types share fields and unions when types are structurally unrelated.
 
 ## Additional resources
 
 - [Constructing Types](https://www.graphql-js.org/docs/constructing-types/)
-- GraphQL Specification: 
-    - [Interfaces](https://spec.graphql.org/October2021/#sec-Interfaces)
-    - [Unions](https://spec.graphql.org/October2021/#sec-Unions)
+- GraphQL Specification:
+  - [Interfaces](https://spec.graphql.org/October2021/#sec-Interfaces)
+  - [Unions](https://spec.graphql.org/October2021/#sec-Unions)
