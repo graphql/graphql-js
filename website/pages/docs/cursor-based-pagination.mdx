@@ -285,7 +285,7 @@ datasets.
 
 The above is just an example to aid understanding; in a production application,
 for most databases it is better to use `WHERE` clauses to implement cursor
-pagination rather than using `OFFSET`. Using `WHERE` can leverage indicies
+pagination rather than using `OFFSET`. Using `WHERE` can leverage indices
 (indexes) to jump directly to the relevant records, whereas `OFFSET` typically
 must scan over and discard that number of records. When paginating very large
 datasets, `OFFSET` can become more expensive as the value grows, whereas using
