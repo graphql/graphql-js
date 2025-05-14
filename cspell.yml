@@ -35,6 +35,8 @@ words:
   - graphiql
   - sublinks
   - instanceof
+  - vitest
+  - vite
 
   # Different names used inside tests
   - Skywalker
