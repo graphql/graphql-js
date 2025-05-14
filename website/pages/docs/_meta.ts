@@ -17,6 +17,7 @@ const meta = {
     title: 'Advanced Guides',
   },
   'constructing-types': '',
+  'abstract-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
   'cursor-based-pagination': '',
