@@ -1,53 +1,66 @@
 ---
-title: Going to Production
+title: Best Practices for Production Readiness
 ---
 
-GraphQL.JS contains a few development checks which in production will cause slower performance and
-an increase in bundle-size. Every bundler goes about these changes different, in here we'll list
-out the most popular ones.
+Bringing a GraphQL.js server into production involves more than deploying code. In production,
+a GraphQL server should be secure, fast, observable, and protected against abusive queries.
 
-## Bundler-specific configuration
+GraphQL.js includes development-time checks that are useful during local testing but should
+be disabled in production to reduce overhead. Additional concerns include caching, error handling,
+schema management, and operational monitoring.
 
-Here are some bundler-specific suggestions for configuring your bundler to remove `globalThis.process` and `process.env.NODE_ENV` on build time.
+This guide covers key practices to prepare a server built with GraphQL.js for production use.
 
-### Vite
+## Optimize your build for production
+
+In development, GraphQL.js includes validation checks to catch common mistakes like invalid schemas
+or resolver returns. These checks are not needed in production and can increase runtime overhead.
+
+You can disable them by setting `process.env.NODE_ENV` to `'production'` during your build process.
+GraphQL.js will automatically strip out development-only code paths.
+
+Bundlers are tools that compile and optimize JavaScript for deployment. Most can be configured to
+replace environment variables `process.env.NODE_ENV` at build time.
+
+### Bundler configuration examples
+
+The following examples show how to configure common bundlers to set `process.env.NODE_ENV`
+and remove development-only code:
+
+#### Vite
 
 ```js
+// vite.config.js
+import { defineConfig } from 'vite';
+
 export default defineConfig({
-  // ...
   define: {
-    'globalThis.process': JSON.stringify(true),
-    'process.env.NODE_ENV': JSON.stringify('production'),
+    'process.env.NODE_ENV': '"production"',
   },
 });
 ```
 
-### Next.js
+#### Next.js
 
-```js
-// ...
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  webpack(config, { webpack }) {
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'globalThis.process': JSON.stringify(true),
-        'process.env.NODE_ENV': JSON.stringify('production'),
-      }),
-    );
-    return config;
-  },
-};
+When you build your application with `next build` and run it using `next start`, Next.js sets
+`process.env.NODE_ENV` to `'production'` automatically. No additional configuration is required.
 
-module.exports = nextConfig;
+```bash
+next build
+next start
 ```
 
-### create-react-app
+If you run a custom server, make sure `NODE_ENV` is set manually.
 
-With `create-react-app`, you need to use a third-party package like [`craco`](https://craco.js.org/) to modify the bundler configuration.
+#### Create React App (CRA)
+
+To customize Webpack behavior in CRA, you can use a tool like [`craco`](https://craco.js.org/). 
+This example uses CommonJS syntax instead of ESM syntax, which is required by `craco.config.js`:
 
 ```js
+// craco.config.js
 const webpack = require('webpack');
+
 module.exports = {
   webpack: {
     plugins: [
@@ -60,7 +73,7 @@ module.exports = {
 };
 ```
 
-### esbuild
+#### esbuild
 
 ```json
 {
@@ -71,42 +84,39 @@ module.exports = {
 }
 ```
 
-### Webpack
+#### Webpack
 
 ```js
-config.plugins.push(
-  new webpack.DefinePlugin({
-    'globalThis.process': JSON.stringify(true),
-    'process.env.NODE_ENV': JSON.stringify('production'),
-  }),
-);
+// webpack.config.js
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+export default {
+  mode: 'production', // Automatically sets NODE_ENV
+  context: __dirname,
+};
 ```
 
-### Rollup
+#### Rollup
 
 ```js
-export default [
-  {
-    // ... input, output, etc.
-    plugins: [
-      minify({
-        mangle: {
-          toplevel: true,
-        },
-        compress: {
-          toplevel: true,
-          global_defs: {
-            '@globalThis.process': JSON.stringify(true),
-            '@process.env.NODE_ENV': JSON.stringify('production'),
-          },
-        },
-      }),
-    ],
-  },
-];
+// rollup.config.js
+import replace from '@rollup/plugin-replace';
+
+export default {
+  plugins: [
+    replace({
+      preventAssignment: true,
+      'process.env.NODE_ENV': JSON.stringify('production'),
+    }),
+  ],
+};
 ```
 
-### SWC
+#### SWC
 
 ```json filename=".swcrc"
 {
@@ -124,3 +134,296 @@ export default [
   }
 }
 ```
+
+## Secure your schema
+
+GraphQL gives clients a lot of flexibility, which can be a strength or a liability depending on
+how it's used. In production, it's important to control how much of your schema is exposed
+and how much work a single query is allowed to do.
+
+Common strategies for securing a schema include:
+
+- Disabling introspection for some users
+- Limiting query depth or cost
+- Enforcing authentication and authorization
+- Applying rate limits
+
+These techniques can help protect your server from accidental misuse or intentional abuse.
+
+### Control schema introspection
+
+Introspection lets clients query the structure of your schema, including types and fields. While
+helpful during development, it may expose internal details you don't want to reveal in
+production.
+
+You can disable introspection in production, or only for unauthenticated users:
+
+```js
+import { validate, specifiedRules, NoSchemaIntrospectionCustomRule } from 'graphql';
+
+const validationRules = isPublicRequest
+  ? [...specifiedRules, NoSchemaIntrospectionCustomRule]
+  : specifiedRules;
+```
+
+Note that many developer tools rely on introspection to function properly. Use introspection
+control as needed for your tools and implementation.
+
+### Limit query complexity
+
+GraphQL allows deeply nested queries, which can be expensive to resolve. You can prevent this
+with query depth limits or cost analysis.
+
+The following example shows how to limit query depth:
+
+```js
+import depthLimit from 'graphql-depth-limit';
+
+const validationRules = [
+  depthLimit(10),
+  ...specifiedRules,
+];
+```
+
+Instead of depth, you can assign each field a cost and reject queries that exceed a total budget.
+Tools like [`graphql-cost-analysis`](https://github.com/pa-bru/graphql-cost-analysis) can help.
+
+### Require authentication and authorization
+
+GraphQL doesn't include built-in authentication. Instead, you can attach user data to the request
+using middleware, then enforce authorization in your resolvers:
+
+```js
+function requireRole(role, resolver) {
+  return (parent, args, context, info) => {
+    if (context.user?.role !== role) {
+      throw new Error('Not authorized');
+    }
+    return resolver(parent, args, context, info);
+  };
+}
+```
+
+For more details, see the [Authentication and Middleware](./authentication-and-express-middleware/) guide.
+
+### Apply rate limiting
+
+To prevent abuse, you can limit how often clients send queries. Basic rate limiting can be added
+at the HTTP level using middleware such as `express-rate-limit`.
+
+For more granular control, you can apply limits per user or operation using your own
+logic inside the request context or resolvers. 
+
+## Improve performance
+
+In production, performance often depends on how efficiently your resolvers fetch and process data.
+GraphQL allows flexible queries, which means a single poorly optimized query can result in
+excessive database calls or slow response times.
+
+### Use batching with DataLoader
+
+The most common performance issue in GraphQL is the N+1 query problem, where nested resolvers
+make repeated calls for related data. `DataLoader` helps avoid this by batching and caching
+field-level fetches within a single request.
+
+For more information on this issue and how to resolve it, see 
+[Solving the N+1 Problem with DataLoader](./n1-dataloader/).
+
+### Apply caching where appropriate
+
+You can apply caching at several levels, depending on your server architecture:
+
+- **Resolver-level caching**: Cache the results of expensive operations for a short duration.
+- **HTTP caching**: Use persisted queries and edge caching to avoid re-processing
+common queries.
+- **Schema caching**: If your schema is static, avoid rebuilding it on every request.
+
+For larger applications, consider request-scoped caching or external systems like Redis to avoid
+memory growth and stale data.
+
+## Monitor and debug in production
+
+Observability is key to diagnosing issues and ensuring your GraphQL server is running smoothly
+in production. This includes structured logs, runtime metrics, and distributed traces to
+follow requests through your system.
+
+### Add structured logging
+
+Use a structured logger to capture events in a machine-readable format. This makes logs easier
+to filter and analyze in production systems. Popular options include:
+
+- [`pino`](https://github.com/pinojs/pino): Fast, minimal JSON logger
+- [`winston`](https://github.com/winstonjs/winston): More configurable with plugin support
+
+You might log things like:
+
+- Incoming operation names
+- Validation or execution errors
+- Resolver-level timing
+- User IDs or request metadata
+
+Avoid logging sensitive data like passwords or access tokens.
+
+### Collect metrics
+
+Operational metrics help track the health and behavior of your server over time. 
+
+You can use tools like [Prometheus](https://prometheus.io) or [OpenTelemetry](https://opentelemetry.io)
+to capture query counts, resolver durations, and error rates.
+
+There's no built-in GraphQL.js metrics hook, but you can wrap resolvers or use the `execute`
+function directly to insert instrumentation.
+
+### Use tracing tools
+
+Distributed tracing shows how a request flows through services and where time is spent. This
+is especially helpful for debugging performance issues.
+
+GraphQL.js allows you to hook into the execution pipeline using:
+
+- `execute`: Trace the overall operation
+- `parse` and `validate`: Trace early steps
+- `formatResponse`: Attach metadata
+
+Tracing tools that work with GraphQL include:
+
+- [Apollo Studio](https://www.apollographql.com/docs/studio/)
+- [OpenTelemetry](https://opentelemetry.io)
+
+## Handle errors
+
+How you handle errors in production affects both security and client usability. Avoid exposing
+internal details in errors, and return errors in a format clients can interpret consistently.
+
+For more information on how GraphQL.js formats and processes errors, see [Understanding GraphQL.js Errors](./graphql-errors/).
+
+### Control what errors are exposed
+
+By default, GraphQL.js includes full error messages and stack traces. In production, you may want
+to return a generic error to avoid leaking implementation details.
+
+You can use a custom error formatter to control this:
+
+```js
+import { GraphQLError } from 'graphql';
+
+function formatError(error) {
+  if (process.env.NODE_ENV === 'production') {
+    return new GraphQLError('Internal server error');
+  }
+  return error;
+}
+```
+
+This function can be passed to your server, depending on the integration.
+
+### Add structured error metadata
+
+GraphQL allows errors to include an `extensions` object, which you can use to add
+metadata such as error codes. This helps clients distinguish between different types of
+errors:
+
+```js
+throw new GraphQLError('Forbidden', {
+  extensions: { code: 'FORBIDDEN' },
+});
+```
+
+You can also create and throw custom error classes to represent specific cases, such as
+authentication or validation failures.
+
+## Manage your schema safely
+
+Schemas evolve over time, but removing or changing fields can break client applications.
+In production environments, it's important to make schema changes carefully and with clear
+migration paths.
+
+### Deprecate fields before removing them
+
+Use the `@deprecated` directive to mark fields or enum values that are planned for removal.
+Always provide a reason so clients know what to use instead:
+
+```graphql
+type User {
+  oldField: String @deprecated(reason: "Use `newField` instead.")
+}
+```
+
+Only remove deprecated fields once you're confident no clients depend on them.
+
+### Detect breaking changes during deployment
+
+You can compare your current schema against the previous version to detect breaking changes.
+Tools that support this include:
+
+- [`graphql-inspector`](https://github.com/graphql-hive/graphql-inspector)
+- [`graphql-cli`](https://github.com/Urigo/graphql-cli)
+
+Integrate these checks into your CI/CD pipeline to catch issues before they reach production.
+
+## Use environment-aware configuration
+
+You should tailor your GraphQL server's behavior based on the runtime environment. 
+
+- Disable introspection and show minimal error messages in production.
+- Enable playgrounds like GraphiQL or Apollo Sandbox only in development.
+- Control logging verbosity and other debug features via environment flags.
+
+Example:
+
+```js
+const isDev = process.env.NODE_ENV !== 'production';
+
+app.use(
+  '/graphql',
+  graphqlHTTP({
+    schema,
+    graphiql: isDev,
+    customFormatErrorFn: formatError,
+  })
+);
+```
+
+## Production readiness checklist
+
+Use this checklist to verify that your GraphQL.js server is ready for production.
+Before deploying, confirm the following checks are complete:
+
+### Build and environment
+- [ ] Bundler sets `process.env.NODE_ENV` to `'production'`
+- [ ] Development-only checks are removed from the production build
+
+### Schema security
+- [ ] Introspection is disabled or restricted in production
+- [ ] Query depth is limited
+- [ ] Query cost limits are in place
+- [ ] Authentication is required for requests
+- [ ] Authorization is enforced in resolvers
+- [ ] Rate limiting is applied
+
+### Performance
+- [ ] `DataLoader` is used to batch database access
+- [ ] Expensive resolvers use caching (request-scoped or shared)
+- [ ] Public queries use HTTP or CDN caching
+- [ ] Schema is reused across requests (not rebuilt each time)
+
+### Monitoring and observability
+- [ ] Logs are structured and machine-readable
+- [ ] Metrics are collected (e.g., with Prometheus or OpenTelemetry)
+- [ ] Tracing is enabled with a supported tool
+- [ ] Logs do not include sensitive data
+
+### Error handling
+- [ ] Stack traces and internal messages are hidden in production
+- [ ] Custom error types are used for common cases
+- [ ] Errors include `extensions.code` for consistent client handling
+- [ ] A `formatError` function is used to control error output
+
+### Schema lifecycle
+- [ ] Deprecated fields are marked with `@deprecated` and a clear reason
+- [ ] Schema changes are validated before deployment
+- [ ] CI/CD includes schema diff checks
+
+### Environment configuration
+- [ ] Playground tools (e.g., GraphiQL) are only enabled in development
+- [ ] Error formatting, logging, and introspection are environment-specific
