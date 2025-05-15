@@ -1,0 +1,152 @@
+---
+title: Authorization Strategies
+---
+
+GraphQL gives you complete control over how to define and enforce access control. 
+That flexibility means it's up to you to decide where authorization rules live and 
+how they're enforced.
+
+This guide covers common strategies for implementing authorization in GraphQL 
+servers using GraphQL.js. It assumes you're authenticating requests and passing a user or 
+session object into the `context`.
+
+## What is authorization?
+
+Authorization determines what a user is allowed to do. It's different from 
+authentication, which verifies who a user is.
+
+In GraphQL, authorization typically involves restricting:
+
+- Access to certain queries or mutations
+- Visibility of specific fields
+- Ability to perform mutations based on roles or ownership
+
+## Resolver-based authorization
+
+The simplest approach is to enforce access rules directly inside resolvers 
+using the `context.user` value:
+
+```js
+// ES module syntax: Add "type": "module" to your package.json to use import/export
+export const resolvers = {
+  Query: {
+    secretData: (parent, args, context) => {
+      if (!context.user || context.user.role !== 'admin') {
+        throw new Error('Not authorized');
+      }
+      return getSecretData();
+    },
+  },
+};
+```
+
+This works well for smaller schemas or one-off checks.
+
+## Centralizing access control logic
+
+As your schema grows, repeating logic like `context.user.role !=='admin'`
+becomes error-prone. Instead, extract shared logic into utility functions:
+
+```js
+export function requireUser(user) {
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+}
+
+export function requireRole(user, role) {
+  requireUser(user);
+  if (user.role !== role) {
+    throw new Error(`Must be a ${role}`);
+  }
+}
+```
+
+You can use these helpers in resolvers:
+
+```js
+import { requireRole } from './auth.js';
+
+export const resolvers = {
+  Mutation: {
+    deleteUser: (parent, args, context) => {
+      requireRole(context.user, 'admin');
+      return deleteUser(args.id);
+    },
+  },
+};
+```
+
+This pattern makes your access rules easier to read, test, and update.
+
+## Field-level access control
+
+You can also conditionally return or hide data at the field level. This 
+is useful when, for example, users should only see their own private data:
+
+```js
+export const resolvers = {
+  User: {
+    email: (parent, args, context) => {
+      if (context.user.id !== parent.id && context.user.role !== 'admin') {
+        return null;
+      }
+      return parent.email;
+    },
+  },
+};
+```
+
+Returning `null` is a common pattern when fields should be hidden from
+unauthorized users without triggering an error.
+
+## Declaractive authorization with directives
+
+If you prefer a schema-first or declarative style, you can define custom
+schema directives like `@auth(role: "admin")`:
+
+```graphql
+type Query {
+  users: [User] @auth(role: "admin")
+}
+```
+
+GraphQL.js doesn't interpret directives by default, they're just annotations.
+You must implement their behavior manually, usually by:
+
+- Wrapping resolvers in custom logic
+- Using a schema transformation library to inject authorization checks
+
+Directive-based authorization can add complexity, so many teams start with
+resolver-based checks and adopt directives later if needed.
+
+## Best practices
+
+- Keep authorization logic close to business logic. Resolvers are often the
+right place to keep authorization logic.
+- Use shared helper functions to reduce duplication and improve clarity.
+- Avoid tightly coupling authorization logic to your schema. Make it
+reusable where possible.
+- Consider using `null` to hide fields from unauthorized users, rather than
+throwing errors.
+- Be mindful of tools like introspection or GraphQL Playground that can
+expose your schema. Use case when deploying introspection in production
+environments.
+
+## Additional resources
+
+- [Anatomy of a Resolver](./resolver-anatomy): Shows how resolvers work and how the `context` 
+object is passed in. Helpful if you're new to writing custom resolvers or 
+want to understand where authorization logic fits.
+- [GraphQL Specification, Execution section](https://spec.graphql.org/October2021/#sec-Execution): Defines how fields are 
+resolved, including field-level error propagation and execution order. Useful 
+background when building advanced authorization patterns that rely on the 
+structure of GraphQL execution.
+- [`graphql-shield`](https://github.com/dimatill/graphql-shield): A community library for adding rule-based 
+authorization as middleware to resolvers.
+- [`graphql-auth-directives`](https://github.com/the-guild-org/graphql-auth-directives): Adds support for custom directives like 
+`@auth(role: "admin")`, letting you declare access control rules in SDL. 
+Helpful if you're building a schema-first API and prefer declarative access 
+control.
+
+
