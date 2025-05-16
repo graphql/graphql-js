@@ -74,127 +74,167 @@ serializable and can be directly used by tools like [GraphQL Code Generator](htt
 
 With a schema-first workflow, you can:
 
-- Generate resolver type definitions that match your schema
+- Generate resolver type definitions and files that match your schema
 - Generate operation types for client queries, integration tests, or internal tooling
 - Detect breaking changes and unused types through schema diffing tools
 
 ## Generating resolver types
 
-We recommend using the [GraphQL Code Generator Server Preset](https://the-guild.dev/graphql/codegen/docs/guides/graphql-server-apollo-yoga-with-server-preset)
-to generate resolver types. It automatically generates resolver types based on your schema, including parent types, 
-arguments, return values, and context, without needing extra plugin setup.
+We recommend using the [Server Preset](https://www.npmjs.com/package/@eddeee888/gcg-typescript-resolver-files) for a 
+managed workflow. It automatically generates types and files based on your schema without needing extra plugin setup.
 
-Example `codegen.ts` config:
+The Server Preset generates:
 
-```ts
-import type { CodegenConfig } from '@graphql-codegen/cli';
+- Resolver types, including parent types, arguments, return values, and context
+- Resolver files with types wired up, ready for your business logic
+- A resolver map and type definitions to plug into GraphQL servers
+
+This setup expects your schema is split into modules to improve readability and maintainability. For example:
+
+```pgsql
+├── src/
+│   ├── schema/
+│   │   ├── base/
+│   │   │   ├── schema.graphql
+│   │   ├── user/
+│   │   │   ├── schema.graphql
+│   │   ├── book/
+│   │   │   ├── schema.graphql
+```
+
+Here's an example `codegen.ts` file using the Server Preset:
+
+```ts filename="codegen.ts"
+import type { CodegenConfig } from "@graphql-codegen/cli";
+import { defineConfig } from "@eddeee888/gcg-typescript-resolver-files";
 
 const config: CodegenConfig = {
-  schema: './schema.graphql',
+  schema: "src/**/schema.graphql",
   generates: {
-    './src/generated/resolvers-types.ts': {
-      plugins: ['typescript', 'typescript-resolvers'],
-    },
+    "src/schema": defineConfig({
+      resolverGeneration: "minimal",
+    }),
   },
 };
+
 export default config;
 ```
 
-To run the generator: 
+To generate the resolver types and files, run:
 
 ```bash
 npx graphql-codegen
 ```
 
-This creates a set of resolver types like:
+This creates resolver files like:
 
 ```ts
-export type QueryResolvers<ContextType = any> = {
-  user?: Resolver<User, any, ContextType, RequireFields<QueryUserArgs, 'id'>>;
+import type { QueryResolvers } from "./../../../types.generated";
+
+export const user: NonNullable<QueryResolvers["user"]> = async (
+  _parent,
+  _arg,
+  _ctx,
+) => {
+  // Implement Query.user resolver logic here
 };
 ```
 
-These types ensure that the `user` resolver expects an `id` argument and returns a 
-`User`, giving you confidence and autocomplete while implementing your server logic.
-
-## Using generated types in your server
-
-Once generated, you can use these types directly in your resolver map:
+The user query resolver is typed to ensure that the user resolver expects an id argument and returns a
+User, giving you confidence and autocomplete while implementing your server logic, which may look like this:
 
 ```ts
-import { QueryResolvers } from './generated/resolvers-types';
-
-export const queryResolvers: QueryResolvers = {
-  user: (parent, args, context) => {
-    return context.db.getUser(args.id);
-  },
-};
-```
-
-You can also extract shared `ContextType` and `Resolver` 
-utility types from the generated file and apply them across your codebase.
-
-## Generating operation types
-
-In addition to resolver types, you can generate types for GraphQL operations such
-as queries, mutations, and fragments. This is especially useful for shared integration tests
-or client logic that needs to match the schema precisely.
-
-We recommend using the GraphQL Code Generator Server Preset for generating operation types.
-The server preset generates both resolver and operation types, without needing to install
-or configure additional plugins.
-
-Suppose you have a query in `./src/operations/getUser.graphql`: 
-
-```graphql
-query GetUser($id: ID!) {
-  user(id: $id) {
-    id
-    name
-  }
-}
-```
-
-Update your codegen config:
-
-```ts
-import type { CodegenConfig } from '@graphql-codegen/cli';
-
-const config: CodegenConfig = {
-  schema: './schema.graphql',
-  documents: './src/operations/**/*.graphql',
-  generates: {
-    './src/generated/': {
-      preset: 'graphql-codegen-preset-server',
-    },
-  },
-};
-export default config;
-```
-
-This produces types like `GetUserQuery` and `GetUserQueryVariables`, which you can
-import into your client code or test files.
-
-## Typing resolvers manually
-
-If you aren't ready to introduce type generation, you can still get partial type safety
-using `graphql-js` built-in types.
-
-```ts
-import { GraphQLFieldResolver } from 'graphql';
-
-const myResolver: GraphQLFieldResolver<MyParent, MyContext> = (
+export const user: NonNullable<QueryResolvers["user"]> = async (
   parent,
   args,
   context,
-  info
 ) => {
-  // ...
+  return context.db.getUser(args.id);
 };
 ```
 
-This pattern may be enough for small projects or static schemas, but it 
-can be hard to maintain and scale without automation.
+See the official [Server Preset guide](https://the-guild.dev/graphql/codegen/docs/guides/graphql-server-apollo-yoga-with-server-preset) to learn about its other features, including mappers convention and static analysis for runtime safety.
+
+## Generating operation types
+
+In addition to resolver types, you can generate types for GraphQL operations such as queries, mutations, and 
+fragments. This is especially useful for shared integration tests or client logic that needs to match the schema 
+precisely.
+
+We recommend using the GraphQL Code Generator [Client Preset](https://the-guild.dev/graphql/codegen/plugins/presets/preset-client) for a managed workflow:
+
+- Write operations with GraphQL syntax in the same file where it is used
+- Get type-safety when using the result
+
+Here's an example configuration using the Client Preset:
+
+```ts
+import type { CodegenConfig } from "@graphql-codegen/cli";
+
+const config: CodegenConfig = {
+  schema: "src/**/schema.graphql",
+  documents: ["src/**/*.ts"],
+  ignoreNoDocuments: true,
+  generates: {
+    "./src/graphql/": {
+      preset: "client",
+      config: {
+        documentMode: "string",
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+To keep generated types up to date as you edit your code, run the generator in watch mode:
+
+```bash
+npx graphql-codegen --config codegen.ts --watch
+```
+
+Once generated, import the `graphql` function from `src/graphql/` to write GraphQL operations 
+directly in your TypeScript files:
+
+```ts
+import { graphql } from "./graphql";
+
+const UserQuery = graphql(`
+  query User($id: ID!) {
+    user(id: ID!) {
+      id
+      fullName
+    }
+  }
+`);
+
+const response = await fetch("https://graphql.org/graphql/", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/graphql-response+json",
+  },
+  body: JSON.stringify({
+    query: UserQuery,
+    variables: { id: "1" },
+  }),
+});
+
+if (!response.ok) {
+  throw new Error("Network response was not ok");
+}
+
+const result: ResultOf<typeof UserQuery> = await response.json();
+
+console.log(result);
+```
+
+For guides on using the Client Preset with popular frameworks and tools, see:
+
+- [Vanilla TypeScript](https://the-guild.dev/graphql/codegen/docs/guides/vanilla-typescript)
+- [React Query](https://the-guild.dev/graphql/codegen/docs/guides/react-query)
+- [React / Vue](https://the-guild.dev/graphql/codegen/docs/guides/react-vue)
 
 ## Best practices for CI and maintenance
 
