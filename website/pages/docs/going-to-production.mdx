@@ -1,5 +1,6 @@
 ---
 title: Best Practices for Production Readiness
+toc: { maxDepth: 2 }
 ---
 
 Bringing a GraphQL.js server into production involves more than deploying code. In production,
@@ -390,40 +391,40 @@ Use this checklist to verify that your GraphQL.js server is ready for production
 Before deploying, confirm the following checks are complete:
 
 ### Build and environment
-- [ ] Bundler sets `process.env.NODE_ENV` to `'production'`
-- [ ] Development-only checks are removed from the production build
+- Bundler sets `process.env.NODE_ENV` to `'production'`
+- Development-only checks are removed from the production build
 
 ### Schema security
-- [ ] Introspection is disabled or restricted in production
-- [ ] Query depth is limited
-- [ ] Query cost limits are in place
-- [ ] Authentication is required for requests
-- [ ] Authorization is enforced in resolvers
-- [ ] Rate limiting is applied
+- Introspection is disabled or restricted in production
+- Query depth is limited
+- Query cost limits are in place
+- Authentication is required for requests
+- Authorization is enforced in resolvers
+- Rate limiting is applied
 
 ### Performance
-- [ ] `DataLoader` is used to batch database access
-- [ ] Expensive resolvers use caching (request-scoped or shared)
-- [ ] Public queries use HTTP or CDN caching
-- [ ] Schema is reused across requests (not rebuilt each time)
+- `DataLoader` is used to batch database access
+- Expensive resolvers use caching (request-scoped or shared)
+- Public queries use HTTP or CDN caching
+- Schema is reused across requests (not rebuilt each time)
 
 ### Monitoring and observability
-- [ ] Logs are structured and machine-readable
-- [ ] Metrics are collected (e.g., with Prometheus or OpenTelemetry)
-- [ ] Tracing is enabled with a supported tool
-- [ ] Logs do not include sensitive data
+- Logs are structured and machine-readable
+- Metrics are collected (e.g., with Prometheus or OpenTelemetry)
+- Tracing is enabled with a supported tool
+- Logs do not include sensitive data
 
 ### Error handling
-- [ ] Stack traces and internal messages are hidden in production
-- [ ] Custom error types are used for common cases
-- [ ] Errors include `extensions.code` for consistent client handling
-- [ ] A `formatError` function is used to control error output
+- Stack traces and internal messages are hidden in production
+- Custom error types are used for common cases
+- Errors include `extensions.code` for consistent client handling
+- A `formatError` function is used to control error output
 
 ### Schema lifecycle
-- [ ] Deprecated fields are marked with `@deprecated` and a clear reason
-- [ ] Schema changes are validated before deployment
-- [ ] CI/CD includes schema diff checks
+- Deprecated fields are marked with `@deprecated` and a clear reason
+- Schema changes are validated before deployment
+- CI/CD includes schema diff checks
 
 ### Environment configuration
-- [ ] Playground tools (e.g., GraphiQL) are only enabled in development
-- [ ] Error formatting, logging, and introspection are environment-specific
+- Playground tools (e.g., GraphiQL) are only enabled in development
+- Error formatting, logging, and introspection are environment-specific
