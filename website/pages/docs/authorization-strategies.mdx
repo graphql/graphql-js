@@ -10,18 +10,6 @@ This guide covers common strategies for implementing authorization in GraphQL
 servers using GraphQL.js. It assumes you're authenticating requests and passing a user or 
 session object into the `context`.
 
-## Before you start
-
-All code examples in this guide use modern JavaScript with [ES module (ESM) syntax](https://nodejs.org/api/esm.html).  
-To run them in Node.js, make sure to:
-
-- Add `"type": "module"` to your `package.json`, or
-- Use the `.mjs` file extension for your files
-
-As of Node.js 22, [module syntax detection](https://nodejs.org/docs/latest-v22.x/api/esm.html#automatic-detection-of-modules) 
-is enabled by default. This means Node.js will attempt to run `.js` files 
-using ES module syntax if it can't parse them as CommonJS.
-
 ## What is authorization?
 
 Authorization determines what a user is allowed to do. It's different from 
@@ -34,6 +22,9 @@ In GraphQL, authorization typically involves restricting:
 - Ability to perform mutations based on roles or ownership
 
 ## Resolver-based authorization
+
+> **Note:**  
+> All examples assume you're using Node.js 22.7 or later with [ES module (ESM) support](https://nodejs.org/api/esm.html) enabled.
 
 The simplest approach is to enforce access rules directly inside resolvers 
 using the `context.user` value:

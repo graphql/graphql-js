@@ -3,16 +3,46 @@ title: Overview
 sidebarTitle: Overview
 ---
 
-GraphQL.JS is the reference implementation to the [GraphQL Specification](https://spec.graphql.org/draft/), it's designed to be simple to use and easy to understand
-while closely following the Specification.
+GraphQL.js is the official JavaScript implementation of the 
+[GraphQL Specification](https://spec.graphql.org/draft/). It provides the core building blocks 
+for constructing GraphQL servers, clients, tools, and utilities in JavaScript and TypeScript.
 
-You can build GraphQL servers, clients, and tools with this library, it's designed so you can choose which parts you use, for example, you can build your own parser
-and use the execution/validation from the library. There also a lot of useful utilities for schema-diffing, working with arguments and many more.
+This documentation site is for developers who want to:
 
-In the following chapters you'll find out more about the three critical pieces of this library
+- Understand how GraphQL works
+- Build a GraphQL API using GraphQL.js
+- Extend, customize, or introspect GraphQL systems
+- Learn best practices for using GraphQL.js in production
 
-- The GraphQL language
-- Document validation
-- GraphQL Execution
+Whether you're writing your own server, building a GraphQL clients, or creating tools
+that work with GraphQL, this site guides you through core concepts, APIs, and
+advanced use cases of GraphQL.js.
 
-You can also code along on [a tutorial](/docs/getting-started).
+## How to use this documentation
+
+To follow along with the code examples in this documentation, make sure your environment
+meets the following requirements.
+
+### Environment
+
+Most code examples use modern JavaScript with [ES module (ESM) syntax](https://nodejs.org/api/esm.html). We recommend:
+
+- Node.js 22.7 or later, which supports automatic module type detection
+    - [Download Node.js 22.7+](https://nodejs.org/en/download/current/)
+- Enable ESM by either:
+    - Adding `"type": "module"` to your `package.json`, or
+    - Using the `.mjs` file extension
+
+If you're using an older version of Node.js or prefer CommonJS, you may need to
+adjust the code examples accordingly.
+
+### Installation
+
+Before running any code examples, install the GraphQL.js package:
+
+```bash
+npm install graphql
+```
+
+You'll see reminders about environment setup throughout the documentation, but this setup
+is assumed by default.
