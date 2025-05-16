@@ -38,6 +38,15 @@ export interface IntrospectionOptions {
    * Default: false
    */
   oneOf?: boolean;
+
+  /**
+   * Choose the type of nullability you would like to see.
+   *
+   * - TRADITIONAL: all GraphQLSemanticNonNull will be unwrapped
+   * - FULL: the true nullability will be returned
+   *
+   */
+  nullability?: 'TRADITIONAL' | 'FULL';
 }
 
 /**
@@ -52,6 +61,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     schemaDescription: false,
     inputValueDeprecation: false,
     oneOf: false,
+    nullability: 'TRADITIONAL',
     ...options,
   };
 
@@ -70,6 +80,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
   const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
+  const nullability = optionsWithDefault.nullability;
 
   return `
     query IntrospectionQuery {
@@ -105,7 +116,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         args${inputDeprecation('(includeDeprecated: true)')} {
           ...InputValue
         }
-        type {
+        type${nullability === 'FULL' ? `(nullability: ${nullability})` : ''} {
           ...TypeRef
         }
         isDeprecated
@@ -285,10 +296,20 @@ export interface IntrospectionNonNullTypeRef<
   readonly ofType: T;
 }
 
+export interface IntrospectionSemanticNonNullTypeRef<
+  T extends IntrospectionTypeRef = IntrospectionTypeRef,
+> {
+  readonly kind: 'SEMANTIC_NON_NULL';
+  readonly ofType: T;
+}
+
 export type IntrospectionTypeRef =
   | IntrospectionNamedTypeRef
   | IntrospectionListTypeRef
   | IntrospectionNonNullTypeRef<
+      IntrospectionNamedTypeRef | IntrospectionListTypeRef
+    >
+  | IntrospectionSemanticNonNullTypeRef<
       IntrospectionNamedTypeRef | IntrospectionListTypeRef
     >;
 
