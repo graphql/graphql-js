@@ -222,6 +222,27 @@ type Message {
 
 type Query {
   getMessage(id: ID!): Message
+	getMessages: [Message]
+}
+
+const root = {
+	getMessage: ({ id }) => {
+		return fakeDatabase[id]
+	},
+	getMessages: () => {
+		return Object.values(fakeDatabase)
+	},
+	createMessage: ({ input }) => {
+		const id = String(Object.keys(fakeDatabase).length + 1)
+		const message = new Message(id, input)
+		fakeDatabase[id] = message
+		return message
+	},
+	updateMessage: ({ id, input }) => {
+		const message = fakeDatabase[id]
+		Object.assign(message, input)
+		return message
+	}
 }
 
 type Mutation {
@@ -244,6 +265,7 @@ app.all(
   '/graphql',
   createHandler({
     schema: schema,
+		rootValue: root,
   }),
 );
 app.listen(4000, () => {
