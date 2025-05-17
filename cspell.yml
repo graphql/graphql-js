@@ -27,6 +27,8 @@ overrides:
       - xlink
       - composability
       - deduplication
+      - Vitest
+      - hardcoding
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
