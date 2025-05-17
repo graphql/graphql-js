@@ -17,9 +17,9 @@ Each of these types maps straightforwardly to JavaScript, so you can just return
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const { buildSchema } = require('graphql');
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
@@ -54,19 +54,19 @@ app.all(
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 
-````
+```
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const {
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
   GraphQLFloat,
   GraphQLList,
-} = require('graphql');
+} from 'graphql';
 
 // Construct a schema
 const schema = new GraphQLSchema({
@@ -99,8 +99,8 @@ app.all(
 
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-````
 
+```
   </Tabs.Tab>
 </Tabs>
 

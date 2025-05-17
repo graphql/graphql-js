@@ -237,7 +237,7 @@ The following example shows how to paginate a list of users using PostgreSQL and
 client like `pg`:
 
 ```js
-const db = require('./db');
+import db from './db';
 
 async function resolveUsers(_, args) {
   const limit = args.first ?? 10;
