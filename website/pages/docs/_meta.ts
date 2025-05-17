@@ -20,6 +20,7 @@ const meta = {
   'abstract-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
+  'type-generation': '',
   'cursor-based-pagination': '',
   'custom-scalars': '',
   'advanced-custom-scalars': '',
@@ -27,6 +28,10 @@ const meta = {
   'resolver-anatomy': '',
   'graphql-errors': '',
   '-- 3': {
+    type: 'separator',
+    title: 'Testing',
+  },
+  '-- 4': {
     type: 'separator',
     title: 'FAQ',
   },
