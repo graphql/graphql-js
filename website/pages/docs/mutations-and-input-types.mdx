@@ -207,6 +207,8 @@ const express = require('express');
 const { createHandler } = require('graphql-http/lib/use/express');
 const { buildSchema } = require('graphql');
 
+const fakeDatabase = {};
+
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
 input MessageInput {
