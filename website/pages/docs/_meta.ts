@@ -12,6 +12,7 @@ const meta = {
   'object-types': '',
   'mutations-and-input-types': '',
   'authentication-and-express-middleware': '',
+  'authorization-strategies': '',
   '-- 2': {
     type: 'separator',
     title: 'Advanced Guides',
