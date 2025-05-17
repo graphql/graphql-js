@@ -33,7 +33,7 @@ To handle GraphQL queries, we need a schema that defines the `Query` type, and w
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```javascript
-const { graphql, buildSchema } = require('graphql');
+import { graphql, buildSchema } from 'graphql';
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`type Query { hello: String } `);
@@ -58,7 +58,7 @@ graphql({
 </Tabs.Tab>
 <Tabs.Tab>
 ```javascript
-const { graphql, GraphQLSchema, GraphQLObjectType, GraphQLString } = require('graphql');
+import { graphql, GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql';
 
 // Construct a schema
 const schema = new GraphQLSchema({

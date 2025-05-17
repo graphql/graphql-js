@@ -24,16 +24,16 @@ type Query {
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const {
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLList,
   GraphQLFloat,
   GraphQLInt,
-  GraphQLNonNull,
-} = require('graphql');
+  GraphQLNonNull
+} from 'graphql';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -107,9 +107,9 @@ The entire code for a server that hosts this `rollDice` API is:
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const { buildSchema } = require('graphql');
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(/_ GraphQL _/ ` type Query { rollDice(numDice: Int!, numSides: Int): [Int] }`);
@@ -139,17 +139,17 @@ console.log('Running a GraphQL API server at localhost:4000/graphql');
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const {
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLInt,
   GraphQLString,
   GraphQLList,
   GraphQLFloat,
-  GraphQLSchema,
-} = require('graphql');
+  GraphQLSchema
+} from 'graphql';
 
 // Construct a schema, using GraphQL schema language
 const schema = new GraphQLSchema({

@@ -25,7 +25,6 @@ export default defineConfig({
 ### Next.js
 
 ```js
-// ...
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack(config, { webpack }) {
@@ -39,7 +38,7 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
 ```
 
 ### create-react-app
@@ -47,8 +46,8 @@ module.exports = nextConfig;
 With `create-react-app`, you need to use a third-party package like [`craco`](https://craco.js.org/) to modify the bundler configuration.
 
 ```js
-const webpack = require('webpack');
-module.exports = {
+import webpack from 'webpack';
+export default {
   webpack: {
     plugins: [
       new webpack.DefinePlugin({
