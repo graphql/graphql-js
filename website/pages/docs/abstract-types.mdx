@@ -36,7 +36,7 @@ concrete type a given value corresponds to.
 The following example defines a `ContentItem` interface for a publishing platform:
 
 ```js
-const { GraphQLInterfaceType, GraphQLString, GraphQLNonNull } = require('graphql');
+import { GraphQLInterfaceType, GraphQLString, GraphQLNonNull } from 'graphql';
 
 const ContentItemInterface = new GraphQLInterfaceType({
   name: 'ContentItem',
@@ -69,7 +69,7 @@ The following example implements the `Article` and `PodcastEpisode` types that
 conform to the `ContentItem` interface:
 
 ```js
-const { GraphQLObjectType, GraphQLString, GraphQLNonNull } = require('graphql');
+import { GraphQLObjectType, GraphQLString, GraphQLNonNull } from 'graphql';
 
 const ArticleType = new GraphQLObjectType({
   name: 'Article',
@@ -114,7 +114,7 @@ A union requires:
 The following example defines a `SearchResult` union:
 
 ```js
-const { GraphQLUnionType } = require('graphql');
+import { GraphQLUnionType } from 'graphql';
 
 const SearchResultType = new GraphQLUnionType({
   name: 'SearchResult',
@@ -134,7 +134,7 @@ const SearchResultType = new GraphQLUnionType({
 });
 ```
 
-Unlike interfaces, unions don’t declare any fields of their own. Clients use inline fragments 
+Unlike interfaces, unions don't declare any fields of their own. Clients use inline fragments 
 to query fields from the concrete types.
 
 ## Resolving abstract types at runtime

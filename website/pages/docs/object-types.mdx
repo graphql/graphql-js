@@ -18,14 +18,14 @@ type Query {
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const {
+import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLInt,
   GraphQLString,
   GraphQLList,
-  GraphQLFloat,
-} = require('graphql');
+  GraphQLFloat
+} from 'graphql';
 
 new GraphQLObjectType({
   name: 'Query',
@@ -43,7 +43,7 @@ new GraphQLObjectType({
     },
   },
 })
-````
+```
   </Tabs.Tab>
 </Tabs>
 
@@ -64,15 +64,15 @@ type Query {
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const {
+import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLInt,
   GraphQLString,
   GraphQLList,
   GraphQLFloat,
-  GraphQLSchema,
-} = require('graphql');
+  GraphQLSchema
+} from 'graphql';
 
 const RandomDie = new GraphQLObjectType({
   name: 'RandomDie',
@@ -173,19 +173,19 @@ type RandomDie {
 type Query {
   getDie(numSides: Int): RandomDie
 }
-````
+```
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const {
+import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLInt,
   GraphQLString,
   GraphQLList,
   GraphQLFloat,
-  GraphQLSchema,
-} = require('graphql');
+  GraphQLSchema
+} from 'graphql';
 
 const RandomDie = new GraphQLObjectType({
   name: 'RandomDie',
@@ -236,8 +236,7 @@ const schema = new GraphQLSchema({
     }
   })
 });
-````
-
+```
   </Tabs.Tab>
 </Tabs>
 
@@ -246,9 +245,9 @@ Putting this all together, here is some sample code that runs a server with this
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const { buildSchema } = require('graphql');
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
@@ -299,20 +298,20 @@ app.all(
 );
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
-````
+```
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const {
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLInt,
-  GraphQLString,
   GraphQLList,
   GraphQLFloat,
-} = require('graphql');
+  GraphQLSchema
+} from 'graphql';
 
 const RandomDie = new GraphQLObjectType({
   name: 'RandomDie',
@@ -351,7 +350,7 @@ const schema = new GraphQLSchema({
         type: RandomDie,
         args: {
           numSides: {
-            type: GraphQLInt,
+            type: GraphQLInt
           }
         },
         resolve: (_, { numSides }) => {
