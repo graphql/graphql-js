@@ -100,25 +100,36 @@ describe('DateTime scalar', () => {
 Integrate the scalar into a schema and run real GraphQL queries to validate end-to-end behavior.
 
 ```js
-const { graphql, buildSchema } = require('graphql');
+const { graphql, GraphQLSchema, GraphQLObjectType } = require('graphql');
+const { DateTimeResolver as DateTime } = require('graphql-scalars');
 
-const schema = buildSchema(`
+const Query = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    now: {
+      type: DateTime,
+      resolve() {
+        return new Date();
+      },
+    },
+  },
+});
+
+/*
   scalar DateTime
 
   type Query {
     now: DateTime
   }
-`);
-
-const rootValue = {
-  now: () => new Date('2024-01-01T00:00:00Z'),
-};
+*/
+const schema = new GraphQLSchema({
+  query: Query,
+});
 
 async function testQuery() {
   const response = await graphql({
     schema,
     source: '{ now }',
-    rootValue,
   });
   console.log(response);
 }
@@ -181,13 +192,22 @@ If you need domain-specific behavior, you can wrap an existing scalar with custo
 ```js
 const { EmailAddressResolver } = require('graphql-scalars');
 
-const StrictEmail = new GraphQLScalarType({
+const StrictEmailAddress = new GraphQLScalarType({
   ...EmailAddressResolver,
+  name: 'StrictEmailAddress',
   parseValue(value) {
-    if (!value.endsWith('@example.com')) {
+    const email = EmailAddressResolver.parseValue(value);
+    if (!email.endsWith('@example.com')) {
       throw new TypeError('Only example.com emails are allowed.');
     }
-    return EmailAddressResolver.parseValue(value);
+    return email;
+  },
+  parseLiteral(literal, variables) {
+    const email = EmailAddressResolver.parseLiteral(literal, variables);
+    if (!email.endsWith('@example.com')) {
+      throw new TypeError('Only example.com emails are allowed.');
+    }
+    return email;
   },
 });
 ```
