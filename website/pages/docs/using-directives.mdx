@@ -3,6 +3,8 @@ title: Using Directives in GraphQL.js
 sidebarTitle: Using Directives
 ---
 
+# Using Directives in GraphQL.js
+
 Directives let you customize query execution at a fine-grained level. They act like
 annotations in a GraphQL document, giving the server instructions about whether to
 include a field, how to format a response, or how to apply custom behavior.
@@ -178,9 +180,9 @@ a resolver.
 ## Implementing custom directive behavior
 
 GraphQL.js doesn't execute custom directive logic for you. You must handle it during
-execution. There are two common approaches: 
+execution. There are two common approaches:
 
-1. Handle directives in resolvers
+### 1. Handle directives in resolvers
 
 Inside a resolver, use the `info` object to access AST nodes and inspect directives.
 You can check whether a directive is present and change behavior accordingly.
@@ -229,7 +231,7 @@ console.log(result);
 // → { data: { greeting: 'HELLO, WORLD' } }
 ```
 
-2. Use AST visitors or schema wrappers
+### 2. Use AST visitors or schema wrappers
 
 For more complex logic, you can preprocess the schema or query using AST visitors or wrap
 field resolvers. This lets you inject directive logic globally across
