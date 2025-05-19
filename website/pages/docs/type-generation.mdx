@@ -197,7 +197,7 @@ npx graphql-codegen --config codegen.ts --watch
 Once generated, import the `graphql` function from `src/graphql/` to write GraphQL operations 
 directly in your TypeScript files:
 
-```ts
+```ts filename="src/index.ts"
 import { graphql } from "./graphql";
 
 const UserQuery = graphql(`
