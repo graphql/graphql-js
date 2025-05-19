@@ -128,7 +128,7 @@ npx graphql-codegen
 
 This creates resolver files like:
 
-```ts
+```ts filename="src/schema/user/resolvers/Query/user.ts"
 import type { QueryResolvers } from "./../../../types.generated";
 
 export const user: NonNullable<QueryResolvers["user"]> = async (
