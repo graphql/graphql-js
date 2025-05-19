@@ -143,7 +143,7 @@ export const user: NonNullable<QueryResolvers["user"]> = async (
 The user query resolver is typed to ensure that the user resolver expects an id argument and returns a
 User, giving you confidence and autocomplete while implementing your server logic, which may look like this:
 
-```ts
+```ts filename="src/schema/user/resolvers/Query/user.ts"
 export const user: NonNullable<QueryResolvers["user"]> = async (
   parent,
   args,
