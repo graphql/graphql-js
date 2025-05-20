@@ -23,6 +23,7 @@ const meta = {
   'cursor-based-pagination': '',
   'custom-scalars': '',
   'advanced-custom-scalars': '',
+  'query-complexity-controls': '',
   'n1-dataloader': '',
   'resolver-anatomy': '',
   'graphql-errors': '',
