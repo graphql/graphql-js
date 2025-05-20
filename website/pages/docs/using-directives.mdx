@@ -18,14 +18,13 @@ custom directives, and how to implement directive behavior during execution.
 
 ## How GraphQL.js handles built-in directives
 
-GraphQL defines built-in directives that control query execution or describe metadata
-about the schema. These include: 
+GraphQL defines several built-in directives, each serving a specific purpose during
+execution or in the schema. These include:
 
-- `@include` and `@skip`: Conditionally include or skip fields
-- `@deprecated`: Marks fields or enum values as deprecated
-
-In GraphQL.js, these directives are handled automatically by the executor or introspection system. 
-You don't need to write custom logic to support them.
+- `@include` and `@skip`: Used in the execution language to conditionally include or skip
+fields and fragments at runtime.
+- `@deprecated`: Used in Schema Definition Language (SDL) to mark fields or enum values as 
+deprecated, with an optional reason. It appears in introspection but doesn't affect query execution.
 
 For example, the `@include` directive conditionally includes a field based on a Boolean variable:
 
