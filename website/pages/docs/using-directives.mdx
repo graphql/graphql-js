@@ -1,0 +1,275 @@
+---
+title: Using Directives in GraphQL.js
+sidebarTitle: Using Directives
+---
+
+# Using Directives in GraphQL.js
+
+Directives let you customize query execution at a fine-grained level. They act like
+annotations in a GraphQL document, giving the server instructions about whether to
+include a field, how to format a response, or how to apply custom behavior.
+
+GraphQL.js supports built-in directives like `@include`, `@skip`, and `@deprecated` out
+of the box. If you want to create your own directives and apply custom behavior, you'll
+need to implement the logic yourself.
+
+This guide covers how GraphQL.js handles built-in directives, how to define and apply
+custom directives, and how to implement directive behavior during execution.
+
+## How GraphQL.js handles built-in directives
+
+GraphQL defines several built-in directives, each serving a specific purpose during
+execution or in the schema. These include:
+
+- `@include` and `@skip`: Used in the execution language to conditionally include or skip
+fields and fragments at runtime.
+- `@deprecated`: Used in Schema Definition Language (SDL) to mark fields or enum values as 
+deprecated, with an optional reason. It appears in introspection but doesn't affect query execution.
+
+For example, the `@include` directive conditionally includes a field based on a Boolean variable:
+
+```graphql
+query($shouldInclude: Boolean!) {
+  greeting @include(if: $shouldInclude)
+}
+```
+
+At runtime, GraphQL.js evaluates the `if` argument. If `shouldInclude` is `false`, the
+`greeting` field in this example is skipped entirely and your resolver won't run.
+
+```js
+import { graphql, buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    greeting: String
+  }
+`);
+
+const rootValue = {
+  greeting: () => 'Hello!',
+};
+
+const query = `
+  query($shouldInclude: Boolean!) {
+    greeting @include(if: $shouldInclude)
+  }
+`;
+
+const variables = { shouldInclude: true };
+
+const result = await graphql({
+  schema,
+  source: query,
+  rootValue,
+  variableValues: variables,
+});
+
+console.log(result);
+// → { data: { greeting: 'Hello!' } }
+```
+
+If `shouldInclude` is `false`, the result would be `{ data: {} }`.
+
+The `@deprecated` directive is used in the schema to indicate that a field or enum
+value should no longer be used. It doesn't affect execution, but is included
+in introspection output:
+
+```graphql
+{
+  __type(name: "MyType") {
+    fields {
+      name
+      isDeprecated
+      deprecationReason
+    }
+  }
+}
+```
+
+GraphQL.js automatically includes deprecation metadata in introspection. Tools like
+GraphiQL use this to show warnings, but GraphQL.js itself doesn't block or modify behavior.
+You can still query deprecated fields unless you add validation rules yourself.
+
+## Declaring custom directives in GraphQL.js
+
+To use a custom directive, you first define it in your schema using the
+`GraphQLDirective` class. This defines the directive's name, where it can
+be applied, and any arguments it accepts.
+
+A directive in GraphQL.js is just metadata. It doesn't perform any behavior on its own.
+
+Here's a basic example that declares an `@uppercase` directive that can be applied to fields:
+
+```js
+import {
+  GraphQLDirective,
+  DirectiveLocation,
+  GraphQLNonNull,
+  GraphQLBoolean,
+} from 'graphql';
+
+const UppercaseDirective = new GraphQLDirective({
+  name: 'uppercase',
+  description: 'Converts the result of a field to uppercase.',
+  locations: [DirectiveLocation.FIELD],
+  args: {
+    enabled: {
+      type: GraphQLNonNull(GraphQLBoolean),
+      defaultValue: true,
+      description: 'Whether to apply the transformation.',
+    },
+  },
+});
+```
+
+To make the directive available to your schema, you must explicitly include it:
+
+```js
+import { GraphQLSchema } from 'graphql';
+
+const schema = new GraphQLSchema({
+  query: QueryType,
+  directives: [UppercaseDirective],
+});
+```
+
+Once added, tools like validation and introspection will recognize it.
+
+## Applying directives in queries
+
+After defining and adding your directive to the schema, clients can apply it in queries using
+the `@directiveName` syntax. Arguments are passed in parentheses, similar to field arguments.
+
+You can apply directives to:
+
+- Fields
+- Fragment spreads
+- Inline fragments
+
+The following examples show how to apply directives:
+
+```graphql
+# Applied to a field
+{
+  greeting @uppercase
+}
+```
+
+```graphql
+# Applied to a fragment spread
+{
+  ...userFields @include(if: true)
+}
+```
+
+```graphql
+# Applied to an inline fragment
+{
+  ... on User @skip(if: false) {
+    email
+  }
+}
+```
+
+When a query is parsed, GraphQL.js includes directive nodes in the field's
+Abstract Syntax Tree (AST). You can access these via `info.fieldNodes` inside
+a resolver.
+
+## Implementing custom directive behavior
+
+GraphQL.js doesn't execute custom directive logic for you. You must handle it during
+execution. There are two common approaches:
+
+### 1. Handle directives in resolvers
+
+Inside a resolver, use the `info` object to access AST nodes and inspect directives.
+You can check whether a directive is present and change behavior accordingly.
+
+```js
+import {
+  graphql,
+  buildSchema,
+  getDirectiveValues,
+} from 'graphql';
+
+const schema = buildSchema(`
+  directive @uppercase(enabled: Boolean = true) on FIELD
+
+  type Query {
+    greeting: String
+  }
+`);
+
+const rootValue = {
+  greeting: (source, args, context, info) => {
+    const directive = getDirectiveValues(
+      schema.getDirective('uppercase'),
+      info.fieldNodes[0],
+      info.variableValues
+    );
+
+    const result = 'Hello, world';
+
+    if (directive?.enabled) {
+      return result.toUpperCase();
+    }
+
+    return result;
+  },
+};
+
+const query = `
+  query {
+    greeting @uppercase
+  }
+`;
+
+const result = await graphql({ schema, source: query, rootValue });
+console.log(result);
+// → { data: { greeting: 'HELLO, WORLD' } }
+```
+
+### 2. Use AST visitors or schema wrappers
+
+For more complex logic, you can preprocess the schema or query using AST visitors or wrap
+field resolvers. This lets you inject directive logic globally across
+multiple types or fields.
+
+This approach is useful for:
+
+- Authorization
+- Logging
+- Schema transformations
+- Feature flags
+
+## Use cases for custom directives
+
+Some common use cases for custom directives include:
+
+- **Formatting**: `@uppercase`, `@date(format: "YYYY-MM-DD")`, `@currency`
+- **Authorization**: `@auth(role: "admin")` to protect fields
+- **Feature flags**: `@feature(name: "newHeader")` to expose experimental features
+- **Observability**: `@log`, `@tag(name: "important")`, or `@metrics(id: "xyz")`
+- **Execution control**: Mask or transform fields at runtime with schema visitors
+
+## Best practices
+
+When working with custom directives in GraphQL.js, keep the following best practices in mind:
+
+- GraphQL.js doesn't have a directive middleware system. All custom directive logic must be implemented
+manually.
+- Weigh schema-driven logic against resolver logic. Directives can make queries more expressive, but they 
+may also hide behavior from developers reading the schema or resolvers.
+- Keep directive behavior transparent and debuggable. Since directives are invisible at runtime unless 
+logged or documented, try to avoid magic behavior.
+- Use directives when they offer real value. Avoid overusing directives to replace things that could be
+handled more clearly in schema design or resolvers.
+- Validate directive usage explicitly if needed. If your directive has rules or side effects, consider 
+writing custom validation rules to enforce correct usage.
+
+## Additional resources
+
+- [GraphQL Specification: Directives](https://spec.graphql.org/draft/#sec-Language.Directives)
+- The Guild's guide on [Schema Directives](https://the-guild.dev/graphql/tools/docs/schema-directives)
+- Apollo Server's guide on [Directives](https://www.apollographql.com/docs/apollo-server/schema/directives)
