@@ -1,5 +1,5 @@
 ---
-title: Best Practices for Production Readiness
+title: Going to Production
 ---
 
 Bringing a GraphQL.js server into production involves more than deploying code. In production,
@@ -208,11 +208,12 @@ For more details, see the [Authentication and Middleware](./authentication-and-e
 
 ### Apply rate limiting
 
-To prevent abuse, you can limit how often clients send queries. Basic rate limiting can be added
-at the HTTP level using middleware such as `express-rate-limit`.
+To prevent abuse, you can limit how often clients access specific operations or fields. The
+[`graphql-rate-limit`](https://github.com/teamplanes/graphql-rate-limit#field-config) package lets
+you define rate limits directly in your schema using custom directives.
 
-For more granular control, you can apply limits per user or operation using your own
-logic inside the request context or resolvers. 
+For more control, you can also implement your own rate-limiting logic using the request
+context, such as limiting by user, client ID, or operation name.
 
 ## Improve performance
 
