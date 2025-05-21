@@ -105,13 +105,37 @@ unauthorized users without triggering an error.
 ## Declarative authorization with directives
 
 If you prefer a schema-first or declarative style, you can define custom
-schema directives like `@auth(role: "admin")`:
+schema directives like `@auth(role: "admin")` directly in your SDL:
 
 ```graphql
 type Query {
   users: [User] @auth(role: "admin")
 }
 ```
+
+To enforce this directive during execution, you need to inspect it in your resolvers
+using `getDirectiveValues`:
+
+```js
+import { getDirectiveValues } from 'graphql';
+
+function withAuthCheck(resolverFn, schema, fieldNode, variableValues, context) {
+  const directive = getDirectiveValues(
+    schema.getDirective('auth'),
+    fieldNode,
+    variableValues
+  );
+
+  if (directive?.role && context.user?.role !== directive.role) {
+    throw new Error('Unauthorized');
+  }
+
+  return resolverFn();
+}
+```
+
+You can wrap individual resolvers with this logic, or apply it more broadly using a
+schema visitor or transformation.
 
 GraphQL.js doesn't interpret directives by default, they're just annotations.
 You must implement their behavior manually, usually by:
@@ -132,7 +156,7 @@ reusable where possible.
 - Consider using `null` to hide fields from unauthorized users, rather than
 throwing errors.
 - Be mindful of tools like introspection or GraphQL Playground that can
-expose your schema. Use case when deploying introspection in production
+expose your schema. Use caution when deploying introspection in production
 environments.
 
 ## Additional resources
