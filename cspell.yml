@@ -25,6 +25,7 @@ overrides:
       - swcrc
       - noreferrer
       - xlink
+      - codegen
       - composability
       - deduplication
 
@@ -118,3 +119,4 @@ words:
   - XXXF
   - bfnrt
   - wrds
+  - pgsql
