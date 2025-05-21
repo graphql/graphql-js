@@ -103,6 +103,7 @@ import {
   GraphQLInputObjectType,
   GraphQLNonNull,
 } from 'graphql';
+import { randomBytes } from 'node:crypto';
 
 // Maps username to content
 const fakeDatabase = {};
@@ -156,7 +157,6 @@ const schema = new GraphQLSchema({
         },
         resolve: (_, { input }) => {
           // Create a random id for our "database".
-          import { randomBytes } from 'crypto';
           const id = randomBytes(10).toString('hex');
           fakeDatabase[id] = input;
           return {
