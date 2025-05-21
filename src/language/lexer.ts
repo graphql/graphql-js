@@ -1,3 +1,10 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`:
+ * * isPunctuatorTokenKind @internal
+ * Should we still expose this file?
+ */
+
 import { syntaxError } from '../error/syntaxError';
 
 import { Token } from './ast';

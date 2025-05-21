@@ -1,3 +1,10 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`:
+ * * GraphQLSchemaNormalizedConfig @internal
+ * * GraphQLSchemaValidationOptions
+ * Should we still expose this file?
+ */
 import { devAssert } from '../jsutils/devAssert';
 import { inspect } from '../jsutils/inspect';
 import { instanceOf } from '../jsutils/instanceOf';

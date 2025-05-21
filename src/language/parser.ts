@@ -1,3 +1,10 @@
+/**
+ * Quoted as "used by external libraries".
+ * Missing exports from `graphql`:
+ * * Parser @internal
+ * Should we still expose this file?
+ */
+
 import type { Maybe } from '../jsutils/Maybe';
 
 import type { GraphQLError } from '../error/GraphQLError';
