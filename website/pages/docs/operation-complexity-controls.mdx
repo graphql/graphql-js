@@ -1,17 +1,23 @@
 ---
-title: Query Complexity Controls
+title: Operation Complexity Controls
 ---
 
-# Query Complexity Controls
+# Operation Complexity Controls
 
 GraphQL gives clients a lot of flexibility to shape responses, but that
 flexibility can also introduce risk. Clients can request deeply nested fields or 
-large volumes of data in a single query. Without controls, these operations can slow
+large volumes of data in a single operation. Without controls, these operations can slow
 down your server or expose security vulnerabilities.
 
-This guide explains how to measure and limit query complexity in GraphQL.js
+This guide explains how to measure and limit operation complexity in GraphQL.js
 using static analysis. You'll learn how to estimate the cost
-of a query before execution and reject it if it exceeds a safe limit.
+of an operation before execution and reject it if it exceeds a safe limit.
+
+<Callout type="info" emoji="ℹ️">
+  In production, we recommend using [trusted documents](https://graphql.org/learn/persistence/)
+  rather than analyzing arbitrary documents at runtime. Complexity analysis can still be
+  useful at build time to catch expensive operations before they're deployed.
+</Callout>
 
 ## Why complexity control matters
 
@@ -25,28 +31,43 @@ Without safeguards, clients could:
 - Use recursive fragments to multiply field resolution
 - Exploit pagination arguments to retrieve excessive data
 
-Query complexity controls help prevent these issues. They allow you to:
+Certain field types (e.g., lists, interfaces, unions) can also significantly
+increase cost by multiplying the number of values returned or resolved.
+
+Complexity controls help prevent these issues. They allow you to:
 
 - Protect your backend from denial-of-service attacks or accidental load
 - Enforce cost-based usage limits between clients or environments
 - Detect expensive queries early in development
+- Add an additional layer of protection alongside authentication, depth limits, and validation
 
-## Estimating query cost
+For more information, see [Security best practices](https://graphql.org/learn/security/).
+
+## Estimating operation cost
 
 To measure a query's complexity, you typically:
 
-1. Parse the incoming query into a GraphQL document.
+1. Parse the incoming operation into a GraphQL document.
 2. Walk the query's Abstract Syntax Tree (AST), which represents its structure.
 3. Assign a cost to each field, often using static heuristics or metadata.
-4. Reject or log the query if it exceeds a maximum allowed complexity.
+4. Reject or log the operation if it exceeds a maximum allowed complexity.
 
 You can do this using custom middleware or validation rules that run before execution.
-No resolvers are called unless the query passes these checks.
+No resolvers are called unless the operation passes these checks.
+
+<Callout type="info" emoji="ℹ️">
+  Fragment cycles or deep nesting can cause some complexity analyzers to perform
+  poorly or get stuck. Always run complexity analysis after validation unless your analyzer
+  explicitly handles cycles safely.
+</Callout>
 
 ## Simple complexity calculation
 
-The `graphql-query-complexity` package calculates query cost by walking the AST. Here's a
-simple example using `simpleEstimator`, which assigns a flat cost to every field:
+There are several community-maintained tools for complexity analysis. The examples in this
+guide use [`graphql-query-complexity`](https://github.com/slicknode/graphql-query-complexity) as 
+an option, but we recommend choosing the approach that best fits your project.
+
+Here's a basic example using its `simpleEstimator`, which assigns a flat cost to every field:
 
 ```js
 import { parse } from 'graphql';
@@ -82,13 +103,13 @@ console.log(`Query complexity: ${complexity}`);
 
 In this example, every field costs 1 point. The total complexity is the number of fields,
 adjusted for nesting and fragments. The complexity is calculated before execution begins,
-allowing you to reject costly queries early.
+allowing you to reject costly operations early.
 
 ## Custom cost estimators
 
 Some fields are more expensive than others. For example, a paginated list might be more
 costly than a scalar field. You can define per-field costs using
-`fieldExtensionsEstimator`.
+`fieldExtensionsEstimator`, a feature supported by some complexity tools.
 
 This estimator reads cost metadata from the field's `extensions.complexity` function in
 your schema. For example:
@@ -118,6 +139,12 @@ const UserType = new GraphQLObjectType({
 
 In this example, the cost of `posts` depends on the number of items requested (`limit`) and the
 complexity of each child field.
+
+<Callout type="info" emoji="ℹ️">
+  Most validation steps don't have access to variable values. If your complexity
+  calculation depends on variables (like `limit`), make sure it runs after validation, not
+  as part of it.
+</Callout>
 
 To evaluate the cost before execution, you can combine estimators like this:
 
@@ -158,18 +185,14 @@ console.log(`Query complexity: ${complexity}`);
 ```
 
 Estimators are evaluated in order. The first one to return a numeric value is used
-for a given field.
-
-This fallback approach allows you to define detailed logic for specific fields and use
-a default cost for everything else.
+for a given field. This lets you define detailed logic for specific fields and fall back
+to a default cost elsewhere.
 
 ## Enforcing limits in your server
 
-To enforce complexity limits automatically, you can use `createComplexityRule` from
-the same package. This integrates with GraphQL.js validation and prevents execution of
-overly complex queries.
-
-Here's how to include it in your server's execution flow:
+Some tools allow you to enforce complexity limits during validation by adding a rule
+to your GraphQL.js server. For example, `graphql-query-complexity` provides a
+`createComplexityRule` helper:
 
 ```js
 import { graphql, specifiedRules, parse } from 'graphql';
@@ -207,24 +230,33 @@ const result = await graphql({
 console.log(result);
 ```
 
-If the query exceeds the defined complexity limit, GraphQL.js will return a validation
-error and skip execution.
+<Callout type="info" emoji="ℹ️">
+  Only use complexity rules in validation if you're sure the analysis is cycle-safe.
+  Otherwise, run complexity checks after validation and before execution.
+</Callout>
 
-This approach is useful when you want to apply global complexity rules without needing
-to modify resolver logic or add separate middleware.
+## Complexity in trusted environments
+
+In environments that use persisted or precompiled operations, complexity analysis is still
+useful, just in a different way. You can run it at build time to:
+
+- Warn engineers about expensive operations during development
+- Track changes to operation cost across schema changes
+- Define internal usage budgets by team, client, or role
 
 ## Best practices
 
-- Set conservative complexity limits at first, and adjust them based on observed usage.
-- Use field-level estimators to better reflect real backend cost.
-- Log query complexity in development and production to identify inefficiencies.
-- Apply stricter limits for public or unauthenticated clients.
-- Combine complexity limits with depth limits, persisted queries, or operation
-whitelisting for stronger control.
+- Use trusted documents in production when possible.
+- Use complexity analysis as a development-time safeguards.
+- Avoid running untrusted operations without additional validation and cost checks.
+- Account for list fields and abstract types, which can significantly increase cost.
+- Avoid estimating complexity before validation unless you're confident in your tooling.
+- Use complexity analysis as part of your layered security strategy, alongside depth limits,
+field guards, and authentication.
 
 ## Additional resources
 
-- [`graphql-query-complexity`](https://github.com/slicknode/graphql-query-complexity): A static analysis tool for measuring query cost in GraphQL.js servers
+- [`graphql-query-complexity`](https://github.com/slicknode/graphql-query-complexity): A community-maintained static analysis tool
 - [`graphql-depth-limit`](https://github.com/graphile/depth-limit): A lightweight tool to restrict the maximum query depth
 - [GraphQL Specification: Operations and execution](https://spec.graphql.org/draft/#sec-Language.Operations)
 - [GraphQL.org: Security best practices](https://graphql.org/learn/security/)
