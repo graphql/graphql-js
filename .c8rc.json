@@ -7,7 +7,8 @@
     "src/jsutils/Maybe.ts",
     "src/jsutils/ObjMap.ts",
     "src/jsutils/PromiseOrValue.ts",
-    "src/utilities/typedQueryDocumentNode.ts"
+    "src/utilities/typedQueryDocumentNode.ts",
+    "src/**/__tests__/**/*.ts"
   ],
   "clean": true,
   "report-dir": "reports/coverage",
