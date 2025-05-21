@@ -251,6 +251,7 @@ function buildResponse(
  * Essential assertions before executing to provide developer feedback for
  * improper use of the GraphQL library.
  *
+ * @deprecated will be removed in v17 in favor of assertValidSchema() and TS checks
  * @internal
  */
 export function assertValidExecutionArguments(
