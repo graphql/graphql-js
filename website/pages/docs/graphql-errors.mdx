@@ -1,6 +1,7 @@
 ---
 title: Understanding GraphQL.js Errors
 ---
+import { Callout, GitHubNoteIcon } from "nextra/components";
 
 # Understanding GraphQL.js Errors
 
@@ -37,13 +38,22 @@ For example:
 Each error object can include the following fields:
 
 - `message`: A human-readable description of the error.
-- `locations` (optional): Where the error occurred in the operation.
+- `locations` (optional): Where the error occurred in the operation document.
 - `path` (optional): The path to the field that caused the error.
 - `extensions` (optional): Additional error metadata, often used for error codes, HTTP status
 codes or debugging information.
 
-The GraphQL specification only requires the `message` field. All others are optional, but 
-recommended to help clients understand and react to errors.
+<Callout type="info">
+
+The GraphQL specification separates errors into two types: _request_ errors, and
+_execution_ errors. Request errors indicate something went wrong that prevented
+the GraphQL operation from executing, for example the document is invalid, and
+only requires the `message` field. Execution errors indicate something went
+wrong during execution, typically due to the result of calling a resolver, and
+requires both the `message` and `path` fields to be present. All others fields
+are optional, but recommended to help clients understand and react to errors.
+
+</Callout>
 
 ## Creating and handling errors with `GraphQLError`
 
@@ -81,11 +91,15 @@ Each option helps tie the error to specific parts of the GraphQL execution:
 
 When a resolver throws an error:
 
-- If the thrown value is already a `GraphQLError`, GraphQL.js uses it as-is.
-- If it is another type of error (such as a built-in `Error`), GraphQL.js wraps it into a
-`GraphQLError`.
+- If the thrown value is a `GraphQLError` and contains the required information
+(`path`), GraphQL.js uses it as-is.
+- Otherwise, GraphQL.js wraps it into a `GraphQLError`.
 
 This ensures that all errors returned to the client follow a consistent structure.
+
+You may throw any type of error that makes sense in your application; throwing
+`Error` is fine, you do not need to throw `GraphQLError`. However, ensure that
+your errors do not reveal security sensitive information.
 
 ## How errors propagate during execution
 
@@ -96,6 +110,7 @@ depends on the nullability of the field where the error occurs.
 the error and sets the field's value to `null` in the `data` payload.
 - **Non-nullable fields**: If a resolver for a non-nullable field throws an error, GraphQL.js
 records the error and then sets the nearest parent nullable field to `null`.
+If no such nullable field exists, then the operation root will be set `null` (`"data": null`).
 
 For example, consider the following schema:
 
