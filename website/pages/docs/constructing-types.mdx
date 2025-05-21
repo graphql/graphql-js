@@ -13,9 +13,9 @@ For example, let's say we are building a simple API that lets you fetch user dat
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const { buildSchema } = require('graphql');
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
 
 const schema = buildSchema(`
 type User {
@@ -61,9 +61,9 @@ console.log('Running a GraphQL API server at localhost:4000/graphql');
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const graphql = require('graphql');
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import * as graphql from 'graphql';
 
 // Maps id to User object
 const fakeDatabase = {

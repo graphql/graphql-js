@@ -9,7 +9,7 @@ schema, follow these best practices.
 
 ### Document expected formats and validation
 
-Provide a clear description of the scalar’s accepted input and output formats. For example, a 
+Provide a clear description of the scalar's accepted input and output formats. For example, a 
 `DateTime` scalar should explain that it expects [ISO-8601](https://www.iso.org/iso-8601-date-and-time-format.html) strings ending with `Z`.
 
 Clear descriptions help clients understand valid input and reduce mistakes.
@@ -100,8 +100,8 @@ describe('DateTime scalar', () => {
 Integrate the scalar into a schema and run real GraphQL queries to validate end-to-end behavior.
 
 ```js
-const { graphql, GraphQLSchema, GraphQLObjectType } = require('graphql');
-const { DateTimeResolver as DateTime } = require('graphql-scalars');
+import { graphql, GraphQLSchema, GraphQLObjectType } from 'graphql';
+import { DateTimeResolver as DateTime } from 'graphql-scalars';
 
 const Query = new GraphQLObjectType({
   name: 'Query',
@@ -184,13 +184,13 @@ scalars for DateTime, EmailAddress, URL, UUID, and many others.
 ### Example: Handling email validation
 
 Handling email validation correctly requires dealing with Unicode, quoted local parts, and 
-domain validation. Rather than writing your own regex, it’s better to use a library scalar 
+domain validation. Rather than writing your own regex, it's better to use a library scalar 
 that's already validated against standards.
 
 If you need domain-specific behavior, you can wrap an existing scalar with custom rules:
 
 ```js
-const { EmailAddressResolver } = require('graphql-scalars');
+import { EmailAddressResolver } from 'graphql-scalars';
 
 const StrictEmailAddress = new GraphQLScalarType({
   ...EmailAddressResolver,

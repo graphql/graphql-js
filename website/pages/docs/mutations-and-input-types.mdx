@@ -22,11 +22,11 @@ type Query {
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const {
+import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLSchema,
-} = require('graphql');
+} from 'graphql';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -95,14 +95,15 @@ type Mutation {
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const {
+import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLSchema,
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLNonNull,
-} = require('graphql');
+} from 'graphql';
+import { randomBytes } from 'node:crypto';
 
 // Maps username to content
 const fakeDatabase = {};
@@ -156,7 +157,7 @@ const schema = new GraphQLSchema({
         },
         resolve: (_, { input }) => {
           // Create a random id for our "database".
-          const id = require('crypto').randomBytes(10).toString('hex');
+          const id = randomBytes(10).toString('hex');
           fakeDatabase[id] = input;
           return {
             id,
@@ -203,9 +204,9 @@ Here's some runnable code that implements this schema, keeping the data in memor
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const { buildSchema } = require('graphql');
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { buildSchema } from 'graphql';
 
 const fakeDatabase = {};
 
@@ -273,21 +274,20 @@ app.all(
 app.listen(4000, () => {
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 });
-
 ```
   </Tabs.Tab>
   <Tabs.Tab>
 ```js
-const express = require('express');
-const { createHandler } = require('graphql-http/lib/use/express');
-const {
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLSchema,
   GraphQLID,
   GraphQLInputObjectType,
   GraphQLNonNull,
-} = require('graphql');
+} from 'graphql';
 
 // If Message had any complex fields, we'd put them on this object.
 class Message {
@@ -350,7 +350,8 @@ const schema = new GraphQLSchema({
         },
         resolve: (_, { input }) => {
           // Create a random id for our "database".
-          const id = require('crypto').randomBytes(10).toString('hex');
+          import { randomBytes } from 'crypto';
+          const id = randomBytes(10).toString('hex');
           fakeDatabase[id] = input;
           return {
             id,
