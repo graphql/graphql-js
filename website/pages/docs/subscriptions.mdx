@@ -1,0 +1,151 @@
+---
+title: Subscriptions
+---
+
+# Subscriptions
+
+Subscriptions allow a GraphQL server to push updates to clients in real time. Unlike queries and mutations, which use a request/response model, subscriptions maintain a long-lived connection between the client and server to stream data as events occur. This is useful for building features like chat apps, live dashboards, or collaborative tools that require real-time updates.
+
+This guide covers how to implement subscriptions in GraphQL.js, when to use them, and what to consider in production environments.
+
+## What is a subscription?
+
+A subscription is a GraphQL operation that delivers ongoing results to the client when a specific event happens. Unlike queries or mutations, which return a single response, a subscription delivers data over time through a persistent connection.
+
+GraphQL.js implements the subscription execution algorithm, but it's up to you to connect it to your event system and transport layer. Most implementations use WebSockets for transport, though any full-duplex protocol can work.
+
+## How execution works
+
+The core of subscription execution in GraphQL.js is the `subscribe` function. It works similarly to `graphql()`, but returns an `AsyncIterable` of execution results
+instead of a single response:
+
+```js
+import { subscribe, parse } from 'graphql';
+import schema from './schema.js';
+
+const document = parse(`
+  subscription {
+    messageSent
+  }
+`);
+
+const iterator = await subscribe({ schema, document });
+
+for await (const result of iterator) {
+  console.log(result);
+}
+```
+
+Each time your application publishes a new `messageSent` event, the iterator emits a new result. It's up to your transport layer to manage the connection and forward these updates to the client.
+
+## When to use subscriptions
+
+Subscriptions are helpful when your application needs to respond to real-time events. For example:
+
+- Receiving new messages in a chat
+- Updating a live feed or activity stream
+- Displaying presence indicators (e.g., "user is online")
+- Reflecting real-time price changes
+
+If real-time delivery isn’t essential, consider using polling with queries instead. Subscriptions require more infrastructure and introduce additional complexity, especially around scaling and connection management.
+
+## Implementing subscriptions in GraphQL.js
+
+GraphQL.js supports subscription execution, but you’re responsible for setting up the transport and event system. At a minimum, you’ll need:
+
+- A `Subscription` root type in your schema
+- A `subscribe` resolver that returns an `AsyncIterable`
+- An event-publishing mechanism
+- A transport layer to maintain the connection
+
+The following examples use the [`graphql-subscriptions`](https://github.com/apollographql/graphql-subscriptions) package to set up an in-memory event system.
+
+### Install dependencies
+
+Start by installing the necessary packages:
+
+```bash
+npm install graphql graphql-subscriptions
+```
+
+To serve subscriptions over a network, you’ll also need a transport implementation. One option is [`graphql-ws`](https://github.com/enisdenjo/graphql-ws), a community-maintained WebSocket library. This guide focuses on schema-level implementation.
+
+### Set up a pub/sub instance
+
+Create a `PubSub` instance to manage your in-memory event system:
+
+```js
+import { PubSub } from 'graphql-subscriptions';
+
+const pubsub = new PubSub();
+```
+
+This `pubsub` object provides `publish` and `asyncIterator` methods, allowing
+you to broadcast and listen for events.
+
+### Define a subscription type
+
+Next, define your `Subscription` root type. Each field on this type should return
+an `AsyncIterable`. Subscribe functions can also accept standard resolver arguments
+such as `args`, `context`, and `info`, depending on your use case:
+
+```js
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+
+const SubscriptionType = new GraphQLObjectType({
+  name: 'Subscription',
+  fields: {
+    messageSent: {
+      type: GraphQLString,
+      subscribe: () => pubsub.asyncIterator(['MESSAGE_SENT']),
+    },
+  },
+});
+```
+
+This schema defines a `messageSent` field that listens for the `MESSAGE_SENT` event and returns a string.
+
+### Publish events
+
+You can trigger a subscription event from any part of your application using the
+`publish` method:
+
+```js
+pubsub.publish('MESSAGE_SENT', { messageSent: 'Hello world!' });
+```
+
+Clients subscribed to the `messageSent` field will receive this message.
+
+### Construct your schema
+
+Finally, build your schema and include the `Subscription` type:
+
+```js
+const schema = new GraphQLSchema({
+  subscription: SubscriptionType,
+});
+```
+
+A client can then initiate a subscription like this:
+
+```graphql
+subscription {
+  messageSent
+}
+```
+
+Whenever your server publishes a `MESSAGE_SENT` event, clients subscribed to
+`messageSent` will receive the updated value over their active connection.
+
+## Planning for production
+
+The in-memory `PubSub` used in this example is suitable for development only.
+It does not support multiple server instances or distributed environments.
+
+For production, consider using a more robust event system such as:
+
+- Redis Pub/Sub
+- Message brokers like Kafka or NATS
+- Custom implementations with persistent queues or durable event storage
+
+Subscriptions also require careful handling of connection limits, authentication, rate limiting, and network reliability. These responsibilities fall to your transport layer and infrastructure.
