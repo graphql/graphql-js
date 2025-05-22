@@ -812,7 +812,7 @@ function createInputObjectDefaultValueCircularRefsValidator(
   ): void {
     // Start with an empty object as a way to visit every field in this input
     // object type and apply every default value.
-    return detectValueDefaultValueCycle(inputObj, {});
+    return detectValueDefaultValueCycle(inputObj, Object.create(null));
   };
 
   function detectValueDefaultValueCycle(
@@ -910,7 +910,7 @@ function createInputObjectDefaultValueCircularRefsValidator(
 
     // Check to see if there is cycle.
     const cycleIndex = fieldPathIndex[fieldStr];
-    if (cycleIndex !== undefined && cycleIndex > 0) {
+    if (cycleIndex !== undefined) {
       context.reportError(
         `Invalid circular reference. The default value of Input Object field ${fieldStr} references itself${
           cycleIndex < fieldPath.length
