@@ -1,0 +1,228 @@
+---
+title: Nullability
+sidebarTitle: Nullability in GraphQL.js
+---
+
+# Nullability in GraphQL.js
+
+Nullability is a core concept in GraphQL that affects how schemas are defined,
+how execution behaves, and how clients interpret results. In GraphQL.js,
+nullability plays a critical role in both schema construction and
+runtime behavior.
+
+This guide explains how nullability works, how it's represented in GraphQL.js,
+and how to design schemas with nullability in mind.
+
+## How nullability works
+
+In GraphQL, fields are nullable by default. This means if a resolver function
+returns `null`, the result will include a `null` value unless the field is
+explicitly marked as non-nullable. 
+
+When a non-nullable field resolves to `null`, the GraphQL execution engine 
+raises a runtime error and attempts to recover by replacing the nearest 
+nullable parent field with `null`. This behavior is known
+as null bubbling.
+
+Understanding nullability requires familiarity with the GraphQL type system,
+execution semantics, and the trade-offs involved in schema design.
+
+## The role of `GraphQLNonNull`
+
+GraphQL.js represents non-nullability using the `GraphQLNonNull` wrapper type.
+By default, all fields are nullable:
+
+```js
+import {
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLNonNull,
+} from 'graphql';
+
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLString) },
+    email: { type: GraphQLString },
+  }),
+});
+```
+
+In this example, the `id` field is non-nullable, meaning it must always
+resolve to a string. The `email` field is nullable.
+
+You can use `GraphQLNonNull` with:
+
+- Field types
+- Argument types
+- Input object fields
+- Return types for resolvers
+
+You can also combine it with other types to create more
+specific constraints. For example:
+
+```js
+new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType)))
+```
+
+This structure corresponds to [User!]! in SDL: a non-nullable list of non-null
+`User` values. When reading code like this, work from the inside out: `UserType`
+is non-nullable, and wrapped in a list, which is itself non-nullable.
+
+## Execution behavior
+
+GraphQL.js uses nullability rules to determine how to handle `null` values
+at runtime:
+
+- If a nullable field returns `null`, the result includes that field with
+a `null` value.
+- If a non-nullable field returns `null`, GraphQL throws an error and
+sets the nearest nullable parent field to `null`.
+
+This bubbling behavior prevents partial data from being returned in cases where
+a non-nullable guarantee is violated.
+
+Here's an example that shows this in action:
+
+```js
+import {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLNonNull,
+} from 'graphql';
+
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString) },
+  },
+});
+
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    user: {
+      type: UserType,
+      resolve: () => ({ id: null }),
+    },
+  },
+});
+
+const schema = new GraphQLSchema({ query: QueryType });
+```
+
+In this example, the `user` field returns an object with `id: null`.
+Because `id` is non-nullable, GraphQL can't return `user.id`, and instead
+nullifies the `user` field entirely. An error describing the violation is
+added to the `errors` array in the response.
+
+## Schema design considerations
+
+Using non-null types communicates clear expectations to clients, but it's
+also less forgiving. When deciding whether to use `GraphQLNonNull`, keep
+the following in mind:
+
+- Use non-null types when a value is always expected. This reflects intent
+and reduces ambiguity for clients.
+- Avoid aggressive use of non-null types in early schema versions. It limits
+your ability to evolve the API later.
+- Be cautious of error bubbling. A `null` return from a deeply nested non-nullable
+field can affect large portions of the response.
+
+### Versioning
+
+Non-null constraints are part of a field's contract:
+
+- Changing a field from non-nullable to nullable is a breaking change.
+- Changing from nullable to non-nullable is also breaking unless you can
+guarantee that the field will never return `null`.
+
+To reduce the risk of versioning issues, start with nullable fields and add
+constraints as your schema matures.
+
+## Using `GraphQLNonNull` in schema and resolvers
+
+Let's walk through two practical scenarios that show how GraphQL.js enforces
+nullability.
+
+### Defining a non-null field
+
+This example defines a `Product` type with a non-nullable `name` field:
+
+```js
+import { GraphQLObjectType, GraphQLString, GraphQLNonNull } from 'graphql';
+
+const ProductType = new GraphQLObjectType({
+  name: 'Product',
+  fields: () => ({
+    name: { type: new GraphQLNonNull(GraphQLString) },
+  }),
+});
+```
+
+This configuration guarantees that `name` must always be a string
+and never `null`. If a resolver returns `null` for this field, an
+error will be thrown.
+
+### Resolver returns `null` for a non-null field
+
+In this example, the resolver returns an object with `name: null`, violating
+the non-null constraint:
+
+```js
+import {
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLNonNull,
+  GraphQLSchema,
+} from 'graphql';
+
+const ProductType = new GraphQLObjectType({
+  name: 'Product',
+  fields: {
+    name: { type: new GraphQLNonNull(GraphQLString) },
+  },
+});
+
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    product: {
+      type: ProductType,
+      resolve: () => ({ name: null }),
+    },
+  },
+});
+
+const schema = new GraphQLSchema({ query: QueryType });
+```
+
+In this example, the `product` resolver returns an object with `name: null`.
+Because the `name` field is non-nullable, GraphQL.js responds by
+nullifying the entire `product` field and appending a 
+corresponding error to the response.
+
+## Best practices
+
+- Default to nullable. Start with nullable fields and introduce non-null
+constraints when data consistency is guaranteed.
+- Express intent. Use non-null when a field must always be present for logical
+correctness.
+- Validate early. Add checks in resolvers to prevent returning `null` for
+non-null fields.
+- Watch for nesting. Distinguish between:
+    - `[User]!` - nullable list of non-null users
+    - `[User!]!` - non-null list of non-null users
+
+## Additional resources
+
+- [GraphQL Specification: Non-null](https://spec.graphql.org/draft/#sec-Non-Null):
+Defines the formal behavior of non-null types in the GraphQL type system and
+execution engine.
+- [Understanding GraphQL.js Errors](website\pages\docs\graphql-errors.mdx): Explains
+how GraphQL.js propagates and formats execution-time errors.
+- [Anatomy of a Resolver](website\pages\docs\resolver-anatomy.mdx): Breaks down
+how resolvers work in GraphQL.js.
+- [Constructing Types](website\pages\docs\constructing-types.mdx): Shows how
+to define and compose types in GraphQL.js.
