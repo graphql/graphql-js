@@ -326,7 +326,7 @@ const printDocASTReducer: ASTReducer<string> = {
   SchemaCoordinate: {
     leave: ({ ofDirective, name, memberName, argumentName }) =>
       join([
-        ofDirective && '@',
+        ofDirective ? '@' : '',
         name,
         wrap('.', memberName),
         wrap('(', argumentName, ':)'),

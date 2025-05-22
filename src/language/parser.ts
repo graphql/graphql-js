@@ -1468,11 +1468,11 @@ export class Parser {
     const start = this._lexer.token;
     const ofDirective = this.expectOptionalToken(TokenKind.AT);
     const name = this.parseName();
-    let memberName;
+    let memberName: NameNode | undefined;
     if (!ofDirective && this.expectOptionalToken(TokenKind.DOT)) {
       memberName = this.parseName();
     }
-    let argumentName;
+    let argumentName: NameNode | undefined;
     if (
       (ofDirective || memberName) &&
       this.expectOptionalToken(TokenKind.PAREN_L)

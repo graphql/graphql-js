@@ -772,6 +772,6 @@ export interface SchemaCoordinateNode {
   readonly loc?: Location;
   readonly ofDirective: boolean;
   readonly name: NameNode;
-  readonly memberName?: NameNode;
-  readonly argumentName?: NameNode;
+  readonly memberName?: NameNode | undefined;
+  readonly argumentName?: NameNode | undefined;
 }
