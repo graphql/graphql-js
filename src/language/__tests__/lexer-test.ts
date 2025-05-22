@@ -166,8 +166,8 @@ describe('Lexer', () => {
   });
 
   it('reports unexpected characters', () => {
-    expectSyntaxError('.').to.deep.equal({
-      message: 'Syntax Error: Unexpected character: ".".',
+    expectSyntaxError('^').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: "^".',
       locations: [{ line: 1, column: 1 }],
     });
   });
