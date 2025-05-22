@@ -264,6 +264,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'errorBehavior',
     );
 
     const operation = document.definitions[0];
@@ -276,6 +277,7 @@ describe('Execute: Handles basic execution tasks', () => {
       schema,
       rootValue,
       operation,
+      errorBehavior: 'PROPAGATE',
     });
 
     const field = operation.selectionSet.selections[0];
@@ -283,6 +285,70 @@ describe('Execute: Handles basic execution tasks', () => {
       fieldNodes: [field],
       path: { prev: undefined, key: 'result', typename: 'Test' },
       variableValues: { var: 'abc' },
+    });
+  });
+
+  it('reflects onError:NO_PROPAGATE via errorBehavior', () => {
+    let resolvedInfo;
+    const testType = new GraphQLObjectType({
+      name: 'Test',
+      fields: {
+        test: {
+          type: GraphQLString,
+          resolve(_val, _args, _ctx, info) {
+            resolvedInfo = info;
+          },
+        },
+      },
+    });
+    const schema = new GraphQLSchema({ query: testType });
+
+    const document = parse('query ($var: String) { result: test }');
+    const rootValue = { root: 'val' };
+    const variableValues = { var: 'abc' };
+
+    executeSync({
+      schema,
+      document,
+      rootValue,
+      variableValues,
+      onError: 'NO_PROPAGATE',
+    });
+
+    expect(resolvedInfo).to.include({
+      errorBehavior: 'NO_PROPAGATE',
+    });
+  });
+
+  it('reflects onError:ABORT via errorBehavior', () => {
+    let resolvedInfo;
+    const testType = new GraphQLObjectType({
+      name: 'Test',
+      fields: {
+        test: {
+          type: GraphQLString,
+          resolve(_val, _args, _ctx, info) {
+            resolvedInfo = info;
+          },
+        },
+      },
+    });
+    const schema = new GraphQLSchema({ query: testType });
+
+    const document = parse('query ($var: String) { result: test }');
+    const rootValue = { root: 'val' };
+    const variableValues = { var: 'abc' };
+
+    executeSync({
+      schema,
+      document,
+      rootValue,
+      variableValues,
+      onError: 'ABORT',
+    });
+
+    expect(resolvedInfo).to.include({
+      errorBehavior: 'ABORT',
     });
   });
 
@@ -735,6 +801,163 @@ describe('Execute: Handles basic execution tasks', () => {
           message: 'Catch me if you can',
           locations: [{ line: 7, column: 17 }],
           path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+        },
+      ],
+    });
+  });
+
+  it('Full response path is included for non-nullable fields with onError:NO_PROPAGATE', () => {
+    const A: GraphQLObjectType = new GraphQLObjectType({
+      name: 'A',
+      fields: () => ({
+        nullableA: {
+          type: A,
+          resolve: () => ({}),
+        },
+        nonNullA: {
+          type: new GraphQLNonNull(A),
+          resolve: () => ({}),
+        },
+        throws: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => {
+            throw new Error('Catch me if you can');
+          },
+        },
+      }),
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          nullableA: {
+            type: A,
+            resolve: () => ({}),
+          },
+        }),
+      }),
+    });
+
+    const document = parse(`
+      query {
+        nullableA {
+          aliasedA: nullableA {
+            nonNullA {
+              anotherA: nonNullA {
+                throws
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const result = executeSync({ schema, document, onError: 'NO_PROPAGATE' });
+    expectJSON(result).toDeepEqual({
+      data: {
+        nullableA: {
+          aliasedA: {
+            nonNullA: {
+              anotherA: {
+                throws: null,
+              },
+            },
+          },
+        },
+      },
+      errors: [
+        {
+          message: 'Catch me if you can',
+          locations: [{ line: 7, column: 17 }],
+          path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+        },
+      ],
+    });
+  });
+
+  it('Full response path is included for non-nullable fields with onError:ABORT', () => {
+    const A: GraphQLObjectType = new GraphQLObjectType({
+      name: 'A',
+      fields: () => ({
+        nullableA: {
+          type: A,
+          resolve: () => ({}),
+        },
+        nonNullA: {
+          type: new GraphQLNonNull(A),
+          resolve: () => ({}),
+        },
+        throws: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => {
+            throw new Error('Catch me if you can');
+          },
+        },
+      }),
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          nullableA: {
+            type: A,
+            resolve: () => ({}),
+          },
+        }),
+      }),
+    });
+
+    const document = parse(`
+      query {
+        nullableA {
+          aliasedA: nullableA {
+            nonNullA {
+              anotherA: nonNullA {
+                throws
+              }
+            }
+          }
+        }
+      }
+    `);
+
+    const result = executeSync({ schema, document, onError: 'ABORT' });
+    expectJSON(result).toDeepEqual({
+      data: null,
+      errors: [
+        {
+          message: 'Catch me if you can',
+          locations: [{ line: 7, column: 17 }],
+          path: ['nullableA', 'aliasedA', 'nonNullA', 'anotherA', 'throws'],
+        },
+      ],
+    });
+  });
+
+  it('raises request error with invalid onError', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'query',
+        fields: () => ({
+          a: {
+            type: GraphQLInt,
+          },
+        }),
+      }),
+    });
+
+    const document = parse('{ a }');
+    const result = executeSync({
+      schema,
+      document,
+      // @ts-expect-error
+      onError: 'DANCE',
+    });
+    expectJSON(result).toDeepEqual({
+      errors: [
+        {
+          message:
+            'Unsupported `onError` value; supported values are `NO_PROPAGATE`, `PROPAGATE` and `ABORT`.',
         },
       ],
     });

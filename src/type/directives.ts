@@ -18,6 +18,7 @@ import {
   defineArguments,
   GraphQLNonNull,
 } from './definition';
+import { __ErrorBehavior } from './introspection';
 import { GraphQLBoolean, GraphQLString } from './scalars';
 
 /**
@@ -221,6 +222,21 @@ export const GraphQLOneOfDirective: GraphQLDirective = new GraphQLDirective({
 });
 
 /**
+ * Used to indicate the default error behavior.
+ */
+export const GraphQLBehaviorDirective: GraphQLDirective = new GraphQLDirective({
+  name: 'behavior',
+  description: 'Indicates the default error behavior of the schema.',
+  locations: [DirectiveLocation.SCHEMA],
+  args: {
+    onError: {
+      type: new GraphQLNonNull(__ErrorBehavior),
+      defaultValue: 'PROPAGATE',
+    },
+  },
+});
+
+/**
  * The full list of specified directives.
  */
 export const specifiedDirectives: ReadonlyArray<GraphQLDirective> =
@@ -230,6 +246,7 @@ export const specifiedDirectives: ReadonlyArray<GraphQLDirective> =
     GraphQLDeprecatedDirective,
     GraphQLSpecifiedByDirective,
     GraphQLOneOfDirective,
+    GraphQLBehaviorDirective,
   ]);
 
 export function isSpecifiedDirective(directive: GraphQLDirective): boolean {
