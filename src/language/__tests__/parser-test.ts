@@ -726,7 +726,7 @@ describe('Parser', () => {
     it('rejects Name . Name . Name', () => {
       expect(() => parseSchemaCoordinate('MyType.field.deep'))
         .to.throw()
-        .to.deep.equal({
+        .to.deep.include({
           message: 'Syntax Error: Expected <EOF>, found ".".',
           locations: [{ line: 1, column: 13 }],
         });
@@ -759,7 +759,7 @@ describe('Parser', () => {
     it('rejects Name . Name ( Name : Name )', () => {
       expect(() => parseSchemaCoordinate('MyType.field(arg: value)'))
         .to.throw()
-        .to.deep.equal({
+        .to.deep.include({
           message: 'Syntax Error: Expected ")", found Name "value".',
           locations: [{ line: 1, column: 19 }],
         });
@@ -804,7 +804,7 @@ describe('Parser', () => {
     it('rejects @ Name . Name', () => {
       expect(() => parseSchemaCoordinate('@myDirective.field'))
         .to.throw()
-        .to.deep.equal({
+        .to.deep.include({
           message: 'Syntax Error: Expected <EOF>, found ".".',
           locations: [{ line: 1, column: 13 }],
         });
