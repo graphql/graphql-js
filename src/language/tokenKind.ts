@@ -10,6 +10,7 @@ export const TokenKind = {
   AMP: '&' as const,
   PAREN_L: '(' as const,
   PAREN_R: ')' as const,
+  DOT: '.',
   SPREAD: '...' as const,
   COLON: ':' as const,
   EQUALS: '=' as const,

@@ -181,7 +181,8 @@ export type ASTNode =
   | InterfaceTypeExtensionNode
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
-  | InputObjectTypeExtensionNode;
+  | InputObjectTypeExtensionNode
+  | SchemaCoordinateNode;
 
 /**
  * Utility type listing all nodes indexed by their kind.
@@ -287,6 +288,7 @@ export const QueryDocumentKeys: {
   UnionTypeExtension: ['name', 'directives', 'types'],
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
+  SchemaCoordinate: ['name', 'memberName', 'argumentName'],
 };
 
 const kindValues = new Set<string>(Object.keys(QueryDocumentKeys));
@@ -761,4 +763,15 @@ export interface InputObjectTypeExtensionNode {
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
   readonly fields?: ReadonlyArray<InputValueDefinitionNode> | undefined;
+}
+
+// Schema Coordinates
+
+export interface SchemaCoordinateNode {
+  readonly kind: 'SchemaCoordinate';
+  readonly loc?: Location;
+  readonly ofDirective: boolean;
+  readonly name: NameNode;
+  readonly memberName?: NameNode | undefined;
+  readonly argumentName?: NameNode | undefined;
 }

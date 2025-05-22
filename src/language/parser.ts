@@ -47,6 +47,7 @@ import type {
   OperationTypeDefinitionNode,
   ScalarTypeDefinitionNode,
   ScalarTypeExtensionNode,
+  SchemaCoordinateNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
   SelectionNode,
@@ -178,6 +179,26 @@ export function parseType(
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
   const type = parser.parseTypeReference();
+  parser.expectToken(TokenKind.EOF);
+  return type;
+}
+
+/**
+ * Given a string containing a GraphQL Schema Coordinate (ex. `Type.field`),
+ * parse the AST for that schema coordinate.
+ * Throws GraphQLError if a syntax error is encountered.
+ *
+ * Consider providing the results to the utility function:
+ * resolveASTSchemaCoordinate(). Or calling resolveSchemaCoordinate() directly
+ * with an unparsed source.
+ */
+export function parseSchemaCoordinate(
+  source: string | Source,
+  options?: ParseOptions,
+): SchemaCoordinateNode {
+  const parser = new Parser(source, options);
+  parser.expectToken(TokenKind.SOF);
+  const type = parser.parseSchemaCoordinate();
   parser.expectToken(TokenKind.EOF);
   return type;
 }
@@ -1431,6 +1452,42 @@ export class Parser {
       return name;
     }
     throw this.unexpected(start);
+  }
+
+  // Schema Coordinates
+
+  /**
+   * SchemaCoordinate :
+   *   - Name
+   *   - Name . Name
+   *   - Name . Name ( Name : )
+   *   - @ Name
+   *   - @ Name ( Name : )
+   */
+  parseSchemaCoordinate(): SchemaCoordinateNode {
+    const start = this._lexer.token;
+    const ofDirective = this.expectOptionalToken(TokenKind.AT);
+    const name = this.parseName();
+    let memberName: NameNode | undefined;
+    if (!ofDirective && this.expectOptionalToken(TokenKind.DOT)) {
+      memberName = this.parseName();
+    }
+    let argumentName: NameNode | undefined;
+    if (
+      (ofDirective || memberName) &&
+      this.expectOptionalToken(TokenKind.PAREN_L)
+    ) {
+      argumentName = this.parseName();
+      this.expectToken(TokenKind.COLON);
+      this.expectToken(TokenKind.PAREN_R);
+    }
+    return this.node<SchemaCoordinateNode>(start, {
+      kind: Kind.SCHEMA_COORDINATE,
+      ofDirective,
+      name,
+      memberName,
+      argumentName,
+    });
   }
 
   // Core parsing utility functions

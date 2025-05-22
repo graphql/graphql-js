@@ -108,3 +108,7 @@ export const ENUM_TYPE_EXTENSION = 'EnumTypeExtension';
 export type ENUM_TYPE_EXTENSION = typeof ENUM_TYPE_EXTENSION;
 export const INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension';
 export type INPUT_OBJECT_TYPE_EXTENSION = typeof INPUT_OBJECT_TYPE_EXTENSION;
+
+/** Schema Coordinates */
+export const SCHEMA_COORDINATE = 'SchemaCoordinate';
+export type SCHEMA_COORDINATE = typeof SCHEMA_COORDINATE;

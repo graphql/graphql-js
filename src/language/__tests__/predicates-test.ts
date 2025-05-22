@@ -8,6 +8,7 @@ import {
   isConstValueNode,
   isDefinitionNode,
   isExecutableDefinitionNode,
+  isSchemaCoordinateNode,
   isSelectionNode,
   isTypeDefinitionNode,
   isTypeExtensionNode,
@@ -139,6 +140,12 @@ describe('AST node predicates', () => {
       'ObjectTypeExtension',
       'ScalarTypeExtension',
       'UnionTypeExtension',
+    ]);
+  });
+
+  it('isSchemaCoordinateNode', () => {
+    expect(filterNodes(isSchemaCoordinateNode)).to.deep.equal([
+      'SchemaCoordinate',
     ]);
   });
 });
