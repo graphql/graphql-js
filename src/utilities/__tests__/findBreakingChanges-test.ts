@@ -577,6 +577,106 @@ describe('findBreakingChanges', () => {
     expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
   });
 
+  it('should consider semantic non-null output types that change type as breaking', () => {
+    const oldSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: Int
+      }
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description: 'Type1.field1 changed type from String to Int.',
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+      },
+    ]);
+  });
+
+  it('should consider output types that move away from SemanticNonNull to non-null as non-breaking', () => {
+    const oldSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: String!
+      }
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
+  });
+
+  it('should consider output types that move away from nullable to semantic non-null as non-breaking', () => {
+    const oldSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: String?
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: String
+      }
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
+  });
+
+  it('should consider list output types that move away from nullable to semantic non-null as non-breaking', () => {
+    const oldSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: [String?]?
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: [String]
+      }
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([]);
+  });
+
+  it('should consider output types that move away from SemanticNonNull to null as breaking', () => {
+    const oldSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: String
+      }
+    `);
+
+    const newSchema = buildSchema(`
+      @SemanticNullability
+      type Type1 {
+        field1: String?
+      }
+    `);
+
+    expect(findBreakingChanges(oldSchema, newSchema)).to.deep.equal([
+      {
+        description: 'Type1.field1 changed type from String to String.',
+        type: BreakingChangeType.FIELD_CHANGED_KIND,
+      },
+    ]);
+  });
+
   it('should detect interfaces removed from types', () => {
     const oldSchema = buildSchema(`
       interface Interface1

@@ -50,6 +50,7 @@ import type {
   SchemaExtensionNode,
   SelectionNode,
   SelectionSetNode,
+  SemanticNonNullTypeNode,
   StringValueNode,
   Token,
   TypeNode,
@@ -103,6 +104,18 @@ export interface ParseOptions {
    * ```
    */
   allowLegacyFragmentVariables?: boolean;
+
+  /**
+   * When enabled, the parser will understand and parse semantic nullability
+   * annotations. This means that every type suffixed with `!` will remain
+   * non-nullable, every type suffixed with `?` will be the classic nullable, and
+   * types without a suffix will be semantically nullable. Semantic nullability
+   * will be the new default when this is enabled. A semantically nullable type
+   * can only be null when there's an error associated with the field.
+   *
+   * @experimental
+   */
+  allowSemanticNullability?: boolean;
 }
 
 /**
@@ -171,7 +184,7 @@ export function parseConstValue(
 export function parseType(
   source: string | Source,
   options?: ParseOptions | undefined,
-): TypeNode {
+): TypeNode | SemanticNonNullTypeNode {
   const parser = new Parser(source, options);
   parser.expectToken(TokenKind.SOF);
   const type = parser.parseTypeReference();
@@ -258,6 +271,16 @@ export class Parser {
    *   - InputObjectTypeDefinition
    */
   parseDefinition(): DefinitionNode {
+    const directives = this.parseDirectives(false);
+    // If a document-level SemanticNullability directive exists as
+    // the first element in a document, then all parsing will
+    // happen in SemanticNullability mode.
+    for (const directive of directives) {
+      if (directive.name.value === 'SemanticNullability') {
+        this._options.allowSemanticNullability = true;
+      }
+    }
+
     if (this.peek(TokenKind.BRACE_L)) {
       return this.parseOperationDefinition();
     }
@@ -380,7 +403,8 @@ export class Parser {
     return this.node<VariableDefinitionNode>(this._lexer.token, {
       kind: Kind.VARIABLE_DEFINITION,
       variable: this.parseVariable(),
-      type: (this.expectToken(TokenKind.COLON), this.parseTypeReference()),
+      type: (this.expectToken(TokenKind.COLON),
+      this.parseTypeReference()) as TypeNode,
       defaultValue: this.expectOptionalToken(TokenKind.EQUALS)
         ? this.parseConstValueLiteral()
         : undefined,
@@ -750,7 +774,7 @@ export class Parser {
    *   - ListType
    *   - NonNullType
    */
-  parseTypeReference(): TypeNode {
+  parseTypeReference(): TypeNode | SemanticNonNullTypeNode {
     const start = this._lexer.token;
     let type;
     if (this.expectOptionalToken(TokenKind.BRACKET_L)) {
@@ -758,10 +782,26 @@ export class Parser {
       this.expectToken(TokenKind.BRACKET_R);
       type = this.node<ListTypeNode>(start, {
         kind: Kind.LIST_TYPE,
-        type: innerType,
+        type: innerType as TypeNode,
       });
     } else {
       type = this.parseNamedType();
+    }
+
+    if (this._options.allowSemanticNullability) {
+      if (this.expectOptionalToken(TokenKind.BANG)) {
+        return this.node<NonNullTypeNode>(start, {
+          kind: Kind.NON_NULL_TYPE,
+          type,
+        });
+      } else if (this.expectOptionalToken(TokenKind.QUESTION_MARK)) {
+        return type;
+      }
+
+      return this.node<SemanticNonNullTypeNode>(start, {
+        kind: Kind.SEMANTIC_NON_NULL_TYPE,
+        type,
+      });
     }
 
     if (this.expectOptionalToken(TokenKind.BANG)) {
@@ -953,7 +993,7 @@ export class Parser {
       kind: Kind.INPUT_VALUE_DEFINITION,
       description,
       name,
-      type,
+      type: type as TypeNode,
       defaultValue,
       directives,
     });

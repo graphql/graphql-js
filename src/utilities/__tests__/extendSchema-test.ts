@@ -39,7 +39,7 @@ import { printSchema } from '../printSchema';
 function expectExtensionASTNodes(obj: {
   readonly extensionASTNodes: ReadonlyArray<ASTNode>;
 }) {
-  return expect(obj.extensionASTNodes.map(print).join('\n\n'));
+  return expect(obj.extensionASTNodes.map((node) => print(node)).join('\n\n'));
 }
 
 function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
@@ -50,11 +50,16 @@ function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
 function expectSchemaChanges(
   schema: GraphQLSchema,
   extendedSchema: GraphQLSchema,
+  semanticNullability: boolean = false,
 ) {
-  const schemaDefinitions = parse(printSchema(schema)).definitions.map(print);
+  const schemaDefinitions = parse(printSchema(schema)).definitions.map((node) =>
+    print(node, { useSemanticNullability: semanticNullability }),
+  );
   return expect(
     parse(printSchema(extendedSchema))
-      .definitions.map(print)
+      .definitions.map((node) =>
+        print(node, { useSemanticNullability: semanticNullability }),
+      )
       .filter((def) => !schemaDefinitions.includes(def))
       .join('\n\n'),
   );
@@ -86,6 +91,34 @@ describe('extendSchema', () => {
     });
   });
 
+  it('extends objects by adding new fields in semantic nullability mode', () => {
+    const schema = buildSchema(`
+      @SemanticNullability
+      type Query {
+        someObject: String
+      }
+    `);
+    const extensionSDL = dedent`
+      @SemanticNullability
+      extend type Query {
+        newSemanticNonNullField: String
+        newSemanticNullableField: String?
+        newNonNullField: String!
+      }
+    `;
+    const extendedSchema = extendSchema(schema, parse(extensionSDL));
+
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expectSchemaChanges(schema, extendedSchema, true).to.equal(dedent`
+      type Query {
+        someObject: String
+        newSemanticNonNullField: String
+        newSemanticNullableField: String?
+        newNonNullField: String!
+      }
+    `);
+  });
+
   it('extends objects by adding new fields', () => {
     const schema = buildSchema(`
       type Query {
@@ -97,6 +130,7 @@ describe('extendSchema', () => {
         tree: [SomeObject]!
         """Old field description."""
         oldField: String
+
       }
 
       interface SomeInterface {

@@ -19,6 +19,7 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLSemanticNonNull,
   isAbstractType,
   isEnumType,
   isInputObjectType,
@@ -27,6 +28,7 @@ import {
   isNonNullType,
   isObjectType,
   isScalarType,
+  isSemanticNonNullType,
   isUnionType,
 } from './definition';
 import type { GraphQLDirective } from './directives';
@@ -204,6 +206,27 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
   },
 });
 
+enum TypeNullability {
+  TRADITIONAL = 'TRADITIONAL',
+  FULL = 'FULL',
+}
+
+export const __TypeNullability: GraphQLEnumType = new GraphQLEnumType({
+  name: '__TypeNullability',
+  description:
+    'This represents the type of nullability we want to return as part of the introspection.',
+  values: {
+    TRADITIONAL: {
+      value: TypeNullability.TRADITIONAL,
+      description: 'Turn semantic-non-null types into nullable types.',
+    },
+    FULL: {
+      value: TypeNullability.FULL,
+      description: 'Allow for returning semantic-non-null types.',
+    },
+  },
+});
+
 export const __Type: GraphQLObjectType = new GraphQLObjectType({
   name: '__Type',
   description:
@@ -236,6 +259,9 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           }
           if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
+          }
+          if (isSemanticNonNullType(type)) {
+            return TypeKind.SEMANTIC_NON_NULL;
           }
           /* c8 ignore next 3 */
           // Not reachable, all possible types have been considered)
@@ -366,7 +392,14 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
       },
       type: {
         type: new GraphQLNonNull(__Type),
-        resolve: (field) => field.type,
+        args: {
+          nullability: {
+            type: new GraphQLNonNull(__TypeNullability),
+            defaultValue: TypeNullability.TRADITIONAL,
+          },
+        },
+        resolve: (field, { nullability }, _context) =>
+          convertOutputTypeToNullabilityMode(field.type, nullability),
       },
       isDeprecated: {
         type: new GraphQLNonNull(GraphQLBoolean),
@@ -378,6 +411,42 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
       },
     } as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
 });
+
+function convertOutputTypeToNullabilityMode(
+  type: GraphQLType,
+  mode: TypeNullability,
+): GraphQLType {
+  if (mode === TypeNullability.TRADITIONAL) {
+    if (isNonNullType(type)) {
+      return new GraphQLNonNull(
+        convertOutputTypeToNullabilityMode(type.ofType, mode),
+      );
+    } else if (isSemanticNonNullType(type)) {
+      return convertOutputTypeToNullabilityMode(type.ofType, mode);
+    } else if (isListType(type)) {
+      return new GraphQLList(
+        convertOutputTypeToNullabilityMode(type.ofType, mode),
+      );
+    }
+    return type;
+  }
+
+  if (isNonNullType(type)) {
+    return new GraphQLNonNull(
+      convertOutputTypeToNullabilityMode(type.ofType, mode),
+    );
+  } else if (isSemanticNonNullType(type)) {
+    return new GraphQLSemanticNonNull(
+      convertOutputTypeToNullabilityMode(type.ofType, mode),
+    );
+  } else if (isListType(type)) {
+    return new GraphQLList(
+      convertOutputTypeToNullabilityMode(type.ofType, mode),
+    );
+  }
+
+  return type;
+}
 
 export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
   name: '__InputValue',
@@ -452,6 +521,7 @@ enum TypeKind {
   INPUT_OBJECT = 'INPUT_OBJECT',
   LIST = 'LIST',
   NON_NULL = 'NON_NULL',
+  SEMANTIC_NON_NULL = 'SEMANTIC_NON_NULL',
 }
 export { TypeKind };
 
@@ -496,6 +566,11 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
       value: TypeKind.NON_NULL,
       description:
         'Indicates this type is a non-null. `ofType` is a valid field.',
+    },
+    SEMANTIC_NON_NULL: {
+      value: TypeKind.SEMANTIC_NON_NULL,
+      description:
+        'Indicates this type is a semantic-non-null. `ofType` is a valid field.',
     },
   },
 });
@@ -553,6 +628,7 @@ export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
     __Schema,
     __Directive,
     __DirectiveLocation,
+    __TypeNullability,
     __Type,
     __Field,
     __InputValue,

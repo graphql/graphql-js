@@ -32,7 +32,7 @@ describe('Introspection', () => {
     expect(result).to.deep.equal({
       data: {
         __schema: {
-          queryType: { name: 'SomeObject', kind: 'OBJECT' },
+          queryType: { kind: 'OBJECT', name: 'SomeObject' },
           mutationType: null,
           subscriptionType: null,
           types: [
@@ -437,6 +437,11 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'SEMANTIC_NON_NULL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               possibleTypes: null,
             },
@@ -506,7 +511,21 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'type',
-                  args: [],
+                  args: [
+                    {
+                      name: 'nullability',
+                      type: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'ENUM',
+                          name: '__TypeNullability',
+                          ofType: null,
+                        },
+                      },
+                      defaultValue: 'TRADITIONAL',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -638,6 +657,27 @@ describe('Introspection', () => {
               inputFields: null,
               interfaces: [],
               enumValues: null,
+              possibleTypes: null,
+            },
+            {
+              kind: 'ENUM',
+              name: '__TypeNullability',
+              specifiedByURL: null,
+              fields: null,
+              inputFields: null,
+              interfaces: null,
+              enumValues: [
+                {
+                  name: 'TRADITIONAL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'FULL',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+              ],
               possibleTypes: null,
             },
             {
@@ -1753,5 +1793,109 @@ describe('Introspection', () => {
       typeResolver,
     });
     expect(result).to.not.have.property('errors');
+  });
+
+  describe('semantic nullability', () => {
+    it('casts semantic-non-null types to nullable types in traditional mode', () => {
+      const schema = buildSchema(`
+        @SemanticNullability
+        type Query {
+          someField: String!
+          someField2: String
+          someField3: String?
+        }
+      `);
+
+      const source = getIntrospectionQuery({
+        nullability: 'TRADITIONAL',
+      });
+
+      const result = graphqlSync({ schema, source });
+      // @ts-expect-error
+      const queryType = result.data?.__schema?.types.find(
+        // @ts-expect-error
+        (t) => t.name === 'Query',
+      );
+      const defaults = {
+        args: [],
+        deprecationReason: null,
+        description: null,
+        isDeprecated: false,
+      };
+      expect(queryType?.fields).to.deep.equal([
+        {
+          name: 'someField',
+          ...defaults,
+          type: {
+            kind: 'NON_NULL',
+            name: null,
+            ofType: { kind: 'SCALAR', name: 'String', ofType: null },
+          },
+        },
+        {
+          name: 'someField2',
+          ...defaults,
+          type: { kind: 'SCALAR', name: 'String', ofType: null },
+        },
+        {
+          name: 'someField3',
+          ...defaults,
+          type: { kind: 'SCALAR', name: 'String', ofType: null },
+        },
+      ]);
+    });
+
+    it('returns semantic-non-null types in full mode', () => {
+      const schema = buildSchema(`
+        @SemanticNullability
+        type Query {
+          someField: String!
+          someField2: String
+          someField3: String?
+        }
+      `);
+
+      const source = getIntrospectionQuery({
+        nullability: 'FULL',
+      });
+
+      const result = graphqlSync({ schema, source });
+      // @ts-expect-error
+      const queryType = result.data?.__schema?.types.find(
+        // @ts-expect-error
+        (t) => t.name === 'Query',
+      );
+      const defaults = {
+        args: [],
+        deprecationReason: null,
+        description: null,
+        isDeprecated: false,
+      };
+      expect(queryType?.fields).to.deep.equal([
+        {
+          name: 'someField',
+          ...defaults,
+          type: {
+            kind: 'NON_NULL',
+            name: null,
+            ofType: { kind: 'SCALAR', name: 'String', ofType: null },
+          },
+        },
+        {
+          name: 'someField2',
+          ...defaults,
+          type: {
+            kind: 'SEMANTIC_NON_NULL',
+            name: null,
+            ofType: { kind: 'SCALAR', name: 'String', ofType: null },
+          },
+        },
+        {
+          name: 'someField3',
+          ...defaults,
+          type: { kind: 'SCALAR', name: 'String', ofType: null },
+        },
+      ]);
+    });
   });
 });

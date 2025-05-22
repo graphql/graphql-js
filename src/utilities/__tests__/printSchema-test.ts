@@ -770,6 +770,9 @@ describe('Type System Printer', () => {
 
         """Indicates this type is a non-null. \`ofType\` is a valid field."""
         NON_NULL
+
+        """Indicates this type is a semantic-non-null. \`ofType\` is a valid field."""
+        SEMANTIC_NON_NULL
       }
 
       """
@@ -779,7 +782,7 @@ describe('Type System Printer', () => {
         name: String!
         description: String
         args(includeDeprecated: Boolean = false): [__InputValue!]!
-        type: __Type!
+        type(nullability: __TypeNullability! = TRADITIONAL): __Type!
         isDeprecated: Boolean!
         deprecationReason: String
       }
@@ -798,6 +801,17 @@ describe('Type System Printer', () => {
         defaultValue: String
         isDeprecated: Boolean!
         deprecationReason: String
+      }
+
+      """
+      This represents the type of nullability we want to return as part of the introspection.
+      """
+      enum __TypeNullability {
+        """Turn semantic-non-null types into nullable types."""
+        TRADITIONAL
+      
+        """Allow for returning semantic-non-null types."""
+        FULL
       }
 
       """

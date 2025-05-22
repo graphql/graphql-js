@@ -60,7 +60,7 @@ function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
 function expectExtensionASTNodes(obj: {
   readonly extensionASTNodes: ReadonlyArray<ASTNode>;
 }) {
-  return expect(obj.extensionASTNodes.map(print).join('\n\n'));
+  return expect(obj.extensionASTNodes.map((node) => print(node)).join('\n\n'));
 }
 
 describe('Schema Builder', () => {

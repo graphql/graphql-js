@@ -37,6 +37,7 @@ enum Kind {
   NAMED_TYPE = 'NamedType',
   LIST_TYPE = 'ListType',
   NON_NULL_TYPE = 'NonNullType',
+  SEMANTIC_NON_NULL_TYPE = 'SemanticNonNullType',
 
   /** Type System Definitions */
   SCHEMA_DEFINITION = 'SchemaDefinition',

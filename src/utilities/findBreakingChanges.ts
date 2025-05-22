@@ -26,6 +26,7 @@ import {
   isRequiredArgument,
   isRequiredInputField,
   isScalarType,
+  isSemanticNonNullType,
   isUnionType,
 } from '../type/definition';
 import { isSpecifiedScalarType } from '../type/scalars';
@@ -458,6 +459,9 @@ function isChangeSafeForObjectOrInterfaceField(
         )) ||
       // moving from nullable to non-null of the same underlying type is safe
       (isNonNullType(newType) &&
+        isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType)) ||
+      // moving from nullable to semantic-non-null of the same underlying type is safe
+      (isSemanticNonNullType(newType) &&
         isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
     );
   }
@@ -470,11 +474,28 @@ function isChangeSafeForObjectOrInterfaceField(
     );
   }
 
+  if (isSemanticNonNullType(oldType)) {
+    return (
+      // if they're both semantic-non-null, make sure the underlying types are compatible
+      (isSemanticNonNullType(newType) &&
+        isChangeSafeForObjectOrInterfaceField(
+          oldType.ofType,
+          newType.ofType,
+        )) ||
+      // moving from semantic-non-null to non-null of the same underlying type is safe
+      (isNonNullType(newType) &&
+        isChangeSafeForObjectOrInterfaceField(oldType.ofType, newType.ofType))
+    );
+  }
+
   return (
     // if they're both named types, see if their names are equivalent
     (isNamedType(newType) && oldType.name === newType.name) ||
     // moving from nullable to non-null of the same underlying type is safe
     (isNonNullType(newType) &&
+      isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType)) ||
+    // moving from nullable to semantic-non-null of the same underlying type is safe
+    (isSemanticNonNullType(newType) &&
       isChangeSafeForObjectOrInterfaceField(oldType, newType.ofType))
   );
 }
