@@ -138,4 +138,10 @@ describe('getIntrospectionQuery', () => {
       2,
     );
   });
+
+  it('throw error if typeDepth is too high', () => {
+    expect(() => getIntrospectionQuery({ typeDepth: 101 })).to.throw(
+      'Please set typeDepth to a reasonable value between 0 and 100; the default is 9.',
+    );
+  });
 });

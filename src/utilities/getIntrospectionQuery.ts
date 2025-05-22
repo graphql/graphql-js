@@ -38,6 +38,16 @@ export interface IntrospectionOptions {
    * Default: false
    */
   oneOf?: boolean;
+
+  /**
+   * How deep to recurse into nested types, larger values will result in more
+   * accurate results, but have a higher load on the server.
+   * Some servers might restrict the maximum query depth or complexity.
+   * If that's the case, try decreasing this value.
+   *
+   * Default: 9
+   */
+  typeDepth?: number;
 }
 
 /**
@@ -52,6 +62,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     schemaDescription: false,
     inputValueDeprecation: false,
     oneOf: false,
+    typeDepth: 9,
     ...options,
   };
 
@@ -70,6 +81,21 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
   const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
+  function ofType(level: number, indent: string): string {
+    if (level <= 0) {
+      return '';
+    }
+    if (level > 100) {
+      throw new Error(
+        'Please set typeDepth to a reasonable value between 0 and 100; the default is 9.',
+      );
+    }
+    return `
+${indent}ofType {
+${indent}  name
+${indent}  kind${ofType(level - 1, indent + '  ')}
+${indent}}`;
+  }
 
   return `
     query IntrospectionQuery {
@@ -139,43 +165,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
 
     fragment TypeRef on __Type {
       kind
-      name
-      ofType {
-        kind
-        name
-        ofType {
-          kind
-          name
-          ofType {
-            kind
-            name
-            ofType {
-              kind
-              name
-              ofType {
-                kind
-                name
-                ofType {
-                  kind
-                  name
-                  ofType {
-                    kind
-                    name
-                    ofType {
-                      kind
-                      name
-                      ofType {
-                        kind
-                        name
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      name${ofType(optionsWithDefault.typeDepth ?? 9, '      ')}
     }
   `;
 }
