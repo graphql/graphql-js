@@ -30,6 +30,7 @@ import {
   DEFAULT_DEPRECATION_REASON,
   isSpecifiedDirective,
 } from '../type/directives';
+import { isSpecifiedEnumType } from '../type/enums';
 import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 import type { GraphQLSchema } from '../type/schema';
@@ -45,11 +46,23 @@ export function printSchema(schema: GraphQLSchema): string {
 }
 
 export function printIntrospectionSchema(schema: GraphQLSchema): string {
-  return printFilteredSchema(schema, isSpecifiedDirective, isIntrospectionType);
+  return printFilteredSchema(
+    schema,
+    isSpecifiedDirective,
+    isIntrospectionSchemaType,
+  );
 }
 
 function isDefinedType(type: GraphQLNamedType): boolean {
-  return !isSpecifiedScalarType(type) && !isIntrospectionType(type);
+  return (
+    !isSpecifiedScalarType(type) &&
+    !isSpecifiedEnumType(type) &&
+    !isIntrospectionType(type)
+  );
+}
+
+function isIntrospectionSchemaType(type: GraphQLNamedType): boolean {
+  return isIntrospectionType(type) || isSpecifiedEnumType(type);
 }
 
 function printFilteredSchema(
@@ -70,7 +83,11 @@ function printFilteredSchema(
 }
 
 function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
-  if (schema.description == null && isSchemaOfCommonNames(schema)) {
+  if (
+    schema.description == null &&
+    schema.defaultErrorBehavior === 'PROPAGATE' &&
+    isSchemaOfCommonNames(schema)
+  ) {
     return;
   }
 
@@ -90,8 +107,15 @@ function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
   if (subscriptionType) {
     operationTypes.push(`  subscription: ${subscriptionType.name}`);
   }
+  const directives =
+    schema.defaultErrorBehavior !== 'PROPAGATE'
+      ? `@behavior(onError: ${schema.defaultErrorBehavior}) `
+      : '';
 
-  return printDescription(schema) + `schema {\n${operationTypes.join('\n')}\n}`;
+  return (
+    printDescription(schema) +
+    `schema ${directives}{\n${operationTypes.join('\n')}\n}`
+  );
 }
 
 /**
