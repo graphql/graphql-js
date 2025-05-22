@@ -2,32 +2,66 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import {
-  dedentBlockStringValue,
-  getBlockStringIndentation,
+  dedentBlockStringLines,
+  isPrintableAsBlockString,
   printBlockString,
-} from '../blockString';
+} from '../blockString.js';
 
-function joinLines(...args: Array<string>) {
+function joinLines(...args: ReadonlyArray<string>) {
   return args.join('\n');
 }
 
-describe('dedentBlockStringValue', () => {
+describe('dedentBlockStringLines', () => {
+  function expectDedent(lines: ReadonlyArray<string>) {
+    return expect(dedentBlockStringLines(lines));
+  }
+
+  it('handles empty string', () => {
+    expectDedent(['']).to.deep.equal([]);
+  });
+
+  it('does not dedent first line', () => {
+    expectDedent(['  a']).to.deep.equal(['  a']);
+    expectDedent([' a', '  b']).to.deep.equal([' a', 'b']);
+  });
+
+  it('removes minimal indentation length', () => {
+    expectDedent(['', ' a', '  b']).to.deep.equal(['a', ' b']);
+    expectDedent(['', '  a', ' b']).to.deep.equal([' a', 'b']);
+    expectDedent(['', '  a', ' b', 'c']).to.deep.equal(['  a', ' b', 'c']);
+  });
+
+  it('dedent both tab and space as single character', () => {
+    expectDedent(['', '\ta', '          b']).to.deep.equal(['a', '         b']);
+    expectDedent(['', '\t a', '          b']).to.deep.equal(['a', '        b']);
+    expectDedent(['', ' \t a', '          b']).to.deep.equal(['a', '       b']);
+  });
+
+  it('dedent do not take empty lines into account', () => {
+    expectDedent(['a', '', ' b']).to.deep.equal(['a', '', 'b']);
+    expectDedent(['a', ' ', '  b']).to.deep.equal(['a', '', 'b']);
+  });
+
   it('removes uniform indentation from a string', () => {
-    const rawValue = joinLines(
+    const lines = [
       '',
       '    Hello,',
       '      World!',
       '',
       '    Yours,',
       '      GraphQL.',
-    );
-    expect(dedentBlockStringValue(rawValue)).to.equal(
-      joinLines('Hello,', '  World!', '', 'Yours,', '  GraphQL.'),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      'Hello,',
+      '  World!',
+      '',
+      'Yours,',
+      '  GraphQL.',
+    ]);
   });
 
   it('removes empty leading and trailing lines', () => {
-    const rawValue = joinLines(
+    const lines = [
       '',
       '',
       '    Hello,',
@@ -37,14 +71,18 @@ describe('dedentBlockStringValue', () => {
       '      GraphQL.',
       '',
       '',
-    );
-    expect(dedentBlockStringValue(rawValue)).to.equal(
-      joinLines('Hello,', '  World!', '', 'Yours,', '  GraphQL.'),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      'Hello,',
+      '  World!',
+      '',
+      'Yours,',
+      '  GraphQL.',
+    ]);
   });
 
   it('removes blank leading and trailing lines', () => {
-    const rawValue = joinLines(
+    const lines = [
       '  ',
       '        ',
       '    Hello,',
@@ -54,27 +92,35 @@ describe('dedentBlockStringValue', () => {
       '      GraphQL.',
       '        ',
       '  ',
-    );
-    expect(dedentBlockStringValue(rawValue)).to.equal(
-      joinLines('Hello,', '  World!', '', 'Yours,', '  GraphQL.'),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      'Hello,',
+      '  World!',
+      '',
+      'Yours,',
+      '  GraphQL.',
+    ]);
   });
 
   it('retains indentation from first line', () => {
-    const rawValue = joinLines(
+    const lines = [
       '    Hello,',
       '      World!',
       '',
       '    Yours,',
       '      GraphQL.',
-    );
-    expect(dedentBlockStringValue(rawValue)).to.equal(
-      joinLines('    Hello,', '  World!', '', 'Yours,', '  GraphQL.'),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      '    Hello,',
+      '  World!',
+      '',
+      'Yours,',
+      '  GraphQL.',
+    ]);
   });
 
   it('does not alter trailing spaces', () => {
-    const rawValue = joinLines(
+    const lines = [
       '               ',
       '    Hello,     ',
       '      World!   ',
@@ -82,86 +128,137 @@ describe('dedentBlockStringValue', () => {
       '    Yours,     ',
       '      GraphQL. ',
       '               ',
-    );
-    expect(dedentBlockStringValue(rawValue)).to.equal(
-      joinLines(
-        'Hello,     ',
-        '  World!   ',
-        '           ',
-        'Yours,     ',
-        '  GraphQL. ',
-      ),
-    );
+    ];
+    expectDedent(lines).to.deep.equal([
+      'Hello,     ',
+      '  World!   ',
+      '           ',
+      'Yours,     ',
+      '  GraphQL. ',
+    ]);
   });
 });
 
-describe('getBlockStringIndentation', () => {
-  it('returns zero for an empty string', () => {
-    expect(getBlockStringIndentation('')).to.equal(0);
+describe('isPrintableAsBlockString', () => {
+  function expectPrintable(str: string) {
+    return expect(isPrintableAsBlockString(str)).to.equal(true);
+  }
+
+  function expectNonPrintable(str: string) {
+    return expect(isPrintableAsBlockString(str)).to.equal(false);
+  }
+
+  it('accepts valid strings', () => {
+    expectPrintable('');
+    expectPrintable(' a');
+    expectPrintable('\t"\n"');
+    expectNonPrintable('\t"\n \n\t"');
   });
 
-  it('do not take first line into account', () => {
-    expect(getBlockStringIndentation('  a')).to.equal(0);
-    expect(getBlockStringIndentation(' a\n  b')).to.equal(2);
+  it('rejects strings with only whitespace', () => {
+    expectNonPrintable(' ');
+    expectNonPrintable('\t');
+    expectNonPrintable('\t ');
+    expectNonPrintable(' \t');
   });
 
-  it('returns minimal indentation length', () => {
-    expect(getBlockStringIndentation('\n a\n  b')).to.equal(1);
-    expect(getBlockStringIndentation('\n  a\n b')).to.equal(1);
-    expect(getBlockStringIndentation('\n  a\n b\nc')).to.equal(0);
+  it('rejects strings with non-printable characters', () => {
+    expectNonPrintable('\x00');
+    expectNonPrintable('a\x00b');
   });
 
-  it('count both tab and space as single character', () => {
-    expect(getBlockStringIndentation('\n\ta\n          b')).to.equal(1);
-    expect(getBlockStringIndentation('\n\t a\n          b')).to.equal(2);
-    expect(getBlockStringIndentation('\n \t a\n          b')).to.equal(3);
+  it('rejects strings with only empty lines', () => {
+    expectNonPrintable('\n');
+    expectNonPrintable('\n\n');
+    expectNonPrintable('\n\n\n');
+    expectNonPrintable(' \n  \n');
+    expectNonPrintable('\t\n\t\t\n');
   });
 
-  it('do not take empty lines into account', () => {
-    expect(getBlockStringIndentation('a\n ')).to.equal(0);
-    expect(getBlockStringIndentation('a\n\t')).to.equal(0);
-    expect(getBlockStringIndentation('a\n\n b')).to.equal(1);
-    expect(getBlockStringIndentation('a\n \n  b')).to.equal(2);
+  it('rejects strings with carriage return', () => {
+    expectNonPrintable('\r');
+    expectNonPrintable('\n\r');
+    expectNonPrintable('\r\n');
+    expectNonPrintable('a\rb');
+  });
+
+  it('rejects strings with leading empty lines', () => {
+    expectNonPrintable('\na');
+    expectNonPrintable(' \na');
+    expectNonPrintable('\t\na');
+    expectNonPrintable('\n\na');
+  });
+
+  it('rejects strings with trailing empty lines', () => {
+    expectNonPrintable('a\n');
+    expectNonPrintable('a\n ');
+    expectNonPrintable('a\n\t');
+    expectNonPrintable('a\n\n');
   });
 });
 
 describe('printBlockString', () => {
-  it('do not escape characters', () => {
+  function expectBlockString(str: string) {
+    return {
+      toEqual(expected: string | { readable: string; minimize: string }) {
+        const { readable, minimize } =
+          typeof expected === 'string'
+            ? { readable: expected, minimize: expected }
+            : expected;
+
+        expect(printBlockString(str)).to.equal(readable);
+        expect(printBlockString(str, { minimize: true })).to.equal(minimize);
+      },
+    };
+  }
+
+  it('does not escape characters', () => {
     const str = '" \\ / \b \f \n \r \t';
-    expect(printBlockString(str)).to.equal('"""\n' + str + '\n"""');
+    expectBlockString(str).toEqual({
+      readable: '"""\n' + str + '\n"""',
+      minimize: '"""\n' + str + '"""',
+    });
   });
 
   it('by default print block strings as single line', () => {
     const str = 'one liner';
-    expect(printBlockString(str)).to.equal('"""one liner"""');
-    expect(printBlockString(str, true)).to.equal('"""\none liner\n"""');
+    expectBlockString(str).toEqual('"""one liner"""');
+  });
+
+  it('by default print block strings ending with triple quotation as multi-line', () => {
+    const str = 'triple quotation """';
+    expectBlockString(str).toEqual({
+      readable: '"""\ntriple quotation \\"""\n"""',
+      minimize: '"""triple quotation \\""""""',
+    });
   });
 
   it('correctly prints single-line with leading space', () => {
     const str = '    space-led string';
-    expect(printBlockString(str)).to.equal('"""    space-led string"""');
-    expect(printBlockString(str, true)).to.equal(
-      '"""    space-led string\n"""',
-    );
+    expectBlockString(str).toEqual('"""    space-led string"""');
   });
 
-  it('correctly prints single-line with leading space and quotation', () => {
+  it('correctly prints single-line with leading space and trailing quotation', () => {
     const str = '    space-led value "quoted string"';
-
-    expect(printBlockString(str)).to.equal(
-      '"""    space-led value "quoted string"\n"""',
-    );
-
-    expect(printBlockString(str, true)).to.equal(
+    expectBlockString(str).toEqual(
       '"""    space-led value "quoted string"\n"""',
     );
   });
 
   it('correctly prints single-line with trailing backslash', () => {
     const str = 'backslash \\';
+    expectBlockString(str).toEqual({
+      readable: '"""\nbackslash \\\n"""',
+      minimize: '"""backslash \\\n"""',
+    });
+  });
 
-    expect(printBlockString(str)).to.equal('"""\nbackslash \\\n"""');
-    expect(printBlockString(str, true)).to.equal('"""\nbackslash \\\n"""');
+  it('correctly prints multi-line with internal indent', () => {
+    const str = 'no indent\n with indent';
+    expectBlockString(str).toEqual({
+      readable: '"""\nno indent\n with indent\n"""',
+      minimize: '"""\nno indent\n with indent"""',
+    });
   });
 
   it('correctly prints string with a first line indentation', () => {
@@ -172,8 +269,8 @@ describe('printBlockString', () => {
       '     string',
     );
 
-    expect(printBlockString(str)).to.equal(
-      joinLines(
+    expectBlockString(str).toEqual({
+      readable: joinLines(
         '"""',
         '    first  ',
         '  line     ',
@@ -181,6 +278,12 @@ describe('printBlockString', () => {
         '     string',
         '"""',
       ),
-    );
+      minimize: joinLines(
+        '"""    first  ',
+        '  line     ',
+        'indentation',
+        '     string"""',
+      ),
+    });
   });
 });

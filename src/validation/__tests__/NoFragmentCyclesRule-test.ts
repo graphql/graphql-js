@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { NoFragmentCyclesRule } from '../rules/NoFragmentCyclesRule';
+import { NoFragmentCyclesRule } from '../rules/NoFragmentCyclesRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(NoFragmentCyclesRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: No circular fragment spreads', () => {
@@ -60,7 +60,7 @@ describe('Validate: No circular fragment spreads', () => {
   it('spreading recursively within field fails', () => {
     expectErrors(`
       fragment fragA on Human { relatives { ...fragA } },
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragA" within itself.',
         locations: [{ line: 2, column: 45 }],
@@ -71,7 +71,7 @@ describe('Validate: No circular fragment spreads', () => {
   it('no spreading itself directly', () => {
     expectErrors(`
       fragment fragA on Dog { ...fragA }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragA" within itself.',
         locations: [{ line: 2, column: 31 }],
@@ -86,7 +86,7 @@ describe('Validate: No circular fragment spreads', () => {
           ...fragA
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragA" within itself.',
         locations: [{ line: 4, column: 11 }],
@@ -98,7 +98,7 @@ describe('Validate: No circular fragment spreads', () => {
     expectErrors(`
       fragment fragA on Dog { ...fragB }
       fragment fragB on Dog { ...fragA }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragB".',
         locations: [
@@ -113,7 +113,7 @@ describe('Validate: No circular fragment spreads', () => {
     expectErrors(`
       fragment fragB on Dog { ...fragA }
       fragment fragA on Dog { ...fragB }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragB" within itself via "fragA".',
         locations: [
@@ -136,7 +136,7 @@ describe('Validate: No circular fragment spreads', () => {
           ...fragA
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragB".',
         locations: [
@@ -157,7 +157,7 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragZ on Dog { ...fragO }
       fragment fragO on Dog { ...fragP }
       fragment fragP on Dog { ...fragA, ...fragX }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Cannot spread fragment "fragA" within itself via "fragB", "fragC", "fragO", "fragP".',
@@ -188,7 +188,7 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragA on Dog { ...fragB, ...fragC }
       fragment fragB on Dog { ...fragA }
       fragment fragC on Dog { ...fragA }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragB".',
         locations: [
@@ -211,7 +211,7 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragA on Dog { ...fragC }
       fragment fragB on Dog { ...fragC }
       fragment fragC on Dog { ...fragA, ...fragB }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragA" within itself via "fragC".',
         locations: [
@@ -234,7 +234,7 @@ describe('Validate: No circular fragment spreads', () => {
       fragment fragA on Dog { ...fragB }
       fragment fragB on Dog { ...fragB, ...fragC }
       fragment fragC on Dog { ...fragA, ...fragB }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot spread fragment "fragB" within itself.',
         locations: [{ line: 3, column: 31 }],

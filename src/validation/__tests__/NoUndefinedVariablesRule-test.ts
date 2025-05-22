@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { NoUndefinedVariablesRule } from '../rules/NoUndefinedVariablesRule';
+import { NoUndefinedVariablesRule } from '../rules/NoUndefinedVariablesRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(NoUndefinedVariablesRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: No undefined variables', () => {
@@ -119,7 +119,7 @@ describe('Validate: No undefined variables', () => {
       query Foo($a: String, $b: String, $c: String) {
         field(a: $a, b: $b, c: $c, d: $d)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$d" is not defined by operation "Foo".',
         locations: [
@@ -135,7 +135,7 @@ describe('Validate: No undefined variables', () => {
       {
         field(a: $a)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is not defined.',
         locations: [
@@ -151,7 +151,7 @@ describe('Validate: No undefined variables', () => {
       query Foo($b: String) {
         field(a: $a, b: $b, c: $c)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
         locations: [
@@ -177,7 +177,7 @@ describe('Validate: No undefined variables', () => {
       fragment FragA on Type {
         field(a: $a)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is not defined.',
         locations: [
@@ -206,7 +206,7 @@ describe('Validate: No undefined variables', () => {
       fragment FragC on Type {
         field(c: $c)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$c" is not defined by operation "Foo".',
         locations: [
@@ -235,7 +235,7 @@ describe('Validate: No undefined variables', () => {
       fragment FragC on Type {
         field(c: $c)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
         locations: [
@@ -264,7 +264,7 @@ describe('Validate: No undefined variables', () => {
       fragment FragAB on Type {
         field(a: $a, b: $b)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$b" is not defined by operation "Foo".',
         locations: [
@@ -293,7 +293,7 @@ describe('Validate: No undefined variables', () => {
       fragment FragAB on Type {
         field(a: $a, b: $b)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
         locations: [
@@ -325,7 +325,7 @@ describe('Validate: No undefined variables', () => {
       fragment FragB on Type {
         field(b: $b)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
         locations: [
@@ -359,7 +359,7 @@ describe('Validate: No undefined variables', () => {
       fragment FragC on Type {
         field2(c: $c)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Variable "$a" is not defined by operation "Foo".',
         locations: [
@@ -400,6 +400,69 @@ describe('Validate: No undefined variables', () => {
         locations: [
           { line: 14, column: 19 },
           { line: 5, column: 7 },
+        ],
+      },
+    ]);
+  });
+
+  it('fragment defined arguments are not undefined variables', () => {
+    expectValid(`
+      query Foo {
+        ...FragA
+      }
+      fragment FragA($a: String) on Type {
+        field1(a: $a)
+      }
+    `);
+  });
+
+  it('defined variables used as fragment arguments are not undefined variables', () => {
+    expectValid(`
+      query Foo($b: String) {
+        ...FragA(a: $b)
+      }
+      fragment FragA($a: String) on Type {
+        field1
+      }
+    `);
+  });
+
+  it('variables used as fragment arguments may be undefined variables', () => {
+    expectErrors(`
+      query Foo {
+        ...FragA(a: $a)
+      }
+      fragment FragA($a: String) on Type {
+        field1
+      }
+    `).toDeepEqual([
+      {
+        message: 'Variable "$a" is not defined by operation "Foo".',
+        locations: [
+          { line: 3, column: 21 },
+          { line: 2, column: 7 },
+        ],
+      },
+    ]);
+  });
+
+  it('variables shadowed by parent fragment arguments are still undefined variables', () => {
+    expectErrors(`
+      query Foo {
+        ...FragA
+      }
+      fragment FragA($a: String) on Type {
+        ...FragB
+      }
+      fragment FragB on Type {
+        field1(a: $a)
+      }
+    `).toDeepEqual([
+      {
+        message: 'Variable "$a" is not defined by operation "Foo".',
+        locations: [
+          { line: 9, column: 19 },
+          { line: 2, column: 7 },
         ],
       },
     ]);

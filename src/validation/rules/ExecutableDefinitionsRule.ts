@@ -1,16 +1,18 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
-import { Kind } from '../../language/kinds';
-import { isExecutableDefinitionNode } from '../../language/predicates';
+import { Kind } from '../../language/kinds.js';
+import { isExecutableDefinitionNode } from '../../language/predicates.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * Executable definitions
  *
  * A GraphQL document is only valid for execution if all definitions are either
  * operation or fragment definitions.
+ *
+ * See https://spec.graphql.org/draft/#sec-Executable-Definitions
  */
 export function ExecutableDefinitionsRule(
   context: ASTValidationContext,
@@ -25,10 +27,9 @@ export function ExecutableDefinitionsRule(
               ? 'schema'
               : '"' + definition.name.value + '"';
           context.reportError(
-            new GraphQLError(
-              `The ${defName} definition is not executable.`,
-              definition,
-            ),
+            new GraphQLError(`The ${defName} definition is not executable.`, {
+              nodes: definition,
+            }),
           );
         }
       }

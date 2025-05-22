@@ -1,21 +1,27 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
+import { parse } from '../../language/parser.js';
+
 import {
   assertInterfaceType,
+  GraphQLInterfaceType,
   GraphQLList,
   GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLUnionType,
-} from '../../type/definition';
+} from '../../type/definition.js';
+import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { executeSync, execute } from '../execute';
+import { execute, executeSync } from '../execute.js';
+
+interface Context {
+  async: boolean;
+}
 
 async function executeQuery(args: {
   schema: GraphQLSchema;
@@ -28,16 +34,16 @@ async function executeQuery(args: {
     schema,
     document,
     rootValue,
-    contextValue: { async: false },
+    contextValue: { async: false } satisfies Context,
   });
   const asyncResult = await execute({
     schema,
     document,
     rootValue,
-    contextValue: { async: true },
+    contextValue: { async: true } satisfies Context,
   });
 
-  expect(result).to.deep.equal(asyncResult);
+  expectJSON(result).toDeepEqual(asyncResult);
   return result;
 }
 
@@ -70,7 +76,7 @@ describe('Execute: Handles execution of abstract types', () => {
       },
     });
 
-    const DogType = new GraphQLObjectType({
+    const DogType = new GraphQLObjectType<Dog, { async: boolean }>({
       name: 'Dog',
       interfaces: [PetType],
       isTypeOf(obj, context) {
@@ -83,7 +89,7 @@ describe('Execute: Handles execution of abstract types', () => {
       },
     });
 
-    const CatType = new GraphQLObjectType({
+    const CatType = new GraphQLObjectType<Cat, { async: boolean }>({
       name: 'Cat',
       interfaces: [PetType],
       isTypeOf(obj, context) {
@@ -149,7 +155,7 @@ describe('Execute: Handles execution of abstract types', () => {
       },
     });
 
-    const DogType = new GraphQLObjectType({
+    const DogType = new GraphQLObjectType<Dog, Context>({
       name: 'Dog',
       interfaces: [PetType],
       isTypeOf(_source, context) {
@@ -165,7 +171,7 @@ describe('Execute: Handles execution of abstract types', () => {
       },
     });
 
-    const CatType = new GraphQLObjectType({
+    const CatType = new GraphQLObjectType<Cat, Context>({
       name: 'Cat',
       interfaces: [PetType],
       isTypeOf: undefined,
@@ -204,7 +210,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    expect(await executeQuery({ schema, query })).to.deep.equal({
+    expectJSON(await executeQuery({ schema, query })).toDeepEqual({
       data: {
         pets: [null, null],
       },
@@ -223,8 +229,62 @@ describe('Execute: Handles execution of abstract types', () => {
     });
   });
 
+  it('isTypeOf can return false', async () => {
+    const PetType = new GraphQLInterfaceType({
+      name: 'Pet',
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const DogType = new GraphQLObjectType<Dog, Context>({
+      name: 'Dog',
+      interfaces: [PetType],
+      isTypeOf(_source, context) {
+        return context.async ? Promise.resolve(false) : false;
+      },
+      fields: {
+        name: { type: GraphQLString },
+        woofs: { type: GraphQLBoolean },
+      },
+    });
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          pet: {
+            type: PetType,
+            resolve: () => ({}),
+          },
+        },
+      }),
+      types: [DogType],
+    });
+
+    const query = `
+      {
+        pet {
+          name
+        }
+      }
+    `;
+
+    expectJSON(await executeQuery({ schema, query })).toDeepEqual({
+      data: { pet: null },
+      errors: [
+        {
+          message:
+            'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet". Either the "Pet" type should provide a "resolveType" function or each possible type should provide an "isTypeOf" function.',
+          locations: [{ line: 3, column: 9 }],
+          path: ['pet'],
+        },
+      ],
+    });
+  });
+
   it('isTypeOf used to resolve runtime type for Union', async () => {
-    const DogType = new GraphQLObjectType({
+    const DogType = new GraphQLObjectType<Dog, Context>({
       name: 'Dog',
       isTypeOf(obj, context) {
         const isDog = obj instanceof Dog;
@@ -236,7 +296,7 @@ describe('Execute: Handles execution of abstract types', () => {
       },
     });
 
-    const CatType = new GraphQLObjectType({
+    const CatType = new GraphQLObjectType<Cat, Context>({
       name: 'Cat',
       isTypeOf(obj, context) {
         const isCat = obj instanceof Cat;
@@ -297,7 +357,7 @@ describe('Execute: Handles execution of abstract types', () => {
   });
 
   it('resolveType can throw', async () => {
-    const PetType = new GraphQLInterfaceType({
+    const PetType = new GraphQLInterfaceType<Dog | Cat, Context>({
       name: 'Pet',
       resolveType(_source, context) {
         const error = new Error('We are testing this error');
@@ -311,7 +371,7 @@ describe('Execute: Handles execution of abstract types', () => {
       },
     });
 
-    const DogType = new GraphQLObjectType({
+    const DogType = new GraphQLObjectType<Dog, Context>({
       name: 'Dog',
       interfaces: [PetType],
       fields: {
@@ -320,7 +380,7 @@ describe('Execute: Handles execution of abstract types', () => {
       },
     });
 
-    const CatType = new GraphQLObjectType({
+    const CatType = new GraphQLObjectType<Cat, Context>({
       name: 'Cat',
       interfaces: [PetType],
       fields: {
@@ -358,7 +418,7 @@ describe('Execute: Handles execution of abstract types', () => {
       }
     `;
 
-    expect(await executeQuery({ schema, query })).to.deep.equal({
+    expectJSON(await executeQuery({ schema, query })).toDeepEqual({
       data: {
         pets: [null, null],
       },
@@ -449,7 +509,7 @@ describe('Execute: Handles execution of abstract types', () => {
 
       interface Pet {
         name: String
-        }
+      }
 
       type Cat implements Pet {
         name: String
@@ -539,7 +599,7 @@ describe('Execute: Handles execution of abstract types', () => {
       const result = executeSync({ schema, document, rootValue });
       return {
         toEqual(message: string) {
-          expect(result).to.deep.equal({
+          expectJSON(result).toDeepEqual({
             data: { pet: null },
             errors: [
               {
@@ -573,15 +633,7 @@ describe('Execute: Handles execution of abstract types', () => {
     // @ts-expect-error
     assertInterfaceType(schema.getType('Pet')).resolveType = () => [];
     expectError({ forTypeName: undefined }).toEqual(
-      'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]".',
-    );
-
-    // FIXME: workaround since we can't inject resolveType into SDL
-    // @ts-expect-error
-    assertInterfaceType(schema.getType('Pet')).resolveType = () =>
-      schema.getType('Cat');
-    expectError({ forTypeName: undefined }).toEqual(
-      'Support for returning GraphQLObjectType from resolveType was removed in graphql-js@16.0.0 please return type name instead.',
+      'Abstract type "Pet" must resolve to an Object type at runtime for field "Query.pet" with value { __typename: undefined }, received "[]", which is not a valid Object type name.',
     );
   });
 });

@@ -1,26 +1,28 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+import { dedent } from '../../__testUtils__/dedent.js';
+import {
+  expectJSON,
+  expectToThrowJSON,
+} from '../../__testUtils__/expectJSON.js';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { Kind } from '../kinds';
-import { Source } from '../source';
-import { TokenKind } from '../tokenKind';
+import { Kind } from '../kinds.js';
 import {
   parse,
-  parseValue,
   parseConstValue,
-  parseType,
   parseSchemaCoordinate,
-} from '../parser';
-
-import { toJSONDeep } from './toJSONDeep';
+  parseType,
+  parseValue,
+} from '../parser.js';
+import { Source } from '../source.js';
+import { TokenKind } from '../tokenKind.js';
 
 function expectSyntaxError(text: string) {
-  return expect(() => parse(text)).to.throw();
+  return expectToThrowJSON(() => parse(text));
 }
 
 describe('Parser', () => {
@@ -91,6 +93,24 @@ describe('Parser', () => {
     `);
   });
 
+  it('limits by a maximum number of tokens', () => {
+    expect(() => parse('{ foo }', { maxTokens: 3 })).to.not.throw();
+    expect(() => parse('{ foo }', { maxTokens: 2 })).to.throw(
+      'Syntax Error: Document contains more than 2 tokens. Parsing aborted.',
+    );
+
+    expect(() => parse('{ foo(bar: "baz") }', { maxTokens: 8 })).to.not.throw();
+
+    expect(() => parse('{ foo(bar: "baz") }', { maxTokens: 7 })).to.throw(
+      'Syntax Error: Document contains more than 7 tokens. Parsing aborted.',
+    );
+  });
+
+  it('exposes the tokenCount', () => {
+    expect(parse('{ foo }').tokenCount).to.equal(3);
+    expect(parse('{ foo(bar: "baz") }').tokenCount).to.equal(8);
+  });
+
   it('parses variable inline values', () => {
     expect(() =>
       parse('{ field(complex: { a: { b: [ $var ] } }) }'),
@@ -123,6 +143,26 @@ describe('Parser', () => {
     expectSyntaxError('{ ...on }').to.deep.equal({
       message: 'Syntax Error: Expected Name, found "}".',
       locations: [{ line: 1, column: 9 }],
+    });
+  });
+
+  it('does not allow "true", "false", or "null" as enum value', () => {
+    expectSyntaxError('enum Test { VALID, true }').to.deep.equal({
+      message:
+        'Syntax Error: Name "true" is reserved and cannot be used for an enum value.',
+      locations: [{ line: 1, column: 20 }],
+    });
+
+    expectSyntaxError('enum Test { VALID, false }').to.deep.equal({
+      message:
+        'Syntax Error: Name "false" is reserved and cannot be used for an enum value.',
+      locations: [{ line: 1, column: 20 }],
+    });
+
+    expectSyntaxError('enum Test { VALID, null }').to.deep.equal({
+      message:
+        'Syntax Error: Name "null" is reserved and cannot be used for an enum value.',
+      locations: [{ line: 1, column: 20 }],
     });
   });
 
@@ -221,7 +261,7 @@ describe('Parser', () => {
       }
     `);
 
-    expect(toJSONDeep(result)).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 40 },
       definitions: [
@@ -230,8 +270,8 @@ describe('Parser', () => {
           loc: { start: 0, end: 40 },
           operation: 'query',
           name: undefined,
-          variableDefinitions: [],
-          directives: [],
+          variableDefinitions: undefined,
+          directives: undefined,
           selectionSet: {
             kind: Kind.SELECTION_SET,
             loc: { start: 0, end: 40 },
@@ -261,7 +301,7 @@ describe('Parser', () => {
                     loc: { start: 9, end: 14 },
                   },
                 ],
-                directives: [],
+                directives: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 16, end: 38 },
@@ -275,8 +315,8 @@ describe('Parser', () => {
                         loc: { start: 22, end: 24 },
                         value: 'id',
                       },
-                      arguments: [],
-                      directives: [],
+                      arguments: undefined,
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                     {
@@ -288,8 +328,8 @@ describe('Parser', () => {
                         loc: { start: 30, end: 34 },
                         value: 'name',
                       },
-                      arguments: [],
-                      directives: [],
+                      arguments: undefined,
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                   ],
@@ -311,7 +351,7 @@ describe('Parser', () => {
       }
     `);
 
-    expect(toJSONDeep(result)).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       kind: Kind.DOCUMENT,
       loc: { start: 0, end: 29 },
       definitions: [
@@ -320,8 +360,8 @@ describe('Parser', () => {
           loc: { start: 0, end: 29 },
           operation: 'query',
           name: undefined,
-          variableDefinitions: [],
-          directives: [],
+          variableDefinitions: undefined,
+          directives: undefined,
           selectionSet: {
             kind: Kind.SELECTION_SET,
             loc: { start: 6, end: 29 },
@@ -335,8 +375,8 @@ describe('Parser', () => {
                   loc: { start: 10, end: 14 },
                   value: 'node',
                 },
-                arguments: [],
-                directives: [],
+                arguments: undefined,
+                directives: undefined,
                 selectionSet: {
                   kind: Kind.SELECTION_SET,
                   loc: { start: 15, end: 27 },
@@ -350,8 +390,8 @@ describe('Parser', () => {
                         loc: { start: 21, end: 23 },
                         value: 'id',
                       },
-                      arguments: [],
-                      directives: [],
+                      arguments: undefined,
+                      directives: undefined,
                       selectionSet: undefined,
                     },
                   ],
@@ -369,20 +409,40 @@ describe('Parser', () => {
     expect('loc' in result).to.equal(false);
   });
 
-  it('Legacy: allows parsing fragment defined variables', () => {
+  it('allows parsing fragment defined variables', () => {
     const document = 'fragment a($v: Boolean = false) on t { f(v: $v) }';
 
     expect(() =>
-      parse(document, { allowLegacyFragmentVariables: true }),
+      parse(document, { experimentalFragmentArguments: true }),
     ).to.not.throw();
-    expect(() => parse(document)).to.throw('Syntax Error');
   });
 
-  it('contains location information that only stringifies start/end', () => {
-    const result = parse('{ id }');
+  it('disallows parsing fragment defined variables without experimental flag', () => {
+    const document = 'fragment a($v: Boolean = false) on t { f(v: $v) }';
 
-    expect(JSON.stringify(result.loc)).to.equal('{"start":0,"end":6}');
-    expect(inspect(result.loc)).to.equal('{ start: 0, end: 6 }');
+    expect(() => parse(document)).to.throw();
+  });
+
+  it('allows parsing fragment spread arguments', () => {
+    const document = 'fragment a on t { ...b(v: $v) }';
+
+    expect(() =>
+      parse(document, { experimentalFragmentArguments: true }),
+    ).to.not.throw();
+  });
+
+  it('disallows parsing fragment spread arguments without experimental flag', () => {
+    const document = 'fragment a on t { ...b(v: $v) }';
+
+    expect(() => parse(document)).to.throw();
+  });
+
+  it('contains location that can be Object.toStringified, JSON.stringified, or jsutils.inspected', () => {
+    const { loc } = parse('{ id }');
+
+    expect(Object.prototype.toString.call(loc)).to.equal('[object Location]');
+    expect(JSON.stringify(loc)).to.equal('{"start":0,"end":6}');
+    expect(inspect(loc)).to.equal('{ start: 0, end: 6 }');
   });
 
   it('contains references to source', () => {
@@ -405,7 +465,7 @@ describe('Parser', () => {
   describe('parseValue', () => {
     it('parses null value', () => {
       const result = parseValue('null');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.NULL,
         loc: { start: 0, end: 4 },
       });
@@ -413,7 +473,7 @@ describe('Parser', () => {
 
     it('parses list values', () => {
       const result = parseValue('[123 "abc"]');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST,
         loc: { start: 0, end: 11 },
         values: [
@@ -434,7 +494,7 @@ describe('Parser', () => {
 
     it('parses block strings', () => {
       const result = parseValue('["""long""" "short"]');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST,
         loc: { start: 0, end: 20 },
         values: [
@@ -456,7 +516,7 @@ describe('Parser', () => {
 
     it('allows variables', () => {
       const result = parseValue('{ field: $var }');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.OBJECT,
         loc: { start: 0, end: 15 },
         fields: [
@@ -504,7 +564,7 @@ describe('Parser', () => {
   describe('parseConstValue', () => {
     it('parses values', () => {
       const result = parseConstValue('[123 "abc"]');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST,
         loc: { start: 0, end: 11 },
         values: [
@@ -546,7 +606,7 @@ describe('Parser', () => {
   describe('parseType', () => {
     it('parses well known types', () => {
       const result = parseType('String');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.NAMED_TYPE,
         loc: { start: 0, end: 6 },
         name: {
@@ -559,7 +619,7 @@ describe('Parser', () => {
 
     it('parses custom types', () => {
       const result = parseType('MyType');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.NAMED_TYPE,
         loc: { start: 0, end: 6 },
         name: {
@@ -572,7 +632,7 @@ describe('Parser', () => {
 
     it('parses list types', () => {
       const result = parseType('[MyType]');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST_TYPE,
         loc: { start: 0, end: 8 },
         type: {
@@ -589,7 +649,7 @@ describe('Parser', () => {
 
     it('parses non-null types', () => {
       const result = parseType('MyType!');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.NON_NULL_TYPE,
         loc: { start: 0, end: 7 },
         type: {
@@ -606,7 +666,7 @@ describe('Parser', () => {
 
     it('parses nested types', () => {
       const result = parseType('[MyType!]');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.LIST_TYPE,
         loc: { start: 0, end: 9 },
         type: {
@@ -629,7 +689,7 @@ describe('Parser', () => {
   describe('parseSchemaCoordinate', () => {
     it('parses Name', () => {
       const result = parseSchemaCoordinate('MyType');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.SCHEMA_COORDINATE,
         loc: { start: 0, end: 6 },
         ofDirective: false,
@@ -645,7 +705,7 @@ describe('Parser', () => {
 
     it('parses Name . Name', () => {
       const result = parseSchemaCoordinate('MyType.field');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.SCHEMA_COORDINATE,
         loc: { start: 0, end: 12 },
         ofDirective: false,
@@ -674,7 +734,7 @@ describe('Parser', () => {
 
     it('parses Name . Name ( Name : )', () => {
       const result = parseSchemaCoordinate('MyType.field(arg:)');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.SCHEMA_COORDINATE,
         loc: { start: 0, end: 18 },
         ofDirective: false,
@@ -707,7 +767,7 @@ describe('Parser', () => {
 
     it('parses @ Name', () => {
       const result = parseSchemaCoordinate('@myDirective');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.SCHEMA_COORDINATE,
         loc: { start: 0, end: 12 },
         ofDirective: true,
@@ -723,7 +783,7 @@ describe('Parser', () => {
 
     it('parses @ Name ( Name : )', () => {
       const result = parseSchemaCoordinate('@myDirective(arg:)');
-      expect(toJSONDeep(result)).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         kind: Kind.SCHEMA_COORDINATE,
         loc: { start: 0, end: 18 },
         ofDirective: true,

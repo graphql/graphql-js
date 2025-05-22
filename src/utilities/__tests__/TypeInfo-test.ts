@@ -1,22 +1,65 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { invariant } from '../../jsutils/invariant';
+import { parse, parseValue } from '../../language/parser.js';
+import { print } from '../../language/printer.js';
+import { visit } from '../../language/visitor.js';
 
-import { parse, parseValue } from '../../language/parser';
-import { print } from '../../language/printer';
-import { visit } from '../../language/visitor';
+import { getNamedType, isCompositeType } from '../../type/definition.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { getNamedType, isCompositeType } from '../../type/definition';
+import { buildSchema } from '../buildASTSchema.js';
+import { TypeInfo, visitWithTypeInfo } from '../TypeInfo.js';
 
-import { buildSchema } from '../buildASTSchema';
-import { TypeInfo, visitWithTypeInfo } from '../TypeInfo';
+const testSchema = buildSchema(`
+  interface Pet {
+    name: String
+  }
 
-import { testSchema } from '../../validation/__tests__/harness';
+  type Dog implements Pet {
+    name: String
+  }
+
+  type Cat implements Pet {
+    name: String
+  }
+
+  type Human {
+    name: String
+    pets: [Pet]
+  }
+
+  type Alien {
+    name(surname: Boolean): String
+  }
+
+  union HumanOrAlien = Human | Alien
+
+  type QueryRoot {
+    human(id: ID): Human
+    alien: Alien
+    humanOrAlien: HumanOrAlien
+    pet: Pet
+  }
+
+  schema {
+    query: QueryRoot
+  }
+`);
 
 describe('TypeInfo', () => {
+  const schema = new GraphQLSchema({});
+
+  it('can be Object.toStringified', () => {
+    const typeInfo = new TypeInfo(schema);
+
+    expect(Object.prototype.toString.call(typeInfo)).to.equal(
+      '[object TypeInfo]',
+    );
+  });
+
   it('allow all methods to be called before entering any node', () => {
-    const typeInfo = new TypeInfo(testSchema);
+    const typeInfo = new TypeInfo(schema);
 
     expect(typeInfo.getType()).to.equal(undefined);
     expect(typeInfo.getParentType()).to.equal(undefined);
@@ -25,6 +68,9 @@ describe('TypeInfo', () => {
     expect(typeInfo.getFieldDef()).to.equal(undefined);
     expect(typeInfo.getDefaultValue()).to.equal(undefined);
     expect(typeInfo.getDirective()).to.equal(null);
+    expect(typeInfo.getFragmentSignature()).to.equal(null);
+    expect(typeInfo.getFragmentSignatureByName()('')).to.equal(null);
+    expect(typeInfo.getFragmentArgument()).to.equal(null);
     expect(typeInfo.getArgument()).to.equal(null);
     expect(typeInfo.getEnumValue()).to.equal(null);
   });
@@ -105,6 +151,62 @@ describe('visitWithTypeInfo', () => {
     );
 
     expect(visitorArgs).to.deep.equal(wrappedVisitorArgs);
+  });
+
+  it('supports introspection fields', () => {
+    const typeInfo = new TypeInfo(testSchema);
+
+    const ast = parse(`
+      {
+        __typename
+        __type(name: "Cat") { __typename }
+        __schema {
+          __typename # in object type
+        }
+        humanOrAlien {
+          __typename # in union type
+        }
+        pet {
+          __typename # in interface type
+        }
+        someUnknownType {
+          __typename # unknown
+        }
+        pet {
+          __type # unknown
+          __schema # unknown
+        }
+      }
+    `);
+
+    const visitedFields: Array<[string | undefined, string | undefined]> = [];
+    visit(
+      ast,
+      visitWithTypeInfo(typeInfo, {
+        Field() {
+          const typeName = typeInfo.getParentType()?.name;
+          const fieldName = typeInfo.getFieldDef()?.name;
+          visitedFields.push([typeName, fieldName]);
+        },
+      }),
+    );
+
+    expect(visitedFields).to.deep.equal([
+      ['QueryRoot', '__typename'],
+      ['QueryRoot', '__type'],
+      ['__Type', '__typename'],
+      ['QueryRoot', '__schema'],
+      ['__Schema', '__typename'],
+      ['QueryRoot', 'humanOrAlien'],
+      ['HumanOrAlien', '__typename'],
+      ['QueryRoot', 'pet'],
+      ['Pet', '__typename'],
+      ['QueryRoot', undefined],
+      [undefined, undefined],
+      ['QueryRoot', 'pet'],
+      ['Pet', undefined],
+      ['Pet', undefined],
+    ]);
   });
 
   it('maintains type info during visit', () => {
@@ -308,11 +410,16 @@ describe('visitWithTypeInfo', () => {
   });
 
   it('supports traversals of input values', () => {
+    const schema = buildSchema(`
+      input ComplexInput {
+        stringListField: [String]
+      }
+    `);
     const ast = parseValue('{ stringListField: ["foo"] }');
-    const complexInputType = testSchema.getType('ComplexInput');
-    invariant(complexInputType != null);
+    const complexInputType = schema.getType('ComplexInput');
+    assert(complexInputType != null);
 
-    const typeInfo = new TypeInfo(testSchema, complexInputType);
+    const typeInfo = new TypeInfo(schema, complexInputType);
 
     const visited: Array<any> = [];
     visit(
@@ -355,13 +462,13 @@ describe('visitWithTypeInfo', () => {
 
   it('supports traversals of selection sets', () => {
     const humanType = testSchema.getType('Human');
-    invariant(humanType != null);
+    assert(humanType != null);
 
     const typeInfo = new TypeInfo(testSchema, humanType);
 
     const ast = parse('{ name, pets { name } }');
     const operationNode = ast.definitions[0];
-    invariant(operationNode.kind === 'OperationDefinition');
+    assert(operationNode.kind === 'OperationDefinition');
 
     const visited: Array<any> = [];
     visit(
@@ -409,6 +516,223 @@ describe('visitWithTypeInfo', () => {
       ['leave', 'SelectionSet', null, 'Pet', '[Pet]'],
       ['leave', 'Field', null, 'Human', '[Pet]'],
       ['leave', 'SelectionSet', null, 'Human', 'Human'],
+    ]);
+  });
+
+  it('supports traversals of fragment arguments', () => {
+    const typeInfo = new TypeInfo(testSchema);
+
+    const ast = parse(
+      `
+        query {
+          ...Foo(x: 4)
+          ...Bar
+        }
+        fragment Foo(
+          $x: ID!
+        ) on QueryRoot {
+          human(id: $x) { name }
+        }
+      `,
+      { experimentalFragmentArguments: true },
+    );
+
+    const visited: Array<any> = [];
+    visit(
+      ast,
+      visitWithTypeInfo(typeInfo, {
+        enter(node) {
+          const type = typeInfo.getType();
+          const inputType = typeInfo.getInputType();
+          visited.push([
+            'enter',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+            String(inputType),
+          ]);
+        },
+        leave(node) {
+          const type = typeInfo.getType();
+          const inputType = typeInfo.getInputType();
+          visited.push([
+            'leave',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+            String(inputType),
+          ]);
+        },
+      }),
+    );
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', null, 'undefined', 'undefined'],
+      ['enter', 'OperationDefinition', null, 'QueryRoot', 'undefined'],
+      ['enter', 'SelectionSet', null, 'QueryRoot', 'undefined'],
+      ['enter', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Name', 'Foo', 'QueryRoot', 'undefined'],
+      ['leave', 'Name', 'Foo', 'QueryRoot', 'undefined'],
+      ['enter', 'FragmentArgument', null, 'QueryRoot', 'ID!'],
+      ['enter', 'Name', 'x', 'QueryRoot', 'ID!'],
+      ['leave', 'Name', 'x', 'QueryRoot', 'ID!'],
+      ['enter', 'IntValue', null, 'QueryRoot', 'ID!'],
+      ['leave', 'IntValue', null, 'QueryRoot', 'ID!'],
+      ['leave', 'FragmentArgument', null, 'QueryRoot', 'ID!'],
+      ['leave', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
+      ['enter', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Name', 'Bar', 'QueryRoot', 'undefined'],
+      ['leave', 'Name', 'Bar', 'QueryRoot', 'undefined'],
+      ['leave', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
+      ['leave', 'SelectionSet', null, 'QueryRoot', 'undefined'],
+      ['leave', 'OperationDefinition', null, 'QueryRoot', 'undefined'],
+      ['enter', 'FragmentDefinition', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Name', 'Foo', 'QueryRoot', 'undefined'],
+      ['leave', 'Name', 'Foo', 'QueryRoot', 'undefined'],
+      ['enter', 'VariableDefinition', null, 'QueryRoot', 'ID!'],
+      ['enter', 'Variable', null, 'QueryRoot', 'ID!'],
+      ['enter', 'Name', 'x', 'QueryRoot', 'ID!'],
+      ['leave', 'Name', 'x', 'QueryRoot', 'ID!'],
+      ['leave', 'Variable', null, 'QueryRoot', 'ID!'],
+      ['enter', 'NonNullType', null, 'QueryRoot', 'ID!'],
+      ['enter', 'NamedType', null, 'QueryRoot', 'ID!'],
+      ['enter', 'Name', 'ID', 'QueryRoot', 'ID!'],
+      ['leave', 'Name', 'ID', 'QueryRoot', 'ID!'],
+      ['leave', 'NamedType', null, 'QueryRoot', 'ID!'],
+      ['leave', 'NonNullType', null, 'QueryRoot', 'ID!'],
+      ['leave', 'VariableDefinition', null, 'QueryRoot', 'ID!'],
+      ['enter', 'NamedType', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Name', 'QueryRoot', 'QueryRoot', 'undefined'],
+      ['leave', 'Name', 'QueryRoot', 'QueryRoot', 'undefined'],
+      ['leave', 'NamedType', null, 'QueryRoot', 'undefined'],
+      ['enter', 'SelectionSet', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Field', null, 'Human', 'undefined'],
+      ['enter', 'Name', 'human', 'Human', 'undefined'],
+      ['leave', 'Name', 'human', 'Human', 'undefined'],
+      ['enter', 'Argument', null, 'Human', 'ID'],
+      ['enter', 'Name', 'id', 'Human', 'ID'],
+      ['leave', 'Name', 'id', 'Human', 'ID'],
+      ['enter', 'Variable', null, 'Human', 'ID'],
+      ['enter', 'Name', 'x', 'Human', 'ID'],
+      ['leave', 'Name', 'x', 'Human', 'ID'],
+      ['leave', 'Variable', null, 'Human', 'ID'],
+      ['leave', 'Argument', null, 'Human', 'ID'],
+      ['enter', 'SelectionSet', null, 'Human', 'undefined'],
+      ['enter', 'Field', null, 'String', 'undefined'],
+      ['enter', 'Name', 'name', 'String', 'undefined'],
+      ['leave', 'Name', 'name', 'String', 'undefined'],
+      ['leave', 'Field', null, 'String', 'undefined'],
+      ['leave', 'SelectionSet', null, 'Human', 'undefined'],
+      ['leave', 'Field', null, 'Human', 'undefined'],
+      ['leave', 'SelectionSet', null, 'QueryRoot', 'undefined'],
+      ['leave', 'FragmentDefinition', null, 'QueryRoot', 'undefined'],
+      ['leave', 'Document', null, 'undefined', 'undefined'],
+    ]);
+  });
+
+  it('supports traversals of fragment arguments with default-value', () => {
+    const typeInfo = new TypeInfo(testSchema);
+
+    const ast = parse(
+      `
+          query {
+            ...Foo(x: null)
+          }
+          fragment Foo(
+            $x: ID = 4
+          ) on QueryRoot {
+            human(id: $x) { name }
+          }
+        `,
+      { experimentalFragmentArguments: true },
+    );
+
+    const visited: Array<any> = [];
+    visit(
+      ast,
+      visitWithTypeInfo(typeInfo, {
+        enter(node) {
+          const type = typeInfo.getType();
+          const inputType = typeInfo.getInputType();
+          visited.push([
+            'enter',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+            String(inputType),
+          ]);
+        },
+        leave(node) {
+          const type = typeInfo.getType();
+          const inputType = typeInfo.getInputType();
+          visited.push([
+            'leave',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+            String(inputType),
+          ]);
+        },
+      }),
+    );
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', null, 'undefined', 'undefined'],
+      ['enter', 'OperationDefinition', null, 'QueryRoot', 'undefined'],
+      ['enter', 'SelectionSet', null, 'QueryRoot', 'undefined'],
+      ['enter', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Name', 'Foo', 'QueryRoot', 'undefined'],
+      ['leave', 'Name', 'Foo', 'QueryRoot', 'undefined'],
+      ['enter', 'FragmentArgument', null, 'QueryRoot', 'ID'],
+      ['enter', 'Name', 'x', 'QueryRoot', 'ID'],
+      ['leave', 'Name', 'x', 'QueryRoot', 'ID'],
+      ['enter', 'NullValue', null, 'QueryRoot', 'ID'],
+      ['leave', 'NullValue', null, 'QueryRoot', 'ID'],
+      ['leave', 'FragmentArgument', null, 'QueryRoot', 'ID'],
+      ['leave', 'FragmentSpread', null, 'QueryRoot', 'undefined'],
+      ['leave', 'SelectionSet', null, 'QueryRoot', 'undefined'],
+      ['leave', 'OperationDefinition', null, 'QueryRoot', 'undefined'],
+      ['enter', 'FragmentDefinition', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Name', 'Foo', 'QueryRoot', 'undefined'],
+      ['leave', 'Name', 'Foo', 'QueryRoot', 'undefined'],
+      ['enter', 'VariableDefinition', null, 'QueryRoot', 'ID'],
+      ['enter', 'Variable', null, 'QueryRoot', 'ID'],
+      ['enter', 'Name', 'x', 'QueryRoot', 'ID'],
+      ['leave', 'Name', 'x', 'QueryRoot', 'ID'],
+      ['leave', 'Variable', null, 'QueryRoot', 'ID'],
+      ['enter', 'NamedType', null, 'QueryRoot', 'ID'],
+      ['enter', 'Name', 'ID', 'QueryRoot', 'ID'],
+      ['leave', 'Name', 'ID', 'QueryRoot', 'ID'],
+      ['leave', 'NamedType', null, 'QueryRoot', 'ID'],
+      ['enter', 'IntValue', null, 'QueryRoot', 'ID'],
+      ['leave', 'IntValue', null, 'QueryRoot', 'ID'],
+      ['leave', 'VariableDefinition', null, 'QueryRoot', 'ID'],
+      ['enter', 'NamedType', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Name', 'QueryRoot', 'QueryRoot', 'undefined'],
+      ['leave', 'Name', 'QueryRoot', 'QueryRoot', 'undefined'],
+      ['leave', 'NamedType', null, 'QueryRoot', 'undefined'],
+      ['enter', 'SelectionSet', null, 'QueryRoot', 'undefined'],
+      ['enter', 'Field', null, 'Human', 'undefined'],
+      ['enter', 'Name', 'human', 'Human', 'undefined'],
+      ['leave', 'Name', 'human', 'Human', 'undefined'],
+      ['enter', 'Argument', null, 'Human', 'ID'],
+      ['enter', 'Name', 'id', 'Human', 'ID'],
+      ['leave', 'Name', 'id', 'Human', 'ID'],
+      ['enter', 'Variable', null, 'Human', 'ID'],
+      ['enter', 'Name', 'x', 'Human', 'ID'],
+      ['leave', 'Name', 'x', 'Human', 'ID'],
+      ['leave', 'Variable', null, 'Human', 'ID'],
+      ['leave', 'Argument', null, 'Human', 'ID'],
+      ['enter', 'SelectionSet', null, 'Human', 'undefined'],
+      ['enter', 'Field', null, 'String', 'undefined'],
+      ['enter', 'Name', 'name', 'String', 'undefined'],
+      ['leave', 'Name', 'name', 'String', 'undefined'],
+      ['leave', 'Field', null, 'String', 'undefined'],
+      ['leave', 'SelectionSet', null, 'Human', 'undefined'],
+      ['leave', 'Field', null, 'Human', 'undefined'],
+      ['leave', 'SelectionSet', null, 'QueryRoot', 'undefined'],
+      ['leave', 'FragmentDefinition', null, 'QueryRoot', 'undefined'],
+      ['leave', 'Document', null, 'undefined', 'undefined'],
     ]);
   });
 });

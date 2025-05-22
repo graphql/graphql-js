@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "description": "graphql-js should be compatible with Webpack",
+  "type": "module",
+  "scripts": {
+    "test": "webpack && node test.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz",
+    "graphql-esm": "file:../graphql-esm.tgz",
+    "webpack": "5.x.x",
+    "webpack-cli": "4.x.x"
+  }
+}

@@ -1,9 +1,16 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "lib": ["es2019", "es2020.promise", "es2020.bigint", "es2020.string"],
-    "strict": true,
+    "lib": [
+      "es2019",
+      "es2020.promise",
+      "es2020.bigint",
+      "es2020.string",
+      "DOM"
+    ],
     "noEmit": true,
-    "types": []
+    "types": [],
+    "strict": true,
+    "exactOptionalPropertyTypes": true
   }
 }

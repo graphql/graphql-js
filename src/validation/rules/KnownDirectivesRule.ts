@@ -1,65 +1,70 @@
-import { inspect } from '../../jsutils/inspect';
-import { invariant } from '../../jsutils/invariant';
+import { inspect } from '../../jsutils/inspect.js';
+import { invariant } from '../../jsutils/invariant.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
-import type { ASTNode, OperationTypeNode } from '../../language/ast';
-import type { DirectiveLocationEnum } from '../../language/directiveLocation';
-import { Kind } from '../../language/kinds';
-import { DirectiveLocation } from '../../language/directiveLocation';
+import type { ASTNode } from '../../language/ast.js';
+import { OperationTypeNode } from '../../language/ast.js';
+import { DirectiveLocation } from '../../language/directiveLocation.js';
+import { Kind } from '../../language/kinds.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { specifiedDirectives } from '../../type/directives';
+import { specifiedDirectives } from '../../type/directives.js';
 
 import type {
-  ValidationContext,
   SDLValidationContext,
-} from '../ValidationContext';
+  ValidationContext,
+} from '../ValidationContext.js';
 
 /**
  * Known directives
  *
  * A GraphQL document is only valid if all `@directives` are known by the
  * schema and legally positioned.
+ *
+ * See https://spec.graphql.org/draft/#sec-Directives-Are-Defined
  */
 export function KnownDirectivesRule(
   context: ValidationContext | SDLValidationContext,
 ): ASTVisitor {
-  const locationsMap = Object.create(null);
+  const locationsMap = new Map<string, ReadonlyArray<string>>();
 
   const schema = context.getSchema();
   const definedDirectives = schema
     ? schema.getDirectives()
     : specifiedDirectives;
   for (const directive of definedDirectives) {
-    locationsMap[directive.name] = directive.locations;
+    locationsMap.set(directive.name, directive.locations);
   }
 
   const astDefinitions = context.getDocument().definitions;
   for (const def of astDefinitions) {
     if (def.kind === Kind.DIRECTIVE_DEFINITION) {
-      locationsMap[def.name.value] = def.locations.map((name) => name.value);
+      locationsMap.set(
+        def.name.value,
+        def.locations.map((name) => name.value),
+      );
     }
   }
 
   return {
     Directive(node, _key, _parent, _path, ancestors) {
       const name = node.name.value;
-      const locations = locationsMap[name];
+      const locations = locationsMap.get(name);
 
-      if (!locations) {
+      if (locations == null) {
         context.reportError(
-          new GraphQLError(`Unknown directive "@${name}".`, node),
+          new GraphQLError(`Unknown directive "@${name}".`, { nodes: node }),
         );
         return;
       }
 
       const candidateLocation = getDirectiveLocationForASTPath(ancestors);
-      if (candidateLocation && !locations.includes(candidateLocation)) {
+      if (candidateLocation != null && !locations.includes(candidateLocation)) {
         context.reportError(
           new GraphQLError(
             `Directive "@${name}" may not be used on ${candidateLocation}.`,
-            node,
+            { nodes: node },
           ),
         );
       }
@@ -69,9 +74,9 @@ export function KnownDirectivesRule(
 
 function getDirectiveLocationForASTPath(
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
-): DirectiveLocationEnum | undefined {
-  const appliedTo = ancestors[ancestors.length - 1];
-  invariant('kind' in appliedTo);
+): DirectiveLocation | undefined {
+  const appliedTo = ancestors.at(-1);
+  invariant(appliedTo != null && 'kind' in appliedTo);
 
   switch (appliedTo.kind) {
     case Kind.OPERATION_DEFINITION:
@@ -84,8 +89,13 @@ function getDirectiveLocationForASTPath(
       return DirectiveLocation.INLINE_FRAGMENT;
     case Kind.FRAGMENT_DEFINITION:
       return DirectiveLocation.FRAGMENT_DEFINITION;
-    case Kind.VARIABLE_DEFINITION:
-      return DirectiveLocation.VARIABLE_DEFINITION;
+    case Kind.VARIABLE_DEFINITION: {
+      const parentNode = ancestors[ancestors.length - 3];
+      invariant('kind' in parentNode);
+      return parentNode.kind === Kind.OPERATION_DEFINITION
+        ? DirectiveLocation.VARIABLE_DEFINITION
+        : DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION;
+    }
     case Kind.SCHEMA_DEFINITION:
     case Kind.SCHEMA_EXTENSION:
       return DirectiveLocation.SCHEMA;
@@ -112,27 +122,28 @@ function getDirectiveLocationForASTPath(
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return DirectiveLocation.INPUT_OBJECT;
     case Kind.INPUT_VALUE_DEFINITION: {
-      const parentNode = ancestors[ancestors.length - 3];
-      invariant('kind' in parentNode);
+      const parentNode = ancestors.at(-3);
+      invariant(parentNode != null && 'kind' in parentNode);
       return parentNode.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION
         ? DirectiveLocation.INPUT_FIELD_DEFINITION
         : DirectiveLocation.ARGUMENT_DEFINITION;
     }
+    // Not reachable, all possible types have been considered.
+    /* c8 ignore next 2 */
+    default:
+      invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
   }
 }
 
 function getDirectiveLocationForOperation(
   operation: OperationTypeNode,
-): DirectiveLocationEnum {
+): DirectiveLocation {
   switch (operation) {
-    case 'query':
+    case OperationTypeNode.QUERY:
       return DirectiveLocation.QUERY;
-    case 'mutation':
+    case OperationTypeNode.MUTATION:
       return DirectiveLocation.MUTATION;
-    case 'subscription':
+    case OperationTypeNode.SUBSCRIPTION:
       return DirectiveLocation.SUBSCRIPTION;
   }
-
-  // istanbul ignore next (Not reachable. All possible types have been considered)
-  invariant(false, 'Unexpected operation: ' + inspect(operation));
 }

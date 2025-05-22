@@ -1,9 +1,10 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { groupBy } from '../../jsutils/groupBy.js';
 
-import type { ASTVisitor } from '../../language/visitor';
-import type { VariableDefinitionNode } from '../../language/ast';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTVisitor } from '../../language/visitor.js';
+
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique variable names
@@ -13,22 +14,24 @@ import type { ASTValidationContext } from '../ValidationContext';
 export function UniqueVariableNamesRule(
   context: ASTValidationContext,
 ): ASTVisitor {
-  let knownVariableNames = Object.create(null);
   return {
-    OperationDefinition() {
-      knownVariableNames = Object.create(null);
-    },
-    VariableDefinition(node: VariableDefinitionNode) {
-      const variableName = node.variable.name.value;
-      if (knownVariableNames[variableName]) {
-        context.reportError(
-          new GraphQLError(
-            `There can be only one variable named "$${variableName}".`,
-            [knownVariableNames[variableName], node.variable.name],
-          ),
-        );
-      } else {
-        knownVariableNames[variableName] = node.variable.name;
+    OperationDefinition(operationNode) {
+      const variableDefinitions = operationNode.variableDefinitions ?? [];
+
+      const seenVariableDefinitions = groupBy(
+        variableDefinitions,
+        (node) => node.variable.name.value,
+      );
+
+      for (const [variableName, variableNodes] of seenVariableDefinitions) {
+        if (variableNodes.length > 1) {
+          context.reportError(
+            new GraphQLError(
+              `There can be only one variable named "$${variableName}".`,
+              { nodes: variableNodes.map((node) => node.variable.name) },
+            ),
+          );
+        }
       }
     },
   };

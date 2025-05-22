@@ -1,30 +1,30 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { ObjMap } from '../../jsutils/ObjMap';
-import { invariant } from '../../jsutils/invariant';
-import { identityFunc } from '../../jsutils/identityFunc';
+import { identityFunc } from '../../jsutils/identityFunc.js';
+import type { ObjMap } from '../../jsutils/ObjMap.js';
 
-import { parseValue } from '../../language/parser';
+import { parseValue } from '../../language/parser.js';
 
-import type { GraphQLInputType } from '../../type/definition';
+import type { GraphQLInputType } from '../../type/definition.js';
 import {
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
-  GraphQLBoolean,
-  GraphQLID,
-} from '../../type/scalars';
-import {
+  GraphQLEnumType,
+  GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLScalarType,
-  GraphQLEnumType,
-  GraphQLInputObjectType,
-} from '../../type/definition';
+} from '../../type/definition.js';
+import {
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars.js';
 
-import { valueFromAST } from '../valueFromAST';
+import { valueFromAST } from '../valueFromAST.js';
 
+/** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
 describe('valueFromAST', () => {
   function expectValueFrom(
     valueText: string,
@@ -66,7 +66,7 @@ describe('valueFromAST', () => {
     const passthroughScalar = new GraphQLScalarType({
       name: 'PassthroughScalar',
       parseLiteral(node) {
-        invariant(node.kind === 'StringValue');
+        assert(node.kind === 'StringValue');
         return node.value;
       },
       parseValue: identityFunc,
@@ -196,6 +196,14 @@ describe('valueFromAST', () => {
       requiredBool: { type: nonNullBool },
     },
   });
+  const testOneOfInputObj = new GraphQLInputObjectType({
+    name: 'TestOneOfInput',
+    fields: {
+      a: { type: GraphQLString },
+      b: { type: GraphQLString },
+    },
+    isOneOf: true,
+  });
 
   it('coerces input objects according to input coercion rules', () => {
     expectValueFrom('null', testInputObj).to.equal(null);
@@ -221,6 +229,22 @@ describe('valueFromAST', () => {
     );
     expectValueFrom('{ requiredBool: null }', testInputObj).to.equal(undefined);
     expectValueFrom('{ bool: true }', testInputObj).to.equal(undefined);
+    expectValueFrom('{ a: "abc" }', testOneOfInputObj).to.deep.equal({
+      a: 'abc',
+    });
+    expectValueFrom('{ b: "def" }', testOneOfInputObj).to.deep.equal({
+      b: 'def',
+    });
+    expectValueFrom('{ a: "abc", b: null }', testOneOfInputObj).to.deep.equal(
+      undefined,
+    );
+    expectValueFrom('{ a: null }', testOneOfInputObj).to.equal(undefined);
+    expectValueFrom('{ a: 1 }', testOneOfInputObj).to.equal(undefined);
+    expectValueFrom('{ a: "abc", b: "def" }', testOneOfInputObj).to.equal(
+      undefined,
+    );
+    expectValueFrom('{}', testOneOfInputObj).to.equal(undefined);
+    expectValueFrom('{ c: "abc" }', testOneOfInputObj).to.equal(undefined);
   });
 
   it('accepts variable values assuming already coerced', () => {

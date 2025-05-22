@@ -1,4 +1,4 @@
-import type { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe.js';
 
 /**
  * Special inspect function to produce readable string literal for error messages in tests
@@ -9,6 +9,6 @@ export function inspectStr(str: Maybe<string>): string {
   }
   return JSON.stringify(str)
     .replace(/^"|"$/g, '`')
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, '\\');
+    .replaceAll('\\"', '"')
+    .replaceAll('\\\\', '\\');
 }

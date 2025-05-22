@@ -1,75 +1,73 @@
-import type { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import type { GraphQLError } from '../error/GraphQLError';
-import { syntaxError } from '../error/syntaxError';
+import type { GraphQLError } from '../error/GraphQLError.js';
+import { syntaxError } from '../error/syntaxError.js';
 
-import type { TokenKindEnum } from './tokenKind';
 import type {
-  Token,
-  NameNode,
-  VariableNode,
-  DocumentNode,
-  DefinitionNode,
-  OperationDefinitionNode,
-  OperationTypeNode,
-  VariableDefinitionNode,
-  SelectionSetNode,
-  SelectionNode,
-  FieldNode,
   ArgumentNode,
+  BooleanValueNode,
   ConstArgumentNode,
+  ConstDirectiveNode,
+  ConstListValueNode,
+  ConstObjectFieldNode,
+  ConstObjectValueNode,
+  ConstValueNode,
+  DefinitionNode,
+  DirectiveDefinitionNode,
+  DirectiveNode,
+  DocumentNode,
+  EnumTypeDefinitionNode,
+  EnumTypeExtensionNode,
+  EnumValueDefinitionNode,
+  EnumValueNode,
+  FieldDefinitionNode,
+  FieldNode,
+  FloatValueNode,
+  FragmentArgumentNode,
+  FragmentDefinitionNode,
   FragmentSpreadNode,
   InlineFragmentNode,
-  FragmentDefinitionNode,
-  ValueNode,
-  ConstValueNode,
-  IntValueNode,
-  FloatValueNode,
-  StringValueNode,
-  BooleanValueNode,
-  NullValueNode,
-  EnumValueNode,
-  ListValueNode,
-  ConstListValueNode,
-  ObjectValueNode,
-  ConstObjectValueNode,
-  ObjectFieldNode,
-  ConstObjectFieldNode,
-  DirectiveNode,
-  ConstDirectiveNode,
-  TypeNode,
-  NamedTypeNode,
-  ListTypeNode,
-  NonNullTypeNode,
-  TypeSystemDefinitionNode,
-  SchemaDefinitionNode,
-  OperationTypeDefinitionNode,
-  ScalarTypeDefinitionNode,
-  ObjectTypeDefinitionNode,
-  FieldDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  InputObjectTypeExtensionNode,
   InputValueDefinitionNode,
   InterfaceTypeDefinitionNode,
-  UnionTypeDefinitionNode,
-  EnumTypeDefinitionNode,
-  EnumValueDefinitionNode,
-  InputObjectTypeDefinitionNode,
-  DirectiveDefinitionNode,
-  TypeSystemExtensionNode,
-  SchemaExtensionNode,
-  ScalarTypeExtensionNode,
-  ObjectTypeExtensionNode,
   InterfaceTypeExtensionNode,
-  UnionTypeExtensionNode,
-  EnumTypeExtensionNode,
-  InputObjectTypeExtensionNode,
+  IntValueNode,
+  ListTypeNode,
+  ListValueNode,
+  NamedTypeNode,
+  NameNode,
+  NonNullTypeNode,
+  NullValueNode,
+  ObjectFieldNode,
+  ObjectTypeDefinitionNode,
+  ObjectTypeExtensionNode,
+  ObjectValueNode,
+  OperationDefinitionNode,
+  OperationTypeDefinitionNode,
+  ScalarTypeDefinitionNode,
+  ScalarTypeExtensionNode,
   SchemaCoordinateNode,
-} from './ast';
-import { Kind } from './kinds';
-import { Location } from './ast';
-import { TokenKind } from './tokenKind';
-import { Source, isSource } from './source';
-import { DirectiveLocation } from './directiveLocation';
-import { Lexer, isPunctuatorTokenKind } from './lexer';
+  SchemaDefinitionNode,
+  SchemaExtensionNode,
+  SelectionNode,
+  SelectionSetNode,
+  StringValueNode,
+  Token,
+  TypeNode,
+  TypeSystemExtensionNode,
+  UnionTypeDefinitionNode,
+  UnionTypeExtensionNode,
+  ValueNode,
+  VariableDefinitionNode,
+  VariableNode,
+} from './ast.js';
+import { Location, OperationTypeNode } from './ast.js';
+import { DirectiveLocation } from './directiveLocation.js';
+import { Kind } from './kinds.js';
+import { isPunctuatorTokenKind, Lexer } from './lexer.js';
+import { isSource, Source } from './source.js';
+import { TokenKind } from './tokenKind.js';
 
 /**
  * Configuration options to control parser behavior
@@ -80,23 +78,37 @@ export interface ParseOptions {
    * in the source that they correspond to. This configuration flag
    * disables that behavior for performance or testing.
    */
-  noLocation?: boolean;
+  noLocation?: boolean | undefined;
 
   /**
-   * @deprecated will be removed in the v17.0.0
-   *
-   * If enabled, the parser will understand and parse variable definitions
-   * contained in a fragment definition. They'll be represented in the
-   * `variableDefinitions` field of the FragmentDefinitionNode.
-   *
-   * The syntax is identical to normal, query-defined variables. For example:
-   *
-   *   fragment A($var: Boolean = false) on T  {
-   *     ...
-   *   }
-   *
+   * Parser CPU and memory usage is linear to the number of tokens in a document
+   * however in extreme cases it becomes quadratic due to memory exhaustion.
+   * Parsing happens before validation so even invalid queries can burn lots of
+   * CPU time and memory.
+   * To prevent this you can set a maximum number of tokens allowed within a document.
    */
-  allowLegacyFragmentVariables?: boolean;
+  maxTokens?: number | undefined;
+
+  /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser will understand and parse fragment variable definitions
+   * and arguments on fragment spreads. Fragment variable definitions will be represented
+   * in the `variableDefinitions` field of the FragmentDefinitionNode.
+   * Fragment spread arguments will be represented in the `arguments` field of FragmentSpreadNode.
+   *
+   * For example:
+   *
+   * ```graphql
+   * {
+   *   t { ...A(var: true) }
+   * }
+   * fragment A($var: Boolean = false) on T {
+   *   ...B(x: $var)
+   * }
+   * ```
+   */
+  experimentalFragmentArguments?: boolean | undefined;
 }
 
 /**
@@ -108,7 +120,12 @@ export function parse(
   options?: ParseOptions,
 ): DocumentNode {
   const parser = new Parser(source, options);
-  return parser.parseDocument();
+  const document = parser.parseDocument();
+  Object.defineProperty(document, 'tokenCount', {
+    enumerable: false,
+    value: parser.tokenCount,
+  });
+  return document;
 }
 
 /**
@@ -118,8 +135,6 @@ export function parse(
  *
  * This is useful within tools that operate upon GraphQL Values directly and
  * in isolation of complete GraphQL documents.
- *
- * Consider providing the results to the utility function: valueFromAST().
  */
 export function parseValue(
   source: string | Source,
@@ -200,14 +215,20 @@ export function parseSchemaCoordinate(
  * @internal
  */
 export class Parser {
-  private _options: Maybe<ParseOptions>;
-  private _lexer: Lexer;
+  protected _options: ParseOptions;
+  protected _lexer: Lexer;
+  protected _tokenCounter: number;
 
-  constructor(source: string | Source, options?: ParseOptions) {
+  constructor(source: string | Source, options: ParseOptions = {}) {
     const sourceObj = isSource(source) ? source : new Source(source);
 
     this._lexer = new Lexer(sourceObj);
     this._options = options;
+    this._tokenCounter = 0;
+  }
+
+  get tokenCount(): number {
+    return this._tokenCounter;
   }
 
   /**
@@ -246,35 +267,72 @@ export class Parser {
    * ExecutableDefinition :
    *   - OperationDefinition
    *   - FragmentDefinition
+   *
+   * TypeSystemDefinition :
+   *   - SchemaDefinition
+   *   - TypeDefinition
+   *   - DirectiveDefinition
+   *
+   * TypeDefinition :
+   *   - ScalarTypeDefinition
+   *   - ObjectTypeDefinition
+   *   - InterfaceTypeDefinition
+   *   - UnionTypeDefinition
+   *   - EnumTypeDefinition
+   *   - InputObjectTypeDefinition
    */
   parseDefinition(): DefinitionNode {
-    if (this.peek(TokenKind.NAME)) {
-      switch (this._lexer.token.value) {
+    if (this.peek(TokenKind.BRACE_L)) {
+      return this.parseOperationDefinition();
+    }
+
+    // Many definitions begin with a description and require a lookahead.
+    const hasDescription = this.peekDescription();
+    const keywordToken = hasDescription
+      ? this._lexer.lookahead()
+      : this._lexer.token;
+
+    if (keywordToken.kind === TokenKind.NAME) {
+      switch (keywordToken.value) {
+        case 'schema':
+          return this.parseSchemaDefinition();
+        case 'scalar':
+          return this.parseScalarTypeDefinition();
+        case 'type':
+          return this.parseObjectTypeDefinition();
+        case 'interface':
+          return this.parseInterfaceTypeDefinition();
+        case 'union':
+          return this.parseUnionTypeDefinition();
+        case 'enum':
+          return this.parseEnumTypeDefinition();
+        case 'input':
+          return this.parseInputObjectTypeDefinition();
+        case 'directive':
+          return this.parseDirectiveDefinition();
+      }
+
+      if (hasDescription) {
+        throw syntaxError(
+          this._lexer.source,
+          this._lexer.token.start,
+          'Unexpected description, descriptions are supported only on type definitions.',
+        );
+      }
+
+      switch (keywordToken.value) {
         case 'query':
         case 'mutation':
         case 'subscription':
           return this.parseOperationDefinition();
         case 'fragment':
           return this.parseFragmentDefinition();
-        case 'schema':
-        case 'scalar':
-        case 'type':
-        case 'interface':
-        case 'union':
-        case 'enum':
-        case 'input':
-        case 'directive':
-          return this.parseTypeSystemDefinition();
         case 'extend':
           return this.parseTypeSystemExtension();
       }
-    } else if (this.peek(TokenKind.BRACE_L)) {
-      return this.parseOperationDefinition();
-    } else if (this.peekDescription()) {
-      return this.parseTypeSystemDefinition();
     }
 
-    throw this.unexpected();
+    throw this.unexpected(keywordToken);
   }
 
   // Implements the parsing rules in the Operations section.
@@ -289,10 +347,10 @@ export class Parser {
     if (this.peek(TokenKind.BRACE_L)) {
       return this.node<OperationDefinitionNode>(start, {
         kind: Kind.OPERATION_DEFINITION,
-        operation: 'query',
+        operation: OperationTypeNode.QUERY,
         name: undefined,
-        variableDefinitions: [],
-        directives: [],
+        variableDefinitions: undefined,
+        directives: undefined,
         selectionSet: this.parseSelectionSet(),
       });
     }
@@ -318,11 +376,11 @@ export class Parser {
     const operationToken = this.expectToken(TokenKind.NAME);
     switch (operationToken.value) {
       case 'query':
-        return 'query';
+        return OperationTypeNode.QUERY;
       case 'mutation':
-        return 'mutation';
+        return OperationTypeNode.MUTATION;
       case 'subscription':
-        return 'subscription';
+        return OperationTypeNode.SUBSCRIPTION;
     }
 
     throw this.unexpected(operationToken);
@@ -331,7 +389,7 @@ export class Parser {
   /**
    * VariableDefinitions : ( VariableDefinition+ )
    */
-  parseVariableDefinitions(): Array<VariableDefinitionNode> {
+  parseVariableDefinitions(): Array<VariableDefinitionNode> | undefined {
     return this.optionalMany(
       TokenKind.PAREN_L,
       this.parseVariableDefinition,
@@ -367,7 +425,9 @@ export class Parser {
   }
 
   /**
+   * ```
    * SelectionSet : { Selection+ }
+   * ```
    */
   parseSelectionSet(): SelectionSetNode {
     return this.node<SelectionSetNode>(this._lexer.token, {
@@ -425,10 +485,16 @@ export class Parser {
   /**
    * Arguments[Const] : ( Argument[?Const]+ )
    */
-  parseArguments(isConst: true): Array<ConstArgumentNode>;
-  parseArguments(isConst: boolean): Array<ArgumentNode>;
-  parseArguments(isConst: boolean): Array<ArgumentNode> {
+  parseArguments(isConst: true): Array<ConstArgumentNode> | undefined;
+  parseArguments(isConst: boolean): Array<ArgumentNode> | undefined;
+  parseArguments(isConst: boolean): Array<ArgumentNode> | undefined {
     const item = isConst ? this.parseConstArgument : this.parseArgument;
+    return this.optionalMany(TokenKind.PAREN_L, item, TokenKind.PAREN_R);
+  }
+
+  /* experimental */
+  parseFragmentArguments(): Array<FragmentArgumentNode> | undefined {
+    const item = this.parseFragmentArgument;
     return this.optionalMany(TokenKind.PAREN_L, item, TokenKind.PAREN_R);
   }
 
@@ -453,12 +519,25 @@ export class Parser {
     return this.parseArgument(true);
   }
 
+  /* experimental */
+  parseFragmentArgument(): FragmentArgumentNode {
+    const start = this._lexer.token;
+    const name = this.parseName();
+
+    this.expectToken(TokenKind.COLON);
+    return this.node<FragmentArgumentNode>(start, {
+      kind: Kind.FRAGMENT_ARGUMENT,
+      name,
+      value: this.parseValueLiteral(false),
+    });
+  }
+
   // Implements the parsing rules in the Fragments section.
 
   /**
    * Corresponds to both FragmentSpread and InlineFragment in the spec.
    *
-   * FragmentSpread : ... FragmentName Directives?
+   * FragmentSpread : ... FragmentName Arguments? Directives?
    *
    * InlineFragment : ... TypeCondition? Directives? SelectionSet
    */
@@ -468,9 +547,21 @@ export class Parser {
 
     const hasTypeCondition = this.expectOptionalKeyword('on');
     if (!hasTypeCondition && this.peek(TokenKind.NAME)) {
+      const name = this.parseFragmentName();
+      if (
+        this.peek(TokenKind.PAREN_L) &&
+        this._options.experimentalFragmentArguments
+      ) {
+        return this.node<FragmentSpreadNode>(start, {
+          kind: Kind.FRAGMENT_SPREAD,
+          name,
+          arguments: this.parseFragmentArguments(),
+          directives: this.parseDirectives(false),
+        });
+      }
       return this.node<FragmentSpreadNode>(start, {
         kind: Kind.FRAGMENT_SPREAD,
-        name: this.parseFragmentName(),
+        name,
         directives: this.parseDirectives(false),
       });
     }
@@ -484,17 +575,14 @@ export class Parser {
 
   /**
    * FragmentDefinition :
-   *   - fragment FragmentName on TypeCondition Directives? SelectionSet
+   *   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
    *
    * TypeCondition : NamedType
    */
   parseFragmentDefinition(): FragmentDefinitionNode {
     const start = this._lexer.token;
     this.expectKeyword('fragment');
-    // Legacy support for defining variables within fragments changes
-    // the grammar of FragmentDefinition:
-    //   - fragment FragmentName VariableDefinitions? on TypeCondition Directives? SelectionSet
-    if (this._options?.allowLegacyFragmentVariables === true) {
+    if (this._options.experimentalFragmentArguments === true) {
       return this.node<FragmentDefinitionNode>(start, {
         kind: Kind.FRAGMENT_DEFINITION,
         name: this.parseFragmentName(),
@@ -553,13 +641,13 @@ export class Parser {
       case TokenKind.BRACE_L:
         return this.parseObject(isConst);
       case TokenKind.INT:
-        this._lexer.advance();
+        this.advanceLexer();
         return this.node<IntValueNode>(token, {
           kind: Kind.INT,
           value: token.value,
         });
       case TokenKind.FLOAT:
-        this._lexer.advance();
+        this.advanceLexer();
         return this.node<FloatValueNode>(token, {
           kind: Kind.FLOAT,
           value: token.value,
@@ -568,7 +656,7 @@ export class Parser {
       case TokenKind.BLOCK_STRING:
         return this.parseStringLiteral();
       case TokenKind.NAME:
-        this._lexer.advance();
+        this.advanceLexer();
         switch (token.value) {
           case 'true':
             return this.node<BooleanValueNode>(token, {
@@ -603,8 +691,9 @@ export class Parser {
           }
         }
         return this.parseVariable();
+      default:
+        throw this.unexpected();
     }
-    throw this.unexpected();
   }
 
   parseConstValueLiteral(): ConstValueNode {
@@ -613,7 +702,7 @@ export class Parser {
 
   parseStringLiteral(): StringValueNode {
     const token = this._lexer.token;
-    this._lexer.advance();
+    this.advanceLexer();
     return this.node<StringValueNode>(token, {
       kind: Kind.STRING,
       value: token.value,
@@ -637,9 +726,11 @@ export class Parser {
   }
 
   /**
+   * ```
    * ObjectValue[Const] :
    *   - { }
    *   - { ObjectField[?Const]+ }
+   * ```
    */
   parseObject(isConst: true): ConstObjectValueNode;
   parseObject(isConst: boolean): ObjectValueNode;
@@ -672,22 +763,27 @@ export class Parser {
   /**
    * Directives[Const] : Directive[?Const]+
    */
-  parseDirectives(isConst: true): Array<ConstDirectiveNode>;
-  parseDirectives(isConst: boolean): Array<DirectiveNode>;
-  parseDirectives(isConst: boolean): Array<DirectiveNode> {
+  parseDirectives(isConst: true): Array<ConstDirectiveNode> | undefined;
+  parseDirectives(isConst: boolean): Array<DirectiveNode> | undefined;
+  parseDirectives(isConst: boolean): Array<DirectiveNode> | undefined {
     const directives = [];
     while (this.peek(TokenKind.AT)) {
       directives.push(this.parseDirective(isConst));
     }
-    return directives;
+    if (directives.length) {
+      return directives;
+    }
+    return undefined;
   }
 
-  parseConstDirectives(): Array<ConstDirectiveNode> {
+  parseConstDirectives(): Array<ConstDirectiveNode> | undefined {
     return this.parseDirectives(true);
   }
 
   /**
+   * ```
    * Directive[Const] : @ Name Arguments[?Const]?
+   * ```
    */
   parseDirective(isConst: true): ConstDirectiveNode;
   parseDirective(isConst: boolean): DirectiveNode;
@@ -745,50 +841,6 @@ export class Parser {
 
   // Implements the parsing rules in the Type Definition section.
 
-  /**
-   * TypeSystemDefinition :
-   *   - SchemaDefinition
-   *   - TypeDefinition
-   *   - DirectiveDefinition
-   *
-   * TypeDefinition :
-   *   - ScalarTypeDefinition
-   *   - ObjectTypeDefinition
-   *   - InterfaceTypeDefinition
-   *   - UnionTypeDefinition
-   *   - EnumTypeDefinition
-   *   - InputObjectTypeDefinition
-   */
-  parseTypeSystemDefinition(): TypeSystemDefinitionNode {
-    // Many definitions begin with a description and require a lookahead.
-    const keywordToken = this.peekDescription()
-      ? this._lexer.lookahead()
-      : this._lexer.token;
-
-    if (keywordToken.kind === TokenKind.NAME) {
-      switch (keywordToken.value) {
-        case 'schema':
-          return this.parseSchemaDefinition();
-        case 'scalar':
-          return this.parseScalarTypeDefinition();
-        case 'type':
-          return this.parseObjectTypeDefinition();
-        case 'interface':
-          return this.parseInterfaceTypeDefinition();
-        case 'union':
-          return this.parseUnionTypeDefinition();
-        case 'enum':
-          return this.parseEnumTypeDefinition();
-        case 'input':
-          return this.parseInputObjectTypeDefinition();
-        case 'directive':
-          return this.parseDirectiveDefinition();
-      }
-    }
-
-    throw this.unexpected(keywordToken);
-  }
-
   peekDescription(): boolean {
     return this.peek(TokenKind.STRING) || this.peek(TokenKind.BLOCK_STRING);
   }
@@ -803,7 +855,9 @@ export class Parser {
   }
 
   /**
+   * ```
    * SchemaDefinition : Description? schema Directives[Const]? { OperationTypeDefinition+ }
+   * ```
    */
   parseSchemaDefinition(): SchemaDefinitionNode {
     const start = this._lexer.token;
@@ -883,16 +937,18 @@ export class Parser {
    *   - implements `&`? NamedType
    *   - ImplementsInterfaces & NamedType
    */
-  parseImplementsInterfaces(): Array<NamedTypeNode> {
+  parseImplementsInterfaces(): Array<NamedTypeNode> | undefined {
     return this.expectOptionalKeyword('implements')
       ? this.delimitedMany(TokenKind.AMP, this.parseNamedType)
-      : [];
+      : undefined;
   }
 
   /**
+   * ```
    * FieldsDefinition : { FieldDefinition+ }
+   * ```
    */
-  parseFieldsDefinition(): Array<FieldDefinitionNode> {
+  parseFieldsDefinition(): Array<FieldDefinitionNode> | undefined {
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseFieldDefinition,
@@ -925,7 +981,7 @@ export class Parser {
   /**
    * ArgumentsDefinition : ( InputValueDefinition+ )
    */
-  parseArgumentDefs(): Array<InputValueDefinitionNode> {
+  parseArgumentDefs(): Array<InputValueDefinitionNode> | undefined {
     return this.optionalMany(
       TokenKind.PAREN_L,
       this.parseInputValueDef,
@@ -1005,10 +1061,10 @@ export class Parser {
    *   - = `|`? NamedType
    *   - UnionMemberTypes | NamedType
    */
-  parseUnionMemberTypes(): Array<NamedTypeNode> {
+  parseUnionMemberTypes(): Array<NamedTypeNode> | undefined {
     return this.expectOptionalToken(TokenKind.EQUALS)
       ? this.delimitedMany(TokenKind.PIPE, this.parseNamedType)
-      : [];
+      : undefined;
   }
 
   /**
@@ -1032,9 +1088,11 @@ export class Parser {
   }
 
   /**
+   * ```
    * EnumValuesDefinition : { EnumValueDefinition+ }
+   * ```
    */
-  parseEnumValuesDefinition(): Array<EnumValueDefinitionNode> {
+  parseEnumValuesDefinition(): Array<EnumValueDefinitionNode> | undefined {
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseEnumValueDefinition,
@@ -1044,13 +1102,11 @@ export class Parser {
 
   /**
    * EnumValueDefinition : Description? EnumValue Directives[Const]?
-   *
-   * EnumValue : Name
    */
   parseEnumValueDefinition(): EnumValueDefinitionNode {
     const start = this._lexer.token;
     const description = this.parseDescription();
-    const name = this.parseName();
+    const name = this.parseEnumValueName();
     const directives = this.parseConstDirectives();
     return this.node<EnumValueDefinitionNode>(start, {
       kind: Kind.ENUM_VALUE_DEFINITION,
@@ -1058,6 +1114,26 @@ export class Parser {
       name,
       directives,
     });
+  }
+
+  /**
+   * EnumValue : Name but not `true`, `false` or `null`
+   */
+  parseEnumValueName(): NameNode {
+    if (
+      this._lexer.token.value === 'true' ||
+      this._lexer.token.value === 'false' ||
+      this._lexer.token.value === 'null'
+    ) {
+      throw syntaxError(
+        this._lexer.source,
+        this._lexer.token.start,
+        `${getTokenDesc(
+          this._lexer.token,
+        )} is reserved and cannot be used for an enum value.`,
+      );
+    }
+    return this.parseName();
   }
 
   /**
@@ -1081,9 +1157,11 @@ export class Parser {
   }
 
   /**
+   * ```
    * InputFieldsDefinition : { InputValueDefinition+ }
+   * ```
    */
-  parseInputFieldsDefinition(): Array<InputValueDefinitionNode> {
+  parseInputFieldsDefinition(): Array<InputValueDefinitionNode> | undefined {
     return this.optionalMany(
       TokenKind.BRACE_L,
       this.parseInputValueDef,
@@ -1130,9 +1208,11 @@ export class Parser {
   }
 
   /**
+   * ```
    * SchemaExtension :
    *  - extend schema Directives[Const]? { OperationTypeDefinition+ }
    *  - extend schema Directives[Const]
+   * ```
    */
   parseSchemaExtension(): SchemaExtensionNode {
     const start = this._lexer.token;
@@ -1144,7 +1224,7 @@ export class Parser {
       this.parseOperationTypeDefinition,
       TokenKind.BRACE_R,
     );
-    if (directives.length === 0 && operationTypes.length === 0) {
+    if (directives === undefined && operationTypes === undefined) {
       throw this.unexpected();
     }
     return this.node<SchemaExtensionNode>(start, {
@@ -1164,7 +1244,7 @@ export class Parser {
     this.expectKeyword('scalar');
     const name = this.parseName();
     const directives = this.parseConstDirectives();
-    if (directives.length === 0) {
+    if (directives === undefined) {
       throw this.unexpected();
     }
     return this.node<ScalarTypeExtensionNode>(start, {
@@ -1189,9 +1269,9 @@ export class Parser {
     const directives = this.parseConstDirectives();
     const fields = this.parseFieldsDefinition();
     if (
-      interfaces.length === 0 &&
-      directives.length === 0 &&
-      fields.length === 0
+      interfaces === undefined &&
+      directives === undefined &&
+      fields === undefined
     ) {
       throw this.unexpected();
     }
@@ -1219,9 +1299,9 @@ export class Parser {
     const directives = this.parseConstDirectives();
     const fields = this.parseFieldsDefinition();
     if (
-      interfaces.length === 0 &&
-      directives.length === 0 &&
-      fields.length === 0
+      interfaces === undefined &&
+      directives === undefined &&
+      fields === undefined
     ) {
       throw this.unexpected();
     }
@@ -1246,7 +1326,7 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseConstDirectives();
     const types = this.parseUnionMemberTypes();
-    if (directives.length === 0 && types.length === 0) {
+    if (directives === undefined && types === undefined) {
       throw this.unexpected();
     }
     return this.node<UnionTypeExtensionNode>(start, {
@@ -1269,7 +1349,7 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseConstDirectives();
     const values = this.parseEnumValuesDefinition();
-    if (directives.length === 0 && values.length === 0) {
+    if (directives === undefined && values === undefined) {
       throw this.unexpected();
     }
     return this.node<EnumTypeExtensionNode>(start, {
@@ -1292,7 +1372,7 @@ export class Parser {
     const name = this.parseName();
     const directives = this.parseConstDirectives();
     const fields = this.parseInputFieldsDefinition();
-    if (directives.length === 0 && fields.length === 0) {
+    if (directives === undefined && fields === undefined) {
       throw this.unexpected();
     }
     return this.node<InputObjectTypeExtensionNode>(start, {
@@ -1304,8 +1384,10 @@ export class Parser {
   }
 
   /**
+   * ```
    * DirectiveDefinition :
    *   - Description? directive @ Name ArgumentsDefinition? `repeatable`? on DirectiveLocations
+   * ```
    */
   parseDirectiveDefinition(): DirectiveDefinitionNode {
     const start = this._lexer.token;
@@ -1366,7 +1448,7 @@ export class Parser {
   parseDirectiveLocation(): NameNode {
     const start = this._lexer.token;
     const name = this.parseName();
-    if (Object.prototype.hasOwnProperty.call(DirectiveLocation, name.value)) {
+    if (Object.hasOwn(DirectiveLocation, name.value)) {
       return name;
     }
     throw this.unexpected(start);
@@ -1415,8 +1497,11 @@ export class Parser {
    * location object, used to identify the place in the source that created a
    * given parsed object.
    */
-  node<T extends { loc?: Location }>(startToken: Token, node: T): T {
-    if (this._options?.noLocation !== true) {
+  node<T extends { loc?: Location | undefined }>(
+    startToken: Token,
+    node: T,
+  ): T {
+    if (this._options.noLocation !== true) {
       node.loc = new Location(
         startToken,
         this._lexer.lastToken,
@@ -1429,7 +1514,7 @@ export class Parser {
   /**
    * Determines if the next token is of a given kind
    */
-  peek(kind: TokenKindEnum): boolean {
+  peek(kind: TokenKind): boolean {
     return this._lexer.token.kind === kind;
   }
 
@@ -1437,10 +1522,10 @@ export class Parser {
    * If the next token is of the given kind, return that token after advancing the lexer.
    * Otherwise, do not change the parser state and throw an error.
    */
-  expectToken(kind: TokenKindEnum): Token {
+  expectToken(kind: TokenKind): Token {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advanceLexer();
       return token;
     }
 
@@ -1455,10 +1540,10 @@ export class Parser {
    * If the next token is of the given kind, return "true" after advancing the lexer.
    * Otherwise, do not change the parser state and return "false".
    */
-  expectOptionalToken(kind: TokenKindEnum): boolean {
+  expectOptionalToken(kind: TokenKind): boolean {
     const token = this._lexer.token;
     if (token.kind === kind) {
-      this._lexer.advance();
+      this.advanceLexer();
       return true;
     }
     return false;
@@ -1471,7 +1556,7 @@ export class Parser {
   expectKeyword(value: string): void {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
     } else {
       throw syntaxError(
         this._lexer.source,
@@ -1488,7 +1573,7 @@ export class Parser {
   expectOptionalKeyword(value: string): boolean {
     const token = this._lexer.token;
     if (token.kind === TokenKind.NAME && token.value === value) {
-      this._lexer.advance();
+      this.advanceLexer();
       return true;
     }
     return false;
@@ -1512,9 +1597,9 @@ export class Parser {
    * Advances the parser to the next lex token after the closing token.
    */
   any<T>(
-    openKind: TokenKindEnum,
+    openKind: TokenKind,
     parseFn: () => T,
-    closeKind: TokenKindEnum,
+    closeKind: TokenKind,
   ): Array<T> {
     this.expectToken(openKind);
     const nodes = [];
@@ -1531,10 +1616,10 @@ export class Parser {
    * Advances the parser to the next lex token after the closing token.
    */
   optionalMany<T>(
-    openKind: TokenKindEnum,
+    openKind: TokenKind,
     parseFn: () => T,
-    closeKind: TokenKindEnum,
-  ): Array<T> {
+    closeKind: TokenKind,
+  ): Array<T> | undefined {
     if (this.expectOptionalToken(openKind)) {
       const nodes = [];
       do {
@@ -1542,7 +1627,7 @@ export class Parser {
       } while (!this.expectOptionalToken(closeKind));
       return nodes;
     }
-    return [];
+    return undefined;
   }
 
   /**
@@ -1551,9 +1636,9 @@ export class Parser {
    * Advances the parser to the next lex token after the closing token.
    */
   many<T>(
-    openKind: TokenKindEnum,
+    openKind: TokenKind,
     parseFn: () => T,
-    closeKind: TokenKindEnum,
+    closeKind: TokenKind,
   ): Array<T> {
     this.expectToken(openKind);
     const nodes = [];
@@ -1568,7 +1653,7 @@ export class Parser {
    * This list may begin with a lex token of delimiterKind followed by items separated by lex tokens of tokenKind.
    * Advances the parser to the next lex token after last item in the list.
    */
-  delimitedMany<T>(delimiterKind: TokenKindEnum, parseFn: () => T): Array<T> {
+  delimitedMany<T>(delimiterKind: TokenKind, parseFn: () => T): Array<T> {
     this.expectOptionalToken(delimiterKind);
 
     const nodes = [];
@@ -1576,6 +1661,22 @@ export class Parser {
       nodes.push(parseFn.call(this));
     } while (this.expectOptionalToken(delimiterKind));
     return nodes;
+  }
+
+  advanceLexer(): void {
+    const { maxTokens } = this._options;
+    const token = this._lexer.advance();
+
+    if (token.kind !== TokenKind.EOF) {
+      ++this._tokenCounter;
+      if (maxTokens !== undefined && this._tokenCounter > maxTokens) {
+        throw syntaxError(
+          this._lexer.source,
+          token.start,
+          `Document contains more than ${maxTokens} tokens. Parsing aborted.`,
+        );
+      }
+    }
   }
 }
 
@@ -1590,6 +1691,6 @@ function getTokenDesc(token: Token): string {
 /**
  * A helper function to describe a token kind as a string for debugging.
  */
-function getTokenKindDesc(kind: TokenKindEnum): string {
+function getTokenKindDesc(kind: TokenKind): string {
   return isPunctuatorTokenKind(kind) ? `"${kind}"` : kind;
 }

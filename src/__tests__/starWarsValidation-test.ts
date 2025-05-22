@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../language/parser';
-import { Source } from '../language/source';
+import { parse } from '../language/parser.js';
+import { Source } from '../language/source.js';
 
-import { validate } from '../validation/validate';
+import { validate } from '../validation/validate.js';
 
-import { StarWarsSchema } from './starWarsSchema';
+import { StarWarsSchema } from './starWarsSchema.js';
 
 /**
  * Helper function to test a query and the expected response.

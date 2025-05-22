@@ -1,21 +1,21 @@
-import type { PromiseOrValue } from './jsutils/PromiseOrValue';
-import { isPromise } from './jsutils/isPromise';
-import type { Maybe } from './jsutils/Maybe';
+import { isPromise } from './jsutils/isPromise.js';
+import type { Maybe } from './jsutils/Maybe.js';
+import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
 
-import type { Source } from './language/source';
-import { parse } from './language/parser';
-
-import { validate } from './validation/validate';
+import { parse } from './language/parser.js';
+import type { Source } from './language/source.js';
 
 import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
-} from './type/definition';
-import type { GraphQLSchema } from './type/schema';
-import { validateSchema } from './type/validate';
+} from './type/definition.js';
+import type { GraphQLSchema } from './type/schema.js';
+import { validateSchema } from './type/validate.js';
 
-import type { ExecutionResult } from './execution/execute';
-import { execute } from './execution/execute';
+import { validate } from './validation/validate.js';
+
+import { execute } from './execution/execute.js';
+import type { ExecutionResult } from './execution/types.js';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -25,6 +25,8 @@ import { execute } from './execution/execute';
  * More sophisticated GraphQL servers, such as those which persist queries,
  * may wish to separate the validation and execution phases to a static time
  * tooling step, and a server runtime step.
+ *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
  *
  * Accepts either an object with named arguments, or individual arguments:
  *
@@ -59,12 +61,14 @@ import { execute } from './execution/execute';
 export interface GraphQLArgs {
   schema: GraphQLSchema;
   source: string | Source;
+  hideSuggestions?: Maybe<boolean>;
   rootValue?: unknown;
   contextValue?: unknown;
   variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  abortSignal?: Maybe<AbortSignal>;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -99,6 +103,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    hideSuggestions,
   } = args;
 
   // Validate Schema
@@ -116,7 +121,9 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   }
 
   // Validate
-  const validationErrors = validate(schema, document);
+  const validationErrors = validate(schema, document, undefined, {
+    hideSuggestions,
+  });
   if (validationErrors.length > 0) {
     return { errors: validationErrors };
   }
@@ -131,5 +138,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     operationName,
     fieldResolver,
     typeResolver,
+    hideSuggestions,
   });
 }

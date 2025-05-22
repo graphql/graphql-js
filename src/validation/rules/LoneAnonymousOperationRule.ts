@@ -1,15 +1,17 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
-import { Kind } from '../../language/kinds';
+import { Kind } from '../../language/kinds.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * Lone anonymous operation
  *
  * A GraphQL document is only valid if when it contains an anonymous operation
  * (the query short-hand) that it contains only that one operation definition.
+ *
+ * See https://spec.graphql.org/draft/#sec-Lone-Anonymous-Operation
  */
 export function LoneAnonymousOperationRule(
   context: ASTValidationContext,
@@ -26,7 +28,7 @@ export function LoneAnonymousOperationRule(
         context.reportError(
           new GraphQLError(
             'This anonymous operation must be the only defined operation.',
-            node,
+            { nodes: node },
           ),
         );
       }

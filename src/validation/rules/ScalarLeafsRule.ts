@@ -1,13 +1,13 @@
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { FieldNode } from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { FieldNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { getNamedType, isLeafType } from '../../type/definition';
+import { getNamedType, isLeafType } from '../../type/definition.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Scalar leafs
@@ -28,7 +28,7 @@ export function ScalarLeafsRule(context: ValidationContext): ASTVisitor {
             context.reportError(
               new GraphQLError(
                 `Field "${fieldName}" must not have a selection since type "${typeStr}" has no subfields.`,
-                selectionSet,
+                { nodes: selectionSet },
               ),
             );
           }
@@ -38,7 +38,16 @@ export function ScalarLeafsRule(context: ValidationContext): ASTVisitor {
           context.reportError(
             new GraphQLError(
               `Field "${fieldName}" of type "${typeStr}" must have a selection of subfields. Did you mean "${fieldName} { ... }"?`,
-              node,
+              { nodes: node },
+            ),
+          );
+        } else if (selectionSet.selections.length === 0) {
+          const fieldName = node.name.value;
+          const typeStr = inspect(type);
+          context.reportError(
+            new GraphQLError(
+              `Field "${fieldName}" of type "${typeStr}" must have at least one field selected.`,
+              { nodes: node },
             ),
           );
         }

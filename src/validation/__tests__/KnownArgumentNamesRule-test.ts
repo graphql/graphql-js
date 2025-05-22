@@ -1,22 +1,29 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import {
-  KnownArgumentNamesRule,
   KnownArgumentNamesOnDirectivesRule,
-} from '../rules/KnownArgumentNamesRule';
+  KnownArgumentNamesRule,
+} from '../rules/KnownArgumentNamesRule.js';
 
-import { expectValidationErrors, expectSDLValidationErrors } from './harness';
+import {
+  expectSDLValidationErrors,
+  expectValidationErrors,
+} from './harness.js';
 
-function expectErrors(queryStr: string) {
-  return expectValidationErrors(KnownArgumentNamesRule, queryStr);
+function expectErrors(queryStr: string, hideSuggestions = false) {
+  return expectValidationErrors(
+    KnownArgumentNamesRule,
+    queryStr,
+    hideSuggestions,
+  );
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
@@ -28,7 +35,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string) {
-  expectSDLErrors(sdlStr).to.deep.equal([]);
+  expectSDLErrors(sdlStr).toDeepEqual([]);
 }
 
 describe('Validate: Known argument names', () => {
@@ -97,12 +104,25 @@ describe('Validate: Known argument names', () => {
     `);
   });
 
+  it('fragment args are known', () => {
+    expectValid(`
+      {
+        dog {
+          ...withArg(dogCommand: SIT)
+        }
+      }
+      fragment withArg($dogCommand: DogCommand) on Dog {
+        doesKnowCommand(dogCommand: $dogCommand)
+      }
+    `);
+  });
+
   it('field args are invalid', () => {
     expectErrors(`
       {
         dog @skip(unless: true)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown argument "unless" on directive "@skip".',
         locations: [{ line: 3, column: 19 }],
@@ -123,7 +143,7 @@ describe('Validate: Known argument names', () => {
       {
         dog @onField(if: true)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown argument "if" on directive "@onField".',
         locations: [{ line: 3, column: 22 }],
@@ -136,11 +156,85 @@ describe('Validate: Known argument names', () => {
       {
         dog @skip(iff: true)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Unknown argument "iff" on directive "@skip". Did you mean "if"?',
         locations: [{ line: 3, column: 19 }],
+      },
+    ]);
+  });
+
+  it('misspelled directive args are reported (no suggestions)', () => {
+    expectErrors(
+      `
+      {
+        dog @skip(iff: true)
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message: 'Unknown argument "iff" on directive "@skip".',
+        locations: [{ line: 3, column: 19 }],
+      },
+    ]);
+  });
+
+  it('arg passed to fragment without arg is reported', () => {
+    expectErrors(`
+      {
+        dog {
+          ...withoutArg(unknown: true)
+        }
+      }
+      fragment withoutArg on Dog {
+        doesKnowCommand
+      }
+    `).toDeepEqual([
+      {
+        message: 'Unknown argument "unknown" on fragment "withoutArg".',
+        locations: [{ line: 4, column: 25 }],
+      },
+    ]);
+  });
+
+  it('misspelled fragment args are reported', () => {
+    expectErrors(`
+      {
+        dog {
+          ...withArg(command: SIT)
+        }
+      }
+      fragment withArg($dogCommand: DogCommand) on Dog {
+        doesKnowCommand(dogCommand: $dogCommand)
+      }
+    `).toDeepEqual([
+      {
+        message:
+          'Unknown argument "command" on fragment "withArg". Did you mean "dogCommand"?',
+        locations: [{ line: 4, column: 22 }],
+      },
+    ]);
+  });
+
+  it('misspelled fragment args are reported (no suggestions)', () => {
+    expectErrors(
+      `
+      {
+        dog {
+          ...withArg(command: SIT)
+        }
+      }
+      fragment withArg($dogCommand: DogCommand) on Dog {
+        doesKnowCommand(dogCommand: $dogCommand)
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message: 'Unknown argument "command" on fragment "withArg".',
+        locations: [{ line: 4, column: 22 }],
       },
     ]);
   });
@@ -150,7 +244,7 @@ describe('Validate: Known argument names', () => {
       fragment invalidArgName on Dog {
         doesKnowCommand(unknown: true)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown argument "unknown" on field "Dog.doesKnowCommand".',
         locations: [{ line: 3, column: 25 }],
@@ -163,10 +257,27 @@ describe('Validate: Known argument names', () => {
       fragment invalidArgName on Dog {
         doesKnowCommand(DogCommand: true)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Unknown argument "DogCommand" on field "Dog.doesKnowCommand". Did you mean "dogCommand"?',
+        locations: [{ line: 3, column: 25 }],
+      },
+    ]);
+  });
+
+  it('misspelled arg name is reported (no suggestions)', () => {
+    expectErrors(
+      `
+      fragment invalidArgName on Dog {
+        doesKnowCommand(DogCommand: true)
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message:
+          'Unknown argument "DogCommand" on field "Dog.doesKnowCommand".',
         locations: [{ line: 3, column: 25 }],
       },
     ]);
@@ -177,7 +288,7 @@ describe('Validate: Known argument names', () => {
       fragment oneGoodArgOneInvalidArg on Dog {
         doesKnowCommand(whoKnows: 1, dogCommand: SIT, unknown: true)
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown argument "whoKnows" on field "Dog.doesKnowCommand".',
         locations: [{ line: 3, column: 25 }],
@@ -203,7 +314,7 @@ describe('Validate: Known argument names', () => {
           }
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown argument "unknown" on field "Dog.doesKnowCommand".',
         locations: [{ line: 4, column: 27 }],
@@ -233,7 +344,7 @@ describe('Validate: Known argument names', () => {
         }
 
         directive @test(arg: String) on FIELD_DEFINITION
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Unknown argument "unknown" on directive "@test".',
           locations: [{ line: 3, column: 29 }],
@@ -248,7 +359,7 @@ describe('Validate: Known argument names', () => {
         }
 
         directive @test(arg: String) on FIELD_DEFINITION
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
             'Unknown argument "agr" on directive "@test". Did you mean "arg"?',
@@ -262,7 +373,7 @@ describe('Validate: Known argument names', () => {
         type Query {
           foo: String @deprecated(unknown: "")
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Unknown argument "unknown" on directive "@deprecated".',
           locations: [{ line: 3, column: 35 }],
@@ -276,7 +387,7 @@ describe('Validate: Known argument names', () => {
           foo: String @deprecated(reason: "")
         }
         directive @deprecated(arg: String) on FIELD
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Unknown argument "reason" on directive "@deprecated".',
           locations: [{ line: 3, column: 35 }],
@@ -297,7 +408,7 @@ describe('Validate: Known argument names', () => {
           extend type Query  @test(unknown: "")
         `,
         schema,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message: 'Unknown argument "unknown" on directive "@test".',
           locations: [{ line: 4, column: 36 }],
@@ -318,7 +429,7 @@ describe('Validate: Known argument names', () => {
           extend type Query @test(unknown: "")
         `,
         schema,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message: 'Unknown argument "unknown" on directive "@test".',
           locations: [{ line: 2, column: 35 }],

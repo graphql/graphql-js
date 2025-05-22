@@ -5,16 +5,16 @@
 export interface Character {
   id: string;
   name: string;
-  friends: Array<string>;
-  appearsIn: Array<number>;
+  friends: ReadonlyArray<string>;
+  appearsIn: ReadonlyArray<number>;
 }
 
 export interface Human {
   type: 'Human';
   id: string;
   name: string;
-  friends: Array<string>;
-  appearsIn: Array<number>;
+  friends: ReadonlyArray<string>;
+  appearsIn: ReadonlyArray<number>;
   homePlanet?: string;
 }
 
@@ -22,8 +22,8 @@ export interface Droid {
   type: 'Droid';
   id: string;
   name: string;
-  friends: Array<string>;
-  appearsIn: Array<number>;
+  friends: ReadonlyArray<string>;
+  appearsIn: ReadonlyArray<number>;
   primaryFunction: string;
 }
 

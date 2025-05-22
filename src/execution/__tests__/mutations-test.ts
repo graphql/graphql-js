@@ -1,15 +1,20 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { GraphQLInt } from '../../type/scalars';
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLInt } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { execute, executeSync } from '../execute';
+import {
+  execute,
+  executeSync,
+  experimentalExecuteIncrementally,
+} from '../execute.js';
 
 class NumberHolder {
   theNumber: number;
@@ -49,6 +54,13 @@ class Root {
 const numberHolderType = new GraphQLObjectType({
   fields: {
     theNumber: { type: GraphQLInt },
+    promiseToGetTheNumber: {
+      type: GraphQLInt,
+      resolve: async (root) => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        return root.theNumber;
+      },
+    },
   },
   name: 'NumberHolder',
 });
@@ -167,7 +179,7 @@ describe('Execute: Handles mutation execution ordering', () => {
     const rootValue = new Root(6);
     const result = await execute({ schema, document, rootValue });
 
-    expect(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       data: {
         first: { theNumber: 1 },
         second: { theNumber: 2 },
@@ -189,5 +201,135 @@ describe('Execute: Handles mutation execution ordering', () => {
         },
       ],
     });
+  });
+  it('Mutation fields with @defer do not block next mutation', async () => {
+    const document = parse(`
+      mutation M {
+        first: promiseToChangeTheNumber(newNumber: 1) {
+          ...DeferFragment @defer(label: "defer-label")
+        },
+        second: immediatelyChangeTheNumber(newNumber: 2) {
+          theNumber
+        }
+      }
+      fragment DeferFragment on NumberHolder {
+        promiseToGetTheNumber
+      }
+    `);
+
+    const rootValue = new Root(6);
+    const mutationResult = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue,
+    });
+    const patches = [];
+
+    assert('initialResult' in mutationResult);
+    patches.push(mutationResult.initialResult);
+    for await (const patch of mutationResult.subsequentResults) {
+      patches.push(patch);
+    }
+
+    expect(patches).to.deep.equal([
+      {
+        data: {
+          first: {},
+          second: { theNumber: 2 },
+        },
+        pending: [{ id: '0', path: ['first'], label: 'defer-label' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            id: '0',
+            data: {
+              promiseToGetTheNumber: 2,
+            },
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Mutation inside of a fragment', async () => {
+    const document = parse(`
+      mutation M {
+        ...MutationFragment
+        second: immediatelyChangeTheNumber(newNumber: 2) {
+          theNumber
+        }
+      }
+      fragment MutationFragment on Mutation {
+        first: promiseToChangeTheNumber(newNumber: 1) {
+          theNumber
+        },
+      }
+    `);
+
+    const rootValue = new Root(6);
+    const mutationResult = await execute({ schema, document, rootValue });
+
+    expect(mutationResult).to.deep.equal({
+      data: {
+        first: { theNumber: 1 },
+        second: { theNumber: 2 },
+      },
+    });
+  });
+  it('Mutation with @defer is not executed serially', async () => {
+    const document = parse(`
+      mutation M {
+        ...MutationFragment @defer(label: "defer-label")
+        second: immediatelyChangeTheNumber(newNumber: 2) {
+          theNumber
+        }
+      }
+      fragment MutationFragment on Mutation {
+        first: promiseToChangeTheNumber(newNumber: 1) {
+          theNumber
+        },
+      }
+    `);
+
+    const rootValue = new Root(6);
+    const mutationResult = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue,
+    });
+    const patches = [];
+
+    assert('initialResult' in mutationResult);
+    patches.push(mutationResult.initialResult);
+    for await (const patch of mutationResult.subsequentResults) {
+      patches.push(patch);
+    }
+
+    expect(patches).to.deep.equal([
+      {
+        data: {
+          second: { theNumber: 2 },
+        },
+        pending: [{ id: '0', path: [], label: 'defer-label' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            id: '0',
+            data: {
+              first: {
+                theNumber: 1,
+              },
+            },
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
   });
 });

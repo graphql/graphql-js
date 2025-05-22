@@ -1,4 +1,5 @@
-import type { DocumentNode, DefinitionNode } from '../language/ast';
+import type { DefinitionNode, DocumentNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 /**
  * Provided a collection of ASTs, presumably each from different files,
@@ -12,5 +13,5 @@ export function concatAST(
   for (const doc of documents) {
     definitions.push(...doc.definitions);
   }
-  return { kind: 'Document', definitions };
+  return { kind: Kind.DOCUMENT, definitions };
 }

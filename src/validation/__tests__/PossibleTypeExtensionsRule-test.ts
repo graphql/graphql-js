@@ -1,19 +1,19 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { PossibleTypeExtensionsRule } from '../rules/PossibleTypeExtensionsRule';
+import { PossibleTypeExtensionsRule } from '../rules/PossibleTypeExtensionsRule.js';
 
-import { expectSDLValidationErrors } from './harness';
+import { expectSDLValidationErrors } from './harness.js';
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(schema, PossibleTypeExtensionsRule, sdlStr);
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Possible type extensions', () => {
@@ -84,7 +84,7 @@ describe('Validate: Possible type extensions', () => {
       extend union Unknown @dummy
       extend enum Unknown @dummy
       extend input Unknown @dummy
-    `).to.deep.equal([
+    `).toDeepEqual([
       { message, locations: [{ line: 4, column: 21 }] },
       { message, locations: [{ line: 5, column: 19 }] },
       { message, locations: [{ line: 6, column: 24 }] },
@@ -108,7 +108,7 @@ describe('Validate: Possible type extensions', () => {
       extend union Foo @dummy
       extend enum Foo @dummy
       extend input Foo @dummy
-    `).to.deep.equal([
+    `).toDeepEqual([
       { message, locations: [{ line: 6, column: 21 }] },
       { message, locations: [{ line: 7, column: 19 }] },
       { message, locations: [{ line: 8, column: 24 }] },
@@ -133,7 +133,7 @@ describe('Validate: Possible type extensions', () => {
       extend enum FooUnion @dummy
       extend input FooEnum @dummy
       extend scalar FooInputObject @dummy
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Cannot extend non-object type "FooScalar".',
         locations: [
@@ -213,7 +213,7 @@ describe('Validate: Possible type extensions', () => {
 
     const message =
       'Cannot extend type "Unknown" because it is not defined. Did you mean "Known"?';
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       { message, locations: [{ line: 2, column: 21 }] },
       { message, locations: [{ line: 3, column: 19 }] },
       { message, locations: [{ line: 4, column: 24 }] },
@@ -241,7 +241,7 @@ describe('Validate: Possible type extensions', () => {
       extend scalar FooInputObject @dummy
     `;
 
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       {
         message: 'Cannot extend non-object type "FooScalar".',
         locations: [{ line: 2, column: 7 }],

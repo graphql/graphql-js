@@ -1,28 +1,31 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type {
-  FragmentDefinitionNode,
-  OperationDefinitionNode,
-} from '../../language/ast';
-import type { ASTVisitor } from '../../language/visitor';
+import type { FragmentDefinitionNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ASTValidationContext } from '../ValidationContext';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 /**
  * No unused fragments
  *
  * A GraphQL document is only valid if all fragment definitions are spread
  * within operations, or spread within other fragments spread within operations.
+ *
+ * See https://spec.graphql.org/draft/#sec-Fragments-Must-Be-Used
  */
 export function NoUnusedFragmentsRule(
   context: ASTValidationContext,
 ): ASTVisitor {
-  const operationDefs: Array<OperationDefinitionNode> = [];
+  const fragmentNameUsed = new Set<string>();
   const fragmentDefs: Array<FragmentDefinitionNode> = [];
 
   return {
-    OperationDefinition(node) {
-      operationDefs.push(node);
+    OperationDefinition(operation) {
+      for (const fragment of context.getRecursivelyReferencedFragments(
+        operation,
+      )) {
+        fragmentNameUsed.add(fragment.name.value);
+      }
       return false;
     },
     FragmentDefinition(node) {
@@ -31,23 +34,13 @@ export function NoUnusedFragmentsRule(
     },
     Document: {
       leave() {
-        const fragmentNameUsed = Object.create(null);
-        for (const operation of operationDefs) {
-          for (const fragment of context.getRecursivelyReferencedFragments(
-            operation,
-          )) {
-            fragmentNameUsed[fragment.name.value] = true;
-          }
-        }
-
         for (const fragmentDef of fragmentDefs) {
           const fragName = fragmentDef.name.value;
-          if (fragmentNameUsed[fragName] !== true) {
+          if (!fragmentNameUsed.has(fragName)) {
             context.reportError(
-              new GraphQLError(
-                `Fragment "${fragName}" is never used.`,
-                fragmentDef,
-              ),
+              new GraphQLError(`Fragment "${fragName}" is never used.`, {
+                nodes: fragmentDef,
+              }),
             );
           }
         }

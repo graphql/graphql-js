@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { FragmentsOnCompositeTypesRule } from '../rules/FragmentsOnCompositeTypesRule';
+import { FragmentsOnCompositeTypesRule } from '../rules/FragmentsOnCompositeTypesRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(FragmentsOnCompositeTypesRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Fragments on composite types', () => {
@@ -72,7 +72,7 @@ describe('Validate: Fragments on composite types', () => {
       fragment scalarFragment on Boolean {
         bad
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Fragment "scalarFragment" cannot condition on non composite type "Boolean".',
@@ -86,7 +86,7 @@ describe('Validate: Fragments on composite types', () => {
       fragment scalarFragment on FurColor {
         bad
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Fragment "scalarFragment" cannot condition on non composite type "FurColor".',
@@ -100,7 +100,7 @@ describe('Validate: Fragments on composite types', () => {
       fragment inputFragment on ComplexInput {
         stringField
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'Fragment "inputFragment" cannot condition on non composite type "ComplexInput".',
@@ -116,7 +116,7 @@ describe('Validate: Fragments on composite types', () => {
           barks
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Fragment cannot condition on non composite type "String".',
         locations: [{ line: 3, column: 16 }],

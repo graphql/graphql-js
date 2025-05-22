@@ -1,4 +1,4 @@
-import type { ObjMap } from './ObjMap';
+import type { ObjMap } from './ObjMap.js';
 
 /**
  * Creates a keyed JS object from an array, given a function to produce the keys
@@ -6,22 +6,26 @@ import type { ObjMap } from './ObjMap';
  *
  * This provides a convenient lookup for the array items if the key function
  * produces unique results.
+ * ```ts
+ * const phoneBook = [
+ *   { name: 'Jon', num: '555-1234' },
+ *   { name: 'Jenny', num: '867-5309' }
+ * ]
  *
- *     const phoneBook = [
- *       { name: 'Jon', num: '555-1234' },
- *       { name: 'Jenny', num: '867-5309' }
- *     ]
+ * const entriesByName = keyMap(
+ *   phoneBook,
+ *   entry => entry.name
+ * )
  *
- *     // { Jon: { name: 'Jon', num: '555-1234' },
- *     //   Jenny: { name: 'Jenny', num: '867-5309' } }
- *     const entriesByName = keyMap(
- *       phoneBook,
- *       entry => entry.name
- *     )
+ * // {
+ * //   Jon: { name: 'Jon', num: '555-1234' },
+ * //   Jenny: { name: 'Jenny', num: '867-5309' }
+ * // }
  *
- *     // { name: 'Jenny', num: '857-6309' }
- *     const jennyEntry = entriesByName['Jenny']
+ * const jennyEntry = entriesByName['Jenny']
  *
+ * // { name: 'Jenny', num: '857-6309' }
+ * ```
  */
 export function keyMap<T>(
   list: ReadonlyArray<T>,

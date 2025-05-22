@@ -1,18 +1,18 @@
 import type {
   ASTNode,
+  ConstValueNode,
   DefinitionNode,
   ExecutableDefinitionNode,
+  SchemaCoordinateNode,
   SelectionNode,
-  ValueNode,
-  ConstValueNode,
+  TypeDefinitionNode,
+  TypeExtensionNode,
   TypeNode,
   TypeSystemDefinitionNode,
-  TypeDefinitionNode,
   TypeSystemExtensionNode,
-  TypeExtensionNode,
-  SchemaCoordinateNode,
-} from './ast';
-import { Kind } from './kinds';
+  ValueNode,
+} from './ast.js';
+import { Kind } from './kinds.js';
 
 export function isDefinitionNode(node: ASTNode): node is DefinitionNode {
   return (
@@ -59,8 +59,8 @@ export function isConstValueNode(node: ASTNode): node is ConstValueNode {
     (node.kind === Kind.LIST
       ? node.values.some(isConstValueNode)
       : node.kind === Kind.OBJECT
-      ? node.fields.some((field) => isConstValueNode(field.value))
-      : node.kind !== Kind.VARIABLE)
+        ? node.fields.some((field) => isConstValueNode(field.value))
+        : node.kind !== Kind.VARIABLE)
   );
 }
 

@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { ExecutableDefinitionsRule } from '../rules/ExecutableDefinitionsRule';
+import { ExecutableDefinitionsRule } from '../rules/ExecutableDefinitionsRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(ExecutableDefinitionsRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Executable definitions', () => {
@@ -53,7 +53,7 @@ describe('Validate: Executable definitions', () => {
       extend type Dog {
         color: String
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'The "Cow" definition is not executable.',
         locations: [{ line: 8, column: 7 }],
@@ -76,7 +76,7 @@ describe('Validate: Executable definitions', () => {
       }
 
       extend schema @directive
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'The schema definition is not executable.',
         locations: [{ line: 2, column: 7 }],

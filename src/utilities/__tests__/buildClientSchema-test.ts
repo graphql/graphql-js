@@ -1,30 +1,28 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import { invariant } from '../../jsutils/invariant';
-
-import { graphqlSync } from '../../graphql';
-
-import { GraphQLSchema } from '../../type/schema';
 import {
   assertEnumType,
-  GraphQLObjectType,
   GraphQLEnumType,
-} from '../../type/definition';
+  GraphQLObjectType,
+} from '../../type/definition.js';
 import {
-  GraphQLInt,
-  GraphQLFloat,
-  GraphQLString,
   GraphQLBoolean,
+  GraphQLFloat,
   GraphQLID,
-} from '../../type/scalars';
+  GraphQLInt,
+  GraphQLString,
+} from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { printSchema } from '../printSchema';
-import { buildSchema } from '../buildASTSchema';
-import { buildClientSchema } from '../buildClientSchema';
-import { introspectionFromSchema } from '../introspectionFromSchema';
+import { graphqlSync } from '../../graphql.js';
+
+import { buildSchema } from '../buildASTSchema.js';
+import { buildClientSchema } from '../buildClientSchema.js';
+import { introspectionFromSchema } from '../introspectionFromSchema.js';
+import { printSchema } from '../printSchema.js';
 
 /**
  * This function does a full cycle of going from a string with the contents of
@@ -308,7 +306,7 @@ describe('Type System: build schema from introspection', () => {
 
         """A field with a two args"""
         two(
-          """This is an list of int arg"""
+          """This is a list of int arg"""
           listArg: [Int]
 
           """This is a required arg"""
@@ -379,32 +377,35 @@ describe('Type System: build schema from introspection', () => {
 
     // Client types do not get server-only values, so `value` mirrors `name`,
     // rather than using the integers defined in the "server" schema.
-    expect(clientFoodEnum.getValues()).to.deep.equal([
-      {
-        name: 'VEGETABLES',
-        description: 'Foods that are vegetables.',
-        value: 'VEGETABLES',
-        deprecationReason: null,
-        extensions: undefined,
-        astNode: undefined,
-      },
-      {
-        name: 'FRUITS',
-        description: null,
-        value: 'FRUITS',
-        deprecationReason: null,
-        extensions: undefined,
-        astNode: undefined,
-      },
-      {
-        name: 'OILS',
-        description: null,
-        value: 'OILS',
-        deprecationReason: 'Too fatty',
-        extensions: undefined,
-        astNode: undefined,
-      },
-    ]);
+    const values = clientFoodEnum.getValues();
+    expect(values).to.have.lengthOf(3);
+
+    expect(values[0]).to.deep.include({
+      name: 'VEGETABLES',
+      description: 'Foods that are vegetables.',
+      value: 'VEGETABLES',
+      deprecationReason: null,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[1]).to.deep.include({
+      name: 'FRUITS',
+      description: null,
+      value: 'FRUITS',
+      deprecationReason: null,
+      extensions: {},
+      astNode: undefined,
+    });
+
+    expect(values[2]).to.deep.include({
+      name: 'OILS',
+      description: null,
+      value: 'OILS',
+      deprecationReason: 'Too fatty',
+      extensions: {},
+      astNode: undefined,
+    });
   });
 
   it('builds a schema with an input object', () => {
@@ -441,9 +442,10 @@ describe('Type System: build schema from introspection', () => {
       }
 
       type Query {
+        defaultID(intArg: ID = "123"): String
         defaultInt(intArg: Int = 30): String
         defaultList(listArg: [Int] = [1, 2, 3]): String
-        defaultObject(objArg: Geo = {lat: 37.485, lon: -122.148}): String
+        defaultObject(objArg: Geo = { lat: 37.485, lon: -122.148 }): String
         defaultNull(intArg: Int = null): String
         noDefault(intArg: Int): String
       }
@@ -573,6 +575,21 @@ describe('Type System: build schema from introspection', () => {
     expect(cycleIntrospection(sdl)).to.equal(sdl);
   });
 
+  it('builds a schema with @oneOf directive', () => {
+    const sdl = dedent`
+      type Query {
+        someField(someArg: SomeInputObject): String
+      }
+
+      input SomeInputObject @oneOf {
+        someInputField1: String
+        someInputField2: String
+      }
+    `;
+
+    expect(cycleIntrospection(sdl)).to.equal(sdl);
+  });
+
   it('can use client schema for limited execution', () => {
     const schema = buildSchema(`
       scalar CustomScalar
@@ -594,6 +611,28 @@ describe('Type System: build schema from introspection', () => {
     });
 
     expect(result.data).to.deep.equal({ foo: 'bar' });
+  });
+
+  it('can use client schema for execution if resolvers are added', () => {
+    const schema = buildSchema(`
+      type Query {
+        foo(bar: String = "abc"): String
+      }
+    `);
+
+    const introspection = introspectionFromSchema(schema);
+    const clientSchema = buildClientSchema(introspection);
+
+    const QueryType: GraphQLObjectType = clientSchema.getType('Query') as any;
+    QueryType.getFields().foo.resolve = (_value, args) => args.bar;
+
+    const result = graphqlSync({
+      schema: clientSchema,
+      source: '{ foo }',
+    });
+
+    expect(result.data).to.deep.equal({ foo: 'abc' });
+    expect(result.data).to.deep.equal({ foo: 'abc' });
   });
 
   it('can build invalid schema', () => {
@@ -680,7 +719,7 @@ describe('Type System: build schema from introspection', () => {
       delete introspection.__schema.queryType.name;
 
       expect(() => buildClientSchema(introspection)).to.throw(
-        'Unknown type reference: {}.',
+        'Unknown type reference: { kind: "OBJECT" }.',
       );
     });
 
@@ -690,7 +729,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       // @ts-expect-error
       delete queryTypeIntrospection.kind;
 
@@ -707,7 +746,7 @@ describe('Type System: build schema from introspection', () => {
 
       expect(queryTypeIntrospection).to.have.property('interfaces');
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       // @ts-expect-error
       delete queryTypeIntrospection.interfaces;
 
@@ -722,7 +761,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeInterface',
       );
 
-      invariant(someInterfaceIntrospection?.kind === 'INTERFACE');
+      assert(someInterfaceIntrospection?.kind === 'INTERFACE');
       // @ts-expect-error
       someInterfaceIntrospection.interfaces = null;
 
@@ -736,7 +775,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       // @ts-expect-error
       delete queryTypeIntrospection.fields;
 
@@ -751,7 +790,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       // @ts-expect-error
       delete queryTypeIntrospection.fields[0].args;
 
@@ -766,9 +805,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       const argType = queryTypeIntrospection.fields[0].args[0].type;
-      invariant(argType.kind === 'SCALAR');
+      assert(argType.kind === 'SCALAR');
 
       expect(argType).to.have.property('name', 'String');
       // @ts-expect-error
@@ -785,9 +824,9 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'Query',
       );
 
-      invariant(queryTypeIntrospection?.kind === 'OBJECT');
+      assert(queryTypeIntrospection?.kind === 'OBJECT');
       const fieldType = queryTypeIntrospection.fields[0].type;
-      invariant(fieldType.kind === 'SCALAR');
+      assert(fieldType.kind === 'SCALAR');
 
       expect(fieldType).to.have.property('name', 'String');
       // @ts-expect-error
@@ -804,7 +843,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeUnion',
       );
 
-      invariant(someUnionIntrospection?.kind === 'UNION');
+      assert(someUnionIntrospection?.kind === 'UNION');
       // @ts-expect-error
       delete someUnionIntrospection.possibleTypes;
 
@@ -819,7 +858,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeEnum',
       );
 
-      invariant(someEnumIntrospection?.kind === 'ENUM');
+      assert(someEnumIntrospection?.kind === 'ENUM');
       // @ts-expect-error
       delete someEnumIntrospection.enumValues;
 
@@ -834,7 +873,7 @@ describe('Type System: build schema from introspection', () => {
         ({ name }) => name === 'SomeInputObject',
       );
 
-      invariant(someInputObjectIntrospection?.kind === 'INPUT_OBJECT');
+      assert(someInputObjectIntrospection?.kind === 'INPUT_OBJECT');
       // @ts-expect-error
       delete someInputObjectIntrospection.inputFields;
 
@@ -879,10 +918,10 @@ describe('Type System: build schema from introspection', () => {
   });
 
   describe('very deep decorators are not supported', () => {
-    it('fails on very deep (> 7 levels) lists', () => {
+    it('fails on very deep (> 8 levels) lists', () => {
       const schema = buildSchema(`
         type Query {
-          foo: [[[[[[[[String]]]]]]]]
+          foo: [[[[[[[[[[String]]]]]]]]]]
         }
       `);
 
@@ -892,10 +931,10 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
-    it('fails on a very deep (> 7 levels) non-null', () => {
+    it('fails on a very deep (> 8 levels) non-null', () => {
       const schema = buildSchema(`
         type Query {
-          foo: [[[[String!]!]!]!]
+          foo: [[[[[String!]!]!]!]!]
         }
       `);
 
@@ -905,11 +944,11 @@ describe('Type System: build schema from introspection', () => {
       );
     });
 
-    it('succeeds on deep (<= 7 levels) types', () => {
-      // e.g., fully non-null 3D matrix
+    it('succeeds on deep (<= 8 levels) types', () => {
+      // e.g., fully non-null 4D matrix
       const sdl = dedent`
         type Query {
-          foo: [[[String!]!]!]!
+          foo: [[[[String!]!]!]!]!
         }
       `;
 

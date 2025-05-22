@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { LoneAnonymousOperationRule } from '../rules/LoneAnonymousOperationRule';
+import { LoneAnonymousOperationRule } from '../rules/LoneAnonymousOperationRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(LoneAnonymousOperationRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Anonymous operation must be alone', () => {
@@ -60,7 +60,7 @@ describe('Validate: Anonymous operation must be alone', () => {
       {
         fieldB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'This anonymous operation must be the only defined operation.',
         locations: [{ line: 2, column: 7 }],
@@ -80,7 +80,7 @@ describe('Validate: Anonymous operation must be alone', () => {
       mutation Foo {
         fieldB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'This anonymous operation must be the only defined operation.',
         locations: [{ line: 2, column: 7 }],
@@ -96,7 +96,7 @@ describe('Validate: Anonymous operation must be alone', () => {
       subscription Foo {
         fieldB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'This anonymous operation must be the only defined operation.',
         locations: [{ line: 2, column: 7 }],

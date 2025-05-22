@@ -1,12 +1,12 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { UniqueFieldDefinitionNamesRule } from '../rules/UniqueFieldDefinitionNamesRule';
+import { UniqueFieldDefinitionNamesRule } from '../rules/UniqueFieldDefinitionNamesRule.js';
 
-import { expectSDLValidationErrors } from './harness';
+import { expectSDLValidationErrors } from './harness.js';
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(
@@ -17,7 +17,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Unique field definition names', () => {
@@ -83,7 +83,7 @@ describe('Validate: Unique field definition names', () => {
         bar: String
         foo: String
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
         locations: [
@@ -164,7 +164,7 @@ describe('Validate: Unique field definition names', () => {
       input SomeInputObject {
         foo: String
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
         locations: [
@@ -211,7 +211,7 @@ describe('Validate: Unique field definition names', () => {
         bar: String
         foo: String
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
         locations: [
@@ -261,7 +261,7 @@ describe('Validate: Unique field definition names', () => {
       extend input SomeInputObject {
         foo: String
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
         locations: [
@@ -345,7 +345,7 @@ describe('Validate: Unique field definition names', () => {
       }
     `;
 
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       {
         message:
           'Field "SomeObject.foo" already exists in the schema. It cannot also be defined in this type extension.',
@@ -408,7 +408,7 @@ describe('Validate: Unique field definition names', () => {
       }
     `;
 
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       {
         message: 'Field "SomeObject.foo" can only be defined once.',
         locations: [

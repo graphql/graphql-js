@@ -1,41 +1,39 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import type { DirectiveNode } from '../../language/ast';
-import { parse } from '../../language/parser';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import { TypeInfo } from '../../utilities/TypeInfo';
-import { buildSchema } from '../../utilities/buildASTSchema';
+import type { DirectiveNode } from '../../language/ast.js';
+import { parse } from '../../language/parser.js';
 
-import type { ValidationContext } from '../ValidationContext';
-import { validate } from '../validate';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { testSchema } from './harness';
+import { validate } from '../validate.js';
+import type { ValidationContext } from '../ValidationContext.js';
+
+import { testSchema } from './harness.js';
 
 describe('Validate: Supports full validation', () => {
-  it('rejects invalid documents', () => {
-    // @ts-expect-error (expects a DocumentNode as a second parameter)
-    expect(() => validate(testSchema, null)).to.throw('Must provide document.');
-  });
-
   it('validates queries', () => {
     const doc = parse(`
       query {
-        catOrDog {
-          ... on Cat {
-            furColor
-          }
-          ... on Dog {
-            isHouseTrained
+        human {
+          pets {
+            ... on Cat {
+              meowsVolume
+            }
+            ... on Dog {
+              barkVolume
+            }
           }
         }
       }
     `);
 
     const errors = validate(testSchema, doc);
-    expect(errors).to.deep.equal([]);
+    expectJSON(errors).toDeepEqual([]);
   });
 
   it('detects unknown fields', () => {
@@ -46,38 +44,11 @@ describe('Validate: Supports full validation', () => {
     `);
 
     const errors = validate(testSchema, doc);
-    expect(errors).to.deep.equal([
+    expectJSON(errors).toDeepEqual([
       {
         locations: [{ line: 3, column: 9 }],
         message: 'Cannot query field "unknown" on type "QueryRoot".',
       },
-    ]);
-  });
-
-  it('Deprecated: validates using a custom TypeInfo', () => {
-    // This TypeInfo will never return a valid field.
-    const typeInfo = new TypeInfo(testSchema, null, () => null);
-
-    const doc = parse(`
-      query {
-        catOrDog {
-          ... on Cat {
-            furColor
-          }
-          ... on Dog {
-            isHouseTrained
-          }
-        }
-      }
-    `);
-
-    const errors = validate(testSchema, doc, undefined, undefined, typeInfo);
-    const errorMessages = errors.map((error) => error.message);
-
-    expect(errorMessages).to.deep.equal([
-      'Cannot query field "catOrDog" on type "QueryRoot". Did you mean "catOrDog"?',
-      'Cannot query field "furColor" on type "Cat". Did you mean "furColor"?',
-      'Cannot query field "isHouseTrained" on type "Dog". Did you mean "isHouseTrained"?',
     ]);
   });
 
@@ -102,7 +73,7 @@ describe('Validate: Supports full validation', () => {
           const directiveDef = context.getDirective();
           const error = new GraphQLError(
             'Reporting directive: ' + String(directiveDef),
-            node,
+            { nodes: node },
           );
           context.reportError(error);
         },
@@ -110,7 +81,7 @@ describe('Validate: Supports full validation', () => {
     }
 
     const errors = validate(schema, doc, [customRule]);
-    expect(errors).to.deep.equal([
+    expectJSON(errors).toDeepEqual([
       {
         message: 'Reporting directive: @custom',
         locations: [{ line: 3, column: 14 }],
@@ -136,13 +107,12 @@ describe('Validate: Limit maximum number of validation errors', () => {
   function invalidFieldError(fieldName: string) {
     return {
       message: `Cannot query field "${fieldName}" on type "QueryRoot".`,
-      locations: [],
     };
   }
 
   it('when maxErrors is equal to number of errors', () => {
     const errors = validateDocument({ maxErrors: 3 });
-    expect(errors).to.be.deep.equal([
+    expectJSON(errors).toDeepEqual([
       invalidFieldError('firstUnknownField'),
       invalidFieldError('secondUnknownField'),
       invalidFieldError('thirdUnknownField'),
@@ -151,7 +121,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
 
   it('when maxErrors is less than number of errors', () => {
     const errors = validateDocument({ maxErrors: 2 });
-    expect(errors).to.be.deep.equal([
+    expectJSON(errors).toDeepEqual([
       invalidFieldError('firstUnknownField'),
       invalidFieldError('secondUnknownField'),
       {

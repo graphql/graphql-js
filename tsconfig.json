@@ -1,12 +1,43 @@
 {
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "integrationTests/*",
+    "resources/*",
+    "benchmark/benchmark.ts"
+  ],
   "compilerOptions": {
-    "module": "commonjs",
-    "lib": ["es2019", "es2020.promise", "es2020.bigint", "es2020.string"],
-    "target": "es2019",
-    "strict": true,
+    "lib": [
+      "es2022",
+      "dom" // Workaround for missing web-compatible globals in `@types/node`
+    ],
+    "target": "es2021",
+    "sourceMap": true,
+    "inlineSources": true,
+    "module": "es2022",
+    "moduleResolution": "node",
     "noEmit": true,
     "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true
+    "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Type Checking
+    // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
+    "strict": true,
+    "useUnknownInCatchVariables": false, // FIXME part of 'strict' but is temporary disabled
+    // All checks that are not part of "strict"
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": false, // TODO consider
+    "noImplicitOverride": true,
+    "noImplicitReturns": false, // TODO consider
+    "noPropertyAccessFromIndexSignature": false, // TODO consider
+    "noUncheckedIndexedAccess": false, // FIXME
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "ts-node": {
+    "esm": true
   }
 }

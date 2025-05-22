@@ -1,17 +1,17 @@
-import { inspect } from '../../jsutils/inspect';
-import type { Maybe } from '../../jsutils/Maybe';
+import { inspect } from '../../jsutils/inspect.js';
+import type { Maybe } from '../../jsutils/Maybe.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { GraphQLCompositeType } from '../../type/definition';
-import { isCompositeType } from '../../type/definition';
+import type { GraphQLCompositeType } from '../../type/definition.js';
+import { isCompositeType } from '../../type/definition.js';
 
-import { typeFromAST } from '../../utilities/typeFromAST';
-import { doTypesOverlap } from '../../utilities/typeComparators';
+import { doTypesOverlap } from '../../utilities/typeComparators.js';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Possible fragment spread
@@ -37,7 +37,7 @@ export function PossibleFragmentSpreadsRule(
         context.reportError(
           new GraphQLError(
             `Fragment cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            node,
+            { nodes: node },
           ),
         );
       }
@@ -56,7 +56,7 @@ export function PossibleFragmentSpreadsRule(
         context.reportError(
           new GraphQLError(
             `Fragment "${fragName}" cannot be spread here as objects of type "${parentTypeStr}" can never be of type "${fragTypeStr}".`,
-            node,
+            { nodes: node },
           ),
         );
       }

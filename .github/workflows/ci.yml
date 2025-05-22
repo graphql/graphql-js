@@ -1,30 +1,26 @@
 name: CI
-on: [push, pull_request]
-env:
-  NODE_VERSION_USED_FOR_DEVELOPMENT: 16
+on: workflow_call
+permissions: {}
 jobs:
   lint:
     name: Lint source files
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
+          cache: npm
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Lint ESLint
         run: npm run lint
@@ -38,37 +34,61 @@ jobs:
       - name: Spellcheck
         run: npm run check:spelling
 
+      - name: Lint GitHub Actions
+        uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color
+
   checkForCommonlyIgnoredFiles:
     name: Check for commonly ignored files
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Check if commit contains files that should be ignored
         run: |
-          git clone --depth 1 https://github.com/github/gitignore.git &&
-          cat gitignore/Node.gitignore $(find gitignore/Global -name "*.gitignore" | grep -v ModelSim) > all.gitignore &&
-          if  [[ "$(git ls-files -iX all.gitignore)" != "" ]]; then
-            echo "::error::Please remove these files:"
-            git ls-files -iX all.gitignore
+          git clone --depth 1 https://github.com/github/gitignore.git
+
+          rm gitignore/Global/ModelSim.gitignore
+          rm gitignore/Global/Images.gitignore
+          cat gitignore/Node.gitignore gitignore/Global/*.gitignore > all.gitignore
+
+          IGNORED_FILES=$(git ls-files --cached --ignored --exclude-from=all.gitignore)
+          if  [[ "$IGNORED_FILES" != "" ]]; then
+            echo -e "::error::Please remove these files:\n$IGNORED_FILES" | sed -z 's/\n/%0A/g'
             exit 1
           fi
 
   checkPackageLock:
     name: Check health of package-lock.json file
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Check that package-lock.json doesn't have conflicts
+        run: npm ls --depth 999
 
       - name: Run npm install
-        run: npm install --package-lock-only --engine-strict --strict-peer-deps
+        run: npm install --ignore-scripts --force --package-lock-only --engine-strict --strict-peer-deps
 
       - name: Check that package-lock.json is in sync with package.json
         run: git diff --exit-code package-lock.json
@@ -76,19 +96,23 @@ jobs:
   integrationTests:
     name: Run integration tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          node-version-file: '.node-version'
+          # We install bunch of packages during integration tests without locking them
+          # so we skip cache action to not pollute cache for other jobs.
 
-      # We install bunch of packages during integration tests without locking them
-      # so we skip cache action to not pollute cache for other jobs.
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run Integration Tests
         run: npm run check:integrations
@@ -96,187 +120,126 @@ jobs:
   fuzz:
     name: Run fuzzing tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
+          cache: npm
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run Tests
         run: npm run fuzzonly
-
-  coverage:
-    name: Measure test coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run tests and measure code coverage
-        run: npm run testonly:cover
-
-      - name: Upload coverage to Codecov
-        if: ${{ always() }}
-        uses: codecov/codecov-action@v1
-        with:
-          file: ./coverage/coverage-final.json
-          fail_ci_if_error: true
 
   test:
     name: Run tests on Node v${{ matrix.node_version_to_setup }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_version_to_setup: [12, 14, 16]
+        node_version_to_setup: [16, 18, 19]
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js v${{ matrix.node_version_to_setup }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
+          cache: npm
           node-version: ${{ matrix.node_version_to_setup }}
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
-
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: Run Tests
-        run: npm run testonly
+      - name: Run Tests with coverage
+        run: npm run testonly:cover
 
-  benchmark:
-    name: Run benchmark
+  codeql:
+    name: Run CodeQL security scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout
+      security-events: write # for codeql-action
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
         with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
+          languages: 'javascript, typescript'
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
 
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Benchmark
-        run: 'npm run benchmark -- --revs HEAD HEAD~1'
-
-  deploy-to-npm-branch:
-    name: Deploy to `npm` branch
+  build-npm-dist:
+    name: Build 'npmDist' artifact
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' &&
-      github.repository == 'graphql/graphql-js' &&
-      github.ref == 'refs/heads/main'
-    needs: [test, fuzz, lint, checkForCommonlyIgnoredFiles, integrationTests]
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
+          cache: npm
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Build NPM package
         run: npm run build:npm
 
-      - name: Deploy to `npm` branch
-        run: npm run gitpublish:npm
-        env:
-          GH_TOKEN: ${{ secrets.GH_NPM_BRANCH_PUBLISH_TOKEN }}
+      - name: Upload npmDist package
+        uses: actions/upload-artifact@v4
+        with:
+          name: npmDist
+          path: ./npmDist
 
-  deploy-to-deno-branch:
-    name: Deploy to `deno` branch
+  build-deno-dist:
+    name: Build 'denoDist' artifact
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' &&
-      github.repository == 'graphql/graphql-js' &&
-      github.ref == 'refs/heads/main'
-    needs: [test, fuzz, lint, checkForCommonlyIgnoredFiles, integrationTests]
+    permissions:
+      contents: read # for actions/checkout
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION_USED_FOR_DEVELOPMENT }}
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
+          cache: npm
+          node-version-file: '.node-version'
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Build Deno package
         run: npm run build:deno
 
-      - name: Deploy to `deno` branch
-        run: npm run gitpublish:deno
-        env:
-          GH_TOKEN: ${{ secrets.GH_NPM_BRANCH_PUBLISH_TOKEN }}
+      - name: Upload denoDist package
+        uses: actions/upload-artifact@v4
+        with:
+          name: denoDist
+          path: ./denoDist

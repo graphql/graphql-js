@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { executeSync } from '../execute';
+import { executeSync } from '../execute.js';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -174,6 +174,7 @@ describe('Execute: handles directives', () => {
         data: { a: 'a', b: 'b' },
       });
     });
+
     it('unless false includes inline fragment', () => {
       const result = executeTestQuery(`
         query {
@@ -188,6 +189,7 @@ describe('Execute: handles directives', () => {
         data: { a: 'a', b: 'b' },
       });
     });
+
     it('unless true includes inline fragment', () => {
       const result = executeTestQuery(`
         query {
@@ -234,6 +236,7 @@ describe('Execute: handles directives', () => {
         data: { a: 'a', b: 'b' },
       });
     });
+
     it('unless false includes anonymous inline fragment', () => {
       const result = executeTestQuery(`
         query Q {
@@ -248,6 +251,7 @@ describe('Execute: handles directives', () => {
         data: { a: 'a', b: 'b' },
       });
     });
+
     it('unless true includes anonymous inline fragment', () => {
       const result = executeTestQuery(`
         query {

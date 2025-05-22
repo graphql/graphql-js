@@ -1,17 +1,19 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { validate } from '../../validation/validate';
+import { parse } from '../../language/parser.js';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { graphqlSync } from '../../graphql';
+import { validate } from '../../validation/validate.js';
 
-import { execute, executeSync } from '../execute';
+import { graphqlSync } from '../../graphql.js';
+
+import { execute, executeSync } from '../execute.js';
 
 describe('Execute: synchronously when possible', () => {
   const schema = new GraphQLSchema({
@@ -52,7 +54,7 @@ describe('Execute: synchronously when possible', () => {
       document: parse(doc),
       rootValue: 'rootValue',
     });
-    expect(result).to.deep.equal({
+    expectJSON(result).toDeepEqual({
       errors: [{ message: 'Must provide an operation.' }],
     });
   });
@@ -111,6 +113,24 @@ describe('Execute: synchronously when possible', () => {
         });
       }).to.throw('GraphQL execution failed to complete synchronously.');
     });
+
+    it('throws if encountering async iterable execution', () => {
+      const doc = `
+        query Example {
+          ...deferFrag @defer(label: "deferLabel")
+        }
+        fragment deferFrag on Query {
+          syncField
+        }
+      `;
+      expect(() => {
+        executeSync({
+          schema,
+          document: parse(doc),
+          rootValue: 'rootValue',
+        });
+      }).to.throw('GraphQL execution failed to complete synchronously.');
+    });
   });
 
   describe('graphqlSync', () => {
@@ -120,7 +140,7 @@ describe('Execute: synchronously when possible', () => {
         schema: badSchema,
         source: '{ __typename }',
       });
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         errors: [{ message: 'Query root type must be provided.' }],
       });
     });
@@ -131,7 +151,7 @@ describe('Execute: synchronously when possible', () => {
         schema,
         source: doc,
       });
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         errors: [
           {
             message: 'Syntax Error: Expected Name, found "{".',

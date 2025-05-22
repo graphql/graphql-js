@@ -1,9 +1,9 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
-import type { TypeDefinitionNode } from '../../language/ast';
+import type { NameNode, TypeDefinitionNode } from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique type names
@@ -11,7 +11,7 @@ import type { SDLValidationContext } from '../ValidationContext';
  * A GraphQL document is only valid if all defined types have unique names.
  */
 export function UniqueTypeNamesRule(context: SDLValidationContext): ASTVisitor {
-  const knownTypeNames = Object.create(null);
+  const knownTypeNames = new Map<string, NameNode>();
   const schema = context.getSchema();
 
   return {
@@ -30,21 +30,21 @@ export function UniqueTypeNamesRule(context: SDLValidationContext): ASTVisitor {
       context.reportError(
         new GraphQLError(
           `Type "${typeName}" already exists in the schema. It cannot also be defined in this type definition.`,
-          node.name,
+          { nodes: node.name },
         ),
       );
       return;
     }
 
-    if (knownTypeNames[typeName]) {
+    const knownNameNode = knownTypeNames.get(typeName);
+    if (knownNameNode != null) {
       context.reportError(
-        new GraphQLError(`There can be only one type named "${typeName}".`, [
-          knownTypeNames[typeName],
-          node.name,
-        ]),
+        new GraphQLError(`There can be only one type named "${typeName}".`, {
+          nodes: [knownNameNode, node.name],
+        }),
       );
     } else {
-      knownTypeNames[typeName] = node.name;
+      knownTypeNames.set(typeName, node.name);
     }
 
     return false;

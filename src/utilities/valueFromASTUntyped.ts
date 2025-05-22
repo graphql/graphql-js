@@ -1,17 +1,15 @@
-import type { ObjMap } from '../jsutils/ObjMap';
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
-import { keyValMap } from '../jsutils/keyValMap';
-import type { Maybe } from '../jsutils/Maybe';
+import { keyValMap } from '../jsutils/keyValMap.js';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 
-import { Kind } from '../language/kinds';
-import type { ValueNode } from '../language/ast';
+import type { ValueNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
  *
- * Unlike `valueFromAST()`, no type is provided. The resulting JavaScript value
- * will reflect the provided GraphQL value AST.
+ * No type is provided. The resulting JavaScript value will reflect the
+ * provided GraphQL value AST.
  *
  * | GraphQL Value        | JavaScript Value |
  * | -------------------- | ---------------- |
@@ -51,7 +49,4 @@ export function valueFromASTUntyped(
     case Kind.VARIABLE:
       return variables?.[valueNode.name.value];
   }
-
-  // istanbul ignore next (Not reachable. All possible value nodes have been considered)
-  invariant(false, 'Unexpected value node: ' + inspect(valueNode));
 }

@@ -1,28 +1,29 @@
-import type { ObjMap } from '../../jsutils/ObjMap';
-import { inspect } from '../../jsutils/inspect';
-import { invariant } from '../../jsutils/invariant';
-import { didYouMean } from '../../jsutils/didYouMean';
-import { suggestionList } from '../../jsutils/suggestionList';
+import { didYouMean } from '../../jsutils/didYouMean.js';
+import { inspect } from '../../jsutils/inspect.js';
+import { invariant } from '../../jsutils/invariant.js';
+import { suggestionList } from '../../jsutils/suggestionList.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { KindEnum } from '../../language/kinds';
-import type { ASTVisitor } from '../../language/visitor';
-import type { DefinitionNode, TypeExtensionNode } from '../../language/ast';
-import { Kind } from '../../language/kinds';
-import { isTypeDefinitionNode } from '../../language/predicates';
+import type {
+  TypeDefinitionNode,
+  TypeExtensionNode,
+} from '../../language/ast.js';
+import { Kind } from '../../language/kinds.js';
+import { isTypeDefinitionNode } from '../../language/predicates.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { GraphQLNamedType } from '../../type/definition';
+import type { GraphQLNamedType } from '../../type/definition.js';
 import {
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
   isEnumType,
   isInputObjectType,
-} from '../../type/definition';
+  isInterfaceType,
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from '../../type/definition.js';
 
-import type { SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext.js';
 
 /**
  * Possible type extension
@@ -33,11 +34,11 @@ export function PossibleTypeExtensionsRule(
   context: SDLValidationContext,
 ): ASTVisitor {
   const schema = context.getSchema();
-  const definedTypes: ObjMap<DefinitionNode> = Object.create(null);
+  const definedTypes = new Map<string, TypeDefinitionNode>();
 
   for (const def of context.getDocument().definitions) {
     if (isTypeDefinitionNode(def)) {
-      definedTypes[def.name.value] = def;
+      definedTypes.set(def.name.value, def);
     }
   }
 
@@ -52,54 +53,52 @@ export function PossibleTypeExtensionsRule(
 
   function checkExtension(node: TypeExtensionNode): void {
     const typeName = node.name.value;
-    const defNode = definedTypes[typeName];
+    const defNode = definedTypes.get(typeName);
     const existingType = schema?.getType(typeName);
 
-    let expectedKind: KindEnum | undefined;
-    if (defNode) {
+    let expectedKind: Kind | undefined;
+    if (defNode != null) {
       expectedKind = defKindToExtKind[defNode.kind];
     } else if (existingType) {
       expectedKind = typeToExtKind(existingType);
     }
 
-    if (expectedKind) {
+    if (expectedKind != null) {
       if (expectedKind !== node.kind) {
         const kindStr = extensionKindToTypeName(node.kind);
         context.reportError(
-          new GraphQLError(
-            `Cannot extend non-${kindStr} type "${typeName}".`,
-            defNode ? [defNode, node] : node,
-          ),
+          new GraphQLError(`Cannot extend non-${kindStr} type "${typeName}".`, {
+            nodes: defNode ? [defNode, node] : node,
+          }),
         );
       }
     } else {
-      const allTypeNames = Object.keys({
-        ...definedTypes,
-        ...schema?.getTypeMap(),
-      });
+      const allTypeNames = [
+        ...definedTypes.keys(),
+        ...Object.keys(schema?.getTypeMap() ?? {}),
+      ];
 
-      const suggestedTypes = suggestionList(typeName, allTypeNames);
       context.reportError(
         new GraphQLError(
           `Cannot extend type "${typeName}" because it is not defined.` +
-            didYouMean(suggestedTypes),
-          node.name,
+            didYouMean(suggestionList(typeName, allTypeNames)),
+          { nodes: node.name },
         ),
       );
     }
   }
 }
 
-const defKindToExtKind: ObjMap<KindEnum> = {
+const defKindToExtKind = {
   [Kind.SCALAR_TYPE_DEFINITION]: Kind.SCALAR_TYPE_EXTENSION,
   [Kind.OBJECT_TYPE_DEFINITION]: Kind.OBJECT_TYPE_EXTENSION,
   [Kind.INTERFACE_TYPE_DEFINITION]: Kind.INTERFACE_TYPE_EXTENSION,
   [Kind.UNION_TYPE_DEFINITION]: Kind.UNION_TYPE_EXTENSION,
   [Kind.ENUM_TYPE_DEFINITION]: Kind.ENUM_TYPE_EXTENSION,
   [Kind.INPUT_OBJECT_TYPE_DEFINITION]: Kind.INPUT_OBJECT_TYPE_EXTENSION,
-};
+} as const;
 
-function typeToExtKind(type: GraphQLNamedType): KindEnum {
+function typeToExtKind(type: GraphQLNamedType): Kind {
   if (isScalarType(type)) {
     return Kind.SCALAR_TYPE_EXTENSION;
   }
@@ -115,16 +114,15 @@ function typeToExtKind(type: GraphQLNamedType): KindEnum {
   if (isEnumType(type)) {
     return Kind.ENUM_TYPE_EXTENSION;
   }
-  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isInputObjectType(type)) {
     return Kind.INPUT_OBJECT_TYPE_EXTENSION;
   }
-
-  // istanbul ignore next (Not reachable. All possible types have been considered)
+  /* c8 ignore next 3 */
+  // Not reachable. All possible types have been considered
   invariant(false, 'Unexpected type: ' + inspect(type));
 }
 
-function extensionKindToTypeName(kind: KindEnum): string {
+function extensionKindToTypeName(kind: Kind): string {
   switch (kind) {
     case Kind.SCALAR_TYPE_EXTENSION:
       return 'scalar';
@@ -138,8 +136,9 @@ function extensionKindToTypeName(kind: KindEnum): string {
       return 'enum';
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
+    // Not reachable. All possible types have been considered
+    /* c8 ignore next 2 */
+    default:
+      invariant(false, 'Unexpected kind: ' + inspect(kind));
   }
-
-  // istanbul ignore next (Not reachable. All possible types have been considered)
-  invariant(false, 'Unexpected kind: ' + inspect(kind));
 }

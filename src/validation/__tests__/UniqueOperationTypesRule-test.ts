@@ -1,19 +1,19 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { UniqueOperationTypesRule } from '../rules/UniqueOperationTypesRule';
+import { UniqueOperationTypesRule } from '../rules/UniqueOperationTypesRule.js';
 
-import { expectSDLValidationErrors } from './harness';
+import { expectSDLValidationErrors } from './harness.js';
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(schema, UniqueOperationTypesRule, sdlStr);
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Unique operation types', () => {
@@ -82,7 +82,7 @@ describe('Validate: Unique operation types', () => {
         mutation: Foo
         subscription: Foo
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one query type in schema.',
         locations: [
@@ -122,7 +122,7 @@ describe('Validate: Unique operation types', () => {
         mutation: Foo
         subscription: Foo
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one query type in schema.',
         locations: [
@@ -168,7 +168,7 @@ describe('Validate: Unique operation types', () => {
         mutation: Foo
         subscription: Foo
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one query type in schema.',
         locations: [
@@ -232,7 +232,7 @@ describe('Validate: Unique operation types', () => {
         mutation: Foo
         subscription: Foo
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one query type in schema.',
         locations: [
@@ -308,7 +308,7 @@ describe('Validate: Unique operation types', () => {
       }
     `;
 
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       {
         message:
           'Type for query already defined in the schema. It cannot be redefined.',
@@ -348,7 +348,7 @@ describe('Validate: Unique operation types', () => {
       }
     `;
 
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       {
         message:
           'Type for query already defined in the schema. It cannot be redefined.',

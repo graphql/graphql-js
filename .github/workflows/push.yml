@@ -1,0 +1,34 @@
+name: Push
+on: push
+permissions: {}
+jobs:
+  ci:
+    permissions:
+      contents: read # for actions/checkout
+      security-events: write
+    uses: ./.github/workflows/ci.yml
+  deploy-to-npm-branch:
+    name: Deploy to `npm` branch
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write # for actions/checkout and to push branch
+    uses: ./.github/workflows/deploy-artifact-as-branch.yml
+    with:
+      environment: npm-branch
+      artifact_name: npmDist
+      target_branch: npm
+      commit_message: "Deploy ${{github.event.workflow_run.head_sha}} to 'npm' branch"
+
+  deploy-to-deno-branch:
+    name: Deploy to `deno` branch
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write # for actions/checkout and to push branch
+    uses: ./.github/workflows/deploy-artifact-as-branch.yml
+    with:
+      environment: deno-branch
+      artifact_name: denoDist
+      target_branch: deno
+      commit_message: "Deploy ${{github.event.workflow_run.head_sha}} to 'deno' branch"

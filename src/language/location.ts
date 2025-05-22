@@ -1,6 +1,6 @@
-import { invariant } from '../jsutils/invariant';
+import { invariant } from '../jsutils/invariant.js';
 
-import type { Source } from './source';
+import type { Source } from './source.js';
 
 const LineRegExp = /\r\n|[\n\r]/g;
 

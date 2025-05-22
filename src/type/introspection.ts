@@ -1,36 +1,37 @@
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
 
-import { print } from '../language/printer';
-import { DirectiveLocation } from '../language/directiveLocation';
-import { astFromValue } from '../utilities/astFromValue';
+import { DirectiveLocation } from '../language/directiveLocation.js';
+import { print } from '../language/printer.js';
 
-import type { GraphQLSchema } from './schema';
-import type { GraphQLDirective } from './directives';
+import { getDefaultValueAST } from '../utilities/getDefaultValueAST.js';
+
 import type {
-  GraphQLType,
-  GraphQLNamedType,
-  GraphQLInputField,
   GraphQLEnumValue,
-  GraphQLField,
   GraphQLFieldConfigMap,
-} from './definition';
-import { GraphQLString, GraphQLBoolean } from './scalars';
+  GraphQLInputField,
+  GraphQLNamedType,
+  GraphQLType,
+} from './definition.js';
 import {
+  GraphQLEnumType,
+  GraphQLField,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  GraphQLEnumType,
-  isScalarType,
-  isObjectType,
-  isInterfaceType,
-  isUnionType,
+  isAbstractType,
   isEnumType,
   isInputObjectType,
+  isInterfaceType,
   isListType,
   isNonNullType,
-  isAbstractType,
-} from './definition';
+  isObjectType,
+  isScalarType,
+  isUnionType,
+} from './definition.js';
+import type { GraphQLDirective } from './directives.js';
+import { GraphQLBoolean, GraphQLString } from './scalars.js';
+import type { GraphQLSchema } from './schema.js';
 
 export const __Schema: GraphQLObjectType = new GraphQLObjectType({
   name: '__Schema',
@@ -73,7 +74,7 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
         ),
         resolve: (schema) => schema.getDirectives(),
       },
-    } as GraphQLFieldConfigMap<GraphQLSchema, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLSchema, unknown>,
 });
 
 export const __Directive: GraphQLObjectType = new GraphQLObjectType({
@@ -104,9 +105,19 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
         type: new GraphQLNonNull(
           new GraphQLList(new GraphQLNonNull(__InputValue)),
         ),
-        resolve: (directive) => directive.args,
+        args: {
+          includeDeprecated: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            default: { value: false },
+          },
+        },
+        resolve(field, { includeDeprecated }) {
+          return includeDeprecated === true
+            ? field.args
+            : field.args.filter((arg) => arg.deprecationReason == null);
+        },
       },
-    } as GraphQLFieldConfigMap<GraphQLDirective, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLDirective, unknown>,
 });
 
 export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
@@ -144,7 +155,11 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
     },
     VARIABLE_DEFINITION: {
       value: DirectiveLocation.VARIABLE_DEFINITION,
-      description: 'Location adjacent to a variable definition.',
+      description: 'Location adjacent to an operation variable definition.',
+    },
+    FRAGMENT_VARIABLE_DEFINITION: {
+      value: DirectiveLocation.FRAGMENT_VARIABLE_DEFINITION,
+      description: 'Location adjacent to a fragment variable definition.',
     },
     SCHEMA: {
       value: DirectiveLocation.SCHEMA,
@@ -223,12 +238,11 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           if (isListType(type)) {
             return TypeKind.LIST;
           }
-          // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
           if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
           }
-
-          // istanbul ignore next (Not reachable. All possible types have been considered)
+          /* c8 ignore next 3 */
+          // Not reachable, all possible types have been considered)
           invariant(false, `Unexpected type: "${inspect(type)}".`);
         },
       },
@@ -239,7 +253,8 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       description: {
         type: GraphQLString,
         resolve: (type) =>
-          // istanbul ignore next (FIXME: add test case)
+          // FIXME: add test case
+          /* c8 ignore next */
           'description' in type ? type.description : undefined,
       },
       specifiedByURL: {
@@ -250,12 +265,15 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       fields: {
         type: new GraphQLList(new GraphQLNonNull(__Field)),
         args: {
-          includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
+          includeDeprecated: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            default: { value: false },
+          },
         },
         resolve(type, { includeDeprecated }) {
           if (isObjectType(type) || isInterfaceType(type)) {
             const fields = Object.values(type.getFields());
-            return includeDeprecated
+            return includeDeprecated === true
               ? fields
               : fields.filter((field) => field.deprecationReason == null);
           }
@@ -280,12 +298,15 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       enumValues: {
         type: new GraphQLList(new GraphQLNonNull(__EnumValue)),
         args: {
-          includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
+          includeDeprecated: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            default: { value: false },
+          },
         },
         resolve(type, { includeDeprecated }) {
           if (isEnumType(type)) {
             const values = type.getValues();
-            return includeDeprecated
+            return includeDeprecated === true
               ? values
               : values.filter((field) => field.deprecationReason == null);
           }
@@ -295,14 +316,14 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         type: new GraphQLList(new GraphQLNonNull(__InputValue)),
         args: {
           includeDeprecated: {
-            type: GraphQLBoolean,
-            defaultValue: false,
+            type: new GraphQLNonNull(GraphQLBoolean),
+            default: { value: false },
           },
         },
         resolve(type, { includeDeprecated }) {
           if (isInputObjectType(type)) {
             const values = Object.values(type.getFields());
-            return includeDeprecated
+            return includeDeprecated === true
               ? values
               : values.filter((field) => field.deprecationReason == null);
           }
@@ -312,7 +333,15 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         type: __Type,
         resolve: (type) => ('ofType' in type ? type.ofType : undefined),
       },
-    } as GraphQLFieldConfigMap<GraphQLType, unknown>),
+      isOneOf: {
+        type: GraphQLBoolean,
+        resolve: (type) => {
+          if (isInputObjectType(type)) {
+            return type.isOneOf;
+          }
+        },
+      },
+    }) as GraphQLFieldConfigMap<GraphQLType, unknown>,
 });
 
 export const __Field: GraphQLObjectType = new GraphQLObjectType({
@@ -335,12 +364,12 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         ),
         args: {
           includeDeprecated: {
-            type: GraphQLBoolean,
-            defaultValue: false,
+            type: new GraphQLNonNull(GraphQLBoolean),
+            default: { value: false },
           },
         },
         resolve(field, { includeDeprecated }) {
-          return includeDeprecated
+          return includeDeprecated === true
             ? field.args
             : field.args.filter((arg) => arg.deprecationReason == null);
         },
@@ -357,7 +386,7 @@ export const __Field: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (field) => field.deprecationReason,
       },
-    } as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLField<unknown, unknown>, unknown>,
 });
 
 export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
@@ -383,9 +412,11 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
         description:
           'A GraphQL-formatted string representing the default value for this input value.',
         resolve(inputValue) {
-          const { type, defaultValue } = inputValue;
-          const valueAST = astFromValue(defaultValue, type);
-          return valueAST ? print(valueAST) : null;
+          const ast = getDefaultValueAST(inputValue);
+          if (ast) {
+            return print(ast);
+          }
+          return null;
         },
       },
       isDeprecated: {
@@ -396,7 +427,7 @@ export const __InputValue: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (obj) => obj.deprecationReason,
       },
-    } as GraphQLFieldConfigMap<GraphQLInputField, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLInputField, unknown>,
 });
 
 export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
@@ -421,19 +452,22 @@ export const __EnumValue: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (enumValue) => enumValue.deprecationReason,
       },
-    } as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>),
+    }) as GraphQLFieldConfigMap<GraphQLEnumValue, unknown>,
 });
 
-export const TypeKind = Object.freeze({
-  SCALAR: 'SCALAR',
-  OBJECT: 'OBJECT',
-  INTERFACE: 'INTERFACE',
-  UNION: 'UNION',
-  ENUM: 'ENUM',
-  INPUT_OBJECT: 'INPUT_OBJECT',
-  LIST: 'LIST',
-  NON_NULL: 'NON_NULL',
-} as const);
+export const TypeKind = {
+  SCALAR: 'SCALAR' as const,
+  OBJECT: 'OBJECT' as const,
+  INTERFACE: 'INTERFACE' as const,
+  UNION: 'UNION' as const,
+  ENUM: 'ENUM' as const,
+  INPUT_OBJECT: 'INPUT_OBJECT' as const,
+  LIST: 'LIST' as const,
+  NON_NULL: 'NON_NULL' as const,
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type TypeKind = (typeof TypeKind)[keyof typeof TypeKind];
 
 export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   name: '__TypeKind',
@@ -480,53 +514,24 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   },
 });
 
-/**
- * Note that these are GraphQLField and not GraphQLFieldConfig,
- * so the format for args is different.
- */
-
-export const SchemaMetaFieldDef: GraphQLField<unknown, unknown> = {
-  name: '__schema',
+export const SchemaMetaFieldDef = new GraphQLField(undefined, '__schema', {
   type: new GraphQLNonNull(__Schema),
   description: 'Access the current type schema of this server.',
-  args: [],
   resolve: (_source, _args, _context, { schema }) => schema,
-  deprecationReason: undefined,
-  extensions: undefined,
-  astNode: undefined,
-};
+});
 
-export const TypeMetaFieldDef: GraphQLField<unknown, unknown> = {
-  name: '__type',
+export const TypeMetaFieldDef = new GraphQLField(undefined, '__type', {
   type: __Type,
   description: 'Request the type information of a single type.',
-  args: [
-    {
-      name: 'name',
-      description: undefined,
-      type: new GraphQLNonNull(GraphQLString),
-      defaultValue: undefined,
-      deprecationReason: undefined,
-      extensions: undefined,
-      astNode: undefined,
-    },
-  ],
+  args: { name: { type: new GraphQLNonNull(GraphQLString) } },
   resolve: (_source, { name }, _context, { schema }) => schema.getType(name),
-  deprecationReason: undefined,
-  extensions: undefined,
-  astNode: undefined,
-};
+});
 
-export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown> = {
-  name: '__typename',
+export const TypeNameMetaFieldDef = new GraphQLField(undefined, '__typename', {
   type: new GraphQLNonNull(GraphQLString),
   description: 'The name of the current Object type at runtime.',
-  args: [],
   resolve: (_source, _args, _context, { parentType }) => parentType.name,
-  deprecationReason: undefined,
-  extensions: undefined,
-  astNode: undefined,
-};
+});
 
 export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
   Object.freeze([

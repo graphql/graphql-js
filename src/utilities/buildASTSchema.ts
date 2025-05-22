@@ -1,18 +1,15 @@
-import { devAssert } from '../jsutils/devAssert';
+import type { DocumentNode } from '../language/ast.js';
+import type { ParseOptions } from '../language/parser.js';
+import { parse } from '../language/parser.js';
+import type { Source } from '../language/source.js';
 
-import type { Source } from '../language/source';
-import type { DocumentNode } from '../language/ast';
-import type { ParseOptions } from '../language/parser';
-import { Kind } from '../language/kinds';
-import { parse } from '../language/parser';
+import { specifiedDirectives } from '../type/directives.js';
+import type { GraphQLSchemaValidationOptions } from '../type/schema.js';
+import { GraphQLSchema } from '../type/schema.js';
 
-import { assertValidSDL } from '../validation/validate';
+import { assertValidSDL } from '../validation/validate.js';
 
-import type { GraphQLSchemaValidationOptions } from '../type/schema';
-import { GraphQLSchema } from '../type/schema';
-import { specifiedDirectives } from '../type/directives';
-
-import { extendSchemaImpl } from './extendSchema';
+import { extendSchemaImpl } from './extendSchema.js';
 
 export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
   /**
@@ -20,15 +17,15 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
    *
    * Default: false
    */
-  assumeValidSDL?: boolean;
+  assumeValidSDL?: boolean | undefined;
 }
 
 /**
  * This takes the ast of a schema document produced by the parse function in
  * src/language/parser.js.
  *
- * If no schema definition is provided, then it will look for types named Query
- * and Mutation.
+ * If no schema definition is provided, then it will look for types named Query,
+ * Mutation and Subscription.
  *
  * Given that AST it constructs a GraphQLSchema. The resulting schema
  * has no resolve methods, so execution will use default resolvers.
@@ -37,11 +34,6 @@ export function buildASTSchema(
   documentAST: DocumentNode,
   options?: BuildSchemaOptions,
 ): GraphQLSchema {
-  devAssert(
-    documentAST != null && documentAST.kind === Kind.DOCUMENT,
-    'Must provide valid Document AST.',
-  );
-
   if (options?.assumeValid !== true && options?.assumeValidSDL !== true) {
     assertValidSDL(documentAST);
   }
@@ -50,7 +42,7 @@ export function buildASTSchema(
     description: undefined,
     types: [],
     directives: [],
-    extensions: undefined,
+    extensions: Object.create(null),
     extensionASTNodes: [],
     assumeValid: false,
   };
@@ -78,15 +70,17 @@ export function buildASTSchema(
     }
   }
 
-  const { directives } = config;
-  // If specified directives were not explicitly declared, add them.
-  for (const stdDirective of specifiedDirectives) {
-    if (directives.every((directive) => directive.name !== stdDirective.name)) {
-      directives.push(stdDirective);
-    }
-  }
+  const directives = [
+    ...config.directives,
+    // If specified directives were not explicitly declared, add them.
+    ...specifiedDirectives.filter((stdDirective) =>
+      config.directives.every(
+        (directive) => directive.name !== stdDirective.name,
+      ),
+    ),
+  ];
 
-  return new GraphQLSchema(config);
+  return new GraphQLSchema({ ...config, directives });
 }
 
 /**
@@ -99,7 +93,7 @@ export function buildSchema(
 ): GraphQLSchema {
   const document = parse(source, {
     noLocation: options?.noLocation,
-    allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
+    experimentalFragmentArguments: options?.experimentalFragmentArguments,
   });
 
   return buildASTSchema(document, {

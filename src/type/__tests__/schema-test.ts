@@ -1,20 +1,30 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import { printSchema } from '../../utilities/printSchema';
+import { DirectiveLocation } from '../../language/directiveLocation.js';
 
-import { GraphQLSchema } from '../schema';
-import { GraphQLDirective } from '../directives';
-import { GraphQLInt, GraphQLString, GraphQLBoolean } from '../scalars';
+import { printSchema } from '../../utilities/printSchema.js';
+
+import type { GraphQLCompositeType } from '../definition.js';
 import {
-  GraphQLList,
-  GraphQLScalarType,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
   GraphQLInputObjectType,
-} from '../definition';
+  GraphQLInterfaceType,
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLScalarType,
+  GraphQLUnionType,
+} from '../definition.js';
+import { GraphQLDirective } from '../directives.js';
+import {
+  SchemaMetaFieldDef,
+  TypeMetaFieldDef,
+  TypeNameMetaFieldDef,
+} from '../introspection.js';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from '../scalars.js';
+import { GraphQLSchema } from '../schema.js';
+import { validateSchema } from '../validate.js';
 
 describe('Type System: Schema', () => {
   it('Define sample schema', () => {
@@ -240,7 +250,7 @@ describe('Type System: Schema', () => {
     it('includes input types only used in directives', () => {
       const directive = new GraphQLDirective({
         name: 'dir',
-        locations: ['OBJECT'],
+        locations: [DirectiveLocation.OBJECT],
         args: {
           arg: {
             type: new GraphQLInputObjectType({ name: 'Foo', fields: {} }),
@@ -317,23 +327,127 @@ describe('Type System: Schema', () => {
     );
   });
 
+  describe('getField', () => {
+    const petType = new GraphQLInterfaceType({
+      name: 'Pet',
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const catType = new GraphQLObjectType({
+      name: 'Cat',
+      interfaces: [petType],
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const dogType = new GraphQLObjectType({
+      name: 'Dog',
+      interfaces: [petType],
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+
+    const catOrDog = new GraphQLUnionType({
+      name: 'CatOrDog',
+      types: [catType, dogType],
+    });
+
+    const queryType = new GraphQLObjectType({
+      name: 'Query',
+      fields: {
+        catOrDog: { type: catOrDog },
+      },
+    });
+
+    const mutationType = new GraphQLObjectType({
+      name: 'Mutation',
+      fields: {},
+    });
+
+    const subscriptionType = new GraphQLObjectType({
+      name: 'Subscription',
+      fields: {},
+    });
+
+    const schema = new GraphQLSchema({
+      query: queryType,
+      mutation: mutationType,
+      subscription: subscriptionType,
+    });
+
+    function expectField(parentType: GraphQLCompositeType, name: string) {
+      return expect(schema.getField(parentType, name));
+    }
+
+    it('returns known fields', () => {
+      expectField(petType, 'name').to.equal(petType.getFields().name);
+      expectField(catType, 'name').to.equal(catType.getFields().name);
+
+      expectField(queryType, 'catOrDog').to.equal(
+        queryType.getFields().catOrDog,
+      );
+    });
+
+    it('returns `undefined` for unknown fields', () => {
+      expectField(catOrDog, 'name').to.equal(undefined);
+
+      expectField(queryType, 'unknown').to.equal(undefined);
+      expectField(petType, 'unknown').to.equal(undefined);
+      expectField(catType, 'unknown').to.equal(undefined);
+      expectField(catOrDog, 'unknown').to.equal(undefined);
+    });
+
+    it('handles introspection fields', () => {
+      expectField(queryType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(mutationType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(subscriptionType, '__typename').to.equal(
+        TypeNameMetaFieldDef,
+      );
+
+      expectField(petType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(catType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(dogType, '__typename').to.equal(TypeNameMetaFieldDef);
+      expectField(catOrDog, '__typename').to.equal(TypeNameMetaFieldDef);
+
+      expectField(queryType, '__type').to.equal(TypeMetaFieldDef);
+      expectField(queryType, '__schema').to.equal(SchemaMetaFieldDef);
+    });
+
+    it('returns `undefined` for introspection fields in wrong location', () => {
+      expectField(petType, '__type').to.equal(undefined);
+      expectField(dogType, '__type').to.equal(undefined);
+      expectField(mutationType, '__type').to.equal(undefined);
+      expectField(subscriptionType, '__type').to.equal(undefined);
+
+      expectField(petType, '__schema').to.equal(undefined);
+      expectField(dogType, '__schema').to.equal(undefined);
+      expectField(mutationType, '__schema').to.equal(undefined);
+      expectField(subscriptionType, '__schema').to.equal(undefined);
+    });
+  });
+
   describe('Validity', () => {
     describe('when not assumed valid', () => {
       it('configures the schema to still needing validation', () => {
-        expect(
-          new GraphQLSchema({
-            assumeValid: false,
-          }).__validationErrors,
-        ).to.equal(undefined);
+        const schema = new GraphQLSchema({
+          assumeValid: false,
+        });
+        expect(schema.assumeValid).to.equal(false);
+        expect(schema.__validationErrors).to.equal(undefined);
       });
 
-      it('checks the configuration for mistakes', () => {
-        // @ts-expect-error
-        expect(() => new GraphQLSchema(JSON.parse)).to.throw();
-        // @ts-expect-error
-        expect(() => new GraphQLSchema({ types: {} })).to.throw();
-        // @ts-expect-error
-        expect(() => new GraphQLSchema({ directives: {} })).to.throw();
+      it('configures the schema to have required validation even once validated', () => {
+        const schema = new GraphQLSchema({
+          assumeValid: false,
+        });
+        const validationErrors = validateSchema(schema);
+        expect(validationErrors.length).to.be.greaterThan(0);
+        expect(validationErrors).to.equal(schema.__validationErrors);
+        expect(schema.assumeValid).to.equal(false);
       });
     });
 
@@ -351,19 +465,6 @@ describe('Type System: Schema', () => {
 
         expect(() => new GraphQLSchema({ query: QueryType })).to.throw(
           'Schema must contain uniquely named types but contains multiple types named "String".',
-        );
-      });
-
-      it('rejects a Schema when a provided type has no name', () => {
-        const query = new GraphQLObjectType({
-          name: 'Query',
-          fields: { foo: { type: GraphQLString } },
-        });
-        const types = [{}, query, {}];
-
-        // @ts-expect-error
-        expect(() => new GraphQLSchema({ query, types })).to.throw(
-          'One of the provided types for building the Schema is missing a name.',
         );
       });
 
@@ -396,11 +497,11 @@ describe('Type System: Schema', () => {
 
     describe('when assumed valid', () => {
       it('configures the schema to have no errors', () => {
-        expect(
-          new GraphQLSchema({
-            assumeValid: true,
-          }).__validationErrors,
-        ).to.deep.equal([]);
+        const schema = new GraphQLSchema({
+          assumeValid: true,
+        });
+        expect(schema.assumeValid).to.equal(true);
+        expect(schema.__validationErrors).to.deep.equal([]);
       });
     });
   });

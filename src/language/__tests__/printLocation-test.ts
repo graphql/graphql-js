@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import { Source } from '../source';
-import { printSourceLocation } from '../printLocation';
+import { printSourceLocation } from '../printLocation.js';
+import { Source } from '../source.js';
 
 describe('printSourceLocation', () => {
   it('prints minified documents', () => {
@@ -61,7 +61,7 @@ describe('printSourceLocation', () => {
     `);
   });
 
-  it('prints an line numbers with correct padding', () => {
+  it('prints line numbers with correct padding', () => {
     const result = printSourceLocation(
       new Source('*\n', 'Test', { line: 9, column: 1 }),
       { line: 1, column: 1 },

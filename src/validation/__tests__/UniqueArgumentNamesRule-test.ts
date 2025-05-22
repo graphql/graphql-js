@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { UniqueArgumentNamesRule } from '../rules/UniqueArgumentNamesRule';
+import { UniqueArgumentNamesRule } from '../rules/UniqueArgumentNamesRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(UniqueArgumentNamesRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Unique argument names', () => {
@@ -91,7 +91,7 @@ describe('Validate: Unique argument names', () => {
       {
         field(arg1: "value", arg1: "value")
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one argument named "arg1".',
         locations: [
@@ -107,18 +107,12 @@ describe('Validate: Unique argument names', () => {
       {
         field(arg1: "value", arg1: "value", arg1: "value")
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one argument named "arg1".',
         locations: [
           { line: 3, column: 15 },
           { line: 3, column: 30 },
-        ],
-      },
-      {
-        message: 'There can be only one argument named "arg1".',
-        locations: [
-          { line: 3, column: 15 },
           { line: 3, column: 45 },
         ],
       },
@@ -130,7 +124,7 @@ describe('Validate: Unique argument names', () => {
       {
         field @directive(arg1: "value", arg1: "value")
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one argument named "arg1".',
         locations: [
@@ -146,18 +140,12 @@ describe('Validate: Unique argument names', () => {
       {
         field @directive(arg1: "value", arg1: "value", arg1: "value")
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'There can be only one argument named "arg1".',
         locations: [
           { line: 3, column: 26 },
           { line: 3, column: 41 },
-        ],
-      },
-      {
-        message: 'There can be only one argument named "arg1".',
-        locations: [
-          { line: 3, column: 26 },
           { line: 3, column: 56 },
         ],
       },

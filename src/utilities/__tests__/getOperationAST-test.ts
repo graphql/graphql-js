@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import { getOperationAST } from '../getOperationAST';
+import { getOperationAST } from '../getOperationAST.js';
 
 describe('getOperationAST', () => {
   it('Gets an operation from a simple document', () => {

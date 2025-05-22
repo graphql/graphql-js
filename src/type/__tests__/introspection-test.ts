@@ -1,12 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
-import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { graphqlSync } from '../../graphql';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.js';
 
-import type { GraphQLResolveInfo } from '../definition';
+import { graphqlSync } from '../../graphql.js';
+
+import type { GraphQLResolveInfo } from '../definition.js';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {
@@ -30,7 +32,7 @@ describe('Introspection', () => {
     expect(result).to.deep.equal({
       data: {
         __schema: {
-          queryType: { name: 'SomeObject' },
+          queryType: { name: 'SomeObject', kind: 'OBJECT' },
           mutationType: null,
           subscriptionType: null,
           types: [
@@ -240,9 +242,13 @@ describe('Introspection', () => {
                     {
                       name: 'includeDeprecated',
                       type: {
-                        kind: 'SCALAR',
-                        name: 'Boolean',
-                        ofType: null,
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
                       },
                       defaultValue: 'false',
                     },
@@ -307,9 +313,13 @@ describe('Introspection', () => {
                     {
                       name: 'includeDeprecated',
                       type: {
-                        kind: 'SCALAR',
-                        name: 'Boolean',
-                        ofType: null,
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
                       },
                       defaultValue: 'false',
                     },
@@ -336,9 +346,13 @@ describe('Introspection', () => {
                     {
                       name: 'includeDeprecated',
                       type: {
-                        kind: 'SCALAR',
-                        name: 'Boolean',
-                        ofType: null,
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
                       },
                       defaultValue: 'false',
                     },
@@ -365,6 +379,17 @@ describe('Introspection', () => {
                   type: {
                     kind: 'OBJECT',
                     name: '__Type',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'isOneOf',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'Boolean',
                     ofType: null,
                   },
                   isDeprecated: false,
@@ -464,9 +489,13 @@ describe('Introspection', () => {
                     {
                       name: 'includeDeprecated',
                       type: {
-                        kind: 'SCALAR',
-                        name: 'Boolean',
-                        ofType: null,
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
                       },
                       defaultValue: 'false',
                     },
@@ -761,7 +790,21 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'args',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -833,6 +876,11 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'VARIABLE_DEFINITION',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'FRAGMENT_VARIABLE_DEFINITION',
                   isDeprecated: false,
                   deprecationReason: null,
                 },
@@ -950,9 +998,13 @@ describe('Introspection', () => {
                   defaultValue: '"No longer supported"',
                   name: 'reason',
                   type: {
-                    kind: 'SCALAR',
-                    name: 'String',
-                    ofType: null,
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'String',
+                      ofType: null,
+                    },
                   },
                 },
               ],
@@ -976,6 +1028,12 @@ describe('Introspection', () => {
                   },
                 },
               ],
+            },
+            {
+              name: 'oneOf',
+              isRepeatable: false,
+              locations: ['INPUT_OBJECT'],
+              args: [],
             },
           ],
         },
@@ -1063,6 +1121,52 @@ describe('Introspection', () => {
                 ofType: null,
               },
               defaultValue: 'null',
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  it('introspects any default value', () => {
+    const schema = buildSchema(`
+      input InputObjectWithDefaultValues {
+        a: String = "Emoji: \\u{1F600}"
+        b: Complex = { x: ["abc"], y: 123 }
+      }
+
+      input Complex {
+        x: [String]
+        y: Int
+      }
+
+      type Query {
+        someField(someArg: InputObjectWithDefaultValues): String
+      }
+    `);
+
+    const source = `
+      {
+        __type(name: "InputObjectWithDefaultValues") {
+          inputFields {
+            name
+            defaultValue
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __type: {
+          inputFields: [
+            {
+              name: 'a',
+              defaultValue: '"Emoji: \u{1F600}"',
+            },
+            {
+              name: 'b',
+              defaultValue: '{ x: ["abc"], y: 123 }',
             },
           ],
         },
@@ -1461,6 +1565,95 @@ describe('Introspection', () => {
     });
   });
 
+  it('identifies oneOf for input objects', () => {
+    const schema = buildSchema(`
+      input SomeInputObject @oneOf {
+        a: String
+      }
+
+      input AnotherInputObject {
+        a: String
+        b: String
+      }
+
+      type Query {
+        someField(someArg: SomeInputObject): String
+        anotherField(anotherArg: AnotherInputObject): String
+      }
+    `);
+
+    const source = `
+      {
+        oneOfInputObject: __type(name: "SomeInputObject") {
+          isOneOf
+        }
+        inputObject: __type(name: "AnotherInputObject") {
+          isOneOf
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        oneOfInputObject: {
+          isOneOf: true,
+        },
+        inputObject: {
+          isOneOf: false,
+        },
+      },
+    });
+  });
+
+  it('returns null for oneOf for other types', () => {
+    const schema = buildSchema(`
+      type SomeObject implements SomeInterface {
+        fieldA: String
+      }
+      enum SomeEnum {
+        SomeObject
+      }
+      interface SomeInterface {
+        fieldA: String
+      }
+      union SomeUnion = SomeObject
+      type Query {
+        someField(enum: SomeEnum): SomeUnion
+        anotherField(enum: SomeEnum): SomeInterface
+      }
+    `);
+
+    const source = `
+      {
+        object: __type(name: "SomeObject") {
+          isOneOf
+        }
+        enum: __type(name: "SomeEnum") {
+          isOneOf
+        }
+        interface: __type(name: "SomeInterface") {
+          isOneOf
+        }
+        scalar: __type(name: "String") {
+          isOneOf
+        }
+        union: __type(name: "SomeUnion") {
+          isOneOf
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        object: { isOneOf: null },
+        enum: { isOneOf: null },
+        interface: { isOneOf: null },
+        scalar: { isOneOf: null },
+        union: { isOneOf: null },
+      },
+    });
+  });
+
   it('fails as expected on the __type root field without an arg', () => {
     const schema = buildSchema(`
       type Query {
@@ -1476,11 +1669,11 @@ describe('Introspection', () => {
       }
     `;
 
-    expect(graphqlSync({ schema, source })).to.deep.equal({
+    expectJSON(graphqlSync({ schema, source })).toDeepEqual({
       errors: [
         {
           message:
-            'Field "__type" argument "name" of type "String!" is required, but it was not provided.',
+            'Argument "<meta>.__type(name:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 3, column: 9 }],
         },
       ],
@@ -1567,20 +1760,20 @@ describe('Introspection', () => {
       schemaDescription: true,
     });
 
-    // istanbul ignore next (Called only to fail test)
+    /* c8 ignore start */
     function fieldResolver(
       _1: any,
       _2: any,
       _3: any,
       info: GraphQLResolveInfo,
     ): never {
-      expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
+      expect.fail(`Called on ${info.parentType}::${info.fieldName}`);
     }
 
-    // istanbul ignore next (Called only to fail test)
     function typeResolver(_1: any, _2: any, info: GraphQLResolveInfo): never {
-      expect.fail(`Called on ${info.parentType.name}::${info.fieldName}`);
+      expect.fail(`Called on ${info.parentType}::${info.fieldName}`);
     }
+    /* c8 ignore stop */
 
     const result = graphqlSync({
       schema,

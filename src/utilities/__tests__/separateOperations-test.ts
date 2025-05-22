@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
 
-import { mapValue } from '../../jsutils/mapValue';
+import { mapValue } from '../../jsutils/mapValue.js';
 
-import { parse } from '../../language/parser';
-import { print } from '../../language/printer';
+import { parse } from '../../language/parser.js';
+import { print } from '../../language/printer.js';
 
-import { separateOperations } from '../separateOperations';
+import { separateOperations } from '../separateOperations.js';
 
 describe('separateOperations', () => {
   it('separates one AST into multiple, maintaining document order', () => {
@@ -196,6 +196,34 @@ describe('separateOperations', () => {
 
         fragment ShouldBeSkippedInFirstQuery on T {
           twoField
+        }
+      `,
+    });
+  });
+
+  it('ignores type definitions', () => {
+    const ast = parse(`
+      query Foo {
+        ...Bar
+      }
+
+      fragment Bar on T {
+        baz
+      }
+
+      scalar Foo
+      type Bar
+    `);
+
+    const separatedASTs = mapValue(separateOperations(ast), print);
+    expect(separatedASTs).to.deep.equal({
+      Foo: dedent`
+        query Foo {
+          ...Bar
+        }
+
+        fragment Bar on T {
+          baz
         }
       `,
     });

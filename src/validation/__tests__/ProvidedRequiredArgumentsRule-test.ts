@@ -1,22 +1,25 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import {
-  ProvidedRequiredArgumentsRule,
   ProvidedRequiredArgumentsOnDirectivesRule,
-} from '../rules/ProvidedRequiredArgumentsRule';
+  ProvidedRequiredArgumentsRule,
+} from '../rules/ProvidedRequiredArgumentsRule.js';
 
-import { expectValidationErrors, expectSDLValidationErrors } from './harness';
+import {
+  expectSDLValidationErrors,
+  expectValidationErrors,
+} from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(ProvidedRequiredArgumentsRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
@@ -28,7 +31,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string) {
-  expectSDLErrors(sdlStr).to.deep.equal([]);
+  expectSDLErrors(sdlStr).toDeepEqual([]);
 }
 
 describe('Validate: Provided required arguments', () => {
@@ -162,10 +165,10 @@ describe('Validate: Provided required arguments', () => {
             multipleReqs(req2: 2)
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
-            'Field "multipleReqs" argument "req1" of type "Int!" is required, but it was not provided.',
+            'Argument "ComplicatedArgs.multipleReqs(req1:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
@@ -178,15 +181,15 @@ describe('Validate: Provided required arguments', () => {
             multipleReqs
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
-            'Field "multipleReqs" argument "req1" of type "Int!" is required, but it was not provided.',
+            'Argument "ComplicatedArgs.multipleReqs(req1:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
         {
           message:
-            'Field "multipleReqs" argument "req2" of type "Int!" is required, but it was not provided.',
+            'Argument "ComplicatedArgs.multipleReqs(req2:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
@@ -199,10 +202,10 @@ describe('Validate: Provided required arguments', () => {
             multipleReqs(req1: "one")
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
-            'Field "multipleReqs" argument "req2" of type "Int!" is required, but it was not provided.',
+            'Argument "ComplicatedArgs.multipleReqs(req2:)" of type "Int!" is required, but it was not provided.',
           locations: [{ line: 4, column: 13 }],
         },
       ]);
@@ -238,15 +241,15 @@ describe('Validate: Provided required arguments', () => {
             name @skip
           }
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
-            'Directive "@include" argument "if" of type "Boolean!" is required, but it was not provided.',
+            'Argument "@include(if:)" of type "Boolean!" is required, but it was not provided.',
           locations: [{ line: 3, column: 15 }],
         },
         {
           message:
-            'Directive "@skip" argument "if" of type "Boolean!" is required, but it was not provided.',
+            'Argument "@skip(if:)" of type "Boolean!" is required, but it was not provided.',
           locations: [{ line: 4, column: 18 }],
         },
       ]);
@@ -271,10 +274,10 @@ describe('Validate: Provided required arguments', () => {
         }
 
         directive @test(arg: String!) on FIELD_DEFINITION
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
-            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+            'Argument "@test(arg:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 3, column: 23 }],
         },
       ]);
@@ -285,10 +288,10 @@ describe('Validate: Provided required arguments', () => {
         type Query {
           foo: String @include
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
-            'Directive "@include" argument "if" of type "Boolean!" is required, but it was not provided.',
+            'Argument "@include(if:)" of type "Boolean!" is required, but it was not provided.',
           locations: [{ line: 3, column: 23 }],
         },
       ]);
@@ -300,10 +303,10 @@ describe('Validate: Provided required arguments', () => {
           foo: String @deprecated
         }
         directive @deprecated(reason: String!) on FIELD
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message:
-            'Directive "@deprecated" argument "reason" of type "String!" is required, but it was not provided.',
+            'Argument "@deprecated(reason:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 3, column: 23 }],
         },
       ]);
@@ -322,10 +325,10 @@ describe('Validate: Provided required arguments', () => {
           extend type Query  @test
         `,
         schema,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message:
-            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+            'Argument "@test(arg:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 4, column: 30 }],
         },
       ]);
@@ -344,13 +347,92 @@ describe('Validate: Provided required arguments', () => {
           extend type Query @test
         `,
         schema,
-      ).to.deep.equal([
+      ).toDeepEqual([
         {
           message:
-            'Directive "@test" argument "arg" of type "String!" is required, but it was not provided.',
+            'Argument "@test(arg:)" of type "String!" is required, but it was not provided.',
           locations: [{ line: 2, column: 29 }],
         },
       ]);
+    });
+  });
+
+  describe('Fragment required arguments', () => {
+    it('ignores unknown arguments', () => {
+      expectValid(`
+        {
+          ...Foo(unknownArgument: true)
+        }
+        fragment Foo on Query {
+          dog
+        }
+      `);
+    });
+
+    it('Missing nullable argument with default is allowed', () => {
+      expectValid(`
+          {
+            ...F
+          }
+          fragment F($x: Int = 3) on Query {
+            foo
+          }
+        `);
+    });
+    it('Missing nullable argument is allowed', () => {
+      expectValid(`
+          {
+            ...F
+          }
+          fragment F($x: Int) on Query {
+            foo
+          }
+        `);
+    });
+    it('Missing non-nullable argument with default is allowed', () => {
+      expectValid(`
+          {
+            ...F
+          }
+          fragment F($x: Int! = 3) on Query {
+            foo
+          }
+        `);
+    });
+    it('Missing non-nullable argument is not allowed', () => {
+      expectErrors(`
+          {
+            ...F
+          }
+          fragment F($x: Int!) on Query {
+            foo
+          }
+        `).toDeepEqual([
+        {
+          message:
+            'Fragment "F" argument "x" of type "Int!" is required, but it was not provided.',
+          locations: [{ line: 3, column: 13 }],
+        },
+      ]);
+    });
+
+    it('Supplies required variables', () => {
+      expectValid(`
+          {
+            ...F(x: 3)
+          }
+          fragment F($x: Int!) on Query {
+            foo
+          }
+        `);
+    });
+
+    it('Skips missing fragments', () => {
+      expectValid(`
+          {
+            ...Missing(x: 3)
+          }
+        `);
     });
   });
 });

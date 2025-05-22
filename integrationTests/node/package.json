@@ -1,12 +1,12 @@
 {
   "private": true,
+  "description": "graphql-js should work on all supported node versions",
+  "type": "module",
   "scripts": {
     "test": "node test.js"
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz",
-    "node-12": "npm:node@12.x.x",
-    "node-14": "npm:node@14.x.x",
-    "node-16": "npm:node@16.x.x"
+    "graphql-esm": "file:../graphql-esm.tgz"
   }
 }

@@ -1,25 +1,27 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString, GraphQLBoolean } from '../../type/scalars';
+import { parse } from '../../language/parser.js';
+
 import {
-  GraphQLList,
-  GraphQLUnionType,
-  GraphQLObjectType,
   GraphQLInterfaceType,
-} from '../../type/definition';
+  GraphQLList,
+  GraphQLObjectType,
+  GraphQLUnionType,
+} from '../../type/definition.js';
+import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
 
-import { executeSync } from '../execute';
+import { execute, executeSync } from '../execute.js';
 
 class Dog {
   name: string;
   barks: boolean;
   mother?: Dog;
   father?: Dog;
-  progeny: Array<Dog>;
+  progeny: ReadonlyArray<Dog>;
 
   constructor(name: string, barks: boolean) {
     this.name = name;
@@ -33,7 +35,7 @@ class Cat {
   meows: boolean;
   mother?: Cat;
   father?: Cat;
-  progeny: Array<Cat>;
+  progeny: ReadonlyArray<Cat>;
 
   constructor(name: string, meows: boolean) {
     this.name = name;
@@ -42,19 +44,30 @@ class Cat {
   }
 }
 
+class Plant {
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+}
+
 class Person {
   name: string;
-  pets?: Array<Dog | Cat>;
-  friends?: Array<Dog | Cat | Person>;
+  pets: ReadonlyArray<Dog | Cat> | undefined;
+  friends: ReadonlyArray<Dog | Cat | Person> | undefined;
+  responsibilities: ReadonlyArray<Dog | Cat | Plant> | undefined;
 
   constructor(
     name: string,
-    pets?: Array<Dog | Cat>,
-    friends?: Array<Dog | Cat | Person>,
+    pets?: ReadonlyArray<Dog | Cat>,
+    friends?: ReadonlyArray<Dog | Cat | Person>,
+    responsibilities?: ReadonlyArray<Dog | Cat | Plant>,
   ) {
     this.name = name;
     this.pets = pets;
     this.friends = friends;
+    this.responsibilities = responsibilities;
   }
 }
 
@@ -108,6 +121,18 @@ const CatType: GraphQLObjectType = new GraphQLObjectType({
   isTypeOf: (value) => value instanceof Cat,
 });
 
+const PlantType: GraphQLObjectType = new GraphQLObjectType({
+  name: 'Plant',
+  interfaces: [NamedType],
+  fields: () => ({
+    name: { type: GraphQLString },
+  }),
+  // eslint-disable-next-line @typescript-eslint/require-await
+  isTypeOf: async () => {
+    throw new Error('Not sure if this is a plant');
+  },
+});
+
 const PetType = new GraphQLUnionType({
   name: 'Pet',
   types: [DogType, CatType],
@@ -115,14 +140,18 @@ const PetType = new GraphQLUnionType({
     if (value instanceof Dog) {
       return DogType.name;
     }
-    // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
     if (value instanceof Cat) {
       return CatType.name;
     }
-
-    // istanbul ignore next (Not reachable. All possible types have been considered)
+    /* c8 ignore next 3 */
+    // Not reachable, all possible types have been considered.
     expect.fail('Not reachable');
   },
+});
+
+const PetOrPlantType = new GraphQLUnionType({
+  name: 'PetOrPlantType',
+  types: [PlantType, DogType, CatType],
 });
 
 const PersonType: GraphQLObjectType = new GraphQLObjectType({
@@ -132,6 +161,7 @@ const PersonType: GraphQLObjectType = new GraphQLObjectType({
     name: { type: GraphQLString },
     pets: { type: new GraphQLList(PetType) },
     friends: { type: new GraphQLList(NamedType) },
+    responsibilities: { type: new GraphQLList(PetOrPlantType) },
     progeny: { type: new GraphQLList(PersonType) },
     mother: { type: PersonType },
     father: { type: PersonType },
@@ -152,8 +182,14 @@ const odie = new Dog('Odie', true);
 odie.mother = new Dog("Odie's Mom", true);
 odie.mother.progeny = [odie];
 
+const fern = new Plant('Fern');
 const liz = new Person('Liz');
-const john = new Person('John', [garfield, odie], [liz, odie]);
+const john = new Person(
+  'John',
+  [garfield, odie],
+  [liz, odie],
+  [garfield, fern],
+);
 
 describe('Execute: Union and intersection types', () => {
   it('can introspect on union and intersection types', () => {
@@ -196,7 +232,12 @@ describe('Execute: Union and intersection types', () => {
           name: 'Named',
           fields: [{ name: 'name' }],
           interfaces: [],
-          possibleTypes: [{ name: 'Dog' }, { name: 'Cat' }, { name: 'Person' }],
+          possibleTypes: [
+            { name: 'Dog' },
+            { name: 'Cat' },
+            { name: 'Person' },
+            { name: 'Plant' },
+          ],
           enumValues: null,
           inputFields: null,
         },
@@ -545,5 +586,51 @@ describe('Execute: Union and intersection types', () => {
     expect(encounteredSchema).to.equal(schema2);
     expect(encounteredRootValue).to.equal(rootValue);
     expect(encounteredContext).to.equal(contextValue);
+  });
+
+  it('it handles rejections from isTypeOf after after an isTypeOf returns true', async () => {
+    const document = parse(`
+      {
+        responsibilities {
+          __typename
+          ... on Dog {
+            name
+            barks
+          }
+          ... on Cat {
+            name
+            meows
+          }
+        }
+      }
+    `);
+
+    const rootValue = new Person('John', [], [liz], [garfield]);
+    const contextValue = { authToken: '123abc' };
+
+    /* c8 ignore next 4 */
+    // eslint-disable-next-line no-undef
+    process.on('unhandledRejection', () => {
+      expect.fail('Unhandled rejection');
+    });
+
+    const result = await execute({
+      schema,
+      document,
+      rootValue,
+      contextValue,
+    });
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        responsibilities: [
+          {
+            __typename: 'Cat',
+            meows: false,
+            name: 'Garfield',
+          },
+        ],
+      },
+    });
   });
 });

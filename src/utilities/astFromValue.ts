@@ -1,21 +1,21 @@
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
-import { isObjectLike } from '../jsutils/isObjectLike';
-import { isIterableObject } from '../jsutils/isIterableObject';
-import type { Maybe } from '../jsutils/Maybe';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import { isIterableObject } from '../jsutils/isIterableObject.js';
+import { isObjectLike } from '../jsutils/isObjectLike.js';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import type { ValueNode } from '../language/ast';
-import { Kind } from '../language/kinds';
+import type { ConstObjectFieldNode, ConstValueNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
-import type { GraphQLInputType } from '../type/definition';
-import { GraphQLID } from '../type/scalars';
+import type { GraphQLInputType } from '../type/definition.js';
 import {
-  isLeafType,
   isEnumType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
-} from '../type/definition';
+} from '../type/definition.js';
+import { GraphQLID } from '../type/scalars.js';
 
 /**
  * Produces a GraphQL Value AST given a JavaScript object.
@@ -37,11 +37,12 @@ import {
  * | Unknown       | Enum Value           |
  * | null          | NullValue            |
  *
+ * @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18
  */
 export function astFromValue(
   value: unknown,
   type: GraphQLInputType,
-): Maybe<ValueNode> {
+): Maybe<ConstValueNode> {
   if (isNonNullType(type)) {
     const astValue = astFromValue(value, type.ofType);
     if (astValue?.kind === Kind.NULL) {
@@ -83,7 +84,7 @@ export function astFromValue(
     if (!isObjectLike(value)) {
       return null;
     }
-    const fieldNodes = [];
+    const fieldNodes: Array<ConstObjectFieldNode> = [];
     for (const field of Object.values(type.getFields())) {
       const fieldValue = astFromValue(value[field.name], field.type);
       if (fieldValue) {
@@ -97,49 +98,48 @@ export function astFromValue(
     return { kind: Kind.OBJECT, fields: fieldNodes };
   }
 
-  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isLeafType(type)) {
-    // Since value is an internally represented value, it must be serialized
+    // Since value is an internally represented value, it must be coerced
     // to an externally represented value before converting into an AST.
-    const serialized = type.serialize(value);
-    if (serialized == null) {
+    const coerced = type.coerceOutputValue(value);
+    if (coerced == null) {
       return null;
     }
 
-    // Others serialize based on their corresponding JavaScript scalar types.
-    if (typeof serialized === 'boolean') {
-      return { kind: Kind.BOOLEAN, value: serialized };
+    // Others coerce based on their corresponding JavaScript scalar types.
+    if (typeof coerced === 'boolean') {
+      return { kind: Kind.BOOLEAN, value: coerced };
     }
 
     // JavaScript numbers can be Int or Float values.
-    if (typeof serialized === 'number' && Number.isFinite(serialized)) {
-      const stringNum = String(serialized);
+    if (typeof coerced === 'number' && Number.isFinite(coerced)) {
+      const stringNum = String(coerced);
       return integerStringRegExp.test(stringNum)
         ? { kind: Kind.INT, value: stringNum }
         : { kind: Kind.FLOAT, value: stringNum };
     }
 
-    if (typeof serialized === 'string') {
+    if (typeof coerced === 'string') {
       // Enum types use Enum literals.
       if (isEnumType(type)) {
-        return { kind: Kind.ENUM, value: serialized };
+        return { kind: Kind.ENUM, value: coerced };
       }
 
       // ID types can use Int literals.
-      if (type === GraphQLID && integerStringRegExp.test(serialized)) {
-        return { kind: Kind.INT, value: serialized };
+      if (type === GraphQLID && integerStringRegExp.test(coerced)) {
+        return { kind: Kind.INT, value: coerced };
       }
 
       return {
         kind: Kind.STRING,
-        value: serialized,
+        value: coerced,
       };
     }
 
-    throw new TypeError(`Cannot convert value to AST: ${inspect(serialized)}.`);
+    throw new TypeError(`Cannot convert value to AST: ${inspect(coerced)}.`);
   }
-
-  // istanbul ignore next (Not reachable. All possible input types have been considered)
+  /* c8 ignore next 3 */
+  // Not reachable, all possible types have been considered.
   invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 

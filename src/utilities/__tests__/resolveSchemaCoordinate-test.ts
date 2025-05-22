@@ -5,11 +5,11 @@ import type {
   GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLObjectType,
-} from '../../type/definition';
-import type { GraphQLDirective } from '../../type/directives';
+} from '../../type/definition.js';
+import type { GraphQLDirective } from '../../type/directives.js';
 
-import { buildSchema } from '../buildASTSchema';
-import { resolveSchemaCoordinate } from '../resolveSchemaCoordinate';
+import { buildSchema } from '../buildASTSchema.js';
+import { resolveSchemaCoordinate } from '../resolveSchemaCoordinate.js';
 
 describe('resolveSchemaCoordinate', () => {
   const schema = buildSchema(`

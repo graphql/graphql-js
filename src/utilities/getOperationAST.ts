@@ -1,6 +1,7 @@
-import type { Maybe } from '../jsutils/Maybe';
-import type { DocumentNode, OperationDefinitionNode } from '../language/ast';
-import { Kind } from '../language/kinds';
+import type { Maybe } from '../jsutils/Maybe.js';
+
+import type { DocumentNode, OperationDefinitionNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
 /**
  * Returns an operation AST given a document AST and optionally an operation

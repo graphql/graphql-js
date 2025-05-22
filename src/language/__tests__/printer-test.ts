@@ -1,17 +1,18 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent, dedentString } from '../../__testUtils__/dedent';
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
-import { parseSchemaCoordinate, parse } from '../parser';
+import { dedent, dedentString } from '../../__testUtils__/dedent.js';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 
-import { print } from '../printer';
+import { Kind } from '../kinds.js';
+import { parse, parseSchemaCoordinate } from '../parser.js';
+import { print } from '../printer.js';
 
 describe('Printer: Query document', () => {
   it('prints minimal ast', () => {
     const ast = {
-      kind: 'Field',
-      name: { kind: 'Name', value: 'foo' },
+      kind: Kind.FIELD,
+      name: { kind: Kind.NAME, value: 'foo' },
     } as const;
     expect(print(ast)).to.equal('foo');
   });
@@ -65,10 +66,10 @@ describe('Printer: Query document', () => {
 
   it('prints query with variable directives', () => {
     const queryASTWithVariableDirective = parse(
-      'query ($foo: TestType = {a: 123} @testDirective(if: true) @test) { id }',
+      'query ($foo: TestType = { a: 123 } @testDirective(if: true) @test) { id }',
     );
     expect(print(queryASTWithVariableDirective)).to.equal(dedent`
-      query ($foo: TestType = {a: 123} @testDirective(if: true) @test) {
+      query ($foo: TestType = { a: 123 } @testDirective(if: true) @test) {
         id
       }
     `);
@@ -79,15 +80,13 @@ describe('Printer: Query document', () => {
       parse('{trip(wheelchair:false arriveBy:false){dateTime}}'),
     );
 
-    expect(printed).to.equal(
-      dedent`
+    expect(printed).to.equal(dedent`
       {
         trip(wheelchair: false, arriveBy: false) {
           dateTime
         }
       }
-    `,
-    );
+    `);
   });
 
   it('puts arguments on multiple lines if line is long (> 80 chars)', () => {
@@ -97,8 +96,7 @@ describe('Printer: Query document', () => {
       ),
     );
 
-    expect(printed).to.equal(
-      dedent`
+    expect(printed).to.equal(dedent`
       {
         trip(
           wheelchair: false
@@ -109,34 +107,119 @@ describe('Printer: Query document', () => {
           dateTime
         }
       }
-    `,
-    );
+    `);
   });
 
-  it('Legacy: prints fragment with variable directives', () => {
-    const queryASTWithVariableDirective = parse(
-      'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
-      { allowLegacyFragmentVariables: true },
+  it('puts large object values on multiple lines if line is long (> 80 chars)', () => {
+    const printed = print(
+      parse(
+        '{trip(obj:{wheelchair:false,smallObj:{a: 1},largeObj:{wheelchair:false,smallObj:{a: 1},arriveBy:false,includePlannedCancellations:true,transitDistanceReluctance:2000,anotherLongFieldName:"Lots and lots and lots and lots of text"},arriveBy:false,includePlannedCancellations:true,transitDistanceReluctance:2000,anotherLongFieldName:"Lots and lots and lots and lots of text"}){dateTime}}',
+      ),
     );
-    expect(print(queryASTWithVariableDirective)).to.equal(dedent`
+
+    expect(printed).to.equal(dedent`
+      {
+        trip(
+          obj: {
+            wheelchair: false
+            smallObj: { a: 1 }
+            largeObj: {
+              wheelchair: false
+              smallObj: { a: 1 }
+              arriveBy: false
+              includePlannedCancellations: true
+              transitDistanceReluctance: 2000
+              anotherLongFieldName: "Lots and lots and lots and lots of text"
+            }
+            arriveBy: false
+            includePlannedCancellations: true
+            transitDistanceReluctance: 2000
+            anotherLongFieldName: "Lots and lots and lots and lots of text"
+          }
+        ) {
+          dateTime
+        }
+      }
+    `);
+  });
+
+  it('puts large list values on multiple lines if line is long (> 80 chars)', () => {
+    const printed = print(
+      parse(
+        '{trip(list:[["small array", "small", "small"], ["Lots and lots and lots and lots of text", "Lots and lots and lots and lots of text", "Lots and lots and lots and lots of text"]]){dateTime}}',
+      ),
+    );
+
+    expect(printed).to.equal(dedent`
+      {
+        trip(
+          list: [
+            ["small array", "small", "small"]
+            [
+              "Lots and lots and lots and lots of text"
+              "Lots and lots and lots and lots of text"
+              "Lots and lots and lots and lots of text"
+            ]
+          ]
+        ) {
+          dateTime
+        }
+      }
+    `);
+  });
+
+  it('prints fragment with argument definition directives', () => {
+    const fragmentWithArgumentDefinitionDirective = parse(
+      'fragment Foo($foo: TestType @test) on TestType @testDirective { id }',
+      { experimentalFragmentArguments: true },
+    );
+    expect(print(fragmentWithArgumentDefinitionDirective)).to.equal(dedent`
       fragment Foo($foo: TestType @test) on TestType @testDirective {
         id
       }
     `);
   });
 
-  it('Legacy: correctly prints fragment defined variables', () => {
-    const fragmentWithVariable = parse(
+  it('correctly prints fragment defined arguments', () => {
+    const fragmentWithArgumentDefinition = parse(
       `
         fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
           id
         }
       `,
-      { allowLegacyFragmentVariables: true },
+      { experimentalFragmentArguments: true },
     );
-    expect(print(fragmentWithVariable)).to.equal(dedent`
+    expect(print(fragmentWithArgumentDefinition)).to.equal(dedent`
       fragment Foo($a: ComplexType, $b: Boolean = false) on TestType {
         id
+      }
+    `);
+  });
+
+  it('prints fragment spread with arguments', () => {
+    const fragmentSpreadWithArguments = parse(
+      'fragment Foo on TestType { ...Bar(a: {x: $x}, b: true) }',
+      { experimentalFragmentArguments: true },
+    );
+    expect(print(fragmentSpreadWithArguments)).to.equal(dedent`
+      fragment Foo on TestType {
+        ...Bar(a: { x: $x }, b: true)
+      }
+    `);
+  });
+
+  it('prints fragment spread with multi-line arguments', () => {
+    const fragmentSpreadWithArguments = parse(
+      'fragment Foo on TestType { ...Bar(a: {x: $x, y: $y, z: $z, xy: $xy}, b: true, c: "a long string extending arguments over max length") }',
+      { experimentalFragmentArguments: true },
+    );
+    expect(print(fragmentSpreadWithArguments)).to.equal(dedent`
+      fragment Foo on TestType {
+        ...Bar(
+          a: { x: $x, y: $y, z: $z, xy: $xy }
+          b: true
+          c: "a long string extending arguments over max length"
+        )
       }
     `);
   });
@@ -182,7 +265,7 @@ describe('Printer: Query document', () => {
         }
       }
 
-      subscription StoryLikeSubscription($input: StoryLikeSubscribeInput) @onSubscription {
+      subscription StoryLikeSubscription($input: StoryLikeSubscribeInput @onVariableDefinition) @onSubscription {
         storyLikeSubscribe(input: $input) {
           story {
             likers {
@@ -199,9 +282,9 @@ describe('Printer: Query document', () => {
         foo(
           size: $size
           bar: $b
-          obj: {key: "value", block: """
+          obj: { key: "value", block: """
           block string uses \"""
-          """}
+          """ }
         )
       }
 

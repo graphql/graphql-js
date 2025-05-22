@@ -1,0 +1,482 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+.conf-hero {
+  background: linear-gradient(
+      360deg,
+      #0e031c 10.63%,
+      #0e031c 10.65%,
+      rgba(14, 3, 28, 0) 166.98%
+    ),
+    url('/img/conf/graphql-conf-bg.png');
+  @apply text-white max-md:text-base;
+}
+
+.with-arrow:after {
+  @apply content-['_→'] font-sans text-xl;
+  @apply transition-all duration-75 hover:ml-1;
+}
+
+footer {
+  @apply !bg-transparent;
+}
+
+.nextra-logo {
+  mask-image: linear-gradient(
+    60deg,
+    black 25%,
+    rgba(0, 0, 0, 0.2) 50%,
+    black 75%
+  );
+  mask-size: 400%;
+  mask-position: 0;
+
+  &:hover {
+    mask-position: 100%;
+    transition:
+      mask-position 1s ease,
+      -webkit-mask-position 1s ease;
+  }
+}
+
+div[role='menu'][data-headlessui-state] {
+  @apply left-0 right-auto;
+}
+
+div[id^='headlessui-menu-items'] {
+  @apply rounded-none;
+
+  > a {
+    @apply py-3.5;
+  }
+}
+
+/* should be fixed in Nextra 4 */
+._max-w-\[90rem\] {
+  @apply container;
+}
+
+.nextra-nav-container + ._max-w-\[90rem\] {
+  @apply px-0;
+}
+
+.nextra-nav-container > nav {
+  @apply gap-6;
+}
+
+/* Move nav links to the left */
+.nextra-nav-container nav {
+  @apply justify-start;
+
+  > a {
+    @apply hover:!text-primary;
+  }
+
+  button[id^='headlessui-menu-button'] {
+    @apply hover:text-primary;
+
+    + div > a {
+      @apply hover:text-primary;
+    }
+  }
+
+  .nextra-search {
+    @apply ml-auto;
+
+    + * {
+      @apply max-md:ml-auto;
+    }
+  }
+}
+
+/*._max-w-\[90rem\] {*/
+/*  !* TODO: maybe add to nextra as option to configure width? *!*/
+/*  @apply container;*/
+/*}*/
+
+.miniGraphiQL {
+  @apply !shadow-none border-2 dark:border-neutral-900 dark:!bg-neutral-900/10 !rounded-md dark:brightness-200;
+}
+
+.result-window {
+  @apply !shadow-none border-l-2 dark:border-neutral-900 !rounded-none;
+}
+
+.variable-editor {
+  @apply before:!bg-transparent border-t-2 dark:border-neutral-900;
+}
+
+.CodeMirror-selected {
+  @apply !bg-primary/50 dark:bg-primary/40;
+}
+
+.CodeMirror-cursor {
+  @apply dark:border-white;
+}
+
+.CodeMirror {
+  @apply p-2;
+}
+
+::selection {
+  @apply bg-primary/50 dark:bg-primary;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    /*background: linear-gradient(*/
+    /*    125deg,*/
+    /*    rgba(234, 117, 195, 0.3) -10%,*/
+    /*    rgba(234, 117, 195, 0) 8%*/
+    /*  ),*/
+    /*  linear-gradient(*/
+    /*    -125deg,*/
+    /*    rgba(234, 117, 195, 0.3) -10%,*/
+    /*    rgba(234, 117, 195, 0) 8%*/
+    /*  ),*/
+    /*  linear-gradient(0deg, #05031c, #05031c);*/
+    /*@apply bg-gradient-to-b from-primary/10 to-[#05031c]*/
+
+    /*background:*/
+    /*        !*linear-gradient(0deg, #05031c, #05031c),*!*/
+    /*  linear-gradient(*/
+    /*    125.93deg,*/
+    /*    rgba(234, 117, 195, 0.7) -10.45%,*/
+    /*    rgba(234, 117, 195, 0) 28.49%*/
+    /*  ),*/
+    /*  linear-gradient(*/
+    /*    -125.93deg,*/
+    /*    rgba(234, 117, 195, 0.7) -33.25%,*/
+    /*    rgba(234, 117, 195, 0) 26.45%*/
+    /*  );*/
+  }
+}
+
+.donts-images ul {
+  gap: 0 3em;
+  @apply flex flex-wrap;
+
+  li {
+    @apply flex gap-3 grow md:basis-1/3;
+
+    div {
+      @apply grow;
+    }
+
+    img {
+      @apply bg-gray-200 p-4 h-20;
+    }
+  }
+}
+
+.dos > ul:first-child li:before {
+  background: url('/img/brand/do.svg');
+}
+
+.donts > ul:first-child li:before {
+  background: url('/img/brand/dont.svg');
+}
+
+.dos,
+.donts {
+  @apply mt-6;
+
+  > ul ul {
+    @apply mt-0;
+
+    li:before {
+      @apply grayscale;
+    }
+  }
+
+  & > ul:first-child li {
+    @apply list-none relative;
+
+    &:before {
+      @apply size-4 absolute content-[''] top-1 -left-6;
+    }
+  }
+}
+
+.code-page {
+  background: linear-gradient(
+      303.75deg,
+      rgba(124, 124, 124, 0.2) 0.8%,
+      rgba(124, 124, 124, 0) 74.17%
+    ),
+    linear-gradient(0deg, #f8f8f8, #f8f8f8);
+}
+
+.dark .code-page {
+  background: linear-gradient(
+      303.75deg,
+      rgba(124, 124, 124, 0.2) 0.8%,
+      rgba(124, 124, 124, 0) 74.17%
+    ),
+    linear-gradient(0deg, #1b1b1b, #1b1b1b);
+}
+
+.dark .blog-page {
+  background: linear-gradient(
+      250.93deg,
+      rgba(115, 119, 125, 0.1),
+      rgba(115, 119, 125, 0)
+    ),
+    #18181b;
+}
+
+.blog-page {
+  background: linear-gradient(
+      231.79deg,
+      rgba(225, 0, 152, 0.4) -23.67%,
+      rgba(225, 0, 152, 0) 25.9%
+    ),
+    linear-gradient(
+      113.65deg,
+      rgba(229, 53, 171, 0.4) -49.55%,
+      rgba(225, 0, 152, 0) 33.97%
+    ),
+    linear-gradient(180deg, #f3f4f6 0%, #fff 100%);
+}
+
+.conf-heading {
+  @apply text-3xl lg:text-[50px]/[4rem] font-bold text-balance;
+}
+
+.conf-block {
+  @apply py-14 lg:py-24;
+}
+
+.tag {
+  @apply hover:text-white hover:border-transparent hover:bg-primary;
+  @apply text-sm border border-current rounded px-2.5 py-1 font-bold transition-colors;
+}
+
+.index {
+  p {
+    @apply text-lg lg:text-xl/9 mb-5 max-w-2xl;
+  }
+
+  h2 {
+    @apply text-3xl lg:text-5xl font-bold mb-10 text-balance;
+  }
+
+  pre {
+    @apply bg-white;
+  }
+}
+
+.add,
+.remove {
+  @apply shadow-[2px_0_currentColor_inset];
+}
+
+.add {
+  @apply !bg-green-200 dark:!bg-green-200/50 text-green-300;
+
+  &::before {
+    @apply absolute start-1.5 content-['+'];
+  }
+}
+
+.remove {
+  @apply !bg-red-200 dark:!bg-red-200/50 text-red-300;
+
+  &::before {
+    @apply absolute start-1.5 content-['-'];
+  }
+}
+
+.step0,
+.step6 {
+  .v2 {
+    @apply opacity-0;
+  }
+}
+
+.step1 .v2 code > span:nth-child(5) {
+  @apply add;
+}
+
+.step2 .v3 code > span:nth-child(6) {
+  @apply add;
+}
+
+.step3 .v4 code > {
+  span:nth-child(7),
+  span:nth-last-child(-n + 5) {
+    @apply add;
+  }
+}
+
+.step4 {
+  .v4 code > span:nth-child(6) {
+    @apply remove;
+  }
+
+  .v5 code > span:nth-child(6) {
+    @apply add;
+  }
+}
+
+.index-button {
+  @apply border border-current rounded-md transition-colors py-2.5 px-6;
+
+  &:hover,
+  &:focus {
+    @apply bg-primary border-transparent text-white;
+  }
+}
+
+.nextra-codeblocks {
+  div.nextra-code {
+    pre {
+      @apply h-full;
+    }
+
+    &:not(:first-child) {
+      @apply mt-0;
+
+      > div {
+        @apply first:rounded-l-none;
+      }
+
+      pre {
+        @apply rounded-l-none;
+      }
+    }
+
+    &:not(:last-child) {
+      > div {
+        @apply first:rounded-r-none;
+      }
+
+      pre {
+        @apply rounded-r-none;
+      }
+    }
+  }
+}
+
+.index-bg {
+  background: linear-gradient(
+      303.75deg,
+      rgba(124, 124, 124, 0.2) 0.8%,
+      rgba(124, 124, 124, 0) 74.17%
+    ),
+    linear-gradient(0deg, #f8f8f8, #f8f8f8);
+
+  .dark & {
+    background: linear-gradient(0deg, #111, #111),
+      linear-gradient(
+        303.75deg,
+        rgba(124, 124, 124, 0.2) 0.8%,
+        rgba(124, 124, 124, 0) 74.17%
+      );
+  }
+}
+
+.index-gradient {
+  @apply bg-gradient-to-b from-transparent to-primary/5 dark:to-primary/10;
+}
+
+.type-evolution {
+  @apply w-full overflow-hidden;
+
+  #typeEvolveView {
+    @apply select-none h-full relative left-0 flex;
+
+    .v1,
+    .v2,
+    .v3,
+    .v4 {
+      @apply border-r dark:border-neutral-800 w-1/2 shrink-0;
+    }
+
+    .v5 {
+      @apply w-full shrink-0;
+    }
+
+    &.step1 {
+      .v2 {
+        opacity: 1;
+        transition: opacity 0.5s ease-in-out;
+      }
+    }
+
+    &.step2 {
+      left: calc(-1 * 50%);
+      transition: left 0.5s ease-in-out;
+    }
+
+    &.step3 {
+      left: calc(-2 * 50%);
+      transition: left 0.5s ease-in-out;
+    }
+
+    &.step4 {
+      left: calc(-3 * 50%);
+      transition: left 0.5s ease-in-out;
+    }
+
+    &.step5 {
+      left: calc(-4 * 50%);
+      transition: left 0.5s ease-in-out;
+    }
+
+    &.step6 {
+      .v5 {
+        left: calc(-4 * 50%);
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+    }
+  }
+}
+
+.apiIndex {
+  @apply mt-6;
+}
+
+.apiIndex li {
+  margin: 0 0 5px 0;
+}
+
+.apiIndex li a {
+  color: inherit;
+  display: block;
+  position: relative;
+  text-decoration: none;
+}
+
+.apiIndex li a:hover::before {
+  @apply text-primary;
+  content: '#';
+  font-size: 16px;
+  left: -2em;
+  line-height: 20px;
+  position: absolute;
+}
+
+.apiIndex li {
+  @apply bg-white dark:bg-black;
+  @apply [box-shadow:inset_0_0_0_1px_#ddd,inset_4px_0_0_#ddd];
+  @apply dark:[box-shadow:inset_0_0_0_1px_#444,inset_4px_0_0_#444];
+  font-size: 13px;
+  padding: 7px 14px;
+}

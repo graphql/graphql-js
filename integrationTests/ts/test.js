@@ -1,9 +1,8 @@
-'use strict';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const path = require('path');
-const childProcess = require('child_process');
-
-const { dependencies } = require('./package.json');
+const { dependencies } = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
 
 const tsVersions = Object.keys(dependencies)
   .filter((pkg) => pkg.startsWith('typescript-'))
@@ -11,7 +10,9 @@ const tsVersions = Object.keys(dependencies)
 
 for (const version of tsVersions) {
   console.log(`Testing on ${version} ...`);
+  childProcess.execSync(tscPath(version), { stdio: 'inherit' });
+}
 
-  const tscPath = path.join(__dirname, 'node_modules', version, 'bin/tsc');
-  childProcess.execSync(tscPath, { stdio: 'inherit' });
+function tscPath(version) {
+  return path.join('node_modules', version, 'bin', 'tsc');
 }

@@ -1,21 +1,22 @@
-import type { GraphQLSchema } from '../type/schema';
-import type { SchemaCoordinateNode } from '../language/ast';
-import type { Source } from '../language/source';
-import {
-  isObjectType,
-  isInterfaceType,
-  isEnumType,
-  isInputObjectType,
-} from '../type/definition';
-import { parseSchemaCoordinate } from '../language/parser';
+import type { SchemaCoordinateNode } from '../language/ast.js';
+import { parseSchemaCoordinate } from '../language/parser.js';
+import type { Source } from '../language/source.js';
+
 import type {
-  GraphQLNamedType,
+  GraphQLArgument,
+  GraphQLEnumValue,
   GraphQLField,
   GraphQLInputField,
-  GraphQLEnumValue,
-  GraphQLArgument,
-} from '../type/definition';
-import type { GraphQLDirective } from '../type/directives';
+  GraphQLNamedType,
+} from '../type/definition.js';
+import {
+  isEnumType,
+  isInputObjectType,
+  isInterfaceType,
+  isObjectType,
+} from '../type/definition.js';
+import type { GraphQLDirective } from '../type/directives.js';
+import type { GraphQLSchema } from '../type/schema.js';
 
 /**
  * A resolved schema element may be one of the following kinds:
@@ -136,7 +137,7 @@ export function resolveASTSchemaCoordinate(
       // Let {enumValueName} be the value of the second {Name}.
       // Return the enum value of {type} named {enumValueName}.
       const enumValue = type.getValue(memberName.value);
-      if (!enumValue) {
+      if (enumValue == null) {
         return;
       }
       return { kind: 'EnumValue', type, enumValue };
@@ -146,7 +147,7 @@ export function resolveASTSchemaCoordinate(
       // Let {inputFieldName} be the value of the second {Name}.
       // Return the input field of {type} named {inputFieldName}.
       const inputField = type.getFields()[memberName.value];
-      if (!inputField) {
+      if (inputField == null) {
         return;
       }
       return { kind: 'InputField', type, inputField };
@@ -159,7 +160,7 @@ export function resolveASTSchemaCoordinate(
     // Let {fieldName} be the value of the second {Name}.
     // Return the field of {type} named {fieldName}.
     const field = type.getFields()[memberName.value];
-    if (!field) {
+    if (field == null) {
       return;
     }
     return { kind: 'Field', type, field };
@@ -174,7 +175,7 @@ export function resolveASTSchemaCoordinate(
   // Let {field} be the field of {type} named {fieldName}.
   const field = type.getFields()[memberName.value];
   // Assert {field} must exist.
-  if (!field) {
+  if (field == null) {
     return;
   }
   // Let {fieldArgumentName} be the value of the third {Name}.
@@ -182,7 +183,7 @@ export function resolveASTSchemaCoordinate(
   const fieldArgument = field.args.find(
     (arg) => arg.name === argumentName.value,
   );
-  if (!fieldArgument) {
+  if (fieldArgument == null) {
     return;
   }
   return { kind: 'FieldArgument', type, field, fieldArgument };

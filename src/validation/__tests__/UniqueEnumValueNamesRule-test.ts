@@ -1,19 +1,19 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { UniqueEnumValueNamesRule } from '../rules/UniqueEnumValueNamesRule';
+import { UniqueEnumValueNamesRule } from '../rules/UniqueEnumValueNamesRule.js';
 
-import { expectSDLValidationErrors } from './harness';
+import { expectSDLValidationErrors } from './harness.js';
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(schema, UniqueEnumValueNamesRule, sdlStr);
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Unique enum value names', () => {
@@ -47,7 +47,7 @@ describe('Validate: Unique enum value names', () => {
         BAR
         FOO
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
         locations: [
@@ -80,7 +80,7 @@ describe('Validate: Unique enum value names', () => {
       enum SomeEnum {
         FOO
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
         locations: [
@@ -99,7 +99,7 @@ describe('Validate: Unique enum value names', () => {
         BAR
         FOO
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
         locations: [
@@ -119,7 +119,7 @@ describe('Validate: Unique enum value names', () => {
       extend enum SomeEnum {
         FOO
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
         locations: [
@@ -156,7 +156,7 @@ describe('Validate: Unique enum value names', () => {
       }
     `;
 
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       {
         message:
           'Enum value "SomeEnum.FOO" already exists in the schema. It cannot also be defined in this type extension.',
@@ -181,7 +181,7 @@ describe('Validate: Unique enum value names', () => {
       }
     `;
 
-    expectSDLErrors(sdl, schema).to.deep.equal([
+    expectSDLErrors(sdl, schema).toDeepEqual([
       {
         message: 'Enum value "SomeEnum.FOO" can only be defined once.',
         locations: [

@@ -1,13 +1,10 @@
-'use strict';
+import fs from 'node:fs';
 
-const fs = require('fs');
-const path = require('path');
-
-exports.bigSchemaSDL = fs.readFileSync(
-  path.join(__dirname, 'github-schema.graphql'),
+export const bigSchemaSDL = fs.readFileSync(
+  new URL('github-schema.graphql', import.meta.url),
   'utf8',
 );
 
-exports.bigSchemaIntrospectionResult = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'github-schema.json'), 'utf8'),
+export const bigSchemaIntrospectionResult = JSON.parse(
+  fs.readFileSync(new URL('github-schema.json', import.meta.url), 'utf8'),
 );

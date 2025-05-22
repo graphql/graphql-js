@@ -1,13 +1,13 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
-import { print } from '../../language/printer';
+import { print } from '../../language/printer.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import { isCompositeType } from '../../type/definition';
+import { isCompositeType } from '../../type/definition.js';
 
-import { typeFromAST } from '../../utilities/typeFromAST';
+import { typeFromAST } from '../../utilities/typeFromAST.js';
 
-import type { ValidationContext } from '../ValidationContext';
+import type { ValidationContext } from '../ValidationContext.js';
 
 /**
  * Fragments on composite type
@@ -15,6 +15,8 @@ import type { ValidationContext } from '../ValidationContext';
  * Fragments use a type condition to determine if they apply, since fragments
  * can only be spread into a composite type (object, interface, or union), the
  * type condition must also be a composite type.
+ *
+ * See https://spec.graphql.org/draft/#sec-Fragments-On-Composite-Types
  */
 export function FragmentsOnCompositeTypesRule(
   context: ValidationContext,
@@ -29,7 +31,7 @@ export function FragmentsOnCompositeTypesRule(
           context.reportError(
             new GraphQLError(
               `Fragment cannot condition on non composite type "${typeStr}".`,
-              typeCondition,
+              { nodes: typeCondition },
             ),
           );
         }
@@ -42,7 +44,7 @@ export function FragmentsOnCompositeTypesRule(
         context.reportError(
           new GraphQLError(
             `Fragment "${node.name.value}" cannot condition on non composite type "${typeStr}".`,
-            node.typeCondition,
+            { nodes: node.typeCondition },
           ),
         );
       }

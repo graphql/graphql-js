@@ -1,11 +1,13 @@
-'use strict';
+import { noDirImportRule } from './no-dir-import.js';
+import { onlyAsciiRule } from './only-ascii.js';
+import { requireToStringTagRule } from './require-to-string-tag.js';
 
-const onlyASCII = require('./only-ascii.js');
-const noDirImport = require('./no-dir-import.js');
-
-module.exports = {
+const internalRulesPlugin = {
   rules: {
-    'only-ascii': onlyASCII,
-    'no-dir-import': noDirImport,
+    ...onlyAsciiRule,
+    ...noDirImportRule,
+    ...requireToStringTagRule,
   },
 };
+
+export { internalRulesPlugin };

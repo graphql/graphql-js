@@ -1,8 +1,9 @@
-import { inspect } from '../jsutils/inspect';
-import type { Maybe } from '../jsutils/Maybe';
+import { devAssert } from '../jsutils/devAssert.js';
+import { inspect } from '../jsutils/inspect.js';
 
-import type { ASTNode, ASTKindToNode } from './ast';
-import { isNode } from './ast';
+import type { ASTNode } from './ast.js';
+import { isNode, QueryDocumentKeys } from './ast.js';
+import { Kind } from './kinds.js';
 
 /**
  * A visitor is provided to visit, it contains the collection of
@@ -11,14 +12,14 @@ import { isNode } from './ast';
 export type ASTVisitor = EnterLeaveVisitor<ASTNode> | KindVisitor;
 
 type KindVisitor = {
-  readonly [K in keyof ASTKindToNode]?:
-    | ASTVisitFn<ASTKindToNode[K]>
-    | EnterLeaveVisitor<ASTKindToNode[K]>;
+  readonly [NodeT in ASTNode as NodeT['kind']]?:
+    | ASTVisitFn<NodeT>
+    | EnterLeaveVisitor<NodeT>;
 };
 
 interface EnterLeaveVisitor<TVisitedNode extends ASTNode> {
-  readonly enter?: ASTVisitFn<TVisitedNode>;
-  readonly leave?: ASTVisitFn<TVisitedNode>;
+  readonly enter?: ASTVisitFn<TVisitedNode> | undefined;
+  readonly leave?: ASTVisitFn<TVisitedNode> | undefined;
 }
 
 /**
@@ -47,9 +48,9 @@ export type ASTVisitFn<TVisitedNode extends ASTNode> = (
  * another form.
  */
 export type ASTReducer<R> = {
-  readonly [K in keyof ASTKindToNode]?: {
-    readonly enter?: ASTVisitFn<ASTKindToNode[K]>;
-    readonly leave: ASTReducerFn<ASTKindToNode[K], R>;
+  readonly [NodeT in ASTNode as NodeT['kind']]?: {
+    readonly enter?: ASTVisitFn<NodeT>;
+    readonly leave: ASTReducerFn<NodeT, R>;
   };
 };
 
@@ -70,98 +71,17 @@ type ASTReducerFn<TReducedNode extends ASTNode, R> = (
   ancestors: ReadonlyArray<ASTNode | ReadonlyArray<ASTNode>>,
 ) => R;
 
-type ReducedField<T, R> = T extends null | undefined
-  ? T
-  : T extends ReadonlyArray<any>
-  ? ReadonlyArray<R>
-  : R;
+type ReducedField<T, R> = T extends ASTNode
+  ? R
+  : T extends ReadonlyArray<ASTNode>
+    ? ReadonlyArray<R>
+    : T;
 
-const QueryDocumentKeys = {
-  Name: [],
-
-  Document: ['definitions'],
-  OperationDefinition: [
-    'name',
-    'variableDefinitions',
-    'directives',
-    'selectionSet',
-  ],
-  VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
-  Variable: ['name'],
-  SelectionSet: ['selections'],
-  Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
-  Argument: ['name', 'value'],
-
-  FragmentSpread: ['name', 'directives'],
-  InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
-  FragmentDefinition: [
-    'name',
-    // Note: fragment variable definitions are deprecated and will removed in v17.0.0
-    'variableDefinitions',
-    'typeCondition',
-    'directives',
-    'selectionSet',
-  ],
-
-  IntValue: [],
-  FloatValue: [],
-  StringValue: [],
-  BooleanValue: [],
-  NullValue: [],
-  EnumValue: [],
-  ListValue: ['values'],
-  ObjectValue: ['fields'],
-  ObjectField: ['name', 'value'],
-
-  Directive: ['name', 'arguments'],
-
-  NamedType: ['name'],
-  ListType: ['type'],
-  NonNullType: ['type'],
-
-  SchemaDefinition: ['description', 'directives', 'operationTypes'],
-  OperationTypeDefinition: ['type'],
-
-  ScalarTypeDefinition: ['description', 'name', 'directives'],
-  ObjectTypeDefinition: [
-    'description',
-    'name',
-    'interfaces',
-    'directives',
-    'fields',
-  ],
-  FieldDefinition: ['description', 'name', 'arguments', 'type', 'directives'],
-  InputValueDefinition: [
-    'description',
-    'name',
-    'type',
-    'defaultValue',
-    'directives',
-  ],
-  InterfaceTypeDefinition: [
-    'description',
-    'name',
-    'interfaces',
-    'directives',
-    'fields',
-  ],
-  UnionTypeDefinition: ['description', 'name', 'directives', 'types'],
-  EnumTypeDefinition: ['description', 'name', 'directives', 'values'],
-  EnumValueDefinition: ['description', 'name', 'directives'],
-  InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
-
-  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
-
-  SchemaExtension: ['directives', 'operationTypes'],
-
-  ScalarTypeExtension: ['name', 'directives'],
-  ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
-  InterfaceTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
-  UnionTypeExtension: ['name', 'directives', 'types'],
-  EnumTypeExtension: ['name', 'directives', 'values'],
-  InputObjectTypeExtension: ['name', 'directives', 'fields'],
-
-  SchemaCoordinate: ['name', 'memberName', 'argumentName'],
+/**
+ * A KeyMap describes each the traversable properties of each kind of node.
+ */
+export type ASTVisitorKeyMap = {
+  [NodeT in ASTNode as NodeT['kind']]?: ReadonlyArray<keyof NodeT>;
 };
 
 export const BREAK: unknown = Object.freeze({});
@@ -180,24 +100,26 @@ export const BREAK: unknown = Object.freeze({});
  * a new version of the AST with the changes applied will be returned from the
  * visit function.
  *
- *     const editedAST = visit(ast, {
- *       enter(node, key, parent, path, ancestors) {
- *         // @return
- *         //   undefined: no action
- *         //   false: skip visiting this node
- *         //   visitor.BREAK: stop visiting altogether
- *         //   null: delete this node
- *         //   any value: replace this node with the returned value
- *       },
- *       leave(node, key, parent, path, ancestors) {
- *         // @return
- *         //   undefined: no action
- *         //   false: no action
- *         //   visitor.BREAK: stop visiting altogether
- *         //   null: delete this node
- *         //   any value: replace this node with the returned value
- *       }
- *     });
+ * ```ts
+ * const editedAST = visit(ast, {
+ *   enter(node, key, parent, path, ancestors) {
+ *     // @return
+ *     //   undefined: no action
+ *     //   false: skip visiting this node
+ *     //   visitor.BREAK: stop visiting altogether
+ *     //   null: delete this node
+ *     //   any value: replace this node with the returned value
+ *   },
+ *   leave(node, key, parent, path, ancestors) {
+ *     // @return
+ *     //   undefined: no action
+ *     //   false: no action
+ *     //   visitor.BREAK: stop visiting altogether
+ *     //   null: delete this node
+ *     //   any value: replace this node with the returned value
+ *   }
+ * });
+ * ```
  *
  * Alternatively to providing enter() and leave() functions, a visitor can
  * instead provide functions named the same as the kinds of AST nodes, or
@@ -206,55 +128,73 @@ export const BREAK: unknown = Object.freeze({});
  *
  * 1) Named visitors triggered when entering a node of a specific kind.
  *
- *     visit(ast, {
- *       Kind(node) {
- *         // enter the "Kind" node
- *       }
- *     })
+ * ```ts
+ * visit(ast, {
+ *   Kind(node) {
+ *     // enter the "Kind" node
+ *   }
+ * })
+ * ```
  *
- * 2) Named visitors that trigger upon entering and leaving a node of
- *    a specific kind.
+ * 2) Named visitors that trigger upon entering and leaving a node of a specific kind.
  *
- *     visit(ast, {
- *       Kind: {
- *         enter(node) {
- *           // enter the "Kind" node
- *         }
- *         leave(node) {
- *           // leave the "Kind" node
- *         }
- *       }
- *     })
+ * ```ts
+ * visit(ast, {
+ *   Kind: {
+ *     enter(node) {
+ *       // enter the "Kind" node
+ *     }
+ *     leave(node) {
+ *       // leave the "Kind" node
+ *     }
+ *   }
+ * })
+ * ```
  *
  * 3) Generic visitors that trigger upon entering and leaving any node.
  *
- *     visit(ast, {
- *       enter(node) {
- *         // enter any node
- *       },
- *       leave(node) {
- *         // leave any node
- *       }
- *     })
+ * ```ts
+ * visit(ast, {
+ *   enter(node) {
+ *     // enter any node
+ *   },
+ *   leave(node) {
+ *     // leave any node
+ *   }
+ * })
+ * ```
  */
-export function visit<N extends ASTNode>(root: N, visitor: ASTVisitor): N;
-export function visit<R>(root: ASTNode, visitor: ASTReducer<R>): R;
+export function visit<N extends ASTNode>(
+  root: N,
+  visitor: ASTVisitor,
+  visitorKeys?: ASTVisitorKeyMap,
+): N;
+export function visit<R>(
+  root: ASTNode,
+  visitor: ASTReducer<R>,
+  visitorKeys?: ASTVisitorKeyMap,
+): R;
 export function visit(
   root: ASTNode,
   visitor: ASTVisitor | ASTReducer<any>,
+  visitorKeys: ASTVisitorKeyMap = QueryDocumentKeys,
 ): any {
+  const enterLeaveMap = new Map<Kind, EnterLeaveVisitor<ASTNode>>();
+  for (const kind of Object.values(Kind)) {
+    enterLeaveMap.set(kind, getEnterLeaveForKind(visitor, kind));
+  }
+
   /* eslint-disable no-undef-init */
   let stack: any = undefined;
   let inArray = Array.isArray(root);
   let keys: any = [root];
   let index = -1;
   let edits = [];
-  let node: any = undefined;
+  let node: any = root;
   let key: any = undefined;
   let parent: any = undefined;
   const path: any = [];
   const ancestors = [];
-  let newRoot = root;
   /* eslint-enable no-undef-init */
 
   do {
@@ -266,20 +206,25 @@ export function visit(
       node = parent;
       parent = ancestors.pop();
       if (isEdited) {
-        node = inArray
-          ? node.slice()
-          : Object.defineProperties({}, Object.getOwnPropertyDescriptors(node));
-        let editOffset = 0;
-        for (let ii = 0; ii < edits.length; ii++) {
-          let editKey: any = edits[ii][0];
-          const editValue = edits[ii][1];
-          if (inArray) {
-            editKey -= editOffset;
+        if (inArray) {
+          node = node.slice();
+
+          let editOffset = 0;
+          for (const [editKey, editValue] of edits) {
+            const arrayKey = editKey - editOffset;
+            if (editValue === null) {
+              node.splice(arrayKey, 1);
+              editOffset++;
+            } else {
+              node[arrayKey] = editValue;
+            }
           }
-          if (inArray && editValue === null) {
-            node.splice(editKey, 1);
-            editOffset++;
-          } else {
+        } else {
+          node = Object.defineProperties(
+            {},
+            Object.getOwnPropertyDescriptors(node),
+          );
+          for (const [editKey, editValue] of edits) {
             node[editKey] = editValue;
           }
         }
@@ -289,44 +234,42 @@ export function visit(
       edits = stack.edits;
       inArray = stack.inArray;
       stack = stack.prev;
-    } else {
-      key = parent ? (inArray ? index : keys[index]) : undefined;
-      node = parent ? parent[key] : newRoot;
+    } else if (parent != null) {
+      key = inArray ? index : keys[index];
+      node = parent[key];
       if (node === null || node === undefined) {
         continue;
       }
-      if (parent) {
-        path.push(key);
-      }
+      path.push(key);
     }
 
     let result;
     if (!Array.isArray(node)) {
-      if (!isNode(node)) {
-        throw new Error(`Invalid AST Node: ${inspect(node)}.`);
+      devAssert(isNode(node), `Invalid AST Node: ${inspect(node)}.`);
+
+      const visitFn = isLeaving
+        ? enterLeaveMap.get(node.kind)?.leave
+        : enterLeaveMap.get(node.kind)?.enter;
+
+      result = visitFn?.call(visitor, node, key, parent, path, ancestors);
+
+      if (result === BREAK) {
+        break;
       }
-      const visitFn = getVisitFn(visitor, node.kind, isLeaving);
-      if (visitFn) {
-        result = visitFn.call(visitor, node, key, parent, path, ancestors);
 
-        if (result === BREAK) {
-          break;
+      if (result === false) {
+        if (!isLeaving) {
+          path.pop();
+          continue;
         }
-
-        if (result === false) {
-          if (!isLeaving) {
+      } else if (result !== undefined) {
+        edits.push([key, result]);
+        if (!isLeaving) {
+          if (isNode(result)) {
+            node = result;
+          } else {
             path.pop();
             continue;
-          }
-        } else if (result !== undefined) {
-          edits.push([key, result]);
-          if (!isLeaving) {
-            if (isNode(result)) {
-              node = result;
-            } else {
-              path.pop();
-              continue;
-            }
           }
         }
       }
@@ -341,10 +284,10 @@ export function visit(
     } else {
       stack = { inArray, index, keys, edits, prev: stack };
       inArray = Array.isArray(node);
-      keys = inArray ? node : (QueryDocumentKeys as any)[node.kind] ?? [];
+      keys = inArray ? node : ((visitorKeys as any)[node.kind] ?? []);
       index = -1;
       edits = [];
-      if (parent) {
+      if (parent != null) {
         ancestors.push(parent);
       }
       parent = node;
@@ -352,10 +295,11 @@ export function visit(
   } while (stack !== undefined);
 
   if (edits.length !== 0) {
-    newRoot = edits[edits.length - 1][1];
+    // New root
+    return edits.at(-1)[1];
   }
 
-  return newRoot;
+  return root;
 }
 
 /**
@@ -367,16 +311,31 @@ export function visit(
 export function visitInParallel(
   visitors: ReadonlyArray<ASTVisitor>,
 ): ASTVisitor {
-  const skipping = new Array(visitors.length);
+  const skipping = new Array(visitors.length).fill(null);
+  const mergedVisitor = Object.create(null);
 
-  return {
-    enter(...args) {
-      const node = args[0];
-      for (let i = 0; i < visitors.length; i++) {
-        if (skipping[i] == null) {
-          const fn = getVisitFn(visitors[i], node.kind, /* isLeaving */ false);
-          if (fn) {
-            const result = fn.apply(visitors[i], args);
+  for (const kind of Object.values(Kind)) {
+    let hasVisitor = false;
+    const enterList = new Array(visitors.length).fill(undefined);
+    const leaveList = new Array(visitors.length).fill(undefined);
+
+    for (let i = 0; i < visitors.length; ++i) {
+      const { enter, leave } = getEnterLeaveForKind(visitors[i], kind);
+      hasVisitor ||= enter != null || leave != null;
+      enterList[i] = enter;
+      leaveList[i] = leave;
+    }
+
+    if (!hasVisitor) {
+      continue;
+    }
+
+    const mergedEnterLeave: EnterLeaveVisitor<ASTNode> = {
+      enter(...args) {
+        const node = args[0];
+        for (let i = 0; i < visitors.length; i++) {
+          if (skipping[i] === null) {
+            const result = enterList[i]?.apply(visitors[i], args);
             if (result === false) {
               skipping[i] = node;
             } else if (result === BREAK) {
@@ -386,50 +345,50 @@ export function visitInParallel(
             }
           }
         }
-      }
-    },
-    leave(...args) {
-      const node = args[0];
-      for (let i = 0; i < visitors.length; i++) {
-        if (skipping[i] == null) {
-          const fn = getVisitFn(visitors[i], node.kind, /* isLeaving */ true);
-          if (fn) {
-            const result = fn.apply(visitors[i], args);
+      },
+      leave(...args) {
+        const node = args[0];
+        for (let i = 0; i < visitors.length; i++) {
+          if (skipping[i] === null) {
+            const result = leaveList[i]?.apply(visitors[i], args);
             if (result === BREAK) {
               skipping[i] = BREAK;
             } else if (result !== undefined && result !== false) {
               return result;
             }
+          } else if (skipping[i] === node) {
+            skipping[i] = null;
           }
-        } else if (skipping[i] === node) {
-          skipping[i] = null;
         }
-      }
-    },
-  };
+      },
+    };
+
+    mergedVisitor[kind] = mergedEnterLeave;
+  }
+
+  return mergedVisitor;
 }
 
 /**
- * Given a visitor instance, if it is leaving or not, and a node kind, return
- * the function the visitor runtime should call.
+ * Given a visitor instance and a node kind, return EnterLeaveVisitor for that kind.
  */
-export function getVisitFn(
+export function getEnterLeaveForKind(
   visitor: ASTVisitor,
-  kind: keyof ASTKindToNode,
-  isLeaving: boolean,
-): Maybe<ASTVisitFn<ASTNode>> {
+  kind: Kind,
+): EnterLeaveVisitor<ASTNode> {
   const kindVisitor:
     | ASTVisitFn<ASTNode>
     | EnterLeaveVisitor<ASTNode>
     | undefined = (visitor as any)[kind];
-  if (kindVisitor) {
-    if (typeof kindVisitor === 'function') {
-      // { Kind() {} }
-      return isLeaving ? undefined : kindVisitor;
-    }
+
+  if (typeof kindVisitor === 'object') {
     // { Kind: { enter() {}, leave() {} } }
-    return isLeaving ? kindVisitor.leave : kindVisitor.enter;
+    return kindVisitor;
+  } else if (typeof kindVisitor === 'function') {
+    // { Kind() {} }
+    return { enter: kindVisitor, leave: undefined };
   }
+
   // { enter() {}, leave() {} }
-  return isLeaving ? (visitor as any).leave : (visitor as any).enter;
+  return { enter: (visitor as any).enter, leave: (visitor as any).leave };
 }

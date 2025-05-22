@@ -1,4 +1,5 @@
 # Exit immediately if any subcommand terminated
+set -e
 trap "exit 1" ERR
 
 #
@@ -7,6 +8,14 @@ trap "exit 1" ERR
 # intends to protect from versioning for NPM without first pushing changes
 # and including any changes on main.
 #
+
+# Check that local copy has no modifications
+GIT_MODIFIED_FILES=$(git ls-files -dm 2> /dev/null);
+GIT_STAGED_FILES=$(git diff --cached --name-only 2> /dev/null);
+if [ "$GIT_MODIFIED_FILES" != "" -o "$GIT_STAGED_FILES" != "" ]; then
+  read -p "Git has local modifications. Continue? (y|N) " yn;
+  if [ "$yn" != "y" ]; then exit 1; fi;
+fi;
 
 # First fetch to ensure git is up to date. Fail-fast if this fails.
 git fetch;

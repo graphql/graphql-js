@@ -1,19 +1,19 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { KnownTypeNamesRule } from '../rules/KnownTypeNamesRule';
+import { KnownTypeNamesRule } from '../rules/KnownTypeNamesRule.js';
 
 import {
+  expectSDLValidationErrors,
   expectValidationErrors,
   expectValidationErrorsWithSchema,
-  expectSDLValidationErrors,
-} from './harness';
+} from './harness.js';
 
-function expectErrors(queryStr: string) {
-  return expectValidationErrors(KnownTypeNamesRule, queryStr);
+function expectErrors(queryStr: string, hideSuggestions = false) {
+  return expectValidationErrors(KnownTypeNamesRule, queryStr, hideSuggestions);
 }
 
 function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
@@ -21,7 +21,7 @@ function expectErrorsWithSchema(schema: GraphQLSchema, queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
@@ -29,7 +29,7 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Known type names', () => {
@@ -53,7 +53,7 @@ describe('Validate: Known type names', () => {
 
   it('unknown type names are invalid', () => {
     expectErrors(`
-      query Foo($var: JumbledUpLetters) {
+      query Foo($var: [JumbledUpLetters!]!) {
         user(id: 4) {
           name
           pets { ... on Badger { name }, ...PetFields }
@@ -62,10 +62,10 @@ describe('Validate: Known type names', () => {
       fragment PetFields on Peat {
         name
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown type "JumbledUpLetters".',
-        locations: [{ line: 2, column: 23 }],
+        locations: [{ line: 2, column: 24 }],
       },
       {
         message: 'Unknown type "Badger".',
@@ -78,6 +78,36 @@ describe('Validate: Known type names', () => {
     ]);
   });
 
+  it('unknown type names are invalid (no suggestions)', () => {
+    expectErrors(
+      `
+      query Foo($var: [JumbledUpLetters!]!) {
+        user(id: 4) {
+          name
+          pets { ... on Badger { name }, ...PetFields }
+        }
+      }
+      fragment PetFields on Peat {
+        name
+      }
+    `,
+      true,
+    ).toDeepEqual([
+      {
+        message: 'Unknown type "JumbledUpLetters".',
+        locations: [{ line: 2, column: 24 }],
+      },
+      {
+        message: 'Unknown type "Badger".',
+        locations: [{ line: 5, column: 25 }],
+      },
+      {
+        message: 'Unknown type "Peat".',
+        locations: [{ line: 8, column: 29 }],
+      },
+    ]);
+  });
+
   it('references to standard scalars that are missing in schema', () => {
     const schema = buildSchema('type Query { foo: String }');
     const query = `
@@ -85,7 +115,7 @@ describe('Validate: Known type names', () => {
         __typename
       }
     `;
-    expectErrorsWithSchema(schema, query).to.deep.equal([
+    expectErrorsWithSchema(schema, query).toDeepEqual([
       {
         message: 'Unknown type "ID".',
         locations: [{ line: 2, column: 19 }],
@@ -176,7 +206,7 @@ describe('Validate: Known type names', () => {
           mutation: M
           subscription: N
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Unknown type "C". Did you mean "A" or "B"?',
           locations: [{ line: 5, column: 36 }],
@@ -237,7 +267,7 @@ describe('Validate: Known type names', () => {
         type Query {
           foo: Foo
         }
-      `).to.deep.equal([
+      `).toDeepEqual([
         {
           message: 'Unknown type "Foo".',
           locations: [{ line: 7, column: 16 }],
@@ -307,7 +337,7 @@ describe('Validate: Known type names', () => {
         }
       `;
 
-      expectSDLErrors(sdl, schema).to.deep.equal([
+      expectSDLErrors(sdl, schema).toDeepEqual([
         {
           message: 'Unknown type "C". Did you mean "A" or "B"?',
           locations: [{ line: 4, column: 36 }],

@@ -1,18 +1,18 @@
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { extendSchema } from '../../utilities/extendSchema';
+import { extendSchema } from '../../utilities/extendSchema.js';
 
-import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule';
+import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule.js';
 
 import {
-  testSchema,
-  expectValidationErrorsWithSchema,
   expectSDLValidationErrors,
-} from './harness';
+  expectValidationErrorsWithSchema,
+  testSchema,
+} from './harness.js';
 
 const extensionSDL = `
   directive @directive on FIELD | FRAGMENT_DEFINITION
@@ -31,7 +31,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
@@ -109,7 +109,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
       fragment Test on Type {
         field @directive @directive
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@directive" can only be used once at this location.',
@@ -126,7 +126,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
       fragment Test on Type {
         field @directive @directive @directive
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@directive" can only be used once at this location.',
@@ -151,7 +151,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
       fragment Test on Type {
         field @directiveA @directiveB @directiveA @directiveB
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@directiveA" can only be used once at this location.',
@@ -176,7 +176,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
       fragment Test on Type @directive @directive {
         field @directive @directive
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@directive" can only be used once at this location.',
@@ -208,7 +208,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
       interface TestInterface @nonRepeatable @nonRepeatable
       union TestUnion @nonRepeatable @nonRepeatable
       input TestInput @nonRepeatable @nonRepeatable
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
@@ -272,7 +272,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
       extend interface TestInterface @nonRepeatable @nonRepeatable
       extend union TestUnion @nonRepeatable @nonRepeatable
       extend input TestInput @nonRepeatable @nonRepeatable
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
@@ -330,7 +330,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
 
       schema @nonRepeatable { query: Dummy }
       extend schema @nonRepeatable
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
@@ -347,7 +347,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
       scalar TestScalar @nonRepeatable
       extend scalar TestScalar @nonRepeatable
       scalar TestScalar @nonRepeatable
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',
@@ -372,7 +372,7 @@ describe('Validate: Directives Are Unique Per Location', () => {
       extend type TestObject @nonRepeatable
       type TestObject @nonRepeatable
       extend type TestObject @nonRepeatable
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'The directive "@nonRepeatable" can only be used once at this location.',

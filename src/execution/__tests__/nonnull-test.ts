@@ -1,16 +1,21 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { parse } from '../../language/parser';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
-import { GraphQLSchema } from '../../type/schema';
-import { GraphQLString } from '../../type/scalars';
-import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { parse } from '../../language/parser.js';
 
-import type { ExecutionResult } from '../execute';
-import { execute, executeSync } from '../execute';
+import { GraphQLNonNull, GraphQLObjectType } from '../../type/definition.js';
+import { GraphQLString } from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
+
+import { buildSchema } from '../../utilities/buildASTSchema.js';
+
+import { execute, executeSync } from '../execute.js';
+import type { ExecutionResult } from '../types.js';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');
@@ -107,7 +112,7 @@ const schema = buildSchema(`
 function executeQuery(
   query: string,
   rootValue: unknown,
-): ExecutionResult | Promise<ExecutionResult> {
+): PromiseOrValue<ExecutionResult> {
   return execute({ schema, document: parse(query), rootValue });
 }
 
@@ -130,7 +135,7 @@ async function executeSyncAndAsync(query: string, rootValue: unknown) {
     rootValue,
   });
 
-  expect(asyncResult).to.deep.equal(patchData(syncResult));
+  expectJSON(asyncResult).toDeepEqual(patchData(syncResult));
   return syncResult;
 }
 
@@ -151,7 +156,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: { sync: null },
         errors: [
           {
@@ -175,7 +180,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeSyncAndAsync(query, nullingData);
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: { syncNest: null },
         errors: [
           {
@@ -190,7 +195,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: { syncNest: null },
         errors: [
           {
@@ -242,7 +247,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeQuery(query, throwingData);
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data,
         errors: [
           {
@@ -254,6 +259,16 @@ describe('Execute: handles non-nullable types', () => {
             message: syncError.message,
             path: ['syncNest', 'syncNest', 'sync'],
             locations: [{ line: 6, column: 22 }],
+          },
+          {
+            message: promiseError.message,
+            path: ['syncNest', 'promise'],
+            locations: [{ line: 5, column: 11 }],
+          },
+          {
+            message: promiseError.message,
+            path: ['syncNest', 'syncNest', 'promise'],
+            locations: [{ line: 6, column: 27 }],
           },
           {
             message: syncError.message,
@@ -272,21 +287,6 @@ describe('Execute: handles non-nullable types', () => {
           },
           {
             message: promiseError.message,
-            path: ['syncNest', 'promise'],
-            locations: [{ line: 5, column: 11 }],
-          },
-          {
-            message: promiseError.message,
-            path: ['syncNest', 'syncNest', 'promise'],
-            locations: [{ line: 6, column: 27 }],
-          },
-          {
-            message: syncError.message,
-            path: ['promiseNest', 'promiseNest', 'sync'],
-            locations: [{ line: 13, column: 25 }],
-          },
-          {
-            message: promiseError.message,
             path: ['syncNest', 'promiseNest', 'promise'],
             locations: [{ line: 7, column: 30 }],
           },
@@ -299,6 +299,11 @@ describe('Execute: handles non-nullable types', () => {
             message: promiseError.message,
             path: ['promiseNest', 'syncNest', 'promise'],
             locations: [{ line: 12, column: 27 }],
+          },
+          {
+            message: syncError.message,
+            path: ['promiseNest', 'promiseNest', 'sync'],
+            locations: [{ line: 13, column: 25 }],
           },
           {
             message: promiseError.message,
@@ -368,7 +373,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeQuery(query, nullingData);
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data,
         errors: [
           {
@@ -429,7 +434,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeQuery(query, throwingData);
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data,
         errors: [
           {
@@ -494,7 +499,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that returns null', async () => {
       const result = await executeSyncAndAsync(query, nullingData);
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: null,
         errors: [
           {
@@ -509,7 +514,7 @@ describe('Execute: handles non-nullable types', () => {
 
     it('that throws', async () => {
       const result = await executeSyncAndAsync(query, throwingData);
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: null,
         errors: [
           {
@@ -519,6 +524,68 @@ describe('Execute: handles non-nullable types', () => {
           },
         ],
       });
+    });
+  });
+
+  describe('cancellation with null bubbling', () => {
+    function nestedPromise(n: number): string {
+      return n > 0 ? `promiseNest { ${nestedPromise(n - 1)} }` : 'promise';
+    }
+
+    it('returns an single error without cancellation', async () => {
+      const query = `
+        {
+          promiseNonNull,
+          ${nestedPromise(4)}
+        }
+      `;
+
+      const result = await executeQuery(query, throwingData);
+      expectJSON(result).toDeepEqual({
+        data: null,
+        errors: [
+          // does not include syncNullError because result returns prior to it being added
+          {
+            message: 'promiseNonNull',
+            path: ['promiseNonNull'],
+            locations: [{ line: 3, column: 11 }],
+          },
+        ],
+      });
+    });
+
+    it('stops running despite error', async () => {
+      const query = `
+        {
+          promiseNonNull,
+          ${nestedPromise(10)}
+        }
+      `;
+
+      let counter = 0;
+      const rootValue = {
+        ...throwingData,
+        promiseNest() {
+          return new Promise((resolve) => {
+            counter++;
+            resolve(rootValue);
+          });
+        },
+      };
+      const result = await executeQuery(query, rootValue);
+      expectJSON(result).toDeepEqual({
+        data: null,
+        errors: [
+          {
+            message: 'promiseNonNull',
+            path: ['promiseNonNull'],
+            locations: [{ line: 3, column: 11 }],
+          },
+        ],
+      });
+      const counterAtExecutionEnd = counter;
+      await resolveOnNextTick();
+      expect(counter).to.equal(counterAtExecutionEnd);
     });
   });
 
@@ -609,14 +676,14 @@ describe('Execute: handles non-nullable types', () => {
         `),
       });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           withNonNullArg: null,
         },
         errors: [
           {
             message:
-              'Argument "cannotBeNull" of required type "String!" was not provided.',
+              'Argument "Query.withNonNullArg(cannotBeNull:)" of required type "String!" was not provided.',
             locations: [{ line: 3, column: 13 }],
             path: ['withNonNullArg'],
           },
@@ -636,14 +703,14 @@ describe('Execute: handles non-nullable types', () => {
         `),
       });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           withNonNullArg: null,
         },
         errors: [
           {
             message:
-              'Argument "cannotBeNull" of non-null type "String!" must not be null.',
+              'Argument "Query.withNonNullArg(cannotBeNull:)" has invalid value: Expected value of non-null type "String!" not to be null.',
             locations: [{ line: 3, column: 42 }],
             path: ['withNonNullArg'],
           },
@@ -666,14 +733,14 @@ describe('Execute: handles non-nullable types', () => {
         },
       });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           withNonNullArg: null,
         },
         errors: [
           {
             message:
-              'Argument "cannotBeNull" of required type "String!" was provided the variable "$testVar" which was not provided a runtime value.',
+              'Argument "Query.withNonNullArg(cannotBeNull:)" has invalid value: Expected variable "$testVar" provided to type "String!" to provide a runtime value.',
             locations: [{ line: 3, column: 42 }],
             path: ['withNonNullArg'],
           },
@@ -694,14 +761,14 @@ describe('Execute: handles non-nullable types', () => {
         },
       });
 
-      expect(result).to.deep.equal({
+      expectJSON(result).toDeepEqual({
         data: {
           withNonNullArg: null,
         },
         errors: [
           {
             message:
-              'Argument "cannotBeNull" of non-null type "String!" must not be null.',
+              'Argument "Query.withNonNullArg(cannotBeNull:)" has invalid value: Expected variable "$testVar" provided to non-null type "String!" not to be null.',
             locations: [{ line: 3, column: 43 }],
             path: ['withNonNullArg'],
           },

@@ -1,17 +1,26 @@
-'use strict';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
 
-const path = require('path');
-const childProcess = require('child_process');
+const graphqlPackageJSON = JSON.parse(
+  fs.readFileSync('./node_modules/graphql/package.json', 'utf-8'),
+);
 
-const { dependencies } = require('./package.json');
-
-const nodeVersions = Object.keys(dependencies)
-  .filter((pkg) => pkg.startsWith('node-'))
+const nodeVersions = graphqlPackageJSON.engines.node
+  .replaceAll('^', '')
+  .replaceAll('>=', '')
+  .split(' || ')
   .sort((a, b) => b.localeCompare(a));
 
 for (const version of nodeVersions) {
-  console.log(`Testing on ${version} ...`);
+  console.log(`Testing on node@${version} ...`);
 
-  const nodePath = path.join(__dirname, 'node_modules', version, 'bin/node');
-  childProcess.execSync(nodePath + ' index.js', { stdio: 'inherit' });
+  childProcess.execSync(
+    `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node ./index.cjs`,
+    { stdio: 'inherit' },
+  );
+
+  childProcess.execSync(
+    `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app node:${version}-slim node ./index.mjs`,
+    { stdio: 'inherit' },
+  );
 }

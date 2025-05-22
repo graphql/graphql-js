@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { inspect } from '../inspect';
+import { inspect } from '../inspect.js';
 
 describe('inspect', () => {
   it('undefined', () => {
@@ -33,12 +33,14 @@ describe('inspect', () => {
 
   it('function', () => {
     const unnamedFuncStr = inspect(
-      // istanbul ignore next (Never called and used as a placeholder)
+      // Never called and used as a placeholder
+      /* c8 ignore next */
       () => expect.fail('Should not be called'),
     );
     expect(unnamedFuncStr).to.equal('[function]');
 
-    // istanbul ignore next (Never called and used as a placeholder)
+    // Never called and used as a placeholder
+    /* c8 ignore next 3 */
     function namedFunc() {
       expect.fail('Should not be called');
     }

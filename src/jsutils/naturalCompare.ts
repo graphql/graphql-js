@@ -6,26 +6,26 @@
  *
  */
 export function naturalCompare(aStr: string, bStr: string): number {
-  let aIdx = 0;
-  let bIdx = 0;
+  let aIndex = 0;
+  let bIndex = 0;
 
-  while (aIdx < aStr.length && bIdx < bStr.length) {
-    let aChar = aStr.charCodeAt(aIdx);
-    let bChar = bStr.charCodeAt(bIdx);
+  while (aIndex < aStr.length && bIndex < bStr.length) {
+    let aChar = aStr.charCodeAt(aIndex);
+    let bChar = bStr.charCodeAt(bIndex);
 
     if (isDigit(aChar) && isDigit(bChar)) {
       let aNum = 0;
       do {
-        ++aIdx;
+        ++aIndex;
         aNum = aNum * 10 + aChar - DIGIT_0;
-        aChar = aStr.charCodeAt(aIdx);
+        aChar = aStr.charCodeAt(aIndex);
       } while (isDigit(aChar) && aNum > 0);
 
       let bNum = 0;
       do {
-        ++bIdx;
+        ++bIndex;
         bNum = bNum * 10 + bChar - DIGIT_0;
-        bChar = bStr.charCodeAt(bIdx);
+        bChar = bStr.charCodeAt(bIndex);
       } while (isDigit(bChar) && bNum > 0);
 
       if (aNum < bNum) {
@@ -42,8 +42,8 @@ export function naturalCompare(aStr: string, bStr: string): number {
       if (aChar > bChar) {
         return 1;
       }
-      ++aIdx;
-      ++bIdx;
+      ++aIndex;
+      ++bIndex;
     }
   }
 

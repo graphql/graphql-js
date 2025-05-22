@@ -1,10 +1,7 @@
-import { Source, isSource } from '../language/source';
-import { TokenKind } from '../language/tokenKind';
-import { Lexer, isPunctuatorTokenKind } from '../language/lexer';
-import {
-  dedentBlockStringValue,
-  getBlockStringIndentation,
-} from '../language/blockString';
+import { printBlockString } from '../language/blockString.js';
+import { isPunctuatorTokenKind, Lexer } from '../language/lexer.js';
+import { isSource, Source } from '../language/source.js';
+import { TokenKind } from '../language/tokenKind.js';
 
 /**
  * Strips characters that are not significant to the validity or execution
@@ -28,6 +25,7 @@ import {
  *
  * Query example:
  *
+ * ```graphql
  * query SomeQuery($foo: String!, $bar: String) {
  *   someField(foo: $foo, bar: $bar) {
  *     a
@@ -37,13 +35,17 @@ import {
  *     }
  *   }
  * }
+ * ```
  *
  * Becomes:
  *
+ * ```graphql
  * query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{c d}}}
+ * ```
  *
  * SDL example:
  *
+ * ```graphql
  * """
  * Type description
  * """
@@ -53,10 +55,13 @@ import {
  *   """
  *   bar: String
  * }
+ * ```
  *
  * Becomes:
  *
+ * ```graphql
  * """Type description""" type Foo{"""Field description""" bar:String}
+ * ```
  */
 export function stripIgnoredCharacters(source: string | Source): string {
   const sourceObj = isSource(source) ? source : new Source(source);
@@ -84,7 +89,7 @@ export function stripIgnoredCharacters(source: string | Source): string {
 
     const tokenBody = body.slice(currentToken.start, currentToken.end);
     if (tokenKind === TokenKind.BLOCK_STRING) {
-      strippedBody += dedentBlockString(tokenBody);
+      strippedBody += printBlockString(currentToken.value, { minimize: true });
     } else {
       strippedBody += tokenBody;
     }
@@ -93,22 +98,4 @@ export function stripIgnoredCharacters(source: string | Source): string {
   }
 
   return strippedBody;
-}
-
-function dedentBlockString(blockStr: string): string {
-  // skip leading and trailing triple quotations
-  const rawStr = blockStr.slice(3, -3);
-  let body = dedentBlockStringValue(rawStr);
-
-  if (getBlockStringIndentation(body) > 0) {
-    body = '\n' + body;
-  }
-
-  const lastChar = body[body.length - 1];
-  const hasTrailingQuote = lastChar === '"' && body.slice(-4) !== '\\"""';
-  if (hasTrailingQuote || lastChar === '\\') {
-    body += '\n';
-  }
-
-  return '"""' + body + '"""';
 }

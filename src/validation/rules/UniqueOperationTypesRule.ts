@@ -1,12 +1,13 @@
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { ASTVisitor } from '../../language/visitor';
 import type {
+  OperationTypeDefinitionNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
-} from '../../language/ast';
+} from '../../language/ast.js';
+import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { SDLValidationContext } from '../ValidationContext';
+import type { SDLValidationContext } from '../ValidationContext.js';
 
 /**
  * Unique operation types
@@ -17,7 +18,7 @@ export function UniqueOperationTypesRule(
   context: SDLValidationContext,
 ): ASTVisitor {
   const schema = context.getSchema();
-  const definedOperationTypes = Object.create(null);
+  const definedOperationTypes = new Map<string, OperationTypeDefinitionNode>();
   const existingOperationTypes = schema
     ? {
         query: schema.getQueryType(),
@@ -34,29 +35,28 @@ export function UniqueOperationTypesRule(
   function checkOperationTypes(
     node: SchemaDefinitionNode | SchemaExtensionNode,
   ) {
-    // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
     const operationTypesNodes = node.operationTypes ?? [];
 
     for (const operationType of operationTypesNodes) {
       const operation = operationType.operation;
-      const alreadyDefinedOperationType = definedOperationTypes[operation];
+      const alreadyDefinedOperationType = definedOperationTypes.get(operation);
 
       if (existingOperationTypes[operation]) {
         context.reportError(
           new GraphQLError(
             `Type for ${operation} already defined in the schema. It cannot be redefined.`,
-            operationType,
+            { nodes: operationType },
           ),
         );
       } else if (alreadyDefinedOperationType) {
         context.reportError(
           new GraphQLError(
             `There can be only one ${operation} type in schema.`,
-            [alreadyDefinedOperationType, operationType],
+            { nodes: [alreadyDefinedOperationType, operationType] },
           ),
         );
       } else {
-        definedOperationTypes[operation] = operationType;
+        definedOperationTypes.set(operation, operationType);
       }
     }
 

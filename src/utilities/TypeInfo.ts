@@ -1,42 +1,46 @@
-import type { ASTVisitor } from '../language/visitor';
-import type { ASTNode, FieldNode } from '../language/ast';
-import { Kind } from '../language/kinds';
-import { isNode } from '../language/ast';
-import { getVisitFn } from '../language/visitor';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import type { Maybe } from '../jsutils/Maybe';
-
-import type { GraphQLSchema } from '../type/schema';
-import type { GraphQLDirective } from '../type/directives';
 import type {
-  GraphQLType,
+  ASTNode,
+  DocumentNode,
+  FragmentDefinitionNode,
+  VariableDefinitionNode,
+} from '../language/ast.js';
+import { isNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
+import type { ASTVisitor } from '../language/visitor.js';
+import { getEnterLeaveForKind } from '../language/visitor.js';
+
+import type {
+  GraphQLArgument,
+  GraphQLCompositeType,
+  GraphQLEnumValue,
+  GraphQLField,
+  GraphQLInputField,
   GraphQLInputType,
   GraphQLOutputType,
-  GraphQLCompositeType,
-  GraphQLField,
-  GraphQLArgument,
-  GraphQLInputField,
-  GraphQLEnumValue,
-} from '../type/definition';
+  GraphQLType,
+} from '../type/definition.js';
 import {
-  isObjectType,
-  isInterfaceType,
+  getNamedType,
+  getNullableType,
+  isCompositeType,
   isEnumType,
   isInputObjectType,
-  isListType,
-  isCompositeType,
   isInputType,
+  isListType,
+  isObjectType,
   isOutputType,
-  getNullableType,
-  getNamedType,
-} from '../type/definition';
-import {
-  SchemaMetaFieldDef,
-  TypeMetaFieldDef,
-  TypeNameMetaFieldDef,
-} from '../type/introspection';
+} from '../type/definition.js';
+import type { GraphQLDirective } from '../type/directives.js';
+import type { GraphQLSchema } from '../type/schema.js';
 
-import { typeFromAST } from './typeFromAST';
+import { typeFromAST } from './typeFromAST.js';
+
+export interface FragmentSignature {
+  readonly definition: FragmentDefinitionNode;
+  readonly variableDefinitions: Map<string, VariableDefinitionNode>;
+}
 
 /**
  * TypeInfo is a utility class which, given a GraphQL schema, can keep track
@@ -49,11 +53,16 @@ export class TypeInfo {
   private _parentTypeStack: Array<Maybe<GraphQLCompositeType>>;
   private _inputTypeStack: Array<Maybe<GraphQLInputType>>;
   private _fieldDefStack: Array<Maybe<GraphQLField<unknown, unknown>>>;
-  private _defaultValueStack: Array<Maybe<unknown>>;
+  private _defaultValueStack: Array<unknown>;
   private _directive: Maybe<GraphQLDirective>;
   private _argument: Maybe<GraphQLArgument>;
   private _enumValue: Maybe<GraphQLEnumValue>;
-  private _getFieldDef: GetFieldDefFn;
+  private _fragmentSignaturesByName: (
+    fragmentName: string,
+  ) => Maybe<FragmentSignature>;
+
+  private _fragmentSignature: Maybe<FragmentSignature>;
+  private _fragmentArgument: Maybe<VariableDefinitionNode>;
 
   constructor(
     schema: GraphQLSchema,
@@ -62,9 +71,9 @@ export class TypeInfo {
      *  beginning somewhere other than documents.
      */
     initialType?: Maybe<GraphQLType>,
-
-    /** @deprecated will be removed in 17.0.0 */
-    getFieldDefFn?: GetFieldDefFn,
+    fragmentSignatures?: Maybe<
+      (fragmentName: string) => Maybe<FragmentSignature>
+    >,
   ) {
     this._schema = schema;
     this._typeStack = [];
@@ -75,7 +84,9 @@ export class TypeInfo {
     this._directive = null;
     this._argument = null;
     this._enumValue = null;
-    this._getFieldDef = getFieldDefFn ?? getFieldDef;
+    this._fragmentSignaturesByName = fragmentSignatures ?? (() => null);
+    this._fragmentSignature = null;
+    this._fragmentArgument = null;
     if (initialType) {
       if (isInputType(initialType)) {
         this._inputTypeStack.push(initialType);
@@ -89,40 +100,32 @@ export class TypeInfo {
     }
   }
 
+  get [Symbol.toStringTag]() {
+    return 'TypeInfo';
+  }
+
   getType(): Maybe<GraphQLOutputType> {
-    if (this._typeStack.length > 0) {
-      return this._typeStack[this._typeStack.length - 1];
-    }
+    return this._typeStack.at(-1);
   }
 
   getParentType(): Maybe<GraphQLCompositeType> {
-    if (this._parentTypeStack.length > 0) {
-      return this._parentTypeStack[this._parentTypeStack.length - 1];
-    }
+    return this._parentTypeStack.at(-1);
   }
 
   getInputType(): Maybe<GraphQLInputType> {
-    if (this._inputTypeStack.length > 0) {
-      return this._inputTypeStack[this._inputTypeStack.length - 1];
-    }
+    return this._inputTypeStack.at(-1);
   }
 
   getParentInputType(): Maybe<GraphQLInputType> {
-    if (this._inputTypeStack.length > 1) {
-      return this._inputTypeStack[this._inputTypeStack.length - 2];
-    }
+    return this._inputTypeStack.at(-2);
   }
 
   getFieldDef(): Maybe<GraphQLField<unknown, unknown>> {
-    if (this._fieldDefStack.length > 0) {
-      return this._fieldDefStack[this._fieldDefStack.length - 1];
-    }
+    return this._fieldDefStack.at(-1);
   }
 
-  getDefaultValue(): Maybe<unknown> {
-    if (this._defaultValueStack.length > 0) {
-      return this._defaultValueStack[this._defaultValueStack.length - 1];
-    }
+  getDefaultValue(): unknown {
+    return this._defaultValueStack.at(-1);
   }
 
   getDirective(): Maybe<GraphQLDirective> {
@@ -131,6 +134,20 @@ export class TypeInfo {
 
   getArgument(): Maybe<GraphQLArgument> {
     return this._argument;
+  }
+
+  getFragmentSignature(): Maybe<FragmentSignature> {
+    return this._fragmentSignature;
+  }
+
+  getFragmentSignatureByName(): (
+    fragmentName: string,
+  ) => Maybe<FragmentSignature> {
+    return this._fragmentSignaturesByName;
+  }
+
+  getFragmentArgument(): Maybe<VariableDefinitionNode> {
+    return this._fragmentArgument;
   }
 
   getEnumValue(): Maybe<GraphQLEnumValue> {
@@ -144,6 +161,12 @@ export class TypeInfo {
     // checked before continuing since TypeInfo is used as part of validation
     // which occurs before guarantees of schema and document validity.
     switch (node.kind) {
+      case Kind.DOCUMENT: {
+        const fragmentSignatures = getFragmentSignatures(node);
+        this._fragmentSignaturesByName = (fragmentName: string) =>
+          fragmentSignatures.get(fragmentName);
+        break;
+      }
       case Kind.SELECTION_SET: {
         const namedType: unknown = getNamedType(this.getType());
         this._parentTypeStack.push(
@@ -156,7 +179,7 @@ export class TypeInfo {
         let fieldDef;
         let fieldType: unknown;
         if (parentType) {
-          fieldDef = this._getFieldDef(schema, parentType, node);
+          fieldDef = schema.getField(parentType, node.name.value);
           if (fieldDef) {
             fieldType = fieldDef.type;
           }
@@ -169,19 +192,14 @@ export class TypeInfo {
         this._directive = schema.getDirective(node.name.value);
         break;
       case Kind.OPERATION_DEFINITION: {
-        let type: unknown;
-        switch (node.operation) {
-          case 'query':
-            type = schema.getQueryType();
-            break;
-          case 'mutation':
-            type = schema.getMutationType();
-            break;
-          case 'subscription':
-            type = schema.getSubscriptionType();
-            break;
-        }
-        this._typeStack.push(isObjectType(type) ? type : undefined);
+        const rootType = schema.getRootType(node.operation);
+        this._typeStack.push(isObjectType(rootType) ? rootType : undefined);
+        break;
+      }
+      case Kind.FRAGMENT_SPREAD: {
+        this._fragmentSignature = this.getFragmentSignatureByName()(
+          node.name.value,
+        );
         break;
       }
       case Kind.INLINE_FRAGMENT:
@@ -213,7 +231,22 @@ export class TypeInfo {
           }
         }
         this._argument = argDef;
-        this._defaultValueStack.push(argDef ? argDef.defaultValue : undefined);
+        this._defaultValueStack.push(
+          argDef?.default ?? argDef?.defaultValue ?? undefined,
+        );
+        this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
+        break;
+      }
+      case Kind.FRAGMENT_ARGUMENT: {
+        const fragmentSignature = this.getFragmentSignature();
+        const argDef = fragmentSignature?.variableDefinitions.get(
+          node.name.value,
+        );
+        this._fragmentArgument = argDef;
+        let argType: unknown;
+        if (argDef) {
+          argType = typeFromAST(this._schema, argDef.type);
+        }
         this._inputTypeStack.push(isInputType(argType) ? argType : undefined);
         break;
       }
@@ -233,12 +266,12 @@ export class TypeInfo {
         let inputField: GraphQLInputField | undefined;
         if (isInputObjectType(objectType)) {
           inputField = objectType.getFields()[node.name.value];
-          if (inputField) {
+          if (inputField != null) {
             inputFieldType = inputField.type;
           }
         }
         this._defaultValueStack.push(
-          inputField ? inputField.defaultValue : undefined,
+          inputField?.default ?? inputField?.defaultValue ?? undefined,
         );
         this._inputTypeStack.push(
           isInputType(inputFieldType) ? inputFieldType : undefined,
@@ -254,11 +287,17 @@ export class TypeInfo {
         this._enumValue = enumValue;
         break;
       }
+      default:
+      // Ignore other nodes
     }
   }
 
   leave(node: ASTNode) {
     switch (node.kind) {
+      case Kind.DOCUMENT:
+        this._fragmentSignaturesByName = /* c8 ignore start */ () =>
+          null /* c8 ignore end */;
+        break;
       case Kind.SELECTION_SET:
         this._parentTypeStack.pop();
         break;
@@ -268,6 +307,9 @@ export class TypeInfo {
         break;
       case Kind.DIRECTIVE:
         this._directive = null;
+        break;
+      case Kind.FRAGMENT_SPREAD:
+        this._fragmentSignature = null;
         break;
       case Kind.OPERATION_DEFINITION:
       case Kind.INLINE_FRAGMENT:
@@ -282,6 +324,12 @@ export class TypeInfo {
         this._defaultValueStack.pop();
         this._inputTypeStack.pop();
         break;
+      case Kind.FRAGMENT_ARGUMENT: {
+        this._fragmentArgument = null;
+        this._defaultValueStack.pop();
+        this._inputTypeStack.pop();
+        break;
+      }
       case Kind.LIST:
       case Kind.OBJECT_FIELD:
         this._defaultValueStack.pop();
@@ -290,42 +338,29 @@ export class TypeInfo {
       case Kind.ENUM:
         this._enumValue = null;
         break;
+      default:
+      // Ignore other nodes
     }
   }
 }
 
-type GetFieldDefFn = (
-  schema: GraphQLSchema,
-  parentType: GraphQLType,
-  fieldNode: FieldNode,
-) => Maybe<GraphQLField<unknown, unknown>>;
-
-/**
- * Not exactly the same as the executor's definition of getFieldDef, in this
- * statically evaluated environment we do not always have an Object type,
- * and need to handle Interface and Union types.
- */
-function getFieldDef(
-  schema: GraphQLSchema,
-  parentType: GraphQLType,
-  fieldNode: FieldNode,
-): Maybe<GraphQLField<unknown, unknown>> {
-  const name = fieldNode.name.value;
-  if (
-    name === SchemaMetaFieldDef.name &&
-    schema.getQueryType() === parentType
-  ) {
-    return SchemaMetaFieldDef;
+function getFragmentSignatures(
+  document: DocumentNode,
+): Map<string, FragmentSignature> {
+  const fragmentSignatures = new Map<string, FragmentSignature>();
+  for (const definition of document.definitions) {
+    if (definition.kind === Kind.FRAGMENT_DEFINITION) {
+      const variableDefinitions = new Map<string, VariableDefinitionNode>();
+      if (definition.variableDefinitions) {
+        for (const varDef of definition.variableDefinitions) {
+          variableDefinitions.set(varDef.variable.name.value, varDef);
+        }
+      }
+      const signature = { definition, variableDefinitions };
+      fragmentSignatures.set(definition.name.value, signature);
+    }
   }
-  if (name === TypeMetaFieldDef.name && schema.getQueryType() === parentType) {
-    return TypeMetaFieldDef;
-  }
-  if (name === TypeNameMetaFieldDef.name && isCompositeType(parentType)) {
-    return TypeNameMetaFieldDef;
-  }
-  if (isObjectType(parentType) || isInterfaceType(parentType)) {
-    return parentType.getFields()[name];
-  }
+  return fragmentSignatures;
 }
 
 /**
@@ -340,7 +375,7 @@ export function visitWithTypeInfo(
     enter(...args) {
       const node = args[0];
       typeInfo.enter(node);
-      const fn = getVisitFn(visitor, node.kind, /* isLeaving */ false);
+      const fn = getEnterLeaveForKind(visitor, node.kind).enter;
       if (fn) {
         const result = fn.apply(visitor, args);
         if (result !== undefined) {
@@ -354,7 +389,7 @@ export function visitWithTypeInfo(
     },
     leave(...args) {
       const node = args[0];
-      const fn = getVisitFn(visitor, node.kind, /* isLeaving */ true);
+      const fn = getEnterLeaveForKind(visitor, node.kind).leave;
       let result;
       if (fn) {
         result = fn.apply(visitor, args);

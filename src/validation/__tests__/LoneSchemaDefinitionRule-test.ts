@@ -1,19 +1,19 @@
 import { describe, it } from 'mocha';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { LoneSchemaDefinitionRule } from '../rules/LoneSchemaDefinitionRule';
+import { LoneSchemaDefinitionRule } from '../rules/LoneSchemaDefinitionRule.js';
 
-import { expectSDLValidationErrors } from './harness';
+import { expectSDLValidationErrors } from './harness.js';
 
 function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
   return expectSDLValidationErrors(schema, LoneSchemaDefinitionRule, sdlStr);
 }
 
 function expectValidSDL(sdlStr: string, schema?: GraphQLSchema) {
-  expectSDLErrors(sdlStr, schema).to.deep.equal([]);
+  expectSDLErrors(sdlStr, schema).toDeepEqual([]);
 }
 
 describe('Validate: Schema definition should be alone', () => {
@@ -54,7 +54,7 @@ describe('Validate: Schema definition should be alone', () => {
       schema {
         subscription: Foo
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Must provide only one schema definition.',
         locations: [{ line: 10, column: 7 }],
@@ -80,7 +80,7 @@ describe('Validate: Schema definition should be alone', () => {
         }
       `,
       schema,
-    ).to.deep.equal([]);
+    ).toDeepEqual([]);
   });
 
   it('redefine schema in schema extension', () => {
@@ -101,7 +101,7 @@ describe('Validate: Schema definition should be alone', () => {
         }
       `,
       schema,
-    ).to.deep.equal([
+    ).toDeepEqual([
       {
         message: 'Cannot define a new schema within a schema extension.',
         locations: [{ line: 2, column: 9 }],
@@ -127,7 +127,7 @@ describe('Validate: Schema definition should be alone', () => {
         }
       `,
       schema,
-    ).to.deep.equal([
+    ).toDeepEqual([
       {
         message: 'Cannot define a new schema within a schema extension.',
         locations: [{ line: 2, column: 9 }],

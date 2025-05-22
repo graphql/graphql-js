@@ -1,13 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
+import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 
-import type { ASTNode, SelectionSetNode } from '../ast';
-import { isNode } from '../ast';
-import { Kind } from '../kinds';
-import { parse } from '../parser';
-import { visit, visitInParallel, BREAK } from '../visitor';
+import type { ASTNode, SelectionSetNode } from '../ast.js';
+import { isNode } from '../ast.js';
+import { Kind } from '../kinds.js';
+import { parse } from '../parser.js';
+import type { ASTVisitor, ASTVisitorKeyMap } from '../visitor.js';
+import { BREAK, visit, visitInParallel } from '../visitor.js';
 
 function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   const [node, key, parent, path, ancestors] = args;
@@ -31,7 +32,7 @@ function checkVisitorFnArgs(ast: any, args: any, isEdited: boolean = false) {
   expect(parent).to.have.property(key);
 
   expect(path).to.be.an.instanceof(Array);
-  expect(path[path.length - 1]).to.equal(key);
+  expect(path.at(-1)).to.equal(key);
 
   expect(ancestors).to.be.an.instanceof(Array);
   expect(ancestors.length).to.equal(path.length - 1);
@@ -419,53 +420,45 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('visit nodes with unknown kinds but does not traverse deeper', () => {
-    const customAST = parse('{ a }');
-    // @ts-expect-error
-    customAST.definitions[0].selectionSet.selections.push({
-      kind: 'CustomField',
-      name: { kind: 'Name', value: 'NamedNodeToBeSkipped' },
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'CustomField',
-            name: { kind: 'Name', value: 'NamedNodeToBeSkipped' },
-          },
-        ],
-      },
-    });
-
+  it('visits only the specified `Kind` in visitorKeyMap', () => {
     const visited: Array<any> = [];
-    visit(customAST, {
+
+    const visitorKeyMap: ASTVisitorKeyMap = {
+      Document: ['definitions'],
+      OperationDefinition: ['name'],
+    };
+
+    const visitor: ASTVisitor = {
       enter(node) {
         visited.push(['enter', node.kind, getValue(node)]);
       },
       leave(node) {
         visited.push(['leave', node.kind, getValue(node)]);
       },
-    });
+    };
+
+    const exampleDocumentAST = parse(`
+      query ExampleOperation {
+        someField
+      }
+    `);
+
+    visit(exampleDocumentAST, visitor, visitorKeyMap);
 
     expect(visited).to.deep.equal([
       ['enter', 'Document', undefined],
       ['enter', 'OperationDefinition', undefined],
-      ['enter', 'SelectionSet', undefined],
-      ['enter', 'Field', undefined],
-      ['enter', 'Name', 'a'],
-      ['leave', 'Name', 'a'],
-      ['leave', 'Field', undefined],
-      ['enter', 'CustomField', undefined],
-      ['leave', 'CustomField', undefined],
-      ['leave', 'SelectionSet', undefined],
+      ['enter', 'Name', 'ExampleOperation'],
+      ['leave', 'Name', 'ExampleOperation'],
       ['leave', 'OperationDefinition', undefined],
       ['leave', 'Document', undefined],
     ]);
   });
 
-  it('Legacy: visits variables defined in fragments', () => {
+  it('visits arguments defined on fragments', () => {
     const ast = parse('fragment a($v: Boolean = false) on t { f }', {
       noLocation: true,
-      allowLegacyFragmentVariables: true,
+      experimentalFragmentArguments: true,
     });
     const visited: Array<any> = [];
 
@@ -512,7 +505,51 @@ describe('Visitor', () => {
     ]);
   });
 
-  it('visits kitchen sink', () => {
+  it('visits arguments on fragment spreads', () => {
+    const ast = parse('fragment a on t { ...s(v: false) }', {
+      noLocation: true,
+      experimentalFragmentArguments: true,
+    });
+    const visited: Array<any> = [];
+
+    visit(ast, {
+      enter(node) {
+        checkVisitorFnArgs(ast, arguments);
+        visited.push(['enter', node.kind, getValue(node)]);
+      },
+      leave(node) {
+        checkVisitorFnArgs(ast, arguments);
+        visited.push(['leave', node.kind, getValue(node)]);
+      },
+    });
+
+    expect(visited).to.deep.equal([
+      ['enter', 'Document', undefined],
+      ['enter', 'FragmentDefinition', undefined],
+      ['enter', 'Name', 'a'],
+      ['leave', 'Name', 'a'],
+      ['enter', 'NamedType', undefined],
+      ['enter', 'Name', 't'],
+      ['leave', 'Name', 't'],
+      ['leave', 'NamedType', undefined],
+      ['enter', 'SelectionSet', undefined],
+      ['enter', 'FragmentSpread', undefined],
+      ['enter', 'Name', 's'],
+      ['leave', 'Name', 's'],
+      ['enter', 'FragmentArgument', { kind: 'BooleanValue', value: false }],
+      ['enter', 'Name', 'v'],
+      ['leave', 'Name', 'v'],
+      ['enter', 'BooleanValue', false],
+      ['leave', 'BooleanValue', false],
+      ['leave', 'FragmentArgument', { kind: 'BooleanValue', value: false }],
+      ['leave', 'FragmentSpread', undefined],
+      ['leave', 'SelectionSet', undefined],
+      ['leave', 'FragmentDefinition', undefined],
+      ['leave', 'Document', undefined],
+    ]);
+  });
+
+  it('properly visits the kitchen sink query', () => {
     const ast = parse(kitchenSinkQuery);
     const visited: Array<any> = [];
     const argsStack: Array<any> = [];
@@ -747,6 +784,10 @@ describe('Visitor', () => {
       ['enter', 'Name', 'name', 'NamedType'],
       ['leave', 'Name', 'name', 'NamedType'],
       ['leave', 'NamedType', 'type', 'VariableDefinition'],
+      ['enter', 'Directive', 0, undefined],
+      ['enter', 'Name', 'name', 'Directive'],
+      ['leave', 'Name', 'name', 'Directive'],
+      ['leave', 'Directive', 0, undefined],
       ['leave', 'VariableDefinition', 0, undefined],
       ['enter', 'Directive', 0, undefined],
       ['enter', 'Name', 'name', 'Directive'],
@@ -1066,7 +1107,7 @@ describe('Visitor', () => {
                 return BREAK;
               }
             },
-            // istanbul ignore next (Never called and used as a placeholder)
+            /* c8 ignore next 3 */
             leave() {
               expect.fail('Should not be called');
             },

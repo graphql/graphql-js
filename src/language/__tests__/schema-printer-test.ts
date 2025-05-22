@@ -1,17 +1,18 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
-import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL';
+import { dedent } from '../../__testUtils__/dedent.js';
+import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
 
-import { parse } from '../parser';
-import { print } from '../printer';
+import { Kind } from '../kinds.js';
+import { parse } from '../parser.js';
+import { print } from '../printer.js';
 
 describe('Printer: SDL document', () => {
   it('prints minimal ast', () => {
     const ast = {
-      kind: 'ScalarTypeDefinition',
-      name: { kind: 'Name', value: 'foo' },
+      kind: Kind.SCALAR_TYPE_DEFINITION,
+      name: { kind: Kind.NAME, value: 'foo' },
     } as const;
     expect(print(ast)).to.equal('scalar foo');
   });
@@ -58,8 +59,9 @@ describe('Printer: SDL document', () => {
         three(argument: InputType, other: String): Int
         four(argument: String = "string"): String
         five(argument: [String] = ["string", "string"]): String
-        six(argument: InputType = {key: "value"}): Type
+        six(argument: InputType = { key: "value" }): Type
         seven(argument: Int = null): Type
+        eight(argument: OneOfInputType): Type
       }
 
       type AnnotatedObject @onObject(arg: "value") {
@@ -140,6 +142,11 @@ describe('Printer: SDL document', () => {
       input InputType {
         key: String!
         answer: Int = 42
+      }
+
+      input OneOfInputType @oneOf {
+        string: String
+        int: Int
       }
 
       input AnnotatedInput @onInputObject {

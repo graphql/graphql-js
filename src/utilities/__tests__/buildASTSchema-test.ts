@@ -1,46 +1,47 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
+import { viralSDL } from '../../__testUtils__/viralSDL.js';
 
-import { invariant } from '../../jsutils/invariant';
+import type { Maybe } from '../../jsutils/Maybe.js';
 
-import type { ASTNode } from '../../language/ast';
-import { Kind } from '../../language/kinds';
-import { parse } from '../../language/parser';
-import { print } from '../../language/printer';
+import type { ASTNode } from '../../language/ast.js';
+import { Kind } from '../../language/kinds.js';
+import { parse } from '../../language/parser.js';
+import { print } from '../../language/printer.js';
 
-import { GraphQLSchema } from '../../type/schema';
-import { validateSchema } from '../../type/validate';
-import { __Schema, __EnumValue } from '../../type/introspection';
+import {
+  assertEnumType,
+  assertInputObjectType,
+  assertInterfaceType,
+  assertObjectType,
+  assertScalarType,
+  assertUnionType,
+} from '../../type/definition.js';
 import {
   assertDirective,
-  GraphQLSkipDirective,
-  GraphQLIncludeDirective,
   GraphQLDeprecatedDirective,
+  GraphQLIncludeDirective,
+  GraphQLOneOfDirective,
+  GraphQLSkipDirective,
   GraphQLSpecifiedByDirective,
-} from '../../type/directives';
+} from '../../type/directives.js';
+import { __EnumValue, __Schema } from '../../type/introspection.js';
 import {
+  GraphQLBoolean,
+  GraphQLFloat,
   GraphQLID,
   GraphQLInt,
-  GraphQLFloat,
   GraphQLString,
-  GraphQLBoolean,
-} from '../../type/scalars';
-import {
-  assertObjectType,
-  assertInputObjectType,
-  assertEnumType,
-  assertUnionType,
-  assertInterfaceType,
-  assertScalarType,
-} from '../../type/definition';
+} from '../../type/scalars.js';
+import { GraphQLSchema } from '../../type/schema.js';
+import { validateSchema } from '../../type/validate.js';
 
-import { graphqlSync } from '../../graphql';
+import { graphqlSync } from '../../graphql.js';
 
-import { printType, printSchema } from '../printSchema';
-import { buildASTSchema, buildSchema } from '../buildASTSchema';
-import type { Maybe } from '../../jsutils/Maybe';
+import { buildASTSchema, buildSchema } from '../buildASTSchema.js';
+import { printSchema, printType } from '../printSchema.js';
 
 /**
  * This function does a full cycle of going from a string with the contents of
@@ -52,7 +53,7 @@ function cycleSDL(sdl: string): string {
 }
 
 function expectASTNode(obj: Maybe<{ readonly astNode: Maybe<ASTNode> }>) {
-  invariant(obj?.astNode != null);
+  assert(obj?.astNode != null);
   return expect(print(obj.astNode));
 }
 
@@ -222,7 +223,7 @@ describe('Schema Builder', () => {
   it('Maintains @include, @skip & @specifiedBy', () => {
     const schema = buildSchema('type Query');
 
-    expect(schema.getDirectives()).to.have.lengthOf(4);
+    expect(schema.getDirectives()).to.have.lengthOf(5);
     expect(schema.getDirective('skip')).to.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.equal(GraphQLIncludeDirective);
     expect(schema.getDirective('deprecated')).to.equal(
@@ -231,6 +232,7 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('specifiedBy')).to.equal(
       GraphQLSpecifiedByDirective,
     );
+    expect(schema.getDirective('oneOf')).to.equal(GraphQLOneOfDirective);
   });
 
   it('Overriding directives excludes specified', () => {
@@ -239,9 +241,10 @@ describe('Schema Builder', () => {
       directive @include on FIELD
       directive @deprecated on FIELD_DEFINITION
       directive @specifiedBy on FIELD_DEFINITION
+      directive @oneOf on OBJECT
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(4);
+    expect(schema.getDirectives()).to.have.lengthOf(5);
     expect(schema.getDirective('skip')).to.not.equal(GraphQLSkipDirective);
     expect(schema.getDirective('include')).to.not.equal(
       GraphQLIncludeDirective,
@@ -252,18 +255,20 @@ describe('Schema Builder', () => {
     expect(schema.getDirective('specifiedBy')).to.not.equal(
       GraphQLSpecifiedByDirective,
     );
+    expect(schema.getDirective('oneOf')).to.not.equal(GraphQLOneOfDirective);
   });
 
-  it('Adding directives maintains @include, @skip & @specifiedBy', () => {
+  it('Adding directives maintains @include, @skip, @deprecated, @specifiedBy, and @oneOf', () => {
     const schema = buildSchema(`
       directive @foo(arg: Int) on FIELD
     `);
 
-    expect(schema.getDirectives()).to.have.lengthOf(5);
+    expect(schema.getDirectives()).to.have.lengthOf(6);
     expect(schema.getDirective('skip')).to.not.equal(undefined);
     expect(schema.getDirective('include')).to.not.equal(undefined);
     expect(schema.getDirective('deprecated')).to.not.equal(undefined);
     expect(schema.getDirective('specifiedBy')).to.not.equal(undefined);
+    expect(schema.getDirective('oneOf')).to.not.equal(undefined);
   });
 
   it('Type modifiers', () => {
@@ -334,7 +339,7 @@ describe('Schema Builder', () => {
     const definition = parse(sdl).definitions[0];
     expect(
       definition.kind === 'InterfaceTypeDefinition' && definition.interfaces,
-    ).to.deep.equal([], 'The interfaces property must be an empty array.');
+    ).to.deep.equal(undefined, 'The interfaces property must not be defined.');
 
     expect(cycleSDL(sdl)).to.equal(sdl);
   });
@@ -1036,7 +1041,7 @@ describe('Schema Builder', () => {
   });
 
   it('Do not override standard types', () => {
-    // NOTE: not sure it's desired behaviour to just silently ignore override
+    // NOTE: not sure it's desired behavior to just silently ignore override
     // attempts so just documenting it here.
 
     const schema = buildSchema(`
@@ -1094,15 +1099,13 @@ describe('Schema Builder', () => {
     );
   });
 
-  it('Rejects invalid AST', () => {
-    // @ts-expect-error (First parameter expected to be DocumentNode)
-    expect(() => buildASTSchema(null)).to.throw(
-      'Must provide valid Document AST',
-    );
-
-    // @ts-expect-error
-    expect(() => buildASTSchema({})).to.throw(
-      'Must provide valid Document AST',
-    );
+  it('correctly processes viral schema', () => {
+    const schema = buildSchema(viralSDL);
+    expect(schema.getQueryType()).to.contain({ name: 'Query' });
+    expect(schema.getType('Virus')).to.contain({ name: 'Virus' });
+    expect(schema.getType('Mutation')).to.contain({ name: 'Mutation' });
+    // Though the viral schema has a 'Mutation' type, it is not used for the
+    // 'mutation' operation.
+    expect(schema.getMutationType()).to.equal(undefined);
   });
 });

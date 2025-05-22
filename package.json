@@ -1,12 +1,17 @@
 {
   "name": "graphql",
-  "version": "16.0.0-alpha.2",
+  "version": "17.0.0-alpha.8",
   "description": "A Query Language and Runtime which can target any service.",
   "license": "MIT",
   "private": true,
-  "main": "index",
-  "module": "index.mjs",
-  "types": "index.d.ts",
+  "type": "module",
+  "typesVersions": {
+    ">=4.4.0": {
+      "*": [
+        "*"
+      ]
+    }
+  },
   "sideEffects": false,
   "homepage": "https://github.com/graphql/graphql-js",
   "bugs": {
@@ -21,50 +26,54 @@
     "graphql-js"
   ],
   "engines": {
-    "node": "^12.22.0 || ^14.16.0 || >=16.0.0"
+    "node": "^16.19.0 || ^18.14.0 || >=19.7.0"
   },
   "scripts": {
-    "preversion": ". ./resources/checkgit.sh && npm ci",
-    "version": "node resources/gen-version.js && npm test && git add src/version.js",
+    "preversion": "bash -c '. ./resources/checkgit.sh && npm ci --ignore-scripts'",
+    "version": "node --loader ts-node/esm resources/gen-version.ts && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
-    "changelog": "node resources/gen-changelog.js",
-    "benchmark": "node benchmark/benchmark.js",
-    "test": "npm run lint && npm run check && npm run testonly && npm run prettier:check && npm run check:spelling && npm run check:integrations",
+    "changelog": "node --loader ts-node/esm resources/gen-changelog.ts",
+    "benchmark": "node --loader ts-node/esm resources/benchmark.ts",
+    "test": "npm run lint && npm run check && npm run testonly:cover && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 .",
     "check": "tsc --pretty",
     "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts",
-    "testonly:cover": "nyc npm run testonly",
-    "prettier": "prettier --write --list-different .",
-    "prettier:check": "prettier --check .",
-    "check:spelling": "cspell --no-progress '**/*'",
-    "check:integrations": "npm run build:npm && npm run build:deno && mocha --full-trace integrationTests/*-test.js",
-    "build:npm": "node resources/build-npm.js",
-    "build:deno": "node resources/build-deno.js",
+    "testonly:cover": "c8 npm run testonly",
+    "testonly:watch": "npm run testonly -- --watch",
+    "prettier": "prettier --cache --cache-strategy metadata --write --list-different .",
+    "prettier:check": "prettier --cache --cache-strategy metadata --check .",
+    "precommit": "lint-staged",
+    "check:spelling": "cspell --cache --no-progress \"**/*\"",
+    "check:integrations": "mocha --full-trace resources/integration-test.ts",
+    "build:npm": "node --loader ts-node/esm resources/build-npm.ts",
+    "build:deno": "node --loader ts-node/esm resources/build-deno.ts",
+    "diff:npm": "node --loader ts-node/esm resources/diff-npm-package.ts",
     "gitpublish:npm": "bash ./resources/gitpublish.sh npm npmDist",
-    "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist"
+    "gitpublish:deno": "bash ./resources/gitpublish.sh deno denoDist",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "@babel/core": "7.14.3",
-    "@babel/eslint-parser": "7.14.4",
-    "@babel/plugin-syntax-typescript": "7.12.13",
-    "@babel/plugin-transform-typescript": "7.14.4",
-    "@babel/preset-env": "7.14.4",
-    "@babel/register": "7.13.16",
-    "@types/chai": "4.2.18",
-    "@types/mocha": "8.2.2",
-    "@types/node": "15.6.1",
-    "@typescript-eslint/eslint-plugin": "4.25.0",
-    "@typescript-eslint/parser": "4.25.0",
-    "chai": "4.3.4",
-    "cspell": "5.5.1",
-    "eslint": "7.27.0",
-    "eslint-plugin-import": "2.23.4",
-    "eslint-plugin-internal-rules": "file:./resources/eslint-internal-rules",
-    "eslint-plugin-istanbul": "0.1.2",
-    "eslint-plugin-node": "11.1.0",
-    "mocha": "8.4.0",
-    "nyc": "15.1.0",
-    "prettier": "2.3.0",
-    "typescript": "4.3.2"
+    "@types/chai": "5.0.1",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.10.1",
+    "c8": "10.1.2",
+    "chai": "5.1.2",
+    "cspell": "8.16.1",
+    "eslint": "^9.16.0",
+    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-n": "17.14.0",
+    "eslint-plugin-react": "7.37.2",
+    "eslint-plugin-react-hooks": "5.0.0",
+    "eslint-plugin-simple-import-sort": "12.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "mocha": "11.0.1",
+    "prettier": "3.4.1",
+    "ts-node": "10.9.2",
+    "typescript": "5.7.2",
+    "typescript-eslint": "^8.17.0"
+  },
+  "publishConfig": {
+    "tag": "alpha"
   }
 }

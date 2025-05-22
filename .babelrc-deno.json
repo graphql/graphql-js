@@ -1,7 +1,0 @@
-{
-  "plugins": [
-    "@babel/plugin-syntax-typescript",
-    ["./resources/add-extension-to-import-paths", { "extension": "ts" }],
-    "./resources/inline-invariant"
-  ]
-}

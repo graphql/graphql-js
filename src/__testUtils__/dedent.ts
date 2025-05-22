@@ -12,19 +12,21 @@ export function dedentString(string: string): string {
     indent += char;
   }
 
-  return trimmedStr.replace(RegExp('^' + indent, 'mg'), ''); // remove indent
+  return trimmedStr.replaceAll(RegExp('^' + indent, 'mg'), ''); // remove indent
 }
 
 /**
  * An ES6 string tag that fixes indentation and also trims string.
  *
  * Example usage:
+ * ```ts
  * const str = dedent`
  *   {
  *     test
  *   }
  * `;
  * str === "{\n  test\n}";
+ * ```
  */
 export function dedent(
   strings: ReadonlyArray<string>,

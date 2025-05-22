@@ -1,13 +1,18 @@
+import type { Maybe } from './Maybe.js';
 import type {
-  ObjMap,
-  ObjMapLike,
   ReadOnlyObjMap,
   ReadOnlyObjMapLike,
-} from './ObjMap';
+  ReadOnlyObjMapSymbolLike,
+  ReadOnlyObjMapWithSymbol,
+} from './ObjMap.js';
 
-export function toObjMap<T>(obj: ObjMapLike<T>): ObjMap<T>;
-export function toObjMap<T>(obj: ReadOnlyObjMapLike<T>): ReadOnlyObjMap<T>;
-export function toObjMap<T>(obj: ObjMapLike<T> | ReadOnlyObjMapLike<T>) {
+export function toObjMap<T>(
+  obj: Maybe<ReadOnlyObjMapLike<T>>,
+): ReadOnlyObjMap<T> {
+  if (obj == null) {
+    return Object.create(null);
+  }
+
   if (Object.getPrototypeOf(obj) === null) {
     return obj;
   }
@@ -16,5 +21,29 @@ export function toObjMap<T>(obj: ObjMapLike<T> | ReadOnlyObjMapLike<T>) {
   for (const [key, value] of Object.entries(obj)) {
     map[key] = value;
   }
+
+  return map;
+}
+
+export function toObjMapWithSymbols<T>(
+  obj: Maybe<ReadOnlyObjMapSymbolLike<T>>,
+): ReadOnlyObjMapWithSymbol<T> {
+  if (obj == null) {
+    return Object.create(null);
+  }
+
+  if (Object.getPrototypeOf(obj) === null) {
+    return obj;
+  }
+
+  const map = Object.create(null);
+  for (const [key, value] of Object.entries(obj)) {
+    map[key] = value;
+  }
+
+  for (const key of Object.getOwnPropertySymbols(obj)) {
+    map[key] = obj[key];
+  }
+
   return map;
 }

@@ -1,20 +1,18 @@
-import type { ObjMap } from '../jsutils/ObjMap';
-import { keyMap } from '../jsutils/keyMap';
-import { inspect } from '../jsutils/inspect';
-import { invariant } from '../jsutils/invariant';
+import { inspect } from '../jsutils/inspect.js';
+import { invariant } from '../jsutils/invariant.js';
+import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 
-import type { ValueNode } from '../language/ast';
-import { Kind } from '../language/kinds';
+import type { ValueNode } from '../language/ast.js';
+import { Kind } from '../language/kinds.js';
 
-import type { GraphQLInputType } from '../type/definition';
+import type { GraphQLInputType } from '../type/definition.js';
 import {
-  isLeafType,
   isInputObjectType,
+  isLeafType,
   isListType,
   isNonNullType,
-} from '../type/definition';
-
-import type { Maybe } from '../jsutils/Maybe';
+} from '../type/definition.js';
 
 /**
  * Produces a JavaScript value given a GraphQL Value AST.
@@ -35,6 +33,7 @@ import type { Maybe } from '../jsutils/Maybe';
  * | Enum Value           | Unknown       |
  * | NullValue            | null          |
  *
+ * @deprecated use `coerceInputLiteral()` instead - will be removed in v18
  */
 export function valueFromAST(
   valueNode: Maybe<ValueNode>,
@@ -49,11 +48,11 @@ export function valueFromAST(
 
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    if (variables == null || variables[variableName] === undefined) {
+    const variableValue = variables?.[variableName];
+    if (variableValue === undefined) {
       // No valid return value.
       return;
     }
-    const variableValue = variables[variableName];
     if (variableValue === null && isNonNullType(type)) {
       return; // Invalid: intentionally return no value.
     }
@@ -109,10 +108,12 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
-    const fieldNodes = keyMap(valueNode.fields, (field) => field.name.value);
+    const fieldNodes = new Map(
+      valueNode.fields.map((field) => [field.name.value, field]),
+    );
     for (const field of Object.values(type.getFields())) {
-      const fieldNode = fieldNodes[field.name];
-      if (!fieldNode || isMissingVariable(fieldNode.value, variables)) {
+      const fieldNode = fieldNodes.get(field.name);
+      if (fieldNode == null || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
           coercedObj[field.name] = field.defaultValue;
         } else if (isNonNullType(field.type)) {
@@ -126,10 +127,21 @@ export function valueFromAST(
       }
       coercedObj[field.name] = fieldValue;
     }
+
+    if (type.isOneOf) {
+      const keys = Object.keys(coercedObj);
+      if (keys.length !== 1) {
+        return; // Invalid: not exactly one key, intentionally return no value.
+      }
+
+      if (coercedObj[keys[0]] === null) {
+        return; // Invalid: value not non-null, intentionally return no value.
+      }
+    }
+
     return coercedObj;
   }
 
-  // istanbul ignore else (See: 'https://github.com/graphql/graphql-js/issues/2618')
   if (isLeafType(type)) {
     // Scalars and Enums fulfill parsing a literal value via parseLiteral().
     // Invalid values represent a failure to parse correctly, in which case
@@ -145,8 +157,8 @@ export function valueFromAST(
     }
     return result;
   }
-
-  // istanbul ignore next (Not reachable. All possible input types have been considered)
+  /* c8 ignore next 3 */
+  // Not reachable, all possible input types have been considered.
   invariant(false, 'Unexpected input type: ' + inspect(type));
 }
 

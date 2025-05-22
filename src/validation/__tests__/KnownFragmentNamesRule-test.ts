@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 
-import { KnownFragmentNamesRule } from '../rules/KnownFragmentNamesRule';
+import { KnownFragmentNamesRule } from '../rules/KnownFragmentNamesRule.js';
 
-import { expectValidationErrors } from './harness';
+import { expectValidationErrors } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrors(KnownFragmentNamesRule, queryStr);
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 describe('Validate: Known fragment names', () => {
@@ -53,7 +53,7 @@ describe('Validate: Known fragment names', () => {
         name
         ...UnknownFragment3
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message: 'Unknown fragment "UnknownFragment1".',
         locations: [{ line: 4, column: 14 }],

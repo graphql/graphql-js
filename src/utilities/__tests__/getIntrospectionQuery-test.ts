@@ -1,11 +1,25 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { IntrospectionOptions } from '../getIntrospectionQuery';
-import { getIntrospectionQuery } from '../getIntrospectionQuery';
+import { parse } from '../../language/parser.js';
+
+import { validate } from '../../validation/validate.js';
+
+import { buildSchema } from '../buildASTSchema.js';
+import type { IntrospectionOptions } from '../getIntrospectionQuery.js';
+import { getIntrospectionQuery } from '../getIntrospectionQuery.js';
+
+const dummySchema = buildSchema(`
+  type Query {
+    dummy: String
+  }
+`);
 
 function expectIntrospectionQuery(options?: IntrospectionOptions) {
   const query = getIntrospectionQuery(options);
+
+  const validationErrors = validate(dummySchema, parse(query));
+  expect(validationErrors).to.deep.equal([]);
 
   return {
     toMatch(name: string, times: number = 1): void {
@@ -101,6 +115,14 @@ describe('getIntrospectionQuery', () => {
       'deprecationReason',
       2,
     );
+  });
+
+  it('include "isOneOf" field on input objects', () => {
+    expectIntrospectionQuery().toNotMatch('isOneOf');
+
+    expectIntrospectionQuery({ oneOf: true }).toMatch('isOneOf', 1);
+
+    expectIntrospectionQuery({ oneOf: false }).toNotMatch('isOneOf');
   });
 
   it('include deprecated input field and args', () => {

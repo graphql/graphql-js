@@ -1,31 +1,30 @@
-import { expect } from 'chai';
+import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import type { Maybe } from '../../jsutils/Maybe';
+import type { Maybe } from '../../jsutils/Maybe.js';
 
-import { parse } from '../../language/parser';
+import { parse } from '../../language/parser.js';
 
-import type { GraphQLSchema } from '../../type/schema';
+import type { GraphQLSchema } from '../../type/schema.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { validate, validateSDL } from '../validate';
-import type { ValidationRule, SDLValidationRule } from '../ValidationContext';
+import { validate, validateSDL } from '../validate.js';
+import type {
+  SDLValidationRule,
+  ValidationRule,
+} from '../ValidationContext.js';
 
 export const testSchema: GraphQLSchema = buildSchema(`
-  interface Being {
-    name(surname: Boolean): String
-  }
-
   interface Mammal {
     mother: Mammal
     father: Mammal
   }
 
-  interface Pet implements Being {
+  interface Pet {
     name(surname: Boolean): String
   }
 
-  interface Canine implements Mammal & Being {
+  interface Canine implements Mammal {
     name(surname: Boolean): String
     mother: Canine
     father: Canine
@@ -37,7 +36,7 @@ export const testSchema: GraphQLSchema = buildSchema(`
     DOWN
   }
 
-  type Dog implements Being & Pet & Mammal & Canine {
+  type Dog implements Pet & Mammal & Canine {
     name(surname: Boolean): String
     nickname: String
     barkVolume: Int
@@ -49,7 +48,7 @@ export const testSchema: GraphQLSchema = buildSchema(`
     father: Dog
   }
 
-  type Cat implements Being & Pet {
+  type Cat implements Pet {
     name(surname: Boolean): String
     nickname: String
     meows: Boolean
@@ -59,26 +58,11 @@ export const testSchema: GraphQLSchema = buildSchema(`
 
   union CatOrDog = Cat | Dog
 
-  interface Intelligent {
-    iq: Int
-  }
-
-  type Human implements Being & Intelligent {
+  type Human {
     name(surname: Boolean): String
     pets: [Pet]
-    relatives: [Human]
-    iq: Int
+    relatives: [Human]!
   }
-
-  type Alien implements Being & Intelligent {
-    name(surname: Boolean): String
-    numEyes: Int
-    iq: Int
-  }
-
-  union DogOrHuman = Dog | Human
-
-  union HumanOrAlien = Human | Alien
 
   enum FurColor {
     BROWN
@@ -98,6 +82,11 @@ export const testSchema: GraphQLSchema = buildSchema(`
     stringListField: [String]
   }
 
+  input OneOfInput @oneOf {
+    stringField: String
+    intField: Int
+  }
+
   type ComplicatedArgs {
     # TODO List
     # TODO Coercion
@@ -112,6 +101,7 @@ export const testSchema: GraphQLSchema = buildSchema(`
     stringListArgField(stringListArg: [String]): String
     stringListNonNullArgField(stringListNonNullArg: [String!]): String
     complexArgField(complexArg: ComplexInput): String
+    oneOfArgField(oneOfArg: OneOfInput): String
     multipleReqs(req1: Int!, req2: Int!): String
     nonNullFieldWithDefault(arg: Int! = 0): String
     multipleOpts(opt1: Int = 0, opt2: Int = 0): String
@@ -120,13 +110,10 @@ export const testSchema: GraphQLSchema = buildSchema(`
 
   type QueryRoot {
     human(id: ID): Human
-    alien: Alien
     dog: Dog
     cat: Cat
     pet: Pet
     catOrDog: CatOrDog
-    dogOrHuman: DogOrHuman
-    humanOrAlien: HumanOrAlien
     complicatedArgs: ComplicatedArgs
   }
 
@@ -134,31 +121,31 @@ export const testSchema: GraphQLSchema = buildSchema(`
     query: QueryRoot
   }
 
-  directive @onQuery on QUERY
-  directive @onMutation on MUTATION
-  directive @onSubscription on SUBSCRIPTION
   directive @onField on FIELD
-  directive @onFragmentDefinition on FRAGMENT_DEFINITION
-  directive @onFragmentSpread on FRAGMENT_SPREAD
-  directive @onInlineFragment on INLINE_FRAGMENT
-  directive @onVariableDefinition on VARIABLE_DEFINITION
 `);
 
 export function expectValidationErrorsWithSchema(
   schema: GraphQLSchema,
   rule: ValidationRule,
   queryStr: string,
+  hideSuggestions = false,
 ): any {
-  const doc = parse(queryStr);
-  const errors = validate(schema, doc, [rule]);
-  return expect(errors);
+  const doc = parse(queryStr, { experimentalFragmentArguments: true });
+  const errors = validate(schema, doc, [rule], { hideSuggestions });
+  return expectJSON(errors);
 }
 
 export function expectValidationErrors(
   rule: ValidationRule,
   queryStr: string,
+  hideSuggestions = false,
 ): any {
-  return expectValidationErrorsWithSchema(testSchema, rule, queryStr);
+  return expectValidationErrorsWithSchema(
+    testSchema,
+    rule,
+    queryStr,
+    hideSuggestions,
+  );
 }
 
 export function expectSDLValidationErrors(
@@ -168,5 +155,5 @@ export function expectSDLValidationErrors(
 ): any {
   const doc = parse(sdlStr);
   const errors = validateSDL(doc, schema, [rule]);
-  return expect(errors);
+  return expectJSON(errors);
 }

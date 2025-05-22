@@ -1,8 +1,5 @@
-/**
- * Produce the GraphQL query recommended for a full schema introspection.
- * Accepts optional IntrospectionOptions.
- */
-export { getIntrospectionQuery } from './getIntrospectionQuery';
+// Produce the GraphQL query recommended for a full schema introspection.
+export { getIntrospectionQuery } from './getIntrospectionQuery.js';
 
 export type {
   IntrospectionOptions,
@@ -27,89 +24,113 @@ export type {
   IntrospectionInputValue,
   IntrospectionEnumValue,
   IntrospectionDirective,
-} from './getIntrospectionQuery';
+} from './getIntrospectionQuery.js';
 
-/** Gets the target Operation from a Document. */
-export { getOperationAST } from './getOperationAST';
+// Gets the target Operation from a Document.
+export { getOperationAST } from './getOperationAST.js';
 
-/** Gets the Type for the target Operation AST. */
-export { getOperationRootType } from './getOperationRootType';
+// Convert a GraphQLSchema to an IntrospectionQuery.
+export { introspectionFromSchema } from './introspectionFromSchema.js';
 
-/** Convert a GraphQLSchema to an IntrospectionQuery. */
-export { introspectionFromSchema } from './introspectionFromSchema';
+// Build a GraphQLSchema from an introspection result.
+export { buildClientSchema } from './buildClientSchema.js';
 
-/** Build a GraphQLSchema from an introspection result. */
-export { buildClientSchema } from './buildClientSchema';
+// Build a GraphQLSchema from GraphQL Schema language.
+export { buildASTSchema, buildSchema } from './buildASTSchema.js';
+export type { BuildSchemaOptions } from './buildASTSchema.js';
 
-/** Build a GraphQLSchema from GraphQL Schema language. */
-export { buildASTSchema, buildSchema } from './buildASTSchema';
-export type { BuildSchemaOptions } from './buildASTSchema';
+// Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST.
+export { extendSchema } from './extendSchema.js';
 
-/** Extends an existing GraphQLSchema from a parsed GraphQL Schema language AST. */
-export { extendSchema } from './extendSchema';
+// Sort a GraphQLSchema.
+export { lexicographicSortSchema } from './lexicographicSortSchema.js';
 
-/** Sort a GraphQLSchema. */
-export { lexicographicSortSchema } from './lexicographicSortSchema';
-
-/** Print a GraphQLSchema to GraphQL Schema language. */
+// Print a GraphQLSchema to GraphQL Schema language.
 export {
   printSchema,
   printType,
+  printDirective,
   printIntrospectionSchema,
-} from './printSchema';
+} from './printSchema.js';
 
-/** Create a GraphQLType from a GraphQL language AST. */
-export { typeFromAST } from './typeFromAST';
+// Create a GraphQLType from a GraphQL language AST.
+export { typeFromAST } from './typeFromAST.js';
 
-/** Create a JavaScript value from a GraphQL language AST with a type. */
-export { valueFromAST } from './valueFromAST';
+// Create a JavaScript value from a GraphQL language AST with a type.
+export {
+  /** @deprecated use `coerceInputLiteral()` instead - will be removed in v18 */
+  valueFromAST,
+} from './valueFromAST.js';
 
-/** Create a JavaScript value from a GraphQL language AST without a type. */
-export { valueFromASTUntyped } from './valueFromASTUntyped';
+// Create a JavaScript value from a GraphQL language AST without a type.
+export { valueFromASTUntyped } from './valueFromASTUntyped.js';
 
-/** Create a GraphQL language AST from a JavaScript value. */
-export { astFromValue } from './astFromValue';
+// Create a GraphQL language AST from a JavaScript value.
+export {
+  /** @deprecated use `valueToLiteral()` instead with care to operate on external values - `astFromValue()` will be removed in v18 */
+  astFromValue,
+} from './astFromValue.js';
 
-/** A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system. */
-export { TypeInfo, visitWithTypeInfo } from './TypeInfo';
+// A helper to use within recursive-descent visitors which need to be aware of the GraphQL type system.
+export { TypeInfo, visitWithTypeInfo } from './TypeInfo.js';
 
-/** Coerces a JavaScript value to a GraphQL type, or produces errors. */
-export { coerceInputValue } from './coerceInputValue';
+// Converts a value to a const value by replacing variables.
+export { replaceVariables } from './replaceVariables.js';
 
-/** Concatenates multiple AST together. */
-export { concatAST } from './concatAST';
+// Create a GraphQL literal (AST) from a JavaScript input value.
+export { valueToLiteral } from './valueToLiteral.js';
 
-/** Separates an AST into an AST per Operation. */
-export { separateOperations } from './separateOperations';
+export {
+  // Coerces a JavaScript value to a GraphQL type, or returns undefined.
+  coerceInputValue,
+  // Coerces a GraphQL literal (AST) to a GraphQL type, or returns undefined.
+  coerceInputLiteral,
+} from './coerceInputValue.js';
 
-/** Strips characters that are not significant to the validity or execution of a GraphQL document. */
-export { stripIgnoredCharacters } from './stripIgnoredCharacters';
+export {
+  // Validate a JavaScript value with a GraphQL type, collecting all errors.
+  validateInputValue,
+  // Validate a GraphQL literal (AST) with a GraphQL type, collecting all errors.
+  validateInputLiteral,
+} from './validateInputValue.js';
 
-/** Comparators for types */
+// Concatenates multiple AST together.
+export { concatAST } from './concatAST.js';
+
+// Separates an AST into an AST per Operation.
+export { separateOperations } from './separateOperations.js';
+
+// Strips characters that are not significant to the validity or execution of a GraphQL document.
+export { stripIgnoredCharacters } from './stripIgnoredCharacters.js';
+
+// Comparators for types
 export {
   isEqualType,
   isTypeSubTypeOf,
   doTypesOverlap,
-} from './typeComparators';
+} from './typeComparators.js';
 
-/** Asserts that a string is a valid GraphQL name */
-export { assertValidName, isValidNameError } from './assertValidName';
-
-/** Compares two GraphQLSchemas and detects breaking changes. */
+// Compares two GraphQLSchemas and detects breaking changes.
 export {
   BreakingChangeType,
   DangerousChangeType,
+  SafeChangeType,
   findBreakingChanges,
   findDangerousChanges,
-} from './findBreakingChanges';
-export type { BreakingChange, DangerousChange } from './findBreakingChanges';
+  findSchemaChanges,
+} from './findSchemaChanges.js';
+export type {
+  BreakingChange,
+  DangerousChange,
+  SafeChange,
+} from './findSchemaChanges.js';
 
-/** Wrapper type that contains DocumentNode and types that can be deduced from it. */
-export type { TypedQueryDocumentNode } from './typedQueryDocumentNode';
+// Wrapper type that contains DocumentNode and types that can be deduced from it.
+export type { TypedQueryDocumentNode } from './typedQueryDocumentNode.js';
 
-/** Schema coordinates */
+// Schema coordinates
 export {
   resolveSchemaCoordinate,
   resolveASTSchemaCoordinate,
-} from './resolveSchemaCoordinate';
-export type { ResolvedSchemaElement } from './resolveSchemaCoordinate';
+} from './resolveSchemaCoordinate.js';
+export type { ResolvedSchemaElement } from './resolveSchemaCoordinate.js';

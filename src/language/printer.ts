@@ -1,9 +1,10 @@
-import type { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import type { ASTNode } from './ast';
-import type { ASTReducer } from './visitor';
-import { visit } from './visitor';
-import { printBlockString } from './blockString';
+import type { ASTNode } from './ast.js';
+import { printBlockString } from './blockString.js';
+import { printString } from './printString.js';
+import type { ASTReducer } from './visitor.js';
+import { visit } from './visitor.js';
 
 /**
  * Converts an AST into a string, using one set of reasonable
@@ -55,24 +56,27 @@ const printDocASTReducer: ASTReducer<string> = {
 
   Field: {
     leave({ alias, name, arguments: args, directives, selectionSet }) {
-      const prefix = wrap('', alias, ': ') + name;
-      let argsLine = prefix + wrap('(', join(args, ', '), ')');
+      const prefix = join([wrap('', alias, ': '), name], '');
 
-      if (argsLine.length > MAX_LINE_LENGTH) {
-        argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
-      }
-
-      return join([argsLine, join(directives, ' '), selectionSet], ' ');
+      return join([
+        wrappedLineAndArgs(prefix, args),
+        wrap(' ', join(directives, ' ')),
+        wrap(' ', selectionSet),
+      ]);
     },
   },
-
   Argument: { leave: ({ name, value }) => name + ': ' + value },
+  FragmentArgument: { leave: ({ name, value }) => name + ': ' + value },
 
   // Fragments
 
   FragmentSpread: {
-    leave: ({ name, directives }) =>
-      '...' + name + wrap(' ', join(directives, ' ')),
+    leave: ({ name, arguments: args, directives }) => {
+      const prefix = '...' + name;
+      return (
+        wrappedLineAndArgs(prefix, args) + wrap(' ', join(directives, ' '))
+      );
+    },
   },
 
   InlineFragment: {
@@ -109,13 +113,27 @@ const printDocASTReducer: ASTReducer<string> = {
   FloatValue: { leave: ({ value }) => value },
   StringValue: {
     leave: ({ value, block: isBlockString }) =>
-      isBlockString ? printBlockString(value) : JSON.stringify(value),
+      isBlockString === true ? printBlockString(value) : printString(value),
   },
   BooleanValue: { leave: ({ value }) => (value ? 'true' : 'false') },
   NullValue: { leave: () => 'null' },
   EnumValue: { leave: ({ value }) => value },
-  ListValue: { leave: ({ values }) => '[' + join(values, ', ') + ']' },
-  ObjectValue: { leave: ({ fields }) => '{' + join(fields, ', ') + '}' },
+  ListValue: {
+    leave: ({ values }) => {
+      const valuesLine = '[' + join(values, ', ') + ']';
+
+      if (valuesLine.length > MAX_LINE_LENGTH) {
+        return '[\n' + indent(join(values, '\n')) + '\n]';
+      }
+      return valuesLine;
+    },
+  },
+  ObjectValue: {
+    leave: ({ fields }) => {
+      const fieldsLine = '{ ' + join(fields, ', ') + ' }';
+      return fieldsLine.length > MAX_LINE_LENGTH ? block(fields) : fieldsLine;
+    },
+  },
   ObjectField: { leave: ({ name, value }) => name + ': ' + value },
 
   // Directive
@@ -328,8 +346,7 @@ function join(
 }
 
 /**
- * Given array, print each item on its own line, wrapped in an
- * indented "{ }" block.
+ * Given array, print each item on its own line, wrapped in an indented `{ }` block.
  */
 function block(array: Maybe<ReadonlyArray<string | undefined>>): string {
   return wrap('{\n', indent(join(array, '\n')), '\n}');
@@ -349,10 +366,21 @@ function wrap(
 }
 
 function indent(str: string): string {
-  return wrap('  ', str.replace(/\n/g, '\n  '));
+  return wrap('  ', str.replaceAll('\n', '\n  '));
 }
 
 function hasMultilineItems(maybeArray: Maybe<ReadonlyArray<string>>): boolean {
-  // istanbul ignore next (See: 'https://github.com/graphql/graphql-js/issues/2203')
   return maybeArray?.some((str) => str.includes('\n')) ?? false;
+}
+
+function wrappedLineAndArgs(
+  prefix: string,
+  args: ReadonlyArray<string> | undefined,
+): string {
+  let argsLine = prefix + wrap('(', join(args, ', '), ')');
+
+  if (argsLine.length > MAX_LINE_LENGTH) {
+    argsLine = prefix + wrap('(\n', indent(join(args, '\n')), '\n)');
+  }
+  return argsLine;
 }

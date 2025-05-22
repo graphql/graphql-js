@@ -1,16 +1,17 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { dedent } from '../../__testUtils__/dedent';
+import { dedent } from '../../__testUtils__/dedent.js';
+import { expectToThrowJSON } from '../../__testUtils__/expectJSON.js';
 
-import { inspect } from '../../jsutils/inspect';
+import { inspect } from '../../jsutils/inspect.js';
 
-import { GraphQLError } from '../../error/GraphQLError';
+import { GraphQLError } from '../../error/GraphQLError.js';
 
-import type { Token } from '../ast';
-import { Source } from '../source';
-import { TokenKind } from '../tokenKind';
-import { Lexer, isPunctuatorTokenKind } from '../lexer';
+import type { Token } from '../ast.js';
+import { isPunctuatorTokenKind, Lexer } from '../lexer.js';
+import { Source } from '../source.js';
+import { TokenKind } from '../tokenKind.js';
 
 function lexOne(str: string) {
   const lexer = new Lexer(new Source(str));
@@ -24,17 +25,10 @@ function lexSecond(str: string) {
 }
 
 function expectSyntaxError(text: string) {
-  return expect(() => lexSecond(text)).to.throw();
+  return expectToThrowJSON(() => lexSecond(text));
 }
 
 describe('Lexer', () => {
-  it('disallows uncommon control characters', () => {
-    expectSyntaxError('\u0007').to.deep.equal({
-      message: 'Syntax Error: Invalid character: U+0007.',
-      locations: [{ line: 1, column: 1 }],
-    });
-  });
-
   it('ignores BOM header', () => {
     expect(lexOne('\uFEFF foo')).to.contain({
       kind: TokenKind.NAME,
@@ -114,8 +108,13 @@ describe('Lexer', () => {
     });
   });
 
-  it('can be JSON.stringified, util.inspected or jsutils.inspect', () => {
-    const token = lexOne('foo');
+  it('can be Object.toStringified, JSON.stringified, or jsutils.inspected', () => {
+    const lexer = new Lexer(new Source('foo'));
+    const token = lexer.advance();
+
+    expect(Object.prototype.toString.call(lexer)).to.equal('[object Lexer]');
+
+    expect(Object.prototype.toString.call(token)).to.equal('[object Token]');
     expect(JSON.stringify(token)).to.equal(
       '{"kind":"Name","value":"foo","line":1,"column":1}',
     );
@@ -166,20 +165,27 @@ describe('Lexer', () => {
     });
   });
 
+  it('reports unexpected characters', () => {
+    expectSyntaxError('.').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: ".".',
+      locations: [{ line: 1, column: 1 }],
+    });
+  });
+
   it('errors respect whitespace', () => {
     let caughtError;
     try {
-      lexOne(['', '', '    ?', ''].join('\n'));
+      lexOne(['', '', ' ~', ''].join('\n'));
     } catch (error) {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Unexpected character: "?".
+      Syntax Error: Unexpected character: "~".
 
-      GraphQL request:3:5
+      GraphQL request:3:2
       2 |
-      3 |     ?
-        |     ^
+      3 |  ~
+        |  ^
       4 |
     `);
   });
@@ -187,18 +193,18 @@ describe('Lexer', () => {
   it('updates line numbers in error for file context', () => {
     let caughtError;
     try {
-      const str = ['', '', '     ?', ''].join('\n');
+      const str = ['', '', '     ~', ''].join('\n');
       const source = new Source(str, 'foo.js', { line: 11, column: 12 });
       new Lexer(source).advance();
     } catch (error) {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Unexpected character: "?".
+      Syntax Error: Unexpected character: "~".
 
       foo.js:13:6
       12 |
-      13 |      ?
+      13 |      ~
          |      ^
       14 |
     `);
@@ -207,16 +213,16 @@ describe('Lexer', () => {
   it('updates column numbers in error for file context', () => {
     let caughtError;
     try {
-      const source = new Source('?', 'foo.js', { line: 1, column: 5 });
+      const source = new Source('~', 'foo.js', { line: 1, column: 5 });
       new Lexer(source).advance();
     } catch (error) {
       caughtError = error;
     }
     expect(String(caughtError)).to.equal(dedent`
-      Syntax Error: Unexpected character: "?".
+      Syntax Error: Unexpected character: "~".
 
       foo.js:1:5
-      1 |     ?
+      1 |     ~
         |     ^
     `);
   });
@@ -264,11 +270,97 @@ describe('Lexer', () => {
       value: 'slashes \\ /',
     });
 
+    expect(lexOne('"unescaped unicode outside BMP \u{1f600}"')).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 34,
+      value: 'unescaped unicode outside BMP \u{1f600}',
+    });
+
+    expect(
+      lexOne('"unescaped maximal unicode outside BMP \u{10ffff}"'),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 42,
+      value: 'unescaped maximal unicode outside BMP \u{10ffff}',
+    });
+
     expect(lexOne('"unicode \\u1234\\u5678\\u90AB\\uCDEF"')).to.contain({
       kind: TokenKind.STRING,
       start: 0,
       end: 34,
       value: 'unicode \u1234\u5678\u90AB\uCDEF',
+    });
+
+    expect(lexOne('"unicode \\u{1234}\\u{5678}\\u{90AB}\\u{CDEF}"')).to.contain(
+      {
+        kind: TokenKind.STRING,
+        start: 0,
+        end: 42,
+        value: 'unicode \u1234\u5678\u90AB\uCDEF',
+      },
+    );
+
+    expect(
+      lexOne('"string with unicode escape outside BMP \\u{1F600}"'),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 50,
+      value: 'string with unicode escape outside BMP \u{1f600}',
+    });
+
+    expect(lexOne('"string with minimal unicode escape \\u{0}"')).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 42,
+      value: 'string with minimal unicode escape \u{0}',
+    });
+
+    expect(
+      lexOne('"string with maximal unicode escape \\u{10FFFF}"'),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 47,
+      value: 'string with maximal unicode escape \u{10FFFF}',
+    });
+
+    expect(
+      lexOne('"string with maximal minimal unicode escape \\u{00000000}"'),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 57,
+      value: 'string with maximal minimal unicode escape \u{0}',
+    });
+
+    expect(
+      lexOne('"string with unicode surrogate pair escape \\uD83D\\uDE00"'),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 56,
+      value: 'string with unicode surrogate pair escape \u{1f600}',
+    });
+
+    expect(
+      lexOne('"string with minimal surrogate pair escape \\uD800\\uDC00"'),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 56,
+      value: 'string with minimal surrogate pair escape \u{10000}',
+    });
+
+    expect(
+      lexOne('"string with maximal surrogate pair escape \\uDBFF\\uDFFF"'),
+    ).to.contain({
+      kind: TokenKind.STRING,
+      start: 0,
+      end: 56,
+      value: 'string with maximal surrogate pair escape \u{10FFFF}',
     });
   });
 
@@ -299,16 +391,19 @@ describe('Lexer', () => {
       locations: [{ line: 1, column: 1 }],
     });
 
-    expectSyntaxError('"contains unescaped \u0007 control char"').to.deep.equal(
-      {
-        message: 'Syntax Error: Invalid character within String: U+0007.',
-        locations: [{ line: 1, column: 21 }],
-      },
-    );
+    expectSyntaxError('"bad surrogate \uDEAD"').to.deep.equal({
+      message: 'Syntax Error: Invalid character within String: U+DEAD.',
+      locations: [{ line: 1, column: 16 }],
+    });
 
-    expectSyntaxError('"null-byte is not \u0000 end of file"').to.deep.equal({
-      message: 'Syntax Error: Invalid character within String: U+0000.',
-      locations: [{ line: 1, column: 19 }],
+    expectSyntaxError('"bad high surrogate pair \uDEAD\uDEAD"').to.deep.equal({
+      message: 'Syntax Error: Invalid character within String: U+DEAD.',
+      locations: [{ line: 1, column: 26 }],
+    });
+
+    expectSyntaxError('"bad low surrogate pair \uD800\uD800"').to.deep.equal({
+      message: 'Syntax Error: Invalid character within String: U+D800.',
+      locations: [{ line: 1, column: 25 }],
     });
 
     expectSyntaxError('"multi\nline"').to.deep.equal({
@@ -355,6 +450,93 @@ describe('Lexer', () => {
       message: 'Syntax Error: Invalid Unicode escape sequence: "\\uXXXF".',
       locations: [{ line: 1, column: 6 }],
     });
+
+    expectSyntaxError('"bad \\u{} esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{}".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\u{FXXX} esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{FX".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\u{FFFF esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{FFFF ".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"bad \\u{FFFF"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{FFFF"".',
+      locations: [{ line: 1, column: 6 }],
+    });
+
+    expectSyntaxError('"too high \\u{110000} esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{110000}".',
+      locations: [{ line: 1, column: 11 }],
+    });
+
+    expectSyntaxError('"way too high \\u{12345678} esc"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid Unicode escape sequence: "\\u{12345678}".',
+      locations: [{ line: 1, column: 15 }],
+    });
+
+    expectSyntaxError('"too long \\u{000000000} esc"').to.deep.equal({
+      message:
+        'Syntax Error: Invalid Unicode escape sequence: "\\u{000000000".',
+      locations: [{ line: 1, column: 11 }],
+    });
+
+    expectSyntaxError('"bad surrogate \\uDEAD esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uDEAD".',
+      locations: [{ line: 1, column: 16 }],
+    });
+
+    expectSyntaxError('"bad surrogate \\u{DEAD} esc"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{DEAD}".',
+      locations: [{ line: 1, column: 16 }],
+    });
+
+    expectSyntaxError(
+      '"cannot use braces for surrogate pair \\u{D83D}\\u{DE00} esc"',
+    ).to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\u{D83D}".',
+      locations: [{ line: 1, column: 39 }],
+    });
+
+    expectSyntaxError(
+      '"bad high surrogate pair \\uDEAD\\uDEAD esc"',
+    ).to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uDEAD".',
+      locations: [{ line: 1, column: 26 }],
+    });
+
+    expectSyntaxError(
+      '"bad low surrogate pair \\uD800\\uD800 esc"',
+    ).to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uD800".',
+      locations: [{ line: 1, column: 25 }],
+    });
+
+    expectSyntaxError(
+      '"cannot escape half a pair \uD83D\\uDE00 esc"',
+    ).to.deep.equal({
+      message: 'Syntax Error: Invalid character within String: U+D83D.',
+      locations: [{ line: 1, column: 28 }],
+    });
+
+    expectSyntaxError(
+      '"cannot escape half a pair \\uD83D\uDE00 esc"',
+    ).to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uD83D".',
+      locations: [{ line: 1, column: 28 }],
+    });
+
+    expectSyntaxError('"bad \\uD83D\\not an escape"').to.deep.equal({
+      message: 'Syntax Error: Invalid Unicode escape sequence: "\\uD83D".',
+      locations: [{ line: 1, column: 6 }],
+    });
   });
 
   it('lexes block strings', () => {
@@ -362,6 +544,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 6,
+      line: 1,
+      column: 1,
       value: '',
     });
 
@@ -369,6 +553,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 12,
+      line: 1,
+      column: 1,
       value: 'simple',
     });
 
@@ -376,6 +562,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 19,
+      line: 1,
+      column: 1,
       value: ' white space ',
     });
 
@@ -383,6 +571,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 22,
+      line: 1,
+      column: 1,
       value: 'contains " quote',
     });
 
@@ -390,6 +580,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 32,
+      line: 1,
+      column: 1,
       value: 'contains """ triple quote',
     });
 
@@ -397,6 +589,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 16,
+      line: 1,
+      column: 1,
       value: 'multi\nline',
     });
 
@@ -404,6 +598,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 28,
+      line: 1,
+      column: 1,
       value: 'multi\nline\nnormalized',
     });
 
@@ -411,13 +607,26 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 32,
+      line: 1,
+      column: 1,
       value: 'unescaped \\n\\r\\b\\t\\f\\u1234',
+    });
+
+    expect(lexOne('"""unescaped unicode outside BMP \u{1f600}"""')).to.contain({
+      kind: TokenKind.BLOCK_STRING,
+      start: 0,
+      end: 38,
+      line: 1,
+      column: 1,
+      value: 'unescaped unicode outside BMP \u{1f600}',
     });
 
     expect(lexOne('"""slashes \\\\ \\/"""')).to.contain({
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 19,
+      line: 1,
+      column: 1,
       value: 'slashes \\\\ \\/',
     });
 
@@ -433,6 +642,8 @@ describe('Lexer', () => {
       kind: TokenKind.BLOCK_STRING,
       start: 0,
       end: 68,
+      line: 1,
+      column: 1,
       value: 'spans\n  multiple\n    lines',
     });
   });
@@ -486,18 +697,9 @@ describe('Lexer', () => {
       locations: [{ line: 1, column: 16 }],
     });
 
-    expectSyntaxError(
-      '"""contains unescaped \u0007 control char"""',
-    ).to.deep.equal({
-      message: 'Syntax Error: Invalid character within String: U+0007.',
-      locations: [{ line: 1, column: 23 }],
-    });
-
-    expectSyntaxError(
-      '"""null-byte is not \u0000 end of file"""',
-    ).to.deep.equal({
-      message: 'Syntax Error: Invalid character within String: U+0000.',
-      locations: [{ line: 1, column: 21 }],
+    expectSyntaxError('"""contains invalid surrogate \uDEAD"""').to.deep.equal({
+      message: 'Syntax Error: Invalid character within String: U+DEAD.',
+      locations: [{ line: 1, column: 31 }],
     });
   });
 
@@ -840,8 +1042,18 @@ describe('Lexer', () => {
       locations: [{ line: 1, column: 1 }],
     });
 
-    expectSyntaxError('?').to.deep.equal({
-      message: 'Syntax Error: Unexpected character: "?".',
+    expectSyntaxError('~').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: "~".',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\x00').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+0000.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\b').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+0008.',
       locations: [{ line: 1, column: 1 }],
     });
 
@@ -857,6 +1069,31 @@ describe('Lexer', () => {
 
     expectSyntaxError('\u203B').to.deep.equal({
       message: 'Syntax Error: Unexpected character: U+203B.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\u{1f600}').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+1F600.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\uD83D\uDE00').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+1F600.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\uD800\uDC00').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+10000.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\uDBFF\uDFFF').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: U+10FFFF.',
+      locations: [{ line: 1, column: 1 }],
+    });
+
+    expectSyntaxError('\uDEAD').to.deep.equal({
+      message: 'Syntax Error: Invalid character: U+DEAD.',
       locations: [{ line: 1, column: 1 }],
     });
   });
@@ -905,7 +1142,7 @@ describe('Lexer', () => {
     for (let tok: Token | null = startToken; tok; tok = tok.next) {
       if (tokens.length) {
         // Tokens are double-linked, prev should point to last seen token.
-        expect(tok.prev).to.equal(tokens[tokens.length - 1]);
+        expect(tok.prev).to.equal(tokens.at(-1));
       }
       tokens.push(tok);
     }
@@ -939,9 +1176,15 @@ describe('Lexer', () => {
       end: 9,
       value: ' Comment',
     });
-    expectSyntaxError('# \u0007').to.deep.equal({
-      message: 'Syntax Error: Invalid character: U+0007.',
-      locations: [{ line: 1, column: 3 }],
+    expect(lexOne('# Comment \u{1f600}').prev).to.contain({
+      kind: TokenKind.COMMENT,
+      start: 0,
+      end: 12,
+      value: ' Comment \u{1f600}',
+    });
+    expectSyntaxError('# Invalid surrogate \uDEAD').to.deep.equal({
+      message: 'Syntax Error: Invalid character: U+DEAD.',
+      locations: [{ line: 1, column: 21 }],
     });
   });
 });

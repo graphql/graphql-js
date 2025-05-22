@@ -1,4 +1,7 @@
+fail-zero: true
 throw-deprecation: true
 check-leaks: true
-require:
-  - 'resources/ts-register.js'
+extension:
+  - ts
+node-option:
+  - 'loader=ts-node/esm/transpile-only'

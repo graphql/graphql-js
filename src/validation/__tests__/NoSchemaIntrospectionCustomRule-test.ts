@@ -1,10 +1,10 @@
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { NoSchemaIntrospectionCustomRule } from '../rules/custom/NoSchemaIntrospectionCustomRule';
+import { NoSchemaIntrospectionCustomRule } from '../rules/custom/NoSchemaIntrospectionCustomRule.js';
 
-import { expectValidationErrorsWithSchema } from './harness';
+import { expectValidationErrorsWithSchema } from './harness.js';
 
 function expectErrors(queryStr: string) {
   return expectValidationErrorsWithSchema(
@@ -15,7 +15,7 @@ function expectErrors(queryStr: string) {
 }
 
 function expectValid(queryStr: string) {
-  expectErrors(queryStr).to.deep.equal([]);
+  expectErrors(queryStr).toDeepEqual([]);
 }
 
 const schema = buildSchema(`
@@ -58,7 +58,7 @@ describe('Validate: Prohibit introspection queries', () => {
           }
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'GraphQL introspection has been disabled, but the requested query contained the field "__schema".',
@@ -81,7 +81,7 @@ describe('Validate: Prohibit introspection queries', () => {
           }
         }
       }
-      `).to.deep.equal([
+      `).toDeepEqual([
       {
         message:
           'GraphQL introspection has been disabled, but the requested query contained the field "__schema".',
@@ -108,7 +108,7 @@ describe('Validate: Prohibit introspection queries', () => {
           }
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'GraphQL introspection has been disabled, but the requested query contained the field "__schema".',
@@ -129,7 +129,7 @@ describe('Validate: Prohibit introspection queries', () => {
           introspectionField
         }
       }
-    `).to.deep.equal([
+    `).toDeepEqual([
       {
         message:
           'GraphQL introspection has been disabled, but the requested query contained the field "introspectionField".',

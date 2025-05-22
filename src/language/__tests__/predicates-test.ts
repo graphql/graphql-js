@@ -1,22 +1,22 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import type { ASTNode } from '../ast';
-import { Kind } from '../kinds';
-import { parseValue } from '../parser';
+import type { ASTNode } from '../ast.js';
+import { Kind } from '../kinds.js';
+import { parseValue } from '../parser.js';
 import {
+  isConstValueNode,
   isDefinitionNode,
   isExecutableDefinitionNode,
+  isSchemaCoordinateNode,
   isSelectionNode,
-  isValueNode,
-  isConstValueNode,
+  isTypeDefinitionNode,
+  isTypeExtensionNode,
   isTypeNode,
   isTypeSystemDefinitionNode,
-  isTypeDefinitionNode,
   isTypeSystemExtensionNode,
-  isTypeExtensionNode,
-  isSchemaCoordinateNode,
-} from '../predicates';
+  isValueNode,
+} from '../predicates.js';
 
 function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
   return Object.values(Kind).filter(
@@ -28,30 +28,30 @@ function filterNodes(predicate: (node: ASTNode) => boolean): Array<string> {
 describe('AST node predicates', () => {
   it('isDefinitionNode', () => {
     expect(filterNodes(isDefinitionNode)).to.deep.equal([
-      'OperationDefinition',
-      'FragmentDefinition',
-      'SchemaDefinition',
-      'ScalarTypeDefinition',
-      'ObjectTypeDefinition',
-      'InterfaceTypeDefinition',
-      'UnionTypeDefinition',
-      'EnumTypeDefinition',
-      'InputObjectTypeDefinition',
       'DirectiveDefinition',
-      'SchemaExtension',
-      'ScalarTypeExtension',
-      'ObjectTypeExtension',
-      'InterfaceTypeExtension',
-      'UnionTypeExtension',
+      'EnumTypeDefinition',
       'EnumTypeExtension',
+      'FragmentDefinition',
+      'InputObjectTypeDefinition',
       'InputObjectTypeExtension',
+      'InterfaceTypeDefinition',
+      'InterfaceTypeExtension',
+      'ObjectTypeDefinition',
+      'ObjectTypeExtension',
+      'OperationDefinition',
+      'ScalarTypeDefinition',
+      'ScalarTypeExtension',
+      'SchemaDefinition',
+      'SchemaExtension',
+      'UnionTypeDefinition',
+      'UnionTypeExtension',
     ]);
   });
 
   it('isExecutableDefinitionNode', () => {
     expect(filterNodes(isExecutableDefinitionNode)).to.deep.equal([
-      'OperationDefinition',
       'FragmentDefinition',
+      'OperationDefinition',
     ]);
   });
 
@@ -65,15 +65,15 @@ describe('AST node predicates', () => {
 
   it('isValueNode', () => {
     expect(filterNodes(isValueNode)).to.deep.equal([
-      'Variable',
-      'IntValue',
-      'FloatValue',
-      'StringValue',
       'BooleanValue',
-      'NullValue',
       'EnumValue',
+      'FloatValue',
+      'IntValue',
       'ListValue',
+      'NullValue',
       'ObjectValue',
+      'StringValue',
+      'Variable',
     ]);
   });
 
@@ -90,56 +90,56 @@ describe('AST node predicates', () => {
 
   it('isTypeNode', () => {
     expect(filterNodes(isTypeNode)).to.deep.equal([
-      'NamedType',
       'ListType',
+      'NamedType',
       'NonNullType',
     ]);
   });
 
   it('isTypeSystemDefinitionNode', () => {
     expect(filterNodes(isTypeSystemDefinitionNode)).to.deep.equal([
-      'SchemaDefinition',
-      'ScalarTypeDefinition',
-      'ObjectTypeDefinition',
-      'InterfaceTypeDefinition',
-      'UnionTypeDefinition',
+      'DirectiveDefinition',
       'EnumTypeDefinition',
       'InputObjectTypeDefinition',
-      'DirectiveDefinition',
+      'InterfaceTypeDefinition',
+      'ObjectTypeDefinition',
+      'ScalarTypeDefinition',
+      'SchemaDefinition',
+      'UnionTypeDefinition',
     ]);
   });
 
   it('isTypeDefinitionNode', () => {
     expect(filterNodes(isTypeDefinitionNode)).to.deep.equal([
-      'ScalarTypeDefinition',
-      'ObjectTypeDefinition',
-      'InterfaceTypeDefinition',
-      'UnionTypeDefinition',
       'EnumTypeDefinition',
       'InputObjectTypeDefinition',
+      'InterfaceTypeDefinition',
+      'ObjectTypeDefinition',
+      'ScalarTypeDefinition',
+      'UnionTypeDefinition',
     ]);
   });
 
   it('isTypeSystemExtensionNode', () => {
     expect(filterNodes(isTypeSystemExtensionNode)).to.deep.equal([
-      'SchemaExtension',
-      'ScalarTypeExtension',
-      'ObjectTypeExtension',
-      'InterfaceTypeExtension',
-      'UnionTypeExtension',
       'EnumTypeExtension',
       'InputObjectTypeExtension',
+      'InterfaceTypeExtension',
+      'ObjectTypeExtension',
+      'ScalarTypeExtension',
+      'SchemaExtension',
+      'UnionTypeExtension',
     ]);
   });
 
   it('isTypeExtensionNode', () => {
     expect(filterNodes(isTypeExtensionNode)).to.deep.equal([
-      'ScalarTypeExtension',
-      'ObjectTypeExtension',
-      'InterfaceTypeExtension',
-      'UnionTypeExtension',
       'EnumTypeExtension',
       'InputObjectTypeExtension',
+      'InterfaceTypeExtension',
+      'ObjectTypeExtension',
+      'ScalarTypeExtension',
+      'UnionTypeExtension',
     ]);
   });
 

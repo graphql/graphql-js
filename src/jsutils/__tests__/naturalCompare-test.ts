@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { naturalCompare } from '../naturalCompare';
+import { naturalCompare } from '../naturalCompare.js';
 
 describe('naturalCompare', () => {
   it('Handles empty strings', () => {

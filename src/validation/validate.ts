@@ -1,19 +1,21 @@
-import { devAssert } from '../jsutils/devAssert';
-import type { Maybe } from '../jsutils/Maybe';
+import type { Maybe } from '../jsutils/Maybe.js';
 
-import { GraphQLError } from '../error/GraphQLError';
+import { GraphQLError } from '../error/GraphQLError.js';
 
-import type { DocumentNode } from '../language/ast';
-import { visit, visitInParallel } from '../language/visitor';
+import type { DocumentNode } from '../language/ast.js';
+import { visit, visitInParallel } from '../language/visitor.js';
 
-import type { GraphQLSchema } from '../type/schema';
-import { assertValidSchema } from '../type/validate';
+import type { GraphQLSchema } from '../type/schema.js';
+import { assertValidSchema } from '../type/validate.js';
 
-import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
+import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.js';
 
-import type { SDLValidationRule, ValidationRule } from './ValidationContext';
-import { specifiedRules, specifiedSDLRules } from './specifiedRules';
-import { SDLValidationContext, ValidationContext } from './ValidationContext';
+import { specifiedRules, specifiedSDLRules } from './specifiedRules.js';
+import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
+import {
+  SDLValidationContext,
+  ValidationContext,
+} from './ValidationContext.js';
 
 /**
  * Implements the "Validation" section of the spec.
@@ -28,6 +30,10 @@ import { SDLValidationContext, ValidationContext } from './ValidationContext';
  * (see the language/visitor API). Visitor methods are expected to return
  * GraphQLErrors, or Arrays of GraphQLErrors when invalid.
  *
+ * Validate will stop validation after a `maxErrors` limit has been reached.
+ * Attackers can send pathologically invalid queries to induce a DoS attack,
+ * so by default `maxErrors` set to 100 errors.
+ *
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
@@ -35,33 +41,30 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
-  options: { maxErrors?: number } = { maxErrors: undefined },
-
-  /** @deprecate will be removed in 17.0.0 */
-  typeInfo: TypeInfo = new TypeInfo(schema),
+  options?: { maxErrors?: number; hideSuggestions?: Maybe<boolean> },
 ): ReadonlyArray<GraphQLError> {
-  devAssert(documentAST, 'Must provide document.');
+  const maxErrors = options?.maxErrors ?? 100;
+  const hideSuggestions = options?.hideSuggestions ?? false;
+
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
 
-  const abortObj = Object.freeze({});
+  const abortError = new GraphQLError(
+    'Too many validation errors, error limit reached. Validation aborted.',
+  );
   const errors: Array<GraphQLError> = [];
+  const typeInfo = new TypeInfo(schema);
   const context = new ValidationContext(
     schema,
     documentAST,
     typeInfo,
     (error) => {
-      if (options.maxErrors != null && errors.length >= options.maxErrors) {
-        errors.push(
-          new GraphQLError(
-            'Too many validation errors, error limit reached. Validation aborted.',
-          ),
-        );
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
-        throw abortObj;
+      if (errors.length >= maxErrors) {
+        throw abortError;
       }
       errors.push(error);
     },
+    hideSuggestions,
   );
 
   // This uses a specialized visitor which runs multiple visitors in parallel,
@@ -71,8 +74,10 @@ export function validate(
   // Visit the whole document with each instance of all provided rules.
   try {
     visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
-  } catch (e) {
-    if (e !== abortObj) {
+  } catch (e: unknown) {
+    if (e === abortError) {
+      errors.push(abortError);
+    } else {
       throw e;
     }
   }

@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { genFuzzStrings } from '../genFuzzStrings';
+import { genFuzzStrings } from '../genFuzzStrings.js';
 
 function expectFuzzStrings(options: {
-  allowedChars: Array<string>;
+  allowedChars: ReadonlyArray<string>;
   maxLength: number;
 }) {
   return expect([...genFuzzStrings(options)]);

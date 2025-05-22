@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { identityFunc } from '../identityFunc';
-import { isIterableObject } from '../isIterableObject';
+import { identityFunc } from '../identityFunc.js';
+import { isIterableObject } from '../isIterableObject.js';
 
 describe('isIterableObject', () => {
   it('should return `true` for collections', () => {
@@ -20,7 +20,6 @@ describe('isIterableObject', () => {
     const iterable = { [Symbol.iterator]: identityFunc };
     expect(isIterableObject(iterable)).to.equal(true);
 
-    // istanbul ignore next (Never called and use just as a placeholder)
     function* generatorFunc() {
       /* do nothing */
     }
