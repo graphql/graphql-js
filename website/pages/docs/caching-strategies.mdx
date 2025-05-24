@@ -1,0 +1,281 @@
+---
+title: Caching Strategies
+---
+
+# Caching Strategies
+
+Caching is a core strategy for improving the performance and scalability of GraphQL
+servers. Because GraphQL allows clients to specify exactly what they need, the server often
+does more work per request compared to REST APIs.
+
+This guide explores different levels of caching in a GraphQL.js so you can apply the right
+strategy for your application.
+
+## Why caching matters
+
+GraphQL servers commonly face performance bottlenecks due to repeated fetching of the
+same data, costly resolver logic, or expensive database queries. Since GraphQL shifts
+much of the composition responsibility to the server, caching becomes essential for maintaining
+fast response times and managing backend load.
+
+## Caching levels
+
+There are several opportunities to apply caching within a GraphQL server:
+
+- **Resolver-level caching**: Cache the result of specific fields.
+- **Request-level caching**: Batch and cache repeated access to backend resources
+within a single operation.
+- **Operation result caching**: Reuse the entire response for repeated identical queries.
+- **Schema caching**: Cache the compiled schema when startup cost is high.
+- **Transport/middleware caching**: Leverage caching behavior in HTTP servers or proxies.
+
+Understanding where caching fits in your application flow helps you apply it strategically
+without overcomplicating your system.
+
+## Resolver-level caching
+
+Resolver-level caching is useful when a specific field’s value is expensive to compute and 
+commonly requested with the same arguments. Instead of recomputing or refetching the data on 
+every request, you can store the result temporarily in memory and return it directly when the 
+same input appears again.
+
+### Use cases
+
+- Fields backed by slow or rate-limited APIs
+- Fields that require complex computation
+- Data that doesn't change frequently
+
+For example, consider a field that returns information about a product:
+
+```js
+// utils/cache.js
+import LRU from 'lru-cache';
+
+export const productCache = new LRU({ max: 1000, ttl: 1000 * 60 }); // 1 min TTL
+```
+
+The next example shows how to use that cache inside a resolver to avoid repeated database
+lookups:
+
+```js
+// resolvers/product.js
+import { productCache } from '../utils/cache.js';
+
+export const resolvers = {
+  Query: {
+    async product(_, { id }, context) {
+      const cached = productCache.get(id);
+      if (cached) return cached;
+
+      const product = await context.db.products.findById(id);
+      productCache.set(id, product);
+      return product;
+    },
+  },
+};
+```
+
+This example uses [`lru-cache`](https://www.npmjs.com/package/lru-cache), which limits the 
+number of stored items and support TTL-based expiration. You can replace it with Redis or 
+another cache if you need cross-process consistency.
+
+### Guidelines
+
+- Resolver-level caches are global. Be careful with authorization-sensitive data.
+- This technique works best for data that doesn't change often or can tolerate short-lived
+staleness.
+- TTL should match how often the underlying data is expected to change.
+
+## Request-level caching with DataLoader
+
+[DataLoader](https://github.com/graphql/dataloader) is a utility for batching and caching
+backend access during a single GraphQL operation. It's designed to solve the N+1 problem,
+where the same resource is fetched repeatedly in a single query across multiple fields.
+
+### Use cases
+
+- Resolving nested relationships
+- Avoiding duplicate database or API calls
+- Scoping caching to a single request, without persisting globally
+
+The following example defines a DataLoader instance that batches user lookups by ID:
+
+```js
+// loaders/userLoader.js
+import DataLoader from 'dataloader';
+import { batchGetUsers } from '../services/users.js';
+
+export const createUserLoader = () => new DataLoader(ids => batchGetUsers(ids));
+```
+
+You can then include the loader in the per-request context to isolate it from other
+operations:
+
+```js
+// context.js
+import { createUserLoader } from './loaders/userLoader.js';
+
+export function createContext() {
+  return {
+    userLoader: createUserLoader(),
+  };
+}
+```
+
+Finally, use the loader in your resolvers to batch-fetch users efficiently:
+
+```js
+// resolvers/user.js
+export const resolvers = {
+  Query: {
+    async users(_, __, context) {
+      return context.userLoader.loadMany([1, 2, 3]);
+    },
+  },
+};
+```
+
+### Guidelines
+
+- The cache is scoped to the request. Each request gets a fresh loader instance.
+- This strategy works best for resolving repeated references to the same resource type.
+- This isn't a long-lived cache. Combine it with other layers for broader coverage.
+
+To read more about DataLoader and the N+1 problem,
+see [Solving the N+1 Problem with DataLoader](https://github.com/graphql/dataloader).
+
+## Operation result caching
+
+Operation result caching stores the complete response of a query, keyed by the query string, variables, and potentially 
+HTTP headers. It can dramatically improve performance when the same query is sent frequently, particularly for read-heavy 
+applications.
+
+### Use cases
+
+- Public data or anonymous content
+- Expensive queries that return stable results
+- Scenarios where the same query is sent frequently
+
+The following example defines two functions to interact with a Redis cache,
+storing and retrieving cached results:
+
+```js
+// cache/queryCache.js
+import Redis from 'ioredis';
+const redis = new Redis();
+
+export async function getCachedResponse(cacheKey) {
+  const cached = await redis.get(cacheKey);
+  return cached ? JSON.parse(cached) : null;
+}
+
+export async function cacheResponse(cacheKey, result, ttl = 60) {
+  await redis.set(cacheKey, JSON.stringify(result), 'EX', ttl);
+}
+```
+
+The next example shows how to wrap your execution logic to check the cache first and store results
+afterward:
+
+```js
+// graphql/executeWithCache.js
+import { getCachedResponse, cacheResponse } from '../cache/queryCache.js';
+
+export async function executeWithCache({ cacheKey, executeFn }) {
+  const cached = await getCachedResponse(cacheKey);
+  if (cached) return cached;
+
+  const result = await executeFn();
+  await cacheResponse(cacheKey, result);
+  return result;
+}
+```
+
+### Guidelines
+
+- Don't cache personalized or auth-sensitive data unless you scope the cache per user or token.
+- Invalidation is nontrivial. Consider TTLs, cache versioning, or event-driven purging.
+
+## Schema caching
+
+Schema caching is useful when your schema construction is expensive, for example, when
+you have dynamically generating types, you are stitching multiple schemas, or fetching
+remote GraphQL services. This is especially important in serverless environments,
+where cold starts can significantly impact performance.
+
+### Use cases
+
+- Serverless functions that rebuild the schema on each invocation
+- Applications that use schema stitching or remote schema delegation
+- Environments where schema generation takes noticeable time on startup
+
+The following example shows how to cache a schema in memory after the first build:
+
+```js
+import { buildSchema } from 'graphql';
+
+let cachedSchema;
+
+export function getSchema() {
+  if (!cachedSchema) {
+    cachedSchema = buildSchema(schemaSDLString); // or makeExecutableSchema()
+  }
+  return cachedSchema;
+}
+```
+
+## Cache invalidation
+
+No caching strategy is complete without an invalidation plan. Cached data can
+become stale or incorrect, and serving outdated information can lead to bugs or a 
+degraded user experience.
+
+The following are common invalidation techniques:
+
+- **TTL (time-to-live)**: Automatically expire cached items after a time window
+- **Manual purging**: Remove or refresh cache entries when related data is updated
+- **Key versioning**: Encode version or timestamp metadata into cache keys
+- **Stale-while-revalidate**: Serve stale data while refreshing it in the background
+
+Design your invalidation strategy based on your data’s volatility and your clients’ 
+tolerance for staleness.
+
+## Third-party and edge caching
+
+While GraphQL.js does not include built-in support for third-party or edge caching, it integrates 
+well with external tools and middleware that handle full response caching or caching by query 
+signature.
+
+### Use cases
+
+- Serving public, cacheable content to unauthenticated users
+- Deploying behind a CDN or reverse proxy
+- Using a gateway service that supports persistent response caching
+
+The following tools and layers are commonly used:
+
+- Redis or Memcached for in-memory and cross-process caching
+- CDN-level caching for static, cache-friendly GraphQL queries
+- API gateways
+
+### Guidelines
+
+- Partition cache entries for personalized data using auth tokens or headers
+- Monitor cache hit/miss ratios to identify tuning opportunities
+- Consider varying cache strategy per query or operation type
+
+## Client-side caching
+
+GraphQL clients include sophisticated client-side caches that store 
+normalized query results and reuse them across views or components. While this is out of scope for GraphQL.js 
+itself, server-side caching should be designed with client behavior in mind.
+
+### When to consider it in server design
+
+- You want to avoid redundant server work for cold-started clients
+- You need consistency between server and client freshness guarantees
+- You're coordinating with clients that rely on local cache behavior
+
+Server-side and client-side caches should align on freshness guarantees and invalidation
+behavior. If the client doesn't re-fetch automatically, server-side staleness
+may be invisible but impactful.

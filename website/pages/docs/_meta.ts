@@ -24,6 +24,7 @@ const meta = {
   'custom-scalars': '',
   'advanced-custom-scalars': '',
   'n1-dataloader': '',
+  'caching-strategies': '',
   'resolver-anatomy': '',
   'graphql-errors': '',
   '-- 3': {
