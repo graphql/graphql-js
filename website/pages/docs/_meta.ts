@@ -20,7 +20,7 @@ const meta = {
   'abstract-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
-  'subscriptions': '',
+  subscriptions: '',
   'cursor-based-pagination': '',
   'custom-scalars': '',
   'advanced-custom-scalars': '',
