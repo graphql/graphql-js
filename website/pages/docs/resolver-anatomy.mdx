@@ -33,15 +33,16 @@ When GraphQL.js executes a resolver, it calls the resolver function
 with four arguments:
 
 ```js
-function resolver(source, args, context, info) { ... }
+function resolve(source, args, context, info) { ... }
 ```
 
 Each argument provides information that can help the resolver return the
 correct value:
 
 - `source`: The result from the parent field's resolver. In nested fields,
-`source` contains the value returned by the parent object. For root fields,
-it is often `undefined`.
+`source` contains the value returned by the parent object (after resolving any
+lists). For root fields, it is the `rootValue` passed to GraphQL, which is often
+left `undefined`.
 - `args`: An object containing the arguments passed to the field in the
 query. For example, if a field is defined to accept an `id` argument, you can
 access it as `args.id`.
@@ -85,7 +86,7 @@ A custom resolver is a function you define to control exactly how a field's
 value is fetched or computed. You can add a resolver by specifying a `resolve` 
 function when defining a field in your schema:
 
-```js
+```js {6-8}
 const UserType = new GraphQLObjectType({
   name: 'User',
   fields: {

@@ -12,7 +12,7 @@ import {
 import { GraphQLBoolean, GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
-import { executeSync } from '../execute';
+import { execute, executeSync } from '../execute';
 
 class Dog {
   name: string;
@@ -118,7 +118,6 @@ const PetType = new GraphQLUnionType({
     if (value instanceof Cat) {
       return CatType.name;
     }
-    /* c8 ignore next 3 */
     // Not reachable, all possible types have been considered.
     expect.fail('Not reachable');
   },
@@ -153,6 +152,71 @@ odie.mother.progeny = [odie];
 
 const liz = new Person('Liz');
 const john = new Person('John', [garfield, odie], [liz, odie]);
+
+const SearchableInterface = new GraphQLInterfaceType({
+  name: 'Searchable',
+  fields: {
+    id: { type: GraphQLString },
+  },
+});
+
+const TypeA = new GraphQLObjectType({
+  name: 'TypeA',
+  interfaces: [SearchableInterface],
+  fields: () => ({
+    id: { type: GraphQLString },
+    nameA: { type: GraphQLString },
+  }),
+  isTypeOf: (_value, _context, _info) =>
+    new Promise((_resolve, reject) =>
+      // eslint-disable-next-line
+      setTimeout(() => reject(new Error('TypeA_isTypeOf_rejected')), 10),
+    ),
+});
+
+const TypeB = new GraphQLObjectType({
+  name: 'TypeB',
+  interfaces: [SearchableInterface],
+  fields: () => ({
+    id: { type: GraphQLString },
+    nameB: { type: GraphQLString },
+  }),
+  isTypeOf: (value: any, _context, _info) => value.id === 'b',
+});
+
+const queryTypeWithSearchable = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    person: {
+      type: PersonType,
+      resolve: () => john,
+    },
+    search: {
+      type: SearchableInterface,
+      args: { id: { type: GraphQLString } },
+      resolve: (_source, { id }) => {
+        if (id === 'a') {
+          return { id: 'a', nameA: 'Object A' };
+        } else if (id === 'b') {
+          return { id: 'b', nameB: 'Object B' };
+        }
+      },
+    },
+  },
+});
+
+const schemaWithSearchable = new GraphQLSchema({
+  query: queryTypeWithSearchable,
+  types: [
+    PetType,
+    TypeA,
+    TypeB,
+    SearchableInterface,
+    PersonType,
+    DogType,
+    CatType,
+  ],
+});
 
 describe('Execute: Union and intersection types', () => {
   it('can introspect on union and intersection types', () => {
@@ -544,5 +608,52 @@ describe('Execute: Union and intersection types', () => {
     expect(encounteredSchema).to.equal(schema2);
     expect(encounteredRootValue).to.equal(rootValue);
     expect(encounteredContext).to.equal(contextValue);
+  });
+
+  it('handles promises from isTypeOf correctly when a later type matches synchronously', async () => {
+    const document = parse(`
+      query TestSearch {
+        search(id: "b") {
+          __typename
+          id
+          ... on TypeA {
+            nameA
+          }
+          ... on TypeB {
+            nameB
+          }
+        }
+      }
+    `);
+
+    let unhandledRejection: any = null;
+    const unhandledRejectionListener = (reason: any) => {
+      unhandledRejection = reason;
+    };
+    // eslint-disable-next-line
+    process.on('unhandledRejection', unhandledRejectionListener);
+
+    const result = await execute({
+      schema: schemaWithSearchable,
+      document,
+    });
+
+    expect(result.errors).to.equal(undefined);
+    expect(result.data).to.deep.equal({
+      search: {
+        __typename: 'TypeB',
+        id: 'b',
+        nameB: 'Object B',
+      },
+    });
+
+    // Give the TypeA promise a chance to reject and the listener to fire
+    // eslint-disable-next-line
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // eslint-disable-next-line
+    process.removeListener('unhandledRejection', unhandledRejectionListener);
+
+    expect(unhandledRejection).to.equal(null);
   });
 });

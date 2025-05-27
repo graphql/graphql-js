@@ -27,6 +27,7 @@ const meta = {
   'n1-dataloader': '',
   'resolver-anatomy': '',
   'graphql-errors': '',
+  'using-directives': '',
   '-- 3': {
     type: 'separator',
     title: 'FAQ',

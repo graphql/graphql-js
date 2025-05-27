@@ -2,7 +2,7 @@
 title: Solving the N+1 Problem with `DataLoader`
 ---
 
-When building a server with GraphQL.js, it's common to encounter
+When building your first server with GraphQL.js, it's common to encounter
 performance issues related to the N+1 problem: a pattern that 
 results in many unnecessary database or service calls, 
 especially in nested query structures.
@@ -69,7 +69,8 @@ when setting up a GraphQL HTTP server such as [express-graphql](https://github.c
 Suppose each `Post` has an `authorId`, and you have a `getUsersByIds(ids)`
 function that can fetch multiple users in a single call:
 
-```js
+{/* prettier-ignore */}
+```js {14-17,37}
 import {
   graphql,
   GraphQLObjectType,
@@ -80,6 +81,15 @@ import {
 } from 'graphql';
 import DataLoader from 'dataloader';
 import { getPosts, getUsersByIds } from './db.js';
+
+function createContext() {
+  return {
+    userLoader: new DataLoader(async (userIds) => {
+      const users = await getUsersByIds(userIds);
+      return userIds.map(id => users.find(user => user.id === id));
+    }),
+  };
+}
 
 const UserType = new GraphQLObjectType({
   name: 'User',
@@ -114,15 +124,6 @@ const QueryType = new GraphQLObjectType({
 });
 
 const schema = new GraphQLSchema({ query: QueryType });
-
-function createContext() {
-  return {
-    userLoader: new DataLoader(async (userIds) => {
-      const users = await getUsersByIds(userIds);
-      return userIds.map(id => users.find(user => user.id === id));
-    }),
-  };
-}
 ```
 
 With this setup, all `.load(authorId)` calls are automatically collected and batched
