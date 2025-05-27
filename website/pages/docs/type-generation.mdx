@@ -80,6 +80,15 @@ With a schema-first workflow, you can:
 
 ## Generating resolver types
 
+To get started, install the required packages:
+
+```bash
+npm install graphql @graphql-codegen/cli @eddeee888/gcg-typescript-resolver-files
+```
+
+This scoped package is publish by a community maintainer and is widely used for GraphQL server
+type generation.
+
 We recommend using the [Server Preset](https://www.npmjs.com/package/@eddeee888/gcg-typescript-resolver-files) for a 
 managed workflow. It automatically generates types and files based on your schema without needing extra plugin setup.
 
@@ -91,7 +100,7 @@ The Server Preset generates:
 
 This setup expects your schema is split into modules to improve readability and maintainability. For example:
 
-```pgsql
+```text
 ├── src/
 │   ├── schema/
 │   │   ├── base/
@@ -160,6 +169,12 @@ See the official [Server Preset guide](https://the-guild.dev/graphql/codegen/doc
 In addition to resolver types, you can generate types for GraphQL operations such as queries, mutations, and 
 fragments. This is especially useful for shared integration tests or client logic that needs to match the schema 
 precisely.
+
+To get started, install the required packages:
+
+```bash
+npm install graphql @graphql-codegen/cli
+```
 
 We recommend using the GraphQL Code Generator [Client Preset](https://the-guild.dev/graphql/codegen/plugins/presets/preset-client) for a managed workflow:
 
