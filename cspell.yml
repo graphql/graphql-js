@@ -28,6 +28,7 @@ overrides:
       - codegen
       - composability
       - deduplication
+      - debuggable
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
@@ -119,4 +120,3 @@ words:
   - XXXF
   - bfnrt
   - wrds
-  - pgsql
