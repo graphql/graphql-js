@@ -31,6 +31,7 @@ const meta = {
     title: 'FAQ',
   },
   'going-to-production': '',
+  'scaling-graphql': '',
 };
 
 export default meta;
