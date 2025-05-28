@@ -29,6 +29,7 @@ overrides:
       - xlink
       - composability
       - deduplication
+      - NATS
 
 validateDirectives: true
 ignoreRegExpList:
