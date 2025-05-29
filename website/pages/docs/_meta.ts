@@ -16,7 +16,7 @@ const meta = {
   'passing-arguments': '',
   'object-types': '',
   'mutations-and-input-types': '',
-  'nullability': '',
+  nullability: '',
   'abstract-types': '',
   'custom-scalars': '',
   '-- 3': {
@@ -26,7 +26,7 @@ const meta = {
   'constructing-types': '',
   'oneof-input-objects': '',
   'defer-stream': '',
-  'subscriptions': '',
+  subscriptions: '',
   'type-generation': '',
   'cursor-based-pagination': '',
   'advanced-custom-scalars': '',
