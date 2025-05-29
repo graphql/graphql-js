@@ -51,8 +51,8 @@ You can run actual GraphQL queries and verify the end-to-end behavior within you
 application's boundaries.
 
 You can use the `graphql()` function from the GraphQL package, no HTTP server 
-needed. With the `graphql()` function, you can test the full flow: query > schema > 
-resolver >  data source (mocked or real).
+needed. With the `graphql()` function, you can test the full flow: request &gt; schema &gt; 
+resolver &gt; data source (mocked or real).
 
 Integration tests confirm that:
 
@@ -64,8 +64,8 @@ Integration tests confirm that:
 
 Use integration tests when:
 
-- You want to test the full operation flow from query to result
-- You're testing how resolvers handle variables, fragments, and nested queries
+- You want to test the full operation flow from request to result
+- You're testing how resolvers handle variables, fragments, and nested fields
 - You want higher confidence that your schema and resolvers work together
 
 Integration tests are slightly slower than unit tests but still fast enough for

@@ -22,11 +22,13 @@ be intentional and reviewed.
 ### Best practices
 
 - Use snapshot tests to catch unintended schema changes  
-  – Tool: [`jest-serializer-graphql-schema`](https://github.com/kamilkisiela/jest-serializer-graphql-schema)  
+  – Tool: [`jest-serializer-graphql-schema`](https://www.npmjs.com/package/jest-serializer-graphql-schema)  
   – Example:
     ```ts
-    expect(printSchema(schema)).toMatchSnapshot();
+    expect(schema).toMatchSnapshot();
     ```
+    - Consider sorting the schema (`graphql.lexicographicSortSchema(schema)`) to ensure
+      a stable order of your schemas types, fields and arguments in the snapshots.
 - Use schema diff tools in CI:
   - `graphql-inspector`
   - Apollo Rover
@@ -69,16 +71,18 @@ maintain.
   function createUser(overrides = {}) {
     return { id: '1', name: 'Test User', ...overrides };
   }
+  ```
 
 - Share fixtures:
 
     ```ts
     export function createTestContext(overrides = {}) {
-  return {
-    db: { findUser: jest.fn() },
-    ...overrides,
-  };
-}
+      return {
+        db: { findUser: jest.fn() },
+        ...overrides,
+      };
+    }
+    ```
 
 - Keep test data small and expressive
 - Avoid coupling test data to real database structures 
@@ -131,4 +135,4 @@ Use schema linting to enforce:
 Tools:
 
 - `graphql-schema-linter`
-- `eslint-plugin-graphql`
+- `@graphql-eslint/eslint-plugin`

@@ -7,7 +7,7 @@ sidebarTitle: Testing GraphQL Servers
 
 ## Why testing matters
 
-GraphQL's type system provides strong safety guarantees, but it
+GraphQL's type system provides strong safety guarantees, but
 all reliable APIs need testing. The GraphQL compiler and runtime
 enforce type correctness, and schema introspection helps clients
 understand valid queries.
@@ -31,7 +31,7 @@ the schema as the only source of truth creates risks as your API evolves.
 
 For example, if you rename a field, any client still expecting the original name
 will break. Changing a field's type (like from `String` to `Int`) can also cause
-unexpected failures in downstream clients. While GraphQL tooling, like schema
+failures in downstream clients. While GraphQL tooling, like schema
 validation, helps enforce structure, it won't stop you from making breaking changes.
 
 Schema changes may feel safe, but clients depend on that schema to remain
@@ -72,7 +72,7 @@ Beyond simulating failures, consider testing resilience patterns like retries or
 
 ## Next steps
 
-- Learn different [testing approaches](\..\testing-approaches.mdx) to choose the right strategy for your project.
-- Explore how to [test operations](\..\testing-operations.mdx) without running a server.
-- Understand how to [test resolvers](\..\testing-resolvers.mdx) to catch logic errors early.
-- Apply [best practices](\..\testing-best-practices.mdx) to scale testing to production.
+- Learn different [testing approaches](./testing-approaches.mdx) to choose the right strategy for your project.
+- Explore how to [test operations](./testing-operations.mdx) without running a server.
+- Understand how to [test resolvers](./testing-resolvers.mdx) to catch logic errors early.
+- Apply [best practices](./testing-best-practices.mdx) to scale testing to production.
