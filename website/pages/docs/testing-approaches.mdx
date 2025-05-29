@@ -3,6 +3,8 @@ title: Testing Approaches
 sidebarTitle: Testing Approaches
 ---
 
+import { Callout } from 'nextra/components'
+
 # Testing Approaches
 
 Testing is essential for building reliable GraphQL servers. But not every test 
@@ -78,10 +80,12 @@ Trade-offs to consider:
 - Requires more setup
 - May miss production-specific issues such as network transport errors
 
-> [!TIP]
->
-> If you're preparing to onboard frontend clients or exposing your API to consumers,
-> integration tests catch mismatches early before they reach production.
+<Callout type="default">
+
+  If you're preparing to onboard frontend clients or exposing your API to consumers,
+  integration tests catch mismatches early before they reach production.
+
+</Callout>
 
 ### Example: Integration test with `graphql()`
 
@@ -134,10 +138,12 @@ Trade-offs to consider:
 - Slower and resource-intensive
 - Requires infrastructure setup
 
-> [!NOTE]
->
-> In the following guides, we focus on unit and integration tests. E2E tests are 
-> valuable, but they require different tooling and workflows.
+<Callout type="info">
+
+  In the following guides, we focus on unit and integration tests. E2E tests are 
+  valuable, but they require different tooling and workflows.
+
+</Callout>
 
 ## Comparing unit tests and integration tests
 

@@ -22,13 +22,15 @@ be intentional and reviewed.
 ### Best practices
 
 - Use snapshot tests to catch unintended schema changes  
-  – Tool: [`jest-serializer-graphql-schema`](https://www.npmjs.com/package/jest-serializer-graphql-schema)  
-  – Example:
+  - Tool: [`jest-serializer-graphql-schema`](https://www.npmjs.com/package/jest-serializer-graphql-schema)  
+  - Example:
     ```ts
     expect(schema).toMatchSnapshot();
     ```
-    - Consider sorting the schema (`graphql.lexicographicSortSchema(schema)`) to ensure
-      a stable order of your schemas types, fields and arguments in the snapshots.
+  - Consider sorting the schema to ensure a stable order of your schemas types, fields and arguments in the snapshots.
+    ```ts
+    expect(lexicographicSortSchema(schema)).toMatchSnapshot();
+    ```
 - Use schema diff tools in CI:
   - `graphql-inspector`
   - Apollo Rover
