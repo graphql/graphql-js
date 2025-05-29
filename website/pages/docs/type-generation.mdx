@@ -44,13 +44,13 @@ However, code-first development has tradeoffs:
 
 - You won't get automatic type definitions for your resolvers unless you generate
 them manually or infer them through wrappers.
-- Schema documentation, testing, and tool compatibility may require you to export
-the schema to SDL first.
+- Schema documentation, testing, and tool compatibility may require you to provide
+  a description of the schema in SDL first.
 
 You can still use type generation tools like GraphQL Code Generator in a code-first setup.
 You just need to convert your schema into SDL.
 
-To export your schema:
+To produce an SDL description of your schema:
 
 ```ts
 import { printSchema } from 'graphql';
@@ -60,13 +60,13 @@ import { writeFileSync } from 'fs';
 writeFileSync('./schema.graphql', printSchema(schema));
 ```
 
-Once you've written the SDL, you can treat the project like a schema-first project
+Once you've written the SDL, you can treat the project like an SDL-first project
 for type generation.
 
 ## Schema-first development
 
 In a schema-first workflow, your GraphQL schema is written in SDL, for example, `.graphql`
-or `.gql` files. This serves as the source of truth for your server. This approach
+or `.gql` (discouraged) files. This serves as the source of truth for your server. This approach
 emphasizes clarity because your schema is defined independently from your business logic.
 
 Schema-first development pairs well with type generation because the schema is 
@@ -86,7 +86,7 @@ To get started, install the required packages:
 npm install graphql @graphql-codegen/cli @eddeee888/gcg-typescript-resolver-files
 ```
 
-This scoped package is publish by a community maintainer and is widely used for GraphQL server
+This scoped package is published by a community maintainer and is widely used for GraphQL server
 type generation.
 
 We recommend using the [Server Preset](https://www.npmjs.com/package/@eddeee888/gcg-typescript-resolver-files) for a 
