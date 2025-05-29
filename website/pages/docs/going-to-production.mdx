@@ -17,10 +17,12 @@ In development, GraphQL.js includes validation checks to catch common mistakes l
 or resolver returns. These checks are not needed in production and can increase runtime overhead.
 
 You can disable them by setting `process.env.NODE_ENV` to `'production'` during your build process.
-GraphQL.js will automatically strip out development-only code paths.
+GraphQL.js will automatically skip over development-only code paths.
 
 Bundlers are tools that compile and optimize JavaScript for deployment. Most can be configured to
-replace environment variables `process.env.NODE_ENV` at build time.
+replace environment variables such as `process.env.NODE_ENV` at build time,
+allowing for unused code (such as development only code paths) to be elided by
+minification tools.
 
 ### Bundler configuration examples
 
@@ -152,9 +154,9 @@ These techniques can help protect your server from accidental misuse or intentio
 
 ### Control schema introspection
 
-Introspection lets clients query the structure of your schema, including types and fields. While
-helpful during development, it may expose internal details you don't want to reveal in
-production.
+Introspection lets clients query the structure of your schema, including types
+and fields. While helpful during development, it may be an unnecessary in
+production and disabling it may reduce your API's attack surface.
 
 You can disable introspection in production, or only for unauthenticated users:
 
@@ -191,16 +193,24 @@ Tools like [`graphql-cost-analysis`](https://github.com/pa-bru/graphql-cost-anal
 ### Require authentication and authorization
 
 GraphQL doesn't include built-in authentication. Instead, you can attach user data to the request
-using middleware, then enforce authorization in your resolvers:
+using middleware, and pass this through to the business logic where
+authorization should take place:
 
 ```js
-function requireRole(role, resolver) {
-  return (parent, args, context, info) => {
-    if (context.user?.role !== role) {
-      throw new Error('Not authorized');
+// From your business logic
+const postRepository = {
+  getBody({ user, post }) {
+    if (user?.id && (user.id === post.authorId)) {
+      return post.body
     }
-    return resolver(parent, args, context, info);
-  };
+    return null
+  }
+}
+
+// Resolver for the `Post.body` field:
+function Post_body(source, args, context, info) {
+  // return the post body only if the user is the post's author
+  return postRepository.getBody({ user: context.user, post: obj })
 }
 ```
 
