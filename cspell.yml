@@ -29,7 +29,10 @@ overrides:
       - xlink
       - composability
       - deduplication
+      - subschema
+      - subschemas
       - NATS
+      - Graphile
 
 validateDirectives: true
 ignoreRegExpList:
