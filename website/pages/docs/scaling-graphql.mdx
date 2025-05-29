@@ -51,7 +51,7 @@ GraphQL.js does not include stitching capabilities directly, but the
 [`@graphql-tools/stitch`](https://the-guild.dev/graphql/stitching/docs/approaches) package
 implements stitching features on top of GraphQL.js primitives.
 
-The following example stitches two subschemas into a single gateway schema:
+The following example stitches two subschemas into a single stitched schema:
 
 ```js
 import { stitchSchemas } from '@graphql-tools/stitch';
@@ -64,7 +64,7 @@ export const schema = stitchSchemas({
 });
 ```
 
-Each subschema can be developed and deployed independently. The gateway handles query delegation,
+Each subschema can be developed and deployed independently. The stitched schema handles query delegation,
 merging, and resolution across them.
 
 Stitching is useful when:
@@ -78,7 +78,7 @@ overlapping types or fields.
 
 ## Federation
 
-Federation is a distributed architecture that composes a single graph from multiple independently
+Federation is a distributed architecture that composes a single GraphQL schema from multiple independently
 developed services, known as subgraphs. Each subgraph owns a portion of the schema and is responsible
 for defining and resolving its fields.
 
@@ -107,6 +107,7 @@ However, other approaches exist:
 - [GraphQL Mesh](https://the-guild.dev/graphql/mesh) allows federation-like composition across 
 services using plugins.
 - Custom gateways and tooling can be implemented using GraphQL.js or other frameworks.
+- The [GraphQL Composite Schemas WG](https://github.com/graphql/composite-schemas-wg/) (formed of Apollo, ChilliCream, The Guild, Netflix, Graphile and many more) are working on an open specification for the next generation of GraphQL Federation
 
 Federation is most useful when schema ownership is distributed and teams need to evolve their subgraphs
 independently under a shared contract.
@@ -118,9 +119,9 @@ schema is expected to grow.
 
 | Pattern | Best for | GraphQL.js support | Tooling required |
 |---|---|---|---|
-| Monolith | Simpler apps and single-team ownership | Built-in | None |
+| Monolith | Default choice for most projects; simpler, faster, easier to reason about | Built-in | None |
 | Schema stitching | Aggregating services you control | External tooling required | `@graphql-tools/stitch`
-| Federation | Distributed graphs across many teams | Manual implementation | Apollo Federation or custom |
+| Federation | Large enterprises; many teams contributing to a distributed graph independently | Manual implementation | Significant tooling and infrastructure |
 
 ## Migration paths
 
