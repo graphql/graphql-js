@@ -21,8 +21,8 @@ explicitly marked as non-nullable.
 
 When a non-nullable field resolves to `null`, the GraphQL execution engine 
 raises a runtime error and attempts to recover by replacing the nearest 
-nullable parent field with `null`. This behavior is known
-as null bubbling.
+nullable parent field with `null`. This behavior is known formally as "error
+propagation" but more commonly as null bubbling.
 
 Understanding nullability requires familiarity with the GraphQL type system,
 execution semantics, and the trade-offs involved in schema design.
@@ -55,8 +55,7 @@ You can use `GraphQLNonNull` with:
 
 - Field types
 - Argument types
-- Input object fields
-- Return types for resolvers
+- Input object field types
 
 You can also combine it with other types to create more
 specific constraints. For example:
@@ -134,9 +133,14 @@ field can affect large portions of the response.
 
 Non-null constraints are part of a field's contract:
 
-- Changing a field from non-nullable to nullable is a breaking change.
-- Changing from nullable to non-nullable is also breaking unless you can
-guarantee that the field will never return `null`.
+- Changing an output position (field type) from non-nullable to nullable is a
+  breaking change - clients may now receive `null` values which they do not have
+  handling code for.
+- Changing an input position (argument or input field type) from nullable to
+  non-nullable is a breaking change - clients are now required to provide this
+  value, which they may not have been supplying previously.
+- Changing an output position from nullable to non-nullable will not break
+  deployed clients since their null handling code will simply not be exercised.
 
 To reduce the risk of versioning issues, start with nullable fields and add
 constraints as your schema matures.
@@ -211,8 +215,11 @@ constraints when data consistency is guaranteed.
 correctness.
 - Validate early. Add checks in resolvers to prevent returning `null` for
 non-null fields.
+- Consider error boundaries. Were an error to occur, where should it stop
+  bubbling?
 - Watch for nesting. Distinguish between:
-    - `[User]!` - nullable list of non-null users
+    - `[User!]` - nullable list of non-null users
+    - `[User]!` - non-null list of nullable users
     - `[User!]!` - non-null list of non-null users
 
 ## Additional resources
@@ -220,9 +227,9 @@ non-null fields.
 - [GraphQL Specification: Non-null](https://spec.graphql.org/draft/#sec-Non-Null):
 Defines the formal behavior of non-null types in the GraphQL type system and
 execution engine.
-- [Understanding GraphQL.js Errors](website\pages\docs\graphql-errors.mdx): Explains
+- [Understanding GraphQL.js Errors](website/pages/docs/graphql-errors.mdx): Explains
 how GraphQL.js propagates and formats execution-time errors.
-- [Anatomy of a Resolver](website\pages\docs\resolver-anatomy.mdx): Breaks down
+- [Anatomy of a Resolver](website/pages/docs/resolver-anatomy.mdx): Breaks down
 how resolvers work in GraphQL.js.
-- [Constructing Types](website\pages\docs\constructing-types.mdx): Shows how
+- [Constructing Types](website/pages/docs/constructing-types.mdx): Shows how
 to define and compose types in GraphQL.js.
