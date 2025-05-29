@@ -14,7 +14,7 @@ using static analysis. You'll learn how to estimate the cost
 of an operation before execution and reject it if it exceeds a safe limit.
 
 <Callout type="info" emoji="ℹ️">
-  In production, we recommend using [trusted documents](https://graphql.org/learn/persistence/)
+  In production, we recommend using [trusted documents](/docs/going-to-production#only-allow-trusted-documents)
   rather than analyzing arbitrary documents at runtime. Complexity analysis can still be
   useful at build time to catch expensive operations before they're deployed.
 </Callout>
@@ -28,7 +28,7 @@ at the schema.
 Without safeguards, clients could:
 
 - Request deeply nested object relationships
-- Use recursive fragments to multiply field resolution
+- Use nested fragments to multiply field resolution
 - Exploit pagination arguments to retrieve excessive data
 
 Certain field types (e.g., lists, interfaces, unions) can also significantly
@@ -246,8 +246,8 @@ useful, just in a different way. You can run it at build time to:
 
 ## Best practices
 
-- Use trusted documents in production when possible.
-- Use complexity analysis as a development-time safeguards.
+- Only accept trusted documents in production when possible.
+- Use complexity analysis as a development-time safeguard.
 - Avoid running untrusted operations without additional validation and cost checks.
 - Account for list fields and abstract types, which can significantly increase cost.
 - Avoid estimating complexity before validation unless you're confident in your tooling.
