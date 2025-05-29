@@ -64,6 +64,7 @@ words:
   - ruru
   - oneof
   - vercel
+  - unbatched
 
   # used as href anchors
   - graphqlerror
