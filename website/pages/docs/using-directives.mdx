@@ -145,7 +145,10 @@ You can apply directives to:
 
 - Fields
 - Fragment spreads
+- Named fragments
 - Inline fragments
+- Operations (query, mutation or subscription)
+- Variable definitions
 
 The following examples show how to apply directives:
 
@@ -253,6 +256,49 @@ Some common use cases for custom directives include:
 - **Observability**: `@log`, `@tag(name: "important")`, or `@metrics(id: "xyz")`
 - **Execution control**: Mask or transform fields at runtime with schema visitors
 
+## When to avoid custom directives
+
+Custom directives should not be used where an argument could achieve the same
+goal. Custom directives in GraphQL requests complicate caching (particularly
+normalized caches) and are less well understood by tooling such as GraphQL; by
+using arguments instead we maximize compatibility and consistency. For example,
+our `@uppercase` directive would fit naturally as a field argument:
+
+```js
+import {
+  graphql,
+  buildSchema,
+} from 'graphql';
+
+const schema = buildSchema(`
+  enum Format {
+    VERBATIM
+    UPPERCASE
+  }
+  type Query {
+    greeting(format: Format! = VERBATIM): String
+  }
+`);
+
+const rootValue = {
+  greeting: (source, args) => {
+    const result = 'Hello, world';
+
+    if (args.format === "UPPERCASE") {
+      return result.toUpperCase();
+    }
+
+    return result;
+  },
+};
+
+const query = `
+  query {
+    greeting(format: UPPERCASE)
+  }
+`;
+
+
 ## Best practices
 
 When working with custom directives in GraphQL.js, keep the following best practices in mind:
@@ -261,6 +307,7 @@ When working with custom directives in GraphQL.js, keep the following best pract
 manually.
 - Weigh schema-driven logic against resolver logic. Directives can make queries more expressive, but they 
 may also hide behavior from developers reading the schema or resolvers.
+- Always prefer field arguments over directives where possible.
 - Keep directive behavior transparent and debuggable. Since directives are invisible at runtime unless 
 logged or documented, try to avoid magic behavior.
 - Use directives when they offer real value. Avoid overusing directives to replace things that could be
