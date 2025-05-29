@@ -8,7 +8,8 @@
     "src/jsutils/ObjMap.ts",
     "src/jsutils/PromiseOrValue.ts",
     "src/utilities/assertValidName.ts",
-    "src/utilities/typedQueryDocumentNode.ts"
+    "src/utilities/typedQueryDocumentNode.ts",
+    "src/**/__tests__/**/*.ts"
   ],
   "clean": true,
   "temp-directory": "coverage",
