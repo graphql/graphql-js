@@ -23,6 +23,7 @@ const meta = {
   'oneof-input-objects': '',
   'defer-stream': '',
   subscriptions: '',
+  'type-generation': '',
   'cursor-based-pagination': '',
   'custom-scalars': '',
   'advanced-custom-scalars': '',
@@ -32,6 +33,10 @@ const meta = {
   'graphql-errors': '',
   'using-directives': '',
   '-- 3': {
+    type: 'separator',
+    title: 'Testing',
+  },
+  '-- 4': {
     type: 'separator',
     title: 'FAQ',
   },

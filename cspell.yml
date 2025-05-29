@@ -27,8 +27,10 @@ overrides:
       - swcrc
       - noreferrer
       - xlink
+      - codegen
       - composability
       - deduplication
+      - debuggable
       - subschema
       - subschemas
       - NATS
