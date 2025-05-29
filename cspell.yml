@@ -118,6 +118,7 @@ words:
   - ruru
   - oneof
   - vercel
+  - unbatched
 
   # used as href anchors
   - graphqlerror
@@ -173,5 +174,7 @@ words:
   - XXXF
   - bfnrt
   - wrds
+  - overcomplicating
+  - cacheable
   - pino
   - debuggable
