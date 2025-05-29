@@ -32,6 +32,10 @@ overrides:
       - subschema
       - subschemas
       - NATS
+      - benjie
+      - codegen
+      - URQL
+      - tada
       - Graphile
 
 validateDirectives: true

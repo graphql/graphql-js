@@ -152,7 +152,57 @@ Common strategies for securing a schema include:
 
 These techniques can help protect your server from accidental misuse or intentional abuse.
 
+### Only allow trusted documents
+
+The most reliable way to protect your GraphQL endpoint from malicious requests
+is to only allow operations that you trust &mdash; those written by your own
+engineers &mdash; to be executed.
+
+This technique is not suitable for public APIs that are intended to accept
+ad-hoc queries from third parties, but if your GraphQL API is only meant to
+power your own websites and apps then it is a simple yet incredibly effective
+technique to protect your API endpoint.
+
+Implementing the trusted documents pattern is straightforward:
+
+- When deploying a website or application, SHA256 hash the GraphQL documents
+  (queries, mutations, subscriptions and associated fragments) it contains, and
+  place them in a trusted store the server has access to.
+- When issuing a request from the client, omit the document (`"query":"{...}"`) and
+  instead provide the document hash (`"documentId": "sha256:..."`).
+- The server should retrieve the document from your trusted store via this hash;
+  if no document is found or no hash is provided then the request should be
+  rejected.
+
+This pattern not only improves security significantly by preventing malicious
+queries, it has a number of additional benefits:
+
+- Reduces network size since you're sending a hash (~64 bytes) rather than the
+  entire GraphQL document (which can be tens of kilobytes).
+- Makes schema evolution easier because you have a concrete list of all the
+  fields/types that are in use.
+- Makes tracking issues easier because you can tie a hash to the
+  client/deployment that introduced it.
+
+Be careful not to confuse trusted documents (the key component of which are
+trust) with automatic persisted queries (APQ) which are a network optimization
+potentially open for anyone to use.
+
+Additional resources:
+
+- [GraphQL over HTTP Appendix
+A: Persisted Documents](https://github.com/graphql/graphql-over-http/pull/264)
+- [GraphQL Trusted Documents](https://benjie.dev/graphql/trusted-documents) and
+  [Techniques to Protect Your GraphQL API](https://benjie.dev/talks/techniques-to-protect) at benjie.dev
+- [@graphql-codegen/client-preset persisted documents](https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#persisted-documents) or [graphql-codegen-persisted-query-ids](https://github.com/valu-digital/graphql-codegen-persisted-query-ids#integrating-with-apollo-client) for Apollo Client
+- [Persisted queries in Relay](https://relay.dev/docs/guides/persisted-queries/)
+- [Persisted queries in URQL](https://www.npmjs.com/package/@urql/exchange-persisted)
+- [Persisted documents in gql.tada](https://gql-tada.0no.co/guides/persisted-documents)
+- [persisted queries with `fetch()`](https://github.com/jasonkuhrt/graffle/issues/269)
+
 ### Control schema introspection
+
+(Unnecessary if you only allow trusted documents.)
 
 Introspection lets clients query the structure of your schema, including types
 and fields. While helpful during development, it may be an unnecessary in
@@ -172,6 +222,8 @@ Note that many developer tools rely on introspection to function properly. Use i
 control as needed for your tools and implementation.
 
 ### Limit query complexity
+
+(Can be a development-only concern if you only allow trusted documents.)
 
 GraphQL allows deeply nested queries, which can be expensive to resolve. You can prevent this
 with query depth limits or cost analysis.
@@ -405,15 +457,16 @@ Before deploying, confirm the following checks are complete:
 - Development-only checks are removed from the production build
 
 ### Schema security
-- Introspection is disabled or restricted in production
-- Query depth is limited
-- Query cost limits are in place
 - Authentication is required for requests
-- Authorization is enforced in resolvers
+- Authorization is enforced via business logic
 - Rate limiting is applied
+- Only allow trusted documents, or:
+  - Introspection is disabled or restricted in production
+  - Query depth is limited
+  - Query cost limits are in place
 
 ### Performance
-- `DataLoader` is used to batch database access
+- `DataLoader` is used to batch data fetching
 - Expensive resolvers use caching (request-scoped or shared)
 - Public queries use HTTP or CDN caching
 - Schema is reused across requests (not rebuilt each time)
