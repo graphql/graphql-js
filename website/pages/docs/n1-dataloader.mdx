@@ -1,8 +1,10 @@
 ---
-title: Solving the N+1 Problem with `DataLoader`
+title: Solving the N+1 Problem with DataLoader
 ---
 
-When building your first server with GraphQL.js, it's common to encounter
+# Solving the N+1 Problem with DataLoader
+
+When building a server with GraphQL.js, it's common to encounter
 performance issues related to the N+1 problem: a pattern that 
 results in many unnecessary database or service calls, 
 especially in nested query structures.
@@ -49,7 +51,7 @@ Nested resolutions, such as fetching an author for each post in the previous
 example, will each call their own data-fetching logic, even if those calls
 could be grouped.
 
-## Solving the problem with `DataLoader`
+## Solving the problem with DataLoader
 
 [`DataLoader`](https://github.com/graphql/dataloader) is a utility library designed
 to solve this problem. It batches multiple `.load(key)` calls into a single `batchLoadFn(keys)` 
@@ -146,4 +148,4 @@ made within the same execution cycle.
 ## Additional resources
 
 - [`DataLoader` GitHub repository](https://github.com/graphql/dataloader): Includes full API docs and usage examples
-- [GraphQL field resolvers](https://graphql.org/graphql-js/resolvers/): Background on how field resolution works.
+- [GraphQL field resolvers](./resolver-anatomy): Background on how field resolution works.

@@ -298,6 +298,14 @@ const query = `
   }
 `;
 
+const result = await graphql({
+  schema,
+  source: query,
+  rootValue,
+});
+
+console.log(result);
+```
 
 ## Best practices
 
