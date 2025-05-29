@@ -27,6 +27,7 @@ const meta = {
   'cursor-based-pagination': '',
   'custom-scalars': '',
   'advanced-custom-scalars': '',
+  'operation-complexity-controls': '',
   'n1-dataloader': '',
   'caching-strategies': '',
   'resolver-anatomy': '',

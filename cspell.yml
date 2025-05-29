@@ -39,6 +39,8 @@ overrides:
       - URQL
       - tada
       - Graphile
+      - precompiled
+      - debuggable
 
 validateDirectives: true
 ignoreRegExpList:
@@ -186,4 +188,3 @@ words:
   - overcomplicating
   - cacheable
   - pino
-  - debuggable
