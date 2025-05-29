@@ -25,6 +25,9 @@ overrides:
       - swcrc
       - noreferrer
       - xlink
+      - composability
+      - deduplication
+      - NATS
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
@@ -117,3 +120,4 @@ words:
   - bfnrt
   - wrds
   - pino
+  - debuggable

@@ -3,26 +3,33 @@ on:
   workflow_call:
     inputs:
       environment:
+        description: Environment to publish under
         required: true
         type: string
       artifact_name:
+        description: Artifact name
         required: true
         type: string
       target_branch:
+        description: Target branch
         required: true
         type: string
       commit_message:
+        description: Commit message
         required: true
         type: string
+permissions: {}
 jobs:
   deploy-artifact-as-branch:
     environment:
       name: ${{ inputs.environment }}
       url: ${{ github.server_url }}/${{ github.repository }}/tree/${{ inputs.target_branch }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # for actions/checkout and to push branch
     steps:
       - name: Checkout `${{ inputs.target_branch }}` branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ inputs.target_branch }}
 
