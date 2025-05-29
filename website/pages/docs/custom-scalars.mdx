@@ -19,7 +19,7 @@ full control over how values are serialized, parsed, and validated.
 Here’s a simple example of a custom scalar that handles date-time strings:
 
 ```js
-const { GraphQLScalarType, Kind } = require('graphql');
+import { GraphQLScalarType, Kind } from 'graphql';
 
 const DateTime = new GraphQLScalarType({
   name: 'DateTime',
@@ -80,16 +80,21 @@ providing a name, description, and three functions:
 - `serialize`: How the server sends internal values to clients.
 - `parseValue`: How the server parses incoming variable values.
 - `parseLiteral`: How the server parses inline values in queries.
+- `specifiedByURL` (optional): A URL specifying the behavior of your scalar;
+  this can be used by clients and tooling to recognize and handle common scalars
+  such as [date-time](https://scalars.graphql.org/andimarek/date-time.html)
+  independent of their name.
 
 The following example is a custom `DateTime` scalar that handles ISO-8601 encoded
 date strings:
 
 ```js
-const { GraphQLScalarType, Kind } = require('graphql');
+import { GraphQLScalarType, Kind } from 'graphql';
 
 const DateTime = new GraphQLScalarType({
   name: 'DateTime',
   description: 'An ISO-8601 encoded UTC date string.',
+  specifiedByURL: 'https://scalars.graphql.org/andimarek/date-time.html',
   
   serialize(value) {
     if (!(value instanceof Date)) {

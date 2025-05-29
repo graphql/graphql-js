@@ -16,9 +16,9 @@ Let's modify our "hello world" example so that it's an API server rather than a 
 <Tabs items={['SDL', 'Code']}>
   <Tabs.Tab>
 ```javascript
-const { buildSchema } = require('graphql');
-const { createHandler } = require('graphql-http/lib/use/express');
-const express = require('express');
+import { buildSchema } from 'graphql';
+import { createHandler } from 'graphql-http/lib/use/express';
+import express from 'express';
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`type Query { hello: String } `);
@@ -49,9 +49,9 @@ console.log('Running a GraphQL API server at http://localhost:4000/graphql');
 </Tabs.Tab>
 <Tabs.Tab>
 ```javascript
-const { GraphQLObjectType, GraphQLSchema, GraphQLString } = require('graphql');
-const { createHandler } = require('graphql-http/lib/use/express');
-const express = require('express');
+import { GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+import { createHandler } from 'graphql-http/lib/use/express';
+import express from 'express';
 
 // Construct a schema
 const schema = new GraphQLSchema({
@@ -99,7 +99,7 @@ One easy way to add it to your server is via the MIT-licensed [ruru](https://git
 To do so, install the `ruru` module with `npm install --save ruru` and then add the following to your `server.js` file, then restart the `node server.js` command:
 
 ```js
-const { ruruHTML } = require('ruru/server');
+import { ruruHTML } from 'ruru/server';
 
 // Serve the GraphiQL IDE.
 app.get('/', (_req, res) => {
