@@ -6,7 +6,7 @@ title: Caching Strategies
 
 Caching is a core strategy for improving the performance and scalability of GraphQL
 servers. Because GraphQL allows clients to specify exactly what they need, the server often
-does more work per request compared to REST APIs.
+does more work per request (but fewer requests) compared to many other APIs.
 
 This guide explores different levels of caching in a GraphQL.js so you can apply the right
 strategy for your application.
@@ -63,13 +63,13 @@ import { productCache } from '../utils/cache.js';
 
 export const resolvers = {
   Query: {
-    async product(_, { id }, context) {
+    product(_, { id }, context) {
       const cached = productCache.get(id);
       if (cached) return cached;
 
-      const product = await context.db.products.findById(id);
-      productCache.set(id, product);
-      return product;
+      const productPromise = context.db.products.findById(id);
+      productCache.set(id, productPromise);
+      return productPromise;
     },
   },
 };
@@ -181,7 +181,24 @@ afterward:
 // graphql/executeWithCache.js
 import { getCachedResponse, cacheResponse } from '../cache/queryCache.js';
 
-export async function executeWithCache({ cacheKey, executeFn }) {
+/**
+ * Stores in-flight requests to executeWithCache such that concurrent
+ * requests with the same cacheKey will only result in one call to
+ * `getCachedResponse` / `cacheResponse`. Once a request completes
+ * (with or without error) it is removed from the map.
+ */
+const inflight = new Map();
+
+export function executeWithCache({ cacheKey, executeFn }) {
+  const existing = inflight.get(cacheKey);
+  if (existing) return existing;
+  
+  const promise = _executeWithCacheUnbatched({ cacheKey, executeFn });
+  inflight.set(cacheKey, promise);
+  return promise.finally(() => inflight.delete(cacheKey));
+}
+
+async function _executeWithCacheUnbatched({ cacheKey, executeFn }) {
   const cached = await getCachedResponse(cacheKey);
   if (cached) return cached;
 
@@ -199,7 +216,7 @@ export async function executeWithCache({ cacheKey, executeFn }) {
 ## Schema caching
 
 Schema caching is useful when your schema construction is expensive, for example, when
-you have dynamically generating types, you are stitching multiple schemas, or fetching
+you are dynamically generating types, you are stitching multiple schemas, or fetching
 remote GraphQL services. This is especially important in serverless environments,
 where cold starts can significantly impact performance.
 
