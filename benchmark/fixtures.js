@@ -5,8 +5,9 @@ export const bigSchemaSDL = fs.readFileSync(
   'utf8',
 );
 
-export const bigDocumentSDL = JSON.parse(
-  fs.readFileSync(new URL('kitchen-sink.graphql', import.meta.url), 'utf8'),
+export const bigDocumentSDL = fs.readFileSync(
+  new URL('kitchen-sink.graphql', import.meta.url),
+  'utf8',
 );
 
 export const bigSchemaIntrospectionResult = JSON.parse(
