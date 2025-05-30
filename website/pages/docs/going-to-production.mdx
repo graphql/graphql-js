@@ -2,8 +2,11 @@
 title: Going to Production
 ---
 
-Bringing a GraphQL.js server into production involves more than deploying code. In production,
-a GraphQL server should be secure, fast, observable, and protected against abusive queries.
+# Going to Production
+
+GraphQL.JS contains a few development checks which in production will cause slower performance and
+an increase in bundle-size. Every bundler goes about these changes different, in here we'll list
+out the most popular ones.
 
 GraphQL.js includes development-time checks that are useful during local testing but should
 be disabled in production to reduce overhead. Additional concerns include caching, error handling,
