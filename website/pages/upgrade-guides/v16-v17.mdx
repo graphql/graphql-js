@@ -178,7 +178,7 @@ Use the `validateInputValue` helper to retrieve the actual errors.
 
 - Added `hideSuggestions` option to `execute`/`validate`/`subscribe`/... to hide schema-suggestions in error messages
 - Added `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods;
-  the `abortSignal` can also be passed to field resolvers to cancel asynchronous work that they initiate.
+  `info.abortSignal` can also be used in field resolvers to cancel asynchronous work that they initiate.
 - `extensions` support `symbol` keys, in addition to the normal string keys.
 - Added ability for resolver functions to return async iterables.
 - Added `perEventExecutor` execution option to allows specifying a custom executor for subscription source stream events, which can be useful for preparing a per event execution context argument.

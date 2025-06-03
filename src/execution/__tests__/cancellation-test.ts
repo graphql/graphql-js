@@ -151,8 +151,8 @@ describe('Execute: Cancellation', () => {
       abortSignal: abortController.signal,
       rootValue: {
         todo: {
-          id: (_args: any, _context: any, _info: any, signal: AbortSignal) =>
-            cancellableAsyncFn(signal),
+          id: (_args: any, _context: any, info: { abortSignal: AbortSignal }) =>
+            cancellableAsyncFn(info.abortSignal),
         },
       },
     });

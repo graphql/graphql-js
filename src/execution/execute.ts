@@ -875,6 +875,7 @@ function executeField(
     toNodes(fieldDetailsList),
     parentType,
     path,
+    abortSignal,
   );
 
   // Get the resolve function, regardless of if its result is normal or abrupt (error).
@@ -893,7 +894,7 @@ function executeField(
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
-    const result = resolveFn(source, args, contextValue, info, abortSignal);
+    const result = resolveFn(source, args, contextValue, info);
 
     if (isPromise(result)) {
       return completePromisedValue(
@@ -960,6 +961,7 @@ export function buildResolveInfo(
   fieldNodes: ReadonlyArray<FieldNode>,
   parentType: GraphQLObjectType,
   path: Path,
+  abortSignal: AbortSignal | undefined,
 ): GraphQLResolveInfo {
   const { schema, fragmentDefinitions, rootValue, operation, variableValues } =
     validatedExecutionArgs;
@@ -976,6 +978,7 @@ export function buildResolveInfo(
     rootValue,
     operation,
     variableValues,
+    abortSignal,
   };
 }
 
@@ -2079,12 +2082,12 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
  * of calling that function while passing along args and context value.
  */
 export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
-  function (source: any, args, contextValue, info, abortSignal) {
+  function (source: any, args, contextValue, info) {
     // ensure source is a value for which property access is acceptable.
     if (isObjectLike(source) || typeof source === 'function') {
       const property = source[info.fieldName];
       if (typeof property === 'function') {
-        return source[info.fieldName](args, contextValue, info, abortSignal);
+        return source[info.fieldName](args, contextValue, info);
       }
       return property;
     }
@@ -2293,6 +2296,7 @@ function executeSubscription(
     fieldNodes,
     rootType,
     path,
+    abortSignal,
   );
 
   try {
@@ -2317,7 +2321,7 @@ function executeSubscription(
     // The resolve function's optional third argument is a context value that
     // is provided to every resolve function within an execution. It is commonly
     // used to represent an authenticated user, or request-specific caches.
-    const result = resolveFn(rootValue, args, contextValue, info, abortSignal);
+    const result = resolveFn(rootValue, args, contextValue, info);
 
     if (isPromise(result)) {
       const abortSignalListener = abortSignal

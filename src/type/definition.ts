@@ -997,7 +997,6 @@ export type GraphQLFieldResolver<
   args: TArgs,
   context: TContext,
   info: GraphQLResolveInfo,
-  abortSignal: AbortSignal | undefined,
 ) => TResult;
 
 export interface GraphQLResolveInfo {
@@ -1011,6 +1010,7 @@ export interface GraphQLResolveInfo {
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
   readonly variableValues: VariableValues;
+  readonly abortSignal: AbortSignal | undefined;
 }
 
 /**

@@ -213,6 +213,7 @@ describe('Execute: Handles basic execution tasks', () => {
     executeSync({ schema, document, rootValue, variableValues });
 
     expect(resolvedInfo).to.have.all.keys(
+      'abortSignal',
       'fieldName',
       'fieldNodes',
       'returnType',
