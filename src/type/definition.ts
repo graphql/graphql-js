@@ -45,7 +45,6 @@ import type { VariableValues } from '../execution/values.js';
 
 import { valueFromASTUntyped } from '../utilities/valueFromASTUntyped.js';
 
-import { assertEnumValueName, assertName } from './assertName.js';
 import type { GraphQLDirective } from './directives.js';
 import type { GraphQLSchema } from './schema.js';
 
@@ -669,7 +668,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>) {
-    this.name = assertName(config.name);
+    this.name = config.name;
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
     this.serialize =
@@ -880,7 +879,7 @@ export class GraphQLObjectType<TSource = any, TContext = any>
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
-    this.name = assertName(config.name);
+    this.name = config.name;
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1116,7 +1115,7 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
     config: GraphQLFieldConfig<TSource, TContext, TArgs>,
   ) {
     this.parentType = parentType;
-    this.name = assertName(name);
+    this.name = name;
     this.description = config.description;
     this.type = config.type;
 
@@ -1182,7 +1181,7 @@ export class GraphQLArgument implements GraphQLSchemaElement {
     config: GraphQLArgumentConfig,
   ) {
     this.parent = parent;
-    this.name = assertName(name);
+    this.name = name;
     this.description = config.description;
     this.type = config.type;
     this.defaultValue = config.defaultValue;
@@ -1281,7 +1280,7 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>) {
-    this.name = assertName(config.name);
+    this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1407,7 +1406,7 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
-    this.name = assertName(config.name);
+    this.name = config.name;
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1528,7 +1527,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   private _nameLookup: ObjMap<GraphQLEnumValue> | null;
 
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
-    this.name = assertName(config.name);
+    this.name = config.name;
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
@@ -1756,7 +1755,7 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
     config: GraphQLEnumValueConfig,
   ) {
     this.parentEnum = parentEnum;
-    this.name = assertEnumValueName(name);
+    this.name = name;
     this.description = config.description;
     this.value = config.value !== undefined ? config.value : name;
     this.deprecationReason = config.deprecationReason;
@@ -1832,7 +1831,7 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
   private _fields: ThunkObjMap<GraphQLInputField>;
 
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
-    this.name = assertName(config.name);
+    this.name = config.name;
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
@@ -1960,7 +1959,7 @@ export class GraphQLInputField implements GraphQLSchemaElement {
     );
 
     this.parentType = parentType;
-    this.name = assertName(name);
+    this.name = name;
     this.description = config.description;
     this.type = config.type;
     this.defaultValue = config.defaultValue;

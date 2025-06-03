@@ -414,52 +414,6 @@ describe('Type System: Objects', () => {
     });
     expect(() => objType.getFields()).to.not.throw();
   });
-
-  it('rejects an Object type with invalid name', () => {
-    expect(
-      () => new GraphQLObjectType({ name: 'bad-name', fields: {} }),
-    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
-  });
-
-  it('rejects an Object type with incorrectly named fields', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {
-        'bad-name': { type: ScalarType },
-      },
-    });
-    expect(() => objType.getFields()).to.throw(
-      'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
-    );
-  });
-
-  it('rejects an Object type with a field function that returns incorrect type', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      // @ts-expect-error (Wrong type of return)
-      fields() {
-        return [{ field: ScalarType }];
-      },
-    });
-    expect(() => objType.getFields()).to.throw();
-  });
-
-  it('rejects an Object type with incorrectly named field args', () => {
-    const objType = new GraphQLObjectType({
-      name: 'SomeObject',
-      fields: {
-        badField: {
-          type: ScalarType,
-          args: {
-            'bad-name': { type: ScalarType },
-          },
-        },
-      },
-    });
-    expect(() => objType.getFields()).to.throw(
-      'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
-    );
-  });
 });
 
 describe('Type System: Interfaces', () => {
@@ -563,12 +517,6 @@ describe('Type System: Interfaces', () => {
     });
     expect(implementing.getInterfaces()).to.deep.equal([InterfaceType]);
   });
-
-  it('rejects an Interface type with invalid name', () => {
-    expect(
-      () => new GraphQLInterfaceType({ name: 'bad-name', fields: {} }),
-    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
-  });
 });
 
 describe('Type System: Unions', () => {
@@ -634,12 +582,6 @@ describe('Type System: Unions', () => {
       types: [],
     });
     expect(unionType.getTypes()).to.deep.equal([]);
-  });
-
-  it('rejects an Union type with invalid name', () => {
-    expect(
-      () => new GraphQLUnionType({ name: 'bad-name', types: [] }),
-    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 });
 
@@ -786,24 +728,6 @@ describe('Type System: Enums', () => {
     expect(enumType.getValue('FOO')).has.property('value', 10);
     expect(enumType.getValue('BAR')).has.property('value', 20);
   });
-
-  it('rejects an Enum type with invalid name', () => {
-    expect(
-      () => new GraphQLEnumType({ name: 'bad-name', values: {} }),
-    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
-  });
-
-  it('rejects an Enum type with incorrectly named values', () => {
-    expect(
-      () =>
-        new GraphQLEnumType({
-          name: 'SomeEnum',
-          values: {
-            'bad-name': {},
-          },
-        }),
-    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
-  });
 });
 
 describe('Type System: Input Objects', () => {
@@ -886,26 +810,6 @@ describe('Type System: Input Objects', () => {
         deprecationReason: undefined,
         astNode: undefined,
       });
-    });
-
-    it('rejects an Input Object type with invalid name', () => {
-      expect(
-        () => new GraphQLInputObjectType({ name: 'bad-name', fields: {} }),
-      ).to.throw(
-        'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
-      );
-    });
-
-    it('rejects an Input Object type with incorrectly named fields', () => {
-      const inputObjType = new GraphQLInputObjectType({
-        name: 'SomeInputObject',
-        fields: {
-          'bad-name': { type: ScalarType },
-        },
-      });
-      expect(() => inputObjType.getFields()).to.throw(
-        'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
-      );
     });
   });
 

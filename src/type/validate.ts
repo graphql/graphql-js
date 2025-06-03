@@ -34,6 +34,7 @@ import {
   validateInputValue,
 } from '../utilities/validateInputValue.js';
 
+import { assertHasValidName } from './assertHasValidName.js';
 import type {
   GraphQLArgument,
   GraphQLEnumType,
@@ -42,6 +43,7 @@ import type {
   GraphQLInputType,
   GraphQLInterfaceType,
   GraphQLObjectType,
+  GraphQLSchemaElement,
   GraphQLUnionType,
 } from './definition.js';
 import {
@@ -196,7 +198,7 @@ function validateDirectives(context: SchemaValidationContext): void {
     }
 
     // Ensure they are named correctly.
-    validateName(context, directive);
+    validateName(context, directive, false);
 
     if (directive.locations.length === 0) {
       context.reportError(
@@ -208,7 +210,7 @@ function validateDirectives(context: SchemaValidationContext): void {
     // Ensure the arguments are valid.
     for (const arg of directive.args) {
       // Ensure they are named correctly.
-      validateName(context, arg);
+      validateName(context, arg, false);
 
       // Ensure the type is an input type.
       if (!isInputType(arg.type)) {
@@ -348,14 +350,16 @@ function uncoerceDefaultValue(value: unknown, type: GraphQLInputType): unknown {
 
 function validateName(
   context: SchemaValidationContext,
-  node: { readonly name: string; readonly astNode: Maybe<ASTNode> },
+  schemaElement: GraphQLSchemaElement & {
+    readonly name: string;
+    readonly astNode: Maybe<ASTNode>;
+  },
+  allowReservedNames: boolean,
 ): void {
-  // Ensure names are valid, however introspection types opt out.
-  if (node.name.startsWith('__')) {
-    context.reportError(
-      `Name "${node.name}" must not begin with "__", which is reserved by GraphQL introspection.`,
-      node.astNode,
-    );
+  try {
+    assertHasValidName(schemaElement, allowReservedNames);
+  } catch (error: unknown) {
+    context.reportError((error as Error).message, schemaElement.astNode);
   }
 }
 
@@ -376,20 +380,18 @@ function validateTypes(context: SchemaValidationContext): void {
       continue;
     }
 
-    // Ensure it is named correctly (excluding introspection types).
-    if (!isIntrospectionType(type)) {
-      validateName(context, type);
-    }
+    const allowReservedNames = isIntrospectionType(type);
+    validateName(context, type, allowReservedNames);
 
     if (isObjectType(type)) {
       // Ensure fields are valid
-      validateFields(context, type);
+      validateFields(context, type, allowReservedNames);
 
       // Ensure objects implement the interfaces they claim to.
       validateInterfaces(context, type);
     } else if (isInterfaceType(type)) {
       // Ensure fields are valid.
-      validateFields(context, type);
+      validateFields(context, type, allowReservedNames);
 
       // Ensure interfaces implement the interfaces they claim to.
       validateInterfaces(context, type);
@@ -398,10 +400,10 @@ function validateTypes(context: SchemaValidationContext): void {
       validateUnionMembers(context, type);
     } else if (isEnumType(type)) {
       // Ensure Enums have valid values.
-      validateEnumValues(context, type);
+      validateEnumValues(context, type, allowReservedNames);
     } else if (isInputObjectType(type)) {
       // Ensure Input Object fields are valid.
-      validateInputFields(context, type);
+      validateInputFields(context, type, allowReservedNames);
 
       // Ensure Input Objects do not contain invalid field circular references.
       // Ensure Input Objects do not contain non-nullable circular references.
@@ -416,6 +418,7 @@ function validateTypes(context: SchemaValidationContext): void {
 function validateFields(
   context: SchemaValidationContext,
   type: GraphQLObjectType | GraphQLInterfaceType,
+  allowReservedNames: boolean,
 ): void {
   const fields = Object.values(type.getFields());
 
@@ -429,7 +432,7 @@ function validateFields(
 
   for (const field of fields) {
     // Ensure they are named correctly.
-    validateName(context, field);
+    validateName(context, field, allowReservedNames);
 
     // Ensure the type is an output type
     if (!isOutputType(field.type)) {
@@ -443,7 +446,7 @@ function validateFields(
     // Ensure the arguments are valid
     for (const arg of field.args) {
       // Ensure they are named correctly.
-      validateName(context, arg);
+      validateName(context, arg, allowReservedNames);
 
       // Ensure the type is an input type
       if (!isInputType(arg.type)) {
@@ -648,6 +651,7 @@ function validateUnionMembers(
 function validateEnumValues(
   context: SchemaValidationContext,
   enumType: GraphQLEnumType,
+  allowReservedNames: boolean,
 ): void {
   const enumValues = enumType.getValues();
 
@@ -660,13 +664,14 @@ function validateEnumValues(
 
   for (const enumValue of enumValues) {
     // Ensure valid name.
-    validateName(context, enumValue);
+    validateName(context, enumValue, allowReservedNames);
   }
 }
 
 function validateInputFields(
   context: SchemaValidationContext,
   inputObj: GraphQLInputObjectType,
+  allowReservedNames: boolean,
 ): void {
   const fields = Object.values(inputObj.getFields());
 
@@ -680,7 +685,7 @@ function validateInputFields(
   // Ensure the input fields are valid
   for (const field of fields) {
     // Ensure they are named correctly.
-    validateName(context, field);
+    validateName(context, field, allowReservedNames);
 
     // Ensure the type is an input type
     if (!isInputType(field.type)) {

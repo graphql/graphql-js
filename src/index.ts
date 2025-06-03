@@ -151,6 +151,7 @@ export {
   validateSchema,
   assertValidSchema,
   // Upholds the spec rules about naming.
+  assertHasValidName,
   assertName,
   assertEnumValueName,
 } from './type/index.js';

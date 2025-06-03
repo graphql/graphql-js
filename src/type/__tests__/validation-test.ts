@@ -531,6 +531,284 @@ describe('Type System: Root types must all be different if provided', () => {
   });
 });
 
+describe('Type System: Schema elements must be properly named', () => {
+  it('accepts types with valid names', () => {
+    const schema = buildSchema(`
+      directive @SomeDirective(someArg: String) on QUERY
+
+      type Query {
+        f1: SomeObject
+        f2: SomeInterface
+        f3: SomeUnion
+        f4: SomeEnum
+        f5: SomeScalar
+      }
+
+      input SomeInputObject {
+        someField: String
+      }
+
+      type SomeObject {
+        someField(someArg: SomeInputObject): String
+      }
+
+      interface SomeInterface {
+        someField: String
+      }
+
+      type SomeUnionMember {
+        field: String  
+      }
+
+      union SomeUnion = SomeUnionMember
+
+      enum SomeEnum {
+        SOME_ENUM_VALUE
+      }
+
+      scalar SomeScalar
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects types with invalid names', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          f1: {
+            type: new GraphQLObjectType({
+              name: 'Some-Object',
+              fields: {
+                'some-Field': {
+                  type: GraphQLString,
+                  args: {
+                    'some-Arg': {
+                      type: new GraphQLInputObjectType({
+                        name: 'Some-Input-Object',
+                        fields: {
+                          'some-Field': { type: GraphQLString },
+                        },
+                      }),
+                    },
+                  },
+                },
+              },
+            }),
+          },
+          f2: {
+            type: new GraphQLInterfaceType({
+              name: 'Some-Interface',
+              fields: { 'some-Field': { type: GraphQLString } },
+            }),
+          },
+          f3: {
+            type: new GraphQLUnionType({
+              name: 'Some-Union',
+              types: [
+                new GraphQLObjectType({
+                  name: 'SomeUnionMember',
+                  fields: { field: { type: GraphQLString } },
+                }),
+              ],
+            }),
+          },
+          f4: {
+            type: new GraphQLEnumType({
+              name: 'Some-Enum',
+              values: { 'SOME-ENUM-VALUE': {}, true: {}, false: {}, null: {} },
+            }),
+          },
+          f5: {
+            type: new GraphQLScalarType({
+              name: 'Some-Scalar',
+            }),
+          },
+        },
+      }),
+      directives: [
+        new GraphQLDirective({
+          name: 'Some-Directive',
+          args: {
+            'some-Arg': {
+              type: GraphQLString,
+            },
+          },
+          locations: [DirectiveLocation.QUERY],
+        }),
+      ],
+    });
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name of directive "@Some-Directive" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message:
+          'Name "some-Arg" of argument "@Some-Directive(some-Arg:)" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message: 'Name of type "Some-Object" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message:
+          'Name "some-Field" of field "Some-Object.some-Field" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message:
+          'Name "some-Arg" of argument "Some-Object.some-Field(some-Arg:)" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message:
+          'Name of type "Some-Input-Object" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message:
+          'Name "some-Field" of input field "Some-Input-Object.some-Field" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message:
+          'Name of type "Some-Interface" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message:
+          'Name "some-Field" of field "Some-Interface.some-Field" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message: 'Name of type "Some-Union" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message: 'Name of type "Some-Enum" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message:
+          'Name "SOME-ENUM-VALUE" of enum value "Some-Enum.SOME-ENUM-VALUE" must only contain [_a-zA-Z0-9].',
+      },
+      {
+        message: 'Name "true" of enum value "Some-Enum.true" cannot be: true.',
+      },
+      {
+        message:
+          'Name "false" of enum value "Some-Enum.false" cannot be: false.',
+      },
+      {
+        message: 'Name "null" of enum value "Some-Enum.null" cannot be: null.',
+      },
+      {
+        message: 'Name of type "Some-Scalar" must only contain [_a-zA-Z0-9].',
+      },
+    ]);
+  });
+
+  it('rejects types with reserved names', () => {
+    const schema = buildSchema(`
+      directive @__SomeDirective(__someArg: String) on QUERY
+
+      type Query {
+        f1: __SomeObject
+        f2: __SomeInterface
+        f3: __SomeUnion
+        f4: __SomeEnum
+        f5: __SomeScalar
+      }
+
+      input __SomeInputObject {
+        __someField: String
+      }
+
+      type __SomeObject {
+        __someField(__someArg: __SomeInputObject): String
+      }
+
+      interface __SomeInterface {
+        __someField: String
+      }
+
+      type SomeUnionMember {
+        field: String  
+      }
+
+      union __SomeUnion = SomeUnionMember
+
+      enum __SomeEnum {
+        __SOME_ENUM_VALUE
+      }
+
+      scalar __SomeScalar
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Name of directive "@__SomeDirective" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 2, column: 7 }],
+      },
+      {
+        message:
+          'Name "__someArg" of argument "@__SomeDirective(__someArg:)" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 2, column: 34 }],
+      },
+      {
+        message:
+          'Name of type "__SomeInputObject" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 12, column: 7 }],
+      },
+      {
+        message:
+          'Name "__someField" of input field "__SomeInputObject.__someField" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 13, column: 9 }],
+      },
+      {
+        message:
+          'Name of type "__SomeObject" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 16, column: 7 }],
+      },
+      {
+        message:
+          'Name "__someField" of field "__SomeObject.__someField" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 17, column: 9 }],
+      },
+      {
+        message:
+          'Name "__someArg" of argument "__SomeObject.__someField(__someArg:)" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 17, column: 21 }],
+      },
+      {
+        message:
+          'Name of type "__SomeInterface" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 20, column: 7 }],
+      },
+      {
+        message:
+          'Name "__someField" of field "__SomeInterface.__someField" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 21, column: 9 }],
+      },
+      {
+        message:
+          'Name of type "__SomeUnion" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 28, column: 7 }],
+      },
+      {
+        message:
+          'Name of type "__SomeEnum" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 30, column: 7 }],
+      },
+      {
+        message:
+          'Name "__SOME_ENUM_VALUE" of enum value "__SomeEnum.__SOME_ENUM_VALUE" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 31, column: 9 }],
+      },
+      {
+        message:
+          'Name of type "__SomeScalar" must not begin with "__", which is reserved by GraphQL introspection.',
+        locations: [{ line: 34, column: 7 }],
+      },
+    ]);
+  });
+});
+
 describe('Type System: Objects must have fields', () => {
   it('accepts an Object type with fields object', () => {
     const schema = buildSchema(`
@@ -583,65 +861,6 @@ describe('Type System: Objects must have fields', () => {
     expectJSON(validateSchema(manualSchema2)).toDeepEqual([
       {
         message: 'Type IncompleteObject must define one or more fields.',
-      },
-    ]);
-  });
-
-  it('rejects an Object type with incorrectly named fields', () => {
-    const schema = schemaWithFieldType(
-      new GraphQLObjectType({
-        name: 'SomeObject',
-        fields: {
-          __badName: { type: GraphQLString },
-        },
-      }),
-    );
-    expectJSON(validateSchema(schema)).toDeepEqual([
-      {
-        message:
-          'Name "__badName" must not begin with "__", which is reserved by GraphQL introspection.',
-      },
-    ]);
-  });
-});
-
-describe('Type System: Fields args must be properly named', () => {
-  it('accepts field args with valid names', () => {
-    const schema = schemaWithFieldType(
-      new GraphQLObjectType({
-        name: 'SomeObject',
-        fields: {
-          goodField: {
-            type: GraphQLString,
-            args: {
-              goodArg: { type: GraphQLString },
-            },
-          },
-        },
-      }),
-    );
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
-  it('rejects field arg with invalid names', () => {
-    const schema = schemaWithFieldType(
-      new GraphQLObjectType({
-        name: 'SomeObject',
-        fields: {
-          badField: {
-            type: GraphQLString,
-            args: {
-              __badName: { type: GraphQLString },
-            },
-          },
-        },
-      }),
-    );
-
-    expectJSON(validateSchema(schema)).toDeepEqual([
-      {
-        message:
-          'Name "__badName" must not begin with "__", which is reserved by GraphQL introspection.',
       },
     ]);
   });
@@ -1373,24 +1592,6 @@ describe('Type System: Enum types must be well defined', () => {
           { line: 6, column: 7 },
           { line: 4, column: 9 },
         ],
-      },
-    ]);
-  });
-
-  it('rejects an Enum type with incorrectly named values', () => {
-    const schema = schemaWithFieldType(
-      new GraphQLEnumType({
-        name: 'SomeEnum',
-        values: {
-          __badName: {},
-        },
-      }),
-    );
-
-    expectJSON(validateSchema(schema)).toDeepEqual([
-      {
-        message:
-          'Name "__badName" must not begin with "__", which is reserved by GraphQL introspection.',
       },
     ]);
   });

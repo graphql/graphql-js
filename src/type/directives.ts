@@ -10,7 +10,6 @@ import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
 import type { DirectiveDefinitionNode } from '../language/ast.js';
 import { DirectiveLocation } from '../language/directiveLocation.js';
 
-import { assertName } from './assertName.js';
 import type {
   GraphQLArgumentConfig,
   GraphQLFieldNormalizedConfigArgumentMap,
@@ -62,7 +61,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
-    this.name = assertName(config.name);
+    this.name = config.name;
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
