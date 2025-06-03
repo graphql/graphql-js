@@ -557,7 +557,7 @@ describe('Type System: Schema elements must be properly named', () => {
       }
 
       type SomeUnionMember {
-        field: String  
+        field: String
       }
 
       union SomeUnion = SomeUnionMember
@@ -727,7 +727,7 @@ describe('Type System: Schema elements must be properly named', () => {
       }
 
       type SomeUnionMember {
-        field: String  
+        field: String
       }
 
       union __SomeUnion = SomeUnionMember
