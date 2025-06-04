@@ -213,7 +213,6 @@ describe('Execute: Handles basic execution tasks', () => {
     executeSync({ schema, document, rootValue, variableValues });
 
     expect(resolvedInfo).to.have.all.keys(
-      'abortSignal',
       'fieldName',
       'fieldNodes',
       'returnType',
@@ -224,6 +223,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'rootValue',
       'operation',
       'variableValues',
+      'abortSignal',
     );
 
     const operation = document.definitions[0];
