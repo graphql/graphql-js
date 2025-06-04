@@ -28,6 +28,8 @@
 
 // The GraphQL.js version info.
 export { version, versionInfo } from './version.js';
+export { setEnv } from './setEnv.js';
+export type { Env } from './setEnv.js';
 
 // The primary entry point into fulfilling a GraphQL request.
 export type { GraphQLArgs } from './graphql.js';
