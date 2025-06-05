@@ -91,10 +91,6 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (directive) => directive.description,
       },
-      isRepeatable: {
-        type: new GraphQLNonNull(GraphQLBoolean),
-        resolve: (directive) => directive.isRepeatable,
-      },
       locations: {
         type: new GraphQLNonNull(
           new GraphQLList(new GraphQLNonNull(__DirectiveLocation)),
@@ -116,6 +112,10 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
             ? field.args
             : field.args.filter((arg) => arg.deprecationReason == null);
         },
+      },
+      isRepeatable: {
+        type: new GraphQLNonNull(GraphQLBoolean),
+        resolve: (directive) => directive.isRepeatable,
       },
     }) as GraphQLFieldConfigMap<GraphQLDirective, unknown>,
 });
@@ -257,11 +257,6 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           /* c8 ignore next */
           'description' in type ? type.description : undefined,
       },
-      specifiedByURL: {
-        type: GraphQLString,
-        resolve: (obj) =>
-          'specifiedByURL' in obj ? obj.specifiedByURL : undefined,
-      },
       fields: {
         type: new GraphQLList(new GraphQLNonNull(__Field)),
         args: {
@@ -332,6 +327,11 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       ofType: {
         type: __Type,
         resolve: (type) => ('ofType' in type ? type.ofType : undefined),
+      },
+      specifiedByURL: {
+        type: GraphQLString,
+        resolve: (obj) =>
+          'specifiedByURL' in obj ? obj.specifiedByURL : undefined,
       },
       isOneOf: {
         type: GraphQLBoolean,
