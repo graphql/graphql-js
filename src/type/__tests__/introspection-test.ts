@@ -226,17 +226,6 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
-                  name: 'specifiedByURL',
-                  args: [],
-                  type: {
-                    kind: 'SCALAR',
-                    name: 'String',
-                    ofType: null,
-                  },
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-                {
                   name: 'fields',
                   args: [
                     {
@@ -379,6 +368,17 @@ describe('Introspection', () => {
                   type: {
                     kind: 'OBJECT',
                     name: '__Type',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'specifiedByURL',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
                     ofType: null,
                   },
                   isDeprecated: false,
@@ -751,21 +751,6 @@ describe('Introspection', () => {
                   deprecationReason: null,
                 },
                 {
-                  name: 'isRepeatable',
-                  args: [],
-                  type: {
-                    kind: 'NON_NULL',
-                    name: null,
-                    ofType: {
-                      kind: 'SCALAR',
-                      name: 'Boolean',
-                      ofType: null,
-                    },
-                  },
-                  isDeprecated: false,
-                  deprecationReason: null,
-                },
-                {
                   name: 'locations',
                   args: [],
                   type: {
@@ -820,6 +805,21 @@ describe('Introspection', () => {
                           ofType: null,
                         },
                       },
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'isRepeatable',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null,
                     },
                   },
                   isDeprecated: false,

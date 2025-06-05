@@ -854,13 +854,13 @@ describe('Type System Printer', () => {
         kind: __TypeKind!
         name: String
         description: String
-        specifiedByURL: String
         fields(includeDeprecated: Boolean! = false): [__Field!]
         interfaces: [__Type!]
         possibleTypes: [__Type!]
         enumValues(includeDeprecated: Boolean! = false): [__EnumValue!]
         inputFields(includeDeprecated: Boolean! = false): [__InputValue!]
         ofType: __Type
+        specifiedByURL: String
         isOneOf: Boolean
       }
 
@@ -943,9 +943,9 @@ describe('Type System Printer', () => {
       type __Directive {
         name: String!
         description: String
-        isRepeatable: Boolean!
         locations: [__DirectiveLocation!]!
         args(includeDeprecated: Boolean! = false): [__InputValue!]!
+        isRepeatable: Boolean!
       }
 
       """
