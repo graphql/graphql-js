@@ -143,6 +143,7 @@ export function extendSchemaImpl(
   // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
+  const assumeValid = options?.assumeValid ?? false;
   let isSchemaChanged = false;
   for (const def of documentAST.definitions) {
     switch (def.kind) {
@@ -355,15 +356,18 @@ export function extendSchemaImpl(
     }
 
     function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
-      return new GraphQLDirective({
-        name: node.name.value,
-        description: node.description?.value,
-        // @ts-expect-error
-        locations: node.locations.map(({ value }) => value),
-        isRepeatable: node.repeatable,
-        args: buildArgumentMap(node.arguments),
-        astNode: node,
-      });
+      return new GraphQLDirective(
+        {
+          name: node.name.value,
+          description: node.description?.value,
+          // @ts-expect-error
+          locations: node.locations.map(({ value }) => value),
+          isRepeatable: node.repeatable,
+          args: buildArgumentMap(node.arguments),
+          astNode: node,
+        },
+        assumeValid,
+      );
     }
 
     function buildFieldMap(
@@ -497,74 +501,92 @@ export function extendSchemaImpl(
           const extensionASTNodes = objectExtensions.get(name) ?? [];
           const allNodes = [astNode, ...extensionASTNodes];
 
-          return new GraphQLObjectType({
-            name,
-            description: astNode.description?.value,
-            interfaces: () => buildInterfaces(allNodes),
-            fields: () => buildFieldMap(allNodes),
-            astNode,
-            extensionASTNodes,
-          });
+          return new GraphQLObjectType(
+            {
+              name,
+              description: astNode.description?.value,
+              interfaces: () => buildInterfaces(allNodes),
+              fields: () => buildFieldMap(allNodes),
+              astNode,
+              extensionASTNodes,
+            },
+            assumeValid,
+          );
         }
         case Kind.INTERFACE_TYPE_DEFINITION: {
           const extensionASTNodes = interfaceExtensions.get(name) ?? [];
           const allNodes = [astNode, ...extensionASTNodes];
 
-          return new GraphQLInterfaceType({
-            name,
-            description: astNode.description?.value,
-            interfaces: () => buildInterfaces(allNodes),
-            fields: () => buildFieldMap(allNodes),
-            astNode,
-            extensionASTNodes,
-          });
+          return new GraphQLInterfaceType(
+            {
+              name,
+              description: astNode.description?.value,
+              interfaces: () => buildInterfaces(allNodes),
+              fields: () => buildFieldMap(allNodes),
+              astNode,
+              extensionASTNodes,
+            },
+            assumeValid,
+          );
         }
         case Kind.ENUM_TYPE_DEFINITION: {
           const extensionASTNodes = enumExtensions.get(name) ?? [];
           const allNodes = [astNode, ...extensionASTNodes];
 
-          return new GraphQLEnumType({
-            name,
-            description: astNode.description?.value,
-            values: () => buildEnumValueMap(allNodes),
-            astNode,
-            extensionASTNodes,
-          });
+          return new GraphQLEnumType(
+            {
+              name,
+              description: astNode.description?.value,
+              values: () => buildEnumValueMap(allNodes),
+              astNode,
+              extensionASTNodes,
+            },
+            assumeValid,
+          );
         }
         case Kind.UNION_TYPE_DEFINITION: {
           const extensionASTNodes = unionExtensions.get(name) ?? [];
           const allNodes = [astNode, ...extensionASTNodes];
 
-          return new GraphQLUnionType({
-            name,
-            description: astNode.description?.value,
-            types: () => buildUnionTypes(allNodes),
-            astNode,
-            extensionASTNodes,
-          });
+          return new GraphQLUnionType(
+            {
+              name,
+              description: astNode.description?.value,
+              types: () => buildUnionTypes(allNodes),
+              astNode,
+              extensionASTNodes,
+            },
+            assumeValid,
+          );
         }
         case Kind.SCALAR_TYPE_DEFINITION: {
           const extensionASTNodes = scalarExtensions.get(name) ?? [];
-          return new GraphQLScalarType({
-            name,
-            description: astNode.description?.value,
-            specifiedByURL: getSpecifiedByURL(astNode),
-            astNode,
-            extensionASTNodes,
-          });
+          return new GraphQLScalarType(
+            {
+              name,
+              description: astNode.description?.value,
+              specifiedByURL: getSpecifiedByURL(astNode),
+              astNode,
+              extensionASTNodes,
+            },
+            assumeValid,
+          );
         }
         case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
           const extensionASTNodes = inputObjectExtensions.get(name) ?? [];
           const allNodes = [astNode, ...extensionASTNodes];
 
-          return new GraphQLInputObjectType({
-            name,
-            description: astNode.description?.value,
-            fields: () => buildInputFieldMap(allNodes),
-            astNode,
-            extensionASTNodes,
-            isOneOf: isOneOf(astNode),
-          });
+          return new GraphQLInputObjectType(
+            {
+              name,
+              description: astNode.description?.value,
+              fields: () => buildInputFieldMap(allNodes),
+              astNode,
+              extensionASTNodes,
+              isOneOf: isOneOf(astNode),
+            },
+            assumeValid,
+          );
         }
       }
     }

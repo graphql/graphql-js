@@ -73,6 +73,8 @@ export function buildClientSchema(
     )}.`,
   );
 
+  const assumeValid = options?.assumeValid ?? false;
+
   // Get the schema from the introspection result.
   const schemaIntrospection = introspection.__schema;
 
@@ -122,7 +124,7 @@ export function buildClientSchema(
     subscription: subscriptionType,
     types: [...typeMap.values()],
     directives,
-    assumeValid: options?.assumeValid,
+    assumeValid,
   });
 
   // Given a type reference in introspection, return the GraphQLType instance.
@@ -203,11 +205,14 @@ export function buildClientSchema(
   function buildScalarDef(
     scalarIntrospection: IntrospectionScalarType,
   ): GraphQLScalarType {
-    return new GraphQLScalarType({
-      name: scalarIntrospection.name,
-      description: scalarIntrospection.description,
-      specifiedByURL: scalarIntrospection.specifiedByURL,
-    });
+    return new GraphQLScalarType(
+      {
+        name: scalarIntrospection.name,
+        description: scalarIntrospection.description,
+        specifiedByURL: scalarIntrospection.specifiedByURL,
+      },
+      assumeValid,
+    );
   }
 
   function buildImplementationsList(
@@ -237,23 +242,29 @@ export function buildClientSchema(
   function buildObjectDef(
     objectIntrospection: IntrospectionObjectType,
   ): GraphQLObjectType {
-    return new GraphQLObjectType({
-      name: objectIntrospection.name,
-      description: objectIntrospection.description,
-      interfaces: () => buildImplementationsList(objectIntrospection),
-      fields: () => buildFieldDefMap(objectIntrospection),
-    });
+    return new GraphQLObjectType(
+      {
+        name: objectIntrospection.name,
+        description: objectIntrospection.description,
+        interfaces: () => buildImplementationsList(objectIntrospection),
+        fields: () => buildFieldDefMap(objectIntrospection),
+      },
+      assumeValid,
+    );
   }
 
   function buildInterfaceDef(
     interfaceIntrospection: IntrospectionInterfaceType,
   ): GraphQLInterfaceType {
-    return new GraphQLInterfaceType({
-      name: interfaceIntrospection.name,
-      description: interfaceIntrospection.description,
-      interfaces: () => buildImplementationsList(interfaceIntrospection),
-      fields: () => buildFieldDefMap(interfaceIntrospection),
-    });
+    return new GraphQLInterfaceType(
+      {
+        name: interfaceIntrospection.name,
+        description: interfaceIntrospection.description,
+        interfaces: () => buildImplementationsList(interfaceIntrospection),
+        fields: () => buildFieldDefMap(interfaceIntrospection),
+      },
+      assumeValid,
+    );
   }
 
   function buildUnionDef(
@@ -265,11 +276,14 @@ export function buildClientSchema(
         `Introspection result missing possibleTypes: ${unionIntrospectionStr}.`,
       );
     }
-    return new GraphQLUnionType({
-      name: unionIntrospection.name,
-      description: unionIntrospection.description,
-      types: () => unionIntrospection.possibleTypes.map(getObjectType),
-    });
+    return new GraphQLUnionType(
+      {
+        name: unionIntrospection.name,
+        description: unionIntrospection.description,
+        types: () => unionIntrospection.possibleTypes.map(getObjectType),
+      },
+      assumeValid,
+    );
   }
 
   function buildEnumDef(
@@ -281,18 +295,21 @@ export function buildClientSchema(
         `Introspection result missing enumValues: ${enumIntrospectionStr}.`,
       );
     }
-    return new GraphQLEnumType({
-      name: enumIntrospection.name,
-      description: enumIntrospection.description,
-      values: keyValMap(
-        enumIntrospection.enumValues,
-        (valueIntrospection) => valueIntrospection.name,
-        (valueIntrospection) => ({
-          description: valueIntrospection.description,
-          deprecationReason: valueIntrospection.deprecationReason,
-        }),
-      ),
-    });
+    return new GraphQLEnumType(
+      {
+        name: enumIntrospection.name,
+        description: enumIntrospection.description,
+        values: keyValMap(
+          enumIntrospection.enumValues,
+          (valueIntrospection) => valueIntrospection.name,
+          (valueIntrospection) => ({
+            description: valueIntrospection.description,
+            deprecationReason: valueIntrospection.deprecationReason,
+          }),
+        ),
+      },
+      assumeValid,
+    );
   }
 
   function buildInputObjectDef(
@@ -304,12 +321,16 @@ export function buildClientSchema(
         `Introspection result missing inputFields: ${inputObjectIntrospectionStr}.`,
       );
     }
-    return new GraphQLInputObjectType({
-      name: inputObjectIntrospection.name,
-      description: inputObjectIntrospection.description,
-      fields: () => buildInputValueDefMap(inputObjectIntrospection.inputFields),
-      isOneOf: inputObjectIntrospection.isOneOf,
-    });
+    return new GraphQLInputObjectType(
+      {
+        name: inputObjectIntrospection.name,
+        description: inputObjectIntrospection.description,
+        fields: () =>
+          buildInputValueDefMap(inputObjectIntrospection.inputFields),
+        isOneOf: inputObjectIntrospection.isOneOf,
+      },
+      assumeValid,
+    );
   }
 
   function buildFieldDefMap(
@@ -399,12 +420,15 @@ export function buildClientSchema(
         `Introspection result missing directive locations: ${directiveIntrospectionStr}.`,
       );
     }
-    return new GraphQLDirective({
-      name: directiveIntrospection.name,
-      description: directiveIntrospection.description,
-      isRepeatable: directiveIntrospection.isRepeatable,
-      locations: directiveIntrospection.locations.slice(),
-      args: buildInputValueDefMap(directiveIntrospection.args),
-    });
+    return new GraphQLDirective(
+      {
+        name: directiveIntrospection.name,
+        description: directiveIntrospection.description,
+        isRepeatable: directiveIntrospection.isRepeatable,
+        locations: directiveIntrospection.locations.slice(),
+        args: buildInputValueDefMap(directiveIntrospection.args),
+      },
+      assumeValid,
+    );
   }
 }

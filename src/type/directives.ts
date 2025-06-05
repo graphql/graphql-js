@@ -61,8 +61,8 @@ export class GraphQLDirective implements GraphQLSchemaElement {
   extensions: Readonly<GraphQLDirectiveExtensions>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
-  constructor(config: Readonly<GraphQLDirectiveConfig>) {
-    this.name = assertName(config.name);
+  constructor(config: Readonly<GraphQLDirectiveConfig>, assumeValid?: boolean) {
+    this.name = assumeValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
@@ -81,7 +81,8 @@ export class GraphQLDirective implements GraphQLSchemaElement {
     );
 
     this.args = Object.entries(args).map(
-      ([argName, argConfig]) => new GraphQLArgument(this, argName, argConfig),
+      ([argName, argConfig]) =>
+        new GraphQLArgument(this, argName, argConfig, assumeValid),
     );
   }
 

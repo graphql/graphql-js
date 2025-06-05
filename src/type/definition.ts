@@ -668,8 +668,11 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
   astNode: Maybe<ScalarTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 
-  constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>) {
-    this.name = assertName(config.name);
+  constructor(
+    config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>,
+    assumeValid?: boolean,
+  ) {
+    this.name = assumeValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
     this.serialize =
@@ -879,7 +882,10 @@ export class GraphQLObjectType<TSource = any, TContext = any>
   private _fields: ThunkObjMap<GraphQLField<TSource, TContext>>;
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
-  constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
+  constructor(
+    config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>,
+    assumeValid?: boolean,
+  ) {
     this.name = assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
@@ -890,6 +896,7 @@ export class GraphQLObjectType<TSource = any, TContext = any>
       undefined,
       this,
       config.fields,
+      assumeValid,
     );
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
@@ -945,13 +952,14 @@ function defineFieldMap<TSource, TContext>(
     | GraphQLObjectType<TSource, TContext>
     | GraphQLInterfaceType<TSource, TContext>,
   fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>,
+  assumeValid: boolean | undefined,
 ): GraphQLFieldMap<TSource, TContext> {
   const fieldMap = resolveObjMapThunk(fields);
 
   return mapValue(
     fieldMap,
     (fieldConfig, fieldName) =>
-      new GraphQLField(parentType, fieldName, fieldConfig),
+      new GraphQLField(parentType, fieldName, fieldConfig, assumeValid),
   );
 }
 
@@ -1114,9 +1122,10 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
       | undefined,
     name: string,
     config: GraphQLFieldConfig<TSource, TContext, TArgs>,
+    assumeValid?: boolean,
   ) {
     this.parentType = parentType;
-    this.name = assertName(name);
+    this.name = assumeValid ? name : assertName(name);
     this.description = config.description;
     this.type = config.type;
 
@@ -1124,7 +1133,7 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
     this.args = argsConfig
       ? Object.entries(argsConfig).map(
           ([argName, argConfig]) =>
-            new GraphQLArgument(this, argName, argConfig),
+            new GraphQLArgument(this, argName, argConfig, assumeValid),
         )
       : [];
 
@@ -1180,9 +1189,10 @@ export class GraphQLArgument implements GraphQLSchemaElement {
     parent: GraphQLField | GraphQLDirective,
     name: string,
     config: GraphQLArgumentConfig,
+    assumeValid?: boolean,
   ) {
     this.parent = parent;
-    this.name = assertName(name);
+    this.name = assumeValid ? name : assertName(name);
     this.description = config.description;
     this.type = config.type;
     this.defaultValue = config.defaultValue;
@@ -1280,8 +1290,11 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
   private _fields: ThunkObjMap<GraphQLField<TSource, TContext>>;
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
-  constructor(config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>) {
-    this.name = assertName(config.name);
+  constructor(
+    config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>,
+    assumeValid?: boolean,
+  ) {
+    this.name = assumeValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1291,6 +1304,7 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
       undefined,
       this,
       config.fields,
+      assumeValid,
     );
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
@@ -1406,8 +1420,11 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
 
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
-  constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
-    this.name = assertName(config.name);
+  constructor(
+    config: Readonly<GraphQLUnionTypeConfig<any, any>>,
+    assumeValid?: boolean,
+  ) {
+    this.name = assumeValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1522,13 +1539,16 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
 
   private _values:
     | ReadonlyArray<GraphQLEnumValue /* <T> */>
-    | (() => GraphQLEnumValueConfigMap);
+    | (() => ReadonlyArray<GraphQLEnumValue /* <T> */>);
 
   private _valueLookup: ReadonlyMap<any /* T */, GraphQLEnumValue> | null;
   private _nameLookup: ObjMap<GraphQLEnumValue> | null;
 
-  constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
-    this.name = assertName(config.name);
+  constructor(
+    config: Readonly<GraphQLEnumTypeConfig /* <T> */>,
+    assumeValid?: boolean,
+  ) {
+    this.name = assumeValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
@@ -1536,10 +1556,16 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
 
     this._values =
       typeof config.values === 'function'
-        ? config.values
+        ? () =>
+            Object.entries(
+              (config.values as () => GraphQLEnumValueConfigMap)(),
+            ).map(
+              ([valueName, valueConfig]) =>
+                new GraphQLEnumValue(this, valueName, valueConfig, assumeValid),
+            )
         : Object.entries(config.values).map(
             ([valueName, valueConfig]) =>
-              new GraphQLEnumValue(this, valueName, valueConfig),
+              new GraphQLEnumValue(this, valueName, valueConfig, assumeValid),
           );
     this._valueLookup = null;
     this._nameLookup = null;
@@ -1551,10 +1577,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
 
   getValues(): ReadonlyArray<GraphQLEnumValue /* <T> */> {
     if (typeof this._values === 'function') {
-      this._values = Object.entries(this._values()).map(
-        ([valueName, valueConfig]) =>
-          new GraphQLEnumValue(this, valueName, valueConfig),
-      );
+      this._values = this._values();
     }
     return this._values;
   }
@@ -1754,9 +1777,10 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
     parentEnum: GraphQLEnumType,
     name: string,
     config: GraphQLEnumValueConfig,
+    assumeValid?: boolean,
   ) {
     this.parentEnum = parentEnum;
-    this.name = assertEnumValueName(name);
+    this.name = assumeValid ? name : assertEnumValueName(name);
     this.description = config.description;
     this.value = config.value !== undefined ? config.value : name;
     this.deprecationReason = config.deprecationReason;
@@ -1831,15 +1855,23 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
 
   private _fields: ThunkObjMap<GraphQLInputField>;
 
-  constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
-    this.name = assertName(config.name);
+  constructor(
+    config: Readonly<GraphQLInputObjectTypeConfig>,
+    assumeValid?: boolean,
+  ) {
+    this.name = assumeValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this.isOneOf = config.isOneOf ?? false;
 
-    this._fields = defineInputFieldMap.bind(undefined, this, config.fields);
+    this._fields = defineInputFieldMap.bind(
+      undefined,
+      this,
+      config.fields,
+      assumeValid,
+    );
   }
 
   get [Symbol.toStringTag]() {
@@ -1877,12 +1909,13 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
 function defineInputFieldMap(
   parentType: GraphQLInputObjectType,
   fields: ThunkObjMap<GraphQLInputFieldConfig>,
+  assumeValid: boolean | undefined,
 ): GraphQLInputFieldMap {
   const fieldMap = resolveObjMapThunk(fields);
   return mapValue(
     fieldMap,
     (fieldConfig, fieldName) =>
-      new GraphQLInputField(parentType, fieldName, fieldConfig),
+      new GraphQLInputField(parentType, fieldName, fieldConfig, assumeValid),
   );
 }
 
@@ -1953,6 +1986,7 @@ export class GraphQLInputField implements GraphQLSchemaElement {
     parentType: GraphQLInputObjectType,
     name: string,
     config: GraphQLInputFieldConfig,
+    assumeValid?: boolean,
   ) {
     devAssert(
       !('resolve' in config),
@@ -1960,7 +1994,7 @@ export class GraphQLInputField implements GraphQLSchemaElement {
     );
 
     this.parentType = parentType;
-    this.name = assertName(name);
+    this.name = assumeValid ? name : assertName(name);
     this.description = config.description;
     this.type = config.type;
     this.defaultValue = config.defaultValue;
