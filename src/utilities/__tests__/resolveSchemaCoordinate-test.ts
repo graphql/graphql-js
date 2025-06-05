@@ -66,12 +66,12 @@ describe('resolveSchemaCoordinate', () => {
       undefined,
     );
 
-    expect(resolveSchemaCoordinate(schema, 'Unknown.field')).to.deep.equal(
-      undefined,
+    expect(() => resolveSchemaCoordinate(schema, 'Unknown.field')).to.throw(
+      'Expected "Unknown" to be defined as a type in the schema.',
     );
 
-    expect(resolveSchemaCoordinate(schema, 'String.field')).to.deep.equal(
-      undefined,
+    expect(() => resolveSchemaCoordinate(schema, 'String.field')).to.throw(
+      'Expected "String" to be an object type, interface type, input object type, or enum type.',
     );
   });
 
@@ -130,17 +130,21 @@ describe('resolveSchemaCoordinate', () => {
       resolveSchemaCoordinate(schema, 'Business.name(unknown:)'),
     ).to.deep.equal(undefined);
 
-    expect(
+    expect(() =>
       resolveSchemaCoordinate(schema, 'Unknown.field(arg:)'),
-    ).to.deep.equal(undefined);
+    ).to.throw('Expected "Unknown" to be defined as a type in the schema.');
 
-    expect(
+    expect(() =>
       resolveSchemaCoordinate(schema, 'Business.unknown(arg:)'),
-    ).to.deep.equal(undefined);
+    ).to.throw(
+      'Expected "unknown" to exist as a field of type "Business" in the schema.',
+    );
 
-    expect(
+    expect(() =>
       resolveSchemaCoordinate(schema, 'SearchCriteria.name(arg:)'),
-    ).to.deep.equal(undefined);
+    ).to.throw(
+      'Expected "SearchCriteria" to be an object type or interface type.',
+    );
   });
 
   it('resolves a Directive', () => {
@@ -178,8 +182,8 @@ describe('resolveSchemaCoordinate', () => {
       undefined,
     );
 
-    expect(resolveSchemaCoordinate(schema, '@unknown(arg:)')).to.deep.equal(
-      undefined,
+    expect(() => resolveSchemaCoordinate(schema, '@unknown(arg:)')).to.throw(
+      'Expected "unknown" to be defined as a directive in the schema.',
     );
   });
 });
