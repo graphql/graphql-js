@@ -23,6 +23,7 @@ import type {
   EnumTypeExtensionNode,
   EnumValueDefinitionNode,
   EnumValueNode,
+  FieldCoordinateNode,
   FieldDefinitionNode,
   FieldNode,
   FloatValueNode,
@@ -38,7 +39,6 @@ import type {
   IntValueNode,
   ListTypeNode,
   ListValueNode,
-  MemberCoordinateNode,
   NamedTypeNode,
   NameNode,
   NonNullTypeNode,
@@ -63,6 +63,7 @@ import type {
   TypeSystemExtensionNode,
   UnionTypeDefinitionNode,
   UnionTypeExtensionNode,
+  ValueCoordinateNode,
   ValueNode,
   VariableDefinitionNode,
   VariableNode,
@@ -1466,6 +1467,7 @@ export class Parser {
    *   - Name
    *   - Name . Name
    *   - Name . Name ( Name : )
+   *   - Name :: Name
    *   - @ Name
    *   - @ Name ( Name : )
    */
@@ -1473,6 +1475,16 @@ export class Parser {
     const start = this._lexer.token;
     const ofDirective = this.expectOptionalToken(TokenKind.AT);
     const name = this.parseName();
+
+    if (!ofDirective && this.expectOptionalToken(TokenKind.TWO_COLON)) {
+      const valueName = this.parseName();
+      return this.node<ValueCoordinateNode>(start, {
+        kind: Kind.VALUE_COORDINATE,
+        name,
+        valueName,
+      });
+    }
+
     let memberName: NameNode | undefined;
     if (!ofDirective && this.expectOptionalToken(TokenKind.DOT)) {
       memberName = this.parseName();
@@ -1508,10 +1520,10 @@ export class Parser {
           argumentName,
         });
       }
-      return this.node<MemberCoordinateNode>(start, {
-        kind: Kind.MEMBER_COORDINATE,
+      return this.node<FieldCoordinateNode>(start, {
+        kind: Kind.FIELD_COORDINATE,
         name,
-        memberName,
+        fieldName: memberName,
       });
     }
 

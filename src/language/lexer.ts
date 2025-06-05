@@ -98,6 +98,7 @@ export function isPunctuatorTokenKind(kind: TokenKind): boolean {
     kind === TokenKind.DOT ||
     kind === TokenKind.SPREAD ||
     kind === TokenKind.COLON ||
+    kind === TokenKind.TWO_COLON ||
     kind === TokenKind.EQUALS ||
     kind === TokenKind.AT ||
     kind === TokenKind.BRACKET_L ||
@@ -271,6 +272,14 @@ function readNextToken(lexer: Lexer, start: number): Token {
         return readDot(lexer, position);
       }
       case 0x003a: // :
+        if (body.charCodeAt(position + 1) === 0x003a) {
+          return createToken(
+            lexer,
+            TokenKind.TWO_COLON,
+            position,
+            position + 2,
+          );
+        }
         return createToken(lexer, TokenKind.COLON, position, position + 1);
       case 0x003d: // =
         return createToken(lexer, TokenKind.EQUALS, position, position + 1);

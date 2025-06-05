@@ -117,8 +117,9 @@ export function isSchemaCoordinateNode(
 ): node is SchemaCoordinateNode {
   return (
     node.kind === Kind.TYPE_COORDINATE ||
-    node.kind === Kind.MEMBER_COORDINATE ||
+    node.kind === Kind.FIELD_COORDINATE ||
     node.kind === Kind.ARGUMENT_COORDINATE ||
+    node.kind === Kind.VALUE_COORDINATE ||
     node.kind === Kind.DIRECTIVE_COORDINATE ||
     node.kind === Kind.DIRECTIVE_ARGUMENT_COORDINATE
   );

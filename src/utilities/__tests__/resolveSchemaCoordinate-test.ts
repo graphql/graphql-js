@@ -71,7 +71,7 @@ describe('resolveSchemaCoordinate', () => {
     );
 
     expect(() => resolveSchemaCoordinate(schema, 'String.field')).to.throw(
-      'Expected "String" to be an object type, interface type, input object type, or enum type.',
+      'Expected "String" to be an Input Object, Object or Interface type.',
     );
   });
 
@@ -101,7 +101,7 @@ describe('resolveSchemaCoordinate', () => {
     const type = schema.getType('SearchFilter') as GraphQLEnumType;
     const enumValue = type.getValue('OPEN_NOW');
     expect(
-      resolveSchemaCoordinate(schema, 'SearchFilter.OPEN_NOW'),
+      resolveSchemaCoordinate(schema, 'SearchFilter::OPEN_NOW'),
     ).to.deep.equal({
       kind: 'EnumValue',
       type,
@@ -109,7 +109,7 @@ describe('resolveSchemaCoordinate', () => {
     });
 
     expect(
-      resolveSchemaCoordinate(schema, 'SearchFilter.UNKNOWN'),
+      resolveSchemaCoordinate(schema, 'SearchFilter::UNKNOWN'),
     ).to.deep.equal(undefined);
   });
 

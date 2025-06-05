@@ -325,13 +325,17 @@ const printDocASTReducer: ASTReducer<string> = {
 
   TypeCoordinate: { leave: ({ name }) => name },
 
-  MemberCoordinate: {
-    leave: ({ name, memberName }) => join([name, wrap('.', memberName)]),
+  FieldCoordinate: {
+    leave: ({ name, fieldName }) => join([name, wrap('.', fieldName)]),
   },
 
   ArgumentCoordinate: {
     leave: ({ name, fieldName, argumentName }) =>
       join([name, wrap('.', fieldName), wrap('(', argumentName, ':)')]),
+  },
+
+  ValueCoordinate: {
+    leave: ({ name, valueName }) => join([name, wrap('::', valueName)]),
   },
 
   DirectiveCoordinate: { leave: ({ name }) => join(['@', name]) },
