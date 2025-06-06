@@ -1563,7 +1563,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
 
   private _values:
     | ReadonlyArray<GraphQLEnumValue /* <T> */>
-    | (() => GraphQLEnumValueConfigMap);
+    | (() => ReadonlyArray<GraphQLEnumValue>) /* <T> */;
 
   private _valueLookup: ReadonlyMap<any /* T */, GraphQLEnumValue> | null;
   private _nameLookup: ObjMap<GraphQLEnumValue> | null;
@@ -1576,13 +1576,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
-    this._values =
-      typeof config.values === 'function'
-        ? config.values
-        : Object.entries(config.values).map(
-            ([valueName, valueConfig]) =>
-              new GraphQLEnumValue(this, valueName, valueConfig),
-          );
+    this._values = defineEnumValues.bind(undefined, this, config.values);
     this._valueLookup = null;
     this._nameLookup = null;
   }
@@ -1593,10 +1587,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
 
   getValues(): ReadonlyArray<GraphQLEnumValue /* <T> */> {
     if (typeof this._values === 'function') {
-      this._values = Object.entries(this._values()).map(
-        ([valueName, valueConfig]) =>
-          new GraphQLEnumValue(this, valueName, valueConfig),
-      );
+      this._values = this._values();
     }
     return this._values;
   }
@@ -1720,6 +1711,18 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   toJSON(): string {
     return this.toString();
   }
+}
+
+function defineEnumValues(
+  parentEnum: GraphQLEnumType,
+  values: ThunkObjMap<GraphQLEnumValueConfig /* <T> */>,
+): ReadonlyArray<GraphQLEnumValue> {
+  const valueMap = resolveObjMapThunk(values);
+
+  return Object.entries(valueMap).map(
+    ([valueName, valueConfig]) =>
+      new GraphQLEnumValue(parentEnum, valueName, valueConfig),
+  );
 }
 
 function didYouMeanEnumValue(
