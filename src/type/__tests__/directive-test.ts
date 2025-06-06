@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import { DirectiveLocation } from '../../language/directiveLocation.js';
 
+import { setEnv } from '../../setEnv.js';
+
 import { GraphQLDirective } from '../directives.js';
 import { GraphQLInt, GraphQLString } from '../scalars.js';
 
@@ -92,7 +94,8 @@ describe('Type System: Directive', () => {
     );
   });
 
-  it('rejects a directive with invalid name', () => {
+  it('rejects a directive with invalid name in development', () => {
+    setEnv('development');
     expect(
       () =>
         new GraphQLDirective({
@@ -102,7 +105,19 @@ describe('Type System: Directive', () => {
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
-  it('rejects a directive with incorrectly named arg', () => {
+  it('accepts a directive with invalid name in production', () => {
+    setEnv('production');
+    expect(
+      () =>
+        new GraphQLDirective({
+          name: 'bad-name',
+          locations: [DirectiveLocation.QUERY],
+        }),
+    ).not.to.throw();
+  });
+
+  it('rejects a directive with incorrectly named arg in development', () => {
+    setEnv('development');
     expect(
       () =>
         new GraphQLDirective({
@@ -113,5 +128,19 @@ describe('Type System: Directive', () => {
           },
         }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
+  });
+
+  it('accepts a directive with incorrectly named arg in production', () => {
+    setEnv('production');
+    expect(
+      () =>
+        new GraphQLDirective({
+          name: 'Foo',
+          locations: [DirectiveLocation.QUERY],
+          args: {
+            'bad-name': { type: GraphQLString },
+          },
+        }),
+    ).not.to.throw();
   });
 });

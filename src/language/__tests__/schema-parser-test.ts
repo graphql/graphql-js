@@ -109,6 +109,28 @@ describe('Schema Parser', () => {
     });
   });
 
+  it('parses type with reserved name', () => {
+    const doc = parse(dedent`
+      type __Reserved
+    `);
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeDefinition',
+          name: nameNode('__Reserved', { start: 5, end: 15 }),
+          description: undefined,
+          interfaces: undefined,
+          directives: undefined,
+          fields: undefined,
+          loc: { start: 0, end: 15 },
+        },
+      ],
+      loc: { start: 0, end: 15 },
+    });
+  });
+
   it('parses type with description string', () => {
     const doc = parse(dedent`
       "Description"

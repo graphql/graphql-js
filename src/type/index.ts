@@ -202,4 +202,5 @@ export {
 export { validateSchema, assertValidSchema } from './validate.js';
 
 // Upholds the spec rules about naming.
+export { assertHasValidName } from './assertHasValidName.js';
 export { assertName, assertEnumValueName } from './assertName.js';

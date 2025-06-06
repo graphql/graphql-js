@@ -7,6 +7,8 @@ import { inspect } from '../../jsutils/inspect.js';
 import { Kind } from '../../language/kinds.js';
 import { parseConstValue } from '../../language/parser.js';
 
+import { setEnv } from '../../setEnv.js';
+
 import type {
   GraphQLEnumTypeConfig,
   GraphQLInputObjectTypeConfig,
@@ -415,13 +417,22 @@ describe('Type System: Objects', () => {
     expect(() => objType.getFields()).to.not.throw();
   });
 
-  it('rejects an Object type with invalid name', () => {
+  it('rejects an Object type with invalid name in development', () => {
+    setEnv('development');
     expect(
       () => new GraphQLObjectType({ name: 'bad-name', fields: {} }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
-  it('rejects an Object type with incorrectly named fields', () => {
+  it('accepts an Object type with invalid name in production', () => {
+    setEnv('production');
+    expect(
+      () => new GraphQLObjectType({ name: 'bad-name', fields: {} }),
+    ).not.to.throw();
+  });
+
+  it('rejects an Object type with incorrectly named fields in development', () => {
+    setEnv('development');
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {
@@ -433,18 +444,19 @@ describe('Type System: Objects', () => {
     );
   });
 
-  it('rejects an Object type with a field function that returns incorrect type', () => {
+  it('accepts an Object type with incorrectly named fields in production', () => {
+    setEnv('production');
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
-      // @ts-expect-error (Wrong type of return)
-      fields() {
-        return [{ field: ScalarType }];
+      fields: {
+        'bad-name': { type: ScalarType },
       },
     });
-    expect(() => objType.getFields()).to.throw();
+    expect(() => objType.getFields()).not.to.throw();
   });
 
-  it('rejects an Object type with incorrectly named field args', () => {
+  it('rejects an Object type with incorrectly named field args in development', () => {
+    setEnv('development');
     const objType = new GraphQLObjectType({
       name: 'SomeObject',
       fields: {
@@ -459,6 +471,22 @@ describe('Type System: Objects', () => {
     expect(() => objType.getFields()).to.throw(
       'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
     );
+  });
+
+  it('accepts an Object type with incorrectly named field args in production', () => {
+    setEnv('production');
+    const objType = new GraphQLObjectType({
+      name: 'SomeObject',
+      fields: {
+        badField: {
+          type: ScalarType,
+          args: {
+            'bad-name': { type: ScalarType },
+          },
+        },
+      },
+    });
+    expect(() => objType.getFields()).not.to.throw();
   });
 });
 
@@ -564,10 +592,18 @@ describe('Type System: Interfaces', () => {
     expect(implementing.getInterfaces()).to.deep.equal([InterfaceType]);
   });
 
-  it('rejects an Interface type with invalid name', () => {
+  it('rejects an Interface type with invalid name in development', () => {
+    setEnv('development');
     expect(
       () => new GraphQLInterfaceType({ name: 'bad-name', fields: {} }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
+  });
+
+  it('accepts an Interface type with invalid name in production', () => {
+    setEnv('production');
+    expect(
+      () => new GraphQLInterfaceType({ name: 'bad-name', fields: {} }),
+    ).not.to.throw();
   });
 });
 
@@ -636,10 +672,18 @@ describe('Type System: Unions', () => {
     expect(unionType.getTypes()).to.deep.equal([]);
   });
 
-  it('rejects an Union type with invalid name', () => {
+  it('rejects an Union type with invalid name in development', () => {
+    setEnv('development');
     expect(
       () => new GraphQLUnionType({ name: 'bad-name', types: [] }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
+  });
+
+  it('accepts an Union type with invalid name in production', () => {
+    setEnv('production');
+    expect(
+      () => new GraphQLUnionType({ name: 'bad-name', types: [] }),
+    ).not.to.throw();
   });
 });
 
@@ -787,13 +831,22 @@ describe('Type System: Enums', () => {
     expect(enumType.getValue('BAR')).has.property('value', 20);
   });
 
-  it('rejects an Enum type with invalid name', () => {
+  it('rejects an Enum type with invalid name in development', () => {
+    setEnv('development');
     expect(
       () => new GraphQLEnumType({ name: 'bad-name', values: {} }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
   });
 
-  it('rejects an Enum type with incorrectly named values', () => {
+  it('rejects an Enum type with invalid name in production', () => {
+    setEnv('production');
+    expect(
+      () => new GraphQLEnumType({ name: 'bad-name', values: {} }),
+    ).not.to.throw();
+  });
+
+  it('rejects an Enum type with incorrectly named values in development', () => {
+    setEnv('development');
     expect(
       () =>
         new GraphQLEnumType({
@@ -803,6 +856,19 @@ describe('Type System: Enums', () => {
           },
         }),
     ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
+  });
+
+  it('accepts an Enum type with incorrectly named values in production', () => {
+    setEnv('production');
+    expect(
+      () =>
+        new GraphQLEnumType({
+          name: 'SomeEnum',
+          values: {
+            'bad-name': {},
+          },
+        }),
+    ).not.to.throw();
   });
 });
 
@@ -888,7 +954,8 @@ describe('Type System: Input Objects', () => {
       });
     });
 
-    it('rejects an Input Object type with invalid name', () => {
+    it('rejects an Input Object type with invalid name in development', () => {
+      setEnv('development');
       expect(
         () => new GraphQLInputObjectType({ name: 'bad-name', fields: {} }),
       ).to.throw(
@@ -896,7 +963,15 @@ describe('Type System: Input Objects', () => {
       );
     });
 
-    it('rejects an Input Object type with incorrectly named fields', () => {
+    it('accepts an Input Object type with invalid name in production', () => {
+      setEnv('production');
+      expect(
+        () => new GraphQLInputObjectType({ name: 'bad-name', fields: {} }),
+      ).not.to.throw();
+    });
+
+    it('rejects an Input Object type with incorrectly named fields in development', () => {
+      setEnv('development');
       const inputObjType = new GraphQLInputObjectType({
         name: 'SomeInputObject',
         fields: {
@@ -906,6 +981,17 @@ describe('Type System: Input Objects', () => {
       expect(() => inputObjType.getFields()).to.throw(
         'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
       );
+    });
+
+    it('accepts an Input Object type with incorrectly named fields in production', () => {
+      setEnv('production');
+      const inputObjType = new GraphQLInputObjectType({
+        name: 'SomeInputObject',
+        fields: {
+          'bad-name': { type: ScalarType },
+        },
+      });
+      expect(() => inputObjType.getFields()).not.to.throw();
     });
   });
 

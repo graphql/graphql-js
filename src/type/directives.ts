@@ -10,6 +10,8 @@ import { toObjMapWithSymbols } from '../jsutils/toObjMap.js';
 import type { DirectiveDefinitionNode } from '../language/ast.js';
 import { DirectiveLocation } from '../language/directiveLocation.js';
 
+import type { Env } from '../setEnv.js';
+
 import { assertName } from './assertName.js';
 import type {
   GraphQLArgumentConfig,
@@ -18,6 +20,16 @@ import type {
 } from './definition.js';
 import { GraphQLArgument, GraphQLNonNull } from './definition.js';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
+
+const noOp = (_name: string): void => {
+  /* no-op */
+};
+
+let nameCheck = noOp;
+
+export function setDirectiveNameCheckForEnv(newEnv: Env): void {
+  nameCheck = newEnv === 'development' ? assertName : noOp;
+}
 
 /**
  * Test if the given value is a GraphQL directive.
@@ -62,7 +74,8 @@ export class GraphQLDirective implements GraphQLSchemaElement {
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
-    this.name = assertName(config.name);
+    this.name = config.name;
+    nameCheck(this.name);
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
