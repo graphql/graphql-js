@@ -1,5 +1,3 @@
-import type { Env } from '../setEnv.js';
-
 import { inspect } from './inspect.js';
 
 const noOp = (_value: unknown, _constructor: Constructor): void => {
@@ -7,6 +5,10 @@ const noOp = (_value: unknown, _constructor: Constructor): void => {
 };
 
 let check = noOp;
+
+export function useDevelopmentInstanceOfCheck(): void {
+  check = developmentInstanceOfCheck;
+}
 
 /**
  * A replacement for instanceof which includes an error warning when multi-realm
@@ -52,10 +54,6 @@ spurious results.`,
       );
     }
   }
-}
-
-export function setInstanceOfCheckForEnv(newEnv: Env): void {
-  check = newEnv === 'development' ? developmentInstanceOfCheck : noOp;
 }
 
 interface Constructor {
