@@ -6,6 +6,7 @@ const meta = {
   },
   'getting-started': '',
   'running-an-express-graphql-server': '',
+  'migrating-from-express-graphql': '',
   'graphql-clients': '',
   'basic-types': '',
   'passing-arguments': '',
