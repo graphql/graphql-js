@@ -79,6 +79,6 @@
     "tag": "latest"
   },
   "browser": {
-		"process": false
-	}
+    "process": false
+  }
 }
