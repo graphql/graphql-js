@@ -77,5 +77,8 @@
   },
   "publishConfig": {
     "tag": "latest"
-  }
+  },
+  "browser": {
+		"process": false
+	}
 }
