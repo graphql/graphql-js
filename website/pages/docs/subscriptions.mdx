@@ -12,7 +12,8 @@ This guide covers how to implement subscriptions in GraphQL.js, when to use them
 
 A subscription is a GraphQL operation that delivers ongoing results to the client when a specific event happens. Unlike queries or mutations, which return a single response, a subscription delivers data over time through a persistent connection.
 
-GraphQL.js implements the subscription execution algorithm, but it's up to you to connect it to your event system and transport layer. Most implementations use WebSockets for transport, though any full-duplex protocol can work.
+GraphQL.js implements the subscription execution algorithm, but it's up to you to connect it to your event system and transport layer. Most implementations use WebSockets or SSE for transport, though any full-duplex protocol can work.
+You can find [here](https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#sse-vs-websocket) some valuable information about the differences between WebSockets and SSE.
 
 ## How execution works
 
@@ -85,26 +86,26 @@ GraphQL.js supports subscription execution, but you’re responsible for setting
 - An event-publishing mechanism
 - A transport layer to maintain the connection
 
-The following examples use the [`graphql-subscriptions`](https://github.com/apollographql/graphql-subscriptions) package to set up an in-memory event system.
+The following examples use the [`@graphql-yoga/subscriptions`](https://github.com/graphql-hive/graphql-yoga/tree/main/packages/subscription) package to set up an in-memory event system.
 
 ### Install dependencies
 
 Start by installing the necessary packages:
 
 ```bash
-npm install graphql graphql-subscriptions
+npm install graphql @graphql-yoga/subscriptions
 ```
 
-To serve subscriptions over a network, you’ll also need a transport implementation. One option is [`graphql-ws`](https://github.com/enisdenjo/graphql-ws), a community-maintained WebSocket library. This guide focuses on schema-level implementation.
+To serve subscriptions over a network, you’ll also need a transport implementation. Two popular options are [`graphql-ws`](https://github.com/enisdenjo/graphql-ws), a community-maintained WebSocket library and [`graphql-sse`](https://github.com/enisdenjo/graphql-sse) a community-maintained Server-Sent Events library. This guide focuses on schema-level implementation.
 
 ### Set up a pub/sub instance
 
 Create a `PubSub` instance to manage your in-memory event system:
 
 ```js
-import { PubSub } from 'graphql-subscriptions';
+import { createPubSub } from '@graphql-yoga/subscriptions'
 
-const pubsub = new PubSub();
+const pubSub = createPubSub();
 ```
 
 This `pubsub` object provides `publish` and `asyncIterator` methods, allowing
@@ -124,7 +125,7 @@ const SubscriptionType = new GraphQLObjectType({
   fields: {
     messageSent: {
       type: GraphQLString,
-      subscribe: () => pubsub.asyncIterator(['MESSAGE_SENT']),
+      subscribe: () => pubsub.subscribe('MESSAGE_SENT'),
     },
   },
 });
