@@ -5,13 +5,15 @@ sidebarTitle: Migrate from Express GraphQL
 
 # Migrate from Express GraphQL to GraphQL over HTTP
 
-When GraphQL was open-sourced in 2015, `express-graphql` quickly became the
-default way to run a GraphQL server in JavaScript. Built as middleware for Express,
-it provided a simple and reliable way to serve GraphQL queries using Node.js.
+When GraphQL was open-sourced in 2015, `express-graphql` quickly became the standard way to run a GraphQL server in Node.js. 
+Built as middleware for Express, it offered a simple and reliable development experience. However, it hasn’t received a 
+feature update since 2018 and is no longer actively maintained. For modern applications, it lacks support for new transport 
+features, fine-grained request handling, and deployment flexibility.
 
-While `express-graphql` still receives occasional updates for security and spec alignment, it is no longer actively developed. This limits its suitability for projects that need more control over request handling, streaming, or support for modern deployment environments.
-
-[`graphql-http`](https://github.com/graphql/graphql-http) is a lightweight implementation of the [GraphQL over HTTP specification](https://graphql.github.io/graphql-over-http/draft/). It's framework-agnostic, built to be composable, and easy to integrate into different server environments. Unlike `express-graphql`, it can run in a wide range of environments, not just Express.
+[`graphql-http`](https://github.com/graphql/graphql-http) is a lightweight implementation of 
+the [GraphQL over HTTP specification](https://graphql.github.io/graphql-over-http/draft/). It's framework-agnostic, built to be 
+composable, and easy to integrate into different server environments. Unlike `express-graphql`, it can run in a wide range of 
+environments, not just Express.
 
 This guide is for developers currently using `express-graphql` who want to
 modernize their stack, adopt the HTTP spec, or decouple their GraphQL server
@@ -39,6 +41,20 @@ Instead of relying on Express, `graphql-http` is built on the standard Web `Requ
 
 As GraphQL evolves, tools and platforms increasingly expect spec-compliant behavior. Migration to `graphql-http` helps ensure your
 server will support future capabilities without relying on workarounds.
+
+### Understand current limitations
+
+Although `graphql-http` is a strong foundation for modern GraphQL servers, it's important to note what it doesn't include:
+
+- It doesn't support subscriptions or experimental features like incremental delivery (`@defer` / `@stream`) out of the box.
+- These limitations are by design. `graphql-http` strictly adheres to the current 
+[GraphQL over HTTP specification](https://graphql.github.io/graphql-over-http/draft/), which does 
+not yet define behavior for those features.
+- If your application needs support for subscriptions or live queries, consider using complementary libraries like 
+[`graphql-ws`](https://github.com/enisdenjo/graphql-ws) or [`graphql-sse`](https://github.com/enisdenjo/graphql-sse).
+
+These are not limitations unique to `graphql-http`. `express-graphql` does not support these features either, but it's important 
+to set the right expectations about extensibility.
 
 ## Migration guide
 
@@ -119,8 +135,13 @@ app.all('/graphql', createHandler({
 
 Unlike `express-graphql`, `graphql-http` does not include a built-in GraphQL IDE. If you want to add one:
 
-- Use a plugin that serves an interactive GraphQL UI alongside your endpoint
-- Or serve a static HTML page that loads your preferred IDE from a CDN
+- Use a tool like [Ruru](https://www.npmjs.com/package/ruru) to serve an interactive GraphQL UI locally:
+
+  ```bash
+  npx ruru -SP -p 4001 -e http://localhost:4000/graphql
+  ```
+
+- Or serve a static HTML page that embeds [GraphiQL](https://github.com/graphql/graphiql) from a CDN.
 
 In either case, make sure to restrict access in production environments.
 
@@ -130,7 +151,8 @@ After migrating, verify that your server responds correctly:
 
 - Send queries and mutations using your preferred client.
 - Check for proper HTTP status codes and response shapes.
-- If you're using streaming features like `@defer`, ensure your client can handle `multipart/mixed` responses.
+- If you're experimenting with streaming features like `@defer`, test that your client can handle multipart/mixed responses.
+Support for this content type is still limited in many tools.
 
 ## Best practices
 
@@ -152,7 +174,7 @@ This can affect client expectations if they were relying on `express-graphql`'s 
 
 To restore this functionality, consider:
 
-- Use a middleware plugin that serves an in-browser IDE.
+- Use a development tool like Ruru to serve an in-browser IDE.
 - Host a static IDE page at a separate endpoint.
 - Ensure the IDE is only available in non-production environments.
 
@@ -172,15 +194,22 @@ This gives you more control but requires a bit more setup.
 
 ### Understand streaming and file upload limitations
 
-`graphql-http` supports streaming via `multipart/mixed`, which enables features like `@defer`. However:
+`graphql-http` aims to support the GraphQL over HTTP spec, including response streaming via `multipart/mixed`. However, 
+support for features like `@defer` and `@stream` is still evolving. These capabilities are experimental in both `graphql-js` 
+and `graphql-http`, and may require additional setup.
 
-- Many clients don't yet support this content type.
-- File uploads are not built-in, and must be handled outside the core handler.
-
-Test your client integration carefully if you rely on these features.
+- Most GraphQL clients don’t yet support multipart responses.
+- Server-side support for streaming may be incomplete or inconsistent.
+- If your app relies on incremental delivery, consider using a transport library like 
+[`graphql-sse`](https://github.com/enisdenjo/graphql-sse) instead.
 
 ## What's next
 
-Once you're up and running with `graphql-http`, you can start extending your server with validation rules, monitoring, custom error handling, or alternative transports. For more advanced use cases, consider combining `graphql-http` with tools like [`envelop`](https://the-guild.dev/graphql/envelop) or [`graphql-yoga`](https://the-guild.dev/graphql/yoga-server).
+For advanced customization, consider integrating `graphql-http` with [Envelop](https://the-guild.dev/graphql/envelop), a 
+plugin-based GraphQL execution layer.
 
-For details on the GraphQL over HTTP specification, see the [official spec draft](https://graphql.github.io/graphql-over-http/draft/).
+If you’re looking for a batteries-included solution that includes transport, subscriptions, and a GraphQL IDE, 
+[GraphQL Yoga](https://the-guild.dev/graphql/yoga-server) might be a better fit. It builds on Envelop and provides its 
+own transport layer, separate from `graphql-http`.
+
+For a list of other spec-compliant server implementations, see the [`graphql-http` server list](https://github.com/graphql/graphql-http?tab=readme-ov-file#servers).
