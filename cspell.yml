@@ -39,6 +39,7 @@ overrides:
       - Graphile
       - precompiled
       - debuggable
+      - dataloaders
 
 ignoreRegExpList:
   - u\{[0-9a-f]{1,8}\}
