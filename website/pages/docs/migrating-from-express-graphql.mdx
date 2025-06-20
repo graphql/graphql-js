@@ -21,9 +21,9 @@ from Express.
 
 ## Benefits of migrating
 
-### `express-graphql` has limited future support
+### `express-graphql` is no longer supported
 
-The library is no longer under active development. While it is still maintained for security and spec compliance, it is not evolving with the GraphQL ecosystem. This makes it less flexible for long-term projects.
+The library has not received updates for some time. As a deprecated package, it is not evolving with the GraphQL ecosystem. This makes it less flexible for long-term projects.
 
 ### `graphql-http` is spec-compliant by default
 
@@ -163,8 +163,8 @@ After migrating, verify that your server responds correctly:
 
 - Send queries and mutations using your preferred client.
 - Check for proper HTTP status codes and response shapes.
-- If you're experimenting with streaming features like `@defer`, test that your client can handle multipart/mixed responses.
-Support for this content type is still limited in many tools.
+- Check the GraphQL `context` and related variables are populated correctly and
+  that your dataloaders and authorization logic are functioning as expected.
 
 ## Best practices
 
@@ -196,9 +196,9 @@ This gives you more control but requires a bit more setup.
 
 ### Understand streaming and file upload limitations
 
-`graphql-http` aims to support the GraphQL over HTTP spec, including response streaming via `multipart/mixed`. However, 
-support for features like `@defer` and `@stream` is still evolving. These capabilities are experimental in both `graphql-js` 
-and `graphql-http`, and may require additional setup.
+`graphql-http` aims to support the GraphQL over HTTP spec, including eventually supporting response streaming. However, 
+support for features like `@defer` and `@stream` is still evolving. These capabilities are experimental in `graphql-js` 
+and not yet supported by `graphql-http`.
 
 - Some GraphQL clients have begun adding support for multipart responses, but broad adoption is still evolving.
 - `graphql-http` does not support streaming features such as `@defer` or `@stream`, as these are not part of the 
@@ -208,11 +208,9 @@ but note that it replaces `graphql-http` and must be used as your server handler
 
 ## What's next
 
-For advanced customization, consider integrating `graphql-http` with [Envelop](https://the-guild.dev/graphql/envelop), a 
-plugin-based GraphQL execution layer.
-
-If you’re looking for a batteries-included solution that includes transport, subscriptions, and a GraphQL IDE, 
-[GraphQL Yoga](https://the-guild.dev/graphql/yoga-server) might be a better fit. It builds on Envelop and provides its 
-own transport layer, separate from `graphql-http`.
-
-For a list of other spec-compliant server implementations, see the [`graphql-http` server list](https://github.com/graphql/graphql-http?tab=readme-ov-file#servers).
+`graphql-http` is the reference implementation of the GraphQL-over-HTTP specification,
+but there are many other servers you can use to serve your GraphQL API, each with 
+different features and trade-offs. For a list of other spec-compliant server
+implementations see the
+[`graphql-http` server list](https://github.com/graphql/graphql-http?tab=readme-ov-file#servers), and don't forget to check out the
+[Tools and Libraries page on graphql.org](https://graphql.org/community/tools-and-libraries/?tags=server_javascript).
