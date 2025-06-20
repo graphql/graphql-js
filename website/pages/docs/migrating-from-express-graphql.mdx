@@ -73,7 +73,7 @@ Before you begin, make sure you have:
 Install the core `graphql-http` package along with its Express adapter:
 
 ```bash
-npm install graphql graphql-http @graphql-http/express
+npm install graphql graphql-http
 ```
 
 The `graphql` package is a peer dependency of `graphql-http`, and must be installed if it isn't already.
@@ -109,29 +109,41 @@ app.listen(4000);
 ```
 
 - Use `app.all()` to allow both `GET` and `POST` requests.
-- The handler accepts an options object similar to `express-graphql`.
+- The handler accepts an options object for GraphQL-specific settings like `schema`, 
+`rootValue`, and `context`, but doesn’t handle server-level features such as middleware 
+or request preprocessing like `express-graphql` did.
 
 ### Step 4: Handle context, error formatting, and extensions
 
 You can provide options like `context`, `rootValue`, and `formatError`:
 
 ```js
+import { GraphQLError } from 'graphql';
+
 app.all('/graphql', createHandler({
   schema,
   context: async (req, res) => {
-    return { user: await authenticate(req) };
+    const user = await authenticate(req);
+    return { user };
   },
-  formatError: (error) => ({
-    message: error.message,
-    path: error.path,
-  }),
+  formatError: (error) =>
+    new GraphQLError(error.message, {
+      nodes: error.nodes,
+      path: error.path,
+      extensions: {
+        code: 'INTERNAL_SERVER_ERROR',
+        timestamp: Date.now(),
+      },
+    }),
 }));
 ```
 
 - `context` can be a static object or an async function.
-- You can also pass `rootValue`, or extend responses with custom logic.
+- You can also pass `rootValue` or other GraphQL-specific options.
+- To modify the HTTP response, such as adding headers or extensions, you’ll need 
+to do that outside of graphql-http, using Express middleware or route handlers.
 
-### Step 5: Add a GraphQL IDE (optional)
+### Step 5: Add a GraphQL IDE
 
 Unlike `express-graphql`, `graphql-http` does not include a built-in GraphQL IDE. If you want to add one:
 
@@ -168,16 +180,6 @@ When migrating from `express-graphql` to `graphql-http`, there are a few key dif
 
 This can affect client expectations if they were relying on `express-graphql`'s more lenient defaults.
 
-### Consider IDE support in development
-
-`express-graphql` includes GraphiQL by default in development mode. `graphql-http` does not.
-
-To restore this functionality, consider:
-
-- Use a development tool like Ruru to serve an in-browser IDE.
-- Host a static IDE page at a separate endpoint.
-- Ensure the IDE is only available in non-production environments.
-
 ### Watch for framework-specific middleware behavior
 
 Since `graphql-http` is framework-agnostic, it does not handle things like body parsing, CORS, or compression. You'll need to ensure those are handled appropriately by your Express setup:
@@ -198,10 +200,11 @@ This gives you more control but requires a bit more setup.
 support for features like `@defer` and `@stream` is still evolving. These capabilities are experimental in both `graphql-js` 
 and `graphql-http`, and may require additional setup.
 
-- Most GraphQL clients don’t yet support multipart responses.
-- Server-side support for streaming may be incomplete or inconsistent.
-- If your app relies on incremental delivery, consider using a transport library like 
-[`graphql-sse`](https://github.com/enisdenjo/graphql-sse) instead.
+- Some GraphQL clients have begun adding support for multipart responses, but broad adoption is still evolving.
+- `graphql-http` does not support streaming features such as `@defer` or `@stream`, as these are not part of the 
+current GraphQL over HTTP specification.
+- If your app relies on incremental delivery, use a transport library like [`graphql-sse`](https://github.com/enisdenjo/graphql-sse), 
+but note that it replaces `graphql-http` and must be used as your server handler.
 
 ## What's next
 
