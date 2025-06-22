@@ -29,8 +29,8 @@ function localDir(...paths) {
   return path.join(__dirname, '..', ...paths);
 }
 
-function exec(command, options = {}) {
-  const result = cp.execSync(command, {
+function exec(command, args = [], options = {}) {
+  const result = cp.execFileSync(command, args, {
     encoding: 'utf-8',
     stdio: ['inherit', 'pipe', 'inherit'],
     ...options,
@@ -62,7 +62,7 @@ function prepareBenchmarkProjects(revisionList) {
       'npm --quiet install --ignore-scripts ' + prepareNPMPackage(revision),
       { cwd: projectPath },
     );
-    exec(`cp -R ${localDir('benchmark')} ${projectPath}`);
+    exec('cp', ['-R', localDir('benchmark'), projectPath]);
 
     return { revision, projectPath };
   });
@@ -76,7 +76,7 @@ function prepareBenchmarkProjects(revisionList) {
     }
 
     // Returns the complete git hash for a given git revision reference.
-    const hash = exec(`git rev-parse "${revision}"`);
+    const hash = exec('git', ['rev-parse', revision]);
 
     const archivePath = path.join(tmpDir, `graphql-${hash}.tgz`);
     if (fs.existsSync(archivePath)) {
@@ -86,8 +86,8 @@ function prepareBenchmarkProjects(revisionList) {
     const repoDir = path.join(tmpDir, hash);
     fs.rmSync(repoDir, { recursive: true, force: true });
     fs.mkdirSync(repoDir);
-    exec(`git archive "${hash}" | tar -xC "${repoDir}"`);
-    exec('npm --quiet ci --ignore-scripts', { cwd: repoDir });
+    exec('sh', ['-c', `git archive "${hash}" | tar -xC "${repoDir}"`]);
+    exec('npm', ['--quiet', 'ci', '--ignore-scripts'], { cwd: repoDir });
     fs.renameSync(buildNPMArchive(repoDir), archivePath);
     fs.rmSync(repoDir, { recursive: true });
     return archivePath;
