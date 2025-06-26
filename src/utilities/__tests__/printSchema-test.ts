@@ -1018,4 +1018,22 @@ describe('Type System Printer', () => {
     const printed = printSchema(viralSchema);
     expect(printed).to.equal(viralSDL);
   });
+  it('prints schema with description and default root operation types correctly', () => {
+    const Query = new GraphQLObjectType({
+      name: 'Query',
+      fields: { a: { type: GraphQLInt } },
+    });
+    const schema = new GraphQLSchema({ query: Query, description: 'Test' });
+    const printed = printSchema(schema);
+    expect(printed).to.equal(dedent`
+      """Test"""
+      schema {
+        query: Query
+      }
+
+      type Query {
+        a: Int
+      }
+    `);
+  });
 });
