@@ -36,7 +36,8 @@ const meta = {
   'resolver-anatomy': '',
   'graphql-errors': '',
   'using-directives': '',
-  '-- 3': {
+  'authorization-strategies': '',
+  '-- 4': {
     type: 'separator',
     title: 'Testing',
   },
@@ -45,8 +46,7 @@ const meta = {
   'testing-operations': '',
   'testing-resolvers': '',
   'testing-best-practices': '',
-  'authorization-strategies': '',
-  '-- 4': {
+  '-- 5': {
     type: 'separator',
     title: 'Production & Scaling',
   },
