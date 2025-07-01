@@ -1,0 +1,10 @@
+{
+  "description": "graphql-js should be loaded correctly on different versions of Node.js, Deno and Bun",
+  "private": true,
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz"
+  }
+}

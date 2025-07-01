@@ -6,6 +6,7 @@ import ts from 'typescript';
 
 import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
 import { inlineInvariant } from './inline-invariant.js';
+import type { ConditionalExports } from './utils.js';
 import {
   prettify,
   readPackageJSON,
@@ -98,7 +99,6 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
       }
     }
 
-    // Temporary workaround to allow "internal" imports, no grantees provided
     packageJSON.exports['./*.js'] = './*.js';
     packageJSON.exports['./*'] = './*.js';
 
@@ -106,10 +106,28 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
     packageJSON.version += '+esm';
   } else {
     delete packageJSON.type;
-    packageJSON.main = 'index';
+    packageJSON.main = 'index.js';
     packageJSON.module = 'index.mjs';
-    emitTSFiles({ outDir, module: 'commonjs', extension: '.js' });
+    packageJSON.types = 'index.d.ts';
+
+    const { emittedTSFiles } = emitTSFiles({
+      outDir,
+      module: 'commonjs',
+      extension: '.js',
+    });
     emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
+
+    packageJSON.exports = {};
+    for (const filepath of emittedTSFiles) {
+      if (path.basename(filepath) === 'index.js') {
+        const relativePath = './' + path.relative('./npmDist', filepath);
+        packageJSON.exports[path.dirname(relativePath)] =
+          buildExports(relativePath);
+      }
+    }
+
+    packageJSON.exports['./*.js'] = buildExports('./*.js');
+    packageJSON.exports['./*'] = buildExports('./*.js');
   }
 
   const packageJsonPath = `./${outDir}/package.json`;
@@ -141,21 +159,31 @@ function emitTSFiles(options: {
 
   const tsHost = ts.createCompilerHost(tsOptions);
   tsHost.writeFile = (filepath, body) => {
-    if (filepath.match(/.js$/) && extension === '.mjs') {
-      let bodyToWrite = body;
-      bodyToWrite = bodyToWrite.replace(
-        '//# sourceMappingURL=graphql.js.map',
-        '//# sourceMappingURL=graphql.mjs.map',
-      );
-      writeGeneratedFile(filepath.replace(/.js$/, extension), bodyToWrite);
-    } else if (filepath.match(/.js.map$/) && extension === '.mjs') {
-      writeGeneratedFile(
-        filepath.replace(/.js.map$/, extension + '.map'),
-        body,
-      );
-    } else {
-      writeGeneratedFile(filepath, body);
+    if (extension === '.mjs') {
+      if (filepath.match(/.js$/)) {
+        let bodyToWrite = body;
+        bodyToWrite = bodyToWrite.replace(
+          '//# sourceMappingURL=graphql.js.map',
+          '//# sourceMappingURL=graphql.mjs.map',
+        );
+        writeGeneratedFile(filepath.replace(/.js$/, extension), bodyToWrite);
+        return;
+      }
+
+      if (filepath.match(/.js.map$/)) {
+        writeGeneratedFile(
+          filepath.replace(/.js.map$/, extension + '.map'),
+          body,
+        );
+        return;
+      }
+
+      if (filepath.match(/.d.ts$/)) {
+        writeGeneratedFile(filepath.replace(/.d.ts$/, '.d.mts'), body);
+        return;
+      }
     }
+    writeGeneratedFile(filepath, body);
   };
 
   const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
@@ -170,5 +198,26 @@ function emitTSFiles(options: {
   assert(tsResult.emittedFiles != null);
   return {
     emittedTSFiles: tsResult.emittedFiles.sort((a, b) => a.localeCompare(b)),
+  };
+}
+
+function buildExports(filepath: string): ConditionalExports {
+  const { dir, name } = path.parse(filepath);
+  const base = `./${path.join(dir, name)}`;
+  return {
+    types: {
+      module: `${base}.d.mts`,
+      'module-sync': `${base}.d.mts`,
+      bun: `${base}.d.mts`,
+      node: `${base}.d.ts`,
+      require: `${base}.d.ts`,
+      default: `${base}.d.mts`,
+    },
+    module: `${base}.mjs`,
+    bun: `${base}.mjs`,
+    'module-sync': `${base}.mjs`,
+    node: `${base}.js`,
+    require: `${base}.js`,
+    default: `${base}.mjs`,
   };
 }

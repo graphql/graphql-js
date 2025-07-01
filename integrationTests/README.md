@@ -14,6 +14,10 @@ Each subdirectory represents a different environment/bundler:
 - `ts` - tests for supported Typescript versions
 - `webpack` - tests for Webpack
 
+### Verifying Conditional Exports
+
+The `conditions` subdirectory contains tests that verify the conditional exports of GraphQL.js. These tests ensure that the correct files are imported based on the environment being used.
+
 ### Verifying Development Mode Tests
 
 Each subdirectory represents a different environment/bundler demonstrating enabling development mode by setting the environment variable `NODE_ENV` to `development`.

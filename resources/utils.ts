@@ -234,7 +234,7 @@ interface PackageJSON {
   repository?: { url?: string };
   scripts?: { [name: string]: string };
   type?: string;
-  exports: { [path: string]: string };
+  exports: { [path: string]: string | ConditionalExports };
   types?: string;
   typesVersions: { [ranges: string]: { [path: string]: Array<string> } };
   devDependencies?: { [name: string]: string };
@@ -243,6 +243,19 @@ interface PackageJSON {
   // TODO: remove after we drop CJS support
   main?: string;
   module?: string;
+}
+
+export interface ConditionalExports extends BaseExports {
+  types: BaseExports;
+}
+
+interface BaseExports {
+  module: string;
+  bun: string;
+  'module-sync': string;
+  node: string;
+  require: string;
+  default: string;
 }
 
 export function readPackageJSON(

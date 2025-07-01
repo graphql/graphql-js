@@ -39,6 +39,9 @@ describe('Integration Tests', () => {
   testOnNodeProject('node');
   testOnNodeProject('webpack');
 
+  // Conditional export tests
+  testOnNodeProject('conditions');
+
   // Development mode tests
   testOnNodeProject('dev-node');
   testOnNodeProject('dev-deno');
