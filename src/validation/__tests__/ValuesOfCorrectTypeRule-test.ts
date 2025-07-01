@@ -1125,6 +1125,19 @@ describe('Validate: Values of correct type', () => {
         },
       ]);
     });
+
+    it('Undefined variable in oneOf input object', () => {
+      // This test verifies that undefined variables in OneOf input objects
+      // don't cause a TypeError in ValuesOfCorrectTypeRule.
+      // The undefined variable should be caught by NoUndefinedVariablesRule instead.
+      expectErrors(`
+        {
+          complicatedArgs {
+            oneOfArgField(oneOfArg: { stringField: $undefinedVariable })
+          }
+        }
+      `).toDeepEqual([]);
+    });
   });
 
   describe('Directive arguments', () => {

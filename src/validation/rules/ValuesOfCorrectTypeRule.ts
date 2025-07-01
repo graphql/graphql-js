@@ -216,6 +216,13 @@ function validateOneOfInputObject(
   if (isVariable) {
     const variableName = value.name.value;
     const definition = variableDefinitions[variableName];
+
+    // If the variable definition is missing, skip validation here.
+    // This should be caught by other validation rules.
+    if (!definition) {
+      return;
+    }
+
     const isNullableVariable = definition.type.kind !== Kind.NON_NULL_TYPE;
 
     if (isNullableVariable) {
