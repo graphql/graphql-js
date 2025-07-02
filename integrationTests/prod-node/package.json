@@ -1,0 +1,11 @@
+{
+  "description": "graphql-js production mode should work with Node.js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "NODE_ENV=production node test.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz"
+  }
+}

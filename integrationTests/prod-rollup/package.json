@@ -1,0 +1,15 @@
+{
+  "description": "graphql-js production mode should work with Rollup",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "test": "npm run build && node dist/bundle.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz",
+    "rollup": "^4.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-replace": "^5.0.0"
+  }
+}

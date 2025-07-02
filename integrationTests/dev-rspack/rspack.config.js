@@ -1,0 +1,17 @@
+import { fileURLToPath } from 'node:url';
+
+const rspack = {
+  entry: './index.js',
+  output: {
+    filename: 'main.js',
+    path: fileURLToPath(new URL('dist', import.meta.url)),
+    library: {
+      type: 'commonjs2',
+    },
+  },
+  mode: 'development',
+  target: 'node',
+};
+
+// eslint-disable-next-line no-restricted-exports, import/no-default-export
+export default rspack;

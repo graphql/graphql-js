@@ -1,0 +1,13 @@
+{
+  "description": "graphql-js development mode should work with esbuild",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild index.js --bundle --outfile=dist/bundle.js --format=esm",
+    "test": "npm run build && node dist/bundle.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz",
+    "esbuild": "^0.25.0"
+  }
+}

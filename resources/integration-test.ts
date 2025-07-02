@@ -38,4 +38,26 @@ describe('Integration Tests', () => {
   testOnNodeProject('ts');
   testOnNodeProject('node');
   testOnNodeProject('webpack');
+
+  // Development mode tests
+  testOnNodeProject('dev-node');
+  testOnNodeProject('dev-deno');
+  testOnNodeProject('dev-bun');
+  testOnNodeProject('dev-webpack');
+  testOnNodeProject('dev-rspack');
+  testOnNodeProject('dev-rollup');
+  testOnNodeProject('dev-esbuild');
+  testOnNodeProject('dev-swc');
+  testOnNodeProject('dev-jest');
+  testOnNodeProject('dev-vitest');
+
+  // Production mode tests
+  testOnNodeProject('prod-node');
+  testOnNodeProject('prod-deno');
+  testOnNodeProject('prod-bun');
+  testOnNodeProject('prod-webpack');
+  testOnNodeProject('prod-rspack');
+  testOnNodeProject('prod-rollup');
+  testOnNodeProject('prod-esbuild');
+  testOnNodeProject('prod-swc');
 });

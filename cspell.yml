@@ -67,6 +67,8 @@ words:
   # TODO: contribute upstream
   - deno
   - hashbang
+  - Rspack
+  - Rollup
 
   # Website tech
   - Nextra
