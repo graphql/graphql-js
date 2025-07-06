@@ -223,9 +223,11 @@ export function parseSchemaCoordinate(
   source: string | Source,
   options?: ParseSchemaCoordinateOptions,
 ): SchemaCoordinateNode {
-  // Ignored tokens are excluded syntax for the schema coordinates.
-  const _options = { ...options, Lexer: SchemaCoordinateLexer };
-  const parser = new Parser(source, _options);
+  // Ignored tokens are excluded syntax for a Schema Coordinate.
+  const parser = new Parser(source, {
+    ...options,
+    Lexer: SchemaCoordinateLexer,
+  });
   parser.expectToken(TokenKind.SOF);
   const coordinate = parser.parseSchemaCoordinate();
   parser.expectToken(TokenKind.EOF);
