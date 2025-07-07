@@ -82,12 +82,7 @@ export function ValuesOfCorrectTypeRule(
       }
 
       if (type.isOneOf) {
-        validateOneOfInputObject(
-          context,
-          node,
-          type,
-          fieldNodeMap,
-        );
+        validateOneOfInputObject(context, node, type, fieldNodeMap);
       }
     },
     ObjectField(node) {
