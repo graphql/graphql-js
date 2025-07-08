@@ -2,7 +2,7 @@
   "description": "graphql-js development mode should work with Deno",
   "private": true,
   "scripts": {
-    "test": "docker run --rm --volume \"$PWD:/usr/src/app\" -w /usr/src/app denoland/deno:latest deno run --allow-env=NODE_ENV test.js"
+    "test": "docker run --rm --volume \"$PWD:/usr/src/app\" -w /usr/src/app denoland/deno:alpine-2.4.1 deno run --allow-env=NODE_ENV test.js"
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz"
