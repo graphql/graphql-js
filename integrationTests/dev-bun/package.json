@@ -2,7 +2,7 @@
   "description": "graphql-js development mode should work with Bun",
   "private": true,
   "scripts": {
-    "test": "docker run --rm --volume \"$PWD:/usr/src/app\" -w /usr/src/app oven/bun:1.2.18-slim bun test.js"
+    "test": "docker run --rm --volume \"$PWD\":/usr/src/app -w /usr/src/app oven/bun:\"$BUN_VERSION\"-slim bun test.js"
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz"

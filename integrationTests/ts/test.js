@@ -15,7 +15,7 @@ for (const version of tsVersions) {
 
 console.log('Testing on deno ...');
 childProcess.execSync(
-  `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app denoland/deno:alpine-2.4.1 deno check`,
+  `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app denoland/deno:alpine-"$DENO_VERSION" deno check`,
   { stdio: 'inherit' },
 );
 
