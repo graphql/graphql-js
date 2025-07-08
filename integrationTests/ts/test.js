@@ -1,6 +1,7 @@
 import childProcess from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const { dependencies } = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
 
@@ -13,9 +14,11 @@ for (const version of tsVersions) {
   childProcess.execSync(tscPath(version), { stdio: 'inherit' });
 }
 
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
 console.log('Testing on deno ...');
 childProcess.execSync(
-  'docker run --rm --volume ".:/usr/src/app" -w /usr/src/app denoland/deno:alpine-2.4.1 deno check',
+  `docker run --rm --volume "${dirname}:/usr/src/app" -w /usr/src/app denoland/deno:alpine-2.4.1 deno check`,
   { stdio: 'inherit' },
 );
 
