@@ -205,14 +205,6 @@ function buildExports(filepath: string): ConditionalExports {
   const { dir, name } = path.parse(filepath);
   const base = `./${path.join(dir, name)}`;
   return {
-    types: {
-      module: `${base}.d.mts`,
-      'module-sync': `${base}.d.mts`,
-      bun: `${base}.d.mts`,
-      node: `${base}.d.ts`,
-      require: `${base}.d.ts`,
-      default: `${base}.d.mts`,
-    },
     module: `${base}.mjs`,
     bun: `${base}.mjs`,
     'module-sync': `${base}.mjs`,

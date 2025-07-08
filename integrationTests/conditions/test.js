@@ -26,6 +26,6 @@ childProcess.execSync(
 
 console.log('Testing on deno (moduleSync: false) ...');
 childProcess.execSync(
-  `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app --env MODULE_SYNC=false denoland/deno:2.4.0 deno run --allow-read --allow-env ./check.mjs`,
+  `docker run --rm --volume "$PWD":/usr/src/app -w /usr/src/app --env MODULE_SYNC=false denoland/alpine-2.4.1 deno run --allow-read --allow-env ./check.mjs`,
   { stdio: 'inherit' },
 );

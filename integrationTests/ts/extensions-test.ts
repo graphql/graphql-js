@@ -5,6 +5,8 @@ interface SomeExtension {
   meaningOfLife: 42;
 }
 
+// Import added to support deno, which does not scan node_modules automatically.
+import 'graphql';
 declare module 'graphql' {
   interface GraphQLObjectTypeExtensions<_TSource, _TContext> {
     someObjectExtension?: SomeExtension;
@@ -32,7 +34,8 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
           },
         },
       },
-      resolve: (_root, args) => 'Hello ' + (args.who || 'World'),
+      resolve: (_root: unknown, args: { who: string }) =>
+        'Hello ' + (args.who || 'World'),
       extensions: {
         someFieldExtension: { meaningOfLife: 42 },
       },

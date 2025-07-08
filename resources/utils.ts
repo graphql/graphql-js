@@ -245,11 +245,7 @@ interface PackageJSON {
   module?: string;
 }
 
-export interface ConditionalExports extends BaseExports {
-  types: BaseExports;
-}
-
-interface BaseExports {
+export interface ConditionalExports {
   module: string;
   bun: string;
   'module-sync': string;
