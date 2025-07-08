@@ -35,8 +35,8 @@ interface NPMOptions extends SpawnOptions {
 export function npm(options?: NPMOptions) {
   let npmCmd;
   let globalOptions = options?.quiet === true ? ['--quiet'] : [];
-  // See: https://github.com/nodejs/node/issues/3675 and in particular
-  // https://github.com/nodejs/node/issues/3675#issuecomment-308963807.
+
+  // See: https://github.com/nodejs/node/issues/3675.
   if (process.platform === 'win32') {
     npmCmd = 'cmd';
     globalOptions = ['/c', 'npm.cmd', ...globalOptions];
