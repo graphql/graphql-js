@@ -18,9 +18,9 @@ The v17 release drops support for end-of-life versions of Node.JS, retaining sup
 
 ## ESM and conditional exports
 
-Earlier versions of GraphQL.js shipped dual builds for CommonJS and ESM, with ESM "*.mjs" files sitting alongside CommonJS "*.js" files.
+Earlier versions of GraphQL.js shipped dual builds for CommonJS and ESM, with ESM ".mjs" files sitting alongside CommonJS ".js" files.
 The ESM build was accessible via tooling recognizing the `module` field in `package.json`, while the CommonJS build was accessible via
-the "main" field. Unless configured carefully, this could sometimes lead to multiple copies of GraphQL.js being loaded in the same
+the `main` field. Unless configured carefully, this could sometimes lead to multiple copies of GraphQL.js being loaded in the same
 process, i.e. the dual-package hazard.
 
 v17 enables access to the ESM build via the `exports` field in `package.json` in a scheme designed to avoid the dual-package hazard as
