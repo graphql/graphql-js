@@ -1125,8 +1125,10 @@ function completeValue(
       incrementalContext,
       deferMap,
     );
+    // c8 control statement technically placed a line early secondary to
+    // slight swc source mapping error (at least as compared to ts-node without swc)
+    /* c8 ignore next 7 */
   }
-  /* c8 ignore next 6 */
   // Not reachable, all possible output types have been considered.
   invariant(
     false,

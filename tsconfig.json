@@ -19,7 +19,6 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
-
     // Type Checking
     // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
     "strict": true,
@@ -38,6 +37,6 @@
     "allowSyntheticDefaultImports": true
   },
   "ts-node": {
-    "esm": true
+    "swc": true
   }
 }

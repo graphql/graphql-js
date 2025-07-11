@@ -156,8 +156,10 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     return result;
+    // c8 control statement technically placed a line early secondary to
+    // slight swc source mapping error (at least as compared to ts-node without swc)
+    /* c8 ignore next 4 */
   }
-  /* c8 ignore next 3 */
   // Not reachable, all possible input types have been considered.
   invariant(false, 'Unexpected input type: ' + inspect(type));
 }
