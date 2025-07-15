@@ -2,6 +2,9 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
+
+import { invariant } from '../../jsutils/invariant';
 
 import { parse } from '../../language/parser';
 
@@ -13,8 +16,6 @@ import { buildSchema } from '../../utilities/buildASTSchema';
 
 import type { ExecutionResult } from '../execute';
 import { execute, executeSync } from '../execute';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
-import { invariant } from '../../jsutils/invariant';
 
 const syncError = new Error('sync');
 const syncNonNullError = new Error('syncNonNull');
@@ -582,25 +583,13 @@ describe('Execute: handles non-nullable types', () => {
       });
 
       // allow time for slower error to reject
-      await resolveOnNextTick();
-      await resolveOnNextTick();
-
-      // result silently modified after operation completes!
-      expectJSON(result).toDeepEqual({
-        data: null,
-        errors: [
-          {
-            message: syncNonNullError.message,
-            path: ['promiseNonNullNest', 'syncNonNull'],
-            locations: [{ line: 4, column: 13 }],
-          },
-          {
-            message: promiseNonNullError.message,
-            path: ['promiseNest', 'promiseNonNull'],
-            locations: [{ line: 7, column: 13 }],
-          },
-        ],
-      });
+      invariant(result.errors !== undefined);
+      const initialErrors = [...result.errors];
+      for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await resolveOnNextTick();
+      }
+      expectJSON(initialErrors).toDeepEqual(result.errors);
     });
 
     it('nullable and non-nullable nested fields throw nested errors', async () => {
@@ -665,31 +654,13 @@ describe('Execute: handles non-nullable types', () => {
         ],
       });
 
-      // allow time for slower error to reject
-      await resolveOnNextTick();
-
-      // result silently modified after operation completes!
-      expectJSON(result).toDeepEqual({
-        data: { syncNest: null },
-        errors: [
-          {
-            message: syncNonNullError.message,
-            path: ['syncNest', 'promiseNonNullNest', 'syncNonNull'],
-            locations: [{ line: 5, column: 15 }],
-          },
-          {
-            message: promiseNonNullError.message,
-            path: [
-              'syncNest',
-              'promiseNest',
-              'promiseNest',
-              'promiseNest',
-              'promiseNonNull',
-            ],
-            locations: [{ line: 10, column: 19 }],
-          },
-        ],
-      });
+      invariant(result.errors !== undefined);
+      const initialErrors = [...result.errors];
+      for (let i = 0; i < 20; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await resolveOnNextTick();
+      }
+      expectJSON(initialErrors).toDeepEqual(result.errors);
     });
   });
 
