@@ -90,7 +90,7 @@ import {
   getVariableValues,
 } from './values.js';
 
-/* eslint-disable @typescript-eslint/max-params */
+/* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
 
@@ -1312,9 +1312,7 @@ async function completeAsyncIteratorValue(
             earlyReturn,
             streamItemQueue,
           };
-          if (exeContext.cancellableStreams === undefined) {
-            exeContext.cancellableStreams = new Set();
-          }
+          exeContext.cancellableStreams ??= new Set();
           exeContext.cancellableStreams.add(streamRecord);
         }
 

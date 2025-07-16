@@ -148,11 +148,20 @@ async function graphqlRequest(query: string) {
     );
   }
 
-  const json = await response.json();
+  const json = (await response.json()) as {
+    data: unknown;
+    errors?: ReadonlyArray<unknown>;
+  };
   if (json.errors != null) {
     throw new Error('Errors: ' + JSON.stringify(json.errors, null, 2));
   }
   return json.data;
+}
+
+interface RepositoryCommitInfo {
+  repository: {
+    [commit: string]: CommitInfo;
+  };
 }
 
 interface CommitInfo {
@@ -191,13 +200,13 @@ async function batchCommitToPR(
     `;
   }
 
-  const response = await graphqlRequest(`
+  const response = (await graphqlRequest(`
     {
       repository(owner: "${githubOrg}", name: "${githubRepo}") {
         ${commitsSubQuery}
       }
     }
-  `);
+  `)) as RepositoryCommitInfo;
 
   const prNumbers = [];
   for (const oid of commits) {
@@ -211,6 +220,12 @@ interface AuthorInfo {
   login: string;
   url: string;
   name: string;
+}
+
+interface RepositoryPrInfo {
+  repository: {
+    [pr: string]: PRInfo;
+  };
 }
 
 interface PRInfo {
@@ -251,13 +266,13 @@ async function batchPRInfo(
     `;
   }
 
-  const response = await graphqlRequest(`
+  const response = (await graphqlRequest(`
     {
       repository(owner: "${githubOrg}", name: "${githubRepo}") {
         ${prsSubQuery}
       }
     }
-  `);
+  `)) as RepositoryPrInfo;
 
   const prsInfo = [];
   for (const number of prNumbers) {

@@ -230,12 +230,10 @@ export class GraphQLSchema {
         for (const iface of namedType.getInterfaces()) {
           if (isInterfaceType(iface)) {
             let implementations = this._implementationsMap[iface.name];
-            if (implementations === undefined) {
-              implementations = this._implementationsMap[iface.name] = {
-                objects: [],
-                interfaces: [],
-              };
-            }
+            implementations ??= this._implementationsMap[iface.name] = {
+              objects: [],
+              interfaces: [],
+            };
 
             implementations.interfaces.push(namedType);
           }
@@ -245,12 +243,10 @@ export class GraphQLSchema {
         for (const iface of namedType.getInterfaces()) {
           if (isInterfaceType(iface)) {
             let implementations = this._implementationsMap[iface.name];
-            if (implementations === undefined) {
-              implementations = this._implementationsMap[iface.name] = {
-                objects: [],
-                interfaces: [],
-              };
-            }
+            implementations ??= this._implementationsMap[iface.name] = {
+              objects: [],
+              interfaces: [],
+            };
 
             implementations.objects.push(namedType);
           }

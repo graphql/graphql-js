@@ -359,4 +359,26 @@ describe('mapAsyncIterable', () => {
         : Promise.resolve(x),
     );
   });
+
+  it('disposes of async iterable', async () => {
+    let returned = false;
+    async function* source() {
+      try {
+        yield 1;
+        yield 2;
+        yield 3;
+      } finally {
+        returned = true;
+      }
+    }
+
+    {
+      await using doubles = mapAsyncIterable(source(), (x) => x + x);
+
+      expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+      expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
+    }
+
+    expect(returned).to.equal(true);
+  });
 });

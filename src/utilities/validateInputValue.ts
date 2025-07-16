@@ -226,7 +226,7 @@ function reportInvalidValue(
  * If variable values are not provided, the literal is validated statically
  * (not assuming that those variables are missing runtime values).
  */
-// eslint-disable-next-line @typescript-eslint/max-params
+// eslint-disable-next-line max-params
 export function validateInputLiteral(
   valueNode: ValueNode,
   type: GraphQLInputType,

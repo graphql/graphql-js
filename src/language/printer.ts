@@ -330,7 +330,9 @@ function join(
   maybeArray: Maybe<ReadonlyArray<string | undefined>>,
   separator = '',
 ): string {
-  return maybeArray?.filter((x) => x).join(separator) ?? '';
+  return (
+    maybeArray?.filter((x) => x !== undefined && x !== '').join(separator) ?? ''
+  );
 }
 
 /**

@@ -263,7 +263,10 @@ export function readTSConfig(overrides?: any): ts.CompilerOptions {
       tsConfigPath,
       fs.readFileSync(tsConfigPath, 'utf-8'),
     );
-  assert(tsConfigError === undefined, 'Fail to parse config: ' + tsConfigError);
+  assert(
+    tsConfigError === undefined,
+    'Fail to parse config: ' + JSON.stringify(tsConfigError),
+  );
   assert(
     tsConfig.compilerOptions !== undefined,
     '"tsconfig.json" should have `compilerOptions`',
@@ -277,7 +280,7 @@ export function readTSConfig(overrides?: any): ts.CompilerOptions {
 
   assert(
     tsOptionsErrors.length === 0,
-    'Fail to parse options: ' + tsOptionsErrors,
+    'Fail to parse options: ' + JSON.stringify(tsOptionsErrors),
   );
 
   return tsOptions;

@@ -207,6 +207,9 @@ class IncrementalPublisher {
       next: _next,
       return: _return,
       throw: _throw,
+      async [Symbol.asyncDispose]() {
+        await _return();
+      },
     };
   }
 

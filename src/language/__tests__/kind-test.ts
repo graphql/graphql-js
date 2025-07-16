@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable no-unused-expressions */
 import { describe, it } from 'mocha';
 
 import { Kind } from '../index.js';

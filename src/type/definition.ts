@@ -1560,9 +1560,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   }
 
   getValue(name: string): Maybe<GraphQLEnumValue> {
-    if (this._nameLookup === null) {
-      this._nameLookup = keyMap(this.getValues(), (value) => value.name);
-    }
+    this._nameLookup ??= keyMap(this.getValues(), (value) => value.name);
     return this._nameLookup[name];
   }
 
@@ -1572,11 +1570,9 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   }
 
   coerceOutputValue(outputValue: unknown /* T */): Maybe<string> {
-    if (this._valueLookup === null) {
-      this._valueLookup = new Map(
-        this.getValues().map((enumValue) => [enumValue.value, enumValue]),
-      );
-    }
+    this._valueLookup ??= new Map(
+      this.getValues().map((enumValue) => [enumValue.value, enumValue]),
+    );
     const enumValue = this._valueLookup.get(outputValue);
     if (enumValue === undefined) {
       throw new GraphQLError(

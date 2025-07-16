@@ -63,5 +63,14 @@ export function mapAsyncIterable<T, U, R = undefined>(
     [Symbol.asyncIterator]() {
       return this;
     },
+    async [Symbol.asyncDispose]() {
+      await this.return(undefined as R);
+      if (
+        typeof (iterable as AsyncGenerator<T, R, void>)[Symbol.asyncDispose] ===
+        'function'
+      ) {
+        await (iterable as AsyncGenerator<T, R, void>)[Symbol.asyncDispose]();
+      }
+    },
   };
 }

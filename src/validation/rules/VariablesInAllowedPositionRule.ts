@@ -49,9 +49,7 @@ export function VariablesInAllowedPositionRule(
           const varName = node.name.value;
 
           let varDef = fragmentVariableDefinition;
-          if (!varDef) {
-            varDef = varDefMap.get(varName);
-          }
+          varDef ??= varDefMap.get(varName);
           if (varDef && type) {
             // A var type is allowed if it is the same or more strict (e.g. is
             // a subtype of) than the expected type. It can be more strict if

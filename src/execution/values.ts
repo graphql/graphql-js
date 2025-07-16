@@ -226,7 +226,7 @@ export function getArgumentValues(
   return coercedValues;
 }
 
-// eslint-disable-next-line @typescript-eslint/max-params
+// eslint-disable-next-line max-params
 function coerceArgument(
   coercedValues: ObjMap<unknown>,
   node: FieldNode | DirectiveNode | FragmentSpreadNode,

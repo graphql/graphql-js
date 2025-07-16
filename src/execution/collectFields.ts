@@ -82,7 +82,7 @@ interface CollectFieldsContext {
  *
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/max-params
+// eslint-disable-next-line max-params
 export function collectFields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDetails>,
@@ -127,7 +127,7 @@ export function collectFields(
  *
  * @internal
  */
-// eslint-disable-next-line @typescript-eslint/max-params
+// eslint-disable-next-line max-params
 export function collectSubfields(
   schema: GraphQLSchema,
   fragments: ObjMap<FragmentDetails>,
@@ -173,7 +173,7 @@ export function collectSubfields(
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/max-params
+// eslint-disable-next-line max-params
 function collectFieldsImpl(
   context: CollectFieldsContext,
   selectionSet: SelectionSetNode,
