@@ -803,6 +803,8 @@ export default tsConfig(
       ],
       'n/no-top-level-await': 'off',
       // TODO: remove when fetch/cpSync stabilizes across all node versions
+      // fetch is not supported until Node.js 21.0.0
+      // fs.cpSync is not supported until Node.js 22.3.0
       'n/no-unsupported-features/node-builtins': [
         'error',
         {
