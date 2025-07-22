@@ -87,5 +87,23 @@ describe('collectFields', () => {
 
       expect(fieldDetailsList).to.have.lengthOf(2);
     });
+
+    it('should not collect a non-deferred spread after a non-deferred spread has been collected', () => {
+      const { groupedFieldSet } = collectRootFields(`
+        query {
+          ...FragmentName
+          ...FragmentName
+        }
+        fragment FragmentName on Query {
+          field
+        }
+      `);
+
+      const fieldDetailsList = groupedFieldSet.get('field');
+
+      invariant(fieldDetailsList != null);
+
+      expect(fieldDetailsList).to.have.lengthOf(1);
+    });
   });
 });
