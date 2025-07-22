@@ -67,7 +67,7 @@ interface CollectFieldsContext {
   fragments: ObjMap<FragmentDetails>;
   variableValues: VariableValues;
   runtimeType: GraphQLObjectType;
-  visitedFragmentNames: Set<string>;
+  visitedFragmentNames: Map<string, boolean>;
   hideSuggestions: boolean;
   forbiddenDirectiveInstances: Array<DirectiveNode>;
   forbidSkipAndInclude: boolean;
@@ -103,7 +103,7 @@ export function collectFields(
     fragments,
     variableValues,
     runtimeType,
-    visitedFragmentNames: new Set(),
+    visitedFragmentNames: new Map(),
     hideSuggestions,
     forbiddenDirectiveInstances: [],
     forbidSkipAndInclude,
@@ -144,7 +144,7 @@ export function collectSubfields(
     fragments,
     variableValues,
     runtimeType: returnType,
-    visitedFragmentNames: new Set(),
+    visitedFragmentNames: new Map(),
     hideSuggestions,
     forbiddenDirectiveInstances: [],
     forbidSkipAndInclude: false,
@@ -258,7 +258,6 @@ function collectFieldsImpl(
         const fragName = selection.name.value;
 
         if (
-          visitedFragmentNames.has(fragName) ||
           !shouldIncludeNode(
             context,
             selection,
@@ -284,6 +283,24 @@ function collectFieldsImpl(
           deferUsage,
         );
 
+        const visitedStatus = visitedFragmentNames.get(fragName);
+
+        let maybeNewDeferUsage: DeferUsage | undefined;
+        if (!newDeferUsage) {
+          if (visitedStatus === false) {
+            continue;
+          }
+          visitedFragmentNames.set(fragName, false);
+          maybeNewDeferUsage = deferUsage;
+        } else {
+          if (visitedStatus !== undefined) {
+            continue;
+          }
+          visitedFragmentNames.set(fragName, true);
+          newDeferUsages.push(newDeferUsage);
+          maybeNewDeferUsage = newDeferUsage;
+        }
+
         const fragmentVariableSignatures = fragment.variableSignatures;
         let newFragmentVariableValues: FragmentVariableValues | undefined;
         if (fragmentVariableSignatures) {
@@ -296,27 +313,14 @@ function collectFieldsImpl(
           );
         }
 
-        if (!newDeferUsage) {
-          visitedFragmentNames.add(fragName);
-          collectFieldsImpl(
-            context,
-            fragment.definition.selectionSet,
-            groupedFieldSet,
-            newDeferUsages,
-            deferUsage,
-            newFragmentVariableValues,
-          );
-        } else {
-          newDeferUsages.push(newDeferUsage);
-          collectFieldsImpl(
-            context,
-            fragment.definition.selectionSet,
-            groupedFieldSet,
-            newDeferUsages,
-            newDeferUsage,
-            newFragmentVariableValues,
-          );
-        }
+        collectFieldsImpl(
+          context,
+          fragment.definition.selectionSet,
+          groupedFieldSet,
+          newDeferUsages,
+          maybeNewDeferUsage,
+          newFragmentVariableValues,
+        );
         break;
       }
     }
