@@ -283,17 +283,21 @@ function collectFieldsImpl(
           deferUsage,
         );
 
-        const visitedStatus = visitedFragmentNames.get(fragName);
+        const visitedAsDeferred = visitedFragmentNames.get(fragName);
 
         let maybeNewDeferUsage: DeferUsage | undefined;
         if (!newDeferUsage) {
-          if (visitedStatus === false) {
+          // If this spread is not deferred, it may be skipped when already visited
+          // as a non-deferred spread. If it was previously visited as a deferred spread,
+          // it must be revisited.
+          if (visitedAsDeferred === false) {
             continue;
           }
           visitedFragmentNames.set(fragName, false);
           maybeNewDeferUsage = deferUsage;
         } else {
-          if (visitedStatus !== undefined) {
+          // If this spread is deferred, it can be skipped if it has already been visited.
+          if (visitedAsDeferred !== undefined) {
             continue;
           }
           visitedFragmentNames.set(fragName, true);
