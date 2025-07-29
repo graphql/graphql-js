@@ -6,7 +6,7 @@ import ts from 'typescript';
 
 import { changeExtensionInImportPaths } from './change-extension-in-import-paths.js';
 import { inlineInvariant } from './inline-invariant.js';
-import type { ConditionalExports } from './utils.js';
+import type { PlatformConditionalExports } from './utils.js';
 import {
   prettify,
   readPackageJSON,
@@ -24,8 +24,11 @@ await buildPackage('./npmEsmDist', true);
 showDirStats('./npmEsmDist');
 
 async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
+  const devDir = path.join(outDir, '__dev__');
+
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir);
+  fs.mkdirSync(devDir);
 
   fs.copyFileSync('./LICENSE', `./${outDir}/LICENSE`);
   fs.copyFileSync('./README.md', `./${outDir}/README.md`);
@@ -118,16 +121,86 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
     emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
 
     packageJSON.exports = {};
-    for (const filepath of emittedTSFiles) {
-      if (path.basename(filepath) === 'index.js') {
-        const relativePath = './' + path.relative('./npmDist', filepath);
-        packageJSON.exports[path.dirname(relativePath)] =
-          buildExports(relativePath);
+    for (const prodFile of emittedTSFiles) {
+      const { dir, base, name, ext } = path.parse(prodFile);
+
+      if (ext === '.map') {
+        continue;
+      } else if (path.basename(dir) === 'dev') {
+        packageJSON.exports['./dev'] = buildPlatformConditionalExports(
+          './dev',
+          'index',
+        );
+        continue;
+      }
+
+      const relativePathToProd = path.relative(prodFile, outDir);
+
+      const { name: innerName, ext: innerExt } = path.parse(name);
+
+      if (innerExt === '.d') {
+        const relativePathAndName = path.relative(
+          outDir,
+          `${dir}/${innerName}`,
+        );
+
+        const line = `export * from '${relativePathToProd}/${relativePathAndName}.mjs';`;
+        for (const typeExt of ['.ts', '.mts']) {
+          writeGeneratedFile(
+            path.join(
+              devDir,
+              path.relative(outDir, `${dir}/${name}${typeExt}`),
+            ),
+            line,
+          );
+        }
+        continue;
+      }
+
+      const relativePathAndName = path.relative(outDir, `${dir}/${name}`);
+
+      let lines = [
+        `const { enableDevMode } = require('${relativePathToProd}/devMode.js');`,
+        'enableDevMode();',
+        `module.exports = require('${relativePathToProd}/${relativePathAndName}.js');`,
+      ];
+
+      writeGeneratedFile(
+        path.join(devDir, path.relative(outDir, `${dir}/${name}.js`)),
+        lines.join('\n'),
+      );
+
+      lines = [
+        `import { enableDevMode } from '${relativePathToProd}/devMode.mjs';`,
+        'enableDevMode();',
+        `export * from '${relativePathToProd}/${relativePathAndName}.mjs';`,
+      ];
+
+      writeGeneratedFile(
+        path.join(devDir, path.relative(outDir, `${dir}/${name}.mjs`)),
+        lines.join('\n'),
+      );
+
+      if (base === 'index.js') {
+        const dirname = path.dirname(relativePathAndName);
+        packageJSON.exports[dirname === '.' ? dirname : `./${dirname}`] = {
+          development: buildPlatformConditionalExports(
+            './__dev__',
+            relativePathAndName,
+          ),
+          default: buildPlatformConditionalExports('.', relativePathAndName),
+        };
       }
     }
 
-    packageJSON.exports['./*.js'] = buildExports('./*.js');
-    packageJSON.exports['./*'] = buildExports('./*.js');
+    const globEntryPoints = {
+      development: buildPlatformConditionalExports('./__dev__', '*'),
+      default: buildPlatformConditionalExports('.', '*'),
+    };
+    packageJSON.exports['./*.js'] = globEntryPoints;
+    packageJSON.exports['./*'] = globEntryPoints;
+
+    packageJSON.sideEffects = ['__dev__/*'];
   }
 
   const packageJsonPath = `./${outDir}/package.json`;
@@ -186,7 +259,11 @@ function emitTSFiles(options: {
     writeGeneratedFile(filepath, body);
   };
 
-  const tsProgram = ts.createProgram(['src/index.ts'], tsOptions, tsHost);
+  const tsProgram = ts.createProgram(
+    ['src/index.ts', 'src/dev/index.ts'],
+    tsOptions,
+    tsHost,
+  );
   const tsResult = tsProgram.emit(undefined, undefined, undefined, undefined, {
     after: [changeExtensionInImportPaths({ extension }), inlineInvariant],
   });
@@ -201,8 +278,10 @@ function emitTSFiles(options: {
   };
 }
 
-function buildExports(filepath: string): ConditionalExports {
-  const { dir, name } = path.parse(filepath);
+function buildPlatformConditionalExports(
+  dir: string,
+  name: string,
+): PlatformConditionalExports {
   const base = `./${path.join(dir, name)}`;
   return {
     module: `${base}.mjs`,

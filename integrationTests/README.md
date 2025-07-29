@@ -20,7 +20,7 @@ The `conditions` subdirectory contains tests that verify the conditional exports
 
 ### Verifying Development Mode Tests
 
-Each subdirectory represents a different environment/bundler demonstrating enabling development mode by setting the environment variable `NODE_ENV` to `development`.
+Each subdirectory represents a different platform/bundler demonstrating enabling development mode by enabling the `development` condition or by calling `enableDevMode()`.
 
 ### Verifying Production Mode Tests
 

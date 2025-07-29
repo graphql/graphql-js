@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz",
-    "rollup": "^4.0.0"
+    "rollup": "^4.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0"
   }
 }

@@ -35,6 +35,16 @@ does it seem to provide the `deno` condition when calling `require`, see https:/
 Deno users can access a Typescript build for deno via git://github.com/graphql/graphql-js.git#deno as well as by specifically loading
 the index.mjs file, i.e. `import { graphql } from 'graphql/index.mjs'`, although this does not protect against the dual-package hazard.
 
+## Development mode no longer enabled by default and no longer dependent on NODE_ENV value
+
+GraphQl.js development mode in v17 is disabled by default and can be enabled by the `development` condition on supporting platforms or
+by explicitly enabling it within user code by calling `enableDevMode()`. Development mode may trigger permanent de-optimizations and
+therefore cannot be disabled once enabled. The new `isDevModeEnabled()` function can be used to check whether development mode has
+been enabled.
+
+GraphQL.js development mode no longer depends on the `NODE_ENV` environment variable; build tools other than Node.js no longer need
+to replace this Node.js specific code.
+
 ## Default values
 
 GraphQL schemas allow default values for input fields and arguments. Historically, GraphQL.js did not rigorously validate or coerce these

@@ -1,4 +1,6 @@
-import { isObjectType } from 'graphql';
+import { enableDevMode, isObjectType } from 'graphql';
+
+enableDevMode();
 
 class GraphQLObjectType {
   get [Symbol.toStringTag]() {

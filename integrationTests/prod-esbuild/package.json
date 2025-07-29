@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild index.js --bundle --outfile=dist/bundle.js --format=esm --define:process.env.NODE_ENV='\"production\"'",
+    "build": "esbuild index.js --bundle --outfile=dist/bundle.js --format=esm",
     "test": "npm run build && node dist/bundle.js"
   },
   "dependencies": {

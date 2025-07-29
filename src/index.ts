@@ -29,6 +29,9 @@
 // The GraphQL.js version info.
 export { version, versionInfo } from './version.js';
 
+// Enable development mode for additional checks.
+export { enableDevMode, isDevModeEnabled } from './devMode.js';
+
 // The primary entry point into fulfilling a GraphQL request.
 export type { GraphQLArgs } from './graphql.js';
 export { graphql, graphqlSync } from './graphql.js';

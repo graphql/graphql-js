@@ -4,141 +4,15 @@ title: Going to Production
 
 # Going to Production
 
-GraphQL.JS contains a few development checks which in production will cause slower performance and
-an increase in bundle-size. Every bundler goes about these changes different, in here we'll list
-out the most popular ones.
-
-GraphQL.js includes development-time checks that are useful during local testing but should
-be disabled in production to reduce overhead. Additional concerns include caching, error handling,
-schema management, and operational monitoring.
-
 This guide covers key practices to prepare a server built with GraphQL.js for production use.
 
-## Optimize your build for production
+Concerns include caching, error handling, schema management, and operational monitoring.
 
-In development, GraphQL.js includes validation checks to catch common mistakes like invalid schemas
-or resolver returns. These checks are not needed in production and can increase runtime overhead.
-
-You can disable them by setting `process.env.NODE_ENV` to `'production'` during your build process.
-GraphQL.js will automatically skip over development-only code paths.
-
-Bundlers are tools that compile and optimize JavaScript for deployment. Most can be configured to
-replace environment variables such as `process.env.NODE_ENV` at build time,
-allowing for unused code (such as development only code paths) to be elided by
-minification tools.
-
-### Bundler configuration examples
-
-The following examples show how to configure common bundlers to set `process.env.NODE_ENV`
-and remove development-only code:
-
-#### Vite
-
-```js
-// vite.config.js
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-  define: {
-    'process.env.NODE_ENV': '"production"',
-  },
-});
-```
-
-#### Next.js
-
-When you build your application with `next build` and run it using `next start`, Next.js sets
-`process.env.NODE_ENV` to `'production'` automatically. No additional configuration is required.
-
-```bash
-next build
-next start
-```
-
-If you run a custom server, make sure `NODE_ENV` is set manually.
-
-#### Create React App (CRA)
-
-To customize Webpack behavior in CRA, you can use a tool like [`craco`](https://craco.js.org/). 
-This example uses CommonJS syntax instead of ESM syntax, which is required by `craco.config.js`:
-
-```js
-// craco.config.js
-const webpack = require('webpack');
-
-module.exports = {
-  webpack: {
-    plugins: [
-      new webpack.DefinePlugin({
-        'globalThis.process': JSON.stringify(true),
-        'process.env.NODE_ENV': JSON.stringify('production'),
-      }),
-    ],
-  },
-};
-```
-
-#### esbuild
-
-```json
-{
-  "define": {
-    "globalThis.process": true,
-    "process.env.NODE_ENV": "production"
-  }
-}
-```
-
-#### Webpack
-
-```js
-// webpack.config.js
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-export default {
-  mode: 'production', // Automatically sets NODE_ENV
-  context: __dirname,
-};
-```
-
-#### Rollup
-
-```js
-// rollup.config.js
-import replace from '@rollup/plugin-replace';
-
-export default {
-  plugins: [
-    replace({
-      preventAssignment: true,
-      'process.env.NODE_ENV': JSON.stringify('production'),
-    }),
-  ],
-};
-```
-
-#### SWC
-
-```json filename=".swcrc"
-{
-  "jsc": {
-    "transform": {
-      "optimizer": {
-        "globals": {
-          "vars": {
-            "globalThis.process": true,
-            "process.env.NODE_ENV": "production"
-          }
-        }
-      }
-    }
-  }
-}
-```
+Of note, GraphQL.JS provides a development mode which includes additional checks impacting
+performance and bundle size, as further discussed within the
+[Development Mode](./development-mode) section. Development mode is disabled by default, but
+one can and should verify that it has not been enabled in production, especially if it is
+enabled in your development environment. 
 
 ## Secure your schema
 

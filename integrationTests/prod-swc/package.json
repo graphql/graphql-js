@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "swc index.js -d dist",
-    "test": "npm run build && NODE_ENV=production node dist/index.js"
+    "test": "npm run build && node dist/index.js"
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz",

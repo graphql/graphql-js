@@ -2,6 +2,9 @@
 import { defineConfig } from 'vitest/config';
 
 const vitestConfig = defineConfig({
+  resolve: {
+    conditions: ['development'],
+  },
   test: {
     include: ['**/*.test.js'],
   },

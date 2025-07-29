@@ -1,9 +1,13 @@
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { before, describe, it } from 'mocha';
 
-import { instanceOf } from '../instanceOf.js';
+import { enableDevInstanceOf, instanceOf } from '../instanceOf.js';
 
 describe('instanceOf', () => {
+  before(() => {
+    enableDevInstanceOf();
+  });
+
   it('do not throw on values without prototype', () => {
     const fooSymbol: unique symbol = Symbol('Foo');
     class Foo {

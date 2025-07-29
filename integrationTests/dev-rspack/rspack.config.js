@@ -11,6 +11,9 @@ const rspack = {
   },
   mode: 'development',
   target: 'node',
+  resolve: {
+    conditionNames: ['development'],
+  },
 };
 
 // eslint-disable-next-line no-restricted-exports, import/no-default-export

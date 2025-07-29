@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "NODE_ENV=production node test.js"
+    "test": "node test.js"
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz"

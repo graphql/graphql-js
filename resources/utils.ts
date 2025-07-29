@@ -228,7 +228,8 @@ interface PackageJSON {
   repository?: { url?: string };
   scripts?: { [name: string]: string };
   type?: string;
-  exports: { [path: string]: string | ConditionalExports };
+  sideEffects?: false | Array<string>;
+  exports: ConditionalExports;
   types?: string;
   typesVersions: { [ranges: string]: { [path: string]: Array<string> } };
   devDependencies?: { [name: string]: string };
@@ -240,6 +241,18 @@ interface PackageJSON {
 }
 
 export interface ConditionalExports {
+  [path: string]:
+    | string
+    | PlatformConditionalExports
+    | EnvironmentConditionalExports;
+}
+
+interface EnvironmentConditionalExports {
+  development: PlatformConditionalExports;
+  default: PlatformConditionalExports;
+}
+
+export interface PlatformConditionalExports {
   module: string;
   bun: string;
   'module-sync': string;
