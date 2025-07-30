@@ -168,7 +168,7 @@ export interface ValidatedExecutionArgs {
 
 export interface ExecutionContext {
   validatedExecutionArgs: ValidatedExecutionArgs;
-  errors: Array<GraphQLError> | undefined;
+  errors: Array<GraphQLError>;
   abortSignalListener: AbortSignalListener | undefined;
   completed: boolean;
   cancellableStreams: Set<CancellableStreamRecord> | undefined;
@@ -176,7 +176,7 @@ export interface ExecutionContext {
 }
 
 interface IncrementalContext {
-  errors: Array<GraphQLError> | undefined;
+  errors: Array<GraphQLError>;
   completed: boolean;
   deferUsageSet?: DeferUsageSet | undefined;
 }
@@ -338,7 +338,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
   const abortSignal = validatedExecutionArgs.abortSignal;
   const exeContext: ExecutionContext = {
     validatedExecutionArgs,
-    errors: undefined,
+    errors: [],
     abortSignalListener: abortSignal
       ? new AbortSignalListener(abortSignal)
       : undefined,
@@ -395,7 +395,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
           exeContext.abortSignalListener?.disconnect();
           return {
             data: null,
-            errors: withError(exeContext.errors, error as GraphQLError),
+            errors: [...exeContext.errors, error as GraphQLError],
           };
         },
       );
@@ -407,15 +407,8 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
     // TODO: add test case for synchronous null bubbling to root with cancellation
     /* c8 ignore next */
     exeContext.abortSignalListener?.disconnect();
-    return { data: null, errors: withError(exeContext.errors, error) };
+    return { data: null, errors: [...exeContext.errors, error] };
   }
-}
-
-function withError(
-  errors: Array<GraphQLError> | undefined,
-  error: GraphQLError,
-): ReadonlyArray<GraphQLError> {
-  return errors === undefined ? [error] : [...errors, error];
 }
 
 function buildDataResponse(
@@ -430,7 +423,7 @@ function buildDataResponse(
   const errors = exeContext.errors;
   if (incrementalDataRecords === undefined) {
     exeContext.abortSignalListener?.disconnect();
-    return errors !== undefined ? { errors, data } : { data };
+    return errors.length ? { errors, data } : { data };
   }
 
   return buildIncrementalResponse(
@@ -1076,12 +1069,7 @@ function handleFieldError(
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
   const context = incrementalContext ?? exeContext;
-  let errors = context.errors;
-  if (errors === undefined) {
-    errors = [];
-    context.errors = errors;
-  }
-  errors.push(error);
+  context.errors.push(error);
 }
 
 /**
@@ -2513,7 +2501,7 @@ function collectExecutionGroups(
         path,
         groupedFieldSet,
         {
-          errors: undefined,
+          errors: [],
           completed: false,
           deferUsageSet,
         },
@@ -2578,7 +2566,7 @@ function executeExecutionGroup(
     return {
       pendingExecutionGroup,
       path: pathToArray(path),
-      errors: withError(incrementalContext.errors, error),
+      errors: [...incrementalContext.errors, error],
     };
   }
 
@@ -2598,7 +2586,7 @@ function executeExecutionGroup(
         return {
           pendingExecutionGroup,
           path: pathToArray(path),
-          errors: withError(incrementalContext.errors, error as GraphQLError),
+          errors: [...incrementalContext.errors, error as GraphQLError],
         };
       },
     );
@@ -2614,7 +2602,7 @@ function executeExecutionGroup(
 }
 
 function buildCompletedExecutionGroup(
-  errors: ReadonlyArray<GraphQLError> | undefined,
+  errors: ReadonlyArray<GraphQLError>,
   pendingExecutionGroup: PendingExecutionGroup,
   path: Path | undefined,
   result: GraphQLWrappedResult<ObjMap<unknown>>,
@@ -2627,7 +2615,7 @@ function buildCompletedExecutionGroup(
   return {
     pendingExecutionGroup,
     path: pathToArray(path),
-    result: errors === undefined ? { data } : { data, errors },
+    result: errors.length ? { errors, data } : { data },
     newDeferredFragmentRecords,
     incrementalDataRecords,
   };
@@ -2664,7 +2652,7 @@ function buildSyncStreamItemQueue(
         initialPath,
         initialItem,
         exeContext,
-        { errors: undefined, completed: false },
+        { errors: [], completed: false },
         fieldDetailsList,
         info,
         itemType,
@@ -2681,7 +2669,7 @@ function buildSyncStreamItemQueue(
       /* c8 ignore next 6 */
       if (currentStreamItem instanceof BoxedPromiseOrValue) {
         const result = currentStreamItem.value;
-        if (!isPromise(result) && result.errors !== undefined) {
+        if (!isPromise(result) && result.item === undefined) {
           break;
         }
       }
@@ -2695,7 +2683,7 @@ function buildSyncStreamItemQueue(
           itemPath,
           value,
           exeContext,
-          { errors: undefined, completed: false },
+          { errors: [], completed: false },
           fieldDetailsList,
           info,
           itemType,
@@ -2787,7 +2775,7 @@ async function getNextAsyncStreamItemResult(
     itemPath,
     iteration.value,
     exeContext,
-    { errors: undefined, completed: false },
+    { errors: [], completed: false },
     fieldDetailsList,
     info,
     itemType,
@@ -2845,7 +2833,7 @@ function completeStreamItem(
       (error: unknown) => {
         incrementalContext.completed = true;
         return {
-          errors: withError(incrementalContext.errors, error as GraphQLError),
+          errors: [...incrementalContext.errors, error as GraphQLError],
         };
       },
     );
@@ -2882,7 +2870,7 @@ function completeStreamItem(
   } catch (error) {
     incrementalContext.completed = true;
     return {
-      errors: withError(incrementalContext.errors, error),
+      errors: [...incrementalContext.errors, error],
     };
   }
 
@@ -2911,7 +2899,7 @@ function completeStreamItem(
         (error: unknown) => {
           incrementalContext.completed = true;
           return {
-            errors: withError(incrementalContext.errors, error as GraphQLError),
+            errors: [...incrementalContext.errors, error as GraphQLError],
           };
         },
       );
@@ -2922,7 +2910,7 @@ function completeStreamItem(
 }
 
 function buildStreamItemResult(
-  errors: ReadonlyArray<GraphQLError> | undefined,
+  errors: ReadonlyArray<GraphQLError>,
   result: GraphQLWrappedResult<unknown>,
 ): StreamItemResult {
   const {

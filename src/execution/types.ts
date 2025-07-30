@@ -252,7 +252,7 @@ export interface StreamItemResult {
     | ReadonlyArray<DeferredFragmentRecord>
     | undefined;
   incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
-  errors?: ReadonlyArray<GraphQLError> | undefined;
+  errors?: ReadonlyArray<GraphQLError>;
 }
 
 export type StreamItemRecord = ThunkIncrementalResult<StreamItemResult>;

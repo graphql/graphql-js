@@ -32,7 +32,7 @@ import {
 export function buildIncrementalResponse(
   context: IncrementalPublisherContext,
   result: ObjMap<unknown>,
-  errors: ReadonlyArray<GraphQLError> | undefined,
+  errors: ReadonlyArray<GraphQLError>,
   newDeferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord> | undefined,
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
 ): ExperimentalIncrementalExecutionResults {
@@ -75,7 +75,7 @@ class IncrementalPublisher {
 
   buildResponse(
     data: ObjMap<unknown>,
-    errors: ReadonlyArray<GraphQLError> | undefined,
+    errors: ReadonlyArray<GraphQLError>,
     newDeferredFragmentRecords:
       | ReadonlyArray<DeferredFragmentRecord>
       | undefined,
@@ -88,10 +88,9 @@ class IncrementalPublisher {
 
     const pending = this._toPendingResults(newRootNodes);
 
-    const initialResult: InitialIncrementalExecutionResult =
-      errors === undefined
-        ? { data, pending, hasNext: true }
-        : { errors, data, pending, hasNext: true };
+    const initialResult: InitialIncrementalExecutionResult = errors.length
+      ? { errors, data, pending, hasNext: true }
+      : { data, pending, hasNext: true };
 
     return {
       initialResult,
