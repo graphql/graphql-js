@@ -41,7 +41,7 @@ import {
  * Test if the given value is a GraphQL schema.
  */
 export function isSchema(schema: unknown): schema is GraphQLSchema {
-  return instanceOf(schema, GraphQLSchema);
+  return instanceOf((schema as any)?.__isSchema, schema, GraphQLSchema);
 }
 
 export function assertSchema(schema: unknown): GraphQLSchema {
@@ -133,6 +133,7 @@ export interface GraphQLSchemaExtensions {
  * ```
  */
 export class GraphQLSchema {
+  readonly __isSchema: true;
   description: Maybe<string>;
   extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
@@ -157,6 +158,7 @@ export class GraphQLSchema {
   }>;
 
   constructor(config: Readonly<GraphQLSchemaConfig>) {
+    this.__isSchema = true;
     // If this schema was built from a source known to be valid, then it may be
     // marked with assumeValid to avoid an additional type system validation.
     this.assumeValid = config.assumeValid ?? false;

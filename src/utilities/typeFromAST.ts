@@ -6,7 +6,11 @@ import type {
 } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 
-import type { GraphQLNamedType, GraphQLType } from '../type/definition.js';
+import type {
+  GraphQLNamedType,
+  GraphQLNullableType,
+  GraphQLType,
+} from '../type/definition.js';
 import { GraphQLList, GraphQLNonNull } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
@@ -44,7 +48,7 @@ export function typeFromAST(
     }
     case Kind.NON_NULL_TYPE: {
       const innerType = typeFromAST(schema, typeNode.type);
-      return innerType && new GraphQLNonNull(innerType);
+      return innerType && new GraphQLNonNull(innerType as GraphQLNullableType);
     }
     case Kind.NAMED_TYPE:
       return schema.getType(typeNode.name.value);

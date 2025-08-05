@@ -23,7 +23,11 @@ import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
  * Test if the given value is a GraphQL directive.
  */
 export function isDirective(directive: unknown): directive is GraphQLDirective {
-  return instanceOf(directive, GraphQLDirective);
+  return instanceOf(
+    (directive as any)?.__isDirective,
+    directive,
+    GraphQLDirective,
+  );
 }
 
 export function assertDirective(directive: unknown): GraphQLDirective {
@@ -53,6 +57,7 @@ export interface GraphQLDirectiveExtensions {
  * behavior. Type system creators will usually not create these directly.
  */
 export class GraphQLDirective implements GraphQLSchemaElement {
+  readonly __isDirective: true;
   name: string;
   description: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
@@ -62,6 +67,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
+    this.__isDirective = true;
     this.name = assertName(config.name);
     this.description = config.description;
     this.locations = config.locations;

@@ -34,6 +34,7 @@ import type {
   GraphQLFieldNormalizedConfigMap,
   GraphQLInputFieldNormalizedConfigMap,
   GraphQLNamedType,
+  GraphQLNullableType,
   GraphQLType,
 } from '../type/definition.js';
 import {
@@ -349,7 +350,9 @@ export function extendSchemaImpl(
         return new GraphQLList(typeFromAST(node.type));
       }
       if (node.kind === Kind.NON_NULL_TYPE) {
-        return new GraphQLNonNull(typeFromAST(node.type));
+        return new GraphQLNonNull(
+          typeFromAST(node.type) as GraphQLNullableType,
+        );
       }
       return namedTypeFromAST(node);
     }

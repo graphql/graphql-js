@@ -7,19 +7,30 @@ const isProduction =
   process.env.NODE_ENV === 'production';
 
 /**
- * A replacement for instanceof which includes an error warning when multi-realm
- * constructors are detected.
+ * A utility which throws an error warning when multi-realm constructors are detected,
+ * triggered by a positive brand check and a negative instanceof (for an object).
+ *
+ * When not in development mode, only the brand check is used.
+ *
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
  */
-export const instanceOf: (value: unknown, constructor: Constructor) => boolean =
-  /* c8 ignore next 6 */
+export const instanceOf: (
+  brandCheck: true | undefined,
+  value: unknown,
+  constructor: Constructor,
+) => boolean =
+  /* c8 ignore next 9 */
   // FIXME: https://github.com/graphql/graphql-js/issues/2317
   isProduction
-    ? function instanceOf(value: unknown, constructor: Constructor): boolean {
-        return value instanceof constructor;
+    ? function instanceOf(brandCheck: true | undefined): boolean {
+        return brandCheck === true;
       }
-    : function instanceOf(value: unknown, constructor: Constructor): boolean {
+    : function instanceOf(
+        _brandCheck: true | undefined,
+        value: unknown,
+        constructor: Constructor,
+      ): boolean {
         if (value instanceof constructor) {
           return true;
         }

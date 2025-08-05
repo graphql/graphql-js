@@ -14,6 +14,8 @@ interface Location {
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 export class Source {
+  readonly __isSource = true as const;
+
   body: string;
   name: string;
   locationOffset: Location;
@@ -47,5 +49,5 @@ export class Source {
  * @internal
  */
 export function isSource(source: unknown): source is Source {
-  return instanceOf(source, Source);
+  return instanceOf((source as any)?.__isSource, source, Source);
 }
