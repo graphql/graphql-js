@@ -7,10 +7,10 @@ const isProduction =
   process.env.NODE_ENV === 'production';
 
 /**
- * A utility which throws an error warning when multi-realm constructors are detected,
- * triggered by a positive brand check and a negative instanceof (for an object).
+ * A replacement for instanceof which includes an error warning when multi-realm
+ * constructors are detected.
  *
- * When not in development mode, only the brand check is used.
+ * In production, it simply uses the provided brand check value.
  *
  * See: https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production
  * See: https://webpack.js.org/guides/production/
