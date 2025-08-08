@@ -76,11 +76,13 @@ export function assertType(type: unknown): GraphQLType {
   return type;
 }
 
+const scalarSymbol: unique symbol = Symbol('Scalar');
+
 /**
  * There are predicates for each GraphQL schema element.
  */
 export function isScalarType(type: unknown): type is GraphQLScalarType {
-  return instanceOf((type as any)?.__isScalar, type, GraphQLScalarType);
+  return instanceOf(type, scalarSymbol, GraphQLScalarType);
 }
 
 export function assertScalarType(type: unknown): GraphQLScalarType {
@@ -90,8 +92,10 @@ export function assertScalarType(type: unknown): GraphQLScalarType {
   return type;
 }
 
+const objectSymbol: unique symbol = Symbol('Object');
+
 export function isObjectType(type: unknown): type is GraphQLObjectType {
-  return instanceOf((type as any)?.__isObject, type, GraphQLObjectType);
+  return instanceOf(type, objectSymbol, GraphQLObjectType);
 }
 
 export function assertObjectType(type: unknown): GraphQLObjectType {
@@ -101,8 +105,10 @@ export function assertObjectType(type: unknown): GraphQLObjectType {
   return type;
 }
 
+const fieldSymbol: unique symbol = Symbol('Field');
+
 export function isField(field: unknown): field is GraphQLField {
-  return instanceOf((field as any)?.__isField, field, GraphQLField);
+  return instanceOf(field, fieldSymbol, GraphQLField);
 }
 
 export function assertField(field: unknown): GraphQLField {
@@ -112,8 +118,10 @@ export function assertField(field: unknown): GraphQLField {
   return field;
 }
 
+const argumentSymbol: unique symbol = Symbol('Argument');
+
 export function isArgument(arg: unknown): arg is GraphQLArgument {
-  return instanceOf((arg as any)?.__isArgument, arg, GraphQLArgument);
+  return instanceOf(arg, argumentSymbol, GraphQLArgument);
 }
 
 export function assertArgument(arg: unknown): GraphQLArgument {
@@ -123,8 +131,10 @@ export function assertArgument(arg: unknown): GraphQLArgument {
   return arg;
 }
 
+const interfaceSymbol: unique symbol = Symbol('Interface');
+
 export function isInterfaceType(type: unknown): type is GraphQLInterfaceType {
-  return instanceOf((type as any)?.__isInterface, type, GraphQLInterfaceType);
+  return instanceOf(type, interfaceSymbol, GraphQLInterfaceType);
 }
 
 export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
@@ -136,8 +146,10 @@ export function assertInterfaceType(type: unknown): GraphQLInterfaceType {
   return type;
 }
 
+const unionSymbol: unique symbol = Symbol('Union');
+
 export function isUnionType(type: unknown): type is GraphQLUnionType {
-  return instanceOf((type as any)?.__isUnion, type, GraphQLUnionType);
+  return instanceOf(type, unionSymbol, GraphQLUnionType);
 }
 
 export function assertUnionType(type: unknown): GraphQLUnionType {
@@ -147,8 +159,10 @@ export function assertUnionType(type: unknown): GraphQLUnionType {
   return type;
 }
 
+const enumSymbol: unique symbol = Symbol('Enum');
+
 export function isEnumType(type: unknown): type is GraphQLEnumType {
-  return instanceOf((type as any)?.__isEnum, type, GraphQLEnumType);
+  return instanceOf(type, enumSymbol, GraphQLEnumType);
 }
 
 export function assertEnumType(type: unknown): GraphQLEnumType {
@@ -158,8 +172,10 @@ export function assertEnumType(type: unknown): GraphQLEnumType {
   return type;
 }
 
+const enumValueSymbol: unique symbol = Symbol('EnumValue');
+
 export function isEnumValue(value: unknown): value is GraphQLEnumValue {
-  return instanceOf((value as any)?.__isEnumValue, value, GraphQLEnumValue);
+  return instanceOf(value, enumValueSymbol, GraphQLEnumValue);
 }
 
 export function assertEnumValue(value: unknown): GraphQLEnumValue {
@@ -169,14 +185,12 @@ export function assertEnumValue(value: unknown): GraphQLEnumValue {
   return value;
 }
 
+const inputObjectSymbol: unique symbol = Symbol('InputObject');
+
 export function isInputObjectType(
   type: unknown,
 ): type is GraphQLInputObjectType {
-  return instanceOf(
-    (type as any)?.__isInputObject,
-    type,
-    GraphQLInputObjectType,
-  );
+  return instanceOf(type, inputObjectSymbol, GraphQLInputObjectType);
 }
 
 export function assertInputObjectType(type: unknown): GraphQLInputObjectType {
@@ -188,8 +202,10 @@ export function assertInputObjectType(type: unknown): GraphQLInputObjectType {
   return type;
 }
 
+const inputFieldSymbol: unique symbol = Symbol('InputField');
+
 export function isInputField(field: unknown): field is GraphQLInputField {
-  return instanceOf((field as any)?.__isInputField, field, GraphQLInputField);
+  return instanceOf(field, inputFieldSymbol, GraphQLInputField);
 }
 
 export function assertInputField(field: unknown): GraphQLInputField {
@@ -199,6 +215,8 @@ export function assertInputField(field: unknown): GraphQLInputField {
   return field;
 }
 
+const listSymbol: unique symbol = Symbol('List');
+
 export function isListType(
   type: GraphQLInputType,
 ): type is GraphQLList<GraphQLInputType>;
@@ -207,7 +225,7 @@ export function isListType(
 ): type is GraphQLList<GraphQLOutputType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType>;
 export function isListType(type: unknown): type is GraphQLList<GraphQLType> {
-  return instanceOf((type as any)?.__isList, type, GraphQLList);
+  return instanceOf(type, listSymbol, GraphQLList);
 }
 
 export function assertListType(type: unknown): GraphQLList<GraphQLType> {
@@ -216,6 +234,8 @@ export function assertListType(type: unknown): GraphQLList<GraphQLType> {
   }
   return type;
 }
+
+const nonNullSymbol: unique symbol = Symbol('NonNull');
 
 export function isNonNullType(
   type: GraphQLInputType,
@@ -229,7 +249,7 @@ export function isNonNullType(
 export function isNonNullType(
   type: unknown,
 ): type is GraphQLNonNull<GraphQLNullableType> {
-  return instanceOf((type as any)?.__isNonNull, type, GraphQLNonNull);
+  return instanceOf(type, nonNullSymbol, GraphQLNonNull);
 }
 
 export function assertNonNullType(
@@ -372,11 +392,11 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
 export class GraphQLList<T extends GraphQLType>
   implements GraphQLSchemaElement
 {
-  readonly __isList: true;
+  readonly __kind: symbol;
   readonly ofType: T;
 
   constructor(ofType: T) {
-    this.__isList = true;
+    this.__kind = listSymbol;
     this.ofType = ofType;
   }
 
@@ -417,11 +437,11 @@ export class GraphQLList<T extends GraphQLType>
 export class GraphQLNonNull<T extends GraphQLNullableType>
   implements GraphQLSchemaElement
 {
-  readonly __isNonNull: true;
+  readonly __kind: symbol;
   readonly ofType: T;
 
   constructor(ofType: T) {
-    this.__isNonNull = true;
+    this.__kind = nonNullSymbol;
     this.ofType = ofType;
   }
 
@@ -659,7 +679,7 @@ export interface GraphQLScalarTypeExtensions {
 export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
   implements GraphQLSchemaElement
 {
-  readonly __isScalar: true;
+  readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
@@ -678,7 +698,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
   extensionASTNodes: ReadonlyArray<ScalarTypeExtensionNode>;
 
   constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>) {
-    this.__isScalar = true;
+    this.__kind = scalarSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
@@ -879,7 +899,7 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
 export class GraphQLObjectType<TSource = any, TContext = any>
   implements GraphQLSchemaElement
 {
-  readonly __isObject = true;
+  readonly __kind = objectSymbol;
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
@@ -891,7 +911,7 @@ export class GraphQLObjectType<TSource = any, TContext = any>
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
-    this.__isObject = true;
+    this.__kind = objectSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
@@ -1105,7 +1125,7 @@ export type GraphQLFieldNormalizedConfigMap<TSource, TContext> = ObjMap<
 export class GraphQLField<TSource = any, TContext = any, TArgs = any>
   implements GraphQLSchemaElement
 {
-  readonly __isField = true;
+  readonly __kind: symbol;
   parentType:
     | GraphQLObjectType<TSource, TContext>
     | GraphQLInterfaceType<TSource, TContext>
@@ -1128,7 +1148,7 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
     name: string,
     config: GraphQLFieldConfig<TSource, TContext, TArgs>,
   ) {
-    this.__isField = true;
+    this.__kind = fieldSymbol;
     this.parentType = parentType;
     this.name = assertName(name);
     this.description = config.description;
@@ -1180,7 +1200,7 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
 }
 
 export class GraphQLArgument implements GraphQLSchemaElement {
-  readonly __isArgument: true;
+  readonly __kind: symbol;
   parent: GraphQLField | GraphQLDirective;
   name: string;
   description: Maybe<string>;
@@ -1196,7 +1216,7 @@ export class GraphQLArgument implements GraphQLSchemaElement {
     name: string,
     config: GraphQLArgumentConfig,
   ) {
-    this.__isArgument = true;
+    this.__kind = argumentSymbol;
     this.parent = parent;
     this.name = assertName(name);
     this.description = config.description;
@@ -1286,7 +1306,7 @@ export interface GraphQLInterfaceTypeExtensions {
 export class GraphQLInterfaceType<TSource = any, TContext = any>
   implements GraphQLSchemaElement
 {
-  readonly __isInterface: true;
+  readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<TSource, TContext>>;
@@ -1298,7 +1318,7 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>) {
-    this.__isInterface = true;
+    this.__kind = interfaceSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1415,7 +1435,7 @@ export interface GraphQLUnionTypeExtensions {
  * ```
  */
 export class GraphQLUnionType implements GraphQLSchemaElement {
-  readonly __isUnion: true;
+  readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1426,7 +1446,7 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
-    this.__isUnion = true;
+    this.__kind = unionSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
@@ -1534,7 +1554,7 @@ export interface GraphQLEnumTypeExtensions {
  * will be used as its internal value.
  */
 export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
-  readonly __isEnum: true;
+  readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
@@ -1549,7 +1569,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   private _nameLookup: ObjMap<GraphQLEnumValue> | null;
 
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
-    this.__isEnum = true;
+    this.__kind = enumSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1760,7 +1780,7 @@ export interface GraphQLEnumValueNormalizedConfig
 }
 
 export class GraphQLEnumValue implements GraphQLSchemaElement {
-  readonly __isEnumValue: true;
+  readonly __kind: symbol;
   parentEnum: GraphQLEnumType;
   name: string;
   description: Maybe<string>;
@@ -1774,7 +1794,7 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
     name: string,
     config: GraphQLEnumValueConfig,
   ) {
-    this.__isEnumValue = true;
+    this.__kind = enumValueSymbol;
     this.parentEnum = parentEnum;
     this.name = assertEnumValueName(name);
     this.description = config.description;
@@ -1842,7 +1862,7 @@ export interface GraphQLInputObjectTypeExtensions {
  * ```
  */
 export class GraphQLInputObjectType implements GraphQLSchemaElement {
-  readonly __isInputObject: true;
+  readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
@@ -1853,7 +1873,7 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
   private _fields: ThunkObjMap<GraphQLInputField>;
 
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
-    this.__isInputObject = true;
+    this.__kind = inputObjectSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1961,7 +1981,7 @@ export type GraphQLInputFieldNormalizedConfigMap =
   ObjMap<GraphQLInputFieldNormalizedConfig>;
 
 export class GraphQLInputField implements GraphQLSchemaElement {
-  readonly __isInputField: true;
+  readonly __kind: symbol;
   parentType: GraphQLInputObjectType;
   name: string;
   description: Maybe<string>;
@@ -1982,7 +2002,7 @@ export class GraphQLInputField implements GraphQLSchemaElement {
       `${parentType}.${name} field has a resolve property, but Input Types cannot define resolvers.`,
     );
 
-    this.__isInputField = true;
+    this.__kind = inputFieldSymbol;
     this.parentType = parentType;
     this.name = assertName(name);
     this.description = config.description;

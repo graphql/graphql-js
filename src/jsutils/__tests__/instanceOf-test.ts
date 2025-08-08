@@ -5,16 +5,17 @@ import { instanceOf } from '../instanceOf.js';
 
 describe('instanceOf', () => {
   it('do not throw on values without prototype', () => {
+    const fooSymbol: unique symbol = Symbol('Foo');
     class Foo {
-      readonly __isFoo = true as const;
+      readonly __kind: symbol = fooSymbol;
       get [Symbol.toStringTag]() {
         return 'Foo';
       }
     }
 
-    expect(instanceOf(undefined, true, Foo)).to.equal(false);
-    expect(instanceOf(undefined, null, Foo)).to.equal(false);
-    expect(instanceOf(undefined, Object.create(null), Foo)).to.equal(false);
+    expect(instanceOf(true, fooSymbol, Foo)).to.equal(false);
+    expect(instanceOf(null, fooSymbol, Foo)).to.equal(false);
+    expect(instanceOf(Object.create(null), fooSymbol, Foo)).to.equal(false);
   });
 
   it('detect name clashes with older versions of this lib', () => {
@@ -24,73 +25,67 @@ describe('instanceOf', () => {
     }
 
     function newVersion() {
-      class Foo {
-        readonly __isFoo = true as const;
+      const fooSymbol: unique symbol = Symbol('Foo');
+      class FooClass {
+        readonly __kind: symbol = fooSymbol;
         get [Symbol.toStringTag]() {
           return 'Foo';
         }
       }
-      return Foo;
+      return { fooSymbol, FooClass };
     }
 
-    const NewClass = newVersion();
+    const { fooSymbol: newSymbol, FooClass: NewClass } = newVersion();
     const OldClass = oldVersion();
-    const newInstance = new NewClass();
-    expect(instanceOf(newInstance.__isFoo, newInstance, NewClass)).to.equal(
-      true,
-    );
-    expect(() => instanceOf(undefined, new OldClass(), NewClass)).to.throw();
+    expect(instanceOf(new NewClass(), newSymbol, NewClass)).to.equal(true);
+    expect(() => instanceOf(new OldClass(), newSymbol, NewClass)).to.throw();
   });
 
   it('allows instances to have share the same constructor name', () => {
     function getMinifiedClass(tag: string) {
+      const someSymbol: unique symbol = Symbol(tag);
       class SomeNameAfterMinification {
-        readonly [tag] = true as const;
+        readonly __kind: symbol = someSymbol;
         get [Symbol.toStringTag]() {
           return tag;
         }
       }
-      return SomeNameAfterMinification;
+      return { someSymbol, SomeNameAfterMinification };
     }
 
-    const Foo = getMinifiedClass('Foo');
-    const Bar = getMinifiedClass('Bar');
-    const fooInstance = new Foo();
-    const barInstance = new Bar();
-    expect(instanceOf(fooInstance.foo, fooInstance, Bar)).to.equal(false);
-    expect(instanceOf(barInstance.bar, barInstance, Foo)).to.equal(false);
+    const { someSymbol: fooSymbol, SomeNameAfterMinification: Foo } =
+      getMinifiedClass('Foo');
+    const { someSymbol: barSymbol, SomeNameAfterMinification: Bar } =
+      getMinifiedClass('Bar');
+    expect(instanceOf(new Foo(), barSymbol, Bar)).to.equal(false);
+    expect(instanceOf(new Bar(), fooSymbol, Foo)).to.equal(false);
 
-    const DuplicateOfFoo = getMinifiedClass('Foo');
-    const duplicateOfFooInstance = new DuplicateOfFoo();
-    expect(() =>
-      instanceOf(duplicateOfFooInstance.foo, new DuplicateOfFoo(), Foo),
-    ).to.throw();
-    expect(() =>
-      instanceOf(fooInstance.foo, fooInstance, DuplicateOfFoo),
-    ).to.throw();
+    const {
+      someSymbol: duplicateOfFooSymbol,
+      SomeNameAfterMinification: DuplicateOfFoo,
+    } = getMinifiedClass('Foo');
+    expect(() => instanceOf(new DuplicateOfFoo(), fooSymbol, Foo)).to.throw();
+    expect(() => instanceOf(new Foo(), duplicateOfFooSymbol, Foo)).to.throw();
   });
 
   it('fails with descriptive error message', () => {
     function getFoo() {
+      const fooSymbol: unique symbol = Symbol('Foo');
       class Foo {
-        readonly __isFoo = true as const;
         get [Symbol.toStringTag]() {
           return 'Foo';
         }
       }
-      return Foo;
+      return { fooSymbol, Foo };
     }
-    const Foo1 = getFoo();
-    const Foo2 = getFoo();
+    const { fooSymbol: foo1Symbol, Foo: Foo1 } = getFoo();
+    const { fooSymbol: foo2Symbol, Foo: Foo2 } = getFoo();
 
-    const foo1Instance = new Foo1();
-    const foo2Instance = new Foo2();
-
-    expect(() => instanceOf(foo1Instance.__isFoo, foo1Instance, Foo2)).to.throw(
-      /^Cannot use Foo "{ __isFoo: true }" from another module or realm./m,
+    expect(() => instanceOf(new Foo1(), foo2Symbol, Foo2)).to.throw(
+      /^Cannot use Foo "{}" from another module or realm./m,
     );
-    expect(() => instanceOf(foo2Instance.__isFoo, foo2Instance, Foo1)).to.throw(
-      /^Cannot use Foo "{ __isFoo: true }" from another module or realm./m,
+    expect(() => instanceOf(new Foo2(), foo1Symbol, Foo1)).to.throw(
+      /^Cannot use Foo "{}" from another module or realm./m,
     );
   });
 });
