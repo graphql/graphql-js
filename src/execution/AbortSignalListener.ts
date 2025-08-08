@@ -70,7 +70,7 @@ export function cancellableIterable<T>(
 ): AsyncIterable<T> {
   const iterator = iterable[Symbol.asyncIterator]();
 
-  const _next = iterator.next.bind(iterator);
+  const _next = () => iterator.next();
 
   if (iterator.return) {
     const _return = iterator.return.bind(iterator);

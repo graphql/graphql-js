@@ -918,12 +918,8 @@ export class GraphQLObjectType<TSource = any, TContext = any>
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._fields = (defineFieldMap<TSource, TContext>).bind(
-      undefined,
-      this,
-      config.fields,
-    );
-    this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
+    this._fields = () => defineFieldMap<TSource, TContext>(this, config.fields);
+    this._interfaces = () => defineInterfaces(config.interfaces);
   }
 
   get [Symbol.toStringTag]() {
@@ -1325,12 +1321,8 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
-    this._fields = (defineFieldMap<TSource, TContext>).bind(
-      undefined,
-      this,
-      config.fields,
-    );
-    this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
+    this._fields = () => defineFieldMap<TSource, TContext>(this, config.fields);
+    this._interfaces = () => defineInterfaces(config.interfaces);
   }
 
   get [Symbol.toStringTag]() {
@@ -1454,7 +1446,7 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
 
-    this._types = defineTypes.bind(undefined, config.types);
+    this._types = () => defineTypes(config.types);
   }
 
   get [Symbol.toStringTag]() {
@@ -1881,7 +1873,7 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
     this.extensionASTNodes = config.extensionASTNodes ?? [];
     this.isOneOf = config.isOneOf ?? false;
 
-    this._fields = defineInputFieldMap.bind(undefined, this, config.fields);
+    this._fields = () => defineInputFieldMap(this, config.fields);
   }
 
   get [Symbol.toStringTag]() {
