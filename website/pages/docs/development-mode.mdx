@@ -47,7 +47,7 @@ results.
 
 Duplicate modules of GraphQL.JS of the same version may also fail at runtime, sometimes in
 unexpected ways. This is because GraphQL.JS relies on the identity of the module for
-key features. Most significantly, `instanceof` checks are used throughout GraphQL.JS to
+key features. Most significantly, unique symbols are used throughout GraphQL.JS to
 identify and distinguish between GraphQL schema elements, such as the particular GraphQL type.
 Also, special exported constants like `BREAK` allow library users to manipulate visitor
 behavior, also relying on the module identity.
@@ -56,8 +56,8 @@ To ensure that only a single GraphQL.JS module is used, all libraries depending 
 should use the appropriate peer dependency mechanism, as provided by their package manager,
 bundler, build tool, or runtime.
 
-In development mode, GraphQL.JS provides a validation check triggered by any use of `instanceof`
-that should catch most cases of multiple GraphQL.js modules being used in the same project.
+In development mode, GraphQL.JS provides validation checks that should catch most cases of
+multiple GraphQL.js modules being used within the same project.
 
 This additional validation is unnecessary in production, where the GraphQL.js library is
 expected to be have been setup correctly as a single module. So as to avoid the performance
@@ -100,31 +100,23 @@ to enable development mode without the need for an explicit import.
 ### Node.js
 
 In Node.js, the development condition can be enabled by passing the `--conditions=development`
-flag to the Node.js runtime. This can be done within `package.json` scripts:
-
-```json
-{
-  "scripts": {
-    "start": "node --conditions=development index.js"
-  }
-}
-```
+flag to the Node.js runtime.
 
 Alternatively, this can be included within the `NODE_OPTIONS` environment variable:
 
 ```bash
-export NODE_OPTIONS=development
+export NODE_OPTIONS=--conditions=development
 ```
 
 #### Deno
 
-In Deno, conditional exports are not yet released, but are available within the latest canary build as follows:
+In Deno version 2.4.0 and later, you can enable the development condition by passing the `--conditions=development` flag to the runtime:
 
 ```bash
 deno run --conditions=development main.js
 ```
 
-Alternatively, within the canary build, this can be included within the `DENO_CONDITIONS` environment variable:
+Alternatively, the `DENO_CONDITIONS` environment variable may be used:
 
 ```bash
 export DENO_CONDITIONS=development
@@ -132,7 +124,7 @@ export DENO_CONDITIONS=development
 
 #### Bun
 
-In Bun, you can also enable the development condition by passing the `--conditions=development` to the runtime:
+In Bun version 1.0.30 and later, you can enable the development condition by passing the `--conditions=development` flag to the runtime:
 
 ```bash
 bun --conditions=development main.js
@@ -190,6 +182,6 @@ must be enabled explicitly.
 
 ### create-react-app
 
-When using Webpack 5 as its bundler, create-react-app support the 'development' condition
+When using Webpack 5 as its bundler, create-react-app supports the 'development' condition
 natively and requires no additional configuration. When using Webpack 4, development mode
 must be enabled explicitly.
