@@ -86,11 +86,7 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
   if (isESMOnly) {
     packageJSON.exports = {};
 
-    const { emittedTSFiles } = emitTSFiles({
-      outDir,
-      module: 'es2020',
-      extension: '.js',
-    });
+    const { emittedTSFiles } = emitTSFiles({ outDir, extension: '.js' });
 
     for (const filepath of emittedTSFiles) {
       if (path.basename(filepath) === 'index.js') {
@@ -113,9 +109,10 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
     const { emittedTSFiles } = emitTSFiles({
       outDir,
       module: 'commonjs',
+      moduleResolution: 'node10',
       extension: '.js',
     });
-    emitTSFiles({ outDir, module: 'es2020', extension: '.mjs' });
+    emitTSFiles({ outDir, extension: '.mjs' });
 
     packageJSON.exports = {};
     for (const filepath of emittedTSFiles) {
@@ -142,18 +139,18 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
 // Based on https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#getting-the-dts-from-a-javascript-file
 function emitTSFiles(options: {
   outDir: string;
-  module: string;
+  module?: string;
+  moduleResolution?: string;
   extension: string;
 }): {
   emittedTSFiles: ReadonlyArray<string>;
 } {
-  const { outDir, module, extension } = options;
+  const { extension, ...rest } = options;
   const tsOptions = readTSConfig({
-    module,
+    ...rest,
     noEmit: false,
     declaration: true,
-    declarationDir: outDir,
-    outDir,
+    declarationDir: rest.outDir,
     listEmittedFiles: true,
   });
 
