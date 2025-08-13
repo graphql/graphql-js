@@ -131,8 +131,11 @@ tool is built with GraphQL.js!
 Building a project using GraphQL.js with [webpack](https://webpack.js.org) or
 [rollup](https://github.com/rollup/rollup) should just work and only include
 the portions of the library you use. This works because GraphQL.js is distributed
-with both CommonJS (`require()`) and ESModule (`import`) files. Ensure that any
-custom build configurations look for `.mjs` files!
+with both CommonJS (`require()`) and ESModule (`import`) files. The `exports`
+map within the project `package.json` should direct runtimes and bundlers to
+the appropriate files. Tools that do not support `exports` will find the CommonJS
+and ESModule builds side by side, with the CommonJS code packaged
+in files with the `.js` extension and the ESModule build within `.mjs` files.
 
 ## Contributing
 
