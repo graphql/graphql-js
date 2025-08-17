@@ -1,5 +1,5 @@
 {
-  "description": "graphql-js development mode should work with Jest and SWC",
+  "description": "graphql-js development mode should work with Jest",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,8 +9,6 @@
     "graphql": "file:../graphql.tgz"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "@swc/core": "^1.6.0",
-    "@swc/jest": "^0.2.36"
+    "jest": "^29.7.0"
   }
 }
