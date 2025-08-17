@@ -1,9 +1,9 @@
 {
-  "description": "graphql-js explicit development mode should work with node",
+  "description": "graphql-js development mode should work with node",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test.js"
+    "test": "node --conditions=development test.js"
   },
   "dependencies": {
     "graphql": "file:../graphql.tgz"
