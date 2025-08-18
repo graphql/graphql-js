@@ -46,11 +46,11 @@ The data from one version used in the function from another could produce confus
 results.
 
 Duplicate modules of GraphQL.JS of the same version may also fail at runtime, sometimes in
-unexpected ways. This is because GraphQL.JS relies on the identity of the module for
-key features. Most significantly, unique symbols are used throughout GraphQL.JS to
-identify and distinguish between GraphQL schema elements, such as the particular GraphQL type.
-Also, special exported constants like `BREAK` allow library users to manipulate visitor
-behavior, also relying on the module identity.
+unexpected ways. This happens because GraphQL.JS relies on module-scoped objects for key
+features. For example, GraphQL.JS uses unique symbols internally to distinguish between
+different schema elements, which underpin the exported predicates such as `isScalarType()`,
+`isObjectType()`, etc. Similarly, the exported constant `BREAK` allows library users to
+control visitor behavior, but will fail when passed to a duplicate module.
 
 To ensure that only a single GraphQL.JS module is used, all libraries depending on GraphQL.JS
 should use the appropriate peer dependency mechanism, as provided by their package manager,
