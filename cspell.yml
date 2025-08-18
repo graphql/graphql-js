@@ -68,6 +68,7 @@ words:
   - deno
   - denoland
   - hashbang
+  - vitest
   - Rollup
   - Rspack
   - Rsbuild

@@ -4,9 +4,8 @@ title: Development Mode
 
 # Development Mode
 
-In development mode, GraphQL.JS can provides additional runtime check appropriate for
-development-time errors, including primarily the erroneous inclusion of multiple
-GraphQL.JS modules.
+In development mode, GraphQL.JS can provide an additional runtime check appropriate for
+development-time errors: the erroneous inclusion of multiple GraphQL.JS modules.
 
 Unlike earlier versions of GraphQL.JS, by default, development mode is disabled.
 This is to best ensure that production builds do not incur the performance and bundle
@@ -16,24 +15,28 @@ Also, unlike earlier versions, development mode is not configured by use of
 environment variables, which are accessed in disparate ways on the various platforms.
 In particular, the `NODE_ENV` environment variable now has no effect on triggering
 development mode. Rather, development mode is either enabled:
-1. explicitly, by calling `enableDevMode()` or
-2. implicitly, by setting the 'development' condition, which is possible only on
-   platforms that support `package.json` conditional exports and custom conditions.
+1. by setting a 'development' condition, which is possible only on
+   platforms that support `package.json` conditional exports and custom conditions, or
+2. by calling `enableDevMode()` within user code.
 
-Conditional exports are supported by: Node.js, Deno (canary), Bun, Webpack 5, Rspack,
-Rollup (via the `node-resolve` plugin), esbuild, Vite, and Rsbuild. create-react-app and Next.js
-support conditional exports when using Webpack 5 as their bundler.
+Conditional exports with custom conditions are supported by: Node.js, Deno, Bun,
+Webpack 5, Rspack, Rollup (via the `node-resolve` plugin), esbuild, Vite, and Rsbuild.
+create-react-app and Next.js support conditional exports when using Webpack 5 as their
+bundler.
 
-Conditional exports are not supported by Deno (current), Webpack 4, Rollup (without
-the `node-resolve` plugin), or swc. create-react-app and Next.js do not support
-conditional exports when using Webpack 4 as their bundler, nor does Next.js yet
-support conditional exports when using Turbopack (see
+Conditional exports with custom conditions are not supported by Webpack 4, Rollup
+(without the `node-resolve` plugin), older versions of Deno or transpilers such as
+swc. create-react-app and Next.js do not support conditional exports with custom
+conditions when using Webpack 4 as their bundler, nor does Next.js yet support
+conditional exports with custom conditions when using Turbopack (see
 https://github.com/vercel/next.js/discussions/78912).
 
-We encourage enabling development mode in a development environment, either
-explicitly or implicitly. This allows for an additional check to ensure that only a
-single GraphQL.JS module is used. Additional development-time checks may also be added in
-the future.
+Testing frameworks such as Mocha, Jest, and Vitest support conditional exports with
+custom conditions,
+
+We encourage enabling development mode in a development environment. This facilitates
+the additional check to ensure that only a single GraphQL.JS module is used. Additional
+development-time checks may also be added in the future.
 
 First, we will discuss the implications of using multiple GraphQL.JS modules, and then
 we will share additional details for how to enable development mode on various platforms.
@@ -185,3 +188,57 @@ must be enabled explicitly.
 When using Webpack 5 as its bundler, create-react-app supports the 'development' condition
 natively and requires no additional configuration. When using Webpack 4, development mode
 must be enabled explicitly.
+
+### Mocha
+
+Mocha supports the 'development' condition by passing the appropriate configuration to `node`:
+
+```bash
+mocha --node-option conditions=development entrypoint.js
+```
+
+Options can also be passed to `node` via the `NODE_OPTIONS` environment variable:
+
+```bash
+export NODE_OPTIONS=--conditions=development
+```
+
+### Jest
+
+Jest supports the 'development' condition by passing the appropriate configuration:
+
+```ts
+//jest.config.ts
+export const jestConfig = {
+  testEnvironmentOptions: {
+    customExportConditions: ['development'],
+  },
+};
+
+You may need to also include the `node` condition within the provided list:
+
+```ts
+//jest.config.ts
+export const jestConfig = {
+  testEnvironmentOptions: {
+    customExportConditions: ['development', 'node'],
+  },
+};
+```
+
+### Vitest
+
+Vitest supports the 'development' condition by passing the appropriate configuration:
+
+```ts
+//vitest.config.ts
+import { defineConfig } from 'vitest/config';
+
+export const vitestConfig = defineConfig({
+  resolve: {
+    conditions: ['development'],
+  },
+  test: {
+    include: ['**/*.test.js'],
+  },
+});
