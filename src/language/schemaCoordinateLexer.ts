@@ -82,10 +82,6 @@ export class SchemaCoordinateLexer implements LexerInterface {
 
 /**
  * Gets the next token from the source starting at the given position.
- *
- * This skips over whitespace until it finds the next lexable token, then lexes
- * punctuators immediately or calls the appropriate helper function for more
- * complicated tokens.
  */
 function readNextToken(lexer: SchemaCoordinateLexer, start: number): Token {
   const body = lexer.source.body;
