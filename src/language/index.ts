@@ -11,7 +11,7 @@ export { Kind } from './kinds.js';
 
 export { TokenKind } from './tokenKind.js';
 
-export { Lexer, SchemaCoordinateLexer } from './lexer.js';
+export { Lexer } from './lexer.js';
 
 export {
   parse,
@@ -20,7 +20,7 @@ export {
   parseType,
   parseSchemaCoordinate,
 } from './parser.js';
-export type { ParseOptions, ParseSchemaCoordinateOptions } from './parser.js';
+export type { ParseOptions } from './parser.js';
 
 export { print } from './printer.js';
 

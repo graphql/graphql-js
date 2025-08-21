@@ -9,11 +9,7 @@ import { inspect } from '../../jsutils/inspect.js';
 import { GraphQLError } from '../../error/GraphQLError.js';
 
 import type { Token } from '../ast.js';
-import {
-  isPunctuatorTokenKind,
-  Lexer,
-  SchemaCoordinateLexer,
-} from '../lexer.js';
+import { isPunctuatorTokenKind, Lexer } from '../lexer.js';
 import { Source } from '../source.js';
 import { TokenKind } from '../tokenKind.js';
 
@@ -170,8 +166,8 @@ describe('Lexer', () => {
   });
 
   it('reports unexpected characters', () => {
-    expectSyntaxError('^').to.deep.equal({
-      message: 'Syntax Error: Unexpected character: "^".',
+    expectSyntaxError('.').to.deep.equal({
+      message: 'Syntax Error: Unexpected character: ".".',
       locations: [{ line: 1, column: 1 }],
     });
   });
@@ -969,13 +965,6 @@ describe('Lexer', () => {
       value: undefined,
     });
 
-    expect(lexOne('.')).to.contain({
-      kind: TokenKind.DOT,
-      start: 0,
-      end: 1,
-      value: undefined,
-    });
-
     expect(lexOne('...')).to.contain({
       kind: TokenKind.SPREAD,
       start: 0,
@@ -1189,33 +1178,6 @@ describe('Lexer', () => {
     expectSyntaxError('# Invalid surrogate \uDEAD').to.deep.equal({
       message: 'Syntax Error: Invalid character: U+DEAD.',
       locations: [{ line: 1, column: 21 }],
-    });
-  });
-});
-
-describe('SchemaCoordinateLexer', () => {
-  it('can be stringified', () => {
-    const lexer = new SchemaCoordinateLexer(new Source('Name.field'));
-    expect(Object.prototype.toString.call(lexer)).to.equal(
-      '[object SchemaCoordinateLexer]',
-    );
-  });
-
-  it('tracks a schema coordinate', () => {
-    const lexer = new SchemaCoordinateLexer(new Source('Name.field'));
-    expect(lexer.advance()).to.contain({
-      kind: TokenKind.NAME,
-      start: 0,
-      end: 4,
-      value: 'Name',
-    });
-  });
-
-  it('forbids ignored tokens', () => {
-    const lexer = new SchemaCoordinateLexer(new Source('\nName.field'));
-    expectToThrowJSON(() => lexer.advance()).to.deep.equal({
-      message: 'Syntax Error: Invalid character: U+000A.',
-      locations: [{ line: 1, column: 1 }],
     });
   });
 });

@@ -230,7 +230,6 @@ export {
   printSourceLocation,
   // Lex
   Lexer,
-  SchemaCoordinateLexer,
   TokenKind,
   // Parse
   parse,
@@ -262,7 +261,6 @@ export {
 
 export type {
   ParseOptions,
-  ParseSchemaCoordinateOptions,
   SourceLocation,
   // Visitor utilities
   ASTVisitor,

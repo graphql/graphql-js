@@ -722,7 +722,7 @@ describe('Parser', () => {
       expect(() => parseSchemaCoordinate('MyType.field.deep'))
         .to.throw()
         .to.deep.include({
-          message: 'Syntax Error: Expected <EOF>, found ".".',
+          message: 'Syntax Error: Expected <EOF>, found ..',
           locations: [{ line: 1, column: 13 }],
         });
     });
@@ -751,10 +751,10 @@ describe('Parser', () => {
     });
 
     it('rejects Name . Name ( Name : Name )', () => {
-      expect(() => parseSchemaCoordinate('MyType.field(arg:value)'))
+      expect(() => parseSchemaCoordinate('MyType.field(arg: value)'))
         .to.throw()
         .to.deep.include({
-          message: 'Syntax Error: Expected ")", found Name "value".',
+          message: 'Syntax Error: Invalid character: " ".',
           locations: [{ line: 1, column: 18 }],
         });
     });
@@ -794,9 +794,15 @@ describe('Parser', () => {
       expect(() => parseSchemaCoordinate('@myDirective.field'))
         .to.throw()
         .to.deep.include({
-          message: 'Syntax Error: Expected <EOF>, found ".".',
+          message: 'Syntax Error: Expected <EOF>, found ..',
           locations: [{ line: 1, column: 13 }],
         });
+    });
+
+    it('accepts a Source object', () => {
+      expect(parseSchemaCoordinate('MyType')).to.deep.equal(
+        parseSchemaCoordinate(new Source('MyType')),
+      );
     });
   });
 });
