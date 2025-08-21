@@ -68,6 +68,7 @@ export let instanceOf: (
   symbol: symbol,
   constructor: Constructor,
 ) => boolean = prodInstanceOf;
+
 export function enableDevInstanceOf(): void {
   instanceOf = devInstanceOf;
 }
