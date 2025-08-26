@@ -48,6 +48,7 @@ ignoreRegExpList:
 
 words:
   - graphiql
+  - metafield
   - uncoerce
   - uncoerced
 

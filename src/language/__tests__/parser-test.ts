@@ -790,6 +790,60 @@ describe('Parser', () => {
       });
     });
 
+    it('parses __Type', () => {
+      const result = parseSchemaCoordinate('__Type');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.TYPE_COORDINATE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: '__Type',
+        },
+      });
+    });
+
+    it('parses Type.__metafield', () => {
+      const result = parseSchemaCoordinate('Type.__metafield');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.MEMBER_COORDINATE,
+        loc: { start: 0, end: 16 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 4 },
+          value: 'Type',
+        },
+        memberName: {
+          kind: Kind.NAME,
+          loc: { start: 5, end: 16 },
+          value: '__metafield',
+        },
+      });
+    });
+
+    it('parses Type.__metafield(arg:)', () => {
+      const result = parseSchemaCoordinate('Type.__metafield(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.ARGUMENT_COORDINATE,
+        loc: { start: 0, end: 22 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 4 },
+          value: 'Type',
+        },
+        fieldName: {
+          kind: Kind.NAME,
+          loc: { start: 5, end: 16 },
+          value: '__metafield',
+        },
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 17, end: 20 },
+          value: 'arg',
+        },
+      });
+    });
+
     it('rejects @ Name . Name', () => {
       expect(() => parseSchemaCoordinate('@myDirective.field'))
         .to.throw()

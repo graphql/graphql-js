@@ -14,10 +14,14 @@ import type { Source } from '../language/source.js';
 
 import type {
   GraphQLArgument,
+  GraphQLEnumType,
   GraphQLEnumValue,
   GraphQLField,
   GraphQLInputField,
+  GraphQLInputObjectType,
+  GraphQLInterfaceType,
   GraphQLNamedType,
+  GraphQLObjectType,
 } from '../type/definition.js';
 import {
   isEnumType,
@@ -38,25 +42,25 @@ export interface ResolvedNamedType {
 
 export interface ResolvedField {
   readonly kind: 'Field';
-  readonly type: GraphQLNamedType;
+  readonly type: GraphQLObjectType | GraphQLInterfaceType;
   readonly field: GraphQLField<unknown, unknown>;
 }
 
 export interface ResolvedInputField {
   readonly kind: 'InputField';
-  readonly type: GraphQLNamedType;
+  readonly type: GraphQLInputObjectType;
   readonly inputField: GraphQLInputField;
 }
 
 export interface ResolvedEnumValue {
   readonly kind: 'EnumValue';
-  readonly type: GraphQLNamedType;
+  readonly type: GraphQLEnumType;
   readonly enumValue: GraphQLEnumValue;
 }
 
 export interface ResolvedFieldArgument {
   readonly kind: 'FieldArgument';
-  readonly type: GraphQLNamedType;
+  readonly type: GraphQLObjectType | GraphQLInterfaceType;
   readonly field: GraphQLField<unknown, unknown>;
   readonly fieldArgument: GraphQLArgument;
 }
@@ -83,8 +87,10 @@ export type ResolvedSchemaElement =
 
 /**
  * A schema coordinate is resolved in the context of a GraphQL schema to
- * uniquely identifies a schema element. It returns undefined if the schema
- * coordinate does not resolve to a schema element.
+ * uniquely identify a schema element. It returns undefined if the schema
+ * coordinate does not resolve to a schema element, meta-field, or introspection
+ * schema element. It will throw if the containing schema element (if
+ * applicable) does not exist.
  *
  * https://spec.graphql.org/draft/#sec-Schema-Coordinates.Semantics
  */
