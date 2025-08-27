@@ -33,29 +33,29 @@ export interface GraphQLFormattedErrorExtensions {
   [attributeName: string]: unknown;
 }
 
-export interface GraphQLErrorOptions {
+export interface GraphQLErrorOptions<TErrorExtensions = GraphQLErrorExtensions> {
   nodes?: ReadonlyArray<ASTNode> | ASTNode | null;
   source?: Maybe<Source>;
   positions?: Maybe<ReadonlyArray<number>>;
   path?: Maybe<ReadonlyArray<string | number>>;
   originalError?: Maybe<Error & { readonly extensions?: unknown }>;
-  extensions?: Maybe<GraphQLErrorExtensions>;
+  extensions?: Maybe<TErrorExtensions>;
 }
 
-type BackwardsCompatibleArgs =
-  | [options?: GraphQLErrorOptions]
+type BackwardsCompatibleArgs<TErrorExtensions = GraphQLErrorExtensions> =
+  | [options?: GraphQLErrorOptions<TErrorExtensions>]
   | [
-      nodes?: GraphQLErrorOptions['nodes'],
-      source?: GraphQLErrorOptions['source'],
-      positions?: GraphQLErrorOptions['positions'],
-      path?: GraphQLErrorOptions['path'],
-      originalError?: GraphQLErrorOptions['originalError'],
-      extensions?: GraphQLErrorOptions['extensions'],
+      nodes?: GraphQLErrorOptions<TErrorExtensions>['nodes'],
+      source?: GraphQLErrorOptions<TErrorExtensions>['source'],
+      positions?: GraphQLErrorOptions<TErrorExtensions>['positions'],
+      path?: GraphQLErrorOptions<TErrorExtensions>['path'],
+      originalError?: GraphQLErrorOptions<TErrorExtensions>['originalError'],
+      extensions?: GraphQLErrorOptions<TErrorExtensions>['extensions'],
     ];
 
-function toNormalizedOptions(
-  args: BackwardsCompatibleArgs,
-): GraphQLErrorOptions {
+function toNormalizedOptions<TErrorExtensions = GraphQLErrorExtensions>(
+  args: BackwardsCompatibleArgs<TErrorExtensions>,
+): GraphQLErrorOptions<TErrorExtensions> {
   const firstArg = args[0];
   if (firstArg == null || 'kind' in firstArg || 'length' in firstArg) {
     return {
@@ -76,7 +76,7 @@ function toNormalizedOptions(
  * and stack trace, it also includes information about the locations in a
  * GraphQL document and/or execution result that correspond to the Error.
  */
-export class GraphQLError extends Error {
+export class GraphQLError<TErrorExtensions = GraphQLErrorExtensions> extends Error {
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
    * which correspond to this error.
@@ -124,9 +124,9 @@ export class GraphQLError extends Error {
   /**
    * Extension fields to add to the formatted error.
    */
-  readonly extensions: GraphQLErrorExtensions;
+  readonly extensions: TErrorExtensions;
 
-  constructor(message: string, options?: GraphQLErrorOptions);
+  constructor(message: string, options?: GraphQLErrorOptions<TErrorExtensions>);
   /**
    * @deprecated Please use the `GraphQLErrorOptions` constructor overload instead.
    */
@@ -137,11 +137,11 @@ export class GraphQLError extends Error {
     positions?: Maybe<ReadonlyArray<number>>,
     path?: Maybe<ReadonlyArray<string | number>>,
     originalError?: Maybe<Error & { readonly extensions?: unknown }>,
-    extensions?: Maybe<GraphQLErrorExtensions>,
+    extensions?: Maybe<TErrorExtensions>,
   );
-  constructor(message: string, ...rawArgs: BackwardsCompatibleArgs) {
+  constructor(message: string, ...rawArgs: BackwardsCompatibleArgs<TErrorExtensions>) {
     const { nodes, source, positions, path, originalError, extensions } =
-      toNormalizedOptions(rawArgs);
+      toNormalizedOptions<TErrorExtensions>(rawArgs);
     super(message);
 
     this.name = 'GraphQLError';
@@ -231,9 +231,9 @@ export class GraphQLError extends Error {
     return output;
   }
 
-  toJSON(): GraphQLFormattedError {
+  toJSON(): GraphQLFormattedError<TErrorExtensions> {
     type WritableFormattedError = {
-      -readonly [P in keyof GraphQLFormattedError]: GraphQLFormattedError[P];
+      -readonly [P in keyof GraphQLFormattedError<TErrorExtensions>]: GraphQLFormattedError<TErrorExtensions>[P];
     };
 
     const formattedError: WritableFormattedError = {
@@ -265,7 +265,7 @@ function undefinedIfEmpty<T>(
 /**
  * See: https://spec.graphql.org/draft/#sec-Errors
  */
-export interface GraphQLFormattedError {
+export interface GraphQLFormattedError<TErrorExtensions = GraphQLFormattedErrorExtensions> {
   /**
    * A short, human-readable summary of the problem that **SHOULD NOT** change
    * from occurrence to occurrence of the problem, except for purposes of
@@ -288,7 +288,7 @@ export interface GraphQLFormattedError {
    * Reserved for implementors to extend the protocol however they see fit,
    * and hence there are no additional restrictions on its contents.
    */
-  readonly extensions?: GraphQLFormattedErrorExtensions;
+  readonly extensions?: TErrorExtensions;
 }
 
 /**

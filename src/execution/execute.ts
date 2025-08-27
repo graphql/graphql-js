@@ -127,8 +127,9 @@ export interface ExecutionContext {
 export interface ExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
+  TErrorExtensions = ObjMap<unknown>,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
+  errors?: ReadonlyArray<GraphQLError<TErrorExtensions>>;
   data?: TData | null;
   extensions?: TExtensions;
 }
