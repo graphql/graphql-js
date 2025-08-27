@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import type {
@@ -12,32 +12,32 @@ import type { GraphQLDirective } from '../../type/directives.js';
 import { buildSchema } from '../buildASTSchema.js';
 import { resolveSchemaCoordinate } from '../resolveSchemaCoordinate.js';
 
+const schema = buildSchema(`
+  type Query {
+    searchBusiness(criteria: SearchCriteria!): [Business]
+  }
+
+  input SearchCriteria {
+    name: String
+    filter: SearchFilter
+  }
+
+  enum SearchFilter {
+    OPEN_NOW
+    DELIVERS_TAKEOUT
+    VEGETARIAN_MENU
+  }
+
+  type Business {
+    id: ID
+    name: String
+    email: String @private(scope: "loggedIn")
+  }
+
+  directive @private(scope: String!) on FIELD_DEFINITION
+`);
+
 describe('resolveSchemaCoordinate', () => {
-  const schema = buildSchema(`
-    type Query {
-      searchBusiness(criteria: SearchCriteria!): [Business]
-    }
-
-    input SearchCriteria {
-      name: String
-      filter: SearchFilter
-    }
-
-    enum SearchFilter {
-      OPEN_NOW
-      DELIVERS_TAKEOUT
-      VEGETARIAN_MENU
-    }
-
-    type Business {
-      id: ID
-      name: String
-      email: String @private(scope: "loggedIn")
-    }
-
-    directive @private(scope: String!) on FIELD_DEFINITION
-  `);
-
   it('resolves a Named Type', () => {
     expect(resolveSchemaCoordinate(schema, 'Business')).to.deep.equal({
       kind: 'NamedType',
@@ -181,10 +181,20 @@ describe('resolveSchemaCoordinate', () => {
       'Expected "unknown" to be defined as a directive in the schema.',
     );
   });
+});
 
+/*
+ * NOTE: the following are not required for spec compliance; resolution
+ * of meta-fields is implementation-defined.
+ *
+ * These tests are here to ensure a change of behavior will only be made
+ * in a semver-major release of GraphQL.js.
+ */
+describe('resolveSchemaCoordinate (meta-fields and introspection types)', () => {
   it('resolves a meta-field', () => {
     const type = schema.getType('Business') as GraphQLObjectType;
     const field = schema.getField(type, '__typename');
+    assert.ok(field);
     expect(
       resolveSchemaCoordinate(schema, 'Business.__typename'),
     ).to.deep.equal({

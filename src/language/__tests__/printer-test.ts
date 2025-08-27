@@ -308,6 +308,13 @@ describe('Printer: Query document', () => {
     );
     expect(print(parseSchemaCoordinate('@name'))).to.equal('@name');
     expect(print(parseSchemaCoordinate('@name(arg:)'))).to.equal('@name(arg:)');
+    expect(print(parseSchemaCoordinate('__Type'))).to.equal('__Type');
+    expect(print(parseSchemaCoordinate('Type.__metafield'))).to.equal(
+      'Type.__metafield',
+    );
+    expect(print(parseSchemaCoordinate('Type.__metafield(arg:)'))).to.equal(
+      'Type.__metafield(arg:)',
+    );
   });
 
   it('throws syntax error for ignored tokens in schema coordinates', () => {
