@@ -54,8 +54,8 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/github/gitignore.git
 
-          rm gitignore/Global/ModelSim.gitignore
-          rm gitignore/Global/Images.gitignore
+          rm -f gitignore/Global/ModelSim.gitignore
+          rm -f gitignore/Global/Images.gitignore
           cat gitignore/Node.gitignore gitignore/Global/*.gitignore > all.gitignore
 
           IGNORED_FILES=$(git ls-files --cached --ignored --exclude-from=all.gitignore)
