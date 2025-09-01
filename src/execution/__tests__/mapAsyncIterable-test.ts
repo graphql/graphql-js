@@ -359,4 +359,43 @@ describe('mapAsyncIterable', () => {
         : Promise.resolve(x),
     );
   });
+
+  it('disposes of async generator', async () => {
+    let returned = false;
+
+    const items = [1, 2, 3];
+    const generator: AsyncGenerator<number, void, void> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next(): Promise<IteratorResult<number, void>> {
+        const value = items.shift();
+        if (value !== undefined) {
+          return Promise.resolve({ done: false, value });
+        }
+
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      return(): Promise<IteratorResult<number, void>> {
+        returned = true;
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      throw(): Promise<IteratorResult<number, void>> {
+        returned = true;
+        return Promise.reject(new Error());
+      },
+      async [Symbol.asyncDispose]() {
+        await this.return();
+      },
+    };
+
+    {
+      await using doubles = mapAsyncIterable(generator, (x) => x + x);
+
+      expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+      expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
+    }
+
+    expect(returned).to.equal(true);
+  });
 });

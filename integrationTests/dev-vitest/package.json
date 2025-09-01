@@ -1,0 +1,12 @@
+{
+  "description": "graphql-js development mode should work with Vitest",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz",
+    "vitest": "^1.0.0"
+  }
+}

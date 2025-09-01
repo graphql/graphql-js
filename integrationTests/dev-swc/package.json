@@ -1,0 +1,14 @@
+{
+  "description": "graphql-js development mode should work with SWC",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "swc index.js -d dist",
+    "test": "npm run build && node dist/index.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz",
+    "@swc/cli": "^0.1.0",
+    "@swc/core": "^1.3.0"
+  }
+}

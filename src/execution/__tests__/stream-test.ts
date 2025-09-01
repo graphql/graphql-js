@@ -755,8 +755,9 @@ describe('Execute: stream directive', () => {
       }
     `);
     const result = await complete(document, {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      async *friendList() {},
+      async *friendList() {
+        // no-op, not called
+      },
     });
     expectJSON(result).toDeepEqual({
       errors: [
@@ -2502,6 +2503,70 @@ describe('Execute: stream directive', () => {
       value: undefined,
     });
     await expectPromise(throwPromise).toRejectWith('bad');
+    assert(returned);
+  });
+  it('Returns underlying async iterables when uses resource is disposed', async () => {
+    let index = 0;
+    let returned = false;
+    const iterable = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => {
+          const friend = friends[index++];
+          if (friend == null) {
+            return Promise.resolve({ done: true, value: undefined });
+          }
+          return Promise.resolve({ done: false, value: friend });
+        },
+        return: () => {
+          returned = true;
+        },
+      }),
+    };
+
+    const document = parse(`
+      query {
+        friendList @stream(initialCount: 0) {
+          id
+        }
+      }
+    `);
+
+    const executeResult = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        friendList: iterable,
+      },
+    });
+    assert('initialResult' in executeResult);
+
+    {
+      await using iterator =
+        executeResult.subsequentResults[Symbol.asyncIterator]();
+
+      const result1 = executeResult.initialResult;
+      expectJSON(result1).toDeepEqual({
+        data: {
+          friendList: [],
+        },
+        pending: [{ id: '0', path: ['friendList'] }],
+        hasNext: true,
+      });
+
+      expectJSON(await iterator.next()).toDeepEqual({
+        done: false,
+        value: {
+          incremental: [
+            {
+              items: [{ id: '1' }],
+              id: '0',
+            },
+          ],
+          hasNext: true,
+        },
+      });
+    }
+
     assert(returned);
   });
 });

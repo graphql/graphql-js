@@ -61,6 +61,9 @@ export class SimplePubSub<T> {
       [Symbol.asyncIterator]() {
         return this;
       },
+      async [Symbol.asyncDispose]() {
+        await this.return();
+      },
     };
 
     function pushValue(event: T): void {

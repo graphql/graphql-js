@@ -19,11 +19,13 @@ import type {
 import { GraphQLArgument, GraphQLNonNull } from './definition.js';
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
 
+const directiveSymbol: unique symbol = Symbol('Directive');
+
 /**
  * Test if the given value is a GraphQL directive.
  */
 export function isDirective(directive: unknown): directive is GraphQLDirective {
-  return instanceOf(directive, GraphQLDirective);
+  return instanceOf(directive, directiveSymbol, GraphQLDirective);
 }
 
 export function assertDirective(directive: unknown): GraphQLDirective {
@@ -53,6 +55,7 @@ export interface GraphQLDirectiveExtensions {
  * behavior. Type system creators will usually not create these directly.
  */
 export class GraphQLDirective implements GraphQLSchemaElement {
+  readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
@@ -62,6 +65,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
   astNode: Maybe<DirectiveDefinitionNode>;
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
+    this.__kind = directiveSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
     this.locations = config.locations;

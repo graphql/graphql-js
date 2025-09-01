@@ -10,9 +10,7 @@ export function memoize3<
   let cache0: WeakMap<A1, WeakMap<A2, WeakMap<A3, R>>>;
 
   return function memoized(a1, a2, a3) {
-    if (cache0 === undefined) {
-      cache0 = new WeakMap();
-    }
+    cache0 ??= new WeakMap();
 
     let cache1 = cache0.get(a1);
     if (cache1 === undefined) {

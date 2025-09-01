@@ -794,15 +794,15 @@ describe('Type System: Enums', () => {
   });
 
   it('rejects an Enum type with incorrectly named values', () => {
-    expect(
-      () =>
-        new GraphQLEnumType({
-          name: 'SomeEnum',
-          values: {
-            'bad-name': {},
-          },
-        }),
-    ).to.throw('Names must only contain [_a-zA-Z0-9] but "bad-name" does not.');
+    const enumType = new GraphQLEnumType({
+      name: 'SomeEnum',
+      values: {
+        'bad-name': {},
+      },
+    });
+    expect(() => enumType.getValues()).to.throw(
+      'Names must only contain [_a-zA-Z0-9] but "bad-name" does not.',
+    );
   });
 });
 

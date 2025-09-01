@@ -55,7 +55,7 @@ export default tsConfig(
       'internal-rules/require-to-string-tag': 'off',
 
       //////////////////////////////////////////////////////////////////////////////
-      // `eslint-plugin-n` rule list based on `v17.14.x`
+      // `eslint-plugin-n` rule list based on `v17.21.x`
       //////////////////////////////////////////////////////////////////////////////
 
       // Rules
@@ -82,6 +82,7 @@ export default tsConfig(
       'n/no-restricted-import': 'off',
       'n/no-restricted-require': 'off',
       'n/no-sync': 'off', // TODO: consider enabling, currently triggers with executeSync/graphqlSync, without ability to add exceptions
+      'n/no-top-level-await': 'error',
       'n/no-unpublished-bin': 'error',
       'n/no-unpublished-import': 'error',
       'n/no-unpublished-require': 'error',
@@ -105,12 +106,13 @@ export default tsConfig(
       'n/shebang': 'error',
 
       //////////////////////////////////////////////////////////////////////////////
-      // `eslint-plugin-import` rule list based on `v2.31.x`
+      // `eslint-plugin-import` rule list based on `v2.32.x`
       //////////////////////////////////////////////////////////////////////////////
 
       // Static analysis
       // https://github.com/benmosher/eslint-plugin-import#static-analysis
       'import/default': 'error',
+      'import/enforce-node-protocol-usage': ['error', 'always'],
       'import/named': 'error',
       'import/namespace': 'error',
       'import/no-absolute-path': 'error',
@@ -228,7 +230,7 @@ export default tsConfig(
       'simple-import-sort/exports': 'off', // TODO: error
 
       //////////////////////////////////////////////////////////////////////////////
-      // ESLint builtin rules list based on `v9.16.x`
+      // ESLint builtin rules list based on `v9.31.x`
       //////////////////////////////////////////////////////////////////////////////
 
       // Possible Errors
@@ -275,6 +277,7 @@ export default tsConfig(
       'no-sparse-arrays': 'error',
       'no-template-curly-in-string': 'error',
       'no-this-before-super': 'error',
+      'no-unassigned-vars': 'error',
       'no-undef': 'error',
       'no-unexpected-multiline': 'error',
       'no-unmodified-loop-condition': 'error',
@@ -492,7 +495,7 @@ export default tsConfig(
     },
     rules: {
       //////////////////////////////////////////////////////////////////////////
-      // `@typescript-eslint/eslint-plugin` rule list based on `v8.16.x`
+      // `@typescript-eslint/eslint-plugin` rule list based on `v8.37.x`
       //////////////////////////////////////////////////////////////////////////
 
       // Supported Rules
@@ -513,7 +516,7 @@ export default tsConfig(
       ],
       '@typescript-eslint/ban-tslint-comment': 'error',
       '@typescript-eslint/class-literal-property-style': 'off', // TODO: enable after TS conversion
-      '@typescript-eslint/class-methods-use-this': 'off',
+      '@typescript-eslint/class-methods-use-this': 'off', // now in core
       '@typescript-eslint/consistent-generic-constructors': 'error',
       '@typescript-eslint/consistent-indexed-object-style': [
         'error',
@@ -524,32 +527,27 @@ export default tsConfig(
       '@typescript-eslint/consistent-type-definitions': 'error',
       '@typescript-eslint/consistent-type-exports': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
-      '@typescript-eslint/default-param-last': 'error',
+      '@typescript-eslint/default-param-last': 'off', // now in core
       '@typescript-eslint/dot-notation': 'error',
       '@typescript-eslint/explicit-function-return-type': 'off', // TODO: consider
       '@typescript-eslint/explicit-member-accessibility': 'off', // TODO: consider
       '@typescript-eslint/explicit-module-boundary-types': 'off', // TODO: consider
-      '@typescript-eslint/init-declarations': 'off',
-      '@typescript-eslint/max-params': [
-        'error',
-        {
-          max: 5, // TODO: drop to default number, which is 3
-        },
-      ],
+      '@typescript-eslint/init-declarations': 'off', // now in core
+      '@typescript-eslint/max-params': 'off', // now in core
       '@typescript-eslint/member-ordering': 'error',
       '@typescript-eslint/method-signature-style': 'error',
       '@typescript-eslint/naming-convention': 'off',
-      '@typescript-eslint/no-array-constructor': 'error',
+      '@typescript-eslint/no-array-constructor': 'off', // now in core
       '@typescript-eslint/no-array-delete': 'error',
       '@typescript-eslint/no-base-to-string': 'error',
       '@typescript-eslint/no-confusing-non-null-assertion': 'error',
       '@typescript-eslint/no-confusing-void-expression': 'off', // TODO: enable with ignoreArrowShorthand
       '@typescript-eslint/no-deprecated': 'off',
-      '@typescript-eslint/no-dupe-class-members': 'error',
+      '@typescript-eslint/no-dupe-class-members': 'off', // now in core
       '@typescript-eslint/no-duplicate-enum-values': 'error',
       '@typescript-eslint/no-duplicate-type-constituents': 'error',
       '@typescript-eslint/no-dynamic-delete': 'off',
-      '@typescript-eslint/no-empty-function': 'error',
+      '@typescript-eslint/no-empty-function': 'off', // now in core
       '@typescript-eslint/no-empty-object-type': 'error',
       '@typescript-eslint/no-explicit-any': 'off', // TODO: error
       '@typescript-eslint/no-extra-non-null-assertion': 'error',
@@ -565,10 +563,10 @@ export default tsConfig(
           ignoreProperties: true,
         },
       ],
-      '@typescript-eslint/no-invalid-this': 'error',
+      '@typescript-eslint/no-invalid-this': 'off', // now in core
       '@typescript-eslint/no-invalid-void-type': 'error',
       '@typescript-eslint/no-loop-func': 'error',
-      '@typescript-eslint/no-magic-numbers': 'off',
+      '@typescript-eslint/no-magic-numbers': 'off', // now in core
       '@typescript-eslint/no-meaningless-void-operator': 'error',
       '@typescript-eslint/no-misused-new': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
@@ -582,7 +580,7 @@ export default tsConfig(
       '@typescript-eslint/no-require-imports': 'error',
       '@typescript-eslint/no-restricted-imports': 'error',
       '@typescript-eslint/no-restricted-types': 'error',
-      '@typescript-eslint/no-shadow': 'error',
+      '@typescript-eslint/no-shadow': 'off', // now in core
       '@typescript-eslint/no-this-alias': 'error',
       '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'error',
       '@typescript-eslint/no-unnecessary-condition': 'off', // TODO: temporary disable
@@ -604,7 +602,7 @@ export default tsConfig(
       '@typescript-eslint/no-unsafe-return': 'off', // TODO: consider
       '@typescript-eslint/no-unsafe-type-assertion': 'off', // TODO: consider
       '@typescript-eslint/no-unsafe-unary-minus': 'error',
-      '@typescript-eslint/no-unused-expressions': 'error',
+      '@typescript-eslint/no-unused-expressions': 'off', // now in core
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -617,8 +615,8 @@ export default tsConfig(
           ignoreRestSiblings: true,
         },
       ],
-      '@typescript-eslint/no-use-before-define': 'off',
-      '@typescript-eslint/no-useless-constructor': 'error',
+      '@typescript-eslint/no-use-before-define': 'off', // now in core
+      '@typescript-eslint/no-useless-constructor': 'off', // now in core
       '@typescript-eslint/no-useless-empty-export': 'error',
       '@typescript-eslint/no-wrapper-object-types': 'error',
       '@typescript-eslint/non-nullable-type-assertion-style': 'off', //TODO: temporarily disabled
@@ -672,26 +670,13 @@ export default tsConfig(
 
       // Below list intentionally includes ESLint rules disabled above.
       // If any of the above rules are enabled in the future, they must still be disabled for TS files.
-      'class-methods-use-this': 'off',
       'consistent-return': 'off',
-      'default-param-last': 'off',
       'dot-notation': 'off',
-      'init-declarations': 'off',
-      'max-params': 'off',
-      'no-array-constructor': 'off',
-      'no-dupe-class-members': 'off',
-      'no-empty-function': 'off',
       'no-implied-eval': 'off',
-      'no-invalid-this': 'off',
       'no-loop-func': 'off',
-      'no-magic-numbers': 'off',
       'no-redeclare': 'off',
       'no-restricted-imports': 'off',
-      'no-shadow': 'off',
-      'no-unused-expressions': 'off',
       'no-unused-vars': 'off',
-      'no-use-before-define': 'off',
-      'no-useless-constructor': 'off',
       'only-throw-error': 'off',
       'prefer-destructuring': 'off',
       'prefer-promise-reject-errors': 'off',
@@ -816,7 +801,10 @@ export default tsConfig(
           allowEmoji: true,
         },
       ],
+      'n/no-top-level-await': 'off',
       // TODO: remove when fetch/cpSync stabilizes across all node versions
+      // fetch is not supported until Node.js 21.0.0
+      // fs.cpSync is not supported until Node.js 22.3.0
       'n/no-unsupported-features/node-builtins': [
         'error',
         {

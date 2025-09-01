@@ -99,6 +99,7 @@ const a = new GraphQLObjectType({
   fields: {
     b: { type: b },
     someField: { type: GraphQLString },
+    nonNullErrorField: { type: new GraphQLNonNull(GraphQLString) },
   },
   name: 'a',
 });
@@ -1580,8 +1581,8 @@ describe('Execute: defer directive', () => {
           a: {},
         },
         pending: [
-          { id: '0', path: [] },
-          { id: '1', path: ['a'] },
+          { id: '0', path: ['a'] },
+          { id: '1', path: [] },
         ],
         hasNext: true,
       },
@@ -1589,17 +1590,17 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { b: { c: {} } },
-            id: '1',
+            id: '0',
           },
           {
             data: { d: 'd' },
-            id: '1',
+            id: '0',
             subPath: ['b', 'c'],
           },
         ],
         completed: [
           {
-            id: '0',
+            id: '1',
             errors: [
               {
                 message:
@@ -1609,7 +1610,7 @@ describe('Execute: defer directive', () => {
               },
             ],
           },
-          { id: '1' },
+          { id: '0' },
         ],
         hasNext: false,
       },
@@ -1652,8 +1653,8 @@ describe('Execute: defer directive', () => {
           a: {},
         },
         pending: [
-          { id: '0', path: [] },
-          { id: '1', path: ['a'] },
+          { id: '0', path: ['a'] },
+          { id: '1', path: [] },
         ],
         hasNext: true,
       },
@@ -1661,18 +1662,18 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { b: { c: {} } },
-            id: '1',
+            id: '0',
           },
           {
             data: { d: 'd' },
-            id: '0',
+            id: '1',
             subPath: ['a', 'b', 'c'],
           },
         ],
         completed: [
-          { id: '0' },
+          { id: '1' },
           {
-            id: '1',
+            id: '0',
             errors: [
               {
                 message:
@@ -1683,6 +1684,83 @@ describe('Execute: defer directive', () => {
             ],
           },
         ],
+        hasNext: false,
+      },
+    ]);
+  });
+
+  it('Nulls cross defer boundaries, failed fragment with slower shared child execution groups', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            someField
+            nonNullErrorField
+            b {
+              c {
+                d
+              }
+            }
+          }
+        }
+        a {
+          ... @defer {
+            someField
+            b {
+              e {
+                f
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: {
+        b: { c: { d: 'd' }, e: { f: 'f' } },
+        someField: Promise.resolve('someField'),
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {},
+        },
+        pending: [
+          { id: '0', path: ['a'] },
+          { id: '1', path: [] },
+        ],
+        hasNext: true,
+      },
+      {
+        completed: [
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field a.nonNullErrorField.',
+                locations: [{ line: 6, column: 13 }],
+                path: ['a', 'nonNullErrorField'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { b: {}, someField: 'someField' },
+            id: '0',
+          },
+          {
+            data: { e: { f: 'f' } },
+            id: '0',
+            subPath: ['b'],
+          },
+        ],
+        completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
@@ -1882,8 +1960,8 @@ describe('Execute: defer directive', () => {
           a: {},
         },
         pending: [
-          { id: '0', path: [] },
-          { id: '1', path: ['a'] },
+          { id: '0', path: ['a'] },
+          { id: '1', path: [] },
         ],
         hasNext: true,
       },
@@ -1891,21 +1969,21 @@ describe('Execute: defer directive', () => {
         incremental: [
           {
             data: { b: { c: {} } },
-            id: '1',
+            id: '0',
           },
           {
             data: { d: 'd' },
-            id: '1',
+            id: '0',
             subPath: ['b', 'c'],
           },
         ],
-        completed: [{ id: '1' }],
+        completed: [{ id: '0' }],
         hasNext: true,
       },
       {
         completed: [
           {
-            id: '0',
+            id: '1',
             errors: [
               {
                 message:

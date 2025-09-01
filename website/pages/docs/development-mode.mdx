@@ -1,0 +1,244 @@
+---
+title: Development Mode
+---
+
+# Development Mode
+
+In development mode, GraphQL.JS can provide an additional runtime check appropriate for
+development-time errors: the erroneous inclusion of multiple GraphQL.JS modules.
+
+Unlike earlier versions of GraphQL.JS, by default, development mode is disabled.
+This is to best ensure that production builds do not incur the performance and bundle
+size penalties associated with the additional checks.
+
+Also, unlike earlier versions, development mode is not configured by use of
+environment variables, which are accessed in disparate ways on the various platforms.
+In particular, the `NODE_ENV` environment variable now has no effect on triggering
+development mode. Rather, development mode is either enabled:
+1. by setting a 'development' condition, which is possible only on
+   platforms that support `package.json` conditional exports and custom conditions, or
+2. by calling `enableDevMode()` within user code.
+
+Conditional exports with custom conditions are supported by: Node.js, Deno, Bun,
+Webpack 5, Rspack, Rollup (via the `node-resolve` plugin), esbuild, Vite, and Rsbuild.
+create-react-app and Next.js support conditional exports when using Webpack 5 as their
+bundler.
+
+Conditional exports with custom conditions are not supported by Webpack 4, Rollup
+(without the `node-resolve` plugin), older versions of Deno or transpilers such as
+swc. create-react-app and Next.js do not support conditional exports with custom
+conditions when using Webpack 4 as their bundler, nor does Next.js yet support
+conditional exports with custom conditions when using Turbopack (see
+https://github.com/vercel/next.js/discussions/78912).
+
+Testing frameworks such as Mocha, Jest, and Vitest support conditional exports with
+custom conditions,
+
+We encourage enabling development mode in a development environment. This facilitates
+the additional check to ensure that only a single GraphQL.JS module is used. Additional
+development-time checks may also be added in the future.
+
+First, we will discuss the implications of using multiple GraphQL.JS modules, and then
+we will share additional details for how to enable development mode on various platforms.
+
+## Multiple Graphql.JS Modules
+
+Only a single GraphQL.JS can be used within a project. Different GraphQL.JS versions cannot be
+used at the same time since different versions may have different capabilities and behavior.
+The data from one version used in the function from another could produce confusing and spurious
+results.
+
+Duplicate modules of GraphQL.JS of the same version may also fail at runtime, sometimes in
+unexpected ways. This happens because GraphQL.JS relies on module-scoped objects for key
+features. For example, GraphQL.JS uses unique symbols internally to distinguish between
+different schema elements, which underpin the exported predicates such as `isScalarType()`,
+`isObjectType()`, etc. Similarly, the exported constant `BREAK` allows library users to
+control visitor behavior, but will fail when passed to a duplicate module.
+
+To ensure that only a single GraphQL.JS module is used, all libraries depending on GraphQL.JS
+should use the appropriate peer dependency mechanism, as provided by their package manager,
+bundler, build tool, or runtime.
+
+In development mode, GraphQL.JS provides validation checks that should catch most cases of
+multiple GraphQL.js modules being used within the same project.
+
+This additional validation is unnecessary in production, where the GraphQL.js library is
+expected to be have been setup correctly as a single module. So as to avoid the performance
+and bundle size overhead this check entails, it is only included when the `development`
+exports condition is explicitly enabled or when the `enableDevMode()` module is
+called.
+
+## Enabling Development Mode
+
+### A Catch-All Option: Explicit Enabling of Development Mode
+
+Development mode may be enabled explicitly by calling `enableDevMode()`:
+
+```js
+// entrypoint.js
+import { enableDevMode } from 'graphql';
+enableDevMode();
+```
+
+A bootstrapping file can be used to enable development mode conditionally:
+
+```js
+// bootstrap.js
+import process from 'node:process';
+import { enableDevMode } from 'graphql';
+if (process.env.NODE_ENV === 'development') {
+  enableDevMode();
+}
+import './path/to/my/entry.js';
+```
+
+The above is compatible with Node.js; the exact environment variable and method
+of accessing it depends on the individual platform.
+
+### Conditional Exports and Implicit Enabling of Development Mode
+
+Depending on your platform, you may be able to use the 'development' condition
+to enable development mode without the need for an explicit import.
+
+### Node.js
+
+In Node.js, the development condition can be enabled by passing the `--conditions=development`
+flag to the Node.js runtime.
+
+Alternatively, this can be included within the `NODE_OPTIONS` environment variable:
+
+```bash
+export NODE_OPTIONS=--conditions=development
+```
+
+#### Deno
+
+In Deno version 2.4.0 and later, you can enable the development condition by passing the `--conditions=development` flag to the runtime:
+
+```bash
+deno run --conditions=development main.js
+```
+
+Alternatively, the `DENO_CONDITIONS` environment variable may be used:
+
+```bash
+export DENO_CONDITIONS=development
+```
+
+#### Bun
+
+In Bun version 1.0.30 and later, you can enable the development condition by passing the `--conditions=development` flag to the runtime:
+
+```bash
+bun --conditions=development main.js
+```
+
+#### Webpack
+
+Webpack 5 supports the 'development' condition natively and requires no additional configuration.
+
+### Rollup
+
+Rollup supports the 'development' condition only when using the `@rollup/plugin-node-resolve` plugin.
+
+```ts
+//rollup.config.js
+import resolve from '@rollup/plugin-node-resolve';
+
+export default {
+  plugins: [
+    resolve({
+      exportConditions: ['development'],
+    })
+  ]
+};
+```
+
+### esbuild
+
+When using esbuild, you can enable the 'development' condition by setting the `--conditions=development`
+flag in your build command:
+
+```bash
+esbuild --conditions=development entrypoint.js
+```
+
+Note that setting any custom conditions will drop the default 'module' condition (used to avoid the dual
+package hazard), so you may need to use:
+
+```bash
+esbuild --conditions=development,module entrypoint.js
+```
+
+See further discussion within the [esbuild documentation](https://esbuild.github.io/api/#conditions) for
+more details.
+
+### Vite
+
+Vite supports the 'development' condition natively and requires no additional configuration.
+
+### Next.js
+
+When using Webpack 5 as its bundler, Next.js supports the 'development' condition natively
+and require no additional configuration. When using Webpack 4 or Turbopack, development mode
+must be enabled explicitly.
+
+### create-react-app
+
+When using Webpack 5 as its bundler, create-react-app supports the 'development' condition
+natively and requires no additional configuration. When using Webpack 4, development mode
+must be enabled explicitly.
+
+### Mocha
+
+Mocha supports the 'development' condition by passing the appropriate configuration to `node`:
+
+```bash
+mocha --node-option conditions=development entrypoint.js
+```
+
+Options can also be passed to `node` via the `NODE_OPTIONS` environment variable:
+
+```bash
+export NODE_OPTIONS=--conditions=development
+```
+
+### Jest
+
+Jest supports the 'development' condition by passing the appropriate configuration:
+
+```ts
+//jest.config.ts
+export const jestConfig = {
+  testEnvironmentOptions: {
+    customExportConditions: ['development'],
+  },
+};
+
+You may need to also include the `node` condition within the provided list:
+
+```ts
+//jest.config.ts
+export const jestConfig = {
+  testEnvironmentOptions: {
+    customExportConditions: ['development', 'node'],
+  },
+};
+```
+
+### Vitest
+
+Vitest supports the 'development' condition by passing the appropriate configuration:
+
+```ts
+//vitest.config.ts
+import { defineConfig } from 'vitest/config';
+
+export const vitestConfig = defineConfig({
+  resolve: {
+    conditions: ['development'],
+  },
+  test: {
+    include: ['**/*.test.js'],
+  },
+});

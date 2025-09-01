@@ -405,8 +405,8 @@ function sampleModule(modulePath: string): BenchmarkSample {
       '--predictable',
       '--no-concurrent-sweeping',
       '--no-minor-gc-task',
-      '--min-semi-space-size=1024', // 1GB
-      '--max-semi-space-size=1024', // 1GB
+      '--min-semi-space-size=1280', // 1.25GB
+      '--max-semi-space-size=1280', // 1.25GB
       '--trace-gc', // no gc calls should happen during benchmark, so trace them
 
       // Node.js flags

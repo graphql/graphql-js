@@ -18,7 +18,7 @@ const queryType: GraphQLObjectType = new GraphQLObjectType({
           default: { value: 'World' },
         },
       },
-      resolve(_root, args: { who: string }) {
+      resolve(_root: unknown, args: { who: string }) {
         return 'Hello ' + args.who;
       },
     },

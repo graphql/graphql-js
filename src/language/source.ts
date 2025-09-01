@@ -6,6 +6,8 @@ interface Location {
   column: number;
 }
 
+const sourceSymbol: unique symbol = Symbol('Source');
+
 /**
  * A representation of source input to GraphQL. The `name` and `locationOffset` parameters are
  * optional, but they are useful for clients who store GraphQL documents in source files.
@@ -14,6 +16,8 @@ interface Location {
  * The `line` and `column` properties in `locationOffset` are 1-indexed.
  */
 export class Source {
+  readonly __kind: symbol;
+
   body: string;
   name: string;
   locationOffset: Location;
@@ -23,6 +27,7 @@ export class Source {
     name: string = 'GraphQL request',
     locationOffset: Location = { line: 1, column: 1 },
   ) {
+    this.__kind = sourceSymbol;
     this.body = body;
     this.name = name;
     this.locationOffset = locationOffset;
@@ -47,5 +52,5 @@ export class Source {
  * @internal
  */
 export function isSource(source: unknown): source is Source {
-  return instanceOf(source, Source);
+  return instanceOf(source, sourceSymbol, Source);
 }

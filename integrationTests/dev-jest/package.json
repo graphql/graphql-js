@@ -1,0 +1,14 @@
+{
+  "description": "graphql-js development mode should work with Jest",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

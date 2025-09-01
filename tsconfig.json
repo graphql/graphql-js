@@ -6,20 +6,16 @@
     "benchmark/benchmark.ts"
   ],
   "compilerOptions": {
-    "lib": [
-      "es2022",
-      "dom" // Workaround for missing web-compatible globals in `@types/node`
-    ],
+    "lib": ["es2024"],
     "target": "es2021",
     "sourceMap": true,
     "inlineSources": true,
-    "module": "es2022",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "node16",
     "noEmit": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
-
     // Type Checking
     // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
     "strict": true,
@@ -27,17 +23,19 @@
     // All checks that are not part of "strict"
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
+    "erasableSyntaxOnly": true,
     "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": false, // TODO consider
     "noImplicitOverride": true,
     "noImplicitReturns": false, // TODO consider
     "noPropertyAccessFromIndexSignature": false, // TODO consider
     "noUncheckedIndexedAccess": false, // FIXME
+    "noUncheckedSideEffectImports": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "allowSyntheticDefaultImports": true
   },
   "ts-node": {
-    "esm": true
+    "swc": true
   }
 }

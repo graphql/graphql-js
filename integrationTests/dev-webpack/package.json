@@ -1,0 +1,12 @@
+{
+  "description": "graphql-js development mode should work with Webpack",
+  "private": true,
+  "scripts": {
+    "test": "webpack --mode=development && node dist/main.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz",
+    "webpack": "^5.0.0",
+    "webpack-cli": "^5.0.0"
+  }
+}

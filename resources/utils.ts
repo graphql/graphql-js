@@ -33,41 +33,35 @@ interface NPMOptions extends SpawnOptions {
 }
 
 export function npm(options?: NPMOptions) {
-  const globalOptions = options?.quiet === true ? ['--quiet'] : [];
+  let npmCmd;
+  let globalOptions = options?.quiet === true ? ['--quiet'] : [];
 
-  // `npm` points to an executable shell script; so it doesn't require a shell per se.
-  // On Windows `shell: true` is required or `npm` will be picked rather than `npm.cmd`.
-  // This could alternatively be handled by manually selecting `npm.cmd` on Windows.
-  // See: https://github.com/nodejs/node/issues/3675 and in particular
-  // https://github.com/nodejs/node/issues/3675#issuecomment-308963807.
-  const npmOptions = { shell: true, ...options };
+  // See: https://github.com/nodejs/node/issues/3675.
+  if (process.platform === 'win32') {
+    npmCmd = 'cmd';
+    globalOptions = ['/c', 'npm.cmd', ...globalOptions];
+  } else {
+    npmCmd = 'npm';
+  }
 
   return {
     run(...args: ReadonlyArray<string>): void {
-      spawn('npm', [...globalOptions, 'run', ...args], npmOptions);
+      spawn(npmCmd, [...globalOptions, 'run', ...args], options);
     },
     install(...args: ReadonlyArray<string>): void {
-      spawn('npm', [...globalOptions, 'install', ...args], npmOptions);
+      spawn(npmCmd, [...globalOptions, 'install', ...args], options);
     },
     ci(...args: ReadonlyArray<string>): void {
-      spawn('npm', [...globalOptions, 'ci', ...args], npmOptions);
+      spawn(npmCmd, [...globalOptions, 'ci', ...args], options);
     },
     exec(...args: ReadonlyArray<string>): void {
-      spawn('npm', [...globalOptions, 'exec', ...args], npmOptions);
+      spawn(npmCmd, [...globalOptions, 'exec', ...args], options);
     },
     pack(...args: ReadonlyArray<string>): string {
-      return spawnOutput(
-        'npm',
-        [...globalOptions, 'pack', ...args],
-        npmOptions,
-      );
+      return spawnOutput(npmCmd, [...globalOptions, 'pack', ...args], options);
     },
     diff(...args: ReadonlyArray<string>): string {
-      return spawnOutput(
-        'npm',
-        [...globalOptions, 'diff', ...args],
-        npmOptions,
-      );
+      return spawnOutput(npmCmd, [...globalOptions, 'diff', ...args], options);
     },
   };
 }
@@ -234,7 +228,8 @@ interface PackageJSON {
   repository?: { url?: string };
   scripts?: { [name: string]: string };
   type?: string;
-  exports: { [path: string]: string };
+  sideEffects?: false | Array<string>;
+  exports: ConditionalExports;
   types?: string;
   typesVersions: { [ranges: string]: { [path: string]: Array<string> } };
   devDependencies?: { [name: string]: string };
@@ -243,6 +238,27 @@ interface PackageJSON {
   // TODO: remove after we drop CJS support
   main?: string;
   module?: string;
+}
+
+export interface ConditionalExports {
+  [path: string]:
+    | string
+    | PlatformConditionalExports
+    | EnvironmentConditionalExports;
+}
+
+interface EnvironmentConditionalExports {
+  development: PlatformConditionalExports;
+  default: PlatformConditionalExports;
+}
+
+export interface PlatformConditionalExports {
+  module: string;
+  bun: string;
+  'module-sync': string;
+  node: string;
+  require: string;
+  default: string;
 }
 
 export function readPackageJSON(
@@ -260,7 +276,10 @@ export function readTSConfig(overrides?: any): ts.CompilerOptions {
       tsConfigPath,
       fs.readFileSync(tsConfigPath, 'utf-8'),
     );
-  assert(tsConfigError === undefined, 'Fail to parse config: ' + tsConfigError);
+  assert(
+    tsConfigError === undefined,
+    'Fail to parse config: ' + JSON.stringify(tsConfigError),
+  );
   assert(
     tsConfig.compilerOptions !== undefined,
     '"tsconfig.json" should have `compilerOptions`',
@@ -274,7 +293,7 @@ export function readTSConfig(overrides?: any): ts.CompilerOptions {
 
   assert(
     tsOptionsErrors.length === 0,
-    'Fail to parse options: ' + tsOptionsErrors,
+    'Fail to parse options: ' + JSON.stringify(tsOptionsErrors),
   );
 
   return tsOptions;
