@@ -62,7 +62,7 @@ export interface FormattedInitialIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > extends FormattedExecutionResult<TData, TExtensions> {
   data: TData;
-  pending: ReadonlyArray<PendingResult>;
+  pending: ReadonlyArray<FormattedPendingResult>;
   hasNext: boolean;
   extensions?: TExtensions;
 }
@@ -83,7 +83,7 @@ export interface FormattedSubsequentIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > {
   hasNext: boolean;
-  pending?: ReadonlyArray<PendingResult>;
+  pending?: ReadonlyArray<FormattedPendingResult>;
   incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
   completed?: ReadonlyArray<FormattedCompletedResult>;
   extensions?: TExtensions;
@@ -156,15 +156,20 @@ export interface PendingResult {
   label?: string;
 }
 
+export interface FormattedPendingResult {
+  id: string;
+  path: ReadonlyArray<string | number>;
+  label?: string;
+}
+
 export interface CompletedResult {
   id: string;
   errors?: ReadonlyArray<GraphQLError>;
 }
 
 export interface FormattedCompletedResult {
-  path: ReadonlyArray<string | number>;
-  label?: string;
-  errors?: ReadonlyArray<GraphQLError>;
+  id: string;
+  errors?: ReadonlyArray<GraphQLFormattedError>;
 }
 
 export function isPendingExecutionGroup(
