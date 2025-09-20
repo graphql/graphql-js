@@ -133,7 +133,7 @@ export interface FormattedIncrementalStreamResult<
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
-  items: Array<TData>;
+  items: ReadonlyArray<TData>;
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
