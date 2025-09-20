@@ -62,7 +62,7 @@ export interface FormattedInitialIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > extends FormattedExecutionResult<TData, TExtensions> {
   data: TData;
-  pending: ReadonlyArray<FormattedPendingResult>;
+  pending: ReadonlyArray<PendingResult>;
   hasNext: boolean;
   extensions?: TExtensions;
 }
@@ -83,7 +83,7 @@ export interface FormattedSubsequentIncrementalExecutionResult<
   TExtensions = ObjMap<unknown>,
 > {
   hasNext: boolean;
-  pending?: ReadonlyArray<FormattedPendingResult>;
+  pending?: ReadonlyArray<PendingResult>;
   incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
   completed?: ReadonlyArray<FormattedCompletedResult>;
   extensions?: TExtensions;
@@ -151,12 +151,6 @@ export type FormattedIncrementalResult<
   | FormattedIncrementalStreamResult<TData, TExtensions>;
 
 export interface PendingResult {
-  id: string;
-  path: ReadonlyArray<string | number>;
-  label?: string;
-}
-
-export interface FormattedPendingResult {
   id: string;
   path: ReadonlyArray<string | number>;
   label?: string;
