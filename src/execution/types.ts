@@ -114,13 +114,13 @@ export interface FormattedIncrementalDeferResult<
   extensions?: TExtensions;
 }
 
-interface StreamItemsRecordResult<TData = ReadonlyArray<unknown>> {
+interface StreamItemsRecordResult<TData = unknown> {
   errors?: ReadonlyArray<GraphQLError>;
-  items: TData;
+  items: ReadonlyArray<TData>;
 }
 
 export interface IncrementalStreamResult<
-  TData = ReadonlyArray<unknown>,
+  TData = unknown,
   TExtensions = ObjMap<unknown>,
 > extends StreamItemsRecordResult<TData> {
   id: string;
@@ -129,11 +129,11 @@ export interface IncrementalStreamResult<
 }
 
 export interface FormattedIncrementalStreamResult<
-  TData = Array<unknown>,
+  TData = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLFormattedError>;
-  items: TData;
+  items: Array<TData>;
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
