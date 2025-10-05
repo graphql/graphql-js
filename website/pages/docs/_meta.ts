@@ -51,6 +51,7 @@ const meta = {
     title: 'Production & Scaling',
   },
   'production-build-optimization': '',
+  'secure-for-production': '',
   'going-to-production': '',
   'scaling-graphql': '',
 };

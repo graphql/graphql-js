@@ -1,0 +1,947 @@
+---
+title: Secure your GraphQL API for production
+sidebarTitle: Secure your API
+---
+
+# Secure your GraphQL API for production
+
+When you deploy GraphQL APIs to production, you need to protect them from malicious queries, unauthorized access, and abuse. This guide shows you essential patterns and techniques for securing GraphQL.js applications in production environments.
+
+## GraphQL security considerations
+
+Like any API, GraphQL requires security protections in production.
+
+### Client-controlled query structure
+
+GraphQL lets clients construct queries with arbitrary nesting and field selection. A client might request deeply nested data that multiplies database queries:
+
+```graphql
+query NestedData {
+  user {
+    posts {
+      comments {
+        author {
+          posts {
+            comments {
+              text
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Each nesting level multiplies the data returned and resources consumed. This flexibility enables powerful client applications but requires careful consideration of query limits.
+
+### Schema introspection capabilities
+
+GraphQL schemas are self-documenting through introspection. Any client can query your schema structure:
+
+```graphql
+query SchemaStructure {
+  __schema {
+    types {
+      name
+      fields {
+        name
+        type {
+          name
+        }
+      }
+    }
+  }
+}
+```
+
+This introspection helps development tools but also reveals your complete API structure, including type names, field names, and relationships. You should consider whether to expose this information in production.
+
+### Query cost variability
+
+GraphQL queries can vary dramatically in computational cost. For example, a
+lightweight query might look like:
+
+```graphql
+query Simple {
+  currentUser {
+    name
+  }
+}
+```
+
+And a resource-intensive query might look like:
+
+```graphql
+query Heavy {
+  users(first: 1000) {
+    posts(first: 1000) {
+      title
+      body
+    }
+  }
+}
+```
+
+Both queries are valid GraphQL, but the second could return millions of records. This variability requires analysis of query costs and appropriate limits.
+
+## Implement trusted documents
+
+Trusted documents provide the strongest protection for GraphQL APIs serving your own applications. This approach allows only pre-approved queries to execute, eliminating most attack vectors.
+
+### How trusted documents work
+
+Instead of sending full GraphQL query strings, clients send a hash identifying a pre-approved query stored on your server.
+
+The process works in two phases: build time and runtime.
+
+Build time:
+
+1. Extract all GraphQL queries from your client applications during the build
+2. Generate SHA256 hashes for each unique query
+3. Create a mapping of hash-to-query pairs  
+4. Deploy this mapping to your GraphQL server
+
+Runtime:
+
+1. Client sends a request with a document hash instead of a full query
+2. Server looks up the query using the provided hash
+3. Server executes the stored query if the hash is recognized
+4. Server rejects requests with unknown or missing hashes
+
+This ensures only queries written and approved by your team can execute.
+
+### Benefits of trusted documents
+
+- **Strong protection**: Only queries crafted by your team can execute, preventing malicious or exploratory queries.
+- **Reduced bandwidth**: A 64-byte hash uses significantly less network bandwidth than multi-kilobyte queries.
+- **Better caching**: Servers can more effectively cache execution plans for known queries.
+- **Schema evolution insights**: You maintain an inventory of all queries used in production, making schema changes safer.
+- **Simplified monitoring**: Tracking API usage becomes straightforward when you know exactly which operations execute.
+
+### Server-side implementation
+
+This example demonstrates the core pattern for storing and validating trusted documents. You'll need to adapt the storage mechanism (Map, database, file system) to your production environment:
+
+```javascript
+export const trustedDocuments = new Map([
+  ['sha256:abc123def456', 'query GetUser($id: ID!) { user(id: $id) { name email } }'],
+  ['sha256:789ghi012jkl', 'mutation CreatePost($input: PostInput!) { createPost(input: $input) { id title } }'],
+]);
+
+export function executeGraphQLWithTrustedDocuments(request) {
+  const { documentHash, variables } = request;
+  
+  if (!documentHash) {
+    throw new Error('Document hash required');
+  }
+  
+  const queryString = trustedDocuments.get(documentHash);
+  
+  if (!queryString) {
+    throw new Error(`Unknown document: ${documentHash}`);
+  }
+  
+  return graphql({
+    schema: yourSchema,
+    source: queryString,
+    variableValues: variables,
+    contextValue: request.context,
+  });
+}
+```
+
+Replace the `Map` with your preferred storage (database, Redis, file system). The key pattern is: receive hash, look up query, validate, execute.
+
+### Client-side configuration
+
+Configure your GraphQL client to send document hashes instead of full query strings. The hash is generated using cryptographic hashing (SHA256) to create a unique identifier for each query:
+
+```javascript
+import crypto from 'crypto';
+
+export function generateDocumentHash(query) {
+  return `sha256:${crypto.createHash('sha256').update(query).digest('hex')}`;
+}
+
+const client = new GraphQLClient('/graphql', {
+  preparationMode: 'trusted-documents',
+  documentHasher: generateDocumentHash,
+});
+
+const result = await client.request({
+  documentHash: 'sha256:abc123def456',
+  variables: { userId: 'user123' }
+});
+```
+
+Most GraphQL client libraries support trusted documents through configuration options or plugins. The cryptographic hash uniquely identifies each query without sending the full query text over the network.
+
+### Deployment workflow
+
+Deploying trusted documents requires coordination between your build process, server deployment, and client applications. The workflow ensures your server knows which queries are valid before clients try to execute them.
+
+During development, your build tools extract and hash all GraphQL queries:
+
+1. Write GraphQL queries in your application code as you normally would
+2. Configure your build tools to extract queries during compilation
+3. Generate SHA256 hashes for each unique query
+4. Store the hash-to-query mappings in your deployment artifacts
+
+This automation ensures you don't manually maintain query lists as your application grows.
+
+When deploying to production, you need to synchronize server and client deployments:
+
+1. Deploy the trusted document mappings to your GraphQL server first
+2. Configure your client applications to use document hashes instead of query strings
+3. Update your server configuration to require trusted documents and reject raw queries
+4. Monitor server logs for requests using unknown hashes, which indicate deployment issues
+
+Deploy server changes before client changes to ensure clients never send hashes the server doesn't recognize.
+
+As your application evolves, maintain your trusted document store:
+
+1. Add new document hashes when deploying features with new queries
+2. Remove unused document hashes during cleanup to keep the store manageable
+3. Track which documents are actively used to inform schema evolution decisions
+4. Update client applications when query structures change, ensuring hash synchronization
+
+Regular maintenance prevents the trusted document store from growing indefinitely and helps identify unused queries.
+
+### Handle unknown documents
+
+When clients send unknown hashes, provide helpful error responses. This example shows the error structure and logging pattern. Adapt the logging mechanism to your monitoring system:
+
+```javascript
+export function handleUnknownDocument(documentHash, context) {
+  const error = new Error('Unknown document hash');
+  error.extensions = {
+    code: 'UNKNOWN_DOCUMENT',
+    documentHash: documentHash,
+    timestamp: new Date().toISOString(),
+  };
+  
+  console.warn('Unknown document hash requested:', {
+    hash: documentHash,
+    userAgent: context.request.headers['user-agent'],
+    ip: context.request.ip,
+  });
+  
+  return error;
+}
+```
+
+Replace `console.warn` with your logging service to track deployment synchronization issues.
+
+## Control schema introspection
+
+Schema introspection provides valuable information for development tools but should be carefully controlled in production environments. Choose your approach based on who needs access to your schema.
+
+### Choose your introspection strategy
+
+- **Disable completely** if you use trusted documents or have a truly public API where you don't want to expose your schema structure to anyone. This is the most secure option.
+- **Allow for authenticated developers** if your team needs to use GraphQL development tools (like GraphiQL) directly against production for debugging, but you want to hide the schema from public access.
+- **Create limited rules** if you need some introspection features for clients (like `__typename` for caching) but want to block comprehensive schema exploration.
+
+### Disable introspection completely
+
+This pattern uses GraphQL's built-in validation rule to block all introspection queries. Integrate this with your server's validation rules configuration:
+
+```javascript
+import { NoSchemaIntrospectionCustomRule } from 'graphql';
+
+const validationRules = process.env.NODE_ENV === 'production'
+  ? [NoSchemaIntrospectionCustomRule]
+  : [];
+
+const server = new GraphQLServer({
+  schema: yourSchema,
+  validationRules: validationRules,
+});
+```
+
+Replace `GraphQLServer` with your specific server implementation. The validation rules array works the same across implementations.
+
+### Conditional introspection access
+
+This example shows how to allow introspection based on user authentication or request headers. Adapt the authentication check to your user model and the header check to your internal tools:
+
+```javascript
+export function createIntrospectionRule(context) {
+  const { user } = context;
+  const isDeveloper = user && user.role === 'developer';
+  const isInternalRequest = context.request.headers['x-internal-request'] === 'true';
+  
+  if (isDeveloper || isInternalRequest) {
+    return [];
+  }
+  
+  return [NoSchemaIntrospectionCustomRule];
+}
+
+const server = new GraphQLServer({
+  schema: yourSchema,
+  validationRules: createIntrospectionRule,
+});
+```
+
+Replace `user.role === 'developer'` with your actual role checking logic. The pattern allows flexibility: introspection for trusted users, blocked for everyone else.
+
+### Limited introspection rules
+
+This example shows a custom validation rule that blocks specific introspection fields. Adapt the blocked field list to your security requirements:
+
+```javascript
+export function createLimitedIntrospectionRule() {
+  return function LimitedIntrospectionRule(context) {
+    return {
+      Field(node) {
+        const fieldName = node.name.value;
+        
+        if (fieldName === '__schema' || fieldName === '__type') {
+          context.reportError(
+            new Error('Detailed introspection not available')
+          );
+        }
+        
+        if (fieldName === '__typename') {
+          return;
+        }
+      }
+    };
+  };
+}
+```
+
+This pattern blocks comprehensive schema queries (`__schema`, `__type`) while allowing basic type information (`__typename`) that client caching libraries need. Adjust the blocked fields based on what your clients require.
+
+## Implement query complexity analysis
+
+Query complexity analysis assigns computational costs to GraphQL operations and rejects queries exceeding predefined limits.
+
+### Understanding query complexity
+
+Query complexity measures how computationally expensive a GraphQL query will be to execute. Each field contributes to the overall complexity score.
+
+Basic complexity factors include:
+
+- Each field has a base complexity score (typically 1)
+- List fields multiply complexity by the number of items requested
+- Nested fields add their complexity to parent fields
+- Arguments can influence complexity calculations
+
+### Configure complexity limits
+
+This example uses third-party libraries for complexity analysis. Install the libraries ([`graphql-depth-limit`](https://www.npmjs.com/package/graphql-depth-limit), [`graphql-validation-complexity`](https://www.npmjs.com/package/graphql-validation-complexity)) and adjust the limits based on your schema's typical usage patterns:
+
+```javascript
+import depthLimit from 'graphql-depth-limit';
+import { createComplexityLimitRule } from 'graphql-validation-complexity';
+
+const server = new GraphQLServer({
+  schema: yourSchema,
+  validationRules: [
+    depthLimit(7),
+    createComplexityLimitRule(1000, {
+      scalarCost: 1,
+      objectCost: 2,
+      listFactor: 10,
+    }),
+  ],
+});
+```
+
+Start with conservative limits and adjust based on your legitimate query patterns. Monitor blocked queries to identify if limits are too strict.
+
+### Assign field-specific costs
+
+This example demonstrates how to assign custom complexity based on your actual database and resolver costs. Profile your resolvers to understand actual computational costs, then assign scores accordingly:
+
+```javascript
+const complexityMap = {
+  Query: {
+    users: {
+      complexity: ({ args, childComplexity }) => {
+        const limit = args.first || 10;
+        return limit * childComplexity;
+      }
+    },
+    currentUser: { complexity: 1 },
+    searchUsers: {
+      complexity: ({ args }) => {
+        return args.query ? 50 : 10;
+      }
+    },
+  },
+  User: {
+    posts: {
+      complexity: ({ args, childComplexity }) => {
+        const limit = args.first || 5;
+        return limit * (childComplexity + 3);
+      }
+    },
+    email: { complexity: 1 },
+  },
+};
+```
+
+Assign higher scores to database-heavy operations (searches, joins) and lower scores to cached or simple field access. Test with real query patterns to calibrate your scoring.
+
+### Handle complexity violations
+
+This pattern shows how to provide helpful error messages when queries exceed limits. Customize the error format to match your API's error structure:
+
+```javascript
+export function createComplexityErrorFormatter(maxComplexity) {
+  return function formatComplexityError(error) {
+    if (error.message.includes('exceeds maximum complexity')) {
+      return {
+        message: 'Query too complex',
+        extensions: {
+          code: 'QUERY_TOO_COMPLEX',
+          maxComplexity: maxComplexity,
+          actualComplexity: error.actualComplexity,
+          suggestion: 'Try reducing the number of fields or nesting levels',
+        }
+      };
+    }
+    return error;
+  };
+}
+```
+
+Include the actual complexity score to help legitimate clients understand how to modify their queries. Integrate this with your server's error formatting configuration.
+
+## Configure rate limiting
+
+Rate limiting controls how frequently clients can make requests to your GraphQL API. This works together with query complexity limits to provide comprehensive protection.
+
+### Request-level rate limiting
+
+This in-memory rate limiter demonstrates the core pattern. For production, replace the `Map` with a distributed store that works across multiple server instances:
+
+```javascript
+const rateLimits = new Map();
+
+export function createRateLimiter(maxRequests, windowMs) {
+  return function rateLimitMiddleware(req, res, next) {
+    const identifier = getClientIdentifier(req);
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    
+    if (!rateLimits.has(identifier)) {
+      rateLimits.set(identifier, []);
+    }
+    
+    const requests = rateLimits.get(identifier);
+    const recentRequests = requests.filter(time => time > windowStart);
+    
+    if (recentRequests.length >= maxRequests) {
+      return res.status(429).json({
+        error: 'Rate limit exceeded',
+        retryAfter: Math.ceil(windowMs / 1000),
+      });
+    }
+    
+    recentRequests.push(now);
+    rateLimits.set(identifier, recentRequests);
+    next();
+  };
+}
+
+export function getClientIdentifier(req) {
+  return req.user?.id || req.ip || 'anonymous';
+}
+```
+
+Set `maxRequests` and `windowMs` based on your API's expected traffic patterns. Start conservatively and adjust based on monitoring.
+
+### Operation-based rate limiting
+
+This pattern applies different rate limits to different operations. Configure the limits based on the actual resource cost and sensitivity of each operation:
+
+```javascript
+const operationLimits = {
+  'GetUser': { maxRequests: 100, windowMs: 60000 },
+  'CreatePost': { maxRequests: 10, windowMs: 60000 },
+  'SearchUsers': { maxRequests: 20, windowMs: 60000 },
+};
+
+export function createOperationRateLimiter() {
+  return function operationRateLimit(req, res, next) {
+    const operationName = req.body.operationName;
+    const limits = operationLimits[operationName];
+    
+    if (!limits) {
+      return next();
+    }
+    
+    const identifier = `${getClientIdentifier(req)}:${operationName}`;
+    
+    if (isRateLimited(identifier, limits.maxRequests, limits.windowMs)) {
+      return res.status(429).json({
+        error: `Rate limit exceeded for operation: ${operationName}`,
+        operation: operationName,
+        retryAfter: Math.ceil(limits.windowMs / 1000),
+      });
+    }
+    
+    next();
+  };
+}
+```
+
+Set stricter limits for mutations than queries, and very strict limits for expensive operations like searches. Operations not in the list have no limits.
+
+### Field-level rate limiting
+
+This advanced pattern applies rate limits to specific fields within queries. Use this when certain fields are particularly expensive but you don't want to limit entire operations:
+
+```javascript
+const fieldLimits = {
+  'Query.users': { maxRequests: 50, windowMs: 60000 },
+  'Query.searchUsers': { maxRequests: 10, windowMs: 60000 },
+  'User.posts': { maxRequests: 100, windowMs: 60000 },
+};
+
+export function createFieldRateLimiter() {
+  return {
+    Field: {
+      enter(node, key, parent, path, ancestors) {
+        const fieldPath = getFieldPath(ancestors, node);
+        const limits = fieldLimits[fieldPath];
+        
+        if (!limits) return;
+        
+        const identifier = `${context.user?.id || context.ip}:${fieldPath}`;
+        
+        if (isRateLimited(identifier, limits.maxRequests, limits.windowMs)) {
+          throw new Error(`Rate limit exceeded for field: ${fieldPath}`);
+        }
+        
+        recordFieldUsage(identifier, fieldPath);
+      }
+    }
+  };
+}
+
+export function getFieldPath(ancestors, node) {
+  const path = [];
+  
+  for (const ancestor of ancestors) {
+    if (ancestor.kind === 'Field') {
+      path.push(ancestor.name.value);
+    } else if (ancestor.kind === 'OperationDefinition') {
+      path.unshift(ancestor.operation);
+    }
+  }
+  
+  path.push(node.name.value);
+  return path.join('.');
+}
+```
+
+This requires integrating with your GraphQL execution and implementing `isRateLimited` and `recordFieldUsage` functions. Field-level limits are complex. Only use them if operation-level limits aren't sufficient.
+
+## Implement authentication and authorization
+
+GraphQL requires careful authentication and authorization since clients can request any combination of fields and data.
+
+### Authentication middleware
+
+This middleware pattern validates JWT tokens and attaches user information to requests. Replace `verifyJWTToken` and `getUserById` with your actual authentication functions:
+
+```javascript
+export async function createAuthenticationMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    req.user = null;
+    return next();
+  }
+  
+  const token = authHeader.slice(7);
+  
+  try {
+    const payload = await verifyJWTToken(token);
+    const user = await getUserById(payload.userId);
+    
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: 'Invalid or inactive user' });
+    }
+    
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid authentication token' });
+  }
+}
+
+export async function verifyJWTToken(token) {
+  return jwt.verify(token, process.env.JWT_SECRET);
+}
+```
+
+Apply this middleware before your GraphQL endpoint. It gracefully handles missing authentication (sets `user` to `null`) so you can have both public and authenticated operations.
+
+### Field-level authorization
+
+This pattern shows authorization checks in individual resolvers. Adapt the permission and role checking functions to your actual user model and access control system:
+
+```javascript
+const resolvers = {
+  Query: {
+    users: async (parent, args, context) => {
+      if (!context.user) {
+        throw new Error('Authentication required');
+      }
+      
+      if (!hasPermission(context.user, 'READ_USERS')) {
+        throw new Error('Insufficient permissions');
+      }
+      
+      return getUserList(args);
+    },
+    
+    currentUser: (parent, args, context) => {
+      if (!context.user) {
+        throw new Error('Authentication required');
+      }
+      
+      return context.user;
+    },
+  },
+  
+  User: {
+    email: (user, args, context) => {
+      if (context.user?.id === user.id || hasRole(context.user, 'admin')) {
+        return user.email;
+      }
+      
+      return null;
+    },
+    
+    phoneNumber: (user, args, context) => {
+      if (context.user?.id !== user.id) {
+        throw new Error('Access denied');
+      }
+      
+      return user.phoneNumber;
+    },
+  },
+};
+
+export function hasPermission(user, permission) {
+  return user?.permissions?.includes(permission) ?? false;
+}
+
+export function hasRole(user, role) {
+  return user?.roles?.includes(role) ?? false;
+}
+```
+
+Decide whether to throw errors or return `null` based on whether the field's unavailability should be obvious to the client. Throwing errors makes authorization failures explicit. Returning `null` silently hides unavailable data.
+
+### Resource-based authorization
+
+This pattern checks authorization based on the specific resource being accessed, not just user roles. Replace `checkFriendship` with your actual relationship-checking logic:
+
+```javascript
+const Post = {
+  content: async (post, args, context) => {
+    const access = await checkPostAccess(context.user, post);
+    
+    if (!access.canRead) {
+      throw new Error('Access denied to this post');
+    }
+    
+    return post.content;
+  },
+  
+  comments: async (post, args, context) => {
+    const access = await checkPostAccess(context.user, post);
+    
+    if (!access.canReadComments) {
+      return [];
+    }
+    
+    return getPostComments(post.id, args);
+  },
+};
+
+export async function checkPostAccess(user, post) {
+  if (post.visibility === 'public') {
+    return { canRead: true, canReadComments: true };
+  }
+  
+  if (post.visibility === 'private') {
+    const isAuthor = user?.id === post.authorId;
+    return { canRead: isAuthor, canReadComments: isAuthor };
+  }
+  
+  if (post.visibility === 'friends') {
+    const isFriend = user ? await checkFriendship(user.id, post.authorId) : false;
+    const isAuthor = user?.id === post.authorId;
+    
+    return {
+      canRead: isAuthor || isFriend,
+      canReadComments: isAuthor || isFriend,
+    };
+  }
+  
+  return { canRead: false, canReadComments: false };
+}
+```
+
+This pattern works well for any system where access depends on relationships between users and resources. The authorization logic considers both the user's identity and the resource's properties.
+
+### Authorization directives
+
+This pattern uses GraphQL directives for declarative authorization. This example shows the concept. You'll need to integrate it with your GraphQL server's directive implementation:
+
+```graphql
+type Query {
+  publicPosts: [Post!]!
+  userPosts: [Post!]! @requireAuth
+  adminUsers: [User!]! @requireRole(role: "admin")
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String! @requireOwnership(field: "id")
+  adminNotes: String @requireRole(role: "admin")
+}
+```
+
+Implement the authorization directive logic:
+
+```javascript
+export function createAuthDirectives() {
+  return {
+    requireAuth: (next, source, args, context) => {
+      if (!context.user) {
+        throw new Error('Authentication required');
+      }
+      return next();
+    },
+    
+    requireRole: (next, source, args, context, info) => {
+      const requiredRole = info.directives.requireRole.role;
+      
+      if (!context.user || !hasRole(context.user, requiredRole)) {
+        throw new Error(`Role required: ${requiredRole}`);
+      }
+      
+      return next();
+    },
+    
+    requireOwnership: (next, source, args, context, info) => {
+      const ownerField = info.directives.requireOwnership.field;
+      const resourceOwnerId = source[ownerField];
+      
+      if (!context.user || context.user.id !== resourceOwnerId) {
+        throw new Error('Resource access denied');
+      }
+      
+      return next();
+    },
+  };
+}
+```
+
+Directive-based authorization keeps authorization requirements visible in your schema and separates authorization logic from business logic. The implementation varies significantly between GraphQL server libraries. Consult your server's documentation for directive integration.
+
+## Test your protections
+
+Verify your GraphQL protections work correctly before deploying to production. These test examples use a generic testing framework syntax. Adapt them to your testing library as needed.
+
+### Test trusted documents
+
+These tests verify trusted documents block unauthorized queries. Replace `client.request` with your actual GraphQL client method:
+
+```javascript
+describe('Trusted Documents', () => {
+  test('allows known document hashes', async () => {
+    const result = await client.request({
+      documentHash: 'sha256:known_hash_123',
+      variables: { id: 'user123' }
+    });
+    
+    expect(result.data).toBeDefined();
+    expect(result.errors).toBeUndefined();
+  });
+  
+  test('blocks unknown document hashes', async () => {
+    await expect(client.request({
+      documentHash: 'sha256:unknown_hash_456',
+      variables: {}
+    })).rejects.toThrow('Unknown document');
+  });
+  
+  test('blocks raw queries', async () => {
+    await expect(client.request({
+      query: 'query { users { id name } }'
+    })).rejects.toThrow('Document hash required');
+  });
+});
+```
+
+Test both success cases (known hashes work) and failure cases (unknown hashes and raw queries are rejected). Use your actual document hashes from production.
+
+### Test query complexity limits
+
+These tests verify complexity limits properly reject expensive queries. Adjust the query structure to match your actual schema and complexity limits:
+
+```javascript
+describe('Query Complexity', () => {
+  test('allows queries under complexity limit', async () => {
+    const simpleQuery = `
+      query SimpleQuery {
+        currentUser {
+          id
+          name
+        }
+      }
+    `;
+    
+    const result = await executeQuery(simpleQuery);
+    expect(result.errors).toBeUndefined();
+  });
+  
+  test('blocks queries over complexity limit', async () => {
+    const complexQuery = `
+      query ComplexQuery {
+        users(first: 100) {
+          posts(first: 100) {
+            comments(first: 100) {
+              author {
+                posts(first: 100) {
+                  title
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    
+    const result = await executeQuery(complexQuery);
+    expect(result.errors).toBeDefined();
+    expect(result.errors[0].extensions.code).toBe('QUERY_TOO_COMPLEX');
+  });
+});
+```
+
+Create test queries that exercise your actual schema's nesting and list capabilities. The complex query should definitively exceed your configured limits.
+
+### Test rate limiting
+
+These tests verify rate limits block excessive requests. Adjust the request counts to match your configured limits:
+
+```javascript
+describe('Rate Limiting', () => {
+  test('allows requests under rate limit', async () => {
+    const promises = [];
+    
+    for (let i = 0; i < 10; i++) {
+      promises.push(client.request({ documentHash: 'sha256:test_hash' }));
+    }
+    
+    const results = await Promise.all(promises);
+    results.forEach(result => {
+      expect(result.errors).toBeUndefined();
+    });
+  });
+  
+  test('blocks requests over rate limit', async () => {
+    const promises = [];
+    
+    for (let i = 0; i < 150; i++) {
+      promises.push(client.request({ documentHash: 'sha256:test_hash' }));
+    }
+    
+    const results = await Promise.allSettled(promises);
+    const rejectedCount = results.filter(r => r.status === 'rejected').length;
+    
+    expect(rejectedCount).toBeGreaterThan(0);
+  });
+});
+```
+
+If your limit is 100 requests per minute, test with 10 requests (well under) and 150 requests (well over). Run these tests sequentially to avoid interference between test cases.
+
+### Test authentication and authorization
+
+These tests verify access controls work for different user types. Create test users representing different roles and authentication states in your test database:
+
+```javascript
+describe('Authentication and Authorization', () => {
+  test('blocks unauthenticated access', async () => {
+    const query = `
+      query {
+        userPosts {
+          id
+          title
+        }
+      }
+    `;
+    
+    const result = await executeQuery(query, {}, { user: null });
+    expect(result.errors).toBeDefined();
+    expect(result.errors[0].message).toMatch(/authentication required/i);
+  });
+  
+  test('allows authorized users to access their data', async () => {
+    const query = `
+      query {
+        currentUser {
+          email
+        }
+      }
+    `;
+    
+    const result = await executeQuery(query, {}, { user: testUser });
+    expect(result.data.currentUser.email).toBeDefined();
+  });
+  
+  test('blocks unauthorized access to other users data', async () => {
+    const query = `
+      query GetUser($id: ID!) {
+        user(id: $id) {
+          email
+        }
+      }
+    `;
+    
+    const result = await executeQuery(
+      query, 
+      { id: 'other-user-id' }, 
+      { user: testUser }
+    );
+    
+    expect(result.data.user.email).toBeNull();
+  });
+});
+```
+
+Test all authorization scenarios:
+
+- Unauthenticated access (blocked)
+- Accessing own data (allowed)
+- Accessing other users' data (blocked)
+- Admin access (allowed)
+
+Replace `testUser` with your test user fixtures.
+
+## Monitor your protected API
+
+After deploying GraphQL protections, establish monitoring to ensure they remain effective.
+
+- **Track protection effectiveness**: Monitor how many requests each protection mechanism blocks to understand patterns and verify defenses work.
+- **Measure performance impact**: Track computational overhead added by complexity analysis, rate limiting, and authorization to ensure protections don't harm user experience.
+- **Monitor bypass attempts**: Watch for patterns where potential attackers try to circumvent protections, such as rotating IP addresses or crafting queries just under complexity limits.
+- **Review authorization patterns**: Analyze authorization failures to identify potential security issues or overly restrictive permissions.
+- **Track trusted document usage**: If using trusted documents, monitor requests for unknown hashes to identify deployment synchronization issues.
+
+This ongoing monitoring ensures your GraphQL security measures adapt to evolving threats.
