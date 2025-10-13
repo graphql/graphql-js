@@ -205,12 +205,19 @@ export const QueryDocumentKeys: {
 
   Document: ['definitions'],
   OperationDefinition: [
+    'description',
     'name',
     'variableDefinitions',
     'directives',
     'selectionSet',
   ],
-  VariableDefinition: ['variable', 'type', 'defaultValue', 'directives'],
+  VariableDefinition: [
+    'description',
+    'variable',
+    'type',
+    'defaultValue',
+    'directives',
+  ],
   Variable: ['name'],
   SelectionSet: ['selections'],
   Field: ['alias', 'name', 'arguments', 'directives', 'selectionSet'],
@@ -226,6 +233,7 @@ export const QueryDocumentKeys: {
   ],
   InlineFragment: ['typeCondition', 'directives', 'selectionSet'],
   FragmentDefinition: [
+    'description',
     'name',
     // Note: Fragment variables are experimental and may be changed or removed
     // in the future.
@@ -339,6 +347,7 @@ export type ExecutableDefinitionNode =
 export interface OperationDefinitionNode {
   readonly kind: typeof Kind.OPERATION_DEFINITION;
   readonly loc?: Location | undefined;
+  readonly description?: StringValueNode | undefined;
   readonly operation: OperationTypeNode;
   readonly name?: NameNode | undefined;
   readonly variableDefinitions?:
@@ -360,6 +369,7 @@ export type OperationTypeNode =
 export interface VariableDefinitionNode {
   readonly kind: typeof Kind.VARIABLE_DEFINITION;
   readonly loc?: Location | undefined;
+  readonly description?: StringValueNode | undefined;
   readonly variable: VariableNode;
   readonly type: TypeNode;
   readonly defaultValue?: ConstValueNode | undefined;
@@ -432,6 +442,7 @@ export interface InlineFragmentNode {
 export interface FragmentDefinitionNode {
   readonly kind: typeof Kind.FRAGMENT_DEFINITION;
   readonly loc?: Location | undefined;
+  readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
   readonly variableDefinitions?:
     | ReadonlyArray<VariableDefinitionNode>

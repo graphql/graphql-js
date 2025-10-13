@@ -224,6 +224,19 @@ describe('Printer: Query document', () => {
     `);
   });
 
+  it('prints fragment', () => {
+    const printed = print(
+      parse('"Fragment description" fragment Foo on Bar { baz }'),
+    );
+
+    expect(printed).to.equal(dedent`
+      "Fragment description"
+      fragment Foo on Bar {
+        baz
+      }
+    `);
+  });
+
   it('prints kitchen sink without altering ast', () => {
     const ast = parse(kitchenSinkQuery, { noLocation: true });
 
@@ -236,7 +249,12 @@ describe('Printer: Query document', () => {
 
     expect(printed).to.equal(
       dedentString(String.raw`
-      query queryName($foo: ComplexType, $site: Site = MOBILE) @onQuery {
+      "Query description"
+      query queryName(
+      "Very complex variable"
+      $foo: ComplexType
+      $site: Site = MOBILE
+      ) @onQuery {
         whoever123is: node(id: [123, 456]) {
           id
           ... on User @onInlineFragment {
@@ -278,6 +296,7 @@ describe('Printer: Query document', () => {
         }
       }
 
+      """Fragment description"""
       fragment frag on Friend @onFragmentDefinition {
         foo(
           size: $size
