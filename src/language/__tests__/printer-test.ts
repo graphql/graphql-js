@@ -5,7 +5,7 @@ import { dedent, dedentString } from '../../__testUtils__/dedent';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery';
 
 import { Kind } from '../kinds';
-import { parse } from '../parser';
+import { parse, parseSchemaCoordinate } from '../parser';
 import { print } from '../printer';
 
 describe('Printer: Query document', () => {
@@ -230,6 +230,35 @@ describe('Printer: Query document', () => {
         __typename
       }
     `),
+    );
+  });
+
+  it('prints schema coordinates', () => {
+    expect(print(parseSchemaCoordinate('Name'))).to.equal('Name');
+    expect(print(parseSchemaCoordinate('Name.field'))).to.equal('Name.field');
+    expect(print(parseSchemaCoordinate('Name.field(arg:)'))).to.equal(
+      'Name.field(arg:)',
+    );
+    expect(print(parseSchemaCoordinate('@name'))).to.equal('@name');
+    expect(print(parseSchemaCoordinate('@name(arg:)'))).to.equal('@name(arg:)');
+    expect(print(parseSchemaCoordinate('__Type'))).to.equal('__Type');
+    expect(print(parseSchemaCoordinate('Type.__metafield'))).to.equal(
+      'Type.__metafield',
+    );
+    expect(print(parseSchemaCoordinate('Type.__metafield(arg:)'))).to.equal(
+      'Type.__metafield(arg:)',
+    );
+  });
+
+  it('throws syntax error for ignored tokens in schema coordinates', () => {
+    expect(() => print(parseSchemaCoordinate('# foo\nName'))).to.throw(
+      'Syntax Error: Invalid character: "#"',
+    );
+    expect(() => print(parseSchemaCoordinate('\nName'))).to.throw(
+      'Syntax Error: Invalid character: U+000A.',
+    );
+    expect(() => print(parseSchemaCoordinate('Name .field'))).to.throw(
+      'Syntax Error: Invalid character: " "',
     );
   });
 });

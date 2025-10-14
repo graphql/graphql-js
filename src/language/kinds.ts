@@ -66,6 +66,13 @@ enum Kind {
   UNION_TYPE_EXTENSION = 'UnionTypeExtension',
   ENUM_TYPE_EXTENSION = 'EnumTypeExtension',
   INPUT_OBJECT_TYPE_EXTENSION = 'InputObjectTypeExtension',
+
+  /** Schema Coordinates */
+  TYPE_COORDINATE = 'TypeCoordinate',
+  MEMBER_COORDINATE = 'MemberCoordinate',
+  ARGUMENT_COORDINATE = 'ArgumentCoordinate',
+  DIRECTIVE_COORDINATE = 'DirectiveCoordinate',
+  DIRECTIVE_ARGUMENT_COORDINATE = 'DirectiveArgumentCoordinate',
 }
 export { Kind };
 
