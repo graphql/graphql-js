@@ -264,6 +264,48 @@ describe('mapAsyncIterable', () => {
     await expectPromise(thrown).toRejectWith(message);
   });
 
+  it('close source when mapped iterable is thrown even when the underlying source does not implement a throw method', async () => {
+    const items = [1, 2, 3];
+    let returned = false;
+    const iterable: AsyncIterableIterator<number> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        if (returned) {
+          return Promise.resolve({ done: true, value: undefined });
+        }
+        const value = items[0];
+        items.shift();
+        return Promise.resolve({
+          done: items.length === 0,
+          value,
+        });
+      },
+      return: () => {
+        returned = true;
+        return Promise.resolve({ done: true, value: undefined });
+      },
+    };
+
+    const doubles = mapAsyncIterable(iterable, (x) => x + x);
+
+    expect(await doubles.next()).to.deep.equal({ value: 2, done: false });
+    expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
+
+    // Throw error
+    const message = 'allows throwing errors when mapping async iterable';
+    const thrown = doubles.throw(new Error(message));
+    await expectPromise(thrown).toRejectWith(message);
+
+    // Returns early when throwing errors through async iterable
+    expect(returned).to.equal(true);
+    expect(await doubles.next()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+  });
+
   it('passes through caught errors through async generators', async () => {
     async function* source() {
       try {
