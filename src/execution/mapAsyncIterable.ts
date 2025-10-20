@@ -7,26 +7,18 @@ import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 export function mapAsyncIterable<T, U, R = undefined>(
   iterable: AsyncGenerator<T, R, void> | AsyncIterable<T>,
   callback: (value: T) => PromiseOrValue<U>,
-  onDone?: () => void,
 ): AsyncGenerator<U, R, void> {
   const iterator = iterable[Symbol.asyncIterator]();
 
   async function mapResult(
     promise: Promise<IteratorResult<T, R>>,
   ): Promise<IteratorResult<U, R>> {
-    let value: T;
-    try {
-      const result = await promise;
-      if (result.done) {
-        onDone?.();
-        return result;
-      }
-      value = result.value;
-    } catch (error) {
-      onDone?.();
-      throw error;
+    const result = await promise;
+    if (result.done) {
+      return result;
     }
 
+    const value = result.value;
     try {
       return { value: await callback(value), done: false };
     } catch (error) {
@@ -45,6 +37,10 @@ export function mapAsyncIterable<T, U, R = undefined>(
       } /* c8 ignore stop */
     }
   }
+
+  const asyncDispose: typeof Symbol.asyncDispose =
+    Symbol.asyncDispose /* c8 ignore start */ ??
+    Symbol.for('Symbol.asyncDispose'); /* c8 ignore stop */
 
   return {
     async next() {
@@ -70,13 +66,13 @@ export function mapAsyncIterable<T, U, R = undefined>(
     [Symbol.asyncIterator]() {
       return this;
     },
-    async [Symbol.asyncDispose]() {
+    async [asyncDispose]() {
       await this.return(undefined as R);
       if (
-        typeof (iterable as AsyncGenerator<T, R, void>)[Symbol.asyncDispose] ===
+        typeof (iterable as AsyncGenerator<T, R, void>)[asyncDispose] ===
         'function'
       ) {
-        await (iterable as AsyncGenerator<T, R, void>)[Symbol.asyncDispose]();
+        await (iterable as AsyncGenerator<T, R, void>)[asyncDispose]();
       }
     },
   };

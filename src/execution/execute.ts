@@ -89,6 +89,7 @@ import {
   getDirectiveValues,
   getVariableValues,
 } from './values.js';
+import { withCleanup } from './withCleanup.js';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -2265,19 +2266,23 @@ function mapSourceToResponse(
   // GraphQL `execute` function, with `payload` as the rootValue.
   // This implements the "MapSourceToResponseEvent" algorithm described in
   // the GraphQL specification..
-  return mapAsyncIterable(
-    abortSignalListener
-      ? cancellableIterable(resultOrStream, abortSignalListener)
-      : resultOrStream,
-    (payload: unknown) => {
-      const perEventExecutionArgs: ValidatedExecutionArgs = {
-        ...validatedExecutionArgs,
-        rootValue: payload,
-      };
-      return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
-    },
-    () => abortSignalListener?.disconnect(),
-  );
+  function mapFn(payload: unknown): PromiseOrValue<ExecutionResult> {
+    const perEventExecutionArgs: ValidatedExecutionArgs = {
+      ...validatedExecutionArgs,
+      rootValue: payload,
+    };
+    return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
+  }
+
+  return abortSignalListener
+    ? withCleanup(
+        mapAsyncIterable(
+          cancellableIterable(resultOrStream, abortSignalListener),
+          mapFn,
+        ),
+        () => abortSignalListener.disconnect(),
+      )
+    : mapAsyncIterable(resultOrStream, mapFn);
 }
 
 export function executeSubscriptionEvent(
