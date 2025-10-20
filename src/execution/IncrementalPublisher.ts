@@ -64,13 +64,11 @@ interface SubsequentIncrementalExecutionResultContext {
  * @internal
  */
 class IncrementalPublisher {
-  private _isDone: boolean;
   private _context: IncrementalPublisherContext;
   private _nextId: number;
   private _incrementalGraph: IncrementalGraph;
 
   constructor(context: IncrementalPublisherContext) {
-    this._isDone = false;
     this._context = context;
     this._nextId = 0;
     this._incrementalGraph = new IncrementalGraph();
@@ -95,14 +93,17 @@ class IncrementalPublisher {
       ? { errors, data, pending, hasNext: true }
       : { data, pending, hasNext: true };
 
-    const subsequentResults = withCleanup(this._subscribe(), async () => {
-      this._isDone = true;
-      this._context.abortSignalListener?.disconnect();
-      this._incrementalGraph.abort();
-      await this._returnAsyncIteratorsIgnoringErrors();
-    });
+    const subsequentResults = this._incrementalGraph
+      .subscribe()
+      .toAsyncGenerator((batch) => this._handleCompletedBatch(batch));
 
-    return { initialResult, subsequentResults };
+    return {
+      initialResult,
+      subsequentResults: withCleanup(subsequentResults, async () => {
+        this._context.abortSignalListener?.disconnect();
+        await this._returnAsyncIteratorsIgnoringErrors();
+      }),
+    };
   }
 
   private _toPendingResults(
@@ -128,55 +129,39 @@ class IncrementalPublisher {
     return String(this._nextId++);
   }
 
-  private async *_subscribe(): AsyncGenerator<
-    SubsequentIncrementalExecutionResult,
-    void,
-    void
-  > {
-    while (!this._isDone) {
-      const context: SubsequentIncrementalExecutionResultContext = {
-        pending: [],
-        incremental: [],
-        completed: [],
-      };
+  private _handleCompletedBatch(
+    batch: Iterable<IncrementalDataRecordResult>,
+  ): SubsequentIncrementalExecutionResult | undefined {
+    const context: SubsequentIncrementalExecutionResultContext = {
+      pending: [],
+      incremental: [],
+      completed: [],
+    };
 
-      let batch: Iterable<IncrementalDataRecordResult> | undefined =
-        this._incrementalGraph.currentCompletedBatch();
-      do {
-        for (const completedResult of batch) {
-          this._handleCompletedIncrementalData(completedResult, context);
-        }
-
-        const { incremental, completed } = context;
-        if (incremental.length > 0 || completed.length > 0) {
-          const hasNext = this._incrementalGraph.hasNext();
-
-          if (!hasNext) {
-            this._isDone = true;
-          }
-
-          const subsequentIncrementalExecutionResult: SubsequentIncrementalExecutionResult =
-            { hasNext };
-
-          const pending = context.pending;
-          if (pending.length > 0) {
-            subsequentIncrementalExecutionResult.pending = pending;
-          }
-          if (incremental.length > 0) {
-            subsequentIncrementalExecutionResult.incremental = incremental;
-          }
-          if (completed.length > 0) {
-            subsequentIncrementalExecutionResult.completed = completed;
-          }
-
-          yield subsequentIncrementalExecutionResult;
-          break;
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        batch = await this._incrementalGraph.nextCompletedBatch();
-      } while (batch !== undefined);
+    for (const completedResult of batch) {
+      this._handleCompletedIncrementalData(completedResult, context);
     }
+
+    const { incremental, completed } = context;
+    if (incremental.length === 0 && completed.length === 0) {
+      return;
+    }
+
+    const hasNext = this._incrementalGraph.hasNext();
+
+    const subsequentIncrementalExecutionResult: SubsequentIncrementalExecutionResult =
+      { hasNext };
+    const pending = context.pending;
+    if (pending.length > 0) {
+      subsequentIncrementalExecutionResult.pending = pending;
+    }
+    if (incremental.length > 0) {
+      subsequentIncrementalExecutionResult.incremental = incremental;
+    }
+    if (completed.length > 0) {
+      subsequentIncrementalExecutionResult.completed = completed;
+    }
+    return subsequentIncrementalExecutionResult;
   }
 
   private _handleCompletedIncrementalData(

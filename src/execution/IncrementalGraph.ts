@@ -1,10 +1,10 @@
 import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isPromise } from '../jsutils/isPromise.js';
-import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
+import { Queue } from './Queue.js';
 import type {
   DeferredFragmentRecord,
   DeliveryGroup,
@@ -22,16 +22,18 @@ import { isDeferredFragmentRecord, isPendingExecutionGroup } from './types.js';
  */
 export class IncrementalGraph {
   private _rootNodes: Set<DeliveryGroup>;
-
-  private _completedQueue: Array<IncrementalDataRecordResult>;
-  private _nextQueue: Array<
-    (iterable: Iterable<IncrementalDataRecordResult> | undefined) => void
-  >;
+  private _completed: Queue<IncrementalDataRecordResult>;
+  // _push and _stop are assigned in the executor which is executed
+  // synchronously by the Queue constructor.
+  private _push!: (item: IncrementalDataRecordResult) => void;
+  private _stop!: () => void;
 
   constructor() {
     this._rootNodes = new Set();
-    this._completedQueue = [];
-    this._nextQueue = [];
+    this._completed = new Queue<IncrementalDataRecordResult>((push, stop) => {
+      this._push = push;
+      this._stop = stop;
+    });
   }
 
   getNewRootNodes(
@@ -92,29 +94,6 @@ export class IncrementalGraph {
     }
   }
 
-  *currentCompletedBatch(): Generator<IncrementalDataRecordResult> {
-    let completed;
-    while ((completed = this._completedQueue.shift()) !== undefined) {
-      yield completed;
-    }
-  }
-
-  nextCompletedBatch(): Promise<
-    Iterable<IncrementalDataRecordResult> | undefined
-  > {
-    const { promise, resolve } = promiseWithResolvers<
-      Iterable<IncrementalDataRecordResult> | undefined
-    >();
-    this._nextQueue.push(resolve);
-    return promise;
-  }
-
-  abort(): void {
-    for (const resolve of this._nextQueue) {
-      resolve(undefined);
-    }
-  }
-
   hasNext(): boolean {
     return this._rootNodes.size > 0;
   }
@@ -146,17 +125,28 @@ export class IncrementalGraph {
     const newRootNodes = this._promoteNonEmptyToRoot(
       deferredFragmentRecord.children,
     );
+    this._maybeStop();
     return { newRootNodes, successfulExecutionGroups };
   }
 
   removeDeferredFragment(
     deferredFragmentRecord: DeferredFragmentRecord,
   ): boolean {
-    return this._rootNodes.delete(deferredFragmentRecord);
+    const deleted = this._rootNodes.delete(deferredFragmentRecord);
+    if (!deleted) {
+      return false;
+    }
+    this._maybeStop();
+    return true;
   }
 
   removeStream(streamRecord: StreamRecord): void {
     this._rootNodes.delete(streamRecord);
+    this._maybeStop();
+  }
+
+  subscribe(): Queue<IncrementalDataRecordResult> {
+    return this._completed;
   }
 
   private _addIncrementalDataRecords(
@@ -246,9 +236,9 @@ export class IncrementalGraph {
     const value = completedExecutionGroup.value;
     if (isPromise(value)) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      value.then((resolved) => this._enqueue(resolved));
+      value.then((resolved) => this._push(resolved));
     } else {
-      this._enqueue(value);
+      this._push(value);
     }
   }
 
@@ -266,7 +256,7 @@ export class IncrementalGraph {
           : streamItemRecord().value;
       if (isPromise(result)) {
         if (items.length > 0) {
-          this._enqueue({
+          this._push({
             streamRecord,
             result:
               // TODO add additional test case or rework for coverage
@@ -290,14 +280,14 @@ export class IncrementalGraph {
       }
       if (result.item === undefined) {
         if (items.length > 0) {
-          this._enqueue({
+          this._push({
             streamRecord,
             result: errors.length > 0 ? { items, errors } : { items },
             newDeferredFragmentRecords,
             incrementalDataRecords,
           });
         }
-        this._enqueue(
+        this._push(
           result.errors === undefined
             ? { streamRecord }
             : {
@@ -320,12 +310,9 @@ export class IncrementalGraph {
     }
   }
 
-  private _enqueue(completed: IncrementalDataRecordResult): void {
-    this._completedQueue.push(completed);
-    const next = this._nextQueue.shift();
-    if (next === undefined) {
-      return;
+  private _maybeStop(): void {
+    if (!this.hasNext()) {
+      this._stop();
     }
-    next(this.currentCompletedBatch());
   }
 }

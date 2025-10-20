@@ -2432,14 +2432,13 @@ describe('Execute: stream directive', () => {
       hasNext: true,
     });
 
-    const returnPromise = iterator.return();
+    await iterator.return();
 
     const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
       done: true,
       value: undefined,
     });
-    await returnPromise;
   });
   it('Returns underlying async iterables when returned generator is thrown', async () => {
     let index = 0;
@@ -2495,14 +2494,14 @@ describe('Execute: stream directive', () => {
       hasNext: true,
     });
 
-    const throwPromise = iterator.throw(new Error('bad'));
+    await expectPromise(iterator.throw(new Error('bad'))).toRejectWith('bad');
 
     const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
       done: true,
       value: undefined,
     });
-    await expectPromise(throwPromise).toRejectWith('bad');
+
     assert(returned);
   });
   it('Returns underlying async iterables when uses resource is disposed', async () => {
