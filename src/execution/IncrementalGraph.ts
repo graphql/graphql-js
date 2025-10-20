@@ -97,11 +97,6 @@ export class IncrementalGraph {
     while ((completed = this._completedQueue.shift()) !== undefined) {
       yield completed;
     }
-    if (this._rootNodes.size === 0) {
-      for (const resolve of this._nextQueue) {
-        resolve(undefined);
-      }
-    }
   }
 
   nextCompletedBatch(): Promise<

@@ -1,4 +1,6 @@
-import { assert } from 'chai';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+
+import { withCleanup } from '../withCleanup.js';
 
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
@@ -21,7 +23,7 @@ export class SimplePubSub<T> {
   }
 
   getSubscriber<R>(transform: (value: T) => R): AsyncGenerator<R, void, void> {
-    const pullQueue: Array<(result: IteratorResult<R, void>) => void> = [];
+    let pendingNext: ((result: R) => void) | undefined;
     const pushQueue: Array<R> = [];
     let listening = true;
     this._subscribers.add(pushValue);
@@ -29,49 +31,41 @@ export class SimplePubSub<T> {
     const emptyQueue = () => {
       listening = false;
       this._subscribers.delete(pushValue);
-      for (const resolve of pullQueue) {
-        resolve({ value: undefined, done: true });
+      if (pendingNext) {
+        pendingNext(undefined as R);
       }
-      pullQueue.length = 0;
+      pendingNext = undefined;
       pushQueue.length = 0;
     };
 
-    return {
-      next(): Promise<IteratorResult<R, void>> {
-        if (!listening) {
-          return Promise.resolve({ value: undefined, done: true });
-        }
-
+    async function* getSubscriberImpl(): AsyncGenerator<R, void, void> {
+      // eslint-disable-next-line no-unmodified-loop-condition
+      while (listening) {
         if (pushQueue.length > 0) {
           const value = pushQueue[0];
           pushQueue.shift();
-          return Promise.resolve({ value, done: false });
+          yield value;
+          continue;
         }
-        return new Promise((resolve) => pullQueue.push(resolve));
-      },
-      return(): Promise<IteratorResult<R, void>> {
-        emptyQueue();
-        return Promise.resolve({ value: undefined, done: true });
-      },
-      throw(error: unknown) {
-        emptyQueue();
-        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-        return Promise.reject(error);
-      },
-      [Symbol.asyncIterator]() {
-        return this;
-      },
-      async [Symbol.asyncDispose]() {
-        await this.return();
-      },
-    };
+
+        const { promise, resolve } = promiseWithResolvers<R>();
+        pendingNext = resolve;
+        // eslint-disable-next-line no-await-in-loop
+        const value = await promise;
+        if (!listening) {
+          return;
+        }
+        yield value;
+      }
+    }
+
+    return withCleanup(getSubscriberImpl(), emptyQueue);
 
     function pushValue(event: T): void {
       const value: R = transform(event);
-      if (pullQueue.length > 0) {
-        const receiver = pullQueue.shift();
-        assert(receiver != null);
-        receiver({ value, done: false });
+      if (pendingNext) {
+        pendingNext(value);
+        pendingNext = undefined;
       } else {
         pushQueue.push(value);
       }

@@ -28,6 +28,7 @@ import {
   isCompletedExecutionGroup,
   isFailedExecutionGroup,
 } from './types.js';
+import { withCleanup } from './withCleanup.js';
 
 export function buildIncrementalResponse(
   context: IncrementalPublisherContext,
@@ -63,11 +64,13 @@ interface SubsequentIncrementalExecutionResultContext {
  * @internal
  */
 class IncrementalPublisher {
+  private _isDone: boolean;
   private _context: IncrementalPublisherContext;
   private _nextId: number;
   private _incrementalGraph: IncrementalGraph;
 
   constructor(context: IncrementalPublisherContext) {
+    this._isDone = false;
     this._context = context;
     this._nextId = 0;
     this._incrementalGraph = new IncrementalGraph();
@@ -92,10 +95,14 @@ class IncrementalPublisher {
       ? { errors, data, pending, hasNext: true }
       : { data, pending, hasNext: true };
 
-    return {
-      initialResult,
-      subsequentResults: this._subscribe(),
-    };
+    const subsequentResults = withCleanup(this._subscribe(), async () => {
+      this._isDone = true;
+      this._context.abortSignalListener?.disconnect();
+      this._incrementalGraph.abort();
+      await this._returnAsyncIteratorsIgnoringErrors();
+    });
+
+    return { initialResult, subsequentResults };
   }
 
   private _toPendingResults(
@@ -121,22 +128,12 @@ class IncrementalPublisher {
     return String(this._nextId++);
   }
 
-  private _subscribe(): AsyncGenerator<
+  private async *_subscribe(): AsyncGenerator<
     SubsequentIncrementalExecutionResult,
     void,
     void
   > {
-    let isDone = false;
-
-    const _next = async (): Promise<
-      IteratorResult<SubsequentIncrementalExecutionResult, void>
-    > => {
-      if (isDone) {
-        this._context.abortSignalListener?.disconnect();
-        await this._returnAsyncIteratorsIgnoringErrors();
-        return { value: undefined, done: true };
-      }
-
+    while (!this._isDone) {
       const context: SubsequentIncrementalExecutionResultContext = {
         pending: [],
         incremental: [],
@@ -155,7 +152,7 @@ class IncrementalPublisher {
           const hasNext = this._incrementalGraph.hasNext();
 
           if (!hasNext) {
-            isDone = true;
+            this._isDone = true;
           }
 
           const subsequentIncrementalExecutionResult: SubsequentIncrementalExecutionResult =
@@ -172,50 +169,14 @@ class IncrementalPublisher {
             subsequentIncrementalExecutionResult.completed = completed;
           }
 
-          return { value: subsequentIncrementalExecutionResult, done: false };
+          yield subsequentIncrementalExecutionResult;
+          break;
         }
 
         // eslint-disable-next-line no-await-in-loop
         batch = await this._incrementalGraph.nextCompletedBatch();
       } while (batch !== undefined);
-
-      // TODO: add test for this case
-      /* c8 ignore next */
-      this._context.abortSignalListener?.disconnect();
-      await this._returnAsyncIteratorsIgnoringErrors();
-      return { value: undefined, done: true };
-    };
-
-    const _return = async (): Promise<
-      IteratorResult<SubsequentIncrementalExecutionResult, void>
-    > => {
-      isDone = true;
-      this._incrementalGraph.abort();
-      await this._returnAsyncIterators();
-      return { value: undefined, done: true };
-    };
-
-    const _throw = async (
-      error?: unknown,
-    ): Promise<IteratorResult<SubsequentIncrementalExecutionResult, void>> => {
-      isDone = true;
-      this._incrementalGraph.abort();
-      await this._returnAsyncIterators();
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-      return Promise.reject(error);
-    };
-
-    return {
-      [Symbol.asyncIterator]() {
-        return this;
-      },
-      next: _next,
-      return: _return,
-      throw: _throw,
-      async [Symbol.asyncDispose]() {
-        await _return();
-      },
-    };
+    }
   }
 
   private _handleCompletedIncrementalData(
