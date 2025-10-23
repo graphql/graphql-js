@@ -59,10 +59,12 @@ export function mapAsyncIterable<T, U, R = undefined>(
     async throw(error?: unknown) {
       if (typeof iterator.throw === 'function') {
         return mapResult(iterator.throw(error));
-      } else if (typeof iterator.return === 'function') {
-        await returnIgnoringErrors();
-        throw error;
       }
+
+      if (typeof iterator.return === 'function') {
+        await returnIgnoringErrors();
+      }
+
       throw error;
     },
     [Symbol.asyncIterator]() {
