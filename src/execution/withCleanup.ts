@@ -35,7 +35,7 @@ export function withCleanup<T>(
           await finish();
           return result;
         }
-        return { value: await result.value, done: false };
+        return { value: result.value, done: false };
       } catch (error) {
         await finish();
         throw error;
