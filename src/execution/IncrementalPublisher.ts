@@ -93,9 +93,9 @@ class IncrementalPublisher {
       ? { errors, data, pending, hasNext: true }
       : { data, pending, hasNext: true };
 
-    const subsequentResults = this._incrementalGraph
-      .subscribe()
-      .toAsyncGenerator((batch) => this._handleCompletedBatch(batch));
+    const subsequentResults = this._incrementalGraph.subscribe((batch) =>
+      this._handleCompletedBatch(batch),
+    );
 
     return {
       initialResult,

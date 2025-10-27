@@ -1,70 +1,61 @@
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import { Queue } from '../Queue.js';
 
 describe('Queue', () => {
-  it('should yield sync pushed items in order', () => {
+  it('should yield sync pushed items in order', async () => {
     const queue = new Queue<number>((push) => {
       push(1);
       push(2);
       push(3);
     });
 
-    const batch1 = queue.currentBatch();
-    assert(batch1 !== undefined);
-    expect(Array.from(batch1)).to.deep.equal([1, 2, 3]);
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({ done: false, value: [1, 2, 3] });
   });
 
   it('should yield async pushed items in order', async () => {
     const queue = new Queue<number>(async (push) => {
-      await Promise.resolve();
+      await resolveOnNextTick();
       push(1);
       push(2);
       push(3);
     });
 
-    const batch1 = queue.currentBatch();
-    expect(batch1).to.deep.equal(undefined);
-    const batch2 = await queue.nextBatch();
-    assert(batch2 !== undefined);
-    expect(Array.from(batch2)).to.deep.equal([1, 2, 3]);
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({ done: false, value: [1, 2, 3] });
   });
 
   it('should yield multiple batches', async () => {
     const queue = new Queue<number>(async (push) => {
-      await Promise.resolve();
+      await resolveOnNextTick();
       push(1);
       push(2);
       push(3);
-      await Promise.resolve();
+      await resolveOnNextTick();
       push(4);
       push(5);
       push(6);
     });
 
-    const batch1 = queue.currentBatch();
-    expect(batch1).to.equal(undefined);
-    const batch2 = await queue.nextBatch();
-    assert(batch2 !== undefined);
-    expect(Array.from(batch2)).to.deep.equal([1, 2, 3]);
-    const batch3 = await queue.nextBatch();
-    assert(batch3 !== undefined);
-    expect(Array.from(batch3)).to.deep.equal([4, 5, 6]);
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({ done: false, value: [1, 2, 3] });
+    expect(await sub.next()).to.deep.equal({ done: false, value: [4, 5, 6] });
   });
 
   it('should allow the executor to indicate completion', async () => {
     const queue = new Queue<number>(async (_push, stop) => {
-      await Promise.resolve();
+      await resolveOnNextTick();
       stop();
     });
 
-    const batch1 = queue.currentBatch();
-    expect(batch1).to.equal(undefined);
-    const batch2 = await queue.nextBatch();
-    expect(batch2).to.equal(undefined);
+    const sub = queue.subscribe((batch) => batch);
+    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
   });
 
   it('should allow a consumer to abort a pending call to nextBatch', async () => {
@@ -74,11 +65,10 @@ describe('Queue', () => {
       await promise;
     });
 
-    const batch1 = queue.currentBatch();
-    expect(batch1).to.equal(undefined);
-    const batch2Promise = queue.nextBatch();
+    const sub = queue.subscribe((batch) => batch);
+    const nextPromise = sub.next();
     queue.stop();
-    expect(await batch2Promise).to.equal(undefined);
+    expect(await nextPromise).to.deep.equal({ done: true, value: undefined });
   });
 
   it('should allow saving the push function', async () => {
@@ -87,41 +77,88 @@ describe('Queue', () => {
       push = _push;
     });
 
-    const batch1 = queue.currentBatch();
-    expect(batch1).to.equal(undefined);
+    const sub = queue.subscribe((batch) => Array.from(batch));
 
-    const batch2Promise = queue.nextBatch();
-
-    await Promise.resolve();
+    await resolveOnNextTick();
     push(1);
     push(2);
     push(3);
 
-    const batch2 = await batch2Promise;
-    assert(batch2 !== undefined);
-    expect(Array.from(batch2)).to.deep.equal([1, 2, 3]);
+    expect(await sub.next()).to.deep.equal({ done: false, value: [1, 2, 3] });
   });
 
-  it('should ignore sync errors in the executor', async () => {
+  it('should stop on sync error in the executor', async () => {
     const queue = new Queue<number>(() => {
       throw new Error('Oops');
     });
-    const batch1 = queue.currentBatch();
-    expect(batch1).to.equal(undefined);
-    const batch2Promise = queue.nextBatch();
-    queue.stop();
-    expect(await batch2Promise).to.equal(undefined);
+
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
   });
 
-  it('should ignore async errors in the executor', async () => {
+  it('should stop on async errors in the executor', async () => {
     const queue = new Queue<number>(async () => {
-      await Promise.resolve();
+      await resolveOnNextTick();
       throw new Error('Oops');
     });
-    const batch1 = queue.currentBatch();
-    expect(batch1).to.equal(undefined);
-    const batch2Promise = queue.nextBatch();
-    queue.stop();
-    expect(await batch2Promise).to.equal(undefined);
+
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
+  });
+
+  it('should skip payloads when mapped to undefined, skipping first async payload', async () => {
+    const queue = new Queue<number>(async (push) => {
+      await resolveOnNextTick();
+      push(1);
+      await resolveOnNextTick();
+      push(2);
+      await resolveOnNextTick();
+      push(3);
+      await resolveOnNextTick();
+      push(4);
+      await resolveOnNextTick();
+      push(5);
+      await resolveOnNextTick();
+      push(6);
+    });
+
+    const sub = queue.subscribe((batch) => {
+      const arr = Array.from(batch);
+      if (arr[0] % 2 === 0) {
+        return arr;
+      }
+    });
+    expect(await sub.next()).to.deep.equal({ done: false, value: [2] });
+    // [3, 4, 5] are batched as we await 2:
+    // - one tick for the [AsyncGeneratorResumeNext] job
+    // - one tick for the await within the withCleanUp next()
+    expect(await sub.next()).to.deep.equal({ done: false, value: [6] });
+  });
+
+  it('should skip payloads when mapped to undefined, skipping second async payload', async () => {
+    const queue = new Queue<number>(async (push) => {
+      await resolveOnNextTick();
+      push(0);
+      await resolveOnNextTick();
+      push(1);
+      await resolveOnNextTick();
+      push(2);
+      await resolveOnNextTick();
+      push(3);
+      await resolveOnNextTick();
+      push(4);
+    });
+
+    const sub = queue.subscribe((batch) => {
+      const arr = Array.from(batch);
+      if (arr[0] % 2 === 0) {
+        return arr;
+      }
+    });
+    expect(await sub.next()).to.deep.equal({ done: false, value: [0] });
+    // [1, 2, 3] are batched as we await 0
+    // - one tick for the [AsyncGeneratorResumeNext] job
+    // - one tick for the await within the withCleanUp next()
+    expect(await sub.next()).to.deep.equal({ done: false, value: [4] });
   });
 });

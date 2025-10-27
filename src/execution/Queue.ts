@@ -25,33 +25,15 @@ export class Queue<T> {
     try {
       result = executor(this._push.bind(this), this.stop.bind(this));
     } catch {
-      // Ignore errors
+      // Ignore actual error
+      this.stop();
     }
     if (isPromise(result)) {
       result.catch(() => {
-        // Ignore errors
+        // Ignore actual error
+        this.stop();
       });
     }
-  }
-
-  currentBatch(): Generator<T> | undefined {
-    if (this._items.length > 0) {
-      return this.batch();
-    }
-  }
-
-  nextBatch(): Promise<Generator<T> | undefined> {
-    if (this._items.length > 0) {
-      return Promise.resolve(this.batch());
-    }
-    if (this._stopped) {
-      return Promise.resolve(undefined);
-    }
-    const { promise, resolve } = promiseWithResolvers<
-      Generator<T> | undefined
-    >();
-    this._resolvers.push(resolve);
-    return promise;
   }
 
   stop(): void {
@@ -59,34 +41,60 @@ export class Queue<T> {
     this._resolve(undefined);
   }
 
-  toAsyncGenerator<U>(
+  subscribe<U>(
     mapFn: (generator: Generator<T>) => U | undefined,
   ): AsyncGenerator<U, void, void> {
-    return withCleanup(this.toAsyncGeneratorImpl(mapFn), () => this.stop());
+    return withCleanup(this.subscribeImpl(mapFn), () => this.stop());
   }
 
-  private async *toAsyncGeneratorImpl<U>(
+  private async *subscribeImpl<U>(
     mapFn: (generator: Generator<T, void, void>) => U | undefined,
   ): AsyncGenerator<U> {
-    let batch = this.currentBatch();
-    if (batch !== undefined) {
-      const maybe = mapFn(batch);
-      if (maybe !== undefined) {
-        yield maybe;
-      }
-    }
-
     if (this._stopped) {
       return;
     }
 
-    // eslint-disable-next-line no-await-in-loop
-    while ((batch = await this.nextBatch()) !== undefined) {
-      const maybe = mapFn(batch);
-      if (maybe !== undefined) {
-        yield maybe;
+    while (this._items.length > 0) {
+      const maybe = mapFn(this.batch());
+      if (maybe === undefined) {
+        continue;
+      }
+      yield maybe;
+      if (this._stopped) {
+        return;
       }
     }
+
+    let batch: Generator<T> | undefined;
+    // eslint-disable-next-line no-await-in-loop
+    while ((batch = await this._nextBatch()) !== undefined) {
+      let maybe = mapFn(batch);
+      if (maybe === undefined) {
+        continue;
+      }
+      yield maybe;
+      if (this._stopped) {
+        return;
+      }
+      while (this._items.length > 0) {
+        maybe = mapFn(this.batch());
+        if (maybe === undefined) {
+          continue;
+        }
+        yield maybe;
+        if (this._stopped) {
+          return;
+        }
+      }
+    }
+  }
+
+  private _nextBatch(): Promise<Generator<T> | undefined> {
+    const { promise, resolve } = promiseWithResolvers<
+      Generator<T> | undefined
+    >();
+    this._resolvers.push(resolve);
+    return promise;
   }
 
   private _push(item: T): void {

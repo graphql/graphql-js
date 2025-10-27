@@ -145,8 +145,10 @@ export class IncrementalGraph {
     this._maybeStop();
   }
 
-  subscribe(): Queue<IncrementalDataRecordResult> {
-    return this._completed;
+  subscribe<U>(
+    mapFn: (generator: Generator<IncrementalDataRecordResult>) => U | undefined,
+  ): AsyncGenerator<U, void, void> {
+    return this._completed.subscribe(mapFn);
   }
 
   private _addIncrementalDataRecords(
