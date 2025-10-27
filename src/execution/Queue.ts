@@ -90,9 +90,6 @@ export class Queue<T> {
   }
 
   private _push(item: T): void {
-    if (this._stopped) {
-      this._resolve(undefined);
-    }
     this._items.push(item);
     this._resolve(this.batch());
   }
