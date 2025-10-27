@@ -25,11 +25,11 @@ export class Queue<T> {
     try {
       result = executor(this._push.bind(this), this.stop.bind(this));
     } catch {
-      // ignore errors
+      // ignore sync executor errors
     }
     if (isPromise(result)) {
       result.catch(() => {
-        // ignore errors
+        /* ignore async executor errors */
       });
     }
   }
