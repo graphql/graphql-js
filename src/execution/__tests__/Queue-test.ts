@@ -161,4 +161,32 @@ describe('Queue', () => {
     // - one tick for the await within the withCleanUp next()
     expect(await sub.next()).to.deep.equal({ done: false, value: [4] });
   });
+
+  it('should condense pushes during map into the same batch', async () => {
+    let push!: (item: number) => void;
+    const queue = new Queue<number>((_push) => {
+      push = _push;
+    });
+
+    await resolveOnNextTick();
+    push(1);
+    push(2);
+
+    const itemsToAdd = [3, 4];
+    const items: Array<number> = [];
+    const sub = queue.subscribe((batch) => {
+      for (const item of batch) {
+        const itemToAdd = itemsToAdd.shift();
+        if (itemToAdd !== undefined) {
+          push(itemToAdd);
+        }
+        items.push(item);
+      }
+      return items;
+    });
+    expect(await sub.next()).to.deep.equal({
+      done: false,
+      value: [1, 2, 3, 4],
+    });
+  });
 });
