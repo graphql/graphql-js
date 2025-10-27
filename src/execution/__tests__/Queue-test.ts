@@ -87,6 +87,34 @@ describe('Queue', () => {
     expect(await sub.next()).to.deep.equal({ done: false, value: [1, 2, 3] });
   });
 
+  it('should ignore sync error in the executor', async () => {
+    let push!: (item: number) => void;
+    const queue = new Queue<number>((_push) => {
+      push = _push;
+      throw new Error('Oops');
+    });
+
+    push(1);
+
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({ done: false, value: [1] });
+  });
+
+  it('should ignore async error in the executor', async () => {
+    let push!: (item: number) => void;
+    const queue = new Queue<number>(async (_push) => {
+      push = _push;
+      await resolveOnNextTick();
+      throw new Error('Oops');
+    });
+
+    await resolveOnNextTick();
+    push(1);
+
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({ done: false, value: [1] });
+  });
+
   it('should skip payloads when mapped to undefined, skipping first async payload', async () => {
     const queue = new Queue<number>(async (push) => {
       await resolveOnNextTick();
