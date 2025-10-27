@@ -49,16 +49,16 @@ describe('Queue', () => {
   });
 
   it('should allow the executor to indicate completion', async () => {
-    const queue = new Queue<number>(async (_push, stop) => {
-      await resolveOnNextTick();
+    const queue = new Queue<number>((push, stop) => {
       stop();
+      push(1); // should be ignored
     });
 
     const sub = queue.subscribe((batch) => batch);
     expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
   });
 
-  it('should allow a consumer to abort a pending call to nextBatch', async () => {
+  it('should allow a consumer to abort a pending call to next', async () => {
     const queue = new Queue<number>(async () => {
       const { promise } = promiseWithResolvers();
       // wait forever
@@ -85,25 +85,6 @@ describe('Queue', () => {
     push(3);
 
     expect(await sub.next()).to.deep.equal({ done: false, value: [1, 2, 3] });
-  });
-
-  it('should stop on sync error in the executor', async () => {
-    const queue = new Queue<number>(() => {
-      throw new Error('Oops');
-    });
-
-    const sub = queue.subscribe((batch) => Array.from(batch));
-    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
-  });
-
-  it('should stop on async errors in the executor', async () => {
-    const queue = new Queue<number>(async () => {
-      await resolveOnNextTick();
-      throw new Error('Oops');
-    });
-
-    const sub = queue.subscribe((batch) => Array.from(batch));
-    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
   });
 
   it('should skip payloads when mapped to undefined, skipping first async payload', async () => {

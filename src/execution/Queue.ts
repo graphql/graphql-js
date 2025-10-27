@@ -25,13 +25,11 @@ export class Queue<T> {
     try {
       result = executor(this._push.bind(this), this.stop.bind(this));
     } catch {
-      // Ignore actual error
-      this.stop();
+      // ignore errors
     }
     if (isPromise(result)) {
       result.catch(() => {
-        // Ignore actual error
-        this.stop();
+        // ignore errors
       });
     }
   }
