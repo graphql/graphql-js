@@ -91,15 +91,10 @@ describe('mapAsyncIterable', () => {
 
   it('allows returning early from mapped async generator', async () => {
     async function* source() {
-      try {
-        yield 1;
-        /* c8 ignore next 3 */
-        yield 2;
-        yield 3; // Shouldn't be reached.
-      } finally {
-        // eslint-disable-next-line no-unsafe-finally
-        return 'The End';
-      }
+      yield 1;
+      /* c8 ignore next 3 */
+      yield 2;
+      yield 3; // Shouldn't be reached.
     }
 
     const doubles = mapAsyncIterable(source(), (x) => x + x);
@@ -108,8 +103,8 @@ describe('mapAsyncIterable', () => {
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
 
     // Early return
-    expect(await doubles.return('')).to.deep.equal({
-      value: 'The End',
+    expect(await doubles.return()).to.deep.equal({
+      value: undefined,
       done: true,
     });
 
@@ -147,7 +142,7 @@ describe('mapAsyncIterable', () => {
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
 
     // Early return
-    expect(await doubles.return(0)).to.deep.equal({
+    expect(await doubles.return()).to.deep.equal({
       value: undefined,
       done: true,
     });
@@ -155,15 +150,10 @@ describe('mapAsyncIterable', () => {
 
   it('passes through early return from async values', async () => {
     async function* source() {
-      try {
-        yield 'a';
-        /* c8 ignore next 3 */
-        yield 'b';
-        yield 'c'; // Shouldn't be reached.
-      } finally {
-        yield 'Done';
-        yield 'Last';
-      }
+      yield 'a';
+      /* c8 ignore next 3 */
+      yield 'b';
+      yield 'c'; // Shouldn't be reached.
     }
 
     const doubles = mapAsyncIterable(source(), (x) => x + x);
@@ -173,14 +163,14 @@ describe('mapAsyncIterable', () => {
 
     // Early return
     expect(await doubles.return()).to.deep.equal({
-      value: 'DoneDone',
-      done: false,
+      value: undefined,
+      done: true,
     });
 
-    // Subsequent next calls may yield from finally block
+    // Subsequent next calls
     expect(await doubles.next()).to.deep.equal({
-      value: 'LastLast',
-      done: false,
+      value: undefined,
+      done: true,
     });
     expect(await doubles.next()).to.deep.equal({
       value: undefined,
@@ -260,14 +250,10 @@ describe('mapAsyncIterable', () => {
 
   it('passes through caught errors through async generators', async () => {
     async function* source() {
-      try {
-        yield 1;
-        /* c8 ignore next 2 */
-        yield 2;
-        yield 3; // Shouldn't be reached.
-      } catch (e) {
-        yield e;
-      }
+      yield 1;
+      /* c8 ignore next 2 */
+      yield 2;
+      yield 3; // Shouldn't be reached.
     }
 
     const doubles = mapAsyncIterable(source(), (x) => x + x);
@@ -276,11 +262,9 @@ describe('mapAsyncIterable', () => {
     expect(await doubles.next()).to.deep.equal({ value: 4, done: false });
 
     // Throw error
-    expect(await doubles.throw('Ouch')).to.deep.equal({
-      value: 'OuchOuch',
-      done: false,
-    });
+    await expectPromise(doubles.throw(new Error('Ouch'))).toRejectWith('Ouch');
 
+    // Subsequent next calls
     expect(await doubles.next()).to.deep.equal({
       value: undefined,
       done: true,

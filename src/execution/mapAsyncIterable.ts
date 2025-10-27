@@ -1,33 +1,18 @@
+import { isPromise } from '../jsutils/isPromise.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+
+import { withCleanup } from './withCleanup.js';
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
  * which produces values mapped via calling the callback function.
  */
-export function mapAsyncIterable<T, U, R = undefined>(
-  iterable: AsyncGenerator<T, R, void> | AsyncIterable<T>,
+export function mapAsyncIterable<T, U>(
+  iterable: AsyncGenerator<T> | AsyncIterable<T>,
   callback: (value: T) => PromiseOrValue<U>,
-): AsyncGenerator<U, R, void> {
-  const iterator = iterable[Symbol.asyncIterator]();
-
-  async function mapResult(
-    promise: Promise<IteratorResult<T, R>>,
-  ): Promise<IteratorResult<U, R>> {
-    const result = await promise;
-    if (result.done) {
-      return result;
-    }
-
-    const value = result.value;
-    try {
-      return { value: await callback(value), done: false };
-    } catch (error) {
-      await returnIgnoringErrors();
-      throw error;
-    }
-  }
-
-  async function returnIgnoringErrors(): Promise<void> {
+): AsyncGenerator<U, void, void> {
+  return withCleanup(mapAsyncIterableImpl(iterable, callback), async () => {
+    const iterator = iterable[Symbol.asyncIterator]();
     if (typeof iterator.return === 'function') {
       try {
         await iterator.return(); /* c8 ignore start */
@@ -36,44 +21,19 @@ export function mapAsyncIterable<T, U, R = undefined>(
         /* ignore error */
       } /* c8 ignore stop */
     }
+  });
+}
+
+async function* mapAsyncIterableImpl<T, U, R = undefined>(
+  iterable: AsyncGenerator<T, R, void> | AsyncIterable<T>,
+  mapFn: (value: T) => PromiseOrValue<U>,
+): AsyncGenerator<U, void, void> {
+  for await (const value of iterable) {
+    const result = mapFn(value);
+    if (isPromise(result)) {
+      yield await result;
+      continue;
+    }
+    yield result;
   }
-
-  const asyncDispose: typeof Symbol.asyncDispose =
-    Symbol.asyncDispose /* c8 ignore start */ ??
-    Symbol.for('Symbol.asyncDispose'); /* c8 ignore stop */
-
-  return {
-    async next() {
-      return mapResult(iterator.next());
-    },
-    async return(): Promise<IteratorResult<U, R>> {
-      // If iterator.return() does not exist, then type R must be undefined.
-      return typeof iterator.return === 'function'
-        ? mapResult(iterator.return())
-        : { value: undefined as any, done: true };
-    },
-    async throw(error?: unknown) {
-      if (typeof iterator.throw === 'function') {
-        return mapResult(iterator.throw(error));
-      }
-
-      if (typeof iterator.return === 'function') {
-        await returnIgnoringErrors();
-      }
-
-      throw error;
-    },
-    [Symbol.asyncIterator]() {
-      return this;
-    },
-    async [asyncDispose]() {
-      await this.return(undefined as R);
-      if (
-        typeof (iterable as AsyncGenerator<T, R, void>)[asyncDispose] ===
-        'function'
-      ) {
-        await (iterable as AsyncGenerator<T, R, void>)[asyncDispose]();
-      }
-    },
-  };
 }
