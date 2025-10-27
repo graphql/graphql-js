@@ -33,9 +33,8 @@ export function withCleanup<T>(
         const result = await generator.next();
         if (result.done) {
           await finish();
-          return result;
         }
-        return { value: result.value, done: false };
+        return result;
       } catch (error) {
         await finish();
         throw error;
