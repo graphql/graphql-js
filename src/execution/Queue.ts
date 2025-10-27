@@ -50,42 +50,34 @@ export class Queue<T> {
   private async *subscribeImpl<U>(
     mapFn: (generator: Generator<T, void, void>) => U | undefined,
   ): AsyncGenerator<U> {
-    if (this._stopped) {
-      return;
-    }
-
-    while (this._items.length > 0) {
-      const maybe = mapFn(this.batch());
-      if (maybe === undefined) {
-        continue;
-      }
-      yield maybe;
+    while (true) {
       if (this._stopped) {
         return;
       }
-    }
 
-    let batch: Generator<T> | undefined;
-    // eslint-disable-next-line no-await-in-loop
-    while ((batch = await this._nextBatch()) !== undefined) {
-      let maybe = mapFn(batch);
-      if (maybe === undefined) {
-        continue;
-      }
-      yield maybe;
-      if (this._stopped) {
-        return;
-      }
-      while (this._items.length > 0) {
-        maybe = mapFn(this.batch());
-        if (maybe === undefined) {
-          continue;
-        }
-        yield maybe;
+      let mapped;
+      // drain any items pushed prior to or between .next() calls
+      while (
+        this._items.length > 0 &&
+        (mapped = mapFn(this.batch())) !== undefined
+      ) {
+        yield mapped;
         if (this._stopped) {
           return;
         }
       }
+
+      // wait for a yield-able batch
+      do {
+        // eslint-disable-next-line no-await-in-loop
+        const nextBatch = await this._nextBatch();
+        if (nextBatch === undefined || this._stopped) {
+          return;
+        }
+        mapped = mapFn(nextBatch);
+      } while (mapped === undefined);
+
+      yield mapped;
     }
   }
 

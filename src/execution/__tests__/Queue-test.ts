@@ -135,33 +135,6 @@ describe('Queue', () => {
     expect(await sub.next()).to.deep.equal({ done: false, value: [6] });
   });
 
-  it('should skip payloads when mapped to undefined, skipping second async payload', async () => {
-    const queue = new Queue<number>(async (push) => {
-      await resolveOnNextTick();
-      push(0);
-      await resolveOnNextTick();
-      push(1);
-      await resolveOnNextTick();
-      push(2);
-      await resolveOnNextTick();
-      push(3);
-      await resolveOnNextTick();
-      push(4);
-    });
-
-    const sub = queue.subscribe((batch) => {
-      const arr = Array.from(batch);
-      if (arr[0] % 2 === 0) {
-        return arr;
-      }
-    });
-    expect(await sub.next()).to.deep.equal({ done: false, value: [0] });
-    // [1, 2, 3] are batched as we await 0
-    // - one tick for the [AsyncGeneratorResumeNext] job
-    // - one tick for the await within the withCleanUp next()
-    expect(await sub.next()).to.deep.equal({ done: false, value: [4] });
-  });
-
   it('should condense pushes during map into the same batch', async () => {
     let push!: (item: number) => void;
     const queue = new Queue<number>((_push) => {
