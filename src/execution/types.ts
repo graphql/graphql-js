@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
@@ -19,8 +20,9 @@ import type {
 export interface ExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
+  TError extends GraphQLError | GraphQLFormattedError = GraphQLError,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
+  errors?: ReadonlyArray<TError>;
   data?: TData | null;
   extensions?: TExtensions;
 }
@@ -28,29 +30,42 @@ export interface ExecutionResult<
 export interface FormattedExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
+> extends ExecutionResult<TData, TExtensions, GraphQLFormattedError> {}
 
 export interface ExperimentalIncrementalExecutionResults<
   TInitial = ObjMap<unknown>,
   TSubsequent = unknown,
   TExtensions = ObjMap<unknown>,
+  TError extends GraphQLError | GraphQLFormattedError = GraphQLError,
 > {
-  initialResult: InitialIncrementalExecutionResult<TInitial, TExtensions>;
+  initialResult: InitialIncrementalExecutionResult<
+    TInitial,
+    TExtensions,
+    TError
+  >;
   subsequentResults: AsyncGenerator<
-    SubsequentIncrementalExecutionResult<TSubsequent, TExtensions>,
+    SubsequentIncrementalExecutionResult<TSubsequent, TExtensions, TError>,
     void,
     void
   >;
 }
 
+export interface FormattedExperimentalIncrementalExecutionResults<
+  TInitial = ObjMap<unknown>,
+  TSubsequent = unknown,
+  TExtensions = ObjMap<unknown>,
+> extends ExperimentalIncrementalExecutionResults<
+    TInitial,
+    TSubsequent,
+    TExtensions,
+    GraphQLFormattedError
+  > {}
+
 export interface InitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends ExecutionResult<TData, TExtensions> {
+  TError extends GraphQLError | GraphQLFormattedError = GraphQLError,
+> extends ExecutionResult<TData, TExtensions, TError> {
   data: TData;
   pending: ReadonlyArray<PendingResult>;
   hasNext: true;
@@ -60,20 +75,20 @@ export interface InitialIncrementalExecutionResult<
 export interface FormattedInitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends FormattedExecutionResult<TData, TExtensions> {
-  data: TData;
-  pending: ReadonlyArray<PendingResult>;
-  hasNext: boolean;
-  extensions?: TExtensions;
-}
+> extends InitialIncrementalExecutionResult<
+    TData,
+    TExtensions,
+    GraphQLFormattedError
+  > {}
 
 export interface SubsequentIncrementalExecutionResult<
   TData = unknown,
   TExtensions = ObjMap<unknown>,
+  TError extends GraphQLError | GraphQLFormattedError = GraphQLError,
 > {
   pending?: ReadonlyArray<PendingResult>;
   incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
-  completed?: ReadonlyArray<CompletedResult>;
+  completed?: ReadonlyArray<CompletedResult<TError>>;
   hasNext: boolean;
   extensions?: TExtensions;
 }
@@ -81,23 +96,19 @@ export interface SubsequentIncrementalExecutionResult<
 export interface FormattedSubsequentIncrementalExecutionResult<
   TData = unknown,
   TExtensions = ObjMap<unknown>,
-> {
-  hasNext: boolean;
-  pending?: ReadonlyArray<PendingResult>;
-  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
-  completed?: ReadonlyArray<FormattedCompletedResult>;
-  extensions?: TExtensions;
-}
-
-interface ExecutionGroupResult<TData = ObjMap<unknown>> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data: TData;
-}
+> extends SubsequentIncrementalExecutionResult<
+    TData,
+    TExtensions,
+    GraphQLFormattedError
+  > {}
 
 export interface IncrementalDeferResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends ExecutionGroupResult<TData> {
+  TError extends GraphQLError | GraphQLFormattedError = GraphQLError,
+> {
+  errors?: ReadonlyArray<TError>;
+  data: TData;
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
@@ -106,23 +117,15 @@ export interface IncrementalDeferResult<
 export interface FormattedIncrementalDeferResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  data: TData;
-  id: string;
-  subPath?: ReadonlyArray<string | number>;
-  extensions?: TExtensions;
-}
-
-interface StreamItemsRecordResult<TData = ReadonlyArray<unknown>> {
-  errors?: ReadonlyArray<GraphQLError>;
-  items: TData;
-}
+> extends IncrementalDeferResult<TData, TExtensions, GraphQLFormattedError> {}
 
 export interface IncrementalStreamResult<
   TData = ReadonlyArray<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends StreamItemsRecordResult<TData> {
+  TError extends GraphQLError | GraphQLFormattedError = GraphQLError,
+> {
+  errors?: ReadonlyArray<TError>;
+  items: TData;
   id: string;
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
@@ -131,13 +134,7 @@ export interface IncrementalStreamResult<
 export interface FormattedIncrementalStreamResult<
   TData = Array<unknown>,
   TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  items: TData;
-  id: string;
-  subPath?: ReadonlyArray<string | number>;
-  extensions?: TExtensions;
-}
+> extends IncrementalStreamResult<TData, TExtensions, GraphQLFormattedError> {}
 
 export type IncrementalResult<TData = unknown, TExtensions = ObjMap<unknown>> =
   | IncrementalDeferResult<TData, TExtensions>
@@ -156,15 +153,15 @@ export interface PendingResult {
   label?: string;
 }
 
-export interface CompletedResult {
+export interface CompletedResult<
+  TError extends GraphQLError | GraphQLFormattedError = GraphQLError,
+> {
   id: string;
-  errors?: ReadonlyArray<GraphQLError>;
+  errors?: ReadonlyArray<TError>;
 }
 
-export interface FormattedCompletedResult {
-  id: string;
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-}
+export interface FormattedCompletedResult
+  extends CompletedResult<GraphQLFormattedError> {}
 
 export function isPendingExecutionGroup(
   incrementalDataRecord: IncrementalDataRecord,
@@ -185,7 +182,10 @@ export function isCompletedExecutionGroup(
 export interface SuccessfulExecutionGroup {
   pendingExecutionGroup: PendingExecutionGroup;
   path: Array<string | number>;
-  result: ExecutionGroupResult;
+  result: {
+    errors?: ReadonlyArray<GraphQLError>;
+    data: ObjMap<unknown>;
+  };
   newDeferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord> | undefined;
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
   errors?: never;
@@ -266,7 +266,10 @@ export interface StreamRecord {
 export interface StreamItemsResult {
   streamRecord: StreamRecord;
   errors?: ReadonlyArray<GraphQLError>;
-  result?: StreamItemsRecordResult;
+  result?: {
+    errors?: ReadonlyArray<GraphQLError>;
+    items: ReadonlyArray<unknown>;
+  };
   newDeferredFragmentRecords?:
     | ReadonlyArray<DeferredFragmentRecord>
     | undefined;
