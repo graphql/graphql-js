@@ -1,4 +1,3 @@
-import { invariant } from '../jsutils/invariant.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import { pathToArray } from '../jsutils/Path.js';
 
@@ -7,7 +6,6 @@ import type { GraphQLError } from '../error/GraphQLError.js';
 import type { AbortSignalListener } from './AbortSignalListener.js';
 import { IncrementalGraph } from './IncrementalGraph.js';
 import type {
-  CancellableStreamRecord,
   CompletedExecutionGroup,
   CompletedResult,
   DeferredFragmentRecord,
@@ -21,34 +19,31 @@ import type {
   InitialIncrementalExecutionResult,
   PendingResult,
   StreamItemsResult,
+  StreamRecord,
   SubsequentIncrementalExecutionResult,
 } from './types.js';
-import {
-  isCancellableStreamRecord,
-  isCompletedExecutionGroup,
-  isFailedExecutionGroup,
-} from './types.js';
+import { isCompletedExecutionGroup, isFailedExecutionGroup } from './types.js';
 import { withCleanup } from './withCleanup.js';
 
+// eslint-disable-next-line max-params
 export function buildIncrementalResponse(
-  context: IncrementalPublisherContext,
   result: ObjMap<unknown>,
   errors: ReadonlyArray<GraphQLError>,
   newDeferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord> | undefined,
   incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
+  earlyReturns: Map<StreamRecord, () => Promise<unknown>>,
+  abortSignalListener: AbortSignalListener | undefined,
 ): ExperimentalIncrementalExecutionResults {
-  const incrementalPublisher = new IncrementalPublisher(context);
+  const incrementalPublisher = new IncrementalPublisher(
+    earlyReturns,
+    abortSignalListener,
+  );
   return incrementalPublisher.buildResponse(
     result,
     errors,
     newDeferredFragmentRecords,
     incrementalDataRecords,
   );
-}
-
-interface IncrementalPublisherContext {
-  abortSignalListener: AbortSignalListener | undefined;
-  cancellableStreams: Set<CancellableStreamRecord> | undefined;
 }
 
 interface SubsequentIncrementalExecutionResultContext {
@@ -64,12 +59,17 @@ interface SubsequentIncrementalExecutionResultContext {
  * @internal
  */
 class IncrementalPublisher {
-  private _context: IncrementalPublisherContext;
+  private _earlyReturns: Map<StreamRecord, () => Promise<unknown>>;
+  private _abortSignalListener: AbortSignalListener | undefined;
   private _nextId: number;
   private _incrementalGraph: IncrementalGraph;
 
-  constructor(context: IncrementalPublisherContext) {
-    this._context = context;
+  constructor(
+    earlyReturns: Map<StreamRecord, () => Promise<unknown>>,
+    abortSignalListener: AbortSignalListener | undefined,
+  ) {
+    this._earlyReturns = earlyReturns;
+    this._abortSignalListener = abortSignalListener;
     this._nextId = 0;
     this._incrementalGraph = new IncrementalGraph();
   }
@@ -100,7 +100,7 @@ class IncrementalPublisher {
     return {
       initialResult,
       subsequentResults: withCleanup(subsequentResults, async () => {
-        this._context.abortSignalListener?.disconnect();
+        this._abortSignalListener?.disconnect();
         await this._returnAsyncIteratorsIgnoringErrors();
       }),
     };
@@ -241,21 +241,18 @@ class IncrementalPublisher {
         errors: streamItemsResult.errors,
       });
       this._incrementalGraph.removeStream(streamRecord);
-      if (isCancellableStreamRecord(streamRecord)) {
-        invariant(this._context.cancellableStreams !== undefined);
-        this._context.cancellableStreams.delete(streamRecord);
-        streamRecord.earlyReturn().catch(() => {
+      const earlyReturn = this._earlyReturns.get(streamRecord);
+      if (earlyReturn !== undefined) {
+        earlyReturn().catch(() => {
           /* c8 ignore next 1 */
           // ignore error
         });
+        this._earlyReturns.delete(streamRecord);
       }
     } else if (streamItemsResult.result === undefined) {
       context.completed.push({ id });
       this._incrementalGraph.removeStream(streamRecord);
-      if (isCancellableStreamRecord(streamRecord)) {
-        invariant(this._context.cancellableStreams !== undefined);
-        this._context.cancellableStreams.delete(streamRecord);
-      }
+      this._earlyReturns.delete(streamRecord);
     } else {
       const incrementalEntry: IncrementalStreamResult = {
         id,
@@ -310,14 +307,10 @@ class IncrementalPublisher {
   }
 
   private async _returnAsyncIterators(): Promise<void> {
-    const cancellableStreams = this._context.cancellableStreams;
-    if (cancellableStreams === undefined) {
-      return;
-    }
     const promises: Array<Promise<unknown>> = [];
-    for (const streamRecord of cancellableStreams) {
-      if (streamRecord.earlyReturn !== undefined) {
-        promises.push(streamRecord.earlyReturn());
+    for (const earlyReturn of this._earlyReturns.values()) {
+      if (earlyReturn !== undefined) {
+        promises.push(earlyReturn());
       }
     }
     await Promise.all(promises);

@@ -273,16 +273,6 @@ export interface StreamItemsResult {
   incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
 }
 
-export interface CancellableStreamRecord extends StreamRecord {
-  earlyReturn: () => Promise<unknown>;
-}
-
-export function isCancellableStreamRecord(
-  deliveryGroup: DeliveryGroup,
-): deliveryGroup is CancellableStreamRecord {
-  return 'earlyReturn' in deliveryGroup;
-}
-
 export type IncrementalDataRecord = PendingExecutionGroup | StreamRecord;
 
 export type IncrementalDataRecordResult =

@@ -72,7 +72,6 @@ import { getVariableSignature } from './getVariableSignature.js';
 import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import type {
-  CancellableStreamRecord,
   CompletedExecutionGroup,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
@@ -172,7 +171,7 @@ export interface ExecutionContext {
   errors: Array<GraphQLError>;
   abortSignalListener: AbortSignalListener | undefined;
   completed: boolean;
-  cancellableStreams: Set<CancellableStreamRecord> | undefined;
+  earlyReturns: Map<StreamRecord, () => Promise<unknown>> | undefined;
   errorPropagation: boolean;
 }
 
@@ -344,7 +343,7 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       ? new AbortSignalListener(abortSignal)
       : undefined,
     completed: false,
-    cancellableStreams: undefined,
+    earlyReturns: undefined,
     errorPropagation: errorPropagation(validatedExecutionArgs.operation),
   };
   try {
@@ -428,11 +427,12 @@ function buildDataResponse(
   }
 
   return buildIncrementalResponse(
-    exeContext,
     data,
     errors,
     newDeferredFragmentRecords,
     incrementalDataRecords,
+    (exeContext.earlyReturns ??= new Map()),
+    exeContext.abortSignalListener,
   );
 }
 
@@ -1351,10 +1351,6 @@ async function completeAsyncIteratorValue(
     fieldDetailsList,
     path,
   );
-  const earlyReturn =
-    asyncIterator.return === undefined
-      ? undefined
-      : asyncIterator.return.bind(asyncIterator);
   try {
     while (true) {
       if (streamUsage && index >= streamUsage.initialCount) {
@@ -1368,22 +1364,17 @@ async function completeAsyncIteratorValue(
           itemType,
         );
 
-        let streamRecord: StreamRecord | CancellableStreamRecord;
-        if (earlyReturn === undefined) {
-          streamRecord = {
-            label: streamUsage.label,
-            path,
-            streamItemQueue,
-          };
-        } else {
-          streamRecord = {
-            label: streamUsage.label,
-            path,
-            earlyReturn,
-            streamItemQueue,
-          };
-          exeContext.cancellableStreams ??= new Set();
-          exeContext.cancellableStreams.add(streamRecord);
+        const streamRecord: StreamRecord = {
+          label: streamUsage.label,
+          path,
+          streamItemQueue,
+        };
+        if (asyncIterator.return !== undefined) {
+          exeContext.earlyReturns ??= new Map();
+          exeContext.earlyReturns.set(
+            streamRecord,
+            asyncIterator.return.bind(asyncIterator),
+          );
         }
 
         addIncrementalDataRecords(graphqlWrappedResult, [streamRecord]);
@@ -1450,12 +1441,10 @@ async function completeAsyncIteratorValue(
       index++;
     }
   } catch (error) {
-    if (earlyReturn !== undefined) {
-      earlyReturn().catch(() => {
-        /* c8 ignore next 1 */
-        // ignore error
-      });
-    }
+    asyncIterator.return?.().catch(() => {
+      /* c8 ignore next 1 */
+      // ignore error
+    });
     throw error;
   }
 
