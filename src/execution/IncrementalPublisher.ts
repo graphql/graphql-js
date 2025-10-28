@@ -106,13 +106,16 @@ class IncrementalPublisher {
     };
   }
 
+  private _ensureId(deliveryGroup: DeliveryGroup): string {
+    return (deliveryGroup.id ??= String(this._nextId++));
+  }
+
   private _toPendingResults(
     newRootNodes: ReadonlyArray<DeliveryGroup>,
   ): Array<PendingResult> {
     const pendingResults: Array<PendingResult> = [];
     for (const node of newRootNodes) {
-      const id = String(this._getNextId());
-      node.id = id;
+      const id = this._ensureId(node);
       const pendingResult: PendingResult = {
         id,
         path: pathToArray(node.path),
@@ -123,10 +126,6 @@ class IncrementalPublisher {
       pendingResults.push(pendingResult);
     }
     return pendingResults;
-  }
-
-  private _getNextId(): string {
-    return String(this._nextId++);
   }
 
   private _handleCompletedBatch(
@@ -185,8 +184,7 @@ class IncrementalPublisher {
         if (
           this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
         ) {
-          const id = deferredFragmentRecord.id;
-          invariant(id !== undefined);
+          const id = this._ensureId(deferredFragmentRecord);
           context.completed.push({
             id,
             errors: completedExecutionGroup.errors,
@@ -208,8 +206,7 @@ class IncrementalPublisher {
       if (completion === undefined) {
         continue;
       }
-      const id = deferredFragmentRecord.id;
-      invariant(id !== undefined);
+      const id = this._ensureId(deferredFragmentRecord);
       const incremental = context.incremental;
       const { newRootNodes, successfulExecutionGroups } = completion;
       context.pending.push(...this._toPendingResults(newRootNodes));
@@ -237,8 +234,7 @@ class IncrementalPublisher {
     context: SubsequentIncrementalExecutionResultContext,
   ): void {
     const streamRecord = streamItemsResult.streamRecord;
-    const id = streamRecord.id;
-    invariant(id !== undefined);
+    const id = this._ensureId(streamRecord);
     if (streamItemsResult.errors !== undefined) {
       context.completed.push({
         id,
