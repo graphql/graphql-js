@@ -49,7 +49,7 @@ describe('Queue', () => {
     });
   });
 
-  it('should yield sync and async pushed items in order', async () => {
+  it('should yield sync and async pushed items in order, separated by macro-task boundary', async () => {
     const queue = new Queue<number>(async (push) => {
       push(1);
       push(2);
