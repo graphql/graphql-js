@@ -111,7 +111,7 @@ describe('GraphQLError', () => {
     });
   });
 
-  it('converts node without location to undefined source, positions and locations', () => {
+  it('converts node without location to error without source, positions and locations', () => {
     const fieldNodeNoLocation = {
       ...fieldNode,
       loc: undefined,
@@ -120,9 +120,6 @@ describe('GraphQLError', () => {
     const e = new GraphQLError('msg', { nodes: fieldNodeNoLocation });
     expect(e).to.deep.include({
       nodes: [fieldNodeNoLocation],
-      source: undefined,
-      positions: undefined,
-      locations: undefined,
     });
   });
 

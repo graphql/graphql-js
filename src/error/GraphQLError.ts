@@ -51,7 +51,7 @@ export interface GraphQLErrorOptions {
  * and stack trace, it also includes information about the locations in a
  * GraphQL document and/or execution result that correspond to the Error.
  */
-export class GraphQLError extends Error {
+export class GraphQLError extends Error implements GraphQLFormattedError {
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
    * which correspond to this error.
@@ -62,7 +62,7 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  readonly locations: ReadonlyArray<SourceLocation> | undefined;
+  readonly locations?: ReadonlyArray<SourceLocation>;
 
   /**
    * An array describing the JSON-path into the execution response which
@@ -70,12 +70,12 @@ export class GraphQLError extends Error {
    *
    * Enumerable, and appears in the result of JSON.stringify().
    */
-  readonly path: ReadonlyArray<string | number> | undefined;
+  readonly path?: ReadonlyArray<string | number>;
 
   /**
    * An array of GraphQL AST Nodes corresponding to this error.
    */
-  readonly nodes: ReadonlyArray<ASTNode> | undefined;
+  readonly nodes?: ReadonlyArray<ASTNode>;
 
   /**
    * The source GraphQL document for the first location of this error.
@@ -83,23 +83,23 @@ export class GraphQLError extends Error {
    * Note that if this Error represents more than one node, the source may not
    * represent nodes after the first node.
    */
-  readonly source: Source | undefined;
+  readonly source?: Source;
 
   /**
    * An array of character offsets within the source GraphQL document
    * which correspond to this error.
    */
-  readonly positions: ReadonlyArray<number> | undefined;
+  readonly positions?: ReadonlyArray<number>;
 
   /**
    * The original error thrown from a field resolver during execution.
    */
-  readonly originalError: Error | undefined;
+  readonly originalError?: Error;
 
   /**
    * Extension fields to add to the formatted error.
    */
-  readonly extensions: GraphQLErrorExtensions;
+  readonly extensions?: GraphQLErrorExtensions;
 
   constructor(message: string, options: GraphQLErrorOptions = {}) {
     const { nodes, source, positions, path, originalError, extensions } =
@@ -108,13 +108,21 @@ export class GraphQLError extends Error {
     super(message);
 
     this.name = 'GraphQLError';
-    this.path = path ?? undefined;
-    this.originalError = originalError ?? undefined;
+    if (path) {
+      this.path = path;
+    }
+
+    if (originalError) {
+      this.originalError = originalError;
+    }
 
     // Compute list of blame nodes.
-    this.nodes = undefinedIfEmpty(
+    const resolvedNodes = undefinedIfEmpty(
       Array.isArray(nodes) ? nodes : nodes ? [nodes] : undefined,
     );
+    if (resolvedNodes) {
+      this.nodes = resolvedNodes;
+    }
 
     const nodeLocations = undefinedIfEmpty(
       this.nodes
@@ -123,19 +131,32 @@ export class GraphQLError extends Error {
     );
 
     // Compute locations in the source for the given nodes/positions.
-    this.source = source ?? nodeLocations?.[0]?.source;
+    const resolvedSource = source ?? nodeLocations?.[0]?.source;
+    if (resolvedSource) {
+      this.source = resolvedSource;
+    }
 
-    this.positions = positions ?? nodeLocations?.map((loc) => loc.start);
+    const resolvedPositions =
+      positions ?? nodeLocations?.map((loc) => loc.start);
+    if (resolvedPositions) {
+      this.positions = resolvedPositions;
+    }
 
-    this.locations =
+    const resolvedLocations =
       positions && source
         ? positions.map((pos) => getLocation(source, pos))
         : nodeLocations?.map((loc) => getLocation(loc.source, loc.start));
+    if (resolvedLocations) {
+      this.locations = resolvedLocations;
+    }
 
     const originalExtensions = isObjectLike(originalError?.extensions)
       ? originalError?.extensions
       : undefined;
-    this.extensions = extensions ?? originalExtensions ?? Object.create(null);
+    const resolvedExtensions = extensions ?? originalExtensions;
+    if (resolvedExtensions) {
+      this.extensions = resolvedExtensions;
+    }
 
     // Only properties prescribed by the spec should be enumerable.
     // Keep the rest as non-enumerable.
