@@ -27,11 +27,6 @@ export interface ExecutionResult<
   extensions?: TExtensions;
 }
 
-export interface FormattedExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends ExecutionResult<TData, TExtensions, GraphQLFormattedError> {}
-
 export interface ExperimentalIncrementalExecutionResults<
   TInitial = ObjMap<unknown>,
   TSubsequent = unknown,
@@ -50,17 +45,6 @@ export interface ExperimentalIncrementalExecutionResults<
   >;
 }
 
-export interface FormattedExperimentalIncrementalExecutionResults<
-  TInitial = ObjMap<unknown>,
-  TSubsequent = unknown,
-  TExtensions = ObjMap<unknown>,
-> extends ExperimentalIncrementalExecutionResults<
-    TInitial,
-    TSubsequent,
-    TExtensions,
-    GraphQLFormattedError
-  > {}
-
 export interface InitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
@@ -71,15 +55,6 @@ export interface InitialIncrementalExecutionResult<
   hasNext: true;
   extensions?: TExtensions;
 }
-
-export interface FormattedInitialIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends InitialIncrementalExecutionResult<
-    TData,
-    TExtensions,
-    GraphQLFormattedError
-  > {}
 
 export interface SubsequentIncrementalExecutionResult<
   TData = unknown,
@@ -93,15 +68,6 @@ export interface SubsequentIncrementalExecutionResult<
   extensions?: TExtensions;
 }
 
-export interface FormattedSubsequentIncrementalExecutionResult<
-  TData = unknown,
-  TExtensions = ObjMap<unknown>,
-> extends SubsequentIncrementalExecutionResult<
-    TData,
-    TExtensions,
-    GraphQLFormattedError
-  > {}
-
 export interface IncrementalDeferResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
@@ -113,11 +79,6 @@ export interface IncrementalDeferResult<
   subPath?: ReadonlyArray<string | number>;
   extensions?: TExtensions;
 }
-
-export interface FormattedIncrementalDeferResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends IncrementalDeferResult<TData, TExtensions, GraphQLFormattedError> {}
 
 export interface IncrementalStreamResult<
   TData = ReadonlyArray<unknown>,
@@ -131,21 +92,9 @@ export interface IncrementalStreamResult<
   extensions?: TExtensions;
 }
 
-export interface FormattedIncrementalStreamResult<
-  TData = Array<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends IncrementalStreamResult<TData, TExtensions, GraphQLFormattedError> {}
-
 export type IncrementalResult<TData = unknown, TExtensions = ObjMap<unknown>> =
   | IncrementalDeferResult<TData, TExtensions>
   | IncrementalStreamResult<TData, TExtensions>;
-
-export type FormattedIncrementalResult<
-  TData = unknown,
-  TExtensions = ObjMap<unknown>,
-> =
-  | FormattedIncrementalDeferResult<TData, TExtensions>
-  | FormattedIncrementalStreamResult<TData, TExtensions>;
 
 export interface PendingResult {
   id: string;
@@ -159,6 +108,57 @@ export interface CompletedResult<
   id: string;
   errors?: ReadonlyArray<TError>;
 }
+
+export interface FormattedExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends ExecutionResult<TData, TExtensions, GraphQLFormattedError> {}
+
+export interface FormattedExperimentalIncrementalExecutionResults<
+  TInitial = ObjMap<unknown>,
+  TSubsequent = unknown,
+  TExtensions = ObjMap<unknown>,
+> extends ExperimentalIncrementalExecutionResults<
+    TInitial,
+    TSubsequent,
+    TExtensions,
+    GraphQLFormattedError
+  > {}
+
+export interface FormattedInitialIncrementalExecutionResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends InitialIncrementalExecutionResult<
+    TData,
+    TExtensions,
+    GraphQLFormattedError
+  > {}
+
+export interface FormattedSubsequentIncrementalExecutionResult<
+  TData = unknown,
+  TExtensions = ObjMap<unknown>,
+> extends SubsequentIncrementalExecutionResult<
+    TData,
+    TExtensions,
+    GraphQLFormattedError
+  > {}
+
+export interface FormattedIncrementalDeferResult<
+  TData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends IncrementalDeferResult<TData, TExtensions, GraphQLFormattedError> {}
+
+export interface FormattedIncrementalStreamResult<
+  TData = Array<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends IncrementalStreamResult<TData, TExtensions, GraphQLFormattedError> {}
+
+export type FormattedIncrementalResult<
+  TData = unknown,
+  TExtensions = ObjMap<unknown>,
+> =
+  | FormattedIncrementalDeferResult<TData, TExtensions>
+  | FormattedIncrementalStreamResult<TData, TExtensions>;
 
 export interface FormattedCompletedResult
   extends CompletedResult<GraphQLFormattedError> {}
