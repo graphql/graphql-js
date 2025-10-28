@@ -31,9 +31,8 @@ describe('Queue', () => {
     expect(await sub.next()).to.deep.equal({ done: false, value: [1, 2, 3] });
   });
 
-  it('should yield multiple batches', async () => {
+  it('should yield sync and async pushed items in order', async () => {
     const queue = new Queue<number>(async (push) => {
-      await resolveOnNextTick();
       push(1);
       push(2);
       push(3);
@@ -44,8 +43,51 @@ describe('Queue', () => {
     });
 
     const sub = queue.subscribe((batch) => Array.from(batch));
-    expect(await sub.next()).to.deep.equal({ done: false, value: [1, 2, 3] });
-    expect(await sub.next()).to.deep.equal({ done: false, value: [4, 5, 6] });
+    expect(await sub.next()).to.deep.equal({
+      done: false,
+      value: [1, 2, 3, 4, 5, 6],
+    });
+  });
+
+  it('should yield sync and async pushed items in order', async () => {
+    const queue = new Queue<number>(async (push) => {
+      push(1);
+      push(2);
+      push(3);
+      // awaiting macro-task delay
+      await new Promise((r) => setTimeout(r));
+      push(4);
+      push(5);
+      push(6);
+    });
+
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({
+      done: false,
+      value: [1, 2, 3],
+    });
+    expect(await sub.next()).to.deep.equal({
+      done: false,
+      value: [4, 5, 6],
+    });
+  });
+
+  it('should yield multiple async batches', async () => {
+    const queue = new Queue<number>(async (push) => {
+      for (let i = 1; i <= 28; i += 3) {
+        // eslint-disable-next-line no-await-in-loop
+        await resolveOnNextTick();
+        push(i);
+        push(i + 1);
+        push(i + 2);
+      }
+    });
+
+    const sub = queue.subscribe((batch) => Array.from(batch)[0]);
+    expect(await sub.next()).to.deep.equal({ done: false, value: 1 });
+    expect(await sub.next()).to.deep.equal({ done: false, value: 4 });
+    expect(await sub.next()).to.deep.equal({ done: false, value: 16 });
+    expect(await sub.next()).to.deep.equal({ done: false, value: 28 });
   });
 
   it('should allow the executor to indicate completion', async () => {
@@ -117,18 +159,11 @@ describe('Queue', () => {
 
   it('should skip payloads when mapped to undefined, skipping first async payload', async () => {
     const queue = new Queue<number>(async (push) => {
-      await resolveOnNextTick();
-      push(1);
-      await resolveOnNextTick();
-      push(2);
-      await resolveOnNextTick();
-      push(3);
-      await resolveOnNextTick();
-      push(4);
-      await resolveOnNextTick();
-      push(5);
-      await resolveOnNextTick();
-      push(6);
+      for (let i = 1; i <= 14; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await resolveOnNextTick();
+        push(i);
+      }
     });
 
     const sub = queue.subscribe((batch) => {
@@ -138,10 +173,8 @@ describe('Queue', () => {
       }
     });
     expect(await sub.next()).to.deep.equal({ done: false, value: [2] });
-    // [3, 4, 5] are batched as we await 2:
-    // - one tick for the [AsyncGeneratorResumeNext] job
-    // - one tick for the await within the withCleanUp next()
-    expect(await sub.next()).to.deep.equal({ done: false, value: [6] });
+    expect(await sub.next()).to.deep.equal({ done: false, value: [8] });
+    expect(await sub.next()).to.deep.equal({ done: false, value: [14] });
   });
 
   it('should condense pushes during map into the same batch', async () => {

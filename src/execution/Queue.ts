@@ -48,38 +48,23 @@ export class Queue<T> {
   private async *subscribeImpl<U>(
     mapFn: (generator: Generator<T, void, void>) => U | undefined,
   ): AsyncGenerator<U> {
-    while (true) {
-      if (this._stopped) {
-        return;
-      }
-
-      let mapped;
-      // drain any items pushed prior to or between .next() calls
-      while (
-        this._items.length > 0 &&
-        (mapped = mapFn(this.batch())) !== undefined
-      ) {
+    let nextBatch: Generator<T> | undefined;
+    // eslint-disable-next-line no-await-in-loop
+    while ((nextBatch = await this._nextBatch()) !== undefined) {
+      const mapped = mapFn(nextBatch);
+      if (mapped !== undefined) {
         yield mapped;
-        if (this._stopped) {
-          return;
-        }
       }
-
-      // wait for a yield-able batch
-      do {
-        // eslint-disable-next-line no-await-in-loop
-        const nextBatch = await this._nextBatch();
-        if (nextBatch === undefined || this._stopped) {
-          return;
-        }
-        mapped = mapFn(nextBatch);
-      } while (mapped === undefined);
-
-      yield mapped;
     }
   }
 
   private _nextBatch(): Promise<Generator<T> | undefined> {
+    if (this._stopped) {
+      return Promise.resolve(undefined);
+    }
+    if (this._items.length) {
+      return Promise.resolve(this.batch());
+    }
     const { promise, resolve } = promiseWithResolvers<
       Generator<T> | undefined
     >();
