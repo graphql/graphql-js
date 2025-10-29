@@ -2655,19 +2655,7 @@ function buildSyncStreamItemQueue(
 
     let iteration = iterator.next();
     let currentIndex = initialIndex + 1;
-    let currentStreamItem:
-      | BoxedPromiseOrValue<StreamItemResult>
-      | (() => BoxedPromiseOrValue<StreamItemResult>) = firstStreamItem;
     while (!iteration.done) {
-      // TODO: add test case for early sync termination
-      /* c8 ignore next 6 */
-      if (currentStreamItem instanceof BoxedPromiseOrValue) {
-        const result = currentStreamItem.value;
-        if (!isPromise(result) && result.item === undefined) {
-          break;
-        }
-      }
-
       const itemPath = addPath(streamPath, currentIndex, undefined);
 
       const value = iteration.value;
@@ -2683,11 +2671,18 @@ function buildSyncStreamItemQueue(
           itemType,
         );
 
-      currentStreamItem = enableEarlyExecution
-        ? new BoxedPromiseOrValue(currentExecutor())
-        : () => new BoxedPromiseOrValue(currentExecutor());
-
-      streamItemQueue.push(currentStreamItem);
+      if (enableEarlyExecution) {
+        const currentStreamItem = new BoxedPromiseOrValue(currentExecutor());
+        const result = currentStreamItem.value;
+        streamItemQueue.push(currentStreamItem);
+        // TODO: add test case for early sync termination
+        /* c8 ignore next 3 */
+        if (!isPromise(result) && result.item === undefined) {
+          break;
+        }
+      } else {
+        streamItemQueue.push(() => new BoxedPromiseOrValue(currentExecutor()));
+      }
 
       iteration = iterator.next();
       currentIndex = initialIndex + 1;
