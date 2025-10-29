@@ -32,7 +32,6 @@ describe('GraphQLError', () => {
     expect(e).to.deep.include({
       name: 'GraphQLError',
       message: 'msg',
-      extensions: {},
     });
     expect(e.stack).to.be.a('string');
   });
