@@ -92,7 +92,7 @@ Example for a patch release:
 npm test
 npm version patch
 git push --follow-tags
-npm publish npmDist
+cd npmDist && npm publish
 ```
 
 ## License
