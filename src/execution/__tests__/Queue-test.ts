@@ -3,8 +3,6 @@ import { describe, it } from 'mocha';
 
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
-
 import { Queue } from '../Queue.js';
 
 describe('Queue', () => {
@@ -92,6 +90,17 @@ describe('Queue', () => {
 
   it('should allow the executor to indicate completion', async () => {
     const queue = new Queue<number>((push, stop) => {
+      push(1);
+      stop();
+    });
+
+    const sub = queue.subscribe((batch) => Array.from(batch));
+    expect(await sub.next()).to.deep.equal({ done: false, value: [1] });
+    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
+  });
+
+  it('should allow the executor to indicate completion prior to any push calls', async () => {
+    const queue = new Queue<number>((push, stop) => {
       stop();
       push(1); // should be ignored
     });
@@ -101,10 +110,8 @@ describe('Queue', () => {
   });
 
   it('should allow a consumer to abort a pending call to next', async () => {
-    const queue = new Queue<number>(async () => {
-      const { promise } = promiseWithResolvers();
-      // wait forever
-      await promise;
+    const queue = new Queue<number>(() => {
+      // no pushes
     });
 
     const sub = queue.subscribe((batch) => batch);

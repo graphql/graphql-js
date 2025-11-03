@@ -59,11 +59,11 @@ export class Queue<T> {
   }
 
   private _nextBatch(): Promise<Generator<T> | undefined> {
-    if (this._stopped) {
-      return Promise.resolve(undefined);
-    }
     if (this._items.length) {
       return Promise.resolve(this.batch());
+    }
+    if (this._stopped) {
+      return Promise.resolve(undefined);
     }
     const { promise, resolve } = promiseWithResolvers<
       Generator<T> | undefined
@@ -73,8 +73,10 @@ export class Queue<T> {
   }
 
   private _push(item: T): void {
-    this._items.push(item);
-    this._resolve(this.batch());
+    if (!this._stopped) {
+      this._items.push(item);
+      this._resolve(this.batch());
+    }
   }
 
   private _resolve(maybeIterable: Generator<T> | undefined): void {
