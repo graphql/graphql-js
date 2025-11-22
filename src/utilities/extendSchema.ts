@@ -68,6 +68,8 @@ import {
   GraphQLDirective,
   GraphQLOneOfDirective,
   GraphQLSpecifiedByDirective,
+  isSpecifiedDirective,
+  specifiedDirectives,
 } from '../type/directives';
 import { introspectionTypes, isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType, specifiedScalarTypes } from '../type/scalars';
@@ -237,6 +239,9 @@ export function extendSchemaImpl(
   }
 
   function replaceDirective(directive: GraphQLDirective): GraphQLDirective {
+    if (isSpecifiedDirective(directive)) {
+      return directive;
+    }
     const config = directive.toConfig();
     return new GraphQLDirective({
       ...config,
@@ -435,7 +440,65 @@ export function extendSchemaImpl(
     return getNamedType(node);
   }
 
+  function findSpecifiedDirectiveNode(node: DirectiveDefinitionNode) {
+    const possibleDirective = specifiedDirectives.find(
+      (stdDirective) => stdDirective.name === node.name.value,
+    );
+    if (possibleDirective == null) {
+      return;
+    }
+    if (possibleDirective.description !== node.description?.value) {
+      return;
+    }
+    if (possibleDirective.args.length !== node.arguments?.length) {
+      return;
+    }
+    if (node.arguments?.length > 0) {
+      for (const argNode of node.arguments) {
+        const argDef = possibleDirective.args.find(
+          (stdArg) => stdArg.name === argNode.name.value,
+        );
+        if (argDef == null) {
+          return;
+        }
+        let type = argDef.type;
+        let argDefType = argNode.type;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          if (isNonNullType(type)) {
+            if (argDefType.kind !== Kind.NON_NULL_TYPE) {
+              return;
+            }
+            type = type.ofType;
+            argDefType = argDefType.type;
+            continue;
+          } else if (isListType(type)) {
+            if (argDefType.kind !== Kind.LIST_TYPE) {
+              return;
+            }
+            type = type.ofType;
+            argDefType = argDefType.type;
+            continue;
+          } else {
+            if (argDefType.kind !== Kind.NAMED_TYPE) {
+              return;
+            }
+            if (type.name !== argDefType.name.value) {
+              return;
+            }
+            break;
+          }
+        }
+      }
+    }
+    return possibleDirective;
+  }
+
   function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
+    const specifiedDirective = findSpecifiedDirectiveNode(node);
+    if (specifiedDirective != null) {
+      return specifiedDirective;
+    }
     return new GraphQLDirective({
       name: node.name.value,
       description: node.description?.value,

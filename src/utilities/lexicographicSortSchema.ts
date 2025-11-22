@@ -29,7 +29,7 @@ import {
   isScalarType,
   isUnionType,
 } from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
+import { GraphQLDirective, isSpecifiedDirective } from '../type/directives';
 import { isIntrospectionType } from '../type/introspection';
 import { GraphQLSchema } from '../type/schema';
 
@@ -78,6 +78,9 @@ export function lexicographicSortSchema(schema: GraphQLSchema): GraphQLSchema {
   }
 
   function sortDirective(directive: GraphQLDirective) {
+    if (isSpecifiedDirective(directive)) {
+      return directive;
+    }
     const config = directive.toConfig();
     return new GraphQLDirective({
       ...config,
