@@ -7,6 +7,8 @@ import type {
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
 
+import type { Queue } from './Queue.js';
+
 /**
  * The result of GraphQL execution.
  *
@@ -246,7 +248,7 @@ export function isDeferredFragmentRecord(
 }
 
 export interface StreamItemResult {
-  item?: unknown;
+  item: unknown;
   newDeferredFragmentRecords?:
     | ReadonlyArray<DeferredFragmentRecord>
     | undefined;
@@ -254,13 +256,11 @@ export interface StreamItemResult {
   errors?: ReadonlyArray<GraphQLError>;
 }
 
-export type StreamItemRecord = ThunkIncrementalResult<StreamItemResult>;
-
 export interface StreamRecord {
   path: Path;
   label: string | undefined;
   id?: string | undefined;
-  streamItemQueue: Array<StreamItemRecord>;
+  streamItemQueue: Queue<StreamItemResult>;
 }
 
 export interface StreamItemsResult {

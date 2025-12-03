@@ -71,13 +71,13 @@ import {
 import { getVariableSignature } from './getVariableSignature.js';
 import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
+import { Queue } from './Queue.js';
 import type {
   CompletedExecutionGroup,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
   PendingExecutionGroup,
-  StreamItemRecord,
   StreamItemResult,
   StreamRecord,
 } from './types.js';
@@ -162,6 +162,7 @@ export interface ValidatedExecutionArgs {
     validatedExecutionArgs: ValidatedExecutionArgs,
   ) => PromiseOrValue<ExecutionResult>;
   enableEarlyExecution: boolean;
+  streamQueueCapacity: number;
   hideSuggestions: boolean;
   abortSignal: AbortSignal | undefined;
 }
@@ -203,6 +204,8 @@ export interface ExecutionArgs {
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
     maxCoercionErrors?: number;
+    /** Configure the capacity used for stream item queues (defaults to 100). */
+    streamQueueCapacity?: number;
   };
 }
 
@@ -562,6 +565,7 @@ export function validateExecutionArgs(
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
+    streamQueueCapacity: options?.streamQueueCapacity ?? 100,
     hideSuggestions,
     abortSignal: args.abortSignal ?? undefined,
   };
@@ -1354,7 +1358,7 @@ async function completeAsyncIteratorValue(
   try {
     while (true) {
       if (streamUsage && index >= streamUsage.initialCount) {
-        const streamItemQueue = buildAsyncStreamItemQueue(
+        const streamItemQueue = buildStreamItemQueue(
           index,
           path,
           asyncIterator,
@@ -1537,16 +1541,12 @@ function completeIterableValue(
     path,
   );
   const iterator = items[Symbol.iterator]();
-  let iteration = iterator.next();
-  while (!iteration.done) {
-    const item = iteration.value;
-
+  while (true) {
     if (streamUsage && index >= streamUsage.initialCount) {
       const syncStreamRecord: StreamRecord = {
         label: streamUsage.label,
         path,
-        streamItemQueue: buildSyncStreamItemQueue(
-          item,
+        streamItemQueue: buildStreamItemQueue(
           index,
           path,
           iterator,
@@ -1560,6 +1560,13 @@ function completeIterableValue(
       addIncrementalDataRecords(graphqlWrappedResult, [syncStreamRecord]);
       break;
     }
+
+    const iteration = iterator.next();
+    if (iteration.done) {
+      break;
+    }
+
+    const item = iteration.value;
 
     // No need to modify the info object containing the path,
     // since from here on it is not ever accessed by resolver functions.
@@ -1597,8 +1604,6 @@ function completeIterableValue(
       containsPromise = true;
     }
     index++;
-
-    iteration = iterator.next();
   }
 
   return containsPromise
@@ -2624,176 +2629,68 @@ function getDeferredFragmentRecords(
   );
 }
 
-function buildSyncStreamItemQueue(
-  initialItem: PromiseOrValue<unknown>,
+function buildStreamItemQueue(
   initialIndex: number,
   streamPath: Path,
-  iterator: Iterator<unknown>,
+  iterator: Iterator<unknown> | AsyncIterator<unknown>,
   exeContext: ExecutionContext,
   fieldDetailsList: FieldDetailsList,
   info: GraphQLResolveInfo,
   itemType: GraphQLOutputType,
-): Array<StreamItemRecord> {
-  const streamItemQueue: Array<StreamItemRecord> = [];
+): Queue<StreamItemResult> {
+  const { enableEarlyExecution, streamQueueCapacity } =
+    exeContext.validatedExecutionArgs;
+  return new Queue<StreamItemResult>(async ({ push, stop, started }) => {
+    if (!enableEarlyExecution) {
+      await started;
+    }
+    let index = initialIndex;
+    while (true) {
+      let iteration;
+      try {
+        iteration = iterator.next();
+        if (isPromise(iteration)) {
+          // eslint-disable-next-line no-await-in-loop
+          iteration = await iteration;
+        }
+      } catch (rawError) {
+        throw locatedError(
+          rawError,
+          toNodes(fieldDetailsList),
+          pathToArray(streamPath),
+        );
+      }
 
-  const enableEarlyExecution =
-    exeContext.validatedExecutionArgs.enableEarlyExecution;
+      if (iteration.done) {
+        stop();
+        return;
+      }
 
-  const firstExecutor = () => {
-    const initialPath = addPath(streamPath, initialIndex, undefined);
-    const firstStreamItem = new BoxedPromiseOrValue(
-      completeStreamItem(
-        initialPath,
-        initialItem,
+      const itemPath = addPath(streamPath, index, undefined);
+
+      let streamItemResult = completeStreamItem(
+        itemPath,
+        iteration.value,
         exeContext,
         { errors: [], completed: false },
         fieldDetailsList,
         info,
         itemType,
-      ),
-    );
-
-    let iteration = iterator.next();
-    let currentIndex = initialIndex + 1;
-    let currentStreamItem:
-      | BoxedPromiseOrValue<StreamItemResult>
-      | (() => BoxedPromiseOrValue<StreamItemResult>) = firstStreamItem;
-    while (!iteration.done) {
-      // TODO: add test case for early sync termination
-      /* c8 ignore next 6 */
-      if (currentStreamItem instanceof BoxedPromiseOrValue) {
-        const result = currentStreamItem.value;
-        if (!isPromise(result) && result.item === undefined) {
-          break;
-        }
+      );
+      if (isPromise(streamItemResult) && !enableEarlyExecution) {
+        // eslint-disable-next-line no-await-in-loop
+        streamItemResult = await streamItemResult;
       }
-
-      const itemPath = addPath(streamPath, currentIndex, undefined);
-
-      const value = iteration.value;
-
-      const currentExecutor = () =>
-        completeStreamItem(
-          itemPath,
-          value,
-          exeContext,
-          { errors: [], completed: false },
-          fieldDetailsList,
-          info,
-          itemType,
-        );
-
-      currentStreamItem = enableEarlyExecution
-        ? new BoxedPromiseOrValue(currentExecutor())
-        : () => new BoxedPromiseOrValue(currentExecutor());
-
-      streamItemQueue.push(currentStreamItem);
-
-      iteration = iterator.next();
-      currentIndex = initialIndex + 1;
+      const pushResult = push(streamItemResult);
+      // TODO: add back-pressure test
+      /* c8 ignore next 4 */
+      if (isPromise(pushResult)) {
+        // eslint-disable-next-line no-await-in-loop
+        await pushResult;
+      }
+      index += 1;
     }
-
-    streamItemQueue.push(new BoxedPromiseOrValue({}));
-
-    return firstStreamItem.value;
-  };
-
-  streamItemQueue.push(
-    enableEarlyExecution
-      ? new BoxedPromiseOrValue(Promise.resolve().then(firstExecutor))
-      : () => new BoxedPromiseOrValue(firstExecutor()),
-  );
-
-  return streamItemQueue;
-}
-
-function buildAsyncStreamItemQueue(
-  initialIndex: number,
-  streamPath: Path,
-  asyncIterator: AsyncIterator<unknown>,
-  exeContext: ExecutionContext,
-  fieldDetailsList: FieldDetailsList,
-  info: GraphQLResolveInfo,
-  itemType: GraphQLOutputType,
-): Array<StreamItemRecord> {
-  const streamItemQueue: Array<StreamItemRecord> = [];
-  const executor = () =>
-    getNextAsyncStreamItemResult(
-      streamItemQueue,
-      streamPath,
-      initialIndex,
-      asyncIterator,
-      exeContext,
-      fieldDetailsList,
-      info,
-      itemType,
-    );
-
-  streamItemQueue.push(
-    exeContext.validatedExecutionArgs.enableEarlyExecution
-      ? new BoxedPromiseOrValue(executor())
-      : () => new BoxedPromiseOrValue(executor()),
-  );
-
-  return streamItemQueue;
-}
-
-async function getNextAsyncStreamItemResult(
-  streamItemQueue: Array<StreamItemRecord>,
-  streamPath: Path,
-  index: number,
-  asyncIterator: AsyncIterator<unknown>,
-  exeContext: ExecutionContext,
-  fieldDetailsList: FieldDetailsList,
-  info: GraphQLResolveInfo,
-  itemType: GraphQLOutputType,
-): Promise<StreamItemResult> {
-  let iteration;
-  try {
-    iteration = await asyncIterator.next();
-  } catch (error) {
-    return {
-      errors: [
-        locatedError(error, toNodes(fieldDetailsList), pathToArray(streamPath)),
-      ],
-    };
-  }
-
-  if (iteration.done) {
-    return {};
-  }
-
-  const itemPath = addPath(streamPath, index, undefined);
-
-  const result = completeStreamItem(
-    itemPath,
-    iteration.value,
-    exeContext,
-    { errors: [], completed: false },
-    fieldDetailsList,
-    info,
-    itemType,
-  );
-
-  const executor = () =>
-    getNextAsyncStreamItemResult(
-      streamItemQueue,
-      streamPath,
-      index + 1,
-      asyncIterator,
-      exeContext,
-      fieldDetailsList,
-      info,
-      itemType,
-    );
-
-  streamItemQueue.push(
-    exeContext.validatedExecutionArgs.enableEarlyExecution
-      ? new BoxedPromiseOrValue(executor())
-      : () => new BoxedPromiseOrValue(executor()),
-  );
-
-  return result;
+  }, streamQueueCapacity);
 }
 
 function completeStreamItem(
@@ -2824,53 +2721,8 @@ function completeStreamItem(
         incrementalContext.completed = true;
         return buildStreamItemResult(incrementalContext.errors, resolvedItem);
       },
-      (error: unknown) => {
+      (rawError: unknown) => {
         incrementalContext.completed = true;
-        return {
-          errors: [...incrementalContext.errors, error as GraphQLError],
-        };
-      },
-    );
-  }
-
-  let result: PromiseOrValue<GraphQLWrappedResult<unknown>>;
-  try {
-    try {
-      result = completeValue(
-        exeContext,
-        itemType,
-        fieldDetailsList,
-        info,
-        itemPath,
-        item,
-        incrementalContext,
-        new Map(),
-      );
-    } catch (rawError) {
-      handleFieldError(
-        rawError,
-        exeContext,
-        itemType,
-        fieldDetailsList,
-        itemPath,
-        incrementalContext,
-      );
-      result = {
-        rawResult: null,
-        newDeferredFragmentRecords: undefined,
-        incrementalDataRecords: undefined,
-      };
-    }
-  } catch (error) {
-    incrementalContext.completed = true;
-    return {
-      errors: [...incrementalContext.errors, error],
-    };
-  }
-
-  if (isPromise(result)) {
-    return result
-      .then(undefined, (rawError: unknown) => {
         handleFieldError(
           rawError,
           exeContext,
@@ -2879,24 +2731,67 @@ function completeStreamItem(
           itemPath,
           incrementalContext,
         );
-        return {
+        return buildStreamItemResult(incrementalContext.errors, {
           rawResult: null,
           newDeferredFragmentRecords: undefined,
           incrementalDataRecords: undefined,
-        };
-      })
-      .then(
-        (resolvedItem) => {
-          incrementalContext.completed = true;
-          return buildStreamItemResult(incrementalContext.errors, resolvedItem);
-        },
-        (error: unknown) => {
-          incrementalContext.completed = true;
-          return {
-            errors: [...incrementalContext.errors, error as GraphQLError],
-          };
-        },
-      );
+        });
+      },
+    );
+  }
+
+  let result: PromiseOrValue<GraphQLWrappedResult<unknown>>;
+  try {
+    result = completeValue(
+      exeContext,
+      itemType,
+      fieldDetailsList,
+      info,
+      itemPath,
+      item,
+      incrementalContext,
+      new Map(),
+    );
+  } catch (rawError) {
+    incrementalContext.completed = true;
+    handleFieldError(
+      rawError,
+      exeContext,
+      itemType,
+      fieldDetailsList,
+      itemPath,
+      incrementalContext,
+    );
+    return buildStreamItemResult(incrementalContext.errors, {
+      rawResult: null,
+      newDeferredFragmentRecords: undefined,
+      incrementalDataRecords: undefined,
+    });
+  }
+
+  if (isPromise(result)) {
+    return result.then(
+      (resolved) => {
+        incrementalContext.completed = true;
+        return buildStreamItemResult(incrementalContext.errors, resolved);
+      },
+      (rawError: unknown) => {
+        incrementalContext.completed = true;
+        handleFieldError(
+          rawError,
+          exeContext,
+          itemType,
+          fieldDetailsList,
+          itemPath,
+          incrementalContext,
+        );
+        return buildStreamItemResult(incrementalContext.errors, {
+          rawResult: null,
+          newDeferredFragmentRecords: undefined,
+          incrementalDataRecords: undefined,
+        });
+      },
+    );
   }
 
   incrementalContext.completed = true;

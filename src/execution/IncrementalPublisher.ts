@@ -62,7 +62,7 @@ class IncrementalPublisher {
   private _earlyReturns: Map<StreamRecord, () => Promise<unknown>>;
   private _abortSignalListener: AbortSignalListener | undefined;
   private _nextId: number;
-  private _incrementalGraph: IncrementalGraph;
+  private _incrementalGraph: IncrementalGraph<SubsequentIncrementalExecutionResult>;
 
   constructor(
     earlyReturns: Map<StreamRecord, () => Promise<unknown>>,
@@ -71,7 +71,9 @@ class IncrementalPublisher {
     this._earlyReturns = earlyReturns;
     this._abortSignalListener = abortSignalListener;
     this._nextId = 0;
-    this._incrementalGraph = new IncrementalGraph();
+    this._incrementalGraph = new IncrementalGraph((batch) =>
+      this._handleCompletedBatch(batch),
+    );
   }
 
   buildResponse(
@@ -93,9 +95,7 @@ class IncrementalPublisher {
       ? { errors, data, pending, hasNext: true }
       : { data, pending, hasNext: true };
 
-    const subsequentResults = this._incrementalGraph.subscribe((batch) =>
-      this._handleCompletedBatch(batch),
-    );
+    const subsequentResults = this._incrementalGraph.subscribe();
 
     return {
       initialResult,

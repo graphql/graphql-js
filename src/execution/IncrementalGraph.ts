@@ -1,6 +1,7 @@
 import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isPromise } from '../jsutils/isPromise.js';
+import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
 import type { GraphQLError } from '../error/GraphQLError.js';
 
@@ -11,7 +12,6 @@ import type {
   IncrementalDataRecord,
   IncrementalDataRecordResult,
   PendingExecutionGroup,
-  StreamItemRecord,
   StreamRecord,
   SuccessfulExecutionGroup,
 } from './types.js';
@@ -20,20 +20,26 @@ import { isDeferredFragmentRecord, isPendingExecutionGroup } from './types.js';
 /**
  * @internal
  */
-export class IncrementalGraph {
+export class IncrementalGraph<U> {
   private _rootNodes: Set<DeliveryGroup>;
-  private _completed: Queue<IncrementalDataRecordResult>;
+  private _completed: AsyncGenerator<U, void, void>;
   // _push and _stop are assigned in the executor which is executed
   // synchronously by the Queue constructor.
-  private _push!: (item: IncrementalDataRecordResult) => void;
+  private _push!: (item: IncrementalDataRecordResult) => PromiseOrValue<void>;
   private _stop!: () => void;
 
-  constructor() {
+  constructor(
+    reducer: (
+      generator: Generator<IncrementalDataRecordResult>,
+    ) => U | undefined,
+  ) {
     this._rootNodes = new Set();
-    this._completed = new Queue<IncrementalDataRecordResult>((push, stop) => {
-      this._push = push;
-      this._stop = stop;
-    });
+    this._completed = new Queue<IncrementalDataRecordResult>(
+      ({ push, stop }) => {
+        this._push = push;
+        this._stop = stop;
+      },
+    ).subscribe(reducer);
   }
 
   getNewRootNodes(
@@ -145,10 +151,8 @@ export class IncrementalGraph {
     this._maybeStop();
   }
 
-  subscribe<U>(
-    mapFn: (generator: Generator<IncrementalDataRecordResult>) => U | undefined,
-  ): AsyncGenerator<U, void, void> {
-    return this._completed.subscribe(mapFn);
+  subscribe(): AsyncGenerator<U, void, void> {
+    return this._completed;
   }
 
   private _addIncrementalDataRecords(
@@ -238,77 +242,68 @@ export class IncrementalGraph {
     const value = completedExecutionGroup.value;
     if (isPromise(value)) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      value.then((resolved) => this._push(resolved));
+      value.then((resolved) => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._push(resolved);
+      });
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this._push(value);
     }
   }
 
   private async _onStreamItems(streamRecord: StreamRecord): Promise<void> {
-    let items: Array<unknown> = [];
-    let errors: Array<GraphQLError> = [];
-    let newDeferredFragmentRecords: Array<DeferredFragmentRecord> = [];
-    let incrementalDataRecords: Array<IncrementalDataRecord> = [];
     const streamItemQueue = streamRecord.streamItemQueue;
-    let streamItemRecord: StreamItemRecord | undefined;
-    while ((streamItemRecord = streamItemQueue.shift()) !== undefined) {
-      let result =
-        streamItemRecord instanceof BoxedPromiseOrValue
-          ? streamItemRecord.value
-          : streamItemRecord().value;
-      if (isPromise(result)) {
-        if (items.length > 0) {
-          this._push({
-            streamRecord,
-            result:
-              // TODO add additional test case or rework for coverage
-              errors.length > 0 /* c8 ignore start */
-                ? { items, errors } /* c8 ignore stop */
-                : { items },
-            newDeferredFragmentRecords,
-            incrementalDataRecords,
-          });
-          items = [];
-          errors = [];
-          newDeferredFragmentRecords = [];
-          incrementalDataRecords = [];
+    let closed = false;
+    try {
+      await streamItemQueue.forEachBatch((streamItemResults) => {
+        const items: Array<unknown> = [];
+        const errors: Array<GraphQLError> = [];
+        const newDeferredFragmentRecords: Array<DeferredFragmentRecord> = [];
+        const incrementalDataRecords: Array<IncrementalDataRecord> = [];
+
+        for (const result of streamItemResults) {
+          items.push(result.item);
+          if (result.errors !== undefined) {
+            errors.push(...result.errors);
+          }
+          if (result.newDeferredFragmentRecords !== undefined) {
+            newDeferredFragmentRecords.push(
+              ...result.newDeferredFragmentRecords,
+            );
+          }
+          if (result.incrementalDataRecords !== undefined) {
+            incrementalDataRecords.push(...result.incrementalDataRecords);
+          }
         }
-        // eslint-disable-next-line no-await-in-loop
-        result = await result;
-        // wait an additional tick to coalesce resolving additional promises
-        // within the queue
-        // eslint-disable-next-line no-await-in-loop
-        await Promise.resolve();
-      }
-      if (result.item === undefined) {
-        if (items.length > 0) {
-          this._push({
-            streamRecord,
-            result: errors.length > 0 ? { items, errors } : { items },
-            newDeferredFragmentRecords,
-            incrementalDataRecords,
-          });
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._push({
+          streamRecord,
+          result:
+            // TODO add additional test case or rework for coverage
+            errors.length > 0 /* c8 ignore start */
+              ? { items, errors } /* c8 ignore stop */
+              : { items },
+          newDeferredFragmentRecords,
+          incrementalDataRecords,
+        });
+
+        if (streamItemQueue.isStopped()) {
+          closed = true;
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this._push({ streamRecord });
         }
-        this._push(
-          result.errors === undefined
-            ? { streamRecord }
-            : {
-                streamRecord,
-                errors: result.errors,
-              },
-        );
-        return;
-      }
-      items.push(result.item);
-      if (result.errors !== undefined) {
-        errors.push(...result.errors);
-      }
-      if (result.newDeferredFragmentRecords !== undefined) {
-        newDeferredFragmentRecords.push(...result.newDeferredFragmentRecords);
-      }
-      if (result.incrementalDataRecords !== undefined) {
-        incrementalDataRecords.push(...result.incrementalDataRecords);
-      }
+      });
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this._push({ streamRecord, errors: [error] });
+      return;
+    }
+
+    if (!closed) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this._push({ streamRecord });
     }
   }
 
