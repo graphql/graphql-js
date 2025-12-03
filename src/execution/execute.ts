@@ -1,4 +1,3 @@
-import { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
 import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
@@ -73,15 +72,17 @@ import { buildIncrementalResponse } from './IncrementalPublisher.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import { Queue } from './Queue.js';
 import type {
-  CompletedExecutionGroup,
+  DeferredFragmentRecord,
+  ExecutionGroup,
+  ExecutionGroupResult,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   IncrementalDataRecord,
-  PendingExecutionGroup,
+  IncrementalWork,
   StreamItemResult,
   StreamRecord,
 } from './types.js';
-import { DeferredFragmentRecord } from './types.js';
+import { isExecutionGroup } from './types.js';
 import type { VariableValues } from './values.js';
 import {
   getArgumentValues,
@@ -89,6 +90,7 @@ import {
   getVariableValues,
 } from './values.js';
 import { withCleanup } from './withCleanup.js';
+import { Task } from './WorkQueue.js';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -429,11 +431,14 @@ function buildDataResponse(
     return errors.length ? { errors, data } : { data };
   }
 
+  const work = buildWorkFromIncrementalPayload(
+    newDeferredFragmentRecords,
+    incrementalDataRecords,
+  );
   return buildIncrementalResponse(
     data,
     errors,
-    newDeferredFragmentRecords,
-    incrementalDataRecords,
+    work,
     (exeContext.earlyReturns ??= new Map()),
     exeContext.abortSignalListener,
   );
@@ -615,7 +620,7 @@ function executeRootExecutionPlan(
   );
 
   if (newGroupedFieldSets.size > 0) {
-    const newPendingExecutionGroups = collectExecutionGroups(
+    const newExecutionGroups = collectExecutionGroups(
       exeContext,
       rootType,
       rootValue,
@@ -625,10 +630,7 @@ function executeRootExecutionPlan(
       newDeferMap,
     );
 
-    return withNewExecutionGroups(
-      graphqlWrappedResult,
-      newPendingExecutionGroups,
-    );
+    return withNewExecutionGroups(graphqlWrappedResult, newExecutionGroups);
   }
   return graphqlWrappedResult;
 }
@@ -663,16 +665,16 @@ function addNewDeferredFragmentRecords(
 
 function withNewExecutionGroups(
   result: PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>>,
-  newPendingExecutionGroups: ReadonlyArray<PendingExecutionGroup>,
+  newExecutionGroups: ReadonlyArray<ExecutionGroup>,
 ): PromiseOrValue<GraphQLWrappedResult<ObjMap<unknown>>> {
   if (isPromise(result)) {
     return result.then((resolved) => {
-      addIncrementalDataRecords(resolved, newPendingExecutionGroups);
+      addIncrementalDataRecords(resolved, newExecutionGroups);
       return resolved;
     });
   }
 
-  addIncrementalDataRecords(result, newPendingExecutionGroups);
+  addIncrementalDataRecords(result, newExecutionGroups);
   return result;
 }
 
@@ -1358,7 +1360,7 @@ async function completeAsyncIteratorValue(
   try {
     while (true) {
       if (streamUsage && index >= streamUsage.initialCount) {
-        const streamItemQueue = buildStreamItemQueue(
+        const queue = buildStreamItemQueue(
           index,
           path,
           asyncIterator,
@@ -1371,7 +1373,7 @@ async function completeAsyncIteratorValue(
         const streamRecord: StreamRecord = {
           label: streamUsage.label,
           path,
-          streamItemQueue,
+          queue,
         };
         if (asyncIterator.return !== undefined) {
           exeContext.earlyReturns ??= new Map();
@@ -1546,7 +1548,7 @@ function completeIterableValue(
       const syncStreamRecord: StreamRecord = {
         label: streamUsage.label,
         path,
-        streamItemQueue: buildStreamItemQueue(
+        queue: buildStreamItemQueue(
           index,
           path,
           iterator,
@@ -1968,11 +1970,11 @@ function getNewDeferMap(
         : deferredFragmentRecordFromDeferUsage(parentDeferUsage, newDeferMap);
 
     // Instantiate the new record.
-    const deferredFragmentRecord = new DeferredFragmentRecord(
+    const deferredFragmentRecord: DeferredFragmentRecord = {
       path,
-      newDeferUsage.label,
+      label: newDeferUsage.label,
       parent,
-    );
+    };
 
     // Add the new record to the list of new records.
     newDeferredFragmentRecords.push(deferredFragmentRecord);
@@ -2085,7 +2087,7 @@ function executeSubExecutionPlan(
   }
 
   if (newGroupedFieldSets.size > 0) {
-    const newPendingExecutionGroups = collectExecutionGroups(
+    const newExecutionGroups = collectExecutionGroups(
       exeContext,
       returnType,
       sourceValue,
@@ -2095,10 +2097,7 @@ function executeSubExecutionPlan(
       newDeferMap,
     );
 
-    return withNewExecutionGroups(
-      graphqlWrappedResult,
-      newPendingExecutionGroups,
-    );
+    return withNewExecutionGroups(graphqlWrappedResult, newExecutionGroups);
   }
   return graphqlWrappedResult;
 }
@@ -2476,8 +2475,8 @@ function collectExecutionGroups(
   parentDeferUsages: DeferUsageSet | undefined,
   newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
-): ReadonlyArray<PendingExecutionGroup> {
-  const newPendingExecutionGroups: Array<PendingExecutionGroup> = [];
+): ReadonlyArray<ExecutionGroup> {
+  const newExecutionGroups: Array<ExecutionGroup> = [];
 
   for (const [deferUsageSet, groupedFieldSet] of newGroupedFieldSets) {
     const deferredFragmentRecords = getDeferredFragmentRecords(
@@ -2485,42 +2484,38 @@ function collectExecutionGroups(
       deferMap,
     );
 
-    const pendingExecutionGroup: PendingExecutionGroup = {
+    const executionGroup = new Task(
+      () =>
+        executeExecutionGroup(
+          deferredFragmentRecords,
+          exeContext,
+          parentType,
+          sourceValue,
+          path,
+          groupedFieldSet,
+          {
+            errors: [],
+            completed: false,
+            deferUsageSet,
+          },
+          deferMap,
+        ),
       deferredFragmentRecords,
-      result:
-        undefined as unknown as BoxedPromiseOrValue<CompletedExecutionGroup>,
-    };
-
-    const executor = () =>
-      executeExecutionGroup(
-        pendingExecutionGroup,
-        exeContext,
-        parentType,
-        sourceValue,
-        path,
-        groupedFieldSet,
-        {
-          errors: [],
-          completed: false,
-          deferUsageSet,
-        },
-        deferMap,
-      );
+    );
 
     if (exeContext.validatedExecutionArgs.enableEarlyExecution) {
-      pendingExecutionGroup.result = new BoxedPromiseOrValue(
-        shouldDefer(parentDeferUsages, deferUsageSet)
-          ? Promise.resolve().then(executor)
-          : executor(),
-      );
-    } else {
-      pendingExecutionGroup.result = () => new BoxedPromiseOrValue(executor());
+      if (shouldDefer(parentDeferUsages, deferUsageSet)) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        Promise.resolve().then(() => executionGroup.start());
+      } else {
+        executionGroup.start();
+      }
     }
 
-    newPendingExecutionGroups.push(pendingExecutionGroup);
+    newExecutionGroups.push(executionGroup);
   }
 
-  return newPendingExecutionGroups;
+  return newExecutionGroups;
 }
 
 function shouldDefer(
@@ -2540,7 +2535,7 @@ function shouldDefer(
 }
 
 function executeExecutionGroup(
-  pendingExecutionGroup: PendingExecutionGroup,
+  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
   exeContext: ExecutionContext,
   parentType: GraphQLObjectType,
   sourceValue: unknown,
@@ -2548,7 +2543,7 @@ function executeExecutionGroup(
   groupedFieldSet: GroupedFieldSet,
   incrementalContext: IncrementalContext,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord>,
-): PromiseOrValue<CompletedExecutionGroup> {
+): PromiseOrValue<ExecutionGroupResult> {
   let result;
   try {
     result = executeFields(
@@ -2562,61 +2557,56 @@ function executeExecutionGroup(
     );
   } catch (error) {
     incrementalContext.completed = true;
-    return {
-      pendingExecutionGroup,
-      path: pathToArray(path),
-      errors: [...incrementalContext.errors, error],
-    };
+    throw error;
   }
 
   if (isPromise(result)) {
     return result.then(
       (resolved) => {
         incrementalContext.completed = true;
-        return buildCompletedExecutionGroup(
+        return buildExecutionGroupResult(
+          deferredFragmentRecords,
           incrementalContext.errors,
-          pendingExecutionGroup,
           path,
           resolved,
         );
       },
       (error: unknown) => {
         incrementalContext.completed = true;
-        return {
-          pendingExecutionGroup,
-          path: pathToArray(path),
-          errors: [...incrementalContext.errors, error as GraphQLError],
-        };
+        throw error;
       },
     );
   }
 
   incrementalContext.completed = true;
-  return buildCompletedExecutionGroup(
+  return buildExecutionGroupResult(
+    deferredFragmentRecords,
     incrementalContext.errors,
-    pendingExecutionGroup,
     path,
     result,
   );
 }
 
-function buildCompletedExecutionGroup(
+function buildExecutionGroupResult(
+  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>,
   errors: ReadonlyArray<GraphQLError>,
-  pendingExecutionGroup: PendingExecutionGroup,
   path: Path | undefined,
   result: GraphQLWrappedResult<ObjMap<unknown>>,
-): CompletedExecutionGroup {
+): ExecutionGroupResult {
   const {
     rawResult: data,
     newDeferredFragmentRecords,
     incrementalDataRecords,
   } = result;
-  return {
-    pendingExecutionGroup,
-    path: pathToArray(path),
-    result: errors.length ? { errors, data } : { data },
+  const work = buildWorkFromIncrementalPayload(
     newDeferredFragmentRecords,
     incrementalDataRecords,
+  );
+  return {
+    value: errors.length
+      ? { deferredFragmentRecords, path: pathToArray(path), errors, data }
+      : { deferredFragmentRecords, path: pathToArray(path), data },
+    work,
   };
 }
 
@@ -2627,6 +2617,27 @@ function getDeferredFragmentRecords(
   return Array.from(deferUsages).map((deferUsage) =>
     deferredFragmentRecordFromDeferUsage(deferUsage, deferMap),
   );
+}
+
+function buildWorkFromIncrementalPayload(
+  newDeferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord> | undefined,
+  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined,
+): IncrementalWork {
+  const groups = newDeferredFragmentRecords ?? [];
+  const tasks: Array<ExecutionGroup> = [];
+  const streams: Array<StreamRecord> = [];
+
+  if (incrementalDataRecords !== undefined) {
+    for (const incrementalDataRecord of incrementalDataRecords) {
+      if (isExecutionGroup(incrementalDataRecord)) {
+        tasks.push(incrementalDataRecord);
+      } else {
+        streams.push(incrementalDataRecord);
+      }
+    }
+  }
+
+  return { groups, tasks, streams };
 }
 
 function buildStreamItemQueue(
@@ -2807,10 +2818,11 @@ function buildStreamItemResult(
     newDeferredFragmentRecords,
     incrementalDataRecords,
   } = result;
-  return {
-    item,
-    errors,
+  const work = buildWorkFromIncrementalPayload(
     newDeferredFragmentRecords,
     incrementalDataRecords,
-  };
+  );
+  return errors.length > 0
+    ? { value: { item, errors }, work }
+    : { value: { item }, work };
 }

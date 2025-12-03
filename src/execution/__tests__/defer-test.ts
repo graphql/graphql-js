@@ -1766,6 +1766,80 @@ describe('Execute: defer directive', () => {
     ]);
   });
 
+  it('Handles cancelling child deferred fragments if parent fragment fails', async () => {
+    const document = parse(`
+      query {
+        ... @defer {
+          a {
+            someField
+            b {
+              c {
+                nonNullErrorField
+              }
+            }
+          }
+          ... @defer {
+            a {
+              someField
+            }
+          }
+        }
+        a {
+          ... @defer {
+            b {
+              c {
+                d
+              }
+            }
+          }
+        }
+      }
+    `);
+    const result = await complete(document, {
+      a: { b: { c: { d: 'd' } }, someField: 'someField' },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          a: {},
+        },
+        pending: [
+          { id: '0', path: ['a'] },
+          { id: '1', path: [] },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { b: { c: {} } },
+            id: '0',
+          },
+          {
+            data: { d: 'd' },
+            id: '0',
+            subPath: ['b', 'c'],
+          },
+        ],
+        completed: [
+          {
+            id: '1',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field c.nonNullErrorField.',
+                locations: [{ line: 8, column: 17 }],
+                path: ['a', 'b', 'c', 'nonNullErrorField'],
+              },
+            ],
+          },
+          { id: '0' },
+        ],
+        hasNext: false,
+      },
+    ]);
+  });
+
   it('Handles multiple erroring deferred grouped field sets', async () => {
     const document = parse(`
       query {

@@ -1,4 +1,3 @@
-import type { BoxedPromiseOrValue } from '../jsutils/BoxedPromiseOrValue.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 
@@ -7,7 +6,8 @@ import type {
   GraphQLFormattedError,
 } from '../error/GraphQLError.js';
 
-import type { Queue } from './Queue.js';
+import type { Group, Stream, Work } from './WorkQueue.js';
+import { Task } from './WorkQueue.js';
 
 /**
  * The result of GraphQL execution.
@@ -91,17 +91,14 @@ export interface FormattedSubsequentIncrementalExecutionResult<
   extensions?: TExtensions;
 }
 
-interface ExecutionGroupResult<TData = ObjMap<unknown>> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data: TData;
-}
-
 export interface IncrementalDeferResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends ExecutionGroupResult<TData> {
+> {
   id: string;
   subPath?: ReadonlyArray<string | number>;
+  errors?: ReadonlyArray<GraphQLError>;
+  data: TData;
   extensions?: TExtensions;
 }
 
@@ -116,17 +113,14 @@ export interface FormattedIncrementalDeferResult<
   extensions?: TExtensions;
 }
 
-interface StreamItemsRecordResult<TData = ReadonlyArray<unknown>> {
-  errors?: ReadonlyArray<GraphQLError>;
-  items: TData;
-}
-
 export interface IncrementalStreamResult<
   TData = ReadonlyArray<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends StreamItemsRecordResult<TData> {
+> {
   id: string;
   subPath?: ReadonlyArray<string | number>;
+  errors?: ReadonlyArray<GraphQLError>;
+  items: TData;
   extensions?: TExtensions;
 }
 
@@ -168,113 +162,64 @@ export interface FormattedCompletedResult {
   errors?: ReadonlyArray<GraphQLFormattedError>;
 }
 
-export function isPendingExecutionGroup(
+export function isExecutionGroup(
   incrementalDataRecord: IncrementalDataRecord,
-): incrementalDataRecord is PendingExecutionGroup {
-  return 'deferredFragmentRecords' in incrementalDataRecord;
+): incrementalDataRecord is ExecutionGroup {
+  return incrementalDataRecord instanceof Task;
 }
 
-export type CompletedExecutionGroup =
-  | SuccessfulExecutionGroup
-  | FailedExecutionGroup;
-
-export function isCompletedExecutionGroup(
-  incrementalDataRecordResult: IncrementalDataRecordResult,
-): incrementalDataRecordResult is CompletedExecutionGroup {
-  return 'pendingExecutionGroup' in incrementalDataRecordResult;
-}
-
-export interface SuccessfulExecutionGroup {
-  pendingExecutionGroup: PendingExecutionGroup;
-  path: Array<string | number>;
-  result: ExecutionGroupResult;
-  newDeferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord> | undefined;
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord> | undefined;
-  errors?: never;
-}
-
-interface FailedExecutionGroup {
-  pendingExecutionGroup: PendingExecutionGroup;
-  path: Array<string | number>;
-  errors: ReadonlyArray<GraphQLError>;
-  result?: never;
-}
-
-export function isFailedExecutionGroup(
-  completedExecutionGroup: CompletedExecutionGroup,
-): completedExecutionGroup is FailedExecutionGroup {
-  return completedExecutionGroup.errors !== undefined;
-}
-
-type ThunkIncrementalResult<T> =
-  | BoxedPromiseOrValue<T>
-  | (() => BoxedPromiseOrValue<T>);
-
-export interface PendingExecutionGroup {
-  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
-  result: ThunkIncrementalResult<CompletedExecutionGroup>;
-}
-
-export type DeliveryGroup = DeferredFragmentRecord | StreamRecord;
+export type ExecutionGroup = Task<
+  ExecutionGroupValue,
+  StreamItemValue,
+  DeferredFragmentRecord,
+  StreamRecord
+>;
 
 /** @internal */
-export class DeferredFragmentRecord {
+export interface DeferredFragmentRecord extends Group<DeferredFragmentRecord> {
   path: Path | undefined;
   label: string | undefined;
-  id?: string | undefined;
   parent: DeferredFragmentRecord | undefined;
-  pendingExecutionGroups: Set<PendingExecutionGroup>;
-  successfulExecutionGroups: Set<SuccessfulExecutionGroup>;
-  children: Set<DeliveryGroup>;
-
-  constructor(
-    path: Path | undefined,
-    label: string | undefined,
-    parent: DeferredFragmentRecord | undefined,
-  ) {
-    this.path = path;
-    this.label = label;
-    this.parent = parent;
-    this.pendingExecutionGroups = new Set();
-    this.successfulExecutionGroups = new Set();
-    this.children = new Set();
-  }
 }
 
-export function isDeferredFragmentRecord(
-  deliveryGroup: DeliveryGroup,
-): deliveryGroup is DeferredFragmentRecord {
-  return deliveryGroup instanceof DeferredFragmentRecord;
+export interface StreamRecord
+  extends Stream<
+    ExecutionGroupValue,
+    StreamItemValue,
+    DeferredFragmentRecord,
+    StreamRecord
+  > {
+  path: Path;
+  label: string | undefined;
+}
+
+export interface ExecutionGroupValue {
+  deferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord>;
+  path: ReadonlyArray<string | number>;
+  errors?: ReadonlyArray<GraphQLError>;
+  data: ObjMap<unknown>;
+}
+
+export type IncrementalWork = Work<
+  ExecutionGroupValue,
+  StreamItemValue,
+  DeferredFragmentRecord,
+  StreamRecord
+>;
+
+export interface ExecutionGroupResult {
+  value: ExecutionGroupValue;
+  work?: IncrementalWork | undefined;
+}
+
+export interface StreamItemValue {
+  errors?: ReadonlyArray<GraphQLError>;
+  item: unknown;
 }
 
 export interface StreamItemResult {
-  item: unknown;
-  newDeferredFragmentRecords?:
-    | ReadonlyArray<DeferredFragmentRecord>
-    | undefined;
-  incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
-  errors?: ReadonlyArray<GraphQLError>;
+  value: StreamItemValue;
+  work?: IncrementalWork | undefined;
 }
 
-export interface StreamRecord {
-  path: Path;
-  label: string | undefined;
-  id?: string | undefined;
-  streamItemQueue: Queue<StreamItemResult>;
-}
-
-export interface StreamItemsResult {
-  streamRecord: StreamRecord;
-  errors?: ReadonlyArray<GraphQLError>;
-  result?: StreamItemsRecordResult;
-  newDeferredFragmentRecords?:
-    | ReadonlyArray<DeferredFragmentRecord>
-    | undefined;
-  incrementalDataRecords?: ReadonlyArray<IncrementalDataRecord> | undefined;
-}
-
-export type IncrementalDataRecord = PendingExecutionGroup | StreamRecord;
-
-export type IncrementalDataRecordResult =
-  | CompletedExecutionGroup
-  | StreamItemsResult;
+export type IncrementalDataRecord = ExecutionGroup | StreamRecord;

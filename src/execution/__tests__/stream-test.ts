@@ -369,16 +369,10 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [{ name: 'Han', id: '2' }],
-            id: '0',
-          },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ name: 'Leia', id: '3' }],
+            items: [
+              { name: 'Han', id: '2' },
+              { name: 'Leia', id: '3' },
+            ],
             id: '0',
           },
         ],
@@ -682,22 +676,13 @@ describe('Execute: stream directive', () => {
       {
         incremental: [
           {
-            items: [{ name: 'Han', id: '2' }],
+            items: [
+              { name: 'Han', id: '2' },
+              { name: 'Leia', id: '3' },
+            ],
             id: '0',
           },
         ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
-            items: [{ name: 'Leia', id: '3' }],
-            id: '0',
-          },
-        ],
-        hasNext: true,
-      },
-      {
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -737,9 +722,6 @@ describe('Execute: stream directive', () => {
             id: '0',
           },
         ],
-        hasNext: true,
-      },
-      {
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -833,9 +815,6 @@ describe('Execute: stream directive', () => {
             id: '0',
           },
         ],
-        hasNext: true,
-      },
-      {
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -903,7 +882,7 @@ describe('Execute: stream directive', () => {
         }
       }
     `);
-    const result = await completeAsync(document, 3, {
+    const result = await completeAsync(document, 2, {
       async *friendList() {
         yield await Promise.resolve(friends[0]);
         yield await Promise.resolve(friends[1]);
@@ -933,12 +912,6 @@ describe('Execute: stream directive', () => {
               id: '0',
             },
           ],
-          hasNext: true,
-        },
-      },
-      {
-        done: false,
-        value: {
           completed: [{ id: '0' }],
           hasNext: false,
         },
@@ -1369,9 +1342,6 @@ describe('Execute: stream directive', () => {
             id: '0',
           },
         ],
-        hasNext: true,
-      },
-      {
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -1674,11 +1644,7 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      {
-        completed: [{ id: '1' }],
+        completed: [{ id: '1' }, { id: '0' }],
         hasNext: false,
       },
     ]);
@@ -1784,9 +1750,6 @@ describe('Execute: stream directive', () => {
             ],
           },
         ],
-        hasNext: true,
-      },
-      {
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -1939,9 +1902,6 @@ describe('Execute: stream directive', () => {
             id: '0',
           },
         ],
-        hasNext: true,
-      },
-      {
         completed: [{ id: '0' }],
         hasNext: false,
       },
@@ -1999,13 +1959,109 @@ describe('Execute: stream directive', () => {
             id: '0',
           },
         ],
-        hasNext: true,
-      },
-      {
         completed: [{ id: '0' }],
         hasNext: false,
       },
     ]);
+  });
+  it('Re-promotes a completed stream when a slower sibling defer resolves later', async () => {
+    const { promise: slowFieldPromise, resolve: resolveSlowField } =
+      promiseWithResolvers<string>();
+    const document = parse(`
+      query {
+        nestedObject {
+          ... @defer {
+            nestedFriendList @stream { name }
+          }
+          ... @defer {
+            scalarField
+            nestedFriendList @stream { name }
+          }
+        }
+      }
+    `);
+    const executeResult = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        nestedObject: {
+          nestedFriendList: () => friends,
+          scalarField: slowFieldPromise,
+        },
+      },
+    });
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {
+        nestedObject: {},
+      },
+      pending: [
+        { id: '0', path: ['nestedObject'] },
+        { id: '1', path: ['nestedObject'] },
+      ],
+      hasNext: true,
+    });
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      value: {
+        pending: [{ id: '2', path: ['nestedObject', 'nestedFriendList'] }],
+        incremental: [
+          {
+            data: {
+              nestedFriendList: [],
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    resolveSlowField('slow');
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      value: {
+        incremental: [
+          {
+            items: [{ name: 'Luke' }, { name: 'Han' }, { name: 'Leia' }],
+            id: '2',
+          },
+        ],
+        completed: [{ id: '2' }],
+        hasNext: true,
+      },
+      done: false,
+    });
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
+      value: {
+        incremental: [
+          {
+            data: {
+              scalarField: 'slow',
+            },
+            id: '1',
+          },
+        ],
+        completed: [{ id: '1' }],
+        hasNext: false,
+      },
+      done: false,
+    });
+
+    const result5 = await iterator.next();
+    expectJSON(result5).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
   });
   it('Returns payloads in correct order when parent deferred fragment resolves slower than stream', async () => {
     const { promise: slowFieldPromise, resolve: resolveSlowField } =
@@ -2071,39 +2127,18 @@ describe('Execute: stream directive', () => {
       value: {
         incremental: [
           {
-            items: [{ name: 'Luke' }],
+            items: [{ name: 'Luke' }, { name: 'Han' }],
             id: '1',
           },
         ],
-        hasNext: true,
+        completed: [{ id: '1' }],
+        hasNext: false,
       },
       done: false,
     });
 
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
-      value: {
-        incremental: [
-          {
-            items: [{ name: 'Han' }],
-            id: '1',
-          },
-        ],
-        hasNext: true,
-      },
-      done: false,
-    });
-
-    const result5 = await iterator.next();
-    expectJSON(result5).toDeepEqual({
-      value: {
-        completed: [{ id: '1' }],
-        hasNext: false,
-      },
-      done: false,
-    });
-    const result6 = await iterator.next();
-    expectJSON(result6).toDeepEqual({
       value: undefined,
       done: true,
     });
@@ -2188,20 +2223,13 @@ describe('Execute: stream directive', () => {
             id: '0',
           },
         ],
+        completed: [{ id: '0' }],
         hasNext: true,
       },
       done: false,
     });
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
-      value: {
-        completed: [{ id: '0' }],
-        hasNext: true,
-      },
-      done: false,
-    });
-    const result5 = await iterator.next();
-    expectJSON(result5).toDeepEqual({
       value: {
         incremental: [
           {
@@ -2214,8 +2242,8 @@ describe('Execute: stream directive', () => {
       },
       done: false,
     });
-    const result6 = await iterator.next();
-    expectJSON(result6).toDeepEqual({
+    const result5 = await iterator.next();
+    expectJSON(result5).toDeepEqual({
       value: undefined,
       done: true,
     });
@@ -2557,7 +2585,7 @@ describe('Execute: stream directive', () => {
         value: {
           incremental: [
             {
-              items: [{ id: '1' }],
+              items: [{ id: '1' }, { id: '2' }],
               id: '0',
             },
           ],
@@ -2567,5 +2595,99 @@ describe('Execute: stream directive', () => {
     }
 
     assert(returned);
+  });
+  it('limits stream batches to the configured capacity (10)', async () => {
+    const document = parse(`
+      query {
+        friendList @stream {
+          id
+        }
+      }
+    `);
+
+    const executeResult = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        async *friendList() {
+          for (let i = 0; i < 18; i++) {
+            // eslint-disable-next-line no-await-in-loop
+            yield await Promise.resolve(friends[i % 3]);
+          }
+        },
+      },
+      enableEarlyExecution: true,
+      options: { streamQueueCapacity: 10 },
+    });
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {
+        friendList: [],
+      },
+      pending: [{ id: '0', path: ['friendList'] }],
+      hasNext: true,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 5));
+
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            items: [
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '1' },
+            ],
+            id: '0',
+          },
+        ],
+        hasNext: true,
+      },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 5));
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            items: [
+              { id: '2' },
+              { id: '3' },
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+            ],
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    });
+
+    const result4 = await iterator.next();
+    expectJSON(result4).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
   });
 });

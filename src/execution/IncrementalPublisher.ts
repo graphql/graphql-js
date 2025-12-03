@@ -4,33 +4,29 @@ import { pathToArray } from '../jsutils/Path.js';
 import type { GraphQLError } from '../error/GraphQLError.js';
 
 import type { AbortSignalListener } from './AbortSignalListener.js';
-import { IncrementalGraph } from './IncrementalGraph.js';
+import { mapAsyncIterable } from './mapAsyncIterable.js';
 import type {
-  CompletedExecutionGroup,
   CompletedResult,
   DeferredFragmentRecord,
-  DeliveryGroup,
+  ExecutionGroupValue,
   ExperimentalIncrementalExecutionResults,
-  IncrementalDataRecord,
-  IncrementalDataRecordResult,
   IncrementalDeferResult,
   IncrementalResult,
-  IncrementalStreamResult,
+  IncrementalWork,
   InitialIncrementalExecutionResult,
   PendingResult,
-  StreamItemsResult,
+  StreamItemValue,
   StreamRecord,
   SubsequentIncrementalExecutionResult,
 } from './types.js';
-import { isCompletedExecutionGroup, isFailedExecutionGroup } from './types.js';
 import { withCleanup } from './withCleanup.js';
+import type { WorkQueueEvent } from './WorkQueue.js';
+import { createWorkQueue } from './WorkQueue.js';
 
-// eslint-disable-next-line max-params
 export function buildIncrementalResponse(
   result: ObjMap<unknown>,
   errors: ReadonlyArray<GraphQLError>,
-  newDeferredFragmentRecords: ReadonlyArray<DeferredFragmentRecord> | undefined,
-  incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
+  work: IncrementalWork,
   earlyReturns: Map<StreamRecord, () => Promise<unknown>>,
   abortSignalListener: AbortSignalListener | undefined,
 ): ExperimentalIncrementalExecutionResults {
@@ -38,64 +34,56 @@ export function buildIncrementalResponse(
     earlyReturns,
     abortSignalListener,
   );
-  return incrementalPublisher.buildResponse(
-    result,
-    errors,
-    newDeferredFragmentRecords,
-    incrementalDataRecords,
-  );
+  return incrementalPublisher.buildResponse(result, errors, work);
 }
 
 interface SubsequentIncrementalExecutionResultContext {
   pending: Array<PendingResult>;
   incremental: Array<IncrementalResult>;
   completed: Array<CompletedResult>;
+  hasNext: boolean;
 }
 
 /**
- * This class is used to publish incremental results to the client, enabling semi-concurrent
- * execution while preserving result order.
- *
  * @internal
  */
-class IncrementalPublisher {
+export class IncrementalPublisher {
+  private _ids: Map<DeferredFragmentRecord | StreamRecord, string>;
   private _earlyReturns: Map<StreamRecord, () => Promise<unknown>>;
   private _abortSignalListener: AbortSignalListener | undefined;
   private _nextId: number;
-  private _incrementalGraph: IncrementalGraph<SubsequentIncrementalExecutionResult>;
 
   constructor(
     earlyReturns: Map<StreamRecord, () => Promise<unknown>>,
     abortSignalListener: AbortSignalListener | undefined,
   ) {
+    this._ids = new Map();
     this._earlyReturns = earlyReturns;
     this._abortSignalListener = abortSignalListener;
     this._nextId = 0;
-    this._incrementalGraph = new IncrementalGraph((batch) =>
-      this._handleCompletedBatch(batch),
-    );
   }
 
   buildResponse(
     data: ObjMap<unknown>,
     errors: ReadonlyArray<GraphQLError>,
-    newDeferredFragmentRecords:
-      | ReadonlyArray<DeferredFragmentRecord>
-      | undefined,
-    incrementalDataRecords: ReadonlyArray<IncrementalDataRecord>,
+    work: IncrementalWork,
   ): ExperimentalIncrementalExecutionResults {
-    const newRootNodes = this._incrementalGraph.getNewRootNodes(
-      newDeferredFragmentRecords,
-      incrementalDataRecords,
-    );
+    const { initialGroups, initialStreams, events } = createWorkQueue<
+      ExecutionGroupValue,
+      StreamItemValue,
+      DeferredFragmentRecord,
+      StreamRecord
+    >(work);
 
-    const pending = this._toPendingResults(newRootNodes);
+    const pending = this._toPendingResults(initialGroups, initialStreams);
 
     const initialResult: InitialIncrementalExecutionResult = errors.length
       ? { errors, data, pending, hasNext: true }
       : { data, pending, hasNext: true };
 
-    const subsequentResults = this._incrementalGraph.subscribe();
+    const subsequentResults = mapAsyncIterable(events, (batch) =>
+      this._handleBatch(batch),
+    );
 
     return {
       initialResult,
@@ -106,169 +94,181 @@ class IncrementalPublisher {
     };
   }
 
-  private _ensureId(deliveryGroup: DeliveryGroup): string {
-    return (deliveryGroup.id ??= String(this._nextId++));
+  private _ensureId(
+    deferredFragmentOrStream: DeferredFragmentRecord | StreamRecord,
+  ): string {
+    let id = this._ids.get(deferredFragmentOrStream);
+    if (id !== undefined) {
+      return id;
+    }
+    id = String(this._nextId++);
+    this._ids.set(deferredFragmentOrStream, id);
+    return id;
   }
 
   private _toPendingResults(
-    newRootNodes: ReadonlyArray<DeliveryGroup>,
+    newGroups: ReadonlyArray<DeferredFragmentRecord>,
+    newStreams: ReadonlyArray<StreamRecord>,
   ): Array<PendingResult> {
     const pendingResults: Array<PendingResult> = [];
-    for (const node of newRootNodes) {
-      const id = this._ensureId(node);
-      const pendingResult: PendingResult = {
-        id,
-        path: pathToArray(node.path),
-      };
-      if (node.label !== undefined) {
-        pendingResult.label = node.label;
+    for (const collection of [newGroups, newStreams]) {
+      for (const node of collection) {
+        const id = this._ensureId(node);
+        const pendingResult: PendingResult = {
+          id,
+          path: pathToArray(node.path),
+        };
+        if (node.label !== undefined) {
+          pendingResult.label = node.label;
+        }
+        pendingResults.push(pendingResult);
       }
-      pendingResults.push(pendingResult);
     }
     return pendingResults;
   }
 
-  private _handleCompletedBatch(
-    batch: Iterable<IncrementalDataRecordResult>,
-  ): SubsequentIncrementalExecutionResult | undefined {
+  private _handleBatch(
+    batch: ReadonlyArray<
+      WorkQueueEvent<
+        ExecutionGroupValue,
+        StreamItemValue,
+        DeferredFragmentRecord,
+        StreamRecord
+      >
+    >,
+  ): SubsequentIncrementalExecutionResult {
     const context: SubsequentIncrementalExecutionResultContext = {
       pending: [],
       incremental: [],
       completed: [],
+      hasNext: true,
     };
 
-    for (const completedResult of batch) {
-      this._handleCompletedIncrementalData(completedResult, context);
+    for (const event of batch) {
+      this._handleWorkQueueEvent(event, context);
     }
 
-    const { incremental, completed } = context;
-    if (incremental.length === 0 && completed.length === 0) {
-      return;
-    }
+    const { incremental, completed, pending, hasNext } = context;
 
-    const hasNext = this._incrementalGraph.hasNext();
-
-    const subsequentIncrementalExecutionResult: SubsequentIncrementalExecutionResult =
-      { hasNext };
-    const pending = context.pending;
+    const result: SubsequentIncrementalExecutionResult = { hasNext };
     if (pending.length > 0) {
-      subsequentIncrementalExecutionResult.pending = pending;
+      result.pending = pending;
     }
     if (incremental.length > 0) {
-      subsequentIncrementalExecutionResult.incremental = incremental;
+      result.incremental = incremental;
     }
     if (completed.length > 0) {
-      subsequentIncrementalExecutionResult.completed = completed;
+      result.completed = completed;
     }
-    return subsequentIncrementalExecutionResult;
+    return result;
   }
 
-  private _handleCompletedIncrementalData(
-    completedIncrementalData: IncrementalDataRecordResult,
+  private _handleWorkQueueEvent(
+    event: WorkQueueEvent<
+      ExecutionGroupValue,
+      StreamItemValue,
+      DeferredFragmentRecord,
+      StreamRecord
+    >,
     context: SubsequentIncrementalExecutionResultContext,
   ): void {
-    if (isCompletedExecutionGroup(completedIncrementalData)) {
-      this._handleCompletedExecutionGroup(completedIncrementalData, context);
-    } else {
-      this._handleCompletedStreamItems(completedIncrementalData, context);
-    }
-  }
-
-  private _handleCompletedExecutionGroup(
-    completedExecutionGroup: CompletedExecutionGroup,
-    context: SubsequentIncrementalExecutionResultContext,
-  ): void {
-    if (isFailedExecutionGroup(completedExecutionGroup)) {
-      for (const deferredFragmentRecord of completedExecutionGroup
-        .pendingExecutionGroup.deferredFragmentRecords) {
-        if (
-          this._incrementalGraph.removeDeferredFragment(deferredFragmentRecord)
-        ) {
-          const id = this._ensureId(deferredFragmentRecord);
-          context.completed.push({
+    switch (event.kind) {
+      case 'GROUP_VALUES': {
+        const group = event.group;
+        const id = this._ensureId(group);
+        for (const value of event.values) {
+          const { bestId, subPath } = this._getBestIdAndSubPath(
             id,
-            errors: completedExecutionGroup.errors,
-          });
+            group,
+            value,
+          );
+          const incrementalEntry: IncrementalDeferResult = {
+            id: bestId,
+            data: value.data,
+          };
+          if (value.errors !== undefined) {
+            incrementalEntry.errors = value.errors;
+          }
+          if (subPath !== undefined) {
+            incrementalEntry.subPath = subPath;
+          }
+          context.incremental.push(incrementalEntry);
         }
+        break;
       }
-      return;
-    }
-
-    this._incrementalGraph.addCompletedSuccessfulExecutionGroup(
-      completedExecutionGroup,
-    );
-
-    for (const deferredFragmentRecord of completedExecutionGroup
-      .pendingExecutionGroup.deferredFragmentRecords) {
-      const completion = this._incrementalGraph.completeDeferredFragment(
-        deferredFragmentRecord,
-      );
-      if (completion === undefined) {
-        continue;
+      case 'GROUP_SUCCESS': {
+        const group = event.group;
+        const id = this._ensureId(group);
+        context.completed.push({ id });
+        this._ids.delete(group);
+        if (event.newGroups.length > 0 || event.newStreams.length > 0) {
+          context.pending.push(
+            ...this._toPendingResults(event.newGroups, event.newStreams),
+          );
+        }
+        break;
       }
-      const id = this._ensureId(deferredFragmentRecord);
-      const incremental = context.incremental;
-      const { newRootNodes, successfulExecutionGroups } = completion;
-      context.pending.push(...this._toPendingResults(newRootNodes));
-      for (const successfulExecutionGroup of successfulExecutionGroups) {
-        const { bestId, subPath } = this._getBestIdAndSubPath(
+      case 'GROUP_FAILURE': {
+        const { group, error } = event;
+        const id = this._ensureId(group);
+        context.completed.push({
           id,
-          deferredFragmentRecord,
-          successfulExecutionGroup,
-        );
-        const incrementalEntry: IncrementalDeferResult = {
-          ...successfulExecutionGroup.result,
-          id: bestId,
-        };
-        if (subPath !== undefined) {
-          incrementalEntry.subPath = subPath;
-        }
-        incremental.push(incrementalEntry);
-      }
-      context.completed.push({ id });
-    }
-  }
-
-  private _handleCompletedStreamItems(
-    streamItemsResult: StreamItemsResult,
-    context: SubsequentIncrementalExecutionResultContext,
-  ): void {
-    const streamRecord = streamItemsResult.streamRecord;
-    const id = this._ensureId(streamRecord);
-    if (streamItemsResult.errors !== undefined) {
-      context.completed.push({
-        id,
-        errors: streamItemsResult.errors,
-      });
-      this._incrementalGraph.removeStream(streamRecord);
-      const earlyReturn = this._earlyReturns.get(streamRecord);
-      if (earlyReturn !== undefined) {
-        earlyReturn().catch(() => {
-          /* c8 ignore next 1 */
-          // ignore error
+          errors: [error as GraphQLError],
         });
-        this._earlyReturns.delete(streamRecord);
+        this._ids.delete(group);
+        break;
       }
-    } else if (streamItemsResult.result === undefined) {
-      context.completed.push({ id });
-      this._incrementalGraph.removeStream(streamRecord);
-      this._earlyReturns.delete(streamRecord);
-    } else {
-      const incrementalEntry: IncrementalStreamResult = {
-        id,
-        ...streamItemsResult.result,
-      };
-
-      context.incremental.push(incrementalEntry);
-
-      const { newDeferredFragmentRecords, incrementalDataRecords } =
-        streamItemsResult;
-      if (incrementalDataRecords !== undefined) {
-        const newRootNodes = this._incrementalGraph.getNewRootNodes(
-          newDeferredFragmentRecords,
-          incrementalDataRecords,
+      case 'STREAM_VALUES': {
+        const stream = event.stream;
+        const id = this._ensureId(stream);
+        const { values, newGroups, newStreams } = event;
+        const items: Array<unknown> = [];
+        const errors: Array<GraphQLError> = [];
+        for (const value of values) {
+          items.push(value.item);
+          if (value.errors !== undefined) {
+            errors.push(...value.errors);
+          }
+        }
+        context.incremental.push(
+          errors.length > 0 ? { id, items, errors } : { id, items },
         );
-        context.pending.push(...this._toPendingResults(newRootNodes));
+        if (newGroups.length > 0 || newStreams.length > 0) {
+          context.pending.push(
+            ...this._toPendingResults(newGroups, newStreams),
+          );
+        }
+        break;
+      }
+      case 'STREAM_SUCCESS': {
+        const stream = event.stream;
+        context.completed.push({
+          id: this._ensureId(stream),
+        });
+        this._ids.delete(stream);
+        this._earlyReturns.delete(stream);
+        break;
+      }
+      case 'STREAM_FAILURE': {
+        const stream = event.stream;
+        context.completed.push({
+          id: this._ensureId(stream),
+          errors: [event.error as GraphQLError],
+        });
+        this._ids.delete(stream);
+        const earlyReturn = this._earlyReturns.get(stream);
+        if (earlyReturn !== undefined) {
+          earlyReturn().catch(() => {
+            /* c8 ignore next 1 */
+            // ignore error
+          });
+          this._earlyReturns.delete(stream);
+        }
+        break;
+      }
+      case 'WORK_QUEUE_TERMINATION': {
+        context.hasNext = false;
+        break;
       }
     }
   }
@@ -276,17 +276,16 @@ class IncrementalPublisher {
   private _getBestIdAndSubPath(
     initialId: string,
     initialDeferredFragmentRecord: DeferredFragmentRecord,
-    completedExecutionGroup: CompletedExecutionGroup,
+    executionGroupValue: ExecutionGroupValue,
   ): { bestId: string; subPath: ReadonlyArray<string | number> | undefined } {
     let maxLength = pathToArray(initialDeferredFragmentRecord.path).length;
     let bestId = initialId;
 
-    for (const deferredFragmentRecord of completedExecutionGroup
-      .pendingExecutionGroup.deferredFragmentRecords) {
+    for (const deferredFragmentRecord of executionGroupValue.deferredFragmentRecords) {
       if (deferredFragmentRecord === initialDeferredFragmentRecord) {
         continue;
       }
-      const id = deferredFragmentRecord.id;
+      const id = this._ids.get(deferredFragmentRecord);
       // TODO: add test case for when an fragment has not been released, but might be processed for the shortest path.
       /* c8 ignore next 3 */
       if (id === undefined) {
@@ -299,7 +298,7 @@ class IncrementalPublisher {
         bestId = id;
       }
     }
-    const subPath = completedExecutionGroup.path.slice(maxLength);
+    const subPath = executionGroupValue.path.slice(maxLength);
     return {
       bestId,
       subPath: subPath.length > 0 ? subPath : undefined,
