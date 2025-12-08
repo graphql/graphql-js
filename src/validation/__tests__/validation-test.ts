@@ -181,7 +181,7 @@ describe('Validate: Limit maximum number of validation errors', () => {
 });
 
 describe('operation and variable definition descriptions', () => {
-  it('parses operation with description and variable descriptions', () => {
+  it('validates operation with description and variable descriptions', () => {
     const schema = buildSchema(
       'type Query { field(a: Int, b: String): String }',
     );
