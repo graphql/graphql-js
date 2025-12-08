@@ -198,7 +198,6 @@ describe('operation and variable definition descriptions', () => {
       `;
     const ast = parse(query);
     const errors = validate(schema, ast);
-    console.log(errors);
     expect(errors.length).to.equal(0);
   });
 });
