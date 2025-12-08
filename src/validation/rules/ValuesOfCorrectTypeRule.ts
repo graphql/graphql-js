@@ -116,7 +116,7 @@ export function ValuesOfCorrectTypeRule(
     EnumValue: (node) => isValidValueNode(context, node),
     IntValue: (node) => isValidValueNode(context, node),
     FloatValue: (node) => isValidValueNode(context, node),
-    StringValue: (node) => isValidValueNode(context, node),
+    StringValue: (node, key) => key !== "description" && isValidValueNode(context, node),
     BooleanValue: (node) => isValidValueNode(context, node),
   };
 }

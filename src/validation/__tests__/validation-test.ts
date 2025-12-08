@@ -179,3 +179,26 @@ describe('Validate: Limit maximum number of validation errors', () => {
     ).to.throw(/^Error from custom rule!$/);
   });
 });
+
+describe('operation and variable definition descriptions', () => {
+  it('parses operation with description and variable descriptions', () => {
+    const schema = buildSchema(
+      'type Query { field(a: Int, b: String): String }',
+    );
+    const query = `
+        "Operation description"
+        query myQuery(
+          "Variable a description"
+          $a: Int,
+          """Variable b\nmultiline description"""
+          $b: String
+        ) {
+          field(a: $a, b: $b)
+        }
+      `;
+    const ast = parse(query);
+    const errors = validate(schema, ast);
+    console.log(errors);
+    expect(errors.length).to.equal(0);
+  });
+});
