@@ -32,7 +32,10 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import { valueFromASTUntyped } from '../../utilities/valueFromASTUntyped.js';
 
-import { executeSync } from '../entrypoints.js';
+import {
+  executeSync,
+  experimentalExecuteIncrementally,
+} from '../entrypoints.js';
 import { getVariableValues } from '../values.js';
 
 const TestFaultyScalarGraphQLError = new GraphQLError(
@@ -1642,7 +1645,6 @@ describe('Execute: Handles inputs', () => {
       });
     });
 
-    /* TODO: add back when @defer and @stream are supported
     it('when a nullable argument to a directive with a field default is not provided and shadowed by an operation variable', () => {
       // this test uses the @defer directive and incremental delivery because the `if` argument for skip/include have no field defaults
       const document = parse(
@@ -1661,6 +1663,5 @@ describe('Execute: Handles inputs', () => {
       const result = experimentalExecuteIncrementally({ schema, document });
       expect(result).to.include.keys('initialResult', 'subsequentResults');
     });
-    */
   });
 });

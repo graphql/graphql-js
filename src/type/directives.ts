@@ -17,7 +17,7 @@ import type {
   GraphQLSchemaElement,
 } from './definition.js';
 import { GraphQLArgument, GraphQLNonNull } from './definition.js';
-import { GraphQLBoolean, GraphQLString } from './scalars.js';
+import { GraphQLBoolean, GraphQLInt, GraphQLString } from './scalars.js';
 
 const directiveSymbol: unique symbol = Symbol('Directive');
 
@@ -171,6 +171,56 @@ export const GraphQLSkipDirective: GraphQLDirective = new GraphQLDirective({
     if: {
       type: new GraphQLNonNull(GraphQLBoolean),
       description: 'Skipped when true.',
+    },
+  },
+});
+
+/**
+ * Used to conditionally defer fragments.
+ */
+export const GraphQLDeferDirective = new GraphQLDirective({
+  name: 'defer',
+  description:
+    'Directs the executor to defer this fragment when the `if` argument is true or undefined.',
+  locations: [
+    DirectiveLocation.FRAGMENT_SPREAD,
+    DirectiveLocation.INLINE_FRAGMENT,
+  ],
+  args: {
+    if: {
+      type: new GraphQLNonNull(GraphQLBoolean),
+      description: 'Deferred when true or undefined.',
+      default: { value: true },
+    },
+    label: {
+      type: GraphQLString,
+      description: 'Unique name',
+    },
+  },
+});
+
+/**
+ * Used to conditionally stream list fields.
+ */
+export const GraphQLStreamDirective = new GraphQLDirective({
+  name: 'stream',
+  description:
+    'Directs the executor to stream plural fields when the `if` argument is true or undefined.',
+  locations: [DirectiveLocation.FIELD],
+  args: {
+    initialCount: {
+      default: { value: 0 },
+      type: new GraphQLNonNull(GraphQLInt),
+      description: 'Number of items to return immediately',
+    },
+    if: {
+      type: new GraphQLNonNull(GraphQLBoolean),
+      description: 'Stream when true or undefined.',
+      default: { value: true },
+    },
+    label: {
+      type: GraphQLString,
+      description: 'Unique name',
     },
   },
 });

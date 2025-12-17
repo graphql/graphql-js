@@ -22,14 +22,24 @@ import { assertValidSchema } from '../type/index.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
 import type { FragmentDetails } from './collectFields.js';
-import type { ExecutionResult, ValidatedExecutionArgs } from './execute.js';
+import type {
+  ExecutionResult,
+  ExperimentalIncrementalExecutionResults,
+  ValidatedExecutionArgs,
+} from './execute.js';
 import {
   createSourceEventStreamImpl,
-  executeQueryOrMutationOrSubscriptionEvent,
+  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
   mapSourceToResponse,
 } from './execute.js';
 import { getVariableSignature } from './getVariableSignature.js';
 import { getVariableValues } from './values.js';
+
+const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
+  'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
+
+const UNEXPECTED_MULTIPLE_PAYLOADS =
+  'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -40,8 +50,58 @@ import { getVariableValues } from './values.js';
  *
  * If the arguments to this function do not result in a legal execution context,
  * a GraphQLError will be thrown immediately explaining the invalid input.
+ *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
+ * If an operation which would defer or stream data is executed with this
+ * function, it will throw or return a rejected promise.
+ * Use `experimentalExecuteIncrementally` if you want to support incremental
+ * delivery.
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  if (args.schema.getDirective('defer') || args.schema.getDirective('stream')) {
+    throw new Error(UNEXPECTED_EXPERIMENTAL_DIRECTIVES);
+  }
+
+  const result = experimentalExecuteIncrementally(args);
+  // Multiple payloads could be encountered if the operation contains @defer or
+  // @stream directives and is not validated prior to execution
+  return ensureSinglePayload(result);
+}
+
+function ensureSinglePayload(
+  result: PromiseOrValue<
+    ExecutionResult | ExperimentalIncrementalExecutionResults
+  >,
+): PromiseOrValue<ExecutionResult> {
+  if (isPromise(result)) {
+    return result.then((resolved) => {
+      if ('initialResult' in resolved) {
+        throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
+      }
+      return resolved;
+    });
+  }
+  if ('initialResult' in result) {
+    throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
+  }
+  return result;
+}
+
+/**
+ * Implements the "Executing requests" section of the GraphQL specification,
+ * including `@defer` and `@stream` as proposed in
+ * https://github.com/graphql/graphql-spec/pull/742
+ *
+ * This function returns a Promise of an ExperimentalIncrementalExecutionResults
+ * object. This object either consists of a single ExecutionResult, or an
+ * object containing an `initialResult` and a stream of `subsequentResults`.
+ *
+ * If the arguments to this function do not result in a legal execution context,
+ * a GraphQLError will be thrown immediately explaining the invalid input.
+ */
+export function experimentalExecuteIncrementally(
+  args: ExecutionArgs,
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const validatedExecutionArgs = validateExecutionArgs(args);
@@ -51,7 +111,33 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: validatedExecutionArgs };
   }
 
-  return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+  return experimentalExecuteQueryOrMutationOrSubscriptionEvent(
+    validatedExecutionArgs,
+  );
+}
+
+/**
+ * Implements the "Executing operations" section of the spec.
+ *
+ * Returns a Promise that will eventually resolve to the data described by
+ * The "Response" section of the GraphQL specification.
+ *
+ * If errors are encountered while executing a GraphQL field, only that
+ * field and its descendants will be omitted, and sibling fields will still
+ * be executed. An execution which encounters errors will still result in a
+ * resolved Promise.
+ *
+ * Errors from sub-fields of a NonNull type may propagate to the top level,
+ * at which point we still log the error and null the parent field, which
+ * in this case is the entire response.
+ */
+export function executeQueryOrMutationOrSubscriptionEvent(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): PromiseOrValue<ExecutionResult> {
+  const result = experimentalExecuteQueryOrMutationOrSubscriptionEvent(
+    validatedExecutionArgs,
+  );
+  return ensureSinglePayload(result);
 }
 
 /**
@@ -60,10 +146,10 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
  * that all field resolvers are also synchronous.
  */
 export function executeSync(args: ExecutionArgs): ExecutionResult {
-  const result = execute(args);
+  const result = experimentalExecuteIncrementally(args);
 
   // Assert that the execution was synchronous.
-  if (isPromise(result)) {
+  if (isPromise(result) || 'initialResult' in result) {
     throw new Error('GraphQL execution failed to complete synchronously.');
   }
 
@@ -94,6 +180,11 @@ export function executeSubscriptionEvent(
  *
  * If the operation succeeded, the promise resolves to an AsyncIterator, which
  * yields a stream of ExecutionResults representing the response stream.
+ *
+ * This function does not support incremental delivery (`@defer` and `@stream`).
+ * If an operation which would defer or stream data is executed with this
+ * function, a field error will be raised at the location of the `@defer` or
+ * `@stream` directive.
  *
  * Accepts an object with named arguments.
  */
@@ -182,6 +273,7 @@ export interface ExecutionArgs {
   >;
   hideSuggestions?: Maybe<boolean>;
   abortSignal?: Maybe<AbortSignal>;
+  enableEarlyExecution?: Maybe<boolean>;
   /** Additional execution options. */
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
@@ -213,6 +305,7 @@ export function validateExecutionArgs(
     subscribeFieldResolver,
     perEventExecutor,
     abortSignal: externalAbortSignal,
+    enableEarlyExecution,
     options,
   } = args;
 
@@ -281,11 +374,10 @@ export function validateExecutionArgs(
     return variableValuesOrErrors.errors;
   }
 
-  const errorPropagation =
-    operation.directives?.find(
-      (directive) =>
-        directive.name.value === GraphQLDisableErrorPropagationDirective.name,
-    ) === undefined;
+  const errorPropagation = !operation.directives?.find(
+    (directive) =>
+      directive.name.value === GraphQLDisableErrorPropagationDirective.name,
+  );
 
   return {
     schema,
@@ -302,6 +394,7 @@ export function validateExecutionArgs(
     hideSuggestions,
     errorPropagation,
     externalAbortSignal: externalAbortSignal ?? undefined,
+    enableEarlyExecution: enableEarlyExecution === true,
   };
 }
 
