@@ -58,6 +58,7 @@ enum Kind {
 
   /** Type System Extensions */
   SCHEMA_EXTENSION = 'SchemaExtension',
+  DIRECTIVE_EXTENSION = 'DirectiveExtension',
 
   /** Type Extensions */
   SCALAR_TYPE_EXTENSION = 'ScalarTypeExtension',

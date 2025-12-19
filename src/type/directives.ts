@@ -59,6 +59,7 @@ export class GraphQLDirective {
   locations: ReadonlyArray<DirectiveLocation>;
   args: ReadonlyArray<GraphQLArgument>;
   isRepeatable: boolean;
+  deprecationReason: Maybe<string>;
   extensions: Readonly<GraphQLDirectiveExtensions>;
   astNode: Maybe<DirectiveDefinitionNode>;
 
@@ -67,6 +68,7 @@ export class GraphQLDirective {
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
+    this.deprecationReason = config.deprecationReason;
     this.extensions = toObjMap(config.extensions);
     this.astNode = config.astNode;
 
@@ -95,6 +97,7 @@ export class GraphQLDirective {
       locations: this.locations,
       args: argsToArgsConfig(this.args),
       isRepeatable: this.isRepeatable,
+      deprecationReason: this.deprecationReason,
       extensions: this.extensions,
       astNode: this.astNode,
     };
@@ -115,6 +118,7 @@ export interface GraphQLDirectiveConfig {
   locations: ReadonlyArray<DirectiveLocation>;
   args?: Maybe<GraphQLFieldConfigArgumentMap>;
   isRepeatable?: Maybe<boolean>;
+  deprecationReason?: Maybe<string>;
   extensions?: Maybe<Readonly<GraphQLDirectiveExtensions>>;
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
@@ -182,6 +186,7 @@ export const GraphQLDeprecatedDirective: GraphQLDirective =
       DirectiveLocation.ARGUMENT_DEFINITION,
       DirectiveLocation.INPUT_FIELD_DEFINITION,
       DirectiveLocation.ENUM_VALUE,
+      DirectiveLocation.DIRECTIVE_DEFINITION,
     ],
     args: {
       reason: {

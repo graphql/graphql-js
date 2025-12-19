@@ -201,6 +201,10 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
       value: DirectiveLocation.INPUT_FIELD_DEFINITION,
       description: 'Location adjacent to an input object field definition.',
     },
+    DIRECTIVE_DEFINITION: {
+      value: DirectiveLocation.DIRECTIVE_DEFINITION,
+      description: 'Location adjacent to a directive definition.',
+    },
   },
 });
 

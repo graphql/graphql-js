@@ -914,6 +914,11 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'DIRECTIVE_DEFINITION',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               possibleTypes: null,
             },
@@ -967,6 +972,7 @@ describe('Introspection', () => {
                 'ARGUMENT_DEFINITION',
                 'INPUT_FIELD_DEFINITION',
                 'ENUM_VALUE',
+                'DIRECTIVE_DEFINITION',
               ],
               args: [
                 {

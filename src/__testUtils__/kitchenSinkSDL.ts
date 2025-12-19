@@ -161,4 +161,8 @@ extend schema @onSchema
 extend schema @onSchema {
   subscription: SubscriptionType
 }
+
+directive @myDirective @onDirective on OBJECT | FIELD_DEFINITION
+
+extend directive @myDirective @onDirective2
 `;

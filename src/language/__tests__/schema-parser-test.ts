@@ -1029,6 +1029,7 @@ input Hello {
         {
           kind: 'DirectiveDefinition',
           description: undefined,
+          directives: [],
           name: {
             kind: 'Name',
             value: 'foo',
@@ -1065,6 +1066,7 @@ input Hello {
         {
           kind: 'DirectiveDefinition',
           description: undefined,
+          directives: [],
           name: {
             kind: 'Name',
             value: 'foo',

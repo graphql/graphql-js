@@ -235,13 +235,21 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   DirectiveDefinition: {
-    leave: ({ description, name, arguments: args, repeatable, locations }) =>
+    leave: ({
+      description,
+      name,
+      arguments: args,
+      directives,
+      repeatable,
+      locations,
+    }) =>
       wrap('', description, '\n') +
       'directive @' +
       name +
       (hasMultilineItems(args)
         ? wrap('(\n', indent(join(args, '\n')), '\n)')
         : wrap('(', join(args, ', '), ')')) +
+      wrap(' ', join(directives, ' ')) +
       (repeatable ? ' repeatable' : '') +
       ' on ' +
       join(locations, ' | '),
@@ -309,6 +317,11 @@ const printDocASTReducer: ASTReducer<string> = {
   InputObjectTypeExtension: {
     leave: ({ name, directives, fields }) =>
       join(['extend input', name, join(directives, ' '), block(fields)], ' '),
+  },
+
+  DirectiveExtension: {
+    leave: ({ name, directives }) =>
+      join(['extend directive @' + name, join(directives, ' ')], ' '),
   },
 
   // Schema Coordinates

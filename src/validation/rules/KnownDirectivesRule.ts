@@ -120,6 +120,9 @@ function getDirectiveLocationForASTPath(
         ? DirectiveLocation.INPUT_FIELD_DEFINITION
         : DirectiveLocation.ARGUMENT_DEFINITION;
     }
+    case Kind.DIRECTIVE_DEFINITION:
+    case Kind.DIRECTIVE_EXTENSION:
+      return DirectiveLocation.DIRECTIVE_DEFINITION;
     // Not reachable, all possible types have been considered.
     /* c8 ignore next */
     default:

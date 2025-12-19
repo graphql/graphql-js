@@ -178,6 +178,10 @@ describe('Printer: SDL document', () => {
       extend schema @onSchema {
         subscription: SubscriptionType
       }
+
+      directive @myDirective @onDirective on OBJECT | FIELD_DEFINITION
+      
+      extend directive @myDirective @onDirective2
     `);
   });
 });
