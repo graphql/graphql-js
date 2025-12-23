@@ -451,10 +451,10 @@ describe('visitWithTypeInfo', () => {
       ['enter', 'ObjectField', null, '[String]'],
       ['enter', 'Name', 'stringListField', '[String]'],
       ['leave', 'Name', 'stringListField', '[String]'],
-      ['enter', 'ListValue', null, 'String'],
+      ['enter', 'ListValue', null, 'String' /* the item type, not list type */],
       ['enter', 'StringValue', null, 'String'],
       ['leave', 'StringValue', null, 'String'],
-      ['leave', 'ListValue', null, 'String'],
+      ['leave', 'ListValue', null, 'String' /* the item type, not list type */],
       ['leave', 'ObjectField', null, '[String]'],
       ['leave', 'ObjectValue', null, 'ComplexInput'],
     ]);
@@ -516,6 +516,106 @@ describe('visitWithTypeInfo', () => {
       ['leave', 'SelectionSet', null, 'Pet', '[Pet]'],
       ['leave', 'Field', null, 'Human', '[Pet]'],
       ['leave', 'SelectionSet', null, 'Human', 'Human'],
+    ]);
+  });
+
+  it('supports traversals of object literals of custom scalars', () => {
+    const schema = buildSchema(`
+      scalar GeoPoint
+    `);
+    const ast = parseValue('{x: 4.0, y: 2.0}');
+    const scalarType = schema.getType('GeoPoint');
+    assert(scalarType != null);
+
+    const typeInfo = new TypeInfo(schema, scalarType);
+
+    const visited: Array<any> = [];
+    visit(
+      ast,
+      visitWithTypeInfo(typeInfo, {
+        enter(node) {
+          const type = typeInfo.getInputType();
+          visited.push([
+            'enter',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+          ]);
+        },
+        leave(node) {
+          const type = typeInfo.getInputType();
+          visited.push([
+            'leave',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+          ]);
+        },
+      }),
+    );
+
+    expect(visited).to.deep.equal([
+      // Everything within ObjectValue should have type: undefined since the
+      // contents of custom scalars aren't part of GraphQL schema definitions.
+      ['enter', 'ObjectValue', null, 'GeoPoint'],
+      ['enter', 'ObjectField', null, 'undefined'],
+      ['enter', 'Name', 'x', 'undefined'],
+      ['leave', 'Name', 'x', 'undefined'],
+      ['enter', 'FloatValue', null, 'undefined'],
+      ['leave', 'FloatValue', null, 'undefined'],
+      ['leave', 'ObjectField', null, 'undefined'],
+      ['enter', 'ObjectField', null, 'undefined'],
+      ['enter', 'Name', 'y', 'undefined'],
+      ['leave', 'Name', 'y', 'undefined'],
+      ['enter', 'FloatValue', null, 'undefined'],
+      ['leave', 'FloatValue', null, 'undefined'],
+      ['leave', 'ObjectField', null, 'undefined'],
+      ['leave', 'ObjectValue', null, 'GeoPoint'],
+    ]);
+  });
+
+  it('supports traversals of list literals of custom scalars', () => {
+    const schema = buildSchema(`
+      scalar GeoPoint
+    `);
+    const ast = parseValue('[4.0, 2.0]');
+    const scalarType = schema.getType('GeoPoint');
+    assert(scalarType != null);
+
+    const typeInfo = new TypeInfo(schema, scalarType);
+
+    const visited: Array<any> = [];
+    visit(
+      ast,
+      visitWithTypeInfo(typeInfo, {
+        enter(node) {
+          const type = typeInfo.getInputType();
+          visited.push([
+            'enter',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+          ]);
+        },
+        leave(node) {
+          const type = typeInfo.getInputType();
+          visited.push([
+            'leave',
+            node.kind,
+            node.kind === 'Name' ? node.value : null,
+            String(type),
+          ]);
+        },
+      }),
+    );
+
+    expect(visited).to.deep.equal([
+      ['enter', 'ListValue', null, 'undefined'],
+      ['enter', 'FloatValue', null, 'undefined'],
+      ['leave', 'FloatValue', null, 'undefined'],
+      ['enter', 'FloatValue', null, 'undefined'],
+      ['leave', 'FloatValue', null, 'undefined'],
+      ['leave', 'ListValue', null, 'undefined'],
     ]);
   });
 

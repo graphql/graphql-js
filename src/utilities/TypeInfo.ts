@@ -254,7 +254,7 @@ export class TypeInfo {
         const listType: unknown = getNullableType(this.getInputType());
         const itemType: unknown = isListType(listType)
           ? listType.ofType
-          : listType;
+          : undefined;
         // List positions never have a default value.
         this._defaultValueStack.push(undefined);
         this._inputTypeStack.push(isInputType(itemType) ? itemType : undefined);

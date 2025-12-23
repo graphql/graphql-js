@@ -533,4 +533,81 @@ describe('Validates OneOf Input Objects', () => {
       },
     ]);
   });
+
+  it('Custom scalars as arg', () => {
+    expectValid(`
+      query Query($point: GeoPoint) {
+        dog {
+          distanceFrom(loc: $point)
+        }
+      }`);
+  });
+
+  it('Forbids using custom scalar as builtin arg', () => {
+    expectErrors(`
+      query Query($point: GeoPoint) {
+        dog {
+          isAtLocation(x: $point, y: 10)
+        }
+      }
+    `).toDeepEqual([
+      {
+        locations: [
+          {
+            column: 19,
+            line: 2,
+          },
+          {
+            column: 27,
+            line: 4,
+          },
+        ],
+        message:
+          'Variable "$point" of type "GeoPoint" used in position expecting type "Int".',
+      },
+    ]);
+  });
+
+  it('Forbids using builtin scalar as custom scalar arg', () => {
+    expectErrors(`
+      query Query($x: Float) {
+        dog {
+          distanceFrom(loc: $x)
+        }
+      }
+    `).toDeepEqual([
+      {
+        locations: [
+          {
+            column: 19,
+            line: 2,
+          },
+          {
+            column: 29,
+            line: 4,
+          },
+        ],
+        message:
+          'Variable "$x" of type "Float" used in position expecting type "GeoPoint".',
+      },
+    ]);
+  });
+
+  it('Allows using variables inside object literal in custom scalar', () => {
+    expectValid(`
+      query Query($x: Float) {
+        dog {
+          distanceFrom(loc: {x: $x, y: 10.0})
+        }
+      }`);
+  });
+
+  it('Allows using variables inside list literal in custom scalar', () => {
+    expectValid(`
+      query Query($x: Float) {
+        dog {
+          distanceFrom(loc: [$x, 10.0])
+        }
+      }`);
+  });
 });
