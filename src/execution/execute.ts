@@ -127,9 +127,11 @@ class CollectedErrors {
     this._errorPositions = new Set<Path | undefined>();
     this._errors = [];
   }
+
   get errors(): ReadonlyArray<GraphQLError> {
     return this._errors;
   }
+
   add(error: GraphQLError, path: Path | undefined) {
     // Do not modify errors list if a response position for this error has already been nulled.
     // This check is unnecessary for implementations able to implement proper cancellation.
@@ -139,6 +141,7 @@ class CollectedErrors {
     this._errorPositions.add(path);
     this._errors.push(error);
   }
+
   private _hasNulledPosition(startPath: Path | undefined): boolean {
     let path = startPath;
     while (path !== undefined) {
