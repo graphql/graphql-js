@@ -114,8 +114,41 @@ export interface ExecutionContext {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  errorPositions: Set<Path | undefined>;
-  errors: Array<GraphQLError>;
+  collectedErrors: CollectedErrors;
+}
+
+/**
+ * @internal
+ */
+class CollectedErrors {
+  private _errorPositions: Set<Path | undefined>;
+  private _errors: Array<GraphQLError>;
+  constructor() {
+    this._errorPositions = new Set<Path | undefined>();
+    this._errors = [];
+  }
+  get errors(): ReadonlyArray<GraphQLError> {
+    return this._errors;
+  }
+  add(error: GraphQLError, path: Path | undefined) {
+    // Do not modify errors list if a response position for this error has already been nulled.
+    // This check is unnecessary for implementations able to implement proper cancellation.
+    if (this._hasNulledPosition(path)) {
+      return;
+    }
+    this._errorPositions.add(path);
+    this._errors.push(error);
+  }
+  private _hasNulledPosition(startPath: Path | undefined): boolean {
+    let path = startPath;
+    while (path !== undefined) {
+      if (this._errorPositions.has(path)) {
+        return true;
+      }
+      path = path.prev;
+    }
+    return this._errorPositions.has(undefined);
+  }
 }
 
 /**
@@ -207,21 +240,17 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     const result = executeOperation(exeContext, operation, rootValue);
     if (isPromise(result)) {
       return result.then(
-        (data) => buildResponse(data, exeContext.errors),
+        (data) => buildResponse(data, exeContext.collectedErrors.errors),
         (error) => {
-          const { errorPositions, errors } = exeContext;
-          errorPositions.add(undefined);
-          errors.push(error);
-          return buildResponse(null, errors);
+          exeContext.collectedErrors.add(error, undefined);
+          return buildResponse(null, exeContext.collectedErrors.errors);
         },
       );
     }
-    return buildResponse(result, exeContext.errors);
+    return buildResponse(result, exeContext.collectedErrors.errors);
   } catch (error) {
-    const { errorPositions, errors } = exeContext;
-    errorPositions.add(undefined);
-    errors.push(error);
-    return buildResponse(null, errors);
+    exeContext.collectedErrors.add(error, undefined);
+    return buildResponse(null, exeContext.collectedErrors.errors);
   }
 }
 
@@ -357,8 +386,7 @@ export function buildExecutionContext(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    errorPositions: new Set(),
-    errors: [],
+    collectedErrors: new CollectedErrors(),
   };
 }
 
@@ -612,31 +640,10 @@ function handleFieldError(
     throw error;
   }
 
-  // Do not modify errors list if a response position for this error has already been nulled.
-  const errorPositions = exeContext.errorPositions;
-  if (hasNulledPosition(errorPositions, path)) {
-    return null;
-  }
-  errorPositions.add(path);
-
   // Otherwise, error protection is applied, logging the error and resolving
   // a null value for this field if one is encountered.
-  exeContext.errors.push(error);
+  exeContext.collectedErrors.add(error, path);
   return null;
-}
-
-function hasNulledPosition(
-  errorPositions: Set<Path | undefined>,
-  startPath: Path | undefined,
-): boolean {
-  let path = startPath;
-  while (path !== undefined) {
-    if (errorPositions.has(path)) {
-      return true;
-    }
-    path = path.prev;
-  }
-  return errorPositions.has(undefined);
 }
 
 /**
