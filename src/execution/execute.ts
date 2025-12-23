@@ -627,15 +627,16 @@ function handleFieldError(
 
 function hasNulledPosition(
   errorPositions: Set<Path | undefined>,
-  path: Path | undefined,
+  startPath: Path | undefined,
 ): boolean {
-  if (errorPositions.has(path)) {
-    return true;
+  let path = startPath;
+  while (path !== undefined) {
+    if (errorPositions.has(path)) {
+      return true;
+    }
+    path = path.prev;
   }
-  if (path === undefined) {
-    return false;
-  }
-  return hasNulledPosition(errorPositions, path.prev);
+  return errorPositions.has(undefined);
 }
 
 /**
