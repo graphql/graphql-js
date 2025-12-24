@@ -133,8 +133,10 @@ class CollectedErrors {
   }
 
   add(error: GraphQLError, path: Path | undefined) {
-    // Do not modify errors list if a response position for this error has already been nulled.
-    // This check is unnecessary for implementations able to implement proper cancellation.
+    // Do not modify errors list if the execution position for this error or
+    // any of its ancestors has already been nulled via error propagation.
+    // This check should be unnecessary for implementations able to implement
+    // actual cancellation.
     if (this._hasNulledPosition(path)) {
       return;
     }
