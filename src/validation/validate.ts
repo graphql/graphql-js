@@ -1,9 +1,12 @@
 import { devAssert } from '../jsutils/devAssert';
+import { mapValue } from '../jsutils/mapValue';
 import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
 
 import type { DocumentNode } from '../language/ast';
+import { QueryDocumentKeys } from '../language/ast';
+
 import { visit, visitInParallel } from '../language/visitor';
 
 import type { GraphQLSchema } from '../type/schema';
@@ -14,6 +17,11 @@ import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext';
 import { SDLValidationContext, ValidationContext } from './ValidationContext';
+
+const ExecutionKeysToBeValidated = mapValue(
+  QueryDocumentKeys,
+  (keys) => keys.filter((key) => key !== 'description'),
+); 
 
 /**
  * Implements the "Validation" section of the spec.
@@ -74,9 +82,14 @@ export function validate(
   // while maintaining the visitor skip and break API.
   const visitor = visitInParallel(rules.map((rule) => rule(context)));
 
-  // Visit the whole document with each instance of all provided rules.
+  // Visit the whole document with each instance of all provided rules,
+  // skipping validation of description nodes. 
   try {
-    visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
+    visit(
+      documentAST,
+      visitWithTypeInfo(typeInfo, visitor),
+      ExecutionKeysToBeValidated,    
+    );
   } catch (e) {
     if (e !== abortObj) {
       throw e;

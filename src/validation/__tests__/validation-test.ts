@@ -5,7 +5,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON';
 
 import { GraphQLError } from '../../error/GraphQLError';
 
-import type { DirectiveNode } from '../../language/ast';
+import type { DirectiveNode, StringValueNode } from '../../language/ast';
 import { parse } from '../../language/parser';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
@@ -186,18 +186,44 @@ describe('operation and variable definition descriptions', () => {
       'type Query { field(a: Int, b: String): String }',
     );
     const query = `
-        "Operation description"
-        query myQuery(
-          "Variable a description"
-          $a: Int,
-          """Variable b\nmultiline description"""
-          $b: String
-        ) {
-          field(a: $a, b: $b)
-        }
-      `;
+      "Operation description"
+      query myQuery(
+        "Variable a description"
+        $a: Int,
+        """Variable b\nmultiline description"""
+        $b: String
+      ) {
+        field(a: $a, b: $b)
+      }
+    `;
     const ast = parse(query);
     const errors = validate(schema, ast);
     expect(errors.length).to.equal(0);
+  });
+
+  it('does not visit description nodes when validating executable documents', () => {
+    const schema = buildSchema(
+      'type Query { field(a: Int, b: String): String }',
+    );
+    const query = `
+      """Operation description"""
+      query myQuery(
+        """Variable description"""
+        $a: Int
+      ) {
+        field(a: $a, b: "literal value")
+      }
+    `;
+    const seenStringLiterals: Array<string> = [];
+    function trackingRule() {
+      return {
+        StringValue(node: StringValueNode) {
+          seenStringLiterals.push(node.value);
+        },
+      };
+    }
+    const errors = validate(schema, parse(query), [trackingRule]);
+    expect(errors.length).to.equal(0);
+    expect(seenStringLiterals).to.deep.equal(['literal value']);
   });
 });
