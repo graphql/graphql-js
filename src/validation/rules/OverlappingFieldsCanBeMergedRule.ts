@@ -705,8 +705,8 @@ function findConflict(
     }
   }
 
-  const directives1 = node1.directives ?? [];
-  const directives2 = node2.directives ?? [];
+  const directives1 = node1.directives;
+  const directives2 = node2.directives;
   const overlappingStreamReason = hasNoOverlappingStreams(
     directives1,
     varMap1,
@@ -827,15 +827,15 @@ function stringifyValue(value: ValueNode): string | null {
 }
 
 function getStreamDirective(
-  directives: ReadonlyArray<DirectiveNode>,
+  directives: ReadonlyArray<DirectiveNode> | undefined,
 ): DirectiveNode | undefined {
-  return directives.find((directive) => directive.name.value === 'stream');
+  return directives?.find((directive) => directive.name.value === 'stream');
 }
 
 function hasNoOverlappingStreams(
-  directives1: ReadonlyArray<DirectiveNode>,
+  directives1: ReadonlyArray<DirectiveNode> | undefined,
   varMap1: Map<string, ValueNode> | undefined,
-  directives2: ReadonlyArray<DirectiveNode>,
+  directives2: ReadonlyArray<DirectiveNode> | undefined,
   varMap2: Map<string, ValueNode> | undefined,
 ): string | undefined {
   const stream1 = getStreamDirective(directives1);
