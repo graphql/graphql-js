@@ -1318,5 +1318,20 @@ describe('extendSchema', () => {
         extend schema @foo
       `);
     });
+
+    it('extend directive to make it deprecated', () => {
+      const schema = buildSchema('directive @isDeprecated on FIELD_DEFINITION');
+      const extendAST = parse(`
+        extend directive @isDeprecated @deprecated(reason: "use another directive")
+      `);
+      const extendedSchema = extendSchema(schema, extendAST);
+
+      const someDirective = assertDirective(
+        extendedSchema.getDirective('isDeprecated'),
+      );
+      expect(someDirective).to.include({
+        deprecationReason: 'use another directive',
+      });
+    });
   });
 });

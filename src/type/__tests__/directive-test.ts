@@ -73,6 +73,22 @@ describe('Type System: Directive', () => {
     });
   });
 
+  it('defines a deprecated directive', () => {
+    const directive = new GraphQLDirective({
+      name: 'Foo',
+      locations: [DirectiveLocation.QUERY],
+      deprecationReason: 'Some reason',
+    });
+
+    expect(directive).to.deep.include({
+      name: 'Foo',
+      args: [],
+      isRepeatable: false,
+      locations: ['QUERY'],
+      deprecationReason: 'Some reason',
+    });
+  });
+
   it('can be stringified, JSON.stringified and Object.toStringified', () => {
     const directive = new GraphQLDirective({
       name: 'Foo',

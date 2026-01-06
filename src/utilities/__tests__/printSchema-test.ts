@@ -717,7 +717,7 @@ describe('Type System Printer', () => {
         subscriptionType: __Type
 
         """A list of all directives supported by this server."""
-        directives: [__Directive!]!
+        directives(includeDeprecated: Boolean = false): [__Directive!]!
       }
 
       """
@@ -821,6 +821,8 @@ describe('Type System Printer', () => {
         isRepeatable: Boolean!
         locations: [__DirectiveLocation!]!
         args(includeDeprecated: Boolean = false): [__InputValue!]!
+        isDeprecated: Boolean!
+        deprecationReason: String
       }
 
       """

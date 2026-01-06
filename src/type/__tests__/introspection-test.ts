@@ -156,7 +156,17 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'directives',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'SCALAR',
+                        name: 'Boolean',
+                        ofType: null,
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -801,6 +811,32 @@ describe('Introspection', () => {
                         },
                       },
                     },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'isDeprecated',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null,
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'deprecationReason',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
                   },
                   isDeprecated: false,
                   deprecationReason: null,
@@ -1759,5 +1795,71 @@ describe('Introspection', () => {
       typeResolver,
     });
     expect(result).to.not.have.property('errors');
+  });
+
+  it('identifies deprecated directives', () => {
+    const schema = buildSchema(`
+      type Query {
+        someField: String
+      }
+      directive @isNotDeprecated on FIELD_DEFINITION
+      directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
+    `);
+
+    const source = `
+      {
+        __schema {
+          directives(includeDeprecated: true) {
+            name
+            isDeprecated
+            deprecationReason
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __schema: {
+          directives: [
+            {
+              name: 'isNotDeprecated',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'isDeprecated',
+              isDeprecated: true,
+              deprecationReason: 'No longer supported',
+            },
+            {
+              name: 'include',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'skip',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'deprecated',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'specifiedBy',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'oneOf',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+          ],
+        },
+      },
+    });
   });
 });

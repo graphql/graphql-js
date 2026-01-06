@@ -72,7 +72,15 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
         type: new GraphQLNonNull(
           new GraphQLList(new GraphQLNonNull(__Directive)),
         ),
-        resolve: (schema) => schema.getDirectives(),
+        args: {
+          includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
+        },
+        resolve: (schema, { includeDeprecated }) =>
+          includeDeprecated
+            ? schema.getDirectives()
+            : schema
+                .getDirectives()
+                .filter((directive) => directive.deprecationReason == null),
       },
     } as GraphQLFieldConfigMap<GraphQLSchema, unknown>),
 });
@@ -116,6 +124,14 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
             ? field.args
             : field.args.filter((arg) => arg.deprecationReason == null);
         },
+      },
+      isDeprecated: {
+        type: new GraphQLNonNull(GraphQLBoolean),
+        resolve: (directive) => directive.deprecationReason != null,
+      },
+      deprecationReason: {
+        type: GraphQLString,
+        resolve: (directive) => directive.deprecationReason,
       },
     } as GraphQLFieldConfigMap<GraphQLDirective, unknown>),
 });
