@@ -38,7 +38,6 @@ import {
 import type {
   GraphQLArgumentConfig,
   GraphQLEnumValueConfigMap,
-  GraphQLFieldConfig,
   GraphQLFieldConfigArgumentMap,
   GraphQLFieldConfigMap,
   GraphQLInputFieldConfigMap,
@@ -331,10 +330,15 @@ export function extendSchemaImpl(
         ...type.getInterfaces().map(replaceNamedType),
         ...buildInterfaces(extensions),
       ],
-      fields: () => ({
-        ...mapValue(config.fields, extendField),
-        ...buildFieldMap(extensions),
-      }),
+      fields: () => {
+        const existingFields = mapValue(config.fields, (field) => ({
+          ...field,
+          type: replaceType(field.type),
+          args: field.args ? mapValue(field.args, extendArg) : {},
+        }));
+        const extensionFields = buildFieldMap(extensions);
+        return mergeFieldMaps(existingFields, extensionFields);
+      },
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
@@ -351,10 +355,15 @@ export function extendSchemaImpl(
         ...type.getInterfaces().map(replaceNamedType),
         ...buildInterfaces(extensions),
       ],
-      fields: () => ({
-        ...mapValue(config.fields, extendField),
-        ...buildFieldMap(extensions),
-      }),
+      fields: () => {
+        const existingFields = mapValue(config.fields, (field) => ({
+          ...field,
+          type: replaceType(field.type),
+          args: field.args ? mapValue(field.args, extendArg) : {},
+        }));
+        const extensionFields = buildFieldMap(extensions);
+        return mergeFieldMaps(existingFields, extensionFields);
+      },
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
@@ -371,16 +380,6 @@ export function extendSchemaImpl(
       ],
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
-  }
-
-  function extendField(
-    field: GraphQLFieldConfig<unknown, unknown>,
-  ): GraphQLFieldConfig<unknown, unknown> {
-    return {
-      ...field,
-      type: replaceType(field.type),
-      args: field.args && mapValue(field.args, extendArg),
-    };
   }
 
   function extendArg(arg: GraphQLArgumentConfig) {
@@ -461,7 +460,8 @@ export function extendSchemaImpl(
       const nodeFields = /* c8 ignore next */ node.fields ?? [];
 
       for (const field of nodeFields) {
-        fieldConfigMap[field.name.value] = {
+        const fieldName = field.name.value;
+        const newFieldConfig: any = {
           // Note: While this could make assertions to get the correctly typed
           // value, that would throw immediately while type system validation
           // with validateSchema() will produce more actionable results.
@@ -471,9 +471,52 @@ export function extendSchemaImpl(
           deprecationReason: getDeprecationReason(field),
           astNode: field,
         };
+
+        if (fieldConfigMap[fieldName] != null) {
+          fieldConfigMap[fieldName] = mergeFieldConfigs(
+            fieldConfigMap[fieldName],
+            newFieldConfig,
+          );
+        } else {
+          fieldConfigMap[fieldName] = newFieldConfig;
+        }
       }
     }
     return fieldConfigMap;
+  }
+
+  function mergeFieldConfigs(existing: any, incoming: any): any {
+    return {
+      type: incoming.type ?? existing.type,
+      description: incoming.description ?? existing.description,
+      args: {
+        ...existing.args,
+        ...incoming.args,
+      },
+      deprecationReason:
+        incoming.deprecationReason ?? existing.deprecationReason,
+      astNode: incoming.astNode ?? existing.astNode,
+    };
+  }
+
+  function mergeFieldMaps(
+    existingFields: GraphQLFieldConfigMap<unknown, unknown>,
+    extensionFields: GraphQLFieldConfigMap<unknown, unknown>,
+  ): GraphQLFieldConfigMap<unknown, unknown> {
+    const mergedFields = { ...existingFields };
+
+    for (const [fieldName, extensionField] of Object.entries(extensionFields)) {
+      if (mergedFields[fieldName] != null) {
+        mergedFields[fieldName] = mergeFieldConfigs(
+          mergedFields[fieldName],
+          extensionField,
+        );
+      } else {
+        mergedFields[fieldName] = extensionField;
+      }
+    }
+
+    return mergedFields;
   }
 
   function buildArgumentMap(

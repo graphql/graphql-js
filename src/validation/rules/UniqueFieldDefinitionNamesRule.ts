@@ -32,9 +32,7 @@ export function UniqueFieldDefinitionNamesRule(
     InputObjectTypeDefinition: checkFieldUniqueness,
     InputObjectTypeExtension: checkFieldUniqueness,
     InterfaceTypeDefinition: checkFieldUniqueness,
-    InterfaceTypeExtension: checkFieldUniqueness,
     ObjectTypeDefinition: checkFieldUniqueness,
-    ObjectTypeExtension: checkFieldUniqueness,
   };
 
   function checkFieldUniqueness(node: {
