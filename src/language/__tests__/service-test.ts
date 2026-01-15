@@ -10,7 +10,7 @@ describe('Service Definition Parsing and Printing', () => {
     it('parses a simple service definition', () => {
       const doc = parse(`
         service {
-          capability graphql.spec
+          capability example.capability
         }
       `);
 
@@ -21,7 +21,7 @@ describe('Service Definition Parsing and Printing', () => {
       if (serviceDef.kind === Kind.SERVICE_DEFINITION) {
         expect(serviceDef.capabilities).to.have.length(1);
         expect(serviceDef.capabilities?.[0].identifier.value).to.equal(
-          'graphql.spec',
+          'example.capability',
         );
         expect(serviceDef.capabilities?.[0].value).to.equal(undefined);
       }
@@ -30,16 +30,18 @@ describe('Service Definition Parsing and Printing', () => {
     it('parses service with capability value', () => {
       const doc = parse(`
         service {
-          capability graphql.spec = "2024"
+          capability example.capability = "Example value"
         }
       `);
 
       const serviceDef = doc.definitions[0];
       if (serviceDef.kind === Kind.SERVICE_DEFINITION) {
         expect(serviceDef.capabilities?.[0].identifier.value).to.equal(
-          'graphql.spec',
+          'example.capability',
         );
-        expect(serviceDef.capabilities?.[0].value?.value).to.equal('2024');
+        expect(serviceDef.capabilities?.[0].value?.value).to.equal(
+          'Example value',
+        );
       }
     });
 
@@ -47,7 +49,7 @@ describe('Service Definition Parsing and Printing', () => {
       const doc = parse(`
         "My GraphQL Service"
         service {
-          capability graphql.spec
+          capability example.capability
         }
       `);
 
@@ -60,15 +62,15 @@ describe('Service Definition Parsing and Printing', () => {
     it('parses service with capability descriptions', () => {
       const doc = parse(`
         service {
-          "Supports the GraphQL spec"
-          capability graphql.spec
+          "Example capability description"
+          capability example.capability
         }
       `);
 
       const serviceDef = doc.definitions[0];
       if (serviceDef.kind === Kind.SERVICE_DEFINITION) {
         expect(serviceDef.capabilities?.[0].description?.value).to.equal(
-          'Supports the GraphQL spec',
+          'Example capability description',
         );
       }
     });
@@ -76,8 +78,8 @@ describe('Service Definition Parsing and Printing', () => {
     it('parses service with multiple capabilities', () => {
       const doc = parse(`
         service {
-          capability graphql.spec
-          capability graphql.federatedQueries
+          capability example.capability
+          capability graphql.someFutureCapability
           capability org.example.customFeature = "v2"
         }
       `);
@@ -86,11 +88,13 @@ describe('Service Definition Parsing and Printing', () => {
       if (serviceDef.kind === Kind.SERVICE_DEFINITION) {
         expect(serviceDef.capabilities).to.have.length(3);
         expect(serviceDef.capabilities?.[0].identifier.value).to.equal(
-          'graphql.spec',
+          'example.capability',
         );
+        expect(serviceDef.capabilities?.[0].value).to.equal(null);
         expect(serviceDef.capabilities?.[1].identifier.value).to.equal(
-          'graphql.federatedQueries',
+          'graphql.someFutureCapability',
         );
+        expect(serviceDef.capabilities?.[1].value).to.equal(null);
         expect(serviceDef.capabilities?.[2].identifier.value).to.equal(
           'org.example.customFeature',
         );
@@ -101,7 +105,7 @@ describe('Service Definition Parsing and Printing', () => {
     it('parses service with directives', () => {
       const doc = parse(`
         service @deprecated {
-          capability graphql.spec
+          capability example.capability
         }
       `);
 
@@ -148,7 +152,7 @@ describe('Service Definition Parsing and Printing', () => {
     it('parses service extension with directives', () => {
       const doc = parse(`
         extend service @deprecated {
-          capability graphql.spec
+          capability example.capability
         }
       `);
 
@@ -164,24 +168,24 @@ describe('Service Definition Parsing and Printing', () => {
     it('prints a service definition', () => {
       const doc = parse(`
         service {
-          capability graphql.spec
+          capability example.capability
         }
       `);
 
       expect(print(doc)).to.equal(`service {
-  capability graphql.spec
+  capability example.capability
 }`);
     });
 
     it('prints service with capability value', () => {
       const doc = parse(`
         service {
-          capability graphql.spec = "2024"
+          capability example.capability = "Example value"
         }
       `);
 
       expect(print(doc)).to.equal(`service {
-  capability graphql.spec = "2024"
+  capability example.capability = "Example value"
 }`);
     });
 
@@ -189,13 +193,13 @@ describe('Service Definition Parsing and Printing', () => {
       const doc = parse(`
         "My Service"
         service {
-          capability graphql.spec
+          capability example.capability
         }
       `);
 
       expect(print(doc)).to.equal(`"My Service"
 service {
-  capability graphql.spec
+  capability example.capability
 }`);
     });
 
@@ -203,25 +207,25 @@ service {
       const doc = parse(`
         service {
           "A capability"
-          capability graphql.spec
+          capability example.capability
         }
       `);
 
       expect(print(doc)).to.equal(`service {
   "A capability"
-  capability graphql.spec
+  capability example.capability
 }`);
     });
 
     it('prints service with directives', () => {
       const doc = parse(`
         service @deprecated {
-          capability graphql.spec
+          capability example.capability
         }
       `);
 
       expect(print(doc)).to.equal(`service @deprecated {
-  capability graphql.spec
+  capability example.capability
 }`);
     });
 
@@ -242,8 +246,8 @@ service {
         """A GraphQL service with multiple capabilities"""
         service @deprecated(reason: "test") {
           """The main spec capability"""
-          capability graphql.spec = "2024"
-          capability graphql.federatedQueries
+          capability example.capability = "Example value"
+          capability graphql.someFutureCapability
           capability org.example.custom
         }
       `;
@@ -252,8 +256,8 @@ service {
         `"""A GraphQL service with multiple capabilities"""
 service @deprecated(reason: "test") {
   """The main spec capability"""
-  capability graphql.spec = "2024"
-  capability graphql.federatedQueries
+  capability example.capability = "Example value"
+  capability graphql.someFutureCapability
   capability org.example.custom
 }`,
       );
