@@ -269,9 +269,9 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   ServiceDefinition: {
-    leave: ({ description, directives, capabilities }) =>
+    leave: ({ description, directives, entries }) =>
       wrap('', description, '\n') +
-      join(['service', join(directives, ' '), block(capabilities)], ' '),
+      join(['service', join(directives, ' '), block(entries)], ' '),
   },
 
   ServiceCapability: {
@@ -364,8 +364,8 @@ const printDocASTReducer: ASTReducer<string> = {
   },
 
   ServiceExtension: {
-    leave: ({ directives, capabilities }) =>
-      join(['extend service', join(directives, ' '), block(capabilities)], ' '),
+    leave: ({ directives, entries }) =>
+      join(['extend service', join(directives, ' '), block(entries)], ' '),
   },
 
   // Schema Coordinates

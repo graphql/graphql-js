@@ -19,11 +19,11 @@ describe('Service Definition Parsing and Printing', () => {
       expect(serviceDef.kind).to.equal(Kind.SERVICE_DEFINITION);
 
       if (serviceDef.kind === Kind.SERVICE_DEFINITION) {
-        expect(serviceDef.capabilities).to.have.length(1);
-        expect(serviceDef.capabilities?.[0].identifier.value).to.equal(
+        expect(serviceDef.entries).to.have.length(1);
+        expect(serviceDef.entries?.[0].identifier.value).to.equal(
           'example.capability',
         );
-        expect(serviceDef.capabilities?.[0].value).to.equal(undefined);
+        expect(serviceDef.entries?.[0].value).to.equal(undefined);
       }
     });
 
@@ -36,10 +36,10 @@ describe('Service Definition Parsing and Printing', () => {
 
       const serviceDef = doc.definitions[0];
       if (serviceDef.kind === Kind.SERVICE_DEFINITION) {
-        expect(serviceDef.capabilities?.[0].identifier.value).to.equal(
+        expect(serviceDef.entries?.[0].identifier.value).to.equal(
           'example.capability',
         );
-        expect(serviceDef.capabilities?.[0].value?.value).to.equal(
+        expect(serviceDef.entries?.[0].value?.value).to.equal(
           'Example value',
         );
       }
@@ -69,7 +69,7 @@ describe('Service Definition Parsing and Printing', () => {
 
       const serviceDef = doc.definitions[0];
       if (serviceDef.kind === Kind.SERVICE_DEFINITION) {
-        expect(serviceDef.capabilities?.[0].description?.value).to.equal(
+        expect(serviceDef.entries?.[0].description?.value).to.equal(
           'Example capability description',
         );
       }
@@ -86,19 +86,19 @@ describe('Service Definition Parsing and Printing', () => {
 
       const serviceDef = doc.definitions[0];
       if (serviceDef.kind === Kind.SERVICE_DEFINITION) {
-        expect(serviceDef.capabilities).to.have.length(3);
-        expect(serviceDef.capabilities?.[0].identifier.value).to.equal(
+        expect(serviceDef.entries).to.have.length(3);
+        expect(serviceDef.entries?.[0].identifier.value).to.equal(
           'example.capability',
         );
-        expect(serviceDef.capabilities?.[0].value).to.equal(undefined);
-        expect(serviceDef.capabilities?.[1].identifier.value).to.equal(
+        expect(serviceDef.entries?.[0].value).to.equal(undefined);
+        expect(serviceDef.entries?.[1].identifier.value).to.equal(
           'graphql.someFutureCapability',
         );
-        expect(serviceDef.capabilities?.[1].value).to.equal(undefined);
-        expect(serviceDef.capabilities?.[2].identifier.value).to.equal(
+        expect(serviceDef.entries?.[1].value).to.equal(undefined);
+        expect(serviceDef.entries?.[2].identifier.value).to.equal(
           'org.example.customFeature',
         );
-        expect(serviceDef.capabilities?.[2].value?.value).to.equal('v2');
+        expect(serviceDef.entries?.[2].value?.value).to.equal('v2');
       }
     });
 
@@ -142,8 +142,8 @@ describe('Service Definition Parsing and Printing', () => {
       expect(serviceExt.kind).to.equal(Kind.SERVICE_EXTENSION);
 
       if (serviceExt.kind === Kind.SERVICE_EXTENSION) {
-        expect(serviceExt.capabilities).to.have.length(1);
-        expect(serviceExt.capabilities?.[0].identifier.value).to.equal(
+        expect(serviceExt.entries).to.have.length(1);
+        expect(serviceExt.entries?.[0].identifier.value).to.equal(
           'graphql.additionalFeature',
         );
       }

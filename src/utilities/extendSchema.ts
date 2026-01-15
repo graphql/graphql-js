@@ -337,8 +337,8 @@ export function extendSchemaImpl(
     }
 
     // Add capabilities from new service definition
-    if (astNode?.capabilities) {
-      for (const cap of astNode.capabilities) {
+    if (astNode?.entries) {
+      for (const cap of astNode.entries) {
         allCapabilities.push({
           identifier: cap.identifier.value,
           description: cap.description?.value,
@@ -350,8 +350,8 @@ export function extendSchemaImpl(
 
     // Add capabilities from extensions
     for (const ext of extensionNodes) {
-      if (ext.capabilities) {
-        for (const cap of ext.capabilities) {
+      if (ext.entries) {
+        for (const cap of ext.entries) {
           allCapabilities.push({
             identifier: cap.identifier.value,
             description: cap.description?.value,

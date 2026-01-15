@@ -341,7 +341,7 @@ export const QueryDocumentKeys: {
     'locations',
   ],
 
-  ServiceDefinition: ['description', 'directives', 'capabilities'],
+  ServiceDefinition: ['description', 'directives', 'entries'],
   ServiceCapability: ['description', 'identifier', 'value'],
 
   SchemaExtension: ['directives', 'operationTypes'],
@@ -355,7 +355,7 @@ export const QueryDocumentKeys: {
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 
-  ServiceExtension: ['directives', 'capabilities'],
+  ServiceExtension: ['directives', 'entries'],
 
   TypeCoordinate: ['name'],
   MemberCoordinate: ['name', 'memberName'],
@@ -1018,8 +1018,10 @@ export interface ServiceDefinitionNode {
   readonly loc?: Location;
   readonly description?: StringValueNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
-  readonly capabilities?: ReadonlyArray<ServiceCapabilityNode>;
+  readonly entries?: ReadonlyArray<ServiceEntryNode>;
 }
+
+export type ServiceEntryNode = ServiceCapabilityNode;
 
 export interface ServiceCapabilityNode {
   readonly kind: Kind.SERVICE_CAPABILITY;
@@ -1158,7 +1160,7 @@ export interface ServiceExtensionNode {
   readonly kind: Kind.SERVICE_EXTENSION;
   readonly loc?: Location;
   readonly directives?: ReadonlyArray<ConstDirectiveNode>;
-  readonly capabilities?: ReadonlyArray<ServiceCapabilityNode>;
+  readonly entries?: ReadonlyArray<ServiceEntryNode>;
 }
 
 // Schema Coordinates

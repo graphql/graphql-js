@@ -1707,7 +1707,7 @@ export class Parser {
     const description = this.parseDescription();
     this.expectKeyword('service');
     const directives = this.parseConstDirectives();
-    const capabilities = this.optionalMany(
+    const entries = this.optionalMany(
       TokenKind.BRACE_L,
       this.parseServiceCapability,
       TokenKind.BRACE_R,
@@ -1716,7 +1716,7 @@ export class Parser {
       kind: Kind.SERVICE_DEFINITION,
       description,
       directives,
-      capabilities,
+      entries,
     });
   }
 
@@ -1783,18 +1783,18 @@ export class Parser {
     this.expectKeyword('extend');
     this.expectKeyword('service');
     const directives = this.parseConstDirectives();
-    const capabilities = this.optionalMany(
+    const entries = this.optionalMany(
       TokenKind.BRACE_L,
       this.parseServiceCapability,
       TokenKind.BRACE_R,
     );
-    if (directives.length === 0 && capabilities.length === 0) {
+    if (directives.length === 0 && entries.length === 0) {
       throw this.unexpected();
     }
     return this.node<ServiceExtensionNode>(start, {
       kind: Kind.SERVICE_EXTENSION,
       directives,
-      capabilities,
+      entries,
     });
   }
 

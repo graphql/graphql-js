@@ -95,6 +95,7 @@ export type {
   InputObjectTypeDefinitionNode,
   DirectiveDefinitionNode,
   ServiceDefinitionNode,
+  ServiceEntryNode,
   ServiceCapabilityNode,
   TypeSystemExtensionNode,
   SchemaExtensionNode,
