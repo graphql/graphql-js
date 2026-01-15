@@ -1723,7 +1723,7 @@ export class Parser {
   /**
    * ```
    * ServiceCapability : Description? capability QualifiedName ServiceCapabilityValue?
-   * ServiceCapabilityValue : = StringValue
+   * ServiceCapabilityValue : ( StringValue )
    * ```
    */
   parseServiceCapability(): ServiceCapabilityNode {
@@ -1756,10 +1756,11 @@ export class Parser {
     (this._lexer as { token: Token }).token = qualifiedNameToken;
     this.advanceLexer();
 
-    // Parse optional value: = StringValue
+    // Parse optional value: ( StringValue )
     let value: StringValueNode | undefined;
-    if (this.expectOptionalToken(TokenKind.EQUALS)) {
+    if (this.expectOptionalToken(TokenKind.PAREN_L)) {
       value = this.parseStringLiteral();
+      this.expectToken(TokenKind.PAREN_R);
     }
 
     return this.node<ServiceCapabilityNode>(start, {

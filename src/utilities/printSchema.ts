@@ -425,7 +425,7 @@ function printCapability(
 
   if (capability.value != null) {
     const astValue = print({ kind: Kind.STRING, value: capability.value });
-    result += ' = ' + astValue;
+    result += '(' + astValue + ')';
   }
 
   return result;

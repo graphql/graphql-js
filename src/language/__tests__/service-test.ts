@@ -30,7 +30,7 @@ describe('Service Definition Parsing and Printing', () => {
     it('parses service with capability value', () => {
       const doc = parse(`
         service {
-          capability example.capability = "Example value"
+          capability example.capability("Example value")
         }
       `);
 
@@ -80,7 +80,7 @@ describe('Service Definition Parsing and Printing', () => {
         service {
           capability example.capability
           capability graphql.someFutureCapability
-          capability org.example.customFeature = "v2"
+          capability org.example.customFeature("v2")
         }
       `);
 
@@ -90,11 +90,11 @@ describe('Service Definition Parsing and Printing', () => {
         expect(serviceDef.capabilities?.[0].identifier.value).to.equal(
           'example.capability',
         );
-        expect(serviceDef.capabilities?.[0].value).to.equal(null);
+        expect(serviceDef.capabilities?.[0].value).to.equal(undefined);
         expect(serviceDef.capabilities?.[1].identifier.value).to.equal(
           'graphql.someFutureCapability',
         );
-        expect(serviceDef.capabilities?.[1].value).to.equal(null);
+        expect(serviceDef.capabilities?.[1].value).to.equal(undefined);
         expect(serviceDef.capabilities?.[2].identifier.value).to.equal(
           'org.example.customFeature',
         );
@@ -180,12 +180,12 @@ describe('Service Definition Parsing and Printing', () => {
     it('prints service with capability value', () => {
       const doc = parse(`
         service {
-          capability example.capability = "Example value"
+          capability example.capability("Example value")
         }
       `);
 
       expect(print(doc)).to.equal(`service {
-  capability example.capability = "Example value"
+  capability example.capability("Example value")
 }`);
     });
 
@@ -246,7 +246,7 @@ service {
         """A GraphQL service with multiple capabilities"""
         service @deprecated(reason: "test") {
           """The main spec capability"""
-          capability example.capability = "Example value"
+          capability example.capability("Example value")
           capability graphql.someFutureCapability
           capability org.example.custom
         }
@@ -256,7 +256,7 @@ service {
         `"""A GraphQL service with multiple capabilities"""
 service @deprecated(reason: "test") {
   """The main spec capability"""
-  capability example.capability = "Example value"
+  capability example.capability("Example value")
   capability graphql.someFutureCapability
   capability org.example.custom
 }`,

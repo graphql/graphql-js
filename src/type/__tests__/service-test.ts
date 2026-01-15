@@ -138,7 +138,7 @@ describe('Schema with Service', () => {
         test: String
       }
       service {
-        capability graphql.spec = "2024"
+        capability graphql.spec("2024")
         capability graphql.federatedQueries
       }
     `);
@@ -156,13 +156,13 @@ describe('Schema with Service', () => {
         test: String
       }
       service {
-        capability graphql.spec = "2024"
+        capability graphql.spec("2024")
       }
     `);
 
     const printed = printSchema(schema);
     expect(printed).to.include('service {');
-    expect(printed).to.include('capability graphql.spec = "2024"');
+    expect(printed).to.include('capability graphql.spec("2024")');
   });
 
   it('does not print service when schema has built-in service', () => {
@@ -217,7 +217,7 @@ describe('withServiceCapabilities', () => {
 
     const printed = printSchema(newSchema);
     expect(printed).to.include('service {');
-    expect(printed).to.include('capability graphql.spec = "2024"');
+    expect(printed).to.include('capability graphql.spec("2024")');
   });
 });
 
@@ -229,7 +229,7 @@ describe('Service Introspection', () => {
       }
       service {
         "The GraphQL spec version"
-        capability graphql.spec = "2024"
+        capability graphql.spec("2024")
         capability graphql.federatedQueries
       }
     `);

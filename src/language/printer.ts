@@ -284,12 +284,12 @@ const printDocASTReducer: ASTReducer<string> = {
         typeof identifier === 'string' && identifier.startsWith('"')
           ? identifier.slice(1, -1)
           : identifier;
+      const valueSuffix = value ? '(' + value + ')' : '';
       return (
         wrap('', description, '\n') +
-        join(
-          ['capability', identifierValue, value ? '= ' + value : undefined],
-          ' ',
-        )
+        'capability ' +
+        identifierValue +
+        valueSuffix
       );
     },
   },
