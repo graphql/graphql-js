@@ -80,6 +80,7 @@ export function buildASTSchema(
     description: undefined,
     types: [],
     directives: [],
+    service: undefined,
     extensions: Object.create(null),
     extensionASTNodes: [],
     assumeValid: false,

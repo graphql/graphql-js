@@ -27,6 +27,8 @@ import type {
   ScalarTypeExtensionNode,
   SchemaDefinitionNode,
   SchemaExtensionNode,
+  ServiceDefinitionNode,
+  ServiceExtensionNode,
   TypeDefinitionNode,
   TypeNode,
   UnionTypeDefinitionNode,
@@ -79,6 +81,8 @@ import type {
   GraphQLSchemaValidationOptions,
 } from '../type/schema';
 import { assertSchema, GraphQLSchema } from '../type/schema';
+import type { GraphQLCapabilityConfig } from '../type/service';
+import { GraphQLService } from '../type/service';
 
 import { assertValidSDLExtension } from '../validation/validate';
 
@@ -205,6 +209,10 @@ export function extendSchemaImpl(
   // Schema extensions are collected which may add additional operation types.
   const schemaExtensions: Array<SchemaExtensionNode> = [];
 
+  let serviceDef: Maybe<ServiceDefinitionNode>;
+  // Service extensions are collected which may add additional capabilities.
+  const serviceExtensions: Array<ServiceExtensionNode> = [];
+
   for (const def of documentAST.definitions) {
     if (def.kind === Kind.SCHEMA_DEFINITION) {
       schemaDef = def;
@@ -228,10 +236,14 @@ export function extendSchemaImpl(
         existingDirectiveExtensions
           ? existingDirectiveExtensions.concat([def])
           : [def];
+    } else if (def.kind === Kind.SERVICE_DEFINITION) {
+      serviceDef = def;
+    } else if (def.kind === Kind.SERVICE_EXTENSION) {
+      serviceExtensions.push(def);
     }
   }
 
-  // If this document contains no new types, extensions, or directives then
+  // If this document contains no new types, extensions, directives, or service then
   // return the same unmodified GraphQLSchema instance.
   if (
     Object.keys(typeExtensionsMap).length === 0 &&
@@ -239,7 +251,9 @@ export function extendSchemaImpl(
     Object.keys(directiveExtensionsMap).length === 0 &&
     directiveDefs.length === 0 &&
     schemaExtensions.length === 0 &&
-    schemaDef == null
+    schemaDef == null &&
+    serviceExtensions.length === 0 &&
+    serviceDef == null
   ) {
     return schemaConfig;
   }
@@ -281,11 +295,76 @@ export function extendSchemaImpl(
       ...directives.map(replaceDirective),
       ...directiveDefs.map(buildDirective),
     ],
+    service: buildService(serviceDef, serviceExtensions),
     extensions: Object.create(null),
     astNode: schemaDef ?? schemaConfig.astNode,
     extensionASTNodes: schemaConfig.extensionASTNodes.concat(schemaExtensions),
     assumeValid: options?.assumeValid ?? false,
   };
+
+  function buildService(
+    astNode: Maybe<ServiceDefinitionNode>,
+    extensionNodes: ReadonlyArray<ServiceExtensionNode>,
+  ): GraphQLService | undefined {
+    // Get existing service from config, if any
+    const existingService = schemaConfig.service;
+
+    // If no new service definition or extensions, return existing service
+    if (astNode == null && extensionNodes.length === 0) {
+      return existingService ?? undefined;
+    }
+
+    // Collect all capabilities from existing service, new definition, and extensions
+    const allCapabilities: Array<GraphQLCapabilityConfig> = [];
+
+    // Add capabilities from existing service
+    if (existingService) {
+      for (const cap of existingService.capabilities) {
+        allCapabilities.push({
+          identifier: cap.identifier,
+          description: cap.description,
+          value: cap.value,
+          astNode: cap.astNode,
+        });
+      }
+    }
+
+    // Add capabilities from new service definition
+    if (astNode?.capabilities) {
+      for (const cap of astNode.capabilities) {
+        allCapabilities.push({
+          identifier: cap.identifier.value,
+          description: cap.description?.value,
+          value: cap.value?.value,
+          astNode: cap,
+        });
+      }
+    }
+
+    // Add capabilities from extensions
+    for (const ext of extensionNodes) {
+      if (ext.capabilities) {
+        for (const cap of ext.capabilities) {
+          allCapabilities.push({
+            identifier: cap.identifier.value,
+            description: cap.description?.value,
+            value: cap.value?.value,
+            astNode: cap,
+          });
+        }
+      }
+    }
+
+    return new GraphQLService({
+      description: astNode?.description?.value ?? existingService?.description,
+      capabilities: allCapabilities,
+      astNode: astNode ?? existingService?.astNode,
+      extensionASTNodes: [
+        ...(existingService?.extensionASTNodes ?? []),
+        ...extensionNodes,
+      ],
+    });
+  }
 
   // Below are functions used for producing this schema that have closed over
   // this scope and have access to the schema, cache, and newly defined types.

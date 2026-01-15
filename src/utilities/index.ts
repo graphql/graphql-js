@@ -32,6 +32,8 @@ export type {
   IntrospectionInputValue,
   IntrospectionEnumValue,
   IntrospectionDirective,
+  IntrospectionCapability,
+  IntrospectionService,
 } from './getIntrospectionQuery';
 
 // Gets the target Operation from a Document.
@@ -61,6 +63,7 @@ export {
   printSchema,
   printType,
   printIntrospectionSchema,
+  type PrintSchemaOptions,
 } from './printSchema';
 
 // Create a GraphQLType from a GraphQL language AST.

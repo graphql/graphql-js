@@ -268,6 +268,32 @@ const printDocASTReducer: ASTReducer<string> = {
       join(locations, ' | '),
   },
 
+  ServiceDefinition: {
+    leave: ({ description, directives, capabilities }) =>
+      wrap('', description, '\n') +
+      join(['service', join(directives, ' '), block(capabilities)], ' '),
+  },
+
+  ServiceCapability: {
+    // Identifier needs to be printed without quotes as a QualifiedName, not a StringValue.
+    // Use enter to capture the raw identifier value before visitor transforms it.
+    leave: ({ description, identifier, value }) => {
+      // identifier here is the result of visiting the StringValue, which adds quotes.
+      // We need to remove the quotes for qualified names.
+      const identifierValue =
+        typeof identifier === 'string' && identifier.startsWith('"')
+          ? identifier.slice(1, -1)
+          : identifier;
+      return (
+        wrap('', description, '\n') +
+        join(
+          ['capability', identifierValue, value ? '= ' + value : undefined],
+          ' ',
+        )
+      );
+    },
+  },
+
   SchemaExtension: {
     leave: ({ directives, operationTypes }) =>
       join(
@@ -335,6 +361,11 @@ const printDocASTReducer: ASTReducer<string> = {
   DirectiveExtension: {
     leave: ({ name, directives }) =>
       join(['extend directive @' + name, join(directives, ' ')], ' '),
+  },
+
+  ServiceExtension: {
+    leave: ({ directives, capabilities }) =>
+      join(['extend service', join(directives, ' '), block(capabilities)], ' '),
   },
 
   // Schema Coordinates

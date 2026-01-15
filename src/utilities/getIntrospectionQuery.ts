@@ -57,6 +57,11 @@ export interface IntrospectionOptions {
    * Default: 9
    */
   typeDepth?: number;
+  /**
+   * Whether to include service capabilities in the introspection result.
+   * Default: false
+   */
+  includeService?: boolean;
 }
 
 /**
@@ -109,6 +114,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     experimentalDirectiveDeprecation: false,
     oneOf: false,
     typeDepth: 9,
+    includeService: false,
     ...options,
   };
 
@@ -146,6 +152,18 @@ ${indent}  kind${ofType(level - 1, indent + '  ')}
 ${indent}}`;
   }
 
+  const serviceQuery = optionsWithDefault.includeService
+    ? `
+      __service {
+        capabilities {
+          identifier
+          ${descriptions}
+          value
+        }
+      }
+    `
+    : '';
+
   return `
     query IntrospectionQuery {
       __schema {
@@ -170,6 +188,7 @@ ${indent}}`;
           }
         }
       }
+      ${serviceQuery}
     }
 
     fragment FullType on __Type {
@@ -485,4 +504,14 @@ export interface IntrospectionDirective {
   readonly locations: ReadonlyArray<DirectiveLocation>;
   /** Arguments accepted by this field or directive. */
   readonly args: ReadonlyArray<IntrospectionInputValue>;
+}
+
+export interface IntrospectionCapability {
+  readonly identifier: string;
+  readonly description?: Maybe<string>;
+  readonly value?: Maybe<string>;
+}
+
+export interface IntrospectionService {
+  readonly capabilities: ReadonlyArray<IntrospectionCapability>;
 }

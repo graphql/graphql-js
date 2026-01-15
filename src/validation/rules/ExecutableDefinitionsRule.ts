@@ -50,11 +50,20 @@ export function ExecutableDefinitionsRule(
     Document(node) {
       for (const definition of node.definitions) {
         if (!isExecutableDefinitionNode(definition)) {
-          const defName =
+          let defName: string;
+          if (
             definition.kind === Kind.SCHEMA_DEFINITION ||
             definition.kind === Kind.SCHEMA_EXTENSION
-              ? 'schema'
-              : '"' + definition.name.value + '"';
+          ) {
+            defName = 'schema';
+          } else if (
+            definition.kind === Kind.SERVICE_DEFINITION ||
+            definition.kind === Kind.SERVICE_EXTENSION
+          ) {
+            defName = 'service';
+          } else {
+            defName = '"' + definition.name.value + '"';
+          }
           context.reportError(
             new GraphQLError(`The ${defName} definition is not executable.`, {
               nodes: definition,

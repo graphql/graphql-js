@@ -35,6 +35,7 @@ import {
 import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 import type { GraphQLSchema } from '../type/schema';
+import type { GraphQLCapability, GraphQLService } from '../type/service';
 
 import { astFromValue } from './astFromValue';
 
@@ -57,11 +58,23 @@ import { astFromValue } from './astFromValue';
  * printSchema(schema); // => ['directive @upper on FIELD_DEFINITION', '', 'type Query {', '  greeting: String', '}'].join('\n')
  * ```
  */
-export function printSchema(schema: GraphQLSchema): string {
+export interface PrintSchemaOptions {
+  /**
+   * Include the service definition in the printed schema.
+   * Defaults to false.
+   */
+  includeService?: boolean;
+}
+
+export function printSchema(
+  schema: GraphQLSchema,
+  options?: PrintSchemaOptions,
+): string {
   return printFilteredSchema(
     schema,
     (n) => !isSpecifiedDirective(n),
     isDefinedType,
+    options,
   );
 }
 
@@ -98,17 +111,25 @@ function printFilteredSchema(
   schema: GraphQLSchema,
   directiveFilter: (type: GraphQLDirective) => boolean,
   typeFilter: (type: GraphQLNamedType) => boolean,
+  options?: PrintSchemaOptions,
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
 
-  return [
+  const parts = [
     printSchemaDefinition(schema),
     ...directives.map((directive) => printDirective(directive)),
     ...types.map((type) => printType(type)),
-  ]
-    .filter(Boolean)
-    .join('\n\n');
+  ];
+
+  if (options?.includeService) {
+    const service = schema.getService();
+    if (service) {
+      parts.push(printService(service));
+    }
+  }
+
+  return parts.filter(Boolean).join('\n\n');
 }
 
 function printSchemaDefinition(schema: GraphQLSchema): Maybe<string> {
@@ -395,4 +416,28 @@ function printDescription(
     indentation && !firstInBlock ? '\n' + indentation : indentation;
 
   return prefix + blockString.replace(/\n/g, '\n' + indentation) + '\n';
+}
+
+function printService(service: GraphQLService): string {
+  const capabilities = service.capabilities.map((cap, i) =>
+    printCapability(cap, !i),
+  );
+  return printDescription(service) + 'service' + printBlock(capabilities);
+}
+
+function printCapability(
+  capability: GraphQLCapability,
+  firstInBlock: boolean,
+): string {
+  let result =
+    printDescription(capability, '  ', firstInBlock) +
+    '  capability ' +
+    capability.identifier;
+
+  if (capability.value != null) {
+    const astValue = print({ kind: Kind.STRING, value: capability.value });
+    result += ' = ' + astValue;
+  }
+
+  return result;
 }

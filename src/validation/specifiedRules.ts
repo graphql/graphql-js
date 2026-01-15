@@ -21,6 +21,7 @@ import { KnownTypeNamesRule } from './rules/KnownTypeNamesRule';
 import { LoneAnonymousOperationRule } from './rules/LoneAnonymousOperationRule';
 // SDL-specific validation rules
 import { LoneSchemaDefinitionRule } from './rules/LoneSchemaDefinitionRule';
+import { LoneServiceDefinitionRule } from './rules/LoneServiceDefinitionRule';
 // TODO: Spec Section
 import { MaxIntrospectionDepthRule } from './rules/MaxIntrospectionDepthRule';
 // Spec Section: "Fragments must not form cycles"
@@ -48,6 +49,7 @@ import { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRu
 import { UniqueArgumentDefinitionNamesRule } from './rules/UniqueArgumentDefinitionNamesRule';
 // Spec Section: "Argument Uniqueness"
 import { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule';
+import { UniqueCapabilityIdentifiersRule } from './rules/UniqueCapabilityIdentifiersRule';
 import { UniqueDirectiveNamesRule } from './rules/UniqueDirectiveNamesRule';
 // Spec Section: "Directives Are Unique Per Location"
 import { UniqueDirectivesPerLocationRule } from './rules/UniqueDirectivesPerLocationRule';
@@ -117,12 +119,14 @@ export const specifiedRules: ReadonlyArray<ValidationRule> = Object.freeze([
 export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
   Object.freeze([
     LoneSchemaDefinitionRule,
+    LoneServiceDefinitionRule,
     UniqueOperationTypesRule,
     UniqueTypeNamesRule,
     UniqueEnumValueNamesRule,
     UniqueFieldDefinitionNamesRule,
     UniqueArgumentDefinitionNamesRule,
     UniqueDirectiveNamesRule,
+    UniqueCapabilityIdentifiersRule,
     KnownTypeNamesRule,
     KnownDirectivesRule,
     UniqueDirectivesPerLocationRule,

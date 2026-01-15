@@ -48,6 +48,7 @@ import {
 } from '../type/definition';
 import {
   SchemaMetaFieldDef,
+  ServiceMetaFieldDef,
   TypeMetaFieldDef,
   TypeNameMetaFieldDef,
 } from '../type/introspection';
@@ -1324,6 +1325,11 @@ export function getFieldDef(
     schema.getQueryType() === parentType
   ) {
     return TypeMetaFieldDef;
+  } else if (
+    fieldName === ServiceMetaFieldDef.name &&
+    schema.getQueryType() === parentType
+  ) {
+    return ServiceMetaFieldDef;
   } else if (fieldName === TypeNameMetaFieldDef.name) {
     return TypeNameMetaFieldDef;
   }
