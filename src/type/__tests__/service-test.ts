@@ -3,13 +3,20 @@ import { describe, it } from 'mocha';
 
 import { buildSchema } from '../../utilities/buildASTSchema';
 import { printSchema } from '../../utilities/printSchema';
+import { withServiceCapabilities } from '../../utilities/withServiceCapabilities';
 
 import { graphqlSync } from '../../graphql';
 
 import { GraphQLObjectType } from '../definition';
 import { GraphQLString } from '../scalars';
 import { GraphQLSchema } from '../schema';
-import { assertService, GraphQLService, isService } from '../service';
+import {
+  assertService,
+  builtInService,
+  GraphQLService,
+  isBuiltInService,
+  isService,
+} from '../service';
 
 describe('Type System: Service', () => {
   describe('GraphQLService', () => {
@@ -113,6 +120,18 @@ describe('Schema with Service', () => {
     expect(schema.getService()).to.equal(service);
   });
 
+  it('uses built-in service by default', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: { test: { type: GraphQLString } },
+      }),
+    });
+
+    expect(schema.getService()).to.equal(builtInService);
+    expect(isBuiltInService(schema.getService())).to.equal(true);
+  });
+
   it('builds service from SDL', () => {
     const schema = buildSchema(`
       type Query {
@@ -125,13 +144,13 @@ describe('Schema with Service', () => {
     `);
 
     const service = schema.getService();
-    expect(service).to.not.equal(undefined);
-    expect(service?.capabilities).to.have.length(2);
-    expect(service?.capabilities[0].identifier).to.equal('graphql.spec');
-    expect(service?.capabilities[0].value).to.equal('2024');
+    expect(isBuiltInService(service)).to.equal(false);
+    expect(service.capabilities).to.have.length(2);
+    expect(service.capabilities[0].identifier).to.equal('graphql.spec');
+    expect(service.capabilities[0].value).to.equal('2024');
   });
 
-  it('prints service when includeService is true', () => {
+  it('prints service when schema has custom service', () => {
     const schema = buildSchema(`
       type Query {
         test: String
@@ -141,24 +160,64 @@ describe('Schema with Service', () => {
       }
     `);
 
-    const printed = printSchema(schema, { includeService: true });
+    const printed = printSchema(schema);
     expect(printed).to.include('service {');
     expect(printed).to.include('capability graphql.spec = "2024"');
   });
 
-  it('does not print service by default', () => {
-    const schema = buildSchema(`
-      type Query {
-        test: String
-      }
-      service {
-        capability graphql.spec
-      }
-    `);
+  it('does not print service when schema has built-in service', () => {
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: { test: { type: GraphQLString } },
+      }),
+    });
 
     const printed = printSchema(schema);
     expect(printed).to.not.include('service');
     expect(printed).to.not.include('capability');
+  });
+});
+
+describe('withServiceCapabilities', () => {
+  it('creates a new schema with custom service', () => {
+    const originalSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: { test: { type: GraphQLString } },
+      }),
+    });
+
+    expect(isBuiltInService(originalSchema.getService())).to.equal(true);
+
+    const newSchema = withServiceCapabilities(originalSchema, {
+      description: 'Remote service',
+      capabilities: [
+        { identifier: 'graphql.spec', value: '2024' },
+        { identifier: 'custom.feature' },
+      ],
+    });
+
+    expect(isBuiltInService(newSchema.getService())).to.equal(false);
+    expect(newSchema.getService().description).to.equal('Remote service');
+    expect(newSchema.getService().capabilities).to.have.length(2);
+  });
+
+  it('results in printSchema including the service', () => {
+    const originalSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: { test: { type: GraphQLString } },
+      }),
+    });
+
+    const newSchema = withServiceCapabilities(originalSchema, {
+      capabilities: [{ identifier: 'graphql.spec', value: '2024' }],
+    });
+
+    const printed = printSchema(newSchema);
+    expect(printed).to.include('service {');
+    expect(printed).to.include('capability graphql.spec = "2024"');
   });
 });
 
@@ -209,7 +268,7 @@ describe('Service Introspection', () => {
     });
   });
 
-  it('returns empty capabilities when no service defined', () => {
+  it('returns built-in capabilities when no custom service defined', () => {
     const schema = buildSchema(`
       type Query {
         test: String
@@ -223,6 +282,7 @@ describe('Service Introspection', () => {
           __service {
             capabilities {
               identifier
+              value
             }
           }
         }
@@ -230,9 +290,15 @@ describe('Service Introspection', () => {
     });
 
     expect(result.errors).to.equal(undefined);
+    // The built-in service has the graphql.spec capability
     expect(result.data).to.deep.equal({
       __service: {
-        capabilities: [],
+        capabilities: [
+          {
+            identifier: 'graphql.spec',
+            value: '2024',
+          },
+        ],
       },
     });
   });

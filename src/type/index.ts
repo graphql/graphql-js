@@ -157,6 +157,9 @@ export {
   assertService,
   // GraphQL Service definition
   GraphQLService,
+  // Built-in service
+  builtInService,
+  isBuiltInService,
 } from './service';
 
 export type {

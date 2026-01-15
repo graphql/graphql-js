@@ -63,7 +63,6 @@ export {
   printSchema,
   printType,
   printIntrospectionSchema,
-  type PrintSchemaOptions,
 } from './printSchema';
 
 // Create a GraphQLType from a GraphQL language AST.
@@ -121,3 +120,7 @@ export {
   resolveASTSchemaCoordinate,
 } from './resolveSchemaCoordinate';
 export type { ResolvedSchemaElement } from './resolveSchemaCoordinate';
+
+// Create a new schema with service capabilities.
+export { withServiceCapabilities } from './withServiceCapabilities';
+export type { WithServiceCapabilitiesOptions } from './withServiceCapabilities';

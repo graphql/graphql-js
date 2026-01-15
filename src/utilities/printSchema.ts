@@ -36,6 +36,7 @@ import { isIntrospectionType } from '../type/introspection';
 import { isSpecifiedScalarType } from '../type/scalars';
 import type { GraphQLSchema } from '../type/schema';
 import type { GraphQLCapability, GraphQLService } from '../type/service';
+import { isBuiltInService } from '../type/service';
 
 import { astFromValue } from './astFromValue';
 
@@ -58,23 +59,11 @@ import { astFromValue } from './astFromValue';
  * printSchema(schema); // => ['directive @upper on FIELD_DEFINITION', '', 'type Query {', '  greeting: String', '}'].join('\n')
  * ```
  */
-export interface PrintSchemaOptions {
-  /**
-   * Include the service definition in the printed schema.
-   * Defaults to false.
-   */
-  includeService?: boolean;
-}
-
-export function printSchema(
-  schema: GraphQLSchema,
-  options?: PrintSchemaOptions,
-): string {
+export function printSchema(schema: GraphQLSchema): string {
   return printFilteredSchema(
     schema,
     (n) => !isSpecifiedDirective(n),
     isDefinedType,
-    options,
   );
 }
 
@@ -111,7 +100,6 @@ function printFilteredSchema(
   schema: GraphQLSchema,
   directiveFilter: (type: GraphQLDirective) => boolean,
   typeFilter: (type: GraphQLNamedType) => boolean,
-  options?: PrintSchemaOptions,
 ): string {
   const directives = schema.getDirectives().filter(directiveFilter);
   const types = Object.values(schema.getTypeMap()).filter(typeFilter);
@@ -122,11 +110,12 @@ function printFilteredSchema(
     ...types.map((type) => printType(type)),
   ];
 
-  if (options?.includeService) {
-    const service = schema.getService();
-    if (service) {
-      parts.push(printService(service));
-    }
+  // Only print service if it's not the built-in service.
+  // This is important because when representing a remote schema locally,
+  // we should not advertise capabilities that the remote server may not support.
+  const service = schema.getService();
+  if (!isBuiltInService(service)) {
+    parts.push(printService(service));
   }
 
   return parts.filter(Boolean).join('\n\n');

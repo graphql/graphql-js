@@ -34,6 +34,7 @@ import type { GraphQLDirective } from './directives';
 import { isDirective, specifiedDirectives } from './directives';
 import { __Schema } from './introspection';
 import type { GraphQLService } from './service';
+import { builtInService } from './service';
 
 /**
  * Test if the given value is a GraphQL schema.
@@ -199,7 +200,7 @@ export class GraphQLSchema {
   private _mutationType: Maybe<GraphQLObjectType>;
   private _subscriptionType: Maybe<GraphQLObjectType>;
   private _directives: ReadonlyArray<GraphQLDirective>;
-  private _service: Maybe<GraphQLService>;
+  private _service: GraphQLService;
   private _typeMap: TypeMap;
   private _subTypeMap: ObjMap<ObjMap<boolean>>;
   private _implementationsMap: ObjMap<{
@@ -327,7 +328,8 @@ export class GraphQLSchema {
     this._subscriptionType = config.subscription;
     // Provide specified directives (e.g. @include and @skip) by default.
     this._directives = config.directives ?? specifiedDirectives;
-    this._service = config.service;
+    // Provide built-in service by default (similar to specifiedDirectives).
+    this._service = config.service ?? builtInService;
 
     // To preserve order of user-provided types, we add first to add them to
     // the set of "collected" types, so `collectReferencedTypes` ignore them.
@@ -806,7 +808,7 @@ export class GraphQLSchema {
    * schemaCopy.getQueryType()?.name; // => 'Query'
    * ```
    */
-  getService(): Maybe<GraphQLService> {
+  getService(): GraphQLService {
     return this._service;
   }
   toConfig(): GraphQLSchemaNormalizedConfig {
@@ -868,7 +870,7 @@ export interface GraphQLSchemaNormalizedConfig extends GraphQLSchemaConfig {
   description: Maybe<string>;
   types: ReadonlyArray<GraphQLNamedType>;
   directives: ReadonlyArray<GraphQLDirective>;
-  service: Maybe<GraphQLService>;
+  service: GraphQLService;
   extensions: Readonly<GraphQLSchemaExtensions>;
   extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;
   assumeValid: boolean;

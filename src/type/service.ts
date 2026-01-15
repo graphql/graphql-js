@@ -153,3 +153,32 @@ interface GraphQLServiceNormalizedConfig extends GraphQLServiceConfig {
   extensions: Readonly<GraphQLServiceExtensions>;
   extensionASTNodes: ReadonlyArray<ServiceExtensionNode>;
 }
+
+/**
+ * The built-in service definition that represents the default capabilities
+ * of the GraphQL.js implementation. This is used when no explicit service
+ * is provided to a schema.
+ *
+ * When printing a schema, if the schema's service is the built-in service,
+ * it will not be included in the output. This is important because when
+ * representing a remote schema locally, we should not advertise capabilities
+ * that the remote server may not support.
+ */
+export const builtInService: GraphQLService = new GraphQLService({
+  description: 'Built-in GraphQL.js service capabilities.',
+  capabilities: [
+    // Core GraphQL spec compliance
+    {
+      identifier: 'graphql.spec',
+      description: 'Indicates compliance with the GraphQL specification.',
+      value: '2024',
+    },
+  ],
+});
+
+/**
+ * Check if a service is the built-in service.
+ */
+export function isBuiltInService(service: GraphQLService): boolean {
+  return service === builtInService;
+}

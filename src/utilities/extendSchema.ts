@@ -82,7 +82,7 @@ import type {
 } from '../type/schema';
 import { assertSchema, GraphQLSchema } from '../type/schema';
 import type { GraphQLCapabilityConfig } from '../type/service';
-import { GraphQLService } from '../type/service';
+import { GraphQLService, isBuiltInService } from '../type/service';
 
 import { assertValidSDLExtension } from '../validation/validate';
 
@@ -305,20 +305,27 @@ export function extendSchemaImpl(
   function buildService(
     astNode: Maybe<ServiceDefinitionNode>,
     extensionNodes: ReadonlyArray<ServiceExtensionNode>,
-  ): GraphQLService | undefined {
-    // Get existing service from config, if any
+  ): GraphQLService {
+    // Get existing service from config (always defined, at least builtInService)
     const existingService = schemaConfig.service;
 
     // If no new service definition or extensions, return existing service
     if (astNode == null && extensionNodes.length === 0) {
-      return existingService ?? undefined;
+      return existingService;
     }
 
     // Collect all capabilities from existing service, new definition, and extensions
     const allCapabilities: Array<GraphQLCapabilityConfig> = [];
 
-    // Add capabilities from existing service
-    if (existingService) {
+    // When a new service definition exists, it replaces the built-in service.
+    // Only merge capabilities from the existing service if:
+    // 1. There's no new service definition (only extensions), OR
+    // 2. The existing service is not the built-in service (it's a custom service)
+    const shouldMergeExisting =
+      astNode == null || !isBuiltInService(existingService);
+
+    // Add capabilities from existing service (if we should merge)
+    if (shouldMergeExisting) {
       for (const cap of existingService.capabilities) {
         allCapabilities.push({
           identifier: cap.identifier,
@@ -360,7 +367,7 @@ export function extendSchemaImpl(
       capabilities: allCapabilities,
       astNode: astNode ?? existingService?.astNode,
       extensionASTNodes: [
-        ...(existingService?.extensionASTNodes ?? []),
+        ...(shouldMergeExisting ? existingService.extensionASTNodes : []),
         ...extensionNodes,
       ],
     });

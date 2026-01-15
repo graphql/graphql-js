@@ -2,7 +2,6 @@
 
 import { inspect } from '../jsutils/inspect';
 import { invariant } from '../jsutils/invariant';
-import type { Maybe } from '../jsutils/Maybe';
 
 import { DirectiveLocation } from '../language/directiveLocation';
 import { print } from '../language/printer';
@@ -584,9 +583,9 @@ export const __Service: GraphQLObjectType = new GraphQLObjectType({
         ),
         description:
           'A list of capabilities detailing each service capability supported by the service.',
-        resolve: (service) => service?.capabilities ?? [],
+        resolve: (service) => service.capabilities,
       },
-    } as GraphQLFieldConfigMap<Maybe<GraphQLService>, unknown>),
+    } as GraphQLFieldConfigMap<GraphQLService, unknown>),
 });
 
 /**
@@ -645,9 +644,8 @@ export const ServiceMetaFieldDef: GraphQLField<unknown, unknown> = {
   type: new GraphQLNonNull(__Service),
   description: 'Access service information and capabilities.',
   args: [],
-  // Returns the service or an empty object - the __Service type fields handle this gracefully
-  resolve: (_source, _args, _context, { schema }) =>
-    schema.getService() ?? { capabilities: [] },
+  // Returns the service - all schemas have a service (built-in or custom)
+  resolve: (_source, _args, _context, { schema }) => schema.getService(),
   deprecationReason: undefined,
   extensions: Object.create(null),
   astNode: undefined,
