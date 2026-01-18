@@ -90,7 +90,7 @@ Example for a patch release:
 
 ```sh
 npm test
-npm version patch
+npm version patch --ignore-scripts=false
 git push --follow-tags
 cd npmDist && npm publish
 ```
