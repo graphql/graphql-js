@@ -101,7 +101,7 @@ Example for a patch release:
 ```sh
 npm ci
 npm test
-npm version patch
+npm version patch --ignore-scripts=false
 git push --follow-tags
 cd npmDist && npm publish
 npm run changelog
