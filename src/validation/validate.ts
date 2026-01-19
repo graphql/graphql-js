@@ -1,8 +1,10 @@
+import { mapValue } from '../jsutils/mapValue.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
 
 import type { DocumentNode } from '../language/ast.js';
+import { QueryDocumentKeys } from '../language/ast.js';
 import { visit, visitInParallel } from '../language/visitor.js';
 
 import type { GraphQLSchema } from '../type/schema.js';
@@ -21,6 +23,13 @@ export interface ValidationOptions {
   maxErrors?: number;
   hideSuggestions?: Maybe<boolean>;
 }
+
+// Per the specification, descriptions must not affect validation.
+// See https://spec.graphql.org/draft/#sec-Descriptions
+const QueryDocumentKeysToValidate = mapValue(
+  QueryDocumentKeys,
+  (keys: ReadonlyArray<string>) => keys.filter((key) => key !== 'description'),
+);
 
 /**
  * Implements the "Validation" section of the spec.
@@ -78,7 +87,11 @@ export function validate(
 
   // Visit the whole document with each instance of all provided rules.
   try {
-    visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
+    visit(
+      documentAST,
+      visitWithTypeInfo(typeInfo, visitor),
+      QueryDocumentKeysToValidate,
+    );
   } catch (e: unknown) {
     if (e === abortError) {
       errors.push(abortError);
