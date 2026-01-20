@@ -2,6 +2,9 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick';
+
+import { invariant } from '../../jsutils/invariant';
 
 import { parse } from '../../language/parser';
 
@@ -521,6 +524,143 @@ describe('Execute: handles non-nullable types', () => {
           },
         ],
       });
+    });
+  });
+
+  describe('Handles multiple errors for a single response position', () => {
+    it('nullable and non-nullable root fields throw nested errors', async () => {
+      const query = `
+        {
+          promiseNonNullNest {
+            syncNonNull
+          }
+          promiseNest {
+            syncNonNull
+          }
+        }
+      `;
+      const result = await executeQuery(query, throwingData);
+
+      expectJSON(result).toDeepEqual({
+        data: null,
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['promiseNest', 'syncNonNull'],
+            locations: [{ line: 7, column: 13 }],
+          },
+          {
+            message: syncNonNullError.message,
+            path: ['promiseNonNullNest', 'syncNonNull'],
+            locations: [{ line: 4, column: 13 }],
+          },
+        ],
+      });
+    });
+
+    it('a nullable root field throws a slower nested error after a non-nullable root field throws a nested error', async () => {
+      const query = `
+        {
+          promiseNonNullNest {
+            syncNonNull
+          }
+          promiseNest {
+            promiseNonNull
+          }
+        }
+      `;
+      const result = await executeQuery(query, throwingData);
+
+      expectJSON(result).toDeepEqual({
+        data: null,
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['promiseNonNullNest', 'syncNonNull'],
+            locations: [{ line: 4, column: 13 }],
+          },
+        ],
+      });
+
+      // allow time for slower error to reject
+      invariant(result.errors !== undefined);
+      const initialErrors = [...result.errors];
+      for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await resolveOnNextTick();
+      }
+      expectJSON(initialErrors).toDeepEqual(result.errors);
+    });
+
+    it('nullable and non-nullable nested fields throw nested errors', async () => {
+      const query = `
+        {
+          syncNest {
+            promiseNonNullNest {
+              syncNonNull
+            }
+            promiseNest {
+              syncNonNull
+            }
+          }
+        }
+      `;
+      const result = await executeQuery(query, throwingData);
+
+      expectJSON(result).toDeepEqual({
+        data: { syncNest: null },
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['syncNest', 'promiseNest', 'syncNonNull'],
+            locations: [{ line: 8, column: 15 }],
+          },
+          {
+            message: syncNonNullError.message,
+            path: ['syncNest', 'promiseNonNullNest', 'syncNonNull'],
+            locations: [{ line: 5, column: 15 }],
+          },
+        ],
+      });
+    });
+
+    it('a nullable nested field throws a slower nested error after a non-nullable nested field throws a nested error', async () => {
+      const query = `
+        {
+          syncNest {
+            promiseNonNullNest {
+              syncNonNull
+            }
+            promiseNest {
+              promiseNest {
+                promiseNest {
+                  promiseNonNull
+                }
+              }
+            }
+          }
+        }
+      `;
+      const result = await executeQuery(query, throwingData);
+
+      expectJSON(result).toDeepEqual({
+        data: { syncNest: null },
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['syncNest', 'promiseNonNullNest', 'syncNonNull'],
+            locations: [{ line: 5, column: 15 }],
+          },
+        ],
+      });
+
+      invariant(result.errors !== undefined);
+      const initialErrors = [...result.errors];
+      for (let i = 0; i < 20; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await resolveOnNextTick();
+      }
+      expectJSON(initialErrors).toDeepEqual(result.errors);
     });
   });
 

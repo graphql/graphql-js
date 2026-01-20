@@ -1,9 +1,11 @@
 import { devAssert } from '../jsutils/devAssert';
+import { mapValue } from '../jsutils/mapValue';
 import type { Maybe } from '../jsutils/Maybe';
 
 import { GraphQLError } from '../error/GraphQLError';
 
 import type { DocumentNode } from '../language/ast';
+import { QueryDocumentKeys } from '../language/ast';
 import { visit, visitInParallel } from '../language/visitor';
 
 import type { GraphQLSchema } from '../type/schema';
@@ -14,6 +16,13 @@ import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo';
 import { specifiedRules, specifiedSDLRules } from './specifiedRules';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext';
 import { SDLValidationContext, ValidationContext } from './ValidationContext';
+
+// Per the specification, descriptions must not affect validation.
+// See https://spec.graphql.org/draft/#sec-Descriptions
+const QueryDocumentKeysToValidate = mapValue(
+  QueryDocumentKeys,
+  (keys: ReadonlyArray<string>) => keys.filter((key) => key !== 'description'),
+);
 
 /**
  * Implements the "Validation" section of the spec.
@@ -76,7 +85,11 @@ export function validate(
 
   // Visit the whole document with each instance of all provided rules.
   try {
-    visit(documentAST, visitWithTypeInfo(typeInfo, visitor));
+    visit(
+      documentAST,
+      visitWithTypeInfo(typeInfo, visitor),
+      QueryDocumentKeysToValidate,
+    );
   } catch (e) {
     if (e !== abortObj) {
       throw e;
