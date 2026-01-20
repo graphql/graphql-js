@@ -181,6 +181,7 @@ export interface ExecutionArgs {
     ) => PromiseOrValue<ExecutionResult>
   >;
   hideSuggestions?: Maybe<boolean>;
+  abortSignal?: Maybe<AbortSignal>;
   /** Additional execution options. */
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
@@ -211,6 +212,7 @@ export function validateExecutionArgs(
     typeResolver,
     subscribeFieldResolver,
     perEventExecutor,
+    abortSignal: externalAbortSignal,
     options,
   } = args;
 
@@ -299,6 +301,7 @@ export function validateExecutionArgs(
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     hideSuggestions,
     errorPropagation,
+    externalAbortSignal: externalAbortSignal ?? undefined,
   };
 }
 

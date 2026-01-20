@@ -9,6 +9,7 @@ import { inspect } from '../../jsutils/inspect.js';
 import { Kind } from '../../language/kinds.js';
 import { parse } from '../../language/parser.js';
 
+import type { GraphQLResolveInfo } from '../../type/definition.js';
 import {
   GraphQLInputObjectType,
   GraphQLInterfaceType,
@@ -188,7 +189,7 @@ describe('Execute: Handles basic execution tasks', () => {
   });
 
   it('provides info about current execution state', () => {
-    let resolvedInfo;
+    let resolvedInfo: GraphQLResolveInfo | undefined;
     const testType = new GraphQLObjectType({
       name: 'Test',
       fields: {
@@ -212,6 +213,8 @@ describe('Execute: Handles basic execution tasks', () => {
     assert(operation.kind === Kind.OPERATION_DEFINITION);
 
     const field = operation.selectionSet.selections[0];
+
+    assert(resolvedInfo != null);
 
     expect(resolvedInfo).to.deep.include({
       fieldName: 'test',
@@ -237,6 +240,8 @@ describe('Execute: Handles basic execution tasks', () => {
         coerced: { var: 'abc' },
       },
     });
+
+    expect(resolvedInfo.abortSignal).to.be.instanceOf(AbortSignal);
   });
 
   it('populates path correctly with complex types', () => {

@@ -26,6 +26,12 @@ export class ResolveInfo implements GraphQLResolveInfo {
   private _fieldDetailsList: FieldDetailsList;
   private _parentType: GraphQLObjectType;
   private _path: Path;
+  private _abortSignal: AbortSignal | undefined;
+  private _registerAbortSignal: () => {
+    abortSignal: AbortSignal | undefined;
+    unregister?: () => void;
+  };
+  private _unregisterAbortSignal: (() => void) | undefined;
 
   private _fieldName: string | undefined;
   private _fieldNodes: ReadonlyArray<FieldNode> | undefined;
@@ -37,18 +43,24 @@ export class ResolveInfo implements GraphQLResolveInfo {
   private _operation: OperationDefinitionNode | undefined;
   private _variableValues: VariableValues | undefined;
 
+  // eslint-disable-next-line max-params
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
     fieldDef: GraphQLField<unknown, unknown>,
     fieldDetailsList: FieldDetailsList,
     parentType: GraphQLObjectType,
     path: Path,
+    registerAbortSignal: () => {
+      abortSignal: AbortSignal | undefined;
+      unregister?: () => void;
+    },
   ) {
     this._validatedExecutionArgs = validatedExecutionArgs;
     this._fieldDef = fieldDef;
     this._fieldDetailsList = fieldDetailsList;
     this._parentType = parentType;
     this._path = path;
+    this._registerAbortSignal = registerAbortSignal;
   }
 
   get fieldName(): string {
@@ -102,5 +114,18 @@ export class ResolveInfo implements GraphQLResolveInfo {
   get variableValues(): VariableValues {
     this._variableValues ??= this._validatedExecutionArgs.variableValues;
     return this._variableValues;
+  }
+
+  get abortSignal(): AbortSignal | undefined {
+    if (this._abortSignal !== undefined) {
+      return this._abortSignal;
+    }
+    const { abortSignal, unregister } = this._registerAbortSignal();
+    this._abortSignal = abortSignal;
+    this._unregisterAbortSignal = unregister;
+    return this._abortSignal;
+  }
+  unregisterAbortSignal(): void {
+    this._unregisterAbortSignal?.();
   }
 }

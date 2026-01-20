@@ -44,12 +44,22 @@ describe('ResolveInfo', () => {
   assert(fieldDetailsList != null);
 
   const path = { key: 'test', prev: undefined, typename: 'Query' };
+
+  const abortController = new AbortController();
+  const abortSignal = abortController.signal;
+  let unregisterCalled = false;
   const resolveInfo = new ResolveInfo(
     validatedExecutionArgs,
     query.getFields().test,
     fieldDetailsList,
     query,
     path,
+    () => ({
+      abortSignal,
+      unregister: () => {
+        unregisterCalled = true;
+      },
+    }),
   );
 
   it('exposes fieldName', () => {
@@ -98,5 +108,16 @@ describe('ResolveInfo', () => {
     expect(resolveInfo.variableValues).to.equal(
       validatedExecutionArgs.variableValues,
     );
+  });
+
+  it('exposes abortSignal', () => {
+    const retrievedAbortSignal = resolveInfo.abortSignal;
+    expect(retrievedAbortSignal).to.equal(abortSignal);
+    expect(retrievedAbortSignal).to.equal(resolveInfo.abortSignal); // ensure same reference
+  });
+
+  it('calls unregisterAbortSignal', () => {
+    resolveInfo.unregisterAbortSignal();
+    expect(unregisterCalled).to.equal(true);
   });
 });

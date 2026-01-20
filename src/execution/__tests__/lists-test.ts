@@ -76,6 +76,35 @@ describe('Execute: Accepts any iterable as list value', () => {
       ],
     });
   });
+
+  it('Ignores iterator return errors when iteration throws', () => {
+    let returnCalled = false;
+    const listField = {
+      [Symbol.iterator]() {
+        return {
+          next() {
+            throw new Error('bad');
+          },
+          return() {
+            returnCalled = true;
+            throw new Error('return bad');
+          },
+        };
+      },
+    };
+
+    expectJSON(complete({ listField })).toDeepEqual({
+      data: { listField: null },
+      errors: [
+        {
+          message: 'bad',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField'],
+        },
+      ],
+    });
+    expect(returnCalled).to.equal(true);
+  });
 });
 
 describe('Execute: Handles abrupt completion in synchronous iterables', () => {

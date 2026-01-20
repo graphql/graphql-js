@@ -66,6 +66,7 @@ export interface GraphQLArgs {
   operationName?: Maybe<string>;
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
+  abortSignal?: Maybe<AbortSignal>;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -101,6 +102,7 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     fieldResolver,
     typeResolver,
     hideSuggestions,
+    abortSignal,
   } = args;
 
   // Validate Schema
@@ -136,5 +138,6 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
     fieldResolver,
     typeResolver,
     hideSuggestions,
+    abortSignal,
   });
 }
