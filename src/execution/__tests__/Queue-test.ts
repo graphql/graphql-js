@@ -84,8 +84,8 @@ describe('Queue', () => {
     const sub = queue.subscribe((batch) => Array.from(batch)[0]);
     expect(await sub.next()).to.deep.equal({ done: false, value: 1 });
     expect(await sub.next()).to.deep.equal({ done: false, value: 4 });
-    expect(await sub.next()).to.deep.equal({ done: false, value: 16 });
-    expect(await sub.next()).to.deep.equal({ done: false, value: 28 });
+    expect(await sub.next()).to.deep.equal({ done: false, value: 13 });
+    expect(await sub.next()).to.deep.equal({ done: false, value: 22 });
   });
 
   it('should allow the executor to indicate completion', async () => {
@@ -180,8 +180,8 @@ describe('Queue', () => {
       }
     });
     expect(await sub.next()).to.deep.equal({ done: false, value: [2] });
-    expect(await sub.next()).to.deep.equal({ done: false, value: [8] });
-    expect(await sub.next()).to.deep.equal({ done: false, value: [14] });
+    expect(await sub.next()).to.deep.equal({ done: false, value: [6] });
+    expect(await sub.next()).to.deep.equal({ done: false, value: [10] });
   });
 
   it('should condense pushes during map into the same batch', async () => {

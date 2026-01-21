@@ -1,7 +1,7 @@
 import { isPromise } from '../jsutils/isPromise.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
-import { withCleanup } from './withCleanup.js';
+import { withConcurrentAbruptClose } from './withConcurrentAbruptClose.js';
 
 /**
  * Given an AsyncIterable and a callback function, return an AsyncIterator
@@ -11,17 +11,35 @@ export function mapAsyncIterable<T, U>(
   iterable: AsyncGenerator<T> | AsyncIterable<T>,
   callback: (value: T) => PromiseOrValue<U>,
 ): AsyncGenerator<U, void, void> {
-  return withCleanup(mapAsyncIterableImpl(iterable, callback), async () => {
-    const iterator = iterable[Symbol.asyncIterator]();
-    if (typeof iterator.return === 'function') {
-      try {
-        await iterator.return(); /* c8 ignore start */
-      } catch (_error) {
-        // FIXME: add test case
-        /* ignore error */
-      } /* c8 ignore stop */
-    }
-  });
+  const iterator = iterable[Symbol.asyncIterator]();
+  const returnFn = iterator.return?.bind(iterator);
+  const throwFn = iterator.throw?.bind(iterator);
+
+  const onReturn = returnFn
+    ? async () => {
+        await callIgnoringErrors(returnFn);
+      }
+    : () => Promise.resolve();
+
+  const onThrow = throwFn
+    ? async (reason?: unknown) => {
+        await callIgnoringErrors(() => throwFn(reason));
+      }
+    : onReturn;
+
+  return withConcurrentAbruptClose(
+    mapAsyncIterableImpl(iterable, callback),
+    onReturn,
+    onThrow,
+  );
+}
+
+async function callIgnoringErrors(fn: () => Promise<unknown>): Promise<void> {
+  try {
+    await fn();
+  } catch {
+    // ignore error
+  }
 }
 
 async function* mapAsyncIterableImpl<T, U, R = undefined>(

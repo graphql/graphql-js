@@ -2,7 +2,7 @@ import { isPromise } from '../jsutils/isPromise.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
-import { withCleanup } from './withCleanup.js';
+import { withConcurrentAbruptClose } from './withConcurrentAbruptClose.js';
 
 /**
  * @internal
@@ -42,7 +42,9 @@ export class Queue<T> {
   subscribe<U>(
     mapFn: (generator: Generator<T>) => U | undefined,
   ): AsyncGenerator<U, void, void> {
-    return withCleanup(this.subscribeImpl(mapFn), () => this.stop());
+    return withConcurrentAbruptClose(this.subscribeImpl(mapFn), () =>
+      this.stop(),
+    );
   }
 
   private async *subscribeImpl<U>(

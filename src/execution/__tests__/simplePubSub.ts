@@ -1,6 +1,6 @@
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
-import { withCleanup } from '../withCleanup.js';
+import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
 
 /**
  * Create an AsyncIterator from an EventEmitter. Useful for mocking a
@@ -59,7 +59,7 @@ export class SimplePubSub<T> {
       }
     }
 
-    return withCleanup(getSubscriberImpl(), emptyQueue);
+    return withConcurrentAbruptClose(getSubscriberImpl(), emptyQueue);
 
     function pushValue(event: T): void {
       const value: R = transform(event);

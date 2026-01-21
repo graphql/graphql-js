@@ -88,7 +88,7 @@ import {
   getDirectiveValues,
   getVariableValues,
 } from './values.js';
-import { withCleanup } from './withCleanup.js';
+import { withConcurrentAbruptClose } from './withConcurrentAbruptClose.js';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
@@ -2264,7 +2264,7 @@ function mapSourceToResponse(
   }
 
   return abortSignalListener
-    ? withCleanup(
+    ? withConcurrentAbruptClose(
         mapAsyncIterable(
           cancellableIterable(resultOrStream, abortSignalListener),
           mapFn,

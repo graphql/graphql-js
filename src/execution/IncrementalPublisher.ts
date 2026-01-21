@@ -23,7 +23,7 @@ import type {
   SubsequentIncrementalExecutionResult,
 } from './types.js';
 import { isCompletedExecutionGroup, isFailedExecutionGroup } from './types.js';
-import { withCleanup } from './withCleanup.js';
+import { withConcurrentAbruptClose } from './withConcurrentAbruptClose.js';
 
 // eslint-disable-next-line max-params
 export function buildIncrementalResponse(
@@ -99,11 +99,15 @@ class IncrementalPublisher {
 
     return {
       initialResult,
-      subsequentResults: withCleanup(subsequentResults, async () => {
-        this._abortSignalListener?.disconnect();
-        await this._returnAsyncIteratorsIgnoringErrors();
-      }),
+      subsequentResults: withConcurrentAbruptClose(subsequentResults, () =>
+        this._cleanUp(),
+      ),
     };
+  }
+
+  private async _cleanUp(): Promise<void> {
+    this._abortSignalListener?.disconnect();
+    await this._returnAsyncIteratorsIgnoringErrors();
   }
 
   private _ensureId(deliveryGroup: DeliveryGroup): string {
@@ -160,6 +164,14 @@ class IncrementalPublisher {
     if (completed.length > 0) {
       subsequentIncrementalExecutionResult.completed = completed;
     }
+
+    if (!hasNext) {
+      this._cleanUp().catch(() => {
+        /* c8 ignore next 2 */
+        // ignore error
+      });
+    }
+
     return subsequentIncrementalExecutionResult;
   }
 
