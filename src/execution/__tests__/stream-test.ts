@@ -1795,23 +1795,18 @@ describe('Execute: stream directive', () => {
 
   it('Returns iterator and ignores errors when stream payloads are filtered', async () => {
     let returned = false;
-    let requested = false;
     const iterable = {
       [Symbol.asyncIterator]: () => ({
         next: () => {
-          /* c8 ignore start */
-          if (requested) {
-            // stream is filtered, next is not called, and so this is not reached.
-            return Promise.reject(new Error('Oops'));
-          } /* c8 ignore stop */
-          requested = true;
-          const friend = friends[0];
+          if (returned) {
+            return Promise.resolve({
+              done: true,
+              value: undefined,
+            });
+          }
           return Promise.resolve({
             done: false,
-            value: {
-              name: friend.name,
-              nonNullName: null,
-            },
+            value: friends[0],
           });
         },
         return: () => {
