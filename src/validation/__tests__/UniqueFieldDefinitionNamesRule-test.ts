@@ -164,4 +164,35 @@ describe('Validate: Unique field definition names', () => {
 
     expectValidSDL(sdl, schema);
   });
+
+  it('allows extending type with field that already exists in schema for merging', () => {
+    const schema = buildSchema(`
+      type SomeObject {
+        foo: String
+      }
+      interface SomeInterface {
+        foo: String
+      }
+      input SomeInputObject {
+        foo: String
+      }
+    `);
+
+    // Extensions can redefine existing fields for merging purposes
+    // Type compatibility will be validated by other rules
+    expectSDLErrors(
+      `
+      extend type SomeObject {
+        foo: String
+      }
+      extend interface SomeInterface {
+        foo: String
+      }
+      extend input SomeInputObject {
+        foo: String
+      }
+    `,
+      schema,
+    ).toDeepEqual([]);
+  });
 });

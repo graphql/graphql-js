@@ -487,15 +487,15 @@ export function extendSchemaImpl(
 
   function mergeFieldConfigs(existing: any, incoming: any): any {
     return {
-      type: incoming.type ?? existing.type,
-      description: incoming.description ?? existing.description,
+      type: existing.type,
+      description: existing.description ?? incoming.description,
       args: {
         ...existing.args,
         ...incoming.args,
       },
       deprecationReason:
-        incoming.deprecationReason ?? existing.deprecationReason,
-      astNode: incoming.astNode ?? existing.astNode,
+        existing.deprecationReason ?? incoming.deprecationReason,
+      astNodes: [existing.astNode, incoming.astNode].filter(Boolean),
     };
   }
 
