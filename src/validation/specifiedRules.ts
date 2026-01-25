@@ -1,13 +1,7 @@
-import { ConflictingDescriptionsAndDeprecationRule } from './rules/ConflictingDescriptionsAndDeprecationRule.js';
-// Spec Section: "Defer And Stream Directive Labels Are Unique"
-import { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.js';
-// Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
-import { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.js';
-// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
-import { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.js';
+import { ConflictingDescriptionsAndDeprecationRule } from './rules/ConflictingDescriptionsAndDeprecationRule';
 // Spec Section: "Executable Definitions"
-import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.js';
-import { ExtendedFieldsMatchOriginalTypeRule } from './rules/ExtendedFieldsMatchOriginalTypeRule.js';
+import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
+import { ExtendedFieldsMatchOriginalTypeRule } from './rules/ExtendedFieldsMatchOriginalTypeRule';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 import { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule';
 // Spec Section: "Fragments on Composite Types"

@@ -1,10 +1,10 @@
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { ConflictingDescriptionsAndDeprecationRule } from '../rules/ConflictingDescriptionsAndDeprecationRule.js';
+import { ConflictingDescriptionsAndDeprecationRule } from '../rules/ConflictingDescriptionsAndDeprecationRule';
 
-import { expectSDLValidationErrors } from './harness.js';
+import { expectSDLValidationErrors } from './harness';
 
 function expectErrors(sdlStr: string) {
   return expectSDLValidationErrors(

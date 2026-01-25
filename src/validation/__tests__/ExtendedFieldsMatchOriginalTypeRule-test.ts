@@ -1,10 +1,10 @@
 import { describe, it } from 'mocha';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { buildSchema } from '../../utilities/buildASTSchema';
 
-import { ExtendedFieldsMatchOriginalTypeRule } from '../rules/ExtendedFieldsMatchOriginalTypeRule.js';
+import { ExtendedFieldsMatchOriginalTypeRule } from '../rules/ExtendedFieldsMatchOriginalTypeRule';
 
-import { expectSDLValidationErrors } from './harness.js';
+import { expectSDLValidationErrors } from './harness';
 
 function expectErrors(
   sdlStr: string,

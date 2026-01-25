@@ -1,4 +1,4 @@
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError';
 
 import type {
   DirectiveNode,
@@ -7,20 +7,20 @@ import type {
   InputValueDefinitionNode,
   NameNode,
   StringValueNode,
-} from '../../language/ast.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+} from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 import {
   isEnumType,
   isInputObjectType,
   isInterfaceType,
   isObjectType,
-} from '../../type/definition.js';
-import { GraphQLDeprecatedDirective } from '../../type/directives.js';
+} from '../../type/definition';
+import { GraphQLDeprecatedDirective } from '../../type/directives';
 
-import { getDirectiveValues } from '../../execution/values.js';
+import { getDirectiveValues } from '../../execution/values';
 
-import type { SDLValidationContext } from '../ValidationContext.js';
+import type { SDLValidationContext } from '../ValidationContext';
 
 /**
  * Conflicting descriptions and deprecation messages

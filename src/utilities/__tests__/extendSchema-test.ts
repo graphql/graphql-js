@@ -1714,7 +1714,7 @@ describe('extendSchema', () => {
       });
 
       const queryType = extendedSchema.getType('Query');
-      assert(queryType != null);
+      expect(queryType != null);
       const fields = (queryType as any).getFields();
       expect(fields.newField.type.toString()).to.equal('String');
       expect(fields.newField.deprecationReason).to.equal('Use something else');

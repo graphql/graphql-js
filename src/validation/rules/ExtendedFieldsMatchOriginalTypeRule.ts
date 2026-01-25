@@ -1,24 +1,24 @@
-import { inspect } from '../../jsutils/inspect.js';
+import { inspect } from '../../jsutils/inspect';
 
-import { GraphQLError } from '../../error/GraphQLError.js';
+import { GraphQLError } from '../../error/GraphQLError';
 
 import type {
   FieldDefinitionNode,
   InputValueDefinitionNode,
   NameNode,
-} from '../../language/ast.js';
-import type { ASTVisitor } from '../../language/visitor.js';
+} from '../../language/ast';
+import type { ASTVisitor } from '../../language/visitor';
 
 import {
   isInputObjectType,
   isInterfaceType,
   isObjectType,
-} from '../../type/definition.js';
+} from '../../type/definition';
 
-import { isEqualType } from '../../utilities/typeComparators.js';
-import { typeFromAST } from '../../utilities/typeFromAST.js';
+import { isEqualType } from '../../utilities/typeComparators';
+import { typeFromAST } from '../../utilities/typeFromAST';
 
-import type { SDLValidationContext } from '../ValidationContext.js';
+import type { SDLValidationContext } from '../ValidationContext';
 
 /**
  * Extended fields match original type
@@ -80,7 +80,9 @@ export function ExtendedFieldsMatchOriginalTypeRule(
       ) {
         context.reportError(
           new GraphQLError(
-            `Field "${typeName}.${fieldName}" type mismatch: original type is "${inspect(existingField.type)}" but extension defines "${inspect(extensionFieldType)}".`,
+            `Field "${typeName}.${fieldName}" type mismatch: original type is "${inspect(
+              existingField.type,
+            )}" but extension defines "${inspect(extensionFieldType)}".`,
             { nodes: extensionField.type },
           ),
         );
@@ -107,7 +109,9 @@ export function ExtendedFieldsMatchOriginalTypeRule(
           ) {
             context.reportError(
               new GraphQLError(
-                `Argument "${typeName}.${fieldName}(${argName})" type mismatch: original type is "${inspect(existingArg.type)}" but extension defines "${inspect(extensionArgType)}".`,
+                `Argument "${typeName}.${fieldName}(${argName})" type mismatch: original type is "${inspect(
+                  existingArg.type,
+                )}" but extension defines "${inspect(extensionArgType)}".`,
                 { nodes: extensionArg.type },
               ),
             );
@@ -151,7 +155,9 @@ export function ExtendedFieldsMatchOriginalTypeRule(
       ) {
         context.reportError(
           new GraphQLError(
-            `Input field "${typeName}.${fieldName}" type mismatch: original type is "${inspect(existingField.type)}" but extension defines "${inspect(extensionFieldType)}".`,
+            `Input field "${typeName}.${fieldName}" type mismatch: original type is "${inspect(
+              existingField.type,
+            )}" but extension defines "${inspect(extensionFieldType)}".`,
             { nodes: extensionField.type },
           ),
         );
