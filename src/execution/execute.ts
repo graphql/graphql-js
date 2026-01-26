@@ -646,7 +646,9 @@ function executeField(
   const { validatedExecutionArgs, abortSignalListener } = exeContext;
   const { schema, contextValue, variableValues, hideSuggestions, abortSignal } =
     validatedExecutionArgs;
-  const fieldName = fieldDetailsList[0].node.name.value;
+  const firstDetails = fieldDetailsList[0];
+  const firstNode = firstDetails.node;
+  const fieldName = firstNode.name.value;
   const fieldDef = schema.getField(parentType, fieldName);
   if (!fieldDef) {
     return;
@@ -671,9 +673,9 @@ function executeField(
     // TODO: find a way to memoize, in case this field is within a List type.
     const args = getArgumentValues(
       fieldDef,
-      fieldDetailsList[0].node,
+      firstNode,
       variableValues,
-      fieldDetailsList[0].fragmentVariableValues,
+      firstDetails.fragmentVariableValues,
       hideSuggestions,
     );
 
@@ -1933,7 +1935,9 @@ function executeSubscription(
     FieldDetailsList,
   ];
   const [responseName, fieldDetailsList] = firstRootField;
-  const fieldName = fieldDetailsList[0].node.name.value;
+  const firstFieldDetails = fieldDetailsList[0];
+  const firstNode = firstFieldDetails.node;
+  const fieldName = firstNode.name.value;
   const fieldDef = schema.getField(rootType, fieldName);
 
   const fieldNodes = fieldDetailsList.map((fieldDetails) => fieldDetails.node);
@@ -1962,9 +1966,9 @@ function executeSubscription(
     // variables scope to fulfill any variable references.
     const args = getArgumentValues(
       fieldDef,
-      fieldNodes[0],
+      firstNode,
       variableValues,
-      fieldDetailsList[0].fragmentVariableValues,
+      firstFieldDetails.fragmentVariableValues,
       hideSuggestions,
     );
 
