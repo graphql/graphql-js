@@ -646,8 +646,8 @@ function executeField(
   const { validatedExecutionArgs, abortSignalListener } = exeContext;
   const { schema, contextValue, variableValues, hideSuggestions, abortSignal } =
     validatedExecutionArgs;
-  const firstDetails = fieldDetailsList[0];
-  const firstNode = firstDetails.node;
+  const firstFieldDetails = fieldDetailsList[0];
+  const firstNode = firstFieldDetails.node;
   const fieldName = firstNode.name.value;
   const fieldDef = schema.getField(parentType, fieldName);
   if (!fieldDef) {
@@ -675,7 +675,7 @@ function executeField(
       fieldDef,
       firstNode,
       variableValues,
-      firstDetails.fragmentVariableValues,
+      firstFieldDetails.fragmentVariableValues,
       hideSuggestions,
     );
 
