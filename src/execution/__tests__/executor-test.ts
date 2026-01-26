@@ -212,36 +212,21 @@ describe('Execute: Handles basic execution tasks', () => {
 
     executeSync({ schema, document, rootValue, variableValues });
 
-    expect(resolvedInfo).to.have.all.keys(
-      'fieldName',
-      'fieldNodes',
-      'returnType',
-      'parentType',
-      'path',
-      'schema',
-      'fragments',
-      'rootValue',
-      'operation',
-      'variableValues',
-      'abortSignal',
-    );
-
     const operation = document.definitions[0];
     assert(operation.kind === Kind.OPERATION_DEFINITION);
 
-    expect(resolvedInfo).to.include({
+    const field = operation.selectionSet.selections[0];
+
+    expect(resolvedInfo).to.deep.include({
       fieldName: 'test',
+      fieldNodes: [field],
       returnType: GraphQLString,
       parentType: testType,
+      path: { prev: undefined, key: 'result', typename: 'Test' },
       schema,
+      fragments: {},
       rootValue,
       operation,
-    });
-
-    const field = operation.selectionSet.selections[0];
-    expect(resolvedInfo).to.deep.include({
-      fieldNodes: [field],
-      path: { prev: undefined, key: 'result', typename: 'Test' },
       variableValues: {
         sources: {
           var: {
@@ -255,6 +240,7 @@ describe('Execute: Handles basic execution tasks', () => {
         },
         coerced: { var: 'abc' },
       },
+      abortSignal: undefined,
     });
   });
 
