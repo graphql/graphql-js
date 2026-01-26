@@ -39,10 +39,7 @@ import {
   isNonNullType,
   isObjectType,
 } from '../type/definition.js';
-import {
-  GraphQLDisableErrorPropagationDirective,
-  GraphQLStreamDirective,
-} from '../type/directives.js';
+import { GraphQLStreamDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
 import {
@@ -153,6 +150,7 @@ export interface ValidatedExecutionArgs {
   ) => PromiseOrValue<ExecutionResult>;
   enableEarlyExecution: boolean;
   hideSuggestions: boolean;
+  errorPropagation: boolean;
   abortSignal: AbortSignal | undefined;
 }
 
@@ -162,7 +160,6 @@ export interface ExecutionContext {
   abortSignalListener: AbortSignalListener | undefined;
   completed: boolean;
   earlyReturns: Map<StreamRecord, () => Promise<unknown>> | undefined;
-  errorPropagation: boolean;
 }
 
 interface IncrementalContext {
@@ -183,15 +180,6 @@ interface GraphQLWrappedResult<T> {
   incrementalDataRecords: Array<IncrementalDataRecord> | undefined;
 }
 
-function errorPropagation(operation: OperationDefinitionNode): boolean {
-  const directiveNode = operation.directives?.find(
-    (directive) =>
-      directive.name.value === GraphQLDisableErrorPropagationDirective.name,
-  );
-
-  return directiveNode === undefined;
-}
-
 export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
@@ -204,7 +192,6 @@ export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
       : undefined,
     completed: false,
     earlyReturns: undefined,
-    errorPropagation: errorPropagation(validatedExecutionArgs.operation),
   };
   try {
     const {
@@ -763,7 +750,10 @@ function handleFieldError(
 
   // If the field type is non-nullable, then it is resolved without any
   // protection from errors, however it still properly locates the error.
-  if (exeContext.errorPropagation && isNonNullType(returnType)) {
+  if (
+    exeContext.validatedExecutionArgs.errorPropagation &&
+    isNonNullType(returnType)
+  ) {
     throw error;
   }
 

@@ -14,6 +14,7 @@ import type {
 } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
 
+import { GraphQLDisableErrorPropagationDirective } from '../type/directives.js';
 import type {
   GraphQLFieldResolver,
   GraphQLTypeResolver,
@@ -378,6 +379,12 @@ export function validateExecutionArgs(
     return variableValuesOrErrors.errors;
   }
 
+  const errorPropagation =
+    operation.directives?.find(
+      (directive) =>
+        directive.name.value === GraphQLDisableErrorPropagationDirective.name,
+    ) === undefined;
+
   return {
     schema,
     fragmentDefinitions,
@@ -392,6 +399,7 @@ export function validateExecutionArgs(
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     enableEarlyExecution: enableEarlyExecution === true,
     hideSuggestions,
+    errorPropagation,
     abortSignal: args.abortSignal ?? undefined,
   };
 }
