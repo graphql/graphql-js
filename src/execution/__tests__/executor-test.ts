@@ -29,7 +29,7 @@ import {
 } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { execute, executeSync } from '../execute.js';
+import { execute, executeSync } from '../entrypoints.js';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('executes arbitrary code', async () => {

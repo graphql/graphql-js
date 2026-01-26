@@ -1,4 +1,4 @@
-import { executeSync } from 'graphql/execution/execute.js';
+import { executeSync } from 'graphql/execution/entrypoints.js';
 import { parse } from 'graphql/language/parser.js';
 import { buildSchema } from 'graphql/utilities/buildASTSchema.js';
 import { getIntrospectionQuery } from 'graphql/utilities/getIntrospectionQuery.js';

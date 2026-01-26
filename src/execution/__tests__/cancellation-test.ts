@@ -16,7 +16,7 @@ import {
   execute,
   experimentalExecuteIncrementally,
   subscribe,
-} from '../execute.js';
+} from '../entrypoints.js';
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,

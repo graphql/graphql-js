@@ -8,7 +8,7 @@ import { parse } from '../../language/parser.js';
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import { collectFields } from '../collectFields.js';
-import { validateExecutionArgs } from '../execute.js';
+import { validateExecutionArgs } from '../entrypoints.js';
 
 const schema = buildSchema(`
   type Query {
