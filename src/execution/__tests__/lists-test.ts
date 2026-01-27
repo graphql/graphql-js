@@ -78,6 +78,123 @@ describe('Execute: Accepts any iterable as list value', () => {
   });
 });
 
+describe('Execute: Handles abrupt completion in synchronous iterables', () => {
+  function complete(rootValue: unknown, as: string = '[String]') {
+    return execute({
+      schema: buildSchema(`type Query { listField: ${as} }`),
+      document: parse('{ listField }'),
+      rootValue,
+    });
+  }
+
+  it('closes the iterator when `next` throws', async () => {
+    let returned = false;
+    let nextCalls = 0;
+
+    const listField: IterableIterator<string> = {
+      [Symbol.iterator](): IterableIterator<string> {
+        return this;
+      },
+      next(): IteratorResult<string> {
+        nextCalls++;
+        if (nextCalls === 1) {
+          return { done: false, value: 'ok' };
+        }
+        throw new Error('bad');
+      },
+      return(): IteratorResult<string> {
+        returned = true;
+        return { done: true, value: undefined };
+      },
+    };
+
+    expectJSON(await complete({ listField })).toDeepEqual({
+      data: { listField: null },
+      errors: [
+        {
+          message: 'bad',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField'],
+        },
+      ],
+    });
+    expect(nextCalls).to.equal(2);
+    expect(returned).to.equal(true);
+  });
+
+  it('closes the iterator when a null bubbles up from a non-null item', async () => {
+    const values = [1, null, 2];
+    let index = 0;
+    let returned = false;
+
+    const listField: IterableIterator<number | null> = {
+      [Symbol.iterator](): IterableIterator<number | null> {
+        return this;
+      },
+      next(): IteratorResult<number | null> {
+        const value = values[index++];
+        if (value === undefined) {
+          return { done: true, value: undefined };
+        }
+        return { done: false, value };
+      },
+      return(): IteratorResult<number | null> {
+        returned = true;
+        return { done: true, value: undefined };
+      },
+    };
+
+    expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
+      data: { listField: null },
+      errors: [
+        {
+          message: 'Cannot return null for non-nullable field Query.listField.',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField', 1],
+        },
+      ],
+    });
+    expect(index).to.equal(2);
+    expect(returned).to.equal(true);
+  });
+
+  it('ignores errors thrown by the iterator `return` method', async () => {
+    const values = [1, null, 2];
+    let index = 0;
+    let returned = false;
+
+    const listField: IterableIterator<number | null> = {
+      [Symbol.iterator](): IterableIterator<number | null> {
+        return this;
+      },
+      next(): IteratorResult<number | null> {
+        const value = values[index++];
+        if (value === undefined) {
+          return { done: true, value: undefined };
+        }
+        return { done: false, value };
+      },
+      return(): IteratorResult<number | null> {
+        returned = true;
+        throw new Error('ignored return error');
+      },
+    };
+
+    expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
+      data: { listField: null },
+      errors: [
+        {
+          message: 'Cannot return null for non-nullable field Query.listField.',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField', 1],
+        },
+      ],
+    });
+    expect(index).to.equal(2);
+    expect(returned).to.equal(true);
+  });
+});
+
 describe('Execute: Accepts async iterables as list value', () => {
   function complete(rootValue: unknown, as: string = '[String]') {
     return execute({

@@ -1018,13 +1018,13 @@ function getStreamUsage(
  * Complete a async iterator value by completing the result and calling
  * recursively until all the results are completed.
  */
-async function completeAsyncIteratorValue(
+async function completeAsyncIterable(
   exeContext: ExecutionContext,
   itemType: GraphQLOutputType,
   fieldDetailsList: FieldDetailsList,
   info: GraphQLResolveInfo,
   path: Path,
-  asyncIterator: AsyncIterator<unknown>,
+  items: AsyncIterable<unknown>,
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): Promise<GraphQLWrappedResult<ReadonlyArray<unknown>>> {
@@ -1035,6 +1035,7 @@ async function completeAsyncIteratorValue(
     newDeferredFragmentRecords: undefined,
     incrementalDataRecords: undefined,
   };
+  const asyncIterator = items[Symbol.asyncIterator]();
   let index = 0;
   const streamUsage = getStreamUsage(
     exeContext.validatedExecutionArgs,
@@ -1131,10 +1132,7 @@ async function completeAsyncIteratorValue(
       index++;
     }
   } catch (error) {
-    asyncIterator.return?.().catch(() => {
-      /* c8 ignore next 1 */
-      // ignore error
-    });
+    returnIteratorIgnoringErrors(asyncIterator);
     throw error;
   }
 
@@ -1169,15 +1167,14 @@ function completeListValue(
     const maybeCancellableIterable = abortSignalListener
       ? cancellableIterable(result, abortSignalListener)
       : result;
-    const asyncIterator = maybeCancellableIterable[Symbol.asyncIterator]();
 
-    return completeAsyncIteratorValue(
+    return completeAsyncIterable(
       exeContext,
       itemType,
       fieldDetailsList,
       info,
       path,
-      asyncIterator,
+      maybeCancellableIterable,
       incrementalContext,
       deferMap,
     );
@@ -1211,8 +1208,6 @@ function completeIterableValue(
   incrementalContext: IncrementalContext | undefined,
   deferMap: ReadonlyMap<DeferUsage, DeferredFragmentRecord> | undefined,
 ): PromiseOrValue<GraphQLWrappedResult<ReadonlyArray<unknown>>> {
-  // This is specified as a simple map, however we're optimizing the path
-  // where the list contains no Promises by avoiding creating another Promise.
   let containsPromise = false;
   const completedResults: Array<unknown> = [];
   const graphqlWrappedResult: GraphQLWrappedResult<Array<unknown>> = {
@@ -1227,38 +1222,62 @@ function completeIterableValue(
     path,
   );
   const iterator = items[Symbol.iterator]();
-  let iteration = iterator.next();
-  while (!iteration.done) {
-    const item = iteration.value;
+  try {
+    while (true) {
+      if (streamUsage && index >= streamUsage.initialCount) {
+        const iteration = iterator.next();
+        if (!iteration.done) {
+          const item = iteration.value;
+          const syncStreamRecord: StreamRecord = {
+            label: streamUsage.label,
+            path,
+            streamItemQueue: buildSyncStreamItemQueue(
+              item,
+              index,
+              path,
+              iterator,
+              exeContext,
+              streamUsage.fieldDetailsList,
+              info,
+              itemType,
+            ),
+          };
 
-    if (streamUsage && index >= streamUsage.initialCount) {
-      const syncStreamRecord: StreamRecord = {
-        label: streamUsage.label,
-        path,
-        streamItemQueue: buildSyncStreamItemQueue(
+          addIncrementalDataRecords(graphqlWrappedResult, [syncStreamRecord]);
+        }
+        break;
+      }
+
+      const iteration = iterator.next();
+      if (iteration.done) {
+        break;
+      }
+
+      const item = iteration.value;
+
+      // No need to modify the info object containing the path,
+      // since from here on it is not ever accessed by resolver functions.
+      const itemPath = addPath(path, index, undefined);
+
+      if (isPromise(item)) {
+        completedResults.push(
+          completePromisedListItemValue(
+            item,
+            graphqlWrappedResult,
+            exeContext,
+            itemType,
+            fieldDetailsList,
+            info,
+            itemPath,
+            incrementalContext,
+            deferMap,
+          ),
+        );
+        containsPromise = true;
+      } else if (
+        completeListItemValue(
           item,
-          index,
-          path,
-          iterator,
-          exeContext,
-          streamUsage.fieldDetailsList,
-          info,
-          itemType,
-        ),
-      };
-
-      addIncrementalDataRecords(graphqlWrappedResult, [syncStreamRecord]);
-      break;
-    }
-
-    // No need to modify the info object containing the path,
-    // since from here on it is not ever accessed by resolver functions.
-    const itemPath = addPath(path, index, undefined);
-
-    if (isPromise(item)) {
-      completedResults.push(
-        completePromisedListItemValue(
-          item,
+          completedResults,
           graphqlWrappedResult,
           exeContext,
           itemType,
@@ -1267,28 +1286,15 @@ function completeIterableValue(
           itemPath,
           incrementalContext,
           deferMap,
-        ),
-      );
-      containsPromise = true;
-    } else if (
-      completeListItemValue(
-        item,
-        completedResults,
-        graphqlWrappedResult,
-        exeContext,
-        itemType,
-        fieldDetailsList,
-        info,
-        itemPath,
-        incrementalContext,
-        deferMap,
-      )
-    ) {
-      containsPromise = true;
+        )
+      ) {
+        containsPromise = true;
+      }
+      index++;
     }
-    index++;
-
-    iteration = iterator.next();
+  } catch (error) {
+    returnIteratorIgnoringErrors(iterator);
+    throw error;
   }
 
   return containsPromise
@@ -2441,4 +2447,19 @@ function buildStreamItemResult(
     newDeferredFragmentRecords,
     incrementalDataRecords,
   };
+}
+
+function returnIteratorIgnoringErrors(
+  iterator: Iterator<unknown> | AsyncIterator<unknown>,
+) {
+  try {
+    const result = iterator.return?.();
+    if (isPromise(result)) {
+      result.catch(() => {
+        // ignore errors
+      });
+    }
+  } catch {
+    // ignore errors
+  }
 }
