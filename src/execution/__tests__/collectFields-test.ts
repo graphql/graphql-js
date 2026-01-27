@@ -42,52 +42,6 @@ function collectRootFields(query: string) {
 
 describe('collectFields', () => {
   describe('overlapping fragment spreads', () => {
-    it('should not collect a deferred spread after a non-deferred spread has been collected', () => {
-      const { newDeferUsages } = collectRootFields(`
-        query {
-          ...FragmentName
-          ...FragmentName @defer
-        }
-        fragment FragmentName on Query {
-          field
-        }
-      `);
-
-      expect(newDeferUsages).to.have.lengthOf(0);
-    });
-
-    it('should not collect a deferred spread after a deferred spread has been collected', () => {
-      const { newDeferUsages } = collectRootFields(`
-        query {
-          ...FragmentName @defer
-          ...FragmentName @defer
-        }
-        fragment FragmentName on Query {
-          field
-        }
-      `);
-
-      expect(newDeferUsages).to.have.lengthOf(1);
-    });
-
-    it('should collect a non-deferred spread after a deferred spread has been collected', () => {
-      const { groupedFieldSet } = collectRootFields(`
-        query {
-          ...FragmentName @defer
-          ...FragmentName
-        }
-        fragment FragmentName on Query {
-          field
-        }
-      `);
-
-      const fieldDetailsList = groupedFieldSet.get('field');
-
-      invariant(fieldDetailsList != null);
-
-      expect(fieldDetailsList).to.have.lengthOf(2);
-    });
-
     it('should not collect a non-deferred spread after a non-deferred spread has been collected', () => {
       const { groupedFieldSet } = collectRootFields(`
         query {

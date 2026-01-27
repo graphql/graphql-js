@@ -6,15 +6,6 @@ export type { ValidationRule } from './ValidationContext.js';
 // All validation rules in the GraphQL Specification.
 export { specifiedRules, recommendedRules } from './specifiedRules.js';
 
-// Spec Section: "Defer And Stream Directive Labels Are Unique"
-export { DeferStreamDirectiveLabelRule } from './rules/DeferStreamDirectiveLabelRule.js';
-
-// Spec Section: "Defer And Stream Directives Are Used On Valid Root Field"
-export { DeferStreamDirectiveOnRootFieldRule } from './rules/DeferStreamDirectiveOnRootFieldRule.js';
-
-// Spec Section: "Defer And Stream Directives Are Used On Valid Operations"
-export { DeferStreamDirectiveOnValidOperationsRule } from './rules/DeferStreamDirectiveOnValidOperationsRule.js';
-
 // Spec Section: "Executable Definitions"
 export { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule.js';
 
@@ -68,9 +59,6 @@ export { ScalarLeafsRule } from './rules/ScalarLeafsRule.js';
 
 // Spec Section: "Subscriptions with Single Root Field"
 export { SingleFieldSubscriptionsRule } from './rules/SingleFieldSubscriptionsRule.js';
-
-// Spec Section: "Stream Directives Are Used On List Fields"
-export { StreamDirectiveOnListFieldRule } from './rules/StreamDirectiveOnListFieldRule.js';
 
 // Spec Section: "Argument Uniqueness"
 export { UniqueArgumentNamesRule } from './rules/UniqueArgumentNamesRule.js';
