@@ -390,6 +390,29 @@ describe('Execute: Accepts async iterables as list value', () => {
     });
     assert(returned);
   });
+
+  it('Ignores error on return method when async iterator nulls', async () => {
+    const values = [1, null, 2];
+    let i = 0;
+    const listField = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => Promise.resolve({ value: values[i++], done: false }),
+        return: () => Promise.reject(new Error('ignored return error')),
+      }),
+    };
+    const errors = [
+      {
+        message: 'Cannot return null for non-nullable field Query.listField.',
+        locations: [{ line: 1, column: 3 }],
+        path: ['listField', 1],
+      },
+    ];
+
+    expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
+      data: { listField: null },
+      errors,
+    });
+  });
 });
 
 describe('Execute: Handles list nullability', () => {

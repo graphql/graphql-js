@@ -26,7 +26,6 @@ export class ResolveInfo implements GraphQLResolveInfo {
   private _fieldDetailsList: FieldDetailsList;
   private _parentType: GraphQLObjectType;
   private _path: Path;
-  private _abortSignal: AbortSignal | undefined;
 
   private _fieldName: string | undefined;
   private _fieldNodes: ReadonlyArray<FieldNode> | undefined;
@@ -38,21 +37,18 @@ export class ResolveInfo implements GraphQLResolveInfo {
   private _operation: OperationDefinitionNode | undefined;
   private _variableValues: VariableValues | undefined;
 
-  // eslint-disable-next-line max-params
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
     fieldDef: GraphQLField<unknown, unknown>,
     fieldDetailsList: FieldDetailsList,
     parentType: GraphQLObjectType,
     path: Path,
-    abortSignal: AbortSignal | undefined,
   ) {
     this._validatedExecutionArgs = validatedExecutionArgs;
     this._fieldDef = fieldDef;
     this._fieldDetailsList = fieldDetailsList;
     this._parentType = parentType;
     this._path = path;
-    this._abortSignal = abortSignal;
   }
 
   get fieldName(): string {
@@ -106,9 +102,5 @@ export class ResolveInfo implements GraphQLResolveInfo {
   get variableValues(): VariableValues {
     this._variableValues ??= this._validatedExecutionArgs.variableValues;
     return this._variableValues;
-  }
-
-  get abortSignal(): AbortSignal | undefined {
-    return this._abortSignal;
   }
 }

@@ -19,14 +19,10 @@ describe('ResolveInfo', () => {
     fields: { test: { type: GraphQLString } },
   });
 
-  const abortController = new AbortController();
-  const abortSignal = abortController.signal;
-
   const validatedExecutionArgs = validateExecutionArgs({
     schema: new GraphQLSchema({ query }),
     document: parse(`{ test }`),
     rootValue: { test: 'root' },
-    abortSignal,
   });
 
   assert('schema' in validatedExecutionArgs);
@@ -54,7 +50,6 @@ describe('ResolveInfo', () => {
     fieldDetailsList,
     query,
     path,
-    abortSignal,
   );
 
   it('exposes fieldName', () => {
@@ -103,9 +98,5 @@ describe('ResolveInfo', () => {
     expect(resolveInfo.variableValues).to.equal(
       validatedExecutionArgs.variableValues,
     );
-  });
-
-  it('exposes abortSignal', () => {
-    expect(resolveInfo.abortSignal).to.equal(abortSignal);
   });
 });

@@ -236,7 +236,6 @@ describe('Execute: Handles basic execution tasks', () => {
         },
         coerced: { var: 'abc' },
       },
-      abortSignal: undefined,
     });
   });
 

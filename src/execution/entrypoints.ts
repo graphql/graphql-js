@@ -5,7 +5,6 @@ import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
-import { locatedError } from '../error/locatedError.js';
 
 import type {
   DocumentNode,
@@ -182,7 +181,6 @@ export interface ExecutionArgs {
     ) => PromiseOrValue<ExecutionResult>
   >;
   hideSuggestions?: Maybe<boolean>;
-  abortSignal?: Maybe<AbortSignal>;
   /** Additional execution options. */
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
@@ -213,13 +211,8 @@ export function validateExecutionArgs(
     typeResolver,
     subscribeFieldResolver,
     perEventExecutor,
-    abortSignal,
     options,
   } = args;
-
-  if (abortSignal?.aborted) {
-    return [locatedError(abortSignal.reason, undefined)];
-  }
 
   // If the schema used for execution is invalid, throw an error.
   assertValidSchema(schema);
@@ -306,7 +299,6 @@ export function validateExecutionArgs(
     perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     hideSuggestions,
     errorPropagation,
-    abortSignal: args.abortSignal ?? undefined,
   };
 }
 
