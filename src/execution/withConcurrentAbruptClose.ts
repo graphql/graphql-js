@@ -32,15 +32,15 @@ export function withConcurrentAbruptClose<T>(
       return generator.next();
     },
     async return() {
-      ignoreErrors(beforeReturn);
+      await ignoreErrors(beforeReturn);
       return generator.return();
     },
     async throw(error?: unknown) {
-      ignoreErrors(() => beforeThrow(error));
+      await ignoreErrors(() => beforeThrow(error));
       return generator.throw(error);
     },
     async [asyncDispose]() {
-      ignoreErrors(beforeReturn);
+      await ignoreErrors(beforeReturn);
       if (typeof generator[asyncDispose] === 'function') {
         await generator[asyncDispose]();
       }
@@ -48,11 +48,13 @@ export function withConcurrentAbruptClose<T>(
   };
 }
 
-function ignoreErrors(fn: () => PromiseOrValue<unknown>): void {
+function ignoreErrors(
+  fn: () => PromiseOrValue<unknown>,
+): PromiseOrValue<unknown> {
   try {
     const result = fn();
     if (isPromise(result)) {
-      result.catch(() => {
+      return result.catch(() => {
         // ignore error
       });
     }

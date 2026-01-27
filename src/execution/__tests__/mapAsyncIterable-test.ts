@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { mapAsyncIterable } from '../mapAsyncIterable.js';
 
@@ -246,6 +247,66 @@ describe('mapAsyncIterable', () => {
       value: undefined,
       done: true,
     });
+  });
+
+  it('waits for source handlers before actually throwing', async () => {
+    const abortReason = new Error('aborted');
+    let storedReason: unknown;
+
+    const iterable: AsyncIterableIterator<number> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return Promise.resolve({ value: 1, done: false });
+      },
+      async throw(reason?: unknown) {
+        if (storedReason === undefined) {
+          await resolveOnNextTick();
+          // eslint-disable-next-line require-atomic-updates
+          storedReason = reason;
+          return { value: undefined, done: true };
+        }
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw storedReason;
+      },
+      return() {
+        return Promise.resolve({ value: undefined, done: true });
+      },
+    };
+
+    const mapped = mapAsyncIterable(iterable, (x) => x);
+
+    expect(await mapped.next()).to.deep.equal({ value: 1, done: false });
+
+    const thrown = mapped.throw(abortReason);
+    await expectPromise(thrown).toRejectWith('aborted');
+    expect(storedReason).to.equal(abortReason);
+  });
+
+  it('throws given reason, ignoring source throw result', async () => {
+    const iterable: AsyncIterableIterator<number> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return Promise.resolve({ value: 1, done: false });
+      },
+      throw(_reason?: unknown) {
+        return Promise.resolve({ value: 1, done: false });
+      },
+      return() {
+        return Promise.resolve({ value: undefined, done: true });
+      },
+    };
+
+    const mapped = mapAsyncIterable(iterable, (x) => x);
+
+    expect(await mapped.next()).to.deep.equal({ value: 1, done: false });
+
+    const abortReason = new Error('aborted');
+    const thrown = mapped.throw(abortReason);
+    await expectPromise(thrown).toRejectWith('aborted');
   });
 
   it('passes through caught errors through async generators', async () => {

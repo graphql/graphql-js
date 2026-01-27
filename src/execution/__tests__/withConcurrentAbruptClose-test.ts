@@ -175,4 +175,42 @@ describe('withConcurrentAbruptClose', () => {
 
     expect(generator[Symbol.asyncIterator]()).to.equal(generator);
   });
+
+  it('awaits beforeThrow so an abrupt close can set the rejection reason', async () => {
+    const abortReason = new Error('aborted');
+    let storedReason: unknown;
+
+    const generator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return Promise.resolve({ value: undefined, done: true });
+      },
+      throw() {
+        return storedReason === undefined
+          ? Promise.resolve({ value: undefined, done: true })
+          : // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            Promise.reject(storedReason);
+      },
+      return() {
+        return Promise.resolve({ value: undefined, done: true });
+      },
+      async [Symbol.asyncDispose]() {
+        await this.return();
+      },
+    };
+
+    const wrapped = withConcurrentAbruptClose(
+      generator,
+      () => undefined,
+      async () => {
+        await Promise.resolve();
+        storedReason = abortReason;
+      },
+    );
+
+    await expectPromise(wrapped.throw(abortReason)).toRejectWith('aborted');
+    expect(storedReason).to.equal(abortReason);
+  });
 });
