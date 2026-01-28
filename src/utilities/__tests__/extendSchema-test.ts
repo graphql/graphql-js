@@ -1364,7 +1364,7 @@ describe('extendSchema', () => {
       `);
     });
 
-    it('merges field arguments additively', () => {
+    it('rejects extensions that try to add arguments to existing fields', () => {
       const schema = buildSchema(`
         type Query {
           test: Test
@@ -1381,30 +1381,14 @@ describe('extendSchema', () => {
         }
       `);
 
-      const extendedSchema = extendSchema(schema, extendAST);
-      expect(validateSchema(extendedSchema)).to.deep.equal([]);
-
-      const testType = assertObjectType(extendedSchema.getType('Test'));
-      const searchField = testType.getFields().search;
-
-      expect(searchField.args.map((arg) => arg.name)).to.have.members([
-        'query',
-        'limit',
-      ]);
-      const queryArg = searchField.args.find((arg) => arg.name === 'query');
-      expect(queryArg?.type.toString()).to.equal('String');
-      const limitArg = searchField.args.find((arg) => arg.name === 'limit');
-      expect(limitArg?.type.toString()).to.equal('Int');
-
-      expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
-        type Test {
-          search(query: String, limit: Int = 10): [String]
-        }
-      `);
+      expect(() => extendSchema(schema, extendAST)).to.throw(
+        'Cannot add new argument "limit" to existing field "Test.search". Field extensions cannot modify argument lists.',
+      );
     });
+  });
 
-    it('merges multiple extensions on the same field', () => {
-      const schema = buildSchema(`
+  it('rejects multiple extensions that try to add arguments to existing fields', () => {
+    const schema = buildSchema(`
         type Query {
           test: Test
         }
@@ -1414,50 +1398,20 @@ describe('extendSchema', () => {
         }
       `);
 
-      const firstExtendAST = parse(`
+    const firstExtendAST = parse(`
         extend type Test {
           profile(detailed: Boolean = false): String
           name: String
         }
       `);
 
-      const secondExtendAST = parse(`
-        extend type Test {
-          profile(includePrivate: Boolean = false): String @deprecated(reason: "Use profileV2")
-          age: Int
-        }
-      `);
+    expect(() => extendSchema(schema, firstExtendAST)).to.throw(
+      'Cannot add new argument "detailed" to existing field "Test.profile". Field extensions cannot modify argument lists.',
+    );
+  });
 
-      let extendedSchema = extendSchema(schema, firstExtendAST);
-      extendedSchema = extendSchema(extendedSchema, secondExtendAST);
-
-      expect(validateSchema(extendedSchema)).to.deep.equal([]);
-
-      const testType = assertObjectType(extendedSchema.getType('Test'));
-      const profileField = testType.getFields().profile;
-
-      expect(profileField.args.map((arg) => arg.name)).to.have.members([
-        'format',
-        'detailed',
-        'includePrivate',
-      ]);
-
-      expect(profileField.deprecationReason).to.equal('Use profileV2');
-
-      const fieldNames = Object.keys(testType.getFields());
-      expect(fieldNames).to.have.members(['profile', 'name', 'age']);
-
-      expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
-        type Test {
-          profile(format: String, detailed: Boolean = false, includePrivate: Boolean = false): String @deprecated(reason: "Use profileV2")
-          name: String
-          age: Int
-        }
-      `);
-    });
-
-    it('merges field descriptions', () => {
-      const schema = buildSchema(`
+  it('merges field descriptions', () => {
+    const schema = buildSchema(`
         type Query {
           test: Test
         }
@@ -1467,7 +1421,7 @@ describe('extendSchema', () => {
         }
       `);
 
-      const extendAST = parse(`
+    const extendAST = parse(`
         extend type Test {
           """Updated field description"""
           field: String
@@ -1475,25 +1429,25 @@ describe('extendSchema', () => {
         }
       `);
 
-      const extendedSchema = extendSchema(schema, extendAST);
-      expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    const extendedSchema = extendSchema(schema, extendAST);
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
 
-      const testType = assertObjectType(extendedSchema.getType('Test'));
-      const field = testType.getFields().field;
+    const testType = assertObjectType(extendedSchema.getType('Test'));
+    const field = testType.getFields().field;
 
-      expect(field.description).to.equal('Updated field description');
+    expect(field.description).to.equal('Updated field description');
 
-      expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
+    expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
         type Test {
           """Updated field description"""
           field: String
           newField: Int
         }
       `);
-    });
+  });
 
-    it('preserves original field properties when not overridden', () => {
-      const schema = buildSchema(`
+  it('rejects extensions that try to add arguments while preserving other properties', () => {
+    const schema = buildSchema(`
         type Query {
           test: Test
         }
@@ -1504,40 +1458,19 @@ describe('extendSchema', () => {
         }
       `);
 
-      const extendAST = parse(`
+    const extendAST = parse(`
         extend type Test {
           field(newArg: Int): String
         }
       `);
 
-      const extendedSchema = extendSchema(schema, extendAST);
-      expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    expect(() => extendSchema(schema, extendAST)).to.throw(
+      'Cannot add new argument "newArg" to existing field "Test.field". Field extensions cannot modify argument lists.',
+    );
+  });
 
-      const testType = assertObjectType(extendedSchema.getType('Test'));
-      const field = testType.getFields().field;
-
-      expect(field.description).to.equal('Original description');
-      expect(field.deprecationReason).to.equal('Original reason');
-
-      expect(field.args.map((arg) => arg.name)).to.have.members([
-        'arg',
-        'newArg',
-      ]);
-      const argArg = field.args.find((arg) => arg.name === 'arg');
-      const newArgArg = field.args.find((arg) => arg.name === 'newArg');
-      expect(argArg?.type.toString()).to.equal('String');
-      expect(newArgArg?.type.toString()).to.equal('Int');
-
-      expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
-        type Test {
-          """Original description"""
-          field(arg: String = "default", newArg: Int): String @deprecated(reason: "Original reason")
-        }
-      `);
-    });
-
-    it('allows adding field properties with extensions', () => {
-      const schema = buildSchema(`
+  it('allows adding field properties with extensions', () => {
+    const schema = buildSchema(`
         type Query {
           test: Test
         }
@@ -1547,31 +1480,31 @@ describe('extendSchema', () => {
         }
       `);
 
-      const extendAST = parse(`
+    const extendAST = parse(`
         extend type Test {
           field: String @deprecated(reason: "Field changed")
         }
       `);
 
-      const extendedSchema = extendSchema(schema, extendAST);
-      expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    const extendedSchema = extendSchema(schema, extendAST);
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
 
-      const testType = assertObjectType(extendedSchema.getType('Test'));
-      const field = testType.getFields().field;
+    const testType = assertObjectType(extendedSchema.getType('Test'));
+    const field = testType.getFields().field;
 
-      expect(field.type.toString()).to.equal('String');
-      expect(field.description).to.equal(undefined);
-      expect(field.deprecationReason).to.equal('Field changed');
+    expect(field.type.toString()).to.equal('String');
+    expect(field.description).to.equal(undefined);
+    expect(field.deprecationReason).to.equal('Field changed');
 
-      expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
+    expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
         type Test {
           field: String @deprecated(reason: "Field changed")
         }
       `);
-    });
+  });
 
-    it('works with interface field merging', () => {
-      const schema = buildSchema(`
+  it('works with interface field merging', () => {
+    const schema = buildSchema(`
         type Query {
           test: Test
         }
@@ -1582,35 +1515,35 @@ describe('extendSchema', () => {
         }
       `);
 
-      const extendAST = parse(`
+    const extendAST = parse(`
         extend interface Test {
           id: ID @deprecated(reason: "Use stringId")
           email: String
         }
       `);
 
-      const extendedSchema = extendSchema(schema, extendAST);
-      expect(validateSchema(extendedSchema)).to.deep.equal([]);
+    const extendedSchema = extendSchema(schema, extendAST);
+    expect(validateSchema(extendedSchema)).to.deep.equal([]);
 
-      const testInterface = assertInterfaceType(extendedSchema.getType('Test'));
-      const fields = testInterface.getFields();
+    const testInterface = assertInterfaceType(extendedSchema.getType('Test'));
+    const fields = testInterface.getFields();
 
-      expect(fields.id.type.toString()).to.equal('ID');
-      expect(fields.id.deprecationReason).to.equal('Use stringId');
-      expect(fields.name.type.toString()).to.equal('String');
-      expect(fields.email.type.toString()).to.equal('String');
+    expect(fields.id.type.toString()).to.equal('ID');
+    expect(fields.id.deprecationReason).to.equal('Use stringId');
+    expect(fields.name.type.toString()).to.equal('String');
+    expect(fields.email.type.toString()).to.equal('String');
 
-      expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
+    expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
         interface Test {
           id: ID @deprecated(reason: "Use stringId")
           name: String
           email: String
         }
       `);
-    });
+  });
 
-    it('handles complex field merging scenarios', () => {
-      const schema = buildSchema(`
+  it('rejects complex field merging scenarios with new arguments', () => {
+    const schema = buildSchema(`
         type Query {
           user: User
         }
@@ -1625,80 +1558,28 @@ describe('extendSchema', () => {
         }
       `);
 
-      const extension1 = parse(`
+    const extension1 = parse(`
         extend type User {
           profile(detailed: Boolean = false): UserProfile @deprecated(reason: "Use profileV2")
           name: String
         }
       `);
 
-      const extension2 = parse(`
-        extend type User {
-          profile(includePrivate: Boolean = false): UserProfile
-          email: String
-          age: Int
-        }
-      `);
+    expect(() => extendSchema(schema, extension1)).to.throw(
+      'Cannot add new argument "detailed" to existing field "User.profile". Field extensions cannot modify argument lists.',
+    );
+  });
 
-      const extension3 = parse(`
-        extend type User {
-          """User's age in years"""
-          age: Int
-          fullName: String
-        }
-      `);
-
-      let extendedSchema = extendSchema(schema, extension1);
-      extendedSchema = extendSchema(extendedSchema, extension2);
-      extendedSchema = extendSchema(extendedSchema, extension3);
-
-      expect(validateSchema(extendedSchema)).to.deep.equal([]);
-
-      const userType = assertObjectType(extendedSchema.getType('User'));
-      const fields = userType.getFields();
-
-      const profileField = fields.profile;
-      expect(profileField.args.map((arg) => arg.name)).to.have.members([
-        'format',
-        'detailed',
-        'includePrivate',
-      ]);
-      expect(profileField.deprecationReason).to.equal('Use profileV2');
-
-      expect(fields.age.description).to.equal("User's age in years");
-
-      expect(Object.keys(fields)).to.have.members([
-        'id',
-        'profile',
-        'name',
-        'email',
-        'age',
-        'fullName',
-      ]);
-
-      expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
-        type User {
-          id: ID!
-          profile(format: String, detailed: Boolean = false, includePrivate: Boolean = false): UserProfile @deprecated(reason: "Use profileV2")
-          name: String
-          email: String
-          """User's age in years"""
-          age: Int
-          fullName: String
-        }
-      `);
-    });
-
-    it('covers field merging within buildFieldMap when same field appears in multiple extensions', () => {
-      // This test specifically targets the if branch in buildFieldMap
-      // when fieldConfigMap[fieldName] != null (same field in multiple extensions)
-      const schema = buildSchema(`
+  it('covers field merging within buildFieldMap when same field appears in multiple extensions', () => {
+    // This test specifically targets the if branch in buildFieldMap
+    // when fieldConfigMap[fieldName] != null (same field in multiple extensions)
+    const schema = buildSchema(`
           type Query {
             existingField: String
           }
         `);
 
-      const extendAST = parse(`
+    const extendAST = parse(`
           extend type Query {
             newField: String
           }
@@ -1708,23 +1589,22 @@ describe('extendSchema', () => {
           }
         `);
 
-      // Use assumeValidSDL to bypass validation and test the internal merging logic
-      const extendedSchema = extendSchema(schema, extendAST, {
-        assumeValidSDL: true,
-      });
+    // Use assumeValidSDL to bypass validation and test the internal merging logic
+    const extendedSchema = extendSchema(schema, extendAST, {
+      assumeValidSDL: true,
+    });
 
-      const queryType = extendedSchema.getType('Query');
-      expect(queryType != null);
-      const fields = (queryType as any).getFields();
-      expect(fields.newField.type.toString()).to.equal('String');
-      expect(fields.newField.deprecationReason).to.equal('Use something else');
+    const queryType = extendedSchema.getType('Query');
+    expect(queryType != null);
+    const fields = (queryType as any).getFields();
+    expect(fields.newField.type.toString()).to.equal('String');
+    expect(fields.newField.deprecationReason).to.equal('Use something else');
 
-      expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
+    expectSchemaChanges(schema, extendedSchema).to.equal(dedent`
           type Query {
             existingField: String
             newField: String @deprecated(reason: "Use something else")
           }
       `);
-    });
   });
 });

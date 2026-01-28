@@ -51,21 +51,27 @@ describe('ExtendedFieldsMatchOriginalTypeRule', () => {
     );
   });
 
-  it('accepts extensions with matching argument types', () => {
+  it('rejects extensions with new arguments to existing fields', () => {
     const schema = buildSchema(`
       type Query {
         search(query: String): [String]
       }
     `);
 
-    expectValid(
+    expectErrors(
       `
       extend type Query {
         search(query: String, limit: Int): [String]
       }
     `,
       schema,
-    );
+    ).toDeepEqual([
+      {
+        message:
+          'Cannot add new argument "limit" to existing field "Query.search". Field extensions cannot modify argument lists.',
+        locations: [{ line: 3, column: 31 }],
+      },
+    ]);
   });
 
   it('rejects extensions with conflicting field types', () => {
@@ -330,6 +336,11 @@ describe('ExtendedFieldsMatchOriginalTypeRule', () => {
         message:
           'Argument "Query.complexField(arg2)" type mismatch: original type is "[Int]" but extension defines "[String]".',
         locations: [{ line: 5, column: 17 }],
+      },
+      {
+        message:
+          'Cannot add new argument "arg3" to existing field "Query.complexField". Field extensions cannot modify argument lists.',
+        locations: [{ line: 6, column: 11 }],
       },
     ]);
   });
