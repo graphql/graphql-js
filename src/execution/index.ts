@@ -12,8 +12,8 @@ export {
   defaultFieldResolver,
   defaultTypeResolver,
   subscribe,
-} from './entrypoints.js';
-export type { ExecutionArgs } from './entrypoints.js';
+} from './execute.js';
+export type { ExecutionArgs } from './execute.js';
 
 export type {
   ValidatedExecutionArgs,

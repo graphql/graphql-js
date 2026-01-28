@@ -14,7 +14,7 @@ import {
 import { GraphQLBoolean, GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { execute, executeSync } from '../entrypoints.js';
+import { execute, executeSync } from '../execute.js';
 
 class Dog {
   name: string;

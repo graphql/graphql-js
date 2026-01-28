@@ -1,4 +1,4 @@
-import { execute } from 'graphql/execution/entrypoints.js';
+import { execute } from 'graphql/execution/execute.js';
 import { parse } from 'graphql/language/parser.js';
 import { buildSchema } from 'graphql/utilities/buildASTSchema.js';
 

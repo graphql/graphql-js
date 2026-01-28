@@ -10,7 +10,7 @@ import {
 } from '../../type/index.js';
 
 import { collectFields } from '../collectFields.js';
-import { validateExecutionArgs } from '../entrypoints.js';
+import { validateExecutionArgs } from '../execute.js';
 import { ResolveInfo } from '../ResolveInfo.js';
 
 describe('ResolveInfo', () => {
