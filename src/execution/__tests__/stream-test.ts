@@ -23,7 +23,7 @@ import { execute, experimentalExecuteIncrementally } from '../entrypoints.js';
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../execute.js';
+} from '../Executor.js';
 
 const friendType = new GraphQLObjectType({
   fields: {

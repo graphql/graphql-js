@@ -30,7 +30,7 @@ import {
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../execute.js';
+} from '../Executor.js';
 
 async function complete(
   document: DocumentNode,

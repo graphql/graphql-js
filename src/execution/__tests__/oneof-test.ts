@@ -7,7 +7,7 @@ import { parse } from '../../language/parser.js';
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import { execute } from '../entrypoints.js';
-import type { ExecutionResult } from '../execute.js';
+import type { ExecutionResult } from '../Executor.js';
 
 const schema = buildSchema(`
   type Query {

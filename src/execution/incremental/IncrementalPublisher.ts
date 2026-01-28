@@ -16,7 +16,7 @@ import type {
   PendingResult,
   StreamItemValue,
   SubsequentIncrementalExecutionResult,
-} from '../execute.js';
+} from '../Executor.js';
 import { mapAsyncIterable } from '../mapAsyncIterable.js';
 import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
 

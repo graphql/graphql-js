@@ -16,7 +16,7 @@ import type {
 } from '../type/index.js';
 
 import type { FieldDetailsList } from './collectFields.js';
-import type { ValidatedExecutionArgs } from './execute.js';
+import type { ValidatedExecutionArgs } from './Executor.js';
 import type { VariableValues } from './values.js';
 
 /** @internal */

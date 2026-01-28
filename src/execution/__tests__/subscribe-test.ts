@@ -26,7 +26,7 @@ import {
   executeSubscriptionEvent,
   subscribe,
 } from '../entrypoints.js';
-import type { ExecutionResult } from '../execute.js';
+import type { ExecutionResult } from '../Executor.js';
 
 import { SimplePubSub } from './simplePubSub.js';
 

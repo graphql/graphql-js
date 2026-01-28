@@ -1,6 +1,6 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path.js';
 
-export { experimentalExecuteQueryOrMutationOrSubscriptionEvent } from './execute.js';
+export { experimentalExecuteQueryOrMutationOrSubscriptionEvent } from './Executor.js';
 
 export {
   createSourceEventStream,
@@ -30,7 +30,7 @@ export type {
   FormattedIncrementalDeferResult,
   FormattedIncrementalStreamResult,
   FormattedIncrementalResult,
-} from './execute.js';
+} from './Executor.js';
 
 export {
   getArgumentValues,

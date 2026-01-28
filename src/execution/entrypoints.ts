@@ -26,12 +26,12 @@ import type {
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   ValidatedExecutionArgs,
-} from './execute.js';
+} from './Executor.js';
 import {
   createSourceEventStreamImpl,
   experimentalExecuteQueryOrMutationOrSubscriptionEvent,
   mapSourceToResponse,
-} from './execute.js';
+} from './Executor.js';
 import { getVariableSignature } from './getVariableSignature.js';
 import { getVariableValues } from './values.js';
 
