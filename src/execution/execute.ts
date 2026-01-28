@@ -1,13 +1,18 @@
+import { inspect } from '../jsutils/inspect.js';
+import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import { isPromise } from '../jsutils/isPromise.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
+import { addPath, pathToArray } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
 import { GraphQLError } from '../error/GraphQLError.js';
+import { locatedError } from '../error/locatedError.js';
 
 import type {
   DocumentNode,
+  FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
 } from '../language/ast.js';
@@ -21,19 +26,19 @@ import type {
 import { assertValidSchema } from '../type/index.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import type { FragmentDetails } from './collectFields.js';
+import { cancellablePromise } from './cancellablePromise.js';
+import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
+import { collectFields } from './collectFields.js';
 import type {
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   ValidatedExecutionArgs,
 } from './Executor.js';
-import {
-  createSourceEventStreamImpl,
-  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
-  mapSourceToResponse,
-} from './Executor.js';
+import { experimentalExecuteQueryOrMutationOrSubscriptionEvent } from './Executor.js';
 import { getVariableSignature } from './getVariableSignature.js';
-import { getVariableValues } from './values.js';
+import { mapAsyncIterable } from './mapAsyncIterable.js';
+import { ResolveInfo } from './ResolveInfo.js';
+import { getArgumentValues, getVariableValues } from './values.js';
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
@@ -469,3 +474,173 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
       return property;
     }
   };
+
+function mapSourceToResponse(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+  resultOrStream: ExecutionResult | AsyncIterable<unknown>,
+): AsyncGenerator<ExecutionResult, void, void> | ExecutionResult {
+  if (!isAsyncIterable(resultOrStream)) {
+    return resultOrStream;
+  }
+
+  // For each payload yielded from a subscription, map it over the normal
+  // GraphQL `execute` function, with `payload` as the rootValue.
+  // This implements the "MapSourceToResponseEvent" algorithm described in
+  // the GraphQL specification..
+  function mapFn(payload: unknown): PromiseOrValue<ExecutionResult> {
+    const perEventExecutionArgs: ValidatedExecutionArgs = {
+      ...validatedExecutionArgs,
+      rootValue: payload,
+    };
+    return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
+  }
+
+  const externalAbortSignal = validatedExecutionArgs.externalAbortSignal;
+  if (externalAbortSignal) {
+    const generator = mapAsyncIterable(resultOrStream, mapFn);
+    return {
+      ...generator,
+      next: () => cancellablePromise(generator.next(), externalAbortSignal),
+    };
+  }
+  return mapAsyncIterable(resultOrStream, mapFn);
+}
+
+function createSourceEventStreamImpl(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
+  try {
+    const eventStream = executeSubscription(validatedExecutionArgs);
+    if (isPromise(eventStream)) {
+      return eventStream.then(undefined, (error: unknown) => ({
+        errors: [error as GraphQLError],
+      }));
+    }
+
+    return eventStream;
+  } catch (error) {
+    return { errors: [error] };
+  }
+}
+
+function executeSubscription(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): PromiseOrValue<AsyncIterable<unknown>> {
+  const {
+    schema,
+    fragments,
+    rootValue,
+    contextValue,
+    operation,
+    variableValues,
+    hideSuggestions,
+    externalAbortSignal,
+  } = validatedExecutionArgs;
+
+  const rootType = schema.getSubscriptionType();
+  if (rootType == null) {
+    throw new GraphQLError(
+      'Schema is not configured to execute subscription operation.',
+      { nodes: operation },
+    );
+  }
+
+  const { groupedFieldSet } = collectFields(
+    schema,
+    fragments,
+    variableValues,
+    rootType,
+    operation.selectionSet,
+    hideSuggestions,
+  );
+
+  const firstRootField = groupedFieldSet.entries().next().value as [
+    string,
+    FieldDetailsList,
+  ];
+  const [responseName, fieldDetailsList] = firstRootField;
+  const firstFieldDetails = fieldDetailsList[0];
+  const firstNode = firstFieldDetails.node;
+  const fieldName = firstNode.name.value;
+  const fieldDef = schema.getField(rootType, fieldName);
+
+  if (!fieldDef) {
+    throw new GraphQLError(
+      `The subscription field "${fieldName}" is not defined.`,
+      { nodes: toNodes(fieldDetailsList) },
+    );
+  }
+
+  const path = addPath(undefined, responseName, rootType.name);
+  const info = new ResolveInfo(
+    validatedExecutionArgs,
+    fieldDef,
+    fieldDetailsList,
+    rootType,
+    path,
+    () => ({ abortSignal: externalAbortSignal }),
+  );
+
+  try {
+    // Implements the "ResolveFieldEventStream" algorithm from GraphQL specification.
+    // It differs from "ResolveFieldValue" due to providing a different `resolveFn`.
+
+    // Build a JS object of arguments from the field.arguments AST, using the
+    // variables scope to fulfill any variable references.
+    const args = getArgumentValues(
+      fieldDef,
+      firstNode,
+      variableValues,
+      firstFieldDetails.fragmentVariableValues,
+      hideSuggestions,
+    );
+
+    // Call the `subscribe()` resolver or the default resolver to produce an
+    // AsyncIterable yielding raw payloads.
+    const resolveFn =
+      fieldDef.subscribe ?? validatedExecutionArgs.subscribeFieldResolver;
+
+    // The resolve function's optional third argument is a context value that
+    // is provided to every resolve function within an execution. It is commonly
+    // used to represent an authenticated user, or request-specific caches.
+    const result = resolveFn(rootValue, args, contextValue, info);
+
+    if (isPromise(result)) {
+      const promise = externalAbortSignal
+        ? cancellablePromise(result, externalAbortSignal)
+        : result;
+      return promise
+        .then(assertEventStream)
+        .then(undefined, (error: unknown) => {
+          throw locatedError(
+            error,
+            toNodes(fieldDetailsList),
+            pathToArray(path),
+          );
+        });
+    }
+    return assertEventStream(result);
+  } catch (error) {
+    throw locatedError(error, toNodes(fieldDetailsList), pathToArray(path));
+  }
+}
+
+function assertEventStream(result: unknown): AsyncIterable<unknown> {
+  if (result instanceof Error) {
+    throw result;
+  }
+
+  // Assert field returned an event stream, otherwise yield an error.
+  if (!isAsyncIterable(result)) {
+    throw new GraphQLError(
+      'Subscription field must return Async Iterable. ' +
+        `Received: ${inspect(result)}.`,
+    );
+  }
+
+  return result;
+}
+
+function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
+  return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
+}
