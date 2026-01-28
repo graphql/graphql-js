@@ -1,14 +1,13 @@
 export { pathToArray as responsePathAsArray } from '../jsutils/Path.js';
 
-export { experimentalExecuteQueryOrMutationOrSubscriptionEvent } from './Executor.js';
-
 export {
   createSourceEventStream,
   execute,
-  executeSubscriptionEvent,
-  experimentalExecuteIncrementally,
   executeQueryOrMutationOrSubscriptionEvent,
+  executeSubscriptionEvent,
   executeSync,
+  experimentalExecuteIncrementally,
+  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
   defaultFieldResolver,
   defaultTypeResolver,
   subscribe,

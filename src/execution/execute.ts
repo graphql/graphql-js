@@ -34,7 +34,7 @@ import type {
   ExperimentalIncrementalExecutionResults,
   ValidatedExecutionArgs,
 } from './Executor.js';
-import { experimentalExecuteQueryOrMutationOrSubscriptionEvent } from './Executor.js';
+import { Executor } from './Executor.js';
 import { getVariableSignature } from './getVariableSignature.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import { ResolveInfo } from './ResolveInfo.js';
@@ -159,6 +159,14 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
   }
 
   return result;
+}
+
+export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+  return new Executor(
+    validatedExecutionArgs,
+  ).executeQueryOrMutationOrSubscriptionEvent();
 }
 
 export function executeSubscriptionEvent(
