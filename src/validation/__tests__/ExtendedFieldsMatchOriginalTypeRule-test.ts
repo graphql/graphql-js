@@ -162,6 +162,42 @@ describe('ExtendedFieldsMatchOriginalTypeRule', () => {
     ]);
   });
 
+  it('accepts extensions with matching argument default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(query: String = "same"): [String]
+      }
+    `);
+
+    expectValid(
+      `
+      extend type Query {
+        search(query: String = "same"): [String]
+        newField: Int
+      }
+    `,
+      schema,
+    );
+  });
+
+  it('accepts extensions with matching argument types and no defaults', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(query: String): [String]
+      }
+    `);
+
+    expectValid(
+      `
+      extend type Query {
+        search(query: String): [String]
+        newField: Int
+      }
+    `,
+      schema,
+    );
+  });
+
   it('works with interface extensions', () => {
     const schema = buildSchema(`
       interface Node {

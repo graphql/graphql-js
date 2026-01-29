@@ -11,14 +11,40 @@ import type { ASTVisitor } from '../../language/visitor';
 
 import {
   isInputObjectType,
+  isInputType,
   isInterfaceType,
   isObjectType,
 } from '../../type/definition';
 
 import { isEqualType } from '../../utilities/typeComparators';
 import { typeFromAST } from '../../utilities/typeFromAST';
+import { valueFromAST } from '../../utilities/valueFromAST';
 
 import type { SDLValidationContext } from '../ValidationContext';
+
+/**
+ * Compare two default values for equality.
+ * This handles the case where both values might be undefined, null, or actual values.
+ */
+function areDefaultValuesEqual(value1: unknown, value2: unknown): boolean {
+  // Both undefined or both null
+  if (value1 === value2) {
+    return true;
+  }
+
+  // One is undefined/null and the other isn't
+  if (value1 == null || value2 == null) {
+    return false;
+  }
+
+  // For complex values, use JSON comparison as a simple deep equality check
+  try {
+    return JSON.stringify(value1) === JSON.stringify(value2);
+  } catch {
+    // If JSON.stringify fails, fall back to reference equality
+    return value1 === value2;
+  }
+}
 
 /**
  * Extended fields match original type
@@ -29,7 +55,8 @@ import type { SDLValidationContext } from '../ValidationContext';
  * This rule validates that:
  * - Field types match exactly between original and extension
  * - Argument types match exactly between original and extension
- * - New arguments can be added, but existing ones must match
+ * - Argument default values match exactly between original and extension
+ * - New arguments can be added
  */
 export function ExtendedFieldsMatchOriginalTypeRule(
   context: SDLValidationContext,
@@ -116,8 +143,40 @@ export function ExtendedFieldsMatchOriginalTypeRule(
               ),
             );
           }
+
+          const argType = extensionArgType ?? existingArg.type;
+          let extensionDefaultValue;
+
+          if (isInputType(argType)) {
+            extensionDefaultValue = valueFromAST(
+              extensionArg.defaultValue,
+              argType,
+            );
+          }
+
+          if (
+            !areDefaultValuesEqual(
+              existingArg.defaultValue,
+              extensionDefaultValue,
+            )
+          ) {
+            const existingDefaultStr =
+              existingArg.defaultValue === undefined
+                ? 'no default'
+                : JSON.stringify(existingArg.defaultValue);
+            const extensionDefaultStr =
+              extensionDefaultValue === undefined
+                ? 'no default'
+                : JSON.stringify(extensionDefaultValue);
+
+            context.reportError(
+              new GraphQLError(
+                `Argument "${typeName}.${fieldName}(${argName})" default value mismatch: original has ${existingDefaultStr} but extension defines ${extensionDefaultStr}.`,
+                { nodes: extensionArg },
+              ),
+            );
+          }
         }
-        // New arguments are allowed, no validation needed
       }
     }
   }
