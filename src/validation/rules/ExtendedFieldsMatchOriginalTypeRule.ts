@@ -29,7 +29,7 @@ import type { SDLValidationContext } from '../ValidationContext';
  * This rule validates that:
  * - Field types match exactly between original and extension
  * - Argument types match exactly between original and extension
- * - No new arguments can be added to existing fields
+ * - New arguments can be added, but existing ones must match
  */
 export function ExtendedFieldsMatchOriginalTypeRule(
   context: SDLValidationContext,
@@ -116,15 +116,8 @@ export function ExtendedFieldsMatchOriginalTypeRule(
               ),
             );
           }
-        } else {
-          // New argument is not allowed
-          context.reportError(
-            new GraphQLError(
-              `Cannot add new argument "${argName}" to existing field "${typeName}.${fieldName}". Field extensions cannot modify argument lists.`,
-              { nodes: extensionArg },
-            ),
-          );
         }
+        // New arguments are allowed, no validation needed
       }
     }
   }

@@ -491,6 +491,7 @@ export function extendSchemaImpl(
       description: existing.description ?? incoming.description,
       args: {
         ...existing.args,
+        ...incoming.args,
       },
       deprecationReason:
         existing.deprecationReason ?? incoming.deprecationReason,
