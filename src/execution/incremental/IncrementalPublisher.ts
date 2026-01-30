@@ -36,7 +36,6 @@ interface SubsequentIncrementalExecutionResultContext {
 export class IncrementalPublisher {
   private _ids: Map<DeliveryGroup | ItemStream, string>;
   private _nextId: number;
-  private _cleanUp: (() => void) | undefined;
 
   constructor() {
     this._ids = new Map();
@@ -62,11 +61,11 @@ export class IncrementalPublisher {
       });
     }
 
+    let onWorkQueueFinished: (() => void) | undefined;
     if (abortSignal) {
       abortSignal.addEventListener('abort', abort);
-      this._cleanUp = () => {
+      onWorkQueueFinished = () =>
         abortSignal.removeEventListener('abort', abort);
-      };
     }
 
     const pending = this._toPendingResults(initialGroups, initialStreams);
@@ -76,8 +75,10 @@ export class IncrementalPublisher {
       : { data, pending, hasNext: true };
 
     const subsequentResults = withConcurrentAbruptClose(
-      mapAsyncIterable(events, (batch) => this._handleBatch(batch)),
-      () => this._cleanUp?.(),
+      mapAsyncIterable(events, (batch) =>
+        this._handleBatch(batch, onWorkQueueFinished),
+      ),
+      () => onWorkQueueFinished?.(),
     );
 
     return {
@@ -128,6 +129,7 @@ export class IncrementalPublisher {
         ItemStream
       >
     >,
+    onWorkQueueFinished: (() => void) | undefined,
   ): SubsequentIncrementalExecutionResult {
     const context: SubsequentIncrementalExecutionResultContext = {
       pending: [],
@@ -137,7 +139,7 @@ export class IncrementalPublisher {
     };
 
     for (const event of batch) {
-      this._handleWorkQueueEvent(event, context);
+      this._handleWorkQueueEvent(event, context, onWorkQueueFinished);
     }
 
     const { incremental, completed, pending, hasNext } = context;
@@ -153,10 +155,6 @@ export class IncrementalPublisher {
       result.completed = completed;
     }
 
-    if (!hasNext) {
-      this._cleanUp?.();
-    }
-
     return result;
   }
 
@@ -168,6 +166,7 @@ export class IncrementalPublisher {
       ItemStream
     >,
     context: SubsequentIncrementalExecutionResultContext,
+    onWorkQueueFinished: (() => void) | undefined,
   ): void {
     switch (event.kind) {
       case 'GROUP_VALUES': {
@@ -255,6 +254,7 @@ export class IncrementalPublisher {
         break;
       }
       case 'WORK_QUEUE_TERMINATION': {
+        onWorkQueueFinished?.();
         context.hasNext = false;
         break;
       }
