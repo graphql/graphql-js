@@ -42,12 +42,14 @@ import {
 } from '../execute.js';
 import type { ExecutionResult } from '../Executor.js';
 import { collectSubfields, getStreamUsage } from '../Executor.js';
+import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.js';
 
 function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   return expectEqualPromisesOrValues([
     executeThrowingOnIncremental(args),
     executeIgnoringIncremental(args),
     experimentalExecuteIncrementally(args),
+    legacyExecuteIncrementally(args),
   ]) as PromiseOrValue<ExecutionResult>;
 }
 
@@ -56,6 +58,7 @@ function executeSync(args: ExecutionArgs): ExecutionResult {
     executeSyncWrappingThrowingOnIncremental(args),
     executeIgnoringIncremental(args),
     experimentalExecuteIncrementally(args),
+    legacyExecuteIncrementally(args),
   ]) as ExecutionResult;
 }
 

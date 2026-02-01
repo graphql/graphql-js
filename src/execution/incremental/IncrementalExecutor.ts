@@ -273,6 +273,12 @@ export class IncrementalExecutor<
     this.streams = [];
   }
 
+  createSubExecutor(
+    deferUsageSet?: DeferUsageSet,
+  ): IncrementalExecutor<TExperimental> {
+    return new IncrementalExecutor(this.validatedExecutionArgs, deferUsageSet);
+  }
+
   override cancel(reason?: unknown): void {
     super.cancel(reason);
     for (const task of this.tasks) {
@@ -442,10 +448,7 @@ export class IncrementalExecutor<
     for (const [deferUsageSet, groupedFieldSet] of newGroupedFieldSets) {
       const deliveryGroups = getDeliveryGroups(deferUsageSet, deliveryGroupMap);
 
-      const executor = new IncrementalExecutor(
-        this.validatedExecutionArgs,
-        deferUsageSet,
-      );
+      const executor = this.createSubExecutor(deferUsageSet);
 
       const executionGroup: ExecutionGroup = {
         groups: deliveryGroups,
@@ -708,7 +711,7 @@ export class IncrementalExecutor<
 
           const itemPath = addPath(streamPath, index, undefined);
 
-          const executor = new IncrementalExecutor(this.validatedExecutionArgs);
+          const executor = this.createSubExecutor();
 
           let streamItemResult = executor.completeStreamItem(
             itemPath,
