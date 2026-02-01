@@ -1053,10 +1053,10 @@ export class Executor {
     deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
   ): Promise<ReadonlyArray<unknown>> {
     // do not stream inner lists of multi-dimensional lists
-    const streamUsage = getStreamUsage(
-      this.validatedExecutionArgs,
-      fieldDetailsList,
-    );
+    const streamUsage =
+      typeof path.key === 'number'
+        ? undefined
+        : this.getStreamUsage(fieldDetailsList);
 
     let containsPromise = false;
     const completedResults: Array<unknown> = [];

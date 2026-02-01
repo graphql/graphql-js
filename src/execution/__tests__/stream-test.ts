@@ -695,12 +695,18 @@ describe('Execute: stream directive', () => {
     ]);
   });
   it('Can stream multi-dimensional lists from async iterable', async () => {
+    async function* innerList(fruit: string) {
+      for (let i = 0; i < 3; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        yield await Promise.resolve(fruit);
+      }
+    }
     const document = parse('{ scalarListList @stream(initialCount: 1) }');
     const result = await complete(document, {
       async *scalarListList() {
-        yield await Promise.resolve(['apple', 'apple', 'apple']);
-        yield await Promise.resolve(['banana', 'banana', 'banana']);
-        yield await Promise.resolve(['coconut', 'coconut', 'coconut']);
+        yield await Promise.resolve(innerList('apple'));
+        yield await Promise.resolve(innerList('banana'));
+        yield await Promise.resolve(innerList('coconut'));
       },
     });
     expectJSON(result).toDeepEqual([
