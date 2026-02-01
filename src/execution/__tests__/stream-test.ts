@@ -694,6 +694,44 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Can stream multi-dimensional lists from async iterable', async () => {
+    const document = parse('{ scalarListList @stream(initialCount: 1) }');
+    const result = await complete(document, {
+      async *scalarListList() {
+        yield await Promise.resolve(['apple', 'apple', 'apple']);
+        yield await Promise.resolve(['banana', 'banana', 'banana']);
+        yield await Promise.resolve(['coconut', 'coconut', 'coconut']);
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          scalarListList: [['apple', 'apple', 'apple']],
+        },
+        pending: [{ id: '0', path: ['scalarListList'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [['banana', 'banana', 'banana']],
+            id: '0',
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [['coconut', 'coconut', 'coconut']],
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
   it('Can stream a field that returns an async iterable, using a non-zero initialCount', async () => {
     const document = parse(`
       query {

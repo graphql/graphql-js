@@ -3,7 +3,8 @@ import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isPromise } from '../jsutils/isPromise.js';
-import { memoize3 } from '../jsutils/memoize3.js';
+import { memoize1 } from '../jsutils/memoize1.js';
+import { memoize2 } from '../jsutils/memoize2.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
@@ -39,7 +40,6 @@ import {
   isNonNullType,
   isObjectType,
 } from '../type/definition.js';
-import { GraphQLStreamDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
 import { cancellablePromise } from './cancellablePromise.js';
@@ -53,6 +53,8 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
+import type { StreamUsage } from './getStreamUsage.js';
+import { getStreamUsage } from './getStreamUsage.js';
 import type {
   DeferUsageSet,
   ExecutionPlan,
@@ -64,35 +66,11 @@ import { Queue } from './incremental/Queue.js';
 import type { Group, Stream, Task, Work } from './incremental/WorkQueue.js';
 import { ResolveInfo } from './ResolveInfo.js';
 import type { VariableValues } from './values.js';
-import { getArgumentValues, getDirectiveValues } from './values.js';
+import { getArgumentValues } from './values.js';
 
 /* eslint-disable max-params */
 // This file contains a lot of such errors but we plan to refactor it anyway
 // so just disable it for entire file.
-
-/**
- * A memoized collection of relevant subfields with regard to the return
- * type. Memoizing ensures the subfields are not repeatedly calculated, which
- * saves overhead when resolving lists of values.
- */
-const collectSubfields = memoize3(
-  (
-    validatedExecutionArgs: ValidatedExecutionArgs,
-    returnType: GraphQLObjectType,
-    fieldDetailsList: FieldDetailsList,
-  ) => {
-    const { schema, fragments, variableValues, hideSuggestions } =
-      validatedExecutionArgs;
-    return _collectSubfields(
-      schema,
-      fragments,
-      variableValues,
-      returnType,
-      fieldDetailsList,
-      hideSuggestions,
-    );
-  },
-);
 
 /**
  * Terminology
@@ -335,12 +313,6 @@ export interface FormattedCompletedResult {
   errors?: ReadonlyArray<GraphQLFormattedError>;
 }
 
-export interface StreamUsage {
-  label: string | undefined;
-  initialCount: number;
-  fieldDetailsList: FieldDetailsList;
-}
-
 /** @internal */
 interface ExecutionGroup
   extends Task<
@@ -413,6 +385,18 @@ export class Executor {
   tasks: Array<ExecutionGroup>;
   streams: Array<ItemStream>;
 
+  collectSubfields: (
+    returnType: GraphQLObjectType,
+    fieldDetailsList: FieldDetailsList,
+  ) => {
+    groupedFieldSet: GroupedFieldSet;
+    newDeferUsages: ReadonlyArray<DeferUsage>;
+  };
+
+  getStreamUsage: (
+    fieldDetailsList: FieldDetailsList,
+  ) => StreamUsage | undefined;
+
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
     deferUsageSet?: DeferUsageSet,
@@ -426,6 +410,28 @@ export class Executor {
     this.groups = [];
     this.tasks = [];
     this.streams = [];
+
+    /**
+     * A memoized collection of relevant subfields with regard to the return
+     * type. Memoizing ensures the subfields are not repeatedly calculated, which
+     * saves overhead when resolving lists of values.
+     */
+    this.collectSubfields = memoize2((returnType, fieldDetailsList) => {
+      const { schema, fragments, variableValues, hideSuggestions } =
+        this.validatedExecutionArgs;
+      return _collectSubfields(
+        schema,
+        fragments,
+        variableValues,
+        returnType,
+        fieldDetailsList,
+        hideSuggestions,
+      );
+    });
+
+    this.getStreamUsage = memoize1((fieldDetailsList) =>
+      getStreamUsage(this.validatedExecutionArgs, fieldDetailsList),
+    );
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
@@ -1046,7 +1052,11 @@ export class Executor {
     items: AsyncIterable<unknown>,
     deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
   ): Promise<ReadonlyArray<unknown>> {
-    const streamUsage = this.getStreamUsage(fieldDetailsList, path);
+    // do not stream inner lists of multi-dimensional lists
+    const streamUsage = getStreamUsage(
+      this.validatedExecutionArgs,
+      fieldDetailsList,
+    );
 
     let containsPromise = false;
     const completedResults: Array<unknown> = [];
@@ -1162,7 +1172,11 @@ export class Executor {
     items: Iterable<unknown>,
     deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
   ): PromiseOrValue<ReadonlyArray<unknown>> {
-    const streamUsage = this.getStreamUsage(fieldDetailsList, path);
+    // do not stream inner lists of multi-dimensional lists
+    const streamUsage =
+      typeof path.key === 'number'
+        ? undefined
+        : this.getStreamUsage(fieldDetailsList);
 
     // This is specified as a simple map, however we're optimizing the path
     // where the list contains no Promises by avoiding creating another Promise.
@@ -1534,8 +1548,7 @@ export class Executor {
     deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     // Collect sub-fields to execute to complete this value.
-    const { groupedFieldSet, newDeferUsages } = collectSubfields(
-      this.validatedExecutionArgs,
+    const { groupedFieldSet, newDeferUsages } = this.collectSubfields(
       returnType,
       fieldDetailsList,
     );
@@ -1605,84 +1618,6 @@ export class Executor {
     }
 
     return data;
-  }
-
-  /**
-   * Returns an object containing info for streaming if a field should be
-   * streamed based on the experimental flag, stream directive present and
-   * not disabled by the "if" argument.
-   */
-  getStreamUsage(
-    fieldDetailsList: FieldDetailsList,
-    path: Path,
-  ): StreamUsage | undefined {
-    // do not stream inner lists of multi-dimensional lists
-    if (typeof path.key === 'number') {
-      return;
-    }
-
-    // TODO: add test for this case (a streamed list nested under a list).
-    /* c8 ignore next 7 */
-    if (
-      (fieldDetailsList as unknown as { _streamUsage: StreamUsage })
-        ._streamUsage !== undefined
-    ) {
-      return (fieldDetailsList as unknown as { _streamUsage: StreamUsage })
-        ._streamUsage;
-    }
-
-    const { operation, variableValues } = this.validatedExecutionArgs;
-    // validation only allows equivalent streams on multiple fields, so it is
-    // safe to only check the first fieldNode for the stream directive
-    const stream = getDirectiveValues(
-      GraphQLStreamDirective,
-      fieldDetailsList[0].node,
-      variableValues,
-      fieldDetailsList[0].fragmentVariableValues,
-    );
-
-    if (!stream) {
-      return;
-    }
-
-    if (stream.if === false) {
-      return;
-    }
-
-    invariant(
-      typeof stream.initialCount === 'number',
-      'initialCount must be a number',
-    );
-
-    invariant(
-      stream.initialCount >= 0,
-      'initialCount must be a positive integer',
-    );
-
-    invariant(
-      operation.operation !== OperationTypeNode.SUBSCRIPTION,
-      '`@stream` directive not supported on subscription operations. Disable `@stream` by setting the `if` argument to `false`.',
-    );
-
-    const streamedFieldDetailsList: FieldDetailsList = fieldDetailsList.map(
-      (fieldDetails) => ({
-        node: fieldDetails.node,
-        deferUsage: undefined,
-        fragmentVariableValues: fieldDetails.fragmentVariableValues,
-      }),
-    );
-
-    const streamUsage = {
-      initialCount: stream.initialCount,
-      label: typeof stream.label === 'string' ? stream.label : undefined,
-      fieldDetailsList: streamedFieldDetailsList,
-    };
-
-    (
-      fieldDetailsList as unknown as { _streamUsage: StreamUsage }
-    )._streamUsage = streamUsage;
-
-    return streamUsage;
   }
 
   handleStream(
