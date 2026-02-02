@@ -29,22 +29,18 @@ import type { GraphQLSchema } from '../type/schema.js';
 import { cancellablePromise } from './cancellablePromise.js';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
 import { collectFields } from './collectFields.js';
-import type {
-  ExecutionResult,
-  ExperimentalIncrementalExecutionResults,
-  ValidatedExecutionArgs,
-} from './Executor.js';
+import type { ExecutionResult, ValidatedExecutionArgs } from './Executor.js';
 import { Executor } from './Executor.js';
+import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.js';
 import { getVariableSignature } from './getVariableSignature.js';
+import type { ExperimentalIncrementalExecutionResults } from './incremental/IncrementalExecutor.js';
+import { IncrementalExecutor } from './incremental/IncrementalExecutor.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
 import { ResolveInfo } from './ResolveInfo.js';
 import { getArgumentValues, getVariableValues } from './values.js';
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
-
-const UNEXPECTED_MULTIPLE_PAYLOADS =
-  'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
 
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
@@ -67,29 +63,14 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     throw new Error(UNEXPECTED_EXPERIMENTAL_DIRECTIVES);
   }
 
-  const result = experimentalExecuteIncrementally(args);
-  // Multiple payloads could be encountered if the operation contains @defer or
-  // @stream directives and is not validated prior to execution
-  return ensureSinglePayload(result);
-}
+  const validatedExecutionArgs = validateExecutionArgs(args);
 
-function ensureSinglePayload(
-  result: PromiseOrValue<
-    ExecutionResult | ExperimentalIncrementalExecutionResults
-  >,
-): PromiseOrValue<ExecutionResult> {
-  if (isPromise(result)) {
-    return result.then((resolved) => {
-      if ('initialResult' in resolved) {
-        throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-      }
-      return resolved;
-    });
+  // Return early errors if execution context failed.
+  if (!('schema' in validatedExecutionArgs)) {
+    return { errors: validatedExecutionArgs };
   }
-  if ('initialResult' in result) {
-    throw new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-  }
-  return result;
+
+  return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
 
 /**
@@ -121,6 +102,23 @@ export function experimentalExecuteIncrementally(
   );
 }
 
+export function executeIgnoringIncremental(
+  args: ExecutionArgs,
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+  // If a valid execution context cannot be created due to incorrect arguments,
+  // a "Response" with only errors is returned.
+  const validatedExecutionArgs = validateExecutionArgs(args);
+
+  // Return early errors if execution context failed.
+  if (!('schema' in validatedExecutionArgs)) {
+    return { errors: validatedExecutionArgs };
+  }
+
+  return executeQueryOrMutationOrSubscriptionEventIgnoringIncremental(
+    validatedExecutionArgs,
+  );
+}
+
 /**
  * Implements the "Executing operations" section of the spec.
  *
@@ -139,10 +137,25 @@ export function experimentalExecuteIncrementally(
 export function executeQueryOrMutationOrSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult> {
-  const result = experimentalExecuteQueryOrMutationOrSubscriptionEvent(
+  return new ExecutorThrowingOnIncremental(
     validatedExecutionArgs,
-  );
-  return ensureSinglePayload(result);
+  ).executeQueryOrMutationOrSubscriptionEvent();
+}
+
+export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+  return new IncrementalExecutor(
+    validatedExecutionArgs,
+  ).executeQueryOrMutationOrSubscriptionEvent();
+}
+
+export function executeQueryOrMutationOrSubscriptionEventIgnoringIncremental(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+  return new Executor(
+    validatedExecutionArgs,
+  ).executeQueryOrMutationOrSubscriptionEvent();
 }
 
 /**
@@ -159,14 +172,6 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
   }
 
   return result;
-}
-
-export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
-  validatedExecutionArgs: ValidatedExecutionArgs,
-): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  return new Executor(
-    validatedExecutionArgs,
-  ).executeQueryOrMutationOrSubscriptionEvent();
 }
 
 export function executeSubscriptionEvent(

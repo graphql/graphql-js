@@ -1,10 +1,12 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.js';
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { inspect } from '../../jsutils/inspect.js';
+import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import type { FieldNode } from '../../language/ast.js';
@@ -21,10 +23,7 @@ import {
   GraphQLScalarType,
   GraphQLUnionType,
 } from '../../type/definition.js';
-import {
-  GraphQLDeferDirective,
-  GraphQLStreamDirective,
-} from '../../type/directives.js';
+import { GraphQLStreamDirective } from '../../type/directives.js';
 import {
   GraphQLBoolean,
   GraphQLInt,
@@ -33,8 +32,32 @@ import {
 import { GraphQLSchema } from '../../type/schema.js';
 
 import type { FieldDetailsList } from '../collectFields.js';
-import { execute, executeSync, validateExecutionArgs } from '../execute.js';
+import type { ExecutionArgs } from '../execute.js';
+import {
+  execute as executeThrowingOnIncremental,
+  executeIgnoringIncremental,
+  executeSync as executeSyncWrappingThrowingOnIncremental,
+  experimentalExecuteIncrementally,
+  validateExecutionArgs,
+} from '../execute.js';
+import type { ExecutionResult } from '../Executor.js';
 import { collectSubfields, getStreamUsage } from '../Executor.js';
+
+function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  return expectEqualPromisesOrValues([
+    executeThrowingOnIncremental(args),
+    executeIgnoringIncremental(args),
+    experimentalExecuteIncrementally(args),
+  ]) as PromiseOrValue<ExecutionResult>;
+}
+
+function executeSync(args: ExecutionArgs): ExecutionResult {
+  return expectEqualPromisesOrValues([
+    executeSyncWrappingThrowingOnIncremental(args),
+    executeIgnoringIncremental(args),
+    experimentalExecuteIncrementally(args),
+  ]) as ExecutionResult;
+}
 
 describe('Execute: Handles basic execution tasks', () => {
   it('executes arbitrary code', async () => {
@@ -982,40 +1005,6 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = executeSync({ schema, document, rootValue, operationName });
     expect(result).to.deep.equal({ data: { a: 'b' } });
-  });
-
-  it('errors when using original execute with schemas including experimental @defer directive', () => {
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Q',
-        fields: {
-          a: { type: GraphQLString },
-        },
-      }),
-      directives: [GraphQLDeferDirective],
-    });
-    const document = parse('query Q { a }');
-
-    expect(() => execute({ schema, document })).to.throw(
-      'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.',
-    );
-  });
-
-  it('errors when using original execute with schemas including experimental @stream directive', () => {
-    const schema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Q',
-        fields: {
-          a: { type: GraphQLString },
-        },
-      }),
-      directives: [GraphQLStreamDirective],
-    });
-    const document = parse('query Q { a }');
-
-    expect(() => execute({ schema, document })).to.throw(
-      'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.',
-    );
   });
 
   it('resolves to an error if schema does not support operation', () => {

@@ -1,29 +1,32 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { expectJSON } from '../../__testUtils__/expectJSON.js';
-import { expectPromise } from '../../__testUtils__/expectPromise.js';
-import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { expectJSON } from '../../../__testUtils__/expectJSON.js';
+import { expectPromise } from '../../../__testUtils__/expectPromise.js';
+import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
 
-import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
-import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.js';
+import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
 
-import type { DocumentNode } from '../../language/ast.js';
-import { parse } from '../../language/parser.js';
+import type { DocumentNode } from '../../../language/ast.js';
+import { parse } from '../../../language/parser.js';
 
 import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-} from '../../type/definition.js';
-import { GraphQLID, GraphQLString } from '../../type/scalars.js';
-import { GraphQLSchema } from '../../type/schema.js';
+} from '../../../type/definition.js';
+import { GraphQLID, GraphQLString } from '../../../type/scalars.js';
+import { GraphQLSchema } from '../../../type/schema.js';
 
-import { execute, experimentalExecuteIncrementally } from '../execute.js';
+import { buildSchema } from '../../../utilities/buildASTSchema.js';
+
+import { experimentalExecuteIncrementally } from '../../execute.js';
+
 import type {
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
-} from '../Executor.js';
+} from '../IncrementalExecutor.js';
 
 const friendType = new GraphQLObjectType({
   fields: {
@@ -84,6 +87,52 @@ const query = new GraphQLObjectType({
 });
 
 const schema = new GraphQLSchema({ query });
+
+const cancellationSchema = buildSchema(`
+  type Todo {
+    id: ID
+    items: [String]
+    author: User
+  }
+
+  type User {
+    id: ID
+    name: String
+  }
+
+  type Query {
+    todo: Todo
+    nonNullableTodo: Todo!
+    blocker: String
+    scalarList: [String]
+    slowScalarList: [String]
+  }
+
+  type Mutation {
+    foo: String
+    bar: String
+  }
+
+  type Subscription {
+    foo: String
+  }
+`);
+
+const cancelStreamSchema = buildSchema(`
+  type CancelStreamUser {
+    id: String
+  }
+
+  type CancelStreamTodo {
+    id: String
+    items: [String]
+    author: CancelStreamUser
+  }
+
+  type Query {
+    todos: [CancelStreamTodo]
+  }
+`);
 
 async function complete(
   document: DocumentNode,
@@ -2793,44 +2842,432 @@ describe('Execute: stream directive', () => {
       value: undefined,
     });
   });
-  it('original execute function throws error if anything is streamed and everything else is sync', () => {
-    const doc = `
+});
+
+describe('Execute: stream directive (cancellation)', () => {
+  it('should stop streamed execution when aborted', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
       query {
-        scalarList
-        friendList @stream { name }
+        todo {
+          id
+          items @stream
+        }
       }
-    `;
-    expect(() =>
-      execute({
-        schema,
-        document: parse(doc),
+    `);
+
+    const resultPromise = (async () => {
+      const result = await experimentalExecuteIncrementally({
+        schema: cancellationSchema,
+        document,
         rootValue: {
-          scalarList: ['apple', 'banana', 'coconut'],
-          friendList: friends,
+          todo: {
+            id: '1',
+            items: [Promise.resolve('item')],
+          },
         },
-      }),
-    ).to.throw(
-      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
+        abortSignal: abortController.signal,
+      });
+
+      if ('initialResult' in result) {
+        for await (const _patch of result.subsequentResults) {
+          // Consume to surface cancellation.
+        }
+      }
+      return result;
+    })();
+
+    abortController.abort();
+
+    await expectPromise(resultPromise).toRejectWith(
+      'This operation was aborted',
     );
   });
-  it('original execute function resolves to error if anything is streamed and something else is async', async () => {
-    const doc = `
+
+  it('cancels streaming when aborted during async iterator next', async () => {
+    const abortController = new AbortController();
+    const document = parse('{ scalarList @stream(initialCount: 0) }');
+
+    const { promise: nextStarted, resolve: resolveNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: nextReturned, resolve: resolveNextReturned } =
+      promiseWithResolvers<IteratorResult<unknown>>();
+    let done = false;
+    const asyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        if (done) {
+          return Promise.resolve({ value: undefined, done: true });
+        }
+        done = true;
+        resolveNextStarted();
+        return nextReturned;
+      },
+    };
+
+    const result = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        scalarList: () => asyncIterator,
+      },
+      abortSignal: abortController.signal,
+    });
+    assert('initialResult' in result);
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    const nextPromise = iterator.next();
+    await nextStarted;
+    abortController.abort();
+
+    resolveNextReturned({ value: 'value', done: false });
+    await expectPromise(nextPromise).toRejectWith('This operation was aborted');
+  });
+
+  it('cancels streaming when aborted while item promise is pending', async () => {
+    const abortController = new AbortController();
+    const document = parse('{ scalarList @stream(initialCount: 0) }');
+
+    const { promise: itemPromise, resolve: resolveItem } =
+      promiseWithResolvers<string>();
+    const { promise: nextStarted, resolve: resolveNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let done = false;
+    const asyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        if (done) {
+          return Promise.resolve({ value: undefined, done: true });
+        }
+        done = true;
+        resolveNextStarted();
+        return Promise.resolve({ value: itemPromise, done: false });
+      },
+    };
+
+    const result = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        scalarList: () => asyncIterator,
+      },
+      abortSignal: abortController.signal,
+    });
+    assert('initialResult' in result);
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    const nextPromise = iterator.next();
+    await nextStarted;
+    abortController.abort();
+
+    resolveItem('value');
+    await expectPromise(nextPromise).toRejectWith('This operation was aborted');
+  });
+
+  it('stops when the stream queue is back-pressured and the consumer cancels', async () => {
+    const document = parse('{ scalarList @stream(initialCount: 0) }');
+    const { promise: reachedCapacity, resolve: resolveReachedCapacity } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let count = 0;
+    let done = false;
+    const iterator = {
+      [Symbol.iterator]() {
+        return this;
+      },
+      next() {
+        if (done) {
+          return { value: undefined, done: true };
+        }
+        count += 1;
+        if (count === 100) {
+          resolveReachedCapacity();
+        }
+        if (count > 100) {
+          done = true;
+        }
+        return { value: String(count), done: false };
+      },
+    };
+
+    const result = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        scalarList: () => iterator,
+      },
+      enableEarlyExecution: true,
+    });
+    assert('initialResult' in result);
+
+    await reachedCapacity;
+    await resolveOnNextTick();
+    const stream = result.subsequentResults[Symbol.asyncIterator]();
+    await expectPromise(stream.return()).toResolve();
+  });
+
+  it('cancels tasks and streams when aborted before initial execution finishes', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
       query {
-        scalarList
-        friendList @stream { name }
+        todo {
+          id
+          items @stream(initialCount: 0)
+          ... @defer {
+            author {
+              id
+            }
+          }
+        }
+        blocker
       }
-    `;
-    await expectPromise(
-      execute({
-        schema,
-        document: parse(doc),
-        rootValue: {
-          scalarList: Promise.resolve(['apple', 'banana', 'coconut']),
-          friendList: friends,
+    `);
+
+    const { promise: blockerPromise, resolve: resolveBlocker } =
+      promiseWithResolvers<string>();
+    const { promise: blockerStarted, resolve: resolveBlockerStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: itemsStarted, resolve: resolveItemsStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+
+    const resultPromise = experimentalExecuteIncrementally({
+      schema: cancellationSchema,
+      document,
+      abortSignal: abortController.signal,
+      rootValue: {
+        blocker() {
+          resolveBlockerStarted();
+          return blockerPromise;
         },
-      }),
-    ).toRejectWith(
-      'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)',
+        todo: {
+          id: 'todo',
+          items() {
+            resolveItemsStarted();
+            return ['a', 'b'];
+          },
+          author() {
+            return { id: 'author' };
+          },
+        },
+      },
+    });
+
+    await itemsStarted;
+    await blockerStarted;
+
+    abortController.abort();
+
+    await expectPromise(resultPromise).toRejectWith(
+      'This operation was aborted',
     );
+
+    resolveBlocker('done');
+  });
+
+  it('should ignore repeated cancellation attempts during incremental execution', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        todo {
+          id
+          items @stream(initialCount: 0)
+          ... @defer {
+            author {
+              id
+            }
+          }
+        }
+      }
+    `);
+
+    let streamReturnCount = 0;
+    let nextPromiseResolved = false;
+    const { promise: nextStarted, resolve: resolveNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: nextPromise, resolve: resolveNext } =
+      promiseWithResolvers<IteratorResult<string>>();
+    const asyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        if (nextPromiseResolved) {
+          return Promise.resolve({ value: undefined, done: true });
+        }
+        nextPromiseResolved = true;
+        resolveNextStarted();
+        return nextPromise;
+      },
+      return() {
+        streamReturnCount += 1;
+        return Promise.resolve({ value: undefined, done: true });
+      },
+    };
+
+    const { promise: authorStarted, resolve: resolveAuthorStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: authorPromise, resolve: resolveAuthor } =
+      promiseWithResolvers<{ id: string }>();
+    const rootValue = {
+      todo: {
+        id: 'todo',
+        items: () => asyncIterator,
+        author() {
+          resolveAuthorStarted();
+          return authorPromise;
+        },
+      },
+    };
+
+    const result = await experimentalExecuteIncrementally({
+      schema: cancellationSchema,
+      document,
+      rootValue,
+      enableEarlyExecution: true,
+      abortSignal: abortController.signal,
+    });
+    assert('initialResult' in result);
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    const nextResultPromise = iterator.next();
+
+    await authorStarted;
+    await nextStarted;
+
+    abortController.abort();
+    await resolveOnNextTick();
+
+    let firstResult:
+      | IteratorResult<SubsequentIncrementalExecutionResult>
+      | undefined;
+    try {
+      firstResult =
+        (await nextResultPromise) as IteratorResult<SubsequentIncrementalExecutionResult>;
+    } catch (error) {
+      expect(error).to.be.instanceOf(Error);
+      expect((error as Error).message).to.equal('This operation was aborted');
+    }
+    if (firstResult && !firstResult.done) {
+      try {
+        const followUp = await iterator.next();
+        expect(followUp.done).to.equal(true);
+      } catch (error) {
+        expect(error).to.be.instanceOf(Error);
+        expect((error as Error).message).to.equal('This operation was aborted');
+      }
+    }
+    expect(streamReturnCount).to.equal(1);
+
+    const priorStreamReturnCount = streamReturnCount;
+    abortController.abort();
+    await resolveOnNextTick();
+
+    expect(streamReturnCount).to.equal(priorStreamReturnCount);
+
+    resolveNext({ value: 'value', done: false });
+    resolveAuthor({ id: 'author' });
+  });
+
+  it('cancels stream item executors with deferred work and nested streams', async () => {
+    const document = parse(`
+      query {
+        todos @stream(initialCount: 0) {
+          id
+          items @stream(initialCount: 0)
+          ... @defer {
+            author {
+              id
+            }
+          }
+        }
+      }
+    `);
+
+    const { promise: idPromise, resolve: resolveId } =
+      promiseWithResolvers<string>();
+    const { promise: idStarted, resolve: resolveIdStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+
+    const result = await experimentalExecuteIncrementally({
+      schema: cancelStreamSchema,
+      document,
+      enableEarlyExecution: true,
+      rootValue: {
+        todos: [
+          {
+            id() {
+              resolveIdStarted();
+              return idPromise;
+            },
+            items: ['a'],
+            author: { id: 'author' },
+          },
+        ],
+      },
+    });
+    assert('initialResult' in result);
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    await idStarted;
+    await expectPromise(iterator.return()).toResolve();
+    await resolveOnNextTick();
+
+    resolveId('todo');
+    await resolveOnNextTick();
+  });
+
+  it('stops streaming when a pending stream item resolves after cancellation', async () => {
+    const document = parse('{ scalarList @stream(initialCount: 0) }');
+    const { promise: itemPromise, resolve: resolveItem } =
+      promiseWithResolvers<string>();
+    const { promise: nextStarted, resolve: resolveNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let done = false;
+    const iterator = {
+      [Symbol.iterator]() {
+        return this;
+      },
+      next() {
+        if (done) {
+          return { value: undefined, done: true };
+        }
+        done = true;
+        resolveNextStarted();
+        return { value: itemPromise, done: false };
+      },
+    };
+
+    const result = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        scalarList: () => iterator,
+      },
+    });
+    assert('initialResult' in result);
+
+    const stream = result.subsequentResults[Symbol.asyncIterator]();
+    const nextPromise = stream.next();
+
+    await nextStarted;
+    const returnPromise = stream.return();
+    await resolveOnNextTick();
+
+    resolveItem('value');
+
+    await expectPromise(returnPromise).toResolve();
+    await expectPromise(nextPromise).toResolve();
   });
 });

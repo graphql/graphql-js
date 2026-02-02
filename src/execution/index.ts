@@ -17,19 +17,22 @@ export type { ExecutionArgs } from './execute.js';
 export type {
   ValidatedExecutionArgs,
   ExecutionResult,
+  FormattedExecutionResult,
+} from './Executor.js';
+
+export type {
   ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,
   SubsequentIncrementalExecutionResult,
   IncrementalDeferResult,
   IncrementalStreamResult,
   IncrementalResult,
-  FormattedExecutionResult,
   FormattedInitialIncrementalExecutionResult,
   FormattedSubsequentIncrementalExecutionResult,
   FormattedIncrementalDeferResult,
   FormattedIncrementalStreamResult,
   FormattedIncrementalResult,
-} from './Executor.js';
+} from './incremental/IncrementalExecutor.js';
 
 export {
   getArgumentValues,

@@ -55,16 +55,8 @@ import {
 } from './collectFields.js';
 import type { StreamUsage } from './getStreamUsage.js';
 import { getStreamUsage as _getStreamUsage } from './getStreamUsage.js';
-import type {
-  DeferUsageSet,
-  ExecutionPlan,
-} from './incremental/buildExecutionPlan.js';
-import { buildExecutionPlan } from './incremental/buildExecutionPlan.js';
-import { Computation } from './incremental/Computation.js';
-import { IncrementalPublisher } from './incremental/IncrementalPublisher.js';
-import { Queue } from './incremental/Queue.js';
-import type { Group, Stream, Task, Work } from './incremental/WorkQueue.js';
 import { ResolveInfo } from './ResolveInfo.js';
+import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.js';
 import type { VariableValues } from './values.js';
 import { getArgumentValues } from './values.js';
 
@@ -218,220 +210,30 @@ export interface FormattedExecutionResult<
   extensions?: TExtensions;
 }
 
-export interface ExperimentalIncrementalExecutionResults<
-  TInitial = ObjMap<unknown>,
-  TSubsequent = unknown,
-  TExtensions = ObjMap<unknown>,
-> {
-  initialResult: InitialIncrementalExecutionResult<TInitial, TExtensions>;
-  subsequentResults: AsyncGenerator<
-    SubsequentIncrementalExecutionResult<TSubsequent, TExtensions>,
-    void,
-    void
-  >;
-}
-
-export interface InitialIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends ExecutionResult<TData, TExtensions> {
-  data: TData;
-  pending: ReadonlyArray<PendingResult>;
-  hasNext: true;
-  extensions?: TExtensions;
-}
-
-export interface FormattedInitialIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> extends FormattedExecutionResult<TData, TExtensions> {
-  data: TData;
-  pending: ReadonlyArray<PendingResult>;
-  hasNext: boolean;
-  extensions?: TExtensions;
-}
-
-export interface SubsequentIncrementalExecutionResult<
-  TData = unknown,
-  TExtensions = ObjMap<unknown>,
-> {
-  pending?: ReadonlyArray<PendingResult>;
-  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
-  completed?: ReadonlyArray<CompletedResult>;
-  hasNext: boolean;
-  extensions?: TExtensions;
-}
-
-export interface FormattedSubsequentIncrementalExecutionResult<
-  TData = unknown,
-  TExtensions = ObjMap<unknown>,
-> {
-  hasNext: boolean;
-  pending?: ReadonlyArray<PendingResult>;
-  incremental?: ReadonlyArray<FormattedIncrementalResult<TData, TExtensions>>;
-  completed?: ReadonlyArray<FormattedCompletedResult>;
-  extensions?: TExtensions;
-}
-
-export interface IncrementalDeferResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  id: string;
-  subPath?: ReadonlyArray<string | number>;
-  errors?: ReadonlyArray<GraphQLError>;
-  data: TData;
-  extensions?: TExtensions;
-}
-
-export interface FormattedIncrementalDeferResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  data: TData;
-  id: string;
-  subPath?: ReadonlyArray<string | number>;
-  extensions?: TExtensions;
-}
-
-export interface IncrementalStreamResult<
-  TData = ReadonlyArray<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  id: string;
-  subPath?: ReadonlyArray<string | number>;
-  errors?: ReadonlyArray<GraphQLError>;
-  items: TData;
-  extensions?: TExtensions;
-}
-
-export interface FormattedIncrementalStreamResult<
-  TData = Array<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  items: TData;
-  id: string;
-  subPath?: ReadonlyArray<string | number>;
-  extensions?: TExtensions;
-}
-
-export type IncrementalResult<TData = unknown, TExtensions = ObjMap<unknown>> =
-  | IncrementalDeferResult<TData, TExtensions>
-  | IncrementalStreamResult<TData, TExtensions>;
-
-export type FormattedIncrementalResult<
-  TData = unknown,
-  TExtensions = ObjMap<unknown>,
-> =
-  | FormattedIncrementalDeferResult<TData, TExtensions>
-  | FormattedIncrementalStreamResult<TData, TExtensions>;
-
-export interface PendingResult {
-  id: string;
-  path: ReadonlyArray<string | number>;
-  label?: string;
-}
-
-export interface CompletedResult {
-  id: string;
-  errors?: ReadonlyArray<GraphQLError>;
-}
-
-export interface FormattedCompletedResult {
-  id: string;
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-}
-
 /** @internal */
-interface ExecutionGroup
-  extends Task<
-    ExecutionGroupValue,
-    StreamItemValue,
-    DeliveryGroup,
-    ItemStream
-  > {
-  groups: ReadonlyArray<DeliveryGroup>;
-  path: Path | undefined;
-  computation: Computation<ExecutionGroupResult>;
-}
-
-/** @internal */
-export interface DeliveryGroup extends Group<DeliveryGroup> {
-  path: Path | undefined;
-  label: string | undefined;
-  parent: DeliveryGroup | undefined;
-}
-
-export interface ItemStream
-  extends Stream<
-    ExecutionGroupValue,
-    StreamItemValue,
-    DeliveryGroup,
-    ItemStream
-  > {
-  path: Path;
-  label: string | undefined;
-}
-
-export interface ExecutionGroupValue {
-  deliveryGroups: ReadonlyArray<DeliveryGroup>;
-  path: ReadonlyArray<string | number>;
-  errors?: ReadonlyArray<GraphQLError>;
-  data: ObjMap<unknown>;
-}
-
-export type IncrementalWork = Work<
-  ExecutionGroupValue,
-  StreamItemValue,
-  DeliveryGroup,
-  ItemStream
->;
-
-export interface ExecutionGroupResult {
-  value: ExecutionGroupValue;
-  work?: IncrementalWork | undefined;
-}
-
-export interface StreamItemValue {
-  errors?: ReadonlyArray<GraphQLError>;
-  item: unknown;
-}
-
-export interface StreamItemResult {
-  value: StreamItemValue;
-  work?: IncrementalWork | undefined;
-}
-
-/** @internal */
-export class Executor {
+export class Executor<
+  TPositionContext = undefined, // No position context by default
+  TAlternativeInitialResponse = ExecutionResult, // No alternative by default
+> {
   validatedExecutionArgs: ValidatedExecutionArgs;
-  deferUsageSet?: DeferUsageSet | undefined;
   finished: boolean;
+  initialResponseAbortController: AbortController | undefined;
   resolverAbortControllers: Set<AbortController>;
   collectedErrors: CollectedErrors;
-  groups: Array<DeliveryGroup>;
-  tasks: Array<ExecutionGroup>;
-  streams: Array<ItemStream>;
 
-  constructor(
-    validatedExecutionArgs: ValidatedExecutionArgs,
-    deferUsageSet?: DeferUsageSet,
-  ) {
+  constructor(validatedExecutionArgs: ValidatedExecutionArgs) {
     this.validatedExecutionArgs = validatedExecutionArgs;
-    this.deferUsageSet = deferUsageSet;
     this.finished = false;
     this.resolverAbortControllers = new Set();
     this.collectedErrors = new CollectedErrors();
-    this.groups = [];
-    this.tasks = [];
-    this.streams = [];
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
-    ExecutionResult | ExperimentalIncrementalExecutionResults
+    ExecutionResult | TAlternativeInitialResponse
   > {
+    const abortController = (this.initialResponseAbortController =
+      new AbortController());
+
     const validatedExecutionArgs = this.validatedExecutionArgs;
     const externalAbortSignal = validatedExecutionArgs.externalAbortSignal;
     let removeAbortListener: (() => void) | undefined;
@@ -448,6 +250,7 @@ export class Executor {
     const onFinish = () => {
       removeAbortListener?.();
       this.finish();
+      abortController.signal.throwIfAborted();
     };
 
     try {
@@ -500,7 +303,7 @@ export class Executor {
           },
         );
         return externalAbortSignal
-          ? cancellablePromise(promise, externalAbortSignal)
+          ? cancellablePromise(promise, abortController.signal)
           : promise;
       }
       onFinish();
@@ -512,14 +315,9 @@ export class Executor {
     }
   }
 
-  cancel(reason?: unknown): void {
+  cancel(reason: unknown): void {
     if (!this.finished) {
-      for (const task of this.tasks) {
-        task.computation.cancel();
-      }
-      for (const stream of this.streams) {
-        stream.queue.abort();
-      }
+      this.initialResponseAbortController?.abort(reason);
       this.finish(reason);
     }
   }
@@ -545,22 +343,9 @@ export class Executor {
    */
   buildResponse(
     data: ObjMap<unknown> | null,
-  ): ExecutionResult | ExperimentalIncrementalExecutionResults {
+  ): ExecutionResult | TAlternativeInitialResponse {
     const errors = this.collectedErrors.errors;
-    const work = this.getIncrementalWork();
-    const { tasks, streams } = work;
-    if (tasks?.length === 0 && streams?.length === 0) {
-      return errors.length ? { errors, data } : { data };
-    }
-
-    invariant(data !== null);
-    const incrementalPublisher = new IncrementalPublisher();
-    return incrementalPublisher.buildResponse(
-      data,
-      errors,
-      work,
-      this.validatedExecutionArgs.externalAbortSignal,
-    );
+    return errors.length ? { errors, data } : { data };
   }
 
   executeCollectedRootFields(
@@ -568,52 +353,15 @@ export class Executor {
     rootType: GraphQLObjectType,
     rootValue: unknown,
     originalGroupedFieldSet: GroupedFieldSet,
-    newDeferUsages: ReadonlyArray<DeferUsage>,
+    _newDeferUsages: ReadonlyArray<DeferUsage>,
   ): PromiseOrValue<ObjMap<unknown>> {
-    if (newDeferUsages.length === 0) {
-      return this.executeRootGroupedFieldSet(
-        operation,
-        rootType,
-        rootValue,
-        originalGroupedFieldSet,
-        undefined,
-      );
-    }
-
-    invariant(
-      this.validatedExecutionArgs.operation.operation !==
-        OperationTypeNode.SUBSCRIPTION,
-      '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
-    );
-
-    const { newDeliveryGroups, newDeliveryGroupMap } =
-      this.getNewDeliveryGroupMap(newDeferUsages, undefined, undefined);
-
-    const { groupedFieldSet, newGroupedFieldSets } = buildExecutionPlan(
-      originalGroupedFieldSet,
-    );
-
-    const data = this.executeRootGroupedFieldSet(
+    return this.executeRootGroupedFieldSet(
       operation,
       rootType,
       rootValue,
-      groupedFieldSet,
-      newDeliveryGroupMap,
+      originalGroupedFieldSet,
+      undefined,
     );
-
-    this.groups.push(...newDeliveryGroups);
-
-    if (newGroupedFieldSets.size > 0) {
-      this.collectExecutionGroups(
-        rootType,
-        rootValue,
-        undefined,
-        newGroupedFieldSets,
-        newDeliveryGroupMap,
-      );
-    }
-
-    return data;
   }
 
   executeRootGroupedFieldSet(
@@ -621,7 +369,7 @@ export class Executor {
     rootType: GraphQLObjectType,
     rootValue: unknown,
     groupedFieldSet: GroupedFieldSet,
-    deliveryGroupMap?: ReadonlyMap<DeferUsage, DeliveryGroup>,
+    positionContext?: TPositionContext,
   ): PromiseOrValue<ObjMap<unknown>> {
     switch (operation) {
       case OperationTypeNode.QUERY:
@@ -630,7 +378,7 @@ export class Executor {
           rootValue,
           undefined,
           groupedFieldSet,
-          deliveryGroupMap,
+          positionContext,
         );
       case OperationTypeNode.MUTATION:
         return this.executeFieldsSerially(
@@ -638,7 +386,7 @@ export class Executor {
           rootValue,
           undefined,
           groupedFieldSet,
-          deliveryGroupMap,
+          positionContext,
         );
       case OperationTypeNode.SUBSCRIPTION:
         // TODO: deprecate `subscribe` and move all logic here
@@ -648,7 +396,7 @@ export class Executor {
           rootValue,
           undefined,
           groupedFieldSet,
-          deliveryGroupMap,
+          positionContext,
         );
     }
   }
@@ -662,7 +410,7 @@ export class Executor {
     sourceValue: unknown,
     path: Path | undefined,
     groupedFieldSet: GroupedFieldSet,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     return promiseReduce(
       groupedFieldSet,
@@ -676,7 +424,7 @@ export class Executor {
           sourceValue,
           fieldDetailsList,
           fieldPath,
-          deliveryGroupMap,
+          positionContext,
         );
         if (result === undefined) {
           return results;
@@ -703,7 +451,7 @@ export class Executor {
     sourceValue: unknown,
     path: Path | undefined,
     groupedFieldSet: GroupedFieldSet,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     const results = Object.create(null);
     let containsPromise = false;
@@ -716,7 +464,7 @@ export class Executor {
           sourceValue,
           fieldDetailsList,
           fieldPath,
-          deliveryGroupMap,
+          positionContext,
         );
 
         if (result !== undefined) {
@@ -758,7 +506,7 @@ export class Executor {
     source: unknown,
     fieldDetailsList: FieldDetailsList,
     path: Path,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<unknown> {
     const validatedExecutionArgs = this.validatedExecutionArgs;
     const { schema, contextValue, variableValues, hideSuggestions } =
@@ -821,7 +569,7 @@ export class Executor {
           info,
           path,
           result,
-          deliveryGroupMap,
+          positionContext,
           true,
         );
       }
@@ -832,7 +580,7 @@ export class Executor {
         info,
         path,
         result,
-        deliveryGroupMap,
+        positionContext,
       );
 
       if (isPromise(completed)) {
@@ -916,7 +664,7 @@ export class Executor {
     info: ResolveInfo,
     path: Path,
     result: unknown,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<unknown> {
     // If result is an Error, throw a located error.
     if (result instanceof Error) {
@@ -932,7 +680,7 @@ export class Executor {
         info,
         path,
         result,
-        deliveryGroupMap,
+        positionContext,
       );
       if (completed === null) {
         throw new Error(
@@ -955,7 +703,7 @@ export class Executor {
         info,
         path,
         result,
-        deliveryGroupMap,
+        positionContext,
       );
     }
 
@@ -974,7 +722,7 @@ export class Executor {
         info,
         path,
         result,
-        deliveryGroupMap,
+        positionContext,
       );
     }
 
@@ -986,7 +734,7 @@ export class Executor {
         info,
         path,
         result,
-        deliveryGroupMap,
+        positionContext,
       );
       // c8 control statement technically placed a line early secondary to
       // slight swc source mapping error (at least as compared to ts-node without swc)
@@ -1005,7 +753,7 @@ export class Executor {
     info: ResolveInfo,
     path: Path,
     result: Promise<unknown>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
     isFieldValue?: boolean,
   ): Promise<unknown> {
     try {
@@ -1019,7 +767,7 @@ export class Executor {
         info,
         path,
         resolved,
-        deliveryGroupMap,
+        positionContext,
       );
 
       if (isPromise(completed)) {
@@ -1048,7 +796,7 @@ export class Executor {
     info: ResolveInfo,
     path: Path,
     items: AsyncIterable<unknown>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): Promise<ReadonlyArray<unknown>> {
     // do not stream inner lists of multi-dimensional lists
     const streamUsage =
@@ -1063,7 +811,9 @@ export class Executor {
     let iteration;
     try {
       while (true) {
-        if (streamUsage && index === streamUsage.initialCount) {
+        if (
+          streamUsage &&
+          streamUsage.initialCount === index &&
           this.handleStream(
             index,
             path,
@@ -1071,10 +821,10 @@ export class Executor {
             streamUsage,
             info,
             itemType,
-          );
+          )
+        ) {
           break;
         }
-
         const itemPath = addPath(path, index, undefined);
         try {
           // eslint-disable-next-line no-await-in-loop
@@ -1098,7 +848,7 @@ export class Executor {
             fieldDetailsList,
             info,
             itemPath,
-            deliveryGroupMap,
+            positionContext,
           )
         ) {
           containsPromise = true;
@@ -1121,6 +871,20 @@ export class Executor {
     return containsPromise ? Promise.all(completedResults) : completedResults;
   }
 
+  /* c8 ignore next 12 */
+  handleStream(
+    _index: number,
+    _path: Path,
+    _iterator:
+      | { handle: Iterator<unknown>; isAsync?: never }
+      | { handle: AsyncIterator<unknown>; isAsync: true },
+    _streamUsage: StreamUsage,
+    _info: ResolveInfo,
+    _itemType: GraphQLOutputType,
+  ): boolean {
+    return false;
+  }
+
   /**
    * Complete a list value by completing each item in the list with the
    * inner type
@@ -1131,7 +895,7 @@ export class Executor {
     info: ResolveInfo,
     path: Path,
     result: unknown,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ReadonlyArray<unknown>> {
     const itemType = returnType.ofType;
 
@@ -1142,7 +906,7 @@ export class Executor {
         info,
         path,
         result,
-        deliveryGroupMap,
+        positionContext,
       );
     }
 
@@ -1158,7 +922,7 @@ export class Executor {
       info,
       path,
       result,
-      deliveryGroupMap,
+      positionContext,
     );
   }
 
@@ -1168,7 +932,7 @@ export class Executor {
     info: ResolveInfo,
     path: Path,
     items: Iterable<unknown>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ReadonlyArray<unknown>> {
     // do not stream inner lists of multi-dimensional lists
     const streamUsage =
@@ -1184,7 +948,9 @@ export class Executor {
     const iterator = items[Symbol.iterator]();
     try {
       while (true) {
-        if (streamUsage && index === streamUsage.initialCount) {
+        if (
+          streamUsage &&
+          streamUsage.initialCount === index &&
           this.handleStream(
             index,
             path,
@@ -1192,10 +958,10 @@ export class Executor {
             streamUsage,
             info,
             itemType,
-          );
+          )
+        ) {
           break;
         }
-
         const iteration = iterator.next();
         if (iteration.done) {
           break;
@@ -1215,7 +981,7 @@ export class Executor {
             fieldDetailsList,
             info,
             itemPath,
-            deliveryGroupMap,
+            positionContext,
           )
         ) {
           containsPromise = true;
@@ -1238,7 +1004,7 @@ export class Executor {
     fieldDetailsList: FieldDetailsList,
     info: ResolveInfo,
     itemPath: Path,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): boolean {
     if (isPromise(item)) {
       completedResults.push(
@@ -1248,7 +1014,7 @@ export class Executor {
           fieldDetailsList,
           info,
           itemPath,
-          deliveryGroupMap,
+          positionContext,
         ),
       );
       return true;
@@ -1260,7 +1026,7 @@ export class Executor {
         fieldDetailsList,
         info,
         itemPath,
-        deliveryGroupMap,
+        positionContext,
       )
     ) {
       return true;
@@ -1280,7 +1046,7 @@ export class Executor {
     fieldDetailsList: FieldDetailsList,
     info: ResolveInfo,
     itemPath: Path,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): boolean {
     try {
       const completedItem = this.completeValue(
@@ -1289,7 +1055,7 @@ export class Executor {
         info,
         itemPath,
         item,
-        deliveryGroupMap,
+        positionContext,
       );
 
       if (isPromise(completedItem)) {
@@ -1323,7 +1089,7 @@ export class Executor {
     fieldDetailsList: FieldDetailsList,
     info: ResolveInfo,
     itemPath: Path,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): Promise<unknown> {
     try {
       const resolved = await item;
@@ -1336,7 +1102,7 @@ export class Executor {
         info,
         itemPath,
         resolved,
-        deliveryGroupMap,
+        positionContext,
       );
       if (isPromise(completed)) {
         completed = await completed;
@@ -1373,7 +1139,7 @@ export class Executor {
     info: GraphQLResolveInfo,
     path: Path,
     result: unknown,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     const validatedExecutionArgs = this.validatedExecutionArgs;
     const { schema, contextValue } = validatedExecutionArgs;
@@ -1399,7 +1165,7 @@ export class Executor {
           info,
           path,
           result,
-          deliveryGroupMap,
+          positionContext,
         );
       });
     }
@@ -1417,7 +1183,7 @@ export class Executor {
       info,
       path,
       result,
-      deliveryGroupMap,
+      positionContext,
     );
   }
 
@@ -1479,7 +1245,7 @@ export class Executor {
     info: GraphQLResolveInfo,
     path: Path,
     result: unknown,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     // If there is an isTypeOf predicate function, call it with the
     // current result. If isTypeOf returns false, then raise an error rather
@@ -1508,7 +1274,7 @@ export class Executor {
             fieldDetailsList,
             path,
             result,
-            deliveryGroupMap,
+            positionContext,
           );
         });
       }
@@ -1523,7 +1289,7 @@ export class Executor {
       fieldDetailsList,
       path,
       result,
-      deliveryGroupMap,
+      positionContext,
     );
   }
 
@@ -1543,7 +1309,7 @@ export class Executor {
     fieldDetailsList: FieldDetailsList,
     path: Path,
     result: unknown,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     // Collect sub-fields to execute to complete this value.
     const { groupedFieldSet, newDeferUsages } = collectSubfields(
@@ -1558,7 +1324,7 @@ export class Executor {
       path,
       groupedFieldSet,
       newDeferUsages,
-      deliveryGroupMap,
+      positionContext,
     );
   }
 
@@ -1567,507 +1333,19 @@ export class Executor {
     sourceValue: unknown,
     path: Path | undefined,
     originalGroupedFieldSet: GroupedFieldSet,
-    newDeferUsages: ReadonlyArray<DeferUsage>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
+    _newDeferUsages: ReadonlyArray<DeferUsage>,
+    _positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
-    if (newDeferUsages.length > 0) {
-      invariant(
-        this.validatedExecutionArgs.operation.operation !==
-          OperationTypeNode.SUBSCRIPTION,
-        '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
-      );
-    }
-
-    if (deliveryGroupMap === undefined && newDeferUsages.length === 0) {
-      return this.executeFields(
-        parentType,
-        sourceValue,
-        path,
-        originalGroupedFieldSet,
-        deliveryGroupMap,
-      );
-    }
-
-    const { newDeliveryGroups, newDeliveryGroupMap } =
-      this.getNewDeliveryGroupMap(newDeferUsages, deliveryGroupMap, path);
-
-    const { groupedFieldSet, newGroupedFieldSets } = this.buildSubExecutionPlan(
-      originalGroupedFieldSet,
-      this.deferUsageSet,
-    );
-
-    const data = this.executeFields(
+    return this.executeFields(
       parentType,
       sourceValue,
       path,
-      groupedFieldSet,
-      newDeliveryGroupMap,
-    );
-
-    this.groups.push(...newDeliveryGroups);
-
-    if (newGroupedFieldSets.size > 0) {
-      this.collectExecutionGroups(
-        parentType,
-        sourceValue,
-        path,
-        newGroupedFieldSets,
-        newDeliveryGroupMap,
-      );
-    }
-
-    return data;
-  }
-
-  handleStream(
-    index: number,
-    path: Path,
-    iterator:
-      | { handle: Iterator<unknown>; isAsync?: never }
-      | { handle: AsyncIterator<unknown>; isAsync: true },
-    streamUsage: StreamUsage,
-    info: ResolveInfo,
-    itemType: GraphQLOutputType,
-  ): void {
-    const { handle, isAsync } = iterator;
-    const queue = this.buildStreamItemQueue(
-      index,
-      path,
-      handle,
-      streamUsage.fieldDetailsList,
-      info,
-      itemType,
-      isAsync,
-    );
-
-    const itemStream: ItemStream = {
-      label: streamUsage.label,
-      path,
-      queue,
-    };
-
-    this.streams.push(itemStream);
-  }
-
-  collectExecutionGroups(
-    parentType: GraphQLObjectType,
-    sourceValue: unknown,
-    path: Path | undefined,
-    newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>,
-  ): void {
-    for (const [deferUsageSet, groupedFieldSet] of newGroupedFieldSets) {
-      const deliveryGroups = getDeliveryGroups(deferUsageSet, deliveryGroupMap);
-
-      const executor = new Executor(this.validatedExecutionArgs, deferUsageSet);
-
-      const executionGroup: ExecutionGroup = {
-        groups: deliveryGroups,
-        path,
-        computation: new Computation(
-          () =>
-            executor.executeExecutionGroup(
-              deliveryGroups,
-              parentType,
-              sourceValue,
-              path,
-              groupedFieldSet,
-              deliveryGroupMap,
-            ),
-          () => executor.cancel(),
-        ),
-      };
-
-      const parentDeferUsages = this.deferUsageSet;
-
-      if (this.validatedExecutionArgs.enableEarlyExecution) {
-        if (this.shouldDefer(parentDeferUsages, deferUsageSet)) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          Promise.resolve().then(() => executionGroup.computation.prime());
-        } else {
-          executionGroup.computation.prime();
-        }
-      }
-
-      this.tasks.push(executionGroup);
-    }
-  }
-
-  executeExecutionGroup(
-    deliveryGroups: ReadonlyArray<DeliveryGroup>,
-    parentType: GraphQLObjectType,
-    sourceValue: unknown,
-    path: Path | undefined,
-    groupedFieldSet: GroupedFieldSet,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>,
-  ): PromiseOrValue<ExecutionGroupResult> {
-    let result;
-    try {
-      result = this.executeFields(
-        parentType,
-        sourceValue,
-        path,
-        groupedFieldSet,
-        deliveryGroupMap,
-      );
-    } catch (error) {
-      this.cancel();
-      throw error;
-    }
-
-    if (isPromise(result)) {
-      return result.then(
-        (resolved) =>
-          this.buildExecutionGroupResult(deliveryGroups, path, resolved),
-        (error: unknown) => {
-          throw error;
-        },
-      );
-    }
-
-    return this.buildExecutionGroupResult(deliveryGroups, path, result);
-  }
-
-  buildStreamItemQueue(
-    initialIndex: number,
-    streamPath: Path,
-    iterator: Iterator<unknown> | AsyncIterator<unknown>,
-    fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
-    itemType: GraphQLOutputType,
-    isAsync: boolean | undefined,
-  ): Queue<StreamItemResult> {
-    const { enableEarlyExecution } = this.validatedExecutionArgs;
-    const queue = new Queue<StreamItemResult>(
-      async ({ push, stop, started, stopped }) => {
-        const cancelStreamItems = new Set<() => void>();
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        stopped.then(() => {
-          cancelStreamItems.forEach((cancelStreamItem) => cancelStreamItem());
-          returnIteratorCatchingErrors(iterator);
-        });
-        await (enableEarlyExecution ? Promise.resolve() : started);
-        if (queue.isStopped()) {
-          return;
-        }
-        let index = initialIndex;
-        while (true) {
-          let iteration;
-          try {
-            if (isAsync) {
-              // eslint-disable-next-line no-await-in-loop
-              iteration = await iterator.next();
-              if (queue.isStopped()) {
-                return;
-              }
-            } else {
-              iteration = (iterator as Iterator<unknown>).next();
-            }
-          } catch (rawError) {
-            throw locatedError(
-              rawError,
-              toNodes(fieldDetailsList),
-              pathToArray(streamPath),
-            );
-          }
-
-          if (iteration.done) {
-            stop();
-            return;
-          }
-
-          const itemPath = addPath(streamPath, index, undefined);
-
-          const executor = new Executor(this.validatedExecutionArgs);
-
-          let streamItemResult = executor.completeStreamItem(
-            itemPath,
-            iteration.value,
-            fieldDetailsList,
-            info,
-            itemType,
-          );
-          if (isPromise(streamItemResult)) {
-            if (enableEarlyExecution) {
-              const cancelStreamItem = () => executor.cancel();
-              cancelStreamItems.add(cancelStreamItem);
-              streamItemResult = streamItemResult.finally(() => {
-                cancelStreamItems.delete(cancelStreamItem);
-              });
-            } else {
-              // eslint-disable-next-line no-await-in-loop
-              streamItemResult = await streamItemResult;
-              if (queue.isStopped()) {
-                return;
-              }
-            }
-          }
-          const pushResult = push(streamItemResult);
-          if (isPromise(pushResult)) {
-            // eslint-disable-next-line no-await-in-loop
-            await pushResult;
-            if (queue.isStopped()) {
-              return;
-            }
-          }
-          index += 1;
-        }
-      },
-      // set initialCapacity to 100 by default
-      100,
-    );
-    return queue;
-  }
-
-  completeStreamItem(
-    itemPath: Path,
-    item: unknown,
-    fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
-    itemType: GraphQLOutputType,
-  ): PromiseOrValue<StreamItemResult> {
-    if (isPromise(item)) {
-      return this.completePromisedValue(
-        itemType,
-        fieldDetailsList,
-        info,
-        itemPath,
-        item,
-        undefined,
-      )
-        .then(
-          (resolvedItem) => this.buildStreamItemResult(resolvedItem),
-          (rawError: unknown) => {
-            this.handleFieldError(
-              rawError,
-              itemType,
-              fieldDetailsList,
-              itemPath,
-            );
-            return this.buildStreamItemResult(null);
-          },
-        )
-        .then(undefined, (error: unknown) => {
-          this.cancel();
-          throw error;
-        });
-    }
-
-    let result: PromiseOrValue<unknown>;
-    try {
-      try {
-        result = this.completeValue(
-          itemType,
-          fieldDetailsList,
-          info,
-          itemPath,
-          item,
-          undefined,
-        );
-      } catch (rawError) {
-        this.handleFieldError(rawError, itemType, fieldDetailsList, itemPath);
-        return this.buildStreamItemResult(null);
-      }
-    } catch (error) {
-      this.cancel();
-      throw error;
-    }
-
-    if (isPromise(result)) {
-      return result
-        .then(
-          (resolved) => this.buildStreamItemResult(resolved),
-          (rawError: unknown) => {
-            this.handleFieldError(
-              rawError,
-              itemType,
-              fieldDetailsList,
-              itemPath,
-            );
-            return this.buildStreamItemResult(null);
-          },
-        )
-        .then(undefined, (error: unknown) => {
-          this.cancel();
-          throw error;
-        });
-    }
-
-    return this.buildStreamItemResult(result);
-  }
-
-  buildExecutionGroupResult(
-    deliveryGroups: ReadonlyArray<DeliveryGroup>,
-    path: Path | undefined,
-    result: ObjMap<unknown>,
-  ): ExecutionGroupResult {
-    this.finish();
-    const data = result;
-    const errors = this.collectedErrors.errors;
-    return {
-      value: errors.length
-        ? { deliveryGroups, path: pathToArray(path), errors, data }
-        : { deliveryGroups, path: pathToArray(path), data },
-      work: this.getIncrementalWork(),
-    };
-  }
-
-  getIncrementalWork(): IncrementalWork {
-    const { groups, tasks, streams, collectedErrors } = this;
-
-    if (collectedErrors.errors.length === 0) {
-      return { groups, tasks, streams };
-    }
-
-    const filteredTasks: Array<ExecutionGroup> = [];
-    for (const task of tasks) {
-      if (collectedErrors.hasNulledPosition(task.path)) {
-        task.computation.cancel();
-      } else {
-        filteredTasks.push(task);
-      }
-    }
-
-    const filteredStreams: Array<ItemStream> = [];
-    for (const stream of streams) {
-      if (collectedErrors.hasNulledPosition(stream.path)) {
-        stream.queue.cancel();
-      } else {
-        filteredStreams.push(stream);
-      }
-    }
-
-    return {
-      groups,
-      tasks: filteredTasks,
-      streams: filteredStreams,
-    };
-  }
-
-  buildStreamItemResult(result: unknown): StreamItemResult {
-    this.finish();
-    const item = result;
-    const errors = this.collectedErrors.errors;
-    const work = this.getIncrementalWork();
-    return errors.length > 0
-      ? { value: { item, errors }, work }
-      : { value: { item }, work };
-  }
-
-  /**
-   * Instantiates new DeliveryGroups for the given path, returning an
-   * updated map of DeferUsage objects to DeliveryGroups.
-   *
-   * Note: As defer directives may be used with operations returning lists,
-   * a DeferUsage object may correspond to many DeliveryGroups.
-   */
-  getNewDeliveryGroupMap(
-    newDeferUsages: ReadonlyArray<DeferUsage>,
-    deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
-    path: Path | undefined,
-  ): {
-    newDeliveryGroups: ReadonlyArray<DeliveryGroup>;
-    newDeliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>;
-  } {
-    const newDeliveryGroups: Array<DeliveryGroup> = [];
-    const newDeliveryGroupMap = new Map(deliveryGroupMap);
-
-    // For each new deferUsage object:
-    for (const newDeferUsage of newDeferUsages) {
-      const parentDeferUsage = newDeferUsage.parentDeferUsage;
-
-      const parent =
-        parentDeferUsage === undefined
-          ? undefined
-          : deliveryGroupFromDeferUsage(parentDeferUsage, newDeliveryGroupMap);
-
-      // Create a new DeliveryGroup object
-      const deliveryGroup: DeliveryGroup = {
-        path,
-        label: newDeferUsage.label,
-        parent,
-      };
-
-      // Add it to the list of new groups
-      newDeliveryGroups.push(deliveryGroup);
-
-      // Update the map
-      newDeliveryGroupMap.set(newDeferUsage, deliveryGroup);
-    }
-
-    return {
-      newDeliveryGroups,
-      newDeliveryGroupMap,
-    };
-  }
-
-  buildSubExecutionPlan(
-    originalGroupedFieldSet: GroupedFieldSet,
-    deferUsageSet: DeferUsageSet | undefined,
-  ): ExecutionPlan {
-    let executionPlan = (
-      originalGroupedFieldSet as unknown as { _executionPlan: ExecutionPlan }
-    )._executionPlan;
-    if (executionPlan !== undefined) {
-      return executionPlan;
-    }
-    executionPlan = buildExecutionPlan(originalGroupedFieldSet, deferUsageSet);
-    (
-      originalGroupedFieldSet as unknown as { _executionPlan: ExecutionPlan }
-    )._executionPlan = executionPlan;
-    return executionPlan;
-  }
-
-  shouldDefer(
-    parentDeferUsages: undefined | DeferUsageSet,
-    deferUsages: DeferUsageSet,
-  ): boolean {
-    // If we have a new child defer usage, defer.
-    // Otherwise, this defer usage was already deferred when it was initially
-    // encountered, and is now in the midst of executing early, so the new
-    // deferred grouped fields set can be executed immediately.
-    return (
-      parentDeferUsages === undefined ||
-      !Array.from(deferUsages).every((deferUsage) =>
-        parentDeferUsages.has(deferUsage),
-      )
+      originalGroupedFieldSet,
+      undefined,
     );
   }
 }
 
 function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
   return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
-}
-
-function getDeliveryGroups(
-  deferUsageSet: DeferUsageSet,
-  deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>,
-): ReadonlyArray<DeliveryGroup> {
-  return Array.from(deferUsageSet).map((deferUsage) =>
-    deliveryGroupFromDeferUsage(deferUsage, deliveryGroupMap),
-  );
-}
-
-function deliveryGroupFromDeferUsage(
-  deferUsage: DeferUsage,
-  deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>,
-): DeliveryGroup {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return deliveryGroupMap.get(deferUsage)!;
-}
-
-function returnIteratorCatchingErrors(
-  iterator: Iterator<unknown> | AsyncIterator<unknown>,
-): void {
-  try {
-    const result = iterator.return?.();
-    if (isPromise(result)) {
-      result.catch(() => {
-        // ignore errors
-      });
-    }
-  } catch {
-    // ignore errors
-  }
 }

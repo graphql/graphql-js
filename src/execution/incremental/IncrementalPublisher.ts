@@ -3,6 +3,9 @@ import { pathToArray } from '../../jsutils/Path.js';
 
 import type { GraphQLError } from '../../error/GraphQLError.js';
 
+import { mapAsyncIterable } from '../mapAsyncIterable.js';
+import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
+
 import type {
   CompletedResult,
   DeliveryGroup,
@@ -16,10 +19,7 @@ import type {
   PendingResult,
   StreamItemValue,
   SubsequentIncrementalExecutionResult,
-} from '../Executor.js';
-import { mapAsyncIterable } from '../mapAsyncIterable.js';
-import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
-
+} from './IncrementalExecutor.js';
 import type { WorkQueueEvent } from './WorkQueue.js';
 import { createWorkQueue } from './WorkQueue.js';
 
