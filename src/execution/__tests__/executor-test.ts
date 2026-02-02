@@ -5,6 +5,7 @@ import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { inspect } from '../../jsutils/inspect.js';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import { Kind } from '../../language/kinds.js';
 import { parse } from '../../language/parser.js';
@@ -192,7 +193,9 @@ describe('Execute: Handles basic execution tasks', () => {
     });
   });
 
-  it('provides info about current execution state', () => {
+  it('provides info about current execution state', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    const { promise, resolve } = promiseWithResolvers<void>();
     let resolvedInfo: GraphQLResolveInfo | undefined;
     const testType = new GraphQLObjectType({
       name: 'Test',
@@ -201,6 +204,7 @@ describe('Execute: Handles basic execution tasks', () => {
           type: GraphQLString,
           resolve(_val, _args, _ctx, info) {
             resolvedInfo = info;
+            return promise;
           },
         },
       },
@@ -211,7 +215,7 @@ describe('Execute: Handles basic execution tasks', () => {
     const rootValue = { root: 'val' };
     const variableValues = { var: 'abc' };
 
-    executeSync({ schema, document, rootValue, variableValues });
+    const result = execute({ schema, document, rootValue, variableValues });
 
     const operation = document.definitions[0];
     assert(operation.kind === Kind.OPERATION_DEFINITION);
@@ -246,6 +250,10 @@ describe('Execute: Handles basic execution tasks', () => {
     });
 
     expect(resolvedInfo.abortSignal).to.be.instanceOf(AbortSignal);
+
+    resolve();
+
+    await result;
   });
 
   it('populates path correctly with complex types', () => {
