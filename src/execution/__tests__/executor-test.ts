@@ -7,6 +7,7 @@ import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 import { inspect } from '../../jsutils/inspect.js';
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
+import type { FieldNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import { parse } from '../../language/parser.js';
 
@@ -31,7 +32,9 @@ import {
 } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
-import { execute, executeSync } from '../execute.js';
+import type { FieldDetailsList } from '../collectFields.js';
+import { execute, executeSync, validateExecutionArgs } from '../execute.js';
+import { collectSubfields, getStreamUsage } from '../Executor.js';
 
 describe('Execute: Handles basic execution tasks', () => {
   it('executes arbitrary code', async () => {
@@ -1449,5 +1452,95 @@ describe('Execute: Handles basic execution tasks', () => {
         },
       ],
     });
+  });
+
+  it('memoizes collectSubfields results', () => {
+    const deepType = new GraphQLObjectType({
+      name: 'DeepType',
+      fields: {
+        name: { type: GraphQLString },
+      },
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          deep: { type: deepType },
+        },
+      }),
+    });
+    const document = parse('{ deep { name } }');
+    const validatedExecutionArgs = validateExecutionArgs({
+      schema,
+      document,
+    });
+
+    assert('schema' in validatedExecutionArgs);
+
+    const operation = validatedExecutionArgs.operation;
+    const node = operation.selectionSet.selections[0] as FieldNode;
+
+    const fieldDetailsList: FieldDetailsList = [{ node }];
+
+    const first = collectSubfields(
+      validatedExecutionArgs,
+      deepType,
+      fieldDetailsList,
+    );
+
+    const second = collectSubfields(
+      validatedExecutionArgs,
+      deepType,
+      fieldDetailsList,
+    );
+
+    expect(second).to.equal(first);
+
+    const third = collectSubfields(validatedExecutionArgs, deepType, [
+      { node },
+    ]);
+
+    expect(third).to.not.equal(first);
+  });
+
+  it('memoizes getStreamUsage results', () => {
+    const itemType = new GraphQLObjectType({
+      name: 'Item',
+      fields: {
+        id: { type: GraphQLString },
+      },
+    });
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          items: { type: new GraphQLList(itemType) },
+        },
+      }),
+      directives: [GraphQLStreamDirective],
+    });
+    const document = parse('{ items @stream(initialCount: 1) { id } }');
+    const validatedExecutionArgs = validateExecutionArgs({
+      schema,
+      document,
+    });
+
+    assert('schema' in validatedExecutionArgs);
+
+    const operation = validatedExecutionArgs.operation;
+    const node = operation.selectionSet.selections[0] as FieldNode;
+
+    const fieldDetailsList = [{ node }];
+    const first = getStreamUsage(validatedExecutionArgs, fieldDetailsList);
+
+    expect(first).to.not.equal(undefined);
+
+    const second = getStreamUsage(validatedExecutionArgs, fieldDetailsList);
+
+    expect(second).to.equal(first);
+
+    const third = getStreamUsage(validatedExecutionArgs, [{ node }]);
+
+    expect(third).to.not.equal(first);
   });
 });

@@ -3,8 +3,8 @@ import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isPromise } from '../jsutils/isPromise.js';
-import { memoize1 } from '../jsutils/memoize1.js';
 import { memoize2 } from '../jsutils/memoize2.js';
+import { memoize3 } from '../jsutils/memoize3.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
@@ -54,7 +54,7 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
 import type { StreamUsage } from './getStreamUsage.js';
-import { getStreamUsage } from './getStreamUsage.js';
+import { getStreamUsage as _getStreamUsage } from './getStreamUsage.js';
 import type {
   DeferUsageSet,
   ExecutionPlan,
@@ -120,6 +120,37 @@ export interface ValidatedExecutionArgs {
   externalAbortSignal: AbortSignal | undefined;
   enableEarlyExecution: boolean;
 }
+
+/**
+ * A memoized collection of relevant subfields with regard to the return
+ * type. Memoizing ensures the subfields are not repeatedly calculated, which
+ * saves overhead when resolving lists of values.
+ */
+export const collectSubfields = memoize3(
+  (
+    validatedExecutionArgs: ValidatedExecutionArgs,
+    returnType: GraphQLObjectType,
+    fieldDetailsList: FieldDetailsList,
+  ) => {
+    const { schema, fragments, variableValues, hideSuggestions } =
+      validatedExecutionArgs;
+    return _collectSubfields(
+      schema,
+      fragments,
+      variableValues,
+      returnType,
+      fieldDetailsList,
+      hideSuggestions,
+    );
+  },
+);
+
+export const getStreamUsage = memoize2(
+  (
+    validatedExecutionArgs: ValidatedExecutionArgs,
+    fieldDetailsList: FieldDetailsList,
+  ) => _getStreamUsage(validatedExecutionArgs, fieldDetailsList),
+);
 
 /**
  * @internal
@@ -384,18 +415,6 @@ export class Executor {
   tasks: Array<ExecutionGroup>;
   streams: Array<ItemStream>;
 
-  collectSubfields: (
-    returnType: GraphQLObjectType,
-    fieldDetailsList: FieldDetailsList,
-  ) => {
-    groupedFieldSet: GroupedFieldSet;
-    newDeferUsages: ReadonlyArray<DeferUsage>;
-  };
-
-  getStreamUsage: (
-    fieldDetailsList: FieldDetailsList,
-  ) => StreamUsage | undefined;
-
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
     deferUsageSet?: DeferUsageSet,
@@ -408,28 +427,6 @@ export class Executor {
     this.groups = [];
     this.tasks = [];
     this.streams = [];
-
-    /**
-     * A memoized collection of relevant subfields with regard to the return
-     * type. Memoizing ensures the subfields are not repeatedly calculated, which
-     * saves overhead when resolving lists of values.
-     */
-    this.collectSubfields = memoize2((returnType, fieldDetailsList) => {
-      const { schema, fragments, variableValues, hideSuggestions } =
-        this.validatedExecutionArgs;
-      return _collectSubfields(
-        schema,
-        fragments,
-        variableValues,
-        returnType,
-        fieldDetailsList,
-        hideSuggestions,
-      );
-    });
-
-    this.getStreamUsage = memoize1((fieldDetailsList) =>
-      getStreamUsage(this.validatedExecutionArgs, fieldDetailsList),
-    );
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
@@ -1057,7 +1054,7 @@ export class Executor {
     const streamUsage =
       typeof path.key === 'number'
         ? undefined
-        : this.getStreamUsage(fieldDetailsList);
+        : getStreamUsage(this.validatedExecutionArgs, fieldDetailsList);
 
     let containsPromise = false;
     const completedResults: Array<unknown> = [];
@@ -1177,7 +1174,7 @@ export class Executor {
     const streamUsage =
       typeof path.key === 'number'
         ? undefined
-        : this.getStreamUsage(fieldDetailsList);
+        : getStreamUsage(this.validatedExecutionArgs, fieldDetailsList);
 
     // This is specified as a simple map, however we're optimizing the path
     // where the list contains no Promises by avoiding creating another Promise.
@@ -1549,7 +1546,8 @@ export class Executor {
     deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup> | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
     // Collect sub-fields to execute to complete this value.
-    const { groupedFieldSet, newDeferUsages } = this.collectSubfields(
+    const { groupedFieldSet, newDeferUsages } = collectSubfields(
+      this.validatedExecutionArgs,
       returnType,
       fieldDetailsList,
     );
