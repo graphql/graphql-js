@@ -334,7 +334,9 @@ export function extendSchemaImpl(
         const existingFields = mapValue(config.fields, (field) => ({
           ...field,
           type: replaceType(field.type),
-          args: /* c8 ignore next */ field.args ? mapValue(field.args, extendArg) : {},
+          args: /* c8 ignore next */ field.args
+            ? mapValue(field.args, extendArg)
+            : {},
         }));
         const extensionFields = buildFieldMap(extensions);
         return mergeFieldMaps(existingFields, extensionFields);
@@ -359,7 +361,9 @@ export function extendSchemaImpl(
         const existingFields = mapValue(config.fields, (field) => ({
           ...field,
           type: replaceType(field.type),
-          args: /* c8 ignore next */ field.args ? mapValue(field.args, extendArg) : {},
+          args: /* c8 ignore next */ field.args
+            ? mapValue(field.args, extendArg)
+            : {},
         }));
         const extensionFields = buildFieldMap(extensions);
         return mergeFieldMaps(existingFields, extensionFields);

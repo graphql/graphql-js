@@ -144,7 +144,8 @@ export function ExtendedFieldsMatchOriginalTypeRule(
             );
           }
 
-          const argType = /* c8 ignore next */ extensionArgType ?? existingArg.type;
+          const argType =
+            /* c8 ignore next */ extensionArgType ?? existingArg.type;
           let extensionDefaultValue;
 
           if (isInputType(argType)) {
