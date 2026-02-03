@@ -21,12 +21,21 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceInputValue(1)).to.equal(1);
       expect(coerceInputValue(0)).to.equal(0);
       expect(coerceInputValue(-1)).to.equal(-1);
+      expect(coerceInputValue(1n)).to.equal(1);
+      expect(coerceInputValue(0n)).to.equal(0);
+      expect(coerceInputValue(-1n)).to.equal(-1);
 
       expect(() => coerceInputValue(9876504321)).to.throw(
         'Int cannot represent non 32-bit signed integer value: 9876504321',
       );
       expect(() => coerceInputValue(-9876504321)).to.throw(
         'Int cannot represent non 32-bit signed integer value: -9876504321',
+      );
+      expect(() => coerceInputValue(2147483648n)).to.throw(
+        'Int cannot represent non 32-bit signed integer value: 2147483648',
+      );
+      expect(() => coerceInputValue(-2147483649n)).to.throw(
+        'Int cannot represent non 32-bit signed integer value: -2147483649',
       );
       expect(() => coerceInputValue(0.1)).to.throw(
         'Int cannot represent non-integer value: 0.1',
@@ -119,6 +128,9 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue(1e5)).to.equal(100000);
       expect(coerceOutputValue(false)).to.equal(0);
       expect(coerceOutputValue(true)).to.equal(1);
+      expect(coerceOutputValue(1n)).to.equal(1);
+      expect(coerceOutputValue(0n)).to.equal(0);
+      expect(coerceOutputValue(-1n)).to.equal(-1);
 
       const customValueOfObj = {
         value: 5,
@@ -156,6 +168,12 @@ describe('Type System: Specified scalar types', () => {
       );
       expect(() => coerceOutputValue('-9876504321')).to.throw(
         'Int cannot represent non 32-bit signed integer value: "-9876504321"',
+      );
+      expect(() => coerceOutputValue(2147483648n)).to.throw(
+        'Int cannot represent non 32-bit signed integer value: 2147483648',
+      );
+      expect(() => coerceOutputValue(-2147483649n)).to.throw(
+        'Int cannot represent non 32-bit signed integer value: -2147483649',
       );
 
       // Too big to represent as an Int in JavaScript or GraphQL
@@ -196,12 +214,22 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceInputValue(-1)).to.equal(-1);
       expect(coerceInputValue(0.1)).to.equal(0.1);
       expect(coerceInputValue(Math.PI)).to.equal(Math.PI);
+      expect(coerceInputValue(1n)).to.equal(1);
+      expect(coerceInputValue(0n)).to.equal(0);
+      expect(coerceInputValue(-1n)).to.equal(-1);
+      expect(coerceInputValue(9007199254740992n)).to.equal(9007199254740992);
 
       expect(() => coerceInputValue(NaN)).to.throw(
         'Float cannot represent non numeric value: NaN',
       );
       expect(() => coerceInputValue(Infinity)).to.throw(
         'Float cannot represent non numeric value: Infinity',
+      );
+      expect(() => coerceInputValue(9007199254740993n)).to.throw(
+        'Float cannot represent non numeric value: 9007199254740993 (value would lose precision)',
+      );
+      expect(() => coerceInputValue(2n ** 1024n)).to.throw(
+        'Float cannot represent non numeric value: 179769313486231590772930519078902473361797697894230657273430081157732675805500963132708477322407536021120113879871393357658789768814416622492847430639474124377767893424865485276302219601246094119453082952085005768838150682342462881473913110540827237163350510684586298239947245938479716304835356329624224137216 (value is too large)',
       );
 
       expect(() => coerceInputValue(undefined)).to.throw(
@@ -286,6 +314,10 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue('-1.1')).to.equal(-1.1);
       expect(coerceOutputValue(false)).to.equal(0.0);
       expect(coerceOutputValue(true)).to.equal(1.0);
+      expect(coerceOutputValue(1n)).to.equal(1.0);
+      expect(coerceOutputValue(0n)).to.equal(0.0);
+      expect(coerceOutputValue(-1n)).to.equal(-1.0);
+      expect(coerceOutputValue(9007199254740992n)).to.equal(9007199254740992);
 
       const customValueOfObj = {
         value: 5.5,
@@ -300,6 +332,12 @@ describe('Type System: Specified scalar types', () => {
       );
       expect(() => coerceOutputValue(Infinity)).to.throw(
         'Float cannot represent non numeric value: Infinity',
+      );
+      expect(() => coerceOutputValue(9007199254740993n)).to.throw(
+        'Float cannot represent non numeric value: 9007199254740993 (value would lose precision)',
+      );
+      expect(() => coerceOutputValue(2n ** 1024n)).to.throw(
+        'Float cannot represent non numeric value: 179769313486231590772930519078902473361797697894230657273430081157732675805500963132708477322407536021120113879871393357658789768814416622492847430639474124377767893424865485276302219601246094119453082952085005768838150682342462881473913110540827237163350510684586298239947245938479716304835356329624224137216 (value is too large)',
       );
       expect(() => coerceOutputValue('one')).to.throw(
         'Float cannot represent non numeric value: "one"',
@@ -386,6 +424,7 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue(-1.1)).to.equal('-1.1');
       expect(coerceOutputValue(true)).to.equal('true');
       expect(coerceOutputValue(false)).to.equal('false');
+      expect(coerceOutputValue(123n)).to.equal('123');
 
       const valueOf = () => 'valueOf string';
       const toJSON = () => 'toJSON string';
@@ -503,6 +542,8 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue(0)).to.equal(false);
       expect(coerceOutputValue(true)).to.equal(true);
       expect(coerceOutputValue(false)).to.equal(false);
+      expect(coerceOutputValue(1n)).to.equal(true);
+      expect(coerceOutputValue(0n)).to.equal(false);
       expect(
         coerceOutputValue({
           value: true,
@@ -542,6 +583,9 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceInputValue(1)).to.equal('1');
       expect(coerceInputValue(0)).to.equal('0');
       expect(coerceInputValue(-1)).to.equal('-1');
+      expect(coerceInputValue(1n)).to.equal('1');
+      expect(coerceInputValue(0n)).to.equal('0');
+      expect(coerceInputValue(-1n)).to.equal('-1');
 
       // Maximum and minimum safe numbers in JS
       expect(coerceInputValue(9007199254740991)).to.equal('9007199254740991');
@@ -626,6 +670,9 @@ describe('Type System: Specified scalar types', () => {
       expect(coerceOutputValue(123)).to.equal('123');
       expect(coerceOutputValue(0)).to.equal('0');
       expect(coerceOutputValue(-1)).to.equal('-1');
+      expect(coerceOutputValue(123n)).to.equal('123');
+      expect(coerceOutputValue(0n)).to.equal('0');
+      expect(coerceOutputValue(-1n)).to.equal('-1');
 
       const valueOf = () => 'valueOf ID';
       const toJSON = () => 'toJSON ID';

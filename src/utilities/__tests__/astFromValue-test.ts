@@ -46,6 +46,14 @@ describe('astFromValue', () => {
       kind: 'BooleanValue',
       value: true,
     });
+    expect(astFromValue(0n, GraphQLBoolean)).to.deep.equal({
+      kind: 'BooleanValue',
+      value: false,
+    });
+    expect(astFromValue(1n, GraphQLBoolean)).to.deep.equal({
+      kind: 'BooleanValue',
+      value: true,
+    });
 
     const NonNullBoolean = new GraphQLNonNull(GraphQLBoolean);
     expect(astFromValue(0, NonNullBoolean)).to.deep.equal({
@@ -56,6 +64,10 @@ describe('astFromValue', () => {
 
   it('converts Int values to Int ASTs', () => {
     expect(astFromValue(-1, GraphQLInt)).to.deep.equal({
+      kind: 'IntValue',
+      value: '-1',
+    });
+    expect(astFromValue(-1n, GraphQLInt)).to.deep.equal({
       kind: 'IntValue',
       value: '-1',
     });
@@ -80,6 +92,9 @@ describe('astFromValue', () => {
     expect(() => astFromValue(1e40, GraphQLInt)).to.throw(
       'Int cannot represent non 32-bit signed integer value: 1e+40',
     );
+    expect(() => astFromValue(2147483648n, GraphQLInt)).to.throw(
+      'Int cannot represent non 32-bit signed integer value: 2147483648',
+    );
 
     expect(() => astFromValue(NaN, GraphQLInt)).to.throw(
       'Int cannot represent non-integer value: NaN',
@@ -88,6 +103,10 @@ describe('astFromValue', () => {
 
   it('converts Float values to Int/Float ASTs', () => {
     expect(astFromValue(-1, GraphQLFloat)).to.deep.equal({
+      kind: 'IntValue',
+      value: '-1',
+    });
+    expect(astFromValue(-1n, GraphQLFloat)).to.deep.equal({
       kind: 'IntValue',
       value: '-1',
     });
@@ -111,6 +130,16 @@ describe('astFromValue', () => {
       kind: 'FloatValue',
       value: '1e+40',
     });
+    expect(astFromValue(9007199254740992n, GraphQLFloat)).to.deep.equal({
+      kind: 'IntValue',
+      value: '9007199254740992',
+    });
+    expect(() => astFromValue(9007199254740993n, GraphQLFloat)).to.throw(
+      'Float cannot represent non numeric value: 9007199254740993 (value would lose precision)',
+    );
+    expect(() => astFromValue(2n ** 1024n, GraphQLFloat)).to.throw(
+      'Float cannot represent non numeric value: 179769313486231590772930519078902473361797697894230657273430081157732675805500963132708477322407536021120113879871393357658789768814416622492847430639474124377767893424865485276302219601246094119453082952085005768838150682342462881473913110540827237163350510684586298239947245938479716304835356329624224137216 (value is too large)',
+    );
   });
 
   it('converts String values to String ASTs', () => {
@@ -130,6 +159,10 @@ describe('astFromValue', () => {
     });
 
     expect(astFromValue(123, GraphQLString)).to.deep.equal({
+      kind: 'StringValue',
+      value: '123',
+    });
+    expect(astFromValue(123n, GraphQLString)).to.deep.equal({
       kind: 'StringValue',
       value: '123',
     });
@@ -173,6 +206,10 @@ describe('astFromValue', () => {
       kind: 'IntValue',
       value: '123',
     });
+    expect(astFromValue(123n, GraphQLID)).to.deep.equal({
+      kind: 'IntValue',
+      value: '123',
+    });
 
     expect(astFromValue('123', GraphQLID)).to.deep.equal({
       kind: 'IntValue',
@@ -204,6 +241,10 @@ describe('astFromValue', () => {
     expect(astFromValue('value', passthroughScalar)).to.deep.equal({
       kind: 'StringValue',
       value: 'value',
+    });
+    expect(astFromValue(123n, passthroughScalar)).to.deep.equal({
+      kind: 'IntValue',
+      value: '123',
     });
 
     expect(() => astFromValue(NaN, passthroughScalar)).to.throw(

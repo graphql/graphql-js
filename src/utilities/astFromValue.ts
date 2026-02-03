@@ -34,6 +34,7 @@ import { GraphQLID } from '../type/scalars.js';
  * | Boolean       | Boolean              |
  * | String        | String / Enum Value  |
  * | Number        | Int / Float          |
+ * | BigInt        | Int                  |
  * | Unknown       | Enum Value           |
  * | null          | NullValue            |
  *
@@ -117,6 +118,10 @@ export function astFromValue(
       return integerStringRegExp.test(stringNum)
         ? { kind: Kind.INT, value: stringNum }
         : { kind: Kind.FLOAT, value: stringNum };
+    }
+
+    if (typeof coerced === 'bigint') {
+      return { kind: Kind.INT, value: String(coerced) };
     }
 
     if (typeof coerced === 'string') {

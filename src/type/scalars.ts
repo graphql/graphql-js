@@ -40,6 +40,9 @@ export const GraphQLInt = new GraphQLScalarType<number>({
     if (typeof coercedValue === 'string') {
       return coerceIntFromString(coercedValue);
     }
+    if (typeof coercedValue === 'bigint') {
+      return coerceIntFromBigInt(coercedValue);
+    }
     throw new GraphQLError(
       `Int cannot represent non-integer value: ${inspect(coercedValue)}`,
     );
@@ -48,6 +51,9 @@ export const GraphQLInt = new GraphQLScalarType<number>({
   coerceInputValue(inputValue) {
     if (typeof inputValue === 'number') {
       return coerceIntFromNumber(inputValue);
+    }
+    if (typeof inputValue === 'bigint') {
+      return coerceIntFromBigInt(inputValue);
     }
     throw new GraphQLError(
       `Int cannot represent non-integer value: ${inspect(inputValue)}`,
@@ -72,8 +78,8 @@ export const GraphQLInt = new GraphQLScalarType<number>({
   },
   valueToLiteral(value) {
     if (
-      typeof value === 'number' &&
-      Number.isInteger(value) &&
+      ((typeof value === 'number' && Number.isInteger(value)) ||
+        typeof value === 'bigint') &&
       value <= GRAPHQL_MAX_INT &&
       value >= GRAPHQL_MIN_INT
     ) {
@@ -99,6 +105,9 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
     if (typeof coercedValue === 'string') {
       return coerceFloatFromString(coercedValue);
     }
+    if (typeof coercedValue === 'bigint') {
+      return coerceFloatFromBigInt(coercedValue);
+    }
     throw new GraphQLError(
       `Float cannot represent non numeric value: ${inspect(coercedValue)}`,
     );
@@ -107,6 +116,9 @@ export const GraphQLFloat = new GraphQLScalarType<number>({
   coerceInputValue(inputValue) {
     if (typeof inputValue === 'number') {
       return coerceFloatFromNumber(inputValue);
+    }
+    if (typeof inputValue === 'bigint') {
+      return coerceFloatFromBigInt(inputValue);
     }
     throw new GraphQLError(
       `Float cannot represent non numeric value: ${inspect(inputValue)}`,
@@ -148,6 +160,9 @@ export const GraphQLString = new GraphQLScalarType<string>({
     }
     if (typeof coercedValue === 'number') {
       return coerceStringFromNumber(coercedValue);
+    }
+    if (typeof coercedValue === 'bigint') {
+      return String(coercedValue);
     }
     throw new GraphQLError(
       `String cannot represent value: ${inspect(outputValue)}`,
@@ -192,6 +207,9 @@ export const GraphQLBoolean = new GraphQLScalarType<boolean>({
     }
     if (typeof coercedValue === 'number') {
       return coerceBooleanFromNumber(coercedValue);
+    }
+    if (typeof coercedValue === 'bigint') {
+      return coercedValue !== 0n;
     }
     throw new GraphQLError(
       `Boolean cannot represent a non boolean value: ${inspect(coercedValue)}`,
@@ -238,6 +256,9 @@ export const GraphQLID = new GraphQLScalarType<string>({
     if (typeof coercedValue === 'number') {
       return coerceIDFromNumber(coercedValue);
     }
+    if (typeof coercedValue === 'bigint') {
+      return String(coercedValue);
+    }
     throw new GraphQLError(
       `ID cannot represent value: ${inspect(outputValue)}`,
     );
@@ -249,6 +270,9 @@ export const GraphQLID = new GraphQLScalarType<string>({
     }
     if (typeof inputValue === 'number') {
       return coerceIDFromNumber(inputValue);
+    }
+    if (typeof inputValue === 'bigint') {
+      return String(inputValue);
     }
     throw new GraphQLError(`ID cannot represent value: ${inspect(inputValue)}`);
   },
@@ -273,6 +297,9 @@ export const GraphQLID = new GraphQLScalarType<string>({
     }
     if (typeof value === 'number') {
       return { kind: Kind.INT, value: coerceIDFromNumber(value) };
+    }
+    if (typeof value === 'bigint') {
+      return { kind: Kind.INT, value: String(value) };
     }
   },
 });
@@ -342,6 +369,15 @@ function coerceIntFromString(value: string): number {
   return num;
 }
 
+function coerceIntFromBigInt(value: bigint): number {
+  if (value > GRAPHQL_MAX_INT || value < GRAPHQL_MIN_INT) {
+    throw new GraphQLError(
+      `Int cannot represent non 32-bit signed integer value: ${String(value)}`,
+    );
+  }
+  return Number(value);
+}
+
 function coerceFloatFromNumber(value: number): number {
   if (!Number.isFinite(value)) {
     throw new GraphQLError(
@@ -361,6 +397,21 @@ function coerceFloatFromString(value: string): number {
   if (!Number.isFinite(num)) {
     throw new GraphQLError(
       `Float cannot represent non numeric value: ${inspect(value)}`,
+    );
+  }
+  return num;
+}
+
+function coerceFloatFromBigInt(coercedValue: bigint): number {
+  const num = Number(coercedValue);
+  if (!Number.isFinite(num)) {
+    throw new GraphQLError(
+      `Float cannot represent non numeric value: ${inspect(coercedValue)} (value is too large)`,
+    );
+  }
+  if (BigInt(num) !== coercedValue) {
+    throw new GraphQLError(
+      `Float cannot represent non numeric value: ${inspect(coercedValue)} (value would lose precision)`,
     );
   }
   return num;

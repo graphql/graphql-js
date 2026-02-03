@@ -113,6 +113,7 @@ export function valueToLiteral(
  * | Boolean           | Boolean              |
  * | String            | String               |
  * | Number            | Int / Float          |
+ * | BigInt            | Int                  |
  * | null / undefined  | Null                 |
  *
  * @internal
@@ -129,6 +130,8 @@ export function defaultScalarValueToLiteral(value: unknown): ConstValueNode {
       return { kind: Kind.BOOLEAN, value };
     case 'string':
       return { kind: Kind.STRING, value, block: false };
+    case 'bigint':
+      return { kind: Kind.INT, value: value.toString() };
     case 'number': {
       if (!Number.isFinite(value)) {
         // Like JSON, a null literal is produced for non-finite values.

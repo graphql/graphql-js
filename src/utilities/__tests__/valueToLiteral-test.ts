@@ -58,6 +58,13 @@ describe('valueToLiteral', () => {
     test(0.5, GraphQLInt, undefined);
   });
 
+  it('converts bigint values to Int ASTs', () => {
+    test(0n, GraphQLInt, '0');
+    test(-1n, GraphQLInt, '-1');
+    test(2147483647n, GraphQLInt, '2147483647');
+    test(2147483648n, GraphQLInt, undefined);
+  });
+
   it('converts float number values to Float ASTs', () => {
     test(123.5, GraphQLFloat, '123.5');
     test(2e40, GraphQLFloat, '2e+40');
@@ -77,6 +84,8 @@ describe('valueToLiteral', () => {
     test('hello world', GraphQLID, '"hello world"');
     test('123', GraphQLID, '123');
     test(123, GraphQLID, '123');
+    test(123n, GraphQLID, '123');
+    test(-123n, GraphQLID, '-123');
     test(
       '123456789123456789123456789123456789',
       GraphQLID,
@@ -200,6 +209,12 @@ describe('valueToLiteral', () => {
 
     it('converts String values to String ASTs', () => {
       testDefault('hello world', '"hello world"');
+    });
+
+    it('converts bigint values to Int ASTs', () => {
+      testDefault(0n, '0');
+      testDefault(-1n, '-1');
+      testDefault(9007199254740993n, '9007199254740993');
     });
 
     it('converts array values to List ASTs', () => {

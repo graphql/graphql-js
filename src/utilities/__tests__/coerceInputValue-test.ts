@@ -121,6 +121,13 @@ describe('coerceInputValue', () => {
     });
   });
 
+  it('converts BigInt values for numeric scalars', () => {
+    test(1n, GraphQLInt, 1);
+    test(1n, GraphQLFloat, 1);
+    test(1n, GraphQLID, '1');
+    test(9007199254740993n, GraphQLFloat, undefined);
+  });
+
   describe('for GraphQLInputObject', () => {
     const TestInputObject: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: 'TestInputObject',
