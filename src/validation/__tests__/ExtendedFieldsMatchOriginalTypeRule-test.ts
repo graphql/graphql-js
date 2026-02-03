@@ -502,4 +502,238 @@ describe('ExtendedFieldsMatchOriginalTypeRule', () => {
       schema,
     );
   });
+
+  it('rejects extensions with conflicting argument default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(query: String = "original"): [String]
+      }
+    `);
+
+    expectErrors(
+      `
+      extend type Query {
+        search(query: String = "different"): [String]
+      }
+    `,
+      schema,
+    ).toDeepEqual([
+      {
+        message:
+          'Argument "Query.search(query)" default value mismatch: original has "original" but extension defines "different".',
+        locations: [{ line: 3, column: 16 }],
+      },
+    ]);
+  });
+
+  it('rejects extensions when original has default but extension does not', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(query: String = "default"): [String]
+      }
+    `);
+
+    expectErrors(
+      `
+      extend type Query {
+        search(query: String): [String]
+      }
+    `,
+      schema,
+    ).toDeepEqual([
+      {
+        message:
+          'Argument "Query.search(query)" default value mismatch: original has "default" but extension defines no default.',
+        locations: [{ line: 3, column: 16 }],
+      },
+    ]);
+  });
+
+  it('rejects extensions when original has no default but extension does', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(query: String): [String]
+      }
+    `);
+
+    expectErrors(
+      `
+      extend type Query {
+        search(query: String = "new"): [String]
+      }
+    `,
+      schema,
+    ).toDeepEqual([
+      {
+        message:
+          'Argument "Query.search(query)" default value mismatch: original has no default but extension defines "new".',
+        locations: [{ line: 3, column: 16 }],
+      },
+    ]);
+  });
+
+  it('accepts extensions with matching complex default values', () => {
+    const schema = buildSchema(`
+      input SearchInput {
+        query: String
+        limit: Int
+      }
+      type Query {
+        search(input: SearchInput = { query: "test", limit: 10 }): [String]
+      }
+    `);
+
+    expectValid(
+      `
+      extend type Query {
+        search(input: SearchInput = { query: "test", limit: 10 }): [String]
+      }
+    `,
+      schema,
+    );
+  });
+
+  it('rejects extensions with conflicting complex default values', () => {
+    const schema = buildSchema(`
+      input SearchInput {
+        query: String
+        limit: Int
+      }
+      type Query {
+        search(input: SearchInput = { query: "test", limit: 10 }): [String]
+      }
+    `);
+
+    expectErrors(
+      `
+      extend type Query {
+        search(input: SearchInput = { query: "test", limit: 20 }): [String]
+      }
+    `,
+      schema,
+    ).toDeepEqual([
+      {
+        message:
+          'Argument "Query.search(input)" default value mismatch: original has {"query":"test","limit":10} but extension defines {"query":"test","limit":20}.',
+        locations: [{ line: 3, column: 16 }],
+      },
+    ]);
+  });
+
+  it('accepts input object extensions with matching default values', () => {
+    const schema = buildSchema(`
+      input UserInput {
+        name: String!
+        age: Int = 18
+      }
+    `);
+
+    expectValid(
+      `
+      extend input UserInput {
+        name: String!
+        age: Int = 18
+        email: String
+      }
+    `,
+      schema,
+    );
+  });
+
+  it('accepts extensions with null default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(query: String = null): [String]
+      }
+    `);
+
+    expectValid(
+      `
+      extend type Query {
+        search(query: String = null): [String]
+      }
+    `,
+      schema,
+    );
+  });
+
+  it('rejects extensions with conflicting null vs non-null default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(query: String = null): [String]
+      }
+    `);
+
+    expectErrors(
+      `
+      extend type Query {
+        search(query: String = "value"): [String]
+      }
+    `,
+      schema,
+    ).toDeepEqual([
+      {
+        message:
+          'Argument "Query.search(query)" default value mismatch: original has null but extension defines "value".',
+        locations: [{ line: 3, column: 16 }],
+      },
+    ]);
+  });
+
+  it('accepts extensions with matching list default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(tags: [String] = ["a", "b"]): [String]
+      }
+    `);
+
+    expectValid(
+      `
+      extend type Query {
+        search(tags: [String] = ["a", "b"]): [String]
+      }
+    `,
+      schema,
+    );
+  });
+
+  it('rejects extensions with conflicting list default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(tags: [String] = ["a", "b"]): [String]
+      }
+    `);
+
+    expectErrors(
+      `
+      extend type Query {
+        search(tags: [String] = ["a", "c"]): [String]
+      }
+    `,
+      schema,
+    ).toDeepEqual([
+      {
+        message:
+          'Argument "Query.search(tags)" default value mismatch: original has ["a","b"] but extension defines ["a","c"].',
+        locations: [{ line: 3, column: 16 }],
+      },
+    ]);
+  });
+
+  it('handles comparison of undefined default values', () => {
+    const schema = buildSchema(`
+      type Query {
+        search(query: String): [String]
+      }
+    `);
+
+    expectValid(
+      `
+      extend type Query {
+        search(query: String): [String]
+      }
+    `,
+      schema,
+    );
+  });
 });

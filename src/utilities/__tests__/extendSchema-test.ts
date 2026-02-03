@@ -17,6 +17,8 @@ import {
   assertObjectType,
   assertScalarType,
   assertUnionType,
+  GraphQLInterfaceType,
+  GraphQLObjectType,
 } from '../../type/definition';
 import { assertDirective } from '../../type/directives';
 import {
@@ -1725,6 +1727,80 @@ describe('extendSchema', () => {
             newField: String @deprecated(reason: "Use something else")
           }
       `);
+    });
+
+    it('extends object types with fields that have no args defined', () => {
+      // Create a schema programmatically where field.args is undefined
+      const QueryType = new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          fieldWithoutArgs: {
+            type: GraphQLString,
+            // Explicitly not defining args to test the field.args ? ... : {} branch
+          },
+        },
+      });
+
+      const schema = new GraphQLSchema({
+        query: QueryType,
+      });
+
+      const extendAST = parse(`
+        extend type Query {
+          newField: String
+        }
+      `);
+
+      const extendedSchema = extendSchema(schema, extendAST);
+
+      expect(validateSchema(extendedSchema)).to.deep.equal([]);
+      const queryType = extendedSchema.getType('Query');
+      expect(queryType).to.not.equal(undefined);
+      const fields = (queryType as any).getFields();
+      expect(fields.fieldWithoutArgs.type.toString()).to.equal('String');
+      expect(fields.newField.type.toString()).to.equal('String');
+    });
+
+    it('extends interface types with fields that have no args defined', () => {
+      // Create a schema programmatically where field.args is undefined
+      const NodeInterface = new GraphQLInterfaceType({
+        name: 'Node',
+        fields: {
+          id: {
+            type: GraphQLID,
+            // Explicitly not defining args to test the field.args ? ... : {} branch
+          },
+        },
+      });
+
+      const QueryType = new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          node: {
+            type: NodeInterface,
+          },
+        },
+      });
+
+      const schema = new GraphQLSchema({
+        query: QueryType,
+        types: [NodeInterface],
+      });
+
+      const extendAST = parse(`
+        extend interface Node {
+          name: String
+        }
+      `);
+
+      const extendedSchema = extendSchema(schema, extendAST);
+
+      expect(validateSchema(extendedSchema)).to.deep.equal([]);
+      const nodeType = extendedSchema.getType('Node');
+      expect(nodeType).to.not.equal(undefined);
+      const fields = (nodeType as any).getFields();
+      expect(fields.id.type.toString()).to.equal('ID');
+      expect(fields.name.type.toString()).to.equal('String');
     });
   });
 });

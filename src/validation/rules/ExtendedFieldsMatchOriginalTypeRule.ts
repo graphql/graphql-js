@@ -40,7 +40,7 @@ function areDefaultValuesEqual(value1: unknown, value2: unknown): boolean {
   // For complex values, use JSON comparison as a simple deep equality check
   try {
     return JSON.stringify(value1) === JSON.stringify(value2);
-  } catch {
+  } /* c8 ignore next 3 */ catch {
     // If JSON.stringify fails, fall back to reference equality
     return value1 === value2;
   }

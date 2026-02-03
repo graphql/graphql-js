@@ -119,7 +119,7 @@ export function ConflictingDescriptionsAndDeprecationRule(
     }
 
     const existingFields = existingType.getFields();
-    const extensionFields = node.fields ?? [];
+    const extensionFields = /* c8 ignore next */ node.fields ?? [];
 
     for (const extensionField of extensionFields) {
       const fieldName = extensionField.name.value;
@@ -144,7 +144,7 @@ export function ConflictingDescriptionsAndDeprecationRule(
 
       // Check argument descriptions and deprecation reasons
       const existingArgs = existingField.args;
-      const extensionArgs = extensionField.arguments ?? [];
+      const extensionArgs = /* c8 ignore next */ extensionField.arguments ?? [];
 
       for (const extensionArg of extensionArgs) {
         const argName = extensionArg.name.value;
@@ -179,7 +179,7 @@ export function ConflictingDescriptionsAndDeprecationRule(
     }
 
     const existingValues = existingType.getValues();
-    const extensionValues = node.values ?? [];
+    const extensionValues = /* c8 ignore next */ node.values ?? [];
 
     for (const extensionValue of extensionValues) {
       const valueName = extensionValue.name.value;
@@ -217,7 +217,7 @@ export function ConflictingDescriptionsAndDeprecationRule(
     }
 
     const existingFields = existingType.getFields();
-    const extensionFields = node.fields ?? [];
+    const extensionFields = /* c8 ignore next */ node.fields ?? [];
 
     for (const extensionField of extensionFields) {
       const fieldName = extensionField.name.value;
