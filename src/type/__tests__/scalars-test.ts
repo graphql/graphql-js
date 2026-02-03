@@ -151,6 +151,12 @@ describe('Type System: Specified scalar types', () => {
       expect(() => coerceOutputValue(-9876504321)).to.throw(
         'Int cannot represent non 32-bit signed integer value: -9876504321',
       );
+      expect(() => coerceOutputValue('9876504321')).to.throw(
+        'Int cannot represent non 32-bit signed integer value: "9876504321"',
+      );
+      expect(() => coerceOutputValue('-9876504321')).to.throw(
+        'Int cannot represent non 32-bit signed integer value: "-9876504321"',
+      );
 
       // Too big to represent as an Int in JavaScript or GraphQL
       expect(() => coerceOutputValue(1e100)).to.throw(
