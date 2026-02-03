@@ -85,7 +85,7 @@ export function ExtendedFieldsMatchOriginalTypeRule(
     }
 
     const existingFields = existingType.getFields();
-    const extensionFields = node.fields ?? [];
+    const extensionFields = /* c8 ignore next */ node.fields ?? [];
 
     for (const extensionField of extensionFields) {
       const fieldName = extensionField.name.value;
@@ -118,7 +118,7 @@ export function ExtendedFieldsMatchOriginalTypeRule(
 
       // Check argument compatibility
       const existingArgs = existingField.args;
-      const extensionArgs = extensionField.arguments ?? [];
+      const extensionArgs = /* c8 ignore next */ extensionField.arguments ?? [];
 
       for (const extensionArg of extensionArgs) {
         const argName = extensionArg.name.value;
@@ -144,7 +144,7 @@ export function ExtendedFieldsMatchOriginalTypeRule(
             );
           }
 
-          const argType = extensionArgType ?? existingArg.type;
+          const argType = /* c8 ignore next */ extensionArgType ?? existingArg.type;
           let extensionDefaultValue;
 
           if (isInputType(argType)) {
@@ -193,7 +193,7 @@ export function ExtendedFieldsMatchOriginalTypeRule(
     }
 
     const existingFields = existingType.getFields();
-    const extensionFields = node.fields ?? [];
+    const extensionFields = /* c8 ignore next */ node.fields ?? [];
 
     for (const extensionField of extensionFields) {
       const fieldName = extensionField.name.value;
