@@ -609,6 +609,7 @@ function executeField(
 }
 
 /**
+ * @deprecated will be removed in v17, use ResolveInfo class instead
  * @internal
  */
 export function buildResolveInfo(

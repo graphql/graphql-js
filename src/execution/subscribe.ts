@@ -22,6 +22,7 @@ import {
   // eslint-disable-next-line import/no-deprecated
   assertValidExecutionArguments,
   buildExecutionContext,
+  // eslint-disable-next-line import/no-deprecated
   buildResolveInfo,
   execute,
   getFieldDef,
@@ -228,6 +229,7 @@ async function executeSubscription(
   }
 
   const path = addPath(undefined, responseName, rootType.name);
+  // eslint-disable-next-line import/no-deprecated
   const info = buildResolveInfo(
     exeContext,
     fieldDef,
