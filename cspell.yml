@@ -16,11 +16,13 @@ overrides:
     dictionaries:
       - fullstack
     words:
-      - clsx
-      - infima
-      - noopener
+      - callout
       - Vite
       - craco
+      - rollup
+      - Rsbuild
+      - Rspack
+      - Turbopack
       - esbuild
       - swcrc
       - noreferrer
