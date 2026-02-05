@@ -50,6 +50,7 @@ const meta = {
     type: 'separator',
     title: 'Production & Scaling',
   },
+  'development-mode': '',
   'going-to-production': '',
   'scaling-graphql': '',
 };

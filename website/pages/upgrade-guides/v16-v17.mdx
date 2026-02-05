@@ -12,6 +12,40 @@ import { Callout } from 'nextra/components'
 
 # Breaking changes
 
+## Required Node.js versions
+
+The v17 release drops support for end-of-life versions of Node.JS, retaining support for versions 20, 22, and 24 or above.
+
+## ESM and conditional exports
+
+Earlier versions of GraphQL.js shipped dual builds for CommonJS and ESM, with ESM ".mjs" files sitting alongside CommonJS ".js" files.
+The ESM build was accessible via tooling recognizing the `module` field in `package.json`, while the CommonJS build was accessible via
+the `main` field. Unless configured carefully, this could sometimes lead to multiple copies of GraphQL.js being loaded in the same
+process, i.e. the dual-package hazard.
+
+v17 enables access to the ESM build via the `exports` field in `package.json` in a scheme designed to avoid the dual-package hazard as
+best as possible, relying on the ability of bun and newer versions of Node.js to consistently load ESM modules via `require` by
+indicating support for specific conditions. __ESM will now be served by default__, unless the requesting environment tooling __both__
+(A) supports the `node` or `require` conditions __and__ (B) does NOT support `bun`, `module`, `module-sync`. In that scenario, the
+CommonJS build will be served instead.
+
+Note: ESM is not served to deno even though it supports require(esm) because deno not yet support the `module-sync` condition, nor
+does it seem to provide the `deno` condition when calling `require`, see https://github.com/denoland/deno/issues/29970.
+
+Deno users can access a Typescript build for deno via git://github.com/graphql/graphql-js.git#deno as well as by specifically loading
+the index.mjs file, i.e. `import { graphql } from 'graphql/index.mjs'`, although this does not protect against the dual-package hazard.
+
+## Development mode no longer enabled by default and no longer dependent on NODE_ENV value
+
+GraphQl.js development mode in v17 is disabled by default and can be enabled by the `development` condition on supporting platforms or
+by explicitly enabling it within user code by calling `enableDevMode()`. Development mode may trigger permanent de-optimizations and
+therefore cannot be disabled once enabled. The new `isDevModeEnabled()` function can be used to check whether development mode has
+been enabled.
+
+GraphQL.js development mode no longer depends on the `NODE_ENV` environment variable; build tools other than Node.js no longer need
+to replace this Node.js specific code. See [Development Mode](./development-mode) for further details regarding how to enable these
+checks in v17.
+
 ## Default values
 
 GraphQL schemas allow default values for input fields and arguments. Historically, GraphQL.js did not rigorously validate or coerce these
@@ -178,7 +212,7 @@ Use the `validateInputValue` helper to retrieve the actual errors.
 
 - Added `hideSuggestions` option to `execute`/`validate`/`subscribe`/... to hide schema-suggestions in error messages
 - Added `abortSignal` option to `graphql()`, `execute()`, and `subscribe()` allows cancellation of these methods;
-  the `abortSignal` can also be passed to field resolvers to cancel asynchronous work that they initiate.
+  `info.abortSignal` can also be used in field resolvers to cancel asynchronous work that they initiate.
 - `extensions` support `symbol` keys, in addition to the normal string keys.
 - Added ability for resolver functions to return async iterables.
 - Added `perEventExecutor` execution option to allows specifying a custom executor for subscription source stream events, which can be useful for preparing a per event execution context argument.
