@@ -20,6 +20,7 @@ import { OperationTypeNode } from '../../language/ast.js';
 import type {
   GraphQLObjectType,
   GraphQLOutputType,
+  GraphQLResolveInfo,
 } from '../../type/definition.js';
 
 import type {
@@ -40,7 +41,6 @@ import type {
   ExecutionPlan,
 } from '../incremental/buildExecutionPlan.js';
 import { buildExecutionPlan } from '../incremental/buildExecutionPlan.js';
-import type { ResolveInfo } from '../ResolveInfo.js';
 import { returnIteratorCatchingErrors } from '../returnIteratorCatchingErrors.js';
 
 import { Computation } from './Computation.js';
@@ -635,7 +635,7 @@ export class IncrementalExecutor<
       | { handle: Iterator<unknown>; isAsync?: never }
       | { handle: AsyncIterator<unknown>; isAsync: true },
     streamUsage: StreamUsage,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     itemType: GraphQLOutputType,
   ): boolean {
     const { handle, isAsync } = iterator;
@@ -665,7 +665,7 @@ export class IncrementalExecutor<
     streamPath: Path,
     iterator: Iterator<unknown> | AsyncIterator<unknown>,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     itemType: GraphQLOutputType,
     isAsync: boolean | undefined,
   ): Queue<StreamItemResult> {
@@ -756,7 +756,7 @@ export class IncrementalExecutor<
     itemPath: Path,
     item: unknown,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     itemType: GraphQLOutputType,
   ): PromiseOrValue<StreamItemResult> {
     if (isPromise(item)) {

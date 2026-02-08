@@ -4,6 +4,7 @@ import { isObjectLike } from '../jsutils/isObjectLike.js';
 import { isPromise } from '../jsutils/isPromise.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
+import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
@@ -20,7 +21,10 @@ import { Kind } from '../language/kinds.js';
 
 import { GraphQLDisableErrorPropagationDirective } from '../type/directives.js';
 import type {
+  GraphQLField,
   GraphQLFieldResolver,
+  GraphQLObjectType,
+  GraphQLResolveInfo,
   GraphQLTypeResolver,
 } from '../type/index.js';
 import { assertValidSchema } from '../type/index.js';
@@ -36,7 +40,6 @@ import { getVariableSignature } from './getVariableSignature.js';
 import type { ExperimentalIncrementalExecutionResults } from './incremental/IncrementalExecutor.js';
 import { IncrementalExecutor } from './incremental/IncrementalExecutor.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
-import { ResolveInfo } from './ResolveInfo.js';
 import { getArgumentValues, getVariableValues } from './values.js';
 
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
@@ -577,21 +580,22 @@ function executeSubscription(
   const fieldName = firstNode.name.value;
   const fieldDef = schema.getField(rootType, fieldName);
 
+  const fieldNodes = fieldDetailsList.map((fieldDetails) => fieldDetails.node);
   if (!fieldDef) {
     throw new GraphQLError(
       `The subscription field "${fieldName}" is not defined.`,
-      { nodes: toNodes(fieldDetailsList) },
+      { nodes: fieldNodes },
     );
   }
 
   const path = addPath(undefined, responseName, rootType.name);
-  const info = new ResolveInfo(
+  const info = buildResolveInfo(
     validatedExecutionArgs,
     fieldDef,
-    fieldDetailsList,
+    fieldNodes,
     rootType,
     path,
-    () => ({ abortSignal: externalAbortSignal }),
+    () => externalAbortSignal,
   );
 
   try {
@@ -634,7 +638,7 @@ function executeSubscription(
     }
     return assertEventStream(result);
   } catch (error) {
-    throw locatedError(error, toNodes(fieldDetailsList), pathToArray(path));
+    throw locatedError(error, fieldNodes, pathToArray(path));
   }
 }
 
@@ -652,6 +656,38 @@ function assertEventStream(result: unknown): AsyncIterable<unknown> {
   }
 
   return result;
+}
+
+/**
+ * TODO: consider no longer exporting this function
+ * @internal
+ */
+// eslint-disable-next-line max-params
+export function buildResolveInfo(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+  fieldDef: GraphQLField<unknown, unknown>,
+  fieldNodes: ReadonlyArray<FieldNode>,
+  parentType: GraphQLObjectType,
+  path: Path,
+  getAbortSignal: () => AbortSignal | undefined,
+): GraphQLResolveInfo {
+  const { schema, fragmentDefinitions, rootValue, operation, variableValues } =
+    validatedExecutionArgs;
+  // The resolve function's optional fourth argument is a collection of
+  // information about the current execution state.
+  return {
+    fieldName: fieldDef.name,
+    fieldNodes,
+    returnType: fieldDef.type,
+    parentType,
+    path,
+    schema,
+    fragments: fragmentDefinitions,
+    rootValue,
+    operation,
+    variableValues,
+    getAbortSignal,
+  };
 }
 
 function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {

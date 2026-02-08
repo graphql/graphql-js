@@ -53,9 +53,9 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
+import { buildResolveInfo } from './execute.js';
 import type { StreamUsage } from './getStreamUsage.js';
 import { getStreamUsage as _getStreamUsage } from './getStreamUsage.js';
-import { ResolveInfo } from './ResolveInfo.js';
 import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.js';
 import type { VariableValues } from './values.js';
 import { getArgumentValues } from './values.js';
@@ -218,13 +218,13 @@ export class Executor<
   validatedExecutionArgs: ValidatedExecutionArgs;
   finished: boolean;
   initialResponseAbortController: AbortController | undefined;
-  resolverAbortControllers: Set<AbortController>;
+  resolverAbortControllers: Map<Path, AbortController>;
   collectedErrors: CollectedErrors;
 
   constructor(validatedExecutionArgs: ValidatedExecutionArgs) {
     this.validatedExecutionArgs = validatedExecutionArgs;
     this.finished = false;
-    this.resolverAbortControllers = new Set();
+    this.resolverAbortControllers = new Map();
     this.collectedErrors = new CollectedErrors();
   }
 
@@ -333,10 +333,24 @@ export class Executor<
     const { resolverAbortControllers } = this;
     const finishReason =
       reason ?? new Error('Execution has already completed.');
-    for (const abortController of resolverAbortControllers) {
+    for (const abortController of resolverAbortControllers.values()) {
       abortController.abort(finishReason);
     }
   }
+
+  getAbortSignal(path: Path): AbortSignal {
+    const resolverAbortSignal = this.resolverAbortControllers.get(path)?.signal;
+    if (resolverAbortSignal !== undefined) {
+      return resolverAbortSignal;
+    }
+    const abortController = new AbortController();
+    this.resolverAbortControllers.set(path, abortController);
+    if (this.finished) {
+      abortController.abort(new Error('Execution has already completed.'));
+    }
+    return abortController.signal;
+  }
+
   /**
    * Given a completed execution context and data, build the `{ errors, data }`
    * response defined by the "Response" section of the GraphQL specification.
@@ -522,26 +536,13 @@ export class Executor<
     const returnType = fieldDef.type;
     const resolveFn = fieldDef.resolve ?? validatedExecutionArgs.fieldResolver;
 
-    const info = new ResolveInfo(
+    const info = buildResolveInfo(
       validatedExecutionArgs,
       fieldDef,
-      fieldDetailsList,
+      toNodes(fieldDetailsList),
       parentType,
       path,
-      () => {
-        /* c8 ignore next 3 */
-        if (this.finished) {
-          throw new Error('Execution has already completed.');
-        }
-        const abortController = new AbortController();
-        this.resolverAbortControllers.add(abortController);
-        return {
-          abortSignal: abortController.signal,
-          unregister: () => {
-            this.resolverAbortControllers.delete(abortController);
-          },
-        };
-      },
+      () => this.getAbortSignal(path),
     );
 
     // Get the resolve function, regardless of if its result is normal or abrupt (error).
@@ -588,20 +589,20 @@ export class Executor<
         // to take a second callback for the error case.
         return completed.then(
           (resolved) => {
-            info.unregisterAbortSignal();
+            this.resolverAbortControllers.delete(path);
             return resolved;
           },
           (rawError: unknown) => {
-            info.unregisterAbortSignal();
+            this.resolverAbortControllers.delete(path);
             this.handleFieldError(rawError, returnType, fieldDetailsList, path);
             return null;
           },
         );
       }
-      info.unregisterAbortSignal();
+      this.resolverAbortControllers.delete(path);
       return completed;
     } catch (rawError) {
-      info.unregisterAbortSignal();
+      this.resolverAbortControllers.delete(path);
       this.handleFieldError(rawError, returnType, fieldDetailsList, path);
       return null;
     }
@@ -661,7 +662,7 @@ export class Executor<
   completeValue(
     returnType: GraphQLOutputType,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     path: Path,
     result: unknown,
     positionContext: TPositionContext | undefined,
@@ -750,7 +751,7 @@ export class Executor<
   async completePromisedValue(
     returnType: GraphQLOutputType,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     path: Path,
     result: Promise<unknown>,
     positionContext: TPositionContext | undefined,
@@ -774,12 +775,12 @@ export class Executor<
         completed = await completed;
       }
       if (isFieldValue) {
-        info.unregisterAbortSignal();
+        this.resolverAbortControllers.delete(path);
       }
       return completed;
     } catch (rawError) {
       if (isFieldValue) {
-        info.unregisterAbortSignal();
+        this.resolverAbortControllers.delete(path);
       }
       this.handleFieldError(rawError, returnType, fieldDetailsList, path);
       return null;
@@ -793,7 +794,7 @@ export class Executor<
   async completeAsyncIterableValue(
     itemType: GraphQLOutputType,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     path: Path,
     items: AsyncIterable<unknown>,
     positionContext: TPositionContext | undefined,
@@ -879,7 +880,7 @@ export class Executor<
       | { handle: Iterator<unknown>; isAsync?: never }
       | { handle: AsyncIterator<unknown>; isAsync: true },
     _streamUsage: StreamUsage,
-    _info: ResolveInfo,
+    _info: GraphQLResolveInfo,
     _itemType: GraphQLOutputType,
   ): boolean {
     return false;
@@ -892,7 +893,7 @@ export class Executor<
   completeListValue(
     returnType: GraphQLList<GraphQLOutputType>,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     path: Path,
     result: unknown,
     positionContext: TPositionContext | undefined,
@@ -929,7 +930,7 @@ export class Executor<
   completeIterableValue(
     itemType: GraphQLOutputType,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     path: Path,
     items: Iterable<unknown>,
     positionContext: TPositionContext | undefined,
@@ -1002,7 +1003,7 @@ export class Executor<
     completedResults: Array<unknown>,
     itemType: GraphQLOutputType,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     itemPath: Path,
     positionContext: TPositionContext | undefined,
   ): boolean {
@@ -1044,7 +1045,7 @@ export class Executor<
     completedResults: Array<unknown>,
     itemType: GraphQLOutputType,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     itemPath: Path,
     positionContext: TPositionContext | undefined,
   ): boolean {
@@ -1087,7 +1088,7 @@ export class Executor<
     item: Promise<unknown>,
     itemType: GraphQLOutputType,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     itemPath: Path,
     positionContext: TPositionContext | undefined,
   ): Promise<unknown> {

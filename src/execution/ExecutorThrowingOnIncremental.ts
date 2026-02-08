@@ -9,6 +9,7 @@ import type {
   GraphQLList,
   GraphQLObjectType,
   GraphQLOutputType,
+  GraphQLResolveInfo,
 } from '../type/index.js';
 
 import type {
@@ -17,7 +18,6 @@ import type {
   GroupedFieldSet,
 } from './collectFields.js';
 import { Executor, getStreamUsage } from './Executor.js';
-import type { ResolveInfo } from './ResolveInfo.js';
 
 const UNEXPECTED_MULTIPLE_PAYLOADS =
   'Executing this GraphQL operation would unexpectedly produce multiple payloads (due to @defer or @stream directive)';
@@ -81,7 +81,7 @@ export class ExecutorThrowingOnIncremental extends Executor {
   override completeListValue(
     returnType: GraphQLList<GraphQLOutputType>,
     fieldDetailsList: FieldDetailsList,
-    info: ResolveInfo,
+    info: GraphQLResolveInfo,
     path: Path,
     result: unknown,
     positionContext: undefined,

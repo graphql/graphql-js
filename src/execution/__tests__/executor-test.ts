@@ -246,23 +246,36 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = execute({ schema, document, rootValue, variableValues });
 
+    expect(resolvedInfo).to.have.all.keys(
+      'fieldName',
+      'fieldNodes',
+      'returnType',
+      'parentType',
+      'path',
+      'schema',
+      'fragments',
+      'rootValue',
+      'operation',
+      'variableValues',
+      'getAbortSignal',
+    );
+
     const operation = document.definitions[0];
     assert(operation.kind === Kind.OPERATION_DEFINITION);
 
-    const field = operation.selectionSet.selections[0];
-
-    assert(resolvedInfo != null);
-
-    expect(resolvedInfo).to.deep.include({
+    expect(resolvedInfo).to.include({
       fieldName: 'test',
-      fieldNodes: [field],
       returnType: GraphQLString,
       parentType: testType,
-      path: { prev: undefined, key: 'result', typename: 'Test' },
       schema,
-      fragments: {},
       rootValue,
       operation,
+    });
+
+    const field = operation.selectionSet.selections[0];
+    expect(resolvedInfo).to.deep.include({
+      fieldNodes: [field],
+      path: { prev: undefined, key: 'result', typename: 'Test' },
       variableValues: {
         sources: {
           var: {
@@ -278,11 +291,17 @@ describe('Execute: Handles basic execution tasks', () => {
       },
     });
 
-    expect(resolvedInfo.abortSignal).to.be.instanceOf(AbortSignal);
+    const abortSignal = resolvedInfo?.getAbortSignal();
+    expect(abortSignal).to.be.instanceOf(AbortSignal);
+    expect(resolvedInfo?.getAbortSignal()).to.equal(abortSignal);
 
     resolve();
 
     await result;
+
+    const lateAbortSignal = resolvedInfo?.getAbortSignal();
+    expect(lateAbortSignal).to.be.instanceOf(AbortSignal);
+    expect(lateAbortSignal?.aborted).to.equal(true);
   });
 
   it('populates path correctly with complex types', () => {

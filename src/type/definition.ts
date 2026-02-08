@@ -1042,7 +1042,7 @@ export interface GraphQLResolveInfo {
   readonly rootValue: unknown;
   readonly operation: OperationDefinitionNode;
   readonly variableValues: VariableValues;
-  readonly abortSignal: AbortSignal | undefined;
+  readonly getAbortSignal: () => AbortSignal | undefined;
 }
 
 /**

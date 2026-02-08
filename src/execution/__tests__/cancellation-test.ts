@@ -10,6 +10,7 @@ import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import { parse } from '../../language/parser.js';
 
+import type { GraphQLResolveInfo } from '../../type/definition.js';
 import {
   GraphQLInterfaceType,
   GraphQLNonNull,
@@ -114,8 +115,11 @@ describe('Execute: Cancellation', () => {
       abortSignal: abortController.signal,
       rootValue: {
         todo: {
-          id: (_args: any, _context: any, info: { abortSignal: AbortSignal }) =>
-            cancellableAsyncFn(info.abortSignal),
+          id: (_args: any, _context: any, info: GraphQLResolveInfo) => {
+            const abortSignal = info.getAbortSignal();
+            assert(abortSignal instanceof AbortSignal);
+            return cancellableAsyncFn(abortSignal);
+          },
         },
       },
     });
