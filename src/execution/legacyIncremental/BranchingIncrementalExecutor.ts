@@ -89,6 +89,7 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<Experiment
   ): IncrementalExecutor<ExperimentalIncrementalExecutionResults> {
     return new BranchingIncrementalExecutor(
       this.validatedExecutionArgs,
+      this.sharedResolverAbortSignal,
       deferUsageSet,
     );
   }
@@ -96,13 +97,13 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<Experiment
   override buildResponse(
     data: ObjMap<unknown> | null,
   ): ExecutionResult | ExperimentalIncrementalExecutionResults {
-    const errors = this.collectedErrors.errors;
     const work = this.getIncrementalWork();
     const { tasks, streams } = work;
     if (tasks?.length === 0 && streams?.length === 0) {
-      return errors.length ? { errors, data } : { data };
+      return super.buildResponse(data);
     }
 
+    const errors = this.collectedErrors.errors;
     invariant(data !== null);
     const incrementalPublisher = new BranchingIncrementalPublisher();
     return incrementalPublisher.buildResponse(
@@ -110,6 +111,7 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<Experiment
       errors,
       work,
       this.validatedExecutionArgs.externalAbortSignal,
+      () => this.resolverAbortController?.abort(),
     );
   }
 

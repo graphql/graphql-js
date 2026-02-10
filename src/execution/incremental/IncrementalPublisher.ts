@@ -47,6 +47,7 @@ export class IncrementalPublisher {
     errors: ReadonlyArray<GraphQLError>,
     work: IncrementalWork,
     abortSignal: AbortSignal | undefined,
+    onFinished: () => void,
   ): ExperimentalIncrementalExecutionResults {
     const { initialGroups, initialStreams, events } = createWorkQueue<
       ExecutionGroupValue,
@@ -61,12 +62,13 @@ export class IncrementalPublisher {
       });
     }
 
-    let onWorkQueueFinished: (() => void) | undefined;
     if (abortSignal) {
       abortSignal.addEventListener('abort', abort);
-      onWorkQueueFinished = () =>
-        abortSignal.removeEventListener('abort', abort);
     }
+    const onWorkQueueFinished = () => {
+      onFinished();
+      abortSignal?.removeEventListener('abort', abort);
+    };
 
     const pending = this._toPendingResults(initialGroups, initialStreams);
 
@@ -78,7 +80,7 @@ export class IncrementalPublisher {
       mapAsyncIterable(events, (batch) =>
         this._handleBatch(batch, onWorkQueueFinished),
       ),
-      () => onWorkQueueFinished?.(),
+      () => onWorkQueueFinished(),
     );
 
     return {

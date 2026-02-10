@@ -264,9 +264,10 @@ export class IncrementalExecutor<
 
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
+    sharedResolverAbortSignal?: AbortSignal,
     deferUsageSet?: DeferUsageSet,
   ) {
-    super(validatedExecutionArgs);
+    super(validatedExecutionArgs, sharedResolverAbortSignal);
     this.deferUsageSet = deferUsageSet;
     this.groups = [];
     this.tasks = [];
@@ -276,7 +277,11 @@ export class IncrementalExecutor<
   createSubExecutor(
     deferUsageSet?: DeferUsageSet,
   ): IncrementalExecutor<TExperimental> {
-    return new IncrementalExecutor(this.validatedExecutionArgs, deferUsageSet);
+    return new IncrementalExecutor(
+      this.validatedExecutionArgs,
+      this.sharedResolverAbortSignal,
+      deferUsageSet,
+    );
   }
 
   override cancel(reason?: unknown): void {
@@ -296,13 +301,13 @@ export class IncrementalExecutor<
   override buildResponse(
     data: ObjMap<unknown> | null,
   ): ExecutionResult | TExperimental {
-    const errors = this.collectedErrors.errors;
     const work = this.getIncrementalWork();
     const { tasks, streams } = work;
     if (tasks?.length === 0 && streams?.length === 0) {
-      return errors.length ? { errors, data } : { data };
+      return super.buildResponse(data);
     }
 
+    const errors = this.collectedErrors.errors;
     invariant(data !== null);
     const incrementalPublisher = new IncrementalPublisher();
     return incrementalPublisher.buildResponse(
@@ -310,6 +315,7 @@ export class IncrementalExecutor<
       errors,
       work,
       this.validatedExecutionArgs.externalAbortSignal,
+      () => this.resolverAbortController?.abort(),
     ) as TExperimental;
   }
 
@@ -509,6 +515,7 @@ export class IncrementalExecutor<
         (resolved) =>
           this.buildExecutionGroupResult(deliveryGroups, path, resolved),
         (error: unknown) => {
+          this.cancel();
           throw error;
         },
       );

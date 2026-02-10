@@ -217,40 +217,44 @@ export class Executor<
 > {
   validatedExecutionArgs: ValidatedExecutionArgs;
   finished: boolean;
-  initialResponseAbortController: AbortController | undefined;
-  resolverAbortControllers: Map<Path, AbortController>;
   collectedErrors: CollectedErrors;
+  internalAbortController: AbortController;
+  resolverAbortController: AbortController | undefined;
+  sharedResolverAbortSignal: AbortSignal;
 
-  constructor(validatedExecutionArgs: ValidatedExecutionArgs) {
+  constructor(
+    validatedExecutionArgs: ValidatedExecutionArgs,
+    sharedResolverAbortSignal?: AbortSignal,
+  ) {
     this.validatedExecutionArgs = validatedExecutionArgs;
     this.finished = false;
-    this.resolverAbortControllers = new Map();
     this.collectedErrors = new CollectedErrors();
+    this.internalAbortController = new AbortController();
+
+    if (sharedResolverAbortSignal === undefined) {
+      this.resolverAbortController = new AbortController();
+      this.sharedResolverAbortSignal = this.resolverAbortController.signal;
+    } else {
+      this.sharedResolverAbortSignal = sharedResolverAbortSignal;
+    }
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
     ExecutionResult | TAlternativeInitialResponse
   > {
-    const abortController = (this.initialResponseAbortController =
-      new AbortController());
-
-    const validatedExecutionArgs = this.validatedExecutionArgs;
-    const externalAbortSignal = validatedExecutionArgs.externalAbortSignal;
-    let removeAbortListener: (() => void) | undefined;
+    const externalAbortSignal = this.validatedExecutionArgs.externalAbortSignal;
+    let removeExternalAbortListener: (() => void) | undefined;
     if (externalAbortSignal) {
-      if (externalAbortSignal.aborted) {
-        throw new Error(externalAbortSignal.reason);
-      }
+      externalAbortSignal.throwIfAborted();
       const onExternalAbort = () => this.cancel(externalAbortSignal.reason);
-      removeAbortListener = () =>
+      removeExternalAbortListener = () =>
         externalAbortSignal.removeEventListener('abort', onExternalAbort);
       externalAbortSignal.addEventListener('abort', onExternalAbort);
     }
 
     const onFinish = () => {
-      removeAbortListener?.();
       this.finish();
-      abortController.signal.throwIfAborted();
+      removeExternalAbortListener?.();
     };
 
     try {
@@ -261,7 +265,7 @@ export class Executor<
         operation,
         variableValues,
         hideSuggestions,
-      } = validatedExecutionArgs;
+      } = this.validatedExecutionArgs;
 
       const { operation: operationType, selectionSet } = operation;
 
@@ -302,53 +306,30 @@ export class Executor<
             return this.buildResponse(null);
           },
         );
-        return externalAbortSignal
-          ? cancellablePromise(promise, abortController.signal)
-          : promise;
+        return cancellablePromise(promise, this.internalAbortController.signal);
       }
       onFinish();
       return this.buildResponse(result);
     } catch (error) {
-      this.collectedErrors.add(error as GraphQLError, undefined);
       onFinish();
+      this.collectedErrors.add(error as GraphQLError, undefined);
       return this.buildResponse(null);
     }
   }
 
-  cancel(reason: unknown): void {
+  cancel(reason?: unknown): void {
     if (!this.finished) {
-      this.initialResponseAbortController?.abort(reason);
-      this.finish(reason);
+      this.finish();
+      this.internalAbortController.abort(reason);
+      this.resolverAbortController?.abort(reason);
     }
   }
 
-  finish(reason?: unknown): void {
+  finish(): void {
     if (!this.finished) {
       this.finished = true;
-      this.triggerResolverAbortSignals(reason);
     }
-  }
-
-  triggerResolverAbortSignals(reason?: unknown): void {
-    const { resolverAbortControllers } = this;
-    const finishReason =
-      reason ?? new Error('Execution has already completed.');
-    for (const abortController of resolverAbortControllers.values()) {
-      abortController.abort(finishReason);
-    }
-  }
-
-  getAbortSignal(path: Path): AbortSignal {
-    const resolverAbortSignal = this.resolverAbortControllers.get(path)?.signal;
-    if (resolverAbortSignal !== undefined) {
-      return resolverAbortSignal;
-    }
-    const abortController = new AbortController();
-    this.resolverAbortControllers.set(path, abortController);
-    if (this.finished) {
-      abortController.abort(new Error('Execution has already completed.'));
-    }
-    return abortController.signal;
+    this.internalAbortController.signal.throwIfAborted();
   }
 
   /**
@@ -358,6 +339,7 @@ export class Executor<
   buildResponse(
     data: ObjMap<unknown> | null,
   ): ExecutionResult | TAlternativeInitialResponse {
+    this.resolverAbortController?.abort();
     const errors = this.collectedErrors.errors;
     return errors.length ? { errors, data } : { data };
   }
@@ -542,7 +524,7 @@ export class Executor<
       toNodes(fieldDetailsList),
       parentType,
       path,
-      () => this.getAbortSignal(path),
+      () => this.sharedResolverAbortSignal,
     );
 
     // Get the resolve function, regardless of if its result is normal or abrupt (error).
@@ -571,7 +553,6 @@ export class Executor<
           path,
           result,
           positionContext,
-          true,
         );
       }
 
@@ -587,22 +568,13 @@ export class Executor<
       if (isPromise(completed)) {
         // Note: we don't rely on a `catch` method, but we do expect "thenable"
         // to take a second callback for the error case.
-        return completed.then(
-          (resolved) => {
-            this.resolverAbortControllers.delete(path);
-            return resolved;
-          },
-          (rawError: unknown) => {
-            this.resolverAbortControllers.delete(path);
-            this.handleFieldError(rawError, returnType, fieldDetailsList, path);
-            return null;
-          },
-        );
+        return completed.then(undefined, (rawError: unknown) => {
+          this.handleFieldError(rawError, returnType, fieldDetailsList, path);
+          return null;
+        });
       }
-      this.resolverAbortControllers.delete(path);
       return completed;
     } catch (rawError) {
-      this.resolverAbortControllers.delete(path);
       this.handleFieldError(rawError, returnType, fieldDetailsList, path);
       return null;
     }
@@ -755,7 +727,6 @@ export class Executor<
     path: Path,
     result: Promise<unknown>,
     positionContext: TPositionContext | undefined,
-    isFieldValue?: boolean,
   ): Promise<unknown> {
     try {
       const resolved = await result;
@@ -774,14 +745,8 @@ export class Executor<
       if (isPromise(completed)) {
         completed = await completed;
       }
-      if (isFieldValue) {
-        this.resolverAbortControllers.delete(path);
-      }
       return completed;
     } catch (rawError) {
-      if (isFieldValue) {
-        this.resolverAbortControllers.delete(path);
-      }
       this.handleFieldError(rawError, returnType, fieldDetailsList, path);
       return null;
     }
