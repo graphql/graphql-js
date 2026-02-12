@@ -56,6 +56,7 @@ export interface GraphQLDirectiveExtensions {
  */
 export class GraphQLDirective implements GraphQLSchemaElement {
   readonly __kind: symbol;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
@@ -66,7 +67,9 @@ export class GraphQLDirective implements GraphQLSchemaElement {
 
   constructor(config: Readonly<GraphQLDirectiveConfig>) {
     this.__kind = directiveSymbol;
-    this.name = assertName(config.name);
+    const nameAssumedValid = config.assumeValidNames === true;
+    this.nameAssumedValid = nameAssumedValid;
+    this.name = nameAssumedValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.locations = config.locations;
     this.isRepeatable = config.isRepeatable ?? false;
@@ -119,6 +122,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
 }
 
 export interface GraphQLDirectiveConfig {
+  assumeValidNames?: Maybe<boolean>;
   name: string;
   description?: Maybe<string>;
   locations: ReadonlyArray<DirectiveLocation>;
@@ -129,7 +133,7 @@ export interface GraphQLDirectiveConfig {
 }
 
 export interface GraphQLDirectiveNormalizedConfig
-  extends GraphQLDirectiveConfig {
+  extends Omit<GraphQLDirectiveConfig, 'assumeValidNames'> {
   args: GraphQLFieldNormalizedConfigArgumentMap;
   isRepeatable: boolean;
   extensions: Readonly<GraphQLDirectiveExtensions>;

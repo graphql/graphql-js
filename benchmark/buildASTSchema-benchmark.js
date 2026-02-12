@@ -9,6 +9,6 @@ export const benchmark = {
   name: 'Build Schema from AST',
   count: 10,
   measure() {
-    buildASTSchema(schemaAST, { assumeValid: true });
+    buildASTSchema(schemaAST, { assumeValid: true, assumeValidNames: true });
   },
 };

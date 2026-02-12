@@ -680,6 +680,7 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
   implements GraphQLSchemaElement
 {
   readonly __kind: symbol;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   specifiedByURL: Maybe<string>;
@@ -699,7 +700,8 @@ export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
 
   constructor(config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>) {
     this.__kind = scalarSymbol;
-    this.name = assertName(config.name);
+    this.nameAssumedValid = config.assumeValidNames === true;
+    this.name = this.nameAssumedValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.specifiedByURL = config.specifiedByURL;
     this.serialize =
@@ -803,6 +805,7 @@ export type GraphQLScalarValueToLiteral = (
 ) => ConstValueNode | undefined;
 
 export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
+  assumeValidNames?: Maybe<boolean>;
   name: string;
   description?: Maybe<string>;
   specifiedByURL?: Maybe<string>;
@@ -829,7 +832,10 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
 }
 
 export interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
-  extends GraphQLScalarTypeConfig<TInternal, TExternal> {
+  extends Omit<
+    GraphQLScalarTypeConfig<TInternal, TExternal>,
+    'assumeValidNames'
+  > {
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
@@ -900,6 +906,7 @@ export class GraphQLObjectType<TSource = any, TContext = any>
   implements GraphQLSchemaElement
 {
   readonly __kind = objectSymbol;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TSource, TContext>>;
@@ -912,7 +919,8 @@ export class GraphQLObjectType<TSource = any, TContext = any>
 
   constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
     this.__kind = objectSymbol;
-    this.name = assertName(config.name);
+    this.nameAssumedValid = config.assumeValidNames === true;
+    this.name = this.nameAssumedValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.isTypeOf = config.isTypeOf;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -988,6 +996,7 @@ function defineFieldMap<TSource, TContext>(
 }
 
 export interface GraphQLObjectTypeConfig<TSource, TContext> {
+  assumeValidNames?: Maybe<boolean>;
   name: string;
   description?: Maybe<string>;
   interfaces?: ThunkReadonlyArray<GraphQLInterfaceType> | undefined;
@@ -999,7 +1008,7 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
 }
 
 export interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>
-  extends GraphQLObjectTypeConfig<any, any> {
+  extends Omit<GraphQLObjectTypeConfig<any, any>, 'assumeValidNames'> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldNormalizedConfigMap<any, any>;
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
@@ -1130,6 +1139,7 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
     | GraphQLObjectType<TSource, TContext>
     | GraphQLInterfaceType<TSource, TContext>
     | undefined;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   type: GraphQLOutputType;
@@ -1150,7 +1160,9 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
   ) {
     this.__kind = fieldSymbol;
     this.parentType = parentType;
-    this.name = assertName(name);
+    this.nameAssumedValid =
+      parentType === undefined || parentType.nameAssumedValid;
+    this.name = this.nameAssumedValid ? name : assertName(name);
     this.description = config.description;
     this.type = config.type;
 
@@ -1202,6 +1214,7 @@ export class GraphQLField<TSource = any, TContext = any, TArgs = any>
 export class GraphQLArgument implements GraphQLSchemaElement {
   readonly __kind: symbol;
   parent: GraphQLField | GraphQLDirective;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   type: GraphQLInputType;
@@ -1218,7 +1231,8 @@ export class GraphQLArgument implements GraphQLSchemaElement {
   ) {
     this.__kind = argumentSymbol;
     this.parent = parent;
-    this.name = assertName(name);
+    this.nameAssumedValid = parent.nameAssumedValid;
+    this.name = this.nameAssumedValid ? name : assertName(name);
     this.description = config.description;
     this.type = config.type;
     this.defaultValue = config.defaultValue;
@@ -1307,6 +1321,7 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
   implements GraphQLSchemaElement
 {
   readonly __kind: symbol;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<TSource, TContext>>;
@@ -1319,7 +1334,8 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
 
   constructor(config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>) {
     this.__kind = interfaceSymbol;
-    this.name = assertName(config.name);
+    this.nameAssumedValid = config.assumeValidNames === true;
+    this.name = this.nameAssumedValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1374,6 +1390,7 @@ export class GraphQLInterfaceType<TSource = any, TContext = any>
 }
 
 export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
+  assumeValidNames?: Maybe<boolean>;
   name: string;
   description?: Maybe<string>;
   interfaces?: ThunkReadonlyArray<GraphQLInterfaceType> | undefined;
@@ -1390,7 +1407,7 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
 }
 
 export interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
-  extends GraphQLInterfaceTypeConfig<any, any> {
+  extends Omit<GraphQLInterfaceTypeConfig<any, any>, 'assumeValidNames'> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldNormalizedConfigMap<TSource, TContext>;
   extensions: Readonly<GraphQLInterfaceTypeExtensions>;
@@ -1436,6 +1453,7 @@ export interface GraphQLUnionTypeExtensions {
  */
 export class GraphQLUnionType implements GraphQLSchemaElement {
   readonly __kind: symbol;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   resolveType: Maybe<GraphQLTypeResolver<any, any>>;
@@ -1447,7 +1465,8 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
 
   constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
     this.__kind = unionSymbol;
-    this.name = assertName(config.name);
+    this.nameAssumedValid = config.assumeValidNames === true;
+    this.name = this.nameAssumedValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.resolveType = config.resolveType;
     this.extensions = toObjMapWithSymbols(config.extensions);
@@ -1496,6 +1515,7 @@ function defineTypes(
 }
 
 export interface GraphQLUnionTypeConfig<TSource, TContext> {
+  assumeValidNames?: Maybe<boolean>;
   name: string;
   description?: Maybe<string>;
   types: ThunkReadonlyArray<GraphQLObjectType>;
@@ -1511,7 +1531,7 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
 }
 
 export interface GraphQLUnionTypeNormalizedConfig
-  extends GraphQLUnionTypeConfig<any, any> {
+  extends Omit<GraphQLUnionTypeConfig<any, any>, 'assumeValidNames'> {
   types: ReadonlyArray<GraphQLObjectType>;
   extensions: Readonly<GraphQLUnionTypeExtensions>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
@@ -1555,6 +1575,7 @@ export interface GraphQLEnumTypeExtensions {
  */
 export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
   readonly __kind: symbol;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
@@ -1570,7 +1591,8 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
 
   constructor(config: Readonly<GraphQLEnumTypeConfig /* <T> */>) {
     this.__kind = enumSymbol;
-    this.name = assertName(config.name);
+    this.nameAssumedValid = config.assumeValidNames === true;
+    this.name = this.nameAssumedValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
@@ -1736,6 +1758,7 @@ function didYouMeanEnumValue(
 }
 
 export interface GraphQLEnumTypeConfig {
+  assumeValidNames?: Maybe<boolean>;
   name: string;
   description?: Maybe<string>;
   values: ThunkObjMap<GraphQLEnumValueConfig /* <T> */>;
@@ -1744,7 +1767,8 @@ export interface GraphQLEnumTypeConfig {
   extensionASTNodes?: Maybe<ReadonlyArray<EnumTypeExtensionNode>>;
 }
 
-export interface GraphQLEnumTypeNormalizedConfig extends GraphQLEnumTypeConfig {
+export interface GraphQLEnumTypeNormalizedConfig
+  extends Omit<GraphQLEnumTypeConfig, 'assumeValidNames'> {
   values: GraphQLEnumValueNormalizedConfigMap;
   extensions: Readonly<GraphQLEnumTypeExtensions>;
   extensionASTNodes: ReadonlyArray<EnumTypeExtensionNode>;
@@ -1785,6 +1809,7 @@ export interface GraphQLEnumValueNormalizedConfig
 export class GraphQLEnumValue implements GraphQLSchemaElement {
   readonly __kind: symbol;
   parentEnum: GraphQLEnumType;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   value: any /* T */;
@@ -1799,7 +1824,8 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
   ) {
     this.__kind = enumValueSymbol;
     this.parentEnum = parentEnum;
-    this.name = assertEnumValueName(name);
+    this.nameAssumedValid = parentEnum.nameAssumedValid;
+    this.name = this.nameAssumedValid ? name : assertEnumValueName(name);
     this.description = config.description;
     this.value = config.value !== undefined ? config.value : name;
     this.deprecationReason = config.deprecationReason;
@@ -1866,6 +1892,7 @@ export interface GraphQLInputObjectTypeExtensions {
  */
 export class GraphQLInputObjectType implements GraphQLSchemaElement {
   readonly __kind: symbol;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
@@ -1877,7 +1904,8 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
 
   constructor(config: Readonly<GraphQLInputObjectTypeConfig>) {
     this.__kind = inputObjectSymbol;
-    this.name = assertName(config.name);
+    this.nameAssumedValid = config.assumeValidNames === true;
+    this.name = this.nameAssumedValid ? config.name : assertName(config.name);
     this.description = config.description;
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
@@ -1932,6 +1960,7 @@ function defineInputFieldMap(
 }
 
 export interface GraphQLInputObjectTypeConfig {
+  assumeValidNames?: Maybe<boolean>;
   name: string;
   description?: Maybe<string>;
   fields: ThunkObjMap<GraphQLInputFieldConfig>;
@@ -1942,7 +1971,7 @@ export interface GraphQLInputObjectTypeConfig {
 }
 
 export interface GraphQLInputObjectTypeNormalizedConfig
-  extends GraphQLInputObjectTypeConfig {
+  extends Omit<GraphQLInputObjectTypeConfig, 'assumeValidNames'> {
   fields: GraphQLInputFieldNormalizedConfigMap;
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
   extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
@@ -1986,6 +2015,7 @@ export type GraphQLInputFieldNormalizedConfigMap =
 export class GraphQLInputField implements GraphQLSchemaElement {
   readonly __kind: symbol;
   parentType: GraphQLInputObjectType;
+  nameAssumedValid: boolean;
   name: string;
   description: Maybe<string>;
   type: GraphQLInputType;
@@ -2007,7 +2037,8 @@ export class GraphQLInputField implements GraphQLSchemaElement {
 
     this.__kind = inputFieldSymbol;
     this.parentType = parentType;
-    this.name = assertName(name);
+    this.nameAssumedValid = parentType.nameAssumedValid;
+    this.name = this.nameAssumedValid ? name : assertName(name);
     this.description = config.description;
     this.type = config.type;
     this.defaultValue = config.defaultValue;
