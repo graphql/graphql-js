@@ -195,20 +195,18 @@ class CollectedErrors {
 export interface ExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
+  TError extends GraphQLFormattedError = GraphQLError,
 > {
-  errors?: ReadonlyArray<GraphQLError>;
+  errors?: ReadonlyArray<TError>;
   data?: TData | null;
   extensions?: TExtensions;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FormattedExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-  data?: TData | null;
-  extensions?: TExtensions;
-}
+> extends ExecutionResult<TData, TExtensions, GraphQLFormattedError> {}
 
 /** @internal */
 export class Executor<
