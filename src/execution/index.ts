@@ -27,6 +27,7 @@ export type {
   IncrementalDeferResult,
   IncrementalStreamResult,
   IncrementalResult,
+  FormattedExperimentalIncrementalExecutionResults,
   FormattedInitialIncrementalExecutionResult,
   FormattedSubsequentIncrementalExecutionResult,
   FormattedIncrementalDeferResult,

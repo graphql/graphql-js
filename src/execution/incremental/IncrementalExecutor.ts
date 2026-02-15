@@ -79,6 +79,21 @@ export interface ExperimentalIncrementalExecutionResults<
   >;
 }
 
+export interface FormattedExperimentalIncrementalExecutionResults<
+  TInitial = ObjMap<unknown>,
+  TSubsequent = unknown,
+  TExtensions = ObjMap<unknown>,
+> {
+  initialResult: FormattedInitialIncrementalExecutionResult<
+    TInitial,
+    TExtensions
+  >;
+  subsequentResults: AsyncGenerator<
+    FormattedSubsequentIncrementalExecutionResult<TSubsequent, TExtensions>,
+    void,
+    void
+  >;
+}
 export interface InitialIncrementalExecutionResult<
   TData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,

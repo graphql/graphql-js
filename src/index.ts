@@ -364,6 +364,7 @@ export type {
   IncrementalStreamResult,
   IncrementalResult,
   FormattedExecutionResult,
+  FormattedExperimentalIncrementalExecutionResults,
   FormattedInitialIncrementalExecutionResult,
   FormattedSubsequentIncrementalExecutionResult,
   FormattedIncrementalDeferResult,
