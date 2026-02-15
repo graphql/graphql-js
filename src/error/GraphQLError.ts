@@ -51,7 +51,7 @@ export interface GraphQLErrorOptions {
  * and stack trace, it also includes information about the locations in a
  * GraphQL document and/or execution result that correspond to the Error.
  */
-export class GraphQLError extends Error {
+export class GraphQLError extends Error implements GraphQLFormattedError {
   /**
    * An array of `{ line, column }` locations within the source GraphQL document
    * which correspond to this error.
@@ -239,17 +239,17 @@ export interface GraphQLFormattedError {
    * If an error can be associated to a particular point in the requested
    * GraphQL document, it should contain a list of locations.
    */
-  readonly locations?: ReadonlyArray<SourceLocation>;
+  readonly locations?: ReadonlyArray<SourceLocation> | undefined;
   /**
    * If an error can be associated to a particular field in the GraphQL result,
    * it _must_ contain an entry with the key `path` that details the path of
    * the response field which experienced the error. This allows clients to
    * identify whether a null result is intentional or caused by a runtime error.
    */
-  readonly path?: ReadonlyArray<string | number>;
+  readonly path?: ReadonlyArray<string | number> | undefined;
   /**
    * Reserved for implementors to extend the protocol however they see fit,
    * and hence there are no additional restrictions on its contents.
    */
-  readonly extensions?: GraphQLFormattedErrorExtensions;
+  readonly extensions?: GraphQLFormattedErrorExtensions | undefined;
 }
