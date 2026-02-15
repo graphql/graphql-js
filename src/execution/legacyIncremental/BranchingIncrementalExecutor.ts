@@ -6,14 +6,17 @@ import { memoize1 } from '../../jsutils/memoize1.js';
 import { memoize2 } from '../../jsutils/memoize2.js';
 import type { ObjMap } from '../../jsutils/ObjMap.js';
 
-import type { GraphQLError } from '../../error/GraphQLError.js';
+import type {
+  GraphQLError,
+  GraphQLFormattedError,
+} from '../../error/GraphQLError.js';
 
 import type {
   DeferUsage,
   FieldDetails,
   GroupedFieldSet,
 } from '../collectFields.js';
-import type { ExecutionResult } from '../Executor.js';
+import type { ExecutionResult, FormattedExecutionResult } from '../Executor.js';
 import type {
   DeferUsageSet,
   ExecutionPlan,
@@ -22,51 +25,70 @@ import { IncrementalExecutor } from '../incremental/IncrementalExecutor.js';
 
 import { BranchingIncrementalPublisher } from './BranchingIncrementalPublisher.js';
 
-export interface ExperimentalIncrementalExecutionResults {
-  initialResult: InitialIncrementalExecutionResult;
+export interface LegacyExperimentalIncrementalExecutionResults<
+  TInitialData = ObjMap<unknown>,
+  TDeferredData = ObjMap<unknown>,
+  TStreamItem = unknown,
+  TExtensions = ObjMap<unknown>,
+> {
+  initialResult: LegacyInitialIncrementalExecutionResult<
+    TInitialData,
+    TExtensions
+  >;
   subsequentResults: AsyncGenerator<
-    SubsequentIncrementalExecutionResult,
+    LegacySubsequentIncrementalExecutionResult<
+      TDeferredData,
+      TStreamItem,
+      TExtensions
+    >,
     void,
     void
   >;
 }
 
-export interface InitialIncrementalExecutionResult<
-  TData = ObjMap<unknown>,
+export interface LegacyInitialIncrementalExecutionResult<
+  TInitialData = ObjMap<unknown>,
   TExtensions = ObjMap<unknown>,
-> extends ExecutionResult<TData, TExtensions> {
-  data: TData;
+> extends ExecutionResult<TInitialData, TExtensions> {
+  data: TInitialData;
   hasNext: true;
   extensions?: TExtensions;
 }
 
-export interface SubsequentIncrementalExecutionResult<
-  TData = unknown,
+export interface LegacySubsequentIncrementalExecutionResult<
+  TDeferredData = ObjMap<unknown>,
+  TStreamItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
-  incremental?: ReadonlyArray<IncrementalResult<TData, TExtensions>>;
+  incremental?: ReadonlyArray<
+    LegacyIncrementalResult<TDeferredData, TStreamItem, TExtensions>
+  >;
   hasNext: boolean;
   extensions?: TExtensions;
 }
 
-export type IncrementalResult<TData = unknown, TExtensions = ObjMap<unknown>> =
-  | IncrementalDeferResult<TData, TExtensions>
-  | IncrementalStreamResult<TData, TExtensions>;
-
-export interface IncrementalDeferResult<
-  TData = ObjMap<unknown>,
+export type LegacyIncrementalResult<
+  TDeferredData = ObjMap<unknown>,
+  TStreamItem = unknown,
   TExtensions = ObjMap<unknown>,
-> extends ExecutionResult<TData, TExtensions> {
+> =
+  | LegacyIncrementalDeferResult<TDeferredData, TExtensions>
+  | LegacyIncrementalStreamResult<TStreamItem, TExtensions>;
+
+export interface LegacyIncrementalDeferResult<
+  TDeferredData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends ExecutionResult<TDeferredData, TExtensions> {
   path: ReadonlyArray<string | number>;
   label?: string;
 }
 
-export interface IncrementalStreamResult<
-  TData = ReadonlyArray<unknown>,
+export interface LegacyIncrementalStreamResult<
+  TStreamItem = unknown,
   TExtensions = ObjMap<unknown>,
 > {
   errors?: ReadonlyArray<GraphQLError>;
-  items: TData | null;
+  items: ReadonlyArray<TStreamItem> | null;
   path: ReadonlyArray<string | number>;
   label?: string;
   extensions?: TExtensions;
@@ -82,11 +104,79 @@ const buildBranchingExecutionPlanFromDeferred = memoize2(
     buildBranchingExecutionPlan(groupedFieldSet, deferUsageSet),
 );
 
+export interface FormattedLegacyExperimentalIncrementalExecutionResults<
+  TInitialData = ObjMap<unknown>,
+  TDeferredData = ObjMap<unknown>,
+  TStreamItem = unknown,
+  TExtensions = ObjMap<unknown>,
+> {
+  initialResult: FormattedLegacyInitialIncrementalExecutionResult<
+    TInitialData,
+    TExtensions
+  >;
+  subsequentResults: AsyncGenerator<
+    FormattedLegacySubsequentIncrementalExecutionResult<
+      TDeferredData,
+      TStreamItem,
+      TExtensions
+    >,
+    void,
+    void
+  >;
+}
+
+export interface FormattedLegacyInitialIncrementalExecutionResult<
+  TInitialData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends FormattedExecutionResult<TInitialData, TExtensions> {
+  data: TInitialData;
+  hasNext: true;
+  extensions?: TExtensions;
+}
+
+export interface FormattedLegacySubsequentIncrementalExecutionResult<
+  TDeferredData = ObjMap<unknown>,
+  TStreamItem = unknown,
+  TExtensions = ObjMap<unknown>,
+> {
+  incremental?: ReadonlyArray<
+    FormattedLegacyIncrementalResult<TDeferredData, TStreamItem, TExtensions>
+  >;
+  hasNext: boolean;
+  extensions?: TExtensions;
+}
+
+export type FormattedLegacyIncrementalResult<
+  TDeferredData = ObjMap<unknown>,
+  TStreamItem = unknown,
+  TExtensions = ObjMap<unknown>,
+> =
+  | FormattedLegacyIncrementalDeferResult<TDeferredData, TExtensions>
+  | FormattedLegacyIncrementalStreamResult<TStreamItem, TExtensions>;
+
+export interface FormattedLegacyIncrementalDeferResult<
+  TDeferredData = ObjMap<unknown>,
+  TExtensions = ObjMap<unknown>,
+> extends FormattedExecutionResult<TDeferredData, TExtensions> {
+  path: ReadonlyArray<string | number>;
+  label?: string;
+}
+
+export interface FormattedLegacyIncrementalStreamResult<
+  TStreamItem = unknown,
+  TExtensions = ObjMap<unknown>,
+> {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+  items: ReadonlyArray<TStreamItem> | null;
+  path: ReadonlyArray<string | number>;
+  label?: string;
+  extensions?: TExtensions;
+}
 /** @internal */
-export class BranchingIncrementalExecutor extends IncrementalExecutor<ExperimentalIncrementalExecutionResults> {
+export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExperimentalIncrementalExecutionResults> {
   override createSubExecutor(
     deferUsageSet?: DeferUsageSet,
-  ): IncrementalExecutor<ExperimentalIncrementalExecutionResults> {
+  ): IncrementalExecutor<LegacyExperimentalIncrementalExecutionResults> {
     return new BranchingIncrementalExecutor(
       this.validatedExecutionArgs,
       this.sharedResolverAbortSignal,
@@ -96,7 +186,7 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<Experiment
 
   override buildResponse(
     data: ObjMap<unknown> | null,
-  ): ExecutionResult | ExperimentalIncrementalExecutionResults {
+  ): ExecutionResult | LegacyExperimentalIncrementalExecutionResults {
     const work = this.getIncrementalWork();
     const { tasks, streams } = work;
     if (tasks?.length === 0 && streams?.length === 0) {

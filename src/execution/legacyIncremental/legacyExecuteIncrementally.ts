@@ -4,12 +4,14 @@ import type { ExecutionArgs } from '../execute.js';
 import { validateExecutionArgs } from '../execute.js';
 import type { ExecutionResult, ValidatedExecutionArgs } from '../Executor.js';
 
-import type { ExperimentalIncrementalExecutionResults } from './BranchingIncrementalExecutor.js';
+import type { LegacyExperimentalIncrementalExecutionResults } from './BranchingIncrementalExecutor.js';
 import { BranchingIncrementalExecutor } from './BranchingIncrementalExecutor.js';
 
 export function legacyExecuteIncrementally(
   args: ExecutionArgs,
-): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+): PromiseOrValue<
+  ExecutionResult | LegacyExperimentalIncrementalExecutionResults
+> {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
   const validatedExecutionArgs = validateExecutionArgs(args);
@@ -26,7 +28,9 @@ export function legacyExecuteIncrementally(
 
 export function legacyExecuteQueryOrMutationOrSubscriptionEvent(
   validatedExecutionArgs: ValidatedExecutionArgs,
-): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+): PromiseOrValue<
+  ExecutionResult | LegacyExperimentalIncrementalExecutionResults
+> {
   return new BranchingIncrementalExecutor(
     validatedExecutionArgs,
   ).executeQueryOrMutationOrSubscriptionEvent();

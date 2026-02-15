@@ -16,16 +16,16 @@ import { mapAsyncIterable } from '../mapAsyncIterable.js';
 import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
 
 import type {
-  ExperimentalIncrementalExecutionResults,
-  IncrementalDeferResult,
-  IncrementalResult,
-  IncrementalStreamResult,
-  InitialIncrementalExecutionResult,
-  SubsequentIncrementalExecutionResult,
+  LegacyExperimentalIncrementalExecutionResults,
+  LegacyIncrementalDeferResult,
+  LegacyIncrementalResult,
+  LegacyIncrementalStreamResult,
+  LegacyInitialIncrementalExecutionResult,
+  LegacySubsequentIncrementalExecutionResult,
 } from './BranchingIncrementalExecutor.js';
 
 interface SubsequentIncrementalExecutionResultContext {
-  incremental: Array<IncrementalResult>;
+  incremental: Array<LegacyIncrementalResult>;
   hasNext: boolean;
 }
 
@@ -45,7 +45,7 @@ export class BranchingIncrementalPublisher {
     work: IncrementalWork,
     abortSignal: AbortSignal | undefined,
     onFinished: () => void,
-  ): ExperimentalIncrementalExecutionResults {
+  ): LegacyExperimentalIncrementalExecutionResults {
     const { initialStreams, events } = createWorkQueue<
       ExecutionGroupValue,
       StreamItemValue,
@@ -71,7 +71,7 @@ export class BranchingIncrementalPublisher {
       abortSignal?.removeEventListener('abort', abort);
     };
 
-    const initialResult: InitialIncrementalExecutionResult = errors.length
+    const initialResult: LegacyInitialIncrementalExecutionResult = errors.length
       ? { errors, data, hasNext: true }
       : { data, hasNext: true };
 
@@ -98,7 +98,7 @@ export class BranchingIncrementalPublisher {
       >
     >,
     onWorkQueueFinished: (() => void) | undefined,
-  ): SubsequentIncrementalExecutionResult {
+  ): LegacySubsequentIncrementalExecutionResult {
     const context: SubsequentIncrementalExecutionResultContext = {
       incremental: [],
       hasNext: true,
@@ -110,7 +110,7 @@ export class BranchingIncrementalPublisher {
 
     const { incremental, hasNext } = context;
 
-    const result: SubsequentIncrementalExecutionResult = { hasNext };
+    const result: LegacySubsequentIncrementalExecutionResult = { hasNext };
     if (incremental.length > 0) {
       result.incremental = incremental;
     }
@@ -221,12 +221,12 @@ export class BranchingIncrementalPublisher {
 
 function buildIncrementalResult(
   originalIncrementalResult:
-    | Omit<IncrementalDeferResult, 'label' | 'errors'>
-    | Omit<IncrementalStreamResult, 'label' | 'errors'>,
+    | Omit<LegacyIncrementalDeferResult, 'label' | 'errors'>
+    | Omit<LegacyIncrementalStreamResult, 'label' | 'errors'>,
   label: string | undefined,
   errors: ReadonlyArray<GraphQLError> | undefined,
-): IncrementalResult {
-  const incrementalResult: IncrementalResult = originalIncrementalResult;
+): LegacyIncrementalResult {
+  const incrementalResult: LegacyIncrementalResult = originalIncrementalResult;
   if (errors !== undefined) {
     incrementalResult.errors = errors;
   }

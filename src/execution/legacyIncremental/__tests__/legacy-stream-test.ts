@@ -22,8 +22,8 @@ import { GraphQLSchema } from '../../../type/schema.js';
 import { buildSchema } from '../../../utilities/buildASTSchema.js';
 
 import type {
-  InitialIncrementalExecutionResult,
-  SubsequentIncrementalExecutionResult,
+  LegacyInitialIncrementalExecutionResult,
+  LegacySubsequentIncrementalExecutionResult,
 } from '../BranchingIncrementalExecutor.js';
 import { legacyExecuteIncrementally } from '../legacyExecuteIncrementally.js';
 
@@ -147,7 +147,8 @@ async function complete(
 
   if ('initialResult' in result) {
     const results: Array<
-      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+      | LegacyInitialIncrementalExecutionResult
+      | LegacySubsequentIncrementalExecutionResult
     > = [result.initialResult];
     for await (const patch of result.subsequentResults) {
       results.push(patch);
@@ -175,7 +176,8 @@ async function completeAsync(
   const promises: Array<
     PromiseOrValue<
       IteratorResult<
-        InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+        | LegacyInitialIncrementalExecutionResult
+        | LegacySubsequentIncrementalExecutionResult
       >
     >
   > = [{ done: false, value: result.initialResult }];
@@ -3063,11 +3065,11 @@ describe('Execute: stream directive (legacy cancellation)', () => {
     await resolveOnNextTick();
 
     let firstResult:
-      | IteratorResult<SubsequentIncrementalExecutionResult>
+      | IteratorResult<LegacySubsequentIncrementalExecutionResult>
       | undefined;
     try {
       firstResult =
-        (await nextResultPromise) as IteratorResult<SubsequentIncrementalExecutionResult>;
+        (await nextResultPromise) as IteratorResult<LegacySubsequentIncrementalExecutionResult>;
     } catch (error) {
       expect(error).to.be.instanceOf(Error);
       expect((error as Error).message).to.equal('This operation was aborted');

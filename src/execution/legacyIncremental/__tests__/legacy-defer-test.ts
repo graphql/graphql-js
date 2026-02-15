@@ -21,8 +21,8 @@ import { GraphQLSchema } from '../../../type/schema.js';
 import { buildSchema } from '../../../utilities/buildASTSchema.js';
 
 import type {
-  InitialIncrementalExecutionResult,
-  SubsequentIncrementalExecutionResult,
+  LegacyInitialIncrementalExecutionResult,
+  LegacySubsequentIncrementalExecutionResult,
 } from '../BranchingIncrementalExecutor.js';
 import { legacyExecuteIncrementally } from '../legacyExecuteIncrementally.js';
 
@@ -184,7 +184,8 @@ async function complete(
 
   if ('initialResult' in result) {
     const results: Array<
-      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+      | LegacyInitialIncrementalExecutionResult
+      | LegacySubsequentIncrementalExecutionResult
     > = [result.initialResult];
     for await (const patch of result.subsequentResults) {
       results.push(patch);
@@ -210,7 +211,8 @@ async function completeCancellation(
 
   if ('initialResult' in result) {
     const results: Array<
-      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+      | LegacyInitialIncrementalExecutionResult
+      | LegacySubsequentIncrementalExecutionResult
     > = [result.initialResult];
     for await (const patch of result.subsequentResults) {
       results.push(patch);
