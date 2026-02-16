@@ -158,7 +158,7 @@ describe('Execute: Handles execution of abstract types', () => {
     const DogType = new GraphQLObjectType<Dog, Context>({
       name: 'Dog',
       interfaces: [PetType],
-      isTypeOf(_source, context) {
+      isTypeOf(_value, context) {
         const error = new Error('We are testing this error');
         if (context.async) {
           return Promise.reject(error);
@@ -240,7 +240,7 @@ describe('Execute: Handles execution of abstract types', () => {
     const DogType = new GraphQLObjectType<Dog, Context>({
       name: 'Dog',
       interfaces: [PetType],
-      isTypeOf(_source, context) {
+      isTypeOf(_value, context) {
         return context.async ? Promise.resolve(false) : false;
       },
       fields: {

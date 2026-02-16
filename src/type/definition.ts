@@ -896,13 +896,13 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * });
  * ```
  */
-export class GraphQLObjectType<TSource = any, TContext = any>
+export class GraphQLObjectType<TSource = any, TContext = any, TAbstract = any>
   implements GraphQLSchemaElement
 {
   readonly __kind = objectSymbol;
   name: string;
   description: Maybe<string>;
-  isTypeOf: Maybe<GraphQLIsTypeOfFn<unknown, TContext>>;
+  isTypeOf: Maybe<GraphQLIsTypeOfFn<TAbstract, TContext>>;
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
@@ -910,7 +910,9 @@ export class GraphQLObjectType<TSource = any, TContext = any>
   private _fields: ThunkObjMap<GraphQLField<TSource, TContext>>;
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
 
-  constructor(config: Readonly<GraphQLObjectTypeConfig<TSource, TContext>>) {
+  constructor(
+    config: Readonly<GraphQLObjectTypeConfig<TSource, TContext, TAbstract>>,
+  ) {
     this.__kind = objectSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
@@ -944,7 +946,7 @@ export class GraphQLObjectType<TSource = any, TContext = any>
     return this._interfaces;
   }
 
-  toConfig(): GraphQLObjectTypeNormalizedConfig<TSource, TContext> {
+  toConfig(): GraphQLObjectTypeNormalizedConfig<TSource, TContext, TAbstract> {
     return {
       name: this.name,
       description: this.description,
@@ -987,19 +989,26 @@ function defineFieldMap<TSource, TContext>(
   );
 }
 
-export interface GraphQLObjectTypeConfig<TSource, TContext> {
+export interface GraphQLObjectTypeConfig<
+  TSource,
+  TContext,
+  TAbstract = unknown,
+> {
   name: string;
   description?: Maybe<string>;
   interfaces?: ThunkReadonlyArray<GraphQLInterfaceType> | undefined;
   fields: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>>;
-  isTypeOf?: Maybe<GraphQLIsTypeOfFn<unknown, TContext>>;
+  isTypeOf?: Maybe<GraphQLIsTypeOfFn<TAbstract, TContext>>;
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
 }
 
-export interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>
-  extends GraphQLObjectTypeConfig<TSource, TContext> {
+export interface GraphQLObjectTypeNormalizedConfig<
+  TSource,
+  TContext,
+  TAbstract = unknown,
+> extends GraphQLObjectTypeConfig<TSource, TContext, TAbstract> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldNormalizedConfigMap<TSource, TContext>;
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
@@ -1013,8 +1022,8 @@ export type GraphQLTypeResolver<TSource, TContext> = (
   abstractType: GraphQLAbstractType,
 ) => PromiseOrValue<string | undefined>;
 
-export type GraphQLIsTypeOfFn<TSource, TContext> = (
-  source: TSource,
+export type GraphQLIsTypeOfFn<TAbstract, TContext> = (
+  value: TAbstract,
   context: TContext,
   info: GraphQLResolveInfo,
 ) => PromiseOrValue<boolean>;
