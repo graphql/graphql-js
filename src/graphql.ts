@@ -1,19 +1,17 @@
 import { isPromise } from './jsutils/isPromise.js';
-import type { Maybe } from './jsutils/Maybe.js';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
 
+import type { ParseOptions } from './language/parser.js';
 import { parse } from './language/parser.js';
 import type { Source } from './language/source.js';
 
-import type {
-  GraphQLFieldResolver,
-  GraphQLTypeResolver,
-} from './type/definition.js';
-import type { GraphQLSchema } from './type/schema.js';
 import { validateSchema } from './type/validate.js';
 
+import type { ValidationOptions } from './validation/validate.js';
 import { validate } from './validation/validate.js';
+import type { ValidationRule } from './validation/ValidationContext.js';
 
+import type { ExecutionArgs } from './execution/execute.js';
 import { execute } from './execution/execute.js';
 import type { ExecutionResult } from './execution/Executor.js';
 
@@ -58,17 +56,12 @@ import type { ExecutionResult } from './execution/Executor.js';
  *    If not provided, the default type resolver is used (which looks for a
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
-export interface GraphQLArgs {
-  schema: GraphQLSchema;
+export interface GraphQLArgs
+  extends ParseOptions,
+    ValidationOptions,
+    Omit<ExecutionArgs, 'document'> {
   source: string | Source;
-  hideSuggestions?: Maybe<boolean>;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Maybe<{ readonly [variable: string]: unknown }>;
-  operationName?: Maybe<string>;
-  fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
-  abortSignal?: Maybe<AbortSignal>;
+  rules?: ReadonlyArray<ValidationRule> | undefined;
 }
 
 export function graphql(args: GraphQLArgs): Promise<ExecutionResult> {
@@ -94,18 +87,7 @@ export function graphqlSync(args: GraphQLArgs): ExecutionResult {
 }
 
 function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
-  const {
-    schema,
-    source,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-    hideSuggestions,
-    abortSignal,
-  } = args;
+  const { schema, source } = args;
 
   // Validate Schema
   const schemaValidationErrors = validateSchema(schema);
@@ -116,30 +98,17 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   // Parse
   let document;
   try {
-    document = parse(source);
+    document = parse(source, args);
   } catch (syntaxError) {
     return { errors: [syntaxError] };
   }
 
   // Validate
-  const validationErrors = validate(schema, document, undefined, {
-    hideSuggestions,
-  });
+  const validationErrors = validate(schema, document, args.rules, args);
   if (validationErrors.length > 0) {
     return { errors: validationErrors };
   }
 
   // Execute
-  return execute({
-    schema,
-    document,
-    rootValue,
-    contextValue,
-    variableValues,
-    operationName,
-    fieldResolver,
-    typeResolver,
-    hideSuggestions,
-    abortSignal,
-  });
+  return execute({ ...args, document });
 }

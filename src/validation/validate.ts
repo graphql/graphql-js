@@ -17,6 +17,11 @@ import {
   ValidationContext,
 } from './ValidationContext.js';
 
+export interface ValidationOptions {
+  maxErrors?: number;
+  hideSuggestions?: Maybe<boolean>;
+}
+
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -41,7 +46,7 @@ export function validate(
   schema: GraphQLSchema,
   documentAST: DocumentNode,
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
-  options?: { maxErrors?: number; hideSuggestions?: Maybe<boolean> },
+  options?: ValidationOptions,
 ): ReadonlyArray<GraphQLError> {
   const maxErrors = options?.maxErrors ?? 100;
   const hideSuggestions = options?.hideSuggestions ?? false;
