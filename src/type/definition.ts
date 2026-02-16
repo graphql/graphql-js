@@ -999,9 +999,9 @@ export interface GraphQLObjectTypeConfig<TSource, TContext> {
 }
 
 export interface GraphQLObjectTypeNormalizedConfig<TSource, TContext>
-  extends GraphQLObjectTypeConfig<any, any> {
+  extends GraphQLObjectTypeConfig<TSource, TContext> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
-  fields: GraphQLFieldNormalizedConfigMap<any, any>;
+  fields: GraphQLFieldNormalizedConfigMap<TSource, TContext>;
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
 }
@@ -1390,7 +1390,7 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
 }
 
 export interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
-  extends GraphQLInterfaceTypeConfig<any, any> {
+  extends GraphQLInterfaceTypeConfig<TSource, TContext> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldNormalizedConfigMap<TSource, TContext>;
   extensions: Readonly<GraphQLInterfaceTypeExtensions>;
@@ -1434,18 +1434,20 @@ export interface GraphQLUnionTypeExtensions {
  * });
  * ```
  */
-export class GraphQLUnionType implements GraphQLSchemaElement {
+export class GraphQLUnionType<TSource = any, TContext = any>
+  implements GraphQLSchemaElement
+{
   readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
-  resolveType: Maybe<GraphQLTypeResolver<any, any>>;
+  resolveType: Maybe<GraphQLTypeResolver<TSource, TContext>>;
   extensions: Readonly<GraphQLUnionTypeExtensions>;
   astNode: Maybe<UnionTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
 
   private _types: ThunkReadonlyArray<GraphQLObjectType>;
 
-  constructor(config: Readonly<GraphQLUnionTypeConfig<any, any>>) {
+  constructor(config: Readonly<GraphQLUnionTypeConfig<TSource, TContext>>) {
     this.__kind = unionSymbol;
     this.name = assertName(config.name);
     this.description = config.description;
@@ -1468,7 +1470,7 @@ export class GraphQLUnionType implements GraphQLSchemaElement {
     return this._types;
   }
 
-  toConfig(): GraphQLUnionTypeNormalizedConfig {
+  toConfig(): GraphQLUnionTypeNormalizedConfig<TSource, TContext> {
     return {
       name: this.name,
       description: this.description,
@@ -1510,8 +1512,8 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
   extensionASTNodes?: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 }
 
-export interface GraphQLUnionTypeNormalizedConfig
-  extends GraphQLUnionTypeConfig<any, any> {
+export interface GraphQLUnionTypeNormalizedConfig<TSource, TContext>
+  extends GraphQLUnionTypeConfig<TSource, TContext> {
   types: ReadonlyArray<GraphQLObjectType>;
   extensions: Readonly<GraphQLUnionTypeExtensions>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
