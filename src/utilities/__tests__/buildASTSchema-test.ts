@@ -1088,6 +1088,61 @@ describe('Schema Builder', () => {
     buildSchema(sdl, { assumeValidSDL: true });
   });
 
+  it('validates enum value names by default for hand-rolled AST', () => {
+    const document: any = {
+      kind: Kind.DOCUMENT,
+      definitions: [
+        {
+          kind: Kind.ENUM_TYPE_DEFINITION,
+          name: { kind: Kind.NAME, value: 'SomeEnum' },
+          directives: [],
+          values: [
+            {
+              kind: Kind.ENUM_VALUE_DEFINITION,
+              name: { kind: Kind.NAME, value: 'true' },
+              directives: [],
+            },
+          ],
+        },
+      ],
+    };
+
+    const schema = buildASTSchema(document, {
+      assumeValidSDL: true,
+    });
+    const enumType = assertEnumType(schema.getType('SomeEnum'));
+    expect(() => enumType.getValues()).to.throw(
+      'Enum values cannot be named: true',
+    );
+  });
+
+  it('can skip name validation when assumeValidNames is set', () => {
+    const document: any = {
+      kind: Kind.DOCUMENT,
+      definitions: [
+        {
+          kind: Kind.ENUM_TYPE_DEFINITION,
+          name: { kind: Kind.NAME, value: 'SomeEnum' },
+          directives: [],
+          values: [
+            {
+              kind: Kind.ENUM_VALUE_DEFINITION,
+              name: { kind: Kind.NAME, value: 'true' },
+              directives: [],
+            },
+          ],
+        },
+      ],
+    };
+
+    const schema = buildASTSchema(document, {
+      assumeValidSDL: true,
+      assumeValidNames: true,
+    });
+    const enumType = assertEnumType(schema.getType('SomeEnum'));
+    expect(() => enumType.getValues()).to.not.throw();
+  });
+
   it('Throws on unknown types', () => {
     const sdl = `
       type Query {

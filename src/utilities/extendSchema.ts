@@ -73,6 +73,12 @@ interface Options extends GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValidSDL?: boolean | undefined;
+  /**
+   * Set to true to skip validating type system names while building schema.
+   *
+   * Default: false
+   */
+  assumeValidNames?: boolean | undefined;
 }
 
 /**
@@ -197,6 +203,8 @@ export function extendSchemaImpl(
     return schemaConfig;
   }
 
+  const assumeValidNames = options?.assumeValidNames === true;
+
   return mapSchemaConfig(schemaConfig, (context) => {
     const { getNamedType, setNamedType, getNamedTypes } = context;
     return {
@@ -238,10 +246,15 @@ export function extendSchemaImpl(
           assumeValid: options?.assumeValid ?? false,
         };
       },
+      [SchemaElementKind.DIRECTIVE]: (config) => ({
+        ...config,
+        assumeValidNames,
+      }),
       [SchemaElementKind.INPUT_OBJECT]: (config) => {
         const extensions = inputObjectExtensions.get(config.name) ?? [];
         return {
           ...config,
+          assumeValidNames,
           fields: () => ({
             ...config.fields(),
             ...buildInputFieldMap(extensions),
@@ -253,6 +266,7 @@ export function extendSchemaImpl(
         const extensions = enumExtensions.get(config.name) ?? [];
         return {
           ...config,
+          assumeValidNames,
           values: () => ({
             ...config.values(),
             ...buildEnumValueMap(extensions),
@@ -268,6 +282,7 @@ export function extendSchemaImpl(
         }
         return {
           ...config,
+          assumeValidNames,
           specifiedByURL,
           extensionASTNodes: config.extensionASTNodes.concat(extensions),
         };
@@ -276,6 +291,7 @@ export function extendSchemaImpl(
         const extensions = objectExtensions.get(config.name) ?? [];
         return {
           ...config,
+          assumeValidNames,
           interfaces: () => [
             ...config.interfaces(),
             ...buildInterfaces(extensions),
@@ -291,6 +307,7 @@ export function extendSchemaImpl(
         const extensions = interfaceExtensions.get(config.name) ?? [];
         return {
           ...config,
+          assumeValidNames,
           interfaces: () => [
             ...config.interfaces(),
             ...buildInterfaces(extensions),
@@ -306,6 +323,7 @@ export function extendSchemaImpl(
         const extensions = unionExtensions.get(config.name) ?? [];
         return {
           ...config,
+          assumeValidNames,
           types: () => [...config.types(), ...buildUnionTypes(extensions)],
           extensionASTNodes: config.extensionASTNodes.concat(extensions),
         };
@@ -356,6 +374,7 @@ export function extendSchemaImpl(
 
     function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
       return new GraphQLDirective({
+        assumeValidNames,
         name: node.name.value,
         description: node.description?.value,
         // @ts-expect-error
@@ -498,6 +517,7 @@ export function extendSchemaImpl(
           const allNodes = [astNode, ...extensionASTNodes];
 
           return new GraphQLObjectType({
+            assumeValidNames,
             name,
             description: astNode.description?.value,
             interfaces: () => buildInterfaces(allNodes),
@@ -511,6 +531,7 @@ export function extendSchemaImpl(
           const allNodes = [astNode, ...extensionASTNodes];
 
           return new GraphQLInterfaceType({
+            assumeValidNames,
             name,
             description: astNode.description?.value,
             interfaces: () => buildInterfaces(allNodes),
@@ -524,6 +545,7 @@ export function extendSchemaImpl(
           const allNodes = [astNode, ...extensionASTNodes];
 
           return new GraphQLEnumType({
+            assumeValidNames,
             name,
             description: astNode.description?.value,
             values: () => buildEnumValueMap(allNodes),
@@ -536,6 +558,7 @@ export function extendSchemaImpl(
           const allNodes = [astNode, ...extensionASTNodes];
 
           return new GraphQLUnionType({
+            assumeValidNames,
             name,
             description: astNode.description?.value,
             types: () => buildUnionTypes(allNodes),
@@ -546,6 +569,7 @@ export function extendSchemaImpl(
         case Kind.SCALAR_TYPE_DEFINITION: {
           const extensionASTNodes = scalarExtensions.get(name) ?? [];
           return new GraphQLScalarType({
+            assumeValidNames,
             name,
             description: astNode.description?.value,
             specifiedByURL: getSpecifiedByURL(astNode),
@@ -558,6 +582,7 @@ export function extendSchemaImpl(
           const allNodes = [astNode, ...extensionASTNodes];
 
           return new GraphQLInputObjectType({
+            assumeValidNames,
             name,
             description: astNode.description?.value,
             fields: () => buildInputFieldMap(allNodes),

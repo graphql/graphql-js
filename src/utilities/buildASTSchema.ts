@@ -18,6 +18,12 @@ export interface BuildSchemaOptions extends GraphQLSchemaValidationOptions {
    * Default: false
    */
   assumeValidSDL?: boolean | undefined;
+  /**
+   * Set to true to skip validating type system names while building schema.
+   *
+   * Default: false
+   */
+  assumeValidNames?: boolean | undefined;
 }
 
 /**
@@ -99,5 +105,6 @@ export function buildSchema(
   return buildASTSchema(document, {
     assumeValidSDL: options?.assumeValidSDL,
     assumeValid: options?.assumeValid,
+    assumeValidNames: options?.assumeValidNames,
   });
 }
