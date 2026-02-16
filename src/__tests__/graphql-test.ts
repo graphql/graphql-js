@@ -11,7 +11,10 @@ import { GraphQLSchema } from '../type/schema.js';
 
 import type { ValidationRule } from '../validation/ValidationContext.js';
 
+import { execute } from '../execution/execute.js';
+
 import { graphql, graphqlSync } from '../graphql.js';
+import { defaultHarness } from '../harness.js';
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -138,6 +141,109 @@ describe('graphql', () => {
     expect(result.errors?.[0]?.message).to.equal(
       'Query root type must be provided.',
     );
+  });
+
+  it('works when a custom harness is provided', async () => {
+    const result = await graphql({
+      schema,
+      source: '{ syncField }',
+      rootValue: 'rootValue',
+      harness: {
+        ...defaultHarness,
+        execute: (args) =>
+          execute({ ...args, rootValue: `**${args.rootValue}**` }),
+      },
+    });
+
+    expect(result).to.deep.equal({ data: { syncField: '**rootValue**' } });
+  });
+
+  it('returns parse errors thrown synchronously by a custom harness', async () => {
+    const parseError = new GraphQLError('sync parse error');
+    const result = await graphql({
+      schema,
+      source: '{ syncField }',
+      harness: {
+        ...defaultHarness,
+        parse: () => {
+          throw parseError;
+        },
+      },
+    });
+
+    expect(result).to.deep.equal({ errors: [parseError] });
+  });
+
+  it('works with asynchronous parse from a custom harness', async () => {
+    const result = await graphql({
+      schema,
+      source: '{ syncField }',
+      rootValue: 'rootValue',
+      harness: {
+        ...defaultHarness,
+        parse: (source, options) =>
+          Promise.resolve(defaultHarness.parse(source, options)),
+      },
+    });
+
+    expect(result).to.deep.equal({ data: { syncField: 'rootValue' } });
+  });
+
+  it('handles errors from an asynchronous parse from a custom harness', async () => {
+    const parseError = new GraphQLError('async parse error');
+    const result = await graphql({
+      schema,
+      source: '{ syncField }',
+      harness: {
+        ...defaultHarness,
+        parse: () => Promise.reject(parseError),
+      },
+    });
+
+    expect(result).to.deep.equal({ errors: [parseError] });
+  });
+
+  it('works with asynchronous validation from a custom harness', async () => {
+    const result = await graphql({
+      schema,
+      source: '{ syncField }',
+      rootValue: 'rootValue',
+      harness: {
+        ...defaultHarness,
+        validate: (s, document) =>
+          Promise.resolve(defaultHarness.validate(s, document)),
+      },
+    });
+
+    expect(result).to.deep.equal({ data: { syncField: 'rootValue' } });
+  });
+
+  it('returns validation errors from synchronous validation from a custom harness', async () => {
+    const validationError = new GraphQLError('async validation error');
+    const result = await graphql({
+      schema,
+      source: '{ syncField }',
+      harness: {
+        ...defaultHarness,
+        validate: () => [validationError],
+      },
+    });
+
+    expect(result).to.deep.equal({ errors: [validationError] });
+  });
+
+  it('returns validation errors from asynchronous validation from a custom harness', async () => {
+    const validationError = new GraphQLError('async validation error');
+    const result = await graphql({
+      schema,
+      source: '{ syncField }',
+      harness: {
+        ...defaultHarness,
+        validate: () => Promise.resolve([validationError]),
+      },
+    });
+
+    expect(result).to.deep.equal({ errors: [validationError] });
   });
 });
 

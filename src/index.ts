@@ -36,6 +36,16 @@ export { enableDevMode, isDevModeEnabled } from './devMode.js';
 export type { GraphQLArgs } from './graphql.js';
 export { graphql, graphqlSync } from './graphql.js';
 
+// The default versions of the parse/validate/execute/subscribe harness used by `graphql` and `graphqlSync`.
+export { defaultHarness } from './harness.js';
+export type {
+  GraphQLHarness,
+  GraphQLParseFn,
+  GraphQLValidateFn,
+  GraphQLExecuteFn,
+  GraphQLSubscribeFn,
+} from './harness.js';
+
 // Create and operate on GraphQL type definitions and schema.
 export type {
   GraphQLField,

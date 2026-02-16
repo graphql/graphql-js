@@ -1,19 +1,23 @@
 import { isPromise } from './jsutils/isPromise.js';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
 
+import type { GraphQLError } from './error/GraphQLError.js';
+
+import type { DocumentNode } from './language/ast.js';
 import type { ParseOptions } from './language/parser.js';
-import { parse } from './language/parser.js';
 import type { Source } from './language/source.js';
 
+import type { GraphQLSchema } from './type/schema.js';
 import { validateSchema } from './type/validate.js';
 
 import type { ValidationOptions } from './validation/validate.js';
-import { validate } from './validation/validate.js';
 import type { ValidationRule } from './validation/ValidationContext.js';
 
 import type { ExecutionArgs } from './execution/execute.js';
-import { execute } from './execution/execute.js';
 import type { ExecutionResult } from './execution/Executor.js';
+
+import type { GraphQLHarness } from './harness.js';
+import { defaultHarness } from './harness.js';
 
 /**
  * This is the primary entry point function for fulfilling GraphQL operations
@@ -60,6 +64,7 @@ export interface GraphQLArgs
   extends ParseOptions,
     ValidationOptions,
     Omit<ExecutionArgs, 'document'> {
+  harness?: GraphQLHarness | undefined;
   source: string | Source;
   rules?: ReadonlyArray<ValidationRule> | undefined;
 }
@@ -87,6 +92,7 @@ export function graphqlSync(args: GraphQLArgs): ExecutionResult {
 }
 
 function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
+  const harness = args.harness ?? defaultHarness;
   const { schema, source } = args;
 
   // Validate Schema
@@ -98,17 +104,55 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   // Parse
   let document;
   try {
-    document = parse(source, args);
+    document = harness.parse(source, args);
   } catch (syntaxError) {
     return { errors: [syntaxError] };
   }
 
+  if (isPromise(document)) {
+    return document.then(
+      (resolvedDocument) =>
+        validateAndExecute(harness, args, schema, resolvedDocument),
+      (syntaxError: unknown) => ({ errors: [syntaxError as GraphQLError] }),
+    );
+  }
+
+  return validateAndExecute(harness, args, schema, document);
+}
+
+function validateAndExecute(
+  harness: GraphQLHarness,
+  args: GraphQLArgs,
+  schema: GraphQLSchema,
+  document: DocumentNode,
+): PromiseOrValue<ExecutionResult> {
   // Validate
-  const validationErrors = validate(schema, document, args.rules, args);
-  if (validationErrors.length > 0) {
-    return { errors: validationErrors };
+  const validationResult = harness.validate(schema, document, args.rules, args);
+
+  if (isPromise(validationResult)) {
+    return validationResult.then((resolvedValidationResult) =>
+      checkValidationAndExecute(
+        harness,
+        args,
+        resolvedValidationResult,
+        document,
+      ),
+    );
+  }
+
+  return checkValidationAndExecute(harness, args, validationResult, document);
+}
+
+function checkValidationAndExecute(
+  harness: GraphQLHarness,
+  args: GraphQLArgs,
+  validationResult: ReadonlyArray<GraphQLError>,
+  document: DocumentNode,
+): PromiseOrValue<ExecutionResult> {
+  if (validationResult.length > 0) {
+    return { errors: validationResult };
   }
 
   // Execute
-  return execute({ ...args, document });
+  return harness.execute({ ...args, document });
 }
