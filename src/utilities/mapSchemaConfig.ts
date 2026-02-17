@@ -93,7 +93,7 @@ type GraphQLInterfaceTypeMappedConfig = EnsureThunks<
   'interfaces' | 'fields'
 >;
 type GraphQLUnionTypeMappedConfig = EnsureThunks<
-  GraphQLUnionTypeNormalizedConfig,
+  GraphQLUnionTypeNormalizedConfig<any, any>,
   'types'
 >;
 type GraphQLEnumTypeMappedConfig = EnsureThunks<
