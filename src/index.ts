@@ -343,6 +343,11 @@ export type {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
   SchemaCoordinateNode,
+  TypeCoordinateNode,
+  MemberCoordinateNode,
+  ArgumentCoordinateNode,
+  DirectiveCoordinateNode,
+  DirectiveArgumentCoordinateNode,
 } from './language/index.js';
 
 // Execute GraphQL queries.

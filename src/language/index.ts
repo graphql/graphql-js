@@ -97,6 +97,11 @@ export type {
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
   SchemaCoordinateNode,
+  TypeCoordinateNode,
+  MemberCoordinateNode,
+  ArgumentCoordinateNode,
+  DirectiveCoordinateNode,
+  DirectiveArgumentCoordinateNode,
 } from './ast.js';
 
 export {
