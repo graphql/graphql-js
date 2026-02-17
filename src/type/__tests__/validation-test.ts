@@ -2410,6 +2410,199 @@ describe('Type System: OneOf Input Object fields must be nullable', () => {
   });
 });
 
+describe('Type System: OneOf Input Objects must be inhabitable', () => {
+  it('accepts a OneOf Input Object with a scalar field', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        a: String
+        b: Int
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf Input Object with an enum field', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      enum Color { RED GREEN BLUE }
+
+      input A @oneOf {
+        a: Color
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf Input Object with a list field', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        a: [A]
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf Input Object referencing a non-OneOf input object', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        a: RegularInput
+      }
+
+      input RegularInput {
+        x: String
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf Input Object with at least one escape field', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        b: B
+        escape: String
+      }
+
+      input B @oneOf {
+        a: A
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts mutually referencing OneOf types where one has a scalar escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        b: B
+      }
+
+      input B @oneOf {
+        a: A
+        escape: Int
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf referencing a non-OneOf which references back', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        b: RegularInput
+      }
+
+      input RegularInput {
+        back: A
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf with multiple fields where one escapes through chained OneOf types', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        b: B
+        c: C
+      }
+
+      input B @oneOf {
+        a: A
+      }
+
+      input C @oneOf {
+        a: A
+        escape: String
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects a closed subgraph of one OneOf type', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        self: A
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'OneOf Input Object A must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.',
+        locations: [{ line: 6, column: 7 }],
+      },
+    ]);
+  });
+
+  it('rejects a closed subgraph of multiple OneOf types', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): String
+      }
+
+      input A @oneOf {
+        b: B
+      }
+
+      input B @oneOf {
+        c: C
+      }
+
+      input C @oneOf {
+        a: A
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'OneOf Input Object A must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.',
+        locations: [{ line: 6, column: 7 }],
+      },
+      {
+        message:
+          'OneOf Input Object B must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.',
+        locations: [{ line: 10, column: 7 }],
+      },
+      {
+        message:
+          'OneOf Input Object C must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.',
+        locations: [{ line: 14, column: 7 }],
+      },
+    ]);
+  });
+});
+
 describe('Objects must adhere to Interface they implement', () => {
   it('accepts an Object which implements an Interface', () => {
     const schema = buildSchema(`

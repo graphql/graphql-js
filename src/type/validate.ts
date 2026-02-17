@@ -410,6 +410,8 @@ function validateTypes(context: SchemaValidationContext): void {
     createInputObjectNonNullCircularRefsValidator(context);
   const validateInputObjectDefaultValueCircularRefs =
     createInputObjectDefaultValueCircularRefsValidator(context);
+  const validateOneOfInputObjectInhabitability =
+    createOneOfInputObjectInhabitabilityValidator(context);
   const typeMap = context.schema.getTypeMap();
   for (const type of Object.values(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
@@ -454,6 +456,11 @@ function validateTypes(context: SchemaValidationContext): void {
 
       // Ensure Input Objects do not contain invalid default value circular references.
       validateInputObjectDefaultValueCircularRefs(type);
+
+      // Ensure OneOf Input Objects are inhabitable.
+      if (type.isOneOf) {
+        validateOneOfInputObjectInhabitability(type);
+      }
     }
   }
 }
@@ -985,6 +992,64 @@ function createInputObjectDefaultValueCircularRefsValidator(
       fieldPath.pop();
       fieldPathIndex[fieldStr] = undefined;
     }
+  }
+}
+
+function createOneOfInputObjectInhabitabilityValidator(
+  context: SchemaValidationContext,
+): (inputObj: GraphQLInputObjectType) => void {
+  // Tracks already validated types to maintain O(N) across top-level calls.
+  const visitedTypes = new Set<GraphQLInputObjectType>();
+
+  return function validateOneOfInputObjectInhabitability(
+    inputObj: GraphQLInputObjectType,
+  ): void {
+    if (visitedTypes.has(inputObj)) {
+      return;
+    }
+
+    if (!isInhabitable(inputObj, new Set())) {
+      context.reportError(
+        `OneOf Input Object ${inputObj} must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.`,
+        inputObj.astNode,
+      );
+    }
+
+    visitedTypes.add(inputObj);
+  };
+
+  function isInhabitable(
+    inputObj: GraphQLInputObjectType,
+    visited: ReadonlySet<GraphQLInputObjectType>,
+  ): boolean {
+    if (visited.has(inputObj)) {
+      return false;
+    }
+
+    const nextVisited = new Set(visited);
+    nextVisited.add(inputObj);
+
+    for (const field of Object.values(inputObj.getFields())) {
+      if (isListType(field.type)) {
+        return true;
+      }
+
+      const namedType = getNamedType(field.type);
+
+      if (!isInputObjectType(namedType)) {
+        return true;
+      }
+
+      if (!namedType.isOneOf) {
+        return true;
+      }
+
+      if (isInhabitable(namedType, nextVisited)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 
