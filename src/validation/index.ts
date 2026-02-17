@@ -1,5 +1,4 @@
 export { validate } from './validate.js';
-export type { ValidationOptions } from './validate.js';
 
 export { ValidationContext } from './ValidationContext.js';
 export type { ValidationRule } from './ValidationContext.js';
