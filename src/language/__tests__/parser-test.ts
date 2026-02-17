@@ -1068,7 +1068,7 @@ describe('Parser', () => {
       expect(() => parseSchemaCoordinate('MyType.field.deep'))
         .to.throw()
         .to.deep.include({
-          message: 'Syntax Error: Expected <EOF>, found ..',
+          message: 'Syntax Error: Expected <EOF>, found ".".',
           locations: [{ line: 1, column: 13 }],
         });
     });
@@ -1194,7 +1194,7 @@ describe('Parser', () => {
       expect(() => parseSchemaCoordinate('@myDirective.field'))
         .to.throw()
         .to.deep.include({
-          message: 'Syntax Error: Expected <EOF>, found ..',
+          message: 'Syntax Error: Expected <EOF>, found ".".',
           locations: [{ line: 1, column: 13 }],
         });
     });

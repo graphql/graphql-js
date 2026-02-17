@@ -7,9 +7,10 @@ import type { Source } from './source.js';
 import { TokenKind } from './tokenKind.js';
 
 /**
- * Parser supports parsing multiple Source types, which may have differing
- * Lexer classes. This is used for schema coordinates which has its own distinct
- * SchemaCoordinateLexer class.
+ * A Lexer interface which provides common properties and methods required for
+ * lexing GraphQL source.
+ *
+ * @internal
  */
 export interface LexerInterface {
   source: Source;
@@ -110,6 +111,7 @@ export function isPunctuatorTokenKind(kind: TokenKind): boolean {
     kind === TokenKind.AMP ||
     kind === TokenKind.PAREN_L ||
     kind === TokenKind.PAREN_R ||
+    kind === TokenKind.DOT ||
     kind === TokenKind.SPREAD ||
     kind === TokenKind.COLON ||
     kind === TokenKind.EQUALS ||
