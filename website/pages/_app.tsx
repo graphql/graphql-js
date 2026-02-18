@@ -1,6 +1,9 @@
+/* eslint-disable camelcase, new-cap, react/react-in-jsx-scope, react/no-unknown-property */
+
 import type { AppProps } from 'next/app';
 import { Roboto_Flex, Roboto_Mono } from 'next/font/google';
 
+// eslint-disable-next-line import/no-unassigned-import
 import '../css/globals.css';
 
 const robotoFlex = Roboto_Flex({

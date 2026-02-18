@@ -1,11 +1,10 @@
-/* eslint-disable camelcase */
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+
+import nextra from 'nextra';
 
 const fileContents = fs.readFileSync('./vercel.json', 'utf-8');
 const vercel = JSON.parse(fileContents);
-
-import nextra from 'nextra';
 
 const withNextra = nextra({
   theme: 'nextra-theme-docs',
@@ -33,7 +32,7 @@ export default withNextra({
     });
     return config;
   },
-  redirects: async () => vercel.redirects,
+  redirects: () => vercel.redirects,
   output: 'export',
   images: {
     loader: 'custom',
@@ -42,6 +41,7 @@ export default withNextra({
   },
   transpilePackages: ['next-image-export-optimizer'],
   env: {
+    /* eslint-disable camelcase */
     nextImageExportOptimizer_imageFolderPath: 'public/images',
     nextImageExportOptimizer_exportFolderPath: 'out',
     nextImageExportOptimizer_quality: '75',
@@ -54,6 +54,7 @@ export default withNextra({
     // If you want to cache the remote images, you can set the time to live of the cache in seconds.
     // The default value is 0 seconds.
     nextImageExportOptimizer_remoteImageCacheTTL: '0',
+    /* eslint-enable camelcase */
   },
   trailingSlash: true,
 });

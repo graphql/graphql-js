@@ -39,6 +39,15 @@ const meta = {
   'authorization-strategies': '',
   '-- 4': {
     type: 'separator',
+    title: 'Testing',
+  },
+  'testing-graphql-servers': '',
+  'testing-approaches': '',
+  'testing-operations': '',
+  'testing-resolvers': '',
+  'testing-best-practices': '',
+  '-- 5': {
+    type: 'separator',
     title: 'Production & Scaling',
   },
   'development-mode': '',

@@ -1,14 +1,17 @@
-import React from 'react';
-import { DocsThemeConfig, ThemeSwitch, useConfig } from 'nextra-theme-docs';
+/* eslint-disable internal-rules/only-ascii */
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
+import type { DocsThemeConfig } from 'nextra-theme-docs';
+import { ThemeSwitch, useConfig } from 'nextra-theme-docs';
+import React from 'react';
+
 import {
+  DiscordIcon,
+  GitHubIcon,
   GraphQLWordmarkLogo,
   StackOverflowIcon,
-  GitHubIcon,
-  DiscordIcon,
   TwitterIcon,
-} from './icons/index';
-import { useRouter } from 'next/router';
+} from './icons/index.js';
 
 const graphQLLogo = (
   <GraphQLWordmarkLogo className="h-8 nextra-logo" title="GraphQL" />
@@ -23,7 +26,7 @@ function List({
   items,
 }: {
   title: string;
-  items: { title: string; url: string }[];
+  items: Array<{ title: string; url: string }>;
 }) {
   return (
     <ul className="text-sm flex flex-col gap-4 max-lg:w-[46%]">
@@ -196,14 +199,18 @@ const cfg: DocsThemeConfig = {
       <>
         <title>{title}</title>
         <meta property="og:title" content={title} />
-        {description && (
+        {description != null && description !== '' && (
           <>
             <meta name="description" content={description} />
             <meta property="og:description" content={description} />
           </>
         )}
-        {canonical && <link rel="canonical" href={canonical} />}
-        {image && <meta name="og:image" content={image} />}
+        {canonical != null && canonical !== '' && (
+          <link rel="canonical" href={canonical} />
+        )}
+        {image != null && image !== '' && (
+          <meta name="og:image" content={image} />
+        )}
         <meta property="og:image" content="/img/og-image.png" />
         <meta property="twitter:site" content="@graphql" />
       </>
@@ -212,7 +219,7 @@ const cfg: DocsThemeConfig = {
   banner: {
     content: (
       <>
-        🎬 That's a Wrap for GraphQLConf 2024! • Watch the Videos •{' '}
+        🎬 That&apos;s a Wrap for GraphQLConf 2024! • Watch the Videos •{' '}
         <NextLink
           href="https://graphql.org/conf/2024"
           className="underline after:content-['_→'] after:font-sans"

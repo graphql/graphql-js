@@ -219,7 +219,7 @@ const editedAST = visit(ast, {
 
 Alternatively to providing enter() and leave() functions, a visitor can
 instead provide functions named the same as the kinds of AST nodes, or
-enter/leave visitors at a named key, leading to four permutations of
+enter/leave visitors at a named key, leading to three permutations of
 visitor API:
 
 1. Named visitors triggered when entering a node a specific kind.
@@ -257,23 +257,6 @@ visit(ast, {
   },
   leave(node) {
     // leave any node
-  },
-});
-```
-
-4. Parallel visitors for entering and leaving nodes of a specific kind.
-
-```js
-visit(ast, {
-  enter: {
-    Kind(node) {
-      // enter the "Kind" node
-    },
-  },
-  leave: {
-    Kind(node) {
-      // leave the "Kind" node
-    },
   },
 });
 ```
