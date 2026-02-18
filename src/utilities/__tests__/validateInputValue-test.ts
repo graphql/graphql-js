@@ -373,6 +373,111 @@ describe('validateInputValue', () => {
     });
   });
 
+  describe('for GraphQLInputObject that isOneOf', () => {
+    const TestInputObject = new GraphQLInputObjectType({
+      name: 'TestInputObject',
+      fields: {
+        foo: { type: GraphQLInt },
+        bar: { type: GraphQLInt },
+      },
+      isOneOf: true,
+    });
+
+    it('no error for a valid input', () => {
+      test({ foo: 123 }, TestInputObject, []);
+    });
+
+    it('returns error if more than one field is specified', () => {
+      test({ foo: 123, bar: null }, TestInputObject, [
+        {
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns error if the one field is null', () => {
+      test({ bar: null }, TestInputObject, [
+        {
+          error:
+            'Field "bar" for OneOf type "TestInputObject" must be non-null.',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns error for an invalid field', () => {
+      test({ foo: NaN }, TestInputObject, [
+        {
+          error: 'Int cannot represent non-integer value: NaN',
+          path: ['foo'],
+        },
+      ]);
+    });
+
+    it('returns multiple errors for multiple invalid fields', () => {
+      test({ foo: 'abc', bar: 'def' }, TestInputObject, [
+        {
+          error: 'Int cannot represent non-integer value: "abc"',
+          path: ['foo'],
+        },
+        {
+          error: 'Int cannot represent non-integer value: "def"',
+          path: ['bar'],
+        },
+        {
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns error for an unknown field', () => {
+      // TODO: not technically a OneOf error, as the OneOf validation assumes known fields
+      test({ foo: 123, unknownField: 123 }, TestInputObject, [
+        {
+          error:
+            'Expected value of type "TestInputObject" not to include unknown field "unknownField", found: { foo: 123, unknownField: 123 }.',
+          path: [],
+        },
+        {
+          error:
+            'Exactly one key must be specified for OneOf type "TestInputObject".',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns error for a misspelled field', () => {
+      // TODO: technically also a OneOf error, as the OneOf validation assumes known fields, so there are no errors here
+      test({ bart: 123 }, TestInputObject, [
+        {
+          error:
+            'Expected value of type "TestInputObject" not to include unknown field "bart". Did you mean "bar"? Found: { bart: 123 }.',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns error for a misspelled field (no suggestions)', () => {
+      // TODO: technically also a OneOf error, as the OneOf validation assumes known fields, so there are no errors here
+      test(
+        { bart: 123 },
+        TestInputObject,
+        [
+          {
+            error:
+              'Expected value of type "TestInputObject" not to include unknown field "bart", found: { bart: 123 }.',
+            path: [],
+          },
+        ],
+        true,
+      );
+    });
+  });
+
   describe('for GraphQLList', () => {
     const TestList = new GraphQLList(GraphQLInt);
 
@@ -846,6 +951,157 @@ describe('validateInputLiteral', () => {
 
     it('no error for NaN as value', () => {
       test('{}', makeTestInputObject(NaN), []);
+    });
+  });
+
+  describe('for GraphQLInputObject that isOneOf', () => {
+    const TestInputObject = new GraphQLInputObjectType({
+      name: 'TestInputObject',
+      fields: {
+        foo: { type: GraphQLInt },
+        bar: { type: GraphQLInt },
+      },
+      isOneOf: true,
+    });
+
+    it('returns no error for a valid input', () => {
+      test('{ foo: 123 }', TestInputObject, []);
+    });
+
+    it('returns an error if more than one field is specified', () => {
+      test('{ foo: 123, bar: null }', TestInputObject, [
+        {
+          error:
+            'OneOf Input Object "TestInputObject" must specify exactly one key.',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns an error if the one field is null', () => {
+      test('{ bar: null }', TestInputObject, [
+        {
+          error:
+            'Field "TestInputObject.bar" used for OneOf Input Object must be non-null.',
+          path: ['bar'],
+        },
+      ]);
+    });
+
+    it('returns an error for a non-object type', () => {
+      test('123', TestInputObject, [
+        {
+          error:
+            'Expected value of type "TestInputObject" to be an object, found: 123.',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns an error for an invalid field', () => {
+      test('{ foo: 1.5 }', TestInputObject, [
+        {
+          error: 'Int cannot represent non-integer value: 1.5',
+          path: ['foo'],
+        },
+      ]);
+    });
+
+    it('returns error for an unknown field', () => {
+      // TODO: not technically a OneOf error, as the OneOf validation assumes known fields
+      test('{ foo: 123, unknownField: 123 }', TestInputObject, [
+        {
+          error:
+            'Expected value of type "TestInputObject" not to include unknown field "unknownField", found: { foo: 123, unknownField: 123 }.',
+          path: [],
+        },
+        {
+          error:
+            'OneOf Input Object "TestInputObject" must specify exactly one key.',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns error for a misspelled field', () => {
+      // TODO: not technically a OneOf error, as the OneOf validation assumes known fields
+      test('{ foo: 123, bart: 123 }', TestInputObject, [
+        {
+          error:
+            'Expected value of type "TestInputObject" not to include unknown field "bart". Did you mean "bar"? Found: { foo: 123, bart: 123 }.',
+          path: [],
+        },
+        {
+          error:
+            'OneOf Input Object "TestInputObject" must specify exactly one key.',
+          path: [],
+        },
+      ]);
+    });
+
+    it('allows variables in an object, statically', () => {
+      test('{ foo: $var }', TestInputObject, []);
+    });
+
+    it('allows correct use of variables', () => {
+      testWithVariables(
+        '($var: Int)',
+        { var: 123 },
+        '{ foo: $var }',
+        TestInputObject,
+        [],
+      );
+    });
+
+    it('returns error with variable provided a value of null', () => {
+      testWithVariables(
+        '($var: Int)',
+        { var: null },
+        '{ foo: $var }',
+        TestInputObject,
+        [
+          {
+            error:
+              'Expected variable "$var" provided to field "foo" for OneOf Input Object type "TestInputObject" not to be null.',
+            path: [],
+          },
+        ],
+      );
+    });
+
+    it('errors with missing variables as the additional field', () => {
+      // TODO: the duplicate errors here should be combined
+      testWithVariables('', {}, '{ foo: 123, bar: $var }', TestInputObject, [
+        {
+          error:
+            'Expected variable "$var" provided to field "bar" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
+          path: [],
+        },
+        {
+          error:
+            'OneOf Input Object "TestInputObject" must specify exactly one key.',
+          path: [],
+        },
+      ]);
+      // TODO: the duplicate errors here should be combined
+      testWithVariables(
+        '($var: Int)',
+        {},
+        '{ foo: 123, bar: $var }',
+        TestInputObject,
+        [
+          {
+            error:
+              'Expected variable "$var" provided to field "bar" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
+            path: [],
+          },
+          {
+            error:
+              'OneOf Input Object "TestInputObject" must specify exactly one key.',
+            path: [],
+          },
+        ],
+      );
     });
   });
 
