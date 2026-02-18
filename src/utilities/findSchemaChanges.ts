@@ -64,7 +64,7 @@ export const DangerousChangeType = {
   OPTIONAL_ARG_ADDED: 'OPTIONAL_ARG_ADDED' as const,
   IMPLEMENTED_INTERFACE_ADDED: 'IMPLEMENTED_INTERFACE_ADDED' as const,
   ARG_DEFAULT_VALUE_CHANGE: 'ARG_DEFAULT_VALUE_CHANGE' as const,
-};
+} as const;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type DangerousChangeType =
   (typeof DangerousChangeType)[keyof typeof DangerousChangeType];
@@ -82,7 +82,7 @@ export const SafeChangeType = {
   FIELD_CHANGED_KIND_SAFE: 'FIELD_CHANGED_KIND_SAFE' as const,
   ARG_CHANGED_KIND_SAFE: 'ARG_CHANGED_KIND_SAFE' as const,
   ARG_DEFAULT_VALUE_ADDED: 'ARG_DEFAULT_VALUE_ADDED' as const,
-};
+} as const;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type SafeChangeType =
   (typeof SafeChangeType)[keyof typeof SafeChangeType];
