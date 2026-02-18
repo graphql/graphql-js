@@ -1,12 +1,2 @@
-# Copied from '.gitignore', please keep it in sync.
-/diff-npm-package.html
-/.eslintcache
-/node_modules
-/reports
-/npmDist
-/npmEsmDist
-/denoDist
-/website/.next
-/website/out
+# additive to .gitignore
 /website/**/*.mdx
-.next
