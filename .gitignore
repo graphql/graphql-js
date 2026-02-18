@@ -14,4 +14,3 @@ node_modules
 /npmEsmDist
 /denoDist
 /website/.next
-/website/out
