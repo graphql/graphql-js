@@ -112,6 +112,58 @@ describe('mapSchemaConfig', () => {
       );
     });
 
+    it('can map fields with non-null return type', () => {
+      const sdl = `
+      type SomeType {
+        field: String!
+      }
+    `;
+
+      const schemaConfig = buildSchema(sdl).toConfig();
+
+      expectSchemaMapping(
+        schemaConfig,
+        () => ({
+          [SchemaElementKind.FIELD]: (config) => ({
+            ...config,
+            description: 'Some description',
+          }),
+        }),
+        `
+          type SomeType {
+            """Some description"""
+            field: String!
+          }
+        `,
+      );
+    });
+
+    it('can map fields with list return type', () => {
+      const sdl = `
+      type SomeType {
+        field: [String]
+      }
+    `;
+
+      const schemaConfig = buildSchema(sdl).toConfig();
+
+      expectSchemaMapping(
+        schemaConfig,
+        () => ({
+          [SchemaElementKind.FIELD]: (config) => ({
+            ...config,
+            description: 'Some description',
+          }),
+        }),
+        `
+          type SomeType {
+            """Some description"""
+            field: [String]
+          }
+        `,
+      );
+    });
+
     it('maps fields after mapping arguments', () => {
       const sdl = `
         type SomeType {
