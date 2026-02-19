@@ -11,7 +11,7 @@ import {
   GraphQLWordmarkLogo,
   StackOverflowIcon,
   TwitterIcon,
-} from './icons/index.js';
+} from './icons/index';
 
 const graphQLLogo = (
   <GraphQLWordmarkLogo className="h-8 nextra-logo" title="GraphQL" />
