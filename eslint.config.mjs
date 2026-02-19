@@ -21,7 +21,7 @@ export default tsConfig(
       'npmDist',
       'npmEsmDist',
       'denoDist',
-      'website',
+      'website/.next',
       'integrationTests/ts/*.ts',
     ],
   },
@@ -482,7 +482,7 @@ export default tsConfig(
     files: ['integrationTests/node-esm/**/*.js'],
   },
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
     plugins: {
       '@typescript-eslint': tsPlugin,
     },
@@ -490,7 +490,7 @@ export default tsConfig(
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: ['tsconfig.json', './website/tsconfig.json'],
+        project: ['tsconfig.json', 'website/tsconfig.json'],
       },
     },
     rules: {
