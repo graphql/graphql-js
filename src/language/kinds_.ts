@@ -112,16 +112,12 @@ export type INPUT_OBJECT_TYPE_EXTENSION = typeof INPUT_OBJECT_TYPE_EXTENSION;
 /** Schema Coordinates */
 export const TYPE_COORDINATE = 'TypeCoordinate';
 export type TYPE_COORDINATE = typeof TYPE_COORDINATE;
-
 export const MEMBER_COORDINATE = 'MemberCoordinate';
 export type MEMBER_COORDINATE = typeof MEMBER_COORDINATE;
-
 export const ARGUMENT_COORDINATE = 'ArgumentCoordinate';
 export type ARGUMENT_COORDINATE = typeof ARGUMENT_COORDINATE;
-
 export const DIRECTIVE_COORDINATE = 'DirectiveCoordinate';
 export type DIRECTIVE_COORDINATE = typeof DIRECTIVE_COORDINATE;
-
 export const DIRECTIVE_ARGUMENT_COORDINATE = 'DirectiveArgumentCoordinate';
 export type DIRECTIVE_ARGUMENT_COORDINATE =
   typeof DIRECTIVE_ARGUMENT_COORDINATE;
