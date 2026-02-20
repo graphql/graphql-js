@@ -188,6 +188,7 @@ describe('Type System: Objects', () => {
       extensions: {},
       astNode: undefined,
       extensionASTNodes: [],
+      deprecationReason: undefined,
     });
   });
 
@@ -222,9 +223,24 @@ describe('Type System: Objects', () => {
       extensions: { someExtension: 'extension' },
       astNode: dummyAny,
       extensionASTNodes: [dummyAny],
+      deprecationReason: undefined,
     };
     const someObject = new GraphQLObjectType(someObjectConfig);
     expect(someObject.toConfig()).to.deep.equal(someObjectConfig);
+  });
+
+  it('defines a deprecated object type', () => {
+    const DeprecatedType = new GraphQLObjectType({
+      name: 'foo',
+      fields: {
+        bar: {
+          type: ScalarType,
+        },
+      },
+      deprecationReason: 'A terrible reason',
+    });
+
+    expect(DeprecatedType.deprecationReason).to.equal('A terrible reason');
   });
 
   it('does not mutate passed field definitions', () => {

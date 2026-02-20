@@ -138,4 +138,32 @@ describe('getIntrospectionQuery', () => {
       2,
     );
   });
+
+  it('include "isDeprecated" field on objects', () => {
+    expectIntrospectionQuery().toMatch('isDeprecated', 2);
+
+    expectIntrospectionQuery({ objectDeprecation: true }).toMatch(
+      'isDeprecated',
+      3,
+    );
+
+    expectIntrospectionQuery({ objectDeprecation: false }).toMatch(
+      'isDeprecated',
+      2,
+    );
+  });
+
+  it('include deprecated objects', () => {
+    expectIntrospectionQuery().toMatch('includeDeprecated: true', 2);
+
+    expectIntrospectionQuery({ objectDeprecation: true }).toMatch(
+      'includeDeprecated: true',
+      4,
+    );
+
+    expectIntrospectionQuery({ objectDeprecation: false }).toMatch(
+      'includeDeprecated: true',
+      2,
+    );
+  });
 });

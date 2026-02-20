@@ -2,7 +2,11 @@ import { GraphQLError } from '../../../error/GraphQLError.js';
 
 import type { ASTVisitor } from '../../../language/visitor.js';
 
-import { getNamedType, isInputObjectType } from '../../../type/definition.js';
+import {
+  getNamedType,
+  isInputObjectType,
+  isObjectType,
+} from '../../../type/definition.js';
 
 import type { ValidationContext } from '../../ValidationContext.js';
 
@@ -65,6 +69,28 @@ export function NoDeprecatedCustomRule(context: ValidationContext): ASTVisitor {
           new GraphQLError(
             `The enum value "${enumValueDef}" is deprecated. ${deprecationReason}`,
             { nodes: node },
+          ),
+        );
+      }
+    },
+    InlineFragment(node) {
+      const type = context.getType();
+      if (isObjectType(type) && type.deprecationReason != null) {
+        context.reportError(
+          new GraphQLError(
+            `The type "${type}" is deprecated. ${type.deprecationReason}`,
+            { nodes: node.typeCondition ?? node },
+          ),
+        );
+      }
+    },
+    FragmentDefinition(node) {
+      const type = getNamedType(context.getType());
+      if (isObjectType(type) && type.deprecationReason != null) {
+        context.reportError(
+          new GraphQLError(
+            `The type "${type}" is deprecated. ${type.deprecationReason}`,
+            { nodes: node.typeCondition },
           ),
         );
       }

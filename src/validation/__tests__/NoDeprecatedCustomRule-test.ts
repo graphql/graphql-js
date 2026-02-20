@@ -269,4 +269,95 @@ describe('Validate: no deprecated', () => {
       ]);
     });
   });
+
+  describe('no deprecated types', () => {
+    const { expectValid, expectErrors } = buildAssertion(`
+      type Query {
+        animals: [Animal]
+      }
+
+      interface Animal {
+        name: String
+      }
+
+      type Dog implements Animal {
+        name: String
+      }
+
+      type Dragon implements Animal @deprecated(reason: "No longer known to exist.") {
+        name: String
+      }
+    `);
+
+    it('ignores non-deprecated types in inline fragments', () => {
+      expectValid(`
+        {
+          animals {
+            ... on Dog {
+              name
+            }
+          }
+        }
+      `);
+    });
+
+    it('reports error when a deprecated type is used in inline fragment', () => {
+      expectErrors(`
+        {
+          animals {
+            ... on Dragon {
+              name
+            }
+          }
+        }
+      `).toDeepEqual([
+        {
+          message: 'The type "Dragon" is deprecated. No longer known to exist.',
+          locations: [{ line: 4, column: 20 }],
+        },
+      ]);
+    });
+
+    it('reports error when inline fragment without type condition is in deprecated type context', () => {
+      expectErrors(`
+        {
+          animals {
+            ... on Dragon {
+              ... {
+                name
+              }
+            }
+          }
+        }
+      `).toDeepEqual([
+        {
+          message: 'The type "Dragon" is deprecated. No longer known to exist.',
+          locations: [{ line: 4, column: 20 }],
+        },
+        {
+          message: 'The type "Dragon" is deprecated. No longer known to exist.',
+          locations: [{ line: 5, column: 15 }],
+        },
+      ]);
+    });
+
+    it('reports error when a deprecated type is used in fragment definition', () => {
+      expectErrors(`
+        {
+          animals {
+            ...DragonFragment
+          }
+        }
+
+        fragment DragonFragment on Dragon {
+          name
+        }
+      `).toDeepEqual([
+        {
+          message: 'The type "Dragon" is deprecated. No longer known to exist.',
+          locations: [{ line: 8, column: 36 }],
+        },
+      ]);
+    });
+  });
 });

@@ -502,6 +502,7 @@ export function extendSchemaImpl(
             description: astNode.description?.value,
             interfaces: () => buildInterfaces(allNodes),
             fields: () => buildFieldMap(allNodes),
+            deprecationReason: getDeprecationReason(astNode),
             astNode,
             extensionASTNodes,
           });
@@ -586,7 +587,8 @@ function getDeprecationReason(
   node:
     | EnumValueDefinitionNode
     | FieldDefinitionNode
-    | InputValueDefinitionNode,
+    | InputValueDefinitionNode
+    | ObjectTypeDefinitionNode,
 ): Maybe<string> {
   const deprecated = getDirectiveValues(GraphQLDeprecatedDirective, node);
   // @ts-expect-error validated by `getDirectiveValues`

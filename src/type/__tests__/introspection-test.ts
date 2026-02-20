@@ -96,7 +96,21 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'types',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -290,7 +304,21 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'possibleTypes',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'LIST',
                     name: null,
@@ -390,6 +418,28 @@ describe('Introspection', () => {
                   type: {
                     kind: 'SCALAR',
                     name: 'Boolean',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'isDeprecated',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'Boolean',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'deprecationReason',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
                     ofType: null,
                   },
                   isDeprecated: false,
@@ -992,6 +1042,7 @@ describe('Introspection', () => {
                 'ARGUMENT_DEFINITION',
                 'INPUT_FIELD_DEFINITION',
                 'ENUM_VALUE',
+                'OBJECT',
               ],
               args: [
                 {
@@ -1275,6 +1326,133 @@ describe('Introspection', () => {
         },
       },
     });
+  });
+
+  it('identifies deprecated objects', () => {
+    const schema = buildSchema(`
+      type Query {
+        dragon: [Dragon] @deprecated(reason: "Use phoenix")
+      }
+      type Dragon @deprecated(reason: "No longer known to exist") {
+        name: String
+      }
+    `);
+
+    const source = `
+      {
+        __schema {
+          types(includeDeprecated: true) {
+            name
+            isDeprecated
+            deprecationReason
+          }
+        }
+        dragon: __type(name: "Dragon") {
+          name
+          isDeprecated
+          deprecationReason
+        }
+      }
+    `;
+
+    const result = graphqlSync({ schema, source });
+
+    const types = (result.data as any).__schema.types;
+    expect(types).to.deep.include.members([
+      {
+        name: 'Dragon',
+        isDeprecated: true,
+        deprecationReason: 'No longer known to exist',
+      },
+    ]);
+    expect((result.data as any).dragon).to.deep.equal({
+      name: 'Dragon',
+      isDeprecated: true,
+      deprecationReason: 'No longer known to exist',
+    });
+  });
+
+  it('respects the includeDeprecated parameter for types', () => {
+    const schema = buildSchema(`
+      type Query {
+        dragon: [Dragon] @deprecated(reason: "Use phoenix")
+      }
+      type Dragon @deprecated(reason: "No longer known to exist") {
+        name: String
+      }
+    `);
+
+    const source = `
+      {
+        __schema {
+          trueTypes: types(includeDeprecated: true) {
+            name
+          }
+          falseTypes: types(includeDeprecated: false) {
+            name
+          }
+          omittedTypes: types {
+            name
+          }
+        }
+      }
+    `;
+
+    const result = graphqlSync({ schema, source });
+    const response = result.data as any;
+    expect(response.__schema.trueTypes).to.deep.include.members([
+      { name: 'Dragon' },
+    ]);
+    expect(response.__schema.falseTypes).to.not.deep.include.members([
+      { name: 'Dragon' },
+    ]);
+    expect(response.__schema.omittedTypes).to.not.deep.include.members([
+      { name: 'Dragon' },
+    ]);
+  });
+
+  it('respects the includeDeprecated parameter for possibleTypes', () => {
+    const schema = buildSchema(`
+      type Query {
+        animals: [Animal]
+      }
+
+      interface Animal {
+        name: String
+      }
+
+      type Dog implements Animal {
+        name: String
+      }
+
+      type Dragon implements Animal @deprecated(reason: "No longer known to exist") {
+        name: String
+      }
+    `);
+
+    const source = `
+      {
+        animal: __type(name: "Animal") {
+          trueTypes: possibleTypes(includeDeprecated: true) {
+            name
+          }
+          falseTypes: possibleTypes(includeDeprecated: false) {
+            name
+          }
+          omittedTypes: possibleTypes {
+            name
+          }
+        }
+      }
+    `;
+
+    const result = graphqlSync({ schema, source });
+    const animal = (result.data as any).animal;
+    expect(animal.trueTypes).to.deep.include.members([{ name: 'Dragon' }]);
+    expect(animal.falseTypes).to.not.deep.include.members([{ name: 'Dragon' }]);
+    expect(animal.omittedTypes).to.not.deep.include.members([
+      { name: 'Dragon' },
+    ]);
   });
 
   it('identifies deprecated args', () => {

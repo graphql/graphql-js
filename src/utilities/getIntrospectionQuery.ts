@@ -40,6 +40,12 @@ export interface IntrospectionOptions {
    * Default: false
    */
   oneOf?: boolean;
+
+  /**
+   * Whether target GraphQL server supports deprecation of objects.
+   * Default: false
+   */
+  objectDeprecation?: boolean;
 }
 
 /**
@@ -54,6 +60,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     schemaDescription: false,
     inputValueDeprecation: false,
     oneOf: false,
+    objectDeprecation: false,
     ...options,
   };
 
@@ -71,6 +78,9 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   function inputDeprecation(str: string) {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
+  function objectDeprecation(str: string) {
+    return optionsWithDefault.objectDeprecation ? str : '';
+  }
   const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
 
   return `
@@ -80,7 +90,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         queryType { name kind }
         mutationType { name kind }
         subscriptionType { name kind }
-        types {
+        types${objectDeprecation('(includeDeprecated: true)')} {
           ...FullType
         }
         directives {
@@ -125,9 +135,11 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         isDeprecated
         deprecationReason
       }
-      possibleTypes {
+      possibleTypes${objectDeprecation('(includeDeprecated: true)')} {
         ...TypeRef
       }
+      ${objectDeprecation('isDeprecated')}
+      ${objectDeprecation('deprecationReason')}
     }
 
     fragment InputValue on __InputValue {
@@ -234,6 +246,8 @@ export interface IntrospectionObjectType {
   readonly interfaces: ReadonlyArray<
     IntrospectionNamedTypeRef<IntrospectionInterfaceType>
   >;
+  readonly isDeprecated?: boolean;
+  readonly deprecationReason?: Maybe<string>;
 }
 
 export interface IntrospectionInterfaceType {
