@@ -986,7 +986,7 @@ describe('Parser', () => {
       });
     });
 
-    it('parses fragment with variable description (legacy)', () => {
+    it('parses fragment with variable description', () => {
       const result = parse('fragment Foo("desc" $foo: Int) on Bar { baz }', {
         experimentalFragmentArguments: true,
       });
