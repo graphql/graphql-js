@@ -1491,7 +1491,7 @@ export class Parser {
     throw this.unexpected(start);
   }
 
-  // Schema Coordinates
+  // Implements the parsing rules in the Schema Coordinates section.
 
   /**
    * SchemaCoordinate :

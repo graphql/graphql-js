@@ -301,7 +301,6 @@ export const QueryDocumentKeys: {
   EnumTypeExtension: ['name', 'directives', 'values'],
   InputObjectTypeExtension: ['name', 'directives', 'fields'],
 
-  // Schema Coordinates
   TypeCoordinate: ['name'],
   MemberCoordinate: ['name', 'memberName'],
   ArgumentCoordinate: ['name', 'fieldName', 'argumentName'],
