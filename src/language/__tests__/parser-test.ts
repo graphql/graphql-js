@@ -757,6 +757,180 @@ describe('Parser', () => {
     });
   });
 
+  describe('parseSchemaCoordinate', () => {
+    it('parses Name', () => {
+      const result = parseSchemaCoordinate('MyType');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.TYPE_COORDINATE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+      });
+    });
+
+    it('parses Name . Name', () => {
+      const result = parseSchemaCoordinate('MyType.field');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.MEMBER_COORDINATE,
+        loc: { start: 0, end: 12 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+        memberName: {
+          kind: Kind.NAME,
+          loc: { start: 7, end: 12 },
+          value: 'field',
+        },
+      });
+    });
+
+    it('rejects Name . Name . Name', () => {
+      expect(() => parseSchemaCoordinate('MyType.field.deep'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Expected <EOF>, found ".".',
+          locations: [{ line: 1, column: 13 }],
+        });
+    });
+
+    it('parses Name . Name ( Name : )', () => {
+      const result = parseSchemaCoordinate('MyType.field(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.ARGUMENT_COORDINATE,
+        loc: { start: 0, end: 18 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: 'MyType',
+        },
+        fieldName: {
+          kind: Kind.NAME,
+          loc: { start: 7, end: 12 },
+          value: 'field',
+        },
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 13, end: 16 },
+          value: 'arg',
+        },
+      });
+    });
+
+    it('rejects Name . Name ( Name : Name )', () => {
+      expect(() => parseSchemaCoordinate('MyType.field(arg: value)'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Invalid character: " ".',
+          locations: [{ line: 1, column: 18 }],
+        });
+    });
+
+    it('parses @ Name', () => {
+      const result = parseSchemaCoordinate('@myDirective');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.DIRECTIVE_COORDINATE,
+        loc: { start: 0, end: 12 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 1, end: 12 },
+          value: 'myDirective',
+        },
+      });
+    });
+
+    it('parses @ Name ( Name : )', () => {
+      const result = parseSchemaCoordinate('@myDirective(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.DIRECTIVE_ARGUMENT_COORDINATE,
+        loc: { start: 0, end: 18 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 1, end: 12 },
+          value: 'myDirective',
+        },
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 13, end: 16 },
+          value: 'arg',
+        },
+      });
+    });
+
+    it('parses __Type', () => {
+      const result = parseSchemaCoordinate('__Type');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.TYPE_COORDINATE,
+        loc: { start: 0, end: 6 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 6 },
+          value: '__Type',
+        },
+      });
+    });
+
+    it('parses Type.__metafield', () => {
+      const result = parseSchemaCoordinate('Type.__metafield');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.MEMBER_COORDINATE,
+        loc: { start: 0, end: 16 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 4 },
+          value: 'Type',
+        },
+        memberName: {
+          kind: Kind.NAME,
+          loc: { start: 5, end: 16 },
+          value: '__metafield',
+        },
+      });
+    });
+
+    it('parses Type.__metafield(arg:)', () => {
+      const result = parseSchemaCoordinate('Type.__metafield(arg:)');
+      expectJSON(result).toDeepEqual({
+        kind: Kind.ARGUMENT_COORDINATE,
+        loc: { start: 0, end: 22 },
+        name: {
+          kind: Kind.NAME,
+          loc: { start: 0, end: 4 },
+          value: 'Type',
+        },
+        fieldName: {
+          kind: Kind.NAME,
+          loc: { start: 5, end: 16 },
+          value: '__metafield',
+        },
+        argumentName: {
+          kind: Kind.NAME,
+          loc: { start: 17, end: 20 },
+          value: 'arg',
+        },
+      });
+    });
+
+    it('rejects @ Name . Name', () => {
+      expect(() => parseSchemaCoordinate('@myDirective.field'))
+        .to.throw()
+        .to.deep.include({
+          message: 'Syntax Error: Expected <EOF>, found ".".',
+          locations: [{ line: 1, column: 13 }],
+        });
+    });
+
+    it('accepts a Source object', () => {
+      expect(parseSchemaCoordinate('MyType')).to.deep.equal(
+        parseSchemaCoordinate(new Source('MyType')),
+      );
+    });
+  });
+
   describe('operation and variable definition descriptions', () => {
     it('parses operation with description and variable descriptions', () => {
       const result = parse(dedent`
@@ -771,6 +945,7 @@ describe('Parser', () => {
         }
       `);
 
+      // Find the operation definition
       const opDef = result.definitions.find(
         (d) => d.kind === Kind.OPERATION_DEFINITION,
       );
@@ -1029,180 +1204,6 @@ describe('Parser', () => {
         directives: undefined,
         loc: { start: 13, end: 29 },
       });
-    });
-  });
-
-  describe('parseSchemaCoordinate', () => {
-    it('parses Name', () => {
-      const result = parseSchemaCoordinate('MyType');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.TYPE_COORDINATE,
-        loc: { start: 0, end: 6 },
-        name: {
-          kind: Kind.NAME,
-          loc: { start: 0, end: 6 },
-          value: 'MyType',
-        },
-      });
-    });
-
-    it('parses Name . Name', () => {
-      const result = parseSchemaCoordinate('MyType.field');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.MEMBER_COORDINATE,
-        loc: { start: 0, end: 12 },
-        name: {
-          kind: Kind.NAME,
-          loc: { start: 0, end: 6 },
-          value: 'MyType',
-        },
-        memberName: {
-          kind: Kind.NAME,
-          loc: { start: 7, end: 12 },
-          value: 'field',
-        },
-      });
-    });
-
-    it('rejects Name . Name . Name', () => {
-      expect(() => parseSchemaCoordinate('MyType.field.deep'))
-        .to.throw()
-        .to.deep.include({
-          message: 'Syntax Error: Expected <EOF>, found ".".',
-          locations: [{ line: 1, column: 13 }],
-        });
-    });
-
-    it('parses Name . Name ( Name : )', () => {
-      const result = parseSchemaCoordinate('MyType.field(arg:)');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.ARGUMENT_COORDINATE,
-        loc: { start: 0, end: 18 },
-        name: {
-          kind: Kind.NAME,
-          loc: { start: 0, end: 6 },
-          value: 'MyType',
-        },
-        fieldName: {
-          kind: Kind.NAME,
-          loc: { start: 7, end: 12 },
-          value: 'field',
-        },
-        argumentName: {
-          kind: Kind.NAME,
-          loc: { start: 13, end: 16 },
-          value: 'arg',
-        },
-      });
-    });
-
-    it('rejects Name . Name ( Name : Name )', () => {
-      expect(() => parseSchemaCoordinate('MyType.field(arg: value)'))
-        .to.throw()
-        .to.deep.include({
-          message: 'Syntax Error: Invalid character: " ".',
-          locations: [{ line: 1, column: 18 }],
-        });
-    });
-
-    it('parses @ Name', () => {
-      const result = parseSchemaCoordinate('@myDirective');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.DIRECTIVE_COORDINATE,
-        loc: { start: 0, end: 12 },
-        name: {
-          kind: Kind.NAME,
-          loc: { start: 1, end: 12 },
-          value: 'myDirective',
-        },
-      });
-    });
-
-    it('parses @ Name ( Name : )', () => {
-      const result = parseSchemaCoordinate('@myDirective(arg:)');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.DIRECTIVE_ARGUMENT_COORDINATE,
-        loc: { start: 0, end: 18 },
-        name: {
-          kind: Kind.NAME,
-          loc: { start: 1, end: 12 },
-          value: 'myDirective',
-        },
-        argumentName: {
-          kind: Kind.NAME,
-          loc: { start: 13, end: 16 },
-          value: 'arg',
-        },
-      });
-    });
-
-    it('parses __Type', () => {
-      const result = parseSchemaCoordinate('__Type');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.TYPE_COORDINATE,
-        loc: { start: 0, end: 6 },
-        name: {
-          kind: Kind.NAME,
-          loc: { start: 0, end: 6 },
-          value: '__Type',
-        },
-      });
-    });
-
-    it('parses Type.__metafield', () => {
-      const result = parseSchemaCoordinate('Type.__metafield');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.MEMBER_COORDINATE,
-        loc: { start: 0, end: 16 },
-        name: {
-          kind: Kind.NAME,
-          loc: { start: 0, end: 4 },
-          value: 'Type',
-        },
-        memberName: {
-          kind: Kind.NAME,
-          loc: { start: 5, end: 16 },
-          value: '__metafield',
-        },
-      });
-    });
-
-    it('parses Type.__metafield(arg:)', () => {
-      const result = parseSchemaCoordinate('Type.__metafield(arg:)');
-      expectJSON(result).toDeepEqual({
-        kind: Kind.ARGUMENT_COORDINATE,
-        loc: { start: 0, end: 22 },
-        name: {
-          kind: Kind.NAME,
-          loc: { start: 0, end: 4 },
-          value: 'Type',
-        },
-        fieldName: {
-          kind: Kind.NAME,
-          loc: { start: 5, end: 16 },
-          value: '__metafield',
-        },
-        argumentName: {
-          kind: Kind.NAME,
-          loc: { start: 17, end: 20 },
-          value: 'arg',
-        },
-      });
-    });
-
-    it('rejects @ Name . Name', () => {
-      expect(() => parseSchemaCoordinate('@myDirective.field'))
-        .to.throw()
-        .to.deep.include({
-          message: 'Syntax Error: Expected <EOF>, found ".".',
-          locations: [{ line: 1, column: 13 }],
-        });
-    });
-
-    it('accepts a Source object', () => {
-      expect(parseSchemaCoordinate('MyType')).to.deep.equal(
-        parseSchemaCoordinate(new Source('MyType')),
-      );
     });
   });
 });
