@@ -4,12 +4,12 @@ import type { ASTNode } from '../../language/ast.js';
 import { Kind } from '../../language/kinds.js';
 import type { ASTVisitor } from '../../language/visitor.js';
 
-import type { ValidationContext } from '../ValidationContext.js';
+import type { ASTValidationContext } from '../ValidationContext.js';
 
 const MAX_LISTS_DEPTH = 3;
 
 export function MaxIntrospectionDepthRule(
-  context: ValidationContext,
+  context: ASTValidationContext,
 ): ASTVisitor {
   /**
    * Counts the depth of list fields in "__Type" recursively and
@@ -30,7 +30,7 @@ export function MaxIntrospectionDepthRule(
       }
       const fragment = context.getFragment(fragmentName);
       if (!fragment) {
-        // Missing fragments checks are handled by the `KnownFragmentNamesRule`.
+        // Missing fragments checks are handled by `KnownFragmentNamesRule`.
         return false;
       }
 
@@ -50,7 +50,6 @@ export function MaxIntrospectionDepthRule(
     if (
       node.kind === Kind.FIELD &&
       // check all introspection lists
-      // TODO: instead of relying on field names, check whether the type is a list
       (node.name.value === 'fields' ||
         node.name.value === 'interfaces' ||
         node.name.value === 'possibleTypes' ||
