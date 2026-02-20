@@ -34,6 +34,11 @@ export function ValuesOfCorrectTypeRule(
     IntValue: (node) => isValidValueNode(context, node, context.getInputType()),
     FloatValue: (node) =>
       isValidValueNode(context, node, context.getInputType()),
+    // Descriptions are string values that would not validate according
+    // to the below logic, but since (per the specification) descriptions must
+    // not affect validation, they are ignored entirely when visiting the AST
+    // and do not require special handling.
+    // See https://spec.graphql.org/draft/#sec-Descriptions
     StringValue: (node) =>
       isValidValueNode(context, node, context.getInputType()),
     BooleanValue: (node) =>
