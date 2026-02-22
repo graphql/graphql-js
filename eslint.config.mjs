@@ -6,13 +6,11 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react';
 import { internalRulesPlugin } from './resources/eslint-internal-rules/index.js';
 
-import {
-  config as tsConfig,
-  parser as tsParser,
-  plugin as tsPlugin,
-} from 'typescript-eslint';
+import { defineConfig } from 'eslint/config';
 
-export default tsConfig(
+import { parser as tsParser, plugin as tsPlugin } from 'typescript-eslint';
+
+export default defineConfig(
   {
     ignores: [
       'eslint.config.mjs',
@@ -55,7 +53,7 @@ export default tsConfig(
       'internal-rules/require-to-string-tag': 'off',
 
       //////////////////////////////////////////////////////////////////////////////
-      // `eslint-plugin-n` rule list based on `v17.21.x`
+      // `eslint-plugin-n` rule list based on `v17.24.x`
       //////////////////////////////////////////////////////////////////////////////
 
       // Rules
@@ -94,9 +92,11 @@ export default tsConfig(
       'n/no-unsupported-features/node-builtins': 'error',
       'n/prefer-global/buffer': 'error',
       'n/prefer-global/console': 'error',
+      'n/prefer-global/crypto': 'error',
       'n/prefer-global/process': 'error',
       'n/prefer-global/text-decoder': 'error',
       'n/prefer-global/text-encoder': 'error',
+      'n/prefer-global/timers': 'error',
       'n/prefer-global/url': 'error',
       'n/prefer-global/url-search-params': 'error',
       'n/prefer-node-protocol': 'error',
@@ -230,7 +230,7 @@ export default tsConfig(
       'simple-import-sort/exports': 'off', // TODO: error
 
       //////////////////////////////////////////////////////////////////////////////
-      // ESLint builtin rules list based on `v9.31.x`
+      // ESLint builtin rules list based on `v9.39.x`
       //////////////////////////////////////////////////////////////////////////////
 
       // Possible Errors
@@ -455,6 +455,7 @@ export default tsConfig(
       'prefer-rest-params': 'off', // TODO: error
       'prefer-spread': 'error',
       'prefer-template': 'off',
+      'preserve-caught-error': 'error',
       radix: 'error',
       'require-await': 'error',
       'require-unicode-regexp': 'off',
@@ -495,7 +496,7 @@ export default tsConfig(
     },
     rules: {
       //////////////////////////////////////////////////////////////////////////
-      // `@typescript-eslint/eslint-plugin` rule list based on `v8.37.x`
+      // `@typescript-eslint/eslint-plugin` rule list based on `v8.56.x`
       //////////////////////////////////////////////////////////////////////////
 
       // Supported Rules
@@ -603,6 +604,7 @@ export default tsConfig(
       '@typescript-eslint/no-unsafe-type-assertion': 'off', // TODO: consider
       '@typescript-eslint/no-unsafe-unary-minus': 'error',
       '@typescript-eslint/no-unused-expressions': 'off', // now in core
+      '@typescript-eslint/no-unused-private-class-members': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -617,6 +619,7 @@ export default tsConfig(
       ],
       '@typescript-eslint/no-use-before-define': 'off', // now in core
       '@typescript-eslint/no-useless-constructor': 'off', // now in core
+      '@typescript-eslint/no-useless-default-assignment': 'error',
       '@typescript-eslint/no-useless-empty-export': 'error',
       '@typescript-eslint/no-wrapper-object-types': 'error',
       '@typescript-eslint/non-nullable-type-assertion-style': 'off', //TODO: temporarily disabled
@@ -653,6 +656,7 @@ export default tsConfig(
           allowNullableBoolean: true, // TODO: consider removing
         },
       ],
+      '@typescript-eslint/strict-void-return': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': [
         'error',
         {
@@ -693,6 +697,7 @@ export default tsConfig(
   {
     files: ['src/**/__*__/**'],
     rules: {
+      '@typescript-eslint/strict-void-return': 'off', // TODO: re-enable when mocha types allow
       'local/require-to-string-tag': 'off',
       'n/no-unpublished-import': [
         'error',

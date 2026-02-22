@@ -389,9 +389,9 @@ export function assertAbstractType(type: unknown): GraphQLAbstractType {
  * })
  * ```
  */
-export class GraphQLList<T extends GraphQLType>
-  implements GraphQLSchemaElement
-{
+export class GraphQLList<
+  T extends GraphQLType,
+> implements GraphQLSchemaElement {
   readonly __kind: symbol;
   readonly ofType: T;
 
@@ -434,9 +434,9 @@ export class GraphQLList<T extends GraphQLType>
  * ```
  * Note: the enforcement of non-nullability occurs within the executor.
  */
-export class GraphQLNonNull<T extends GraphQLNullableType>
-  implements GraphQLSchemaElement
-{
+export class GraphQLNonNull<
+  T extends GraphQLNullableType,
+> implements GraphQLSchemaElement {
   readonly __kind: symbol;
   readonly ofType: T;
 
@@ -676,9 +676,10 @@ export interface GraphQLScalarTypeExtensions {
  *    `coerceInputLiteral()` method.
  *
  */
-export class GraphQLScalarType<TInternal = unknown, TExternal = TInternal>
-  implements GraphQLSchemaElement
-{
+export class GraphQLScalarType<
+  TInternal = unknown,
+  TExternal = TInternal,
+> implements GraphQLSchemaElement {
   readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
@@ -828,8 +829,10 @@ export interface GraphQLScalarTypeConfig<TInternal, TExternal> {
   extensionASTNodes?: Maybe<ReadonlyArray<ScalarTypeExtensionNode>>;
 }
 
-export interface GraphQLScalarTypeNormalizedConfig<TInternal, TExternal>
-  extends GraphQLScalarTypeConfig<TInternal, TExternal> {
+export interface GraphQLScalarTypeNormalizedConfig<
+  TInternal,
+  TExternal,
+> extends GraphQLScalarTypeConfig<TInternal, TExternal> {
   serialize: GraphQLScalarSerializer<TExternal>;
   parseValue: GraphQLScalarValueParser<TInternal>;
   parseLiteral: GraphQLScalarLiteralParser<TInternal>;
@@ -896,9 +899,11 @@ export interface GraphQLObjectTypeExtensions<_TSource = any, _TContext = any> {
  * });
  * ```
  */
-export class GraphQLObjectType<TSource = any, TContext = any, TAbstract = any>
-  implements GraphQLSchemaElement
-{
+export class GraphQLObjectType<
+  TSource = any,
+  TContext = any,
+  TAbstract = any,
+> implements GraphQLSchemaElement {
   readonly __kind = objectSymbol;
   name: string;
   description: Maybe<string>;
@@ -1083,8 +1088,11 @@ export interface GraphQLFieldConfig<TSource, TContext, TArgs = any> {
   astNode?: Maybe<FieldDefinitionNode>;
 }
 
-export interface GraphQLFieldNormalizedConfig<TSource, TContext, TArgs = any>
-  extends GraphQLFieldConfig<TSource, TContext, TArgs> {
+export interface GraphQLFieldNormalizedConfig<
+  TSource,
+  TContext,
+  TArgs = any,
+> extends GraphQLFieldConfig<TSource, TContext, TArgs> {
   args: GraphQLFieldNormalizedConfigArgumentMap;
   extensions: Readonly<GraphQLFieldExtensions<TSource, TContext, TArgs>>;
 }
@@ -1131,9 +1139,11 @@ export type GraphQLFieldNormalizedConfigMap<TSource, TContext> = ObjMap<
   GraphQLFieldNormalizedConfig<TSource, TContext>
 >;
 
-export class GraphQLField<TSource = any, TContext = any, TArgs = any>
-  implements GraphQLSchemaElement
-{
+export class GraphQLField<
+  TSource = any,
+  TContext = any,
+  TArgs = any,
+> implements GraphQLSchemaElement {
   readonly __kind: symbol;
   parentType:
     | GraphQLObjectType<TSource, TContext>
@@ -1312,9 +1322,10 @@ export interface GraphQLInterfaceTypeExtensions {
  * });
  * ```
  */
-export class GraphQLInterfaceType<TSource = any, TContext = any>
-  implements GraphQLSchemaElement
-{
+export class GraphQLInterfaceType<
+  TSource = any,
+  TContext = any,
+> implements GraphQLSchemaElement {
   readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
@@ -1398,8 +1409,10 @@ export interface GraphQLInterfaceTypeConfig<TSource, TContext> {
   extensionASTNodes?: Maybe<ReadonlyArray<InterfaceTypeExtensionNode>>;
 }
 
-export interface GraphQLInterfaceTypeNormalizedConfig<TSource, TContext>
-  extends GraphQLInterfaceTypeConfig<TSource, TContext> {
+export interface GraphQLInterfaceTypeNormalizedConfig<
+  TSource,
+  TContext,
+> extends GraphQLInterfaceTypeConfig<TSource, TContext> {
   interfaces: ReadonlyArray<GraphQLInterfaceType>;
   fields: GraphQLFieldNormalizedConfigMap<TSource, TContext>;
   extensions: Readonly<GraphQLInterfaceTypeExtensions>;
@@ -1443,9 +1456,10 @@ export interface GraphQLUnionTypeExtensions {
  * });
  * ```
  */
-export class GraphQLUnionType<TSource = any, TContext = any>
-  implements GraphQLSchemaElement
-{
+export class GraphQLUnionType<
+  TSource = any,
+  TContext = any,
+> implements GraphQLSchemaElement {
   readonly __kind: symbol;
   name: string;
   description: Maybe<string>;
@@ -1521,8 +1535,10 @@ export interface GraphQLUnionTypeConfig<TSource, TContext> {
   extensionASTNodes?: Maybe<ReadonlyArray<UnionTypeExtensionNode>>;
 }
 
-export interface GraphQLUnionTypeNormalizedConfig<TSource, TContext>
-  extends GraphQLUnionTypeConfig<TSource, TContext> {
+export interface GraphQLUnionTypeNormalizedConfig<
+  TSource,
+  TContext,
+> extends GraphQLUnionTypeConfig<TSource, TContext> {
   types: ReadonlyArray<GraphQLObjectType>;
   extensions: Readonly<GraphQLUnionTypeExtensions>;
   extensionASTNodes: ReadonlyArray<UnionTypeExtensionNode>;
@@ -1788,8 +1804,7 @@ export interface GraphQLEnumValueConfig {
   astNode?: Maybe<EnumValueDefinitionNode>;
 }
 
-export interface GraphQLEnumValueNormalizedConfig
-  extends GraphQLEnumValueConfig {
+export interface GraphQLEnumValueNormalizedConfig extends GraphQLEnumValueConfig {
   extensions: Readonly<GraphQLEnumValueExtensions>;
 }
 
@@ -1952,8 +1967,7 @@ export interface GraphQLInputObjectTypeConfig {
   isOneOf?: boolean;
 }
 
-export interface GraphQLInputObjectTypeNormalizedConfig
-  extends GraphQLInputObjectTypeConfig {
+export interface GraphQLInputObjectTypeNormalizedConfig extends GraphQLInputObjectTypeConfig {
   fields: GraphQLInputFieldNormalizedConfigMap;
   extensions: Readonly<GraphQLInputObjectTypeExtensions>;
   extensionASTNodes: ReadonlyArray<InputObjectTypeExtensionNode>;
@@ -1985,8 +1999,7 @@ export interface GraphQLInputFieldConfig {
 
 export type GraphQLInputFieldConfigMap = ObjMap<GraphQLInputFieldConfig>;
 
-export interface GraphQLInputFieldNormalizedConfig
-  extends GraphQLInputFieldConfig {
+export interface GraphQLInputFieldNormalizedConfig extends GraphQLInputFieldConfig {
   default: GraphQLDefaultInput | undefined;
   extensions: Readonly<GraphQLInputFieldExtensions>;
 }

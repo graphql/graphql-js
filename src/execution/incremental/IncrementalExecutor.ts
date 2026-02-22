@@ -229,13 +229,12 @@ export interface FormattedCompletedResult {
 }
 
 /** @internal */
-interface ExecutionGroup
-  extends Task<
-    ExecutionGroupValue,
-    StreamItemValue,
-    DeliveryGroup,
-    ItemStream
-  > {
+interface ExecutionGroup extends Task<
+  ExecutionGroupValue,
+  StreamItemValue,
+  DeliveryGroup,
+  ItemStream
+> {
   groups: ReadonlyArray<DeliveryGroup>;
   path: Path | undefined;
   computation: Computation<ExecutionGroupResult>;
@@ -248,13 +247,12 @@ export interface DeliveryGroup extends Group<DeliveryGroup> {
   parent: DeliveryGroup | undefined;
 }
 
-export interface ItemStream
-  extends Stream<
-    ExecutionGroupValue,
-    StreamItemValue,
-    DeliveryGroup,
-    ItemStream
-  > {
+export interface ItemStream extends Stream<
+  ExecutionGroupValue,
+  StreamItemValue,
+  DeliveryGroup,
+  ItemStream
+> {
   path: Path;
   label: string | undefined;
   initialCount: number;

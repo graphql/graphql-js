@@ -18,7 +18,7 @@ describe('expectEqualPromisesOrValues', () => {
     ).not.to.throw();
   });
 
-  it('does not throw when given equal promises', async () => {
+  it('does not throw when given equal promises', async (): Promise<void> => {
     const testValue = Promise.resolve({ test: 'test' });
 
     await expectPromise(

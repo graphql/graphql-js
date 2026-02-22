@@ -28,8 +28,11 @@ describe('Computation', () => {
     });
 
     await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       computation.prime(),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       computation.prime(),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       computation.prime(),
     ]);
     const results = [
@@ -55,8 +58,11 @@ describe('Computation', () => {
     });
 
     await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       computation.prime(),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       computation.prime(),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       computation.prime(),
     ]);
     const results = [

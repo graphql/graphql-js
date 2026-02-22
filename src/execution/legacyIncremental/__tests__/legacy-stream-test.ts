@@ -184,6 +184,7 @@ async function completeAsync(
   for (let i = 0; i < numCalls; i++) {
     promises.push(iterator.next());
   }
+  // eslint-disable-next-line @typescript-eslint/await-thenable
   return Promise.all(promises);
 }
 

@@ -949,7 +949,7 @@ describe('Parser', () => {
       const opDef = result.definitions.find(
         (d) => d.kind === Kind.OPERATION_DEFINITION,
       );
-      if (!opDef || opDef.kind !== Kind.OPERATION_DEFINITION) {
+      if (opDef?.kind !== Kind.OPERATION_DEFINITION) {
         throw new Error('No operation definition found');
       }
 
@@ -1110,7 +1110,7 @@ describe('Parser', () => {
       const opDef = result.definitions.find(
         (d) => d.kind === Kind.OPERATION_DEFINITION,
       );
-      if (!opDef || opDef.kind !== Kind.OPERATION_DEFINITION) {
+      if (opDef?.kind !== Kind.OPERATION_DEFINITION) {
         throw new Error('No operation definition found');
       }
       const varDef = opDef.variableDefinitions?.[0];
@@ -1169,7 +1169,7 @@ describe('Parser', () => {
       const fragDef = result.definitions.find(
         (d) => d.kind === Kind.FRAGMENT_DEFINITION,
       );
-      if (!fragDef || fragDef.kind !== Kind.FRAGMENT_DEFINITION) {
+      if (fragDef?.kind !== Kind.FRAGMENT_DEFINITION) {
         throw new Error('No fragment definition found');
       }
       const varDef = fragDef.variableDefinitions?.[0];

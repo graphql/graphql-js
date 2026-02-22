@@ -61,9 +61,7 @@ import { defaultHarness } from './harness.js';
  *    `__typename` field or alternatively calls the `isTypeOf` method).
  */
 export interface GraphQLArgs
-  extends ParseOptions,
-    ValidationOptions,
-    Omit<ExecutionArgs, 'document'> {
+  extends ParseOptions, ValidationOptions, Omit<ExecutionArgs, 'document'> {
   harness?: GraphQLHarness | undefined;
   source: string | Source;
   rules?: ReadonlyArray<ValidationRule> | undefined;

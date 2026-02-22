@@ -128,8 +128,7 @@ export interface GraphQLDirectiveConfig {
   astNode?: Maybe<DirectiveDefinitionNode>;
 }
 
-export interface GraphQLDirectiveNormalizedConfig
-  extends GraphQLDirectiveConfig {
+export interface GraphQLDirectiveNormalizedConfig extends GraphQLDirectiveConfig {
   args: GraphQLFieldNormalizedConfigArgumentMap;
   isRepeatable: boolean;
   extensions: Readonly<GraphQLDirectiveExtensions>;

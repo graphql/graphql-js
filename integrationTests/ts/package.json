@@ -18,6 +18,7 @@
     "typescript-5.5": "npm:typescript@5.5.x",
     "typescript-5.6": "npm:typescript@5.6.x",
     "typescript-5.7": "npm:typescript@5.7.x",
-    "typescript-5.8": "npm:typescript@5.8.x"
+    "typescript-5.8": "npm:typescript@5.8.x",
+    "typescript-5.9": "npm:typescript@5.8.x"
   }
 }

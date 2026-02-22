@@ -778,8 +778,7 @@ export class Executor<
     try {
       while (true) {
         if (
-          streamUsage &&
-          streamUsage.initialCount === index &&
+          streamUsage?.initialCount === index &&
           this.handleStream(
             index,
             path,
@@ -915,8 +914,7 @@ export class Executor<
     try {
       while (true) {
         if (
-          streamUsage &&
-          streamUsage.initialCount === index &&
+          streamUsage?.initialCount === index &&
           this.handleStream(
             index,
             path,
