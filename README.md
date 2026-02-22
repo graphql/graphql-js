@@ -108,8 +108,6 @@ graphql({ schema, source }).then((result) => {
 });
 ```
 
-**Note**: Please don't forget to set `NODE_ENV=production` if you are running a production server. It will disable some checks that can be useful during development but will significantly improve performance.
-
 ## Want to ride the bleeding edge?
 
 The `npm` branch in this repository is automatically maintained to be the last
@@ -122,7 +120,7 @@ directly on this branch:
 npm install graphql@git://github.com/graphql/graphql-js.git#npm
 ```
 
-### Using in a Browser
+## Using in a Browser
 
 GraphQL.js is a general-purpose library and can be used both in a Node server
 and in the browser. As an example, the [GraphiQL](https://github.com/graphql/graphiql/)
