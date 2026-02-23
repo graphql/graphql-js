@@ -41,7 +41,7 @@ export default defineConfig(
     settings: {
       // eslint-plugin-import tries to parse all imported files included huge ones (e.g. 'typescript')
       // that leads to very poor performance so to fix that we disable all checks on external files.
-      'import/ignore': '/node_modules/',
+      'import/ignore': ['/node_modules/'],
     },
     rules: {
       //////////////////////////////////////////////////////////////////////////////
