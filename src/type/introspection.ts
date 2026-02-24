@@ -46,8 +46,19 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
       types: {
         description: 'A list of all types supported by this server.',
         type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(__Type))),
-        resolve(schema) {
-          return Object.values(schema.getTypeMap());
+        args: {
+          includeDeprecated: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            default: { value: false },
+          },
+        },
+        resolve(schema, { includeDeprecated }) {
+          const types = Object.values(schema.getTypeMap());
+          return includeDeprecated === true
+            ? types
+            : types.filter(
+                (type) => !isObjectType(type) || type.deprecationReason == null,
+              );
         },
       },
       queryType: {
@@ -291,9 +302,18 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
       },
       possibleTypes: {
         type: new GraphQLList(new GraphQLNonNull(__Type)),
-        resolve(type, _args, _context, { schema }) {
+        args: {
+          includeDeprecated: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            default: { value: false },
+          },
+        },
+        resolve(type, { includeDeprecated }, _context, { schema }) {
           if (isAbstractType(type)) {
-            return schema.getPossibleTypes(type);
+            const possibleTypes = schema.getPossibleTypes(type);
+            return includeDeprecated === true
+              ? possibleTypes
+              : possibleTypes.filter((t) => t.deprecationReason == null);
           }
         },
       },
@@ -342,6 +362,16 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
             return type.isOneOf;
           }
         },
+      },
+      isDeprecated: {
+        type: GraphQLBoolean,
+        resolve: (type) =>
+          isObjectType(type) ? type.deprecationReason != null : undefined,
+      },
+      deprecationReason: {
+        type: GraphQLString,
+        resolve: (type) =>
+          isObjectType(type) ? type.deprecationReason : undefined,
       },
     }) as GraphQLFieldConfigMap<GraphQLType, unknown>,
 });

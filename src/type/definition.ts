@@ -911,6 +911,7 @@ export class GraphQLObjectType<
   extensions: Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>;
   astNode: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes: ReadonlyArray<ObjectTypeExtensionNode>;
+  deprecationReason: Maybe<string>;
 
   private _fields: ThunkObjMap<GraphQLField<TSource, TContext>>;
   private _interfaces: ThunkReadonlyArray<GraphQLInterfaceType>;
@@ -925,6 +926,7 @@ export class GraphQLObjectType<
     this.extensions = toObjMapWithSymbols(config.extensions);
     this.astNode = config.astNode;
     this.extensionASTNodes = config.extensionASTNodes ?? [];
+    this.deprecationReason = config.deprecationReason;
     this._fields = (defineFieldMap<TSource, TContext>).bind(
       undefined,
       this,
@@ -961,6 +963,7 @@ export class GraphQLObjectType<
       extensions: this.extensions,
       astNode: this.astNode,
       extensionASTNodes: this.extensionASTNodes,
+      deprecationReason: this.deprecationReason,
     };
   }
 
@@ -1007,6 +1010,7 @@ export interface GraphQLObjectTypeConfig<
   extensions?: Maybe<Readonly<GraphQLObjectTypeExtensions<TSource, TContext>>>;
   astNode?: Maybe<ObjectTypeDefinitionNode>;
   extensionASTNodes?: Maybe<ReadonlyArray<ObjectTypeExtensionNode>>;
+  deprecationReason?: Maybe<string>;
 }
 
 export interface GraphQLObjectTypeNormalizedConfig<

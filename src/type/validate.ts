@@ -440,6 +440,18 @@ function validateFields(
       );
     }
 
+    // Ensure non-deprecated fields do not return deprecated types.
+    if (field.deprecationReason == null) {
+      const namedType = getNamedType(field.type);
+      if (isObjectType(namedType) && namedType.deprecationReason != null) {
+        context.reportError(
+          `The type of ${field} is deprecated type "${namedType}". ` +
+            `Either deprecate the field or change its return type.`,
+          [field.astNode?.type],
+        );
+      }
+    }
+
     // Ensure the arguments are valid
     for (const arg of field.args) {
       // Ensure they are named correctly.

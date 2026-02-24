@@ -3380,6 +3380,40 @@ describe('Interfaces must adhere to Interface they implement', () => {
       },
     ]);
   });
+
+  it('rejects non-deprecated field returning deprecated type', () => {
+    const schema = buildSchema(`
+      type Query {
+        dragon: Dragon
+      }
+
+      type Dragon @deprecated(reason: "No longer known to exist") {
+        name: String
+      }
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'The type of Query.dragon is deprecated type "Dragon". Either deprecate the field or change its return type.',
+        locations: [{ line: 3, column: 17 }],
+      },
+    ]);
+  });
+
+  it('accepts deprecated field returning deprecated type', () => {
+    const schema = buildSchema(`
+      type Query {
+        dragon: Dragon @deprecated(reason: "Use phoenix instead")
+      }
+
+      type Dragon @deprecated(reason: "No longer known to exist") {
+        name: String
+      }
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
 });
 
 describe('assertValidSchema', () => {
