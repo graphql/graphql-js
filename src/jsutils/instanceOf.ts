@@ -1,4 +1,7 @@
+import { checkForMultiplePackageInstances } from './checkForMultiplePackageInstances.js';
 import { inspect } from './inspect.js';
+
+checkForMultiplePackageInstances();
 
 /**
  * A replacement for instanceof relying on a symbol-driven type brand which in
