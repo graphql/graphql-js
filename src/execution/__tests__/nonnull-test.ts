@@ -2,8 +2,11 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
+import { invariant } from '../../jsutils/invariant.js';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import { parse } from '../../language/parser.js';
 
@@ -520,6 +523,186 @@ describe('Execute: handles non-nullable types', () => {
             message: syncNonNullError.message,
             path: ['syncNonNull'],
             locations: [{ line: 3, column: 9 }],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('Handles multiple errors for a single response position', () => {
+    it('nullable and non-nullable root fields throw nested errors', async () => {
+      const query = `
+        {
+          promiseNonNullNest {
+            syncNonNull
+          }
+          promiseNest {
+            syncNonNull
+          }
+        }
+      `;
+      const result = await executeQuery(query, throwingData);
+
+      expectJSON(result).toDeepEqual({
+        data: null,
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['promiseNest', 'syncNonNull'],
+            locations: [{ line: 7, column: 13 }],
+          },
+          {
+            message: syncNonNullError.message,
+            path: ['promiseNonNullNest', 'syncNonNull'],
+            locations: [{ line: 4, column: 13 }],
+          },
+        ],
+      });
+    });
+
+    it('a nullable root field throws a slower nested error after a non-nullable root field throws a nested error', async () => {
+      const query = `
+        {
+          promiseNonNullNest {
+            syncNonNull
+          }
+          promiseNest {
+            promiseNonNull
+          }
+        }
+      `;
+      const result = await executeQuery(query, throwingData);
+
+      expectJSON(result).toDeepEqual({
+        data: null,
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['promiseNonNullNest', 'syncNonNull'],
+            locations: [{ line: 4, column: 13 }],
+          },
+        ],
+      });
+
+      // allow time for slower error to reject
+      invariant(result.errors !== undefined);
+      const initialErrors = [...result.errors];
+      for (let i = 0; i < 5; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await resolveOnNextTick();
+      }
+      expectJSON(initialErrors).toDeepEqual(result.errors);
+    });
+
+    it('nullable and non-nullable nested fields throw nested errors', async () => {
+      const query = `
+        {
+          syncNest {
+            promiseNonNullNest {
+              syncNonNull
+            }
+            promiseNest {
+              syncNonNull
+            }
+          }
+        }
+      `;
+      const result = await executeQuery(query, throwingData);
+
+      expectJSON(result).toDeepEqual({
+        data: { syncNest: null },
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['syncNest', 'promiseNest', 'syncNonNull'],
+            locations: [{ line: 8, column: 15 }],
+          },
+          {
+            message: syncNonNullError.message,
+            path: ['syncNest', 'promiseNonNullNest', 'syncNonNull'],
+            locations: [{ line: 5, column: 15 }],
+          },
+        ],
+      });
+    });
+
+    it('a nullable nested field throws a slower nested error after a non-nullable nested field throws a nested error', async () => {
+      const query = `
+        {
+          syncNest {
+            promiseNonNullNest {
+              syncNonNull
+            }
+            promiseNest {
+              promiseNest {
+                promiseNest {
+                  promiseNonNull
+                }
+              }
+            }
+          }
+        }
+      `;
+      const result = await executeQuery(query, throwingData);
+
+      expectJSON(result).toDeepEqual({
+        data: { syncNest: null },
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['syncNest', 'promiseNonNullNest', 'syncNonNull'],
+            locations: [{ line: 5, column: 15 }],
+          },
+        ],
+      });
+
+      invariant(result.errors !== undefined);
+      const initialErrors = [...result.errors];
+      for (let i = 0; i < 20; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await resolveOnNextTick();
+      }
+      expectJSON(initialErrors).toDeepEqual(result.errors);
+    });
+
+    it('suppresses a later error after a parent has been nulled', async () => {
+      const query = `
+        {
+          syncNest {
+            syncNonNull
+            promise
+          }
+        }
+      `;
+
+      const nonNullDeferred = promiseWithResolvers<unknown>();
+      const promiseDeferred = promiseWithResolvers<unknown>();
+
+      const resultPromise = executeQuery(query, {
+        syncNest: {
+          syncNonNull: () => nonNullDeferred.promise,
+          promise: () => promiseDeferred.promise,
+        },
+      });
+
+      nonNullDeferred.reject(syncNonNullError);
+
+      // Give the first error a chance to null out the parent position.
+      await resolveOnNextTick();
+      await resolveOnNextTick();
+      await resolveOnNextTick();
+
+      promiseDeferred.reject(promiseError);
+
+      const result = await resultPromise;
+
+      expectJSON(result).toDeepEqual({
+        data: { syncNest: null },
+        errors: [
+          {
+            message: syncNonNullError.message,
+            path: ['syncNest', 'syncNonNull'],
+            locations: [{ line: 4, column: 13 }],
           },
         ],
       });
