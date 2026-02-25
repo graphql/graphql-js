@@ -86,28 +86,11 @@ Feel free to reach out via the [graphql-js channel](https://discord.com/channels
 
 ## Release on NPM
 
-_Only core contributors may release to NPM._
+Releases are managed by Changesets and GitHub Actions:
 
-To release a new version on NPM, first ensure all tests pass with `npm test`,
-then use `npm version patch|minor|major` in order to increment the version in
-package.json and tag and commit a release. Then `git push && git push --tags`
-to sync this change with source control. Then `npm publish npmDist` to actually
-publish the release to NPM.
-Once published, add [release notes](https://github.com/graphql/graphql-js/releases).
-Use [semver](https://semver.org/) to determine which version part to increment.
-
-Example for a patch release:
-
-```sh
-npm ci
-npm test
-npm version patch --ignore-scripts=false
-git push --follow-tags
-cd npmDist && npm publish
-npm run changelog
-```
-
-Then upload the changelog to [https://github.com/graphql/graphql-js/releases](https://github.com/graphql/graphql-js/releases).
+- Contributors add changesets in PRs (`npm run changeset`) for user-facing changes.
+- Changesets release automation is currently enabled only on `17.x.x`.
+- Merging the release PR triggers publish to NPM.
 
 ## License
 

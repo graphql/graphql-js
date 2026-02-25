@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "graphql": "17.0.0-alpha.10"
+  },
+  "changesets": []
+}

@@ -1,0 +1,45 @@
+name: Changesets
+on:
+  push:
+    branches:
+      - 17.x.x
+  workflow_dispatch:
+permissions: {}
+jobs:
+  release:
+    name: Create release PR or publish
+    if: ${{ !github.event.repository.fork && github.ref_name == '17.x.x' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref_name }}
+      cancel-in-progress: true
+    permissions:
+      contents: write # for changesets action to commit/tag
+      pull-requests: write # for changesets action to create/update release PR
+      id-token: write # for npm trusted publishing via OIDC
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run Changesets
+        uses: changesets/action@v1
+        with:
+          title: 'chore(release): version packages'
+          commit: 'chore(release): version packages'
+          version: npm run release:version
+          publish: npm run release:publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
