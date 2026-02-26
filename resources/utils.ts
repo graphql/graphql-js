@@ -63,12 +63,6 @@ export function npm(options?: NPMOptions) {
     diff(...args: ReadonlyArray<string>): string {
       return spawnOutput(npmCmd, [...globalOptions, 'diff', ...args], options);
     },
-    publish(...args: ReadonlyArray<string>): void {
-      spawn(npmCmd, [...globalOptions, 'publish', ...args], options);
-    },
-    view(...args: ReadonlyArray<string>): string {
-      return spawnOutput(npmCmd, [...globalOptions, 'view', ...args], options);
-    },
   };
 }
 
