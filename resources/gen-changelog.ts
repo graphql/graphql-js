@@ -55,19 +55,36 @@ const { githubOrg, githubRepo } = repoURLMatch.groups;
 
 process.stdout.write(await genChangeLog());
 
+function parseFromRevArg(rawArgs: ReadonlyArray<string>): string | null {
+  if (rawArgs.length === 0) {
+    return null;
+  }
+
+  if (rawArgs.length === 1 && rawArgs[0].trim() !== '') {
+    return rawArgs[0];
+  }
+
+  throw new Error(
+    'Usage: npm run changelog [-- <fromRev>]\n' +
+      'Example: npm run changelog -- d41f59bbfdfc207712a2fc3778934694a3410ddf',
+  );
+}
+
 async function genChangeLog(): Promise<string> {
   const { version } = packageJSON;
   const releaseTag = `v${version}`;
-  let tag: string | null = null;
-  let commitsList: Array<string>;
-  try {
-    commitsList = git().revList('--reverse', `${releaseTag}..`);
-  } catch {
+  const releaseTagExists = git().tagExists(releaseTag);
+  const tag = releaseTagExists ? null : releaseTag;
+  let baseRef = parseFromRevArg(process.argv.slice(2));
+  if (releaseTagExists) {
+    baseRef ??= releaseTag;
+  } else if (baseRef == null) {
     const parentPackageJSON = git().catFile('blob', 'HEAD~1:package.json');
     const parentVersion = JSON.parse(parentPackageJSON).version;
-    commitsList = git().revList('--reverse', `v${parentVersion}..HEAD~1`);
-    tag = releaseTag;
+    baseRef = `v${parentVersion}`;
   }
+  const commitsRange = releaseTagExists ? `${baseRef}..` : `${baseRef}..HEAD~1`;
+  const commitsList = git().revList('--reverse', commitsRange);
 
   const allPRs = await getPRsInfo(commitsList);
   const date = git().log('-1', '--format=%cd', '--date=short');

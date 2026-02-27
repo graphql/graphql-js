@@ -48,6 +48,9 @@ export function npm(options?: NPMOptions) {
     run(...args: ReadonlyArray<string>): void {
       spawn(npmCmd, [...globalOptions, 'run', ...args], options);
     },
+    runOutput(...args: ReadonlyArray<string>): string {
+      return spawnOutput(npmCmd, [...globalOptions, 'run', ...args], options);
+    },
     install(...args: ReadonlyArray<string>): void {
       spawn(npmCmd, [...globalOptions, 'install', ...args], options);
     },
@@ -57,11 +60,17 @@ export function npm(options?: NPMOptions) {
     exec(...args: ReadonlyArray<string>): void {
       spawn(npmCmd, [...globalOptions, 'exec', ...args], options);
     },
+    version(...args: ReadonlyArray<string>): void {
+      spawn(npmCmd, [...globalOptions, 'version', ...args], options);
+    },
     pack(...args: ReadonlyArray<string>): string {
       return spawnOutput(npmCmd, [...globalOptions, 'pack', ...args], options);
     },
     diff(...args: ReadonlyArray<string>): string {
       return spawnOutput(npmCmd, [...globalOptions, 'diff', ...args], options);
+    },
+    view(...args: ReadonlyArray<string>): string {
+      return spawnOutput(npmCmd, [...globalOptions, 'view', ...args], options);
     },
   };
 }
@@ -73,11 +82,23 @@ interface GITOptions extends SpawnOptions {
 export function git(options?: GITOptions) {
   const cmdOptions = options?.quiet === true ? ['--quiet'] : [];
   return {
+    add(...args: ReadonlyArray<string>): void {
+      spawn('git', ['add', ...cmdOptions, ...args], options);
+    },
+    commit(...args: ReadonlyArray<string>): void {
+      spawn('git', ['commit', ...cmdOptions, ...args], options);
+    },
     clone(...args: ReadonlyArray<string>): void {
       spawn('git', ['clone', ...cmdOptions, ...args], options);
     },
     checkout(...args: ReadonlyArray<string>): void {
       spawn('git', ['checkout', ...cmdOptions, ...args], options);
+    },
+    fetch(...args: ReadonlyArray<string>): void {
+      spawn('git', ['fetch', ...cmdOptions, ...args], options);
+    },
+    status(...args: ReadonlyArray<string>): string {
+      return spawnOutput('git', ['status', ...cmdOptions, ...args], options);
     },
     revParse(...args: ReadonlyArray<string>): string {
       return spawnOutput('git', ['rev-parse', ...cmdOptions, ...args], options);
@@ -86,6 +107,17 @@ export function git(options?: GITOptions) {
       const allArgs = ['rev-list', ...cmdOptions, ...args];
       const result = spawnOutput('git', allArgs, options);
       return result === '' ? [] : result.split('\n');
+    },
+    tagExists(tag: string): boolean {
+      const result = childProcess.spawnSync(
+        'git',
+        ['rev-parse', '--verify', '--quiet', `refs/tags/${tag}`],
+        {
+          stdio: 'ignore',
+          ...options,
+        },
+      );
+      return result.status === 0;
     },
     catFile(...args: ReadonlyArray<string>): string {
       return spawnOutput('git', ['cat-file', ...cmdOptions, ...args], options);

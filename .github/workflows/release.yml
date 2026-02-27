@@ -1,0 +1,122 @@
+name: Release
+on:
+  push:
+    branches:
+      - 17.x.x
+permissions: {}
+jobs:
+  check-publish:
+    name: Check for publish need and prepare artifacts
+    # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' }}
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.release_metadata.outputs.should_publish }}
+      tag: ${{ steps.release_metadata.outputs.tag }}
+      tarball_name: ${{ steps.release_metadata.outputs.tarball_name }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref_name }}
+      cancel-in-progress: true
+    permissions:
+      contents: read # for actions/checkout
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Read release metadata
+        id: release_metadata
+        run: |
+          npm run --silent release:metadata >> "${GITHUB_OUTPUT}"
+
+      - name: Log publish decision
+        run: |
+          if [ "${{ steps.release_metadata.outputs.should_publish }}" = "true" ]; then
+            echo "${{ steps.release_metadata.outputs.package_spec }} is not published yet."
+          else
+            echo "${{ steps.release_metadata.outputs.package_spec }} is already published."
+          fi
+
+      - name: Build NPM package
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        run: npm run build:npm
+
+      - name: Pack npmDist package
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        run: npm pack ./npmDist --pack-destination . > /dev/null
+
+      - name: Upload npm package tarball
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: npmDist-tarball
+          path: ./${{ steps.release_metadata.outputs.tarball_name }}
+
+  publish-release:
+    name: Publish, tag, and create release
+    needs: check-publish
+    # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' && needs.check-publish.outputs.should_publish == 'true' && needs.check-publish.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write # for creating/pushing tag and creating GitHub release
+      id-token: write # for npm trusted publishing via OIDC
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+
+      - name: Download npmDist package
+        uses: actions/download-artifact@v4
+        with:
+          name: npmDist-tarball
+          path: ./artifacts
+
+      - name: Verify package tarball is present
+        run: |
+          tarball="./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
+          if [ ! -f "${tarball}" ]; then
+            echo "::error::Expected package tarball ${tarball} is missing."
+            exit 1
+          fi
+
+      - name: Create release if needed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_notes_file="./artifacts/release-notes.md"
+          gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}" \
+            --jq '.commit.message | split("\n")[1:] | join("\n") | ltrimstr("\n")' \
+            > "${release_notes_file}"
+          if [ ! -s "${release_notes_file}" ]; then
+            printf '## Release %s\n' "${{ needs.check-publish.outputs.tag }}" > "${release_notes_file}"
+          fi
+
+          if gh release view "${{ needs.check-publish.outputs.tag }}" > /dev/null 2>&1; then
+            echo "GitHub release ${{ needs.check-publish.outputs.tag }} already exists."
+          else
+            gh release create "${{ needs.check-publish.outputs.tag }}" \
+              --target "${GITHUB_SHA}" \
+              --title "${{ needs.check-publish.outputs.tag }}" \
+              --notes-file "${release_notes_file}"
+          fi
+
+      - name: Dry-run npm publish
+        run: npm publish --provenance --dry-run "./artifacts/${{ needs.check-publish.outputs.tarball_name }}"

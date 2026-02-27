@@ -33,6 +33,8 @@
     "version": "node --import ./resources/register-ts-node.js  resources/gen-version.ts && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "node --import ./resources/register-ts-node.js  resources/gen-changelog.ts",
+    "release:prepare": "node --import ./resources/register-ts-node.js resources/release-prepare.ts",
+    "release:metadata": "node --import ./resources/register-ts-node.js resources/release-metadata.ts",
     "benchmark": "node --import ./resources/register-ts-node.js  resources/benchmark.ts",
     "test": "npm run lint && npm run check && npm run testonly:cover && npm run prettier:check && npm run check:spelling && npm run check:integrations",
     "lint": "eslint --cache --max-warnings 0 .",
