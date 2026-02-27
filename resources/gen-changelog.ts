@@ -57,14 +57,16 @@ process.stdout.write(await genChangeLog());
 
 async function genChangeLog(): Promise<string> {
   const { version } = packageJSON;
-
+  const releaseTag = `v${version}`;
   let tag: string | null = null;
-  let commitsList = git().revList('--reverse', `v${version}..`);
-  if (commitsList.length === 0) {
+  let commitsList: Array<string>;
+  try {
+    commitsList = git().revList('--reverse', `${releaseTag}..`);
+  } catch {
     const parentPackageJSON = git().catFile('blob', 'HEAD~1:package.json');
     const parentVersion = JSON.parse(parentPackageJSON).version;
     commitsList = git().revList('--reverse', `v${parentVersion}..HEAD~1`);
-    tag = `v${version}`;
+    tag = releaseTag;
   }
 
   const allPRs = await getPRsInfo(commitsList);
@@ -72,6 +74,7 @@ async function genChangeLog(): Promise<string> {
 
   const byLabel: { [label: string]: Array<PRInfo> } = {};
   const committersByLogin: { [login: string]: AuthorInfo } = {};
+  const validationIssues: Array<string> = [];
 
   for (const pr of allPRs) {
     const labels = pr.labels.nodes
@@ -79,21 +82,32 @@ async function genChangeLog(): Promise<string> {
       .filter((label) => label.startsWith('PR: '));
 
     if (labels.length === 0) {
-      throw new Error(`PR is missing label. See ${pr.url}`);
+      validationIssues.push(`PR #${pr.number} is missing label. See ${pr.url}`);
+      continue;
     }
+
     if (labels.length > 1) {
-      throw new Error(
-        `PR has conflicting labels: ${labels.join('\n')}\nSee ${pr.url}`,
+      validationIssues.push(
+        `PR #${pr.number} has conflicting labels: ${labels.join(', ')}\nSee ${pr.url}`,
       );
+      continue;
     }
 
     const label = labels[0];
     if (labelsConfig[label] == null) {
-      throw new Error(`Unknown label: ${label}. See ${pr.url}`);
+      validationIssues.push(
+        `PR #${pr.number} has unknown label: ${label}\nSee ${pr.url}`,
+      );
+      continue;
     }
+
     byLabel[label] ??= [];
     byLabel[label].push(pr);
     committersByLogin[pr.author.login] = pr.author;
+  }
+
+  if (validationIssues.length > 0) {
+    throw new Error(validationIssues.join('\n\n'));
   }
 
   let changelog = `## ${tag ?? 'Unreleased'} (${date})\n`;
