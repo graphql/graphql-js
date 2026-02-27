@@ -9,8 +9,23 @@ try {
   process.exit(1);
 }
 
-console.log('Running npm version without creating a tag...');
+console.log('Installing dependencies...');
+npm().ci('--ignore-scripts');
+
+console.log('Bumping package version without creating a tag...');
 npm().version(...args.npmVersionArgs, '--no-git-tag-version');
+
+console.log('Updating src/version.ts...');
+npm().exec(
+  '--',
+  'node',
+  '--import',
+  './resources/register-ts-node.js',
+  'resources/gen-version.ts',
+);
+
+console.log('Running test suite...');
+npm().run('test');
 
 const { version } = readPackageJSON();
 console.log(`Generating changelog for v${version}...`);
@@ -95,6 +110,13 @@ function validateBranchState(releaseBranch: string): void {
   if (status !== '') {
     throw new Error(
       'Working directory must be clean before running release:prepare.',
+    );
+  }
+  const branchStatus = git().status('--porcelain', '--branch');
+  const branchSummary = branchStatus.split('\n')[0] ?? '';
+  if (/\[[^\]]+\]/.test(branchSummary)) {
+    throw new Error(
+      `Current branch "${checkedBranch}" is not up to date with its upstream.`,
     );
   }
 

@@ -29,8 +29,6 @@
     "node": "^20.0.0 || ^22.0.0 || ^24.0.0 || >=25.0.0"
   },
   "scripts": {
-    "preversion": "bash -c '. ./resources/checkgit.sh && npm ci --ignore-scripts'",
-    "version": "node --import ./resources/register-ts-node.js  resources/gen-version.ts && npm test && git add src/version.ts",
     "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
     "changelog": "node --import ./resources/register-ts-node.js  resources/gen-changelog.ts",
     "release:prepare": "node --import ./resources/register-ts-node.js resources/release-prepare.ts",
