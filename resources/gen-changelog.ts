@@ -73,17 +73,29 @@ function parseFromRevArg(rawArgs: ReadonlyArray<string>): string | null {
 async function genChangeLog(): Promise<string> {
   const { version } = packageJSON;
   const releaseTag = `v${version}`;
+  const fromRev = parseFromRevArg(process.argv.slice(2));
   const releaseTagExists = git().tagExists(releaseTag);
-  const tag = releaseTagExists ? null : releaseTag;
-  let baseRef = parseFromRevArg(process.argv.slice(2));
+
+  let tag: string | null;
+  let baseRef: string;
+  let endRef: string;
   if (releaseTagExists) {
-    baseRef ??= releaseTag;
-  } else if (baseRef == null) {
-    const parentPackageJSON = git().catFile('blob', 'HEAD~1:package.json');
-    const parentVersion = JSON.parse(parentPackageJSON).version;
-    baseRef = `v${parentVersion}`;
+    tag = null;
+    baseRef = fromRev ?? releaseTag;
+    endRef = 'HEAD';
+  } else {
+    tag = releaseTag;
+    if (fromRev != null) {
+      baseRef = fromRev;
+    } else {
+      const parentPackageJSON = git().catFile('blob', 'HEAD~1:package.json');
+      const parentVersion = JSON.parse(parentPackageJSON).version;
+      baseRef = `v${parentVersion}`;
+    }
+    endRef = 'HEAD~1';
   }
-  const commitsRange = releaseTagExists ? `${baseRef}..` : `${baseRef}..HEAD~1`;
+
+  const commitsRange = `${baseRef}..${endRef}`;
   const commitsList = git().revList('--reverse', commitsRange);
 
   const allPRs = await getPRsInfo(commitsList);
