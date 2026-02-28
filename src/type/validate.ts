@@ -405,14 +405,15 @@ function validateName(
 }
 
 function validateTypes(context: SchemaValidationContext): void {
-  // Ensure Input Objects do not contain non-nullable circular references.
-  const validateInputObjectNonNullCircularRefs =
-    createInputObjectNonNullCircularRefsValidator(context);
+  const inputObjectUnbreakableCycleCheck =
+    createInputObjectUnbreakableCycleCheck();
   const validateInputObjectDefaultValueCircularRefs =
     createInputObjectDefaultValueCircularRefsValidator(context);
-  const validateOneOfInputObjectInhabitability =
-    createOneOfInputObjectInhabitabilityValidator(context);
   const typeMap = context.schema.getTypeMap();
+
+  // Collect Input Object types that have unbreakable cycles.
+  const typesWithUnbreakableCycles = new Set<GraphQLInputObjectType>();
+
   for (const type of Object.values(typeMap)) {
     // Ensure all provided types are in fact GraphQL type.
     if (!isNamedType(type)) {
@@ -450,18 +451,24 @@ function validateTypes(context: SchemaValidationContext): void {
       // Ensure Input Object fields are valid.
       validateInputFields(context, type);
 
-      // Ensure Input Objects do not contain invalid field circular references.
-      // Ensure Input Objects do not contain non-nullable circular references.
-      validateInputObjectNonNullCircularRefs(type);
+      // Ensure Input Objects do not have unbreakable cycles.
+      if (inputObjectUnbreakableCycleCheck(type)) {
+        typesWithUnbreakableCycles.add(type);
+      }
 
       // Ensure Input Objects do not contain invalid default value circular references.
       validateInputObjectDefaultValueCircularRefs(type);
-
-      // Ensure OneOf Input Objects are inhabitable.
-      if (type.isOneOf) {
-        validateOneOfInputObjectInhabitability(type);
-      }
     }
+  }
+
+  // Report errors for Input Object types that have unbreakable cycles.
+  for (const type of typesWithUnbreakableCycles) {
+    const cyclePath = traceUnbreakableCycle(type, typesWithUnbreakableCycles);
+    const pathStr = cyclePath.map((p) => p.fieldStr).join(', ');
+    context.reportError(
+      `Input Object ${type} references itself via the required fields: ${pathStr}.`,
+      cyclePath.map((p) => p.astNode),
+    );
   }
 }
 
@@ -778,66 +785,142 @@ function validateOneOfInputObjectField(
   }
 }
 
-function createInputObjectNonNullCircularRefsValidator(
-  context: SchemaValidationContext,
-): (inputObj: GraphQLInputObjectType) => void {
-  // Modified copy of algorithm from 'src/validation/rules/NoFragmentCycles.js'.
-  // Tracks already visited types to maintain O(N) and to ensure that cycles
-  // are not redundantly reported.
-  const visitedTypes = new Set<GraphQLInputObjectType>();
+// Implements the spec's InputObjectHasUnbreakableCycle algorithm.
+// Tracks already checked types to maintain O(N) and to ensure that types
+// are not redundantly checked.
+function createInputObjectUnbreakableCycleCheck(): (
+  inputObj: GraphQLInputObjectType,
+) => boolean {
+  const knownNoCycle = new Set<GraphQLInputObjectType>();
+  const visited = new Set<GraphQLInputObjectType>();
 
-  // Array of types nodes used to produce meaningful errors
-  const fieldPath: Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> = [];
+  return inputObjectHasUnbreakableCycle;
 
-  // Position in the type path
-  const fieldPathIndexByTypeName: ObjMap<number | undefined> =
-    Object.create(null);
-
-  return detectCycleRecursive;
-
-  // This does a straight-forward DFS to find cycles.
-  // It does not terminate when a cycle was found but continues to explore
-  // the graph to find all possible cycles.
-  function detectCycleRecursive(inputObj: GraphQLInputObjectType): void {
-    if (visitedTypes.has(inputObj)) {
-      return;
+  function inputObjectHasUnbreakableCycle(
+    inputObj: GraphQLInputObjectType,
+  ): boolean {
+    if (knownNoCycle.has(inputObj)) {
+      return false;
+    }
+    if (visited.has(inputObj)) {
+      return true;
     }
 
-    visitedTypes.add(inputObj);
-    fieldPathIndexByTypeName[inputObj.name] = fieldPath.length;
+    visited.add(inputObj);
 
-    const fields = Object.values(inputObj.getFields());
-    for (const field of fields) {
-      if (isNonNullType(field.type) && isInputObjectType(field.type.ofType)) {
-        const fieldType = field.type.ofType;
-        const cycleIndex = fieldPathIndexByTypeName[fieldType.name];
+    let result: boolean;
 
-        fieldPath.push({
-          fieldStr: `${inputObj}.${field.name}`,
-          astNode: field.astNode,
-        });
-        if (cycleIndex === undefined) {
-          detectCycleRecursive(fieldType);
-        } else {
-          const cyclePath = fieldPath.slice(cycleIndex);
-          const pathStr = cyclePath
-            .map((fieldObj) => fieldObj.fieldStr)
-            .join(', ');
-          context.reportError(
-            `Invalid circular reference. The Input Object ${fieldType} references itself ${
-              cyclePath.length > 1
-                ? 'via the non-null fields:'
-                : 'in the non-null field'
-            } ${pathStr}.`,
-            cyclePath.map((fieldObj) => fieldObj.astNode),
-          );
+    if (inputObj.isOneOf) {
+      // OneOf Input Objects have an unbreakable cycle if every field has one.
+      result = true;
+      for (const field of Object.values(inputObj.getFields())) {
+        if (!inputFieldTypeHasUnbreakableCycle(field.type)) {
+          result = false;
+          break;
         }
-        fieldPath.pop();
+      }
+    } else {
+      // Normal Input Objects have an unbreakable cycle if any non-null field has one.
+      result = false;
+      for (const field of Object.values(inputObj.getFields())) {
+        if (
+          isNonNullType(field.type) &&
+          inputFieldTypeHasUnbreakableCycle(field.type.ofType)
+        ) {
+          result = true;
+          break;
+        }
       }
     }
 
-    fieldPathIndexByTypeName[inputObj.name] = undefined;
+    visited.delete(inputObj);
+
+    if (!result) {
+      knownNoCycle.add(inputObj);
+    }
+    return result;
   }
+
+  function inputFieldTypeHasUnbreakableCycle(
+    fieldType: GraphQLInputType,
+  ): boolean {
+    if (isListType(fieldType)) {
+      return false;
+    }
+    if (isNonNullType(fieldType)) {
+      return inputFieldTypeHasUnbreakableCycle(fieldType.ofType);
+    }
+    if (!isInputObjectType(fieldType)) {
+      return false;
+    }
+    return inputObjectHasUnbreakableCycle(fieldType);
+  }
+}
+
+// For an Input Object type with an unbreakable cycle, traces a witness cycle
+// path by following required edges to other types with unbreakable cycles.
+function traceUnbreakableCycle(
+  startType: GraphQLInputObjectType,
+  typesWithUnbreakableCycles: ReadonlySet<GraphQLInputObjectType>,
+): Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> {
+  const path: Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> = [];
+  const seen = new Set<GraphQLInputObjectType>();
+
+  let current: Maybe<GraphQLInputObjectType> = startType;
+  while (current != null && !seen.has(current)) {
+    seen.add(current);
+    let next: Maybe<GraphQLInputObjectType>;
+
+    for (const field of Object.values(current.getFields())) {
+      let target: Maybe<GraphQLInputObjectType>;
+
+      if (current.isOneOf) {
+        if (
+          isInputObjectType(field.type) &&
+          typesWithUnbreakableCycles.has(field.type)
+        ) {
+          target = field.type;
+        }
+      } else if (isNonNullType(field.type)) {
+        target = unwrapToUnbreakableCycleType(
+          field.type.ofType,
+          typesWithUnbreakableCycles,
+        );
+      }
+
+      if (target != null) {
+        path.push({
+          fieldStr: `${current}.${field.name}`,
+          astNode: field.astNode,
+        });
+        next = target;
+        break;
+      }
+    }
+
+    current = next;
+  }
+
+  return path;
+}
+
+function unwrapToUnbreakableCycleType(
+  type: GraphQLInputType,
+  typesWithUnbreakableCycles: ReadonlySet<GraphQLInputObjectType>,
+): Maybe<GraphQLInputObjectType> {
+  if (isListType(type)) {
+    return undefined;
+  }
+  if (isNonNullType(type)) {
+    return unwrapToUnbreakableCycleType(
+      type.ofType,
+      typesWithUnbreakableCycles,
+    );
+  }
+  if (isInputObjectType(type) && typesWithUnbreakableCycles.has(type)) {
+    return type;
+  }
+  return undefined;
 }
 
 function createInputObjectDefaultValueCircularRefsValidator(
@@ -992,64 +1075,6 @@ function createInputObjectDefaultValueCircularRefsValidator(
       fieldPath.pop();
       fieldPathIndex[fieldStr] = undefined;
     }
-  }
-}
-
-function createOneOfInputObjectInhabitabilityValidator(
-  context: SchemaValidationContext,
-): (inputObj: GraphQLInputObjectType) => void {
-  // Tracks already validated types to maintain O(N) across top-level calls.
-  const visitedTypes = new Set<GraphQLInputObjectType>();
-
-  return function validateOneOfInputObjectInhabitability(
-    inputObj: GraphQLInputObjectType,
-  ): void {
-    if (visitedTypes.has(inputObj)) {
-      return;
-    }
-
-    if (!isInhabitable(inputObj, new Set())) {
-      context.reportError(
-        `OneOf Input Object ${inputObj} must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.`,
-        inputObj.astNode,
-      );
-    }
-
-    visitedTypes.add(inputObj);
-  };
-
-  function isInhabitable(
-    inputObj: GraphQLInputObjectType,
-    visited: ReadonlySet<GraphQLInputObjectType>,
-  ): boolean {
-    if (visited.has(inputObj)) {
-      return false;
-    }
-
-    const nextVisited = new Set(visited);
-    nextVisited.add(inputObj);
-
-    for (const field of Object.values(inputObj.getFields())) {
-      if (isListType(field.type)) {
-        return true;
-      }
-
-      const namedType = getNamedType(field.type);
-
-      if (!isInputObjectType(namedType)) {
-        return true;
-      }
-
-      if (!namedType.isOneOf) {
-        return true;
-      }
-
-      if (isInhabitable(namedType, nextVisited)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 }
 

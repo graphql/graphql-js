@@ -925,7 +925,7 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Invalid circular reference. The Input Object SomeInputObject references itself in the non-null field SomeInputObject.nonNullSelf.',
+          'Input Object SomeInputObject references itself via the required fields: SomeInputObject.nonNullSelf.',
         locations: [{ line: 7, column: 9 }],
       },
     ]);
@@ -953,11 +953,29 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Invalid circular reference. The Input Object SomeInputObject references itself via the non-null fields: SomeInputObject.startLoop, AnotherInputObject.nextInLoop, YetAnotherInputObject.closeLoop.',
+          'Input Object SomeInputObject references itself via the required fields: SomeInputObject.startLoop, AnotherInputObject.nextInLoop, YetAnotherInputObject.closeLoop.',
         locations: [
           { line: 7, column: 9 },
           { line: 11, column: 9 },
           { line: 15, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Input Object AnotherInputObject references itself via the required fields: AnotherInputObject.nextInLoop, YetAnotherInputObject.closeLoop, SomeInputObject.startLoop.',
+        locations: [
+          { line: 11, column: 9 },
+          { line: 15, column: 9 },
+          { line: 7, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Input Object YetAnotherInputObject references itself via the required fields: YetAnotherInputObject.closeLoop, SomeInputObject.startLoop, AnotherInputObject.nextInLoop.',
+        locations: [
+          { line: 15, column: 9 },
+          { line: 7, column: 9 },
+          { line: 11, column: 9 },
         ],
       },
     ]);
@@ -987,7 +1005,7 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Invalid circular reference. The Input Object SomeInputObject references itself via the non-null fields: SomeInputObject.startLoop, AnotherInputObject.closeLoop.',
+          'Input Object SomeInputObject references itself via the required fields: SomeInputObject.startLoop, AnotherInputObject.closeLoop.',
         locations: [
           { line: 7, column: 9 },
           { line: 11, column: 9 },
@@ -995,16 +1013,20 @@ describe('Type System: Input Objects must have fields', () => {
       },
       {
         message:
-          'Invalid circular reference. The Input Object AnotherInputObject references itself via the non-null fields: AnotherInputObject.startSecondLoop, YetAnotherInputObject.closeSecondLoop.',
+          'Input Object AnotherInputObject references itself via the required fields: AnotherInputObject.closeLoop, SomeInputObject.startLoop.',
         locations: [
-          { line: 12, column: 9 },
-          { line: 16, column: 9 },
+          { line: 11, column: 9 },
+          { line: 7, column: 9 },
         ],
       },
       {
         message:
-          'Invalid circular reference. The Input Object YetAnotherInputObject references itself in the non-null field YetAnotherInputObject.nonNullSelf.',
-        locations: [{ line: 17, column: 9 }],
+          'Input Object YetAnotherInputObject references itself via the required fields: YetAnotherInputObject.closeSecondLoop, AnotherInputObject.closeLoop, SomeInputObject.startLoop.',
+        locations: [
+          { line: 16, column: 9 },
+          { line: 11, column: 9 },
+          { line: 7, column: 9 },
+        ],
       },
     ]);
   });
@@ -2410,44 +2432,28 @@ describe('Type System: OneOf Input Object fields must be nullable', () => {
   });
 });
 
-describe('Type System: OneOf Input Objects must be inhabitable', () => {
+describe('Type System: Input Objects must not have unbreakable cycles', () => {
   it('accepts a OneOf Input Object with a scalar field', () => {
     const schema = buildSchema(`
       type Query {
-        test(arg: A): String
+        test(arg: A): Int
       }
 
       input A @oneOf {
-        a: String
-        b: Int
+        a: Int
       }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
-  it('accepts a OneOf Input Object with an enum field', () => {
+  it('accepts a OneOf Input Object with a recursive list field', () => {
     const schema = buildSchema(`
       type Query {
-        test(arg: A): String
-      }
-
-      enum Color { RED GREEN BLUE }
-
-      input A @oneOf {
-        a: Color
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
-  it('accepts a OneOf Input Object with a list field', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: A): String
+        test(arg: A): Int
       }
 
       input A @oneOf {
-        a: [A]
+        a: [A!]
       }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([]);
@@ -2456,100 +2462,59 @@ describe('Type System: OneOf Input Objects must be inhabitable', () => {
   it('accepts a OneOf Input Object referencing a non-OneOf input object', () => {
     const schema = buildSchema(`
       type Query {
-        test(arg: A): String
-      }
-
-      input A @oneOf {
-        a: RegularInput
-      }
-
-      input RegularInput {
-        x: String
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
-  it('accepts a OneOf Input Object with at least one escape field', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: A): String
-      }
-
-      input A @oneOf {
-        b: B
-        escape: String
-      }
-
-      input B @oneOf {
-        a: A
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
-  it('accepts mutually referencing OneOf types where one has a scalar escape', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: A): String
+        test(arg: A): Int
       }
 
       input A @oneOf {
         b: B
       }
 
-      input B @oneOf {
-        a: A
+      input B {
+        x: Int
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf/OneOf cycle with a scalar escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A @oneOf {
+        b: B
         escape: Int
       }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
-  it('accepts a OneOf referencing a non-OneOf which references back', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: A): String
-      }
-
-      input A @oneOf {
-        b: RegularInput
-      }
-
-      input RegularInput {
-        back: A
-      }
-    `);
-    expectJSON(validateSchema(schema)).toDeepEqual([]);
-  });
-
-  it('accepts a OneOf with multiple fields where one escapes through chained OneOf types', () => {
-    const schema = buildSchema(`
-      type Query {
-        test(arg: A): String
-      }
-
-      input A @oneOf {
-        b: B
-        c: C
-      }
 
       input B @oneOf {
         a: A
       }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
 
-      input C @oneOf {
+  it('accepts a OneOf/non-OneOf cycle with a nullable escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A @oneOf {
+        b: B
+      }
+
+      input B {
         a: A
-        escape: String
       }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
-  it('rejects a closed subgraph of one OneOf type', () => {
+  it('rejects a self-referencing OneOf type with no escapes', () => {
     const schema = buildSchema(`
       type Query {
-        test(arg: A): String
+        test(arg: A): Int
       }
 
       input A @oneOf {
@@ -2559,24 +2524,110 @@ describe('Type System: OneOf Input Objects must be inhabitable', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'OneOf Input Object A must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.',
-        locations: [{ line: 6, column: 7 }],
+          'Input Object A references itself via the required fields: A.self.',
+        locations: [{ line: 7, column: 9 }],
       },
     ]);
   });
 
-  it('rejects a closed subgraph of multiple OneOf types', () => {
+  it('rejects a mixed OneOf/non-OneOf cycle with no escapes', () => {
     const schema = buildSchema(`
       type Query {
-        test(arg: A): String
+        test(arg: A): Int
       }
 
       input A @oneOf {
         b: B
       }
 
-      input B @oneOf {
-        c: C
+      input B {
+        a: A!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Input Object A references itself via the required fields: A.b, B.a.',
+        locations: [
+          { line: 7, column: 9 },
+          { line: 11, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Input Object B references itself via the required fields: B.a, A.b.',
+        locations: [
+          { line: 11, column: 9 },
+          { line: 7, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('accepts a OneOf/non-OneOf with scalar escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A @oneOf {
+        b: B
+        escape: Int
+      }
+
+      input B {
+        a: A!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a non-OneOf/non-OneOf cycle with a nullable escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A {
+        b: B!
+      }
+
+      input B {
+        a: A
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a non-OneOf/non-OneOf cycle with a list escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A {
+        b: [B!]!
+      }
+
+      input B {
+        a: A!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('rejects a larger mixed OneOf/non-OneOf cycle with no escapes', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A @oneOf {
+        b: B
+      }
+
+      input B {
+        c: C!
       }
 
       input C @oneOf {
@@ -2586,18 +2637,30 @@ describe('Type System: OneOf Input Objects must be inhabitable', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'OneOf Input Object A must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.',
-        locations: [{ line: 6, column: 7 }],
+          'Input Object A references itself via the required fields: A.b, B.c, C.a.',
+        locations: [
+          { line: 7, column: 9 },
+          { line: 11, column: 9 },
+          { line: 15, column: 9 },
+        ],
       },
       {
         message:
-          'OneOf Input Object B must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.',
-        locations: [{ line: 10, column: 7 }],
+          'Input Object B references itself via the required fields: B.c, C.a, A.b.',
+        locations: [
+          { line: 11, column: 9 },
+          { line: 15, column: 9 },
+          { line: 7, column: 9 },
+        ],
       },
       {
         message:
-          'OneOf Input Object C must be inhabitable but all fields recursively reference only other OneOf Input Objects forming an unresolvable cycle.',
-        locations: [{ line: 14, column: 7 }],
+          'Input Object C references itself via the required fields: C.a, A.b, B.c.',
+        locations: [
+          { line: 15, column: 9 },
+          { line: 7, column: 9 },
+          { line: 11, column: 9 },
+        ],
       },
     ]);
   });
