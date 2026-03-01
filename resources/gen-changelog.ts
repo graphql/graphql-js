@@ -70,32 +70,82 @@ function parseFromRevArg(rawArgs: ReadonlyArray<string>): string | null {
   );
 }
 
-async function genChangeLog(): Promise<string> {
-  const { version } = packageJSON;
-  const releaseTag = `v${version}`;
-  const fromRev = parseFromRevArg(process.argv.slice(2));
-  const releaseTagExists = git().tagExists(releaseTag);
+function readVersionFromPackageJSONAtRef(ref: string): string {
+  const packageJSONAtRef = git().catFile('blob', `${ref}:package.json`);
+  return JSON.parse(packageJSONAtRef).version;
+}
 
-  let tag: string | null;
-  let baseRef: string;
-  let endRef: string;
-  if (releaseTagExists) {
-    tag = null;
-    baseRef = fromRev ?? releaseTag;
-    endRef = 'HEAD';
-  } else {
-    tag = releaseTag;
-    if (fromRev != null) {
-      baseRef = fromRev;
-    } else {
-      const parentPackageJSON = git().catFile('blob', 'HEAD~1:package.json');
-      const parentVersion = JSON.parse(parentPackageJSON).version;
-      baseRef = `v${parentVersion}`;
-    }
-    endRef = 'HEAD~1';
+function resolveChangelogRangeConfig(
+  workingTreeVersion: string,
+  fromRev: string | null,
+): {
+  title: string;
+  rangeStart: string;
+  rangeEnd: string;
+} {
+  const workingTreeReleaseTag = `v${workingTreeVersion}`;
+
+  // packageJSON in the working tree can differ from HEAD:package.json during
+  // release:prepare after npm version updates files but before committing.
+  // Supported scenario 1: release preparation not started
+  // - working-tree version tag exists
+  // - HEAD version older than or equal to working-tree version, must also exist
+  if (git().tagExists(workingTreeReleaseTag)) {
+    return {
+      title: 'Unreleased',
+      rangeStart: fromRev ?? workingTreeReleaseTag,
+      rangeEnd: 'HEAD',
+    };
   }
 
-  const commitsRange = `${baseRef}..${endRef}`;
+  const headVersion = readVersionFromPackageJSONAtRef('HEAD');
+  const headReleaseTag = `v${headVersion}`;
+
+  // Supported scenario 2: release preparation started
+  // - working-tree version tag not yet created
+  // - HEAD version tag exists
+  if (git().tagExists(headReleaseTag)) {
+    return {
+      title: workingTreeReleaseTag,
+      rangeStart: fromRev ?? headReleaseTag,
+      rangeEnd: 'HEAD',
+    };
+  }
+
+  // Supported scenario 3:
+  // - release preparation committed
+  // - working-tree version tag equal to HEAD version tag, both not yet created
+  // - HEAD~1 version tag exists
+  const parentVersion = readVersionFromPackageJSONAtRef('HEAD~1');
+  const parentTag = `v${parentVersion}`;
+  const parentTagExists = git().tagExists(parentTag);
+  if (workingTreeReleaseTag === headReleaseTag && parentTagExists) {
+    console.warn(`Release committed, should already contain this changelog!`);
+
+    return {
+      title: workingTreeReleaseTag,
+      rangeStart: fromRev ?? parentTag,
+      rangeEnd: 'HEAD~1',
+    };
+  }
+
+  throw new Error(
+    'Unable to determine changelog range. One of the following scenarios must be true:\n' +
+      `1) HEAD/working-tree release tags exist, i.e. release preparation not started.\n` +
+      `2) HEAD release tag exists, but working-tree release tag not yet created, i.e. release preparation started, not yet committed.\n` +
+      `3) HEAD/working-tree release tags not yet created, i.e. release preparation committed, not yet released, no additional commits on branch.`,
+  );
+}
+
+async function genChangeLog(): Promise<string> {
+  const workingTreeVersion = packageJSON.version;
+  const fromRev = parseFromRevArg(process.argv.slice(2));
+  const { title, rangeStart, rangeEnd } = resolveChangelogRangeConfig(
+    workingTreeVersion,
+    fromRev,
+  );
+
+  const commitsRange = `${rangeStart}..${rangeEnd}`;
   const commitsList = git().revList('--reverse', commitsRange);
 
   const allPRs = await getPRsInfo(commitsList);
@@ -139,7 +189,7 @@ async function genChangeLog(): Promise<string> {
     throw new Error(validationIssues.join('\n\n'));
   }
 
-  let changelog = `## ${tag ?? 'Unreleased'} (${date})\n`;
+  let changelog = `## ${title} (${date})\n`;
   for (const [label, config] of Object.entries(labelsConfig)) {
     const prs = byLabel[label];
     if (prs != null) {
