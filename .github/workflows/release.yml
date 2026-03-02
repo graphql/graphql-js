@@ -93,8 +93,14 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
+      contents: read # for actions/checkout
       id-token: write # for npm trusted publishing via OIDC
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -124,6 +130,11 @@ jobs:
     permissions:
       contents: write # for creating GitHub release
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Download release notes
         uses: actions/download-artifact@v4
         with:
