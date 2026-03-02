@@ -1,14 +1,32 @@
-import { npm, readPackageJSON } from './utils.js';
+import { git, npm, readPackageJSON, readPackageJSONAtRef } from './utils.js';
+
+interface ReleaseMetadata {
+  version: string;
+  tag: string;
+  distTag: string;
+  prerelease: boolean;
+  releaseNotes: string;
+  packageSpec: string;
+  tarballName: string;
+  shouldPublish: boolean;
+}
 
 try {
   const packageJSON = readPackageJSON();
-  const { version } = packageJSON;
+  const { version, publishConfig } = packageJSON;
 
   if (typeof version !== 'string' || version === '') {
     throw new Error('package.json is missing a valid "version" field.');
   }
 
   const tag = `v${version}`;
+  const distTag = publishConfig?.tag ?? '';
+  const prerelease = distTag === 'alpha';
+  const releaseCommitSha = findReleaseCommitSha(version);
+  const releaseNotes =
+    releaseCommitSha == null
+      ? ''
+      : git().log('-1', '--format=%b', releaseCommitSha).trim();
   const packageSpec = `graphql@${version}`;
   const tarballName = `graphql-${version}.tgz`;
 
@@ -17,15 +35,46 @@ try {
   const versions = Array.isArray(parsedVersions)
     ? parsedVersions
     : [parsedVersions];
-  const shouldPublish = versions.includes(version) ? 'false' : 'true';
+  const shouldPublish = !versions.includes(version);
+  const releaseMetadata: ReleaseMetadata = {
+    version,
+    tag,
+    distTag,
+    prerelease,
+    releaseNotes,
+    packageSpec,
+    tarballName,
+    shouldPublish,
+  };
 
-  process.stdout.write(`version=${version}\n`);
-  process.stdout.write(`tag=${tag}\n`);
-  process.stdout.write(`package_spec=${packageSpec}\n`);
-  process.stdout.write(`tarball_name=${tarballName}\n`);
-  process.stdout.write(`should_publish=${shouldPublish}\n`);
+  process.stdout.write(JSON.stringify(releaseMetadata) + '\n');
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   process.stderr.write(message + '\n');
   process.exit(1);
+}
+
+function findReleaseCommitSha(version: string): string | null {
+  const commitsTouchingPackageJSON = git().revList(
+    '--first-parent',
+    '--reverse',
+    'HEAD',
+    '--',
+    'package.json',
+  );
+
+  let previousVersion: string | null = null;
+  for (const commit of commitsTouchingPackageJSON) {
+    const versionAtCommit = readPackageJSONAtRef(commit).version;
+    if (versionAtCommit === version && previousVersion !== version) {
+      return commit;
+    }
+    previousVersion = versionAtCommit;
+  }
+
+  process.stderr.write(
+    `Warning: Unable to find commit introducing version ${version} in fetched history. ` +
+      `Release notes will be empty for this run.\n`,
+  );
+  return null;
 }

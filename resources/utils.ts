@@ -300,6 +300,11 @@ export function readPackageJSON(
   return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
 }
 
+export function readPackageJSONAtRef(ref: string): PackageJSON {
+  const packageJSONAtRef = git().catFile('blob', `${ref}:package.json`);
+  return JSON.parse(packageJSONAtRef);
+}
+
 export function readTSConfig(overrides?: any): ts.CompilerOptions {
   const tsConfigPath = localRepoPath('tsconfig.json');
 

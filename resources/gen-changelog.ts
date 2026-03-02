@@ -1,4 +1,4 @@
-import { git, readPackageJSON } from './utils.js';
+import { git, readPackageJSON, readPackageJSONAtRef } from './utils.js';
 
 const packageJSON = readPackageJSON();
 const labelsConfig: { [label: string]: { section: string; fold?: boolean } } = {
@@ -70,11 +70,6 @@ function parseFromRevArg(rawArgs: ReadonlyArray<string>): string | null {
   );
 }
 
-function readVersionFromPackageJSONAtRef(ref: string): string {
-  const packageJSONAtRef = git().catFile('blob', `${ref}:package.json`);
-  return JSON.parse(packageJSONAtRef).version;
-}
-
 function resolveChangelogRangeConfig(
   workingTreeVersion: string,
   fromRev: string | null,
@@ -98,7 +93,7 @@ function resolveChangelogRangeConfig(
     };
   }
 
-  const headVersion = readVersionFromPackageJSONAtRef('HEAD');
+  const headVersion = readPackageJSONAtRef('HEAD').version;
   const headReleaseTag = `v${headVersion}`;
 
   // Supported scenario 2: release preparation started
@@ -116,7 +111,7 @@ function resolveChangelogRangeConfig(
   // - release preparation committed
   // - working-tree version tag equal to HEAD version tag, both not yet created
   // - HEAD~1 version tag exists
-  const parentVersion = readVersionFromPackageJSONAtRef('HEAD~1');
+  const parentVersion = readPackageJSONAtRef('HEAD~1').version;
   const parentTag = `v${parentVersion}`;
   const parentTagExists = git().tagExists(parentTag);
   if (workingTreeReleaseTag === headReleaseTag && parentTagExists) {

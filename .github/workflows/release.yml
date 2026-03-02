@@ -13,6 +13,8 @@ jobs:
     outputs:
       should_publish: ${{ steps.release_metadata.outputs.should_publish }}
       tag: ${{ steps.release_metadata.outputs.tag }}
+      dist_tag: ${{ steps.release_metadata.outputs.dist_tag }}
+      prerelease: ${{ steps.release_metadata.outputs.prerelease }}
       tarball_name: ${{ steps.release_metadata.outputs.tarball_name }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -23,6 +25,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
+          # Keep checkout fast: we should only need to scroll back a few
+          # commits for release notes. If the release commit is older than
+          # this depth, release:metadata will emit empty release notes.
+          fetch-depth: 10
           persist-credentials: false
 
       - name: Setup Node.js
@@ -37,7 +43,17 @@ jobs:
       - name: Read release metadata
         id: release_metadata
         run: |
-          npm run --silent release:metadata >> "${GITHUB_OUTPUT}"
+          release_metadata_json="$(npm run --silent release:metadata)"
+          jq -r '
+            "version=\(.version)",
+            "tag=\(.tag)",
+            "dist_tag=\(.distTag)",
+            "prerelease=\(.prerelease)",
+            "package_spec=\(.packageSpec)",
+            "tarball_name=\(.tarballName)",
+            "should_publish=\(.shouldPublish)"
+          ' <<< "${release_metadata_json}" >> "${GITHUB_OUTPUT}"
+          jq -r '.releaseNotes' <<< "${release_metadata_json}" > ./release-notes.md
 
       - name: Log publish decision
         run: |
@@ -62,22 +78,23 @@ jobs:
           name: npmDist-tarball
           path: ./${{ steps.release_metadata.outputs.tarball_name }}
 
-  publish-release:
-    name: Publish, tag, and create release
+      - name: Upload release notes
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: ./release-notes.md
+
+  publish-npm:
+    name: Publish npm package
     needs: check-publish
     # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
     if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' && needs.check-publish.outputs.should_publish == 'true' && needs.check-publish.result == 'success' }}
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: write # for creating/pushing tag and creating GitHub release
       id-token: write # for npm trusted publishing via OIDC
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -89,34 +106,50 @@ jobs:
           name: npmDist-tarball
           path: ./artifacts
 
-      - name: Verify package tarball is present
+      - name: Dry-run npm publish
         run: |
-          tarball="./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
-          if [ ! -f "${tarball}" ]; then
-            echo "::error::Expected package tarball ${tarball} is missing."
-            exit 1
+          if [ -n "${{ needs.check-publish.outputs.dist_tag }}" ]; then
+            npm publish --provenance --tag "${{ needs.check-publish.outputs.dist_tag }}" "./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
+          else
+            npm publish --provenance "./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
           fi
 
-      - name: Create release if needed
+  create-release:
+    name: Create release
+    needs: check-publish
+    # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' && needs.check-publish.outputs.should_publish == 'true' && needs.check-publish.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write # for creating GitHub release
+    steps:
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+          path: ./artifacts
+
+      - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          release_notes_file="./artifacts/release-notes.md"
-          gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}" \
-            --jq '.commit.message | split("\n")[1:] | join("\n") | ltrimstr("\n")' \
-            > "${release_notes_file}"
-          if [ ! -s "${release_notes_file}" ]; then
-            printf '## Release %s\n' "${{ needs.check-publish.outputs.tag }}" > "${release_notes_file}"
+          if gh release view "${{ needs.check-publish.outputs.tag }}" > /dev/null 2>&1; then
+            echo "GitHub release ${{ needs.check-publish.outputs.tag }} already exists. Skipping release creation."
+            exit 0
           fi
 
-          if gh release view "${{ needs.check-publish.outputs.tag }}" > /dev/null 2>&1; then
-            echo "GitHub release ${{ needs.check-publish.outputs.tag }} already exists."
+          release_notes_file="./artifacts/release-notes.md"
+
+          if [ "${{ needs.check-publish.outputs.prerelease }}" = "true" ]; then
+            gh release create "${{ needs.check-publish.outputs.tag }}" \
+              --target "${GITHUB_SHA}" \
+              --title "${{ needs.check-publish.outputs.tag }}" \
+              --notes-file "${release_notes_file}" \
+              --prerelease
           else
             gh release create "${{ needs.check-publish.outputs.tag }}" \
               --target "${GITHUB_SHA}" \
               --title "${{ needs.check-publish.outputs.tag }}" \
               --notes-file "${release_notes_file}"
           fi
-
-      - name: Dry-run npm publish
-        run: npm publish --provenance --dry-run "./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
