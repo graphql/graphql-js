@@ -76,24 +76,18 @@ ensure your pull request matches the style guides, run `npm run prettier`.
 
 ## Release on NPM
 
-_Only core contributors may release to NPM._
+Releases on `16.x.x` are managed by local scripts and GitHub Actions:
 
-To release a new version on NPM, first ensure all tests pass with `npm test`,
-then use `npm version patch|minor|major` in order to increment the version in
-package.json and tag and commit a release. Then `git push && git push --tags`
-to sync this change with source control. Then `npm publish npmDist` to actually
-publish the release to NPM.
-Once published, add [release notes](https://github.com/graphql/graphql-js/tags).
-Use [semver](https://semver.org/) to determine which version part to increment.
-
-Example for a patch release:
-
-```sh
-npm test
-npm version patch --ignore-scripts=false
-git push --follow-tags
-cd npmDist && npm publish
+```bash
+git switch 16.x.x
+git switch -c <my_release_branch>
+export GH_TOKEN=<token> # required to build changelog via GitHub API requests
+npm run release:prepare -- 16.x.x patch
 ```
+
+Push `<my_release_branch>`, open a PR from `<my_release_branch>` to `16.x.x`,
+wait for CI to pass, merge the PR, and then approve the GitHub Actions release
+workflow.
 
 ## License
 

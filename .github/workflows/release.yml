@@ -1,0 +1,166 @@
+name: Release
+on:
+  push:
+    branches:
+      - 16.x.x
+permissions: {}
+jobs:
+  check-publish:
+    name: Check for publish need and prepare artifacts
+    # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '16.x.x' }}
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.release_metadata.outputs.should_publish }}
+      tag: ${{ steps.release_metadata.outputs.tag }}
+      dist_tag: ${{ steps.release_metadata.outputs.dist_tag }}
+      prerelease: ${{ steps.release_metadata.outputs.prerelease }}
+      tarball_name: ${{ steps.release_metadata.outputs.tarball_name }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref_name }}
+      cancel-in-progress: true
+    permissions:
+      contents: read # for actions/checkout
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # Keep checkout fast: we should only need to scroll back a few
+          # commits for release notes. If the release commit is older than
+          # this depth, release:metadata will emit empty release notes.
+          fetch-depth: 10
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: '.node-version'
+
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Read release metadata
+        id: release_metadata
+        run: |
+          release_metadata_json="$(npm run --silent release:metadata)"
+          jq -r '
+            "version=\(.version)",
+            "tag=\(.tag)",
+            "dist_tag=\(.distTag)",
+            "prerelease=\(.prerelease)",
+            "package_spec=\(.packageSpec)",
+            "tarball_name=\(.tarballName)",
+            "should_publish=\(.shouldPublish)"
+          ' <<< "${release_metadata_json}" >> "${GITHUB_OUTPUT}"
+          jq -r '.releaseNotes' <<< "${release_metadata_json}" > ./release-notes.md
+
+      - name: Log publish decision
+        run: |
+          if [ "${{ steps.release_metadata.outputs.should_publish }}" = "true" ]; then
+            echo "${{ steps.release_metadata.outputs.package_spec }} is not published yet."
+          else
+            echo "${{ steps.release_metadata.outputs.package_spec }} is already published."
+          fi
+
+      - name: Build NPM package
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        run: npm run build:npm
+
+      - name: Pack npmDist package
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        run: npm pack ./npmDist --pack-destination . > /dev/null
+
+      - name: Upload npm package tarball
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: npmDist-tarball
+          path: ./${{ steps.release_metadata.outputs.tarball_name }}
+
+      - name: Upload release notes
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: ./release-notes.md
+
+  publish-npm:
+    name: Publish npm package
+    needs: check-publish
+    # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '16.x.x' && needs.check-publish.outputs.should_publish == 'true' && needs.check-publish.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read # for actions/checkout
+      id-token: write # for npm trusted publishing via OIDC
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+
+      - name: Download npmDist package
+        uses: actions/download-artifact@v4
+        with:
+          name: npmDist-tarball
+          path: ./artifacts
+
+      - name: Publish npm package
+        run: |
+          if [ -n "${{ needs.check-publish.outputs.dist_tag }}" ]; then
+            npm publish --provenance --tag "${{ needs.check-publish.outputs.dist_tag }}" "./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
+          else
+            npm publish --provenance "./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
+          fi
+
+  create-release:
+    name: Create release
+    needs: check-publish
+    # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '16.x.x' && needs.check-publish.outputs.should_publish == 'true' && needs.check-publish.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write # for creating GitHub release
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+          path: ./artifacts
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ needs.check-publish.outputs.tag }}" > /dev/null 2>&1; then
+            echo "GitHub release ${{ needs.check-publish.outputs.tag }} already exists. Skipping release creation."
+            exit 0
+          fi
+
+          release_notes_file="./artifacts/release-notes.md"
+
+          if [ "${{ needs.check-publish.outputs.prerelease }}" = "true" ]; then
+            gh release create "${{ needs.check-publish.outputs.tag }}" \
+              --target "${GITHUB_SHA}" \
+              --title "${{ needs.check-publish.outputs.tag }}" \
+              --notes-file "${release_notes_file}" \
+              --prerelease
+          else
+            gh release create "${{ needs.check-publish.outputs.tag }}" \
+              --target "${GITHUB_SHA}" \
+              --title "${{ needs.check-publish.outputs.tag }}" \
+              --notes-file "${release_notes_file}"
+          fi

@@ -5,7 +5,7 @@ const https = require('https');
 
 const packageJSON = require('../package.json');
 
-const { exec } = require('./utils.js');
+const { exec, readPackageJSONAtRef, tagExists } = require('./utils.js');
 
 const graphqlRequest = util.promisify(graphqlRequestImpl);
 const labelsConfig = {
@@ -68,26 +68,97 @@ getChangeLog()
   });
 
 function getChangeLog() {
-  const { version } = packageJSON;
-
-  let tag = null;
-  let commitsList = exec(`git rev-list --reverse v${version}..`);
-  if (commitsList === '') {
-    const parentPackageJSON = exec('git cat-file blob HEAD~1:package.json');
-    const parentVersion = JSON.parse(parentPackageJSON).version;
-    commitsList = exec(`git rev-list --reverse v${parentVersion}..HEAD~1`);
-    tag = `v${version}`;
-  }
+  const workingTreeVersion = packageJSON.version;
+  const fromRev = parseFromRevArg(process.argv.slice(2));
+  const { title, rangeStart, rangeEnd } = resolveChangelogRangeConfig(
+    workingTreeVersion,
+    fromRev,
+  );
+  const commitsRange = `${rangeStart}..${rangeEnd}`;
+  const commitsListOutput = exec(`git rev-list --reverse ${commitsRange}`);
+  const commitsList =
+    commitsListOutput === '' ? [] : commitsListOutput.split('\n');
 
   const date = exec('git log -1 --format=%cd --date=short');
-  return getCommitsInfo(commitsList.split('\n'))
+  return getCommitsInfo(commitsList)
     .then((commitsInfo) => getPRsInfo(commitsInfoToPRs(commitsInfo)))
-    .then((prsInfo) => genChangeLog(tag, date, prsInfo));
+    .then((prsInfo) => genChangeLog(title, date, prsInfo));
 }
 
-function genChangeLog(tag, date, allPRs) {
+function parseFromRevArg(rawArgs) {
+  if (rawArgs.length === 0) {
+    return null;
+  }
+
+  if (rawArgs.length === 1 && rawArgs[0].trim() !== '') {
+    return rawArgs[0];
+  }
+
+  throw new Error(
+    'Usage: npm run changelog [-- <fromRev>]\n' +
+      'Example: npm run changelog -- d41f59bbfdfc207712a2fc3778934694a3410ddf',
+  );
+}
+
+function resolveChangelogRangeConfig(workingTreeVersion, fromRev) {
+  const workingTreeReleaseTag = `v${workingTreeVersion}`;
+
+  // packageJSON in the working tree can differ from HEAD:package.json during
+  // release:prepare after npm version updates files but before committing.
+  // Supported scenario 1: release preparation not started
+  // - working-tree version tag exists
+  // - HEAD version older than or equal to working-tree version, must also exist
+  if (tagExists(workingTreeReleaseTag)) {
+    return {
+      title: 'Unreleased',
+      rangeStart: fromRev || workingTreeReleaseTag,
+      rangeEnd: 'HEAD',
+    };
+  }
+
+  const headVersion = readPackageJSONAtRef('HEAD').version;
+  const headReleaseTag = `v${headVersion}`;
+
+  // Supported scenario 2: release preparation started
+  // - working-tree version tag not yet created
+  // - HEAD version tag exists
+  if (tagExists(headReleaseTag)) {
+    return {
+      title: workingTreeReleaseTag,
+      rangeStart: fromRev || headReleaseTag,
+      rangeEnd: 'HEAD',
+    };
+  }
+
+  // Supported scenario 3:
+  // - release preparation committed
+  // - working-tree version tag equal to HEAD version tag, both not yet created
+  // - HEAD~1 version tag exists
+  const parentVersion = readPackageJSONAtRef('HEAD~1').version;
+  const parentTag = `v${parentVersion}`;
+  const parentTagExists = tagExists(parentTag);
+  if (workingTreeReleaseTag === headReleaseTag && parentTagExists) {
+    console.warn('Release committed, should already contain this changelog!');
+
+    return {
+      title: workingTreeReleaseTag,
+      rangeStart: fromRev || parentTag,
+      rangeEnd: 'HEAD~1',
+    };
+  }
+
+  throw new Error(
+    'Unable to determine changelog range. One of the following scenarios must be true:\n' +
+      '1) HEAD/working-tree release tags exist, i.e. release preparation not started.\n' +
+      '2) HEAD release tag exists, but working-tree release tag not yet created, i.e. release preparation started, not yet committed.\n' +
+      '3) HEAD/working-tree release tags not yet created, i.e. release preparation committed, not yet released, no additional commits on branch.',
+  );
+}
+
+function genChangeLog(title, date, allPRs) {
   const byLabel = {};
   const committersByLogin = {};
+  const validationIssues = [];
 
   for (const pr of allPRs) {
     const labels = pr.labels.nodes
@@ -95,24 +166,37 @@ function genChangeLog(tag, date, allPRs) {
       .filter((label) => label.startsWith('PR: '));
 
     if (labels.length === 0) {
-      throw new Error(`PR is missing label. See ${pr.url}`);
+      validationIssues.push(`PR #${pr.number} is missing label. See ${pr.url}`);
+      continue;
     }
+
     if (labels.length > 1) {
-      throw new Error(
-        `PR has conflicting labels: ${labels.join('\n')}\nSee ${pr.url}`,
+      validationIssues.push(
+        `PR #${pr.number} has conflicting labels: ${labels.join(', ')}\nSee ${
+          pr.url
+        }`,
       );
+      continue;
     }
 
     const label = labels[0];
     if (!labelsConfig[label]) {
-      throw new Error(`Unknown label: ${label}. See ${pr.url}`);
+      validationIssues.push(
+        `PR #${pr.number} has unknown label: ${label}\nSee ${pr.url}`,
+      );
+      continue;
     }
+
     byLabel[label] = byLabel[label] || [];
     byLabel[label].push(pr);
     committersByLogin[pr.author.login] = pr.author;
   }
 
-  let changelog = `## ${tag || 'Unreleased'} (${date})\n`;
+  if (validationIssues.length > 0) {
+    throw new Error(validationIssues.join('\n\n'));
+  }
+
+  let changelog = `## ${title} (${date})\n`;
   for (const [label, config] of Object.entries(labelsConfig)) {
     const prs = byLabel[label];
     if (prs) {

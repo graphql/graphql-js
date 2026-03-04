@@ -15,6 +15,39 @@ function exec(command, options) {
   return output && output.trimEnd();
 }
 
+function spawn(command, args, options = {}) {
+  const result = childProcess.spawnSync(command, args, {
+    stdio: 'inherit',
+    ...options,
+  });
+  ensureSpawnSuccess(command, args, result);
+}
+
+function spawnOutput(command, args, options = {}) {
+  const result = childProcess.spawnSync(command, args, {
+    encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024,
+    ...options,
+  });
+  ensureSpawnSuccess(command, args, result);
+  return result.stdout.trimEnd();
+}
+
+function ensureSpawnSuccess(command, args, result) {
+  if (result.status === 0) {
+    return;
+  }
+
+  const stderr = result.stderr ? String(result.stderr).trim() : '';
+  throw new Error(
+    stderr !== ''
+      ? stderr
+      : `${command} ${args.join(' ')} exited with code ${String(
+          result.status,
+        )}.`,
+  );
+}
+
 function readdirRecursive(dirPath, opts = {}) {
   const { ignoreDir } = opts;
   const result = [];
@@ -91,9 +124,36 @@ function writeGeneratedFile(filepath, body) {
   fs.writeFileSync(filepath, formatted);
 }
 
+function readPackageJSON(filepath = require.resolve('../package.json')) {
+  return JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+}
+
+function readPackageJSONAtRef(ref) {
+  const packageJSONAtRef = spawnOutput('git', [
+    'cat-file',
+    'blob',
+    `${ref}:package.json`,
+  ]);
+  return JSON.parse(packageJSONAtRef);
+}
+
+function tagExists(tag) {
+  const result = childProcess.spawnSync(
+    'git',
+    ['rev-parse', '--verify', '--quiet', `refs/tags/${tag}`],
+    { stdio: 'ignore' },
+  );
+  return result.status === 0;
+}
+
 module.exports = {
   exec,
+  spawn,
+  spawnOutput,
   readdirRecursive,
   showDirStats,
+  readPackageJSON,
+  readPackageJSONAtRef,
+  tagExists,
   writeGeneratedFile,
 };
