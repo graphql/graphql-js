@@ -93,18 +93,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: read # for actions/checkout
+      contents: read # keep token scopes minimal
       id-token: write # for npm trusted publishing via OIDC
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.node-version'
+          # npm trusted publishing requires a newer Node/npm line than 16.x.x
+          # branch runtime constraints, so pin only this job to Node 24.
+          node-version: 24
 
       - name: Download npmDist package
         uses: actions/download-artifact@v4
