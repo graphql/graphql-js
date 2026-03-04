@@ -1,0 +1,216 @@
+---
+title: Migrate from Express GraphQL to GraphQL over HTTP
+sidebarTitle: Migrate from Express GraphQL
+---
+
+# Migrate from Express GraphQL to GraphQL over HTTP
+
+When GraphQL was open-sourced in 2015, `express-graphql` quickly became the standard way to run a GraphQL server in Node.js. 
+Built as middleware for Express, it offered a simple and reliable development experience. However, it hasn’t received a 
+feature update since 2018 and is no longer actively maintained. For modern applications, it lacks support for new transport 
+features, fine-grained request handling, and deployment flexibility.
+
+[`graphql-http`](https://github.com/graphql/graphql-http) is a lightweight implementation of 
+the [GraphQL over HTTP specification](https://graphql.github.io/graphql-over-http/draft/). It's framework-agnostic, built to be 
+composable, and easy to integrate into different server environments. Unlike `express-graphql`, it can run in a wide range of 
+environments, not just Express.
+
+This guide is for developers currently using `express-graphql` who want to
+modernize their stack, adopt the HTTP spec, or decouple their GraphQL server
+from Express.
+
+## Benefits of migrating
+
+### `express-graphql` is no longer supported
+
+The library has not received updates for some time. As a deprecated package, it is not evolving with the GraphQL ecosystem. This makes it less flexible for long-term projects.
+
+### `graphql-http` is spec-compliant by default
+
+The GraphQL over HTTP specification defines how GraphQL should be transported over HTTP, including request methods, status codes, content types, and more. `graphql-http` follows this spec precisely, helping your server behave predictably and remain compatible with future tooling.
+
+### It's framework-agnostic by design
+
+Instead of relying on Express, `graphql-http` is built on the standard Web `Request` and `Response` interfaces. It works with Express, Fastify, Node's native HTTP server, and can also be used in serverless and edge environments.
+
+### It fits into modern JavaScript stacks
+
+`graphql-http` supports ESM and works well with modern build tools and lightweight deployment platforms. Its composable design makes it easy to customize, wrap, and integrate into different application architectures.
+
+### Designed for future compatibility
+
+As GraphQL evolves, tools and platforms increasingly expect spec-compliant behavior. Migration to `graphql-http` helps ensure your
+server will support future capabilities without relying on workarounds.
+
+### Understand current limitations
+
+Although `graphql-http` is a strong foundation for modern GraphQL servers, it's important to note what it doesn't include:
+
+- It doesn't support subscriptions or experimental features like incremental delivery (`@defer` / `@stream`) out of the box.
+- These limitations are by design. `graphql-http` strictly adheres to the current 
+[GraphQL over HTTP specification](https://graphql.github.io/graphql-over-http/draft/), which does 
+not yet define behavior for those features.
+- If your application needs support for subscriptions or live queries, consider using complementary libraries like 
+[`graphql-ws`](https://github.com/enisdenjo/graphql-ws) or [`graphql-sse`](https://github.com/enisdenjo/graphql-sse).
+
+These are not limitations unique to `graphql-http`. `express-graphql` does not support these features either, but it's important 
+to set the right expectations about extensibility.
+
+## Migration guide
+
+The following steps walk through how to migrate an existing `express-graphql` server to use `graphql-http`. The steps assume you already have a working Express app using `express-graphql`.
+
+### Prerequisites
+
+Before you begin, make sure you have:
+
+- Node.js 16 or later
+- A GraphQL schema
+- An existing Express app configured with `express-graphql`
+
+### Step 1: Install graphql-http and the Express adapter
+
+Install the core `graphql-http` package along with its Express adapter:
+
+```bash
+npm install graphql graphql-http
+```
+
+The `graphql` package is a peer dependency of `graphql-http`, and must be installed if it isn't already.
+
+### Step 2: Remove express-graphql middleware
+
+In your Express server file, remove the `express-graphql` middleware:
+
+```js
+// Before (using express-graphql)
+import { graphqlHTTP } from 'express-graphql';
+
+app.use('/graphql', graphqlHTTP({
+  schema,
+  graphiql: true,
+}));
+```
+
+### Step 3: Add graphql-http middleware with createHandler
+
+Replace it with the `graphql-http` handler using the Express adapter:
+
+```js
+import express from 'express';
+import { createHandler } from 'graphql-http/lib/use/express';
+import { schema } from './schema.js';
+
+const app = express();
+
+app.all('/graphql', createHandler({ schema }));
+
+app.listen(4000);
+```
+
+- Use `app.all()` to allow both `GET` and `POST` requests.
+- The handler accepts an options object for GraphQL-specific settings like `schema`, 
+`rootValue`, and `context`, but doesn’t handle server-level features such as middleware 
+or request preprocessing like `express-graphql` did.
+
+### Step 4: Handle context, error formatting, and extensions
+
+You can provide options like `context`, `rootValue`, and `formatError`:
+
+```js
+import { GraphQLError } from 'graphql';
+
+app.all('/graphql', createHandler({
+  schema,
+  context: async (req, res) => {
+    const user = await authenticate(req);
+    return { user };
+  },
+  formatError: (error) =>
+    new GraphQLError(error.message, {
+      nodes: error.nodes,
+      path: error.path,
+      extensions: {
+        code: 'INTERNAL_SERVER_ERROR',
+        timestamp: Date.now(),
+      },
+    }),
+}));
+```
+
+- `context` can be a static object or an async function.
+- You can also pass `rootValue` or other GraphQL-specific options.
+- To modify the HTTP response, such as adding headers or extensions, you’ll need 
+to do that outside of graphql-http, using Express middleware or route handlers.
+
+### Step 5: Add a GraphQL IDE
+
+Unlike `express-graphql`, `graphql-http` does not include a built-in GraphQL IDE. If you want to add one:
+
+- Use a tool like [Ruru](https://www.npmjs.com/package/ruru) to serve an interactive GraphQL UI locally:
+
+  ```bash
+  npx ruru -SP -p 4001 -e http://localhost:4000/graphql
+  ```
+
+- Or serve a static HTML page that embeds [GraphiQL](https://github.com/graphql/graphiql) from a CDN.
+
+In either case, make sure to restrict access in production environments.
+
+### Step 6: Test your setup
+
+After migrating, verify that your server responds correctly:
+
+- Send queries and mutations using your preferred client.
+- Check for proper HTTP status codes and response shapes.
+- Check the GraphQL `context` and related variables are populated correctly and
+  that your dataloaders and authorization logic are functioning as expected.
+
+## Best practices
+
+When migrating from `express-graphql` to `graphql-http`, there are a few key differences and potential pitfalls to keep in mind. These tips can help you avoid common issues and ensure a smoother transition.
+
+### Be aware of different error behavior
+
+`graphql-http` follows the GraphQL over HTTP spec closely, which means error formatting and status codes may differ from what you're used to with `express-graphql`. For example:
+
+- Invalid queries may return a `400 Bad Request` instead of a `200 OK`.
+- Errors in parsing or validation are surfaced earlier and more strictly.
+- You can customize error output using the `formatError` option, but it must conform to the spec.
+
+This can affect client expectations if they were relying on `express-graphql`'s more lenient defaults.
+
+### Watch for framework-specific middleware behavior
+
+Since `graphql-http` is framework-agnostic, it does not handle things like body parsing, CORS, or compression. You'll need to ensure those are handled appropriately by your Express setup:
+
+```js
+import cors from 'cors';
+import express from 'express';
+
+app.use(cors());
+app.use(express.json());
+```
+
+This gives you more control but requires a bit more setup.
+
+### Understand streaming and file upload limitations
+
+`graphql-http` aims to support the GraphQL over HTTP spec, including eventually supporting response streaming. However, 
+support for features like `@defer` and `@stream` is still evolving. These capabilities are experimental in `graphql-js` 
+and not yet supported by `graphql-http`.
+
+- Some GraphQL clients have begun adding support for multipart responses, but broad adoption is still evolving.
+- `graphql-http` does not support streaming features such as `@defer` or `@stream`, as these are not part of the 
+current GraphQL over HTTP specification.
+- If your app relies on incremental delivery, use a transport library like [`graphql-sse`](https://github.com/enisdenjo/graphql-sse), 
+but note that it replaces `graphql-http` and must be used as your server handler.
+
+## What's next
+
+`graphql-http` is the reference implementation of the GraphQL-over-HTTP specification,
+but there are many other servers you can use to serve your GraphQL API, each with 
+different features and trade-offs. For a list of other spec-compliant server
+implementations see the
+[`graphql-http` server list](https://github.com/graphql/graphql-http?tab=readme-ov-file#servers), and don't forget to check out the
+[Tools and Libraries page on graphql.org](https://graphql.org/community/tools-and-libraries/?tags=server_javascript).

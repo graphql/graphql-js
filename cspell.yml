@@ -120,6 +120,7 @@ words:
   - Wordmark
   - codeofconduct
   - graphqlconf
+  - dataloaders
 
   # website words
   - runtimes
