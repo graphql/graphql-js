@@ -2,17 +2,27 @@
 title: Going to Production
 ---
 
+import { Callout } from 'nextra/components';
+
 # Going to Production
 
 This guide covers key practices to prepare a server built with GraphQL.js for production use.
+Concerns include concerns include build optimization, caching, error handling, schema
+management, and operational monitoring.
 
-Concerns include caching, error handling, schema management, and operational monitoring.
+## Optimize your build for production
 
-Of note, GraphQL.JS provides a development mode which includes additional checks impacting
-performance and bundle size, as further discussed within the
-[Development Mode](./development-mode) section. Development mode is disabled by default, but
-one can and should verify that it has not been enabled in production, especially if it is
-enabled in your development environment. 
+GraphQL.js includes development-time checks that are useful during local testing. For v16 and
+earlier, these checks are enabled by default and should be disabled in production to reduce
+overhead. See [Development Mode](./development-mode) for further details about these checks
+and how to disable them. Starting in v17, development mode is disabled by default, and must
+be explicitly enabled for development environments.
+
+<Callout type="info" emoji="ℹ️">
+  In v16 and earlier, development mode is enabled by default and must be explicitly disabled
+  in production. Starting in v17, development mode is disabled by default and may require
+  explicit enabling. See [Development Mode](./development-mode) for details and instructions.
+</Callout>
 
 ## Secure your schema
 
