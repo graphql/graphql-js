@@ -123,9 +123,12 @@ function validateBranchState(releaseBranch: string): void {
   let releaseBranchHead: string;
   try {
     releaseBranchHead = git({ quiet: true }).revParse(releaseBranch);
-  } catch {
+  } catch (error) {
     throw new Error(
       `Release branch "${releaseBranch}" does not exist locally.`,
+      {
+        cause: error,
+      },
     );
   }
 
@@ -135,31 +138,53 @@ function validateBranchState(releaseBranch: string): void {
       '--abbrev-ref',
       `${releaseBranch}@{upstream}`,
     );
-  } catch {
+  } catch (error) {
     throw new Error(
       `Release branch "${releaseBranch}" does not track a remote branch. ` +
         'Set one first (for example: git branch --set-upstream-to ' +
         `<remote>/${releaseBranch} ${releaseBranch}).`,
+      { cause: error },
     );
   }
 
   const upstreamRemote = releaseBranchUpstream.split('/')[0];
   try {
-    git().fetch('--quiet', upstreamRemote, releaseBranch);
-  } catch {
+    git().fetch('--quiet', '--tags', upstreamRemote, releaseBranch);
+  } catch (error) {
     throw new Error(
-      `Failed to fetch "${releaseBranchUpstream}". ` +
-        'Verify network access and git remote configuration, then retry.',
+      `Failed to fetch "${releaseBranchUpstream}" and tags from "${upstreamRemote}". ` +
+        'Check remote access, authentication, git remote configuration, ' +
+        'and local/remote tag state.',
+      { cause: error },
     );
   }
 
   const upstreamReleaseBranchHead = git({ quiet: true }).revParse(
     `${releaseBranch}@{upstream}`,
   );
-  if (releaseBranchHead !== upstreamReleaseBranchHead) {
+  const localOnlyCommits = git().revList(
+    `${upstreamReleaseBranchHead}..${releaseBranchHead}`,
+  );
+  const upstreamOnlyCommits = git().revList(
+    `${releaseBranchHead}..${upstreamReleaseBranchHead}`,
+  );
+  if (localOnlyCommits.length > 0 && upstreamOnlyCommits.length > 0) {
     throw new Error(
-      `Local "${releaseBranch}" is not up to date with "${releaseBranchUpstream}". ` +
+      `Local "${releaseBranch}" has diverged from "${releaseBranchUpstream}". ` +
+        'Resolve conflicts and synchronize first (for example: ' +
+        `git switch ${releaseBranch} && git pull --rebase).`,
+    );
+  }
+  if (upstreamOnlyCommits.length > 0) {
+    throw new Error(
+      `Local "${releaseBranch}" is behind "${releaseBranchUpstream}". ` +
         `Update it first (for example: git switch ${releaseBranch} && git pull --ff-only).`,
+    );
+  }
+  if (localOnlyCommits.length > 0) {
+    throw new Error(
+      `Local "${releaseBranch}" is ahead of "${releaseBranchUpstream}". ` +
+        `Push or reset it before release prepare (for example: git switch ${releaseBranch} && git push).`,
     );
   }
 
