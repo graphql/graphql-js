@@ -243,3 +243,30 @@ jobs:
         with:
           name: denoDist
           path: ./denoDist
+
+  type-check-deno-dist:
+    name: Type check denoDist on Deno v${{ matrix.deno_version_to_setup }}
+    needs: build-deno-dist
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Keep minors pinned to preserve backward-compat coverage; include v2.x
+        # so CI also exercises the latest Deno release used for publishing.
+        deno_version_to_setup: [2.4.x, 2.5.x, 2.6.x, 2.7.x, v2.x]
+    permissions:
+      contents: read # for actions/download-artifact
+    steps:
+      - name: Download denoDist package
+        uses: actions/download-artifact@v4
+        with:
+          name: denoDist
+          path: ./denoDist
+
+      - name: Setup Deno v${{ matrix.deno_version_to_setup }}
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ matrix.deno_version_to_setup }}
+
+      - name: Check denoDist package
+        run: deno check ./denoDist/index.ts

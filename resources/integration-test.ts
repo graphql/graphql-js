@@ -4,6 +4,8 @@ import { describe, it } from 'mocha';
 
 import { localRepoPath, makeTmpDir, npm, readPackageJSON } from './utils.js';
 
+// Keep these pinned to minimum supported runtime versions so integration
+// checks continue to verify backward compatibility behavior.
 const BUN_VERSION = '1.2.18';
 const DENO_VERSION = '2.4.1';
 
