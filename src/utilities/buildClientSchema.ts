@@ -190,14 +190,16 @@ export function buildClientSchema(
         return buildEnumDef(type);
       case TypeKind.INPUT_OBJECT:
         return buildInputObjectDef(type);
+      default:
+        // TypeScript considers this unreachable, but invalid runtime input can reach it.
+        // Note: we include a default case rather than throwing after the switch to avoid
+        // the use of a @ts-expect-error statement.
+        throw new Error(
+          `Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${inspect(
+            type,
+          )}.`,
+        );
     }
-    // Unreachable.
-    // @ts-expect-error
-    throw new Error(
-      `Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: ${inspect(
-        type,
-      )}.`,
-    );
   }
 
   function buildScalarDef(
