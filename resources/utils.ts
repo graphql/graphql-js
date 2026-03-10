@@ -253,6 +253,28 @@ export function writeGeneratedFile(filepath: string, body: string): void {
   fs.writeFileSync(filepath, body);
 }
 
+export function buildCJSDevModeStub(
+  devModeSpecifier: string,
+  targetSpecifier: string,
+): string {
+  return [
+    `const { enableDevMode } = require('${devModeSpecifier}');`,
+    'enableDevMode();',
+    `module.exports = require('${targetSpecifier}');`,
+  ].join('\n');
+}
+
+export function buildESMDevModeStub(
+  devModeSpecifier: string,
+  targetSpecifier: string,
+): string {
+  return [
+    `import { enableDevMode } from '${devModeSpecifier}';`,
+    'enableDevMode();',
+    `export * from '${targetSpecifier}';`,
+  ].join('\n');
+}
+
 interface PackageJSON {
   description: string;
   version: string;

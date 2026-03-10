@@ -1,5 +1,5 @@
 {
-  "description": "graphql-js development mode should work with Deno",
+  "description": "graphql-js development mode should work with Deno with node build",
   "private": true,
   "scripts": {
     "test": "docker run --rm --volume \"$PWD\":/usr/src/app -w /usr/src/app denoland/deno:alpine-\"$DENO_VERSION\" deno run --conditions=development test.js"

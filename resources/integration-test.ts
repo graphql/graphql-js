@@ -26,6 +26,9 @@ describe('Integration Tests', () => {
   fs.renameSync(tmpDirPath(archiveEsmName), tmpDirPath('graphql-esm.tgz'));
 
   npm().run('build:deno');
+  fs.cpSync(localRepoPath('denoDist'), tmpDirPath('graphql-deno-dist'), {
+    recursive: true,
+  });
 
   function testOnNodeProject(projectName: string) {
     const projectPath = tmpDirPath(projectName);
@@ -56,7 +59,8 @@ describe('Integration Tests', () => {
   // Development mode tests
   testOnNodeProject('dev-explicit');
   testOnNodeProject('dev-node');
-  testOnNodeProject('dev-deno');
+  testOnNodeProject('dev-deno-with-deno-build');
+  testOnNodeProject('dev-deno-with-node-build');
   testOnNodeProject('dev-bun');
   testOnNodeProject('dev-webpack');
   testOnNodeProject('dev-rspack');
@@ -68,7 +72,8 @@ describe('Integration Tests', () => {
 
   // Production mode tests
   testOnNodeProject('prod-node');
-  testOnNodeProject('prod-deno');
+  testOnNodeProject('prod-deno-with-deno-build');
+  testOnNodeProject('prod-deno-with-node-build');
   testOnNodeProject('prod-bun');
   testOnNodeProject('prod-webpack');
   testOnNodeProject('prod-rspack');

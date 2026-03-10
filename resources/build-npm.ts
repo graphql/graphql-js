@@ -8,6 +8,8 @@ import { changeExtensionInImportPaths } from './change-extension-in-import-paths
 import { inlineInvariant } from './inline-invariant.js';
 import type { PlatformConditionalExports } from './utils.js';
 import {
+  buildCJSDevModeStub,
+  buildESMDevModeStub,
   prettify,
   readPackageJSON,
   readTSConfig,
@@ -156,26 +158,20 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
 
       const relativePathAndName = path.relative(outDir, `${dir}/${name}`);
 
-      let lines = [
-        `const { enableDevMode } = require('${relativePathToProd}/devMode.js');`,
-        'enableDevMode();',
-        `module.exports = require('${relativePathToProd}/${relativePathAndName}.js');`,
-      ];
-
       writeGeneratedFile(
         path.join(devDir, path.relative(outDir, `${dir}/${name}.js`)),
-        lines.join('\n'),
+        buildCJSDevModeStub(
+          `${relativePathToProd}/devMode.js`,
+          `${relativePathToProd}/${relativePathAndName}.js`,
+        ),
       );
-
-      lines = [
-        `import { enableDevMode } from '${relativePathToProd}/devMode.mjs';`,
-        'enableDevMode();',
-        `export * from '${relativePathToProd}/${relativePathAndName}.mjs';`,
-      ];
 
       writeGeneratedFile(
         path.join(devDir, path.relative(outDir, `${dir}/${name}.mjs`)),
-        lines.join('\n'),
+        buildESMDevModeStub(
+          `${relativePathToProd}/devMode.mjs`,
+          `${relativePathToProd}/${relativePathAndName}.mjs`,
+        ),
       );
 
       if (base === 'index.js') {

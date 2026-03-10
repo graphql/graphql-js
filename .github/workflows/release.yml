@@ -15,7 +15,6 @@ jobs:
       tag: ${{ steps.release_metadata.outputs.tag }}
       dist_tag: ${{ steps.release_metadata.outputs.dist_tag }}
       prerelease: ${{ steps.release_metadata.outputs.prerelease }}
-      tarball_name: ${{ steps.release_metadata.outputs.tarball_name }}
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref_name }}
       cancel-in-progress: true
@@ -50,7 +49,6 @@ jobs:
             "dist_tag=\(.distTag)",
             "prerelease=\(.prerelease)",
             "package_spec=\(.packageSpec)",
-            "tarball_name=\(.tarballName)",
             "should_publish=\(.shouldPublish)"
           ' <<< "${release_metadata_json}" >> "${GITHUB_OUTPUT}"
           jq -r '.releaseNotes' <<< "${release_metadata_json}" > ./release-notes.md
@@ -67,16 +65,23 @@ jobs:
         if: steps.release_metadata.outputs.should_publish == 'true'
         run: npm run build:npm
 
-      - name: Pack npmDist package
-        if: steps.release_metadata.outputs.should_publish == 'true'
-        run: npm pack ./npmDist --pack-destination . > /dev/null
-
-      - name: Upload npm package tarball
+      - name: Upload npmDist package
         if: steps.release_metadata.outputs.should_publish == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: npmDist-tarball
-          path: ./${{ steps.release_metadata.outputs.tarball_name }}
+          name: npmDist
+          path: ./npmDist
+
+      - name: Build Deno package
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        run: npm run build:deno
+
+      - name: Upload denoDist package
+        if: steps.release_metadata.outputs.should_publish == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: denoDist
+          path: ./denoDist
 
       - name: Upload release notes
         if: steps.release_metadata.outputs.should_publish == 'true'
@@ -89,7 +94,7 @@ jobs:
     name: Publish npm package
     needs: check-publish
     # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
-    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' && needs.check-publish.outputs.should_publish == 'true' && needs.check-publish.result == 'success' }}
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' && needs.check-publish.outputs.should_publish == 'true' }}
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -109,22 +114,54 @@ jobs:
       - name: Download npmDist package
         uses: actions/download-artifact@v4
         with:
-          name: npmDist-tarball
-          path: ./artifacts
+          name: npmDist
+          path: ./npmDist
 
-      - name: Dry-run npm publish
+      - name: Publish to npm
+        working-directory: ./npmDist
         run: |
           if [ -n "${{ needs.check-publish.outputs.dist_tag }}" ]; then
-            npm publish --provenance --tag "${{ needs.check-publish.outputs.dist_tag }}" "./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
+            npm publish --provenance --tag "${{ needs.check-publish.outputs.dist_tag }}"
           else
-            npm publish --provenance "./artifacts/${{ needs.check-publish.outputs.tarball_name }}"
+            npm publish --provenance
           fi
+
+  publish-jsr:
+    name: Publish JSR package
+    needs: check-publish
+    # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' && needs.check-publish.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read # for actions/checkout
+      id-token: write # for JSR trusted publishing via OIDC
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download denoDist package
+        uses: actions/download-artifact@v4
+        with:
+          name: denoDist
+          path: ./denoDist
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Publish to JSR
+        working-directory: ./denoDist
+        run: deno publish
 
   create-release:
     name: Create release
     needs: check-publish
     # Keep this guard on every job for defense-in-depth in case job dependencies are refactored.
-    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' && needs.check-publish.outputs.should_publish == 'true' && needs.check-publish.result == 'success' }}
+    if: ${{ !github.event.repository.fork && github.repository == 'graphql/graphql-js' && github.ref_name == '17.x.x' && needs.check-publish.outputs.should_publish == 'true' }}
     runs-on: ubuntu-latest
     environment: release
     permissions:
