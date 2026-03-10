@@ -74,4 +74,38 @@ describe('printSourceLocation', () => {
       10 |
     `);
   });
+
+  it('prints custom amount of lines before and after the provided location', () => {
+    const result = printSourceLocation(
+      new Source(dedent`
+        type Query {
+          me: User
+          empty: Empty
+        }
+
+        type Empty {
+
+        }
+
+        type User {
+          id: ID
+        }
+
+      `, 'Test'),
+      { line: 8, column: 1 },
+      3,
+    );
+
+    expect(result).to.equal(dedent`
+      Test:8:1
+       5 |
+       6 | type Empty {
+       7 |
+       8 | }
+         | ^
+       9 |
+      10 | type User {
+      11 |   id: ID
+    `);
+  });
 });

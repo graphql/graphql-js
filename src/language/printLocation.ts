@@ -19,6 +19,10 @@ export function printLocation(location: Location): string {
 export function printSourceLocation(
   source: Source,
   sourceLocation: SourceLocation,
+  /**
+   * Optional number of lines to be added before and after the original location (default: `1`).
+   */
+  padding: number = 1
 ): string {
   const firstLineColumnOffset = source.locationOffset.column - 1;
   const body = ''.padStart(firstLineColumnOffset) + source.body;
@@ -56,16 +60,50 @@ export function printSourceLocation(
     );
   }
 
+  const { before, after } = generatePaddingLines(lineNum, lineIndex, lines, padding);
+
   return (
     locationStr +
     printPrefixedLines([
       // Lines specified like this: ["prefix", "string"],
-      [`${lineNum - 1} |`, lines[lineIndex - 1]],
+      ...before,
       [`${lineNum} |`, locationLine],
       ['|', '^'.padStart(columnNum)],
-      [`${lineNum + 1} |`, lines[lineIndex + 1]],
+      ...after,
     ])
   );
+}
+
+function generatePaddingLines(
+  lineNum: number,
+  lineIndex: number,
+  lines: string[],
+  margin: number
+): {
+  before: readonly [string, string][];
+  after: readonly [string, string][];
+} {
+  const before: [string, string][] = [];
+  const after: [string, string][] = [];
+
+  for (let i = 1; i <= margin; i++) {
+    const prevLineIndex = lineIndex - i;
+    
+    if (prevLineIndex >= 0) {
+      before.unshift([`${lineNum - i} |`, lines[prevLineIndex]]);
+    }
+
+    const nextLineIndex = lineIndex + i;
+    
+    if (nextLineIndex < lines.length) {
+      after.push([`${lineNum + i} |`, lines[nextLineIndex]]);
+    }
+  }
+  
+  return {
+    before,
+    after
+  };
 }
 
 function printPrefixedLines(
