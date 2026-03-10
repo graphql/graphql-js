@@ -70,14 +70,10 @@ getChangeLog()
 function getChangeLog() {
   const workingTreeVersion = packageJSON.version;
   const fromRev = parseFromRevArg(process.argv.slice(2));
-  const { title, rangeStart, rangeEnd } = resolveChangelogRangeConfig(
+  const { title, commitsList } = resolveChangeLogConfig(
     workingTreeVersion,
     fromRev,
   );
-  const commitsRange = `${rangeStart}..${rangeEnd}`;
-  const commitsListOutput = exec(`git rev-list --reverse ${commitsRange}`);
-  const commitsList =
-    commitsListOutput === '' ? [] : commitsListOutput.split('\n');
 
   const date = exec('git log -1 --format=%cd --date=short');
   return getCommitsInfo(commitsList)
@@ -100,59 +96,91 @@ function parseFromRevArg(rawArgs) {
   );
 }
 
-function resolveChangelogRangeConfig(workingTreeVersion, fromRev) {
+function getTaggedVersionCommit(version) {
+  const tag = `v${version}`;
+  if (!tagExists(tag)) {
+    return null;
+  }
+  return exec(`git rev-parse ${tag}^{}`);
+}
+
+function getFirstParentCommit(commit) {
+  const commitWithParents = exec(`git rev-list --parents -n 1 ${commit}`);
+  if (commitWithParents === '') {
+    return null;
+  }
+
+  const [, firstParent] = commitWithParents.split(' ');
+  return firstParent || null;
+}
+
+function resolveCommitRefOrThrow(ref) {
+  try {
+    return exec(`git rev-parse ${ref}`);
+  } catch (error) {
+    throw new Error(
+      `Unable to resolve fromRev "${ref}" to a local commit. ` +
+        'Pass a reachable first-parent revision:\n' +
+        '  npm run changelog -- <fromRev>',
+      { cause: error },
+    );
+  }
+}
+
+function resolveChangeLogConfig(workingTreeVersion, fromRev) {
   const workingTreeReleaseTag = `v${workingTreeVersion}`;
+  const title = tagExists(workingTreeReleaseTag)
+    ? 'Unreleased'
+    : workingTreeReleaseTag;
 
-  // packageJSON in the working tree can differ from HEAD:package.json during
-  // release:prepare after npm version updates files but before committing.
-  // Supported scenario 1: release preparation not started
-  // - working-tree version tag exists
-  // - HEAD version older than or equal to working-tree version, must also exist
-  if (tagExists(workingTreeReleaseTag)) {
-    return {
-      title: 'Unreleased',
-      rangeStart: fromRev || workingTreeReleaseTag,
-      rangeEnd: 'HEAD',
-    };
+  const commitsList = [];
+  let rangeStart =
+    fromRev != null
+      ? resolveCommitRefOrThrow(fromRev)
+      : getTaggedVersionCommit(workingTreeVersion);
+
+  let rangeStartReached = false;
+  let lastCheckedVersion = workingTreeVersion;
+  let newerCommit = null;
+  let newerVersion = null;
+  let commit = exec('git rev-parse HEAD');
+
+  while (commit != null) {
+    const commitVersion = readPackageJSONAtRef(commit).version;
+
+    if (rangeStart == null && commitVersion !== lastCheckedVersion) {
+      rangeStart = getTaggedVersionCommit(commitVersion);
+      lastCheckedVersion = commitVersion;
+    }
+
+    if (newerCommit != null && newerVersion === commitVersion) {
+      commitsList.push(newerCommit);
+    }
+
+    if (rangeStart != null && commit === rangeStart) {
+      rangeStartReached = true;
+      break;
+    }
+
+    newerCommit = commit;
+    newerVersion = commitVersion;
+    commit = getFirstParentCommit(commit);
   }
 
-  const headVersion = readPackageJSONAtRef('HEAD').version;
-  const headReleaseTag = `v${headVersion}`;
-
-  // Supported scenario 2: release preparation started
-  // - working-tree version tag not yet created
-  // - HEAD version tag exists
-  if (tagExists(headReleaseTag)) {
-    return {
-      title: workingTreeReleaseTag,
-      rangeStart: fromRev || headReleaseTag,
-      rangeEnd: 'HEAD',
-    };
+  if (rangeStart == null || !rangeStartReached) {
+    throw new Error(
+      'Unable to determine changelog range from local first-parent history.\n' +
+        'This can happen with a shallow clone, missing tags, or an unreachable fromRev.\n' +
+        'Fetch more history/tags (for example, "git fetch --tags --deepen=200") ' +
+        'or pass an explicit reachable first-parent fromRev:\n' +
+        '  npm run changelog -- <fromRev>',
+    );
   }
 
-  // Supported scenario 3:
-  // - release preparation committed
-  // - working-tree version tag equal to HEAD version tag, both not yet created
-  // - HEAD~1 version tag exists
-  const parentVersion = readPackageJSONAtRef('HEAD~1').version;
-  const parentTag = `v${parentVersion}`;
-  const parentTagExists = tagExists(parentTag);
-  if (workingTreeReleaseTag === headReleaseTag && parentTagExists) {
-    console.warn('Release committed, should already contain this changelog!');
-
-    return {
-      title: workingTreeReleaseTag,
-      rangeStart: fromRev || parentTag,
-      rangeEnd: 'HEAD~1',
-    };
-  }
-
-  throw new Error(
-    'Unable to determine changelog range. One of the following scenarios must be true:\n' +
-      '1) HEAD/working-tree release tags exist, i.e. release preparation not started.\n' +
-      '2) HEAD release tag exists, but working-tree release tag not yet created, i.e. release preparation started, not yet committed.\n' +
-      '3) HEAD/working-tree release tags not yet created, i.e. release preparation committed, not yet released, no additional commits on branch.',
-  );
+  return {
+    title,
+    commitsList: commitsList.reverse(),
+  };
 }
 
 function genChangeLog(title, date, allPRs) {

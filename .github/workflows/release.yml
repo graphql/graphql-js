@@ -142,22 +142,35 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view "${{ needs.check-publish.outputs.tag }}" > /dev/null 2>&1; then
-            echo "GitHub release ${{ needs.check-publish.outputs.tag }} already exists. Skipping release creation."
+          tag="${{ needs.check-publish.outputs.tag }}"
+
+          if gh release view "${tag}" > /dev/null 2>&1; then
+            echo "GitHub release ${tag} already exists. Skipping release creation."
             exit 0
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" > /dev/null; then
+            echo "Tag ${tag} already exists on origin."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "${tag}" "${GITHUB_SHA}" -m "${tag}"
+            gh auth setup-git
+            git push origin "refs/tags/${tag}"
+            echo "Created annotated tag ${tag} at ${GITHUB_SHA}."
           fi
 
           release_notes_file="./artifacts/release-notes.md"
 
           if [ "${{ needs.check-publish.outputs.prerelease }}" = "true" ]; then
-            gh release create "${{ needs.check-publish.outputs.tag }}" \
-              --target "${GITHUB_SHA}" \
-              --title "${{ needs.check-publish.outputs.tag }}" \
+            gh release create "${tag}" \
+              --verify-tag \
+              --title "${tag}" \
               --notes-file "${release_notes_file}" \
               --prerelease
           else
-            gh release create "${{ needs.check-publish.outputs.tag }}" \
-              --target "${GITHUB_SHA}" \
-              --title "${{ needs.check-publish.outputs.tag }}" \
+            gh release create "${tag}" \
+              --verify-tag \
+              --title "${tag}" \
               --notes-file "${release_notes_file}"
           fi
