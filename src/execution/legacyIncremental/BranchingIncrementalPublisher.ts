@@ -1,6 +1,7 @@
 import type { ObjMap } from '../../jsutils/ObjMap.js';
 import { addPath, pathToArray } from '../../jsutils/Path.js';
 
+import { ensureGraphQLError } from '../../error/ensureGraphQLError.js';
 import type { GraphQLError } from '../../error/GraphQLError.js';
 
 import type {
@@ -157,7 +158,7 @@ export class BranchingIncrementalPublisher {
               path: pathToArray(group.path),
             },
             group.label,
-            [event.error as GraphQLError],
+            [ensureGraphQLError(event.error)],
           ),
         );
         break;
@@ -205,7 +206,7 @@ export class BranchingIncrementalPublisher {
               path: pathToArray(stream.path),
             },
             stream.label,
-            [event.error as GraphQLError],
+            [ensureGraphQLError(event.error)],
           ),
         );
         break;

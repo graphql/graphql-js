@@ -14,7 +14,7 @@ export function expectPromise(maybePromise: unknown) {
       return maybePromise;
     },
     async toRejectWith(message: string) {
-      let caughtError: Error | undefined;
+      let caughtError: unknown;
       let resolved;
       let rejected = false;
       try {

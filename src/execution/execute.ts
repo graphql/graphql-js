@@ -8,6 +8,7 @@ import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 
+import { ensureGraphQLError } from '../error/ensureGraphQLError.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import { locatedError } from '../error/locatedError.js';
 
@@ -529,13 +530,13 @@ function createSourceEventStreamImpl(
     const eventStream = executeSubscription(validatedExecutionArgs);
     if (isPromise(eventStream)) {
       return eventStream.then(undefined, (error: unknown) => ({
-        errors: [error as GraphQLError],
+        errors: [ensureGraphQLError(error)],
       }));
     }
 
     return eventStream;
   } catch (error) {
-    return { errors: [error] };
+    return { errors: [ensureGraphQLError(error)] };
   }
 }
 

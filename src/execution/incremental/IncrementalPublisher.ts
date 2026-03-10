@@ -1,6 +1,7 @@
 import type { ObjMap } from '../../jsutils/ObjMap.js';
 import { pathToArray } from '../../jsutils/Path.js';
 
+import { ensureGraphQLError } from '../../error/ensureGraphQLError.js';
 import type { GraphQLError } from '../../error/GraphQLError.js';
 
 import { mapAsyncIterable } from '../mapAsyncIterable.js';
@@ -211,7 +212,7 @@ export class IncrementalPublisher {
         const id = this._ensureId(group);
         context.completed.push({
           id,
-          errors: [error as GraphQLError],
+          errors: [ensureGraphQLError(error)],
         });
         this._ids.delete(group);
         break;
@@ -250,7 +251,7 @@ export class IncrementalPublisher {
         const stream = event.stream;
         context.completed.push({
           id: this._ensureId(stream),
-          errors: [event.error as GraphQLError],
+          errors: [ensureGraphQLError(event.error)],
         });
         this._ids.delete(stream);
         break;

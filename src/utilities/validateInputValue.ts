@@ -8,6 +8,7 @@ import type { Path } from '../jsutils/Path.js';
 import { addPath, pathToArray } from '../jsutils/Path.js';
 import { suggestionList } from '../jsutils/suggestionList.js';
 
+import { ensureGraphQLError } from '../error/ensureGraphQLError.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 
 import type { ASTNode, ValueNode, VariableNode } from '../language/ast.js';
@@ -183,7 +184,7 @@ function validateInputValueImpl(
     assertLeafType(type);
 
     let result;
-    let caughtError;
+    let caughtError: unknown;
 
     try {
       result = type.coerceInputValue(inputValue, hideSuggestions);
@@ -200,11 +201,11 @@ function validateInputValueImpl(
         onError,
         `Expected value of type "${type}"${
           caughtError != null
-            ? `, but encountered error "${caughtError.message != null && caughtError.message !== '' ? caughtError.message : caughtError}"; found`
+            ? `, but encountered error "${getCaughtErrorMessage(caughtError)}"; found`
             : ', found'
         }: ${inspect(inputValue)}.`,
         path,
-        caughtError,
+        ensureGraphQLError(caughtError),
       );
     }
   }
@@ -454,7 +455,7 @@ function validateInputLiteralImpl(
     assertLeafType(type);
 
     let result;
-    let caughtError;
+    let caughtError: unknown;
     try {
       result = type.coerceInputLiteral
         ? type.coerceInputLiteral(
@@ -479,12 +480,12 @@ function validateInputLiteralImpl(
         context.onError,
         `Expected value of type "${type}"${
           caughtError != null
-            ? `, but encountered error "${caughtError.message != null && caughtError.message !== '' ? caughtError.message : caughtError}"; found`
+            ? `, but encountered error "${getCaughtErrorMessage(caughtError)}"; found`
             : ', found'
         }: ${print(valueNode)}.`,
         valueNode,
         path,
-        caughtError,
+        ensureGraphQLError(caughtError),
       );
     }
   }
@@ -509,7 +510,21 @@ function reportInvalidLiteral(
   originalError?: GraphQLError,
 ): void {
   onError(
-    new GraphQLError(message, { nodes: valueNode, originalError }),
+    new GraphQLError(message, {
+      nodes: valueNode,
+      originalError,
+    }),
     pathToArray(path),
   );
+}
+
+function getCaughtErrorMessage(caughtError: unknown): string {
+  if (isObjectLike(caughtError)) {
+    const message = caughtError.message;
+    if (typeof message === 'string' && message !== '') {
+      return message;
+    }
+  }
+
+  return String(caughtError);
 }

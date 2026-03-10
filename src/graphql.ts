@@ -1,6 +1,7 @@
 import { isPromise } from './jsutils/isPromise.js';
 import type { PromiseOrValue } from './jsutils/PromiseOrValue.js';
 
+import { ensureGraphQLError } from './error/ensureGraphQLError.js';
 import type { GraphQLError } from './error/GraphQLError.js';
 
 import type { DocumentNode } from './language/ast.js';
@@ -104,14 +105,14 @@ function graphqlImpl(args: GraphQLArgs): PromiseOrValue<ExecutionResult> {
   try {
     document = harness.parse(source, args);
   } catch (syntaxError) {
-    return { errors: [syntaxError] };
+    return { errors: [ensureGraphQLError(syntaxError)] };
   }
 
   if (isPromise(document)) {
     return document.then(
       (resolvedDocument) =>
         validateAndExecute(harness, args, schema, resolvedDocument),
-      (syntaxError: unknown) => ({ errors: [syntaxError as GraphQLError] }),
+      (syntaxError: unknown) => ({ errors: [ensureGraphQLError(syntaxError)] }),
     );
   }
 

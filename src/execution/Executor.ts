@@ -12,6 +12,7 @@ import { promiseForObject } from '../jsutils/promiseForObject.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
 import { promiseReduce } from '../jsutils/promiseReduce.js';
 
+import { ensureGraphQLError } from '../error/ensureGraphQLError.js';
 import type { GraphQLFormattedError } from '../error/GraphQLError.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 import { locatedError } from '../error/locatedError.js';
@@ -302,7 +303,7 @@ export class Executor<
           },
           (error: unknown) => {
             onFinish();
-            this.collectedErrors.add(error as GraphQLError, undefined);
+            this.collectedErrors.add(ensureGraphQLError(error), undefined);
             return this.buildResponse(null);
           },
         );
@@ -312,7 +313,7 @@ export class Executor<
       return this.buildResponse(result);
     } catch (error) {
       onFinish();
-      this.collectedErrors.add(error as GraphQLError, undefined);
+      this.collectedErrors.add(ensureGraphQLError(error), undefined);
       return this.buildResponse(null);
     }
   }

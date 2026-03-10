@@ -3,6 +3,7 @@ import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap, ReadOnlyObjMap } from '../jsutils/ObjMap.js';
 import { printPathArray } from '../jsutils/printPathArray.js';
 
+import { ensureGraphQLError } from '../error/ensureGraphQLError.js';
 import { GraphQLError } from '../error/GraphQLError.js';
 
 import type {
@@ -89,7 +90,7 @@ export function getVariableValues(
       return { variableValues };
     }
   } catch (error) {
-    errors.push(error);
+    errors.push(ensureGraphQLError(error));
   }
 
   return { errors };

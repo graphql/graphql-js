@@ -22,7 +22,8 @@ describe('expectPromise', () => {
         'foo',
       ); /* c8 ignore start */
     } /* c8 ignore stop */ catch (err) {
-      expect(err.message).to.equal(
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      expect(errorMessage).to.equal(
         "Promise should have rejected with message 'foo', but resolved as '{}'",
       );
     }
@@ -34,7 +35,8 @@ describe('expectPromise', () => {
         'bar',
       ); /* c8 ignore start */
     } /* c8 ignore stop */ catch (err) {
-      expect(err.message).to.equal(
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      expect(errorMessage).to.equal(
         "expected Error: foo to have property 'message' of 'bar', but got 'foo'",
       );
     }

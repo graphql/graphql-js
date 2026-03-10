@@ -19,7 +19,6 @@
     // Type Checking
     // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
     "strict": true,
-    "useUnknownInCatchVariables": false, // FIXME part of 'strict' but is temporary disabled
     // All checks that are not part of "strict"
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

@@ -286,7 +286,9 @@ function runBenchmark(
       results.push(computeStats(revision, samples));
       process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
     } catch (error) {
-      console.log('  ' + revision + ': ' + red(error.message));
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.log('  ' + revision + ': ' + red(errorMessage));
     }
   }
   console.log('\n');
