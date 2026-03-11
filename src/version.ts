@@ -4,7 +4,7 @@
 /**
  * A string containing the version of the GraphQL.js library
  */
-export const version = '17.0.0-alpha.13' as string;
+export const version = '17.0.0-alpha.14' as string;
 
 /**
  * An object containing the components of the GraphQL.js version string
@@ -18,5 +18,5 @@ export const versionInfo: Readonly<{
   major: 17 as number,
   minor: 0 as number,
   patch: 0 as number,
-  preReleaseTag: 'alpha.13' as string | null,
+  preReleaseTag: 'alpha.14' as string | null,
 });
