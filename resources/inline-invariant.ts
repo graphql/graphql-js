@@ -11,12 +11,14 @@ import ts from 'typescript';
  *
  *  if (!(<cond>)) invariant(false, ...)
  */
-export function inlineInvariant(context: ts.TransformationContext) {
+export function inlineInvariant(
+  context: ts.TransformationContext,
+): ts.Transformer<ts.SourceFile> {
   const { factory } = context;
 
   return visitSourceFile;
 
-  function visitSourceFile(sourceFile: ts.SourceFile) {
+  function visitSourceFile(sourceFile: ts.SourceFile): ts.SourceFile {
     return ts.visitNode(sourceFile, visitNode, ts.isSourceFile);
   }
 

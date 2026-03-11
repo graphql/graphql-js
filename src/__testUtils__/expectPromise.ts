@@ -3,17 +3,22 @@ import { assert, expect } from 'chai';
 import { inspect } from '../jsutils/inspect.js';
 import { isPromise } from '../jsutils/isPromise.js';
 
-export function expectPromise(maybePromise: unknown) {
+interface PromiseExpectation {
+  toResolve: () => Promise<unknown>;
+  toRejectWith: (message: string) => Promise<void>;
+}
+
+export function expectPromise(maybePromise: unknown): PromiseExpectation {
   assert(
     isPromise(maybePromise),
     `Expected a promise, received '${inspect(maybePromise)}'`,
   );
 
   return {
-    toResolve() {
+    toResolve(): Promise<unknown> {
       return maybePromise;
     },
-    async toRejectWith(message: string) {
+    async toRejectWith(message: string): Promise<void> {
       let caughtError: unknown;
       let resolved;
       let rejected = false;

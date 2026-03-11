@@ -6,7 +6,9 @@ export type { SourceLocation } from './location.js';
 export { printLocation, printSourceLocation } from './printLocation.js';
 
 // @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
-
+// Deno  misclassifies this merged value+type re-export and requires `export type`.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore TS1205
 export { Kind } from './kinds.js';
 
 export { TokenKind } from './tokenKind.js';

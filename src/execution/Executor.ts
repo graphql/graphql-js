@@ -119,7 +119,11 @@ export interface ValidatedExecutionArgs {
  * type. Memoizing ensures the subfields are not repeatedly calculated, which
  * saves overhead when resolving lists of values.
  */
-export const collectSubfields = memoize3(
+export const collectSubfields: (
+  validatedExecutionArgs: ValidatedExecutionArgs,
+  returnType: GraphQLObjectType,
+  fieldDetailsList: FieldDetailsList,
+) => ReturnType<typeof _collectSubfields> = memoize3(
   (
     validatedExecutionArgs: ValidatedExecutionArgs,
     returnType: GraphQLObjectType,
@@ -138,7 +142,7 @@ export const collectSubfields = memoize3(
   },
 );
 
-export const getStreamUsage = memoize2(
+export const getStreamUsage: typeof _getStreamUsage = memoize2(
   (
     validatedExecutionArgs: ValidatedExecutionArgs,
     fieldDetailsList: FieldDetailsList,
@@ -160,7 +164,7 @@ class CollectedErrors {
     return this._errors;
   }
 
-  add(error: GraphQLError, path: Path | undefined) {
+  add(error: GraphQLError, path: Path | undefined): void {
     // Do not modify errors list if the execution position for this error or
     // any of its ancestors has already been nulled via error propagation.
     // This check should be unnecessary for implementations able to implement

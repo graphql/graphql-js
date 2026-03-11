@@ -48,7 +48,7 @@ export class SchemaCoordinateLexer implements LexerInterface {
     this.token = startOfFileToken;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'SchemaCoordinateLexer';
   }
 

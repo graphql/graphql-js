@@ -12,8 +12,10 @@
     "inlineSources": true,
     "module": "node16",
     "moduleResolution": "node16",
+    "declaration": true,
     "noEmit": true,
     "isolatedModules": true,
+    "isolatedDeclarations": true,
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
     // Type Checking

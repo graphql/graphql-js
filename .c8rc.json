@@ -7,6 +7,7 @@
     "src/jsutils/Maybe.ts",
     "src/jsutils/ObjMap.ts",
     "src/jsutils/PromiseOrValue.ts",
+    "src/language/KindTypeMap.ts",
     "src/utilities/typedQueryDocumentNode.ts",
     "src/**/__tests__/**/*.ts"
   ],

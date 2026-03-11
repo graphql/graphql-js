@@ -83,7 +83,9 @@ import type { SDLValidationRule, ValidationRule } from './ValidationContext.js';
  * Technically these aren't part of the spec but they are strongly encouraged
  * validation rules.
  */
-export const recommendedRules = Object.freeze([MaxIntrospectionDepthRule]);
+export const recommendedRules: ReadonlyArray<ValidationRule> = Object.freeze([
+  MaxIntrospectionDepthRule,
+]);
 
 /**
  * This set includes all validation rules defined by the GraphQL spec.

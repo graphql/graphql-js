@@ -39,6 +39,6 @@ const Query = new GraphQLObjectType({
   },
 });
 
-export const viralSchema = new GraphQLSchema({
+export const viralSchema: GraphQLSchema = new GraphQLSchema({
   query: Query,
 });

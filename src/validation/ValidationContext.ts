@@ -62,7 +62,7 @@ export class ASTValidationContext {
     this._onError = onError;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'ASTValidationContext';
   }
 
@@ -154,11 +154,11 @@ export class SDLValidationContext extends ASTValidationContext {
     this._schema = schema;
   }
 
-  get hideSuggestions() {
+  get hideSuggestions(): boolean {
     return false;
   }
 
-  override get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag](): string {
     return 'SDLValidationContext';
   }
 
@@ -198,11 +198,11 @@ export class ValidationContext extends ASTValidationContext {
     this._hideSuggestions = hideSuggestions ?? false;
   }
 
-  override get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag](): string {
     return 'ValidationContext';
   }
 
-  get hideSuggestions() {
+  get hideSuggestions(): boolean {
     return this._hideSuggestions;
   }
 

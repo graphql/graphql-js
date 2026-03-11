@@ -20,7 +20,12 @@ export const version = '${version}' as string;
 /**
  * An object containing the components of the GraphQL.js version string
  */
-export const versionInfo = Object.freeze({
+export const versionInfo: Readonly<{
+  major: number;
+  minor: number;
+  patch: number;
+  preReleaseTag: string | null;
+}> = Object.freeze({
   major: ${major} as number,
   minor: ${minor} as number,
   patch: ${patch} as number,

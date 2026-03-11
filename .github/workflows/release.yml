@@ -134,14 +134,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: read # for actions/checkout
+      contents: read # for actions/download-artifact
       id-token: write # for JSR trusted publishing via OIDC
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
       - name: Download denoDist package
         uses: actions/download-artifact@v4
         with:

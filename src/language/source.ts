@@ -41,7 +41,7 @@ export class Source {
     );
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'Source';
   }
 }

@@ -63,7 +63,7 @@ export class Lexer implements LexerInterface {
     this.lineStart = 0;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'Lexer';
   }
 

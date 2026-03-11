@@ -26,7 +26,7 @@ jobs:
         run: npm run lint
 
       - name: Check Types
-        run: npm run check
+        run: npm run check:ts
 
       - name: Lint Prettier
         run: npm run prettier:check
@@ -244,7 +244,7 @@ jobs:
           name: denoDist
           path: ./denoDist
 
-  type-check-deno-dist:
+  check-deno-dist:
     name: Type check denoDist on Deno v${{ matrix.deno_version_to_setup }}
     needs: build-deno-dist
     runs-on: ubuntu-latest
@@ -268,5 +268,12 @@ jobs:
         with:
           deno-version: ${{ matrix.deno_version_to_setup }}
 
-      - name: Check denoDist package
-        run: deno check ./denoDist/index.ts
+      - name: Run denoDist package publish dry-run checks
+        # `deno publish --dry-run` performs a number of checks including:
+        # (a) type-checking package modules/public API,
+        # (b) validating exports and module-graph resolution,
+        # (c) validating the publish file set (gitignore + publish.exclude/include),
+        # (d) validating package metadata/config, and
+        # (e) enforcing JSR slow-types checks.
+        working-directory: ./denoDist
+        run: deno publish --dry-run

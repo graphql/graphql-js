@@ -516,24 +516,27 @@ export const __TypeKind: GraphQLEnumType = new GraphQLEnumType({
   },
 });
 
-export const SchemaMetaFieldDef = new GraphQLField(undefined, '__schema', {
-  type: new GraphQLNonNull(__Schema),
-  description: 'Access the current type schema of this server.',
-  resolve: (_source, _args, _context, { schema }) => schema,
-});
+export const SchemaMetaFieldDef: GraphQLField<unknown, unknown> =
+  new GraphQLField<unknown, unknown>(undefined, '__schema', {
+    type: new GraphQLNonNull(__Schema),
+    description: 'Access the current type schema of this server.',
+    resolve: (_source, _args, _context, { schema }) => schema,
+  });
 
-export const TypeMetaFieldDef = new GraphQLField(undefined, '__type', {
-  type: __Type,
-  description: 'Request the type information of a single type.',
-  args: { name: { type: new GraphQLNonNull(GraphQLString) } },
-  resolve: (_source, { name }, _context, { schema }) => schema.getType(name),
-});
+export const TypeMetaFieldDef: GraphQLField<unknown, unknown> =
+  new GraphQLField<unknown, unknown>(undefined, '__type', {
+    type: __Type,
+    description: 'Request the type information of a single type.',
+    args: { name: { type: new GraphQLNonNull(GraphQLString) } },
+    resolve: (_source, { name }, _context, { schema }) => schema.getType(name),
+  });
 
-export const TypeNameMetaFieldDef = new GraphQLField(undefined, '__typename', {
-  type: new GraphQLNonNull(GraphQLString),
-  description: 'The name of the current Object type at runtime.',
-  resolve: (_source, _args, _context, { parentType }) => parentType.name,
-});
+export const TypeNameMetaFieldDef: GraphQLField<unknown, unknown> =
+  new GraphQLField<unknown, unknown>(undefined, '__typename', {
+    type: new GraphQLNonNull(GraphQLString),
+    description: 'The name of the current Object type at runtime.',
+    resolve: (_source, _args, _context, { parentType }) => parentType.name,
+  });
 
 export const introspectionTypes: ReadonlyArray<GraphQLNamedType> =
   Object.freeze([

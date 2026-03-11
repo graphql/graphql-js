@@ -135,7 +135,7 @@ const schemaSymbol: unique symbol = Symbol('Schema');
  * ```
  */
 export class GraphQLSchema {
-  readonly __kind = schemaSymbol;
+  readonly __kind: typeof schemaSymbol = schemaSymbol;
   description: Maybe<string>;
   extensions: Readonly<GraphQLSchemaExtensions>;
   astNode: Maybe<SchemaDefinitionNode>;
@@ -258,7 +258,7 @@ export class GraphQLSchema {
     }
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLSchema';
   }
 

@@ -90,6 +90,9 @@ interface JSRConfig {
   name: string;
   version: string;
   exports: { [entrypoint: string]: string };
+  publish: {
+    exclude: ReadonlyArray<string>;
+  };
 }
 
 async function writeJSRConfig(
@@ -122,6 +125,10 @@ async function writeJSRConfig(
     name: '@graphql/graphql-js',
     version,
     exports: jsrExports,
+    publish: {
+      // The package root is `denoDist/`, so unignore relative to that root.
+      exclude: ['!.'],
+    },
   };
 
   const prettified = await prettify(jsrConfigPath, JSON.stringify(jsrConfig));

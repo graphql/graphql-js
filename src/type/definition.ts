@@ -400,7 +400,7 @@ export class GraphQLList<
     this.ofType = ofType;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLList';
   }
 
@@ -445,7 +445,7 @@ export class GraphQLNonNull<
     this.ofType = ofType;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLNonNull';
   }
 
@@ -740,7 +740,7 @@ export class GraphQLScalarType<
     }
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLScalarType';
   }
 
@@ -904,7 +904,7 @@ export class GraphQLObjectType<
   TContext = any,
   TAbstract = any,
 > implements GraphQLSchemaElement {
-  readonly __kind = objectSymbol;
+  readonly __kind: typeof objectSymbol = objectSymbol;
   name: string;
   description: Maybe<string>;
   isTypeOf: Maybe<GraphQLIsTypeOfFn<TAbstract, TContext>>;
@@ -933,7 +933,7 @@ export class GraphQLObjectType<
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLObjectType';
   }
 
@@ -1188,7 +1188,7 @@ export class GraphQLField<
     this.astNode = config.astNode;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLField';
   }
 
@@ -1247,7 +1247,7 @@ export class GraphQLArgument implements GraphQLSchemaElement {
     this.astNode = config.astNode;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLArgument';
   }
 
@@ -1353,7 +1353,7 @@ export class GraphQLInterfaceType<
     this._interfaces = defineInterfaces.bind(undefined, config.interfaces);
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLInterfaceType';
   }
 
@@ -1482,7 +1482,7 @@ export class GraphQLUnionType<
     this._types = defineTypes.bind(undefined, config.types);
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLUnionType';
   }
 
@@ -1608,7 +1608,7 @@ export class GraphQLEnumType /* <T> */ implements GraphQLSchemaElement {
     this._nameLookup = null;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLEnumType';
   }
 
@@ -1833,7 +1833,7 @@ export class GraphQLEnumValue implements GraphQLSchemaElement {
     this.astNode = config.astNode;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLEnumValue';
   }
 
@@ -1913,7 +1913,7 @@ export class GraphQLInputObjectType implements GraphQLSchemaElement {
     this._fields = defineInputFieldMap.bind(undefined, this, config.fields);
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLInputObjectType';
   }
 
@@ -2041,7 +2041,7 @@ export class GraphQLInputField implements GraphQLSchemaElement {
     this.astNode = config.astNode;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLInputField';
   }
 

@@ -21,14 +21,16 @@ import ts from 'typescript';
  * ```
  *
  */
-export function changeExtensionInImportPaths(config: { extension: string }) {
+export function changeExtensionInImportPaths(config: {
+  extension: string;
+}): ts.TransformerFactory<ts.SourceFile> {
   const { extension } = config;
-  return (context: ts.TransformationContext) => {
+  return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
     const { factory } = context;
 
     return visitSourceFile;
 
-    function visitSourceFile(sourceFile: ts.SourceFile) {
+    function visitSourceFile(sourceFile: ts.SourceFile): ts.SourceFile {
       return ts.visitNode(sourceFile, visitNode, ts.isSourceFile);
     }
 

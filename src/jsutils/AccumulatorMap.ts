@@ -3,7 +3,7 @@
  */
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export class AccumulatorMap<K, T> extends Map<K, Array<T>> {
-  override get [Symbol.toStringTag]() {
+  override get [Symbol.toStringTag](): string {
     return 'AccumulatorMap';
   }
 

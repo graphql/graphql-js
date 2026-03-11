@@ -100,7 +100,7 @@ export class TypeInfo {
     }
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'TypeInfo';
   }
 
@@ -154,7 +154,7 @@ export class TypeInfo {
     return this._enumValue;
   }
 
-  enter(node: ASTNode) {
+  enter(node: ASTNode): void {
     const schema = this._schema;
     // Note: many of the types below are explicitly typed as "unknown" to drop
     // any assumptions of a valid schema to ensure runtime types are properly
@@ -292,7 +292,7 @@ export class TypeInfo {
     }
   }
 
-  leave(node: ASTNode) {
+  leave(node: ASTNode): void {
     switch (node.kind) {
       case Kind.DOCUMENT:
         this._fragmentSignaturesByName = /* c8 ignore start */ () =>

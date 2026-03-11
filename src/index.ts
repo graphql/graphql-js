@@ -230,8 +230,11 @@ export type {
 
 // Parse and operate on GraphQL language source files.
 // @see https://github.com/typescript-eslint/typescript-eslint/issues/10313
-
+// Deno  misclassifies this merged value+type re-export and requires `export type`.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore TS1205
 export { Kind } from './language/kinds.js';
+
 export {
   Token,
   Source,

@@ -9,7 +9,12 @@ export const version = '17.0.0-alpha.13' as string;
 /**
  * An object containing the components of the GraphQL.js version string
  */
-export const versionInfo = Object.freeze({
+export const versionInfo: Readonly<{
+  major: number;
+  minor: number;
+  patch: number;
+  preReleaseTag: string | null;
+}> = Object.freeze({
   major: 17 as number,
   minor: 0 as number,
   patch: 0 as number,

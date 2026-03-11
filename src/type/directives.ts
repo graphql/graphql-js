@@ -89,7 +89,7 @@ export class GraphQLDirective implements GraphQLSchemaElement {
     );
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'GraphQLDirective';
   }
 
@@ -177,7 +177,7 @@ export const GraphQLSkipDirective: GraphQLDirective = new GraphQLDirective({
 /**
  * Used to conditionally defer fragments.
  */
-export const GraphQLDeferDirective = new GraphQLDirective({
+export const GraphQLDeferDirective: GraphQLDirective = new GraphQLDirective({
   name: 'defer',
   description:
     'Directs the executor to defer this fragment when the `if` argument is true or undefined.',
@@ -201,7 +201,7 @@ export const GraphQLDeferDirective = new GraphQLDirective({
 /**
  * Used to conditionally stream list fields.
  */
-export const GraphQLStreamDirective = new GraphQLDirective({
+export const GraphQLStreamDirective: GraphQLDirective = new GraphQLDirective({
   name: 'stream',
   description:
     'Directs the executor to stream plural fields when the `if` argument is true or undefined.',
@@ -282,15 +282,16 @@ export const GraphQLOneOfDirective: GraphQLDirective = new GraphQLDirective({
 /**
  * Disables error propagation (experimental).
  */
-export const GraphQLDisableErrorPropagationDirective = new GraphQLDirective({
-  name: 'experimental_disableErrorPropagation',
-  description: 'Disables error propagation.',
-  locations: [
-    DirectiveLocation.QUERY,
-    DirectiveLocation.MUTATION,
-    DirectiveLocation.SUBSCRIPTION,
-  ],
-});
+export const GraphQLDisableErrorPropagationDirective: GraphQLDirective =
+  new GraphQLDirective({
+    name: 'experimental_disableErrorPropagation',
+    description: 'Disables error propagation.',
+    locations: [
+      DirectiveLocation.QUERY,
+      DirectiveLocation.MUTATION,
+      DirectiveLocation.SUBSCRIPTION,
+    ],
+  });
 
 /**
  * The full list of specified directives.

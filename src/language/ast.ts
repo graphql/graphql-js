@@ -1,4 +1,4 @@
-import type { Kind } from './kinds.js';
+import type { KindTypeMap } from './KindTypeMap.js';
 import type { Source } from './source.js';
 import type { TokenKind } from './tokenKind.js';
 
@@ -40,7 +40,7 @@ export class Location {
     this.source = source;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'Location';
   }
 
@@ -115,7 +115,7 @@ export class Token {
     this.next = null;
   }
 
-  get [Symbol.toStringTag]() {
+  get [Symbol.toStringTag](): string {
     return 'Token';
   }
 
@@ -320,7 +320,7 @@ export function isNode(maybeNode: any): maybeNode is ASTNode {
 /** Name */
 
 export interface NameNode {
-  readonly kind: typeof Kind.NAME;
+  readonly kind: KindTypeMap['NAME'];
   readonly loc?: Location | undefined;
   readonly value: string;
 }
@@ -328,7 +328,7 @@ export interface NameNode {
 /** Document */
 
 export interface DocumentNode {
-  readonly kind: typeof Kind.DOCUMENT;
+  readonly kind: KindTypeMap['DOCUMENT'];
   readonly loc?: Location | undefined;
   readonly definitions: ReadonlyArray<DefinitionNode>;
   readonly tokenCount?: number | undefined;
@@ -344,7 +344,7 @@ export type ExecutableDefinitionNode =
   | FragmentDefinitionNode;
 
 export interface OperationDefinitionNode {
-  readonly kind: typeof Kind.OPERATION_DEFINITION;
+  readonly kind: KindTypeMap['OPERATION_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly operation: OperationTypeNode;
@@ -366,7 +366,7 @@ export type OperationTypeNode =
   (typeof OperationTypeNode)[keyof typeof OperationTypeNode];
 
 export interface VariableDefinitionNode {
-  readonly kind: typeof Kind.VARIABLE_DEFINITION;
+  readonly kind: KindTypeMap['VARIABLE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly variable: VariableNode;
@@ -376,13 +376,13 @@ export interface VariableDefinitionNode {
 }
 
 export interface VariableNode {
-  readonly kind: typeof Kind.VARIABLE;
+  readonly kind: KindTypeMap['VARIABLE'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
 }
 
 export interface SelectionSetNode {
-  kind: typeof Kind.SELECTION_SET;
+  kind: KindTypeMap['SELECTION_SET'];
   loc?: Location | undefined;
   selections: ReadonlyArray<SelectionNode>;
 }
@@ -390,7 +390,7 @@ export interface SelectionSetNode {
 export type SelectionNode = FieldNode | FragmentSpreadNode | InlineFragmentNode;
 
 export interface FieldNode {
-  readonly kind: typeof Kind.FIELD;
+  readonly kind: KindTypeMap['FIELD'];
   readonly loc?: Location | undefined;
   readonly alias?: NameNode | undefined;
   readonly name: NameNode;
@@ -400,21 +400,21 @@ export interface FieldNode {
 }
 
 export interface ArgumentNode {
-  readonly kind: typeof Kind.ARGUMENT;
+  readonly kind: KindTypeMap['ARGUMENT'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly value: ValueNode;
 }
 
 export interface ConstArgumentNode {
-  readonly kind: typeof Kind.ARGUMENT;
+  readonly kind: KindTypeMap['ARGUMENT'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly value: ConstValueNode;
 }
 
 export interface FragmentArgumentNode {
-  readonly kind: typeof Kind.FRAGMENT_ARGUMENT;
+  readonly kind: KindTypeMap['FRAGMENT_ARGUMENT'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly value: ValueNode;
@@ -423,7 +423,7 @@ export interface FragmentArgumentNode {
 /** Fragments */
 
 export interface FragmentSpreadNode {
-  readonly kind: typeof Kind.FRAGMENT_SPREAD;
+  readonly kind: KindTypeMap['FRAGMENT_SPREAD'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<FragmentArgumentNode> | undefined;
@@ -431,7 +431,7 @@ export interface FragmentSpreadNode {
 }
 
 export interface InlineFragmentNode {
-  readonly kind: typeof Kind.INLINE_FRAGMENT;
+  readonly kind: KindTypeMap['INLINE_FRAGMENT'];
   readonly loc?: Location | undefined;
   readonly typeCondition?: NamedTypeNode | undefined;
   readonly directives?: ReadonlyArray<DirectiveNode> | undefined;
@@ -439,7 +439,7 @@ export interface InlineFragmentNode {
 }
 
 export interface FragmentDefinitionNode {
-  readonly kind: typeof Kind.FRAGMENT_DEFINITION;
+  readonly kind: KindTypeMap['FRAGMENT_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -475,74 +475,74 @@ export type ConstValueNode =
   | ConstObjectValueNode;
 
 export interface IntValueNode {
-  readonly kind: typeof Kind.INT;
+  readonly kind: KindTypeMap['INT'];
   readonly loc?: Location | undefined;
   readonly value: string;
 }
 
 export interface FloatValueNode {
-  readonly kind: typeof Kind.FLOAT;
+  readonly kind: KindTypeMap['FLOAT'];
   readonly loc?: Location | undefined;
   readonly value: string;
 }
 
 export interface StringValueNode {
-  readonly kind: typeof Kind.STRING;
+  readonly kind: KindTypeMap['STRING'];
   readonly loc?: Location | undefined;
   readonly value: string;
   readonly block?: boolean | undefined;
 }
 
 export interface BooleanValueNode {
-  readonly kind: typeof Kind.BOOLEAN;
+  readonly kind: KindTypeMap['BOOLEAN'];
   readonly loc?: Location | undefined;
   readonly value: boolean;
 }
 
 export interface NullValueNode {
-  readonly kind: typeof Kind.NULL;
+  readonly kind: KindTypeMap['NULL'];
   readonly loc?: Location | undefined;
 }
 
 export interface EnumValueNode {
-  readonly kind: typeof Kind.ENUM;
+  readonly kind: KindTypeMap['ENUM'];
   readonly loc?: Location | undefined;
   readonly value: string;
 }
 
 export interface ListValueNode {
-  readonly kind: typeof Kind.LIST;
+  readonly kind: KindTypeMap['LIST'];
   readonly loc?: Location | undefined;
   readonly values: ReadonlyArray<ValueNode>;
 }
 
 export interface ConstListValueNode {
-  readonly kind: typeof Kind.LIST;
+  readonly kind: KindTypeMap['LIST'];
   readonly loc?: Location | undefined;
   readonly values: ReadonlyArray<ConstValueNode>;
 }
 
 export interface ObjectValueNode {
-  readonly kind: typeof Kind.OBJECT;
+  readonly kind: KindTypeMap['OBJECT'];
   readonly loc?: Location | undefined;
   readonly fields: ReadonlyArray<ObjectFieldNode>;
 }
 
 export interface ConstObjectValueNode {
-  readonly kind: typeof Kind.OBJECT;
+  readonly kind: KindTypeMap['OBJECT'];
   readonly loc?: Location | undefined;
   readonly fields: ReadonlyArray<ConstObjectFieldNode>;
 }
 
 export interface ObjectFieldNode {
-  readonly kind: typeof Kind.OBJECT_FIELD;
+  readonly kind: KindTypeMap['OBJECT_FIELD'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly value: ValueNode;
 }
 
 export interface ConstObjectFieldNode {
-  readonly kind: typeof Kind.OBJECT_FIELD;
+  readonly kind: KindTypeMap['OBJECT_FIELD'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly value: ConstValueNode;
@@ -551,14 +551,14 @@ export interface ConstObjectFieldNode {
 /** Directives */
 
 export interface DirectiveNode {
-  readonly kind: typeof Kind.DIRECTIVE;
+  readonly kind: KindTypeMap['DIRECTIVE'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ArgumentNode> | undefined;
 }
 
 export interface ConstDirectiveNode {
-  readonly kind: typeof Kind.DIRECTIVE;
+  readonly kind: KindTypeMap['DIRECTIVE'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<ConstArgumentNode> | undefined;
@@ -569,19 +569,19 @@ export interface ConstDirectiveNode {
 export type TypeNode = NamedTypeNode | ListTypeNode | NonNullTypeNode;
 
 export interface NamedTypeNode {
-  readonly kind: typeof Kind.NAMED_TYPE;
+  readonly kind: KindTypeMap['NAMED_TYPE'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
 }
 
 export interface ListTypeNode {
-  readonly kind: typeof Kind.LIST_TYPE;
+  readonly kind: KindTypeMap['LIST_TYPE'];
   readonly loc?: Location | undefined;
   readonly type: TypeNode;
 }
 
 export interface NonNullTypeNode {
-  readonly kind: typeof Kind.NON_NULL_TYPE;
+  readonly kind: KindTypeMap['NON_NULL_TYPE'];
   readonly loc?: Location | undefined;
   readonly type: NamedTypeNode | ListTypeNode;
 }
@@ -594,7 +594,7 @@ export type TypeSystemDefinitionNode =
   | DirectiveDefinitionNode;
 
 export interface SchemaDefinitionNode {
-  readonly kind: typeof Kind.SCHEMA_DEFINITION;
+  readonly kind: KindTypeMap['SCHEMA_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
@@ -602,7 +602,7 @@ export interface SchemaDefinitionNode {
 }
 
 export interface OperationTypeDefinitionNode {
-  readonly kind: typeof Kind.OPERATION_TYPE_DEFINITION;
+  readonly kind: KindTypeMap['OPERATION_TYPE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly operation: OperationTypeNode;
   readonly type: NamedTypeNode;
@@ -619,7 +619,7 @@ export type TypeDefinitionNode =
   | InputObjectTypeDefinitionNode;
 
 export interface ScalarTypeDefinitionNode {
-  readonly kind: typeof Kind.SCALAR_TYPE_DEFINITION;
+  readonly kind: KindTypeMap['SCALAR_TYPE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -627,7 +627,7 @@ export interface ScalarTypeDefinitionNode {
 }
 
 export interface ObjectTypeDefinitionNode {
-  readonly kind: typeof Kind.OBJECT_TYPE_DEFINITION;
+  readonly kind: KindTypeMap['OBJECT_TYPE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -637,7 +637,7 @@ export interface ObjectTypeDefinitionNode {
 }
 
 export interface FieldDefinitionNode {
-  readonly kind: typeof Kind.FIELD_DEFINITION;
+  readonly kind: KindTypeMap['FIELD_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -647,7 +647,7 @@ export interface FieldDefinitionNode {
 }
 
 export interface InputValueDefinitionNode {
-  readonly kind: typeof Kind.INPUT_VALUE_DEFINITION;
+  readonly kind: KindTypeMap['INPUT_VALUE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -657,7 +657,7 @@ export interface InputValueDefinitionNode {
 }
 
 export interface InterfaceTypeDefinitionNode {
-  readonly kind: typeof Kind.INTERFACE_TYPE_DEFINITION;
+  readonly kind: KindTypeMap['INTERFACE_TYPE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -667,7 +667,7 @@ export interface InterfaceTypeDefinitionNode {
 }
 
 export interface UnionTypeDefinitionNode {
-  readonly kind: typeof Kind.UNION_TYPE_DEFINITION;
+  readonly kind: KindTypeMap['UNION_TYPE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -676,7 +676,7 @@ export interface UnionTypeDefinitionNode {
 }
 
 export interface EnumTypeDefinitionNode {
-  readonly kind: typeof Kind.ENUM_TYPE_DEFINITION;
+  readonly kind: KindTypeMap['ENUM_TYPE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -685,7 +685,7 @@ export interface EnumTypeDefinitionNode {
 }
 
 export interface EnumValueDefinitionNode {
-  readonly kind: typeof Kind.ENUM_VALUE_DEFINITION;
+  readonly kind: KindTypeMap['ENUM_VALUE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -693,7 +693,7 @@ export interface EnumValueDefinitionNode {
 }
 
 export interface InputObjectTypeDefinitionNode {
-  readonly kind: typeof Kind.INPUT_OBJECT_TYPE_DEFINITION;
+  readonly kind: KindTypeMap['INPUT_OBJECT_TYPE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -704,7 +704,7 @@ export interface InputObjectTypeDefinitionNode {
 /** Directive Definitions */
 
 export interface DirectiveDefinitionNode {
-  readonly kind: typeof Kind.DIRECTIVE_DEFINITION;
+  readonly kind: KindTypeMap['DIRECTIVE_DEFINITION'];
   readonly loc?: Location | undefined;
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
@@ -718,7 +718,7 @@ export interface DirectiveDefinitionNode {
 export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
 
 export interface SchemaExtensionNode {
-  readonly kind: typeof Kind.SCHEMA_EXTENSION;
+  readonly kind: KindTypeMap['SCHEMA_EXTENSION'];
   readonly loc?: Location | undefined;
   readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
   readonly operationTypes?:
@@ -737,14 +737,14 @@ export type TypeExtensionNode =
   | InputObjectTypeExtensionNode;
 
 export interface ScalarTypeExtensionNode {
-  readonly kind: typeof Kind.SCALAR_TYPE_EXTENSION;
+  readonly kind: KindTypeMap['SCALAR_TYPE_EXTENSION'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
 }
 
 export interface ObjectTypeExtensionNode {
-  readonly kind: typeof Kind.OBJECT_TYPE_EXTENSION;
+  readonly kind: KindTypeMap['OBJECT_TYPE_EXTENSION'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly interfaces?: ReadonlyArray<NamedTypeNode> | undefined;
@@ -753,7 +753,7 @@ export interface ObjectTypeExtensionNode {
 }
 
 export interface InterfaceTypeExtensionNode {
-  readonly kind: typeof Kind.INTERFACE_TYPE_EXTENSION;
+  readonly kind: KindTypeMap['INTERFACE_TYPE_EXTENSION'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly interfaces?: ReadonlyArray<NamedTypeNode> | undefined;
@@ -762,7 +762,7 @@ export interface InterfaceTypeExtensionNode {
 }
 
 export interface UnionTypeExtensionNode {
-  readonly kind: typeof Kind.UNION_TYPE_EXTENSION;
+  readonly kind: KindTypeMap['UNION_TYPE_EXTENSION'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
@@ -770,7 +770,7 @@ export interface UnionTypeExtensionNode {
 }
 
 export interface EnumTypeExtensionNode {
-  readonly kind: typeof Kind.ENUM_TYPE_EXTENSION;
+  readonly kind: KindTypeMap['ENUM_TYPE_EXTENSION'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
@@ -778,7 +778,7 @@ export interface EnumTypeExtensionNode {
 }
 
 export interface InputObjectTypeExtensionNode {
-  readonly kind: typeof Kind.INPUT_OBJECT_TYPE_EXTENSION;
+  readonly kind: KindTypeMap['INPUT_OBJECT_TYPE_EXTENSION'];
   readonly loc?: Location | undefined;
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
@@ -795,20 +795,20 @@ export type SchemaCoordinateNode =
   | DirectiveArgumentCoordinateNode;
 
 export interface TypeCoordinateNode {
-  readonly kind: typeof Kind.TYPE_COORDINATE;
+  readonly kind: KindTypeMap['TYPE_COORDINATE'];
   readonly loc?: Location;
   readonly name: NameNode;
 }
 
 export interface MemberCoordinateNode {
-  readonly kind: typeof Kind.MEMBER_COORDINATE;
+  readonly kind: KindTypeMap['MEMBER_COORDINATE'];
   readonly loc?: Location;
   readonly name: NameNode;
   readonly memberName: NameNode;
 }
 
 export interface ArgumentCoordinateNode {
-  readonly kind: typeof Kind.ARGUMENT_COORDINATE;
+  readonly kind: KindTypeMap['ARGUMENT_COORDINATE'];
   readonly loc?: Location;
   readonly name: NameNode;
   readonly fieldName: NameNode;
@@ -816,13 +816,13 @@ export interface ArgumentCoordinateNode {
 }
 
 export interface DirectiveCoordinateNode {
-  readonly kind: typeof Kind.DIRECTIVE_COORDINATE;
+  readonly kind: KindTypeMap['DIRECTIVE_COORDINATE'];
   readonly loc?: Location;
   readonly name: NameNode;
 }
 
 export interface DirectiveArgumentCoordinateNode {
-  readonly kind: typeof Kind.DIRECTIVE_ARGUMENT_COORDINATE;
+  readonly kind: KindTypeMap['DIRECTIVE_ARGUMENT_COORDINATE'];
   readonly loc?: Location;
   readonly name: NameNode;
   readonly argumentName: NameNode;

@@ -23,22 +23,33 @@ function toJSONDeep(value: unknown): unknown {
   return mapValue(value, toJSONDeep);
 }
 
-export function expectJSON(actual: unknown) {
+export function expectJSON(actual: unknown): {
+  toDeepEqual: (expected: unknown) => ReturnType<typeof expect>;
+  toDeepNestedProperty: (
+    path: string,
+    expected: unknown,
+  ) => ReturnType<typeof expect>;
+} {
   const actualJSON = toJSONDeep(actual);
 
   return {
-    toDeepEqual(expected: unknown) {
+    toDeepEqual(expected: unknown): ReturnType<typeof expect> {
       const expectedJSON = toJSONDeep(expected);
-      expect(actualJSON).to.deep.equal(expectedJSON);
+      return expect(actualJSON).to.deep.equal(expectedJSON);
     },
-    toDeepNestedProperty(path: string, expected: unknown) {
+    toDeepNestedProperty(
+      path: string,
+      expected: unknown,
+    ): ReturnType<typeof expect> {
       const expectedJSON = toJSONDeep(expected);
-      expect(actualJSON).to.deep.nested.property(path, expectedJSON);
+      return expect(actualJSON).to.deep.nested.property(path, expectedJSON);
     },
   };
 }
 
-export function expectToThrowJSON(fn: () => unknown) {
+export function expectToThrowJSON(
+  fn: () => unknown,
+): ReturnType<typeof expect> {
   function mapException(): unknown {
     try {
       return fn();
