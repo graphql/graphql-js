@@ -78,6 +78,7 @@ export { concatAST } from './concatAST';
 
 // Merges multiple AST documents, combining selection sets and deduplicating fields.
 export { mergeAST } from './mergeAST';
+export type { MergeASTOptions } from './mergeAST';
 
 // Separates an AST into an AST per Operation.
 export { separateOperations } from './separateOperations';

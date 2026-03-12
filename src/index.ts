@@ -505,4 +505,5 @@ export type {
   TypedQueryDocumentNode,
   // Schema Coordinates
   ResolvedSchemaElement,
+  MergeASTOptions,
 } from './utilities/index';

@@ -11,6 +11,20 @@ import type {
 import { Kind } from '../language/kinds';
 import { print } from '../language/printer';
 
+const DEFAULT_MAX_DEPTH = 20;
+
+/**
+ * Options for controlling the merge behavior.
+ */
+export interface MergeASTOptions {
+  /**
+   * Maximum nesting depth allowed when recursively merging selection sets.
+   * Prevents denial-of-service from deeply nested or adversarial input.
+   * Defaults to 20.
+   */
+  maxDepth?: number;
+}
+
 /**
  * Provided a collection of ASTs, merge their definitions together,
  * combining selection sets of operations with the same name and type.
@@ -28,10 +42,16 @@ import { print } from '../language/printer';
  *
  * Operations are matched by name and operation type (query/mutation/subscription).
  * Unnamed operations are matched by operation type alone.
+ *
+ * A `maxDepth` option (default: 20) limits the recursion depth when merging
+ * nested selection sets, guarding against denial-of-service from deeply
+ * nested or adversarial documents.
  */
 export function mergeAST(
   documents: ReadonlyArray<DocumentNode>,
+  options?: MergeASTOptions,
 ): DocumentNode {
+  const maxDepth = options?.maxDepth ?? DEFAULT_MAX_DEPTH;
   const operationMap = new Map<string, OperationDefinitionNode>();
   const fragmentMap = new Map<string, FragmentDefinitionNode>();
   const otherDefinitions: DefinitionNode[] = [];
@@ -42,7 +62,7 @@ export function mergeAST(
         const key = operationKey(definition);
         const existing = operationMap.get(key);
         if (existing) {
-          operationMap.set(key, mergeOperations(existing, definition));
+          operationMap.set(key, mergeOperations(existing, definition, maxDepth));
         } else {
           operationMap.set(key, definition);
         }
@@ -80,10 +100,13 @@ function operationKey(operation: OperationDefinitionNode): string {
 function mergeOperations(
   a: OperationDefinitionNode,
   b: OperationDefinitionNode,
+  maxDepth: number,
 ): OperationDefinitionNode {
   const mergedSelectionSet = mergeSelectionSets(
     a.selectionSet,
     b.selectionSet,
+    1,
+    maxDepth,
   );
   const mergedVariableDefinitions = mergeVariableDefinitions(
     a.variableDefinitions ?? [],
@@ -111,8 +134,21 @@ function mergeOperations(
 function mergeSelectionSets(
   a: SelectionSetNode,
   b: SelectionSetNode,
+  depth: number,
+  maxDepth: number,
 ): SelectionSetNode {
-  const merged = mergeSelections([...a.selections, ...b.selections]);
+  if (depth > maxDepth) {
+    throw new Error(
+      `mergeAST: maximum depth of ${maxDepth} exceeded. ` +
+        'This limit prevents denial-of-service from deeply nested documents. ' +
+        'Consider increasing the maxDepth option if this depth is expected.',
+    );
+  }
+  const merged = mergeSelections(
+    [...a.selections, ...b.selections],
+    depth,
+    maxDepth,
+  );
   return {
     kind: Kind.SELECTION_SET,
     selections: merged,
@@ -125,6 +161,8 @@ function mergeSelectionSets(
  */
 function mergeSelections(
   selections: ReadonlyArray<SelectionNode>,
+  depth: number,
+  maxDepth: number,
 ): ReadonlyArray<SelectionNode> {
   const fieldMap = new Map<string, FieldNode>();
   const inlineFragmentMap = new Map<string, InlineFragmentNode>();
@@ -135,7 +173,7 @@ function mergeSelections(
       const key = fieldKey(selection);
       const existing = fieldMap.get(key);
       if (existing) {
-        fieldMap.set(key, mergeFieldNodes(existing, selection));
+        fieldMap.set(key, mergeFieldNodes(existing, selection, depth, maxDepth));
         // Update the entry in result array
         const idx = result.indexOf(existing);
         result[idx] = fieldMap.get(key)!;
@@ -147,7 +185,12 @@ function mergeSelections(
       const key = inlineFragmentKey(selection);
       const existing = inlineFragmentMap.get(key);
       if (existing) {
-        const merged = mergeInlineFragments(existing, selection);
+        const merged = mergeInlineFragments(
+          existing,
+          selection,
+          depth,
+          maxDepth,
+        );
         inlineFragmentMap.set(key, merged);
         const idx = result.indexOf(existing);
         result[idx] = merged;
@@ -158,7 +201,11 @@ function mergeSelections(
     } else {
       // FragmentSpread - deduplicate by name and directives
       const key = print(selection);
-      if (!result.some((s) => s.kind === Kind.FRAGMENT_SPREAD && print(s) === key)) {
+      if (
+        !result.some(
+          (s) => s.kind === Kind.FRAGMENT_SPREAD && print(s) === key,
+        )
+      ) {
         result.push(selection);
       }
     }
@@ -199,7 +246,12 @@ function inlineFragmentKey(fragment: InlineFragmentNode): string {
  * Merge two field nodes. If both have selection sets, recursively merge them.
  * If only one has a selection set, use that one. Directives are combined.
  */
-function mergeFieldNodes(a: FieldNode, b: FieldNode): FieldNode {
+function mergeFieldNodes(
+  a: FieldNode,
+  b: FieldNode,
+  depth: number,
+  maxDepth: number,
+): FieldNode {
   if (a.selectionSet && b.selectionSet) {
     const mergedDirectives = mergeDirectives(
       a.directives ?? [],
@@ -207,7 +259,12 @@ function mergeFieldNodes(a: FieldNode, b: FieldNode): FieldNode {
     );
     return {
       ...a,
-      selectionSet: mergeSelectionSets(a.selectionSet, b.selectionSet),
+      selectionSet: mergeSelectionSets(
+        a.selectionSet,
+        b.selectionSet,
+        depth + 1,
+        maxDepth,
+      ),
       ...(mergedDirectives.length > 0
         ? { directives: mergedDirectives }
         : {}),
@@ -228,10 +285,17 @@ function mergeFieldNodes(a: FieldNode, b: FieldNode): FieldNode {
 function mergeInlineFragments(
   a: InlineFragmentNode,
   b: InlineFragmentNode,
+  depth: number,
+  maxDepth: number,
 ): InlineFragmentNode {
   return {
     ...a,
-    selectionSet: mergeSelectionSets(a.selectionSet, b.selectionSet),
+    selectionSet: mergeSelectionSets(
+      a.selectionSet,
+      b.selectionSet,
+      depth + 1,
+      maxDepth,
+    ),
   };
 }
 
@@ -240,11 +304,15 @@ function mergeInlineFragments(
  * The first occurrence of each variable is kept.
  */
 function mergeVariableDefinitions(
-  a: ReadonlyArray<{ readonly variable: { readonly name: { readonly value: string } } }>,
-  b: ReadonlyArray<{ readonly variable: { readonly name: { readonly value: string } } }>,
-): ReadonlyArray<typeof a[number]> {
+  a: ReadonlyArray<{
+    readonly variable: { readonly name: { readonly value: string } };
+  }>,
+  b: ReadonlyArray<{
+    readonly variable: { readonly name: { readonly value: string } };
+  }>,
+): ReadonlyArray<(typeof a)[number]> {
   const seen = new Set<string>();
-  const result: Array<typeof a[number]> = [];
+  const result: Array<(typeof a)[number]> = [];
   for (const varDef of [...a, ...b]) {
     const name = varDef.variable.name.value;
     if (!seen.has(name)) {
@@ -258,9 +326,7 @@ function mergeVariableDefinitions(
 /**
  * Merge directive arrays, deduplicating by their printed representation.
  */
-function mergeDirectives<
-  T extends { readonly kind: string },
->(
+function mergeDirectives<T extends { readonly kind: string }>(
   a: ReadonlyArray<T>,
   b: ReadonlyArray<T>,
 ): ReadonlyArray<T> {
