@@ -5,6 +5,9 @@ import { expectPromise } from '../../__testUtils__/expectPromise.js';
 
 import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
 
+const asyncDispose: typeof Symbol.asyncDispose =
+  Symbol.asyncDispose ?? Symbol.for('Symbol.asyncDispose');
+
 /* eslint-disable @typescript-eslint/require-await */
 describe('withConcurrentAbruptClose', () => {
   it('calls function when returned', async () => {
@@ -161,6 +164,166 @@ describe('withConcurrentAbruptClose', () => {
     }
 
     expect(called).to.equal(true);
+    expect(returned).to.equal(true);
+  });
+
+  it('calls the abrupt-close function at most once before completion is observed', async () => {
+    let resolveNext!: (result: IteratorResult<number, void>) => void;
+    const nextPromise = new Promise<IteratorResult<number, void>>((resolve) => {
+      resolveNext = resolve;
+    });
+
+    const source: AsyncGenerator<number, void, void> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next(): Promise<IteratorResult<number, void>> {
+        return nextPromise;
+      },
+      return(): Promise<IteratorResult<number, void>> {
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      throw(reason?: unknown): Promise<IteratorResult<number, void>> {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return Promise.reject(reason);
+      },
+      async [asyncDispose]() {
+        await this.return();
+      },
+    };
+
+    let cleanupCalls = 0;
+    const generator = withConcurrentAbruptClose(source, () => {
+      cleanupCalls += 1;
+    });
+
+    const pendingNext = generator.next();
+    await generator.return();
+    await generator[asyncDispose]();
+
+    resolveNext({ done: true, value: undefined });
+    await pendingNext;
+
+    expect(cleanupCalls).to.equal(1);
+  });
+
+  it('does not call cleanup function again when returned after completion', async () => {
+    let returned = false;
+
+    const source: AsyncGenerator<number, void, void> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next(): Promise<IteratorResult<number, void>> {
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      return(): Promise<IteratorResult<number, void>> {
+        returned = true;
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      throw(reason?: unknown): Promise<IteratorResult<number, void>> {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return Promise.reject(reason);
+      },
+      async [asyncDispose]() {
+        await this.return();
+      },
+    };
+
+    let called = false;
+    const generator = withConcurrentAbruptClose(source, () => {
+      called = true;
+    });
+
+    expect(await generator.next()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+    expect(await generator.return()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+
+    expect(called).to.equal(false);
+    expect(returned).to.equal(true);
+  });
+
+  it('does not call cleanup function again when thrown after completion', async () => {
+    let thrownReason: unknown;
+
+    const source: AsyncGenerator<number, void, void> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next(): Promise<IteratorResult<number, void>> {
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      return(): Promise<IteratorResult<number, void>> {
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      throw(reason?: unknown): Promise<IteratorResult<number, void>> {
+        thrownReason = reason;
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return Promise.reject(reason);
+      },
+      async [Symbol.asyncDispose]() {
+        await this.return();
+      },
+    };
+
+    let called = false;
+    const generator = withConcurrentAbruptClose(source, () => {
+      called = true;
+    });
+
+    expect(await generator.next()).to.deep.equal({
+      value: undefined,
+      done: true,
+    });
+
+    const oops = new Error('Oops');
+    await expectPromise(generator.throw(oops)).toRejectWith('Oops');
+
+    expect(called).to.equal(false);
+    expect(thrownReason).to.equal(oops);
+  });
+
+  it('does not call cleanup function again when disposed after completion', async () => {
+    let returned = false;
+
+    const source: AsyncGenerator<number, void, void> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next(): Promise<IteratorResult<number, void>> {
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      return(): Promise<IteratorResult<number, void>> {
+        returned = true;
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      throw(reason?: unknown): Promise<IteratorResult<number, void>> {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return Promise.reject(reason);
+      },
+      async [Symbol.asyncDispose]() {
+        await this.return();
+      },
+    };
+
+    let called = false;
+    {
+      await using generator = withConcurrentAbruptClose(source, () => {
+        called = true;
+      });
+
+      expect(await generator.next()).to.deep.equal({
+        value: undefined,
+        done: true,
+      });
+    }
+
+    expect(called).to.equal(false);
     expect(returned).to.equal(true);
   });
 

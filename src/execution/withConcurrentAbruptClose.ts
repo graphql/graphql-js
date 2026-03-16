@@ -15,32 +15,48 @@ const asyncDispose: typeof Symbol.asyncDispose =
  * if that logic can cause that hanging `next()` call to return early).
  *
  * Errors from the provided functions are ignored.
- *
- * The provided functions should be idempotent, as they may be called
- * multiple times.
  */
 export function withConcurrentAbruptClose<T>(
   generator: AsyncGenerator<T, void, void>,
   beforeReturn: () => PromiseOrValue<void>,
   beforeThrow: (error?: unknown) => PromiseOrValue<void> = beforeReturn,
 ): AsyncGenerator<T, void, void> {
+  let completed = false;
+  let abruptCloseRequested = false;
+
+  const runAbruptCloseFn = (fn: () => PromiseOrValue<void>) => {
+    if (completed || abruptCloseRequested) {
+      return;
+    }
+    abruptCloseRequested = true;
+    return ignoreErrors(fn);
+  };
+
   return {
     [Symbol.asyncIterator]() {
       return this;
     },
     next() {
-      return generator.next();
+      const result = generator.next();
+      result
+        .then((iteration) => {
+          if (iteration.done) {
+            completed = true;
+          }
+        })
+        .catch(() => undefined);
+      return result;
     },
     async return() {
-      await ignoreErrors(beforeReturn);
+      await runAbruptCloseFn(beforeReturn);
       return generator.return();
     },
     async throw(error?: unknown) {
-      await ignoreErrors(() => beforeThrow(error));
+      await runAbruptCloseFn(() => beforeThrow(error));
       return generator.throw(error);
     },
     async [asyncDispose]() {
-      await ignoreErrors(beforeReturn);
+      await runAbruptCloseFn(beforeReturn);
       if (typeof generator[asyncDispose] === 'function') {
         await generator[asyncDispose]();
       }
