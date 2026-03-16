@@ -2697,18 +2697,65 @@ describe('Execute: stream directive (legacy)', () => {
 
     assert(returned);
   });
-  it('Returns underlying async iterables when uses resource is disposed', async () => {
-    let index = 0;
+  it('Returns underlying async iterables when resource is disposed before source completion', async () => {
     let returned = false;
     const iterable = {
       [Symbol.asyncIterator]: () => ({
+        next: () =>
+          new Promise(() => {
+            /* never resolves */
+          }),
+        return: () => {
+          returned = true;
+        },
+      }),
+    };
+
+    const document = parse(`
+      query {
+        friendList @stream(initialCount: 0) {
+          id
+        }
+      }
+    `);
+
+    const executeResult = await legacyExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        friendList: iterable,
+      },
+    });
+    assert('initialResult' in executeResult);
+
+    {
+      await using iterator =
+        executeResult.subsequentResults[Symbol.asyncIterator]();
+      assert(iterator != null);
+
+      const result1 = executeResult.initialResult;
+      expectJSON(result1).toDeepEqual({
+        data: {
+          friendList: [],
+        },
+        hasNext: true,
+      });
+    }
+
+    assert(returned);
+  });
+
+  it('Does not return underlying async iterables when resource is disposed after source completion', async () => {
+    let index = 0;
+    let returned = false;
+    const values = [friends[0]];
+    const iterable = {
+      [Symbol.asyncIterator]: () => ({
         next: () => {
-          if (index > 1) {
-            return new Promise(() => {
-              // never resolves
-            });
+          const friend = values[index++];
+          if (friend == null) {
+            return Promise.resolve({ done: true, value: undefined });
           }
-          const friend = friends[index++];
           return Promise.resolve({ done: false, value: friend });
         },
         return: () => {
@@ -2751,16 +2798,16 @@ describe('Execute: stream directive (legacy)', () => {
         value: {
           incremental: [
             {
-              items: [{ id: '1' }, { id: '2' }],
+              items: [{ id: '1' }],
               path: ['friendList', 0],
             },
           ],
-          hasNext: true,
+          hasNext: false,
         },
       });
     }
 
-    assert(returned);
+    assert(!returned);
   });
   it('limits stream batches to the default capacity (100)', async () => {
     const document = parse(`
