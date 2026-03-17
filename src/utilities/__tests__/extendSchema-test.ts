@@ -1321,9 +1321,12 @@ describe('extendSchema', () => {
 
     it('extend directive to make it deprecated', () => {
       const schema = buildSchema('directive @isDeprecated on FIELD_DEFINITION');
-      const extendAST = parse(`
+      const extendAST = parse(
+        `
         extend directive @isDeprecated @deprecated(reason: "use another directive")
-      `, { experimentalDirectivesOnDirectiveDefinitions: true });
+      `,
+        { experimentalDirectivesOnDirectiveDefinitions: true },
+      );
       const extendedSchema = extendSchema(schema, extendAST);
 
       const someDirective = assertDirective(
