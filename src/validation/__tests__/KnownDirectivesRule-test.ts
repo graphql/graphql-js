@@ -352,8 +352,6 @@ describe('Validate: Known directives', () => {
           extend schema @onSchema
           
           directive @myDirective on OBJECT
-          
-          extend directive @myDirective @onDirective
         `,
         schemaWithSDLDirectives,
       );

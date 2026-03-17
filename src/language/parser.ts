@@ -114,6 +114,18 @@ export interface ParseOptions {
   allowLegacyFragmentVariables?: boolean;
 
   /**
+   * EXPERIMENTAL:
+   *
+   * If enabled, the parser will parse directives on directive definitions.
+   * This syntax is not part of the GraphQL specification and may change.
+   *
+   * ```graphql
+   * directive @foo @bar on FIELD
+   * ```
+   */
+  experimentalDirectivesOnDirectiveDefinitions?: boolean;
+
+  /**
    * You may override the Lexer class used to lex the source; this is used by
    * schema coordinates to introduce a lexer with a restricted syntax.
    */
@@ -1207,7 +1219,12 @@ export class Parser {
         case 'input':
           return this.parseInputObjectTypeExtension();
         case 'directive':
-          return this.parseDirectiveDefinitionExtension();
+          if (
+            this._options.experimentalDirectivesOnDirectiveDefinitions === true
+          ) {
+            return this.parseDirectiveDefinitionExtension();
+          }
+          break;
       }
     }
 
@@ -1420,7 +1437,10 @@ export class Parser {
     this.expectToken(TokenKind.AT);
     const name = this.parseName();
     const args = this.parseArgumentDefs();
-    const directives = this.parseConstDirectives();
+    const directives =
+      this._options.experimentalDirectivesOnDirectiveDefinitions === true
+        ? this.parseConstDirectives()
+        : [];
     const repeatable = this.expectOptionalKeyword('repeatable');
     this.expectKeyword('on');
     const locations = this.parseDirectiveLocations();

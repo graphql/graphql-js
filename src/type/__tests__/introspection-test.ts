@@ -3,12 +3,13 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
-import { buildSchema } from '../../utilities/buildASTSchema';
+import { buildASTSchema, buildSchema } from '../../utilities/buildASTSchema';
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
 import { graphqlSync } from '../../graphql';
 
 import type { GraphQLResolveInfo } from '../definition';
+import { parse } from '../..';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {
@@ -1798,13 +1799,13 @@ describe('Introspection', () => {
   });
 
   it('identifies deprecated directives', () => {
-    const schema = buildSchema(`
+    const schema = buildASTSchema(parse(`
       type Query {
         someField: String
       }
       directive @isNotDeprecated on FIELD_DEFINITION
       directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
-    `);
+    `, { experimentalDirectivesOnDirectiveDefinitions: true }));
 
     const source = `
       {
