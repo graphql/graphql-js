@@ -122,7 +122,7 @@ describe('Printer: Query document', () => {
     `);
   });
 
-    it('Experimental: prints directives on directives', () => {
+  it('Experimental: prints directives on directives', () => {
     const queryASTWithVariableDirective = parse(
       `
       directive @foo @bar on FIELD_DEFINITION
