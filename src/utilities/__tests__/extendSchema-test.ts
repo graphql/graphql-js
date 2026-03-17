@@ -1336,5 +1336,13 @@ describe('extendSchema', () => {
         deprecationReason: 'use another directive',
       });
     });
+
+    it('extend directive without adding new directives is an error', () => {
+      expect(() =>
+        parse('extend directive @isDeprecated', {
+          experimentalDirectivesOnDirectiveDefinitions: true,
+        }),
+      ).to.throw('Syntax Error: Unexpected <EOF>.');
+    });
   });
 });
