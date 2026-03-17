@@ -3,13 +3,14 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON';
 
+import { parse } from '../../language/parser';
+
 import { buildASTSchema, buildSchema } from '../../utilities/buildASTSchema';
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery';
 
 import { graphqlSync } from '../../graphql';
 
 import type { GraphQLResolveInfo } from '../definition';
-import { parse } from '../..';
 
 describe('Introspection', () => {
   it('executes an introspection query', () => {
