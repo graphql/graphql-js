@@ -5,6 +5,9 @@ export function cancellablePromise<T>(
   abortSignal: AbortSignal,
 ): Promise<T> {
   if (abortSignal.aborted) {
+    // If cancellation has already happened, still drain the original promise to
+    // avoid unhandled rejections from work that settles later.
+    originalPromise.catch(() => undefined);
     // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
     return Promise.reject(abortSignal.reason);
   }

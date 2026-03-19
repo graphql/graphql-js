@@ -3,6 +3,8 @@ import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 
+import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
+
 import { cancellablePromise } from '../cancellablePromise.js';
 
 describe('cancellablePromise', () => {
@@ -109,5 +111,35 @@ describe('cancellablePromise', () => {
     );
 
     await expectPromise(withCancellation).toRejectWith('Cancelled!');
+  });
+
+  it('handles later original rejections when already aborted', async () => {
+    const abortController = new AbortController();
+    abortController.abort(new Error('Cancelled!'));
+
+    const deferred = promiseWithResolvers<undefined>();
+
+    let unhandledRejection: unknown = null;
+    const unhandledRejectionListener = (reason: unknown) => {
+      unhandledRejection = reason;
+    };
+    // eslint-disable-next-line no-undef
+    process.on('unhandledRejection', unhandledRejectionListener);
+
+    try {
+      const withCancellation = cancellablePromise(
+        deferred.promise,
+        abortController.signal,
+      );
+      await expectPromise(withCancellation).toRejectWith('Cancelled!');
+
+      deferred.reject(new Error('Rejected later'));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    } finally {
+      // eslint-disable-next-line no-undef
+      process.removeListener('unhandledRejection', unhandledRejectionListener);
+    }
+
+    expect(unhandledRejection).to.equal(null);
   });
 });
