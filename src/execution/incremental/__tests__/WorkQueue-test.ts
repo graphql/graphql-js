@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectPromise } from '../../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
 
 import { isPromise } from '../../../jsutils/isPromise.js';
@@ -1265,5 +1266,62 @@ describe('WorkQueue', () => {
 
     expect(childTaskCancelled).to.equal(true);
     expect(childStreamCancelled).to.equal(true);
+  });
+
+  it('forwards throw reason when cancelling nested work', async () => {
+    const root: TestGroup = { parent: undefined };
+    const rootStream = streamFrom([{ value: 1 }]);
+    const abortReason = new Error('Abort nested work');
+
+    let childStreamCancelReason: unknown;
+    const childStreamQueue = new Queue<TestStreamItem>(({ stopped }) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      stopped.then((reason) => {
+        childStreamCancelReason = reason;
+      });
+    });
+    const childStream: TestStream = { queue: childStreamQueue };
+
+    let childTaskCancelReason: unknown;
+    const childTask: Task<
+      TestTaskValue,
+      TestStreamItemValue,
+      TestGroup,
+      TestStream
+    > = {
+      groups: [root],
+      computation: new Computation(
+        () =>
+          new Promise(() => {
+            // never resolves
+          }),
+        (reason) => {
+          childTaskCancelReason = reason;
+        },
+      ),
+    };
+
+    const rootTask = makeTask([root], () => ({
+      value: 'root',
+      work: { streams: [childStream] },
+    }));
+
+    const workQueue = createWorkQueue({
+      groups: [root],
+      tasks: [rootTask, childTask],
+      streams: [rootStream],
+    });
+
+    const iterator = workQueue.events[Symbol.asyncIterator]();
+    await iterator.next();
+
+    await expectPromise(iterator.throw(abortReason)).toRejectWith(
+      'Abort nested work',
+    );
+
+    await resolveOnNextTick();
+
+    expect(childTaskCancelReason).to.equal(abortReason);
+    expect(childStreamCancelReason).to.equal(abortReason);
   });
 });

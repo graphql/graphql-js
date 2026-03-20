@@ -9,9 +9,12 @@ type MaybePromise<T> =
 /** @internal **/
 export class Computation<T> {
   private _fn: () => PromiseOrValue<T>;
-  private _onCancel: (() => void) | undefined;
+  private _onCancel: ((reason?: unknown) => void) | undefined;
   private _maybePromise?: MaybePromise<T>;
-  constructor(fn: () => PromiseOrValue<T>, onCancel?: () => void) {
+  constructor(
+    fn: () => PromiseOrValue<T>,
+    onCancel?: (reason?: unknown) => void,
+  ) {
     this._fn = fn;
     this._onCancel = onCancel;
   }
@@ -51,21 +54,21 @@ export class Computation<T> {
       }
     }
   }
-  cancel(): void {
+  cancel(reason?: unknown): void {
     const maybePromise = this._maybePromise;
     if (!maybePromise) {
       this._maybePromise = {
         status: 'rejected',
-        reason: new Error('Cancelled!'),
+        reason,
       };
       return;
     }
     const status = maybePromise.status;
     if (status === 'pending' && this._onCancel) {
-      this._onCancel();
+      this._onCancel(reason);
       this._maybePromise = {
         status: 'rejected',
-        reason: new Error('Cancelled!'),
+        reason,
       };
     }
   }

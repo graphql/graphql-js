@@ -168,4 +168,31 @@ describe('Computation', () => {
     expect(onCancelRan).to.equal(true);
     expect(() => computation.result()).to.throw('Cancelled!');
   });
+
+  it('can be cancelled with a provided reason before running', () => {
+    const abortReason = new Error('aborted');
+    const computation = new Computation(() => ({ value: 123 }));
+
+    computation.cancel(abortReason);
+    expect(() => computation.result()).to.throw('aborted');
+  });
+
+  it('forwards cancellation reason to onCancel while running asynchronously', () => {
+    const abortReason = new Error('aborted');
+    let onCancelReason: unknown;
+    const computation = new Computation(
+      () =>
+        new Promise(() => {
+          // Never resolves.
+        }),
+      (reason) => {
+        onCancelReason = reason;
+      },
+    );
+
+    computation.prime();
+    computation.cancel(abortReason);
+    expect(onCancelReason).to.equal(abortReason);
+    expect(() => computation.result()).to.throw('aborted');
+  });
 });

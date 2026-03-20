@@ -87,7 +87,7 @@ export class Queue<T> {
   private _batchRequests = new Set<BatchRequest<T>>();
 
   private _resolveStarted: () => void;
-  private _resolveStopped: () => void;
+  private _resolveStopped: (reason?: unknown) => void;
 
   constructor(
     executor: ({
@@ -106,8 +106,7 @@ export class Queue<T> {
 
     this._resolveStarted = resolveStarted;
     const { promise: stopped, resolve: resolveStopped } =
-      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-      promiseWithResolvers<void>();
+      promiseWithResolvers<unknown>();
     this._resolveStopped = resolveStopped;
 
     try {
@@ -152,7 +151,7 @@ export class Queue<T> {
     if (this._isStopped) {
       return;
     }
-    this._terminate();
+    this._terminate(reason);
     if (this._batchRequests.size) {
       this._batchRequests.forEach((request) => request.reject(reason));
       this._batchRequests.clear();
@@ -285,7 +284,7 @@ export class Queue<T> {
     return maybePushPromise;
   }
 
-  private _terminate(): void {
+  private _terminate(reason?: unknown): void {
     for (const entry of this._entries) {
       if (entry.kind === 'item') {
         this._release();
@@ -294,7 +293,7 @@ export class Queue<T> {
     this._entries.length = 0;
     this._stopRequested = true;
     this._isStopped = true;
-    this._resolveStopped();
+    this._resolveStopped(reason);
   }
 
   private _stop(reason?: unknown): void {
@@ -343,7 +342,7 @@ export class Queue<T> {
         this._entries.shift();
         this._release();
         this._isStopped = true;
-        this._resolveStopped();
+        this._resolveStopped(settled.reason);
         this._batchRequests = new Set();
         requests.forEach((request) => request.reject(settled.reason));
       }

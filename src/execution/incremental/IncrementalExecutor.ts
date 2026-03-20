@@ -321,10 +321,10 @@ export class IncrementalExecutor<
   override cancel(reason?: unknown): void {
     super.cancel(reason);
     for (const task of this.tasks) {
-      task.computation.cancel();
+      task.computation.cancel(reason);
     }
     for (const stream of this.streams) {
-      stream.queue.abort();
+      stream.queue.abort(reason);
     }
   }
 
@@ -503,7 +503,7 @@ export class IncrementalExecutor<
               groupedFieldSet,
               deliveryGroupMap,
             ),
-          () => executor.cancel(),
+          (reason) => executor.cancel(reason),
         ),
       };
 
@@ -581,10 +581,14 @@ export class IncrementalExecutor<
       return { groups, tasks, streams };
     }
 
+    const cancellationReason = new Error(
+      'Cancelled secondary to null within original result',
+    );
+
     const filteredTasks: Array<ExecutionGroup> = [];
     for (const task of tasks) {
       if (collectedErrors.hasNulledPosition(task.path)) {
-        task.computation.cancel();
+        task.computation.cancel(cancellationReason);
       } else {
         filteredTasks.push(task);
       }
@@ -593,7 +597,7 @@ export class IncrementalExecutor<
     const filteredStreams: Array<ItemStream> = [];
     for (const stream of streams) {
       if (collectedErrors.hasNulledPosition(stream.path)) {
-        stream.queue.cancel();
+        stream.queue.abort(cancellationReason);
       } else {
         filteredStreams.push(stream);
       }
@@ -713,11 +717,13 @@ export class IncrementalExecutor<
     const { enableEarlyExecution } = this.validatedExecutionArgs;
     const queue = new Queue<StreamItemResult>(
       async ({ push, stop, started, stopped }) => {
-        const cancelStreamItems = new Set<() => void>();
+        const cancelStreamItems = new Set<(reason?: unknown) => void>();
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        stopped.then(() => {
-          cancelStreamItems.forEach((cancelStreamItem) => cancelStreamItem());
+        stopped.then((reason) => {
+          cancelStreamItems.forEach((cancelStreamItem) =>
+            cancelStreamItem(reason),
+          );
           returnIteratorCatchingErrors(iterator);
         });
         await (enableEarlyExecution ? Promise.resolve() : started);
@@ -763,7 +769,8 @@ export class IncrementalExecutor<
           );
           if (isPromise(streamItemResult)) {
             if (enableEarlyExecution) {
-              const cancelStreamItem = () => executor.cancel();
+              const cancelStreamItem = (reason?: unknown) =>
+                executor.cancel(reason);
               cancelStreamItems.add(cancelStreamItem);
               streamItemResult = streamItemResult.finally(() => {
                 cancelStreamItems.delete(cancelStreamItem);

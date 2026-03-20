@@ -157,6 +157,19 @@ describe('Queue', () => {
     expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
   });
 
+  it('cancel is a no-op after stopping', async () => {
+    const queue = new Queue(({ stop }) => {
+      stop();
+    });
+
+    const sub = queue.subscribe();
+
+    expect(queue.isStopped()).to.equal(true);
+    queue.cancel();
+
+    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
+  });
+
   it('abort is a no-op after stopping', async () => {
     const queue = new Queue(({ stop }) => {
       stop();
@@ -643,14 +656,17 @@ describe('Queue', () => {
   it('stops in an error state when calling stopped with a reason, i.e. the last call to next to reject with that reason', async () => {
     let stoppedPromise!: Promise<unknown>;
     let stopped = false;
+    let stoppedReason: unknown;
+    const stopReason = new Error('Oops');
     const sub = new Queue(({ push, stop, stopped: _stoppedPromise }) => {
       stoppedPromise = _stoppedPromise;
 
-      stoppedPromise.then(() => {
+      stoppedPromise.then((reason) => {
         stopped = true;
+        stoppedReason = reason;
       });
       push(1);
-      stop(new Error('Oops'));
+      stop(stopReason);
     }).subscribe();
 
     expect(stopped).to.equal(false);
@@ -659,6 +675,7 @@ describe('Queue', () => {
     await expectPromise(sub.next()).toRejectWith('Oops');
 
     expect(stopped).to.equal(true);
+    expect(stoppedReason).to.equal(stopReason);
   });
 
   it('cancels existing requests when calling cancel', async () => {
