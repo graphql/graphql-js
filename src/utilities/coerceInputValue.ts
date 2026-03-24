@@ -69,7 +69,7 @@ export function coerceInputValue(
       return; // Invalid: intentionally return no value.
     }
 
-    const coercedValue: any = {};
+    const coercedValue: any = Object.create(null);
     const fieldDefs = type.getFields();
     const hasUndefinedField = Object.keys(inputValue).some(
       (name) => !Object.hasOwn(fieldDefs, name),
@@ -109,7 +109,7 @@ export function coerceInputValue(
       }
     }
 
-    return coercedValue;
+    return { ...coercedValue };
   }
 
   const leafType = assertLeafType(type);

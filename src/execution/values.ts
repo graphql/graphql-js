@@ -206,7 +206,7 @@ export function getArgumentValues(
   fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
 ): { [argument: string]: unknown } {
-  const coercedValues: { [argument: string]: unknown } = {};
+  const coercedValues: { [argument: string]: unknown } = Object.create(null);
 
   const argumentNodes = node.arguments ?? [];
   const argNodeMap = new Map(argumentNodes.map((arg) => [arg.name.value, arg]));
@@ -224,7 +224,7 @@ export function getArgumentValues(
       hideSuggestions,
     );
   }
-  return coercedValues;
+  return { ...coercedValues };
 }
 
 // eslint-disable-next-line max-params
