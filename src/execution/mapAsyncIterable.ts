@@ -16,15 +16,11 @@ export function mapAsyncIterable<T, U>(
   const throwFn = iterator.throw?.bind(iterator);
 
   const onReturn = returnFn
-    ? async () => {
-        await callIgnoringErrors(returnFn);
-      }
+    ? () => callIgnoringErrors(returnFn)
     : () => Promise.resolve();
 
   const onThrow = throwFn
-    ? async (reason?: unknown) => {
-        await callIgnoringErrors(() => throwFn(reason));
-      }
+    ? (reason?: unknown) => callIgnoringErrors(() => throwFn(reason))
     : onReturn;
 
   return withConcurrentAbruptClose(
