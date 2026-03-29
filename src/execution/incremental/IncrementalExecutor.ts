@@ -321,7 +321,13 @@ export class IncrementalExecutor<
   override cancel(reason?: unknown): void {
     super.cancel(reason);
     for (const task of this.tasks) {
-      task.computation.abort(reason);
+      const aborted = task.computation.abort(reason);
+      /* c8 ignore start */
+      // TODO: add coverage
+      if (isPromise(aborted)) {
+        aborted.catch(() => undefined);
+      }
+      /* c8 ignore stop */
     }
     for (const stream of this.streams) {
       const aborted = stream.queue.abort(reason);
@@ -594,7 +600,13 @@ export class IncrementalExecutor<
     const filteredTasks: Array<ExecutionGroup> = [];
     for (const task of tasks) {
       if (collectedErrors.hasNulledPosition(task.path)) {
-        task.computation.abort(cancellationReason);
+        const aborted = task.computation.abort(cancellationReason);
+        /* c8 ignore start */
+        // TODO: add coverage
+        if (isPromise(aborted)) {
+          aborted.catch(() => undefined);
+        }
+        /* c8 ignore stop */
       } else {
         filteredTasks.push(task);
       }
@@ -740,6 +752,7 @@ export class IncrementalExecutor<
               cancelStreamItem(reason),
             );
           }
+
           returnIteratorCatchingErrors(iterator);
         });
         await (enableEarlyExecution ? Promise.resolve() : started);
