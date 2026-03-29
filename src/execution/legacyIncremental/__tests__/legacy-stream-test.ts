@@ -2703,10 +2703,12 @@ describe('Execute: stream directive (legacy)', () => {
     const iterable = {
       [Symbol.asyncIterator]: () => ({
         next: () => {
-          const friend = friends[index++];
-          if (friend == null) {
-            return Promise.resolve({ done: true, value: undefined });
+          if (index > 1) {
+            return new Promise(() => {
+              // never resolves
+            });
           }
+          const friend = friends[index++];
           return Promise.resolve({ done: false, value: friend });
         },
         return: () => {

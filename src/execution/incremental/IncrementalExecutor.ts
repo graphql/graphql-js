@@ -751,8 +751,8 @@ export class IncrementalExecutor<
             cancelStreamItems.forEach((cancelStreamItem) =>
               cancelStreamItem(reason),
             );
+            returnIteratorCatchingErrors(iterator);
           }
-          returnIteratorCatchingErrors(iterator);
         });
         await (enableEarlyExecution ? Promise.resolve() : started);
         if (stopRequested) {
