@@ -4,7 +4,19 @@ import { describe, it } from 'mocha';
 import { expectPromise } from '../../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
 
+import { isPromise } from '../../../jsutils/isPromise.js';
+
 import { Computation } from '../Computation.js';
+
+function abortIgnoringCleanup(
+  computation: Computation<unknown>,
+  reason?: unknown,
+): void {
+  const aborted = computation.abort(reason);
+  if (isPromise(aborted)) {
+    aborted.catch(() => undefined);
+  }
+}
 
 describe('Computation', () => {
   it('can return a result', () => {
@@ -114,7 +126,7 @@ describe('Computation', () => {
         onAbortRan = true;
       },
     );
-    computation.abort();
+    abortIgnoringCleanup(computation);
     expect(() => computation.result()).to.throw('Cancelled!');
     expect(onAbortRan).to.equal(false);
   });
@@ -129,7 +141,7 @@ describe('Computation', () => {
     );
 
     computation.prime();
-    computation.abort();
+    abortIgnoringCleanup(computation);
     expect(computation.result()).to.deep.equal({ value: 123 });
     expect(onAbortRan).to.equal(false);
   });
@@ -146,7 +158,7 @@ describe('Computation', () => {
     );
 
     computation.prime();
-    computation.abort();
+    abortIgnoringCleanup(computation);
     expect(() => computation.result()).to.throw('failure');
     expect(onAbortRan).to.equal(false);
   });
@@ -164,16 +176,52 @@ describe('Computation', () => {
     );
 
     computation.prime();
-    computation.abort();
+    abortIgnoringCleanup(computation);
     expect(onAbortRan).to.equal(true);
     expect(() => computation.result()).to.throw('Cancelled!');
+  });
+
+  it('returns async abort cleanup while running', async () => {
+    let resolveCleanup!: () => void;
+    const cleanupPromise = new Promise<void>((resolve) => {
+      resolveCleanup = resolve;
+    });
+    const computation = new Computation(
+      () =>
+        new Promise(() => {
+          // Never resolves.
+        }),
+      () => cleanupPromise,
+    );
+
+    computation.prime();
+    const abortResult = computation.abort();
+    expect(abortResult).to.equal(cleanupPromise);
+    expect(isPromise(abortResult)).to.equal(true);
+    if (!isPromise(abortResult)) {
+      throw new Error('Expected async abort cleanup promise.');
+    }
+
+    let abortSettled = false;
+    abortResult.then(
+      () => {
+        abortSettled = true;
+      },
+      () => {
+        abortSettled = true;
+      },
+    );
+    expect(abortSettled).to.equal(false);
+    resolveCleanup();
+    await abortResult;
+    expect(abortSettled).to.equal(true);
   });
 
   it('can be aborted with a provided reason before running', () => {
     const abortReason = new Error('aborted');
     const computation = new Computation(() => ({ value: 123 }));
 
-    computation.abort(abortReason);
+    abortIgnoringCleanup(computation, abortReason);
     expect(() => computation.result()).to.throw('aborted');
   });
 
@@ -191,7 +239,7 @@ describe('Computation', () => {
     );
 
     computation.prime();
-    computation.abort(abortReason);
+    abortIgnoringCleanup(computation, abortReason);
     expect(onAbortReason).to.equal(abortReason);
     expect(() => computation.result()).to.throw('aborted');
   });

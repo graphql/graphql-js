@@ -282,7 +282,10 @@ export function createWorkQueue<
     reason: unknown,
     cancelPromises: Array<Promise<unknown>>,
   ): void {
-    task.computation.abort(reason);
+    const abortResult = task.computation.abort(reason);
+    if (isPromise(abortResult)) {
+      cancelPromises.push(abortResult);
+    }
     const taskNode = taskNodes.get(task);
     if (taskNode) {
       for (const childStream of taskNode.childStreams) {
@@ -296,10 +299,9 @@ export function createWorkQueue<
     reason: unknown,
     cancelPromises: Array<Promise<unknown>>,
   ): void {
-    const cancelResult =
-      reason === undefined ? stream.queue.cancel() : stream.queue.abort(reason);
-    if (isPromise(cancelResult)) {
-      cancelPromises.push(cancelResult);
+    const abortResult = stream.queue.abort(reason);
+    if (isPromise(abortResult)) {
+      cancelPromises.push(abortResult);
     }
   }
 

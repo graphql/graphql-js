@@ -1228,6 +1228,9 @@ describe('WorkQueue', () => {
     const childStream: TestStream = { queue: childStreamQueue };
 
     let childTaskCancelled = false;
+    const { promise: childTaskCleanup, resolve: resolveChildTaskCleanup } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
     const childTask: Task<
       TestTaskValue,
       TestStreamItemValue,
@@ -1242,6 +1245,7 @@ describe('WorkQueue', () => {
           }),
         () => {
           childTaskCancelled = true;
+          return childTaskCleanup;
         },
       ),
     };
@@ -1278,6 +1282,7 @@ describe('WorkQueue', () => {
     await resolveOnNextTick();
 
     resolveChildStreamCleanup();
+    resolveChildTaskCleanup();
 
     expect(await returnPromise).to.deep.equal({
       value: undefined,
