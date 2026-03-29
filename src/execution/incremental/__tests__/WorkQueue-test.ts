@@ -6,6 +6,7 @@ import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
 
 import { isPromise } from '../../../jsutils/isPromise.js';
 import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.js';
+import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
 
 import { Computation } from '../Computation.js';
 import { Queue } from '../Queue.js';
@@ -109,6 +110,7 @@ function streamFrom(
       if (throwAfter) {
         throw error ?? streamFailureError;
       }
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       stop();
     }, initialCapacity),
   };
@@ -713,7 +715,11 @@ describe('WorkQueue', () => {
     const fastTaskA = makeTask([groupA], 'A-only');
 
     const slowTaskB = makeTask([groupB], async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      const { promise: delay, resolve } =
+        // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+        promiseWithResolvers<void>();
+      setTimeout(resolve, 0);
+      await delay;
       return { value: 'B-slow' };
     });
 
@@ -966,7 +972,12 @@ describe('WorkQueue', () => {
       queue: new Queue<TestStreamItem>(async ({ push, stop }) => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         push({ value: 1 });
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        const { promise: delay, resolve } =
+          // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+          promiseWithResolvers<void>();
+        setTimeout(resolve, 0);
+        await delay;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         stop();
       }, 1),
     };
@@ -1205,10 +1216,13 @@ describe('WorkQueue', () => {
     const rootStream = streamFrom([{ value: 1 }]);
 
     let childStreamCancelled = false;
-    const childStreamQueue = new Queue<TestStreamItem>(({ stopped }) => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      stopped.then(() => {
+    const { promise: childStreamCleanup, resolve: resolveChildStreamCleanup } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const childStreamQueue = new Queue<TestStreamItem>(({ onStop }) => {
+      onStop(() => {
         childStreamCancelled = true;
+        return childStreamCleanup;
       });
     });
     const childStream: TestStream = { queue: childStreamQueue };
@@ -1259,7 +1273,13 @@ describe('WorkQueue', () => {
       ],
       done: false,
     });
-    expect(await iterator.return()).to.deep.equal({
+    const returnPromise = iterator.return();
+
+    await resolveOnNextTick();
+
+    resolveChildStreamCleanup();
+
+    expect(await returnPromise).to.deep.equal({
       value: undefined,
       done: true,
     });
@@ -1274,9 +1294,8 @@ describe('WorkQueue', () => {
     const abortReason = new Error('Abort nested work');
 
     let childStreamCancelReason: unknown;
-    const childStreamQueue = new Queue<TestStreamItem>(({ stopped }) => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      stopped.then((reason) => {
+    const childStreamQueue = new Queue<TestStreamItem>(({ onStop }) => {
+      onStop((reason) => {
         childStreamCancelReason = reason;
       });
     });

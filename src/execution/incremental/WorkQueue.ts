@@ -209,7 +209,7 @@ export function createWorkQueue<
   const groupNodes = new Map<G, GroupNode<T, I, G, S>>();
   const taskNodes = new Map<Task<T, I, G, S>, TaskNode<T, I, G, S>>();
   let pushGraphEvent!: (e: GraphEvent<T, I, G, S>) => PromiseOrValue<void>;
-  let stopGraphEvents!: (err?: unknown) => void;
+  let stopGraphEvents!: (err?: unknown) => PromiseOrValue<void>;
 
   const { newGroups: initialRootGroups, newStreams: initialRootStreams } =
     maybeIntegrateWork(initialWork);
@@ -224,7 +224,7 @@ export function createWorkQueue<
   }
 
   const events = new Queue<GraphEvent<T, I, G, S>>(
-    ({ push: _push, stop: _stop, started, stopped }) => {
+    ({ push: _push, stop: _stop, onStop, started }) => {
       pushGraphEvent = _push;
       stopGraphEvents = _stop;
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -237,8 +237,7 @@ export function createWorkQueue<
           startStream(stream);
         }
       });
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      stopped.then((reason) => cancel(reason));
+      onStop((reason) => cancel(reason));
     },
     1,
   ).subscribe((graphEvents) => handleGraphEvents(graphEvents));
@@ -249,39 +248,59 @@ export function createWorkQueue<
     events,
   };
 
-  function cancel(reason?: unknown): void {
+  function cancel(reason?: unknown): PromiseOrValue<void> {
+    const cancelPromises: Array<Promise<unknown>> = [];
     for (const group of rootGroups) {
-      cancelGroup(group, reason);
+      cancelGroup(group, reason, cancelPromises);
     }
     for (const stream of rootStreams) {
-      cancelStream(stream, reason);
+      cancelStream(stream, reason, cancelPromises);
+    }
+    if (cancelPromises.length > 0) {
+      return Promise.allSettled(cancelPromises).then(() => undefined);
     }
   }
 
-  function cancelGroup(group: G, reason?: unknown): void {
+  function cancelGroup(
+    group: G,
+    reason: unknown,
+    cancelPromises: Array<Promise<unknown>>,
+  ): void {
     const groupNode = groupNodes.get(group);
     if (groupNode) {
       for (const task of groupNode.tasks) {
-        cancelTask(task, reason);
+        cancelTask(task, reason, cancelPromises);
       }
       for (const childGroup of groupNode.childGroups) {
-        cancelGroup(childGroup, reason);
+        cancelGroup(childGroup, reason, cancelPromises);
       }
     }
   }
 
-  function cancelTask(task: Task<T, I, G, S>, reason?: unknown): void {
+  function cancelTask(
+    task: Task<T, I, G, S>,
+    reason: unknown,
+    cancelPromises: Array<Promise<unknown>>,
+  ): void {
     task.computation.cancel(reason);
     const taskNode = taskNodes.get(task);
     if (taskNode) {
       for (const childStream of taskNode.childStreams) {
-        cancelStream(childStream, reason);
+        cancelStream(childStream, reason, cancelPromises);
       }
     }
   }
 
-  function cancelStream(stream: S, reason?: unknown): void {
-    stream.queue.abort(reason);
+  function cancelStream(
+    stream: S,
+    reason: unknown,
+    cancelPromises: Array<Promise<unknown>>,
+  ): void {
+    const cancelResult =
+      reason === undefined ? stream.queue.cancel() : stream.queue.abort(reason);
+    if (isPromise(cancelResult)) {
+      cancelPromises.push(cancelResult);
+    }
   }
 
   function maybeIntegrateWork(
@@ -495,6 +514,7 @@ export function createWorkQueue<
     }
 
     if (rootGroups.size === 0 && rootStreams.size === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       stopGraphEvents();
       workQueueEvents.push({ kind: 'WORK_QUEUE_TERMINATION' });
     }

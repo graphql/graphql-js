@@ -2585,6 +2585,80 @@ describe('Execute: stream directive', () => {
     await returnPromise;
     assert(returned);
   });
+  it('Awaits stream source async iterable return before iterator return settles', async () => {
+    let returnCalled = false;
+    const { promise: returnCleanup, resolve: resolveReturnCleanup } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const iterable = {
+      [Symbol.asyncIterator]: () => ({
+        next: () =>
+          new Promise(() => {
+            /* never resolves */
+          }),
+        return: async () => {
+          returnCalled = true;
+          await returnCleanup;
+          return {
+            value: undefined,
+            done: true,
+          };
+        },
+      }),
+    };
+
+    const document = parse(`
+      query {
+        friendList @stream(initialCount: 0) {
+          id
+        }
+      }
+    `);
+
+    const executeResult = await experimentalExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        friendList: iterable,
+      },
+    });
+    assert('initialResult' in executeResult);
+    const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
+
+    const result1 = executeResult.initialResult;
+    expectJSON(result1).toDeepEqual({
+      data: {
+        friendList: [],
+      },
+      pending: [{ id: '0', path: ['friendList'] }],
+      hasNext: true,
+    });
+
+    const result2Promise = iterator.next();
+    const returnPromise = iterator.return();
+    let returnSettled = false;
+    returnPromise.then(
+      () => {
+        returnSettled = true;
+      },
+      () => {
+        returnSettled = true;
+      },
+    );
+
+    await resolveOnNextTick();
+    expect(returnCalled).to.equal(true);
+    expect(returnSettled).to.equal(false);
+
+    resolveReturnCleanup();
+
+    const result2 = await result2Promise;
+    expectJSON(result2).toDeepEqual({
+      done: true,
+      value: undefined,
+    });
+    await returnPromise;
+  });
   it('Can return async iterable when underlying iterable does not have a return method', async () => {
     let index = 0;
     const iterable = {
@@ -2969,6 +3043,83 @@ describe('Execute: stream directive (cancellation)', () => {
 
     resolveItem('value');
     await expectPromise(nextPromise).toRejectWith('This operation was aborted');
+  });
+
+  it('cancels pending stream item executors with deferred work when consumer cancels', async () => {
+    const document = parse(`
+      query {
+        todos @stream(initialCount: 0) {
+          id
+          ... @defer {
+            author {
+              id
+            }
+          }
+        }
+      }
+    `);
+
+    const { promise: itemPromise, resolve: resolveItem } =
+      promiseWithResolvers<{
+        id: string;
+        author: () => { id: string };
+      }>();
+    const { promise: secondNextStarted, resolve: resolveSecondNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let nextCalls = 0;
+    let sourceReturnCalls = 0;
+    let deferredAuthorCalls = 0;
+
+    const todos = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        if (nextCalls === 0) {
+          nextCalls += 1;
+          return Promise.resolve({
+            value: itemPromise,
+            done: false,
+          });
+        }
+        resolveSecondNextStarted();
+        return new Promise<IteratorResult<unknown>>(() => {
+          /* never resolves */
+        });
+      },
+      return() {
+        sourceReturnCalls += 1;
+        return Promise.resolve({ value: undefined, done: true });
+      },
+    };
+
+    const result = await experimentalExecuteIncrementally({
+      schema: cancelStreamSchema,
+      document,
+      rootValue: { todos },
+      enableEarlyExecution: true,
+    });
+    assert('initialResult' in result);
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    const nextPromise = iterator.next();
+
+    await secondNextStarted;
+    await expectPromise(iterator.return()).toResolve();
+    await expectPromise(nextPromise).toResolve();
+    expect(sourceReturnCalls).to.equal(1);
+
+    resolveItem({
+      id: 'todo',
+      author() {
+        deferredAuthorCalls += 1;
+        return { id: 'author' };
+      },
+    });
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    expect(deferredAuthorCalls).to.equal(0);
   });
 
   it('stops when the stream queue is back-pressured and the consumer cancels', async () => {

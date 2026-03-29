@@ -13,6 +13,88 @@ import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
 
 import { Queue } from '../Queue.js';
 
+interface StopCleanupFixture {
+  stop: (reason?: unknown) => PromiseOrValue<void>;
+  queue: Queue<number>;
+  cleanupCalls: () => number;
+  resolveCleanup: () => void;
+  nextPromise: Promise<unknown>;
+}
+
+function createQueueWithOnStopCallback(): StopCleanupFixture {
+  let stop!: (reason?: unknown) => PromiseOrValue<void>;
+  let cleanupCallsCount = 0;
+  const { promise: cleanup, resolve: resolveCleanup } =
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    promiseWithResolvers<void>();
+  const queue = new Queue<number>(({ onStop, stop: savedStop }) => {
+    stop = savedStop;
+    onStop(() => {
+      cleanupCallsCount += 1;
+      return cleanup;
+    });
+  });
+
+  return {
+    stop,
+    queue,
+    cleanupCalls: () => cleanupCallsCount,
+    resolveCleanup,
+    nextPromise: queue.subscribe().next(),
+  };
+}
+
+async function expectSingleStop(
+  fixture: StopCleanupFixture,
+  requestStops: ReadonlyArray<() => PromiseOrValue<void>>,
+): Promise<unknown> {
+  const { cleanupCalls, resolveCleanup, nextPromise } = fixture;
+  let nextSettled = false;
+  nextPromise.then(
+    () => {
+      nextSettled = true;
+    },
+    () => {
+      nextSettled = true;
+    },
+  );
+  const stopPromises = requestStops.map((requestStop) => {
+    const result = requestStop();
+    expect(isPromise(result)).to.equal(true);
+    invariant(isPromise(result));
+    return result;
+  });
+  const [firstPromise, ...otherPromises] = stopPromises;
+  for (const promise of otherPromises) {
+    expect(promise).to.equal(firstPromise);
+  }
+  expect(cleanupCalls()).to.equal(1);
+  let firstPromiseResolved = false;
+  firstPromise.then(() => {
+    firstPromiseResolved = true;
+  });
+  await resolveOnNextTick();
+  expect(firstPromiseResolved).to.equal(false);
+  expect(nextSettled).to.equal(false);
+  resolveCleanup();
+  await firstPromise;
+  expect(firstPromiseResolved).to.equal(true);
+  expect(nextSettled).to.equal(true);
+  return nextPromise;
+}
+
+const createStopRequestVariants: ReadonlyArray<
+  (
+    stop: (reason?: unknown) => PromiseOrValue<void>,
+    queue: Queue<number>,
+  ) => () => PromiseOrValue<void>
+> = [
+  (stop) => () => stop(),
+  (stop) => () => stop(new Error('ignored stop')),
+  (_stop, queue) => () => queue.cancel(),
+  (_stop, queue) => () => queue.abort(new Error('ignored abort')),
+];
+
 describe('Queue', () => {
   it('should yield sync items pushed synchronously', async () => {
     const sub = new Queue(({ push }) => {
@@ -117,7 +199,7 @@ describe('Queue', () => {
   });
 
   it('returns stopped state synchronously when completed before push', () => {
-    let stop!: (reason?: unknown) => void;
+    let stop!: (reason?: unknown) => PromiseOrValue<void>;
     const queue = new Queue(({ stop: savedStop }) => {
       stop = savedStop;
     });
@@ -148,43 +230,124 @@ describe('Queue', () => {
     expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
   });
 
-  it('ignores repeated stop calls', async () => {
-    const sub = new Queue(({ stop }) => {
-      stop();
-      stop();
-    }).subscribe();
+  it('onStop fires with stop()', async () => {
+    const fixture = createQueueWithOnStopCallback();
+    const { stop } = fixture;
 
-    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
+    expect(await expectSingleStop(fixture, [() => stop()])).to.deep.equal({
+      done: true,
+      value: undefined,
+    });
   });
 
-  it('cancel is a no-op after stopping', async () => {
-    const queue = new Queue(({ stop }) => {
-      stop();
-    });
+  it('onStop fires with stop(reason)', async () => {
+    const fixture = createQueueWithOnStopCallback();
+    const { stop } = fixture;
+    const stopReason = new Error('Stop!');
 
-    const sub = queue.subscribe();
-
-    expect(queue.isStopped()).to.equal(true);
-    queue.cancel();
-
-    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
+    await expectPromise(
+      expectSingleStop(fixture, [() => stop(stopReason)]),
+    ).toRejectWith('Stop!');
   });
 
-  it('abort is a no-op after stopping', async () => {
-    const queue = new Queue(({ stop }) => {
-      stop();
+  it('onStop fires with queue.cancel()', async () => {
+    const fixture = createQueueWithOnStopCallback();
+    const { queue } = fixture;
+
+    expect(
+      await expectSingleStop(fixture, [() => queue.cancel()]),
+    ).to.deep.equal({ done: true, value: undefined });
+  });
+
+  it('onStop fires with queue.abort()', async () => {
+    const fixture = createQueueWithOnStopCallback();
+    const { queue } = fixture;
+    const abortReason = new Error('Abort!');
+
+    await expectPromise(
+      expectSingleStop(fixture, [() => queue.abort(abortReason)]),
+    ).toRejectWith('Abort!');
+  });
+
+  it('stop requests no-op after stop()', async () => {
+    for (const followupStopRequestFactory of createStopRequestVariants) {
+      const fixture = createQueueWithOnStopCallback();
+      const { stop, queue } = fixture;
+
+      expect(
+        // eslint-disable-next-line no-await-in-loop
+        await expectSingleStop(fixture, [
+          () => stop(),
+          followupStopRequestFactory(stop, queue),
+        ]),
+      ).to.deep.equal({ done: true, value: undefined });
+    }
+  });
+
+  it('stop requests no-op after stop(reason)', async () => {
+    const stopReason = new Error('Stop!');
+    for (const followupStopRequestFactory of createStopRequestVariants) {
+      const fixture = createQueueWithOnStopCallback();
+      const { stop, queue } = fixture;
+
+      // eslint-disable-next-line no-await-in-loop
+      await expectPromise(
+        expectSingleStop(fixture, [
+          () => stop(stopReason),
+          followupStopRequestFactory(stop, queue),
+        ]),
+      ).toRejectWith('Stop!');
+    }
+  });
+
+  it('stop requests no-op after queue.cancel()', async () => {
+    for (const followupStopRequestFactory of createStopRequestVariants) {
+      const fixture = createQueueWithOnStopCallback();
+      const { stop, queue } = fixture;
+
+      expect(
+        // eslint-disable-next-line no-await-in-loop
+        await expectSingleStop(fixture, [
+          () => queue.cancel(),
+          followupStopRequestFactory(stop, queue),
+        ]),
+      ).to.deep.equal({ done: true, value: undefined });
+    }
+  });
+
+  it('stop requests no-op after queue.abort()', async () => {
+    const abortReason = new Error('Abort!');
+    for (const followupStopRequestFactory of createStopRequestVariants) {
+      const fixture = createQueueWithOnStopCallback();
+      const { stop, queue } = fixture;
+      const requestAbort = () => queue.abort(abortReason);
+      const followupStopRequest = followupStopRequestFactory(stop, queue);
+
+      // eslint-disable-next-line no-await-in-loop
+      await expectPromise(
+        expectSingleStop(fixture, [requestAbort, followupStopRequest]),
+      ).toRejectWith('Abort!');
+    }
+  });
+
+  it('throws when registering onStop after stop has been requested', () => {
+    let stop!: (reason?: unknown) => PromiseOrValue<void>;
+    let onStop!: (cleanup: (reason?: unknown) => PromiseOrValue<void>) => void;
+    const queue = new Queue(({ onStop: savedOnStop, stop: savedStop }) => {
+      onStop = savedOnStop;
+      stop = savedStop;
     });
 
-    const sub = queue.subscribe();
-
+    stop();
     expect(queue.isStopped()).to.equal(true);
-    queue.abort(new Error('ignored'));
 
-    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
+    expect(() => onStop(() => undefined)).to.throw(
+      'Cannot register onStop cleanup after stop has been requested.',
+    );
   });
 
   it('should resolve a pending next call when stopped before any pushes', async () => {
-    let stop!: (reason?: unknown) => void;
+    let stop!: (reason?: unknown) => PromiseOrValue<void>;
     const sub = new Queue(({ stop: savedStop }) => {
       stop = savedStop;
     }).subscribe();
@@ -634,50 +797,6 @@ describe('Queue', () => {
     expect(started).to.equal(true);
   });
 
-  it('should resolve stopped promise when iteration ends', async () => {
-    let stoppedPromise!: Promise<unknown>;
-    let stopped = false;
-    new Queue(({ stop, stopped: _stoppedPromise }) => {
-      stoppedPromise = _stoppedPromise;
-
-      stoppedPromise.then(() => {
-        stopped = true;
-      });
-      stop();
-    }).subscribe();
-
-    expect(stopped).to.equal(false);
-
-    await resolveOnNextTick();
-
-    expect(stopped).to.equal(true);
-  });
-
-  it('stops in an error state when calling stopped with a reason, i.e. the last call to next to reject with that reason', async () => {
-    let stoppedPromise!: Promise<unknown>;
-    let stopped = false;
-    let stoppedReason: unknown;
-    const stopReason = new Error('Oops');
-    const sub = new Queue(({ push, stop, stopped: _stoppedPromise }) => {
-      stoppedPromise = _stoppedPromise;
-
-      stoppedPromise.then((reason) => {
-        stopped = true;
-        stoppedReason = reason;
-      });
-      push(1);
-      stop(stopReason);
-    }).subscribe();
-
-    expect(stopped).to.equal(false);
-
-    expect(await sub.next()).to.deep.equal({ done: false, value: [1] });
-    await expectPromise(sub.next()).toRejectWith('Oops');
-
-    expect(stopped).to.equal(true);
-    expect(stoppedReason).to.equal(stopReason);
-  });
-
   it('cancels existing requests when calling cancel', async () => {
     const queue = new Queue(({ push }) => {
       push(
@@ -689,7 +808,7 @@ describe('Queue', () => {
     const sub = queue.subscribe();
 
     const nextPromise = sub.next();
-    queue.cancel();
+    expect(queue.cancel()).to.equal(undefined);
 
     expect(await nextPromise).to.deep.equal({ done: true, value: undefined });
   });
@@ -705,7 +824,7 @@ describe('Queue', () => {
     const sub = queue.subscribe();
 
     const nextPromise = sub.next();
-    queue.abort(new Error('Abort!'));
+    expect(queue.abort(new Error('Abort!'))).to.equal(undefined);
 
     await expectPromise(nextPromise).toRejectWith('Abort!');
   });

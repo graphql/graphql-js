@@ -27,9 +27,9 @@ interface BatchRequest<T> {
 
 interface QueueExecutorOptions<T> {
   push: (item: PromiseOrValue<T>) => PromiseOrValue<void>;
-  stop: (reason?: unknown) => void;
+  stop: (reason?: unknown) => PromiseOrValue<void>;
+  onStop: (cleanup: (reason?: unknown) => PromiseOrValue<void>) => void;
   started: Promise<void>;
-  stopped: Promise<unknown>;
 }
 
 /**
@@ -40,12 +40,12 @@ interface QueueExecutorOptions<T> {
  * live somewhere in between.
  *
  * The constructor takes an executor function and an optional `initialCapacity`.
- * Executors receive `{ push, stop, started, stopped }` and may return `void` or
+ * Executors receive `{ push, stop, onStop, started }` and may return `void` or
  * a promise if they perform asynchronous setup. They call `push` whenever
  * another item is ready, call `stop` when no more values will be produced
- * (optionally supplying an error), await `started` when setup should run only
- * after iteration begins, and await `stopped` to observe when the queue
- * terminates. Because `push` and `stop` are plain functions, executors can
+ * (optionally supplying an error), register stop-time cleanup via `onStop`,
+ * and await `started` when setup should run only after iteration begins.
+ * Because `push`, `stop`, and `onStop` are plain functions, executors can
  * hoist them into outside scopes or pass them to helpers. If the executor
  * throws or its returned promise rejects, the queue treats it as `stop(error)`
  * and propagates the failure.
@@ -84,17 +84,20 @@ export class Queue<T> {
   private _entries: Array<Entry<T>> = [];
   private _isStopped = false;
   private _stopRequested = false;
+  private _stopCleanupCallbacks: Array<
+    (reason?: unknown) => PromiseOrValue<void>
+  > = [];
+  private _stopCompletion: Promise<void> | undefined;
   private _batchRequests = new Set<BatchRequest<T>>();
 
   private _resolveStarted: () => void;
-  private _resolveStopped: (reason?: unknown) => void;
 
   constructor(
     executor: ({
       push,
       stop,
+      onStop,
       started,
-      stopped,
     }: QueueExecutorOptions<T>) => PromiseOrValue<void>,
     initialCapacity = 1,
   ) {
@@ -105,22 +108,25 @@ export class Queue<T> {
       promiseWithResolvers<void>();
 
     this._resolveStarted = resolveStarted;
-    const { promise: stopped, resolve: resolveStopped } =
-      promiseWithResolvers<unknown>();
-    this._resolveStopped = resolveStopped;
 
     try {
       const result = executor({
         push: this._push.bind(this),
         stop: this._stop.bind(this),
+        onStop: this._onStop.bind(this),
         started,
-        stopped,
       });
       if (isPromise(result)) {
         result.catch((error: unknown) => this._stop(error));
       }
     } catch (error) {
-      this._stop(error);
+      const stopped = this._stop(error);
+      /* c8 ignore start */
+      // TODO: add coverage
+      if (isPromise(stopped)) {
+        stopped.catch(() => undefined);
+      }
+      /* c8 ignore stop */
     }
   }
 
@@ -138,29 +144,33 @@ export class Queue<T> {
     );
   }
 
-  cancel(): void {
-    if (this._isStopped) {
-      return;
+  cancel(): PromiseOrValue<void> {
+    if (this._stopRequested) {
+      return this._stopCompletion;
     }
-    this._terminate();
-    this._batchRequests.forEach((request) => request.resolve(undefined));
-    this._batchRequests.clear();
+    return this._terminate(undefined, () => {
+      this._isStopped = true;
+      this._batchRequests.forEach((request) => request.resolve(undefined));
+      this._batchRequests.clear();
+    });
   }
 
-  abort(reason?: unknown): void {
-    if (this._isStopped) {
-      return;
+  abort(reason?: unknown): PromiseOrValue<void> {
+    if (this._stopRequested) {
+      return this._stopCompletion;
     }
-    this._terminate(reason);
-    if (this._batchRequests.size) {
-      this._batchRequests.forEach((request) => request.reject(reason));
-      this._batchRequests.clear();
-      return;
-    }
-    // save rejection for later batch requests
-    this._entries.push({
-      kind: 'item',
-      settled: { status: 'rejected', reason },
+    return this._terminate(reason, () => {
+      this._isStopped = true;
+      if (this._batchRequests.size) {
+        this._batchRequests.forEach((request) => request.reject(reason));
+        this._batchRequests.clear();
+        return;
+      }
+      // save rejection for later batch requests
+      this._entries.push({
+        kind: 'item',
+        settled: { status: 'rejected', reason },
+      });
     });
   }
 
@@ -226,6 +236,44 @@ export class Queue<T> {
     this._flush();
   }
 
+  private _onStop(cleanup: (reason?: unknown) => PromiseOrValue<void>): void {
+    if (this._stopRequested) {
+      throw new Error(
+        'Cannot register onStop cleanup after stop has been requested.',
+      );
+    }
+    this._stopCleanupCallbacks.push(cleanup);
+  }
+
+  private _runStopCleanup(
+    reason: unknown,
+    afterCleanup: () => void,
+  ): PromiseOrValue<void> {
+    this._stopRequested = true;
+    const cleanupPromises = this._stopCleanupCallbacks.flatMap(
+      (cleanupCallback): Array<Promise<unknown>> => {
+        try {
+          const result = cleanupCallback(reason);
+          return isPromise(result) ? [result] : [];
+        } /* c8 ignore start */ catch {
+          // ignore errors
+          return [];
+        } /* c8 ignore stop */
+      },
+    );
+    const cleanup =
+      cleanupPromises.length > 0
+        ? Promise.allSettled(cleanupPromises).then(() => undefined)
+        : undefined;
+    if (isPromise(cleanup)) {
+      this._stopCompletion = cleanup
+        .then(afterCleanup, afterCleanup)
+        .then(() => undefined);
+      return this._stopCompletion;
+    }
+    afterCleanup();
+  }
+
   private async *_iteratorLoop<U>(
     reducer: (
       generator: Generator<T, void, void>,
@@ -284,42 +332,48 @@ export class Queue<T> {
     return maybePushPromise;
   }
 
-  private _terminate(reason?: unknown): void {
+  private _terminate(
+    reason: unknown,
+    afterCleanup: () => void,
+  ): PromiseOrValue<void> {
     for (const entry of this._entries) {
       if (entry.kind === 'item') {
         this._release();
       }
     }
     this._entries.length = 0;
-    this._stopRequested = true;
-    this._isStopped = true;
-    this._resolveStopped(reason);
+    return this._runStopCleanup(reason, afterCleanup);
   }
 
-  private _stop(reason?: unknown): void {
+  private _stop(reason?: unknown): PromiseOrValue<void> {
     if (this._stopRequested) {
-      return;
+      return this._stopCompletion;
     }
-    this._stopRequested = true;
-    if (reason === undefined) {
-      if (this._entries.length === 0) {
-        this._isStopped = true;
-        this._resolveStopped();
+    const stopCompletion = this._runStopCleanup(reason, () => {
+      if (reason === undefined) {
+        if (this._entries.length === 0) {
+          this._isStopped = true;
+          this._deliverBatchIfReady();
+          return;
+        }
+
+        this._entries.push({ kind: 'stop' });
         this._deliverBatchIfReady();
         return;
       }
 
+      this._entries.push({
+        kind: 'item',
+        settled: { status: 'rejected', reason },
+      });
       this._entries.push({ kind: 'stop' });
       this._deliverBatchIfReady();
-      return;
-    }
-
-    this._entries.push({
-      kind: 'item',
-      settled: { status: 'rejected', reason },
     });
-    this._entries.push({ kind: 'stop' });
-    this._deliverBatchIfReady();
+
+    if (isPromise(stopCompletion)) {
+      stopCompletion.catch(() => undefined);
+    }
+    return stopCompletion;
   }
 
   private _deliverBatchIfReady(): void {
@@ -342,7 +396,6 @@ export class Queue<T> {
         this._entries.shift();
         this._release();
         this._isStopped = true;
-        this._resolveStopped(settled.reason);
         this._batchRequests = new Set();
         requests.forEach((request) => request.reject(settled.reason));
       }
@@ -361,7 +414,6 @@ export class Queue<T> {
       if (entry.kind === 'stop') {
         this._isStopped = true;
         this._entries.shift();
-        this._resolveStopped();
         return;
       }
       const settled = entry.settled;

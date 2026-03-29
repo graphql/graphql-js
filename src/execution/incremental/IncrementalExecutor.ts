@@ -324,7 +324,13 @@ export class IncrementalExecutor<
       task.computation.cancel(reason);
     }
     for (const stream of this.streams) {
-      stream.queue.abort(reason);
+      const aborted = stream.queue.abort(reason);
+      /* c8 ignore start */
+      // TODO: add coverage
+      if (isPromise(aborted)) {
+        aborted.catch(() => undefined);
+      }
+      /* c8 ignore stop */
     }
   }
 
@@ -597,7 +603,13 @@ export class IncrementalExecutor<
     const filteredStreams: Array<ItemStream> = [];
     for (const stream of streams) {
       if (collectedErrors.hasNulledPosition(stream.path)) {
-        stream.queue.abort(cancellationReason);
+        const aborted = stream.queue.abort(cancellationReason);
+        /* c8 ignore start */
+        // TODO: add coverage
+        if (isPromise(aborted)) {
+          aborted.catch(() => undefined);
+        }
+        /* c8 ignore stop */
       } else {
         filteredStreams.push(stream);
       }
@@ -716,18 +728,22 @@ export class IncrementalExecutor<
   ): Queue<StreamItemResult> {
     const { enableEarlyExecution } = this.validatedExecutionArgs;
     const queue = new Queue<StreamItemResult>(
-      async ({ push, stop, started, stopped }) => {
+      async ({ push, stop, onStop, started }) => {
         const cancelStreamItems = new Set<(reason?: unknown) => void>();
+        let finishedNormally = false;
+        let stopRequested = false;
 
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        stopped.then((reason) => {
-          cancelStreamItems.forEach((cancelStreamItem) =>
-            cancelStreamItem(reason),
-          );
+        onStop((reason) => {
+          stopRequested = true;
+          if (!finishedNormally) {
+            cancelStreamItems.forEach((cancelStreamItem) =>
+              cancelStreamItem(reason),
+            );
+          }
           returnIteratorCatchingErrors(iterator);
         });
         await (enableEarlyExecution ? Promise.resolve() : started);
-        if (queue.isStopped()) {
+        if (stopRequested) {
           return;
         }
         let index = initialIndex;
@@ -737,7 +753,7 @@ export class IncrementalExecutor<
             if (isAsync) {
               // eslint-disable-next-line no-await-in-loop
               iteration = await iterator.next();
-              if (queue.isStopped()) {
+              if (stopRequested) {
                 return;
               }
             } else {
@@ -752,7 +768,14 @@ export class IncrementalExecutor<
           }
 
           if (iteration.done) {
-            stop();
+            finishedNormally = true;
+            const stopped = stop();
+            /* c8 ignore start */
+            // TODO: add coverage
+            if (isPromise(stopped)) {
+              stopped.catch(() => undefined);
+            }
+            /* c8 ignore stop */
             return;
           }
 
@@ -778,7 +801,7 @@ export class IncrementalExecutor<
             } else {
               // eslint-disable-next-line no-await-in-loop
               streamItemResult = await streamItemResult;
-              if (queue.isStopped()) {
+              if (stopRequested) {
                 return;
               }
             }
@@ -787,7 +810,7 @@ export class IncrementalExecutor<
           if (isPromise(pushResult)) {
             // eslint-disable-next-line no-await-in-loop
             await pushResult;
-            if (queue.isStopped()) {
+            if (stopRequested) {
               return;
             }
           }
