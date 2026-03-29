@@ -121,12 +121,9 @@ export class Queue<T> {
       }
     } catch (error) {
       const stopped = this._stop(error);
-      /* c8 ignore start */
-      // TODO: add coverage
       if (isPromise(stopped)) {
         stopped.catch(() => undefined);
       }
-      /* c8 ignore stop */
     }
   }
 

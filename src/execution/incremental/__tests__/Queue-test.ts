@@ -396,6 +396,40 @@ describe('Queue', () => {
     await expectPromise(sub.next()).toRejectWith('Oops');
   });
 
+  it('waits for async onStop cleanup after sync executor error', async () => {
+    const { promise: cleanup, resolve: resolveCleanup } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let cleanupCalled = false;
+    const sub = new Queue(({ onStop }) => {
+      onStop(() => {
+        cleanupCalled = true;
+        return cleanup;
+      });
+      throw new Error('Oops');
+    }).subscribe();
+
+    const nextPromise = sub.next();
+    let nextSettled = false;
+    nextPromise.then(
+      () => {
+        nextSettled = true;
+      },
+      () => {
+        nextSettled = true;
+      },
+    );
+
+    await resolveOnNextTick();
+    expect(cleanupCalled).to.equal(true);
+    expect(nextSettled).to.equal(false);
+
+    resolveCleanup();
+
+    await expectPromise(nextPromise).toRejectWith('Oops');
+    expect(nextSettled).to.equal(true);
+  });
+
   it('delivers queued items before rejecting on async executor error', async () => {
     const sub = new Queue(async ({ push }) => {
       push(1);
