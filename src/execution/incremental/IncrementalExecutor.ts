@@ -752,7 +752,6 @@ export class IncrementalExecutor<
               cancelStreamItem(reason),
             );
           }
-
           returnIteratorCatchingErrors(iterator);
         });
         await (enableEarlyExecution ? Promise.resolve() : started);
