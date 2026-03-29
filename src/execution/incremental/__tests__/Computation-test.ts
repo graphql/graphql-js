@@ -106,93 +106,93 @@ describe('Computation', () => {
     expect(runCount).to.equal(1);
   });
 
-  it('can be cancelled before running', () => {
-    let onCancelRan = false;
+  it('can be aborted before running', () => {
+    let onAbortRan = false;
     const computation = new Computation(
       () => ({ value: 123 }),
       () => {
-        onCancelRan = true;
+        onAbortRan = true;
       },
     );
-    computation.cancel();
+    computation.abort();
     expect(() => computation.result()).to.throw('Cancelled!');
-    expect(onCancelRan).to.equal(false);
+    expect(onAbortRan).to.equal(false);
   });
 
-  it('cannot be cancelled after running synchronously', () => {
-    let onCancelRan = false;
+  it('cannot be aborted after running synchronously', () => {
+    let onAbortRan = false;
     const computation = new Computation(
       () => ({ value: 123 }),
       () => {
-        onCancelRan = true;
+        onAbortRan = true;
       },
     );
 
     computation.prime();
-    computation.cancel();
+    computation.abort();
     expect(computation.result()).to.deep.equal({ value: 123 });
-    expect(onCancelRan).to.equal(false);
+    expect(onAbortRan).to.equal(false);
   });
 
-  it('cannot be cancelled after erroring synchronously', () => {
-    let onCancelRan = false;
+  it('cannot be aborted after erroring synchronously', () => {
+    let onAbortRan = false;
     const computation = new Computation(
       () => {
         throw new Error('failure');
       },
       () => {
-        onCancelRan = true;
+        onAbortRan = true;
       },
     );
 
     computation.prime();
-    computation.cancel();
+    computation.abort();
     expect(() => computation.result()).to.throw('failure');
-    expect(onCancelRan).to.equal(false);
+    expect(onAbortRan).to.equal(false);
   });
 
-  it('can be cancelled while running asynchronously', () => {
-    let onCancelRan = false;
+  it('can be aborted while running asynchronously', () => {
+    let onAbortRan = false;
     const computation = new Computation(
       () =>
         new Promise(() => {
           // Never resolves.
         }),
       () => {
-        onCancelRan = true;
+        onAbortRan = true;
       },
     );
 
     computation.prime();
-    computation.cancel();
-    expect(onCancelRan).to.equal(true);
+    computation.abort();
+    expect(onAbortRan).to.equal(true);
     expect(() => computation.result()).to.throw('Cancelled!');
   });
 
-  it('can be cancelled with a provided reason before running', () => {
+  it('can be aborted with a provided reason before running', () => {
     const abortReason = new Error('aborted');
     const computation = new Computation(() => ({ value: 123 }));
 
-    computation.cancel(abortReason);
+    computation.abort(abortReason);
     expect(() => computation.result()).to.throw('aborted');
   });
 
-  it('forwards cancellation reason to onCancel while running asynchronously', () => {
+  it('forwards abort reason to onAbort while running asynchronously', () => {
     const abortReason = new Error('aborted');
-    let onCancelReason: unknown;
+    let onAbortReason: unknown;
     const computation = new Computation(
       () =>
         new Promise(() => {
           // Never resolves.
         }),
       (reason) => {
-        onCancelReason = reason;
+        onAbortReason = reason;
       },
     );
 
     computation.prime();
-    computation.cancel(abortReason);
-    expect(onCancelReason).to.equal(abortReason);
+    computation.abort(abortReason);
+    expect(onAbortReason).to.equal(abortReason);
     expect(() => computation.result()).to.throw('aborted');
   });
 });

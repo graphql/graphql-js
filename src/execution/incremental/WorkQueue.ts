@@ -282,7 +282,7 @@ export function createWorkQueue<
     reason: unknown,
     cancelPromises: Array<Promise<unknown>>,
   ): void {
-    task.computation.cancel(reason);
+    task.computation.abort(reason);
     const taskNode = taskNodes.get(task);
     if (taskNode) {
       for (const childStream of taskNode.childStreams) {

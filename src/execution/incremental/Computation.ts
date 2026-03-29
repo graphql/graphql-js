@@ -9,14 +9,14 @@ type MaybePromise<T> =
 /** @internal **/
 export class Computation<T> {
   private _fn: () => PromiseOrValue<T>;
-  private _onCancel: ((reason?: unknown) => void) | undefined;
+  private _onAbort: ((reason?: unknown) => void) | undefined;
   private _maybePromise?: MaybePromise<T>;
   constructor(
     fn: () => PromiseOrValue<T>,
-    onCancel?: (reason?: unknown) => void,
+    onAbort?: (reason?: unknown) => void,
   ) {
     this._fn = fn;
-    this._onCancel = onCancel;
+    this._onAbort = onAbort;
   }
   prime(): MaybePromise<T> {
     if (this._maybePromise) {
@@ -54,7 +54,7 @@ export class Computation<T> {
       }
     }
   }
-  cancel(reason?: unknown): void {
+  abort(reason?: unknown): void {
     const maybePromise = this._maybePromise;
     if (!maybePromise) {
       this._maybePromise = {
@@ -64,8 +64,8 @@ export class Computation<T> {
       return;
     }
     const status = maybePromise.status;
-    if (status === 'pending' && this._onCancel) {
-      this._onCancel(reason);
+    if (status === 'pending' && this._onAbort) {
+      this._onAbort(reason);
       this._maybePromise = {
         status: 'rejected',
         reason,

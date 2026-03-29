@@ -321,7 +321,7 @@ export class IncrementalExecutor<
   override cancel(reason?: unknown): void {
     super.cancel(reason);
     for (const task of this.tasks) {
-      task.computation.cancel(reason);
+      task.computation.abort(reason);
     }
     for (const stream of this.streams) {
       const aborted = stream.queue.abort(reason);
@@ -594,7 +594,7 @@ export class IncrementalExecutor<
     const filteredTasks: Array<ExecutionGroup> = [];
     for (const task of tasks) {
       if (collectedErrors.hasNulledPosition(task.path)) {
-        task.computation.cancel(cancellationReason);
+        task.computation.abort(cancellationReason);
       } else {
         filteredTasks.push(task);
       }
