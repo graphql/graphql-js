@@ -318,25 +318,25 @@ export class IncrementalExecutor<
     );
   }
 
-  override cancel(reason?: unknown): void {
-    super.cancel(reason);
+  override abort(reason?: unknown): PromiseOrValue<void> {
+    const abortPromises: Array<Promise<unknown>> = [];
+    const superAborted = super.abort(reason);
+    // Executor.abort is currently synchronous
+    invariant(!isPromise(superAborted));
     for (const task of this.tasks) {
       const aborted = task.computation.abort(reason);
-      /* c8 ignore start */
-      // TODO: add coverage
       if (isPromise(aborted)) {
-        aborted.catch(() => undefined);
+        abortPromises.push(aborted);
       }
-      /* c8 ignore stop */
     }
     for (const stream of this.streams) {
       const aborted = stream.queue.abort(reason);
-      /* c8 ignore start */
-      // TODO: add coverage
       if (isPromise(aborted)) {
-        aborted.catch(() => undefined);
+        abortPromises.push(aborted);
       }
-      /* c8 ignore stop */
+    }
+    if (abortPromises.length > 0) {
+      return Promise.allSettled(abortPromises).then(() => undefined);
     }
   }
 
@@ -515,7 +515,7 @@ export class IncrementalExecutor<
               groupedFieldSet,
               deliveryGroupMap,
             ),
-          (reason) => executor.cancel(reason),
+          (reason) => executor.abort(reason),
         ),
       };
 
@@ -552,7 +552,7 @@ export class IncrementalExecutor<
         deliveryGroupMap,
       );
     } catch (error) {
-      this.cancel();
+      ignoreAbortCleanup(this.abort());
       throw error;
     }
 
@@ -561,7 +561,7 @@ export class IncrementalExecutor<
         (resolved) =>
           this.buildExecutionGroupResult(deliveryGroups, path, resolved),
         (error: unknown) => {
-          this.cancel();
+          ignoreAbortCleanup(this.abort());
           throw error;
         },
       );
@@ -600,13 +600,7 @@ export class IncrementalExecutor<
     const filteredTasks: Array<ExecutionGroup> = [];
     for (const task of tasks) {
       if (collectedErrors.hasNulledPosition(task.path)) {
-        const aborted = task.computation.abort(cancellationReason);
-        /* c8 ignore start */
-        // TODO: add coverage
-        if (isPromise(aborted)) {
-          aborted.catch(() => undefined);
-        }
-        /* c8 ignore stop */
+        ignoreAbortCleanup(task.computation.abort(cancellationReason));
       } else {
         filteredTasks.push(task);
       }
@@ -615,13 +609,7 @@ export class IncrementalExecutor<
     const filteredStreams: Array<ItemStream> = [];
     for (const stream of streams) {
       if (collectedErrors.hasNulledPosition(stream.path)) {
-        const aborted = stream.queue.abort(cancellationReason);
-        /* c8 ignore start */
-        // TODO: add coverage
-        if (isPromise(aborted)) {
-          aborted.catch(() => undefined);
-        }
-        /* c8 ignore stop */
+        ignoreAbortCleanup(stream.queue.abort(cancellationReason));
       } else {
         filteredStreams.push(stream);
       }
@@ -741,17 +729,29 @@ export class IncrementalExecutor<
     const { enableEarlyExecution } = this.validatedExecutionArgs;
     const queue = new Queue<StreamItemResult>(
       async ({ push, stop, onStop, started }) => {
-        const cancelStreamItems = new Set<(reason?: unknown) => void>();
+        const abortStreamItems = new Set<
+          (reason?: unknown) => PromiseOrValue<void>
+        >();
         let finishedNormally = false;
         let stopRequested = false;
 
         onStop((reason) => {
           stopRequested = true;
           if (!finishedNormally) {
-            cancelStreamItems.forEach((cancelStreamItem) =>
-              cancelStreamItem(reason),
-            );
-            returnIteratorCatchingErrors(iterator);
+            const abortPromises: Array<Promise<unknown>> = [];
+            for (const abortStreamItem of abortStreamItems) {
+              const result = abortStreamItem(reason);
+              if (isPromise(result)) {
+                abortPromises.push(result);
+              }
+            }
+            const returned = returnIteratorCatchingErrors(iterator);
+            if (isPromise(returned)) {
+              abortPromises.push(returned);
+            }
+            if (abortPromises.length > 0) {
+              return Promise.allSettled(abortPromises).then(() => undefined);
+            }
           }
         });
         await (enableEarlyExecution ? Promise.resolve() : started);
@@ -783,7 +783,6 @@ export class IncrementalExecutor<
             finishedNormally = true;
             const stopped = stop();
             /* c8 ignore start */
-            // TODO: add coverage
             if (isPromise(stopped)) {
               stopped.catch(() => undefined);
             }
@@ -804,11 +803,11 @@ export class IncrementalExecutor<
           );
           if (isPromise(streamItemResult)) {
             if (enableEarlyExecution) {
-              const cancelStreamItem = (reason?: unknown) =>
-                executor.cancel(reason);
-              cancelStreamItems.add(cancelStreamItem);
+              const abortStreamItem = (reason?: unknown) =>
+                executor.abort(reason);
+              abortStreamItems.add(abortStreamItem);
               streamItemResult = streamItemResult.finally(() => {
-                cancelStreamItems.delete(cancelStreamItem);
+                abortStreamItems.delete(abortStreamItem);
               });
             } else {
               // eslint-disable-next-line no-await-in-loop
@@ -864,7 +863,7 @@ export class IncrementalExecutor<
           },
         )
         .then(undefined, (error: unknown) => {
-          this.cancel();
+          ignoreAbortCleanup(this.abort());
           throw error;
         });
     }
@@ -885,7 +884,7 @@ export class IncrementalExecutor<
         return this.buildStreamItemResult(null);
       }
     } catch (error) {
-      this.cancel();
+      ignoreAbortCleanup(this.abort());
       throw error;
     }
 
@@ -904,7 +903,7 @@ export class IncrementalExecutor<
           },
         )
         .then(undefined, (error: unknown) => {
-          this.cancel();
+          ignoreAbortCleanup(this.abort());
           throw error;
         });
     }
@@ -920,6 +919,12 @@ export class IncrementalExecutor<
     return errors.length > 0
       ? { value: { item, errors }, work }
       : { value: { item }, work };
+  }
+}
+
+function ignoreAbortCleanup(aborted: PromiseOrValue<void>): void {
+  if (isPromise(aborted)) {
+    aborted.catch(() => undefined);
   }
 }
 

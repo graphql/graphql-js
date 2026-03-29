@@ -2904,6 +2904,97 @@ describe('Execute: defer directive (legacy)', () => {
     );
   });
 
+  it('cancels pending deferred tasks with async child stream cleanup', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        todo {
+          id
+          ... @defer {
+            items @stream(initialCount: 0)
+            author {
+              id
+            }
+          }
+        }
+        blocker
+      }
+    `);
+
+    const { promise: blockerPromise, resolve: resolveBlocker } =
+      promiseWithResolvers<string>();
+    const { promise: blockerStarted, resolve: resolveBlockerStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: authorPromise, resolve: resolveAuthor } =
+      promiseWithResolvers<{ id: string }>();
+    const { promise: authorStarted, resolve: resolveAuthorStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: itemsStarted, resolve: resolveItemsStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: returnCleanup, resolve: resolveReturnCleanup } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let sourceReturnCalls = 0;
+    const asyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return new Promise<IteratorResult<string>>(() => {
+          /* never resolves */
+        });
+      },
+      async return() {
+        sourceReturnCalls += 1;
+        await returnCleanup;
+        return { value: undefined, done: true };
+      },
+    };
+
+    const resultPromise = legacyExecuteIncrementally({
+      schema: cancellationSchema,
+      document,
+      enableEarlyExecution: true,
+      abortSignal: abortController.signal,
+      rootValue: {
+        blocker() {
+          resolveBlockerStarted();
+          return blockerPromise;
+        },
+        todo: {
+          id: 'todo',
+          items() {
+            resolveItemsStarted();
+            return asyncIterator;
+          },
+          author() {
+            resolveAuthorStarted();
+            return authorPromise;
+          },
+        },
+      },
+    });
+
+    await blockerStarted;
+    await itemsStarted;
+    await authorStarted;
+    abortController.abort();
+    await resolveOnNextTick();
+
+    expect(sourceReturnCalls).to.equal(1);
+    await expectPromise(resultPromise).toRejectWith(
+      'This operation was aborted',
+    );
+
+    resolveReturnCleanup();
+    resolveAuthor({ id: 'author' });
+    resolveBlocker('done');
+    await resolveOnNextTick();
+  });
+
   it('should ignore deferred payloads resolved after cancellation', async () => {
     const abortController = new AbortController();
     const document = parse(`

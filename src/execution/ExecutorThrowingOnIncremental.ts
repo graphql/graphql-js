@@ -1,4 +1,5 @@
 import { invariant } from '../jsutils/invariant.js';
+import { isPromise } from '../jsutils/isPromise.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
@@ -38,7 +39,8 @@ export class ExecutorThrowingOnIncremental extends Executor {
         '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
       );
       const reason = new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-      this.cancel(reason);
+      const aborted = this.abort(reason);
+      invariant(!isPromise(aborted));
       throw reason;
     }
     return this.executeRootGroupedFieldSet(
@@ -64,7 +66,8 @@ export class ExecutorThrowingOnIncremental extends Executor {
         '`@defer` directive not supported on subscription operations. Disable `@defer` by setting the `if` argument to `false`.',
       );
       const reason = new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-      this.cancel(reason);
+      const aborted = this.abort(reason);
+      invariant(!isPromise(aborted));
       throw reason;
     }
 
@@ -98,7 +101,8 @@ export class ExecutorThrowingOnIncremental extends Executor {
       );
 
       const reason = new Error(UNEXPECTED_MULTIPLE_PAYLOADS);
-      this.cancel(reason);
+      const aborted = this.abort(reason);
+      invariant(!isPromise(aborted));
       throw reason;
     }
 

@@ -251,7 +251,12 @@ export class Executor<
     let removeExternalAbortListener: (() => void) | undefined;
     if (externalAbortSignal) {
       externalAbortSignal.throwIfAborted();
-      const onExternalAbort = () => this.cancel(externalAbortSignal.reason);
+      const onExternalAbort = () => {
+        const aborted = this.abort(externalAbortSignal.reason);
+        if (isPromise(aborted)) {
+          aborted.catch(() => undefined);
+        }
+      };
       removeExternalAbortListener = () =>
         externalAbortSignal.removeEventListener('abort', onExternalAbort);
       externalAbortSignal.addEventListener('abort', onExternalAbort);
@@ -322,7 +327,7 @@ export class Executor<
     }
   }
 
-  cancel(reason?: unknown): void {
+  abort(reason?: unknown): PromiseOrValue<void> {
     if (!this.finished) {
       this.finish();
       this.internalAbortController.abort(reason);
@@ -826,6 +831,7 @@ export class Executor<
         index++;
       }
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       returnIteratorCatchingErrors(asyncIterator);
       throw error;
     }
@@ -833,6 +839,7 @@ export class Executor<
     // Throwing on completion outside of the loop may allow engines to better optimize
     if (this.finished) {
       if (!iteration?.done) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         returnIteratorCatchingErrors(asyncIterator);
       }
       throw new Error('Execution has already completed.');
@@ -959,6 +966,7 @@ export class Executor<
         index++;
       }
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       returnIteratorCatchingErrors(iterator);
       throw error;
     }

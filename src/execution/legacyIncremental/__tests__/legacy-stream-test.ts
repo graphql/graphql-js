@@ -2920,6 +2920,193 @@ describe('Execute: stream directive (legacy cancellation)', () => {
     await expectPromise(nextPromise).toRejectWith('This operation was aborted');
   });
 
+  it('waits for async stream source return cleanup before abort cancellation settles', async () => {
+    const abortController = new AbortController();
+    const document = parse('{ scalarList @stream(initialCount: 0) }');
+
+    const { promise: nextStarted, resolve: resolveNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: returnCleanup, resolve: resolveReturnCleanup } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let returnCalled = false;
+    let done = false;
+    const asyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        if (done) {
+          return Promise.resolve({ value: undefined, done: true });
+        }
+        done = true;
+        resolveNextStarted();
+        return new Promise<IteratorResult<unknown>>(() => {
+          /* never resolves */
+        });
+      },
+      async return() {
+        returnCalled = true;
+        await returnCleanup;
+        return { value: undefined, done: true };
+      },
+    };
+
+    const result = await legacyExecuteIncrementally({
+      schema,
+      document,
+      rootValue: {
+        scalarList: () => asyncIterator,
+      },
+      abortSignal: abortController.signal,
+    });
+    assert('initialResult' in result);
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    const nextPromise = iterator.next();
+    let nextPromiseSettled = false;
+    nextPromise.then(
+      () => {
+        nextPromiseSettled = true;
+      },
+      () => {
+        nextPromiseSettled = true;
+      },
+    );
+    await nextStarted;
+
+    abortController.abort();
+    await resolveOnNextTick();
+    expect(returnCalled).to.equal(true);
+    expect(nextPromiseSettled).to.equal(false);
+
+    resolveReturnCleanup();
+    await expectPromise(nextPromise).toRejectWith('This operation was aborted');
+    expect(nextPromiseSettled).to.equal(true);
+  });
+
+  it('waits for async deferred nested stream item cleanup before abort cancellation settles', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        todos @stream(initialCount: 0) {
+          id
+          ... @defer {
+            author {
+              id
+            }
+            items @stream(initialCount: 0)
+          }
+        }
+      }
+    `);
+
+    const { promise: todosNextStarted, resolve: resolveTodosNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: idStarted, resolve: resolveIdStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: itemsNextStarted, resolve: resolveItemsNextStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: authorStarted, resolve: resolveAuthorStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: idPromise } = promiseWithResolvers<string>();
+    const { promise: authorPromise } = promiseWithResolvers<{ id: string }>();
+    const { promise: itemsReturnCleanup, resolve: resolveItemsReturnCleanup } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const never = new Promise<IteratorResult<unknown>>(() => {
+      /* never resolves */
+    });
+
+    let yieldedTodo = false;
+    let itemsReturnCalled = false;
+    const itemsAsyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        resolveItemsNextStarted();
+        return never;
+      },
+      async return() {
+        itemsReturnCalled = true;
+        await itemsReturnCleanup;
+        return { value: undefined, done: true };
+      },
+    };
+    const todosAsyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        if (yieldedTodo) {
+          return never;
+        }
+        yieldedTodo = true;
+        resolveTodosNextStarted();
+        return Promise.resolve({
+          value: {
+            id() {
+              resolveIdStarted();
+              return idPromise;
+            },
+            author() {
+              resolveAuthorStarted();
+              return authorPromise;
+            },
+            items() {
+              return itemsAsyncIterator;
+            },
+          },
+          done: false,
+        });
+      },
+    };
+
+    const result = await legacyExecuteIncrementally({
+      schema: cancelStreamSchema,
+      document,
+      rootValue: {
+        todos: () => todosAsyncIterator,
+      },
+      abortSignal: abortController.signal,
+      enableEarlyExecution: true,
+    });
+    assert('initialResult' in result);
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    const nextPromise = iterator.next();
+    let nextPromiseSettled = false;
+    nextPromise.then(
+      () => {
+        nextPromiseSettled = true;
+      },
+      () => {
+        nextPromiseSettled = true;
+      },
+    );
+
+    await todosNextStarted;
+    await idStarted;
+    await authorStarted;
+    await itemsNextStarted;
+
+    abortController.abort();
+    await resolveOnNextTick();
+
+    expect(itemsReturnCalled).to.equal(true);
+    expect(nextPromiseSettled).to.equal(false);
+
+    resolveItemsReturnCleanup();
+    await expectPromise(nextPromise).toRejectWith('This operation was aborted');
+    expect(nextPromiseSettled).to.equal(true);
+  });
+
   it('cancels streaming when aborted while item promise is pending', async () => {
     const abortController = new AbortController();
     const document = parse('{ scalarList @stream(initialCount: 0) }');
@@ -3141,6 +3328,82 @@ describe('Execute: stream directive (legacy cancellation)', () => {
     );
 
     resolveBlocker('done');
+  });
+
+  it('cancels async stream source cleanup when aborted before initial execution finishes', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        todo {
+          id
+          items @stream(initialCount: 0)
+        }
+        blocker
+      }
+    `);
+
+    const { promise: blockerPromise, resolve: resolveBlocker } =
+      promiseWithResolvers<string>();
+    const { promise: blockerStarted, resolve: resolveBlockerStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: itemsStarted, resolve: resolveItemsStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const { promise: returnCleanup, resolve: resolveReturnCleanup } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    let sourceReturnCalls = 0;
+    const never = new Promise<IteratorResult<string>>(() => {
+      /* never resolves */
+    });
+    const asyncIterator = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return never;
+      },
+      async return() {
+        sourceReturnCalls += 1;
+        await returnCleanup;
+        return { value: undefined, done: true };
+      },
+    };
+
+    const resultPromise = legacyExecuteIncrementally({
+      schema: cancellationSchema,
+      document,
+      abortSignal: abortController.signal,
+      rootValue: {
+        blocker() {
+          resolveBlockerStarted();
+          return blockerPromise;
+        },
+        todo: {
+          id: 'todo',
+          items() {
+            resolveItemsStarted();
+            return asyncIterator;
+          },
+        },
+      },
+    });
+
+    await itemsStarted;
+    await blockerStarted;
+
+    abortController.abort();
+    await resolveOnNextTick();
+
+    expect(sourceReturnCalls).to.equal(1);
+    await expectPromise(resultPromise).toRejectWith(
+      'This operation was aborted',
+    );
+
+    resolveReturnCleanup();
+    resolveBlocker('done');
+    await resolveOnNextTick();
   });
 
   it('should ignore repeated cancellation attempts during incremental execution', async () => {
