@@ -672,30 +672,37 @@ describe('Execute: Union and intersection types', () => {
     const rootValue = new Person('John', [], [liz], [garfield]);
     const contextValue = { authToken: '123abc' };
 
-    /* c8 ignore next 4 */
+    let unhandledRejection: unknown = null;
+    const unhandledRejectionListener = (reason: unknown) => {
+      unhandledRejection = reason;
+    };
     // eslint-disable-next-line no-undef
-    process.on('unhandledRejection', () => {
-      expect.fail('Unhandled rejection');
-    });
+    process.on('unhandledRejection', unhandledRejectionListener);
 
-    const result = await execute({
-      schema,
-      document,
-      rootValue,
-      contextValue,
-    });
+    try {
+      const result = await execute({
+        schema,
+        document,
+        rootValue,
+        contextValue,
+      });
 
-    expectJSON(result).toDeepEqual({
-      data: {
-        responsibilities: [
-          {
-            __typename: 'Cat',
-            meows: false,
-            name: 'Garfield',
-          },
-        ],
-      },
-    });
+      expectJSON(result).toDeepEqual({
+        data: {
+          responsibilities: [
+            {
+              __typename: 'Cat',
+              meows: false,
+              name: 'Garfield',
+            },
+          ],
+        },
+      });
+    } finally {
+      // eslint-disable-next-line no-undef
+      process.removeListener('unhandledRejection', unhandledRejectionListener);
+    }
+    expect(unhandledRejection).to.equal(null);
   });
 
   it('handles promises from isTypeOf correctly when a later type matches synchronously', async () => {
@@ -718,7 +725,7 @@ describe('Execute: Union and intersection types', () => {
     const unhandledRejectionListener = (reason: any) => {
       unhandledRejection = reason;
     };
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-undef
     process.on('unhandledRejection', unhandledRejectionListener);
 
     const result = await execute({
@@ -739,7 +746,93 @@ describe('Execute: Union and intersection types', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-undef
+    process.removeListener('unhandledRejection', unhandledRejectionListener);
+
+    expect(unhandledRejection).to.equal(null);
+  });
+
+  it('handles pending isTypeOf rejections when a later isTypeOf throws synchronously', async () => {
+    const ThrowingSearchableInterface = new GraphQLInterfaceType({
+      name: 'ThrowingSearchable',
+      fields: {
+        id: { type: GraphQLString },
+      },
+    });
+
+    const TypeAsyncReject = new GraphQLObjectType({
+      name: 'TypeAsyncReject',
+      interfaces: [ThrowingSearchableInterface],
+      fields: () => ({
+        id: { type: GraphQLString },
+        nameAsyncReject: { type: GraphQLString },
+      }),
+      isTypeOf: (_value, _context, _info) =>
+        new Promise((_resolve, reject) =>
+          setTimeout(
+            () => reject(new Error('TypeAsyncReject_isTypeOf_rejected')),
+            10,
+          ),
+        ),
+    });
+
+    const TypeThrowing = new GraphQLObjectType({
+      name: 'TypeThrowing',
+      interfaces: [ThrowingSearchableInterface],
+      fields: () => ({
+        id: { type: GraphQLString },
+        nameThrowing: { type: GraphQLString },
+      }),
+      isTypeOf: () => {
+        throw new Error('TypeThrowing_isTypeOf_threw');
+      },
+    });
+
+    const schemaWithThrowingIsTypeOf = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          search: {
+            type: ThrowingSearchableInterface,
+            resolve: () => ({ id: 'x', nameThrowing: 'Object X' }),
+          },
+        },
+      }),
+      types: [TypeAsyncReject, TypeThrowing],
+    });
+
+    const document = parse(`
+      {
+        search {
+          __typename
+          id
+          ... on TypeThrowing {
+            nameThrowing
+          }
+        }
+      }
+    `);
+
+    let unhandledRejection: unknown = null;
+    const unhandledRejectionListener = (reason: unknown) => {
+      unhandledRejection = reason;
+    };
+    // eslint-disable-next-line no-undef
+    process.on('unhandledRejection', unhandledRejectionListener);
+
+    const result = await execute({
+      schema: schemaWithThrowingIsTypeOf,
+      document,
+    });
+
+    expect(result.data).to.deep.equal({
+      search: null,
+    });
+    expect(result.errors?.[0].message).to.equal('TypeThrowing_isTypeOf_threw');
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
 
     expect(unhandledRejection).to.equal(null);
