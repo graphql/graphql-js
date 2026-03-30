@@ -263,8 +263,7 @@ export class Executor<
       externalAbortSignal.addEventListener('abort', onExternalAbort);
     }
 
-    const onFinish = () => {
-      this.finish();
+    const maybeRemoveExternalAbortListener = () => {
       removeExternalAbortListener?.();
     };
 
@@ -308,39 +307,44 @@ export class Executor<
       if (isPromise(result)) {
         const promise = result.then(
           (data) => {
-            onFinish();
+            maybeRemoveExternalAbortListener();
+            this.throwIfAborted();
             return this.buildResponse(data);
           },
           (error: unknown) => {
-            onFinish();
+            maybeRemoveExternalAbortListener();
+            this.throwIfAborted();
             this.collectedErrors.add(ensureGraphQLError(error), undefined);
             return this.buildResponse(null);
           },
         );
         return cancellablePromise(promise, this.internalAbortController.signal);
       }
-      onFinish();
+      maybeRemoveExternalAbortListener();
       return this.buildResponse(result);
     } catch (error) {
-      onFinish();
+      maybeRemoveExternalAbortListener();
       this.collectedErrors.add(ensureGraphQLError(error), undefined);
       return this.buildResponse(null);
     }
   }
 
+  throwIfAborted(): void {
+    this.internalAbortController.signal.throwIfAborted();
+  }
+
   abort(reason?: unknown): PromiseOrValue<void> {
-    if (!this.aborted) {
-      this.finish();
-      this.internalAbortController.abort(reason);
-      this.resolverAbortController?.abort(reason);
+    if (this.aborted) {
+      return;
     }
+    this.aborted = true;
+    this.internalAbortController.abort(reason);
+    this.resolverAbortController?.abort(reason);
   }
 
   finish(): void {
-    if (!this.aborted) {
-      this.aborted = true;
-    }
-    this.internalAbortController.signal.throwIfAborted();
+    this.aborted = true;
+    this.throwIfAborted();
   }
 
   /**
@@ -350,9 +354,11 @@ export class Executor<
   buildResponse(
     data: ObjMap<unknown> | null,
   ): ExecutionResult | TAlternativeInitialResponse {
-    this.resolverAbortController?.abort();
     const errors = this.collectedErrors.errors;
-    return errors.length ? { errors, data } : { data };
+    const result = errors.length ? { errors, data } : { data };
+    this.finish();
+    this.resolverAbortController?.abort();
+    return result;
   }
 
   executeCollectedRootFields(
