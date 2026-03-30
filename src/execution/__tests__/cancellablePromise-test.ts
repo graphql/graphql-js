@@ -5,118 +5,49 @@ import { expectPromise } from '../../__testUtils__/expectPromise.js';
 
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
-import { cancellablePromise } from '../cancellablePromise.js';
+import { cancellablePromise, withCancellation } from '../cancellablePromise.js';
 
-describe('cancellablePromise', () => {
+describe('withCancellation', () => {
   it('works to wrap a resolved promise', async () => {
-    const abortController = new AbortController();
-
     const promise = Promise.resolve(1);
-
-    const withCancellation = cancellablePromise(
-      promise,
-      abortController.signal,
-    );
-
-    expect(await withCancellation).to.equal(1);
+    const withAbort = withCancellation(promise);
+    expect(await withAbort.promise).to.equal(1);
   });
 
   it('works to wrap a rejected promise', async () => {
-    const abortController = new AbortController();
-
     const promise = Promise.reject(new Error('Rejected!'));
-
-    const withCancellation = cancellablePromise(
-      promise,
-      abortController.signal,
-    );
-
-    await expectPromise(withCancellation).toRejectWith('Rejected!');
+    const withAbort = withCancellation(promise);
+    await expectPromise(withAbort.promise).toRejectWith('Rejected!');
   });
 
-  it('works to cancel an already resolved promise', async () => {
-    const abortController = new AbortController();
-
+  it('works to abort an already resolved promise', async () => {
     const promise = Promise.resolve(1);
+    const withAbort = withCancellation(promise);
 
-    const withCancellation = cancellablePromise(
-      promise,
-      abortController.signal,
-    );
-
-    abortController.abort(new Error('Cancelled!'));
-
-    await expectPromise(withCancellation).toRejectWith('Cancelled!');
+    withAbort.abort(new Error('Cancelled!'));
+    await expectPromise(withAbort.promise).toRejectWith('Cancelled!');
   });
 
-  it('works to cancel an already resolved promise after abort signal triggered', async () => {
-    const abortController = new AbortController();
-
-    abortController.abort(new Error('Cancelled!'));
-
-    const promise = Promise.resolve(1);
-
-    const withCancellation = cancellablePromise(
-      promise,
-      abortController.signal,
-    );
-
-    await expectPromise(withCancellation).toRejectWith('Cancelled!');
-  });
-
-  it('works to cancel an already rejected promise after abort signal triggered', async () => {
-    const abortController = new AbortController();
-
-    abortController.abort(new Error('Cancelled!'));
-
-    const promise = Promise.reject(new Error('Rejected!'));
-
-    const withCancellation = cancellablePromise(
-      promise,
-      abortController.signal,
-    );
-
-    await expectPromise(withCancellation).toRejectWith('Cancelled!');
-  });
-
-  it('works to cancel a hanging promise', async () => {
-    const abortController = new AbortController();
-
+  it('works to abort a hanging promise', async () => {
     const promise = new Promise(() => {
       /* never resolves */
     });
+    const withAbort = withCancellation(promise);
 
-    const withCancellation = cancellablePromise(
-      promise,
-      abortController.signal,
-    );
-
-    abortController.abort(new Error('Cancelled!'));
-
-    await expectPromise(withCancellation).toRejectWith('Cancelled!');
+    withAbort.abort(new Error('Cancelled!'));
+    await expectPromise(withAbort.promise).toRejectWith('Cancelled!');
   });
 
-  it('works to cancel a hanging promise created after abort signal triggered', async () => {
-    const abortController = new AbortController();
+  it('does nothing when aborting an already settled promise', async () => {
+    const promise = Promise.resolve(1);
+    const withAbort = withCancellation(promise);
 
-    abortController.abort(new Error('Cancelled!'));
-
-    const promise = new Promise(() => {
-      /* never resolves */
-    });
-
-    const withCancellation = cancellablePromise(
-      promise,
-      abortController.signal,
-    );
-
-    await expectPromise(withCancellation).toRejectWith('Cancelled!');
+    expect(await withAbort.promise).to.equal(1);
+    withAbort.abort(new Error('Cancelled!'));
+    expect(await withAbort.promise).to.equal(1);
   });
 
   it('handles later original rejections when already aborted', async () => {
-    const abortController = new AbortController();
-    abortController.abort(new Error('Cancelled!'));
-
     const deferred = promiseWithResolvers<undefined>();
 
     let unhandledRejection: unknown = null;
@@ -127,11 +58,97 @@ describe('cancellablePromise', () => {
     process.on('unhandledRejection', unhandledRejectionListener);
 
     try {
-      const withCancellation = cancellablePromise(
+      const withAbort = withCancellation(deferred.promise);
+      withAbort.abort(new Error('Cancelled!'));
+      await expectPromise(withAbort.promise).toRejectWith('Cancelled!');
+
+      deferred.reject(new Error('Rejected later'));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    } finally {
+      // eslint-disable-next-line no-undef
+      process.removeListener('unhandledRejection', unhandledRejectionListener);
+    }
+
+    expect(unhandledRejection).to.equal(null);
+  });
+});
+
+describe('cancellablePromise', () => {
+  it('works to wrap a resolved promise', async () => {
+    const abortController = new AbortController();
+    const cancelledPromise = cancellablePromise(
+      Promise.resolve(1),
+      abortController.signal,
+    );
+    expect(await cancelledPromise).to.equal(1);
+  });
+
+  it('works to wrap a rejected promise', async () => {
+    const abortController = new AbortController();
+    const cancelledPromise = cancellablePromise(
+      Promise.reject(new Error('Rejected!')),
+      abortController.signal,
+    );
+    await expectPromise(cancelledPromise).toRejectWith('Rejected!');
+  });
+
+  it('rejects immediately when signal is already aborted', async () => {
+    const abortController = new AbortController();
+    abortController.abort(new Error('Cancelled!'));
+
+    const cancelledPromise = cancellablePromise(
+      new Promise(() => {
+        /* never resolves */
+      }),
+      abortController.signal,
+    );
+
+    await expectPromise(cancelledPromise).toRejectWith('Cancelled!');
+  });
+
+  it('works to abort a hanging promise', async () => {
+    const abortController = new AbortController();
+    const cancelledPromise = cancellablePromise(
+      new Promise(() => {
+        /* never resolves */
+      }),
+      abortController.signal,
+    );
+
+    abortController.abort(new Error('Cancelled!'));
+    await expectPromise(cancelledPromise).toRejectWith('Cancelled!');
+  });
+
+  it('does nothing when aborting an already settled promise', async () => {
+    const abortController = new AbortController();
+    const cancelledPromise = cancellablePromise(
+      Promise.resolve(1),
+      abortController.signal,
+    );
+
+    expect(await cancelledPromise).to.equal(1);
+    abortController.abort(new Error('Cancelled!'));
+    expect(await cancelledPromise).to.equal(1);
+  });
+
+  it('handles later original rejections when already aborted', async () => {
+    const deferred = promiseWithResolvers<undefined>();
+    const abortController = new AbortController();
+
+    let unhandledRejection: unknown = null;
+    const unhandledRejectionListener = (reason: unknown) => {
+      unhandledRejection = reason;
+    };
+    // eslint-disable-next-line no-undef
+    process.on('unhandledRejection', unhandledRejectionListener);
+
+    try {
+      const cancelledPromise = cancellablePromise(
         deferred.promise,
         abortController.signal,
       );
-      await expectPromise(withCancellation).toRejectWith('Cancelled!');
+      abortController.abort(new Error('Cancelled!'));
+      await expectPromise(cancelledPromise).toRejectWith('Cancelled!');
 
       deferred.reject(new Error('Rejected later'));
       await new Promise((resolve) => setTimeout(resolve, 20));

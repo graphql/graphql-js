@@ -1,30 +1,66 @@
 import { promiseWithResolvers } from '../jsutils/promiseWithResolvers.js';
 
-export function cancellablePromise<T>(
+export interface CancellablePromise<T> {
+  promise: Promise<T>;
+  abort: (reason?: unknown) => void;
+}
+
+export function withCancellation<T>(
   originalPromise: Promise<T>,
+): CancellablePromise<T> {
+  const { promise, resolve, reject } = promiseWithResolvers<T>();
+  let settled = false;
+
+  const settleResolve = (value: T): void => {
+    if (settled) {
+      return;
+    }
+    settled = true;
+    resolve(value);
+  };
+  const settleReject = (error: unknown): void => {
+    if (settled) {
+      return;
+    }
+    settled = true;
+    reject(error);
+  };
+
+  originalPromise.then(settleResolve, settleReject);
+
+  return {
+    promise,
+    abort(reason?: unknown): void {
+      settleReject(reason);
+    },
+  };
+}
+
+export function cancellablePromise<T>(
+  promise: Promise<T>,
   abortSignal: AbortSignal,
 ): Promise<T> {
+  const withAbort = withCancellation(promise);
+
   if (abortSignal.aborted) {
-    // If cancellation has already happened, still drain the original promise to
-    // avoid unhandled rejections from work that settles later.
-    originalPromise.catch(() => undefined);
-    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-    return Promise.reject(abortSignal.reason);
+    withAbort.abort(abortSignal.reason);
+    return withAbort.promise;
   }
 
-  const { promise, resolve, reject } = promiseWithResolvers<T>();
-  const onAbort = () => reject(abortSignal.reason);
+  const onAbort = () => {
+    abortSignal.removeEventListener('abort', onAbort);
+    withAbort.abort(abortSignal.reason);
+  };
   abortSignal.addEventListener('abort', onAbort);
-  originalPromise.then(
-    (resolved) => {
+
+  withAbort.promise.then(
+    () => {
       abortSignal.removeEventListener('abort', onAbort);
-      resolve(resolved);
     },
-    (error: unknown) => {
+    () => {
       abortSignal.removeEventListener('abort', onAbort);
-      reject(error);
     },
   );
 
-  return promise;
+  return withAbort.promise;
 }
