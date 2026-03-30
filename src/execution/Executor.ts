@@ -222,7 +222,7 @@ export class Executor<
   TAlternativeInitialResponse = ExecutionResult, // No alternative by default
 > {
   validatedExecutionArgs: ValidatedExecutionArgs;
-  finished: boolean;
+  aborted: boolean;
   collectedErrors: CollectedErrors;
   internalAbortController: AbortController;
   resolverAbortController: AbortController | undefined;
@@ -233,7 +233,7 @@ export class Executor<
     sharedResolverAbortSignal?: AbortSignal,
   ) {
     this.validatedExecutionArgs = validatedExecutionArgs;
-    this.finished = false;
+    this.aborted = false;
     this.collectedErrors = new CollectedErrors();
     this.internalAbortController = new AbortController();
 
@@ -329,7 +329,7 @@ export class Executor<
   }
 
   abort(reason?: unknown): PromiseOrValue<void> {
-    if (!this.finished) {
+    if (!this.aborted) {
       this.finish();
       this.internalAbortController.abort(reason);
       this.resolverAbortController?.abort(reason);
@@ -337,8 +337,8 @@ export class Executor<
   }
 
   finish(): void {
-    if (!this.finished) {
-      this.finished = true;
+    if (!this.aborted) {
+      this.aborted = true;
     }
     this.internalAbortController.signal.throwIfAborted();
   }
@@ -422,8 +422,8 @@ export class Executor<
     return promiseReduce(
       groupedFieldSet,
       (results, [responseName, fieldDetailsList]) => {
-        if (this.finished) {
-          throw new Error('Execution has already completed.');
+        if (this.aborted) {
+          throw new Error('Aborted!');
         }
         const fieldPath = addPath(path, responseName, parentType.name);
         const result = this.executeField(
@@ -597,8 +597,8 @@ export class Executor<
     fieldDetailsList: FieldDetailsList,
     path: Path,
   ): void {
-    if (this.finished) {
-      throw new Error('Execution has already completed.');
+    if (this.aborted) {
+      throw new Error('Aborted!');
     }
 
     const error = locatedError(
@@ -741,8 +741,8 @@ export class Executor<
   ): Promise<unknown> {
     try {
       const resolved = await result;
-      if (this.finished) {
-        throw new Error('Execution has already completed.');
+      if (this.aborted) {
+        throw new Error('Aborted!');
       }
       let completed = this.completeValue(
         returnType,
@@ -812,7 +812,7 @@ export class Executor<
             pathToArray(path),
           );
         }
-        if (this.finished || iteration.done) {
+        if (this.aborted || iteration.done) {
           break;
         }
         const item = iteration.value;
@@ -843,12 +843,12 @@ export class Executor<
     }
 
     // Throwing on completion outside of the loop may allow engines to better optimize
-    if (this.finished) {
+    if (this.aborted) {
       if (!iteration?.done) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         returnIteratorCatchingErrors(asyncIterator);
       }
-      throw new Error('Execution has already completed.');
+      throw new Error('Aborted!');
     }
 
     return containsPromise ? Promise.all(completedResults) : completedResults;
@@ -1081,8 +1081,8 @@ export class Executor<
   ): Promise<unknown> {
     try {
       const resolved = await item;
-      if (this.finished) {
-        throw new Error('Execution has already completed.');
+      if (this.aborted) {
+        throw new Error('Aborted!');
       }
       let completed = this.completeValue(
         itemType,
@@ -1137,8 +1137,8 @@ export class Executor<
 
     if (isPromise(runtimeType)) {
       return runtimeType.then((resolvedRuntimeType) => {
-        if (this.finished) {
-          throw new Error('Execution has already completed.');
+        if (this.aborted) {
+          throw new Error('Aborted!');
         }
         return this.completeObjectValue(
           this.ensureValidRuntimeType(
@@ -1247,8 +1247,8 @@ export class Executor<
 
       if (isPromise(isTypeOf)) {
         return isTypeOf.then((resolvedIsTypeOf) => {
-          if (this.finished) {
-            throw new Error('Execution has already completed.');
+          if (this.aborted) {
+            throw new Error('Aborted!');
           }
           if (!resolvedIsTypeOf) {
             throw this.invalidReturnTypeError(
