@@ -54,6 +54,7 @@ import {
   collectFields,
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
+import { collectIteratorPromises } from './collectIteratorPromises.js';
 import { buildResolveInfo } from './execute.js';
 import type { StreamUsage } from './getStreamUsage.js';
 import { getStreamUsage as _getStreamUsage } from './getStreamUsage.js';
@@ -833,6 +834,11 @@ export class Executor<
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       returnIteratorCatchingErrors(asyncIterator);
+      if (containsPromise) {
+        return Promise.all(completedResults).finally(() => {
+          throw error;
+        });
+      }
       throw error;
     }
 
@@ -966,8 +972,13 @@ export class Executor<
         index++;
       }
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      returnIteratorCatchingErrors(iterator);
+      const maybePromises = containsPromise ? completedResults : [];
+      maybePromises.push(...collectIteratorPromises(iterator));
+      if (maybePromises.length) {
+        return Promise.all(maybePromises).finally(() => {
+          throw error;
+        });
+      }
       throw error;
     }
 

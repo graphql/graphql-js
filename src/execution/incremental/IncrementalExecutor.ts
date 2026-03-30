@@ -29,6 +29,7 @@ import type {
   GroupedFieldSet,
 } from '../collectFields.js';
 import { collectSubfields as _collectSubfields } from '../collectFields.js';
+import { collectIteratorPromises } from '../collectIteratorPromises.js';
 import type {
   ExecutionResult,
   FormattedExecutionResult,
@@ -745,9 +746,15 @@ export class IncrementalExecutor<
                 abortPromises.push(result);
               }
             }
-            const returned = returnIteratorCatchingErrors(iterator);
-            if (isPromise(returned)) {
+            if (isAsync) {
+              const returned = returnIteratorCatchingErrors(
+                iterator as AsyncIterator<unknown>,
+              );
               abortPromises.push(returned);
+            } else {
+              abortPromises.push(
+                ...collectIteratorPromises(iterator as Iterator<unknown>),
+              );
             }
             if (abortPromises.length > 0) {
               return Promise.allSettled(abortPromises).then(() => undefined);

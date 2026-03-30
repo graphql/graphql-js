@@ -1,17 +1,8 @@
-import { isPromise } from '../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
-
-export function returnIteratorCatchingErrors(
-  iterator: Iterator<unknown> | AsyncIterator<unknown>,
-): PromiseOrValue<void> {
+export async function returnIteratorCatchingErrors(
+  iterator: AsyncIterator<unknown>,
+): Promise<void> {
   try {
-    const result = iterator.return?.();
-    if (isPromise(result)) {
-      return result.then(
-        () => undefined,
-        () => undefined,
-      );
-    }
+    await iterator.return?.();
   } catch /* c8 ignore next 2 */ {
     // ignore errors
   }

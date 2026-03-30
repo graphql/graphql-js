@@ -43,6 +43,14 @@ const friends = [
   { name: 'Leia', id: 3 },
 ];
 
+function delayedReject(message: string): Promise<never> {
+  return (async () => {
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    throw new Error(message);
+  })();
+}
+
 const query = new GraphQLObjectType({
   fields: {
     scalarList: {
@@ -207,6 +215,46 @@ describe('Execute: stream directive', () => {
         hasNext: false,
       },
     ]);
+  });
+  it('Does not call `return` on an exhausted sync iterator', async () => {
+    const document = parse('{ scalarList @stream(initialCount: 1) }');
+    let index = 0;
+    let returned = false;
+    const values = ['apple', 'banana', 'coconut'];
+    const result = await complete(document, {
+      scalarList: {
+        [Symbol.iterator]() {
+          return this;
+        },
+        next() {
+          const value = values[index++];
+          if (value === undefined) {
+            return { done: true, value: undefined };
+          }
+          return { done: false, value };
+        },
+        return() {
+          returned = true;
+          throw new Error('ignored return error');
+        },
+      },
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          scalarList: ['apple'],
+        },
+        pending: [{ id: '0', path: ['scalarList'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [{ items: ['banana', 'coconut'], id: '0' }],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+    expect(returned).to.equal(false);
+    expect(index).to.equal(4);
   });
   it('Can use default value of initialCount', async () => {
     const document = parse('{ scalarList @stream }');
@@ -1171,6 +1219,77 @@ describe('Execute: stream directive', () => {
         hasNext: false,
       },
     ]);
+  });
+  it('Drains sync iterators with later promises when null bubbles past the stream', async () => {
+    const document = parse(`
+      query {
+        nonNullFriendList @stream(initialCount: 1) {
+          name
+        }
+      }
+    `);
+    let unhandledRejection: unknown = null;
+    const unhandledRejectionListener = (reason: unknown) => {
+      unhandledRejection = reason;
+    };
+    // eslint-disable-next-line no-undef
+    process.on('unhandledRejection', unhandledRejectionListener);
+    let index = 0;
+    let returned = false;
+    const values = [friends[0], null, delayedReject('third bad')];
+
+    const result = await complete(document, {
+      nonNullFriendList: {
+        [Symbol.iterator]() {
+          return this;
+        },
+        next() {
+          const value = values[index++];
+          if (value === undefined) {
+            return { done: true, value: undefined };
+          }
+          return { done: false, value };
+        },
+        return() {
+          returned = true;
+          throw new Error('ignored return error');
+        },
+      },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // eslint-disable-next-line no-undef
+    process.removeListener('unhandledRejection', unhandledRejectionListener);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          nonNullFriendList: [{ name: 'Luke' }],
+        },
+        pending: [{ id: '0', path: ['nonNullFriendList'] }],
+        hasNext: true,
+      },
+      {
+        completed: [
+          {
+            id: '0',
+            errors: [
+              {
+                message:
+                  'Cannot return null for non-nullable field Query.nonNullFriendList.',
+                locations: [{ line: 3, column: 9 }],
+                path: ['nonNullFriendList', 1],
+              },
+            ],
+          },
+        ],
+        hasNext: false,
+      },
+    ]);
+    expect(returned).to.equal(false);
+    expect(index).to.equal(4);
+    expect(unhandledRejection).to.equal(null);
   });
   it('Handles errors thrown by completeValue after initialCount is reached', async () => {
     const document = parse(`
@@ -3367,6 +3486,7 @@ describe('Execute: stream directive (cancellation)', () => {
       promiseWithResolvers<void>();
     let count = 0;
     let done = false;
+    let returned = false;
     const iterator = {
       [Symbol.iterator]() {
         return this;
@@ -3384,6 +3504,10 @@ describe('Execute: stream directive (cancellation)', () => {
         }
         return { value: String(count), done: false };
       },
+      return() {
+        returned = true;
+        throw new Error('ignored return error');
+      },
     };
 
     const result = await experimentalExecuteIncrementally({
@@ -3400,6 +3524,7 @@ describe('Execute: stream directive (cancellation)', () => {
     await resolveOnNextTick();
     const stream = result.subsequentResults[Symbol.asyncIterator]();
     await expectPromise(stream.return()).toResolve();
+    expect(returned).to.equal(false);
   });
 
   it('cancels tasks and streams when aborted before initial execution finishes', async () => {

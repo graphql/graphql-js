@@ -2,6 +2,7 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
@@ -20,6 +21,14 @@ import { buildSchema } from '../../utilities/buildASTSchema.js';
 
 import { execute, executeSync } from '../execute.js';
 import type { ExecutionResult } from '../Executor.js';
+
+function delayedReject(message: string): Promise<never> {
+  return (async () => {
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    throw new Error(message);
+  })();
+}
 
 describe('Execute: Accepts any iterable as list value', () => {
   function complete(rootValue: unknown) {
@@ -77,13 +86,18 @@ describe('Execute: Accepts any iterable as list value', () => {
     });
   });
 
-  it('Ignores iterator return errors when iteration throws', () => {
+  it('Does not call iterator `return` when iteration throws', () => {
     let returnCalled = false;
+    let nextCalls = 0;
     const listField = {
       [Symbol.iterator]() {
         return {
           next() {
-            throw new Error('bad');
+            nextCalls++;
+            if (nextCalls === 1) {
+              throw new Error('bad');
+            }
+            return { done: true, value: undefined };
           },
           return() {
             returnCalled = true;
@@ -103,7 +117,8 @@ describe('Execute: Accepts any iterable as list value', () => {
         },
       ],
     });
-    expect(returnCalled).to.equal(true);
+    expect(nextCalls).to.equal(2);
+    expect(returnCalled).to.equal(false);
   });
 });
 
@@ -116,7 +131,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     });
   }
 
-  it('closes the iterator when `next` throws', async () => {
+  it('drains the iterator when `next` throws', async () => {
     let returned = false;
     let nextCalls = 0;
 
@@ -129,7 +144,10 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         if (nextCalls === 1) {
           return { done: false, value: 'ok' };
         }
-        throw new Error('bad');
+        if (nextCalls === 2) {
+          throw new Error('bad');
+        }
+        return { done: true, value: undefined };
       },
       return(): IteratorResult<string> {
         returned = true;
@@ -147,11 +165,11 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         },
       ],
     });
-    expect(nextCalls).to.equal(2);
-    expect(returned).to.equal(true);
+    expect(nextCalls).to.equal(3);
+    expect(returned).to.equal(false);
   });
 
-  it('closes the iterator when a null bubbles up from a non-null item', async () => {
+  it('drains the iterator when a null bubbles up from a non-null item', async () => {
     const values = [1, null, 2];
     let index = 0;
     let returned = false;
@@ -183,34 +201,98 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         },
       ],
     });
-    expect(index).to.equal(2);
-    expect(returned).to.equal(true);
+    expect(index).to.equal(4);
+    expect(returned).to.equal(false);
   });
 
-  it('ignores errors thrown by the iterator `return` method', async () => {
-    const values = [1, null, 2];
-    let index = 0;
+  it('handles iterator errors with later pending promises without calling `return`', async () => {
+    let unhandledRejection: unknown = null;
+    const unhandledRejectionListener = (reason: unknown) => {
+      unhandledRejection = reason;
+    };
+    // eslint-disable-next-line no-undef
+    process.on('unhandledRejection', unhandledRejectionListener);
     let returned = false;
+    let nextCalls = 0;
+    const laterPromise = delayedReject('later bad');
 
-    const listField: IterableIterator<number | null> = {
-      [Symbol.iterator](): IterableIterator<number | null> {
+    const listField: IterableIterator<number | Promise<never>> = {
+      [Symbol.iterator](): IterableIterator<number | Promise<never>> {
         return this;
       },
-      next(): IteratorResult<number | null> {
+      next(): IteratorResult<number | Promise<never>> {
+        nextCalls++;
+        if (nextCalls === 1) {
+          return { done: false, value: 1 };
+        }
+        if (nextCalls === 2) {
+          throw new Error('bad');
+        }
+        if (nextCalls === 3) {
+          return { done: false, value: laterPromise };
+        }
+        return { done: true, value: undefined };
+      },
+      return(): IteratorResult<number | Promise<never>> {
+        returned = true;
+        throw new Error('ignored return error');
+      },
+    };
+
+    expectJSON(await complete({ listField })).toDeepEqual({
+      data: { listField: null },
+      errors: [
+        {
+          message: 'bad',
+          locations: [{ line: 1, column: 3 }],
+          path: ['listField'],
+        },
+      ],
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // eslint-disable-next-line no-undef
+    process.removeListener('unhandledRejection', unhandledRejectionListener);
+
+    expect(nextCalls).to.equal(4);
+    expect(returned).to.equal(false);
+    expect(unhandledRejection).to.equal(null);
+  });
+
+  it('handles sync errors with later pending promises without calling `return`', async () => {
+    let unhandledRejection: unknown = null;
+    const unhandledRejectionListener = (reason: unknown) => {
+      unhandledRejection = reason;
+    };
+    // eslint-disable-next-line no-undef
+    process.on('unhandledRejection', unhandledRejectionListener);
+    let returned = false;
+    let index = 0;
+    const values = [
+      delayedReject('first bad'),
+      null,
+      delayedReject('third bad'),
+    ];
+    const listField: IterableIterator<Promise<string> | null> = {
+      [Symbol.iterator](): IterableIterator<Promise<string> | null> {
+        return this;
+      },
+      next(): IteratorResult<Promise<string> | null> {
         const value = values[index++];
         if (value === undefined) {
           return { done: true, value: undefined };
         }
         return { done: false, value };
       },
-      return(): IteratorResult<number | null> {
+      return(): IteratorResult<Promise<string> | null> {
         returned = true;
         throw new Error('ignored return error');
       },
     };
 
-    expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
-      data: { listField: null },
+    expectJSON(await complete({ listField }, '[String!]!')).toDeepEqual({
+      data: null,
       errors: [
         {
           message: 'Cannot return null for non-nullable field Query.listField.',
@@ -219,8 +301,15 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         },
       ],
     });
-    expect(index).to.equal(2);
-    expect(returned).to.equal(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // eslint-disable-next-line no-undef
+    process.removeListener('unhandledRejection', unhandledRejectionListener);
+
+    expect(returned).to.equal(false);
+    expect(index).to.equal(4);
+    expect(unhandledRejection).to.equal(null);
   });
 });
 
@@ -235,7 +324,17 @@ describe('Execute: Accepts async iterables as list value', () => {
 
   function completeObjectList(
     resolve: GraphQLFieldResolver<{ index: number }, unknown>,
+    nonNullable = false,
   ): PromiseOrValue<ExecutionResult> {
+    const ObjectWrapperType = new GraphQLObjectType({
+      name: 'ObjectWrapper',
+      fields: {
+        index: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve,
+        },
+      },
+    });
     const schema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -247,15 +346,9 @@ describe('Execute: Accepts async iterables as list value', () => {
               yield await Promise.resolve({ index: 2 });
             },
             type: new GraphQLList(
-              new GraphQLObjectType({
-                name: 'ObjectWrapper',
-                fields: {
-                  index: {
-                    type: new GraphQLNonNull(GraphQLString),
-                    resolve,
-                  },
-                },
-              }),
+              nonNullable
+                ? new GraphQLNonNull(ObjectWrapperType)
+                : ObjectWrapperType,
             ),
           },
         },
@@ -362,6 +455,41 @@ describe('Execute: Accepts async iterables as list value', () => {
       ],
     });
   });
+
+  it('handles mixture of sync and async errors in AsyncIterables', async () => {
+    let unhandledRejection: unknown = null;
+    const unhandledRejectionListener = (reason: unknown) => {
+      unhandledRejection = reason;
+    };
+    // eslint-disable-next-line no-undef
+    process.on('unhandledRejection', unhandledRejectionListener);
+
+    expectJSON(
+      await completeObjectList(({ index }) => {
+        if (index === 0) {
+          return delayedReject('bad');
+        }
+        throw new Error('also bad');
+      }, true),
+    ).toDeepEqual({
+      data: { listField: null },
+      errors: [
+        {
+          message: 'also bad',
+          locations: [{ line: 1, column: 15 }],
+          path: ['listField', 1, 'index'],
+        },
+      ],
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // eslint-disable-next-line no-undef
+    process.removeListener('unhandledRejection', unhandledRejectionListener);
+
+    expect(unhandledRejection).to.equal(null);
+  });
+
   it('Handles nulls yielded by async generator', async () => {
     async function* listField() {
       yield await Promise.resolve(1);
