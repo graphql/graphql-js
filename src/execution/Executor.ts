@@ -43,7 +43,7 @@ import {
 } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
-import { cancellablePromise } from './cancellablePromise.js';
+import { withCancellation } from './cancellablePromise.js';
 import type {
   DeferUsage,
   FieldDetailsList,
@@ -223,8 +223,9 @@ export class Executor<
 > {
   validatedExecutionArgs: ValidatedExecutionArgs;
   aborted: boolean;
+  abortReason: unknown;
   collectedErrors: CollectedErrors;
-  internalAbortController: AbortController;
+  abortResultPromise: ((reason?: unknown) => void) | undefined;
   resolverAbortController: AbortController | undefined;
   sharedResolverAbortSignal: AbortSignal;
 
@@ -234,8 +235,8 @@ export class Executor<
   ) {
     this.validatedExecutionArgs = validatedExecutionArgs;
     this.aborted = false;
+    this.abortReason = new Error('This operation was aborted');
     this.collectedErrors = new CollectedErrors();
-    this.internalAbortController = new AbortController();
 
     if (sharedResolverAbortSignal === undefined) {
       this.resolverAbortController = new AbortController();
@@ -318,7 +319,13 @@ export class Executor<
             return this.buildResponse(null);
           },
         );
-        return cancellablePromise(promise, this.internalAbortController.signal);
+        const { promise: cancellablePromise, abort: abortResultPromise } =
+          withCancellation(promise);
+        this.abortResultPromise = abortResultPromise;
+        if (this.aborted) {
+          abortResultPromise(this.abortReason);
+        }
+        return cancellablePromise;
       }
       maybeRemoveExternalAbortListener();
       return this.buildResponse(result);
@@ -330,7 +337,9 @@ export class Executor<
   }
 
   throwIfAborted(): void {
-    this.internalAbortController.signal.throwIfAborted();
+    if (this.aborted) {
+      throw this.abortReason;
+    }
   }
 
   abort(reason?: unknown): PromiseOrValue<void> {
@@ -338,13 +347,16 @@ export class Executor<
       return;
     }
     this.aborted = true;
-    this.internalAbortController.abort(reason);
-    this.resolverAbortController?.abort(reason);
+    if (reason !== undefined) {
+      this.abortReason = reason;
+    }
+    this.abortResultPromise?.(this.abortReason);
+    this.resolverAbortController?.abort(this.abortReason);
   }
 
   finish(): void {
-    this.aborted = true;
     this.throwIfAborted();
+    this.aborted = true;
   }
 
   /**
