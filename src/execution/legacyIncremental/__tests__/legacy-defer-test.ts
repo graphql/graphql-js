@@ -2135,6 +2135,122 @@ describe('Execute: defer directive (legacy)', () => {
     ]);
   });
 
+  it('Stops late initial-path completion before publishing a deferred response', async () => {
+    const lateSideType = new GraphQLObjectType({
+      name: 'LateLegacyInitialSide',
+      fields: {
+        value: { type: GraphQLString },
+      },
+    });
+    const lateParentType = new GraphQLObjectType({
+      name: 'LateLegacyInitialParent',
+      fields: {
+        boom: { type: new GraphQLNonNull(GraphQLString) },
+        side: { type: lateSideType },
+      },
+    });
+    const lateGType = new GraphQLObjectType({
+      name: 'LateLegacyInitialG',
+      fields: {
+        h: { type: GraphQLString },
+      },
+    });
+    const lateSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'LateLegacyInitialQuery',
+        fields: {
+          parent: { type: lateParentType },
+          g: { type: lateGType },
+        },
+      }),
+    });
+    const document = parse(`
+      query {
+        parent {
+          boom
+          side {
+            value
+          }
+        }
+        g {
+          ... @defer {
+            h
+          }
+        }
+      }
+    `);
+    const { promise: boomPromise, reject: rejectBoom } =
+      promiseWithResolvers<string>();
+    const { promise: sidePromise, resolve: resolveSide } =
+      promiseWithResolvers<{
+        value: () => string;
+      }>();
+    let lateValueCalls = 0;
+    const resultPromise = legacyExecuteIncrementally({
+      schema: lateSchema,
+      document,
+      rootValue: {
+        parent: {
+          boom: () => boomPromise,
+          side: () => sidePromise,
+        },
+        g: {
+          h: 'value',
+        },
+      },
+    });
+    rejectBoom(new Error('boom'));
+    const result = await resultPromise;
+    assert('initialResult' in result);
+    expectJSON(result.initialResult).toDeepEqual({
+      data: {
+        parent: null,
+        g: {},
+      },
+      errors: [
+        {
+          message: 'boom',
+          locations: [{ line: 4, column: 11 }],
+          path: ['parent', 'boom'],
+        },
+      ],
+      hasNext: true,
+    });
+
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            data: {
+              h: 'value',
+            },
+            path: ['g'],
+          },
+        ],
+        hasNext: false,
+      },
+    });
+
+    resolveSide({
+      value() {
+        lateValueCalls += 1;
+        return 'late value';
+      },
+    });
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    expect(lateValueCalls).to.equal(0);
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
   it('Cancels deferred fields when deferred result exhibits null bubbling', async () => {
     const document = parse(`
       query {
@@ -2181,6 +2297,106 @@ describe('Execute: defer directive (legacy)', () => {
         hasNext: false,
       },
     ]);
+  });
+
+  it('Stops late deferred payload completion after deferred null bubbling', async () => {
+    const lateSideType = new GraphQLObjectType({
+      name: 'LateLegacyDeferredSide',
+      fields: {
+        value: { type: GraphQLString },
+      },
+    });
+    const lateParentType = new GraphQLObjectType({
+      name: 'LateLegacyDeferredParent',
+      fields: {
+        side: { type: lateSideType },
+        boom: { type: new GraphQLNonNull(GraphQLString) },
+      },
+    });
+    const lateSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'LateLegacyDeferredQuery',
+        fields: {
+          parent: { type: lateParentType },
+        },
+      }),
+    });
+    const document = parse(`
+      query {
+        ... @defer {
+          parent {
+            side {
+              value
+            }
+            boom
+          }
+        }
+      }
+    `);
+    const { promise: boomPromise, reject: rejectBoom } =
+      promiseWithResolvers<string>();
+    const { promise: sidePromise, resolve: resolveSide } =
+      promiseWithResolvers<{
+        value: () => string;
+      }>();
+    let lateValueCalls = 0;
+    const resultPromise = legacyExecuteIncrementally({
+      schema: lateSchema,
+      document,
+      rootValue: {
+        parent: {
+          side: () => sidePromise,
+          boom: () => boomPromise,
+        },
+      },
+      enableEarlyExecution: true,
+    });
+    rejectBoom(new Error('boom'));
+    const result = await resultPromise;
+    assert('initialResult' in result);
+    expectJSON(result.initialResult).toDeepEqual({
+      data: {},
+      hasNext: true,
+    });
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    const result2 = await iterator.next();
+    expectJSON(result2).toDeepEqual({
+      done: false,
+      value: {
+        incremental: [
+          {
+            data: {
+              parent: null,
+            },
+            errors: [
+              {
+                message: 'boom',
+                locations: [{ line: 8, column: 13 }],
+                path: ['parent', 'boom'],
+              },
+            ],
+            path: [],
+          },
+        ],
+        hasNext: false,
+      },
+    });
+
+    resolveSide({
+      value() {
+        lateValueCalls += 1;
+        return 'late value';
+      },
+    });
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    expect(lateValueCalls).to.equal(0);
+
+    const result3 = await iterator.next();
+    expectJSON(result3).toDeepEqual({
+      value: undefined,
+      done: true,
+    });
   });
 
   it('Does not deduplicate list fields', async () => {

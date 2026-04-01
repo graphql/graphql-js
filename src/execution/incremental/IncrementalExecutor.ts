@@ -354,6 +354,7 @@ export class IncrementalExecutor<
       return super.buildResponse(data);
     }
 
+    this.finish();
     const errors = this.collectedErrors.errors;
     invariant(data !== null);
     const incrementalPublisher = new IncrementalPublisher();

@@ -1431,6 +1431,119 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+
+  it('Stops late stream item completion after item null bubbling', async () => {
+    const lateMetadataType = new GraphQLObjectType({
+      name: 'LateStreamMetadata',
+      fields: {
+        value: { type: GraphQLString },
+      },
+    });
+    const lateFriendType = new GraphQLObjectType({
+      name: 'LateStreamFriend',
+      fields: {
+        metadata: { type: lateMetadataType },
+        nonNullName: { type: new GraphQLNonNull(GraphQLString) },
+      },
+    });
+    const lateSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'LateStreamQuery',
+        fields: {
+          friendList: {
+            type: new GraphQLList(lateFriendType),
+          },
+        },
+      }),
+    });
+    const document = parse(`
+      query {
+        friendList @stream(initialCount: 1) {
+          metadata {
+            value
+          }
+          nonNullName
+        }
+      }
+    `);
+    const { promise: metadataPromise, resolve: resolveMetadata } =
+      promiseWithResolvers<{ value: () => string }>();
+    let lateMetadataValueCalls = 0;
+    const execution = await experimentalExecuteIncrementally({
+      schema: lateSchema,
+      document,
+      rootValue: {
+        friendList: () => [
+          Promise.resolve({
+            metadata: { value: 'ready' },
+            nonNullName: friends[0].name,
+          }),
+          Promise.resolve({
+            metadata: () => metadataPromise,
+            nonNullName: () => Promise.reject(new Error('Oops')),
+          }),
+          Promise.resolve({
+            metadata: { value: 'later' },
+            nonNullName: friends[1].name,
+          }),
+        ],
+      },
+    });
+    assert('initialResult' in execution);
+    const results: Array<
+      InitialIncrementalExecutionResult | SubsequentIncrementalExecutionResult
+    > = [execution.initialResult];
+    for await (const patch of execution.subsequentResults) {
+      results.push(patch);
+    }
+
+    expectJSON(results).toDeepEqual([
+      {
+        data: {
+          friendList: [{ metadata: { value: 'ready' }, nonNullName: 'Luke' }],
+        },
+        pending: [{ id: '0', path: ['friendList'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [null],
+            id: '0',
+            errors: [
+              {
+                message: 'Oops',
+                locations: [{ line: 7, column: 11 }],
+                path: ['friendList', 1, 'nonNullName'],
+              },
+            ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: [{ metadata: { value: 'later' }, nonNullName: 'Han' }],
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+
+    resolveMetadata({
+      value() {
+        lateMetadataValueCalls += 1;
+        return 'late value';
+      },
+    });
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    expect(lateMetadataValueCalls).to.equal(0);
+  });
+
   it('Handles async errors thrown by completeValue after initialCount is reached for a non-nullable list', async () => {
     const document = parse(`
       query {

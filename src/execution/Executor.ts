@@ -366,9 +366,9 @@ export class Executor<
   buildResponse(
     data: ObjMap<unknown> | null,
   ): ExecutionResult | TAlternativeInitialResponse {
+    this.finish();
     const errors = this.collectedErrors.errors;
     const result = errors.length ? { errors, data } : { data };
-    this.finish();
     this.resolverAbortController?.abort();
     return result;
   }

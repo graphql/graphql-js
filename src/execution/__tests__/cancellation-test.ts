@@ -530,6 +530,85 @@ describe('Execute: Cancellation', () => {
     });
   });
 
+  it('should stop late sibling object completion after non-null bubbling returns a response', async () => {
+    const { promise: boomPromise, reject: rejectBoom } =
+      promiseWithResolvers<string>();
+    const { promise: sidePromise, resolve: resolveSide } =
+      promiseWithResolvers<{
+        value: () => string;
+      }>();
+    let lateValueCalls = 0;
+    const sideType = new GraphQLObjectType({
+      name: 'LateSide',
+      fields: {
+        value: { type: GraphQLString },
+      },
+    });
+
+    const parentType = new GraphQLObjectType({
+      name: 'LateParent',
+      fields: {
+        boom: {
+          type: new GraphQLNonNull(GraphQLString),
+          resolve: () => boomPromise,
+        },
+        side: {
+          type: sideType,
+          resolve: () => sidePromise,
+        },
+      },
+    });
+
+    const bubbleSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'LateQuery',
+        fields: {
+          parent: {
+            type: parentType,
+            resolve: () => ({}),
+          },
+          other: {
+            type: GraphQLString,
+            resolve: () => 'ok',
+          },
+        },
+      }),
+    });
+
+    const document = parse('{ parent { boom side { value } } other }');
+    const resultPromise = execute({ schema: bubbleSchema, document });
+
+    rejectBoom(new Error('boom'));
+    // wait for boom to bubble up
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    const result = await resultPromise;
+    resolveSide({
+      value() {
+        lateValueCalls += 1;
+        return 'late value';
+      },
+    });
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    expect(lateValueCalls).to.equal(0);
+
+    expectJSON(result).toDeepEqual({
+      data: {
+        parent: null,
+        other: 'ok',
+      },
+      errors: [
+        {
+          message: 'boom',
+          locations: [{ line: 1, column: 12 }],
+          path: ['parent', 'boom'],
+        },
+      ],
+    });
+  });
+
   it('should stop the execution when aborted mid-mutation', async () => {
     const abortController = new AbortController();
     const document = parse(`
