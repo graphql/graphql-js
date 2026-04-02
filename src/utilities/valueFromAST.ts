@@ -48,7 +48,7 @@ export function valueFromAST(
 
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    if (variables == null || !hasOwnProperty(variables, variableName)) {
+    if (variables == null || variables[variableName] === undefined || !hasOwnProperty(variables, variableName)) {
       // No valid return value.
       return;
     }
