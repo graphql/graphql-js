@@ -252,11 +252,13 @@ describe('valueFromAST', () => {
     expectValueFrom('$var', GraphQLBoolean, { var: true }).to.equal(true);
     expectValueFrom('$var', GraphQLBoolean, { var: null }).to.equal(null);
     expectValueFrom('$var', nonNullBool, { var: null }).to.equal(undefined);
+    expectValueFrom('$toString', GraphQLBoolean, {}).to.equal(undefined);
   });
 
   it('asserts variables are provided as items in lists', () => {
     expectValueFrom('[ $foo ]', listOfBool, {}).to.deep.equal([null]);
     expectValueFrom('[ $foo ]', listOfNonNullBool, {}).to.equal(undefined);
+    expectValueFrom('[ $toString ]', listOfBool, {}).to.deep.equal([null]);
     expectValueFrom('[ $foo ]', listOfNonNullBool, {
       foo: true,
     }).to.deep.equal([true]);
@@ -282,6 +284,15 @@ describe('valueFromAST', () => {
     expectValueFrom('{ requiredBool: $foo }', testInputObj, {
       foo: true,
     }).to.deep.equal({
+      int: 42,
+      requiredBool: true,
+    });
+
+    expectValueFrom(
+      '{ int: $toString, requiredBool: true }',
+      testInputObj,
+      {},
+    ).to.deep.equal({
       int: 42,
       requiredBool: true,
     });

@@ -48,7 +48,7 @@ export function valueFromAST(
 
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    if (variables == null || variables[variableName] === undefined) {
+    if (variables == null || !hasOwnProperty(variables, variableName)) {
       // No valid return value.
       return;
     }
@@ -168,6 +168,10 @@ function isMissingVariable(
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&
-    (variables == null || variables[valueNode.name.value] === undefined)
+    (variables == null || !hasOwnProperty(variables, valueNode.name.value))
   );
+}
+
+function hasOwnProperty(obj: ObjMap<unknown>, prop: string): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
 }
