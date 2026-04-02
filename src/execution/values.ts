@@ -58,9 +58,8 @@ type VariableValuesOrErrors =
  * provided variable definitions and arbitrary input. If the input cannot be
  * parsed to match the variable definitions, a GraphQLError will be thrown.
  *
- * Note: The returned value is a plain Object with a prototype, since it is
- * exposed to user code. Care should be taken to not pull values from the
- * Object prototype.
+ * Note: The `coerced` and `sources` properties of VariableValues use null
+ * prototype to avoid collisions with JavaScript's own property names.
  */
 export function getVariableValues(
   schema: GraphQLSchema,
@@ -195,9 +194,8 @@ export function getFragmentVariableValues(
  * Prepares an object map of argument values given a list of argument
  * definitions and list of argument AST nodes.
  *
- * Note: The returned value is a plain Object with a prototype, since it is
- * exposed to user code. Care should be taken to not pull values from the
- * Object prototype.
+ * Note: The returned value uses a null prototype to avoid collisions with
+ * JavaScript's own property names.
  */
 export function getArgumentValues(
   def: GraphQLField<unknown, unknown> | GraphQLDirective,
@@ -316,9 +314,8 @@ function coerceArgument(
  *
  * If the directive does not exist on the node, returns undefined.
  *
- * Note: The returned value is a plain Object with a prototype, since it is
- * exposed to user code. Care should be taken to not pull values from the
- * Object prototype.
+ * Note: The returned value uses a null prototype to avoid collisions with
+ * JavaScript's own property names.
  */
 export function getDirectiveValues(
   directiveDef: GraphQLDirective,
@@ -326,7 +323,7 @@ export function getDirectiveValues(
   variableValues?: Maybe<VariableValues>,
   fragmentVariableValues?: Maybe<FragmentVariableValues>,
   hideSuggestions?: Maybe<boolean>,
-): undefined | { [argument: string]: unknown } {
+): undefined | ObjMap<unknown> {
   const directiveNode = node.directives?.find(
     (directive) => directive.name.value === directiveDef.name,
   );

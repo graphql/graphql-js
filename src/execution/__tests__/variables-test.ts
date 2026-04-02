@@ -164,6 +164,15 @@ const TestType = new GraphQLObjectType({
       type: TestNestedInputObject,
     }),
     fieldWithJSONScalarInput: fieldWithInputArg({ type: TestJSONScalar }),
+    fieldWithPrototypeNamedArgument: {
+      type: GraphQLString,
+      args: {
+        toString: { type: GraphQLString },
+      },
+      resolve(_, args) {
+        return args.toString === undefined ? 'missing' : inspect(args.toString);
+      },
+    },
     list: fieldWithInputArg({ type: new GraphQLList(GraphQLString) }),
     nested: {
       type: NestedType,
@@ -1225,6 +1234,20 @@ describe('Execute: Handles inputs', () => {
         },
       });
     });
+
+    it('does not expose prototype argument names when omitted', () => {
+      const result = executeQuery(`
+        {
+          fieldWithPrototypeNamedArgument
+        }
+      `);
+
+      expect(result).to.deep.equal({
+        data: {
+          fieldWithPrototypeNamedArgument: 'missing',
+        },
+      });
+    });
   });
 
   describe('getVariableValues: limit maximum number of coercion errors', () => {
@@ -1659,6 +1682,33 @@ describe('Execute: Handles inputs', () => {
       );
       const result = experimentalExecuteIncrementally({ schema, document });
       expect(result).to.include.keys('initialResult', 'subsequentResults');
+    });
+  });
+
+  describe('getVariableValues: own-property names', () => {
+    const doc = parse(`
+      query ($toString: String) {
+        fieldWithNullableStringInput(input: $toString)
+      }
+    `);
+
+    const operation = doc.definitions[0];
+    assert(operation.kind === Kind.OPERATION_DEFINITION);
+    const { variableDefinitions } = operation;
+    assert(variableDefinitions != null);
+
+    it('does not expose prototype variable names when omitted', () => {
+      const result = getVariableValues(schema, variableDefinitions, {});
+      assert('variableValues' in result);
+      expect(result.variableValues.coerced.toString).to.equal(undefined);
+    });
+
+    it('still returns provided variables with colliding names', () => {
+      const result = getVariableValues(schema, variableDefinitions, {
+        toString: 'value',
+      });
+      assert('variableValues' in result);
+      expect(result.variableValues.coerced.toString).to.equal('value');
     });
   });
 });
