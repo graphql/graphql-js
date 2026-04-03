@@ -1807,12 +1807,12 @@ describe('Introspection', () => {
     const schema = buildASTSchema(
       parse(
         `
-      type Query {
-        someField: String
-      }
-      directive @isNotDeprecated on FIELD_DEFINITION
-      directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
-    `,
+          type Query {
+            someField: String
+          }
+          directive @isNotDeprecated on FIELD_DEFINITION
+          directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
+        `,
         { experimentalDirectivesOnDirectiveDefinitions: true },
       ),
     );
