@@ -73,7 +73,10 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
           new GraphQLList(new GraphQLNonNull(__Directive)),
         ),
         args: {
-          includeDeprecated: { type: GraphQLBoolean, defaultValue: false },
+          includeDeprecated: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            defaultValue: false,
+          },
         },
         resolve: (schema, { includeDeprecated }) =>
           includeDeprecated
