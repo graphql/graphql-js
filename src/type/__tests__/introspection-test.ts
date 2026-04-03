@@ -1873,4 +1873,90 @@ describe('Introspection', () => {
       },
     });
   });
+
+  it('supports multiple directives with arguments applied to a directive definition', () => {
+    const schema = buildASTSchema(
+      parse(
+        `
+          type Query {
+            someField: String
+          }
+          directive @foo(arg: String) repeatable on DIRECTIVE_DEFINITION 
+          directive @bar(arg: String) on DIRECTIVE_DEFINITION
+          directive @baz(arg: String) @foo(arg: "foo1") @foo(arg: "foo2") @bar(arg: "bar") on FIELD_DEFINITION
+        `,
+        { experimentalDirectivesOnDirectiveDefinitions: true },
+      ),
+    );
+
+    const source = `
+      {
+        __schema {
+          directives {
+            name
+            isRepeatable
+            isDeprecated
+            deprecationReason
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __schema: {
+          directives: [
+            {
+              name: 'foo',
+              isRepeatable: true,
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'bar',
+              isRepeatable: false,
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'baz',
+              isRepeatable: false,
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'include',
+              isRepeatable: false,
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'skip',
+              isRepeatable: false,
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'deprecated',
+              isRepeatable: false,
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'specifiedBy',
+              isRepeatable: false,
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'oneOf',
+              isRepeatable: false,
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+          ],
+        },
+      },
+    });
+  });
 });
