@@ -30,6 +30,7 @@ import type {
 } from '../collectFields.js';
 import { collectSubfields as _collectSubfields } from '../collectFields.js';
 import { collectIteratorPromises } from '../collectIteratorPromises.js';
+import type { SharedExecutionContext } from '../createSharedExecutionContext.js';
 import type {
   ExecutionResult,
   FormattedExecutionResult,
@@ -299,10 +300,10 @@ export class IncrementalExecutor<
 
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
-    sharedResolverAbortSignal?: AbortSignal,
+    sharedExecutionContext?: SharedExecutionContext,
     deferUsageSet?: DeferUsageSet,
   ) {
-    super(validatedExecutionArgs, sharedResolverAbortSignal);
+    super(validatedExecutionArgs, sharedExecutionContext);
     this.deferUsageSet = deferUsageSet;
     this.groups = [];
     this.tasks = [];
@@ -314,7 +315,7 @@ export class IncrementalExecutor<
   ): IncrementalExecutor<TExperimental> {
     return new IncrementalExecutor(
       this.validatedExecutionArgs,
-      this.sharedResolverAbortSignal,
+      this.sharedExecutionContext,
       deferUsageSet,
     );
   }

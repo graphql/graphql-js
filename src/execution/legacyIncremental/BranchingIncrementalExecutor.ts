@@ -179,7 +179,7 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExpe
   ): IncrementalExecutor<LegacyExperimentalIncrementalExecutionResults> {
     return new BranchingIncrementalExecutor(
       this.validatedExecutionArgs,
-      this.sharedResolverAbortSignal,
+      this.sharedExecutionContext,
       deferUsageSet,
     );
   }

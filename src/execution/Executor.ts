@@ -55,6 +55,8 @@ import {
   collectSubfields as _collectSubfields,
 } from './collectFields.js';
 import { collectIteratorPromises } from './collectIteratorPromises.js';
+import type { SharedExecutionContext } from './createSharedExecutionContext.js';
+import { createSharedExecutionContext } from './createSharedExecutionContext.js';
 import { buildResolveInfo } from './execute.js';
 import type { StreamUsage } from './getStreamUsage.js';
 import { getStreamUsage as _getStreamUsage } from './getStreamUsage.js';
@@ -224,26 +226,31 @@ export class Executor<
   validatedExecutionArgs: ValidatedExecutionArgs;
   aborted: boolean;
   abortReason: unknown;
+  sharedExecutionContext: SharedExecutionContext;
   collectedErrors: CollectedErrors;
   abortResultPromise: ((reason?: unknown) => void) | undefined;
   resolverAbortController: AbortController | undefined;
-  sharedResolverAbortSignal: AbortSignal;
+  getAbortSignal: () => AbortSignal | undefined;
 
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
-    sharedResolverAbortSignal?: AbortSignal,
+    sharedExecutionContext?: SharedExecutionContext,
   ) {
     this.validatedExecutionArgs = validatedExecutionArgs;
     this.aborted = false;
     this.abortReason = new Error('This operation was aborted');
     this.collectedErrors = new CollectedErrors();
 
-    if (sharedResolverAbortSignal === undefined) {
+    if (sharedExecutionContext === undefined) {
       this.resolverAbortController = new AbortController();
-      this.sharedResolverAbortSignal = this.resolverAbortController.signal;
+      this.sharedExecutionContext = createSharedExecutionContext(
+        this.resolverAbortController.signal,
+      );
     } else {
-      this.sharedResolverAbortSignal = sharedResolverAbortSignal;
+      this.sharedExecutionContext = sharedExecutionContext;
     }
+    const { getAbortSignal } = this.sharedExecutionContext;
+    this.getAbortSignal = getAbortSignal;
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
@@ -553,7 +560,7 @@ export class Executor<
       toNodes(fieldDetailsList),
       parentType,
       path,
-      () => this.sharedResolverAbortSignal,
+      this.getAbortSignal,
     );
 
     // Get the resolve function, regardless of if its result is normal or abrupt (error).

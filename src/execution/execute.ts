@@ -34,6 +34,7 @@ import type { GraphQLSchema } from '../type/schema.js';
 import { cancellablePromise } from './cancellablePromise.js';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
 import { collectFields } from './collectFields.js';
+import { createSharedExecutionContext } from './createSharedExecutionContext.js';
 import type { ExecutionResult, ValidatedExecutionArgs } from './Executor.js';
 import { Executor } from './Executor.js';
 import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.js';
@@ -598,6 +599,8 @@ function executeSubscription(
     );
   }
 
+  const sharedExecutionContext =
+    createSharedExecutionContext(externalAbortSignal);
   const path = addPath(undefined, responseName, rootType.name);
   const info = buildResolveInfo(
     validatedExecutionArgs,
@@ -605,7 +608,7 @@ function executeSubscription(
     fieldNodes,
     rootType,
     path,
-    () => externalAbortSignal,
+    sharedExecutionContext.getAbortSignal,
   );
 
   try {
