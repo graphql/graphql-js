@@ -139,7 +139,7 @@ export function extendSchemaImpl(
   // Collect the type definitions and extensions found in the document.
   const typeDefs: Array<TypeDefinitionNode> = [];
   const typeExtensionsMap = Object.create(null);
-  const directiveExtensionsMap = Object.create(null);
+  const directiveExtensionsMap: Record<string, DirectiveExtensionNode[]> = Object.create(null);
 
   // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
