@@ -1220,7 +1220,7 @@ export class Parser {
           return this.parseInputObjectTypeExtension();
         case 'directive':
           if (
-            this._options.experimentalDirectivesOnDirectiveDefinitions === true
+            this._options.experimentalDirectivesOnDirectiveDefinitions
           ) {
             return this.parseDirectiveDefinitionExtension();
           }
