@@ -139,7 +139,9 @@ export function extendSchemaImpl(
   // Collect the type definitions and extensions found in the document.
   const typeDefs: Array<TypeDefinitionNode> = [];
   const typeExtensionsMap = Object.create(null);
-  const directiveExtensionsMap: Record<string, DirectiveExtensionNode[]> = Object.create(null);
+  const directiveExtensionsMap: {
+    [key: string]: Array<DirectiveExtensionNode>;
+  } = Object.create(null);
 
   // New directives and types are separate because a directives and types can
   // have the same name. For example, a type named "skip".
@@ -198,7 +200,7 @@ export function extendSchemaImpl(
     typeMap[name] = stdTypeMap[name] ?? buildType(typeNode);
   }
 
-  const directiveMap = Object.create(null);
+  const directiveMap: { [key: string]: GraphQLDirective } = Object.create(null);
   for (const existingDirective of schemaConfig.directives) {
     directiveMap[existingDirective.name] = extendDirective(existingDirective);
   }
@@ -436,13 +438,13 @@ export function extendSchemaImpl(
   function extendDirective(directive: GraphQLDirective): GraphQLDirective {
     const config = directive.toConfig();
     const extensions = directiveExtensionsMap[config.name] ?? [];
-    const deprecatedReason = extensions
-      .map((ext: DirectiveExtensionNode) => getDeprecationReason(ext))
-      .find((reason: Maybe<string>) => reason != null);
+    const deprecationReason = extensions
+      .map((ext) => getDeprecationReason(ext))
+      .find((reason) => reason != null);
 
     return new GraphQLDirective({
       ...config,
-      deprecationReason: deprecatedReason,
+      deprecationReason,
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }

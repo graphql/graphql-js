@@ -1219,9 +1219,7 @@ export class Parser {
         case 'input':
           return this.parseInputObjectTypeExtension();
         case 'directive':
-          if (
-            this._options.experimentalDirectivesOnDirectiveDefinitions
-          ) {
+          if (this._options.experimentalDirectivesOnDirectiveDefinitions) {
             return this.parseDirectiveDefinitionExtension();
           }
           break;
@@ -1437,10 +1435,10 @@ export class Parser {
     this.expectToken(TokenKind.AT);
     const name = this.parseName();
     const args = this.parseArgumentDefs();
-    const directives =
-      this._options.experimentalDirectivesOnDirectiveDefinitions
-        ? this.parseConstDirectives()
-        : [];
+    const directives = this._options
+      .experimentalDirectivesOnDirectiveDefinitions
+      ? this.parseConstDirectives()
+      : [];
     const repeatable = this.expectOptionalKeyword('repeatable');
     this.expectKeyword('on');
     const locations = this.parseDirectiveLocations();
