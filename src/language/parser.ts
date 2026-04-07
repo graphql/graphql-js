@@ -1438,7 +1438,7 @@ export class Parser {
     const name = this.parseName();
     const args = this.parseArgumentDefs();
     const directives =
-      this._options.experimentalDirectivesOnDirectiveDefinitions === true
+      this._options.experimentalDirectivesOnDirectiveDefinitions
         ? this.parseConstDirectives()
         : [];
     const repeatable = this.expectOptionalKeyword('repeatable');
