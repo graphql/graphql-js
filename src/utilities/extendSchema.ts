@@ -215,7 +215,8 @@ export function extendSchemaImpl(
   };
 
   // Then produce and return a Schema config with these types.
-  const directives: Array<GraphQLDirective> = Object.values(directiveMap);
+  const directives = Object.values(directiveMap);
+  // will be `Array<GraphQLDirective>`
   return {
     description: schemaDef?.description?.value,
     ...operationTypes,
