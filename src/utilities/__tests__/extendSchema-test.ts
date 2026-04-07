@@ -1329,10 +1329,10 @@ describe('extendSchema', () => {
       );
       const extendedSchema = extendSchema(schema, extendAST);
 
-      const someDirective = assertDirective(
+      const isDeprecatedDirective = assertDirective(
         extendedSchema.getDirective('isDeprecated'),
       );
-      expect(someDirective).to.include({
+      expect(isDeprecatedDirective).to.include({
         deprecationReason: 'use another directive',
       });
     });
