@@ -1045,6 +1045,10 @@ export type GraphQLFieldResolver<
   info: GraphQLResolveInfo,
 ) => TResult;
 
+export interface GraphQLResolveInfoHelpers {
+  readonly trackPromise: (promise: Promise<unknown>) => void;
+}
+
 export interface GraphQLResolveInfo {
   readonly fieldName: string;
   readonly fieldNodes: ReadonlyArray<FieldNode>;
@@ -1057,6 +1061,7 @@ export interface GraphQLResolveInfo {
   readonly operation: OperationDefinitionNode;
   readonly variableValues: VariableValues;
   readonly getAbortSignal: () => AbortSignal | undefined;
+  readonly getAsyncHelpers: () => GraphQLResolveInfoHelpers;
 }
 
 /**

@@ -26,6 +26,7 @@ import type {
   GraphQLFieldResolver,
   GraphQLObjectType,
   GraphQLResolveInfo,
+  GraphQLResolveInfoHelpers,
   GraphQLTypeResolver,
 } from '../type/index.js';
 import { assertValidSchema } from '../type/index.js';
@@ -440,7 +441,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
 
     // Otherwise, test each possible type.
     const possibleTypes = info.schema.getPossibleTypes(abstractType);
-    const promisedIsTypeOfResults = [];
+    const promisedIsTypeOfResults: Array<Promise<boolean>> = [];
 
     try {
       for (let i = 0; i < possibleTypes.length; i++) {
@@ -453,12 +454,10 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
             promisedIsTypeOfResults[i] = isTypeOfResult;
           } else if (isTypeOfResult) {
             if (promisedIsTypeOfResults.length) {
-              // Explicitly ignore any promise rejections
-              Promise.allSettled(promisedIsTypeOfResults)
-                /* c8 ignore next 3 */
-                .catch(() => {
-                  // Do nothing
-                });
+              const { trackPromise } = info.getAsyncHelpers();
+              for (const promisedIsTypeOfResult of promisedIsTypeOfResults) {
+                trackPromise(promisedIsTypeOfResult);
+              }
             }
             return type.name;
           }
@@ -466,9 +465,10 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
       }
     } catch (error) {
       if (promisedIsTypeOfResults.length) {
-        return Promise.allSettled(promisedIsTypeOfResults).then(() => {
-          throw error;
-        });
+        const { trackPromise } = info.getAsyncHelpers();
+        for (const promisedIsTypeOfResult of promisedIsTypeOfResults) {
+          trackPromise(promisedIsTypeOfResult);
+        }
       }
       throw error;
     }
@@ -609,6 +609,7 @@ function executeSubscription(
     rootType,
     path,
     sharedExecutionContext.getAbortSignal,
+    sharedExecutionContext.getAsyncHelpers,
   );
 
   try {
@@ -683,6 +684,7 @@ export function buildResolveInfo(
   parentType: GraphQLObjectType,
   path: Path,
   getAbortSignal: () => AbortSignal | undefined,
+  getAsyncHelpers: () => GraphQLResolveInfoHelpers,
 ): GraphQLResolveInfo {
   const { schema, fragmentDefinitions, rootValue, operation, variableValues } =
     validatedExecutionArgs;
@@ -700,6 +702,7 @@ export function buildResolveInfo(
     operation,
     variableValues,
     getAbortSignal,
+    getAsyncHelpers,
   };
 }
 

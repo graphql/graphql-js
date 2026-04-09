@@ -32,6 +32,7 @@ import type {
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLResolveInfo,
+  GraphQLResolveInfoHelpers,
   GraphQLTypeResolver,
 } from '../type/definition.js';
 import {
@@ -231,6 +232,11 @@ export class Executor<
   abortResultPromise: ((reason?: unknown) => void) | undefined;
   resolverAbortController: AbortController | undefined;
   getAbortSignal: () => AbortSignal | undefined;
+  getAsyncHelpers: () => GraphQLResolveInfoHelpers;
+  promiseAll: <T>(
+    values: ReadonlyArray<PromiseOrValue<T>>,
+  ) => Promise<Array<T>>;
+  trackPromise: (promise: Promise<unknown>) => void;
 
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
@@ -249,8 +255,12 @@ export class Executor<
     } else {
       this.sharedExecutionContext = sharedExecutionContext;
     }
-    const { getAbortSignal } = this.sharedExecutionContext;
+    const { getAbortSignal, getAsyncHelpers, promiseAll, trackPromise } =
+      this.sharedExecutionContext;
     this.getAbortSignal = getAbortSignal;
+    this.getAsyncHelpers = getAsyncHelpers;
+    this.promiseAll = promiseAll;
+    this.trackPromise = trackPromise;
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
@@ -261,10 +271,7 @@ export class Executor<
     if (externalAbortSignal) {
       externalAbortSignal.throwIfAborted();
       const onExternalAbort = () => {
-        const aborted = this.abort(externalAbortSignal.reason);
-        if (isPromise(aborted)) {
-          aborted.catch(() => undefined);
-        }
+        this.abort(externalAbortSignal.reason);
       };
       removeExternalAbortListener = () =>
         externalAbortSignal.removeEventListener('abort', onExternalAbort);
@@ -324,6 +331,7 @@ export class Executor<
             return this.buildResponse(null);
           },
         );
+        this.sharedExecutionContext.asyncWorkTracker.add(promise);
         const { promise: cancellablePromise, abort: abortResultPromise } =
           withCancellation(promise);
         this.abortResultPromise = abortResultPromise;
@@ -347,7 +355,7 @@ export class Executor<
     }
   }
 
-  abort(reason?: unknown): PromiseOrValue<void> {
+  abort(reason?: unknown): void {
     if (this.aborted) {
       return;
     }
@@ -506,8 +514,9 @@ export class Executor<
       }
     } catch (error) {
       if (containsPromise) {
-        // Ensure that any promises returned by other fields are handled, as they may also reject.
-        promiseForObject(results).catch(() => undefined);
+        this.sharedExecutionContext.asyncWorkTracker.addValues(
+          Object.values(results),
+        );
       }
       throw error;
     }
@@ -520,7 +529,7 @@ export class Executor<
     // Otherwise, results is a map from field name to the result of resolving that
     // field, which is possibly a promise. Return a promise that will return this
     // same map, but with any promises replaced with the values they resolved to.
-    return promiseForObject(results);
+    return promiseForObject(results, this.promiseAll);
   }
 
   /**
@@ -557,6 +566,7 @@ export class Executor<
       parentType,
       path,
       this.getAbortSignal,
+      this.getAsyncHelpers,
     );
 
     // Get the resolve function, regardless of if its result is normal or abrupt (error).
@@ -853,10 +863,11 @@ export class Executor<
         index++;
       }
     } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      returnIteratorCatchingErrors(asyncIterator);
+      this.trackPromise(returnIteratorCatchingErrors(asyncIterator));
       if (containsPromise) {
-        Promise.all(completedResults).catch(() => undefined);
+        this.sharedExecutionContext.asyncWorkTracker.addValues(
+          completedResults,
+        );
       }
       throw error;
     }
@@ -864,13 +875,14 @@ export class Executor<
     // Throwing on completion outside of the loop may allow engines to better optimize
     if (this.aborted) {
       if (!iteration?.done) {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        returnIteratorCatchingErrors(asyncIterator);
+        this.trackPromise(returnIteratorCatchingErrors(asyncIterator));
       }
       throw new Error('Aborted!');
     }
 
-    return containsPromise ? Promise.all(completedResults) : completedResults;
+    return containsPromise
+      ? this.promiseAll(completedResults)
+      : completedResults;
   }
 
   /* c8 ignore next 12 */
@@ -991,15 +1003,17 @@ export class Executor<
         index++;
       }
     } catch (error) {
-      const maybePromises = containsPromise ? completedResults : [];
-      maybePromises.push(...collectIteratorPromises(iterator));
-      if (maybePromises.length) {
-        Promise.all(maybePromises).catch(() => undefined);
+      const asyncWorkTracker = this.sharedExecutionContext.asyncWorkTracker;
+      if (containsPromise) {
+        asyncWorkTracker.addValues(completedResults);
       }
+      asyncWorkTracker.addValues(collectIteratorPromises(iterator));
       throw error;
     }
 
-    return containsPromise ? Promise.all(completedResults) : completedResults;
+    return containsPromise
+      ? this.promiseAll(completedResults)
+      : completedResults;
   }
 
   completeMaybePromisedListItemValue(

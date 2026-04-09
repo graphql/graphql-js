@@ -121,6 +121,7 @@ export type {
   GraphQLObjectTypeConfig,
   GraphQLObjectTypeExtensions,
   GraphQLResolveInfo,
+  GraphQLResolveInfoHelpers,
   GraphQLScalarTypeConfig,
   GraphQLScalarTypeExtensions,
   GraphQLTypeResolver,

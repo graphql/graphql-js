@@ -1,4 +1,5 @@
 import type { ObjMap } from './ObjMap.js';
+import type { PromiseOrValue } from './PromiseOrValue.js';
 
 /**
  * This function transforms a JS object `ObjMap<Promise<T>>` into
@@ -7,16 +8,20 @@ import type { ObjMap } from './ObjMap.js';
  * This is akin to bluebird's `Promise.props`, but implemented only using
  * `Promise.all` so it will work with any implementation of ES6 promises.
  */
-export async function promiseForObject<T>(
-  object: ObjMap<Promise<T>>,
+export function promiseForObject<T>(
+  object: Readonly<ObjMap<PromiseOrValue<T>>>,
+  promiseAll: <TValue>(
+    values: ReadonlyArray<PromiseOrValue<TValue>>,
+  ) => Promise<Array<TValue>>,
 ): Promise<ObjMap<T>> {
   const keys = Object.keys(object);
   const values = Object.values(object);
 
-  const resolvedValues = await Promise.all(values);
-  const resolvedObject = Object.create(null);
-  for (let i = 0; i < keys.length; ++i) {
-    resolvedObject[keys[i]] = resolvedValues[i];
-  }
-  return resolvedObject;
+  return promiseAll(values).then((resolvedValues) => {
+    const resolvedObject = Object.create(null);
+    for (let i = 0; i < keys.length; ++i) {
+      resolvedObject[keys[i]] = resolvedValues[i];
+    }
+    return resolvedObject;
+  });
 }

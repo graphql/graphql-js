@@ -258,7 +258,10 @@ describe('Execute: Handles basic execution tasks', () => {
       'operation',
       'variableValues',
       'getAbortSignal',
+      'getAsyncHelpers',
     );
+    const asyncHelpers = resolvedInfo?.getAsyncHelpers();
+    expect(asyncHelpers).to.have.all.keys('trackPromise');
 
     const operation = document.definitions[0];
     assert(operation.kind === Kind.OPERATION_DEFINITION);
@@ -294,6 +297,13 @@ describe('Execute: Handles basic execution tasks', () => {
     const abortSignal = resolvedInfo?.getAbortSignal();
     expect(abortSignal).to.be.instanceOf(AbortSignal);
     expect(resolvedInfo?.getAbortSignal()).to.equal(abortSignal);
+
+    expect(resolvedInfo?.getAsyncHelpers()).to.equal(asyncHelpers);
+
+    const trackPromise = asyncHelpers?.trackPromise;
+    expect(trackPromise).to.be.a('function');
+    expect(resolvedInfo?.getAsyncHelpers().trackPromise).to.equal(trackPromise);
+    trackPromise?.(Promise.resolve());
 
     resolve();
 
