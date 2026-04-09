@@ -316,12 +316,10 @@ export class Executor<
         const promise = result.then(
           (data) => {
             maybeRemoveExternalAbortListener();
-            this.throwIfAborted();
             return this.buildResponse(data);
           },
           (error: unknown) => {
             maybeRemoveExternalAbortListener();
-            this.throwIfAborted();
             this.collectedErrors.add(ensureGraphQLError(error), undefined);
             return this.buildResponse(null);
           },
