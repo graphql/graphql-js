@@ -167,24 +167,33 @@ describe('Original execute errors on experimental @defer and @stream directives'
       query: new GraphQLObjectType({
         name: 'Query',
         fields: {
-          scalarList: { type: new GraphQLList(GraphQLString) },
-          friendList: {
-            type: new GraphQLList(
-              new GraphQLObjectType({
-                name: 'Friend',
-                fields: {
-                  name: { type: GraphQLString },
+          nested: {
+            type: new GraphQLObjectType({
+              name: 'Nested',
+              fields: {
+                scalarList: { type: new GraphQLList(GraphQLString) },
+                friendList: {
+                  type: new GraphQLList(
+                    new GraphQLObjectType({
+                      name: 'Friend',
+                      fields: {
+                        name: { type: GraphQLString },
+                      },
+                    }),
+                  ),
                 },
-              }),
-            ),
+              },
+            }),
           },
         },
       }),
     });
     const doc = `
       query {
-        scalarList
-        friendList @stream { name }
+        nested {
+          scalarList
+          friendList @stream { name }
+        }
       }
     `;
     await expectPromise(
@@ -192,8 +201,10 @@ describe('Original execute errors on experimental @defer and @stream directives'
         schema,
         document: parse(doc),
         rootValue: {
-          scalarList: Promise.resolve(['apple', 'banana', 'coconut']),
-          friendList: [{ name: 'Alice' }, { name: 'Bob' }],
+          nested: Promise.resolve({
+            scalarList: Promise.resolve(['apple', 'banana', 'coconut']),
+            friendList: [{ name: 'Alice' }, { name: 'Bob' }],
+          }),
         },
       }),
     ).toRejectWith(

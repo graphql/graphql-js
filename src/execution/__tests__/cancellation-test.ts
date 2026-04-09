@@ -667,6 +667,31 @@ describe('Execute: Cancellation', () => {
     ).to.throw('This operation was aborted');
   });
 
+  it('should stop the execution when aborted before cancellation is wired', async () => {
+    const abortController = new AbortController();
+    const document = parse(`
+      query {
+        blocker
+      }
+    `);
+
+    const resultPromise = execute({
+      document,
+      schema,
+      abortSignal: abortController.signal,
+      rootValue: {
+        blocker: () => {
+          abortController.abort(new Error('Custom abort error'));
+          return new Promise(() => {
+            /* will never resolve */
+          });
+        },
+      },
+    });
+
+    await expectPromise(resultPromise).toRejectWith('Custom abort error');
+  });
+
   it('should stop the execution when aborted prior to return of a subscription resolver', async () => {
     const abortController = new AbortController();
     const document = parse(`

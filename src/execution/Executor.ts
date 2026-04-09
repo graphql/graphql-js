@@ -509,9 +509,7 @@ export class Executor<
     } catch (error) {
       if (containsPromise) {
         // Ensure that any promises returned by other fields are handled, as they may also reject.
-        return promiseForObject(results).finally(() => {
-          throw error;
-        }) as never;
+        promiseForObject(results).catch(() => undefined);
       }
       throw error;
     }
@@ -860,9 +858,7 @@ export class Executor<
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       returnIteratorCatchingErrors(asyncIterator);
       if (containsPromise) {
-        return Promise.all(completedResults).finally(() => {
-          throw error;
-        });
+        Promise.all(completedResults).catch(() => undefined);
       }
       throw error;
     }
@@ -1000,9 +996,7 @@ export class Executor<
       const maybePromises = containsPromise ? completedResults : [];
       maybePromises.push(...collectIteratorPromises(iterator));
       if (maybePromises.length) {
-        return Promise.all(maybePromises).finally(() => {
-          throw error;
-        });
+        Promise.all(maybePromises).catch(() => undefined);
       }
       throw error;
     }

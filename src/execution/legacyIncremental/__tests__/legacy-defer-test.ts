@@ -1713,15 +1713,6 @@ describe('Execute: defer directive (legacy)', () => {
       {
         incremental: [
           {
-            data: { b: { e: { f: 'f' } }, someField: 'someField' },
-            path: ['a'],
-          },
-        ],
-        hasNext: true,
-      },
-      {
-        incremental: [
-          {
             data: { a: null },
             path: [],
             errors: [
@@ -1732,6 +1723,15 @@ describe('Execute: defer directive (legacy)', () => {
                 path: ['a', 'nonNullErrorField'],
               },
             ],
+          },
+        ],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { b: { e: { f: 'f' } }, someField: 'someField' },
+            path: ['a'],
           },
         ],
         hasNext: false,

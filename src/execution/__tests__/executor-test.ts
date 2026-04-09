@@ -680,7 +680,6 @@ describe('Execute: Handles basic execution tasks', () => {
 
     const result = execute({ schema, document });
 
-    expect(isAsyncResolverFinished).to.equal(false);
     expectJSON(await result).toDeepEqual({
       data: null,
       errors: [
@@ -692,6 +691,11 @@ describe('Execute: Handles basic execution tasks', () => {
         },
       ],
     });
+
+    expect(isAsyncResolverFinished).to.equal(false);
+    await resolveOnNextTick();
+    await resolveOnNextTick();
+    await resolveOnNextTick();
     expect(isAsyncResolverFinished).to.equal(true);
   });
 
