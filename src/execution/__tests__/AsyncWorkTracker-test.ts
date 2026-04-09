@@ -103,3 +103,83 @@ describe('promiseAllTrackOnReject', () => {
     expect(unhandledRejection).to.equal(null);
   });
 });
+
+describe('wait', () => {
+  it('returns synchronously when there is no pending async work', () => {
+    const tracker = new AsyncWorkTracker();
+    expect(tracker.wait()).to.equal(undefined);
+  });
+
+  it('waits when tracked async work is present', async () => {
+    const tracker = new AsyncWorkTracker();
+
+    const delayed = promiseWithResolvers<undefined>();
+    tracker.add(delayed.promise);
+
+    let settled = false;
+    const maybeWait = tracker.wait();
+    expect(maybeWait).to.be.instanceOf(Promise);
+    const wait = Promise.resolve(maybeWait).then(() => {
+      settled = true;
+    });
+    await resolveOnNextTick();
+    expect(settled).to.equal(false);
+
+    delayed.resolve(undefined);
+    await wait;
+    expect(settled).to.equal(true);
+  });
+
+  it('keeps waiting when tracked async work is followed by more tracked async work', async () => {
+    const tracker = new AsyncWorkTracker();
+
+    const delayed = promiseWithResolvers<undefined>();
+    tracker.add(delayed.promise);
+
+    let settled = false;
+    const maybeWait = tracker.wait();
+    expect(maybeWait).to.be.instanceOf(Promise);
+    const wait = Promise.resolve(maybeWait).then(() => {
+      settled = true;
+    });
+    await resolveOnNextTick();
+    expect(settled).to.equal(false);
+
+    delayed.resolve(undefined);
+
+    const anotherDelayed = promiseWithResolvers<undefined>();
+    tracker.add(anotherDelayed.promise);
+    await resolveOnNextTick();
+    expect(settled).to.equal(false);
+
+    anotherDelayed.resolve(undefined);
+
+    await wait;
+    expect(settled).to.equal(true);
+  });
+
+  it('does not wait for side-effect promiseAll tracking added on next microtask', async () => {
+    const tracker = new AsyncWorkTracker();
+    const delayed = promiseWithResolvers<undefined>();
+
+    tracker
+      .promiseAllTrackOnReject([
+        Promise.reject(new Error('bad')),
+        delayed.promise,
+      ])
+      .catch(() => undefined);
+
+    const maybeWait = tracker.wait();
+    expect(maybeWait).to.equal(undefined);
+
+    await resolveOnNextTick();
+    expect(tracker.pendingAsyncWork.size).to.equal(0);
+    await resolveOnNextTick();
+    expect(tracker.pendingAsyncWork.size).to.be.greaterThan(0);
+
+    delayed.resolve(undefined);
+    await Promise.allSettled(Array.from(tracker.pendingAsyncWork));
+    await resolveOnNextTick();
+    expect(tracker.pendingAsyncWork.size).to.equal(0);
+  });
+});

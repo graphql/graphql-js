@@ -40,6 +40,7 @@ import type { ExecutionResult, ValidatedExecutionArgs } from './Executor.js';
 import { Executor } from './Executor.js';
 import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.js';
 import { getVariableSignature } from './getVariableSignature.js';
+import type { ExecutionHooks } from './hooks.js';
 import type { ExperimentalIncrementalExecutionResults } from './incremental/IncrementalExecutor.js';
 import { IncrementalExecutor } from './incremental/IncrementalExecutor.js';
 import { mapAsyncIterable } from './mapAsyncIterable.js';
@@ -298,6 +299,7 @@ export interface ExecutionArgs {
   hideSuggestions?: Maybe<boolean>;
   abortSignal?: Maybe<AbortSignal>;
   enableEarlyExecution?: Maybe<boolean>;
+  hooks?: Maybe<ExecutionHooks>;
   /** Additional execution options. */
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
@@ -330,6 +332,7 @@ export function validateExecutionArgs(
     perEventExecutor,
     abortSignal: externalAbortSignal,
     enableEarlyExecution,
+    hooks,
     options,
   } = args;
 
@@ -419,6 +422,7 @@ export function validateExecutionArgs(
     errorPropagation,
     externalAbortSignal: externalAbortSignal ?? undefined,
     enableEarlyExecution: enableEarlyExecution === true,
+    hooks: hooks ?? undefined,
   };
 }
 
@@ -468,13 +472,16 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
     }
 
     if (promisedIsTypeOfResults.length) {
-      return Promise.all(promisedIsTypeOfResults).then((isTypeOfResults) => {
-        for (let i = 0; i < isTypeOfResults.length; i++) {
-          if (isTypeOfResults[i]) {
-            return possibleTypes[i].name;
+      return info
+        .getAsyncHelpers()
+        .promiseAll(promisedIsTypeOfResults)
+        .then((isTypeOfResults) => {
+          for (let i = 0; i < isTypeOfResults.length; i++) {
+            if (isTypeOfResults[i]) {
+              return possibleTypes[i].name;
+            }
           }
-        }
-      });
+        });
     }
   };
 

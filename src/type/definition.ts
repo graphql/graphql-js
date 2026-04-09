@@ -1046,6 +1046,31 @@ export type GraphQLFieldResolver<
 ) => TResult;
 
 export interface GraphQLResolveInfoHelpers {
+  /**
+   * Promise.all wrapper that allows rejected branches to be tracked
+   * as execution async work.
+   *
+   * Intended use: return or await this promise from resolver work.
+   * Un-awaited async side effects are an anti-pattern:
+   *
+   *   const { promiseAll } = info.getAsyncHelpers();
+   *   promiseAll([someAsyncWork(), someOtherAsyncWork()]).catch(() => undefined);
+   *
+   * In that anti-pattern, tracking starts only after rejection (on a
+   * later microtask), so this work is not guaranteed to delay
+   * `hooks.asyncWorkFinished`.
+   *
+   * Use `track(...)` for un-awaited async side effects:
+   *
+   *   const { track } = info.getAsyncHelpers();
+   *   track([
+   *     someAsyncWork().catch(() => undefined),
+   *     someOtherAsyncWork().catch(() => undefined)
+   *   ]);
+   */
+  readonly promiseAll: <T>(
+    values: ReadonlyArray<PromiseOrValue<T>>,
+  ) => Promise<Array<T>>;
   readonly track: (
     maybePromises: ReadonlyArray<PromiseOrValue<unknown>>,
   ) => void;

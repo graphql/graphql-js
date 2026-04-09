@@ -354,7 +354,7 @@ export class IncrementalExecutor<
       errors,
       work,
       this.validatedExecutionArgs.externalAbortSignal,
-      () => this.resolverAbortController?.abort(),
+      () => this.finishSharedExecution(),
     ) as TExperimental;
   }
 

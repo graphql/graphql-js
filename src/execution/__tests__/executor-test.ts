@@ -261,7 +261,7 @@ describe('Execute: Handles basic execution tasks', () => {
       'getAsyncHelpers',
     );
     const asyncHelpers = resolvedInfo?.getAsyncHelpers();
-    expect(asyncHelpers).to.have.all.keys('track');
+    expect(asyncHelpers).to.have.all.keys('promiseAll', 'track');
 
     const operation = document.definitions[0];
     assert(operation.kind === Kind.OPERATION_DEFINITION);
@@ -299,6 +299,10 @@ describe('Execute: Handles basic execution tasks', () => {
     expect(resolvedInfo?.getAbortSignal()).to.equal(abortSignal);
 
     expect(resolvedInfo?.getAsyncHelpers()).to.equal(asyncHelpers);
+
+    const promiseAll = asyncHelpers?.promiseAll;
+    expect(promiseAll).to.be.a('function');
+    expect(resolvedInfo?.getAsyncHelpers().promiseAll).to.equal(promiseAll);
 
     const track = asyncHelpers?.track;
     expect(track).to.be.a('function');

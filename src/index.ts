@@ -374,6 +374,8 @@ export {
 
 export type {
   ExecutionArgs,
+  AsyncWorkFinishedInfo,
+  ExecutionHooks,
   ValidatedExecutionArgs,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,

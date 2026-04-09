@@ -26,6 +26,7 @@ export function createSharedExecutionContext(
 
   const getAsyncHelpers = (): GraphQLResolveInfoHelpers =>
     (resolveInfoHelpers ??= {
+      promiseAll,
       track: (maybePromises) => asyncWorkTracker.addValues(maybePromises),
     });
 

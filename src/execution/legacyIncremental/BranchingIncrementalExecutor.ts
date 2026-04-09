@@ -202,7 +202,7 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExpe
       errors,
       work,
       this.validatedExecutionArgs.externalAbortSignal,
-      () => this.resolverAbortController?.abort(),
+      () => this.finishSharedExecution(),
     );
   }
 

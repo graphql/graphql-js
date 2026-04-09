@@ -61,6 +61,8 @@ import { createSharedExecutionContext } from './createSharedExecutionContext.js'
 import { buildResolveInfo } from './execute.js';
 import type { StreamUsage } from './getStreamUsage.js';
 import { getStreamUsage as _getStreamUsage } from './getStreamUsage.js';
+import type { ExecutionHooks } from './hooks.js';
+import { runAsyncWorkFinishedHook } from './hooks.js';
 import { returnIteratorCatchingErrors } from './returnIteratorCatchingErrors.js';
 import type { VariableValues } from './values.js';
 import { getArgumentValues } from './values.js';
@@ -116,6 +118,7 @@ export interface ValidatedExecutionArgs {
   errorPropagation: boolean;
   externalAbortSignal: AbortSignal | undefined;
   enableEarlyExecution: boolean;
+  hooks: ExecutionHooks | undefined;
 }
 
 /**
@@ -370,6 +373,20 @@ export class Executor<
     this.aborted = true;
   }
 
+  finishSharedExecution(): void {
+    this.resolverAbortController?.abort();
+    const asyncWorkFinishedHook =
+      this.validatedExecutionArgs.hooks?.asyncWorkFinished;
+    if (asyncWorkFinishedHook === undefined) {
+      return;
+    }
+    runAsyncWorkFinishedHook(
+      this.validatedExecutionArgs,
+      this.sharedExecutionContext,
+      asyncWorkFinishedHook,
+    );
+  }
+
   /**
    * Given a completed execution context and data, build the `{ errors, data }`
    * response defined by the "Response" section of the GraphQL specification.
@@ -377,10 +394,10 @@ export class Executor<
   buildResponse(
     data: ObjMap<unknown> | null,
   ): ExecutionResult | TAlternativeInitialResponse {
+    this.finishSharedExecution();
     this.finish();
     const errors = this.collectedErrors.errors;
     const result = errors.length ? { errors, data } : { data };
-    this.resolverAbortController?.abort();
     return result;
   }
 

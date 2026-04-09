@@ -14,6 +14,8 @@ export {
 } from './execute.js';
 export type { ExecutionArgs } from './execute.js';
 
+export type { AsyncWorkFinishedInfo, ExecutionHooks } from './hooks.js';
+
 export type {
   ValidatedExecutionArgs,
   ExecutionResult,
