@@ -12,7 +12,6 @@ export interface SharedExecutionContext {
   promiseAll: <T>(
     values: ReadonlyArray<PromiseOrValue<T>>,
   ) => Promise<Array<T>>;
-  trackPromise: (promise: Promise<unknown>) => void;
 }
 
 export function createSharedExecutionContext(
@@ -25,13 +24,9 @@ export function createSharedExecutionContext(
     values: ReadonlyArray<PromiseOrValue<T>>,
   ): Promise<Array<T>> => asyncWorkTracker.promiseAllTrackOnReject(values);
 
-  const trackPromise = (promise: Promise<unknown>): void => {
-    asyncWorkTracker.add(promise);
-  };
-
   const getAsyncHelpers = (): GraphQLResolveInfoHelpers =>
     (resolveInfoHelpers ??= {
-      trackPromise,
+      track: (maybePromises) => asyncWorkTracker.addValues(maybePromises),
     });
 
   return {
@@ -39,6 +34,5 @@ export function createSharedExecutionContext(
     getAbortSignal: () => abortSignal,
     getAsyncHelpers,
     promiseAll,
-    trackPromise,
   };
 }

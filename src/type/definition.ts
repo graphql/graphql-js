@@ -1046,7 +1046,9 @@ export type GraphQLFieldResolver<
 ) => TResult;
 
 export interface GraphQLResolveInfoHelpers {
-  readonly trackPromise: (promise: Promise<unknown>) => void;
+  readonly track: (
+    maybePromises: ReadonlyArray<PromiseOrValue<unknown>>,
+  ) => void;
 }
 
 export interface GraphQLResolveInfo {

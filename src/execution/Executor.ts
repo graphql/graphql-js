@@ -236,7 +236,6 @@ export class Executor<
   promiseAll: <T>(
     values: ReadonlyArray<PromiseOrValue<T>>,
   ) => Promise<Array<T>>;
-  trackPromise: (promise: Promise<unknown>) => void;
 
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
@@ -255,12 +254,11 @@ export class Executor<
     } else {
       this.sharedExecutionContext = sharedExecutionContext;
     }
-    const { getAbortSignal, getAsyncHelpers, promiseAll, trackPromise } =
+    const { getAbortSignal, getAsyncHelpers, promiseAll } =
       this.sharedExecutionContext;
     this.getAbortSignal = getAbortSignal;
     this.getAsyncHelpers = getAsyncHelpers;
     this.promiseAll = promiseAll;
-    this.trackPromise = trackPromise;
   }
 
   executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
@@ -863,7 +861,9 @@ export class Executor<
         index++;
       }
     } catch (error) {
-      this.trackPromise(returnIteratorCatchingErrors(asyncIterator));
+      this.sharedExecutionContext.asyncWorkTracker.add(
+        returnIteratorCatchingErrors(asyncIterator),
+      );
       if (containsPromise) {
         this.sharedExecutionContext.asyncWorkTracker.addValues(
           completedResults,
@@ -875,7 +875,9 @@ export class Executor<
     // Throwing on completion outside of the loop may allow engines to better optimize
     if (this.aborted) {
       if (!iteration?.done) {
-        this.trackPromise(returnIteratorCatchingErrors(asyncIterator));
+        this.sharedExecutionContext.asyncWorkTracker.add(
+          returnIteratorCatchingErrors(asyncIterator),
+        );
       }
       throw new Error('Aborted!');
     }

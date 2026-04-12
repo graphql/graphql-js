@@ -735,7 +735,7 @@ export class IncrementalExecutor<
               abortStreamItem(reason);
             }
             if (isAsync) {
-              this.sharedExecutionContext.trackPromise(
+              this.sharedExecutionContext.asyncWorkTracker.add(
                 returnIteratorCatchingErrors(
                   iterator as AsyncIterator<unknown>,
                 ),

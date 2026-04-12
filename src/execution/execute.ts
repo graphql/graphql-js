@@ -454,10 +454,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
             promisedIsTypeOfResults[i] = isTypeOfResult;
           } else if (isTypeOfResult) {
             if (promisedIsTypeOfResults.length) {
-              const { trackPromise } = info.getAsyncHelpers();
-              for (const promisedIsTypeOfResult of promisedIsTypeOfResults) {
-                trackPromise(promisedIsTypeOfResult);
-              }
+              info.getAsyncHelpers().track(promisedIsTypeOfResults);
             }
             return type.name;
           }
@@ -465,10 +462,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
       }
     } catch (error) {
       if (promisedIsTypeOfResults.length) {
-        const { trackPromise } = info.getAsyncHelpers();
-        for (const promisedIsTypeOfResult of promisedIsTypeOfResults) {
-          trackPromise(promisedIsTypeOfResult);
-        }
+        info.getAsyncHelpers().track(promisedIsTypeOfResults);
       }
       throw error;
     }
