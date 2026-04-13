@@ -31,6 +31,10 @@ const QueryDocumentKeysToValidate = mapValue(
   (keys: ReadonlyArray<string>) => keys.filter((key) => key !== 'description'),
 );
 
+const tooManyValidationErrorsError = new GraphQLError(
+  'Too many validation errors, error limit reached. Validation aborted.',
+);
+
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -63,9 +67,6 @@ export function validate(
   // If the schema used for validation is invalid, throw an error.
   assertValidSchema(schema);
 
-  const abortError = new GraphQLError(
-    'Too many validation errors, error limit reached. Validation aborted.',
-  );
   const errors: Array<GraphQLError> = [];
   const typeInfo = new TypeInfo(schema);
   const context = new ValidationContext(
@@ -74,7 +75,7 @@ export function validate(
     typeInfo,
     (error) => {
       if (errors.length >= maxErrors) {
-        throw abortError;
+        throw tooManyValidationErrorsError;
       }
       errors.push(error);
     },
@@ -93,8 +94,8 @@ export function validate(
       QueryDocumentKeysToValidate,
     );
   } catch (e: unknown) {
-    if (e === abortError) {
-      errors.push(abortError);
+    if (e === tooManyValidationErrorsError) {
+      errors.push(tooManyValidationErrorsError);
     } else {
       throw e;
     }
