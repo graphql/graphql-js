@@ -310,14 +310,18 @@ export class IncrementalExecutor<
     this.streams = [];
   }
 
-  createSubExecutor(
+  getCreateSubExecutor(): (
     deferUsageSet?: DeferUsageSet,
-  ): IncrementalExecutor<TExperimental> {
-    return new IncrementalExecutor(
-      this.validatedExecutionArgs,
-      this.sharedExecutionContext,
-      deferUsageSet,
-    );
+  ) => IncrementalExecutor<TExperimental> {
+    const validatedExecutionArgs = this.validatedExecutionArgs;
+    const sharedExecutionContext = this.sharedExecutionContext;
+
+    return (deferUsageSet?: DeferUsageSet) =>
+      new IncrementalExecutor<TExperimental>(
+        validatedExecutionArgs,
+        sharedExecutionContext,
+        deferUsageSet,
+      );
   }
 
   override abort(reason?: unknown): void {
@@ -354,7 +358,7 @@ export class IncrementalExecutor<
       errors,
       work,
       this.validatedExecutionArgs.externalAbortSignal,
-      () => this.finishSharedExecution(),
+      this.getFinishSharedExecution(),
     ) as TExperimental;
   }
 
@@ -490,10 +494,11 @@ export class IncrementalExecutor<
     newGroupedFieldSets: Map<DeferUsageSet, GroupedFieldSet>,
     deliveryGroupMap: ReadonlyMap<DeferUsage, DeliveryGroup>,
   ): void {
+    const createSubExecutor = this.getCreateSubExecutor();
     for (const [deferUsageSet, groupedFieldSet] of newGroupedFieldSets) {
       const deliveryGroups = getDeliveryGroups(deferUsageSet, deliveryGroupMap);
 
-      const executor = this.createSubExecutor(deferUsageSet);
+      const executor = createSubExecutor(deferUsageSet);
 
       const executionGroup: ExecutionGroup = {
         groups: deliveryGroups,
@@ -721,7 +726,9 @@ export class IncrementalExecutor<
     itemType: GraphQLOutputType,
     isAsync: boolean | undefined,
   ): Queue<StreamItemResult> {
+    const createSubExecutor = this.getCreateSubExecutor();
     const { enableEarlyExecution } = this.validatedExecutionArgs;
+    const sharedExecutionContext = this.sharedExecutionContext;
     const queue = new Queue<StreamItemResult>(
       async ({ push, stop, onStop, started }) => {
         const abortStreamItems = new Set<(reason?: unknown) => void>();
@@ -735,13 +742,13 @@ export class IncrementalExecutor<
               abortStreamItem(reason);
             }
             if (isAsync) {
-              this.sharedExecutionContext.asyncWorkTracker.add(
+              sharedExecutionContext.asyncWorkTracker.add(
                 returnIteratorCatchingErrors(
                   iterator as AsyncIterator<unknown>,
                 ),
               );
             } else {
-              this.sharedExecutionContext.asyncWorkTracker.addValues(
+              sharedExecutionContext.asyncWorkTracker.addValues(
                 collectIteratorPromises(iterator as Iterator<unknown>),
               );
             }
@@ -785,7 +792,7 @@ export class IncrementalExecutor<
 
           const itemPath = addPath(streamPath, index, undefined);
 
-          const executor = this.createSubExecutor();
+          const executor = createSubExecutor();
 
           let streamItemResult = executor.completeStreamItem(
             itemPath,

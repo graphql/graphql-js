@@ -174,14 +174,18 @@ export interface FormattedLegacyIncrementalStreamResult<
 }
 /** @internal */
 export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExperimentalIncrementalExecutionResults> {
-  override createSubExecutor(
+  override getCreateSubExecutor(): (
     deferUsageSet?: DeferUsageSet,
-  ): IncrementalExecutor<LegacyExperimentalIncrementalExecutionResults> {
-    return new BranchingIncrementalExecutor(
-      this.validatedExecutionArgs,
-      this.sharedExecutionContext,
-      deferUsageSet,
-    );
+  ) => BranchingIncrementalExecutor {
+    const validatedExecutionArgs = this.validatedExecutionArgs;
+    const sharedExecutionContext = this.sharedExecutionContext;
+
+    return (deferUsageSet?: DeferUsageSet) =>
+      new BranchingIncrementalExecutor(
+        validatedExecutionArgs,
+        sharedExecutionContext,
+        deferUsageSet,
+      );
   }
 
   override buildResponse(
@@ -202,7 +206,7 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExpe
       errors,
       work,
       this.validatedExecutionArgs.externalAbortSignal,
-      () => this.finishSharedExecution(),
+      this.getFinishSharedExecution(),
     );
   }
 

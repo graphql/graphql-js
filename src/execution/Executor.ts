@@ -375,18 +375,24 @@ export class Executor<
     this.aborted = true;
   }
 
-  finishSharedExecution(): void {
-    this.resolverAbortController?.abort();
+  getFinishSharedExecution(): () => void {
+    const resolverAbortController = this.resolverAbortController;
     const asyncWorkFinishedHook =
       this.validatedExecutionArgs.hooks?.asyncWorkFinished;
     if (asyncWorkFinishedHook === undefined) {
-      return;
+      return () => resolverAbortController?.abort();
     }
-    runAsyncWorkFinishedHook(
-      this.validatedExecutionArgs,
-      this.sharedExecutionContext,
-      asyncWorkFinishedHook,
-    );
+
+    const validatedExecutionArgs = this.validatedExecutionArgs;
+    const sharedExecutionContext = this.sharedExecutionContext;
+    return () => {
+      resolverAbortController?.abort();
+      runAsyncWorkFinishedHook(
+        validatedExecutionArgs,
+        sharedExecutionContext,
+        asyncWorkFinishedHook,
+      );
+    };
   }
 
   /**
@@ -396,7 +402,7 @@ export class Executor<
   buildResponse(
     data: ObjMap<unknown> | null,
   ): ExecutionResult | TAlternativeInitialResponse {
-    this.finishSharedExecution();
+    this.getFinishSharedExecution()();
     this.finish();
     const errors = this.collectedErrors.errors;
     const result = errors.length ? { errors, data } : { data };
