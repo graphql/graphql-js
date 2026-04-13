@@ -222,6 +222,8 @@ export interface FormattedExecutionResult<
   extensions?: TExtensions;
 }
 
+const defaultAbortReason = new Error('This operation was aborted');
+
 /** @internal */
 export class Executor<
   TPositionContext = undefined, // No position context by default
@@ -246,7 +248,7 @@ export class Executor<
   ) {
     this.validatedExecutionArgs = validatedExecutionArgs;
     this.aborted = false;
-    this.abortReason = new Error('This operation was aborted');
+    this.abortReason = defaultAbortReason;
     this.collectedErrors = new CollectedErrors();
 
     if (sharedExecutionContext === undefined) {
