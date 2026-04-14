@@ -115,6 +115,8 @@ export interface ExecutionContext {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   collectedErrors: CollectedErrors;
+  maxDepth: number | undefined;
+  maxAliases: number | undefined;
 }
 
 /**
@@ -195,6 +197,21 @@ export interface ExecutionArgs {
   options?: {
     /** Set the maximum number of errors allowed for coercing (defaults to 50). */
     maxCoercionErrors?: number;
+    /**
+     * Set the maximum allowed depth for field resolution.
+     * Depth is counted as the number of nested field selections from the root.
+     * When exceeded, a GraphQLError is thrown for the offending field.
+     * No limit is applied when undefined (the default).
+     */
+    maxDepth?: number;
+    /**
+     * Set the maximum number of aliases allowed in any single selection set.
+     * This helps prevent alias-bombing denial-of-service attacks where many
+     * aliases for the same field bypass depth-based protections.
+     * When exceeded, a GraphQLError is thrown before executing the selection set.
+     * No limit is applied when undefined (the default).
+     */
+    maxAliases?: number;
   };
 }
 
@@ -393,6 +410,8 @@ export function buildExecutionContext(
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
     collectedErrors: new CollectedErrors(),
+    maxDepth: options?.maxDepth,
+    maxAliases: options?.maxAliases,
   };
 }
 
@@ -419,6 +438,9 @@ function executeOperation(
     rootType,
     operation.selectionSet,
   );
+
+  checkAliasCount(exeContext, rootFields);
+
   const path = undefined;
 
   switch (operation.operation) {
@@ -531,6 +553,48 @@ function executeFields(
 }
 
 /**
+ * Checks whether the number of response keys (including aliases) in a
+ * selection set exceeds the configured limit. Throws a GraphQLError when
+ * the limit is exceeded.
+ */
+function checkAliasCount(
+  exeContext: ExecutionContext,
+  fields: Map<string, ReadonlyArray<FieldNode>>,
+): void {
+  if (exeContext.maxAliases !== undefined) {
+    const aliasCount = fields.size;
+    if (aliasCount > exeContext.maxAliases) {
+      // Collect nodes for the error location from the first field node of
+      // each response key beyond the limit.
+      const nodes: Array<FieldNode> = [];
+      for (const [, fieldNodes] of fields) {
+        nodes.push(fieldNodes[0]);
+      }
+      throw new GraphQLError(
+        `Aliases limit of ${exeContext.maxAliases} exceeded, found ${aliasCount} aliases.`,
+        { nodes },
+      );
+    }
+  }
+}
+
+/**
+ * Counts the field depth represented by a Path. Only string keys are counted
+ * (numeric keys represent list indices and should not increase the depth).
+ */
+function pathDepth(path: Path | undefined): number {
+  let depth = 0;
+  let current = path;
+  while (current !== undefined) {
+    if (typeof current.key === 'string') {
+      depth++;
+    }
+    current = current.prev;
+  }
+  return depth;
+}
+
+/**
  * Implements the "Executing fields" section of the spec
  * In particular, this function figures out the value that the field returns by
  * calling its resolve function, then calls completeValue to complete promises,
@@ -543,6 +607,17 @@ function executeField(
   fieldNodes: ReadonlyArray<FieldNode>,
   path: Path,
 ): PromiseOrValue<unknown> {
+  // Check depth limit before resolving the field.
+  if (exeContext.maxDepth !== undefined) {
+    const depth = pathDepth(path);
+    if (depth > exeContext.maxDepth) {
+      throw new GraphQLError(
+        `Query depth limit of ${exeContext.maxDepth} exceeded, found depth: ${depth}.`,
+        { nodes: fieldNodes },
+      );
+    }
+  }
+
   const fieldDef = getFieldDef(exeContext.schema, parentType, fieldNodes[0]);
   if (!fieldDef) {
     return;
@@ -972,6 +1047,8 @@ function completeObjectValue(
 ): PromiseOrValue<ObjMap<unknown>> {
   // Collect sub-fields to execute to complete this value.
   const subFieldNodes = collectSubfields(exeContext, returnType, fieldNodes);
+
+  checkAliasCount(exeContext, subFieldNodes);
 
   // If there is an isTypeOf predicate function, call it with the
   // current result. If isTypeOf returns false, then raise an error rather
