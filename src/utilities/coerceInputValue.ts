@@ -2,6 +2,7 @@ import { invariant } from '../jsutils/invariant.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
 import type { Maybe } from '../jsutils/Maybe.js';
+import type { ObjMap } from '../jsutils/ObjMap.js';
 
 import type { ValueNode, VariableNode } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
@@ -69,7 +70,7 @@ export function coerceInputValue(
       return; // Invalid: intentionally return no value.
     }
 
-    const coercedValue: any = Object.create(null);
+    const coercedValue: ObjMap<unknown> = Object.create(null);
     const fieldDefs = type.getFields();
     const hasUndefinedField = Object.keys(inputValue).some(
       (name) => !Object.hasOwn(fieldDefs, name),
@@ -109,7 +110,7 @@ export function coerceInputValue(
       }
     }
 
-    return { ...coercedValue };
+    return coercedValue;
   }
 
   const leafType = assertLeafType(type);
@@ -211,7 +212,7 @@ export function coerceInputLiteral(
       return; // Invalid: intentionally return no value.
     }
 
-    const coercedValue: { [field: string]: unknown } = {};
+    const coercedValue: ObjMap<unknown> = Object.create(null);
     const fieldDefs = type.getFields();
     const hasUndefinedField = valueNode.fields.some(
       (field) => !Object.hasOwn(fieldDefs, field.name.value),
