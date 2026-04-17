@@ -198,6 +198,50 @@ async function runSubscribeCase() {
   }
 }
 
+function runResolveCase() {
+  const schema = buildSchema(
+    `type Query { hello: String nested: Nested } type Nested { leaf: String }`,
+  );
+  const document = parse('{ hello nested { leaf } }');
+
+  const events = [];
+  const handler = {
+    start: (msg) =>
+      events.push({
+        kind: 'start',
+        fieldName: msg.fieldName,
+        parentType: msg.parentType,
+        fieldType: msg.fieldType,
+        fieldPath: msg.fieldPath,
+        isTrivialResolver: msg.isTrivialResolver,
+      }),
+    end: () => events.push({ kind: 'end' }),
+    asyncStart: () => events.push({ kind: 'asyncStart' }),
+    asyncEnd: () => events.push({ kind: 'asyncEnd' }),
+    error: (msg) => events.push({ kind: 'error', error: msg.error }),
+  };
+
+  const channel = dc.tracingChannel('graphql:resolve');
+  channel.subscribe(handler);
+
+  try {
+    const rootValue = { hello: () => 'world', nested: { leaf: 'leaf-value' } };
+    execute({ schema, document, rootValue });
+
+    const starts = events.filter((e) => e.kind === 'start');
+    const paths = starts.map((e) => e.fieldPath);
+    assert.deepEqual(paths, ['hello', 'nested', 'nested.leaf']);
+
+    const hello = starts.find((e) => e.fieldName === 'hello');
+    assert.equal(hello.parentType, 'Query');
+    assert.equal(hello.fieldType, 'String');
+    // buildSchema never attaches field.resolve; all fields report as trivial.
+    assert.equal(hello.isTrivialResolver, true);
+  } finally {
+    channel.unsubscribe(handler);
+  }
+}
+
 function runNoSubscriberCase() {
   const doc = parse('{ field }');
   assert.equal(doc.kind, 'Document');
@@ -208,6 +252,7 @@ async function main() {
   runValidateCase();
   runExecuteCase();
   await runSubscribeCase();
+  runResolveCase();
   runNoSubscriberCase();
   console.log('diagnostics integration test passed');
 }
