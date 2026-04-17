@@ -3,6 +3,7 @@
 /* eslint-disable n/no-unsupported-features/node-builtins */
 
 import assert from 'node:assert/strict';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import dc from 'node:diagnostics_channel';
 
 import {
@@ -247,12 +248,48 @@ function runNoSubscriberCase() {
   assert.equal(doc.kind, 'Document');
 }
 
+async function runAlsPropagationCase() {
+  // A subscriber that binds a store on the `start` sub-channel should be able
+  // to read it in every lifecycle handler (start, end, asyncStart, asyncEnd).
+  // This is what APMs use to parent child spans to the current operation
+  // without threading state through the ctx object.
+  const als = new AsyncLocalStorage();
+  const channel = dc.tracingChannel('graphql:execute');
+  channel.start.bindStore(als, (ctx) => ({ operationName: ctx.operationName }));
+
+  const seen = {};
+  const handler = {
+    start: () => (seen.start = als.getStore()),
+    end: () => (seen.end = als.getStore()),
+    asyncStart: () => (seen.asyncStart = als.getStore()),
+    asyncEnd: () => (seen.asyncEnd = als.getStore()),
+  };
+  channel.subscribe(handler);
+
+  try {
+    const schema = buildSchema(`type Query { slow: String }`);
+    const document = parse('query Slow { slow }');
+    const rootValue = { slow: () => Promise.resolve('done') };
+
+    await execute({ schema, document, rootValue });
+
+    assert.deepEqual(seen.start, { operationName: 'Slow' });
+    assert.deepEqual(seen.end, { operationName: 'Slow' });
+    assert.deepEqual(seen.asyncStart, { operationName: 'Slow' });
+    assert.deepEqual(seen.asyncEnd, { operationName: 'Slow' });
+  } finally {
+    channel.unsubscribe(handler);
+    channel.start.unbindStore(als);
+  }
+}
+
 async function main() {
   runParseCases();
   runValidateCase();
   runExecuteCase();
   await runSubscribeCase();
   runResolveCase();
+  await runAlsPropagationCase();
   runNoSubscriberCase();
   console.log('diagnostics integration test passed');
 }

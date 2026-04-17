@@ -185,7 +185,21 @@ export function maybeTracePromise<T>(
 }
 
 /**
- * Publish a mixed sync-or-promise operation through the named graphql tracing channel.
+ * Publish a mixed sync-or-promise operation through the named graphql tracing
+ * channel.
+ *
+ * Mirrors Node's own `TracingChannel.tracePromise` for the async branch while
+ * handling sync returns without the cost of a promise wrap. The entire
+ * lifecycle runs inside `start.runStores`, which is what lets subscribers
+ * that call `channel.start.bindStore(als, ...)` read that store in every
+ * sub-channel handler: promise continuations attached inside a `runStores`
+ * block inherit the AsyncLocalStorage context via async_hooks, so
+ * `asyncStart` and `asyncEnd` fire with the same store active as `start`
+ * and `end`.
+ *
+ * Subscribers can inspect `isPromise(ctx.result)` inside their `end` handler
+ * to know whether `asyncEnd` will follow or the operation is complete. This
+ * matches Node's convention.
  *
  * @internal
  */
@@ -203,29 +217,44 @@ export function maybeTraceMixed<T>(
     result?: unknown;
   };
 
-  // traceSync fires start/end (and error, if fn throws synchronously)
-  const result = channel.traceSync(fn, ctx);
-  if (!isPromise(result)) {
-    return result;
-  }
+  return channel.start.runStores(ctx, () => {
+    let result: T | Promise<T>;
+    try {
+      result = fn();
+    } catch (err) {
+      ctx.error = err;
+      channel.error.publish(ctx);
+      channel.end.publish(ctx);
+      throw err;
+    }
 
-  // Fires off `asyncStart` and `asyncEnd` lifecycle events.
-  channel.asyncStart.publish(ctx);
-  return result
-    .then(
+    if (!isPromise(result)) {
+      ctx.result = result;
+      channel.end.publish(ctx);
+      return result;
+    }
+
+    channel.end.publish(ctx);
+    return result.then(
       (value) => {
         ctx.result = value;
-
-        return value;
+        channel.asyncStart.publish(ctx);
+        try {
+          return value;
+        } finally {
+          channel.asyncEnd.publish(ctx);
+        }
       },
       (err: unknown) => {
         ctx.error = err;
         channel.error.publish(ctx);
-
-        throw err;
+        channel.asyncStart.publish(ctx);
+        try {
+          throw err;
+        } finally {
+          channel.asyncEnd.publish(ctx);
+        }
       },
-    )
-    .finally(() => {
-      channel.asyncEnd.publish(ctx);
-    });
+    );
+  });
 }

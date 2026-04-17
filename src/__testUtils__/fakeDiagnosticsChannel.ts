@@ -29,11 +29,15 @@ export class FakeChannel implements MinimalChannel {
   }
 
   runStores<T, ContextType extends object>(
-    _ctx: ContextType,
+    ctx: ContextType,
     fn: (this: ContextType, ...args: Array<unknown>) => T,
     thisArg?: unknown,
     ...args: Array<unknown>
   ): T {
+    // Node's Channel.runStores publishes the context on the channel before
+    // invoking fn. Mirror that here so traceSync / tracePromise fake exactly
+    // matches real Node's start / end event counts.
+    this.publish(ctx);
     return fn.apply(thisArg as ContextType, args);
   }
 
@@ -81,23 +85,24 @@ export class FakeTracingChannel implements MinimalTracingChannel {
     thisArg?: unknown,
     ...args: Array<unknown>
   ): T {
-    this.start.publish(ctx);
-    let result: T;
-    try {
-      result = this.end.runStores(ctx, fn, thisArg, ...args);
-    } catch (err) {
-      (ctx as { error: unknown }).error = err;
-      this.error.publish(ctx);
+    return this.start.runStores(ctx, () => {
+      let result: T;
+      try {
+        result = fn.apply(thisArg as object, args);
+      } catch (err) {
+        (ctx as { error: unknown }).error = err;
+        this.error.publish(ctx);
+        this.end.publish(ctx);
+        throw err;
+      }
+      // Node's real traceSync sets `ctx.result` before publishing `end`, so
+      // subscribers can inspect `isPromise(ctx.result)` inside their `end`
+      // handler to decide whether the operation is complete or async events
+      // will follow. Match that semantic here.
+      (ctx as { result: unknown }).result = result;
       this.end.publish(ctx);
-      throw err;
-    }
-    // Node's real traceSync sets `ctx.result` before publishing `end`, so
-    // subscribers can inspect `isPromise(ctx.result)` inside their `end`
-    // handler to decide whether the operation is complete or async events
-    // will follow. Match that semantic here.
-    (ctx as { result: unknown }).result = result;
-    this.end.publish(ctx);
-    return result;
+      return result;
+    });
   }
 
   tracePromise<T>(
@@ -106,33 +111,39 @@ export class FakeTracingChannel implements MinimalTracingChannel {
     thisArg?: unknown,
     ...args: Array<unknown>
   ): Promise<T> {
-    this.start.publish(ctx);
-    let promise: Promise<T>;
-    try {
-      promise = this.end.runStores(ctx, fn, thisArg, ...args);
-    } catch (err) {
-      (ctx as { error: unknown }).error = err;
-      this.error.publish(ctx);
+    return this.start.runStores(ctx, () => {
+      let promise: Promise<T>;
+      try {
+        promise = fn.apply(thisArg as object, args);
+      } catch (err) {
+        (ctx as { error: unknown }).error = err;
+        this.error.publish(ctx);
+        this.end.publish(ctx);
+        throw err;
+      }
       this.end.publish(ctx);
-      throw err;
-    }
-    this.end.publish(ctx);
-    this.asyncStart.publish(ctx);
-    return promise
-      .then(
+      return promise.then(
         (result) => {
           (ctx as { result: unknown }).result = result;
-          return result;
+          this.asyncStart.publish(ctx);
+          try {
+            return result;
+          } finally {
+            this.asyncEnd.publish(ctx);
+          }
         },
         (err: unknown) => {
           (ctx as { error: unknown }).error = err;
           this.error.publish(ctx);
-          throw err;
+          this.asyncStart.publish(ctx);
+          try {
+            throw err;
+          } finally {
+            this.asyncEnd.publish(ctx);
+          }
         },
-      )
-      .finally(() => {
-        this.asyncEnd.publish(ctx);
-      });
+      );
+    });
   }
 }
 
