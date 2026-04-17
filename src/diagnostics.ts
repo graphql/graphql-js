@@ -1,0 +1,127 @@
+/**
+ * TracingChannel integration.
+ *
+ * graphql-js exposes a set of named tracing channels that APM tools can
+ * subscribe to in order to observe parse, validate, execute, subscribe, and
+ * resolver lifecycle events. To preserve the isomorphic invariant of the
+ * core (no runtime-specific imports in `src/`), graphql-js does not import
+ * `node:diagnostics_channel` itself. Instead, APMs (or runtime-specific
+ * adapters) hand in a module satisfying `MinimalDiagnosticsChannel` via
+ * `enableDiagnosticsChannel`.
+ *
+ * Channel names are owned by graphql-js so multiple APMs converge on the
+ * same `TracingChannel` instances and all subscribers coexist.
+ */
+
+/**
+ * Structural subset of `DiagnosticsChannel` sufficient for publishing and
+ * subscriber gating. `node:diagnostics_channel`'s `Channel` satisfies this.
+ */
+export interface MinimalChannel {
+  readonly hasSubscribers: boolean;
+  publish: (message: unknown) => void;
+  runStores: <T, ContextType>(
+    context: ContextType,
+    fn: (this: ContextType, ...args: Array<unknown>) => T,
+    thisArg?: unknown,
+    ...args: Array<unknown>
+  ) => T;
+}
+
+/**
+ * Structural subset of Node's `TracingChannel`. The `node:diagnostics_channel`
+ * `TracingChannel` satisfies this by duck typing, so graphql-js does not need
+ * a dependency on `@types/node` or on the runtime itself.
+ */
+export interface MinimalTracingChannel {
+  readonly hasSubscribers: boolean;
+  readonly start: MinimalChannel;
+  readonly end: MinimalChannel;
+  readonly asyncStart: MinimalChannel;
+  readonly asyncEnd: MinimalChannel;
+  readonly error: MinimalChannel;
+
+  traceSync: <T>(
+    fn: (...args: Array<unknown>) => T,
+    ctx: object,
+    thisArg?: unknown,
+    ...args: Array<unknown>
+  ) => T;
+
+  tracePromise: <T>(
+    fn: (...args: Array<unknown>) => Promise<T>,
+    ctx: object,
+    thisArg?: unknown,
+    ...args: Array<unknown>
+  ) => Promise<T>;
+}
+
+/**
+ * Structural subset of `node:diagnostics_channel` covering just what
+ * graphql-js needs at registration time.
+ */
+export interface MinimalDiagnosticsChannel {
+  tracingChannel: (name: string) => MinimalTracingChannel;
+}
+
+/**
+ * The collection of tracing channels graphql-js emits on. APMs subscribe to
+ * these by name on their own `node:diagnostics_channel` import; both paths
+ * land on the same channel instance because `tracingChannel(name)` is cached
+ * by name.
+ */
+export interface GraphQLChannels {
+  execute: MinimalTracingChannel;
+  parse: MinimalTracingChannel;
+  validate: MinimalTracingChannel;
+  resolve: MinimalTracingChannel;
+  subscribe: MinimalTracingChannel;
+}
+
+let channels: GraphQLChannels | undefined;
+
+/**
+ * Internal accessor used at emission sites. Returns `undefined` when no
+ * `diagnostics_channel` module has been registered, allowing emission sites
+ * to short-circuit on a single property access.
+ *
+ * @internal
+ */
+export function getChannels(): GraphQLChannels | undefined {
+  return channels;
+}
+
+/**
+ * Register a `node:diagnostics_channel`-compatible module with graphql-js.
+ *
+ * After calling this, graphql-js will publish lifecycle events on the
+ * following tracing channels whenever subscribers are present:
+ *
+ *   - `graphql:parse`
+ *   - `graphql:validate`
+ *   - `graphql:execute`
+ *   - `graphql:subscribe`
+ *   - `graphql:resolve`
+ *
+ * Calling this repeatedly is safe: subsequent calls replace the stored
+ * channel references, but since `tracingChannel(name)` is cached by name,
+ * the channel identities remain stable across registrations from the same
+ * underlying module.
+ *
+ * @example
+ * ```ts
+ * import dc from 'node:diagnostics_channel';
+ * import { enableDiagnosticsChannel } from 'graphql';
+ *
+ * enableDiagnosticsChannel(dc);
+ * ```
+ */
+export function enableDiagnosticsChannel(dc: MinimalDiagnosticsChannel): void {
+  channels = {
+    execute: dc.tracingChannel('graphql:execute'),
+    parse: dc.tracingChannel('graphql:parse'),
+    validate: dc.tracingChannel('graphql:validate'),
+    resolve: dc.tracingChannel('graphql:resolve'),
+    subscribe: dc.tracingChannel('graphql:subscribe'),
+  };
+}

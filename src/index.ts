@@ -26,6 +26,17 @@ export { version, versionInfo } from './version.ts';
 // Enable development mode for additional checks.
 export { enableDevMode, isDevModeEnabled } from './devMode.ts';
 
+// Register a `node:diagnostics_channel`-compatible module to enable
+// tracing channel emission from parse, validate, execute, subscribe,
+// and resolver lifecycles.
+export { enableDiagnosticsChannel } from './diagnostics.js';
+export type {
+  MinimalChannel,
+  MinimalTracingChannel,
+  MinimalDiagnosticsChannel,
+  GraphQLChannels,
+} from './diagnostics.js';
+
 // The primary entry point into fulfilling a GraphQL request.
 export type { GraphQLArgs } from './graphql.ts';
 export { graphql, graphqlSync } from './graphql.ts';
