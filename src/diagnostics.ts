@@ -20,7 +20,7 @@
 export interface MinimalChannel {
   readonly hasSubscribers: boolean;
   publish: (message: unknown) => void;
-  runStores: <T, ContextType>(
+  runStores: <T, ContextType extends object>(
     context: ContextType,
     fn: (this: ContextType, ...args: Array<unknown>) => T,
     thisArg?: unknown,
@@ -124,4 +124,60 @@ export function enableDiagnosticsChannel(dc: MinimalDiagnosticsChannel): void {
     resolve: dc.tracingChannel('graphql:resolve'),
     subscribe: dc.tracingChannel('graphql:subscribe'),
   };
+}
+
+/**
+ * Gate for emission sites. Returns `true` when the named channel exists and
+ * publishing should proceed.
+ *
+ * Uses `!== false` rather than a truthy check so runtimes which do not
+ * implement the aggregated `hasSubscribers` getter on `TracingChannel` still
+ * publish. Notably Node 18 (nodejs/node#54470), where the aggregated getter
+ * returns `undefined` while sub-channels behave correctly.
+ *
+ * @internal
+ */
+function shouldTrace(
+  channel: MinimalTracingChannel | undefined,
+): channel is MinimalTracingChannel {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
+  return channel !== undefined && channel.hasSubscribers !== false;
+}
+
+/**
+ * Publish a synchronous operation through the named graphql tracing channel,
+ * short-circuiting to `fn()` when the channel isn't registered or nothing is
+ * listening.
+ *
+ * @internal
+ */
+export function maybeTraceSync<T>(
+  name: keyof GraphQLChannels,
+  ctxFactory: () => object,
+  fn: () => T,
+): T {
+  const channel = getChannels()?.[name];
+  if (!shouldTrace(channel)) {
+    return fn();
+  }
+  return channel.traceSync(fn, ctxFactory());
+}
+
+/**
+ * Publish a promise-returning operation through the named graphql tracing
+ * channel, short-circuiting to `fn()` when the channel isn't registered or
+ * nothing is listening.
+ *
+ * @internal
+ */
+export function maybeTracePromise<T>(
+  name: keyof GraphQLChannels,
+  ctxFactory: () => object,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const channel = getChannels()?.[name];
+  if (!shouldTrace(channel)) {
+    return fn();
+  }
+  return channel.tracePromise(fn, ctxFactory());
 }
