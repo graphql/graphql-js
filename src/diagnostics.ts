@@ -13,6 +13,8 @@
  * same `TracingChannel` instances and all subscribers coexist.
  */
 
+import { isPromise } from './jsutils/isPromise.js';
+
 /**
  * Structural subset of `DiagnosticsChannel` sufficient for publishing and
  * subscriber gating. `node:diagnostics_channel`'s `Channel` satisfies this.
@@ -180,4 +182,53 @@ export function maybeTracePromise<T>(
     return fn();
   }
   return channel.tracePromise(fn, ctxFactory());
+}
+
+/**
+ * Publish a mixed sync-or-promise operation through the named graphql tracing
+ * channel. Delegates the start/end/error lifecycle to Node's `traceSync`
+ * (which also runs `fn` inside `end.runStores` for AsyncLocalStorage context
+ * propagation) and, when `fn` returns a promise, appends `asyncStart` and
+ * `asyncEnd` on settlement plus `error` on rejection.
+ *
+ * Use this when the function may return either a value or a promise, which
+ * is common on graphql-js's execution path where async-ness is determined
+ * by resolvers only after the call begins. Short-circuits to `fn()` when
+ * the channel isn't registered or nothing is listening.
+ *
+ * @internal
+ */
+export function maybeTraceMixed<T>(
+  name: keyof GraphQLChannels,
+  ctxFactory: () => object,
+  fn: () => T | Promise<T>,
+): T | Promise<T> {
+  const channel = getChannels()?.[name];
+  if (!shouldTrace(channel)) {
+    return fn();
+  }
+  const ctx = ctxFactory() as {
+    error?: unknown;
+    result?: unknown;
+  };
+  const result = channel.traceSync(fn, ctx);
+  if (!isPromise(result)) {
+    ctx.result = result;
+    return result;
+  }
+  return result.then(
+    (value) => {
+      ctx.result = value;
+      channel.asyncStart.publish(ctx);
+      channel.asyncEnd.publish(ctx);
+      return value;
+    },
+    (err: unknown) => {
+      ctx.error = err;
+      channel.error.publish(ctx);
+      channel.asyncStart.publish(ctx);
+      channel.asyncEnd.publish(ctx);
+      throw err;
+    },
+  );
 }

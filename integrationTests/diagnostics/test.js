@@ -8,6 +8,7 @@ import dc from 'node:diagnostics_channel';
 import {
   buildSchema,
   enableDiagnosticsChannel,
+  execute,
   parse,
   validate,
 } from 'graphql';
@@ -98,6 +99,51 @@ enableDiagnosticsChannel(dc);
     );
     assert.equal(events[0].schema, schema);
     assert.equal(events[0].document, doc);
+  } finally {
+    channel.unsubscribe(handler);
+  }
+}
+
+// graphql:execute - sync path, ctx carries operationType, operationName,
+// document, schema.
+{
+  const schema = buildSchema(`type Query { hello: String }`);
+  const document = parse('query Greeting { hello }');
+
+  const events = [];
+  const handler = {
+    start: (msg) =>
+      events.push({
+        kind: 'start',
+        operationType: msg.operationType,
+        operationName: msg.operationName,
+        document: msg.document,
+        schema: msg.schema,
+      }),
+    end: () => events.push({ kind: 'end' }),
+    asyncStart: () => events.push({ kind: 'asyncStart' }),
+    asyncEnd: () => events.push({ kind: 'asyncEnd' }),
+    error: (msg) => events.push({ kind: 'error', error: msg.error }),
+  };
+
+  const channel = dc.tracingChannel('graphql:execute');
+  channel.subscribe(handler);
+
+  try {
+    const result = execute({
+      schema,
+      document,
+      rootValue: { hello: 'world' },
+    });
+    assert.equal(result.data.hello, 'world');
+    assert.deepEqual(
+      events.map((e) => e.kind),
+      ['start', 'end'],
+    );
+    assert.equal(events[0].operationType, 'query');
+    assert.equal(events[0].operationName, 'Greeting');
+    assert.equal(events[0].document, document);
+    assert.equal(events[0].schema, schema);
   } finally {
     channel.unsubscribe(handler);
   }
