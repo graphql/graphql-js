@@ -5,7 +5,12 @@
 import assert from 'node:assert/strict';
 import dc from 'node:diagnostics_channel';
 
-import { enableDiagnosticsChannel, parse } from 'graphql';
+import {
+  buildSchema,
+  enableDiagnosticsChannel,
+  parse,
+  validate,
+} from 'graphql';
 
 enableDiagnosticsChannel(dc);
 
@@ -59,6 +64,40 @@ enableDiagnosticsChannel(dc);
       ['start', 'error', 'end'],
     );
     assert.ok(events[1].error instanceof Error);
+  } finally {
+    channel.unsubscribe(handler);
+  }
+}
+
+// graphql:validate - synchronous, with schema/document context
+{
+  const schema = buildSchema(`type Query { field: String }`);
+  const doc = parse('{ field }');
+
+  const events = [];
+  const handler = {
+    start: (msg) =>
+      events.push({
+        kind: 'start',
+        schema: msg.schema,
+        document: msg.document,
+      }),
+    end: () => events.push({ kind: 'end' }),
+    error: (msg) => events.push({ kind: 'error', error: msg.error }),
+  };
+
+  const channel = dc.tracingChannel('graphql:validate');
+  channel.subscribe(handler);
+
+  try {
+    const errors = validate(schema, doc);
+    assert.deepEqual(errors, []);
+    assert.deepEqual(
+      events.map((e) => e.kind),
+      ['start', 'end'],
+    );
+    assert.equal(events[0].schema, schema);
+    assert.equal(events[0].document, doc);
   } finally {
     channel.unsubscribe(handler);
   }
