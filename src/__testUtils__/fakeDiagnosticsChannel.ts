@@ -82,15 +82,22 @@ export class FakeTracingChannel implements MinimalTracingChannel {
     ...args: Array<unknown>
   ): T {
     this.start.publish(ctx);
+    let result: T;
     try {
-      return this.end.runStores(ctx, fn, thisArg, ...args);
+      result = this.end.runStores(ctx, fn, thisArg, ...args);
     } catch (err) {
       (ctx as { error: unknown }).error = err;
       this.error.publish(ctx);
-      throw err;
-    } finally {
       this.end.publish(ctx);
+      throw err;
     }
+    // Node's real traceSync sets `ctx.result` before publishing `end`, so
+    // subscribers can inspect `isPromise(ctx.result)` inside their `end`
+    // handler to decide whether the operation is complete or async events
+    // will follow. Match that semantic here.
+    (ctx as { result: unknown }).result = result;
+    this.end.publish(ctx);
+    return result;
   }
 
   tracePromise<T>(
@@ -110,21 +117,22 @@ export class FakeTracingChannel implements MinimalTracingChannel {
       throw err;
     }
     this.end.publish(ctx);
-    return promise.then(
-      (result) => {
-        (ctx as { result: unknown }).result = result;
-        this.asyncStart.publish(ctx);
+    this.asyncStart.publish(ctx);
+    return promise
+      .then(
+        (result) => {
+          (ctx as { result: unknown }).result = result;
+          return result;
+        },
+        (err: unknown) => {
+          (ctx as { error: unknown }).error = err;
+          this.error.publish(ctx);
+          throw err;
+        },
+      )
+      .finally(() => {
         this.asyncEnd.publish(ctx);
-        return result;
-      },
-      (err: unknown) => {
-        (ctx as { error: unknown }).error = err;
-        this.error.publish(ctx);
-        this.asyncStart.publish(ctx);
-        this.asyncEnd.publish(ctx);
-        throw err;
-      },
-    );
+      });
   }
 }
 

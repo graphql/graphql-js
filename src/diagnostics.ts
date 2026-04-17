@@ -185,16 +185,7 @@ export function maybeTracePromise<T>(
 }
 
 /**
- * Publish a mixed sync-or-promise operation through the named graphql tracing
- * channel. Delegates the start/end/error lifecycle to Node's `traceSync`
- * (which also runs `fn` inside `end.runStores` for AsyncLocalStorage context
- * propagation) and, when `fn` returns a promise, appends `asyncStart` and
- * `asyncEnd` on settlement plus `error` on rejection.
- *
- * Use this when the function may return either a value or a promise, which
- * is common on graphql-js's execution path where async-ness is determined
- * by resolvers only after the call begins. Short-circuits to `fn()` when
- * the channel isn't registered or nothing is listening.
+ * Publish a mixed sync-or-promise operation through the named graphql tracing channel.
  *
  * @internal
  */
@@ -211,24 +202,30 @@ export function maybeTraceMixed<T>(
     error?: unknown;
     result?: unknown;
   };
+
+  // traceSync fires start/end (and error, if fn throws synchronously)
   const result = channel.traceSync(fn, ctx);
   if (!isPromise(result)) {
-    ctx.result = result;
     return result;
   }
-  return result.then(
-    (value) => {
-      ctx.result = value;
-      channel.asyncStart.publish(ctx);
+
+  // Fires off `asyncStart` and `asyncEnd` lifecycle events.
+  channel.asyncStart.publish(ctx);
+  return result
+    .then(
+      (value) => {
+        ctx.result = value;
+
+        return value;
+      },
+      (err: unknown) => {
+        ctx.error = err;
+        channel.error.publish(ctx);
+
+        throw err;
+      },
+    )
+    .finally(() => {
       channel.asyncEnd.publish(ctx);
-      return value;
-    },
-    (err: unknown) => {
-      ctx.error = err;
-      channel.error.publish(ctx);
-      channel.asyncStart.publish(ctx);
-      channel.asyncEnd.publish(ctx);
-      throw err;
-    },
-  );
+    });
 }
