@@ -55,6 +55,9 @@ describe('Integration Tests', () => {
   testOnNodeProject('node');
   testOnNodeProject('webpack');
 
+  // Tracing channel tests
+  testOnNodeProject('diagnostics');
+
   // Conditional export tests
   testOnNodeProject('conditions');
 
