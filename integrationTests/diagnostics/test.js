@@ -10,68 +10,70 @@ import {
   enableDiagnosticsChannel,
   execute,
   parse,
+  subscribe,
   validate,
 } from 'graphql';
 
 enableDiagnosticsChannel(dc);
 
-// graphql:parse - synchronous
-{
-  const events = [];
-  const handler = {
-    start: (msg) => events.push({ kind: 'start', source: msg.source }),
-    end: (msg) => events.push({ kind: 'end', source: msg.source }),
-    asyncStart: (msg) =>
-      events.push({ kind: 'asyncStart', source: msg.source }),
-    asyncEnd: (msg) => events.push({ kind: 'asyncEnd', source: msg.source }),
-    error: (msg) =>
-      events.push({ kind: 'error', source: msg.source, error: msg.error }),
-  };
+function runParseCases() {
+  // graphql:parse - synchronous.
+  {
+    const events = [];
+    const handler = {
+      start: (msg) => events.push({ kind: 'start', source: msg.source }),
+      end: (msg) => events.push({ kind: 'end', source: msg.source }),
+      asyncStart: (msg) =>
+        events.push({ kind: 'asyncStart', source: msg.source }),
+      asyncEnd: (msg) => events.push({ kind: 'asyncEnd', source: msg.source }),
+      error: (msg) =>
+        events.push({ kind: 'error', source: msg.source, error: msg.error }),
+    };
 
-  const channel = dc.tracingChannel('graphql:parse');
-  channel.subscribe(handler);
+    const channel = dc.tracingChannel('graphql:parse');
+    channel.subscribe(handler);
 
-  try {
-    const doc = parse('{ field }');
-    assert.equal(doc.kind, 'Document');
-    assert.deepEqual(
-      events.map((e) => e.kind),
-      ['start', 'end'],
-    );
-    assert.equal(events[0].source, '{ field }');
-    assert.equal(events[1].source, '{ field }');
-  } finally {
-    channel.unsubscribe(handler);
+    try {
+      const doc = parse('{ field }');
+      assert.equal(doc.kind, 'Document');
+      assert.deepEqual(
+        events.map((e) => e.kind),
+        ['start', 'end'],
+      );
+      assert.equal(events[0].source, '{ field }');
+      assert.equal(events[1].source, '{ field }');
+    } finally {
+      channel.unsubscribe(handler);
+    }
+  }
+
+  // graphql:parse - error path fires start, error, end.
+  {
+    const events = [];
+    const handler = {
+      start: (msg) => events.push({ kind: 'start', source: msg.source }),
+      end: (msg) => events.push({ kind: 'end', source: msg.source }),
+      error: (msg) =>
+        events.push({ kind: 'error', source: msg.source, error: msg.error }),
+    };
+
+    const channel = dc.tracingChannel('graphql:parse');
+    channel.subscribe(handler);
+
+    try {
+      assert.throws(() => parse('{ '));
+      assert.deepEqual(
+        events.map((e) => e.kind),
+        ['start', 'error', 'end'],
+      );
+      assert.ok(events[1].error instanceof Error);
+    } finally {
+      channel.unsubscribe(handler);
+    }
   }
 }
 
-// graphql:parse - error path fires start, error, end (traceSync finally-emits end)
-{
-  const events = [];
-  const handler = {
-    start: (msg) => events.push({ kind: 'start', source: msg.source }),
-    end: (msg) => events.push({ kind: 'end', source: msg.source }),
-    error: (msg) =>
-      events.push({ kind: 'error', source: msg.source, error: msg.error }),
-  };
-
-  const channel = dc.tracingChannel('graphql:parse');
-  channel.subscribe(handler);
-
-  try {
-    assert.throws(() => parse('{ '));
-    assert.deepEqual(
-      events.map((e) => e.kind),
-      ['start', 'error', 'end'],
-    );
-    assert.ok(events[1].error instanceof Error);
-  } finally {
-    channel.unsubscribe(handler);
-  }
-}
-
-// graphql:validate - synchronous, with schema/document context
-{
+function runValidateCase() {
   const schema = buildSchema(`type Query { field: String }`);
   const doc = parse('{ field }');
 
@@ -104,9 +106,7 @@ enableDiagnosticsChannel(dc);
   }
 }
 
-// graphql:execute - sync path, ctx carries operationType, operationName,
-// document, schema.
-{
+function runExecuteCase() {
   const schema = buildSchema(`type Query { hello: String }`);
   const document = parse('query Greeting { hello }');
 
@@ -149,10 +149,67 @@ enableDiagnosticsChannel(dc);
   }
 }
 
-// No-op when nothing is subscribed - parse still succeeds.
-{
+async function runSubscribeCase() {
+  async function* ticks() {
+    yield { tick: 'one' };
+  }
+
+  const schema = buildSchema(`
+    type Query { dummy: String }
+    type Subscription { tick: String }
+  `);
+  // buildSchema doesn't attach a subscribe resolver to fields; inject one.
+  schema.getSubscriptionType().getFields().tick.subscribe = () => ticks();
+
+  const document = parse('subscription Tick { tick }');
+
+  const events = [];
+  const handler = {
+    start: (msg) =>
+      events.push({
+        kind: 'start',
+        operationType: msg.operationType,
+        operationName: msg.operationName,
+      }),
+    end: () => events.push({ kind: 'end' }),
+    asyncStart: () => events.push({ kind: 'asyncStart' }),
+    asyncEnd: () => events.push({ kind: 'asyncEnd' }),
+    error: (msg) => events.push({ kind: 'error', error: msg.error }),
+  };
+
+  const channel = dc.tracingChannel('graphql:subscribe');
+  channel.subscribe(handler);
+
+  try {
+    const result = subscribe({ schema, document });
+    const stream = typeof result.then === 'function' ? await result : result;
+    if (stream[Symbol.asyncIterator]) {
+      await stream.return?.();
+    }
+    // Subscription setup is synchronous here; start/end fire, no async tail.
+    assert.deepEqual(
+      events.map((e) => e.kind),
+      ['start', 'end'],
+    );
+    assert.equal(events[0].operationType, 'subscription');
+    assert.equal(events[0].operationName, 'Tick');
+  } finally {
+    channel.unsubscribe(handler);
+  }
+}
+
+function runNoSubscriberCase() {
   const doc = parse('{ field }');
   assert.equal(doc.kind, 'Document');
 }
 
-console.log('diagnostics integration test passed');
+async function main() {
+  runParseCases();
+  runValidateCase();
+  runExecuteCase();
+  await runSubscribeCase();
+  runNoSubscriberCase();
+  console.log('diagnostics integration test passed');
+}
+
+main();

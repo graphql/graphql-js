@@ -524,31 +524,33 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const validatedExecutionArgs = validateSubscriptionArgs(args);
+  return maybeTraceMixed('subscribe', buildExecuteCtxFromArgs(args), () => {
+    // If a valid execution context cannot be created due to incorrect
+    // arguments, a "Response" with only errors is returned.
+    const validatedExecutionArgs = validateSubscriptionArgs(args);
 
-  // Return early errors if execution context failed.
-  if (!('schema' in validatedExecutionArgs)) {
-    return { errors: validatedExecutionArgs };
-  }
+    // Return early errors if execution context failed.
+    if (!('schema' in validatedExecutionArgs)) {
+      return { errors: validatedExecutionArgs };
+    }
 
-  const resultOrStream = createSourceEventStream(validatedExecutionArgs);
+    const resultOrStream = createSourceEventStream(validatedExecutionArgs);
 
-  if (isPromise(resultOrStream)) {
-    return resultOrStream.then((resolvedResultOrStream) =>
-      isAsyncIterable(resolvedResultOrStream)
-        ? mapSourceToResponseEvent(
-            validatedExecutionArgs,
-            resolvedResultOrStream,
-          )
-        : resolvedResultOrStream,
-    );
-  }
+    if (isPromise(resultOrStream)) {
+      return resultOrStream.then((resolvedResultOrStream) =>
+        isAsyncIterable(resolvedResultOrStream)
+          ? mapSourceToResponseEvent(
+              validatedExecutionArgs,
+              resolvedResultOrStream,
+            )
+          : resolvedResultOrStream,
+      );
+    }
 
-  return isAsyncIterable(resultOrStream)
-    ? mapSourceToResponseEvent(validatedExecutionArgs, resultOrStream)
-    : resultOrStream;
+    return isAsyncIterable(resultOrStream)
+      ? mapSourceToResponseEvent(validatedExecutionArgs, resultOrStream)
+      : resultOrStream;
+  });
 }
 
 /**
