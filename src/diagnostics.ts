@@ -235,26 +235,22 @@ export function maybeTraceMixed<T>(
     }
 
     channel.end.publish(ctx);
-    return result.then(
-      (value) => {
-        ctx.result = value;
-        channel.asyncStart.publish(ctx);
-        try {
+    channel.asyncStart.publish(ctx);
+
+    return result
+      .then(
+        (value) => {
+          ctx.result = value;
           return value;
-        } finally {
-          channel.asyncEnd.publish(ctx);
-        }
-      },
-      (err: unknown) => {
-        ctx.error = err;
-        channel.error.publish(ctx);
-        channel.asyncStart.publish(ctx);
-        try {
+        },
+        (err: unknown) => {
+          ctx.error = err;
+          channel.error.publish(ctx);
           throw err;
-        } finally {
-          channel.asyncEnd.publish(ctx);
-        }
-      },
-    );
+        },
+      )
+      .finally(() => {
+        channel.asyncEnd.publish(ctx);
+      });
   });
 }

@@ -122,27 +122,22 @@ export class FakeTracingChannel implements MinimalTracingChannel {
         throw err;
       }
       this.end.publish(ctx);
-      return promise.then(
-        (result) => {
-          (ctx as { result: unknown }).result = result;
-          this.asyncStart.publish(ctx);
-          try {
+      this.asyncStart.publish(ctx);
+      return promise
+        .then(
+          (result) => {
+            (ctx as { result: unknown }).result = result;
             return result;
-          } finally {
-            this.asyncEnd.publish(ctx);
-          }
-        },
-        (err: unknown) => {
-          (ctx as { error: unknown }).error = err;
-          this.error.publish(ctx);
-          this.asyncStart.publish(ctx);
-          try {
+          },
+          (err: unknown) => {
+            (ctx as { error: unknown }).error = err;
+            this.error.publish(ctx);
             throw err;
-          } finally {
-            this.asyncEnd.publish(ctx);
-          }
-        },
-      );
+          },
+        )
+        .finally(() => {
+          this.asyncEnd.publish(ctx);
+        });
     });
   }
 }
