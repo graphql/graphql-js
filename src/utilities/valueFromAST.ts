@@ -48,7 +48,11 @@ export function valueFromAST(
 
   if (valueNode.kind === Kind.VARIABLE) {
     const variableName = valueNode.name.value;
-    const variableValue = variables?.[variableName];
+    if (variables == null || !Object.hasOwn(variables, variableName)) {
+      // No valid return value.
+      return;
+    }
+    const variableValue = variables[variableName];
     if (variableValue === undefined) {
       // No valid return value.
       return;
@@ -172,6 +176,7 @@ function isMissingVariable(
 ): boolean {
   return (
     valueNode.kind === Kind.VARIABLE &&
-    variables?.[valueNode.name.value] === undefined
+    (variables?.[valueNode.name.value] === undefined ||
+      !Object.hasOwn(variables, valueNode.name.value))
   );
 }
