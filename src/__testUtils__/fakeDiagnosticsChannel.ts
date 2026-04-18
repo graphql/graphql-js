@@ -55,8 +55,7 @@ export class FakeChannel implements MinimalChannel {
 
 /**
  * Structurally-faithful `MinimalTracingChannel` implementation mirroring
- * Node's `TracingChannel.traceSync` / `tracePromise` lifecycle (start,
- * runStores, error, asyncStart, asyncEnd, end).
+ * Node's `TracingChannel.traceSync` / `tracePromise` lifecycle
  */
 export class FakeTracingChannel implements MinimalTracingChannel {
   start: FakeChannel = new FakeChannel();

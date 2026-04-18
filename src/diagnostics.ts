@@ -188,19 +188,6 @@ export function maybeTracePromise<T>(
  * Publish a mixed sync-or-promise operation through the named graphql tracing
  * channel.
  *
- * Mirrors Node's own `TracingChannel.tracePromise` for the async branch while
- * handling sync returns without the cost of a promise wrap. The entire
- * lifecycle runs inside `start.runStores`, which is what lets subscribers
- * that call `channel.start.bindStore(als, ...)` read that store in every
- * sub-channel handler: promise continuations attached inside a `runStores`
- * block inherit the AsyncLocalStorage context via async_hooks, so
- * `asyncStart` and `asyncEnd` fire with the same store active as `start`
- * and `end`.
- *
- * Subscribers can inspect `isPromise(ctx.result)` inside their `end` handler
- * to know whether `asyncEnd` will follow or the operation is complete. This
- * matches Node's convention.
- *
  * @internal
  */
 export function maybeTraceMixed<T>(
