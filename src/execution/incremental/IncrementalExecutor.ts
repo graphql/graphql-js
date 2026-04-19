@@ -1,6 +1,6 @@
 /* eslint-disable max-params */
 import { invariant } from '../../jsutils/invariant.js';
-import { isPromise } from '../../jsutils/isPromise.js';
+import { isPromise, isPromiseLike } from '../../jsutils/isPromise.js';
 import { memoize1 } from '../../jsutils/memoize1.js';
 import { memoize2 } from '../../jsutils/memoize2.js';
 import type { ObjMap } from '../../jsutils/ObjMap.js';
@@ -841,7 +841,7 @@ export class IncrementalExecutor<
     info: GraphQLResolveInfo,
     itemType: GraphQLOutputType,
   ): PromiseOrValue<StreamItemResult> {
-    if (isPromise(item)) {
+    if (isPromiseLike(item)) {
       return this.completePromisedValue(
         itemType,
         fieldDetailsList,

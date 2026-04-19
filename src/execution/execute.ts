@@ -1,7 +1,7 @@
 import { inspect } from '../jsutils/inspect.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
-import { isPromise } from '../jsutils/isPromise.js';
+import { isPromise, isPromiseLike } from '../jsutils/isPromise.js';
 import type { Maybe } from '../jsutils/Maybe.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
 import type { Path } from '../jsutils/Path.js';
@@ -445,7 +445,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
 
     // Otherwise, test each possible type.
     const possibleTypes = info.schema.getPossibleTypes(abstractType);
-    const promisedIsTypeOfResults: Array<Promise<boolean>> = [];
+    const promisedIsTypeOfResults: Array<PromiseLike<boolean>> = [];
 
     try {
       for (let i = 0; i < possibleTypes.length; i++) {
@@ -454,7 +454,7 @@ export const defaultTypeResolver: GraphQLTypeResolver<unknown, unknown> =
         if (type.isTypeOf) {
           const isTypeOfResult = type.isTypeOf(value, contextValue, info);
 
-          if (isPromise(isTypeOfResult)) {
+          if (isPromiseLike(isTypeOfResult)) {
             promisedIsTypeOfResults[i] = isTypeOfResult;
           } else if (isTypeOfResult) {
             if (promisedIsTypeOfResults.length) {
@@ -637,10 +637,11 @@ function executeSubscription(
     // used to represent an authenticated user, or request-specific caches.
     const result = resolveFn(rootValue, args, contextValue, info);
 
-    if (isPromise(result)) {
+    if (isPromiseLike(result)) {
+      const promisedResult = Promise.resolve(result);
       const promise = externalAbortSignal
-        ? cancellablePromise(result, externalAbortSignal)
-        : result;
+        ? cancellablePromise(promisedResult, externalAbortSignal)
+        : promisedResult;
       return promise
         .then(assertEventStream)
         .then(undefined, (error: unknown) => {

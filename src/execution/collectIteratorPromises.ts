@@ -1,4 +1,4 @@
-import { isPromise } from '../jsutils/isPromise.js';
+import { isPromiseLike } from '../jsutils/isPromise.js';
 
 /**
  * Drain a sync iterator after abrupt completion so later promise rejections
@@ -6,7 +6,7 @@ import { isPromise } from '../jsutils/isPromise.js';
  */
 export function collectIteratorPromises(
   iterator: Iterator<unknown>,
-): Array<Promise<unknown>> {
+): Array<unknown> {
   const promises = [];
   try {
     while (true) {
@@ -14,7 +14,7 @@ export function collectIteratorPromises(
       if (iteration.done) {
         return promises;
       }
-      if (isPromise(iteration.value)) {
+      if (isPromiseLike(iteration.value)) {
         promises.push(iteration.value);
       }
     }

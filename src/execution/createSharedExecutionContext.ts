@@ -1,5 +1,3 @@
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
-
 import type { GraphQLResolveInfoHelpers } from '../type/index.js';
 
 import { AsyncWorkTracker } from './AsyncWorkTracker.js';
@@ -10,7 +8,7 @@ export interface SharedExecutionContext {
   getAbortSignal: () => AbortSignal | undefined;
   getAsyncHelpers: () => GraphQLResolveInfoHelpers;
   promiseAll: <T>(
-    values: ReadonlyArray<PromiseOrValue<T>>,
+    values: ReadonlyArray<PromiseLike<T> | T>,
   ) => Promise<Array<T>>;
 }
 
@@ -21,7 +19,7 @@ export function createSharedExecutionContext(
   let resolveInfoHelpers: GraphQLResolveInfoHelpers | undefined;
 
   const promiseAll = <T>(
-    values: ReadonlyArray<PromiseOrValue<T>>,
+    values: ReadonlyArray<PromiseLike<T> | T>,
   ): Promise<Array<T>> => asyncWorkTracker.promiseAllTrackOnReject(values);
 
   const getAsyncHelpers = (): GraphQLResolveInfoHelpers =>

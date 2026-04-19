@@ -1,5 +1,4 @@
-import { isPromise } from '../jsutils/isPromise.js';
-import type { PromiseOrValue } from '../jsutils/PromiseOrValue.js';
+import { isPromiseLike } from '../jsutils/isPromise.js';
 
 /** @internal */
 export class AsyncWorkTracker {
@@ -9,9 +8,9 @@ export class AsyncWorkTracker {
     this.pendingAsyncWork = new Set<Promise<void>>();
   }
 
-  add(promise: Promise<unknown>): void {
+  add(promiseLike: PromiseLike<unknown>): void {
     const pendingAsyncWork = this.pendingAsyncWork;
-    const promiseToSettle = promise.then(
+    const promiseToSettle = Promise.resolve(promiseLike).then(
       () => {
         pendingAsyncWork.delete(promiseToSettle);
       },
@@ -22,9 +21,9 @@ export class AsyncWorkTracker {
     pendingAsyncWork.add(promiseToSettle);
   }
 
-  addValues(values: ReadonlyArray<PromiseOrValue<unknown>>): void {
+  addValues(values: ReadonlyArray<unknown>): void {
     for (const value of values) {
-      if (isPromise(value)) {
+      if (isPromiseLike(value)) {
         this.add(value);
       }
     }
@@ -40,7 +39,7 @@ export class AsyncWorkTracker {
   }
 
   promiseAllTrackOnReject<T>(
-    values: ReadonlyArray<PromiseOrValue<T>>,
+    values: ReadonlyArray<PromiseLike<T> | T>,
   ): Promise<Array<T>> {
     const promise = Promise.all(values);
     promise.then(undefined, () => {

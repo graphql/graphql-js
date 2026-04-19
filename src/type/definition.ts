@@ -1069,11 +1069,9 @@ export interface GraphQLResolveInfoHelpers {
    *   ]);
    */
   readonly promiseAll: <T>(
-    values: ReadonlyArray<PromiseOrValue<T>>,
+    values: ReadonlyArray<PromiseLike<T> | T>,
   ) => Promise<Array<T>>;
-  readonly track: (
-    maybePromises: ReadonlyArray<PromiseOrValue<unknown>>,
-  ) => void;
+  readonly track: (maybePromises: ReadonlyArray<unknown>) => void;
 }
 
 export interface GraphQLResolveInfo {

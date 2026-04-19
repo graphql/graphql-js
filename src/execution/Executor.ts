@@ -2,7 +2,7 @@ import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
-import { isPromise } from '../jsutils/isPromise.js';
+import { isPromise, isPromiseLike } from '../jsutils/isPromise.js';
 import { memoize2 } from '../jsutils/memoize2.js';
 import { memoize3 } from '../jsutils/memoize3.js';
 import type { ObjMap } from '../jsutils/ObjMap.js';
@@ -610,7 +610,7 @@ export class Executor<
       // used to represent an authenticated user, or request-specific caches.
       const result = resolveFn(source, args, contextValue, info);
 
-      if (isPromise(result)) {
+      if (isPromiseLike(result)) {
         return this.completePromisedValue(
           returnType,
           fieldDetailsList,
@@ -790,7 +790,7 @@ export class Executor<
     fieldDetailsList: FieldDetailsList,
     info: GraphQLResolveInfo,
     path: Path,
-    result: Promise<unknown>,
+    result: PromiseLike<unknown>,
     positionContext: TPositionContext | undefined,
   ): Promise<unknown> {
     try {
@@ -1052,7 +1052,7 @@ export class Executor<
     itemPath: Path,
     positionContext: TPositionContext | undefined,
   ): boolean {
-    if (isPromise(item)) {
+    if (isPromiseLike(item)) {
       completedResults.push(
         this.completePromisedListItemValue(
           item,
@@ -1130,7 +1130,7 @@ export class Executor<
   }
 
   async completePromisedListItemValue(
-    item: Promise<unknown>,
+    item: PromiseLike<unknown>,
     itemType: GraphQLOutputType,
     fieldDetailsList: FieldDetailsList,
     info: GraphQLResolveInfo,
@@ -1193,8 +1193,8 @@ export class Executor<
       returnType.resolveType ?? validatedExecutionArgs.typeResolver;
     const runtimeType = resolveTypeFn(result, contextValue, info, returnType);
 
-    if (isPromise(runtimeType)) {
-      return runtimeType.then((resolvedRuntimeType) => {
+    if (isPromiseLike(runtimeType)) {
+      return Promise.resolve(runtimeType).then((resolvedRuntimeType) => {
         if (this.aborted) {
           throw new Error('Aborted!');
         }
@@ -1303,8 +1303,8 @@ export class Executor<
         info,
       );
 
-      if (isPromise(isTypeOf)) {
-        return isTypeOf.then((resolvedIsTypeOf) => {
+      if (isPromiseLike(isTypeOf)) {
+        return Promise.resolve(isTypeOf).then((resolvedIsTypeOf) => {
           if (this.aborted) {
             throw new Error('Aborted!');
           }
