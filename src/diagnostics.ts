@@ -139,7 +139,7 @@ export function enableDiagnosticsChannel(dc: MinimalDiagnosticsChannel): void {
  *
  * @internal
  */
-function shouldTrace(
+export function shouldTrace(
   channel: MinimalTracingChannel | undefined,
 ): channel is MinimalTracingChannel {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
