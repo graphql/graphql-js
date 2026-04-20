@@ -166,25 +166,6 @@ export function maybeTraceSync<T>(
 }
 
 /**
- * Publish a promise-returning operation through the named graphql tracing
- * channel, short-circuiting to `fn()` when the channel isn't registered or
- * nothing is listening.
- *
- * @internal
- */
-export function maybeTracePromise<T>(
-  name: keyof GraphQLChannels,
-  ctxFactory: () => object,
-  fn: () => Promise<T>,
-): Promise<T> {
-  const channel = getChannels()?.[name];
-  if (!shouldTrace(channel)) {
-    return fn();
-  }
-  return channel.tracePromise(fn, ctxFactory());
-}
-
-/**
  * Publish a mixed sync-or-promise operation through the named graphql tracing
  * channel.
  *
