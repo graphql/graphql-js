@@ -49,13 +49,6 @@ export interface MinimalTracingChannel {
     thisArg?: unknown,
     ...args: Array<unknown>
   ) => T;
-
-  tracePromise: <T>(
-    fn: (...args: Array<unknown>) => Promise<T>,
-    ctx: object,
-    thisArg?: unknown,
-    ...args: Array<unknown>
-  ) => Promise<T>;
 }
 
 /**

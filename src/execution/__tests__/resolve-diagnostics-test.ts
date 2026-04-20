@@ -25,6 +25,7 @@ const schema = buildSchema(`
     sync: String
     async: String
     fail: String
+    asyncFail: String
     plain: String
     nested: Nested
   }
@@ -39,6 +40,7 @@ const rootValue = {
   fail: () => {
     throw new Error('boom');
   },
+  asyncFail: () => Promise.reject(new Error('async-boom')),
   // no `plain` resolver, default property-access is used.
   plain: 'plain-value',
   nested: { leaf: 'leaf-value' },
@@ -96,6 +98,29 @@ describe('resolve diagnostics channel', () => {
 
     const kinds = active.events.map((e) => e.kind);
     expect(kinds).to.deep.equal(['start', 'error', 'end']);
+  });
+
+  it('emits full async lifecycle with error when a resolver rejects', async () => {
+    active = collectEvents(resolveChannel);
+
+    await execute({
+      schema,
+      document: parse('{ asyncFail }'),
+      rootValue,
+    });
+
+    const kinds = active.events.map((e) => e.kind);
+    expect(kinds).to.deep.equal([
+      'start',
+      'end',
+      'asyncStart',
+      'error',
+      'asyncEnd',
+    ]);
+    const errorEvent = active.events.find((e) => e.kind === 'error');
+    expect((errorEvent?.ctx as { error?: Error }).error?.message).to.equal(
+      'async-boom',
+    );
   });
 
   it('reports isTrivialResolver based on field.resolve presence', () => {

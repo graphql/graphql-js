@@ -29,9 +29,6 @@ function fakeTracingChannel(name: string): MinimalTracingChannel {
     asyncEnd: noop,
     error: noop,
     traceSync: <T>(fn: (...args: Array<unknown>) => T): T => fn(),
-    tracePromise: <T>(
-      fn: (...args: Array<unknown>) => Promise<T>,
-    ): Promise<T> => fn(),
   };
   return channel;
 }
