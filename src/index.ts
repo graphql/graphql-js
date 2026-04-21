@@ -356,6 +356,7 @@ export type {
 
 // Execute GraphQL queries.
 export {
+  AbortedGraphQLExecutionError,
   execute,
   executeQueryOrMutationOrSubscriptionEvent,
   executeSubscriptionEvent,

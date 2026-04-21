@@ -44,6 +44,7 @@ import {
 } from '../type/definition.js';
 import type { GraphQLSchema } from '../type/schema.js';
 
+import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.js';
 import { withCancellation } from './cancellablePromise.js';
 import type {
   DeferUsage,
@@ -339,7 +340,7 @@ export class Executor<
         const { promise: cancellablePromise, abort: abortResultPromise } =
           withCancellation(promise.then((resolved) => this.finish(resolved)));
         this.abortResultPromise = () => {
-          abortResultPromise(this.abortReason);
+          abortResultPromise(this.createAbortedExecutionError(promise));
         };
         if (this.aborted) {
           this.abortResultPromise();
@@ -369,10 +370,16 @@ export class Executor<
 
   finish<T>(result: T): T {
     if (this.aborted) {
-      throw this.abortReason;
+      throw this.createAbortedExecutionError(result);
     }
     this.aborted = true;
     return result;
+  }
+
+  createAbortedExecutionError<T>(
+    result: PromiseOrValue<T>,
+  ): AbortedGraphQLExecutionError<T> {
+    return new AbortedGraphQLExecutionError(this.abortReason, result);
   }
 
   getFinishSharedExecution(): () => void {
@@ -649,10 +656,6 @@ export class Executor<
     fieldDetailsList: FieldDetailsList,
     path: Path,
   ): void {
-    if (this.aborted) {
-      throw new Error('Aborted!');
-    }
-
     const error = locatedError(
       rawError,
       toNodes(fieldDetailsList),

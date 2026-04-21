@@ -5,7 +5,7 @@ import { isPromise } from '../jsutils/isPromise.js';
 
 interface PromiseExpectation {
   toResolve: () => Promise<unknown>;
-  toRejectWith: (message: string) => Promise<void>;
+  toRejectWith: (message: string) => Promise<Error>;
 }
 
 export function expectPromise(maybePromise: unknown): PromiseExpectation {
@@ -18,7 +18,7 @@ export function expectPromise(maybePromise: unknown): PromiseExpectation {
     toResolve(): Promise<unknown> {
       return maybePromise;
     },
-    async toRejectWith(message: string): Promise<void> {
+    async toRejectWith(message: string): Promise<Error> {
       let caughtError: unknown;
       let resolved;
       let rejected = false;
@@ -38,6 +38,7 @@ export function expectPromise(maybePromise: unknown): PromiseExpectation {
 
       expect(caughtError).to.be.an.instanceOf(Error);
       expect(caughtError).to.have.property('message', message);
+      return caughtError as Error;
     },
   };
 }

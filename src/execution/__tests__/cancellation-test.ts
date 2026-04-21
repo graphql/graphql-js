@@ -1,11 +1,13 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
+import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.js';
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
+import { isPromise } from '../../jsutils/isPromise.js';
 import { promiseWithResolvers } from '../../jsutils/promiseWithResolvers.js';
 
 import { parse } from '../../language/parser.js';
@@ -21,7 +23,13 @@ import { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import { execute, subscribe } from '../execute.js';
+import { AbortedGraphQLExecutionError } from '../AbortedGraphQLExecutionError.js';
+import {
+  execute,
+  experimentalExecuteIncrementally,
+  subscribe,
+} from '../execute.js';
+import { legacyExecuteIncrementally } from '../legacyIncremental/legacyExecuteIncrementally.js';
 
 const schema = buildSchema(`
   type Todo {
@@ -39,6 +47,7 @@ const schema = buildSchema(`
     todo: Todo
     nonNullableTodo: Todo!
     blocker: String
+    aborter: String
   }
 
   type Mutation {
@@ -162,6 +171,207 @@ describe('Execute: Cancellation', () => {
     abortController.abort(new Error('Custom abort error'));
 
     await expectPromise(resultPromise).toRejectWith('Custom abort error');
+  });
+
+  it('rejects with the aborted execution error while initial result is pending', async () => {
+    const abortController = new AbortController();
+    const abortReason = new Error('Custom abort error');
+    const { promise: fieldValue, resolve: resolveFieldValue } =
+      promiseWithResolvers<string>();
+    const { promise: fieldStarted, resolve: resolveFieldStarted } =
+      // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+      promiseWithResolvers<void>();
+    const document = parse(`
+      query {
+        blocker
+      }
+    `);
+
+    const resultPromise = execute({
+      document,
+      schema,
+      abortSignal: abortController.signal,
+      rootValue: {
+        blocker: () => {
+          resolveFieldStarted(undefined);
+          return fieldValue;
+        },
+      },
+    });
+
+    await fieldStarted;
+    abortController.abort(abortReason);
+
+    const caughtError =
+      await expectPromise(resultPromise).toRejectWith('Custom abort error');
+
+    assert(caughtError instanceof AbortedGraphQLExecutionError);
+    expect(caughtError.cause).to.equal(abortReason);
+    assert(isPromise(caughtError.abortedResult));
+
+    let resultSettled = false;
+    const promisedResult = caughtError.abortedResult.then((result) => {
+      resultSettled = true;
+      return result;
+    });
+    await resolveOnNextTick();
+    expect(resultSettled).to.equal(false);
+
+    resolveFieldValue('ok');
+
+    const result = await promisedResult;
+    expectJSON(result).toDeepEqual({
+      data: { blocker: null },
+      errors: [
+        {
+          message: 'Aborted!',
+          path: ['blocker'],
+          locations: [{ line: 3, column: 9 }],
+        },
+      ],
+    });
+  });
+
+  it('throws the aborted execution error with a completed initial result in the atypical internal resolver-abort case', async () => {
+    const abortController = new AbortController();
+    const abortReason = new Error('Custom abort error');
+    const document = parse(`
+      query {
+        aborter
+      }
+    `);
+
+    const caughtError = await expectPromise(
+      Promise.resolve().then(() =>
+        execute({
+          document,
+          schema,
+          abortSignal: abortController.signal,
+          rootValue: {
+            aborter: () => {
+              abortController.abort(abortReason);
+              return 'done';
+            },
+          },
+        }),
+      ),
+    ).toRejectWith('Custom abort error');
+
+    assert(caughtError instanceof AbortedGraphQLExecutionError);
+    expect(caughtError.cause).to.equal(abortReason);
+    expect(isPromise(caughtError.abortedResult)).to.equal(false);
+    expectJSON(caughtError.abortedResult).toDeepEqual({
+      data: {
+        aborter: 'done',
+      },
+    });
+  });
+
+  it('throws the aborted execution error with an external abort while incremental initial result is still pending', async () => {
+    await expectEqualPromisesOrValues(
+      [experimentalExecuteIncrementally, legacyExecuteIncrementally].map(
+        async (executeIncrementally) => {
+          const abortController = new AbortController();
+          const abortReason = new Error('Custom abort error');
+
+          const { promise: delayedAborter, resolve: resolveAborter } =
+            promiseWithResolvers<string>();
+          const { promise: fieldStarted, resolve: resolveFieldStarted } =
+            // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+            promiseWithResolvers<void>();
+
+          delayedAborter.then(
+            () => {
+              abortController.abort(abortReason);
+            },
+            () => {
+              abortController.abort(abortReason);
+            },
+          );
+
+          const executionResult = Promise.resolve().then(() =>
+            executeIncrementally({
+              schema,
+              document: parse(`
+                query {
+                  todo {
+                    id
+                    ... @defer {
+                      items
+                    }
+                  }
+                  aborter
+                }
+              `),
+              abortSignal: abortController.signal,
+              rootValue: {
+                aborter() {
+                  resolveFieldStarted(undefined);
+                  return delayedAborter;
+                },
+                todo: {
+                  id: '1',
+                  items: ['a'],
+                },
+              },
+            }),
+          );
+
+          await fieldStarted;
+          resolveAborter('done');
+
+          const caughtError =
+            await expectPromise(executionResult).toRejectWith(
+              'Custom abort error',
+            );
+
+          assert(caughtError instanceof AbortedGraphQLExecutionError);
+          expect(caughtError.cause).to.equal(abortReason);
+          expect(isPromise(caughtError.abortedResult)).to.equal(true);
+
+          const abortedResult = await caughtError.abortedResult;
+          expect(abortedResult.initialResult).to.be.an('object');
+        },
+      ),
+    );
+  });
+
+  it('does not wrap aborts after the initial result', async () => {
+    const abortController = new AbortController();
+    const { promise: deferredItems } =
+      promiseWithResolvers<ReadonlyArray<string>>();
+
+    const result = await experimentalExecuteIncrementally({
+      schema,
+      document: parse(`
+        query {
+          todo {
+            id
+            ... @defer {
+              items
+            }
+          }
+        }
+      `),
+      enableEarlyExecution: true,
+      abortSignal: abortController.signal,
+      rootValue: {
+        todo: {
+          id: '1',
+          items: () => deferredItems,
+        },
+      },
+    });
+
+    assert('initialResult' in result);
+    const iterator = result.subsequentResults[Symbol.asyncIterator]();
+    abortController.abort();
+
+    const caughtError = await expectPromise(iterator.next()).toRejectWith(
+      'This operation was aborted',
+    );
+
+    expect(caughtError).not.to.be.an.instanceOf(AbortedGraphQLExecutionError);
   });
 
   it('should stop the execution when aborted during nested object field completion', async () => {

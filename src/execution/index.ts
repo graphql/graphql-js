@@ -37,6 +37,8 @@ export type {
   FormattedIncrementalResult,
 } from './incremental/IncrementalExecutor.js';
 
+export { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.js';
+
 export {
   getArgumentValues,
   getVariableValues,
