@@ -197,7 +197,6 @@ export class BranchingIncrementalExecutor extends IncrementalExecutor<LegacyExpe
       return super.buildResponse(data);
     }
 
-    this.finish();
     const errors = this.collectedErrors.errors;
     invariant(data !== null);
     const incrementalPublisher = new BranchingIncrementalPublisher();

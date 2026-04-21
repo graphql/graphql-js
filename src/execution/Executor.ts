@@ -234,7 +234,7 @@ export class Executor<
   abortReason: unknown;
   sharedExecutionContext: SharedExecutionContext;
   collectedErrors: CollectedErrors;
-  abortResultPromise: ((reason?: unknown) => void) | undefined;
+  abortResultPromise: (() => void) | undefined;
   resolverAbortController: AbortController | undefined;
   getAbortSignal: () => AbortSignal | undefined;
   getAsyncHelpers: () => GraphQLResolveInfoHelpers;
@@ -285,6 +285,7 @@ export class Executor<
       removeExternalAbortListener?.();
     };
 
+    let result: PromiseOrValue<ObjMap<unknown>>;
     try {
       const {
         schema,
@@ -314,7 +315,7 @@ export class Executor<
         hideSuggestions,
       );
 
-      const result = this.executeCollectedRootFields(
+      result = this.executeCollectedRootFields(
         operation.operation,
         rootType,
         rootValue,
@@ -336,26 +337,22 @@ export class Executor<
         );
         this.sharedExecutionContext.asyncWorkTracker.add(promise);
         const { promise: cancellablePromise, abort: abortResultPromise } =
-          withCancellation(promise);
-        this.abortResultPromise = abortResultPromise;
-        if (this.aborted) {
+          withCancellation(promise.then((resolved) => this.finish(resolved)));
+        this.abortResultPromise = () => {
           abortResultPromise(this.abortReason);
+        };
+        if (this.aborted) {
+          this.abortResultPromise();
         }
         return cancellablePromise;
       }
       maybeRemoveExternalAbortListener();
-      return this.buildResponse(result);
     } catch (error) {
       maybeRemoveExternalAbortListener();
       this.collectedErrors.add(ensureGraphQLError(error), undefined);
-      return this.buildResponse(null);
+      return this.finish(this.buildResponse(null));
     }
-  }
-
-  throwIfAborted(): void {
-    if (this.aborted) {
-      throw this.abortReason;
-    }
+    return this.finish(this.buildResponse(result));
   }
 
   abort(reason?: unknown): void {
@@ -366,13 +363,16 @@ export class Executor<
     if (reason !== undefined) {
       this.abortReason = reason;
     }
-    this.abortResultPromise?.(this.abortReason);
+    this.abortResultPromise?.();
     this.resolverAbortController?.abort(this.abortReason);
   }
 
-  finish(): void {
-    this.throwIfAborted();
+  finish<T>(result: T): T {
+    if (this.aborted) {
+      throw this.abortReason;
+    }
     this.aborted = true;
+    return result;
   }
 
   getFinishSharedExecution(): () => void {
@@ -403,10 +403,8 @@ export class Executor<
     data: ObjMap<unknown> | null,
   ): ExecutionResult | TAlternativeInitialResponse {
     this.getFinishSharedExecution()();
-    this.finish();
     const errors = this.collectedErrors.errors;
-    const result = errors.length ? { errors, data } : { data };
-    return result;
+    return errors.length ? { errors, data } : { data };
   }
 
   executeCollectedRootFields(

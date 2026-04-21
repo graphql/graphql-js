@@ -349,7 +349,6 @@ export class IncrementalExecutor<
       return super.buildResponse(data);
     }
 
-    this.finish();
     const errors = this.collectedErrors.errors;
     invariant(data !== null);
     const incrementalPublisher = new IncrementalPublisher();
@@ -573,15 +572,14 @@ export class IncrementalExecutor<
     path: Path | undefined,
     result: ObjMap<unknown>,
   ): ExecutionGroupResult {
-    this.finish();
     const data = result;
     const errors = this.collectedErrors.errors;
-    return {
+    return this.finish({
       value: errors.length
         ? { deliveryGroups, path: pathToArray(path), errors, data }
         : { deliveryGroups, path: pathToArray(path), data },
       work: this.getIncrementalWork(),
-    };
+    });
   }
 
   getIncrementalWork(): IncrementalWork {
@@ -912,13 +910,14 @@ export class IncrementalExecutor<
   }
 
   buildStreamItemResult(result: unknown): StreamItemResult {
-    this.finish();
     const item = result;
     const errors = this.collectedErrors.errors;
     const work = this.getIncrementalWork();
-    return errors.length > 0
-      ? { value: { item, errors }, work }
-      : { value: { item }, work };
+    return this.finish(
+      errors.length > 0
+        ? { value: { item, errors }, work }
+        : { value: { item }, work },
+    );
   }
 }
 
