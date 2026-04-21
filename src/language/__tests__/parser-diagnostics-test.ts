@@ -3,21 +3,20 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  FakeDc,
+  sharedFakeDc,
 } from '../../__testUtils__/fakeDiagnosticsChannel.js';
 
 import { enableDiagnosticsChannel } from '../../diagnostics.js';
 
 import { parse } from '../parser.js';
 
-const fakeDc = new FakeDc();
-const parseChannel = fakeDc.tracingChannel('graphql:parse');
+const parseChannel = sharedFakeDc.tracingChannel('graphql:parse');
 
 describe('parse diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
 
   beforeEach(() => {
-    enableDiagnosticsChannel(fakeDc);
+    enableDiagnosticsChannel(sharedFakeDc);
   });
 
   afterEach(() => {

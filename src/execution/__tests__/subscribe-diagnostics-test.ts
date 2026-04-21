@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  FakeDc,
+  sharedFakeDc,
 } from '../../__testUtils__/fakeDiagnosticsChannel.js';
 
 import { isPromise } from '../../jsutils/isPromise.js';
@@ -44,14 +44,13 @@ async function* twoTicks(): AsyncIterable<{ tick: string }> {
   yield { tick: 'two' };
 }
 
-const fakeDc = new FakeDc();
-const subscribeChannel = fakeDc.tracingChannel('graphql:subscribe');
+const subscribeChannel = sharedFakeDc.tracingChannel('graphql:subscribe');
 
 describe('subscribe diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
 
   beforeEach(() => {
-    enableDiagnosticsChannel(fakeDc);
+    enableDiagnosticsChannel(sharedFakeDc);
   });
 
   afterEach(() => {

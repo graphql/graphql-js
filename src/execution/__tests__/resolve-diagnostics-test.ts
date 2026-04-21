@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  FakeDc,
+  sharedFakeDc,
 } from '../../__testUtils__/fakeDiagnosticsChannel.js';
 
 import { isPromise } from '../../jsutils/isPromise.js';
@@ -46,14 +46,13 @@ const rootValue = {
   nested: { leaf: 'leaf-value' },
 };
 
-const fakeDc = new FakeDc();
-const resolveChannel = fakeDc.tracingChannel('graphql:resolve');
+const resolveChannel = sharedFakeDc.tracingChannel('graphql:resolve');
 
 describe('resolve diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
 
   beforeEach(() => {
-    enableDiagnosticsChannel(fakeDc);
+    enableDiagnosticsChannel(sharedFakeDc);
   });
 
   afterEach(() => {

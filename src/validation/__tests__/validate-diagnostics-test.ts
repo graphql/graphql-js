@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  FakeDc,
+  sharedFakeDc,
 } from '../../__testUtils__/fakeDiagnosticsChannel.js';
 
 import { parse } from '../../language/parser.js';
@@ -20,14 +20,13 @@ const schema = buildSchema(`
   }
 `);
 
-const fakeDc = new FakeDc();
-const validateChannel = fakeDc.tracingChannel('graphql:validate');
+const validateChannel = sharedFakeDc.tracingChannel('graphql:validate');
 
 describe('validate diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
 
   beforeEach(() => {
-    enableDiagnosticsChannel(fakeDc);
+    enableDiagnosticsChannel(sharedFakeDc);
   });
 
   afterEach(() => {

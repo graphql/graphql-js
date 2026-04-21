@@ -74,6 +74,7 @@ export interface GraphQLChannels {
 }
 
 let channels: GraphQLChannels | undefined;
+let registeredDc: MinimalDiagnosticsChannel | undefined;
 
 /**
  * Internal accessor used at emission sites. Returns `undefined` when no
@@ -98,20 +99,31 @@ export function getChannels(): GraphQLChannels | undefined {
  *   - `graphql:subscribe`
  *   - `graphql:resolve`
  *
- * Calling this repeatedly is safe: subsequent calls replace the stored
- * channel references, but since `tracingChannel(name)` is cached by name,
- * the channel identities remain stable across registrations from the same
- * underlying module.
+ * @throws {Error} If a different `diagnostics_channel` module is registered.
  *
  * @example
  * ```ts
  * import dc from 'node:diagnostics_channel';
  * import { enableDiagnosticsChannel } from 'graphql';
  *
- * enableDiagnosticsChannel(dc);
+ * try {
+ *   enableDiagnosticsChannel(dc);
+ * } catch {
+ *   // A diagnostic_channel module was already registered, safe to subscribe.
+ * }
  * ```
  */
 export function enableDiagnosticsChannel(dc: MinimalDiagnosticsChannel): void {
+  if (registeredDc !== undefined) {
+    if (registeredDc !== dc) {
+      throw new Error(
+        'enableDiagnosticsChannel was called with a different `diagnostics_channel` module than the one previously registered. graphql-js can only publish to one module at a time; ensure all APMs share the same `node:diagnostics_channel` import.',
+      );
+    }
+    return;
+  }
+
+  registeredDc = dc;
   channels = {
     execute: dc.tracingChannel('graphql:execute'),
     parse: dc.tracingChannel('graphql:parse'),

@@ -123,6 +123,14 @@ export class FakeDc implements MinimalDiagnosticsChannel {
   }
 }
 
+/**
+ * Shared fake `diagnostics_channel` instance used across all diagnostics
+ * test suites. `enableDiagnosticsChannel` now throws when called with a
+ * different `dc` module than the one previously registered, so all test
+ * files must register the same instance.
+ */
+export const sharedFakeDc: FakeDc = new FakeDc();
+
 export interface CollectedEvent {
   kind: 'start' | 'end' | 'asyncStart' | 'asyncEnd' | 'error';
   ctx: { [key: string]: unknown };
