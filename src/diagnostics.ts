@@ -99,6 +99,8 @@ export function getChannels(): GraphQLChannels | undefined {
  *   - `graphql:subscribe`
  *   - `graphql:resolve`
  *
+ * Re-registration is tolerated when the incoming `dc` exposes the same
+ * `tracingChannel` function as the previously registered one
  * @throws {Error} If a different `diagnostics_channel` module is registered.
  *
  * @example
@@ -115,7 +117,11 @@ export function getChannels(): GraphQLChannels | undefined {
  */
 export function enableDiagnosticsChannel(dc: MinimalDiagnosticsChannel): void {
   if (registeredDc !== undefined) {
-    if (registeredDc !== dc) {
+    // Compare `tracingChannel` function identity rather than module identity
+    // so consumers that pass an ESM Module Namespace object and consumers
+    // that pass the default export of the same underlying module are
+    // treated as equivalent
+    if (registeredDc.tracingChannel !== dc.tracingChannel) {
       throw new Error(
         'enableDiagnosticsChannel was called with a different `diagnostics_channel` module than the one previously registered. graphql-js can only publish to one module at a time; ensure all APMs share the same `node:diagnostics_channel` import.',
       );

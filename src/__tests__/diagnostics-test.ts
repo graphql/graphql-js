@@ -52,4 +52,20 @@ describe('diagnostics', () => {
       }),
     ).to.throw(/different `diagnostics_channel` module/);
   });
+
+  it('re-registration accepts a wrapper sharing the same tracingChannel fn', () => {
+    enableDiagnosticsChannel(sharedFakeDc);
+    const first = getChannels();
+    invariant(first !== undefined);
+
+    // Models an ESM Module Namespace object: distinct outer reference, but
+    // the `tracingChannel` property is strictly the same function as the
+    // default export's, so it routes to the same underlying channel cache.
+    const namespaceLike = { tracingChannel: sharedFakeDc.tracingChannel };
+    expect(namespaceLike).to.not.equal(sharedFakeDc);
+    expect(namespaceLike.tracingChannel).to.equal(sharedFakeDc.tracingChannel);
+
+    expect(() => enableDiagnosticsChannel(namespaceLike)).to.not.throw();
+    expect(getChannels()).to.equal(first);
+  });
 });
