@@ -2,7 +2,7 @@
   "include": [
     "src/**/*",
     "integrationTests/*",
-    "resources/*",
+    "resources/**/*",
     "benchmark/benchmark.ts"
   ],
   "compilerOptions": {
