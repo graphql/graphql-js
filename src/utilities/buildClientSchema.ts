@@ -24,9 +24,10 @@ import {
   GraphQLScalarType,
   GraphQLUnionType,
   isInputType,
+  isNamedType,
   isOutputType,
 } from '../type/definition';
-import { GraphQLDirective } from '../type/directives';
+import { GraphQLDirective, specifiedDirectives } from '../type/directives';
 import { introspectionTypes, TypeKind } from '../type/introspection';
 import { specifiedScalarTypes } from '../type/scalars';
 import type { GraphQLSchemaValidationOptions } from '../type/schema';
@@ -381,6 +382,66 @@ export function buildClientSchema(
     };
   }
 
+  function getSpecifiedDirectiveFromIntrospection(
+    directiveIntrospection: IntrospectionDirective,
+  ): GraphQLDirective | undefined {
+    const possibleSpecifiedDirective = specifiedDirectives.find(
+      (dir) => dir.name === directiveIntrospection.name,
+    );
+    if (possibleSpecifiedDirective == null) {
+      return;
+    }
+
+    for (const location of directiveIntrospection.locations) {
+      if (!possibleSpecifiedDirective.locations.includes(location)) {
+        return;
+      }
+    }
+
+    for (const arg of directiveIntrospection.args) {
+      const possibleArg = possibleSpecifiedDirective.args.find(
+        (a) => a.name === arg.name,
+      );
+      if (possibleArg == null) {
+        return;
+      }
+      const argType = getType(arg.type);
+      // Is same type
+      let currentType = argType;
+      let expectedType = possibleArg.type;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        if (currentType instanceof GraphQLNonNull) {
+          if (expectedType instanceof GraphQLNonNull) {
+            currentType = currentType.ofType;
+            expectedType = expectedType.ofType;
+            continue;
+          } else {
+            return;
+          }
+        }
+        if (currentType instanceof GraphQLList) {
+          if (expectedType instanceof GraphQLList) {
+            currentType = currentType.ofType;
+            expectedType = expectedType.ofType;
+            continue;
+          } else {
+            return;
+          }
+        }
+        if (!isNamedType(currentType) || !isNamedType(expectedType)) {
+          return;
+        }
+        if (currentType !== expectedType) {
+          return;
+        }
+        break;
+      }
+    }
+
+    return possibleSpecifiedDirective;
+  }
+
   function buildDirective(
     directiveIntrospection: IntrospectionDirective,
   ): GraphQLDirective {
@@ -395,6 +456,12 @@ export function buildClientSchema(
       throw new Error(
         `Introspection result missing directive locations: ${directiveIntrospectionStr}.`,
       );
+    }
+    const specifiedDirective = getSpecifiedDirectiveFromIntrospection(
+      directiveIntrospection,
+    );
+    if (specifiedDirective != null) {
+      return specifiedDirective;
     }
     return new GraphQLDirective({
       name: directiveIntrospection.name,

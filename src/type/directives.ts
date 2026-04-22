@@ -233,5 +233,7 @@ export const specifiedDirectives: ReadonlyArray<GraphQLDirective> =
   ]);
 
 export function isSpecifiedDirective(directive: GraphQLDirective): boolean {
-  return specifiedDirectives.some(({ name }) => name === directive.name);
+  return specifiedDirectives.some(
+    (specifiedDirective) => specifiedDirective === directive,
+  );
 }

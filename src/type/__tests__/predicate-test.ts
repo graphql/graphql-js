@@ -700,5 +700,13 @@ describe('Directive predicates', () => {
     it('returns false for custom directive', () => {
       expect(isSpecifiedDirective(Directive)).to.equal(false);
     });
+
+    it('returns false for the directives with the same name as specified directives', () => {
+      const FakeSkipDirective = new GraphQLDirective({
+        name: 'skip',
+        locations: [DirectiveLocation.QUERY],
+      });
+      expect(isSpecifiedDirective(FakeSkipDirective)).to.equal(false);
+    });
   });
 });
