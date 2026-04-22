@@ -26,12 +26,10 @@ export const versionInfo: Readonly<{
   patch: number;
   preReleaseTag: string | null;
 }> = Object.freeze({
-  major: ${major} as number,
-  minor: ${minor} as number,
-  patch: ${patch} as number,
-  preReleaseTag: ${
-    preReleaseTag ? `'${preReleaseTag}'` : 'null'
-  } as string | null,
+  major: ${major},
+  minor: ${minor},
+  patch: ${patch},
+  preReleaseTag: ${preReleaseTag ? `'${preReleaseTag}'` : 'null'},
 });
 `;
 

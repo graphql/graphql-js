@@ -15,8 +15,8 @@ export const versionInfo: Readonly<{
   patch: number;
   preReleaseTag: string | null;
 }> = Object.freeze({
-  major: 17 as number,
-  minor: 0 as number,
-  patch: 0 as number,
-  preReleaseTag: 'alpha.14' as string | null,
+  major: 17,
+  minor: 0,
+  patch: 0,
+  preReleaseTag: 'alpha.14',
 });
