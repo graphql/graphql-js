@@ -2,10 +2,17 @@ import assert from 'node:assert';
 import path from 'node:path';
 
 import { getArguments } from './args.js';
-import { maxTime, memorySamplesPerBenchmark, minSamples } from './config.js';
+import {
+  maxTime,
+  memorySamplesPerBenchmark,
+  minTimingSamplesPerBenchmark,
+} from './config.js';
 import { cyan, printBenchmarkResults, red } from './output.js';
 import { prepareBenchmarkProjects } from './projects.js';
-import { computeStats } from './statistics.js';
+import {
+  computeStats,
+  havePairwiseComparisonsStabilized,
+} from './statistics.js';
 import type { BenchmarkProject, BenchmarkResult } from './types.js';
 import {
   getBenchmarkName,
@@ -96,11 +103,18 @@ function collectTimingSamples(
     modulePath: path.join(project.projectPath, benchmark),
     samples: new Array<number>(),
   }));
+  const timingSamples = sampleGroups.map(({ samples }) => samples);
 
-  // If time permits, increase sample size to reduce the margin of error.
+  // Start new timing rounds only while the total budget remains. Within that
+  // budget, collect the minimum sample size before checking whether every
+  // pairwise revision comparison has stabilized.
   const start = Date.now();
   let round = 0;
-  while (round < minSamples || (Date.now() - start) / 1e3 < maxTime) {
+  while (
+    (Date.now() - start) / 1e3 < maxTime &&
+    (round < minTimingSamplesPerBenchmark ||
+      !havePairwiseComparisonsStabilized(timingSamples))
+  ) {
     for (const sampleGroup of shuffled(sampleGroups)) {
       try {
         const sample = sampleTimingModule(sampleGroup.modulePath);
@@ -120,7 +134,7 @@ function collectTimingSamples(
       '  completed ' + cyan(round) + ' timing rounds...\u000D',
     );
   }
-  return sampleGroups.map(({ samples }) => samples);
+  return timingSamples;
 }
 
 function shuffled<T>(array: ReadonlyArray<T>): Array<T> {

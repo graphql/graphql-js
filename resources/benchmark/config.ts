@@ -4,8 +4,12 @@ export const LOCAL = 'local';
 // The maximum total time in seconds spent collecting timing samples
 // across all revisions for one benchmark.
 export const maxTime = 60;
-// The minimum sample size required to perform statistical analysis.
-export const minSamples = 5;
+// The minimum sample size to collect for each revision before allowing
+// dynamic stopping. maxTime remains a hard upper bound.
+export const minTimingSamplesPerBenchmark = 10;
+// Stop timing once every pairwise revision comparison has a 95% confidence
+// interval this narrow, measured as relative percent error around the mean ratio.
+export const targetPairwiseComparisonIntervalHalfWidth = 2;
 
 export const memorySamplesPerBenchmark = 10;
 
