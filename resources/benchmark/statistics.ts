@@ -24,12 +24,7 @@ export function computeStats(
   assert(timingSamples.length > 1);
   assert(memorySamples.length > 0);
 
-  // Compute the sample mean (estimate of the population mean).
-  let mean = 0;
-  for (const clocked of timingSamples) {
-    mean += clocked;
-  }
-  mean /= timingSamples.length;
+  const { mean, marginOfError } = computeMeanStats(timingSamples);
 
   let meanMemUsed = 0;
   for (const memUsed of memorySamples) {
@@ -37,36 +32,36 @@ export function computeStats(
   }
   meanMemUsed /= memorySamples.length;
 
-  // Compute the sample variance (estimate of the population variance).
-  let variance = 0;
-  for (const clocked of timingSamples) {
-    variance += (clocked - mean) ** 2;
-  }
-  variance /= timingSamples.length - 1;
-
-  // Compute the sample standard deviation (estimate of the population standard deviation).
-  const sd = Math.sqrt(variance);
-
-  // Compute the standard error of the mean (a.k.a. the standard deviation of the sampling distribution of the sample mean).
-  const sem = sd / Math.sqrt(timingSamples.length);
-
-  // Compute the degrees of freedom.
-  const df = timingSamples.length - 1;
-
-  // Compute the critical value.
-  const critical = tTable[df] ?? tTableInfinity;
-
-  // Compute the margin of error.
-  const moe = sem * critical;
-
-  // The relative margin of error (expressed as a percentage of the mean).
-  const rme = (moe / mean) * 100 || 0;
-
   return {
     name,
     memPerOp: Math.floor(meanMemUsed),
     ops: NS_PER_SEC / mean,
-    deviation: rme,
+    deviation: (marginOfError / mean) * 100 || 0,
     numSamples: timingSamples.length,
   };
+}
+
+function computeMeanStats(samples: ReadonlyArray<number>): {
+  mean: number;
+  marginOfError: number;
+} {
+  assert(samples.length > 1);
+
+  let mean = 0;
+  for (const sample of samples) {
+    mean += sample;
+  }
+  mean /= samples.length;
+
+  let variance = 0;
+  for (const sample of samples) {
+    variance += (sample - mean) ** 2;
+  }
+  variance /= samples.length - 1;
+
+  const sd = Math.sqrt(variance);
+  const sem = sd / Math.sqrt(samples.length);
+  const df = samples.length - 1;
+  const critical = tTable[df] ?? tTableInfinity;
+  return { mean, marginOfError: sem * critical };
 }
