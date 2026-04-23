@@ -1,12 +1,17 @@
+import assert from 'node:assert';
 import path from 'node:path';
 
 import { getArguments } from './args.js';
+import { maxTime, memorySamplesPerBenchmark, minSamples } from './config.js';
 import { cyan, printBenchmarkResults, red } from './output.js';
 import { prepareBenchmarkProjects } from './projects.js';
-import { collectMemorySamples, collectTimingSamples } from './sampling.js';
 import { computeStats } from './statistics.js';
 import type { BenchmarkProject, BenchmarkResult } from './types.js';
-import { getBenchmarkName } from './workers.js';
+import {
+  getBenchmarkName,
+  sampleMemoryModule,
+  sampleTimingModule,
+} from './workers.js';
 
 export function runBenchmarks(): void {
   // Get the revisions and make things happen!
@@ -48,4 +53,32 @@ function runBenchmark(
 
   printBenchmarkResults(results);
   console.log('');
+}
+
+export function collectTimingSamples(modulePath: string): Array<number> {
+  const samples: Array<number> = [];
+
+  // If time permits, increase sample size to reduce the margin of error.
+  const start = Date.now();
+  while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
+    const sample = sampleTimingModule(modulePath);
+
+    assert(sample > 0);
+    samples.push(sample);
+  }
+  return samples;
+}
+
+export function collectMemorySamples(modulePath: string): Array<number> {
+  const samples: Array<number> = [];
+  for (
+    let sampleIndex = 0;
+    sampleIndex < memorySamplesPerBenchmark;
+    ++sampleIndex
+  ) {
+    const sample = sampleMemoryModule(modulePath);
+    assert(sample > 0);
+    samples.push(sample);
+  }
+  return samples;
 }
