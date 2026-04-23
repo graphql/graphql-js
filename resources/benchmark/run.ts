@@ -28,45 +28,103 @@ function runBenchmark(
   benchmark: string,
   benchmarkProjects: ReadonlyArray<BenchmarkProject>,
 ): void {
-  const results: Array<BenchmarkResult> = [];
+  const memorySamples: Array<Array<number>> = [];
   for (let i = 0; i < benchmarkProjects.length; ++i) {
-    const { revision, projectPath } = benchmarkProjects[i];
-    const modulePath = path.join(projectPath, benchmark);
+    const modulePath = path.join(benchmarkProjects[i].projectPath, benchmark);
 
     if (i === 0) {
       console.log('\u23F1   ' + getBenchmarkName(modulePath));
     }
 
     try {
-      const timingSamples = collectTimingSamples(modulePath);
-      const memorySamples = collectMemorySamples(modulePath);
-
-      results.push(computeStats(revision, timingSamples, memorySamples));
-      process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
+      memorySamples[i] = collectMemorySamples(modulePath);
+      process.stdout.write(
+        '  completed ' + cyan(i + 1) + ' memory tests...\u000D',
+      );
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      console.log('  ' + revision + ': ' + red(errorMessage));
+      console.log(
+        '  ' + benchmarkProjects[i].revision + ': ' + red(errorMessage),
+      );
+      return;
     }
   }
+  process.stdout.write('\n');
+
+  let timingSamples: Array<Array<number>>;
+  try {
+    timingSamples = collectTimingSamples(benchmark, benchmarkProjects);
+  } catch {
+    console.log('  ' + red('timing samples collection failed'));
+    return;
+  }
+
+  const results: Array<BenchmarkResult> = [];
+  for (let i = 0; i < benchmarkProjects.length; ++i) {
+    results.push(
+      computeStats(
+        benchmarkProjects[i].revision,
+        timingSamples[i],
+        memorySamples[i],
+      ),
+    );
+  }
+
   console.log('\n');
 
   printBenchmarkResults(results);
   console.log('');
 }
 
-export function collectTimingSamples(modulePath: string): Array<number> {
-  const samples: Array<number> = [];
+function collectTimingSamples(
+  benchmark: string,
+  benchmarkProjects: ReadonlyArray<BenchmarkProject>,
+): Array<Array<number>> {
+  const sampleGroups = benchmarkProjects.map((project) => ({
+    revision: project.revision,
+    modulePath: path.join(project.projectPath, benchmark),
+    samples: new Array<number>(),
+  }));
 
   // If time permits, increase sample size to reduce the margin of error.
   const start = Date.now();
-  while (samples.length < minSamples || (Date.now() - start) / 1e3 < maxTime) {
-    const sample = sampleTimingModule(modulePath);
+  let round = 0;
+  while (round < minSamples || (Date.now() - start) / 1e3 < maxTime) {
+    for (const sampleGroup of shuffled(sampleGroups)) {
+      try {
+        const sample = sampleTimingModule(sampleGroup.modulePath);
 
-    assert(sample > 0);
-    samples.push(sample);
+        assert(sample > 0);
+        sampleGroup.samples.push(sample);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.log('  ' + sampleGroup.revision + ': ' + red(errorMessage));
+        throw error;
+      }
+    }
+
+    ++round;
+    process.stdout.write(
+      '  completed ' + cyan(round) + ' timing rounds...\u000D',
+    );
   }
-  return samples;
+  return sampleGroups.map(({ samples }) => samples);
+}
+
+function shuffled<T>(array: ReadonlyArray<T>): Array<T> {
+  const shuffledArray = [...array];
+  // Fisher-Yates shuffle: walk backward and swap each slot with a random
+  // earlier slot, including itself, to produce an unbiased permutation.
+  for (let index = shuffledArray.length - 1; index > 0; --index) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffledArray[index], shuffledArray[randomIndex]] = [
+      shuffledArray[randomIndex],
+      shuffledArray[index],
+    ];
+  }
+  return shuffledArray;
 }
 
 export function collectMemorySamples(modulePath: string): Array<number> {
