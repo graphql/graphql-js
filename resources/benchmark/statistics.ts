@@ -21,9 +21,6 @@ export function computeStats(
   timingSamples: ReadonlyArray<number>,
   memorySamples: ReadonlyArray<number>,
 ): BenchmarkResult {
-  assert(timingSamples.length > 1);
-  assert(memorySamples.length > 0);
-
   const { mean, marginOfError } = computeMeanStats(timingSamples);
 
   let meanMemUsed = 0;

@@ -62,13 +62,23 @@ function runBenchmark(
 
   const results: Array<BenchmarkResult> = [];
   for (let i = 0; i < benchmarkProjects.length; ++i) {
-    results.push(
-      computeStats(
+    let result: BenchmarkResult;
+    try {
+      result = computeStats(
         benchmarkProjects[i].revision,
         timingSamples[i],
         memorySamples[i],
-      ),
-    );
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.log(
+        '  ' + benchmarkProjects[i].revision + ': ' + red(errorMessage),
+      );
+      return;
+    }
+
+    results.push(result);
   }
 
   console.log('\n');
