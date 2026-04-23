@@ -24,13 +24,18 @@ export function sampleMemoryModule(modulePath: string): number {
   return runWorkerFile(
     localRepoPath('resources/benchmark/worker-memory.js'),
     modulePath,
+    memoryBenchmarkNodeFlags,
   ) as number;
 }
 
-function runWorkerFile(workerPath: string, modulePath: string): unknown {
+function runWorkerFile(
+  workerPath: string,
+  modulePath: string,
+  nodeFlags: ReadonlyArray<string> = [],
+): unknown {
   const result = childProcess.spawnSync(
     process.execPath,
-    [...memoryBenchmarkNodeFlags, workerPath, modulePath],
+    [...nodeFlags, workerPath, modulePath],
     {
       stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
       env: { NODE_ENV: 'production' },
