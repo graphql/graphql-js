@@ -10,3 +10,13 @@ export interface BenchmarkResult {
   deviation: number;
   numSamples: number;
 }
+
+export interface PairedComparison {
+  baselineRevision: string;
+  revision: string;
+  speedupPercent: number;
+  ciLowPercent: number;
+  ciHighPercent: number;
+  ciHalfWidthPercent: number;
+  numPairs: number;
+}

@@ -7,10 +7,16 @@ import {
   memorySamplesPerBenchmark,
   minTimingSamplesPerBenchmark,
 } from './config.js';
-import { cyan, printBenchmarkResults, red } from './output.js';
+import {
+  cyan,
+  printBenchmarkResults,
+  printPairedComparisons,
+  red,
+} from './output.js';
 import { prepareBenchmarkProjects } from './projects.js';
 import {
   computeStats,
+  getPairedComparisons,
   havePairwiseComparisonsStabilized,
 } from './statistics.js';
 import type { BenchmarkProject, BenchmarkResult } from './types.js';
@@ -91,6 +97,12 @@ function runBenchmark(
   console.log('\n');
 
   printBenchmarkResults(results);
+  printPairedComparisons(
+    getPairedComparisons(
+      benchmarkProjects.map(({ revision }) => revision),
+      timingSamples,
+    ),
+  );
   console.log('');
 }
 

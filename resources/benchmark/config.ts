@@ -13,6 +13,9 @@ export const targetPairwiseComparisonIntervalHalfWidth = 2;
 
 export const memorySamplesPerBenchmark = 10;
 
+export const pairedGreenThreshold = 0.95;
+export const pairedYellowThreshold = 0.8;
+
 export const timingBenchmarkNodeFlags: ReadonlyArray<string> = ['--expose-gc'];
 
 export const memoryBenchmarkNodeFlags: ReadonlyArray<string> = [
