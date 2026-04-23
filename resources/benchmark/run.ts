@@ -3,9 +3,10 @@ import path from 'node:path';
 import { getArguments } from './args.js';
 import { cyan, printBenchmarkResults, red } from './output.js';
 import { prepareBenchmarkProjects } from './projects.js';
-import { collectSamples, sampleModule } from './sampling.js';
+import { collectSamples } from './sampling.js';
 import { computeStats } from './statistics.js';
 import type { BenchmarkProject, BenchmarkResult } from './types.js';
+import { getBenchmarkName } from './workers.js';
 
 export function runBenchmarks(): void {
   // Get the revisions and make things happen!
@@ -28,8 +29,7 @@ function runBenchmark(
     const modulePath = path.join(projectPath, benchmark);
 
     if (i === 0) {
-      const { name } = sampleModule(modulePath);
-      console.log('\u23F1   ' + name);
+      console.log('\u23F1   ' + getBenchmarkName(modulePath));
     }
 
     try {

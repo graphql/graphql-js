@@ -21,7 +21,6 @@ runWorker(async () => {
   const resourcesEnd = process.resourceUsage();
 
   writeResult({
-    name: benchmark.name,
     clocked: timeDiff / benchmark.count,
     memUsed: (process.memoryUsage().heapUsed - memBaseline) / benchmark.count,
     involuntaryContextSwitches:

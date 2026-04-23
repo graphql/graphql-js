@@ -5,8 +5,6 @@ import { yellow } from './output.js';
 import type { BenchmarkSample } from './types.js';
 import { sampleModule } from './workers.js';
 
-export { sampleModule };
-
 export function collectSamples(modulePath: string): Array<BenchmarkSample> {
   let numOfConsequentlyRejectedSamples = 0;
   const samples: Array<BenchmarkSample> = [];

@@ -4,7 +4,6 @@ export interface BenchmarkProject {
 }
 
 export interface BenchmarkSample {
-  name: string;
   clocked: number;
   memUsed: number;
   involuntaryContextSwitches: number;

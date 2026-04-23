@@ -6,6 +6,13 @@ import { localRepoPath } from '../utils.js';
 import { nodeFlags } from './config.js';
 import type { BenchmarkSample } from './types.js';
 
+export function getBenchmarkName(modulePath: string): string {
+  return runWorkerFile(
+    localRepoPath('resources/benchmark/worker-name.js'),
+    modulePath,
+  ) as string;
+}
+
 export function sampleModule(modulePath: string): BenchmarkSample {
   return runWorkerFile(
     localRepoPath('resources/benchmark/worker-timing.js'),
