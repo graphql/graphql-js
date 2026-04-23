@@ -5,3 +5,12 @@ export const LOCAL = 'local';
 export const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 export const minSamples = 5;
+
+export const nodeFlags: ReadonlyArray<string> = [
+  '--predictable',
+  '--no-concurrent-sweeping',
+  '--no-minor-gc-task',
+  '--min-semi-space-size=1280', // 1.25GB
+  '--max-semi-space-size=1280', // 1.25GB
+  '--trace-gc', // no gc calls should happen during benchmark, so trace them
+];
