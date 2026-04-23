@@ -6,16 +6,25 @@ import { git, localRepoPath, makeTmpDir, npm } from '../utils.js';
 import { LOCAL } from './config.js';
 import type { BenchmarkProject } from './types.js';
 
-// Build a benchmark-friendly environment for each revision.
+// Build a benchmark-friendly install for each revision.
 export function prepareBenchmarkProjects(
   revisionList: ReadonlyArray<string>,
 ): Array<BenchmarkProject> {
   const { tmpDirPath } = makeTmpDir('graphql-js-benchmark');
+  const { tmpDirPath: benchmarkCachePath } = makeTmpDir(
+    'graphql-js-benchmark-cache',
+    false,
+  );
 
   return revisionList.map((revision) => {
+    // Resolve refs like "main" to full SHAs so equivalent revisions reuse setup.
+    const hash = revision === LOCAL ? LOCAL : git().revParse(revision);
+    const projectPath = tmpDirPath('setup', hash);
+    if (fs.existsSync(projectPath)) {
+      return { revision, projectPath };
+    }
+
     console.log(`\u{1F373}  Preparing ${revision}...`);
-    const projectPath = tmpDirPath('setup', revision);
-    fs.rmSync(projectPath, { recursive: true, force: true });
     fs.mkdirSync(projectPath, { recursive: true });
 
     fs.cpSync(localRepoPath('benchmark'), path.join(projectPath, 'benchmark'), {
@@ -29,7 +38,7 @@ export function prepareBenchmarkProjects(
           private: true,
           type: 'module',
           dependencies: {
-            graphql: prepareNPMPackage(revision),
+            graphql: prepareNPMPackage(hash),
           },
         },
         null,
@@ -41,18 +50,15 @@ export function prepareBenchmarkProjects(
     return { revision, projectPath };
   });
 
-  function prepareNPMPackage(revision: string): string {
-    if (revision === LOCAL) {
+  function prepareNPMPackage(hash: string): string {
+    if (hash === LOCAL) {
       const repoDir = localRepoPath();
       const archivePath = tmpDirPath('graphql-local.tgz');
       fs.renameSync(buildNPMArchive(repoDir), archivePath);
       return archivePath;
     }
 
-    // Returns the complete git hash for a given git revision reference.
-    const hash = git().revParse(revision);
-
-    const archivePath = tmpDirPath(`graphql-${hash}.tgz`);
+    const archivePath = benchmarkCachePath(`graphql-${hash}.tgz`);
     if (fs.existsSync(archivePath)) {
       return archivePath;
     }

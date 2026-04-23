@@ -18,10 +18,15 @@ interface MakeTmpDirReturn {
   tmpDirPath: (...paths: ReadonlyArray<string>) => string;
 }
 
-export function makeTmpDir(name: string): MakeTmpDirReturn {
+export function makeTmpDir(
+  name: string,
+  clear: boolean = true,
+): MakeTmpDirReturn {
   const tmpDir = path.join(os.tmpdir(), name);
-  fs.rmSync(tmpDir, { recursive: true, force: true });
-  fs.mkdirSync(tmpDir);
+  if (clear) {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+  fs.mkdirSync(tmpDir, { recursive: true });
 
   return {
     tmpDirPath: (...paths) => path.join(tmpDir, ...paths),
