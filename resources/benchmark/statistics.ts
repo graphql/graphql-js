@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 
 import { NS_PER_SEC } from './config.js';
-import type { BenchmarkResult, BenchmarkTimingSample } from './types.js';
+import type { BenchmarkResult } from './types.js';
 
 // T-Distribution two-tailed critical values for 95% confidence.
 // See http://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.
@@ -18,7 +18,7 @@ const tTableInfinity = 1.96;
 // Computes stats on benchmark results.
 export function computeStats(
   name: string,
-  timingSamples: ReadonlyArray<BenchmarkTimingSample>,
+  timingSamples: ReadonlyArray<number>,
   memorySamples: ReadonlyArray<number>,
 ): BenchmarkResult {
   assert(timingSamples.length > 1);
@@ -26,7 +26,7 @@ export function computeStats(
 
   // Compute the sample mean (estimate of the population mean).
   let mean = 0;
-  for (const { clocked } of timingSamples) {
+  for (const clocked of timingSamples) {
     mean += clocked;
   }
   mean /= timingSamples.length;
@@ -39,7 +39,7 @@ export function computeStats(
 
   // Compute the sample variance (estimate of the population variance).
   let variance = 0;
-  for (const { clocked } of timingSamples) {
+  for (const clocked of timingSamples) {
     variance += (clocked - mean) ** 2;
   }
   variance /= timingSamples.length - 1;

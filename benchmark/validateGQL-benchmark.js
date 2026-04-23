@@ -10,8 +10,5 @@ const queryAST = parse(getIntrospectionQuery());
 
 export const benchmark = {
   name: 'Validate Introspection Query',
-  count: 50,
-  measure() {
-    validate(schema, queryAST);
-  },
+  measure: () => validate(schema, queryAST),
 };

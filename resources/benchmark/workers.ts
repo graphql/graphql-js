@@ -3,8 +3,10 @@ import childProcess from 'node:child_process';
 
 import { localRepoPath } from '../utils.js';
 
-import { memoryBenchmarkNodeFlags } from './config.js';
-import type { BenchmarkTimingSample } from './types.js';
+import {
+  memoryBenchmarkNodeFlags,
+  timingBenchmarkNodeFlags,
+} from './config.js';
 
 export function getBenchmarkName(modulePath: string): string {
   return runWorkerFile(
@@ -13,11 +15,12 @@ export function getBenchmarkName(modulePath: string): string {
   ) as string;
 }
 
-export function sampleTimingModule(modulePath: string): BenchmarkTimingSample {
+export function sampleTimingModule(modulePath: string): number {
   return runWorkerFile(
     localRepoPath('resources/benchmark/worker-timing.js'),
     modulePath,
-  ) as BenchmarkTimingSample;
+    timingBenchmarkNodeFlags,
+  ) as number;
 }
 
 export function sampleMemoryModule(modulePath: string): number {

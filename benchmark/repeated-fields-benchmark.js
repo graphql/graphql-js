@@ -6,8 +6,5 @@ const source = `{ ${'hello '.repeat(250)}}`;
 
 export const benchmark = {
   name: 'Many repeated fields',
-  count: 5,
-  measure() {
-    graphqlSync({ schema, source });
-  },
+  measure: () => graphqlSync({ schema, source }),
 };

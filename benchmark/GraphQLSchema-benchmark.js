@@ -7,9 +7,5 @@ const bigSchema = buildClientSchema(bigSchemaIntrospectionResult.data);
 
 export const benchmark = {
   name: 'Recreate a GraphQLSchema',
-  count: 40,
-  measure() {
-    // eslint-disable-next-line no-new
-    new GraphQLSchema(bigSchema.toConfig());
-  },
+  measure: () => new GraphQLSchema(bigSchema.toConfig()),
 };

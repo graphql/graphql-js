@@ -7,8 +7,5 @@ const sdlAST = parse(bigSchemaSDL);
 
 export const benchmark = {
   name: 'Validate SDL Document',
-  count: 10,
-  measure() {
-    validateSDL(sdlAST);
-  },
+  measure: () => validateSDL(sdlAST),
 };

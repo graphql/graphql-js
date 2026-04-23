@@ -16,8 +16,5 @@ const visitors = new Array(50).fill({
 
 export const benchmark = {
   name: 'Visit all AST nodes in parallel',
-  count: 10,
-  measure() {
-    visit(documentAST, visitInParallel(visitors));
-  },
+  measure: () => visit(documentAST, visitInParallel(visitors)),
 };

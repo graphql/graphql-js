@@ -13,12 +13,10 @@ async function* listField() {
 
 export const benchmark = {
   name: 'Execute Async Iterable List Field',
-  count: 10,
-  async measure() {
-    await execute({
+  measure: () =>
+    execute({
       schema,
       document,
       rootValue: { listField },
-    });
-  },
+    }),
 };

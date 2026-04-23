@@ -5,8 +5,5 @@ const introspectionQuery = getIntrospectionQuery();
 
 export const benchmark = {
   name: 'Parse introspection query',
-  count: 1000,
-  measure() {
-    parse(introspectionQuery);
-  },
+  measure: () => parse(introspectionQuery),
 };

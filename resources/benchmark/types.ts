@@ -3,11 +3,6 @@ export interface BenchmarkProject {
   projectPath: string;
 }
 
-export interface BenchmarkTimingSample {
-  clocked: number;
-  involuntaryContextSwitches: number;
-}
-
 export interface BenchmarkResult {
   name: string;
   memPerOp: number;

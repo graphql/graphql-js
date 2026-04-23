@@ -7,8 +7,5 @@ const document = parse(bigDocumentSDL);
 
 export const benchmark = {
   name: 'Print kitchen sink document',
-  count: 1000,
-  measure() {
-    print(document);
-  },
+  measure: () => print(document),
 };

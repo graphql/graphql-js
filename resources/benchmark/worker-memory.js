@@ -5,25 +5,28 @@ import {
   writeResult,
 } from './worker-utils.js';
 
+const memoryWarmupIterations = 10;
+const memorySampleIterations = 10;
+
 runWorker(async () => {
   const benchmark = await loadBenchmark(readModulePath());
-  await warmUp(benchmark);
+  writeResult(await measureMemoryUsage(benchmark));
+});
+
+async function measureMemoryUsage(benchmark) {
+  await runIterations(benchmark, memoryWarmupIterations);
 
   const memBaseline = process.memoryUsage().heapUsed;
-  for (let i = 0; i < benchmark.count; ++i) {
+  await runIterations(benchmark, memorySampleIterations);
+  return (
+    (process.memoryUsage().heapUsed - memBaseline) / memorySampleIterations
+  );
+}
+
+async function runIterations(benchmark, iterations) {
+  for (let i = 0; i < iterations; ++i) {
+    // Each benchmark decides whether the measurement must await async work.
     // eslint-disable-next-line no-await-in-loop
     await benchmark.measure();
   }
-  writeResult((process.memoryUsage().heapUsed - memBaseline) / benchmark.count);
-});
-
-async function warmUp(benchmark) {
-  // It looks like 7 is a magic number to reliably trigger JIT.
-  await benchmark.measure();
-  await benchmark.measure();
-  await benchmark.measure();
-  await benchmark.measure();
-  await benchmark.measure();
-  await benchmark.measure();
-  await benchmark.measure();
 }

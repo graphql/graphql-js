@@ -21,8 +21,5 @@ const queryAST = parse(`
 
 export const benchmark = {
   name: 'Validate Invalid Query',
-  count: 50,
-  measure() {
-    validate(schema, queryAST);
-  },
+  measure: () => validate(schema, queryAST),
 };

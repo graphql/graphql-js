@@ -7,8 +7,5 @@ const schemaAST = parse(bigSchemaSDL);
 
 export const benchmark = {
   name: 'Build Schema from AST',
-  count: 10,
-  measure() {
-    buildASTSchema(schemaAST, { assumeValid: true });
-  },
+  measure: () => buildASTSchema(schemaAST, { assumeValid: true }),
 };

@@ -16,8 +16,5 @@ const visitor = {
 
 export const benchmark = {
   name: 'Visit all AST nodes',
-  count: 10,
-  measure() {
-    visit(documentAST, visitor);
-  },
+  measure: () => visit(documentAST, visitor),
 };

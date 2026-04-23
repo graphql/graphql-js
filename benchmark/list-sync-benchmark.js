@@ -15,12 +15,10 @@ function listField() {
 
 export const benchmark = {
   name: 'Execute Synchronous List Field',
-  count: 10,
-  async measure() {
-    await execute({
+  measure: () =>
+    execute({
       schema,
       document,
       rootValue: { listField },
-    });
-  },
+    }),
 };
