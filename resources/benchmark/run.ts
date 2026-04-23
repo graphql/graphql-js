@@ -3,7 +3,7 @@ import path from 'node:path';
 import { getArguments } from './args.js';
 import { cyan, printBenchmarkResults, red } from './output.js';
 import { prepareBenchmarkProjects } from './projects.js';
-import { collectSamples } from './sampling.js';
+import { collectMemorySamples, collectTimingSamples } from './sampling.js';
 import { computeStats } from './statistics.js';
 import type { BenchmarkProject, BenchmarkResult } from './types.js';
 import { getBenchmarkName } from './workers.js';
@@ -33,9 +33,10 @@ function runBenchmark(
     }
 
     try {
-      const samples = collectSamples(modulePath);
+      const timingSamples = collectTimingSamples(modulePath);
+      const memorySamples = collectMemorySamples(modulePath);
 
-      results.push(computeStats(revision, samples));
+      results.push(computeStats(revision, timingSamples, memorySamples));
       process.stdout.write('  ' + cyan(i + 1) + ' tests completed.\u000D');
     } catch (error) {
       const errorMessage =

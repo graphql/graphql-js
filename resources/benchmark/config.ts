@@ -6,7 +6,9 @@ export const maxTime = 5;
 // The minimum sample size required to perform statistical analysis.
 export const minSamples = 5;
 
-export const nodeFlags: ReadonlyArray<string> = [
+export const memorySamplesPerBenchmark = 10;
+
+export const memoryBenchmarkNodeFlags: ReadonlyArray<string> = [
   '--predictable',
   '--no-concurrent-sweeping',
   '--no-minor-gc-task',

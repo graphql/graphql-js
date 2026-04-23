@@ -9,21 +9,12 @@ runWorker(async () => {
   const benchmark = await loadBenchmark(readModulePath());
   await warmUp(benchmark);
 
-  const resourcesStart = process.resourceUsage();
-  const startTime = process.hrtime.bigint();
+  const memBaseline = process.memoryUsage().heapUsed;
   for (let i = 0; i < benchmark.count; ++i) {
     // eslint-disable-next-line no-await-in-loop
     await benchmark.measure();
   }
-  const timeDiff = Number(process.hrtime.bigint() - startTime);
-  const resourcesEnd = process.resourceUsage();
-
-  writeResult({
-    clocked: timeDiff / benchmark.count,
-    involuntaryContextSwitches:
-      resourcesEnd.involuntaryContextSwitches -
-      resourcesStart.involuntaryContextSwitches,
-  });
+  writeResult((process.memoryUsage().heapUsed - memBaseline) / benchmark.count);
 });
 
 async function warmUp(benchmark) {

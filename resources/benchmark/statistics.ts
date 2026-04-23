@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 
 import { NS_PER_SEC } from './config.js';
-import type { BenchmarkResult, BenchmarkSample } from './types.js';
+import type { BenchmarkResult, BenchmarkTimingSample } from './types.js';
 
 // T-Distribution two-tailed critical values for 95% confidence.
 // See http://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.
@@ -18,35 +18,40 @@ const tTableInfinity = 1.96;
 // Computes stats on benchmark results.
 export function computeStats(
   name: string,
-  samples: ReadonlyArray<BenchmarkSample>,
+  timingSamples: ReadonlyArray<BenchmarkTimingSample>,
+  memorySamples: ReadonlyArray<number>,
 ): BenchmarkResult {
-  assert(samples.length > 1);
+  assert(timingSamples.length > 1);
+  assert(memorySamples.length > 0);
 
   // Compute the sample mean (estimate of the population mean).
   let mean = 0;
-  let meanMemUsed = 0;
-  for (const { clocked, memUsed } of samples) {
+  for (const { clocked } of timingSamples) {
     mean += clocked;
+  }
+  mean /= timingSamples.length;
+
+  let meanMemUsed = 0;
+  for (const memUsed of memorySamples) {
     meanMemUsed += memUsed;
   }
-  mean /= samples.length;
-  meanMemUsed /= samples.length;
+  meanMemUsed /= memorySamples.length;
 
   // Compute the sample variance (estimate of the population variance).
   let variance = 0;
-  for (const { clocked } of samples) {
+  for (const { clocked } of timingSamples) {
     variance += (clocked - mean) ** 2;
   }
-  variance /= samples.length - 1;
+  variance /= timingSamples.length - 1;
 
   // Compute the sample standard deviation (estimate of the population standard deviation).
   const sd = Math.sqrt(variance);
 
   // Compute the standard error of the mean (a.k.a. the standard deviation of the sampling distribution of the sample mean).
-  const sem = sd / Math.sqrt(samples.length);
+  const sem = sd / Math.sqrt(timingSamples.length);
 
   // Compute the degrees of freedom.
-  const df = samples.length - 1;
+  const df = timingSamples.length - 1;
 
   // Compute the critical value.
   const critical = tTable[df] ?? tTableInfinity;
@@ -62,6 +67,6 @@ export function computeStats(
     memPerOp: Math.floor(meanMemUsed),
     ops: NS_PER_SEC / mean,
     deviation: rme,
-    numSamples: samples.length,
+    numSamples: timingSamples.length,
   };
 }

@@ -3,8 +3,8 @@ import childProcess from 'node:child_process';
 
 import { localRepoPath } from '../utils.js';
 
-import { nodeFlags } from './config.js';
-import type { BenchmarkSample } from './types.js';
+import { memoryBenchmarkNodeFlags } from './config.js';
+import type { BenchmarkTimingSample } from './types.js';
 
 export function getBenchmarkName(modulePath: string): string {
   return runWorkerFile(
@@ -13,17 +13,24 @@ export function getBenchmarkName(modulePath: string): string {
   ) as string;
 }
 
-export function sampleModule(modulePath: string): BenchmarkSample {
+export function sampleTimingModule(modulePath: string): BenchmarkTimingSample {
   return runWorkerFile(
     localRepoPath('resources/benchmark/worker-timing.js'),
     modulePath,
-  ) as BenchmarkSample;
+  ) as BenchmarkTimingSample;
+}
+
+export function sampleMemoryModule(modulePath: string): number {
+  return runWorkerFile(
+    localRepoPath('resources/benchmark/worker-memory.js'),
+    modulePath,
+  ) as number;
 }
 
 function runWorkerFile(workerPath: string, modulePath: string): unknown {
   const result = childProcess.spawnSync(
     process.execPath,
-    [...nodeFlags, workerPath, modulePath],
+    [...memoryBenchmarkNodeFlags, workerPath, modulePath],
     {
       stdio: ['inherit', 'inherit', 'inherit', 'pipe'],
       env: { NODE_ENV: 'production' },
