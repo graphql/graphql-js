@@ -29,7 +29,11 @@ import { assertValidSchema } from '../type/index.ts';
 
 import { getOperationAST } from '../utilities/getOperationAST.ts';
 
-import { maybeTraceMixed } from '../diagnostics.ts';
+import {
+  executeChannel,
+  subscribeChannel,
+  traceMixed,
+} from '../diagnostics.ts';
 
 import { buildResolveInfo } from './buildResolveInfo.ts';
 import { cancellablePromise } from './cancellablePromise.ts';
@@ -63,26 +67,24 @@ export type RootSelectionSetExecutor = (
  * resolution of the operation AST to a lazy getter so the cost of walking
  * the document is only paid if a subscriber reads it.
  */
-function buildExecuteCtxFromArgs(args: ExecutionArgs): () => object {
-  return () => {
-    let operation: OperationDefinitionNode | null | undefined;
-    const resolveOperation = (): OperationDefinitionNode | null | undefined => {
-      if (operation === undefined) {
-        operation = getOperationAST(args.document, args.operationName);
-      }
-      return operation;
-    };
-    return {
-      document: args.document,
-      schema: args.schema,
-      variableValues: args.variableValues,
-      get operationName() {
-        return args.operationName ?? resolveOperation()?.name?.value;
-      },
-      get operationType() {
-        return resolveOperation()?.operation;
-      },
-    };
+function buildExecuteCtxFromArgs(args: ExecutionArgs): object {
+  let operation: OperationDefinitionNode | null | undefined;
+  const resolveOperation = (): OperationDefinitionNode | null | undefined => {
+    if (operation === undefined) {
+      operation = getOperationAST(args.document, args.operationName);
+    }
+    return operation;
+  };
+  return {
+    document: args.document,
+    schema: args.schema,
+    variableValues: args.variableValues,
+    get operationName() {
+      return args.operationName ?? resolveOperation()?.name?.value;
+    },
+    get operationType() {
+      return resolveOperation()?.operation;
+    },
   };
 }
 
@@ -95,14 +97,14 @@ function buildExecuteCtxFromArgs(args: ExecutionArgs): () => object {
  */
 function buildExecuteCtxFromValidatedArgs(
   args: ValidatedExecutionArgs,
-): () => object {
-  return () => ({
+): object {
+  return {
     operation: args.operation,
     schema: args.schema,
     variableValues: args.variableValues,
     operationName: args.operation.name?.value,
     operationType: args.operation.operation,
-  });
+  };
 }
 
 /**
@@ -151,23 +153,26 @@ function buildExecuteCtxFromValidatedArgs(
  * ```
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  return maybeTraceMixed('execute', buildExecuteCtxFromArgs(args), () => {
-    if (
-      args.schema.getDirective('defer') ||
-      args.schema.getDirective('stream')
-    ) {
-      throw new Error(UNEXPECTED_EXPERIMENTAL_DIRECTIVES);
-    }
+  if (!executeChannel?.hasSubscribers) {
+    return executeImpl(args);
+  }
+  return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
+    executeImpl(args),
+  );
+}
 
-    const validatedExecutionArgs = validateExecutionArgs(args);
+function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
+  if (args.schema.getDirective('defer') || args.schema.getDirective('stream')) {
+    throw new Error(UNEXPECTED_EXPERIMENTAL_DIRECTIVES);
+  }
 
-    // Return early errors if execution context failed.
-    if (!('schema' in validatedExecutionArgs)) {
-      return { errors: validatedExecutionArgs };
-    }
+  const validatedExecutionArgs = validateExecutionArgs(args);
+  // Return early errors if execution context failed.
+  if (!('schema' in validatedExecutionArgs)) {
+    return { errors: validatedExecutionArgs };
+  }
 
-    return executeRootSelectionSet(validatedExecutionArgs);
-  });
+  return executeRootSelectionSet(validatedExecutionArgs);
 }
 
 /**
@@ -208,36 +213,52 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
 export function experimentalExecuteIncrementally(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  return maybeTraceMixed('execute', buildExecuteCtxFromArgs(args), () => {
-    // If a valid execution context cannot be created due to incorrect
-    // arguments, a "Response" with only errors is returned.
-    const validatedExecutionArgs = validateExecutionArgs(args);
+  if (!executeChannel?.hasSubscribers) {
+    return experimentalExecuteIncrementallyImpl(args);
+  }
+  return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
+    experimentalExecuteIncrementallyImpl(args),
+  );
+}
 
-    // Return early errors if execution context failed.
-    if (!('schema' in validatedExecutionArgs)) {
-      return { errors: validatedExecutionArgs };
-    }
+function experimentalExecuteIncrementallyImpl(
+  args: ExecutionArgs,
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+  // If a valid execution context cannot be created due to incorrect
+  // arguments, a "Response" with only errors is returned.
+  const validatedExecutionArgs = validateExecutionArgs(args);
+  // Return early errors if execution context failed.
+  if (!('schema' in validatedExecutionArgs)) {
+    return { errors: validatedExecutionArgs };
+  }
 
-    return experimentalExecuteRootSelectionSet(validatedExecutionArgs);
-  });
+  return experimentalExecuteRootSelectionSet(validatedExecutionArgs);
 }
 
 /** @internal */
 export function executeIgnoringIncremental(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  return maybeTraceMixed('execute', buildExecuteCtxFromArgs(args), () => {
-    // If a valid execution context cannot be created due to incorrect
-    // arguments, a "Response" with only errors is returned.
-    const validatedExecutionArgs = validateExecutionArgs(args);
+  if (!executeChannel?.hasSubscribers) {
+    return executeIgnoringIncrementalImpl(args);
+  }
+  return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
+    executeIgnoringIncrementalImpl(args),
+  );
+}
 
-    // Return early errors if execution context failed.
-    if (!('schema' in validatedExecutionArgs)) {
-      return { errors: validatedExecutionArgs };
-    }
+function executeIgnoringIncrementalImpl(
+  args: ExecutionArgs,
+): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
+  // If a valid execution context cannot be created due to incorrect
+  // arguments, a "Response" with only errors is returned.
+  const validatedExecutionArgs = validateExecutionArgs(args);
+  // Return early errors if execution context failed.
+  if (!('schema' in validatedExecutionArgs)) {
+    return { errors: validatedExecutionArgs };
+  }
 
-    return executeRootSelectionSetIgnoringIncremental(validatedExecutionArgs);
-  });
+  return executeRootSelectionSetIgnoringIncremental(validatedExecutionArgs);
 }
 
 /**
@@ -396,8 +417,13 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
 export function executeSubscriptionEvent(
   validatedExecutionArgs: ValidatedSubscriptionArgs,
 ): PromiseOrValue<ExecutionResult> {
-  return maybeTraceMixed(
-    'execute',
+  if (!executeChannel?.hasSubscribers) {
+    return new ExecutorThrowingOnIncremental(
+      validatedExecutionArgs,
+    ).executeRootSelectionSet(false);
+  }
+  return traceMixed(
+    executeChannel,
     buildExecuteCtxFromValidatedArgs(validatedExecutionArgs),
     () =>
       new ExecutorThrowingOnIncremental(
@@ -524,18 +550,29 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  return maybeTraceMixed('subscribe', buildExecuteCtxFromArgs(args), () => {
-    // If a valid execution context cannot be created due to incorrect
-    // arguments, a "Response" with only errors is returned.
-    const validatedExecutionArgs = validateSubscriptionArgs(args);
+  if (!subscribeChannel?.hasSubscribers) {
+    return subscribeImpl(args);
+  }
+  return traceMixed(subscribeChannel, buildExecuteCtxFromArgs(args), () =>
+    subscribeImpl(args),
+  );
+}
 
-    // Return early errors if execution context failed.
-    if (!('schema' in validatedExecutionArgs)) {
-      return { errors: validatedExecutionArgs };
-    }
+function subscribeImpl(
+  args: ExecutionArgs,
+): PromiseOrValue<
+  AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
+> {
+  // If a valid execution context cannot be created due to incorrect
+  // arguments, a "Response" with only errors is returned.
+  const validatedExecutionArgs = validateSubscriptionArgs(args);
 
-    const resultOrStream = createSourceEventStream(validatedExecutionArgs);
+  // Return early errors if execution context failed.
+  if (!('schema' in validatedExecutionArgs)) {
+    return { errors: validatedExecutionArgs };
+  }
 
+<<<<<<< HEAD
     if (isPromise(resultOrStream)) {
       return resultOrStream.then((resolvedResultOrStream) =>
         isAsyncIterable(resolvedResultOrStream)
@@ -551,6 +588,17 @@ export function subscribe(
       ? mapSourceToResponseEvent(validatedExecutionArgs, resultOrStream)
       : resultOrStream;
   });
+=======
+  const resultOrStream = createSourceEventStream(validatedExecutionArgs);
+
+  if (isPromise(resultOrStream)) {
+    return resultOrStream.then((resolvedResultOrStream) =>
+      mapSourceToResponse(validatedExecutionArgs, resolvedResultOrStream),
+    );
+  }
+
+  return mapSourceToResponse(validatedExecutionArgs, resultOrStream);
+>>>>>>> 19112ed5 (ref(perf): inline no-subscriber fast path at tracing emission sites)
 }
 
 /**

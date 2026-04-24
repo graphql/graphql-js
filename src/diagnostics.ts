@@ -187,3 +187,13 @@ export function traceMixed<T>(
       });
   });
 }
+
+/**
+ * Check if a channel is defined and has subscribers.
+ */
+export function shouldTrace(
+  channel: MinimalTracingChannel | undefined,
+): channel is MinimalTracingChannel {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
+  return channel !== undefined && channel.hasSubscribers !== false;
+}

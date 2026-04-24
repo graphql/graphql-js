@@ -40,8 +40,7 @@ import {
 } from '../type/definition.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 
-import type { MinimalTracingChannel } from '../diagnostics.ts';
-import { getChannels, maybeTraceMixed, shouldTrace } from '../diagnostics.ts';
+import { resolveChannel, shouldTrace, traceMixed } from '../diagnostics.ts';
 
 import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
 import { buildResolveInfo } from './buildResolveInfo.ts';
@@ -219,12 +218,6 @@ export class Executor<
     values: ReadonlyArray<PromiseOrValue<T>>,
   ) => Promise<Array<T>>;
 
-  // Resolved once per Executor so the per-field gate in `executeField` is a
-  // single member read + null check, not a `getChannels()?.resolve` walk +
-  // `hasSubscribers` read on every resolution. Undefined when diagnostics
-  // are off or nobody is listening at construction time.
-  _resolveChannel: MinimalTracingChannel | undefined;
-
   constructor(
     validatedExecutionArgs: ValidatedExecutionArgs,
     sharedExecutionContext?: SharedExecutionContext,
@@ -233,11 +226,6 @@ export class Executor<
     this.aborted = false;
     this.abortReason = defaultAbortReason;
     this.collectedErrors = new CollectedErrors();
-
-    const resolveChannel = getChannels()?.resolve;
-    this._resolveChannel = shouldTrace(resolveChannel)
-      ? resolveChannel
-      : undefined;
 
     if (sharedExecutionContext === undefined) {
       this.resolverAbortController = new AbortController();
@@ -595,10 +583,10 @@ export class Executor<
       // The resolve function's optional third argument is a context value that
       // is provided to every resolve function within an execution. It is commonly
       // used to represent an authenticated user, or request-specific caches.
-      const result = this._resolveChannel
-        ? maybeTraceMixed(
-            'resolve',
-            () => buildResolveCtx(info, args, fieldDef.resolve === undefined),
+      const result = shouldTrace(resolveChannel)
+        ? traceMixed(
+            resolveChannel,
+            buildResolveCtx(info, args, fieldDef.resolve === undefined),
             () => resolveFn(source, args, contextValue, info),
           )
         : resolveFn(source, args, contextValue, info);
