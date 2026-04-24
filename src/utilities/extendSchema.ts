@@ -438,9 +438,11 @@ export function extendSchemaImpl(
   function extendDirective(directive: GraphQLDirective): GraphQLDirective {
     const config = directive.toConfig();
     const extensions = directiveExtensionsMap[config.name] ?? [];
-    const deprecationReason = extensions
-      .map((ext) => getDeprecationReason(ext))
-      .find((reason) => reason != null);
+    const deprecationReason =
+      config.deprecationReason ??
+      extensions
+        .map((ext) => getDeprecationReason(ext))
+        .find((reason) => reason != null);
 
     return new GraphQLDirective({
       ...config,

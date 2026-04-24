@@ -31,7 +31,7 @@ import { validateSchema } from '../../type/validate';
 
 import { graphqlSync } from '../../graphql';
 
-import { buildSchema } from '../buildASTSchema';
+import { buildASTSchema, buildSchema } from '../buildASTSchema';
 import { concatAST } from '../concatAST';
 import { extendSchema } from '../extendSchema';
 import { printSchema } from '../printSchema';
@@ -1327,6 +1327,34 @@ describe('extendSchema', () => {
       `,
         { experimentalDirectivesOnDirectiveDefinitions: true },
       );
+      const extendedSchema = extendSchema(schema, extendAST);
+
+      const isDeprecatedDirective = assertDirective(
+        extendedSchema.getDirective('isDeprecated'),
+      );
+      expect(isDeprecatedDirective).to.include({
+        deprecationReason: 'use another directive',
+      });
+    });
+
+    it('preserves deprecated directives when extending other types', () => {
+      const schema = buildASTSchema(
+        parse(
+          dedent`
+            type Query {
+              foo: String
+            }
+
+            directive @isDeprecated @deprecated(reason: "use another directive") on FIELD_DEFINITION
+          `,
+          { experimentalDirectivesOnDirectiveDefinitions: true },
+        ),
+      );
+      const extendAST = parse(dedent`
+        extend type Query {
+          bar: Int
+        }
+      `);
       const extendedSchema = extendSchema(schema, extendAST);
 
       const isDeprecatedDirective = assertDirective(
