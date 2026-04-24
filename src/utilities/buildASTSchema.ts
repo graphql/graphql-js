@@ -102,6 +102,8 @@ export function buildSchema(
   const document = parse(source, {
     noLocation: options?.noLocation,
     allowLegacyFragmentVariables: options?.allowLegacyFragmentVariables,
+    experimentalDirectivesOnDirectiveDefinitions:
+      options?.experimentalDirectivesOnDirectiveDefinitions,
   });
 
   return buildASTSchema(document, {
