@@ -1,23 +1,17 @@
 import { expect } from 'chai';
-import { afterEach, beforeEach, describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  sharedFakeDc,
-} from '../../__testUtils__/fakeDiagnosticsChannel.js';
-
-import { enableDiagnosticsChannel } from '../../diagnostics.js';
+  getTracingChannel,
+} from '../../__testUtils__/diagnosticsTestUtils.js';
 
 import { parse } from '../parser.js';
 
-const parseChannel = sharedFakeDc.tracingChannel('graphql:parse');
+const parseChannel = getTracingChannel('graphql:parse');
 
 describe('parse diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
-
-  beforeEach(() => {
-    enableDiagnosticsChannel(sharedFakeDc);
-  });
 
   afterEach(() => {
     active?.unsubscribe();

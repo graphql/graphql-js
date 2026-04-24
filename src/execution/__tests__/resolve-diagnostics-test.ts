@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { afterEach, beforeEach, describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  sharedFakeDc,
-} from '../../__testUtils__/fakeDiagnosticsChannel.js';
+  getTracingChannel,
+} from '../../__testUtils__/diagnosticsTestUtils.js';
 
 import { isPromise } from '../../jsutils/isPromise.js';
 
@@ -15,8 +15,6 @@ import { GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
-
-import { enableDiagnosticsChannel } from '../../diagnostics.js';
 
 import { execute } from '../execute.js';
 
@@ -46,14 +44,10 @@ const rootValue = {
   nested: { leaf: 'leaf-value' },
 };
 
-const resolveChannel = sharedFakeDc.tracingChannel('graphql:resolve');
+const resolveChannel = getTracingChannel('graphql:resolve');
 
 describe('resolve diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
-
-  beforeEach(() => {
-    enableDiagnosticsChannel(sharedFakeDc);
-  });
 
   afterEach(() => {
     active?.unsubscribe();

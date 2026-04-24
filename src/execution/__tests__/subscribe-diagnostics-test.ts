@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { afterEach, beforeEach, describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  sharedFakeDc,
-} from '../../__testUtils__/fakeDiagnosticsChannel.js';
+  getTracingChannel,
+} from '../../__testUtils__/diagnosticsTestUtils.js';
 
 import { isPromise } from '../../jsutils/isPromise.js';
 
@@ -13,8 +13,6 @@ import { parse } from '../../language/parser.js';
 import { GraphQLObjectType } from '../../type/definition.js';
 import { GraphQLString } from '../../type/scalars.js';
 import { GraphQLSchema } from '../../type/schema.js';
-
-import { enableDiagnosticsChannel } from '../../diagnostics.js';
 
 import { subscribe } from '../execute.js';
 
@@ -44,14 +42,10 @@ async function* twoTicks(): AsyncIterable<{ tick: string }> {
   yield { tick: 'two' };
 }
 
-const subscribeChannel = sharedFakeDc.tracingChannel('graphql:subscribe');
+const subscribeChannel = getTracingChannel('graphql:subscribe');
 
 describe('subscribe diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
-
-  beforeEach(() => {
-    enableDiagnosticsChannel(sharedFakeDc);
-  });
 
   afterEach(() => {
     active?.unsubscribe();

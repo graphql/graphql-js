@@ -1,16 +1,14 @@
 import { expect } from 'chai';
-import { afterEach, beforeEach, describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  sharedFakeDc,
-} from '../../__testUtils__/fakeDiagnosticsChannel.js';
+  getTracingChannel,
+} from '../../__testUtils__/diagnosticsTestUtils.js';
 
 import { parse } from '../../language/parser.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
-
-import { enableDiagnosticsChannel } from '../../diagnostics.js';
 
 import { validate } from '../validate.js';
 
@@ -20,14 +18,10 @@ const schema = buildSchema(`
   }
 `);
 
-const validateChannel = sharedFakeDc.tracingChannel('graphql:validate');
+const validateChannel = getTracingChannel('graphql:validate');
 
 describe('validate diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
-
-  beforeEach(() => {
-    enableDiagnosticsChannel(sharedFakeDc);
-  });
 
   afterEach(() => {
     active?.unsubscribe();

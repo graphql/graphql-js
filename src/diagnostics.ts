@@ -1,16 +1,14 @@
+/* eslint-disable no-undef, import/no-nodejs-modules, n/global-require, @typescript-eslint/no-require-imports */
 /**
  * TracingChannel integration.
  *
- * graphql-js exposes a set of named tracing channels that APM tools can
- * subscribe to in order to observe parse, validate, execute, subscribe, and
- * resolver lifecycle events. To preserve the isomorphic invariant of the
- * core (no runtime-specific imports in `src/`), graphql-js does not import
- * `node:diagnostics_channel` itself. Instead, APMs (or runtime-specific
- * adapters) hand in a module satisfying `MinimalDiagnosticsChannel` via
- * `enableDiagnosticsChannel`.
- *
- * Channel names are owned by graphql-js so multiple APMs converge on the
- * same `TracingChannel` instances and all subscribers coexist.
+ * graphql-js publishes lifecycle events on a set of named tracing channels
+ * that APM tools can subscribe to in order to observe parse, validate,
+ * execute, subscribe, and resolver behavior. At module load time graphql-js
+ * resolves `node:diagnostics_channel` itself so APMs do not need to interact
+ * with the graphql API to enable tracing. On runtimes that do not expose
+ * `node:diagnostics_channel` (e.g., browsers) the load silently no-ops and
+ * emission sites short-circuit.
  */
 
 import { isPromise } from './jsutils/isPromise.js';
@@ -18,6 +16,8 @@ import { isPromise } from './jsutils/isPromise.js';
 /**
  * Structural subset of `DiagnosticsChannel` sufficient for publishing and
  * subscriber gating. `node:diagnostics_channel`'s `Channel` satisfies this.
+ *
+ * @internal
  */
 export interface MinimalChannel {
   readonly hasSubscribers: boolean;
@@ -34,6 +34,8 @@ export interface MinimalChannel {
  * Structural subset of Node's `TracingChannel`. The `node:diagnostics_channel`
  * `TracingChannel` satisfies this by duck typing, so graphql-js does not need
  * a dependency on `@types/node` or on the runtime itself.
+ *
+ * @internal
  */
 export interface MinimalTracingChannel {
   readonly hasSubscribers: boolean;
@@ -51,11 +53,7 @@ export interface MinimalTracingChannel {
   ) => T;
 }
 
-/**
- * Structural subset of `node:diagnostics_channel` covering just what
- * graphql-js needs at registration time.
- */
-export interface MinimalDiagnosticsChannel {
+interface DiagnosticsChannelModule {
   tracingChannel: (name: string) => MinimalTracingChannel;
 }
 
@@ -73,13 +71,44 @@ export interface GraphQLChannels {
   subscribe: MinimalTracingChannel;
 }
 
-let channels: GraphQLChannels | undefined;
-let registeredDc: MinimalDiagnosticsChannel | undefined;
+function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
+  let dc: DiagnosticsChannelModule | undefined;
+  try {
+    if (
+      typeof process !== 'undefined' &&
+      typeof (process as { getBuiltinModule?: (id: string) => unknown })
+        .getBuiltinModule === 'function'
+    ) {
+      dc = (
+        process as { getBuiltinModule: (id: string) => DiagnosticsChannelModule }
+      ).getBuiltinModule('node:diagnostics_channel');
+    }
+    if (!dc && typeof require === 'function') {
+      // CJS fallback for runtimes that lack `process.getBuiltinModule`
+      // (e.g. Node 20.0 - 20.15). ESM builds skip this branch because
+      // `require` is undeclared there.
+      dc = require('node:diagnostics_channel') as DiagnosticsChannelModule;
+    }
+  } catch {
+    // diagnostics_channel not available on this runtime; tracing is a no-op.
+  }
+  return dc;
+}
+
+const dc = resolveDiagnosticsChannel();
+
+const channels: GraphQLChannels | undefined = dc && {
+  execute: dc.tracingChannel('graphql:execute'),
+  parse: dc.tracingChannel('graphql:parse'),
+  validate: dc.tracingChannel('graphql:validate'),
+  resolve: dc.tracingChannel('graphql:resolve'),
+  subscribe: dc.tracingChannel('graphql:subscribe'),
+};
 
 /**
- * Internal accessor used at emission sites. Returns `undefined` when no
- * `diagnostics_channel` module has been registered, allowing emission sites
- * to short-circuit on a single property access.
+ * Internal accessor used at emission sites. Returns `undefined` when
+ * `node:diagnostics_channel` isn't available on this runtime, allowing
+ * emission sites to short-circuit on a single property access.
  *
  * @internal
  */
@@ -88,65 +117,12 @@ export function getChannels(): GraphQLChannels | undefined {
 }
 
 /**
- * Register a `node:diagnostics_channel`-compatible module with graphql-js.
- *
- * After calling this, graphql-js will publish lifecycle events on the
- * following tracing channels whenever subscribers are present:
- *
- *   - `graphql:parse`
- *   - `graphql:validate`
- *   - `graphql:execute`
- *   - `graphql:subscribe`
- *   - `graphql:resolve`
- *
- * Re-registration is tolerated when the incoming `dc` exposes the same
- * `tracingChannel` function as the previously registered one
- * @throws {Error} If a different `diagnostics_channel` module is registered.
- *
- * @example
- * ```ts
- * import dc from 'node:diagnostics_channel';
- * import { enableDiagnosticsChannel } from 'graphql';
- *
- * try {
- *   enableDiagnosticsChannel(dc);
- * } catch {
- *   // A diagnostic_channel module was already registered, safe to subscribe.
- * }
- * ```
- */
-export function enableDiagnosticsChannel(dc: MinimalDiagnosticsChannel): void {
-  if (registeredDc !== undefined) {
-    // Compare `tracingChannel` function identity rather than module identity
-    // so consumers that pass an ESM Module Namespace object and consumers
-    // that pass the default export of the same underlying module are
-    // treated as equivalent
-    if (registeredDc.tracingChannel !== dc.tracingChannel) {
-      throw new Error(
-        'enableDiagnosticsChannel was called with a different `diagnostics_channel` module than the one previously registered. graphql-js can only publish to one module at a time; ensure all APMs share the same `node:diagnostics_channel` import.',
-      );
-    }
-    return;
-  }
-
-  registeredDc = dc;
-  channels = {
-    execute: dc.tracingChannel('graphql:execute'),
-    parse: dc.tracingChannel('graphql:parse'),
-    validate: dc.tracingChannel('graphql:validate'),
-    resolve: dc.tracingChannel('graphql:resolve'),
-    subscribe: dc.tracingChannel('graphql:subscribe'),
-  };
-}
-
-/**
  * Gate for emission sites. Returns `true` when the named channel exists and
  * publishing should proceed.
  *
  * Uses `!== false` rather than a truthy check so runtimes which do not
  * implement the aggregated `hasSubscribers` getter on `TracingChannel` still
- * publish. Notably Node 18 (nodejs/node#54470), where the aggregated getter
- * returns `undefined` while sub-channels behave correctly.
+ * publish.
  *
  * @internal
  */

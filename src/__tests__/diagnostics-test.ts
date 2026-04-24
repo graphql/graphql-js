@@ -1,71 +1,31 @@
+/* eslint-disable import/no-nodejs-modules */
+import dc from 'node:diagnostics_channel';
+
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { sharedFakeDc } from '../__testUtils__/fakeDiagnosticsChannel.js';
-
 import { invariant } from '../jsutils/invariant.js';
 
-import { enableDiagnosticsChannel, getChannels } from '../diagnostics.js';
+import { getChannels } from '../diagnostics.js';
 
 describe('diagnostics', () => {
-  it('exposes the five graphql tracing channels after registration', () => {
-    enableDiagnosticsChannel(sharedFakeDc);
-
+  it('auto-registers the five graphql tracing channels', () => {
     const channels = getChannels();
     invariant(channels !== undefined);
-    expect(channels.execute).to.equal(
-      sharedFakeDc.tracingChannel('graphql:execute'),
-    );
-    expect(channels.parse).to.equal(
-      sharedFakeDc.tracingChannel('graphql:parse'),
-    );
-    expect(channels.validate).to.equal(
-      sharedFakeDc.tracingChannel('graphql:validate'),
-    );
-    expect(channels.resolve).to.equal(
-      sharedFakeDc.tracingChannel('graphql:resolve'),
-    );
-    expect(channels.subscribe).to.equal(
-      sharedFakeDc.tracingChannel('graphql:subscribe'),
-    );
-  });
 
-  it('re-registration with the same module is a no-op', () => {
-    enableDiagnosticsChannel(sharedFakeDc);
-    const first = getChannels();
-    invariant(first !== undefined);
-
-    enableDiagnosticsChannel(sharedFakeDc);
-    const second = getChannels();
-
-    expect(second).to.equal(first);
-  });
-
-  it('re-registration with a different module throws', () => {
-    enableDiagnosticsChannel(sharedFakeDc);
-
-    expect(() =>
-      enableDiagnosticsChannel({
-        tracingChannel: () => {
-          throw new Error('should not be called');
-        },
-      }),
-    ).to.throw(/different `diagnostics_channel` module/);
-  });
-
-  it('re-registration accepts a wrapper sharing the same tracingChannel fn', () => {
-    enableDiagnosticsChannel(sharedFakeDc);
-    const first = getChannels();
-    invariant(first !== undefined);
-
-    // Models an ESM Module Namespace object: distinct outer reference, but
-    // the `tracingChannel` property is strictly the same function as the
-    // default export's, so it routes to the same underlying channel cache.
-    const namespaceLike = { tracingChannel: sharedFakeDc.tracingChannel };
-    expect(namespaceLike).to.not.equal(sharedFakeDc);
-    expect(namespaceLike.tracingChannel).to.equal(sharedFakeDc.tracingChannel);
-
-    expect(() => enableDiagnosticsChannel(namespaceLike)).to.not.throw();
-    expect(getChannels()).to.equal(first);
+    // Node's `tracingChannel(name)` returns a fresh wrapper per call but
+    // the underlying sub-channels are cached by name, so compare those.
+    const byName = {
+      execute: 'graphql:execute',
+      parse: 'graphql:parse',
+      validate: 'graphql:validate',
+      resolve: 'graphql:resolve',
+      subscribe: 'graphql:subscribe',
+    } as const;
+    for (const [key, name] of Object.entries(byName)) {
+      expect(channels[key as keyof typeof byName].start).to.equal(
+        dc.channel(`tracing:${name}:start`),
+      );
+    }
   });
 });

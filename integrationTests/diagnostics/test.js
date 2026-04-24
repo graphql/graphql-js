@@ -6,16 +6,7 @@ import assert from 'node:assert/strict';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import dc from 'node:diagnostics_channel';
 
-import {
-  buildSchema,
-  enableDiagnosticsChannel,
-  execute,
-  parse,
-  subscribe,
-  validate,
-} from 'graphql';
-
-enableDiagnosticsChannel(dc);
+import { buildSchema, execute, parse, subscribe, validate } from 'graphql';
 
 function runParseCases() {
   // graphql:parse - synchronous.

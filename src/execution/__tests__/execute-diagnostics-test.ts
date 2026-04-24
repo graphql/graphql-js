@@ -1,16 +1,14 @@
 import { expect } from 'chai';
-import { afterEach, beforeEach, describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
-  sharedFakeDc,
-} from '../../__testUtils__/fakeDiagnosticsChannel.js';
+  getTracingChannel,
+} from '../../__testUtils__/diagnosticsTestUtils.js';
 
 import { parse } from '../../language/parser.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
-
-import { enableDiagnosticsChannel } from '../../diagnostics.js';
 
 import type { ExecutionArgs } from '../execute.js';
 import {
@@ -32,14 +30,10 @@ const rootValue = {
   async: () => Promise.resolve('hello-async'),
 };
 
-const executeChannel = sharedFakeDc.tracingChannel('graphql:execute');
+const executeChannel = getTracingChannel('graphql:execute');
 
 describe('execute diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
-
-  beforeEach(() => {
-    enableDiagnosticsChannel(sharedFakeDc);
-  });
 
   afterEach(() => {
     active?.unsubscribe();
