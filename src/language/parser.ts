@@ -5,7 +5,7 @@ import type { Maybe } from '../jsutils/Maybe.ts';
 import type { GraphQLError } from '../error/GraphQLError.ts';
 import { syntaxError } from '../error/syntaxError.ts';
 
-import { maybeTraceSync } from '../diagnostics.js';
+import { parseChannel } from '../diagnostics.js';
 
 import type {
   ArgumentCoordinateNode,
@@ -187,19 +187,23 @@ export function parse(
   source: string | Source,
   options?: ParseOptions,
 ): DocumentNode {
-  return maybeTraceSync(
-    'parse',
-    () => ({ source }),
-    () => {
-      const parser = new Parser(source, options);
-      const document = parser.parseDocument();
-      Object.defineProperty(document, 'tokenCount', {
-        enumerable: false,
-        value: parser.tokenCount,
-      });
-      return document;
-    },
-  );
+  if (!parseChannel?.hasSubscribers) {
+    return parseImpl(source, options);
+  }
+  return parseChannel.traceSync(() => parseImpl(source, options), { source });
+}
+
+function parseImpl(
+  source: string | Source,
+  options: ParseOptions | undefined,
+): DocumentNode {
+  const parser = new Parser(source, options);
+  const document = parser.parseDocument();
+  Object.defineProperty(document, 'tokenCount', {
+    enumerable: false,
+    value: parser.tokenCount,
+  });
+  return document;
 }
 
 /**

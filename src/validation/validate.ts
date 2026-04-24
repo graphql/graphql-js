@@ -14,7 +14,7 @@ import { assertValidSchema } from '../type/validate.ts';
 
 import { TypeInfo, visitWithTypeInfo } from '../utilities/TypeInfo.ts';
 
-import { maybeTraceSync } from '../diagnostics.ts';
+import { validateChannel } from '../diagnostics.ts';
 
 import { specifiedRules, specifiedSDLRules } from './specifiedRules.ts';
 import type { SDLValidationRule, ValidationRule } from './ValidationContext.ts';
@@ -124,55 +124,66 @@ export function validate(
   rules: ReadonlyArray<ValidationRule> = specifiedRules,
   options?: ValidationOptions,
 ): ReadonlyArray<GraphQLError> {
-  return maybeTraceSync(
-    'validate',
-    () => ({ schema, document: documentAST }),
-    () => {
-      const maxErrors = options?.maxErrors ?? 100;
-      const hideSuggestions = options?.hideSuggestions ?? false;
-
-      // If the schema used for validation is invalid, throw an error.
-      assertValidSchema(schema);
-
-      const errors: Array<GraphQLError> = [];
-      const typeInfo = new TypeInfo(schema);
-      const context = new ValidationContext(
-        schema,
-        documentAST,
-        typeInfo,
-        (error) => {
-          if (errors.length >= maxErrors) {
-            throw tooManyValidationErrorsError;
-          }
-          errors.push(error);
-        },
-        hideSuggestions,
-      );
-
-      // This uses a specialized visitor which runs multiple visitors in
-      // parallel, while maintaining the visitor skip and break API.
-      const visitor = visitInParallel(rules.map((rule) => rule(context)));
-
-      // Visit the whole document with each instance of all provided rules.
-      try {
-        visit(
-          documentAST,
-          visitWithTypeInfo(typeInfo, visitor),
-          QueryDocumentKeysToValidate,
-        );
-      } catch (e: unknown) {
-        if (e === tooManyValidationErrorsError) {
-          errors.push(tooManyValidationErrorsError);
-        } else {
-          throw e;
-        }
-      }
-      return errors;
-    },
+  if (!validateChannel?.hasSubscribers) {
+    return validateImpl(schema, documentAST, rules, options);
+  }
+  return validateChannel.traceSync(
+    () => validateImpl(schema, documentAST, rules, options),
+    { schema, document: documentAST },
   );
 }
 
-/** @internal */
+function validateImpl(
+  schema: GraphQLSchema,
+  documentAST: DocumentNode,
+  rules: ReadonlyArray<ValidationRule>,
+  options: ValidationOptions | undefined,
+): ReadonlyArray<GraphQLError> {
+  const maxErrors = options?.maxErrors ?? 100;
+  const hideSuggestions = options?.hideSuggestions ?? false;
+
+  // If the schema used for validation is invalid, throw an error.
+  assertValidSchema(schema);
+
+  const errors: Array<GraphQLError> = [];
+  const typeInfo = new TypeInfo(schema);
+  const context = new ValidationContext(
+    schema,
+    documentAST,
+    typeInfo,
+    (error) => {
+      if (errors.length >= maxErrors) {
+        throw tooManyValidationErrorsError;
+      }
+      errors.push(error);
+    },
+    hideSuggestions,
+  );
+
+  // This uses a specialized visitor which runs multiple visitors in
+  // parallel, while maintaining the visitor skip and break API.
+  const visitor = visitInParallel(rules.map((rule) => rule(context)));
+
+  // Visit the whole document with each instance of all provided rules.
+  try {
+    visit(
+      documentAST,
+      visitWithTypeInfo(typeInfo, visitor),
+      QueryDocumentKeysToValidate,
+    );
+  } catch (e: unknown) {
+    if (e === tooManyValidationErrorsError) {
+      errors.push(tooManyValidationErrorsError);
+    } else {
+      throw e;
+    }
+  }
+  return errors;
+}
+
+/**
+ * @internal
+ */
 export function validateSDL(
   documentAST: DocumentNode,
   schemaToExtend?: Maybe<GraphQLSchema>,

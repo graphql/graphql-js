@@ -80,7 +80,9 @@ function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
         .getBuiltinModule === 'function'
     ) {
       dc = (
-        process as { getBuiltinModule: (id: string) => DiagnosticsChannelModule }
+        process as {
+          getBuiltinModule: (id: string) => DiagnosticsChannelModule;
+        }
       ).getBuiltinModule('node:diagnostics_channel');
     }
     if (!dc && typeof require === 'function') {
@@ -97,80 +99,56 @@ function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
 
 const dc = resolveDiagnosticsChannel();
 
-const channels: GraphQLChannels | undefined = dc && {
-  execute: dc.tracingChannel('graphql:execute'),
-  parse: dc.tracingChannel('graphql:parse'),
-  validate: dc.tracingChannel('graphql:validate'),
-  resolve: dc.tracingChannel('graphql:resolve'),
-  subscribe: dc.tracingChannel('graphql:subscribe'),
-};
-
 /**
- * Internal accessor used at emission sites. Returns `undefined` when
- * `node:diagnostics_channel` isn't available on this runtime, allowing
- * emission sites to short-circuit on a single property access.
+ * Per-channel handles, resolved once at module load. `undefined` when
+ * `node:diagnostics_channel` isn't available. Emission sites read these
+ * directly to keep the no-subscriber fast path to a single property access
+ * plus a `hasSubscribers` check (no function calls, no closures).
  *
  * @internal
  */
-export function getChannels(): GraphQLChannels | undefined {
-  return channels;
-}
+export const parseChannel: MinimalTracingChannel | undefined =
+  dc?.tracingChannel('graphql:parse');
+/** @internal */
+export const validateChannel: MinimalTracingChannel | undefined =
+  dc?.tracingChannel('graphql:validate');
+/** @internal */
+export const executeChannel: MinimalTracingChannel | undefined =
+  dc?.tracingChannel('graphql:execute');
+/** @internal */
+export const subscribeChannel: MinimalTracingChannel | undefined =
+  dc?.tracingChannel('graphql:subscribe');
+/** @internal */
+export const resolveChannel: MinimalTracingChannel | undefined =
+  dc?.tracingChannel('graphql:resolve');
 
 /**
- * Gate for emission sites. Returns `true` when the named channel exists and
- * publishing should proceed.
- *
- * Uses `!== false` rather than a truthy check so runtimes which do not
- * implement the aggregated `hasSubscribers` getter on `TracingChannel` still
- * publish.
+ * Publish a synchronous operation through `channel`. Caller has already
+ * verified that a subscriber is attached; this helper exists only so the
+ * traced path doesn't need to be duplicated at every emission site.
  *
  * @internal
  */
-export function shouldTrace(
-  channel: MinimalTracingChannel | undefined,
-): channel is MinimalTracingChannel {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
-  return channel !== undefined && channel.hasSubscribers !== false;
-}
-
-/**
- * Publish a synchronous operation through the named graphql tracing channel,
- * short-circuiting to `fn()` when the channel isn't registered or nothing is
- * listening.
- *
- * @internal
- */
-export function maybeTraceSync<T>(
-  name: keyof GraphQLChannels,
-  ctxFactory: () => object,
+export function traceSync<T>(
+  channel: MinimalTracingChannel,
+  ctx: object,
   fn: () => T,
 ): T {
-  const channel = getChannels()?.[name];
-  if (!shouldTrace(channel)) {
-    return fn();
-  }
-  return channel.traceSync(fn, ctxFactory());
+  return channel.traceSync(fn, ctx);
 }
 
 /**
- * Publish a mixed sync-or-promise operation through the named graphql tracing
- * channel.
+ * Publish a mixed sync-or-promise operation through `channel`. Caller has
+ * already verified that a subscriber is attached.
  *
  * @internal
  */
-export function maybeTraceMixed<T>(
-  name: keyof GraphQLChannels,
-  ctxFactory: () => object,
+export function traceMixed<T>(
+  channel: MinimalTracingChannel,
+  ctxInput: object,
   fn: () => T | Promise<T>,
 ): T | Promise<T> {
-  const channel = getChannels()?.[name];
-  if (!shouldTrace(channel)) {
-    return fn();
-  }
-  const ctx = ctxFactory() as {
-    error?: unknown;
-    result?: unknown;
-  };
+  const ctx = ctxInput as { error?: unknown; result?: unknown };
 
   return channel.start.runStores(ctx, () => {
     let result: T | Promise<T>;
