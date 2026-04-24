@@ -472,6 +472,13 @@ export function extendSchemaImpl(
   }
 
   function buildDirective(node: DirectiveDefinitionNode): GraphQLDirective {
+    const extensions = directiveExtensionsMap[node.name.value] ?? [];
+    const deprecationReason =
+      getDeprecationReason(node) ??
+      extensions
+        .map((ext) => getDeprecationReason(ext))
+        .find((reason) => reason != null);
+
     return new GraphQLDirective({
       name: node.name.value,
       description: node.description?.value,
@@ -479,8 +486,9 @@ export function extendSchemaImpl(
       locations: node.locations.map(({ value }) => value),
       isRepeatable: node.repeatable,
       args: buildArgumentMap(node.arguments),
-      deprecationReason: getDeprecationReason(node),
+      deprecationReason,
       astNode: node,
+      extensionASTNodes: extensions,
     });
   }
 

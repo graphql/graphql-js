@@ -1365,6 +1365,52 @@ describe('extendSchema', () => {
       });
     });
 
+    it('applies directive extensions defined in the same document', () => {
+      const schema = buildASTSchema(
+        parse(
+          dedent`
+            directive @onDirective on DIRECTIVE_DEFINITION
+            directive @someDirective on FIELD_DEFINITION
+
+            extend directive @someDirective @onDirective
+          `,
+          { experimentalDirectivesOnDirectiveDefinitions: true },
+        ),
+      );
+
+      const someDirective = assertDirective(
+        schema.getDirective('someDirective'),
+      );
+      expectExtensionASTNodes(someDirective).to.equal(
+        'extend directive @someDirective @onDirective',
+      );
+    });
+
+    it('applies multiple directive extensions defined in the same document', () => {
+      const schema = buildASTSchema(
+        parse(
+          dedent`
+            directive @onDirective on DIRECTIVE_DEFINITION
+            directive @otherDirective on DIRECTIVE_DEFINITION
+            directive @someDirective on FIELD_DEFINITION
+
+            extend directive @someDirective @onDirective
+            extend directive @someDirective @otherDirective
+          `,
+          { experimentalDirectivesOnDirectiveDefinitions: true },
+        ),
+      );
+
+      const someDirective = assertDirective(
+        schema.getDirective('someDirective'),
+      );
+      expectExtensionASTNodes(someDirective).to.equal(dedent`
+        extend directive @someDirective @onDirective
+
+        extend directive @someDirective @otherDirective
+      `);
+    });
+
     it('extend directive without adding new directives is an error', () => {
       expect(() =>
         parse('extend directive @isDeprecated', {
