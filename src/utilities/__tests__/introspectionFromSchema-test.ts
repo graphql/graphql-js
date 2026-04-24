@@ -3,7 +3,10 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent';
 
+import { DirectiveLocation } from '../../language/directiveLocation';
+
 import { GraphQLObjectType } from '../../type/definition';
+import { GraphQLDirective } from '../../type/directives';
 import { GraphQLString } from '../../type/scalars';
 import { GraphQLSchema } from '../../type/schema';
 
@@ -62,5 +65,37 @@ describe('introspectionFromSchema', () => {
         string: String
       }
     `);
+  });
+
+  it('includes deprecated directives', () => {
+    const schemaWithDeprecatedDirective = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          string: {
+            type: GraphQLString,
+          },
+        },
+      }),
+      directives: [
+        new GraphQLDirective({
+          name: 'deprecatedDirective',
+          locations: [DirectiveLocation.QUERY],
+          deprecationReason: 'Use another directive',
+        }),
+      ],
+    });
+    const introspection = introspectionFromSchema(
+      schemaWithDeprecatedDirective,
+    );
+    const deprecatedDirective = introspection.__schema.directives.find(
+      ({ name }) => name === 'deprecatedDirective',
+    );
+
+    expect(deprecatedDirective).to.deep.include({
+      name: 'deprecatedDirective',
+      isDeprecated: true,
+      deprecationReason: 'Use another directive',
+    });
   });
 });
