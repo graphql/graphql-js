@@ -178,6 +178,35 @@ describe('resolve diagnostics channel', () => {
     expect(endsSync.length).to.equal(4);
   });
 
+  it('emits per-field for serial mutation execution', async () => {
+    const mutationSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: { dummy: { type: GraphQLString } },
+      }),
+      mutation: new GraphQLObjectType({
+        name: 'Mutation',
+        fields: {
+          first: { type: GraphQLString, resolve: () => 'one' },
+          second: { type: GraphQLString, resolve: () => 'two' },
+        },
+      }),
+    });
+
+    active = collectEvents(resolveChannel);
+
+    await execute({
+      schema: mutationSchema,
+      document: parse('mutation M { first second }'),
+    });
+
+    const starts = active.events.filter((e) => e.kind === 'start');
+    expect(starts.map((e) => e.ctx.fieldName)).to.deep.equal([
+      'first',
+      'second',
+    ]);
+  });
+
   it('does nothing when no subscribers are attached', () => {
     const result = execute({
       schema,

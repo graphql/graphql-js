@@ -40,6 +40,7 @@ import {
 } from '../type/definition.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 
+import type { MinimalTracingChannel } from '../diagnostics.ts';
 import { resolveChannel, shouldTrace, traceMixed } from '../diagnostics.ts';
 
 import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
@@ -444,6 +445,9 @@ export class Executor<
     groupedFieldSet: GroupedFieldSet,
     positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
+    const tracingChannel = shouldTrace(resolveChannel)
+      ? resolveChannel
+      : undefined;
     return promiseReduce(
       groupedFieldSet,
       (results, [responseName, fieldDetailsList]) => {
@@ -457,6 +461,7 @@ export class Executor<
           fieldDetailsList,
           fieldPath,
           positionContext,
+          tracingChannel,
         );
         if (result === undefined) {
           return results;
@@ -489,6 +494,9 @@ export class Executor<
   ): PromiseOrValue<ObjMap<unknown>> {
     const results = Object.create(null);
     let containsPromise = false;
+    const tracingChannel = shouldTrace(resolveChannel)
+      ? resolveChannel
+      : undefined;
 
     try {
       for (const [responseName, fieldDetailsList] of groupedFieldSet) {
@@ -499,6 +507,7 @@ export class Executor<
           fieldDetailsList,
           fieldPath,
           positionContext,
+          tracingChannel,
         );
 
         if (result !== undefined) {
@@ -542,6 +551,7 @@ export class Executor<
     fieldDetailsList: FieldDetailsList,
     path: Path,
     positionContext: TPositionContext | undefined,
+    tracingChannel: MinimalTracingChannel | undefined,
   ): PromiseOrValue<unknown> {
     const validatedExecutionArgs = this.validatedExecutionArgs;
     const { schema, contextValue, variableValues, hideSuggestions } =
@@ -583,11 +593,15 @@ export class Executor<
       // The resolve function's optional third argument is a context value that
       // is provided to every resolve function within an execution. It is commonly
       // used to represent an authenticated user, or request-specific caches.
-      const result = shouldTrace(resolveChannel)
-        ? traceMixed(
-            resolveChannel,
-            buildResolveCtx(info, args, fieldDef.resolve === undefined),
-            () => resolveFn(source, args, contextValue, info),
+      const result = tracingChannel
+        ? invokeResolverWithTracing(
+            tracingChannel,
+            resolveFn,
+            source,
+            args,
+            contextValue,
+            info,
+            fieldDef.resolve === undefined,
           )
         : resolveFn(source, args, contextValue, info);
 
@@ -1409,4 +1423,25 @@ function buildResolveCtx(
       return cachedFieldPath;
     },
   };
+}
+
+/**
+ * Traced path for a single resolver call. Extracted as a module-scope function to increase likelihood of inlining.
+ *
+ * @internal
+ */
+function invokeResolverWithTracing(
+  tracingChannel: MinimalTracingChannel,
+  resolveFn: GraphQLFieldResolver<unknown, unknown>,
+  source: unknown,
+  args: { readonly [argument: string]: unknown },
+  contextValue: unknown,
+  info: GraphQLResolveInfo,
+  isTrivialResolver: boolean,
+): PromiseOrValue<unknown> {
+  return traceMixed(
+    tracingChannel,
+    buildResolveCtx(info, args, isTrivialResolver),
+    () => resolveFn(source, args, contextValue, info),
+  );
 }
