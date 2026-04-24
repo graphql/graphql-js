@@ -1812,6 +1812,7 @@ describe('Introspection', () => {
           }
           directive @isNotDeprecated on FIELD_DEFINITION
           directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
+          directive @isDeprecatedWithEmptyReason @deprecated(reason: "") on FIELD_DEFINITION
         `,
         { experimentalDirectivesOnDirectiveDefinitions: true },
       ),
@@ -1844,6 +1845,11 @@ describe('Introspection', () => {
               deprecationReason: 'No longer supported',
             },
             {
+              name: 'isDeprecatedWithEmptyReason',
+              isDeprecated: true,
+              deprecationReason: '',
+            },
+            {
               name: 'include',
               isDeprecated: false,
               deprecationReason: null,
@@ -1874,16 +1880,15 @@ describe('Introspection', () => {
     });
   });
 
-  it('supports multiple directives with arguments applied to a directive definition', () => {
+  it('respects the includeDeprecated parameter for directives', () => {
     const schema = buildASTSchema(
       parse(
         `
           type Query {
             someField: String
           }
-          directive @foo(arg: String) repeatable on DIRECTIVE_DEFINITION 
-          directive @bar(arg: String) on DIRECTIVE_DEFINITION
-          directive @baz(arg: String) @foo(arg: "foo1") @foo(arg: "foo2") @bar(arg: "bar") on FIELD_DEFINITION
+          directive @isNotDeprecated on FIELD_DEFINITION
+          directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
         `,
         { experimentalDirectivesOnDirectiveDefinitions: true },
       ),
@@ -1892,11 +1897,14 @@ describe('Introspection', () => {
     const source = `
       {
         __schema {
-          directives {
+          trueDirectives: directives(includeDeprecated: true) {
             name
-            isRepeatable
-            isDeprecated
-            deprecationReason
+          }
+          falseDirectives: directives(includeDeprecated: false) {
+            name
+          }
+          omittedDirectives: directives {
+            name
           }
         }
       }
@@ -1905,55 +1913,30 @@ describe('Introspection', () => {
     expect(graphqlSync({ schema, source })).to.deep.equal({
       data: {
         __schema: {
-          directives: [
-            {
-              name: 'foo',
-              isRepeatable: true,
-              isDeprecated: false,
-              deprecationReason: null,
-            },
-            {
-              name: 'bar',
-              isRepeatable: false,
-              isDeprecated: false,
-              deprecationReason: null,
-            },
-            {
-              name: 'baz',
-              isRepeatable: false,
-              isDeprecated: false,
-              deprecationReason: null,
-            },
-            {
-              name: 'include',
-              isRepeatable: false,
-              isDeprecated: false,
-              deprecationReason: null,
-            },
-            {
-              name: 'skip',
-              isRepeatable: false,
-              isDeprecated: false,
-              deprecationReason: null,
-            },
-            {
-              name: 'deprecated',
-              isRepeatable: false,
-              isDeprecated: false,
-              deprecationReason: null,
-            },
-            {
-              name: 'specifiedBy',
-              isRepeatable: false,
-              isDeprecated: false,
-              deprecationReason: null,
-            },
-            {
-              name: 'oneOf',
-              isRepeatable: false,
-              isDeprecated: false,
-              deprecationReason: null,
-            },
+          trueDirectives: [
+            { name: 'isNotDeprecated' },
+            { name: 'isDeprecated' },
+            { name: 'include' },
+            { name: 'skip' },
+            { name: 'deprecated' },
+            { name: 'specifiedBy' },
+            { name: 'oneOf' },
+          ],
+          falseDirectives: [
+            { name: 'isNotDeprecated' },
+            { name: 'include' },
+            { name: 'skip' },
+            { name: 'deprecated' },
+            { name: 'specifiedBy' },
+            { name: 'oneOf' },
+          ],
+          omittedDirectives: [
+            { name: 'isNotDeprecated' },
+            { name: 'include' },
+            { name: 'skip' },
+            { name: 'deprecated' },
+            { name: 'specifiedBy' },
+            { name: 'oneOf' },
           ],
         },
       },
