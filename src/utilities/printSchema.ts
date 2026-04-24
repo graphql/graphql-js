@@ -280,6 +280,7 @@ function printDirective(directive: GraphQLDirective): string {
     'directive @' +
     directive.name +
     printArgs(directive.args) +
+    printDeprecated(directive.deprecationReason) +
     (directive.isRepeatable ? ' repeatable' : '') +
     ' on ' +
     directive.locations.join(' | ')

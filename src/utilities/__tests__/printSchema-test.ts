@@ -612,6 +612,22 @@ describe('Type System Printer', () => {
     `);
   });
 
+  it('Prints deprecated directives', () => {
+    const schema = new GraphQLSchema({
+      directives: [
+        new GraphQLDirective({
+          name: 'deprecatedDirective',
+          locations: [DirectiveLocation.FIELD],
+          deprecationReason: 'Use another directive',
+        }),
+      ],
+    });
+
+    expect(printSchema(schema)).to.equal(dedent`
+      directive @deprecatedDirective @deprecated(reason: "Use another directive") on FIELD
+    `);
+  });
+
   it('Prints an empty description', () => {
     const schema = buildSingleFieldSchema({
       type: GraphQLString,
