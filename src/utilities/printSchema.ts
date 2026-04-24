@@ -276,6 +276,7 @@ export function printDirective(directive: GraphQLDirective): string {
     printDescription(directive) +
     `directive ${directive}` +
     printArgs(directive.args) +
+    printDeprecated(directive.deprecationReason) +
     (directive.isRepeatable ? ' repeatable' : '') +
     ' on ' +
     directive.locations.join(' | ')

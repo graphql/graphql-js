@@ -30,7 +30,7 @@ import { validateSchema } from '../../type/validate.js';
 
 import { graphqlSync } from '../../graphql.js';
 
-import { buildSchema } from '../buildASTSchema.js';
+import { buildASTSchema, buildSchema } from '../buildASTSchema.js';
 import { concatAST } from '../concatAST.js';
 import { extendSchema } from '../extendSchema.js';
 import { printSchema } from '../printSchema.js';
@@ -1341,6 +1341,106 @@ describe('extendSchema', () => {
 
         extend schema @foo
       `);
+    });
+
+    it('extend directive to make it deprecated', () => {
+      const schema = buildSchema('directive @isDeprecated on FIELD_DEFINITION');
+      const extendAST = parse(
+        `
+        extend directive @isDeprecated @deprecated(reason: "use another directive")
+      `,
+        { experimentalDirectivesOnDirectiveDefinitions: true },
+      );
+      const extendedSchema = extendSchema(schema, extendAST);
+
+      const isDeprecatedDirective = assertDirective(
+        extendedSchema.getDirective('isDeprecated'),
+      );
+      expect(isDeprecatedDirective).to.include({
+        deprecationReason: 'use another directive',
+      });
+    });
+
+    it('preserves deprecated directives when extending other types', () => {
+      const schema = buildASTSchema(
+        parse(
+          dedent`
+            type Query {
+              foo: String
+            }
+
+            directive @isDeprecated @deprecated(reason: "use another directive") on FIELD_DEFINITION
+          `,
+          { experimentalDirectivesOnDirectiveDefinitions: true },
+        ),
+      );
+      const extendAST = parse(dedent`
+        extend type Query {
+          bar: Int
+        }
+      `);
+      const extendedSchema = extendSchema(schema, extendAST);
+
+      const isDeprecatedDirective = assertDirective(
+        extendedSchema.getDirective('isDeprecated'),
+      );
+      expect(isDeprecatedDirective).to.include({
+        deprecationReason: 'use another directive',
+      });
+    });
+
+    it('applies directive extensions defined in the same document', () => {
+      const schema = buildASTSchema(
+        parse(
+          dedent`
+            directive @onDirective on DIRECTIVE_DEFINITION
+            directive @someDirective on FIELD_DEFINITION
+
+            extend directive @someDirective @onDirective
+          `,
+          { experimentalDirectivesOnDirectiveDefinitions: true },
+        ),
+      );
+
+      const someDirective = assertDirective(
+        schema.getDirective('someDirective'),
+      );
+      expectExtensionASTNodes(someDirective).to.equal(
+        'extend directive @someDirective @onDirective',
+      );
+    });
+
+    it('applies multiple directive extensions defined in the same document', () => {
+      const schema = buildASTSchema(
+        parse(
+          dedent`
+            directive @onDirective on DIRECTIVE_DEFINITION
+            directive @otherDirective on DIRECTIVE_DEFINITION
+            directive @someDirective on FIELD_DEFINITION
+
+            extend directive @someDirective @onDirective
+            extend directive @someDirective @otherDirective
+          `,
+          { experimentalDirectivesOnDirectiveDefinitions: true },
+        ),
+      );
+
+      const someDirective = assertDirective(
+        schema.getDirective('someDirective'),
+      );
+      expectExtensionASTNodes(someDirective).to.equal(dedent`
+        extend directive @someDirective @onDirective
+
+        extend directive @someDirective @otherDirective
+      `);
+    });
+
+    it('extend directive without adding new directives is an error', () => {
+      expect(() =>
+        parse('extend directive @isDeprecated', {
+          experimentalDirectivesOnDirectiveDefinitions: true,
+        }),
+      ).to.throw('Syntax Error: Unexpected <EOF>.');
     });
   });
 });

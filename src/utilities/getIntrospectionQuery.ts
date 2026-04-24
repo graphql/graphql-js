@@ -36,6 +36,12 @@ export interface IntrospectionOptions {
   inputValueDeprecation?: boolean;
 
   /**
+   * Whether target GraphQL server supports deprecation of directives.
+   * Default: false
+   */
+  experimentalDirectiveDeprecation?: boolean;
+
+  /**
    * Whether target GraphQL server supports `@oneOf` input objects.
    * Default: false
    */
@@ -53,6 +59,7 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
     directiveIsRepeatable: false,
     schemaDescription: false,
     inputValueDeprecation: false,
+    experimentalDirectiveDeprecation: false,
     oneOf: false,
     ...options,
   };
@@ -71,6 +78,9 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
   function inputDeprecation(str: string) {
     return optionsWithDefault.inputValueDeprecation ? str : '';
   }
+  function experimentalDirectiveDeprecation(str: string) {
+    return optionsWithDefault.experimentalDirectiveDeprecation ? str : '';
+  }
   const oneOf = optionsWithDefault.oneOf ? 'isOneOf' : '';
 
   return `
@@ -83,10 +93,14 @@ export function getIntrospectionQuery(options?: IntrospectionOptions): string {
         types {
           ...FullType
         }
-        directives {
+        directives${experimentalDirectiveDeprecation(
+          '(includeDeprecated: true)',
+        )} {
           name
           ${descriptions}
           ${directiveIsRepeatable}
+          ${experimentalDirectiveDeprecation('isDeprecated')}
+          ${experimentalDirectiveDeprecation('deprecationReason')}
           locations
           args${inputDeprecation('(includeDeprecated: true)')} {
             ...InputValue
@@ -346,6 +360,8 @@ export interface IntrospectionDirective {
   readonly name: string;
   readonly description?: Maybe<string>;
   readonly isRepeatable?: boolean;
+  readonly isDeprecated?: boolean;
+  readonly deprecationReason?: Maybe<string>;
   readonly locations: ReadonlyArray<DirectiveLocation>;
   readonly args: ReadonlyArray<IntrospectionInputValue>;
 }

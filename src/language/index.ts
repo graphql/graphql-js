@@ -99,6 +99,7 @@ export type {
   UnionTypeExtensionNode,
   EnumTypeExtensionNode,
   InputObjectTypeExtensionNode,
+  DirectiveExtensionNode,
   SchemaCoordinateNode,
   TypeCoordinateNode,
   MemberCoordinateNode,

@@ -29,6 +29,7 @@ describe('AST node predicates', () => {
   it('isDefinitionNode', () => {
     expect(filterNodes(isDefinitionNode)).to.deep.equal([
       'DirectiveDefinition',
+      'DirectiveExtension',
       'EnumTypeDefinition',
       'EnumTypeExtension',
       'FragmentDefinition',
@@ -122,6 +123,7 @@ describe('AST node predicates', () => {
 
   it('isTypeSystemExtensionNode', () => {
     expect(filterNodes(isTypeSystemExtensionNode)).to.deep.equal([
+      'DirectiveExtension',
       'EnumTypeExtension',
       'InputObjectTypeExtension',
       'InterfaceTypeExtension',

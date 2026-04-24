@@ -1032,6 +1032,7 @@ input Hello {
         {
           kind: 'DirectiveDefinition',
           description: undefined,
+          directives: undefined,
           name: {
             kind: 'Name',
             value: 'foo',
@@ -1068,6 +1069,7 @@ input Hello {
         {
           kind: 'DirectiveDefinition',
           description: undefined,
+          directives: undefined,
           name: {
             kind: 'Name',
             value: 'foo',
@@ -1100,6 +1102,47 @@ input Hello {
     ).to.deep.equal({
       message: 'Syntax Error: Unexpected Name "INCORRECT_LOCATION".',
       locations: [{ line: 1, column: 27 }],
+    });
+  });
+
+  it('Directive extension with experimental option enabled', () => {
+    const doc = parse('extend directive @foo @bar', {
+      experimentalDirectivesOnDirectiveDefinitions: true,
+    });
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'DirectiveExtension',
+          name: {
+            kind: 'Name',
+            value: 'foo',
+            loc: { start: 18, end: 21 },
+          },
+          directives: [
+            {
+              kind: 'Directive',
+              name: {
+                kind: 'Name',
+                value: 'bar',
+                loc: { start: 23, end: 26 },
+              },
+              arguments: undefined,
+              loc: { start: 22, end: 26 },
+            },
+          ],
+          loc: { start: 0, end: 26 },
+        },
+      ],
+      loc: { start: 0, end: 26 },
+    });
+  });
+
+  it('Directive extension requires experimental option', () => {
+    expectSyntaxError('extend directive @foo @bar').to.deep.equal({
+      message: 'Syntax Error: Unexpected Name "directive".',
+      locations: [{ line: 1, column: 8 }],
     });
   });
 

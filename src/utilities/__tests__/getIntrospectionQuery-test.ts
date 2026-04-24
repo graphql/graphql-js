@@ -21,17 +21,29 @@ function expectIntrospectionQuery(options?: IntrospectionOptions) {
   const validationErrors = validate(dummySchema, parse(query));
   expect(validationErrors).to.deep.equal([]);
 
-  return {
-    toMatch(name: string, times: number = 1): void {
+  const helpers = {
+    toMatch: (name: string, times: number = 1) => {
       const pattern = toRegExp(name);
 
       expect(query).to.match(pattern);
       expect(query.match(pattern)).to.have.lengthOf(times);
+      return helpers;
     },
-    toNotMatch(name: string): void {
+    toContain: (text: string) => {
+      expect(query).to.include(text);
+      return helpers;
+    },
+    toNotMatch: (name: string) => {
       expect(query).to.not.match(toRegExp(name));
+      return helpers;
+    },
+    toNotContain: (text: string) => {
+      expect(query).to.not.include(text);
+      return helpers;
     },
   };
+
+  return helpers;
 
   function toRegExp(name: string): RegExp {
     return new RegExp('\\b' + name + '\\b', 'g');
@@ -137,5 +149,31 @@ describe('getIntrospectionQuery', () => {
       'includeDeprecated: true',
       2,
     );
+  });
+
+  it('include "isDeprecated" field on directives', () => {
+    expectIntrospectionQuery().toMatch('isDeprecated', 2);
+
+    expectIntrospectionQuery({
+      experimentalDirectiveDeprecation: true,
+    }).toMatch('isDeprecated', 3);
+
+    expectIntrospectionQuery({
+      experimentalDirectiveDeprecation: false,
+    }).toMatch('isDeprecated', 2);
+  });
+
+  it('include "deprecationReason" field on directives', () => {
+    expectIntrospectionQuery()
+      .toNotContain('directives(includeDeprecated: true) {')
+      .toMatch('deprecationReason', 2);
+
+    expectIntrospectionQuery({ experimentalDirectiveDeprecation: true })
+      .toContain('directives(includeDeprecated: true) {')
+      .toMatch('deprecationReason', 3);
+
+    expectIntrospectionQuery({ experimentalDirectiveDeprecation: false })
+      .toNotContain('directives(includeDeprecated: true) {')
+      .toMatch('deprecationReason', 2);
   });
 });

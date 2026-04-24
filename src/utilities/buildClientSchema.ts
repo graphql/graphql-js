@@ -405,6 +405,7 @@ export function buildClientSchema(
       name: directiveIntrospection.name,
       description: directiveIntrospection.description,
       isRepeatable: directiveIntrospection.isRepeatable,
+      deprecationReason: directiveIntrospection.deprecationReason,
       locations: directiveIntrospection.locations.slice(),
       args: buildInputValueDefMap(directiveIntrospection.args),
     });

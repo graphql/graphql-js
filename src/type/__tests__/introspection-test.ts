@@ -3,7 +3,9 @@ import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 
-import { buildSchema } from '../../utilities/buildASTSchema.js';
+import { parse } from '../../language/parser.js';
+
+import { buildASTSchema, buildSchema } from '../../utilities/buildASTSchema.js';
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.js';
 
 import { graphqlSync } from '../../graphql.js';
@@ -156,7 +158,21 @@ describe('Introspection', () => {
                 },
                 {
                   name: 'directives',
-                  args: [],
+                  args: [
+                    {
+                      name: 'includeDeprecated',
+                      type: {
+                        kind: 'NON_NULL',
+                        name: null,
+                        ofType: {
+                          kind: 'SCALAR',
+                          name: 'Boolean',
+                          ofType: null,
+                        },
+                      },
+                      defaultValue: 'false',
+                    },
+                  ],
                   type: {
                     kind: 'NON_NULL',
                     name: null,
@@ -825,6 +841,32 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'isDeprecated',
+                  args: [],
+                  type: {
+                    kind: 'NON_NULL',
+                    name: null,
+                    ofType: {
+                      kind: 'SCALAR',
+                      name: 'Boolean',
+                      ofType: null,
+                    },
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
+                {
+                  name: 'deprecationReason',
+                  args: [],
+                  type: {
+                    kind: 'SCALAR',
+                    name: 'String',
+                    ofType: null,
+                  },
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               inputFields: null,
               interfaces: [],
@@ -939,6 +981,11 @@ describe('Introspection', () => {
                   isDeprecated: false,
                   deprecationReason: null,
                 },
+                {
+                  name: 'DIRECTIVE_DEFINITION',
+                  isDeprecated: false,
+                  deprecationReason: null,
+                },
               ],
               possibleTypes: null,
             },
@@ -992,6 +1039,7 @@ describe('Introspection', () => {
                 'ARGUMENT_DEFINITION',
                 'INPUT_FIELD_DEFINITION',
                 'ENUM_VALUE',
+                'DIRECTIVE_DEFINITION',
               ],
               args: [
                 {
@@ -1782,5 +1830,145 @@ describe('Introspection', () => {
       typeResolver,
     });
     expect(result).to.not.have.property('errors');
+  });
+
+  it('identifies deprecated directives', () => {
+    const schema = buildASTSchema(
+      parse(
+        `
+          type Query {
+            someField: String
+          }
+          directive @isNotDeprecated on FIELD_DEFINITION
+          directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
+          directive @isDeprecatedWithEmptyReason @deprecated(reason: "") on FIELD_DEFINITION
+        `,
+        { experimentalDirectivesOnDirectiveDefinitions: true },
+      ),
+    );
+
+    const source = `
+      {
+        __schema {
+          directives(includeDeprecated: true) {
+            name
+            isDeprecated
+            deprecationReason
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __schema: {
+          directives: [
+            {
+              name: 'isNotDeprecated',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'isDeprecated',
+              isDeprecated: true,
+              deprecationReason: 'No longer supported',
+            },
+            {
+              name: 'isDeprecatedWithEmptyReason',
+              isDeprecated: true,
+              deprecationReason: '',
+            },
+            {
+              name: 'include',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'skip',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'deprecated',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'specifiedBy',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+            {
+              name: 'oneOf',
+              isDeprecated: false,
+              deprecationReason: null,
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  it('respects the includeDeprecated parameter for directives', () => {
+    const schema = buildASTSchema(
+      parse(
+        `
+          type Query {
+            someField: String
+          }
+          directive @isNotDeprecated on FIELD_DEFINITION
+          directive @isDeprecated @deprecated(reason: "No longer supported") on FIELD_DEFINITION
+        `,
+        { experimentalDirectivesOnDirectiveDefinitions: true },
+      ),
+    );
+
+    const source = `
+      {
+        __schema {
+          trueDirectives: directives(includeDeprecated: true) {
+            name
+          }
+          falseDirectives: directives(includeDeprecated: false) {
+            name
+          }
+          omittedDirectives: directives {
+            name
+          }
+        }
+      }
+    `;
+
+    expect(graphqlSync({ schema, source })).to.deep.equal({
+      data: {
+        __schema: {
+          trueDirectives: [
+            { name: 'isNotDeprecated' },
+            { name: 'isDeprecated' },
+            { name: 'include' },
+            { name: 'skip' },
+            { name: 'deprecated' },
+            { name: 'specifiedBy' },
+            { name: 'oneOf' },
+          ],
+          falseDirectives: [
+            { name: 'isNotDeprecated' },
+            { name: 'include' },
+            { name: 'skip' },
+            { name: 'deprecated' },
+            { name: 'specifiedBy' },
+            { name: 'oneOf' },
+          ],
+          omittedDirectives: [
+            { name: 'isNotDeprecated' },
+            { name: 'include' },
+            { name: 'skip' },
+            { name: 'deprecated' },
+            { name: 'specifiedBy' },
+            { name: 'oneOf' },
+          ],
+        },
+      },
+    });
   });
 });

@@ -72,7 +72,18 @@ export const __Schema: GraphQLObjectType = new GraphQLObjectType({
         type: new GraphQLNonNull(
           new GraphQLList(new GraphQLNonNull(__Directive)),
         ),
-        resolve: (schema) => schema.getDirectives(),
+        args: {
+          includeDeprecated: {
+            type: new GraphQLNonNull(GraphQLBoolean),
+            default: { value: false },
+          },
+        },
+        resolve: (schema, { includeDeprecated }) =>
+          includeDeprecated === true
+            ? schema.getDirectives()
+            : schema
+                .getDirectives()
+                .filter((directive) => directive.deprecationReason == null),
       },
     }) as GraphQLFieldConfigMap<GraphQLSchema, unknown>,
 });
@@ -116,6 +127,14 @@ export const __Directive: GraphQLObjectType = new GraphQLObjectType({
             ? field.args
             : field.args.filter((arg) => arg.deprecationReason == null);
         },
+      },
+      isDeprecated: {
+        type: new GraphQLNonNull(GraphQLBoolean),
+        resolve: (directive) => directive.deprecationReason != null,
+      },
+      deprecationReason: {
+        type: GraphQLString,
+        resolve: (directive) => directive.deprecationReason,
       },
     }) as GraphQLFieldConfigMap<GraphQLDirective, unknown>,
 });
@@ -204,6 +223,10 @@ export const __DirectiveLocation: GraphQLEnumType = new GraphQLEnumType({
     INPUT_FIELD_DEFINITION: {
       value: DirectiveLocation.INPUT_FIELD_DEFINITION,
       description: 'Location adjacent to an input object field definition.',
+    },
+    DIRECTIVE_DEFINITION: {
+      value: DirectiveLocation.DIRECTIVE_DEFINITION,
+      description: 'Location adjacent to a directive definition.',
     },
   },
 });

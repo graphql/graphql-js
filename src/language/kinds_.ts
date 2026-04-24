@@ -94,6 +94,8 @@ export type DIRECTIVE_DEFINITION = typeof DIRECTIVE_DEFINITION;
 /** Type System Extensions */
 export const SCHEMA_EXTENSION = 'SchemaExtension';
 export type SCHEMA_EXTENSION = typeof SCHEMA_EXTENSION;
+export const DIRECTIVE_EXTENSION = 'DirectiveExtension';
+export type DIRECTIVE_EXTENSION = typeof DIRECTIVE_EXTENSION;
 
 /** Type Extensions */
 export const SCALAR_TYPE_EXTENSION = 'ScalarTypeExtension';

@@ -59,6 +59,7 @@ const schemaWithSDLDirectives = buildSchema(`
   directive @onEnumValue on ENUM_VALUE
   directive @onInputObject on INPUT_OBJECT
   directive @onInputFieldDefinition on INPUT_FIELD_DEFINITION
+  directive @onDirective on DIRECTIVE_DEFINITION
 `);
 
 describe('Validate: Known directives', () => {
@@ -360,6 +361,8 @@ describe('Validate: Known directives', () => {
           directive @myDirective2(arg:String @myDirective) on FIELD
 
           extend schema @onSchema
+
+          directive @myDirective3 on OBJECT
         `,
         schemaWithSDLDirectives,
       );
@@ -393,6 +396,8 @@ describe('Validate: Known directives', () => {
           }
 
           extend schema @onObject
+
+          extend type MyObj @onDirective
         `,
         schemaWithSDLDirectives,
       ).toDeepEqual([
@@ -456,6 +461,10 @@ describe('Validate: Known directives', () => {
         {
           message: 'Directive "@onObject" may not be used on SCHEMA.',
           locations: [{ line: 26, column: 25 }],
+        },
+        {
+          message: 'Directive "@onDirective" may not be used on OBJECT.',
+          locations: [{ line: 28, column: 29 }],
         },
       ]);
     });

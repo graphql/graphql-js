@@ -1088,6 +1088,24 @@ describe('Schema Builder', () => {
     buildSchema(sdl, { assumeValidSDL: true });
   });
 
+  it('Forwards parser options to buildSchema', () => {
+    const schema = buildSchema(
+      dedent`
+        type Query {
+          foo: String
+        }
+
+        directive @bar @deprecated(reason: "Use another directive") on FIELD_DEFINITION
+      `,
+      { experimentalDirectivesOnDirectiveDefinitions: true },
+    );
+
+    const barDirective = assertDirective(schema.getDirective('bar'));
+    expect(barDirective).to.include({
+      deprecationReason: 'Use another directive',
+    });
+  });
+
   it('Throws on unknown types', () => {
     const sdl = `
       type Query {

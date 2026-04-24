@@ -182,6 +182,7 @@ export type ASTNode =
   | UnionTypeExtensionNode
   | EnumTypeExtensionNode
   | InputObjectTypeExtensionNode
+  | DirectiveExtensionNode
   | TypeCoordinateNode
   | MemberCoordinateNode
   | ArgumentCoordinateNode
@@ -290,9 +291,16 @@ export const QueryDocumentKeys: {
   EnumValueDefinition: ['description', 'name', 'directives'],
   InputObjectTypeDefinition: ['description', 'name', 'directives', 'fields'],
 
-  DirectiveDefinition: ['description', 'name', 'arguments', 'locations'],
+  DirectiveDefinition: [
+    'description',
+    'name',
+    'arguments',
+    'directives',
+    'locations',
+  ],
 
   SchemaExtension: ['directives', 'operationTypes'],
+  DirectiveExtension: ['name', 'directives'],
 
   ScalarTypeExtension: ['name', 'directives'],
   ObjectTypeExtension: ['name', 'interfaces', 'directives', 'fields'],
@@ -719,13 +727,17 @@ export interface DirectiveDefinitionNode {
   readonly description?: StringValueNode | undefined;
   readonly name: NameNode;
   readonly arguments?: ReadonlyArray<InputValueDefinitionNode> | undefined;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
   readonly repeatable: boolean;
   readonly locations: ReadonlyArray<NameNode>;
 }
 
 /** Type System Extensions */
 
-export type TypeSystemExtensionNode = SchemaExtensionNode | TypeExtensionNode;
+export type TypeSystemExtensionNode =
+  | SchemaExtensionNode
+  | TypeExtensionNode
+  | DirectiveExtensionNode;
 
 export interface SchemaExtensionNode {
   readonly kind: KindTypeMap['SCHEMA_EXTENSION'];
@@ -793,6 +805,13 @@ export interface InputObjectTypeExtensionNode {
   readonly name: NameNode;
   readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
   readonly fields?: ReadonlyArray<InputValueDefinitionNode> | undefined;
+}
+
+export interface DirectiveExtensionNode {
+  readonly kind: KindTypeMap['DIRECTIVE_EXTENSION'];
+  readonly loc?: Location | undefined;
+  readonly name: NameNode;
+  readonly directives?: ReadonlyArray<ConstDirectiveNode> | undefined;
 }
 
 /** Schema Coordinates */

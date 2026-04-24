@@ -23,6 +23,7 @@ export const DirectiveLocation = {
   ENUM_VALUE: 'ENUM_VALUE' as const,
   INPUT_OBJECT: 'INPUT_OBJECT' as const,
   INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION' as const,
+  DIRECTIVE_DEFINITION: 'DIRECTIVE_DEFINITION' as const,
   FRAGMENT_VARIABLE_DEFINITION: 'FRAGMENT_VARIABLE_DEFINITION' as const,
 } as const;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
