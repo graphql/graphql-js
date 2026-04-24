@@ -85,12 +85,14 @@ function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
         }
       ).getBuiltinModule('node:diagnostics_channel');
     }
+    /* c8 ignore next 6 */
     if (!dc && typeof require === 'function') {
       // CJS fallback for runtimes that lack `process.getBuiltinModule`
       // (e.g. Node 20.0 - 20.15). ESM builds skip this branch because
       // `require` is undeclared there.
       dc = require('node:diagnostics_channel') as DiagnosticsChannelModule;
     }
+    /* c8 ignore next 3 */
   } catch {
     // diagnostics_channel not available on this runtime; tracing is a no-op.
   }
@@ -121,21 +123,6 @@ export const subscribeChannel: MinimalTracingChannel | undefined =
 /** @internal */
 export const resolveChannel: MinimalTracingChannel | undefined =
   dc?.tracingChannel('graphql:resolve');
-
-/**
- * Publish a synchronous operation through `channel`. Caller has already
- * verified that a subscriber is attached; this helper exists only so the
- * traced path doesn't need to be duplicated at every emission site.
- *
- * @internal
- */
-export function traceSync<T>(
-  channel: MinimalTracingChannel,
-  ctx: object,
-  fn: () => T,
-): T {
-  return channel.traceSync(fn, ctx);
-}
 
 /**
  * Publish a mixed sync-or-promise operation through `channel`. Caller has

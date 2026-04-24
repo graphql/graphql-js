@@ -13,6 +13,7 @@ import { buildSchema } from '../../utilities/buildASTSchema.js';
 import type { ExecutionArgs } from '../execute.js';
 import {
   execute,
+  executeIgnoringIncremental,
   executeSubscriptionEvent,
   executeSync,
   validateExecutionArgs,
@@ -76,6 +77,17 @@ describe('execute diagnostics channel', () => {
     executeSync({ schema, document, rootValue });
 
     expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
+  });
+
+  it('emits start and end around executeIgnoringIncremental', () => {
+    active = collectEvents(executeChannel);
+
+    const document = parse('query Q { sync }');
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    executeIgnoringIncremental({ schema, document, rootValue });
+
+    expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
+    expect(active.events[0].ctx.operationName).to.equal('Q');
   });
 
   it('emits start, error, and end when execute throws synchronously', () => {
