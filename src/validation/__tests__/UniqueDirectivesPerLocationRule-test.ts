@@ -1,5 +1,7 @@
 import { describe, it } from 'mocha';
 
+import { expectJSON } from '../../__testUtils__/expectJSON';
+
 import { parse } from '../../language/parser';
 
 import type { GraphQLSchema } from '../../type/schema';
@@ -7,6 +9,7 @@ import type { GraphQLSchema } from '../../type/schema';
 import { extendSchema } from '../../utilities/extendSchema';
 
 import { UniqueDirectivesPerLocationRule } from '../rules/UniqueDirectivesPerLocationRule';
+import { validateSDL } from '../validate';
 
 import {
   expectSDLValidationErrors,
@@ -40,6 +43,14 @@ function expectSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
     UniqueDirectivesPerLocationRule,
     sdlStr,
   );
+}
+
+function expectExperimentalSDLErrors(sdlStr: string, schema?: GraphQLSchema) {
+  const doc = parse(sdlStr, {
+    experimentalDirectivesOnDirectiveDefinitions: true,
+  });
+  const errors = validateSDL(doc, schema, [UniqueDirectivesPerLocationRule]);
+  return expectJSON(errors);
 }
 
 describe('Validate: Directives Are Unique Per Location', () => {
@@ -387,6 +398,76 @@ describe('Validate: Directives Are Unique Per Location', () => {
         locations: [
           { line: 4, column: 30 },
           { line: 6, column: 30 },
+        ],
+      },
+    ]);
+  });
+
+  it('duplicate directives on directive definitions', () => {
+    expectExperimentalSDLErrors(`
+      directive @nonRepeatable on DIRECTIVE_DEFINITION
+
+      directive @testDirective @nonRepeatable @nonRepeatable on FIELD_DEFINITION
+    `).toDeepEqual([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 4, column: 32 },
+          { line: 4, column: 47 },
+        ],
+      },
+    ]);
+  });
+
+  it('duplicate directives on directive extensions', () => {
+    expectExperimentalSDLErrors(`
+      directive @nonRepeatable on DIRECTIVE_DEFINITION
+
+      extend directive @testDirective @nonRepeatable @nonRepeatable
+    `).toDeepEqual([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 4, column: 39 },
+          { line: 4, column: 54 },
+        ],
+      },
+    ]);
+  });
+
+  it('duplicate directives between directive definitions and extensions', () => {
+    expectExperimentalSDLErrors(`
+      directive @nonRepeatable on DIRECTIVE_DEFINITION
+
+      directive @testDirective @nonRepeatable on FIELD_DEFINITION
+      extend directive @testDirective @nonRepeatable
+    `).toDeepEqual([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 4, column: 32 },
+          { line: 5, column: 39 },
+        ],
+      },
+    ]);
+  });
+
+  it('duplicate directives between directive extensions', () => {
+    expectExperimentalSDLErrors(`
+      directive @nonRepeatable on DIRECTIVE_DEFINITION
+
+      extend directive @testDirective @nonRepeatable
+      extend directive @testDirective @nonRepeatable
+    `).toDeepEqual([
+      {
+        message:
+          'The directive "@nonRepeatable" can only be used once at this location.',
+        locations: [
+          { line: 4, column: 39 },
+          { line: 5, column: 39 },
         ],
       },
     ]);

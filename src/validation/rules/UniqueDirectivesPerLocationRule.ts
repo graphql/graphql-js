@@ -44,6 +44,7 @@ export function UniqueDirectivesPerLocationRule(
 
   const schemaDirectives = Object.create(null);
   const typeDirectivesMap = Object.create(null);
+  const directiveDirectivesMap = Object.create(null);
 
   return {
     // Many different AST nodes may contain directives. Rather than listing
@@ -65,6 +66,16 @@ export function UniqueDirectivesPerLocationRule(
         seenDirectives = typeDirectivesMap[typeName];
         if (seenDirectives === undefined) {
           typeDirectivesMap[typeName] = seenDirectives = Object.create(null);
+        }
+      } else if (
+        node.kind === Kind.DIRECTIVE_DEFINITION ||
+        node.kind === Kind.DIRECTIVE_EXTENSION
+      ) {
+        const directiveName = node.name.value;
+        seenDirectives = directiveDirectivesMap[directiveName];
+        if (seenDirectives === undefined) {
+          directiveDirectivesMap[directiveName] = seenDirectives =
+            Object.create(null);
         }
       } else {
         seenDirectives = Object.create(null);
