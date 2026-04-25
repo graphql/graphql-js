@@ -594,7 +594,7 @@ export class Executor<
       // is provided to every resolve function within an execution. It is commonly
       // used to represent an authenticated user, or request-specific caches.
       const result = tracingChannel
-        ? invokeResolverWithTracing(
+        ? this.invokeResolverWithTracing(
             tracingChannel,
             resolveFn,
             source,
@@ -638,6 +638,48 @@ export class Executor<
       this.handleFieldError(rawError, returnType, fieldDetailsList, path);
       return null;
     }
+  }
+
+  invokeResolverWithTracing(
+    tracingChannel: MinimalTracingChannel,
+    resolveFn: GraphQLFieldResolver<unknown, unknown>,
+    source: unknown,
+    args: { readonly [argument: string]: unknown },
+    contextValue: unknown,
+    info: GraphQLResolveInfo,
+    isTrivialResolver: boolean,
+  ): PromiseOrValue<unknown> {
+    return traceMixed(
+      tracingChannel,
+      this.buildResolveCtx(args, info, isTrivialResolver),
+      () => resolveFn(source, args, contextValue, info),
+    );
+  }
+
+  /**
+   * Build a graphql:resolve channel context for a single field invocation.
+   *
+   * `fieldPath` is exposed as a lazy getter because serializing the response
+   * path is O(depth) and APMs that depth-filter or skip default resolvers
+   * often never read it. `args` is passed through by reference.
+   */
+  buildResolveCtx(
+    args: ObjMap<unknown>,
+    info: GraphQLResolveInfo,
+    isDefaultResolver: boolean,
+  ): object {
+    let cachedFieldPath: string | undefined;
+    return {
+      fieldName: info.fieldName,
+      parentType: info.parentType.name,
+      fieldType: String(info.returnType),
+      args,
+      isDefaultResolver,
+      get fieldPath() {
+        cachedFieldPath ??= pathToArray(info.path).join('.');
+        return cachedFieldPath;
+      },
+    };
   }
 
   handleFieldError(
@@ -1397,51 +1439,4 @@ export class Executor<
 
 function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
   return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
-}
-
-/**
- * Build a graphql:resolve channel context for a single field invocation.
- *
- * `fieldPath` is exposed as a lazy getter because serializing the response
- * path is O(depth) and APMs that depth-filter or skip trivial resolvers
- * often never read it. `args` is passed through by reference.
- */
-function buildResolveCtx(
-  info: GraphQLResolveInfo,
-  args: { readonly [argument: string]: unknown },
-  isDefaultResolver: boolean,
-): object {
-  let cachedFieldPath: string | undefined;
-  return {
-    fieldName: info.fieldName,
-    parentType: info.parentType.name,
-    fieldType: String(info.returnType),
-    args,
-    isDefaultResolver,
-    get fieldPath() {
-      cachedFieldPath ??= pathToArray(info.path).join('.');
-      return cachedFieldPath;
-    },
-  };
-}
-
-/**
- * Traced path for a single resolver call. Extracted as a module-scope function to increase likelihood of inlining.
- *
- * @internal
- */
-function invokeResolverWithTracing(
-  tracingChannel: MinimalTracingChannel,
-  resolveFn: GraphQLFieldResolver<unknown, unknown>,
-  source: unknown,
-  args: { readonly [argument: string]: unknown },
-  contextValue: unknown,
-  info: GraphQLResolveInfo,
-  isDefaultResolver: boolean,
-): PromiseOrValue<unknown> {
-  return traceMixed(
-    tracingChannel,
-    buildResolveCtx(info, args, isDefaultResolver),
-    () => resolveFn(source, args, contextValue, info),
-  );
 }
