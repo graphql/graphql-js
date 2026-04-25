@@ -179,7 +179,7 @@ ${indent}}`;
 
     fragment TypeRef on __Type {
       kind
-      name${ofType(optionsWithDefault.typeDepth ?? 9, '      ')}
+      name${ofType(optionsWithDefault.typeDepth, '      ')}
     }
   `;
 }
