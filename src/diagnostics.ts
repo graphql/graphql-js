@@ -181,6 +181,5 @@ export function traceMixed<T>(
 export function shouldTrace(
   channel: MinimalTracingChannel | undefined,
 ): channel is MinimalTracingChannel {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
-  return channel !== undefined && channel.hasSubscribers !== false;
+  return channel?.hasSubscribers === true;
 }
