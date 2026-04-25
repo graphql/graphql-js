@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { afterEach, describe, it } from 'mocha';
 
 import {
@@ -6,17 +6,17 @@ import {
   getTracingChannel,
 } from '../../__testUtils__/diagnosticsTestUtils.js';
 
+import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
+
 import { parse } from '../../language/parser.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
-import type { ExecutionArgs } from '../execute.js';
 import {
   execute,
   executeIgnoringIncremental,
-  executeSubscriptionEvent,
   executeSync,
-  validateExecutionArgs,
+  subscribe,
 } from '../execute.js';
 
 const schema = buildSchema(`
@@ -109,30 +109,50 @@ describe('execute diagnostics channel', () => {
     ]);
   });
 
-  it('emits for each executeSubscriptionEvent call with resolved operation ctx', () => {
-    const args: ExecutionArgs = {
-      schema,
-      document: parse('query Q { sync }'),
-      rootValue,
-    };
-    const validated = validateExecutionArgs(args);
-    if (!('schema' in validated)) {
-      throw new Error('unexpected validation failure');
+  it('emits for each subscription event with resolved operation ctx', async () => {
+    const subscriptionSchema = buildSchema(`
+      type Query {
+        dummy: String
+      }
+
+      type Subscription {
+        tick: String
+      }
+    `);
+
+    async function* tickGenerator() {
+      await Promise.resolve();
+      yield { tick: 'one' };
+      yield { tick: 'two' };
     }
+
+    const document = parse('subscription S { tick }');
 
     active = collectEvents(executeChannel);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    executeSubscriptionEvent(validated);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    executeSubscriptionEvent(validated);
+    const subscription = await subscribe({
+      schema: subscriptionSchema,
+      document,
+      rootValue: { tick: tickGenerator },
+    });
+    assert(isAsyncIterable(subscription));
+
+    expect(await subscription.next()).to.deep.equal({
+      done: false,
+      value: { data: { tick: 'one' } },
+    });
+    expect(await subscription.next()).to.deep.equal({
+      done: false,
+      value: { data: { tick: 'two' } },
+    });
 
     const starts = active.events.filter((e) => e.kind === 'start');
     expect(starts.length).to.equal(2);
     for (const ev of starts) {
-      expect(ev.ctx.operationType).to.equal('query');
-      expect(ev.ctx.operationName).to.equal('Q');
-      expect(ev.ctx.schema).to.equal(schema);
+      expect(ev.ctx.operationType).to.equal('subscription');
+      expect(ev.ctx.operationName).to.equal('S');
+      expect(ev.ctx.operation).to.equal(document.definitions[0]);
+      expect(ev.ctx.schema).to.equal(subscriptionSchema);
     }
   });
 
