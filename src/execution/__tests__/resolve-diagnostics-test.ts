@@ -116,7 +116,7 @@ describe('resolve diagnostics channel', () => {
     );
   });
 
-  it('reports isTrivialResolver based on field.resolve presence', () => {
+  it('reports isDefaultResolver based on field.resolve presence', () => {
     const trivialSchema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -141,7 +141,7 @@ describe('resolve diagnostics channel', () => {
 
     const starts = active.events.filter((e) => e.kind === 'start');
     const byField = new Map(
-      starts.map((e) => [e.ctx.fieldName, e.ctx.isTrivialResolver]),
+      starts.map((e) => [e.ctx.fieldName, e.ctx.isDefaultResolver]),
     );
     expect(byField.get('trivial')).to.equal(true);
     expect(byField.get('custom')).to.equal(false);

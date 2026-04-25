@@ -1409,7 +1409,7 @@ function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
 function buildResolveCtx(
   info: GraphQLResolveInfo,
   args: { readonly [argument: string]: unknown },
-  isTrivialResolver: boolean,
+  isDefaultResolver: boolean,
 ): object {
   let cachedFieldPath: string | undefined;
   return {
@@ -1417,7 +1417,7 @@ function buildResolveCtx(
     parentType: info.parentType.name,
     fieldType: String(info.returnType),
     args,
-    isTrivialResolver,
+    isDefaultResolver,
     get fieldPath() {
       cachedFieldPath ??= pathToArray(info.path).join('.');
       return cachedFieldPath;
@@ -1437,11 +1437,11 @@ function invokeResolverWithTracing(
   args: { readonly [argument: string]: unknown },
   contextValue: unknown,
   info: GraphQLResolveInfo,
-  isTrivialResolver: boolean,
+  isDefaultResolver: boolean,
 ): PromiseOrValue<unknown> {
   return traceMixed(
     tracingChannel,
-    buildResolveCtx(info, args, isTrivialResolver),
+    buildResolveCtx(info, args, isDefaultResolver),
     () => resolveFn(source, args, contextValue, info),
   );
 }

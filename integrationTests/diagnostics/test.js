@@ -205,7 +205,7 @@ function runResolveCase() {
         parentType: msg.parentType,
         fieldType: msg.fieldType,
         fieldPath: msg.fieldPath,
-        isTrivialResolver: msg.isTrivialResolver,
+        isDefaultResolver: msg.isDefaultResolver,
       }),
     end: () => events.push({ kind: 'end' }),
     asyncStart: () => events.push({ kind: 'asyncStart' }),
@@ -228,7 +228,7 @@ function runResolveCase() {
     assert.equal(hello.parentType, 'Query');
     assert.equal(hello.fieldType, 'String');
     // buildSchema never attaches field.resolve; all fields report as trivial.
-    assert.equal(hello.isTrivialResolver, true);
+    assert.equal(hello.isDefaultResolver, true);
   } finally {
     channel.unsubscribe(handler);
   }
