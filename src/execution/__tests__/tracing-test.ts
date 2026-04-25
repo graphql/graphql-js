@@ -39,6 +39,11 @@ const schema = buildSchema(`
     leaf: String
   }
 
+  type Mutation {
+    first: String
+    second: String
+  }
+
   type Subscription {
     tick: String
   }
@@ -47,11 +52,6 @@ const schema = buildSchema(`
 describe('execute diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
   const executeChannel = getTracingChannel('graphql:execute');
-
-  const rootValue = {
-    sync: () => 'hello',
-    async: () => Promise.resolve('hello-async'),
-  };
 
   afterEach(() => {
     active?.unsubscribe();
@@ -62,7 +62,11 @@ describe('execute diagnostics channel', () => {
     active = collectEvents(executeChannel);
 
     const document = parse('query Q { sync }');
-    const result = execute({ schema, document, rootValue });
+    const result = execute({
+      schema,
+      document,
+      rootValue: { sync: () => 'hello' },
+    });
 
     expect(result).to.deep.equal({ data: { sync: 'hello' } });
     expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
@@ -76,7 +80,11 @@ describe('execute diagnostics channel', () => {
     active = collectEvents(executeChannel);
 
     const document = parse('query { async }');
-    const result = await execute({ schema, document, rootValue });
+    const result = await execute({
+      schema,
+      document,
+      rootValue: { async: () => Promise.resolve('hello-async') },
+    });
 
     expect(result).to.deep.equal({ data: { async: 'hello-async' } });
     expect(active.events.map((e) => e.kind)).to.deep.equal([
@@ -91,7 +99,7 @@ describe('execute diagnostics channel', () => {
     active = collectEvents(executeChannel);
 
     const document = parse('{ sync }');
-    executeSync({ schema, document, rootValue });
+    executeSync({ schema, document, rootValue: { sync: () => 'hello' } });
 
     expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
   });
@@ -101,7 +109,11 @@ describe('execute diagnostics channel', () => {
 
     const document = parse('query Q { sync }');
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    executeIgnoringIncremental({ schema, document, rootValue });
+    executeIgnoringIncremental({
+      schema,
+      document,
+      rootValue: { sync: () => 'hello' },
+    });
 
     expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
     expect(active.events[0].ctx.operationName).to.equal('Q');
@@ -115,9 +127,7 @@ describe('execute diagnostics channel', () => {
       type Query { sync: String }
     `);
     const document = parse('{ sync }');
-    expect(() =>
-      execute({ schema: schemaWithDefer, document, rootValue }),
-    ).to.throw();
+    expect(() => execute({ schema: schemaWithDefer, document })).to.throw();
 
     expect(active.events.map((e) => e.kind)).to.deep.equal([
       'start',
@@ -165,7 +175,11 @@ describe('execute diagnostics channel', () => {
 
   it('does nothing when no subscribers are attached', () => {
     const document = parse('{ sync }');
-    const result = execute({ schema, document, rootValue });
+    const result = execute({
+      schema,
+      document,
+      rootValue: { sync: () => 'hello' },
+    });
     expect(result).to.deep.equal({ data: { sync: 'hello' } });
   });
 });
@@ -238,7 +252,7 @@ describe('subscribe diagnostics channel', () => {
     const document = parse('fragment F on Subscription { tick }');
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    subscribe({ schema, document, rootValue: { tick: twoTicks } });
+    subscribe({ schema, document });
 
     expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
   });
@@ -262,18 +276,6 @@ describe('resolve diagnostics channel', () => {
   let active: ReturnType<typeof collectEvents> | undefined;
   const resolveChannel = getTracingChannel('graphql:resolve');
 
-  const rootValue = {
-    sync: () => 'hello',
-    async: () => Promise.resolve('hello-async'),
-    fail: () => {
-      throw new Error('boom');
-    },
-    asyncFail: () => Promise.reject(new Error('async-boom')),
-    // no `plain` resolver, default property-access is used.
-    plain: 'plain-value',
-    nested: { leaf: 'leaf-value' },
-  };
-
   afterEach(() => {
     active?.unsubscribe();
     active = undefined;
@@ -285,7 +287,7 @@ describe('resolve diagnostics channel', () => {
     const result = execute({
       schema,
       document: parse('{ sync }'),
-      rootValue,
+      rootValue: { sync: () => 'hello' },
     });
     if (isPromise(result)) {
       throw new Error('expected sync');
@@ -308,7 +310,7 @@ describe('resolve diagnostics channel', () => {
     const result = execute({
       schema,
       document: parse('{ async }'),
-      rootValue,
+      rootValue: { async: () => Promise.resolve('hello-async') },
     });
     await result;
 
@@ -320,7 +322,15 @@ describe('resolve diagnostics channel', () => {
     active = collectEvents(resolveChannel);
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    execute({ schema, document: parse('{ fail }'), rootValue });
+    execute({
+      schema,
+      document: parse('{ fail }'),
+      rootValue: {
+        fail: () => {
+          throw new Error('boom');
+        },
+      },
+    });
 
     const kinds = active.events.map((e) => e.kind);
     expect(kinds).to.deep.equal(['start', 'error', 'end']);
@@ -332,7 +342,9 @@ describe('resolve diagnostics channel', () => {
     await execute({
       schema,
       document: parse('{ asyncFail }'),
-      rootValue,
+      rootValue: {
+        asyncFail: () => Promise.reject(new Error('async-boom')),
+      },
     });
 
     const kinds = active.events.map((e) => e.kind);
@@ -387,7 +399,9 @@ describe('resolve diagnostics channel', () => {
     execute({
       schema,
       document: parse('{ nested { leaf } }'),
-      rootValue,
+      rootValue: {
+        nested: { leaf: 'leaf-value' },
+      },
     });
 
     const starts = active.events.filter((e) => e.kind === 'start');
@@ -402,7 +416,12 @@ describe('resolve diagnostics channel', () => {
     execute({
       schema,
       document: parse('{ sync plain nested { leaf } }'),
-      rootValue,
+      rootValue: {
+        sync: () => 'hello',
+        // no `plain` resolver, default property-access is used.
+        plain: 'plain-value',
+        nested: { leaf: 'leaf-value' },
+      },
     });
 
     const starts = active.events.filter((e) => e.kind === 'start');
@@ -412,25 +431,15 @@ describe('resolve diagnostics channel', () => {
   });
 
   it('emits per-field for serial mutation execution', async () => {
-    const mutationSchema = new GraphQLSchema({
-      query: new GraphQLObjectType({
-        name: 'Query',
-        fields: { dummy: { type: GraphQLString } },
-      }),
-      mutation: new GraphQLObjectType({
-        name: 'Mutation',
-        fields: {
-          first: { type: GraphQLString, resolve: () => 'one' },
-          second: { type: GraphQLString, resolve: () => 'two' },
-        },
-      }),
-    });
-
     active = collectEvents(resolveChannel);
 
     await execute({
-      schema: mutationSchema,
+      schema,
       document: parse('mutation M { first second }'),
+      rootValue: {
+        first: () => 'one',
+        second: () => 'two',
+      },
     });
 
     const starts = active.events.filter((e) => e.kind === 'start');
@@ -444,7 +453,7 @@ describe('resolve diagnostics channel', () => {
     const result = execute({
       schema,
       document: parse('{ sync }'),
-      rootValue,
+      rootValue: { sync: () => 'hello' },
     });
     if (isPromise(result)) {
       throw new Error('expected sync');
