@@ -417,19 +417,9 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
 export function executeSubscriptionEvent(
   validatedExecutionArgs: ValidatedSubscriptionArgs,
 ): PromiseOrValue<ExecutionResult> {
-  if (!executeChannel?.hasSubscribers) {
-    return new ExecutorThrowingOnIncremental(
-      validatedExecutionArgs,
-    ).executeRootSelectionSet(false);
-  }
-  return traceMixed(
-    executeChannel,
-    buildExecuteCtxFromValidatedArgs(validatedExecutionArgs),
-    () =>
-      new ExecutorThrowingOnIncremental(
-        validatedExecutionArgs,
-      ).executeRootSelectionSet(false),
-  );
+  return new ExecutorThrowingOnIncremental(
+    validatedExecutionArgs,
+  ).executeRootSelectionSet(false);
 }
 
 /**
@@ -572,33 +562,22 @@ function subscribeImpl(
     return { errors: validatedExecutionArgs };
   }
 
-<<<<<<< HEAD
-    if (isPromise(resultOrStream)) {
-      return resultOrStream.then((resolvedResultOrStream) =>
-        isAsyncIterable(resolvedResultOrStream)
-          ? mapSourceToResponseEvent(
-              validatedExecutionArgs,
-              resolvedResultOrStream,
-            )
-          : resolvedResultOrStream,
-      );
-    }
-
-    return isAsyncIterable(resultOrStream)
-      ? mapSourceToResponseEvent(validatedExecutionArgs, resultOrStream)
-      : resultOrStream;
-  });
-=======
   const resultOrStream = createSourceEventStream(validatedExecutionArgs);
 
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(validatedExecutionArgs, resolvedResultOrStream),
+      isAsyncIterable(resolvedResultOrStream)
+        ? mapSourceToResponseEvent(
+            validatedExecutionArgs,
+            resolvedResultOrStream,
+          )
+        : resolvedResultOrStream,
     );
   }
 
-  return mapSourceToResponse(validatedExecutionArgs, resultOrStream);
->>>>>>> 19112ed5 (ref(perf): inline no-subscriber fast path at tracing emission sites)
+  return isAsyncIterable(resultOrStream)
+    ? mapSourceToResponseEvent(validatedExecutionArgs, resultOrStream)
+    : resultOrStream;
 }
 
 /**
@@ -1033,7 +1012,14 @@ export function mapSourceToResponseEvent(
       ...validatedExecutionArgs,
       rootValue: payload,
     };
-    return rootSelectionSetExecutor(perEventExecutionArgs);
+    if (!executeChannel?.hasSubscribers) {
+      return rootSelectionSetExecutor(perEventExecutionArgs);
+    }
+    return traceMixed(
+      executeChannel,
+      buildExecuteCtxFromValidatedArgs(validatedExecutionArgs),
+      () => rootSelectionSetExecutor(perEventExecutionArgs),
+    );
   }
 
   const externalAbortSignal = validatedExecutionArgs.externalAbortSignal;
