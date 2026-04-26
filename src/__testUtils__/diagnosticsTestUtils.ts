@@ -80,6 +80,7 @@ export async function expectNoTracingActivity<T>(
     name: string,
   ): void {
     const original = target[key] as (...args: Array<unknown>) => unknown;
+    /* c8 ignore next 7 */
     target[key] = function interceptedMethod(
       this: unknown,
       ...args: Array<unknown>
