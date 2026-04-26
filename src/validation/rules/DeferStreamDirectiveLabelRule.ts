@@ -30,7 +30,7 @@ export function DeferStreamDirectiveLabelRule(
           (arg) => arg.name.value === 'label',
         );
         const labelValue = labelArgument?.value;
-        if (!labelValue) {
+        if (!labelValue || labelValue.kind === Kind.NULL) {
           return;
         }
         if (labelValue.kind !== Kind.STRING) {
