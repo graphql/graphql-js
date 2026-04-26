@@ -75,16 +75,19 @@ function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
   let dc: DiagnosticsChannelModule | undefined;
   try {
     if (
-      typeof process !== 'undefined' &&
-      typeof (process as { getBuiltinModule?: (id: string) => unknown })
-        .getBuiltinModule === 'function'
-    ) {
-      dc = (
-        process as {
-          getBuiltinModule: (id: string) => DiagnosticsChannelModule;
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins
+      typeof (
+        globalThis as {
+          process?: { getBuiltinModule?: (id: string) => unknown };
         }
-      ).getBuiltinModule('node:diagnostics_channel');
+      )?.process?.getBuiltinModule === 'function'
+    ) {
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins
+      dc = globalThis.process.getBuiltinModule(
+        'node:diagnostics_channel',
+      ) as DiagnosticsChannelModule;
     }
+    // TODO: remove this code when we drop support for Node < 20.16>.
     /* c8 ignore next 6 */
     if (!dc && typeof require === 'function') {
       // CJS fallback for runtimes that lack `process.getBuiltinModule`
