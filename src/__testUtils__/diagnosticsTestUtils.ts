@@ -65,11 +65,6 @@ export async function expectNoTracingActivity<T>(
   fn: () => T | Promise<T>,
 ): Promise<Awaited<T>> {
   expect(channel.hasSubscribers).to.equal(false);
-  expect(channel.start.hasSubscribers).to.equal(false);
-  expect(channel.end.hasSubscribers).to.equal(false);
-  expect(channel.asyncStart.hasSubscribers).to.equal(false);
-  expect(channel.asyncEnd.hasSubscribers).to.equal(false);
-  expect(channel.error.hasSubscribers).to.equal(false);
 
   const calls: Array<string> = [];
   const restore: Array<() => void> = [];

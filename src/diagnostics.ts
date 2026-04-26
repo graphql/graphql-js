@@ -20,7 +20,6 @@ import { isPromise } from './jsutils/isPromise.js';
  * @internal
  */
 export interface MinimalChannel {
-  readonly hasSubscribers: boolean;
   publish: (message: unknown) => void;
   runStores: <T, ContextType extends object>(
     context: ContextType,
