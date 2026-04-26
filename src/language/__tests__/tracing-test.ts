@@ -3,6 +3,7 @@ import { afterEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
+  expectNoTracingActivity,
   getTracingChannel,
 } from '../../__testUtils__/diagnosticsTestUtils.js';
 
@@ -39,8 +40,10 @@ describe('parse diagnostics channel', () => {
     expect(active.events[1].ctx.error).to.be.instanceOf(Error);
   });
 
-  it('does nothing when no subscribers are attached', () => {
-    const doc = parse('{ field }');
+  it('does not call tracing methods when no subscribers are attached', async () => {
+    const doc = await expectNoTracingActivity(parseChannel, () =>
+      parse('{ field }'),
+    );
     expect(doc.kind).to.equal('Document');
   });
 });

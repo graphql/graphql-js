@@ -3,6 +3,7 @@ import { afterEach, describe, it } from 'mocha';
 
 import {
   collectEvents,
+  expectNoTracingActivity,
   getTracingChannel,
 } from '../../__testUtils__/diagnosticsTestUtils.js';
 
@@ -173,13 +174,15 @@ describe('execute diagnostics channel', () => {
     }
   });
 
-  it('does nothing when no subscribers are attached', () => {
+  it('does not call tracing methods when no subscribers are attached', async () => {
     const document = parse('{ sync }');
-    const result = execute({
-      schema,
-      document,
-      rootValue: { sync: () => 'hello' },
-    });
+    const result = await expectNoTracingActivity(executeChannel, () =>
+      execute({
+        schema,
+        document,
+        rootValue: { sync: () => 'hello' },
+      }),
+    );
     expect(result).to.deep.equal({ data: { sync: 'hello' } });
   });
 });
@@ -257,18 +260,19 @@ describe('subscribe diagnostics channel', () => {
     expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
   });
 
-  it('does nothing when no subscribers are attached', async () => {
+  it('does not call tracing methods when no subscribers are attached', async () => {
     const document = parse('subscription { tick }');
 
-    const result = subscribe({
-      schema,
-      document,
-      rootValue: { tick: twoTicks },
-    });
-    const resolved = isPromise(result) ? await result : result;
-    if (isAsyncIterable(resolved)) {
+    await expectNoTracingActivity(subscribeChannel, async () => {
+      const result = subscribe({
+        schema,
+        document,
+        rootValue: { tick: twoTicks },
+      });
+      const resolved = isPromise(result) ? await result : result;
+      assert(isAsyncIterable(resolved));
       await resolved.return?.();
-    }
+    });
   });
 });
 
@@ -449,14 +453,14 @@ describe('resolve diagnostics channel', () => {
     ]);
   });
 
-  it('does nothing when no subscribers are attached', () => {
-    const result = execute({
-      schema,
-      document: parse('{ sync }'),
-      rootValue: { sync: () => 'hello' },
-    });
-    if (isPromise(result)) {
-      throw new Error('expected sync');
-    }
+  it('does not call tracing methods when no subscribers are attached', async () => {
+    const result = await expectNoTracingActivity(resolveChannel, () =>
+      execute({
+        schema,
+        document: parse('{ sync }'),
+        rootValue: { sync: () => 'hello' },
+      }),
+    );
+    expect(result).to.deep.equal({ data: { sync: 'hello' } });
   });
 });
