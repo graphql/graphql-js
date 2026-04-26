@@ -40,8 +40,7 @@ import {
 } from '../type/definition.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 
-import type { MinimalTracingChannel } from '../diagnostics.ts';
-import { resolveChannel, shouldTrace, traceMixed } from '../diagnostics.ts';
+import { resolveChannel, traceMixed } from '../diagnostics.ts';
 
 import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
 import { buildResolveInfo } from './buildResolveInfo.ts';
@@ -445,9 +444,6 @@ export class Executor<
     groupedFieldSet: GroupedFieldSet,
     positionContext: TPositionContext | undefined,
   ): PromiseOrValue<ObjMap<unknown>> {
-    const tracingChannel = shouldTrace(resolveChannel)
-      ? resolveChannel
-      : undefined;
     return promiseReduce(
       groupedFieldSet,
       (results, [responseName, fieldDetailsList]) => {
@@ -461,7 +457,6 @@ export class Executor<
           fieldDetailsList,
           fieldPath,
           positionContext,
-          tracingChannel,
         );
         if (result === undefined) {
           return results;
@@ -494,9 +489,6 @@ export class Executor<
   ): PromiseOrValue<ObjMap<unknown>> {
     const results = Object.create(null);
     let containsPromise = false;
-    const tracingChannel = shouldTrace(resolveChannel)
-      ? resolveChannel
-      : undefined;
 
     try {
       for (const [responseName, fieldDetailsList] of groupedFieldSet) {
@@ -507,7 +499,6 @@ export class Executor<
           fieldDetailsList,
           fieldPath,
           positionContext,
-          tracingChannel,
         );
 
         if (result !== undefined) {
@@ -551,7 +542,6 @@ export class Executor<
     fieldDetailsList: FieldDetailsList,
     path: Path,
     positionContext: TPositionContext | undefined,
-    tracingChannel: MinimalTracingChannel | undefined,
   ): PromiseOrValue<unknown> {
     const validatedExecutionArgs = this.validatedExecutionArgs;
     const { schema, contextValue, variableValues, hideSuggestions } =
@@ -565,7 +555,18 @@ export class Executor<
     }
 
     const returnType = fieldDef.type;
-    const resolveFn = fieldDef.resolve ?? validatedExecutionArgs.fieldResolver;
+    let resolveFn = fieldDef.resolve ?? validatedExecutionArgs.fieldResolver;
+
+    if (resolveChannel?.hasSubscribers) {
+      const channel = resolveChannel;
+      const originalResolveFn = resolveFn;
+      resolveFn = (s, args, c, info) =>
+        traceMixed(
+          channel,
+          this.buildResolveCtx(args, info, fieldDef.resolve === undefined),
+          () => originalResolveFn(s, args, c, info),
+        );
+    }
 
     const info = buildResolveInfo(
       validatedExecutionArgs,
@@ -593,17 +594,7 @@ export class Executor<
       // The resolve function's optional third argument is a context value that
       // is provided to every resolve function within an execution. It is commonly
       // used to represent an authenticated user, or request-specific caches.
-      const result = tracingChannel
-        ? this.invokeResolverWithTracing(
-            tracingChannel,
-            resolveFn,
-            source,
-            args,
-            contextValue,
-            info,
-            fieldDef.resolve === undefined,
-          )
-        : resolveFn(source, args, contextValue, info);
+      const result = resolveFn(source, args, contextValue, info);
 
       if (isPromiseLike(result)) {
         return this.completePromisedValue(
@@ -638,22 +629,6 @@ export class Executor<
       this.handleFieldError(rawError, returnType, fieldDetailsList, path);
       return null;
     }
-  }
-
-  invokeResolverWithTracing(
-    tracingChannel: MinimalTracingChannel,
-    resolveFn: GraphQLFieldResolver<unknown, unknown>,
-    source: unknown,
-    args: { readonly [argument: string]: unknown },
-    contextValue: unknown,
-    info: GraphQLResolveInfo,
-    isTrivialResolver: boolean,
-  ): PromiseOrValue<unknown> {
-    return traceMixed(
-      tracingChannel,
-      this.buildResolveCtx(args, info, isTrivialResolver),
-      () => resolveFn(source, args, contextValue, info),
-    );
   }
 
   /**
