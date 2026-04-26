@@ -1156,6 +1156,40 @@ function assertEventStream(result: unknown): AsyncIterable<unknown> {
   return result;
 }
 
+/**
+ * Build a graphql:execute channel context from ValidatedExecutionArgs.
+ * Used by executeSubscriptionEvent, where the operation has already been
+ * resolved during argument validation. The original document is not
+ * available at this point, only the resolved operation; subscribers that
+ * need the document should read it from the graphql:subscribe context.
+ */
+function buildExecuteCtxFromValidatedArgs(
+  args: ValidatedExecutionArgs,
+): object {
+  return {
+    operation: args.operation,
+    schema: args.schema,
+    variableValues: getOriginalVariableValues(args),
+    operationName: args.operation.name?.value,
+    operationType: args.operation.operation,
+  };
+}
+
+function getOriginalVariableValues(
+  args: ValidatedExecutionArgs,
+): Maybe<{ readonly [variable: string]: unknown }> {
+  const originalVariableValues: { [variable: string]: unknown } = {};
+  for (const [variableName, source] of Object.entries(
+    args.variableValues.sources,
+  )) {
+    if (Object.hasOwn(source, 'value')) {
+      originalVariableValues[variableName] = source.value;
+    }
+  }
+
+  return originalVariableValues;
+}
+
 function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
   return fieldDetailsList.map((fieldDetails) => fieldDetails.node);
 }

@@ -54,7 +54,8 @@ describe('execute diagnostics channel', () => {
   const executeChannel = getTracingChannel('graphql:execute');
 
   it('emits start and end around a synchronous execute', async () => {
-    const document = parse('query Q { sync }');
+    const document = parse('query Q($sync: String) { sync }');
+    const variableValues = { sync: 'ignored by the field' };
 
     await expectEvents(
       executeChannel,
@@ -63,6 +64,7 @@ describe('execute diagnostics channel', () => {
           schema,
           document,
           rootValue: { sync: () => 'hello' },
+          variableValues,
         }),
       (result) => [
         {
@@ -70,7 +72,7 @@ describe('execute diagnostics channel', () => {
           context: {
             document,
             schema,
-            variableValues: undefined,
+            variableValues,
             operationName: 'Q',
             operationType: 'query',
           },
@@ -80,7 +82,7 @@ describe('execute diagnostics channel', () => {
           context: {
             document,
             schema,
-            variableValues: undefined,
+            variableValues,
             operationName: 'Q',
             operationType: 'query',
             result,
@@ -370,9 +372,9 @@ describe('execute diagnostics channel', () => {
       yield { tick: 'two' };
     }
 
-    const document = parse('subscription S { tick }');
+    const document = parse('subscription S($tick: String) { tick }');
     const operation = document.definitions[0];
-    const variableValues = { coerced: {}, sources: {} };
+    const variableValues = { tick: 'ignored by the field' };
 
     await expectEvents(
       executeChannel,
@@ -381,6 +383,7 @@ describe('execute diagnostics channel', () => {
           schema,
           document,
           rootValue: { tick: tickGenerator },
+          variableValues,
         });
         assert(isAsyncIterable(subscription));
 
@@ -470,7 +473,8 @@ describe('subscribe diagnostics channel', () => {
   }
 
   it('emits start and end for a synchronous subscription setup', async () => {
-    const document = parse('subscription S { tick }');
+    const document = parse('subscription S($tick: String) { tick }');
+    const variableValues = { tick: 'ignored by the field' };
 
     await expectEvents(
       subscribeChannel,
@@ -479,6 +483,7 @@ describe('subscribe diagnostics channel', () => {
           schema,
           document,
           rootValue: { tick: twoTicks },
+          variableValues,
         });
         assert(isAsyncIterable(subscription));
 
@@ -494,7 +499,7 @@ describe('subscribe diagnostics channel', () => {
           context: {
             document,
             schema,
-            variableValues: undefined,
+            variableValues,
             operationName: 'S',
             operationType: 'subscription',
           },
@@ -504,7 +509,7 @@ describe('subscribe diagnostics channel', () => {
           context: {
             document,
             schema,
-            variableValues: undefined,
+            variableValues,
             operationName: 'S',
             operationType: 'subscription',
             result,
