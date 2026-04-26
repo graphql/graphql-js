@@ -1,13 +1,14 @@
 import { expect } from 'chai';
-import { afterEach, describe, it } from 'mocha';
+import { describe, it } from 'mocha';
 
-import {
-  collectEvents,
-  expectNoTracingActivity,
-  getTracingChannel,
-} from '../../__testUtils__/diagnosticsTestUtils.js';
+import { catchThrownError } from '../../__testUtils__/catchThrownError.js';
+import { expectEvents } from '../../__testUtils__/expectEvents.js';
+import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
+import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 
 import { parse } from '../../language/parser.js';
+
+import type { GraphQLSchema } from '../../type/schema.js';
 
 import { buildSchema } from '../../utilities/buildASTSchema.js';
 
@@ -22,47 +23,59 @@ const schema = buildSchema(`
 const validateChannel = getTracingChannel('graphql:validate');
 
 describe('validate diagnostics channel', () => {
-  let active: ReturnType<typeof collectEvents> | undefined;
+  it('emits start and end around a successful validate', async () => {
+    const document = parse('{ field }');
 
-  afterEach(() => {
-    active?.unsubscribe();
-    active = undefined;
+    await expectEvents(
+      validateChannel,
+      () => validate(schema, document),
+      (result) => [
+        { channel: 'start', context: { schema, document } },
+        { channel: 'end', context: { schema, document, result } },
+      ],
+    );
   });
 
-  it('emits start and end around a successful validate', () => {
-    active = collectEvents(validateChannel);
+  it('emits start and end for a document with validation errors', async () => {
+    const document = parse('{ missingField }');
 
-    const doc = parse('{ field }');
-    const errors = validate(schema, doc);
-
-    expect(errors).to.deep.equal([]);
-    expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
-    expect(active.events[0].ctx.schema).to.equal(schema);
-    expect(active.events[0].ctx.document).to.equal(doc);
+    await expectEvents(
+      validateChannel,
+      () => validate(schema, document),
+      (result) => [
+        { channel: 'start', context: { schema, document } },
+        { channel: 'end', context: { schema, document, result } },
+      ],
+    );
   });
 
-  it('emits start and end for a document with validation errors', () => {
-    active = collectEvents(validateChannel);
+  it('emits start, error, and end when validate throws on an invalid schema', async () => {
+    const context = {
+      document: parse('{ field }'),
+      schema: {} as GraphQLSchema,
+    };
 
-    const doc = parse('{ missingField }');
-    const errors = validate(schema, doc);
-
-    expect(errors).to.have.length.greaterThan(0);
-    // Validation errors are collected, not thrown, so we still see start/end.
-    expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
-  });
-
-  it('emits start, error, and end when validate throws on an invalid schema', () => {
-    active = collectEvents(validateChannel);
-
-    expect(() => validate({} as typeof schema, parse('{ field }'))).to.throw();
-
-    expect(active.events.map((e) => e.kind)).to.deep.equal([
-      'start',
-      'error',
-      'end',
-    ]);
-    expect(active.events[1].ctx.error).to.be.instanceOf(Error);
+    await expectEvents(
+      validateChannel,
+      () => catchThrownError(() => validate(context.schema, context.document)),
+      (error) => [
+        {
+          channel: 'start',
+          context,
+        },
+        {
+          channel: 'error',
+          context: {
+            ...context,
+            error,
+          },
+        },
+        {
+          channel: 'end',
+          context: { ...context, error },
+        },
+      ],
+    );
   });
 
   it('does not call tracing methods when no subscribers are attached', async () => {

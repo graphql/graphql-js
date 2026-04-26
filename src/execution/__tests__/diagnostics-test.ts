@@ -1,14 +1,14 @@
 import { assert, expect } from 'chai';
-import { afterEach, describe, it } from 'mocha';
+import { describe, it } from 'mocha';
 
-import {
-  collectEvents,
-  expectNoTracingActivity,
-  getTracingChannel,
-} from '../../__testUtils__/diagnosticsTestUtils.js';
+import { catchThrownError } from '../../__testUtils__/catchThrownError.js';
+import { expectEvents } from '../../__testUtils__/expectEvents.js';
+import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
+import { expectPromise } from '../../__testUtils__/expectPromise.js';
+import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
+import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
-import { isPromise } from '../../jsutils/isPromise.js';
 
 import { parse } from '../../language/parser.js';
 
@@ -51,90 +51,316 @@ const schema = buildSchema(`
 `);
 
 describe('execute diagnostics channel', () => {
-  let active: ReturnType<typeof collectEvents> | undefined;
   const executeChannel = getTracingChannel('graphql:execute');
 
-  afterEach(() => {
-    active?.unsubscribe();
-    active = undefined;
-  });
-
-  it('emits start and end around a synchronous execute', () => {
-    active = collectEvents(executeChannel);
-
+  it('emits start and end around a synchronous execute', async () => {
     const document = parse('query Q { sync }');
-    const result = execute({
-      schema,
-      document,
-      rootValue: { sync: () => 'hello' },
-    });
 
-    expect(result).to.deep.equal({ data: { sync: 'hello' } });
-    expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
-    expect(active.events[0].ctx.operationType).to.equal('query');
-    expect(active.events[0].ctx.operationName).to.equal('Q');
-    expect(active.events[0].ctx.document).to.equal(document);
-    expect(active.events[0].ctx.schema).to.equal(schema);
+    await expectEvents(
+      executeChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: { sync: () => 'hello' },
+        }),
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'Q',
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'Q',
+            operationType: 'query',
+            result,
+          },
+        },
+      ],
+    );
   });
 
   it('emits start, end, and async lifecycle when execute returns a promise', async () => {
-    active = collectEvents(executeChannel);
-
     const document = parse('query { async }');
-    const result = await execute({
-      schema,
-      document,
-      rootValue: { async: () => Promise.resolve('hello-async') },
+
+    await expectEvents(
+      executeChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: { async: () => Promise.resolve('hello-async') },
+        }),
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'asyncStart',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'asyncEnd',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+            result,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits full async lifecycle with error when execute returns a rejected promise', async () => {
+    const asyncDeferSchema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          hero: {
+            type: new GraphQLObjectType({
+              name: 'Hero',
+              fields: {
+                id: { type: GraphQLString },
+                name: { type: GraphQLString },
+              },
+            }),
+          },
+        },
+      }),
     });
-
-    expect(result).to.deep.equal({ data: { async: 'hello-async' } });
-    expect(active.events.map((e) => e.kind)).to.deep.equal([
-      'start',
-      'end',
-      'asyncStart',
-      'asyncEnd',
-    ]);
-  });
-
-  it('emits once for executeSync via experimentalExecuteIncrementally', () => {
-    active = collectEvents(executeChannel);
-
-    const document = parse('{ sync }');
-    executeSync({ schema, document, rootValue: { sync: () => 'hello' } });
-
-    expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
-  });
-
-  it('emits start and end around executeIgnoringIncremental', () => {
-    active = collectEvents(executeChannel);
-
-    const document = parse('query Q { sync }');
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    executeIgnoringIncremental({
-      schema,
-      document,
-      rootValue: { sync: () => 'hello' },
-    });
-
-    expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
-    expect(active.events[0].ctx.operationName).to.equal('Q');
-  });
-
-  it('emits start, error, and end when execute throws synchronously', () => {
-    active = collectEvents(executeChannel);
-
-    const schemaWithDefer = buildSchema(`
-      directive @defer on FIELD
-      type Query { sync: String }
+    const document = parse(`
+      query Deferred {
+        hero { name ... @defer { id } }
+      }
     `);
-    const document = parse('{ sync }');
-    expect(() => execute({ schema: schemaWithDefer, document })).to.throw();
 
-    expect(active.events.map((e) => e.kind)).to.deep.equal([
-      'start',
-      'error',
-      'end',
-    ]);
+    await expectEvents(
+      executeChannel,
+      () =>
+        expectPromise(
+          execute({
+            schema: asyncDeferSchema,
+            document,
+            rootValue: {
+              hero: Promise.resolve({
+                id: '1',
+                name: async () => {
+                  await resolveOnNextTick();
+                  return 'slow';
+                },
+              }),
+            },
+          }),
+        ).toReject(),
+      (error) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema: asyncDeferSchema,
+            variableValues: undefined,
+            operationName: 'Deferred',
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema: asyncDeferSchema,
+            variableValues: undefined,
+            operationName: 'Deferred',
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'asyncStart',
+          context: {
+            document,
+            schema: asyncDeferSchema,
+            variableValues: undefined,
+            operationName: 'Deferred',
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'error',
+          context: {
+            document,
+            schema: asyncDeferSchema,
+            variableValues: undefined,
+            operationName: 'Deferred',
+            operationType: 'query',
+            error,
+          },
+        },
+        {
+          channel: 'asyncEnd',
+          context: {
+            document,
+            schema: asyncDeferSchema,
+            variableValues: undefined,
+            operationName: 'Deferred',
+            operationType: 'query',
+            error,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits once for executeSync via experimentalExecuteIncrementally', async () => {
+    const document = parse('{ sync }');
+
+    await expectEvents(
+      executeChannel,
+      () =>
+        executeSync({ schema, document, rootValue: { sync: () => 'hello' } }),
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+            result,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits start and end around executeIgnoringIncremental', async () => {
+    const document = parse('query Q { sync }');
+
+    await expectEvents(
+      executeChannel,
+      () =>
+        executeIgnoringIncremental({
+          schema,
+          document,
+          rootValue: { sync: () => 'hello' },
+        }),
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'Q',
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'Q',
+            operationType: 'query',
+            result,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits start, error, and end when execute throws synchronously', async () => {
+    const document = parse('{ sync }');
+    const invalidSchema = buildSchema(`
+        directive @defer on FIELD
+        type Query { sync: String }
+      `);
+
+    await expectEvents(
+      executeChannel,
+      () =>
+        catchThrownError(() => execute({ schema: invalidSchema, document })),
+      (error) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema: invalidSchema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'error',
+          context: {
+            document,
+            schema: invalidSchema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+            error,
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema: invalidSchema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'query',
+            error,
+          },
+        },
+      ],
+    );
   });
 
   it('emits for each subscription event with resolved operation ctx', async () => {
@@ -145,33 +371,80 @@ describe('execute diagnostics channel', () => {
     }
 
     const document = parse('subscription S { tick }');
+    const operation = document.definitions[0];
+    const variableValues = { coerced: {}, sources: {} };
 
-    active = collectEvents(executeChannel);
+    await expectEvents(
+      executeChannel,
+      async () => {
+        const subscription = await subscribe({
+          schema,
+          document,
+          rootValue: { tick: tickGenerator },
+        });
+        assert(isAsyncIterable(subscription));
 
-    const subscription = await subscribe({
-      schema,
-      document,
-      rootValue: { tick: tickGenerator },
-    });
-    assert(isAsyncIterable(subscription));
-
-    expect(await subscription.next()).to.deep.equal({
-      done: false,
-      value: { data: { tick: 'one' } },
-    });
-    expect(await subscription.next()).to.deep.equal({
-      done: false,
-      value: { data: { tick: 'two' } },
-    });
-
-    const starts = active.events.filter((e) => e.kind === 'start');
-    expect(starts.length).to.equal(2);
-    for (const ev of starts) {
-      expect(ev.ctx.operationType).to.equal('subscription');
-      expect(ev.ctx.operationName).to.equal('S');
-      expect(ev.ctx.operation).to.equal(document.definitions[0]);
-      expect(ev.ctx.schema).to.equal(schema);
-    }
+        const firstResult = await subscription.next();
+        expect(firstResult).to.deep.equal({
+          done: false,
+          value: { data: { tick: 'one' } },
+        });
+        const secondResult = await subscription.next();
+        expect(secondResult).to.deep.equal({
+          done: false,
+          value: { data: { tick: 'two' } },
+        });
+        const returned = subscription.return?.();
+        if (returned !== undefined) {
+          await returned;
+        }
+        return [firstResult, secondResult] as const;
+      },
+      ([firstResult, secondResult]) => [
+        {
+          channel: 'start',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'S',
+            operationType: 'subscription',
+            result: firstResult.value,
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'S',
+            operationType: 'subscription',
+            result: secondResult.value,
+          },
+        },
+      ],
+    );
   });
 
   it('does not call tracing methods when no subscribers are attached', async () => {
@@ -188,7 +461,6 @@ describe('execute diagnostics channel', () => {
 });
 
 describe('subscribe diagnostics channel', () => {
-  let active: ReturnType<typeof collectEvents> | undefined;
   const subscribeChannel = getTracingChannel('graphql:subscribe');
 
   async function* twoTicks(): AsyncIterable<{ tick: string }> {
@@ -197,175 +469,518 @@ describe('subscribe diagnostics channel', () => {
     yield { tick: 'two' };
   }
 
-  afterEach(() => {
-    active?.unsubscribe();
-    active = undefined;
-  });
-
   it('emits start and end for a synchronous subscription setup', async () => {
-    active = collectEvents(subscribeChannel);
-
     const document = parse('subscription S { tick }');
 
-    const result = subscribe({
-      schema,
-      document,
-      rootValue: { tick: twoTicks },
-    });
-    const resolved = isPromise(result) ? await result : result;
-    assert(isAsyncIterable(resolved));
-    await resolved.return?.();
+    await expectEvents(
+      subscribeChannel,
+      async () => {
+        const subscription = await subscribe({
+          schema,
+          document,
+          rootValue: { tick: twoTicks },
+        });
+        assert(isAsyncIterable(subscription));
 
-    expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
-    expect(active.events[0].ctx.operationType).to.equal('subscription');
-    expect(active.events[0].ctx.operationName).to.equal('S');
-    expect(active.events[0].ctx.document).to.equal(document);
-    expect(active.events[0].ctx.schema).to.equal(schema);
+        const returned = subscription.return?.();
+        if (returned !== undefined) {
+          await returned;
+        }
+        return subscription;
+      },
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+            result,
+          },
+        },
+      ],
+    );
   });
 
   it('emits the full async lifecycle when subscribe resolver returns a promise', async () => {
-    active = collectEvents(subscribeChannel);
-
     const document = parse('subscription { tick }');
 
-    const result = subscribe({
-      schema,
-      document,
-      rootValue: {
-        tick: (): Promise<AsyncIterable<{ tick: string }>> =>
-          Promise.resolve(twoTicks()),
-      },
-    });
-    const resolved = isPromise(result) ? await result : result;
-    assert(isAsyncIterable(resolved));
-    await resolved.return?.();
+    await expectEvents(
+      subscribeChannel,
+      async () => {
+        const subscription = await subscribe({
+          schema,
+          document,
+          rootValue: {
+            tick: (): Promise<AsyncIterable<{ tick: string }>> =>
+              Promise.resolve(twoTicks()),
+          },
+        });
+        assert(isAsyncIterable(subscription));
 
-    expect(active.events.map((e) => e.kind)).to.deep.equal([
-      'start',
-      'end',
-      'asyncStart',
-      'asyncEnd',
-    ]);
+        const returned = subscription.return?.();
+        if (returned !== undefined) {
+          await returned;
+        }
+        return subscription;
+      },
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'asyncStart',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'asyncEnd',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: 'subscription',
+            result,
+          },
+        },
+      ],
+    );
   });
 
-  it('emits only start and end for a synchronous validation failure', () => {
-    active = collectEvents(subscribeChannel);
-
-    // Invalid: no operation.
+  it('emits only start and end for a synchronous validation failure', async () => {
     const document = parse('fragment F on Subscription { tick }');
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    subscribe({ schema, document });
+    await expectEvents(
+      subscribeChannel,
+      async () => {
+        const result = await subscribe({ schema, document });
+        expect(result).to.have.property('errors');
+        return result;
+      },
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: undefined,
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: undefined,
+            operationType: undefined,
+            result,
+          },
+        },
+      ],
+    );
+  });
 
-    expect(active.events.map((e) => e.kind)).to.deep.equal(['start', 'end']);
+  it('emits start, error, and end when subscribe throws synchronously', async () => {
+    const document = parse('subscription S { tick }');
+    const invalidSchema = {} as GraphQLSchema;
+
+    await expectEvents(
+      subscribeChannel,
+      () =>
+        catchThrownError(() => subscribe({ schema: invalidSchema, document })),
+      (error) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema: invalidSchema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'error',
+          context: {
+            document,
+            schema: invalidSchema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+            error,
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema: invalidSchema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+            error,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits full async lifecycle when subscribe resolver rejects and subscribe resolves to an error result', async () => {
+    const document = parse('subscription S { tick }');
+    const error = new Error('subscribe-boom');
+
+    await expectEvents(
+      subscribeChannel,
+      async () => {
+        const result = await subscribe({
+          schema,
+          document,
+          rootValue: {
+            tick: () => Promise.reject(error),
+          },
+        });
+        expect(result).to.have.property('errors');
+        return result;
+      },
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'asyncStart',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'asyncEnd',
+          context: {
+            document,
+            schema,
+            variableValues: undefined,
+            operationName: 'S',
+            operationType: 'subscription',
+            result,
+          },
+        },
+      ],
+    );
   });
 
   it('does not call tracing methods when no subscribers are attached', async () => {
     const document = parse('subscription { tick }');
 
     await expectNoTracingActivity(subscribeChannel, async () => {
-      const result = subscribe({
+      const resolved = await subscribe({
         schema,
         document,
         rootValue: { tick: twoTicks },
       });
-      const resolved = isPromise(result) ? await result : result;
       assert(isAsyncIterable(resolved));
-      await resolved.return?.();
+
+      const returned = resolved.return?.();
+      if (returned !== undefined) {
+        await returned;
+      }
     });
   });
 });
 
 describe('resolve diagnostics channel', () => {
-  let active: ReturnType<typeof collectEvents> | undefined;
   const resolveChannel = getTracingChannel('graphql:resolve');
 
-  afterEach(() => {
-    active?.unsubscribe();
-    active = undefined;
-  });
+  it('emits start and end around a synchronous resolver', async () => {
+    const document = parse('{ sync }');
 
-  it('emits start and end around a synchronous resolver', () => {
-    active = collectEvents(resolveChannel);
-
-    const result = execute({
-      schema,
-      document: parse('{ sync }'),
-      rootValue: { sync: () => 'hello' },
-    });
-    if (isPromise(result)) {
-      throw new Error('expected sync');
-    }
-
-    const starts = active.events.filter((e) => e.kind === 'start');
-    expect(starts.length).to.equal(1);
-    expect(starts[0].ctx.fieldName).to.equal('sync');
-    expect(starts[0].ctx.parentType).to.equal('Query');
-    expect(starts[0].ctx.fieldType).to.equal('String');
-    expect(starts[0].ctx.fieldPath).to.equal('sync');
-
-    const kinds = active.events.map((e) => e.kind);
-    expect(kinds).to.deep.equal(['start', 'end']);
-  });
-
-  it('emits the full async lifecycle when a resolver returns a promise', async () => {
-    active = collectEvents(resolveChannel);
-
-    const result = execute({
-      schema,
-      document: parse('{ async }'),
-      rootValue: { async: () => Promise.resolve('hello-async') },
-    });
-    await result;
-
-    const kinds = active.events.map((e) => e.kind);
-    expect(kinds).to.deep.equal(['start', 'end', 'asyncStart', 'asyncEnd']);
-  });
-
-  it('emits start, error, end when a sync resolver throws', () => {
-    active = collectEvents(resolveChannel);
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    execute({
-      schema,
-      document: parse('{ fail }'),
-      rootValue: {
-        fail: () => {
-          throw new Error('boom');
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: { sync: () => 'hello' },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'sync',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'sync',
+          },
         },
-      },
-    });
-
-    const kinds = active.events.map((e) => e.kind);
-    expect(kinds).to.deep.equal(['start', 'error', 'end']);
-  });
-
-  it('emits full async lifecycle with error when a resolver rejects', async () => {
-    active = collectEvents(resolveChannel);
-
-    await execute({
-      schema,
-      document: parse('{ asyncFail }'),
-      rootValue: {
-        asyncFail: () => Promise.reject(new Error('async-boom')),
-      },
-    });
-
-    const kinds = active.events.map((e) => e.kind);
-    expect(kinds).to.deep.equal([
-      'start',
-      'end',
-      'asyncStart',
-      'error',
-      'asyncEnd',
-    ]);
-    const errorEvent = active.events.find((e) => e.kind === 'error');
-    expect((errorEvent?.ctx as { error?: Error }).error?.message).to.equal(
-      'async-boom',
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'sync',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'sync',
+            result: 'hello',
+          },
+        },
+      ],
     );
   });
 
-  it('reports isDefaultResolver based on field.resolve presence', () => {
+  it('emits the full async lifecycle when a resolver returns a promise', async () => {
+    const document = parse('{ async }');
+
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: { async: () => Promise.resolve('hello-async') },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'async',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'async',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'async',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'async',
+          },
+        },
+        {
+          channel: 'asyncStart',
+          context: {
+            fieldName: 'async',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'async',
+          },
+        },
+        {
+          channel: 'asyncEnd',
+          context: {
+            fieldName: 'async',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'async',
+            result: 'hello-async',
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits start, error, end when a sync resolver throws', async () => {
+    const document = parse('{ fail }');
+    const error = new Error('boom');
+
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: {
+            fail: () => {
+              throw error;
+            },
+          },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'fail',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'fail',
+          },
+        },
+        {
+          channel: 'error',
+          context: {
+            fieldName: 'fail',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'fail',
+            error,
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'fail',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'fail',
+            error,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits full async lifecycle with error when a resolver rejects', async () => {
+    const document = parse('{ asyncFail }');
+    const error = new Error('async-boom');
+
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: {
+            asyncFail: () => Promise.reject(error),
+          },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'asyncFail',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'asyncFail',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'asyncFail',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'asyncFail',
+          },
+        },
+        {
+          channel: 'asyncStart',
+          context: {
+            fieldName: 'asyncFail',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'asyncFail',
+          },
+        },
+        {
+          channel: 'error',
+          context: {
+            fieldName: 'asyncFail',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'asyncFail',
+            error,
+          },
+        },
+        {
+          channel: 'asyncEnd',
+          context: {
+            fieldName: 'asyncFail',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'asyncFail',
+            error,
+          },
+        },
+      ],
+    );
+  });
+
+  it('reports isDefaultResolver based on field.resolve presence', async () => {
     const trivialSchema = new GraphQLSchema({
       query: new GraphQLObjectType({
         name: 'Query',
@@ -379,78 +994,306 @@ describe('resolve diagnostics channel', () => {
       }),
     });
 
-    active = collectEvents(resolveChannel);
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    execute({
-      schema: trivialSchema,
-      document: parse('{ trivial custom }'),
-      rootValue: { trivial: 'value' },
-    });
-
-    const starts = active.events.filter((e) => e.kind === 'start');
-    const byField = new Map(
-      starts.map((e) => [e.ctx.fieldName, e.ctx.isDefaultResolver]),
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema: trivialSchema,
+          document: parse('{ trivial custom }'),
+          rootValue: { trivial: 'value' },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'trivial',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'trivial',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'trivial',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'trivial',
+            result: 'value',
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'custom',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: false,
+            fieldPath: 'custom',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'custom',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: false,
+            fieldPath: 'custom',
+            result: 'explicit',
+          },
+        },
+      ],
     );
-    expect(byField.get('trivial')).to.equal(true);
-    expect(byField.get('custom')).to.equal(false);
   });
 
-  it('serializes fieldPath lazily, joining path keys with dots', () => {
-    active = collectEvents(resolveChannel);
+  it('serializes fieldPath lazily, joining path keys with dots', async () => {
+    const document = parse('{ nested { leaf } }');
+    const nested = { leaf: 'leaf-value' };
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    execute({
-      schema,
-      document: parse('{ nested { leaf } }'),
-      rootValue: {
-        nested: { leaf: 'leaf-value' },
-      },
-    });
-
-    const starts = active.events.filter((e) => e.kind === 'start');
-    const paths = starts.map((e) => e.ctx.fieldPath);
-    expect(paths).to.deep.equal(['nested', 'nested.leaf']);
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: {
+            nested,
+          },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'nested',
+            parentType: 'Query',
+            fieldType: 'Nested',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'nested',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'nested',
+            parentType: 'Query',
+            fieldType: 'Nested',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'nested',
+            result: nested,
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'leaf',
+            parentType: 'Nested',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'nested.leaf',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'leaf',
+            parentType: 'Nested',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'nested.leaf',
+            result: 'leaf-value',
+          },
+        },
+      ],
+    );
   });
 
-  it('fires once per field, not per schema walk', () => {
-    active = collectEvents(resolveChannel);
+  it('fires once per field, not per schema walk', async () => {
+    const document = parse('{ sync plain nested { leaf } }');
+    const nested = { leaf: 'leaf-value' };
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    execute({
-      schema,
-      document: parse('{ sync plain nested { leaf } }'),
-      rootValue: {
-        sync: () => 'hello',
-        // no `plain` resolver, default property-access is used.
-        plain: 'plain-value',
-        nested: { leaf: 'leaf-value' },
-      },
-    });
-
-    const starts = active.events.filter((e) => e.kind === 'start');
-    const endsSync = active.events.filter((e) => e.kind === 'end');
-    expect(starts.length).to.equal(4); // sync, plain, nested, nested.leaf
-    expect(endsSync.length).to.equal(4);
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: {
+            sync: () => 'hello',
+            plain: 'plain-value',
+            nested,
+          },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'sync',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'sync',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'sync',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'sync',
+            result: 'hello',
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'plain',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'plain',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'plain',
+            parentType: 'Query',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'plain',
+            result: 'plain-value',
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'nested',
+            parentType: 'Query',
+            fieldType: 'Nested',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'nested',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'nested',
+            parentType: 'Query',
+            fieldType: 'Nested',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'nested',
+            result: nested,
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'leaf',
+            parentType: 'Nested',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'nested.leaf',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'leaf',
+            parentType: 'Nested',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'nested.leaf',
+            result: 'leaf-value',
+          },
+        },
+      ],
+    );
   });
 
   it('emits per-field for serial mutation execution', async () => {
-    active = collectEvents(resolveChannel);
+    const document = parse('mutation M { first second }');
 
-    await execute({
-      schema,
-      document: parse('mutation M { first second }'),
-      rootValue: {
-        first: () => 'one',
-        second: () => 'two',
-      },
-    });
-
-    const starts = active.events.filter((e) => e.kind === 'start');
-    expect(starts.map((e) => e.ctx.fieldName)).to.deep.equal([
-      'first',
-      'second',
-    ]);
+    await expectEvents(
+      resolveChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: {
+            first: () => 'one',
+            second: () => 'two',
+          },
+        }),
+      () => [
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'first',
+            parentType: 'Mutation',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'first',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'first',
+            parentType: 'Mutation',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'first',
+            result: 'one',
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            fieldName: 'second',
+            parentType: 'Mutation',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'second',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            fieldName: 'second',
+            parentType: 'Mutation',
+            fieldType: 'String',
+            args: {},
+            isDefaultResolver: true,
+            fieldPath: 'second',
+            result: 'two',
+          },
+        },
+      ],
+    );
   });
 
   it('does not call tracing methods when no subscribers are attached', async () => {
