@@ -2,6 +2,7 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.js';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 import { kitchenSinkSDL } from '../../__testUtils__/kitchenSinkSDL.js';
 
@@ -78,13 +79,9 @@ describe('stripIgnoredCharacters', () => {
   });
 
   it('report document with invalid token', () => {
-    let caughtError;
-
-    try {
-      stripIgnoredCharacters('{ foo(arg: "\n"');
-    } catch (e) {
-      caughtError = e;
-    }
+    const caughtError = expectToThrow(() =>
+      stripIgnoredCharacters('{ foo(arg: "\n"'),
+    );
 
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Unterminated string.

@@ -6,6 +6,7 @@ import {
   expectJSON,
   expectToThrowJSON,
 } from '../../__testUtils__/expectJSON.js';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.js';
 
 import { inspect } from '../../jsutils/inspect.js';
@@ -27,12 +28,7 @@ function expectSyntaxError(text: string) {
 
 describe('Parser', () => {
   it('parse provides useful errors', () => {
-    let caughtError;
-    try {
-      parse('{');
-    } catch (error) {
-      caughtError = error;
-    }
+    const caughtError = expectToThrow(() => parse('{'));
 
     expect(caughtError).to.deep.contain({
       message: 'Syntax Error: Expected Name, found <EOF>.',
@@ -78,12 +74,9 @@ describe('Parser', () => {
   });
 
   it('parse provides useful error when using source', () => {
-    let caughtError;
-    try {
-      parse(new Source('query', 'MyQuery.graphql'));
-    } catch (error) {
-      caughtError = error;
-    }
+    const caughtError = expectToThrow(() =>
+      parse(new Source('query', 'MyQuery.graphql')),
+    );
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Expected "{", found <EOF>.
 

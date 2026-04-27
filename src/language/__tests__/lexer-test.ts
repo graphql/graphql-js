@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.js';
 import { expectToThrowJSON } from '../../__testUtils__/expectJSON.js';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 
 import { inspect } from '../../jsutils/inspect.js';
 
@@ -173,12 +174,9 @@ describe('Lexer', () => {
   });
 
   it('errors respect whitespace', () => {
-    let caughtError;
-    try {
-      lexOne(['', '', ' ~', ''].join('\n'));
-    } catch (error) {
-      caughtError = error;
-    }
+    const caughtError = expectToThrow(() =>
+      lexOne(['', '', ' ~', ''].join('\n')),
+    );
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Unexpected character: "~".
 
@@ -191,14 +189,11 @@ describe('Lexer', () => {
   });
 
   it('updates line numbers in error for file context', () => {
-    let caughtError;
-    try {
+    const caughtError = expectToThrow(() => {
       const str = ['', '', '     ~', ''].join('\n');
       const source = new Source(str, 'foo.js', { line: 11, column: 12 });
       new Lexer(source).advance();
-    } catch (error) {
-      caughtError = error;
-    }
+    });
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Unexpected character: "~".
 
@@ -211,13 +206,10 @@ describe('Lexer', () => {
   });
 
   it('updates column numbers in error for file context', () => {
-    let caughtError;
-    try {
+    const caughtError = expectToThrow(() => {
       const source = new Source('~', 'foo.js', { line: 1, column: 5 });
       new Lexer(source).advance();
-    } catch (error) {
-      caughtError = error;
-    }
+    });
     expect(String(caughtError)).to.equal(dedent`
       Syntax Error: Unexpected character: "~".
 
