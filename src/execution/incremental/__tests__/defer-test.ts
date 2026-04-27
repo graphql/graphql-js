@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
+import { spyOnMethod } from '../../../__testUtils__/spyOn.js';
 
 import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
 
@@ -945,24 +946,19 @@ describe('Execute: defer directive', () => {
 
     const { promise: slowFieldPromise, resolve: resolveSlowField } =
       promiseWithResolvers();
-    let cResolverCalled = false;
-    let eResolverCalled = false;
+    const bResolvers = {
+      c: () => ({ d: 'd' }),
+      e: () => ({ f: 'f' }),
+    };
+    const cResolverSpy = spyOnMethod(bResolvers, 'c');
+    const eResolverSpy = spyOnMethod(bResolvers, 'e');
     const executeResult = experimentalExecuteIncrementally({
       schema,
       document,
       rootValue: {
         a: {
           someField: slowFieldPromise,
-          b: {
-            c: () => {
-              cResolverCalled = true;
-              return { d: 'd' };
-            },
-            e: () => {
-              eResolverCalled = true;
-              return { f: 'f' };
-            },
-          },
+          b: bResolvers,
         },
       },
       enableEarlyExecution: false,
@@ -982,8 +978,8 @@ describe('Execute: defer directive', () => {
 
     const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
-    expect(cResolverCalled).to.equal(false);
-    expect(eResolverCalled).to.equal(false);
+    expect(cResolverSpy.callCount).to.equal(0);
+    expect(eResolverSpy.callCount).to.equal(0);
 
     const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
@@ -1010,8 +1006,8 @@ describe('Execute: defer directive', () => {
       done: false,
     });
 
-    expect(cResolverCalled).to.equal(true);
-    expect(eResolverCalled).to.equal(false);
+    expect(cResolverSpy.callCount).to.equal(1);
+    expect(eResolverSpy.callCount).to.equal(0);
 
     resolveSlowField('someField');
 
@@ -1037,7 +1033,7 @@ describe('Execute: defer directive', () => {
       done: false,
     });
 
-    expect(eResolverCalled).to.equal(true);
+    expect(eResolverSpy.callCount).to.equal(1);
 
     const result4 = await iterator.next();
     expectJSON(result4).toDeepEqual({
@@ -1074,24 +1070,21 @@ describe('Execute: defer directive', () => {
     const { promise: cPromise, resolve: resolveC } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
-    let cResolverCalled = false;
-    let eResolverCalled = false;
+    const bResolvers = {
+      c: async () => {
+        await cPromise;
+        return { d: 'd' };
+      },
+      e: () => ({ f: 'f' }),
+    };
+    const cResolverSpy = spyOnMethod(bResolvers, 'c');
+    const eResolverSpy = spyOnMethod(bResolvers, 'e');
     const executeResult = experimentalExecuteIncrementally({
       schema,
       document,
       rootValue: {
         a: {
-          b: {
-            c: async () => {
-              cResolverCalled = true;
-              await cPromise;
-              return { d: 'd' };
-            },
-            e: () => {
-              eResolverCalled = true;
-              return { f: 'f' };
-            },
-          },
+          b: bResolvers,
         },
       },
       enableEarlyExecution: false,
@@ -1111,8 +1104,8 @@ describe('Execute: defer directive', () => {
 
     const iterator = executeResult.subsequentResults[Symbol.asyncIterator]();
 
-    expect(cResolverCalled).to.equal(false);
-    expect(eResolverCalled).to.equal(false);
+    expect(cResolverSpy.callCount).to.equal(0);
+    expect(eResolverSpy.callCount).to.equal(0);
 
     const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
@@ -1135,8 +1128,8 @@ describe('Execute: defer directive', () => {
 
     resolveC();
 
-    expect(cResolverCalled).to.equal(true);
-    expect(eResolverCalled).to.equal(false);
+    expect(cResolverSpy.callCount).to.equal(1);
+    expect(eResolverSpy.callCount).to.equal(0);
 
     const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({
@@ -2313,7 +2306,6 @@ describe('Execute: defer directive', () => {
       promiseWithResolvers<{
         value: () => string;
       }>();
-    let lateValueCalls = 0;
     const resultPromise = experimentalExecuteIncrementally({
       schema: lateSchema,
       document,
@@ -2364,15 +2356,14 @@ describe('Execute: defer directive', () => {
       },
     });
 
-    resolveSide({
-      value() {
-        lateValueCalls += 1;
-        return 'late value';
-      },
-    });
+    const lateSide = {
+      value: () => 'late value',
+    };
+    const lateValueSpy = spyOnMethod(lateSide, 'value');
+    resolveSide(lateSide);
     await resolveOnNextTick();
     await resolveOnNextTick();
-    expect(lateValueCalls).to.equal(0);
+    expect(lateValueSpy.callCount).to.equal(0);
 
     const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({
@@ -2471,7 +2462,6 @@ describe('Execute: defer directive', () => {
       promiseWithResolvers<{
         value: () => string;
       }>();
-    let lateValueCalls = 0;
     const resultPromise = experimentalExecuteIncrementally({
       schema: lateSchema,
       document,
@@ -2516,15 +2506,14 @@ describe('Execute: defer directive', () => {
       },
     });
 
-    resolveSide({
-      value() {
-        lateValueCalls += 1;
-        return 'late value';
-      },
-    });
+    const lateSide = {
+      value: () => 'late value',
+    };
+    const lateValueSpy = spyOnMethod(lateSide, 'value');
+    resolveSide(lateSide);
     await resolveOnNextTick();
     await resolveOnNextTick();
-    expect(lateValueCalls).to.equal(0);
+    expect(lateValueSpy.callCount).to.equal(0);
 
     const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({
@@ -3242,7 +3231,6 @@ describe('Execute: defer directive', () => {
     const { promise: returnCleanup, resolve: resolveReturnCleanup } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
-    let sourceReturnCalls = 0;
     const asyncIterator = {
       [Symbol.asyncIterator]() {
         return this;
@@ -3253,11 +3241,12 @@ describe('Execute: defer directive', () => {
         });
       },
       async return() {
-        sourceReturnCalls += 1;
         await returnCleanup;
         return { value: undefined, done: true };
       },
     };
+
+    const sourceReturnSpy = spyOnMethod(asyncIterator, 'return');
 
     const resultPromise = experimentalExecuteIncrementally({
       schema: cancellationSchema,
@@ -3289,7 +3278,7 @@ describe('Execute: defer directive', () => {
     abortController.abort();
     await resolveOnNextTick();
 
-    expect(sourceReturnCalls).to.equal(1);
+    expect(sourceReturnSpy.callCount).to.equal(1);
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );

@@ -5,6 +5,7 @@ import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
+import { spyOnMethod } from '../../../__testUtils__/spyOn.js';
 
 import { invariant } from '../../../jsutils/invariant.js';
 import { isPromise } from '../../../jsutils/isPromise.js';
@@ -400,12 +401,12 @@ describe('Queue', () => {
     const { promise: cleanup, resolve: resolveCleanup } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
-    let cleanupCalled = false;
+    const cleanupHooks = {
+      cleanup: () => cleanup,
+    };
+    const cleanupSpy = spyOnMethod(cleanupHooks, 'cleanup');
     const sub = new Queue(({ onStop }) => {
-      onStop(() => {
-        cleanupCalled = true;
-        return cleanup;
-      });
+      onStop(cleanupHooks.cleanup);
       throw new Error('Oops');
     }).subscribe();
 
@@ -421,7 +422,7 @@ describe('Queue', () => {
     );
 
     await resolveOnNextTick();
-    expect(cleanupCalled).to.equal(true);
+    expect(cleanupSpy.callCount).to.equal(1);
     expect(nextSettled).to.equal(false);
 
     resolveCleanup();

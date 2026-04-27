@@ -5,6 +5,7 @@ import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualProm
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { spyOnMethod } from '../../__testUtils__/spyOn.js';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
 import { isPromise } from '../../jsutils/isPromise.js';
@@ -379,12 +380,17 @@ describe('Subscription Initialization Phase', () => {
   });
 
   it('should only resolve the first field of invalid multi-field', async () => {
-    async function* fooGenerator() {
-      yield { foo: 'FooValue' };
-    }
+    const rootValue = {
+      async *foo() {
+        yield { foo: 'FooValue' };
+      },
+      async *bar() {
+        /* c8 ignore next 0 */
+      },
+    };
 
-    let didResolveFoo = false;
-    let didResolveBar = false;
+    const fooSpy = spyOnMethod(rootValue, 'foo');
+    const barSpy = spyOnMethod(rootValue, 'bar');
 
     const schema = new GraphQLSchema({
       query: DummyQueryType,
@@ -393,17 +399,9 @@ describe('Subscription Initialization Phase', () => {
         fields: {
           foo: {
             type: GraphQLString,
-            subscribe() {
-              didResolveFoo = true;
-              return fooGenerator();
-            },
           },
           bar: {
             type: GraphQLString,
-            /* c8 ignore next 3 */
-            subscribe() {
-              didResolveBar = true;
-            },
           },
         },
       }),
@@ -412,11 +410,12 @@ describe('Subscription Initialization Phase', () => {
     const subscription = subscribe({
       schema,
       document: parse('subscription { foo bar }'),
+      rootValue,
     });
     assert(isAsyncIterable(subscription));
 
-    expect(didResolveFoo).to.equal(true);
-    expect(didResolveBar).to.equal(false);
+    expect(fooSpy.callCount).to.equal(1);
+    expect(barSpy.callCount).to.equal(0);
 
     expect(await subscription.next()).to.have.property('done', false);
 

@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
+import { spyOn } from '../../../__testUtils__/spyOn.js';
 
 import { isPromise } from '../../../jsutils/isPromise.js';
 
@@ -33,11 +34,8 @@ describe('Computation', () => {
   });
 
   it('only runs once when started multiple times', async () => {
-    let runCount = 0;
-    const computation = new Computation(() => {
-      runCount++;
-      return { value: 'done' };
-    });
+    const runSpy = spyOn(() => ({ value: 'done' }));
+    const computation = new Computation(runSpy);
 
     await Promise.all([
       // eslint-disable-next-line @typescript-eslint/await-thenable
@@ -58,16 +56,15 @@ describe('Computation', () => {
       { value: 'done' },
       { value: 'done' },
     ]);
-    expect(runCount).to.equal(1);
+    expect(runSpy.callCount).to.equal(1);
   });
 
   it('stores async result via result()', async () => {
-    let runCount = 0;
-    const computation = new Computation(async () => {
-      runCount++;
+    const runSpy = spyOn(async () => {
       await resolveOnNextTick();
       return { value: 'done' };
     });
+    const computation = new Computation(runSpy);
 
     await Promise.all([
       // eslint-disable-next-line @typescript-eslint/await-thenable
@@ -88,96 +85,77 @@ describe('Computation', () => {
       { value: 'done' },
       { value: 'done' },
     ]);
-    expect(runCount).to.equal(1);
+    expect(runSpy.callCount).to.equal(1);
   });
 
   it('stores sync error in result()', () => {
-    let runCount = 0;
-    const computation = new Computation(() => {
-      runCount++;
+    const runSpy = spyOn(() => {
       throw new Error('failure');
     });
+    const computation = new Computation(runSpy);
 
     expect(() => computation.prime()).to.not.throw();
     expect(() => computation.result()).to.throw('failure');
     expect(() => computation.result()).to.throw('failure');
-    expect(runCount).to.equal(1);
+    expect(runSpy.callCount).to.equal(1);
   });
 
   it('stores async error in result()', async () => {
-    let runCount = 0;
-    const computation = new Computation(async () => {
-      runCount++;
+    const runSpy = spyOn(async () => {
       await resolveOnNextTick();
       throw new Error('failure');
     });
+    const computation = new Computation(runSpy);
 
     expect(() => computation.prime()).to.not.throw();
     await expectPromise(computation.result()).toRejectWith('failure');
     expect(() => computation.result()).to.throw('failure');
-    expect(runCount).to.equal(1);
+    expect(runSpy.callCount).to.equal(1);
   });
 
   it('can be aborted before running', () => {
-    let onAbortRan = false;
-    const computation = new Computation(
-      () => ({ value: 123 }),
-      () => {
-        onAbortRan = true;
-      },
-    );
+    const onAbortSpy = spyOn(() => undefined);
+    const computation = new Computation(() => ({ value: 123 }), onAbortSpy);
     abortIgnoringCleanup(computation);
     expect(() => computation.result()).to.throw('Cancelled!');
-    expect(onAbortRan).to.equal(false);
+    expect(onAbortSpy.callCount).to.equal(0);
   });
 
   it('cannot be aborted after running synchronously', () => {
-    let onAbortRan = false;
-    const computation = new Computation(
-      () => ({ value: 123 }),
-      () => {
-        onAbortRan = true;
-      },
-    );
+    const onAbortSpy = spyOn(() => undefined);
+    const computation = new Computation(() => ({ value: 123 }), onAbortSpy);
 
     computation.prime();
     abortIgnoringCleanup(computation);
     expect(computation.result()).to.deep.equal({ value: 123 });
-    expect(onAbortRan).to.equal(false);
+    expect(onAbortSpy.callCount).to.equal(0);
   });
 
   it('cannot be aborted after erroring synchronously', () => {
-    let onAbortRan = false;
-    const computation = new Computation(
-      () => {
-        throw new Error('failure');
-      },
-      () => {
-        onAbortRan = true;
-      },
-    );
+    const onAbortSpy = spyOn(() => undefined);
+    const computation = new Computation(() => {
+      throw new Error('failure');
+    }, onAbortSpy);
 
     computation.prime();
     abortIgnoringCleanup(computation);
     expect(() => computation.result()).to.throw('failure');
-    expect(onAbortRan).to.equal(false);
+    expect(onAbortSpy.callCount).to.equal(0);
   });
 
   it('can be aborted while running asynchronously', () => {
-    let onAbortRan = false;
+    const onAbortSpy = spyOn(() => undefined);
     const computation = new Computation(
       () =>
         new Promise(() => {
           // Never resolves.
         }),
-      () => {
-        onAbortRan = true;
-      },
+      onAbortSpy,
     );
 
     computation.prime();
     abortIgnoringCleanup(computation);
-    expect(onAbortRan).to.equal(true);
+    expect(onAbortSpy.callCount).to.equal(1);
     expect(() => computation.result()).to.throw('Cancelled!');
   });
 

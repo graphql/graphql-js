@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
+import { spyOnMethod } from '../../__testUtils__/spyOn.js';
 
 import { withConcurrentAbruptClose } from '../withConcurrentAbruptClose.js';
 
@@ -125,8 +126,6 @@ describe('withConcurrentAbruptClose', () => {
   });
 
   it('calls cleanup function when disposed', async () => {
-    let returned = false;
-
     const items = [1, 2, 3];
     const source: AsyncGenerator<number, void, void> = {
       [Symbol.asyncIterator]() {
@@ -141,30 +140,33 @@ describe('withConcurrentAbruptClose', () => {
         return Promise.resolve({ done: true, value: undefined });
       },
       return(): Promise<IteratorResult<number, void>> {
-        returned = true;
         return Promise.resolve({ done: true, value: undefined });
       },
       throw(): Promise<IteratorResult<number, void>> {
-        returned = true;
         return Promise.reject(new Error());
       },
       async [Symbol.asyncDispose]() {
         await this.return();
       },
     };
+    const returnSpy = spyOnMethod(source, 'return');
 
-    let called = false;
+    const cleanupHooks = {
+      cleanup: () => undefined,
+    };
+    const cleanupSpy = spyOnMethod(cleanupHooks, 'cleanup');
     {
-      await using generator = withConcurrentAbruptClose(source, () => {
-        called = true;
-      });
+      await using generator = withConcurrentAbruptClose(
+        source,
+        cleanupHooks.cleanup,
+      );
 
       expect(await generator.next()).to.deep.equal({ value: 1, done: false });
       expect(await generator.next()).to.deep.equal({ value: 2, done: false });
     }
 
-    expect(called).to.equal(true);
-    expect(returned).to.equal(true);
+    expect(cleanupSpy.callCount).to.equal(1);
+    expect(returnSpy.callCount).to.equal(1);
   });
 
   it('calls the abrupt-close function at most once before completion is observed', async () => {
@@ -192,10 +194,11 @@ describe('withConcurrentAbruptClose', () => {
       },
     };
 
-    let cleanupCalls = 0;
-    const generator = withConcurrentAbruptClose(source, () => {
-      cleanupCalls += 1;
-    });
+    const cleanupHooks = {
+      cleanup: () => undefined,
+    };
+    const cleanupSpy = spyOnMethod(cleanupHooks, 'cleanup');
+    const generator = withConcurrentAbruptClose(source, cleanupHooks.cleanup);
 
     const pendingNext = generator.next();
     await generator.return();
@@ -204,12 +207,10 @@ describe('withConcurrentAbruptClose', () => {
     resolveNext({ done: true, value: undefined });
     await pendingNext;
 
-    expect(cleanupCalls).to.equal(1);
+    expect(cleanupSpy.callCount).to.equal(1);
   });
 
   it('does not call cleanup function again when returned after completion', async () => {
-    let returned = false;
-
     const source: AsyncGenerator<number, void, void> = {
       [Symbol.asyncIterator]() {
         return this;
@@ -218,7 +219,6 @@ describe('withConcurrentAbruptClose', () => {
         return Promise.resolve({ done: true, value: undefined });
       },
       return(): Promise<IteratorResult<number, void>> {
-        returned = true;
         return Promise.resolve({ done: true, value: undefined });
       },
       throw(reason?: unknown): Promise<IteratorResult<number, void>> {
@@ -229,11 +229,13 @@ describe('withConcurrentAbruptClose', () => {
         await this.return();
       },
     };
+    const returnSpy = spyOnMethod(source, 'return');
 
-    let called = false;
-    const generator = withConcurrentAbruptClose(source, () => {
-      called = true;
-    });
+    const cleanupHooks = {
+      cleanup: () => undefined,
+    };
+    const cleanupSpy = spyOnMethod(cleanupHooks, 'cleanup');
+    const generator = withConcurrentAbruptClose(source, cleanupHooks.cleanup);
 
     expect(await generator.next()).to.deep.equal({
       value: undefined,
@@ -244,8 +246,8 @@ describe('withConcurrentAbruptClose', () => {
       done: true,
     });
 
-    expect(called).to.equal(false);
-    expect(returned).to.equal(true);
+    expect(cleanupSpy.callCount).to.equal(0);
+    expect(returnSpy.callCount).to.equal(1);
   });
 
   it('does not call cleanup function again when thrown after completion', async () => {
@@ -271,10 +273,13 @@ describe('withConcurrentAbruptClose', () => {
       },
     };
 
-    let called = false;
-    const generator = withConcurrentAbruptClose(source, () => {
-      called = true;
-    });
+    const cleanupHooks = {
+      cleanup() {
+        /* noop */
+      },
+    };
+    const cleanupSpy = spyOnMethod(cleanupHooks, 'cleanup');
+    const generator = withConcurrentAbruptClose(source, cleanupHooks.cleanup);
 
     expect(await generator.next()).to.deep.equal({
       value: undefined,
@@ -284,13 +289,11 @@ describe('withConcurrentAbruptClose', () => {
     const oops = new Error('Oops');
     await expectPromise(generator.throw(oops)).toRejectWith('Oops');
 
-    expect(called).to.equal(false);
+    expect(cleanupSpy.callCount).to.equal(0);
     expect(thrownReason).to.equal(oops);
   });
 
   it('does not call cleanup function again when disposed after completion', async () => {
-    let returned = false;
-
     const source: AsyncGenerator<number, void, void> = {
       [Symbol.asyncIterator]() {
         return this;
@@ -299,7 +302,6 @@ describe('withConcurrentAbruptClose', () => {
         return Promise.resolve({ done: true, value: undefined });
       },
       return(): Promise<IteratorResult<number, void>> {
-        returned = true;
         return Promise.resolve({ done: true, value: undefined });
       },
       throw(reason?: unknown): Promise<IteratorResult<number, void>> {
@@ -310,12 +312,17 @@ describe('withConcurrentAbruptClose', () => {
         await this.return();
       },
     };
+    const returnSpy = spyOnMethod(source, 'return');
 
-    let called = false;
+    const cleanupHooks = {
+      cleanup: () => undefined,
+    };
+    const cleanupSpy = spyOnMethod(cleanupHooks, 'cleanup');
     {
-      await using generator = withConcurrentAbruptClose(source, () => {
-        called = true;
-      });
+      await using generator = withConcurrentAbruptClose(
+        source,
+        cleanupHooks.cleanup,
+      );
 
       expect(await generator.next()).to.deep.equal({
         value: undefined,
@@ -323,8 +330,8 @@ describe('withConcurrentAbruptClose', () => {
       });
     }
 
-    expect(called).to.equal(false);
-    expect(returned).to.equal(true);
+    expect(cleanupSpy.callCount).to.equal(0);
+    expect(returnSpy.callCount).to.equal(1);
   });
 
   it('returns the generator itself when the `Symbol.asyncIterator` method is called', async () => {

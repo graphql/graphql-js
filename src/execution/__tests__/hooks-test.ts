@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { spyOn } from '../../__testUtils__/spyOn.js';
 
 import { isPromise } from '../../jsutils/isPromise.js';
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
@@ -470,7 +471,9 @@ describe('Execute: Hooks', () => {
       promiseWithResolvers<ReadonlyArray<string>>();
     const { promise: asyncWorkFinished, resolve: resolveAsyncWorkFinished } =
       promiseWithResolvers<undefined>();
-    let hookCalls = 0;
+    const asyncWorkFinishedSpy = spyOn(() =>
+      resolveAsyncWorkFinished(undefined),
+    );
 
     const result = await experimentalExecuteIncrementally({
       schema: cancellationHookSchema,
@@ -486,10 +489,7 @@ describe('Execute: Hooks', () => {
       `),
       enableEarlyExecution: true,
       hooks: {
-        asyncWorkFinished() {
-          hookCalls += 1;
-          resolveAsyncWorkFinished(undefined);
-        },
+        asyncWorkFinished: asyncWorkFinishedSpy,
       },
       rootValue: {
         todo: {
@@ -532,6 +532,6 @@ describe('Execute: Hooks', () => {
     expect(nextResult.value.hasNext).to.equal(false);
     await asyncWorkFinished;
     await asyncWorkObserved;
-    expect(hookCalls).to.equal(1);
+    expect(asyncWorkFinishedSpy.callCount).to.equal(1);
   });
 });

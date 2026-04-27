@@ -4,6 +4,7 @@ import { describe, it } from 'mocha';
 import { expectJSON } from '../../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
+import { spyOnMethod } from '../../../__testUtils__/spyOn.js';
 
 import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.js';
 import { promiseWithResolvers } from '../../../jsutils/promiseWithResolvers.js';
@@ -219,26 +220,24 @@ describe('Execute: stream directive', () => {
   it('Does not call `return` on an exhausted sync iterator', async () => {
     const document = parse('{ scalarList @stream(initialCount: 1) }');
     let index = 0;
-    let returned = false;
     const values = ['apple', 'banana', 'coconut'];
-    const result = await complete(document, {
-      scalarList: {
-        [Symbol.iterator]() {
-          return this;
-        },
-        next() {
-          const value = values[index++];
-          if (value === undefined) {
-            return { done: true, value: undefined };
-          }
-          return { done: false, value };
-        },
-        return() {
-          returned = true;
-          throw new Error('ignored return error');
-        },
+    const scalarList = {
+      [Symbol.iterator]() {
+        return this;
       },
-    });
+      next() {
+        const value = values[index++];
+        if (value === undefined) {
+          return { done: true, value: undefined };
+        }
+        return { done: false, value };
+      },
+      return() {
+        throw new Error('ignored return error');
+      },
+    };
+    const returnSpy = spyOnMethod(scalarList, 'return');
+    const result = await complete(document, { scalarList });
     expectJSON(result).toDeepEqual([
       {
         data: {
@@ -253,7 +252,7 @@ describe('Execute: stream directive', () => {
         hasNext: false,
       },
     ]);
-    expect(returned).to.equal(false);
+    expect(returnSpy.callCount).to.equal(0);
     expect(index).to.equal(4);
   });
   it('Can use default value of initialCount', async () => {
@@ -1235,27 +1234,25 @@ describe('Execute: stream directive', () => {
     // eslint-disable-next-line no-undef
     process.on('unhandledRejection', unhandledRejectionListener);
     let index = 0;
-    let returned = false;
     const values = [friends[0], null, delayedReject('third bad')];
 
-    const result = await complete(document, {
-      nonNullFriendList: {
-        [Symbol.iterator]() {
-          return this;
-        },
-        next() {
-          const value = values[index++];
-          if (value === undefined) {
-            return { done: true, value: undefined };
-          }
-          return { done: false, value };
-        },
-        return() {
-          returned = true;
-          throw new Error('ignored return error');
-        },
+    const nonNullFriendList = {
+      [Symbol.iterator]() {
+        return this;
       },
-    });
+      next() {
+        const value = values[index++];
+        if (value === undefined) {
+          return { done: true, value: undefined };
+        }
+        return { done: false, value };
+      },
+      return() {
+        throw new Error('ignored return error');
+      },
+    };
+    const returnSpy = spyOnMethod(nonNullFriendList, 'return');
+    const result = await complete(document, { nonNullFriendList });
 
     await new Promise((resolve) => setTimeout(resolve, 20));
 
@@ -1287,7 +1284,7 @@ describe('Execute: stream directive', () => {
         hasNext: false,
       },
     ]);
-    expect(returned).to.equal(false);
+    expect(returnSpy.callCount).to.equal(0);
     expect(index).to.equal(4);
     expect(unhandledRejection).to.equal(null);
   });
@@ -1468,7 +1465,6 @@ describe('Execute: stream directive', () => {
     `);
     const { promise: metadataPromise, resolve: resolveMetadata } =
       promiseWithResolvers<{ value: () => string }>();
-    let lateMetadataValueCalls = 0;
     const execution = await experimentalExecuteIncrementally({
       schema: lateSchema,
       document,
@@ -1533,15 +1529,14 @@ describe('Execute: stream directive', () => {
       },
     ]);
 
-    resolveMetadata({
-      value() {
-        lateMetadataValueCalls += 1;
-        return 'late value';
-      },
-    });
+    const lateMetadata = {
+      value: () => 'late value',
+    };
+    const lateMetadataValueSpy = spyOnMethod(lateMetadata, 'value');
+    resolveMetadata(lateMetadata);
     await resolveOnNextTick();
     await resolveOnNextTick();
-    expect(lateMetadataValueCalls).to.equal(0);
+    expect(lateMetadataValueSpy.callCount).to.equal(0);
   });
 
   it('Handles async errors thrown by completeValue after initialCount is reached for a non-nullable list', async () => {
@@ -2147,33 +2142,33 @@ describe('Execute: stream directive', () => {
   });
 
   it('Returns iterator and ignores errors when stream payloads are filtered', async () => {
-    let returned = false;
     let requested = false;
     const iterable = {
-      [Symbol.asyncIterator]: () => ({
-        next: () => {
-          /* c8 ignore start */
-          if (requested) {
-            // stream is filtered, next is not called, and so this is not reached.
-            return Promise.reject(new Error('Oops'));
-          } /* c8 ignore stop */
-          requested = true;
-          const friend = friends[0];
-          return Promise.resolve({
-            done: false,
-            value: {
-              name: friend.name,
-              nonNullName: null,
-            },
-          });
-        },
-        return: () => {
-          returned = true;
-          // Ignores errors from return.
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        /* c8 ignore start */
+        if (requested) {
+          // stream is filtered, next is not called, and so this is not reached.
           return Promise.reject(new Error('Oops'));
-        },
-      }),
+        } /* c8 ignore stop */
+        requested = true;
+        const friend = friends[0];
+        return Promise.resolve({
+          done: false,
+          value: {
+            name: friend.name,
+            nonNullName: null,
+          },
+        });
+      },
+      return() {
+        // Ignores errors from return.
+        return Promise.reject(new Error('Oops'));
+      },
     };
+    const returnSpy = spyOnMethod(iterable, 'return');
 
     const document = parse(`
       query {
@@ -2247,7 +2242,7 @@ describe('Execute: stream directive', () => {
     const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({ done: true, value: undefined });
 
-    assert(returned);
+    assert(returnSpy.callCount === 1);
   });
   it('Handles promises returned by completeValue after initialCount is reached', async () => {
     const document = parse(`
@@ -2766,18 +2761,20 @@ describe('Execute: stream directive', () => {
     });
   });
   it('Returns underlying async iterables when returned generator is returned', async () => {
-    let returned = false;
     const iterable = {
-      [Symbol.asyncIterator]: () => ({
-        next: () =>
-          new Promise(() => {
-            /* never resolves */
-          }),
-        return: () => {
-          returned = true;
-        },
-      }),
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return new Promise(() => {
+          /* never resolves */
+        });
+      },
+      return() {
+        /* noop */
+      },
     };
+    const returnSpy = spyOnMethod(iterable, 'return');
 
     const document = parse(`
       query {
@@ -2815,29 +2812,29 @@ describe('Execute: stream directive', () => {
       value: undefined,
     });
     await returnPromise;
-    assert(returned);
+    assert(returnSpy.callCount === 1);
   });
   it('Awaits stream source async iterable return before iterator return settles', async () => {
-    let returnCalled = false;
     const { promise: returnCleanup, resolve: resolveReturnCleanup } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
     const iterable = {
-      [Symbol.asyncIterator]: () => ({
-        next: () =>
-          new Promise(() => {
-            /* never resolves */
-          }),
-        return: async () => {
-          returnCalled = true;
-          await returnCleanup;
-          return {
-            value: undefined,
-            done: true,
-          };
-        },
-      }),
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next: () =>
+        new Promise(() => {
+          /* never resolves */
+        }),
+      return: async () => {
+        await returnCleanup;
+        return {
+          value: undefined,
+          done: true,
+        };
+      },
     };
+    const returnSpy = spyOnMethod(iterable, 'return');
 
     const document = parse(`
       query {
@@ -2879,7 +2876,7 @@ describe('Execute: stream directive', () => {
     );
 
     await resolveOnNextTick();
-    expect(returnCalled).to.equal(true);
+    expect(returnSpy.callCount).to.equal(1);
     expect(returnSettled).to.equal(false);
 
     resolveReturnCleanup();
@@ -2948,21 +2945,22 @@ describe('Execute: stream directive', () => {
   });
   it('Returns underlying async iterables when returned generator is thrown', async () => {
     let index = 0;
-    let returned = false;
     const iterable = {
-      [Symbol.asyncIterator]: () => ({
-        next: () => {
-          const friend = friends[index++];
-          if (friend == null) {
-            return Promise.resolve({ done: true, value: undefined });
-          }
-          return Promise.resolve({ done: false, value: friend });
-        },
-        return: () => {
-          returned = true;
-        },
-      }),
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        const friend = friends[index++];
+        if (friend == null) {
+          return Promise.resolve({ done: true, value: undefined });
+        }
+        return Promise.resolve({ done: false, value: friend });
+      },
+      return() {
+        /* noop */
+      },
     };
+    const returnSpy = spyOnMethod(iterable, 'return');
     const document = parse(`
       query {
         friendList @stream(initialCount: 1) {
@@ -3008,21 +3006,23 @@ describe('Execute: stream directive', () => {
       value: undefined,
     });
 
-    assert(returned);
+    assert(returnSpy.callCount === 1);
   });
   it('Returns underlying async iterables when resource is disposed before source completion', async () => {
-    let returned = false;
     const iterable = {
-      [Symbol.asyncIterator]: () => ({
-        next: () =>
-          new Promise(() => {
-            /* never resolves */
-          }),
-        return: () => {
-          returned = true;
-        },
-      }),
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return new Promise(() => {
+          /* never resolves */
+        });
+      },
+      return() {
+        /* noop */
+      },
     };
+    const returnSpy = spyOnMethod(iterable, 'return');
 
     const document = parse(`
       query {
@@ -3056,27 +3056,28 @@ describe('Execute: stream directive', () => {
       });
     }
 
-    assert(returned);
+    assert(returnSpy.callCount === 1);
   });
 
   it('Does not return underlying async iterables when resource is disposed after source completion', async () => {
     let index = 0;
-    let returned = false;
     const values = [friends[0]];
     const iterable = {
-      [Symbol.asyncIterator]: () => ({
-        next: () => {
-          const friend = values[index++];
-          if (friend == null) {
-            return Promise.resolve({ done: true, value: undefined });
-          }
-          return Promise.resolve({ done: false, value: friend });
-        },
-        return: () => {
-          returned = true;
-        },
-      }),
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        const friend = values[index++];
+        if (friend == null) {
+          return Promise.resolve({ done: true, value: undefined });
+        }
+        return Promise.resolve({ done: false, value: friend });
+      },
+      return() {
+        /* noop */
+      },
     };
+    const returnSpy = spyOnMethod(iterable, 'return');
 
     const document = parse(`
       query {
@@ -3123,7 +3124,7 @@ describe('Execute: stream directive', () => {
       });
     }
 
-    assert(!returned);
+    assert(!returnSpy.callCount);
   });
   it('limits stream batches to the default capacity (100)', async () => {
     const document = parse(`
@@ -3295,7 +3296,6 @@ describe('Execute: stream directive (cancellation)', () => {
     const { promise: returnCleanup, resolve: resolveReturnCleanup } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
-    let returnCalled = false;
     let done = false;
     const asyncIterator = {
       [Symbol.asyncIterator]() {
@@ -3312,11 +3312,11 @@ describe('Execute: stream directive (cancellation)', () => {
         });
       },
       async return() {
-        returnCalled = true;
         await returnCleanup;
         return { value: undefined, done: true };
       },
     };
+    const returnSpy = spyOnMethod(asyncIterator, 'return');
 
     const result = await experimentalExecuteIncrementally({
       schema,
@@ -3343,7 +3343,7 @@ describe('Execute: stream directive (cancellation)', () => {
 
     abortController.abort();
     await resolveOnNextTick();
-    expect(returnCalled).to.equal(true);
+    expect(returnSpy.callCount).to.equal(1);
     expect(nextPromiseSettled).to.equal(false);
 
     resolveReturnCleanup();
@@ -3389,7 +3389,6 @@ describe('Execute: stream directive (cancellation)', () => {
     });
 
     let yieldedTodo = false;
-    let itemsReturnCalled = false;
     const itemsAsyncIterator = {
       [Symbol.asyncIterator]() {
         return this;
@@ -3399,11 +3398,11 @@ describe('Execute: stream directive (cancellation)', () => {
         return never;
       },
       async return() {
-        itemsReturnCalled = true;
         await itemsReturnCleanup;
         return { value: undefined, done: true };
       },
     };
+    const itemsReturnSpy = spyOnMethod(itemsAsyncIterator, 'return');
     const todosAsyncIterator = {
       [Symbol.asyncIterator]() {
         return this;
@@ -3464,7 +3463,7 @@ describe('Execute: stream directive (cancellation)', () => {
     abortController.abort();
     await resolveOnNextTick();
 
-    expect(itemsReturnCalled).to.equal(true);
+    expect(itemsReturnSpy.callCount).to.equal(1);
     expect(nextPromiseSettled).to.equal(false);
 
     resolveItemsReturnCleanup();
@@ -3537,17 +3536,15 @@ describe('Execute: stream directive (cancellation)', () => {
     const { promise: secondNextStarted, resolve: resolveSecondNextStarted } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
-    let nextCalls = 0;
-    let sourceReturnCalls = 0;
-    let deferredAuthorCalls = 0;
+    let firstCall = true;
 
     const todos = {
       [Symbol.asyncIterator]() {
         return this;
       },
       next() {
-        if (nextCalls === 0) {
-          nextCalls += 1;
+        if (firstCall) {
+          firstCall = false;
           return Promise.resolve({
             value: itemPromise,
             done: false,
@@ -3559,10 +3556,11 @@ describe('Execute: stream directive (cancellation)', () => {
         });
       },
       return() {
-        sourceReturnCalls += 1;
         return Promise.resolve({ value: undefined, done: true });
       },
     };
+
+    const sourceReturnSpy = spyOnMethod(todos, 'return');
 
     const result = await experimentalExecuteIncrementally({
       schema: cancelStreamSchema,
@@ -3578,18 +3576,19 @@ describe('Execute: stream directive (cancellation)', () => {
     await secondNextStarted;
     await expectPromise(iterator.return()).toResolve();
     await expectPromise(nextPromise).toResolve();
-    expect(sourceReturnCalls).to.equal(1);
+    expect(sourceReturnSpy.callCount).to.equal(1);
 
-    resolveItem({
+    const todo = {
       id: 'todo',
-      author() {
-        deferredAuthorCalls += 1;
-        return { id: 'author' };
-      },
-    });
+      author: () => ({ id: 'author' }),
+    };
+
+    const deferredAuthorSpy = spyOnMethod(todo, 'author');
+
+    resolveItem(todo);
     await resolveOnNextTick();
     await resolveOnNextTick();
-    expect(deferredAuthorCalls).to.equal(0);
+    expect(deferredAuthorSpy.callCount).to.equal(0);
   });
 
   it('stops when the stream queue is back-pressured and the consumer cancels', async () => {
@@ -3599,7 +3598,6 @@ describe('Execute: stream directive (cancellation)', () => {
       promiseWithResolvers<void>();
     let count = 0;
     let done = false;
-    let returned = false;
     const iterator = {
       [Symbol.iterator]() {
         return this;
@@ -3618,10 +3616,11 @@ describe('Execute: stream directive (cancellation)', () => {
         return { value: String(count), done: false };
       },
       return() {
-        returned = true;
         throw new Error('ignored return error');
       },
     };
+
+    const returnSpy = spyOnMethod(iterator, 'return');
 
     const result = await experimentalExecuteIncrementally({
       schema,
@@ -3637,7 +3636,7 @@ describe('Execute: stream directive (cancellation)', () => {
     await resolveOnNextTick();
     const stream = result.subsequentResults[Symbol.asyncIterator]();
     await expectPromise(stream.return()).toResolve();
-    expect(returned).to.equal(false);
+    expect(returnSpy.callCount).to.equal(0);
   });
 
   it('cancels tasks and streams when aborted before initial execution finishes', async () => {
@@ -3723,7 +3722,6 @@ describe('Execute: stream directive (cancellation)', () => {
     const { promise: returnCleanup, resolve: resolveReturnCleanup } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
-    let sourceReturnCalls = 0;
     const never = new Promise<IteratorResult<string>>(() => {
       /* never resolves */
     });
@@ -3735,11 +3733,11 @@ describe('Execute: stream directive (cancellation)', () => {
         return never;
       },
       async return() {
-        sourceReturnCalls += 1;
         await returnCleanup;
         return { value: undefined, done: true };
       },
     };
+    const sourceReturnSpy = spyOnMethod(asyncIterator, 'return');
 
     const resultPromise = experimentalExecuteIncrementally({
       schema: cancellationSchema,
@@ -3766,7 +3764,7 @@ describe('Execute: stream directive (cancellation)', () => {
     abortController.abort();
     await resolveOnNextTick();
 
-    expect(sourceReturnCalls).to.equal(1);
+    expect(sourceReturnSpy.callCount).to.equal(1);
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
@@ -3792,7 +3790,6 @@ describe('Execute: stream directive (cancellation)', () => {
       }
     `);
 
-    let streamReturnCount = 0;
     let nextPromiseResolved = false;
     const { promise: nextStarted, resolve: resolveNextStarted } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -3812,10 +3809,10 @@ describe('Execute: stream directive (cancellation)', () => {
         return nextPromise;
       },
       return() {
-        streamReturnCount += 1;
         return Promise.resolve({ value: undefined, done: true });
       },
     };
+    const streamReturnSpy = spyOnMethod(asyncIterator, 'return');
 
     const { promise: authorStarted, resolve: resolveAuthorStarted } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
@@ -3857,13 +3854,12 @@ describe('Execute: stream directive (cancellation)', () => {
     await resolveOnNextTick();
     const followUp = await iterator.next();
     expect(followUp.done).to.equal(true);
-    expect(streamReturnCount).to.equal(1);
+    expect(streamReturnSpy.callCount).to.equal(1);
 
-    const priorStreamReturnCount = streamReturnCount;
     abortController.abort();
     await resolveOnNextTick();
 
-    expect(streamReturnCount).to.equal(priorStreamReturnCount);
+    expect(streamReturnSpy.callCount).to.equal(1);
 
     resolveNext({ value: 'value', done: false });
     resolveAuthor({ id: 'author' });

@@ -1,8 +1,9 @@
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { spyOnMethod } from '../../__testUtils__/spyOn.js';
 
 import type { PromiseOrValue } from '../../jsutils/PromiseOrValue.js';
 
@@ -87,25 +88,23 @@ describe('Execute: Accepts any iterable as list value', () => {
   });
 
   it('Does not call iterator `return` when iteration throws', () => {
-    let returnCalled = false;
     let nextCalls = 0;
     const listField = {
       [Symbol.iterator]() {
-        return {
-          next() {
-            nextCalls++;
-            if (nextCalls === 1) {
-              throw new Error('bad');
-            }
-            return { done: true, value: undefined };
-          },
-          return() {
-            returnCalled = true;
-            throw new Error('return bad');
-          },
-        };
+        return this;
+      },
+      next() {
+        nextCalls++;
+        if (nextCalls === 1) {
+          throw new Error('bad');
+        }
+        return { done: true, value: undefined };
+      },
+      return() {
+        throw new Error('return bad');
       },
     };
+    const returnSpy = spyOnMethod(listField, 'return');
 
     expectJSON(complete({ listField })).toDeepEqual({
       data: { listField: null },
@@ -118,7 +117,7 @@ describe('Execute: Accepts any iterable as list value', () => {
       ],
     });
     expect(nextCalls).to.equal(2);
-    expect(returnCalled).to.equal(false);
+    expect(returnSpy.callCount).to.equal(0);
   });
 });
 
@@ -132,7 +131,6 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
   }
 
   it('drains the iterator when `next` throws', async () => {
-    let returned = false;
     let nextCalls = 0;
 
     const listField: IterableIterator<string> = {
@@ -150,10 +148,10 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         return { done: true, value: undefined };
       },
       return(): IteratorResult<string> {
-        returned = true;
         return { done: true, value: undefined };
       },
     };
+    const returnSpy = spyOnMethod(listField, 'return');
 
     expectJSON(await complete({ listField })).toDeepEqual({
       data: { listField: null },
@@ -166,13 +164,12 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
       ],
     });
     expect(nextCalls).to.equal(3);
-    expect(returned).to.equal(false);
+    expect(returnSpy.callCount).to.equal(0);
   });
 
   it('drains the iterator when a null bubbles up from a non-null item', async () => {
     const values = [1, null, 2];
     let index = 0;
-    let returned = false;
 
     const listField: IterableIterator<number | null> = {
       [Symbol.iterator](): IterableIterator<number | null> {
@@ -186,10 +183,10 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         return { done: false, value };
       },
       return(): IteratorResult<number | null> {
-        returned = true;
         return { done: true, value: undefined };
       },
     };
+    const returnSpy = spyOnMethod(listField, 'return');
 
     expectJSON(await complete({ listField }, '[Int!]')).toDeepEqual({
       data: { listField: null },
@@ -202,7 +199,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
       ],
     });
     expect(index).to.equal(4);
-    expect(returned).to.equal(false);
+    expect(returnSpy.callCount).to.equal(0);
   });
 
   it('handles iterator errors with later pending promises without calling `return`', async () => {
@@ -212,7 +209,6 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     };
     // eslint-disable-next-line no-undef
     process.on('unhandledRejection', unhandledRejectionListener);
-    let returned = false;
     let nextCalls = 0;
     const laterPromise = delayedReject('later bad');
 
@@ -234,10 +230,10 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         return { done: true, value: undefined };
       },
       return(): IteratorResult<number | Promise<never>> {
-        returned = true;
         throw new Error('ignored return error');
       },
     };
+    const returnSpy = spyOnMethod(listField, 'return');
 
     expectJSON(await complete({ listField })).toDeepEqual({
       data: { listField: null },
@@ -256,7 +252,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     process.removeListener('unhandledRejection', unhandledRejectionListener);
 
     expect(nextCalls).to.equal(4);
-    expect(returned).to.equal(false);
+    expect(returnSpy.callCount).to.equal(0);
     expect(unhandledRejection).to.equal(null);
   });
 
@@ -267,7 +263,6 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     };
     // eslint-disable-next-line no-undef
     process.on('unhandledRejection', unhandledRejectionListener);
-    let returned = false;
     let index = 0;
     const values = [
       delayedReject('first bad'),
@@ -286,10 +281,10 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
         return { done: false, value };
       },
       return(): IteratorResult<Promise<string> | null> {
-        returned = true;
         throw new Error('ignored return error');
       },
     };
+    const returnSpy = spyOnMethod(listField, 'return');
 
     expectJSON(await complete({ listField }, '[String!]!')).toDeepEqual({
       data: null,
@@ -307,7 +302,7 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
 
-    expect(returned).to.equal(false);
+    expect(returnSpy.callCount).to.equal(0);
     expect(index).to.equal(4);
     expect(unhandledRejection).to.equal(null);
   });
@@ -523,16 +518,18 @@ describe('Execute: Accepts async iterables as list value', () => {
   it('Returns async iterable when list nulls', async () => {
     const values = [1, null, 2];
     let i = 0;
-    let returned = false;
     const listField = {
-      [Symbol.asyncIterator]: () => ({
-        next: () => Promise.resolve({ value: values[i++], done: false }),
-        return: () => {
-          returned = true;
-          return Promise.resolve({ value: undefined, done: true });
-        },
-      }),
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next() {
+        return Promise.resolve({ value: values[i++], done: false });
+      },
+      return() {
+        return Promise.resolve({ value: undefined, done: true });
+      },
     };
+    const returnSpy = spyOnMethod(listField, 'return');
     const errors = [
       {
         message: 'Cannot return null for non-nullable field Query.listField.',
@@ -545,7 +542,7 @@ describe('Execute: Accepts async iterables as list value', () => {
       data: { listField: null },
       errors,
     });
-    assert(returned);
+    expect(returnSpy.callCount).to.equal(1);
   });
 
   it('Ignores error on return method when async iterator nulls', async () => {

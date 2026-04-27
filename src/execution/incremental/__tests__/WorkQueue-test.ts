@@ -3,6 +3,7 @@ import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.js';
+import { spyOn } from '../../../__testUtils__/spyOn.js';
 
 import { isPromise } from '../../../jsutils/isPromise.js';
 import type { PromiseOrValue } from '../../../jsutils/PromiseOrValue.js';
@@ -121,11 +122,8 @@ describe('WorkQueue', () => {
     const root: TestGroup = { parent: undefined };
     const child: TestGroup = { parent: root };
 
-    let childRan = false;
-    const childTask = makeTask([child], () => {
-      childRan = true;
-      return { value: 'child' };
-    });
+    const childRanSpy = spyOn(() => ({ value: 'child' }));
+    const childTask = makeTask([child], childRanSpy);
     const rootTask = makeTask([root], 'root', {
       groups: [child],
       tasks: [childTask],
@@ -166,7 +164,7 @@ describe('WorkQueue', () => {
       ],
     });
 
-    expect(childRan).to.equal(true);
+    expect(childRanSpy.callCount).to.equal(1);
   });
 
   it('can handle child groups passed prior to parents', async () => {
@@ -216,19 +214,14 @@ describe('WorkQueue', () => {
     const root: TestGroup = { parent: undefined };
     const child: TestGroup = { parent: root };
     const grandchild: TestGroup = { parent: child };
-    let grandchildRan = false;
-    let childFailed = false;
-
-    const grandchildTask = makeTask([grandchild], () => {
-      grandchildRan = true;
-      return { value: 'grandchild' };
-    });
+    const grandchildRanSpy = spyOn(() => ({ value: 'grandchild' }));
+    const grandchildTask = makeTask([grandchild], grandchildRanSpy);
 
     const boom = new Error('boom');
-    const failingChildTask = makeTask([child], () => {
-      childFailed = true;
+    const childRanSpy = spyOn(() => {
       throw boom;
     });
+    const failingChildTask = makeTask([child], childRanSpy);
 
     const rootTask = makeTask([root], 'root', {
       groups: [child, grandchild],
@@ -264,8 +257,8 @@ describe('WorkQueue', () => {
       ],
     });
 
-    expect(grandchildRan).to.equal(false);
-    expect(childFailed).to.equal(true);
+    expect(grandchildRanSpy.callCount).to.equal(0);
+    expect(childRanSpy.callCount).to.equal(1);
   });
 
   it('integrates work object returned by task', async () => {

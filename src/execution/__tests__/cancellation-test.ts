@@ -5,6 +5,7 @@ import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualProm
 import { expectJSON } from '../../__testUtils__/expectJSON.js';
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
+import { spyOnMethod } from '../../__testUtils__/spyOn.js';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
 import { isPromise } from '../../jsutils/isPromise.js';
@@ -747,7 +748,6 @@ describe('Execute: Cancellation', () => {
       promiseWithResolvers<{
         value: () => string;
       }>();
-    let lateValueCalls = 0;
     const sideType = new GraphQLObjectType({
       name: 'LateSide',
       fields: {
@@ -794,15 +794,14 @@ describe('Execute: Cancellation', () => {
     await resolveOnNextTick();
     await resolveOnNextTick();
     const result = await resultPromise;
-    resolveSide({
-      value() {
-        lateValueCalls += 1;
-        return 'late value';
-      },
-    });
+    const lateSide = {
+      value: () => 'late value',
+    };
+    const lateValueSpy = spyOnMethod(lateSide, 'value');
+    resolveSide(lateSide);
     await resolveOnNextTick();
     await resolveOnNextTick();
-    expect(lateValueCalls).to.equal(0);
+    expect(lateValueSpy.callCount).to.equal(0);
 
     expectJSON(result).toDeepEqual({
       data: {
@@ -1067,7 +1066,6 @@ describe('Execute: Cancellation', () => {
     const { promise: nextStarted, resolve: resolveNextStarted } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
-    let returnCalled = false;
     const asyncIterator = {
       [Symbol.asyncIterator]() {
         return this;
@@ -1077,10 +1075,10 @@ describe('Execute: Cancellation', () => {
         return nextReturned;
       },
       return() {
-        returnCalled = true;
         throw new Error('Return failed');
       },
     };
+    const returnSpy = spyOnMethod(asyncIterator, 'return');
 
     const resultPromise = execute({
       schema,
@@ -1099,7 +1097,7 @@ describe('Execute: Cancellation', () => {
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
-    expect(returnCalled).to.equal(true);
+    expect(returnSpy.callCount).to.equal(1);
   });
 
   it('ignores async iterator return promise rejections after aborting list completion', async () => {
@@ -1116,7 +1114,6 @@ describe('Execute: Cancellation', () => {
     const { promise: nextStarted, resolve: resolveNextStarted } =
       // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
       promiseWithResolvers<void>();
-    let returnCalled = false;
     const asyncIterator = {
       [Symbol.asyncIterator]() {
         return this;
@@ -1126,10 +1123,10 @@ describe('Execute: Cancellation', () => {
         return nextReturned;
       },
       return() {
-        returnCalled = true;
         return Promise.reject(new Error('Return failed'));
       },
     };
+    const returnSpy = spyOnMethod(asyncIterator, 'return');
 
     const resultPromise = execute({
       schema,
@@ -1148,6 +1145,6 @@ describe('Execute: Cancellation', () => {
     await expectPromise(resultPromise).toRejectWith(
       'This operation was aborted',
     );
-    expect(returnCalled).to.equal(true);
+    expect(returnSpy.callCount).to.equal(1);
   });
 });
