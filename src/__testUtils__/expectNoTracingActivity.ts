@@ -24,6 +24,7 @@ export async function expectNoTracingActivity<T>(
       channel,
       'traceSync',
       (original) =>
+        // c8 ignore next 5
         function interceptedTraceSync(
           this: unknown,
           ...args: Array<unknown>
@@ -55,6 +56,7 @@ export async function expectNoTracingActivity<T>(
         subChannel,
         'runStores',
         (original) =>
+          // c8 ignore next 6
           function interceptedRunStores(
             this: unknown,
             ...args: Array<unknown>

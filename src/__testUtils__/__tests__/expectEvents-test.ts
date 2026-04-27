@@ -97,6 +97,34 @@ describe('expectEvents', () => {
     );
   });
 
+  it('collects events with non-object contexts', async () => {
+    const channel = createFakeTracingChannel();
+
+    await expectEvents(
+      channel,
+      () => {
+        channel.start.publish(null);
+        channel.end.publish(undefined);
+        channel.error.publish('error');
+        return 'done';
+      },
+      (_result) => [
+        {
+          channel: 'start',
+          context: null,
+        },
+        {
+          channel: 'end',
+          context: undefined,
+        },
+        {
+          channel: 'error',
+          context: 'error',
+        },
+      ],
+    );
+  });
+
   it('unsubscribes when the callback rejects', async () => {
     let activeHandler: object | undefined;
     const error = new Error('boom');

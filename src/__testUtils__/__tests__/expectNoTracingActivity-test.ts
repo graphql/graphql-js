@@ -75,4 +75,22 @@ describe('expectNoTracingActivity', () => {
 
     expect(channel.start.publish).to.equal(originalPublish);
   });
+
+  it('fails when traceSync is called', async () => {
+    const channel = createFakeTracingChannel();
+    await expectPromise(
+      expectNoTracingActivity(channel, () => {
+        channel.traceSync(() => 'ok', {}, undefined);
+      }),
+    ).toRejectWith("expected [ 'traceSync' ] to deeply equal []");
+  });
+
+  it('fails when runStores is called', async () => {
+    const channel = createFakeTracingChannel();
+    await expectPromise(
+      expectNoTracingActivity(channel, () => {
+        channel.start.runStores({}, () => 'ok');
+      }),
+    ).toRejectWith("expected [ 'start.runStores' ] to deeply equal []");
+  });
 });
