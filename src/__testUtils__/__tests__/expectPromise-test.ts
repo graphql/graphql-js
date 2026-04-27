@@ -16,6 +16,24 @@ describe('expectPromise', () => {
     expect(await expectPromise(promise).toResolve()).to.equal(testValue);
   });
 
+  it('toReject throws if the promise does not reject', async () => {
+    try {
+      await expectPromise(Promise.resolve({})).toReject(); /* c8 ignore start */
+    } /* c8 ignore stop */ catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      expect(errorMessage).to.equal(
+        "Promise should have rejected, but resolved as '{}'",
+      );
+    }
+  });
+
+  it('toReject returns the rejected reason', async () => {
+    const error = new Error('foo');
+    expect(await expectPromise(Promise.reject(error)).toReject()).to.equal(
+      error,
+    );
+  });
+
   it('toRejectWith throws if the promise does not reject', async () => {
     try {
       await expectPromise(Promise.resolve({})).toRejectWith(

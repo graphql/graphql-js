@@ -1051,13 +1051,9 @@ describe('Subscription Publish Phase', () => {
     payload = subscription.next();
 
     // Throw error
-    let caughtError;
-    try {
-      /* c8 ignore next 2 */
-      await subscription.throw('ouch');
-    } catch (e) {
-      caughtError = e;
-    }
+    const caughtError = await expectPromise(
+      subscription.throw('ouch'),
+    ).toReject();
     expect(caughtError).to.equal('ouch');
 
     expect(await payload).to.deep.equal({

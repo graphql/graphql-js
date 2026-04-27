@@ -5,6 +5,7 @@ import { isPromise } from '../jsutils/isPromise.js';
 
 interface PromiseExpectation {
   toResolve: () => Promise<unknown>;
+  toReject: () => Promise<unknown>;
   toRejectWith: (message: string) => Promise<Error>;
 }
 
@@ -17,6 +18,24 @@ export function expectPromise(maybePromise: unknown): PromiseExpectation {
   return {
     toResolve(): Promise<unknown> {
       return maybePromise;
+    },
+    async toReject(): Promise<unknown> {
+      let caughtError: unknown;
+      let resolved;
+      let rejected = false;
+      try {
+        resolved = await maybePromise;
+      } catch (error) {
+        rejected = true;
+        caughtError = error;
+      }
+
+      assert(
+        rejected,
+        `Promise should have rejected, but resolved as '${inspect(resolved)}'`,
+      );
+
+      return caughtError;
     },
     async toRejectWith(message: string): Promise<Error> {
       let caughtError: unknown;
