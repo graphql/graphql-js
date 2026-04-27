@@ -150,10 +150,11 @@ export function shouldTrace(
     return false;
   }
   const aggregate = channel.hasSubscribers;
-  /* c8 ignore start: Bun-only fallback, exercised by integrationTests/diagnostics-bun. */
   if (aggregate !== undefined) {
     return aggregate;
+    /* c8 ignore start */
   }
+  // Bun-only fallback, exercised by integrationTests/diagnostics-bun.
   return SUB_CHANNEL_KEYS.some((key) => channel[key].hasSubscribers);
   /* c8 ignore stop */
 }
