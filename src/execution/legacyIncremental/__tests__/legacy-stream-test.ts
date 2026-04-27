@@ -3640,25 +3640,12 @@ describe('Execute: stream directive (legacy cancellation)', () => {
     abortController.abort();
     await resolveOnNextTick();
 
-    let firstResult:
-      | IteratorResult<LegacySubsequentIncrementalExecutionResult>
-      | undefined;
-    try {
-      firstResult =
-        (await nextResultPromise) as IteratorResult<LegacySubsequentIncrementalExecutionResult>;
-    } catch (error) {
-      expect(error).to.be.instanceOf(Error);
-      expect((error as Error).message).to.equal('This operation was aborted');
-    }
-    if (firstResult && !firstResult.done) {
-      try {
-        const followUp = await iterator.next();
-        expect(followUp.done).to.equal(true);
-      } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.equal('This operation was aborted');
-      }
-    }
+    await expectPromise(nextResultPromise).toRejectWith(
+      'This operation was aborted',
+    );
+    await resolveOnNextTick();
+    const followUp = await iterator.next();
+    expect(followUp.done).to.equal(true);
     expect(streamReturnCount).to.equal(1);
 
     const priorStreamReturnCount = streamReturnCount;
