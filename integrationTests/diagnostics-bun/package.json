@@ -1,0 +1,10 @@
+{
+  "description": "graphql-js tracing channels should publish on node:diagnostics_channel (Bun)",
+  "private": true,
+  "scripts": {
+    "test": "docker run --rm --volume \"$PWD\":/usr/src/app -w /usr/src/app oven/bun:\"$BUN_VERSION\"-slim bun test.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz"
+  }
+}

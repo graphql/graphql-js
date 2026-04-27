@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "graphql": "../graphql-deno-dist/index.ts",
+    "graphql/": "../graphql-deno-dist/"
+  }
+}

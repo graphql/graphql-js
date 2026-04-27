@@ -1,0 +1,11 @@
+{
+  "description": "graphql-js tracing channels should publish on node:diagnostics_channel (Node 20 with CJS fallback)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "docker run --rm --volume \"$PWD\":/usr/src/app -w /usr/src/app node:20.15-alpine node test.js"
+  },
+  "dependencies": {
+    "graphql": "file:../graphql.tgz"
+  }
+}
