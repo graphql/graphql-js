@@ -2,6 +2,7 @@ type AnyFn = (...args: Array<any>) => any;
 
 export interface MethodSpy {
   readonly callCount: number;
+  restore: () => void;
 }
 
 export type SpyFn<T extends AnyFn> = T & MethodSpy;
@@ -29,6 +30,7 @@ export function spyOnMethod<T extends object>(
   key: keyof T,
 ): MethodSpy {
   const original = target[key];
+  const wasOwnProperty = Object.hasOwn(target, key);
 
   if (typeof original !== 'function') {
     throw new Error(
@@ -36,7 +38,21 @@ export function spyOnMethod<T extends object>(
     );
   }
 
-  const spy = spyOn(original as unknown as AnyFn);
+  const spy = spyOn(original as AnyFn);
   target[key] = spy as T[keyof T];
-  return spy;
+
+  const methodSpy: MethodSpy = {
+    get callCount() {
+      return spy.callCount;
+    },
+    restore() {
+      if (wasOwnProperty) {
+        target[key] = original;
+      } else {
+        delete target[key];
+      }
+    },
+  };
+
+  return methodSpy;
 }

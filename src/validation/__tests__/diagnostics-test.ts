@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { catchThrownError } from '../../__testUtils__/catchThrownError.js';
 import { expectEvents } from '../../__testUtils__/expectEvents.js';
 import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 
 import { parse } from '../../language/parser.js';
@@ -57,7 +57,7 @@ describe('validate diagnostics channel', () => {
 
     await expectEvents(
       validateChannel,
-      () => catchThrownError(() => validate(context.schema, context.document)),
+      () => expectToThrow(() => validate(context.schema, context.document)),
       (error) => [
         {
           channel: 'start',

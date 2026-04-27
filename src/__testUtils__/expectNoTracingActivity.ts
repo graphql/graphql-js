@@ -3,11 +3,12 @@ import { expect } from 'chai';
 import type { MinimalTracingChannel } from '../diagnostics.js';
 
 import { tracingSubChannels } from './diagnosticsTracing.js';
-import { interceptMethod } from './interceptMethod.js';
+import type { MethodSpy } from './spyOn.js';
+import { spyOnMethod } from './spyOn.js';
 
 /**
  * Assert that a graphql tracing channel stays on its zero-subscriber fast path.
- * The test installs wrappers around the real tracing methods and verifies none
+ * The test installs spies around the real tracing methods and verifies none
  * of them were touched while `fn` ran.
  */
 export async function expectNoTracingActivity<T>(
@@ -16,65 +17,28 @@ export async function expectNoTracingActivity<T>(
 ): Promise<Awaited<T>> {
   expect(channel.hasSubscribers).to.equal(false);
 
-  const calls: Array<string> = [];
-  const restore: Array<() => void> = [];
-
-  restore.push(
-    interceptMethod(
-      channel,
-      'traceSync',
-      (original) =>
-        // c8 ignore next 5
-        function interceptedTraceSync(
-          this: unknown,
-          ...args: Array<unknown>
-        ): unknown {
-          calls.push('traceSync');
-          return original.apply(this, args);
-        },
-    ),
-  );
+  const namedSpies: Array<[string, MethodSpy]> = [];
+  namedSpies.push(['traceSync', spyOnMethod(channel, 'traceSync')]);
 
   for (const phase of tracingSubChannels) {
     const subChannel = channel[phase];
-    restore.push(
-      interceptMethod(
-        subChannel,
-        'publish',
-        (original) =>
-          function interceptedPublish(
-            this: unknown,
-            ...args: Array<unknown>
-          ): unknown {
-            calls.push(`${phase}.publish`);
-            return original.apply(this, args);
-          },
-      ),
-    );
-    restore.push(
-      interceptMethod(
-        subChannel,
-        'runStores',
-        (original) =>
-          // c8 ignore next 6
-          function interceptedRunStores(
-            this: unknown,
-            ...args: Array<unknown>
-          ): unknown {
-            calls.push(`${phase}.runStores`);
-            return original.apply(this, args);
-          },
-      ),
-    );
+    namedSpies.push([`${phase}.publish`, spyOnMethod(subChannel, 'publish')]);
+    namedSpies.push([
+      `${phase}.runStores`,
+      spyOnMethod(subChannel, 'runStores'),
+    ]);
   }
 
   try {
     const result = await fn();
-    expect(calls).to.deep.equal([]);
+    const calledMethods = namedSpies
+      .filter(([, spy]) => spy.callCount > 0)
+      .map(([name]) => name);
+    expect(calledMethods).to.deep.equal([]);
     return result;
   } finally {
-    while (restore.length > 0) {
-      restore.pop()?.();
+    for (const [, spy] of namedSpies) {
+      spy.restore();
     }
   }
 }

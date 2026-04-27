@@ -65,4 +65,50 @@ describe('spyOnMethod', () => {
       "Cannot spy on 'maybeMethod' because it is not a function.",
     );
   });
+
+  it('restores the original method', () => {
+    const obj = {
+      add(a: number, b: number) {
+        return a + b;
+      },
+    };
+
+    const originalAdd = obj.add;
+    const spy = spyOnMethod(obj, 'add');
+
+    expect(obj.add).to.not.equal(originalAdd);
+    expect(spy.callCount).to.equal(0);
+
+    obj.add(1, 2);
+    expect(spy.callCount).to.equal(1);
+
+    spy.restore();
+
+    expect(obj.add).to.equal(originalAdd);
+    obj.add(3, 4);
+    expect(spy.callCount).to.equal(1); // no longer tracked
+  });
+
+  it('restores inherited methods by removing the own-property spy', () => {
+    class Base {
+      add(a: number, b: number) {
+        return a + b;
+      }
+    }
+    const instance = new Base();
+
+    expect(Object.hasOwn(instance, 'add')).to.equal(false);
+
+    const spy = spyOnMethod(instance, 'add');
+    expect(Object.hasOwn(instance, 'add')).to.equal(true);
+
+    instance.add(1, 2);
+    expect(spy.callCount).to.equal(1);
+
+    spy.restore();
+
+    expect(Object.hasOwn(instance, 'add')).to.equal(false);
+    instance.add(3, 4);
+    expect(spy.callCount).to.equal(1); // no longer tracked, prototype method again
+  });
 });

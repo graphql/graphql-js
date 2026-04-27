@@ -1,9 +1,9 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { catchThrownError } from '../../__testUtils__/catchThrownError.js';
 import { expectEvents } from '../../__testUtils__/expectEvents.js';
 import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
@@ -192,8 +192,7 @@ describe('subscribe diagnostics channel', () => {
 
     await expectEvents(
       subscribeChannel,
-      () =>
-        catchThrownError(() => subscribe({ schema: invalidSchema, document })),
+      () => expectToThrow(() => subscribe({ schema: invalidSchema, document })),
       (error) => [
         {
           channel: 'start',

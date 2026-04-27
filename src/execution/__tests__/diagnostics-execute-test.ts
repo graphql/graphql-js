@@ -1,10 +1,10 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 
-import { catchThrownError } from '../../__testUtils__/catchThrownError.js';
 import { expectEvents } from '../../__testUtils__/expectEvents.js';
 import { expectNoTracingActivity } from '../../__testUtils__/expectNoTracingActivity.js';
 import { expectPromise } from '../../__testUtils__/expectPromise.js';
+import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
@@ -315,8 +315,7 @@ describe('execute diagnostics channel', () => {
 
     await expectEvents(
       executeChannel,
-      () =>
-        catchThrownError(() => execute({ schema: invalidSchema, document })),
+      () => expectToThrow(() => execute({ schema: invalidSchema, document })),
       (error) => [
         {
           channel: 'start',
