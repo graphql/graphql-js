@@ -155,7 +155,12 @@ export function shouldTrace(
     /* c8 ignore start */
   }
   // Bun-only fallback, exercised by integrationTests/diagnostics-bun.
-  return SUB_CHANNEL_KEYS.some((key) => channel[key].hasSubscribers);
+  for (const key of SUB_CHANNEL_KEYS) {
+    if (channel[key].hasSubscribers) {
+      return true;
+    }
+  }
+  return false;
   /* c8 ignore stop */
 }
 
