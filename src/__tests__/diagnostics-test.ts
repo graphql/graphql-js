@@ -1,4 +1,4 @@
-/* eslint-disable import/no-nodejs-modules */
+/* eslint-disable import/no-nodejs-modules, n/no-unsupported-features/node-builtins */
 import dc from 'node:diagnostics_channel';
 
 import { expect } from 'chai';
@@ -6,10 +6,12 @@ import { describe, it } from 'mocha';
 
 import { invariant } from '../jsutils/invariant.js';
 
+import type { MinimalTracingChannel } from '../diagnostics.js';
 import {
   executeChannel,
   parseChannel,
   resolveChannel,
+  shouldTrace,
   subscribeChannel,
   validateChannel,
 } from '../diagnostics.js';
@@ -39,5 +41,33 @@ describe('diagnostics', () => {
     expect(resolveChannel.start).to.equal(
       dc.channel('tracing:graphql:resolve:start'),
     );
+  });
+
+  describe('shouldTrace', () => {
+    it('returns false when channel is undefined', () => {
+      expect(shouldTrace(undefined)).to.equal(false);
+    });
+
+    it('reflects the aggregate hasSubscribers on a real tracing channel', () => {
+      const tc = dc.tracingChannel(
+        'shouldTrace:aggregate',
+      ) as unknown as MinimalTracingChannel;
+      expect(shouldTrace(tc)).to.equal(false);
+
+      const handler = {
+        start: () => undefined,
+        end: () => undefined,
+        asyncStart: () => undefined,
+        asyncEnd: () => undefined,
+        error: () => undefined,
+      };
+      const realTC = dc.tracingChannel('shouldTrace:aggregate');
+      realTC.subscribe(handler);
+      try {
+        expect(shouldTrace(tc)).to.equal(true);
+      } finally {
+        realTC.unsubscribe(handler);
+      }
+    });
   });
 });
