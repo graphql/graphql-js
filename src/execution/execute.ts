@@ -31,6 +31,7 @@ import { getOperationAST } from '../utilities/getOperationAST.ts';
 
 import {
   executeChannel,
+  shouldTrace,
   subscribeChannel,
   traceMixed,
 } from '../diagnostics.ts';
@@ -108,7 +109,7 @@ export type RootSelectionSetExecutor = (
  * ```
  */
 export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
-  if (!executeChannel?.hasSubscribers) {
+  if (!shouldTrace(executeChannel)) {
     return executeImpl(args);
   }
   return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
@@ -213,7 +214,7 @@ function executeImpl(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
 export function experimentalExecuteIncrementally(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  if (!executeChannel?.hasSubscribers) {
+  if (!shouldTrace(executeChannel)) {
     return experimentalExecuteIncrementallyImpl(args);
   }
   return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
@@ -239,7 +240,7 @@ function experimentalExecuteIncrementallyImpl(
 export function executeIgnoringIncremental(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  if (!executeChannel?.hasSubscribers) {
+  if (!shouldTrace(executeChannel)) {
     return executeIgnoringIncrementalImpl(args);
   }
   return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
@@ -540,7 +541,7 @@ export function subscribe(
 ): PromiseOrValue<
   AsyncGenerator<ExecutionResult, void, void> | ExecutionResult
 > {
-  if (!subscribeChannel?.hasSubscribers) {
+  if (!shouldTrace(subscribeChannel)) {
     return subscribeImpl(args);
   }
   return traceMixed(subscribeChannel, buildExecuteCtxFromArgs(args), () =>
@@ -1012,7 +1013,7 @@ export function mapSourceToResponseEvent(
       ...validatedExecutionArgs,
       rootValue: payload,
     };
-    if (!executeChannel?.hasSubscribers) {
+    if (!shouldTrace(executeChannel)) {
       return rootSelectionSetExecutor(perEventExecutionArgs);
     }
     return traceMixed(

@@ -40,7 +40,7 @@ import {
 } from '../type/definition.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 
-import { resolveChannel, traceMixed } from '../diagnostics.ts';
+import { resolveChannel, shouldTrace, traceMixed } from '../diagnostics.ts';
 
 import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
 import { buildResolveInfo } from './buildResolveInfo.ts';
@@ -557,7 +557,7 @@ export class Executor<
     const returnType = fieldDef.type;
     let resolveFn = fieldDef.resolve ?? validatedExecutionArgs.fieldResolver;
 
-    if (resolveChannel?.hasSubscribers) {
+    if (shouldTrace(resolveChannel)) {
       const channel = resolveChannel;
       const originalResolveFn = resolveFn;
       resolveFn = (s, args, c, info) =>

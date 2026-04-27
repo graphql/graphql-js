@@ -20,6 +20,7 @@ import { isPromise } from './jsutils/isPromise.js';
  * @internal
  */
 export interface MinimalChannel {
+  readonly hasSubscribers?: boolean;
   publish: (message: unknown) => void;
   runStores: <T, ContextType extends object>(
     context: ContextType,
@@ -37,7 +38,9 @@ export interface MinimalChannel {
  * @internal
  */
 export interface MinimalTracingChannel {
-  readonly hasSubscribers: boolean;
+  // `undefined` accommodates runtimes (e.g. Bun) that ship `tracingChannel`
+  // without exposing the aggregate `hasSubscribers` getter.
+  readonly hasSubscribers: boolean | undefined;
   readonly start: MinimalChannel;
   readonly end: MinimalChannel;
   readonly asyncStart: MinimalChannel;
@@ -125,6 +128,33 @@ export const subscribeChannel: MinimalTracingChannel | undefined =
 /** @internal */
 export const resolveChannel: MinimalTracingChannel | undefined =
   dc?.tracingChannel('graphql:resolve');
+
+const SUB_CHANNEL_KEYS: ReadonlyArray<
+  'start' | 'end' | 'asyncStart' | 'asyncEnd' | 'error'
+> = ['start', 'end', 'asyncStart', 'asyncEnd', 'error'];
+
+/**
+ * Whether emission sites should publish to `channel`. Trusts the
+ * `TracingChannel.hasSubscribers` aggregate when the runtime exposes it; if
+ * the getter is missing (e.g. Bun's `node:diagnostics_channel`, where
+ * `tracingChannel.hasSubscribers` is `undefined`), falls back to checking
+ * each of the five underlying lifecycle channels so a subscriber attached
+ * via `tracingChannel.subscribe(handlers)` is still observed.
+ *
+ * @internal
+ */
+export function shouldTrace(
+  channel: MinimalTracingChannel | undefined,
+): channel is MinimalTracingChannel {
+  if (channel == null) {
+    return false;
+  }
+  const aggregate = channel.hasSubscribers;
+  if (aggregate !== undefined) {
+    return aggregate;
+  }
+  return SUB_CHANNEL_KEYS.some((key) => channel[key].hasSubscribers === true);
+}
 
 /**
  * Publish a mixed sync-or-promise operation through `channel`. Caller has
