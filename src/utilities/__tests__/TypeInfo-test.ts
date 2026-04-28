@@ -451,10 +451,10 @@ describe('visitWithTypeInfo', () => {
       ['enter', 'ObjectField', null, '[String]'],
       ['enter', 'Name', 'stringListField', '[String]'],
       ['leave', 'Name', 'stringListField', '[String]'],
-      ['enter', 'ListValue', null, 'String' /* the item type, not list type */],
+      ['enter', 'ListValue', null, 'String'],
       ['enter', 'StringValue', null, 'String'],
       ['leave', 'StringValue', null, 'String'],
-      ['leave', 'ListValue', null, 'String' /* the item type, not list type */],
+      ['leave', 'ListValue', null, 'String'],
       ['leave', 'ObjectField', null, '[String]'],
       ['leave', 'ObjectValue', null, 'ComplexInput'],
     ]);
@@ -519,7 +519,7 @@ describe('visitWithTypeInfo', () => {
     ]);
   });
 
-  it('supports traversals of object literals of custom scalars', () => {
+  it('supports traversals of object literals in custom scalar positions', () => {
     const schema = buildSchema(`
       scalar GeoPoint
     `);
@@ -556,7 +556,7 @@ describe('visitWithTypeInfo', () => {
 
     expect(visited).to.deep.equal([
       // Everything within ObjectValue should have type: undefined since the
-      // contents of custom scalars aren't part of GraphQL schema definitions.
+      // contents of custom scalars are not part of the GraphQL type system.
       ['enter', 'ObjectValue', null, 'GeoPoint'],
       ['enter', 'ObjectField', null, 'undefined'],
       ['enter', 'Name', 'x', 'undefined'],
@@ -574,7 +574,7 @@ describe('visitWithTypeInfo', () => {
     ]);
   });
 
-  it('supports traversals of list literals of custom scalars', () => {
+  it('supports traversals of list literals in custom scalar positions', () => {
     const schema = buildSchema(`
       scalar GeoPoint
     `);
@@ -610,6 +610,9 @@ describe('visitWithTypeInfo', () => {
     );
 
     expect(visited).to.deep.equal([
+      // Everything including ListValue should have type: undefined since the
+      // contents of custom scalars are not part of the GraphQL type system.
+      // ListValues carry the item type, so the item type is also undefined.
       ['enter', 'ListValue', null, 'undefined'],
       ['enter', 'FloatValue', null, 'undefined'],
       ['leave', 'FloatValue', null, 'undefined'],
