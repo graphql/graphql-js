@@ -293,6 +293,10 @@ describe('validateInputValue', () => {
       ]);
     });
 
+    it('ignores unknown fields with undefined values', () => {
+      test({ foo: 123, unknownField: undefined }, TestInputObject, []);
+    });
+
     it('returns error when supplied with an array', () => {
       test([{ foo: 123 }, { bar: 456 }], TestInputObject, [
         {
@@ -395,6 +399,10 @@ describe('validateInputValue', () => {
           path: [],
         },
       ]);
+    });
+
+    it('does not count undefined keys as provided', () => {
+      test({ foo: 123, bar: undefined }, TestInputObject, []);
     });
 
     it('returns error if the one field is null', () => {

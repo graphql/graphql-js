@@ -144,9 +144,13 @@ function validateInputValueImpl(
       }
     }
 
-    const fields = Object.keys(inputValue);
+    const fields: Array<string> = [];
     // Ensure every provided field is defined.
-    for (const fieldName of fields) {
+    for (const fieldName of Object.keys(inputValue)) {
+      if (inputValue[fieldName] === undefined) {
+        continue;
+      }
+      fields.push(fieldName);
       if (!Object.hasOwn(fieldDefs, fieldName)) {
         const suggestion = hideSuggestions
           ? ''

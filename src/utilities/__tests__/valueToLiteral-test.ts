@@ -130,6 +130,7 @@ describe('valueToLiteral', () => {
   it('converts input objects', () => {
     test({ foo: 3, bar: '3' }, inputObj, '{ foo: 3, bar: 3 }');
     test({ foo: 3 }, inputObj, '{ foo: 3 }');
+    test({ foo: 3, unknown: undefined }, inputObj, '{ foo: 3 }');
 
     // Non-object is invalid
     test('123', inputObj, undefined);

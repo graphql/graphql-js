@@ -162,6 +162,12 @@ describe('coerceInputValue', () => {
       test({ foo: 123, unknownField: 123 }, TestInputObject, undefined);
     });
 
+    it('ignores unknown fields with undefined values', () => {
+      test({ foo: 123, unknownField: undefined }, TestInputObject, {
+        foo: 123,
+      });
+    });
+
     it('invalid when supplied with an array', () => {
       test([{ foo: 123 }, { bar: 456 }], TestInputObject, undefined);
     });
