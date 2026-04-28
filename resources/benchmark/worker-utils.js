@@ -20,7 +20,9 @@ export async function loadBenchmark(modulePath) {
 }
 
 export function writeResult(result) {
-  fs.writeFileSync(3, JSON.stringify(result));
+  const resultFilePath = process.env.BENCHMARK_RESULT_FILE;
+  assert(resultFilePath != null);
+  fs.writeFileSync(resultFilePath, JSON.stringify(result));
 }
 
 export function runWorker(main) {

@@ -5,6 +5,7 @@ type ColorFn = (value: number | string) => string;
 
 export function printBenchmarkResults(
   results: ReadonlyArray<BenchmarkResult>,
+  includesMemory: boolean,
 ): void {
   const nameMaxLen = maxBy(results, ({ name }) => name.length);
   const opsTop = maxBy(results, ({ ops }) => ops);
@@ -29,9 +30,7 @@ export function printBenchmarkResults(
         grey('\xb1') +
         deviationStr() +
         cyan('%') +
-        grey(' x ') +
-        memPerOpStr() +
-        '/op' +
+        (includesMemory ? grey(' x ') + memPerOpStr() + '/op' : '') +
         grey(' (' + numSamples + ' runs sampled)'),
     );
 

@@ -29,7 +29,7 @@ interface LogRatioStats {
 export function computeStats(
   name: string,
   timingSamples: ReadonlyArray<number>,
-  memorySamples: ReadonlyArray<number>,
+  memorySamples: ReadonlyArray<number> = [],
 ): BenchmarkResult {
   const { mean } = computeMeanStats(timingSamples);
 

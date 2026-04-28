@@ -16,12 +16,31 @@ export const memorySamplesPerBenchmark = 10;
 export const pairedGreenThreshold = 0.95;
 export const pairedYellowThreshold = 0.8;
 
-export const timingBenchmarkNodeFlags: ReadonlyArray<string> = ['--expose-gc'];
+export const timingCommandArgsByRuntime = {
+  node: ['--expose-gc'],
+  bun: ['--expose-gc'],
+  deno: [
+    'run',
+    '--allow-read',
+    '--allow-env',
+    '--allow-write',
+    '--v8-flags=--expose-gc',
+  ],
+} as const;
 
-export const memoryBenchmarkNodeFlags: ReadonlyArray<string> = [
-  '--predictable',
-  '--no-concurrent-sweeping',
-  '--no-minor-gc-task',
-  '--min-semi-space-size=1280', // 1.25GB
-  '--max-semi-space-size=1280', // 1.25GB
-];
+export const memoryCommandArgsByRuntime = {
+  node: [
+    '--no-concurrent-sweeping',
+    '--no-minor-gc-task',
+    '--min-semi-space-size=1280', // 1.25GB
+    '--max-semi-space-size=1280', // 1.25GB
+  ],
+  bun: [],
+  deno: [
+    'run',
+    '--allow-read',
+    '--allow-env',
+    '--allow-write',
+    '--v8-flags=--no-concurrent-sweeping,--no-minor-gc-task,--min-semi-space-size=1280,--max-semi-space-size=1280',
+  ],
+} as const;
