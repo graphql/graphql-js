@@ -404,6 +404,38 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
+      it('preserves explicit null variables within input object literals', () => {
+        const result = executeQuery(
+          `
+          query q($input: String) {
+            fieldWithObjectInput(input: { a: $input, c: "baz" })
+          }`,
+          { input: null },
+        );
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithObjectInput: '{ a: null, c: "baz" }',
+          },
+        });
+      });
+
+      it('treats explicitly undefined variable values as omitted', () => {
+        const result = executeQuery(
+          `
+          query q($input: String = "Default value") {
+            fieldWithNullableStringInput(input: $input)
+          }`,
+          { input: undefined },
+        );
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithNullableStringInput: '"Default value"',
+          },
+        });
+      });
+
       it('uses default value when not provided', () => {
         const result = executeQuery(`
           query ($input: TestInputObject = {a: "foo", b: ["bar"], c: "baz"}) {

@@ -640,6 +640,16 @@ describe('coerceInputLiteral', () => {
       { int: 42, requiredBool: true },
     );
   });
+
+  it('preserves explicit null variables in input object fields', () => {
+    testWithVariables(
+      '($foo: Boolean)',
+      { foo: null },
+      '{ int: $foo, requiredBool: true }',
+      testInputObj,
+      { int: null, requiredBool: true },
+    );
+  });
 });
 
 describe('coerceDefaultValue', () => {

@@ -229,11 +229,11 @@ export function coerceInputLiteral(
       if (
         !fieldNode ||
         (fieldNode.value.kind === Kind.VARIABLE &&
-          getCoercedVariableValue(
+          isMissingVariable(
             fieldNode.value,
             variableValues,
             fragmentVariableValues,
-          ) == null)
+          ))
       ) {
         if (isRequiredInputField(field)) {
           return; // Invalid: intentionally return no value.
@@ -294,6 +294,19 @@ function getCoercedVariableValue(
   }
 
   return variableValues?.coerced[varName];
+}
+
+function isMissingVariable(
+  variableNode: VariableNode,
+  variableValues: Maybe<VariableValues>,
+  fragmentVariableValues: Maybe<FragmentVariableValues>,
+): boolean {
+  const varName = variableNode.name.value;
+  const scopedValues =
+    fragmentVariableValues?.sources[varName] !== undefined
+      ? fragmentVariableValues.coerced
+      : variableValues?.coerced;
+  return scopedValues?.[varName] === undefined;
 }
 
 interface InputValue {
