@@ -113,8 +113,8 @@ function coerceVariableValues(
     }
 
     const { name: varName, type: varType } = varSignature;
-    let value: unknown;
-    if (!Object.hasOwn(inputs, varName)) {
+    const value = Object.hasOwn(inputs, varName) ? inputs[varName] : undefined;
+    if (value === undefined) {
       sources[varName] = { signature: varSignature };
       if (varDefNode.defaultValue) {
         coerced[varName] = coerceInputLiteral(varDefNode.defaultValue, varType);
@@ -124,7 +124,6 @@ function coerceVariableValues(
         continue;
       }
     } else {
-      value = inputs[varName];
       sources[varName] = { signature: varSignature, value };
     }
 

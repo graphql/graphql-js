@@ -451,6 +451,22 @@ describe('Execute: Handles inputs', () => {
         });
       });
 
+      it('treats explicitly undefined variable values as omitted', () => {
+        const result = executeQuery(
+          `
+          query q($input: String = "Default value") {
+            fieldWithNullableStringInput(input: $input)
+          }`,
+          { input: undefined },
+        );
+
+        expect(result).to.deep.equal({
+          data: {
+            fieldWithNullableStringInput: '"Default value"',
+          },
+        });
+      });
+
       it('uses null default value when not provided', () => {
         const result = executeQuery(
           `
@@ -1709,6 +1725,16 @@ describe('Execute: Handles inputs', () => {
       });
       assert('variableValues' in result);
       expect(result.variableValues.coerced.toString).to.equal('value');
+    });
+
+    it('treats explicit undefined values as omitted', () => {
+      const result = getVariableValues(schema, variableDefinitions, {
+        toString: undefined,
+      });
+      assert('variableValues' in result);
+      expect(Object.hasOwn(result.variableValues.coerced, 'toString')).to.equal(
+        false,
+      );
     });
   });
 });
