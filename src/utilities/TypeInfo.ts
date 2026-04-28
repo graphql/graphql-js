@@ -116,6 +116,8 @@ export class TypeInfo {
     return this._inputTypeStack.at(-1);
   }
 
+  // Note: continues to expose the closest enclosing valid input type if
+  // traversal descends into syntax with no corresponding GraphQL input type.
   getParentInputType(): Maybe<GraphQLInputType> {
     return this._inputTypeStack.at(-2);
   }

@@ -285,6 +285,8 @@ export class ValidationContext extends ASTValidationContext {
     return this._typeInfo.getInputType();
   }
 
+  // Note: continues to expose the closest enclosing valid input type if
+  // traversal descends into syntax with no corresponding GraphQL input type.
   getParentInputType(): Maybe<GraphQLInputType> {
     return this._typeInfo.getParentInputType();
   }

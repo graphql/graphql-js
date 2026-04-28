@@ -535,20 +535,24 @@ describe('visitWithTypeInfo', () => {
       visitWithTypeInfo(typeInfo, {
         enter(node) {
           const type = typeInfo.getInputType();
+          const parentType = typeInfo.getParentInputType();
           visited.push([
             'enter',
             node.kind,
             node.kind === 'Name' ? node.value : null,
             String(type),
+            String(parentType),
           ]);
         },
         leave(node) {
           const type = typeInfo.getInputType();
+          const parentType = typeInfo.getParentInputType();
           visited.push([
             'leave',
             node.kind,
             node.kind === 'Name' ? node.value : null,
             String(type),
+            String(parentType),
           ]);
         },
       }),
@@ -557,20 +561,22 @@ describe('visitWithTypeInfo', () => {
     expect(visited).to.deep.equal([
       // Everything within ObjectValue should have type: undefined since the
       // contents of custom scalars are not part of the GraphQL type system.
-      ['enter', 'ObjectValue', null, 'GeoPoint'],
-      ['enter', 'ObjectField', null, 'undefined'],
-      ['enter', 'Name', 'x', 'undefined'],
-      ['leave', 'Name', 'x', 'undefined'],
-      ['enter', 'FloatValue', null, 'undefined'],
-      ['leave', 'FloatValue', null, 'undefined'],
-      ['leave', 'ObjectField', null, 'undefined'],
-      ['enter', 'ObjectField', null, 'undefined'],
-      ['enter', 'Name', 'y', 'undefined'],
-      ['leave', 'Name', 'y', 'undefined'],
-      ['enter', 'FloatValue', null, 'undefined'],
-      ['leave', 'FloatValue', null, 'undefined'],
-      ['leave', 'ObjectField', null, 'undefined'],
-      ['leave', 'ObjectValue', null, 'GeoPoint'],
+      // getParentInputType() continues to report the closest enclosing valid
+      // input type even after traversal leaves the GraphQL input type system.
+      ['enter', 'ObjectValue', null, 'GeoPoint', 'undefined'],
+      ['enter', 'ObjectField', null, 'undefined', 'GeoPoint'],
+      ['enter', 'Name', 'x', 'undefined', 'GeoPoint'],
+      ['leave', 'Name', 'x', 'undefined', 'GeoPoint'],
+      ['enter', 'FloatValue', null, 'undefined', 'GeoPoint'],
+      ['leave', 'FloatValue', null, 'undefined', 'GeoPoint'],
+      ['leave', 'ObjectField', null, 'undefined', 'GeoPoint'],
+      ['enter', 'ObjectField', null, 'undefined', 'GeoPoint'],
+      ['enter', 'Name', 'y', 'undefined', 'GeoPoint'],
+      ['leave', 'Name', 'y', 'undefined', 'GeoPoint'],
+      ['enter', 'FloatValue', null, 'undefined', 'GeoPoint'],
+      ['leave', 'FloatValue', null, 'undefined', 'GeoPoint'],
+      ['leave', 'ObjectField', null, 'undefined', 'GeoPoint'],
+      ['leave', 'ObjectValue', null, 'GeoPoint', 'undefined'],
     ]);
   });
 
@@ -590,20 +596,24 @@ describe('visitWithTypeInfo', () => {
       visitWithTypeInfo(typeInfo, {
         enter(node) {
           const type = typeInfo.getInputType();
+          const parentType = typeInfo.getParentInputType();
           visited.push([
             'enter',
             node.kind,
             node.kind === 'Name' ? node.value : null,
             String(type),
+            String(parentType),
           ]);
         },
         leave(node) {
           const type = typeInfo.getInputType();
+          const parentType = typeInfo.getParentInputType();
           visited.push([
             'leave',
             node.kind,
             node.kind === 'Name' ? node.value : null,
             String(type),
+            String(parentType),
           ]);
         },
       }),
@@ -613,12 +623,14 @@ describe('visitWithTypeInfo', () => {
       // Everything including ListValue should have type: undefined since the
       // contents of custom scalars are not part of the GraphQL type system.
       // ListValues carry the item type, so the item type is also undefined.
-      ['enter', 'ListValue', null, 'undefined'],
-      ['enter', 'FloatValue', null, 'undefined'],
-      ['leave', 'FloatValue', null, 'undefined'],
-      ['enter', 'FloatValue', null, 'undefined'],
-      ['leave', 'FloatValue', null, 'undefined'],
-      ['leave', 'ListValue', null, 'undefined'],
+      // getParentInputType() continues to report the closest enclosing valid
+      // input type even after traversal leaves the GraphQL input type system.
+      ['enter', 'ListValue', null, 'undefined', 'GeoPoint'],
+      ['enter', 'FloatValue', null, 'undefined', 'GeoPoint'],
+      ['leave', 'FloatValue', null, 'undefined', 'GeoPoint'],
+      ['enter', 'FloatValue', null, 'undefined', 'GeoPoint'],
+      ['leave', 'FloatValue', null, 'undefined', 'GeoPoint'],
+      ['leave', 'ListValue', null, 'undefined', 'GeoPoint'],
     ]);
   });
 
