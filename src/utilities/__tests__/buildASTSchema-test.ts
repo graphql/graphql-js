@@ -1078,6 +1078,19 @@ describe('Schema Builder', () => {
     expect(() => buildSchema(sdl)).to.throw('Unknown directive "@unknown".');
   });
 
+  it('Rejects SDL with invalid directive argument values', () => {
+    const sdl = `
+      type Query {
+        foo: String @test(arg: UNQUOTED_STRING)
+      }
+
+      directive @test(arg: String!) on FIELD_DEFINITION
+    `;
+    expect(() => buildSchema(sdl)).to.throw(
+      'String cannot represent a non string value: UNQUOTED_STRING',
+    );
+  });
+
   it('Allows to disable SDL validation', () => {
     const sdl = `
       type Query {

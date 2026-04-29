@@ -62,7 +62,10 @@ import { UniqueTypeNamesRule } from './rules/UniqueTypeNamesRule';
 // Spec Section: "Variable Uniqueness"
 import { UniqueVariableNamesRule } from './rules/UniqueVariableNamesRule';
 // Spec Section: "Value Type Correctness"
-import { ValuesOfCorrectTypeRule } from './rules/ValuesOfCorrectTypeRule';
+import {
+  ValuesOfCorrectTypeOnDirectivesRule,
+  ValuesOfCorrectTypeRule,
+} from './rules/ValuesOfCorrectTypeRule';
 // Spec Section: "Variables are Input Types"
 import { VariablesAreInputTypesRule } from './rules/VariablesAreInputTypesRule';
 // Spec Section: "All Variable Usages Are Allowed"
@@ -130,5 +133,6 @@ export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
     KnownArgumentNamesOnDirectivesRule,
     UniqueArgumentNamesRule,
     UniqueInputFieldNamesRule,
+    ValuesOfCorrectTypeOnDirectivesRule,
     ProvidedRequiredArgumentsOnDirectivesRule,
   ]);
