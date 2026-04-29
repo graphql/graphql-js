@@ -147,7 +147,6 @@ describe('Validate: Defer/Stream directive labels', () => {
       }
     `);
   });
-
   it('Stream with variable label', () => {
     expectErrors(`
       query ($label: String!) {
