@@ -260,6 +260,76 @@ describe('Execute: defer directive', () => {
       },
     ]);
   });
+  it('Returns label from defer directive', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          id
+          ...NameFragment @defer(label: "defer-label")
+        }
+      }
+      fragment NameFragment on Hero {
+        name
+      }
+    `);
+    const result = await complete(document);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          hero: {
+            id: '1',
+          },
+        },
+        pending: [{ id: '0', path: ['hero'], label: 'defer-label' }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: {
+              name: 'Luke',
+            },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
+  it('Treats null defer label the same as no label', async () => {
+    const document = parse(`
+      query HeroNameQuery {
+        hero {
+          id
+          ...NameFragment @defer(label: null)
+        }
+      }
+      fragment NameFragment on Hero {
+        name
+      }
+    `);
+    const result = await complete(document);
+
+    expectJSON(result).toDeepEqual([
+      {
+        data: { hero: { id: '1' } },
+        pending: [{ id: '0', path: ['hero'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            data: { name: 'Luke' },
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
   it('Can disable defer using if argument', async () => {
     const document = parse(`
       query HeroNameQuery {

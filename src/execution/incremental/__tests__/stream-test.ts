@@ -326,6 +326,33 @@ describe('Execute: stream directive', () => {
       },
     ]);
   });
+  it('Treats null stream label the same as no label', async () => {
+    const document = parse(
+      '{ scalarList @stream(initialCount: 1, label: null) }',
+    );
+    const result = await complete(document, {
+      scalarList: () => ['apple', 'banana', 'coconut'],
+    });
+    expectJSON(result).toDeepEqual([
+      {
+        data: {
+          scalarList: ['apple'],
+        },
+        pending: [{ id: '0', path: ['scalarList'] }],
+        hasNext: true,
+      },
+      {
+        incremental: [
+          {
+            items: ['banana', 'coconut'],
+            id: '0',
+          },
+        ],
+        completed: [{ id: '0' }],
+        hasNext: false,
+      },
+    ]);
+  });
   it('Can disable @stream using if argument', async () => {
     const document = parse(
       '{ scalarList @stream(initialCount: 0, if: false) }',
