@@ -272,9 +272,9 @@ export class Executor<
     this.promiseAll = promiseAll;
   }
 
-  executeRootSelectionSet(): PromiseOrValue<
-    ExecutionResult | TAlternativeInitialResponse
-  > {
+  executeRootSelectionSet(
+    serially?: boolean,
+  ): PromiseOrValue<ExecutionResult | TAlternativeInitialResponse> {
     const externalAbortSignal = this.validatedExecutionArgs.externalAbortSignal;
     let removeExternalAbortListener: (() => void) | undefined;
     if (externalAbortSignal) {
@@ -322,10 +322,10 @@ export class Executor<
       );
 
       result = this.executeCollectedRootFields(
-        operation.operation,
         rootType,
         rootValue,
         groupedFieldSet,
+        serially ?? operationType === OperationTypeNode.MUTATION,
         newDeferUsages,
       );
 
@@ -420,56 +420,43 @@ export class Executor<
   }
 
   executeCollectedRootFields(
-    operation: OperationTypeNode,
     rootType: GraphQLObjectType,
     rootValue: unknown,
     originalGroupedFieldSet: GroupedFieldSet,
+    serially: boolean,
     _newDeferUsages: ReadonlyArray<DeferUsage>,
   ): PromiseOrValue<ObjMap<unknown>> {
     return this.executeRootGroupedFieldSet(
-      operation,
       rootType,
       rootValue,
       originalGroupedFieldSet,
+      serially,
       undefined,
     );
   }
 
   executeRootGroupedFieldSet(
-    operation: OperationTypeNode,
     rootType: GraphQLObjectType,
     rootValue: unknown,
     groupedFieldSet: GroupedFieldSet,
+    serially: boolean,
     positionContext?: TPositionContext,
   ): PromiseOrValue<ObjMap<unknown>> {
-    switch (operation) {
-      case OperationTypeNode.QUERY:
-        return this.executeFields(
+    return serially
+      ? this.executeFieldsSerially(
+          rootType,
+          rootValue,
+          undefined,
+          groupedFieldSet,
+          positionContext,
+        )
+      : this.executeFields(
           rootType,
           rootValue,
           undefined,
           groupedFieldSet,
           positionContext,
         );
-      case OperationTypeNode.MUTATION:
-        return this.executeFieldsSerially(
-          rootType,
-          rootValue,
-          undefined,
-          groupedFieldSet,
-          positionContext,
-        );
-      case OperationTypeNode.SUBSCRIPTION:
-        // TODO: deprecate `subscribe` and move all logic here
-        // Temporary solution until we finish merging execute and subscribe together
-        return this.executeFields(
-          rootType,
-          rootValue,
-          undefined,
-          groupedFieldSet,
-          positionContext,
-        );
-    }
   }
 
   /**

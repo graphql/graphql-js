@@ -25,10 +25,10 @@ const UNEXPECTED_MULTIPLE_PAYLOADS =
 /** @internal */
 export class ExecutorThrowingOnIncremental extends Executor {
   override executeCollectedRootFields(
-    operation: OperationTypeNode,
     rootType: GraphQLObjectType,
     rootValue: unknown,
     originalGroupedFieldSet: GroupedFieldSet,
+    serially: boolean,
     newDeferUsages: ReadonlyArray<DeferUsage>,
   ): PromiseOrValue<ObjMap<unknown>> {
     if (newDeferUsages.length > 0) {
@@ -42,10 +42,10 @@ export class ExecutorThrowingOnIncremental extends Executor {
       throw reason;
     }
     return this.executeRootGroupedFieldSet(
-      operation,
       rootType,
       rootValue,
       originalGroupedFieldSet,
+      serially,
       undefined,
     );
   }

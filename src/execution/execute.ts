@@ -183,7 +183,9 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
 export function executeSubscriptionEvent(
   validatedExecutionArgs: ValidatedSubscriptionArgs,
 ): PromiseOrValue<ExecutionResult> {
-  return executeRootSelectionSet(validatedExecutionArgs);
+  return new ExecutorThrowingOnIncremental(
+    validatedExecutionArgs,
+  ).executeRootSelectionSet(false);
 }
 
 /**

@@ -362,18 +362,18 @@ export class IncrementalExecutor<
   }
 
   override executeCollectedRootFields(
-    operation: OperationTypeNode,
     rootType: GraphQLObjectType,
     rootValue: unknown,
     originalGroupedFieldSet: GroupedFieldSet,
+    serially: boolean,
     newDeferUsages: ReadonlyArray<DeferUsage>,
   ): PromiseOrValue<ObjMap<unknown>> {
     if (newDeferUsages.length === 0) {
       return this.executeRootGroupedFieldSet(
-        operation,
         rootType,
         rootValue,
         originalGroupedFieldSet,
+        serially,
         undefined,
       );
     }
@@ -391,10 +391,10 @@ export class IncrementalExecutor<
       this.buildRootExecutionPlan(originalGroupedFieldSet);
 
     const data = this.executeRootGroupedFieldSet(
-      operation,
       rootType,
       rootValue,
       groupedFieldSet,
+      serially,
       newDeliveryGroupMap,
     );
 
