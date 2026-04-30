@@ -21,17 +21,15 @@ export function legacyExecuteIncrementally(
     return { errors: validatedExecutionArgs };
   }
 
-  return legacyExecuteQueryOrMutationOrSubscriptionEvent(
-    validatedExecutionArgs,
-  );
+  return legacyExecuteRootSelectionSet(validatedExecutionArgs);
 }
 
-export function legacyExecuteQueryOrMutationOrSubscriptionEvent(
+export function legacyExecuteRootSelectionSet(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<
   ExecutionResult | LegacyExperimentalIncrementalExecutionResults
 > {
   return new BranchingIncrementalExecutor(
     validatedExecutionArgs,
-  ).executeQueryOrMutationOrSubscriptionEvent();
+  ).executeRootSelectionSet();
 }

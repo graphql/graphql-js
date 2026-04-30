@@ -360,10 +360,10 @@ export type {
 export {
   AbortedGraphQLExecutionError,
   execute,
-  executeQueryOrMutationOrSubscriptionEvent,
+  executeRootSelectionSet,
   executeSubscriptionEvent,
   experimentalExecuteIncrementally,
-  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
+  experimentalExecuteRootSelectionSet,
   executeSync,
   defaultFieldResolver,
   defaultTypeResolver,

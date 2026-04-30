@@ -272,7 +272,7 @@ export class Executor<
     this.promiseAll = promiseAll;
   }
 
-  executeQueryOrMutationOrSubscriptionEvent(): PromiseOrValue<
+  executeRootSelectionSet(): PromiseOrValue<
     ExecutionResult | TAlternativeInitialResponse
   > {
     const externalAbortSignal = this.validatedExecutionArgs.externalAbortSignal;

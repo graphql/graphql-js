@@ -82,7 +82,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
     return { errors: validatedExecutionArgs };
   }
 
-  return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+  return executeRootSelectionSet(validatedExecutionArgs);
 }
 
 /**
@@ -109,9 +109,7 @@ export function experimentalExecuteIncrementally(
     return { errors: validatedExecutionArgs };
   }
 
-  return experimentalExecuteQueryOrMutationOrSubscriptionEvent(
-    validatedExecutionArgs,
-  );
+  return experimentalExecuteRootSelectionSet(validatedExecutionArgs);
 }
 
 export function executeIgnoringIncremental(
@@ -126,9 +124,7 @@ export function executeIgnoringIncremental(
     return { errors: validatedExecutionArgs };
   }
 
-  return executeQueryOrMutationOrSubscriptionEventIgnoringIncremental(
-    validatedExecutionArgs,
-  );
+  return executeRootSelectionSetIgnoringIncremental(validatedExecutionArgs);
 }
 
 /**
@@ -146,28 +142,26 @@ export function executeIgnoringIncremental(
  * at which point we still log the error and null the parent field, which
  * in this case is the entire response.
  */
-export function executeQueryOrMutationOrSubscriptionEvent(
+export function executeRootSelectionSet(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult> {
   return new ExecutorThrowingOnIncremental(
     validatedExecutionArgs,
-  ).executeQueryOrMutationOrSubscriptionEvent();
+  ).executeRootSelectionSet();
 }
 
-export function experimentalExecuteQueryOrMutationOrSubscriptionEvent(
+export function experimentalExecuteRootSelectionSet(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
   return new IncrementalExecutor(
     validatedExecutionArgs,
-  ).executeQueryOrMutationOrSubscriptionEvent();
+  ).executeRootSelectionSet();
 }
 
-export function executeQueryOrMutationOrSubscriptionEventIgnoringIncremental(
+export function executeRootSelectionSetIgnoringIncremental(
   validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<ExecutionResult | ExperimentalIncrementalExecutionResults> {
-  return new Executor(
-    validatedExecutionArgs,
-  ).executeQueryOrMutationOrSubscriptionEvent();
+  return new Executor(validatedExecutionArgs).executeRootSelectionSet();
 }
 
 /**
@@ -189,7 +183,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
 export function executeSubscriptionEvent(
   validatedExecutionArgs: ValidatedSubscriptionArgs,
 ): PromiseOrValue<ExecutionResult> {
-  return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
+  return executeRootSelectionSet(validatedExecutionArgs);
 }
 
 /**

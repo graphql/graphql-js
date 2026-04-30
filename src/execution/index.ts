@@ -3,11 +3,11 @@ export { pathToArray as responsePathAsArray } from '../jsutils/Path.js';
 export {
   createSourceEventStream,
   execute,
-  executeQueryOrMutationOrSubscriptionEvent,
+  executeRootSelectionSet,
   executeSubscriptionEvent,
   executeSync,
   experimentalExecuteIncrementally,
-  experimentalExecuteQueryOrMutationOrSubscriptionEvent,
+  experimentalExecuteRootSelectionSet,
   defaultFieldResolver,
   defaultTypeResolver,
   subscribe,
