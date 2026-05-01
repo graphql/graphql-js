@@ -352,15 +352,27 @@ export function extendSchemaImpl(
     const config = type.toConfig();
     const extensions = typeExtensionsMap[config.name] ?? [];
 
+    let fields: GraphQLInputFieldConfigMap | undefined;
+
     return new GraphQLInputObjectType({
       ...config,
-      fields: () => ({
-        ...mapValue(config.fields, (field) => ({
-          ...field,
-          type: replaceType(field.type),
-        })),
-        ...buildInputFieldMap(extensions),
-      }),
+      fields: () => {
+        if (fields === undefined) {
+          fields = Object.create(null) as GraphQLInputFieldConfigMap;
+          Object.assign(
+            fields,
+            mapValue(config.fields, (field) => ({
+              ...field,
+              type: replaceType(field.type),
+            })),
+          );
+          extendInputFieldMap(fields, extensions);
+          // Default values must be applied _after_ all fields are known to
+          // prevent issues with recursion.
+          applyInputFieldDefaultValues(fields, extensions);
+        }
+        return fields;
+      },
       extensionASTNodes: config.extensionASTNodes.concat(extensions),
     });
   }
@@ -599,12 +611,12 @@ export function extendSchemaImpl(
     return argConfigMap;
   }
 
-  function buildInputFieldMap(
+  function extendInputFieldMap(
+    inputFieldMap: GraphQLInputFieldConfigMap,
     nodes: ReadonlyArray<
       InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode
     >,
-  ): GraphQLInputFieldConfigMap {
-    const inputFieldMap = Object.create(null);
+  ): void {
     for (const node of nodes) {
       // FIXME: https://github.com/graphql/graphql-js/issues/2203
       const fieldsNodes = /* c8 ignore next */ node.fields ?? [];
@@ -618,13 +630,34 @@ export function extendSchemaImpl(
         inputFieldMap[field.name.value] = {
           type,
           description: field.description?.value,
-          defaultValue: valueFromAST(field.defaultValue, type),
+          // `defaultValue` will be populated later by applyInputFieldDefaultValues
+          defaultValue: undefined,
           deprecationReason: getDeprecationReason(field),
           astNode: field,
         };
       }
     }
-    return inputFieldMap;
+  }
+
+  function applyInputFieldDefaultValues(
+    inputFieldMap: GraphQLInputFieldConfigMap,
+    nodes: ReadonlyArray<
+      InputObjectTypeDefinitionNode | InputObjectTypeExtensionNode
+    >,
+  ): void {
+    for (const node of nodes) {
+      // FIXME: https://github.com/graphql/graphql-js/issues/2203
+      const fieldsNodes = /* c8 ignore next */ node.fields ?? [];
+
+      for (const field of fieldsNodes) {
+        const type = inputFieldMap[field.name.value].type;
+
+        inputFieldMap[field.name.value].defaultValue = valueFromAST(
+          field.defaultValue,
+          type,
+        );
+      }
+    }
   }
 
   function buildEnumValueMap(
@@ -740,10 +773,20 @@ export function extendSchemaImpl(
       case Kind.INPUT_OBJECT_TYPE_DEFINITION: {
         const allNodes = [astNode, ...extensionASTNodes];
 
+        let fields: GraphQLInputFieldConfigMap | undefined;
         return new GraphQLInputObjectType({
           name,
           description: astNode.description?.value,
-          fields: () => buildInputFieldMap(allNodes),
+          fields: () => {
+            if (fields === undefined) {
+              fields = Object.create(null) as GraphQLInputFieldConfigMap;
+              extendInputFieldMap(fields, allNodes);
+              // Default values must be applied _after_ all fields are known to
+              // prevent issues with recursion.
+              applyInputFieldDefaultValues(fields, allNodes);
+            }
+            return fields;
+          },
           astNode,
           extensionASTNodes,
           isOneOf: isOneOf(astNode),
