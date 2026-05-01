@@ -371,6 +371,7 @@ export {
   getDirectiveValues,
   subscribe,
   createSourceEventStream,
+  validateExecutionArgs,
 } from './execution/index.js';
 
 export type {
