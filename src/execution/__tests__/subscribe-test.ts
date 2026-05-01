@@ -26,7 +26,7 @@ import {
   createSourceEventStream,
   executeSubscriptionEvent,
   subscribe,
-  validateExecutionArgs,
+  validateSubscriptionArgs,
 } from '../execute.js';
 import type { ExecutionResult } from '../Executor.js';
 
@@ -188,7 +188,7 @@ function subscribeWithBadFn(
 function subscribeWithBadArgs(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
-  const validatedExecutionArgs = validateExecutionArgs(args);
+  const validatedExecutionArgs = validateSubscriptionArgs(args);
   const sourceEventStreamResult =
     'schema' in validatedExecutionArgs
       ? createSourceEventStream(validatedExecutionArgs)
@@ -220,8 +220,34 @@ describe('Subscription Initialization Phase', () => {
         document: parse('subscription { foo }'),
       } as never),
     ).to.throw(
-      'Passing ExecutionArgs to createSourceEventStream() was removed in graphql-js@17.0.0; call validateExecutionArgs() first and pass the result instead, or use subscribe() for the full subscription pipeline.',
+      'Passing ExecutionArgs to createSourceEventStream() was removed in graphql-js@17.0.0; call validateSubscriptionArgs() first and pass the result instead, or use subscribe() for the full subscription pipeline.',
     );
+  });
+
+  it('throws when validateSubscriptionArgs is called with a non-subscription operation', () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+    });
+
+    expect(() =>
+      validateSubscriptionArgs({
+        schema,
+        document: parse('{ dummy }'),
+      }),
+    ).to.throw('Expected subscription operation.');
+  });
+
+  it('throws when subscribe is called with a non-subscription operation', () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+    });
+
+    expect(() =>
+      subscribe({
+        schema,
+        document: parse('{ dummy }'),
+      }),
+    ).to.throw('Expected subscription operation.');
   });
 
   it('accepts multiple subscription fields defined in schema', async () => {

@@ -274,6 +274,7 @@ export {
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
   isSchemaCoordinateNode,
+  isSubscriptionOperationDefinitionNode,
 } from './language/index.js';
 
 export type {
@@ -292,6 +293,7 @@ export type {
   DefinitionNode,
   ExecutableDefinitionNode,
   OperationDefinitionNode,
+  SubscriptionOperationDefinitionNode,
   VariableDefinitionNode,
   VariableNode,
   SelectionSetNode,
@@ -372,6 +374,7 @@ export {
   subscribe,
   createSourceEventStream,
   validateExecutionArgs,
+  validateSubscriptionArgs,
 } from './execution/index.js';
 
 export type {
@@ -379,6 +382,7 @@ export type {
   AsyncWorkFinishedInfo,
   ExecutionHooks,
   ValidatedExecutionArgs,
+  ValidatedSubscriptionArgs,
   ExecutionResult,
   ExperimentalIncrementalExecutionResults,
   InitialIncrementalExecutionResult,

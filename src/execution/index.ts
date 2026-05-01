@@ -12,6 +12,7 @@ export {
   defaultTypeResolver,
   subscribe,
   validateExecutionArgs,
+  validateSubscriptionArgs,
 } from './execute.js';
 export type { ExecutionArgs } from './execute.js';
 
@@ -19,6 +20,7 @@ export type { AsyncWorkFinishedInfo, ExecutionHooks } from './hooks.js';
 
 export type {
   ValidatedExecutionArgs,
+  ValidatedSubscriptionArgs,
   ExecutionResult,
   FormattedExecutionResult,
 } from './Executor.js';

@@ -3,8 +3,10 @@ import type {
   ConstValueNode,
   DefinitionNode,
   ExecutableDefinitionNode,
+  OperationDefinitionNode,
   SchemaCoordinateNode,
   SelectionNode,
+  SubscriptionOperationDefinitionNode,
   TypeDefinitionNode,
   TypeExtensionNode,
   TypeNode,
@@ -12,6 +14,7 @@ import type {
   TypeSystemExtensionNode,
   ValueNode,
 } from './ast.js';
+import { OperationTypeNode } from './ast.js';
 import { Kind } from './kinds.js';
 
 export function isDefinitionNode(node: ASTNode): node is DefinitionNode {
@@ -29,6 +32,18 @@ export function isExecutableDefinitionNode(
     node.kind === Kind.OPERATION_DEFINITION ||
     node.kind === Kind.FRAGMENT_DEFINITION
   );
+}
+
+/**
+ * A type predicate for SubscriptionOperationDefinitionNode.
+ * Useful anywhere that must distinguish subscription operations from
+ * queries and mutations, such as the subscription execution pipeline
+ * which routes events through a different code path.
+ */
+export function isSubscriptionOperationDefinitionNode(
+  node: OperationDefinitionNode,
+): node is SubscriptionOperationDefinitionNode {
+  return node.operation === OperationTypeNode.SUBSCRIPTION;
 }
 
 export function isSelectionNode(node: ASTNode): node is SelectionNode {

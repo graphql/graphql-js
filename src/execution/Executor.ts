@@ -21,6 +21,7 @@ import type {
   FieldNode,
   FragmentDefinitionNode,
   OperationDefinitionNode,
+  SubscriptionOperationDefinitionNode,
 } from '../language/ast.js';
 import { OperationTypeNode } from '../language/ast.js';
 
@@ -113,13 +114,17 @@ export interface ValidatedExecutionArgs {
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
   perEventExecutor: (
-    validatedExecutionArgs: ValidatedExecutionArgs,
+    validatedExecutionArgs: ValidatedSubscriptionArgs,
   ) => PromiseOrValue<ExecutionResult>;
   hideSuggestions: boolean;
   errorPropagation: boolean;
   externalAbortSignal: AbortSignal | undefined;
   enableEarlyExecution: boolean;
   hooks: ExecutionHooks | undefined;
+}
+
+export interface ValidatedSubscriptionArgs extends ValidatedExecutionArgs {
+  operation: SubscriptionOperationDefinitionNode;
 }
 
 /**

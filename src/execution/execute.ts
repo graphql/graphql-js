@@ -19,6 +19,7 @@ import type {
   OperationDefinitionNode,
 } from '../language/ast.js';
 import { Kind } from '../language/kinds.js';
+import { isSubscriptionOperationDefinitionNode } from '../language/predicates.js';
 
 import { GraphQLDisableErrorPropagationDirective } from '../type/directives.js';
 import type {
@@ -36,7 +37,11 @@ import { cancellablePromise } from './cancellablePromise.js';
 import type { FieldDetailsList, FragmentDetails } from './collectFields.js';
 import { collectFields } from './collectFields.js';
 import { createSharedExecutionContext } from './createSharedExecutionContext.js';
-import type { ExecutionResult, ValidatedExecutionArgs } from './Executor.js';
+import type {
+  ExecutionResult,
+  ValidatedExecutionArgs,
+  ValidatedSubscriptionArgs,
+} from './Executor.js';
 import { Executor } from './Executor.js';
 import { ExecutorThrowingOnIncremental } from './ExecutorThrowingOnIncremental.js';
 import { getVariableSignature } from './getVariableSignature.js';
@@ -182,7 +187,7 @@ export function executeSync(args: ExecutionArgs): ExecutionResult {
 }
 
 export function executeSubscriptionEvent(
-  validatedExecutionArgs: ValidatedExecutionArgs,
+  validatedExecutionArgs: ValidatedSubscriptionArgs,
 ): PromiseOrValue<ExecutionResult> {
   return executeQueryOrMutationOrSubscriptionEvent(validatedExecutionArgs);
 }
@@ -220,7 +225,7 @@ export function subscribe(
 > {
   // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
-  const validatedExecutionArgs = validateExecutionArgs(args);
+  const validatedExecutionArgs = validateSubscriptionArgs(args);
 
   // Return early errors if execution context failed.
   if (!('schema' in validatedExecutionArgs)) {
@@ -268,11 +273,11 @@ export function subscribe(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export function createSourceEventStream(
-  validatedExecutionArgs: ValidatedExecutionArgs,
+  validatedExecutionArgs: ValidatedSubscriptionArgs,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
   if (!('operation' in validatedExecutionArgs)) {
     throw new GraphQLError(
-      'Passing ExecutionArgs to createSourceEventStream() was removed in graphql-js@17.0.0; call validateExecutionArgs() first and pass the result instead, or use subscribe() for the full subscription pipeline.',
+      'Passing ExecutionArgs to createSourceEventStream() was removed in graphql-js@17.0.0; call validateSubscriptionArgs() first and pass the result instead, or use subscribe() for the full subscription pipeline.',
     );
   }
 
@@ -302,7 +307,7 @@ export interface ExecutionArgs {
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   perEventExecutor?: Maybe<
     (
-      validatedExecutionArgs: ValidatedExecutionArgs,
+      validatedExecutionArgs: ValidatedSubscriptionArgs,
     ) => PromiseOrValue<ExecutionResult>
   >;
   hideSuggestions?: Maybe<boolean>;
@@ -435,6 +440,27 @@ export function validateExecutionArgs(
   };
 }
 
+export function validateSubscriptionArgs(
+  args: ExecutionArgs,
+): ReadonlyArray<GraphQLError> | ValidatedSubscriptionArgs {
+  const validatedExecutionArgs = validateExecutionArgs(args);
+  if (!('schema' in validatedExecutionArgs)) {
+    return validatedExecutionArgs;
+  }
+  assertSubscriptionExecutionArgs(validatedExecutionArgs);
+  return validatedExecutionArgs;
+}
+
+function assertSubscriptionExecutionArgs(
+  validatedExecutionArgs: ValidatedExecutionArgs,
+): asserts validatedExecutionArgs is ValidatedSubscriptionArgs {
+  if (
+    !isSubscriptionOperationDefinitionNode(validatedExecutionArgs.operation)
+  ) {
+    throw new GraphQLError('Expected subscription operation.');
+  }
+}
+
 /**
  * If a resolveType function is not given, then a default resolve behavior is
  * used which attempts two strategies:
@@ -513,7 +539,7 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
   };
 
 function mapSourceToResponse(
-  validatedExecutionArgs: ValidatedExecutionArgs,
+  validatedExecutionArgs: ValidatedSubscriptionArgs,
   resultOrStream: ExecutionResult | AsyncIterable<unknown>,
 ): AsyncGenerator<ExecutionResult, void, void> | ExecutionResult {
   if (!isAsyncIterable(resultOrStream)) {
@@ -525,7 +551,7 @@ function mapSourceToResponse(
   // This implements the "MapSourceToResponseEvent" algorithm described in
   // the GraphQL specification..
   function mapFn(payload: unknown): PromiseOrValue<ExecutionResult> {
-    const perEventExecutionArgs: ValidatedExecutionArgs = {
+    const perEventExecutionArgs: ValidatedSubscriptionArgs = {
       ...validatedExecutionArgs,
       rootValue: payload,
     };

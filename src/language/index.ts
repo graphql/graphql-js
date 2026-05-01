@@ -44,6 +44,7 @@ export type {
   DefinitionNode,
   ExecutableDefinitionNode,
   OperationDefinitionNode,
+  SubscriptionOperationDefinitionNode,
   VariableDefinitionNode,
   VariableNode,
   SelectionSetNode,
@@ -118,6 +119,7 @@ export {
   isTypeSystemExtensionNode,
   isTypeExtensionNode,
   isSchemaCoordinateNode,
+  isSubscriptionOperationDefinitionNode,
 } from './predicates.js';
 
 export { DirectiveLocation } from './directiveLocation.js';

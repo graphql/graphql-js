@@ -356,6 +356,16 @@ export interface OperationDefinitionNode {
   readonly selectionSet: SelectionSetNode;
 }
 
+/**
+ * A narrowed OperationDefinitionNode for subscription operations.
+ * Subscription operations go through a distinct execution pipeline
+ * (source event stream + per-event execution), so narrowing the operation
+ * type allows functions in that pipeline to accept only valid input.
+ */
+export interface SubscriptionOperationDefinitionNode extends OperationDefinitionNode {
+  readonly operation: (typeof OperationTypeNode)['SUBSCRIPTION'];
+}
+
 export const OperationTypeNode = {
   QUERY: 'query' as const,
   MUTATION: 'mutation' as const,
