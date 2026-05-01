@@ -26,6 +26,7 @@ import {
   createSourceEventStream,
   executeSubscriptionEvent,
   subscribe,
+  validateExecutionArgs,
 } from '../execute.js';
 import type { ExecutionResult } from '../Executor.js';
 
@@ -187,15 +188,42 @@ function subscribeWithBadFn(
 function subscribeWithBadArgs(
   args: ExecutionArgs,
 ): PromiseOrValue<ExecutionResult | AsyncIterable<unknown>> {
+  const validatedExecutionArgs = validateExecutionArgs(args);
+  const sourceEventStreamResult =
+    'schema' in validatedExecutionArgs
+      ? createSourceEventStream(validatedExecutionArgs)
+      : { errors: validatedExecutionArgs };
+
   return expectEqualPromisesOrValues([
     subscribe(args),
-    createSourceEventStream(args),
+    sourceEventStreamResult,
   ]);
 }
 
 /* eslint-disable @typescript-eslint/require-await */
 // Check all error cases when initializing the subscription.
 describe('Subscription Initialization Phase', () => {
+  it('throws for legacy ExecutionArgs passed to createSourceEventStream', () => {
+    const schema = new GraphQLSchema({
+      query: DummyQueryType,
+      subscription: new GraphQLObjectType({
+        name: 'Subscription',
+        fields: {
+          foo: { type: GraphQLString },
+        },
+      }),
+    });
+
+    expect(() =>
+      createSourceEventStream({
+        schema,
+        document: parse('subscription { foo }'),
+      } as never),
+    ).to.throw(
+      'Passing ExecutionArgs to createSourceEventStream() was removed in graphql-js@17.0.0; call validateExecutionArgs() first and pass the result instead, or use subscribe() for the full subscription pipeline.',
+    );
+  });
+
   it('accepts multiple subscription fields defined in schema', async () => {
     const schema = new GraphQLSchema({
       query: DummyQueryType,

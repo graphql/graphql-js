@@ -227,7 +227,7 @@ export function subscribe(
     return { errors: validatedExecutionArgs };
   }
 
-  const resultOrStream = createSourceEventStreamImpl(validatedExecutionArgs);
+  const resultOrStream = createSourceEventStream(validatedExecutionArgs);
 
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
@@ -240,12 +240,13 @@ export function subscribe(
 
 /**
  * Implements the "CreateSourceEventStream" algorithm described in the
- * GraphQL specification, resolving the subscription source event stream.
+ * GraphQL specification, resolving the subscription source event stream for a
+ * previously validated subscription request.
  *
  * Returns a Promise which resolves to either an AsyncIterable (if successful)
- * or an ExecutionResult (error). The promise will be rejected if the schema or
- * other arguments to this function are invalid, or if the resolved event stream
- * is not an async iterable.
+ * or an ExecutionResult (error). The promise will be rejected if the validated
+ * execution arguments are invalid, or if the resolved event stream is not an
+ * async iterable.
  *
  * If the client-provided arguments to this function do not result in a
  * compliant subscription, a GraphQL Response (ExecutionResult) with
@@ -267,18 +268,26 @@ export function subscribe(
  * "Supporting Subscriptions at Scale" information in the GraphQL specification.
  */
 export function createSourceEventStream(
-  args: ExecutionArgs,
+  validatedExecutionArgs: ValidatedExecutionArgs,
 ): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  // If a valid execution context cannot be created due to incorrect arguments,
-  // a "Response" with only errors is returned.
-  const validatedExecutionArgs = validateExecutionArgs(args);
-
-  // Return early errors if execution context failed.
-  if (!('schema' in validatedExecutionArgs)) {
-    return { errors: validatedExecutionArgs };
+  if (!('operation' in validatedExecutionArgs)) {
+    throw new GraphQLError(
+      'Passing ExecutionArgs to createSourceEventStream() was removed in graphql-js@17.0.0; call validateExecutionArgs() first and pass the result instead, or use subscribe() for the full subscription pipeline.',
+    );
   }
 
-  return createSourceEventStreamImpl(validatedExecutionArgs);
+  try {
+    const eventStream = executeSubscription(validatedExecutionArgs);
+    if (isPromise(eventStream)) {
+      return eventStream.then(undefined, (error: unknown) => ({
+        errors: [ensureGraphQLError(error)],
+      }));
+    }
+
+    return eventStream;
+  } catch (error) {
+    return { errors: [ensureGraphQLError(error)] };
+  }
 }
 
 export interface ExecutionArgs {
@@ -532,23 +541,6 @@ function mapSourceToResponse(
     };
   }
   return mapAsyncIterable(resultOrStream, mapFn);
-}
-
-function createSourceEventStreamImpl(
-  validatedExecutionArgs: ValidatedExecutionArgs,
-): PromiseOrValue<AsyncIterable<unknown> | ExecutionResult> {
-  try {
-    const eventStream = executeSubscription(validatedExecutionArgs);
-    if (isPromise(eventStream)) {
-      return eventStream.then(undefined, (error: unknown) => ({
-        errors: [ensureGraphQLError(error)],
-      }));
-    }
-
-    return eventStream;
-  } catch (error) {
-    return { errors: [ensureGraphQLError(error)] };
-  }
 }
 
 function executeSubscription(
