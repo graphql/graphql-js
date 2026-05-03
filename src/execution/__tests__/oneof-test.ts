@@ -83,7 +83,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" has invalid default value: OneOf Input Object "TestInputObject" must specify exactly one key.',
+              'Variable "$input" has invalid default value: Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           },
         ],
       });
@@ -148,7 +148,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
         errors: [
           {
             message:
-              'Variable "$input" has invalid value: Field "a" for OneOf type "TestInputObject" must be non-null.',
+              'Variable "$input" has invalid value at .a: Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
             locations: [{ line: 2, column: 16 }],
           },
         ],
@@ -173,7 +173,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" has invalid value: Exactly one key must be specified for OneOf type "TestInputObject".',
+              'Variable "$input" has invalid value: Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           },
         ],
       });
@@ -197,7 +197,7 @@ describe('Execute: Handles OneOf Input Objects', () => {
           {
             locations: [{ column: 16, line: 2 }],
             message:
-              'Variable "$input" has invalid value: Exactly one key must be specified for OneOf type "TestInputObject".',
+              'Variable "$input" has invalid value: Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           },
         ],
       });

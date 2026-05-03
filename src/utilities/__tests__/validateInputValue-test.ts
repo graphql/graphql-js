@@ -395,7 +395,7 @@ describe('validateInputValue', () => {
       test({ foo: 123, bar: null }, TestInputObject, [
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
         },
       ]);
@@ -409,8 +409,8 @@ describe('validateInputValue', () => {
       test({ bar: null }, TestInputObject, [
         {
           error:
-            'Field "bar" for OneOf type "TestInputObject" must be non-null.',
-          path: [],
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+          path: ['bar'],
         },
       ]);
     });
@@ -436,7 +436,7 @@ describe('validateInputValue', () => {
         },
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
         },
       ]);
@@ -452,7 +452,7 @@ describe('validateInputValue', () => {
         },
         {
           error:
-            'Exactly one key must be specified for OneOf type "TestInputObject".',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
         },
       ]);
@@ -980,7 +980,7 @@ describe('validateInputLiteral', () => {
       test('{ foo: 123, bar: null }', TestInputObject, [
         {
           error:
-            'OneOf Input Object "TestInputObject" must specify exactly one key.',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
         },
       ]);
@@ -990,7 +990,7 @@ describe('validateInputLiteral', () => {
       test('{ bar: null }', TestInputObject, [
         {
           error:
-            'Field "TestInputObject.bar" used for OneOf Input Object must be non-null.',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: ['bar'],
         },
       ]);
@@ -1025,7 +1025,7 @@ describe('validateInputLiteral', () => {
         },
         {
           error:
-            'OneOf Input Object "TestInputObject" must specify exactly one key.',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
         },
       ]);
@@ -1041,7 +1041,7 @@ describe('validateInputLiteral', () => {
         },
         {
           error:
-            'OneOf Input Object "TestInputObject" must specify exactly one key.',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
         },
       ]);
@@ -1087,7 +1087,7 @@ describe('validateInputLiteral', () => {
         },
         {
           error:
-            'OneOf Input Object "TestInputObject" must specify exactly one key.',
+            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
         },
       ]);
@@ -1105,7 +1105,7 @@ describe('validateInputLiteral', () => {
           },
           {
             error:
-              'OneOf Input Object "TestInputObject" must specify exactly one key.',
+              'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
             path: [],
           },
         ],

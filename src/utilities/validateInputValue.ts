@@ -169,7 +169,7 @@ function validateInputValueImpl(
       if (fields.length !== 1) {
         reportInvalidValue(
           onError,
-          `Exactly one key must be specified for OneOf type "${type}".`,
+          getOneOfInputObjectErrorMessage(type),
           path,
         );
       }
@@ -179,8 +179,8 @@ function validateInputValueImpl(
       if (value === null) {
         reportInvalidValue(
           onError,
-          `Field "${field}" for OneOf type "${type}" must be non-null.`,
-          path,
+          getOneOfInputObjectErrorMessage(type),
+          addPath(path, field, type.name),
         );
       }
     }
@@ -437,7 +437,7 @@ function validateInputLiteralImpl(
       if (isNotExactlyOneField) {
         reportInvalidLiteral(
           context.onError,
-          `OneOf Input Object "${type}" must specify exactly one key.`,
+          getOneOfInputObjectErrorMessage(type),
           valueNode,
           path,
         );
@@ -449,7 +449,7 @@ function validateInputLiteralImpl(
         const fieldName = fields[0].name.value;
         reportInvalidLiteral(
           context.onError,
-          `Field "${type}.${fieldName}" used for OneOf Input Object must be non-null.`,
+          getOneOfInputObjectErrorMessage(type),
           valueNode,
           addPath(path, fieldName, undefined),
         );
@@ -531,4 +531,8 @@ function getCaughtErrorMessage(caughtError: unknown): string {
   }
 
   return String(caughtError);
+}
+
+function getOneOfInputObjectErrorMessage(type: GraphQLInputType): string {
+  return `Within OneOf Input Object type "${type}", exactly one field must be specified, and the value for that field must be non-null.`;
 }

@@ -1147,7 +1147,7 @@ describe('Validate: Values of correct type', () => {
       `).toDeepEqual([
         {
           message:
-            'Field "OneOfInput.stringField" used for OneOf Input Object must be non-null.',
+            'Within OneOf Input Object type "OneOfInput", exactly one field must be specified, and the value for that field must be non-null.',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
@@ -1163,7 +1163,7 @@ describe('Validate: Values of correct type', () => {
       `).toDeepEqual([
         {
           message:
-            'OneOf Input Object "OneOfInput" must specify exactly one key.',
+            'Within OneOf Input Object type "OneOfInput", exactly one field must be specified, and the value for that field must be non-null.',
           locations: [{ line: 4, column: 37 }],
         },
       ]);
