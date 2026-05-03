@@ -303,4 +303,10 @@ describe('valueFromAST', () => {
       requiredBool: true,
     });
   });
+
+  it('rejects multiple oneOf fields when one variable is unprovided', () => {
+    expectValueFrom('{ a: $a, b: $b }', testOneOfInputObj, {
+      a: 'abc',
+    }).to.equal(undefined);
+  });
 });

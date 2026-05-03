@@ -677,6 +677,26 @@ describe('coerceInputLiteral', () => {
     );
   });
 
+  it('rejects multiple oneOf fields when one variable is unprovided', () => {
+    testWithVariables(
+      '($a: String, $b: String)',
+      { a: 'abc' },
+      '{ a: $a, b: $b }',
+      testOneOfInputObj,
+      undefined,
+    );
+  });
+
+  it('rejects oneOf field when variable is null', () => {
+    testWithVariables(
+      '($a: String)',
+      { a: null },
+      '{ a: $a }',
+      testOneOfInputObj,
+      undefined,
+    );
+  });
+
   it('preserves explicit null variables in input object fields', () => {
     testWithVariables(
       '($foo: Boolean)',

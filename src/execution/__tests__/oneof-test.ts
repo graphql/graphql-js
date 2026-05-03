@@ -259,6 +259,32 @@ describe('Execute: Handles OneOf Input Objects', () => {
       });
     });
 
+    it('errors with missing variable as an additional field', () => {
+      const query = `
+        query ($a: String, $b: Int) {
+          test(input: { a: $a, b: $b }) {
+            a
+            b
+          }
+        }
+      `;
+      const result = executeQuery(query, rootValue, { a: 'abc' });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          test: null,
+        },
+        errors: [
+          {
+            message:
+              'Argument "Query.test(input:)" has invalid value: Expected variable "$b" provided to field "b" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
+            locations: [{ line: 3, column: 23 }],
+            path: ['test'],
+          },
+        ],
+      });
+    });
+
     it('errors with nulled fragment variable for field', () => {
       const query = `
         query {

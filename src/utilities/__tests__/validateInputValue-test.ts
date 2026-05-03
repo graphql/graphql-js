@@ -1111,6 +1111,27 @@ describe('validateInputLiteral', () => {
         ],
       );
     });
+
+    it('errors with multiple variables when one is missing', () => {
+      testWithVariables(
+        '($foo: Int, $bar: Int)',
+        { foo: 123 },
+        '{ foo: $foo, bar: $bar }',
+        TestInputObject,
+        [
+          {
+            error:
+              'Expected variable "$bar" provided to field "bar" for OneOf Input Object type "TestInputObject" to provide a runtime value.',
+            path: [],
+          },
+          {
+            error:
+              'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
+            path: [],
+          },
+        ],
+      );
+    });
   });
 
   describe('for GraphQLList', () => {
