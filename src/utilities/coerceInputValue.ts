@@ -73,12 +73,15 @@ export function coerceInputValue(
 
     const coercedValue: ObjMap<unknown> = Object.create(null);
     const fieldDefs = type.getFields();
-    const hasUndefinedField = Object.keys(inputValue).some(
-      (name) =>
-        inputValue[name] !== undefined && !Object.hasOwn(fieldDefs, name),
-    );
-    if (hasUndefinedField) {
-      return; // Invalid: intentionally return no value.
+    let definedFieldCount = 0;
+    for (const fieldName of Object.keys(inputValue)) {
+      if (inputValue[fieldName] === undefined) {
+        continue;
+      }
+      definedFieldCount++;
+      if (!Object.hasOwn(fieldDefs, fieldName)) {
+        return; // Invalid: intentionally return no value.
+      }
     }
     for (const field of Object.values(fieldDefs)) {
       const fieldValue = inputValue[field.name];
@@ -101,7 +104,7 @@ export function coerceInputValue(
 
     if (type.isOneOf) {
       const keys = Object.keys(coercedValue);
-      if (keys.length !== 1) {
+      if (definedFieldCount !== 1 || keys.length !== 1) {
         return; // Invalid: intentionally return no value.
       }
 

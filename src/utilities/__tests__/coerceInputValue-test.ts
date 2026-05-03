@@ -190,6 +190,13 @@ describe('coerceInputValue', () => {
       },
       isOneOf: true,
     });
+    const TestInvalidOneOfInputObjectWithDefault = new GraphQLInputObjectType({
+      name: 'TestInvalidOneOfInputObjectWithDefault',
+      fields: {
+        foo: { type: GraphQLInt, default: { value: 123 } },
+      },
+      isOneOf: true,
+    });
 
     it('returns for valid input', () => {
       test({ foo: 123 }, TestInputObject, { foo: 123 });
@@ -201,6 +208,18 @@ describe('coerceInputValue', () => {
 
     it('invalid if the one field is null', () => {
       test({ bar: null }, TestInputObject, undefined);
+    });
+
+    it('invalid if an omitted field would be filled by a default', () => {
+      test({}, TestInvalidOneOfInputObjectWithDefault, undefined);
+    });
+
+    it('invalid if an undefined field would be filled by a default', () => {
+      test(
+        { foo: undefined },
+        TestInvalidOneOfInputObjectWithDefault,
+        undefined,
+      );
     });
 
     it('invalid for an invalid field', () => {
