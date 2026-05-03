@@ -79,8 +79,8 @@ behavior will be exposed as `default: { literal: <literal> }`.
 The `GraphQLError` constructor now only accepts a message and options object as arguments. Previously, it also accepted positional arguments.
 
 ```diff
-- new GraphQLError('message', 'source', 'positions', 'path', 'originalError', 'extensions');
-+ new GraphQLError('message', { source, positions, path, originalError, extensions });
+- new GraphQLError('message', nodes, source, positions, path, originalError, extensions);
++ new GraphQLError('message', { nodes, source, positions, path, originalError, extensions });
 ```
 
 ## `createSourceEventStream` arguments
