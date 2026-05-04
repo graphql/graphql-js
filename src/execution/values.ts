@@ -313,7 +313,7 @@ function printArgumentOrFragmentVariable(
 ): string {
   return isArgument(argDef)
     ? `Argument "${argDef}"`
-    : `Fragment "${node.name.value}" variable "$${argDef.name}"`;
+    : `Variable "$${argDef.name}" defined by fragment "${node.name.value}"`;
 }
 
 /**

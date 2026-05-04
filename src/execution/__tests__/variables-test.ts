@@ -1417,7 +1417,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Fragment "a" variable "$value" of required type "String!" was not provided.',
+              'Variable "$value" defined by fragment "a" of required type "String!" was not provided.',
             locations: [{ line: 3, column: 11 }],
           },
         ],
@@ -1490,7 +1490,7 @@ describe('Execute: Handles inputs', () => {
         errors: [
           {
             message:
-              'Fragment "a" variable "$value" has invalid value: Expected value of non-null type "String!" not to be null.',
+              'Variable "$value" defined by fragment "a" has invalid value: Expected value of non-null type "String!" not to be null.',
             locations: [{ line: 3, column: 23 }],
           },
         ],
