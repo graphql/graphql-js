@@ -244,7 +244,7 @@ function coerceArgument(
       // continue with an invalid argument value.
       throw new GraphQLError(
         // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
-        `Argument "${isArgument(argDef) ? argDef : argName}" of required type "${argType}" was not provided.`,
+        `${printArgumentOrFragmentVariable(argDef, node)} of required type "${argType}" was not provided.`,
         { nodes: node },
       );
     }
@@ -291,7 +291,7 @@ function coerceArgument(
       argType,
       (error, path) => {
         // TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
-        error.message = `Argument "${isArgument(argDef) ? argDef : argDef.name}" has invalid value${printPathArray(
+        error.message = `${printArgumentOrFragmentVariable(argDef, node)} has invalid value${printPathArray(
           path,
         )}: ${error.message}`;
         throw error;
@@ -304,6 +304,16 @@ function coerceArgument(
     invariant(false, 'Invalid argument');
   }
   coercedValues[argName] = coercedValue;
+}
+
+// TODO: clean up the naming of isRequiredArgument(), isArgument(), and argDef if/when experimental fragment variables are merged
+function printArgumentOrFragmentVariable(
+  argDef: GraphQLArgument | GraphQLVariableSignature,
+  node: FieldNode | DirectiveNode | FragmentSpreadNode,
+): string {
+  return isArgument(argDef)
+    ? `Argument "${argDef}"`
+    : `Fragment "${node.name.value}" variable "$${argDef.name}"`;
 }
 
 /**
