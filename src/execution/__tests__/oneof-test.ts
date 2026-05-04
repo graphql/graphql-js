@@ -79,17 +79,11 @@ describe('Execute: Handles OneOf Input Objects', () => {
       const result = executeQuery(query, rootValue);
 
       expectJSON(result).toDeepEqual({
-        data: {
-          test: null,
-        },
         errors: [
           {
-            locations: [{ column: 23, line: 3 }],
+            locations: [{ column: 16, line: 2 }],
             message:
-              // This type of error would be caught at validation-time
-              // hence the vague error message here.
-              'Argument "Query.test(input:)" has invalid value: Expected variable "$input" provided to type "TestInputObject!" to provide a runtime value.',
-            path: ['test'],
+              'Variable "$input" has invalid default value: OneOf Input Object "TestInputObject" must specify exactly one key.',
           },
         ],
       });

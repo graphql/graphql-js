@@ -36,6 +36,7 @@ import {
 
 import type {
   GraphQLArgument,
+  GraphQLDefaultInput,
   GraphQLEnumType,
   GraphQLInputField,
   GraphQLInputObjectType,
@@ -241,64 +242,76 @@ function validateDefaultValue(
     return;
   }
 
-  if (defaultInput.literal) {
-    validateInputLiteral(
-      defaultInput.literal,
-      inputValue.type,
-      (error, path) => {
-        context.reportError(
-          `${inputValue} has invalid default value${printPathArray(path)}: ${
-            error.message
-          }`,
-          error.nodes,
-        );
-      },
-    );
-  } else {
-    const errors: Array<[GraphQLError, ReadonlyArray<string | number>]> = [];
-    validateInputValue(defaultInput.value, inputValue.type, (error, path) => {
-      errors.push([error, path]);
-    });
+  const errors: Array<[GraphQLError, ReadonlyArray<string | number>]> = [];
+  validateDefaultInput(defaultInput, inputValue.type, (error, path) => {
+    errors.push([error, path]);
+  });
 
+  if (errors.length === 0) {
+    return;
+  }
+
+  if (!defaultInput.literal) {
     // If there were validation errors, check to see if it can be "uncoerced"
     // and then correctly validated. If so, report a clear error with a path
     // to resolution.
-    if (errors.length > 0) {
-      try {
-        const uncoercedValue = uncoerceDefaultValue(
-          defaultInput.value,
-          inputValue.type,
-        );
-
-        const uncoercedErrors = [];
-        validateInputValue(uncoercedValue, inputValue.type, (error, path) => {
-          uncoercedErrors.push([error, path]);
-        });
-
-        if (uncoercedErrors.length === 0) {
-          context.reportError(
-            `${inputValue} has invalid default value: ${inspect(
-              defaultInput.value,
-            )}. Did you mean: ${inspect(uncoercedValue)}?`,
-            inputValue.astNode?.defaultValue,
-          );
-          return;
-        }
-      } catch (_error) {
-        // ignore
-      }
-    }
-
-    // Otherwise report the original set of errors.
-    for (const [error, path] of errors) {
-      context.reportError(
-        `${inputValue} has invalid default value${printPathArray(path)}: ${
-          error.message
-        }`,
-        inputValue.astNode?.defaultValue,
+    try {
+      const uncoercedValue = uncoerceDefaultValue(
+        defaultInput.value,
+        inputValue.type,
       );
+
+      const uncoercedErrors = [];
+      validateInputValue(uncoercedValue, inputValue.type, (error, path) => {
+        uncoercedErrors.push([error, path]);
+      });
+
+      if (uncoercedErrors.length === 0) {
+        context.reportError(
+          `${inputValue} has invalid default value: ${inspect(
+            defaultInput.value,
+          )}. Did you mean: ${inspect(uncoercedValue)}?`,
+          inputValue.astNode?.defaultValue,
+        );
+        return;
+      }
+    } catch (_error) {
+      // ignore
     }
   }
+
+  // Otherwise report the original set of errors.
+  for (const [error, path] of errors) {
+    context.reportError(
+      `${inputValue} has invalid default value${printPathArray(path)}: ${
+        error.message
+      }`,
+      error.nodes ?? inputValue.astNode?.defaultValue,
+    );
+  }
+}
+
+/**
+ * @internal
+ */
+export function validateDefaultInput(
+  defaultInput: GraphQLDefaultInput,
+  inputType: GraphQLInputType,
+  onError: (error: GraphQLError, path: ReadonlyArray<string | number>) => void,
+  hideSuggestions?: Maybe<boolean>,
+): void {
+  if (defaultInput.literal) {
+    validateInputLiteral(
+      defaultInput.literal,
+      inputType,
+      onError,
+      undefined,
+      undefined,
+      hideSuggestions,
+    );
+    return;
+  }
+  validateInputValue(defaultInput.value, inputType, onError, hideSuggestions);
 }
 
 /**

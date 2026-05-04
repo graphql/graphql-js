@@ -241,6 +241,23 @@ describe('coerceInputValue', () => {
         .to.have.property('foo')
         .that.satisfy(Number.isNaN);
     });
+
+    it('invalid when coercing an invalid field default throws', () => {
+      // Invalid default values should be caught during validation.
+      const typeWithInvalidDefault = new GraphQLInputObjectType({
+        name: 'TypeWithInvalidDefault',
+        fields: {
+          foo: {
+            type: GraphQLString,
+            default: { value: 123 },
+          },
+        },
+      });
+
+      expect(() => coerceInputValue({}, typeWithInvalidDefault)).to.throw(
+        'Expected value of type "String" to be valid, found: 123.',
+      );
+    });
   });
 
   describe('for GraphQLList', () => {
@@ -508,6 +525,25 @@ describe('coerceInputLiteral', () => {
     });
 
     test('{}', type, { int: 42, float: 3.14 });
+  });
+
+  it('invalid when coercing an invalid literal default throws', () => {
+    // Invalid default values should be caught during validation.
+    const typeWithInvalidDefault = new GraphQLInputObjectType({
+      name: 'TypeWithInvalidLiteralDefault',
+      fields: {
+        foo: {
+          type: GraphQLString,
+          default: { literal: { kind: Kind.INT, value: '123' } },
+        },
+      },
+    });
+
+    expect(() =>
+      coerceInputLiteral(parseValue('{}'), typeWithInvalidDefault),
+    ).to.throw(
+      'Expected value of type "String" to be valid, found: { kind: "IntValue", value: "123" }.',
+    );
   });
 
   const testInputObj = new GraphQLInputObjectType({

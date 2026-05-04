@@ -192,6 +192,34 @@ const TestType = new GraphQLObjectType({
   },
 });
 
+const TestTypeWithInvalidDefaultArgumentValue = new GraphQLObjectType({
+  name: 'TestTypeWithInvalidDefaultArgumentValue',
+  fields: {
+    fieldWithInvalidDefaultArgumentValue: fieldWithInputArg({
+      type: GraphQLString,
+      default: { value: 123 },
+    }),
+  },
+});
+
+const TestTypeWithInvalidNestedDefaultArgumentValue = new GraphQLObjectType({
+  name: 'TestTypeWithInvalidNestedDefaultArgumentValue',
+  fields: {
+    fieldWithInvalidNestedDefaultArgumentValue: fieldWithInputArg({
+      type: new GraphQLInputObjectType({
+        name: 'InputWithInvalidNestedFieldDefault',
+        fields: {
+          foo: {
+            type: GraphQLString,
+            default: { value: 123 },
+          },
+        },
+      }),
+      default: { value: {} },
+    }),
+  },
+});
+
 const schema = new GraphQLSchema({
   query: TestType,
   directives: [
@@ -447,6 +475,61 @@ describe('Execute: Handles inputs', () => {
           data: {
             fieldWithObjectInput: '{ a: "foo", b: ["bar"], c: "baz" }',
           },
+        });
+      });
+
+      it('reports invalid default values with variable definition locations', () => {
+        const result = executeQuery(
+          'query ($input: String = 123) { fieldWithNullableStringInput(input: $input) }',
+        );
+
+        expectJSON(result).toDeepEqual({
+          errors: [
+            {
+              message:
+                'Variable "$input" has invalid default value: String cannot represent a non string value: 123',
+              locations: [{ line: 1, column: 8 }],
+            },
+          ],
+        });
+      });
+
+      it('includes suggestions for invalid default values', () => {
+        const result = executeSync({
+          schema,
+          document: parse(
+            'query ($input: TestInputObject = { c: "ok", aa: "x" }) { fieldWithObjectInput(input: $input) }',
+          ),
+        });
+
+        expectJSON(result).toDeepEqual({
+          errors: [
+            {
+              message:
+                'Variable "$input" has invalid default value: Expected value of type "TestInputObject" not to include unknown field "aa". Did you mean "a"? Found: { c: "ok", aa: "x" }.',
+              locations: [{ line: 1, column: 8 }],
+            },
+          ],
+        });
+      });
+
+      it('hides suggestions for invalid default values when specified', () => {
+        const result = executeSync({
+          schema,
+          document: parse(
+            'query ($input: TestInputObject = { c: "ok", aa: "x" }) { fieldWithObjectInput(input: $input) }',
+          ),
+          hideSuggestions: true,
+        });
+
+        expectJSON(result).toDeepEqual({
+          errors: [
+            {
+              message:
+                'Variable "$input" has invalid default value: Expected value of type "TestInputObject" not to include unknown field "aa", found: { c: "ok", aa: "x" }.',
+              locations: [{ line: 1, column: 8 }],
+            },
+          ],
         });
       });
 
@@ -1296,6 +1379,58 @@ describe('Execute: Handles inputs', () => {
         },
       });
     });
+
+    it('localizes invalid default value errors during execution', () => {
+      const schemaWithInvalidDefaultArgumentValue = new GraphQLSchema({
+        query: TestTypeWithInvalidDefaultArgumentValue,
+        assumeValid: true,
+      });
+
+      const result = executeSync({
+        schema: schemaWithInvalidDefaultArgumentValue,
+        document: parse('{ fieldWithInvalidDefaultArgumentValue }'),
+      });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithInvalidDefaultArgumentValue: null,
+        },
+        errors: [
+          {
+            message:
+              'Argument "TestTypeWithInvalidDefaultArgumentValue.fieldWithInvalidDefaultArgumentValue(input:)" has invalid default value: String cannot represent a non string value: 123',
+            locations: [{ line: 1, column: 3 }],
+            path: ['fieldWithInvalidDefaultArgumentValue'],
+          },
+        ],
+      });
+    });
+
+    it('localizes nested invalid field default value errors during execution', () => {
+      const schemaWithInvalidNestedDefaultArgumentValue = new GraphQLSchema({
+        query: TestTypeWithInvalidNestedDefaultArgumentValue,
+        assumeValid: true,
+      });
+
+      const result = executeSync({
+        schema: schemaWithInvalidNestedDefaultArgumentValue,
+        document: parse('{ fieldWithInvalidNestedDefaultArgumentValue }'),
+      });
+
+      expectJSON(result).toDeepEqual({
+        data: {
+          fieldWithInvalidNestedDefaultArgumentValue: null,
+        },
+        errors: [
+          {
+            message:
+              'Argument "TestTypeWithInvalidNestedDefaultArgumentValue.fieldWithInvalidNestedDefaultArgumentValue(input:)" has invalid default value: Expected value of type "String" to be valid, found: 123.',
+            locations: [{ line: 1, column: 3 }],
+            path: ['fieldWithInvalidNestedDefaultArgumentValue'],
+          },
+        ],
+      });
+    });
   });
 
   describe('getVariableValues: limit maximum number of coercion errors', () => {
@@ -1453,6 +1588,23 @@ describe('Execute: Handles inputs', () => {
         data: {
           fieldWithNonNullableStringInput: '"B"',
         },
+      });
+    });
+
+    it('when the definition has an invalid default and is not provided', () => {
+      const result = executeQueryWithFragmentArguments(
+        'query { ...a } fragment a($value: String = 123) on TestType { fieldWithNullableStringInput(input: $value) }',
+      );
+
+      expectJSON(result).toDeepEqual({
+        data: null,
+        errors: [
+          {
+            message:
+              'Variable "$value" defined by fragment "a" has invalid default value: String cannot represent a non string value: 123',
+            locations: [{ line: 1, column: 9 }],
+          },
+        ],
       });
     });
 

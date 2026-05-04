@@ -24,6 +24,7 @@ import {
 } from '../type/definition.js';
 import type { GraphQLDirective } from '../type/directives.js';
 import type { GraphQLSchema } from '../type/schema.js';
+import { validateDefaultInput } from '../type/validate.js';
 
 import {
   coerceDefaultValue,
@@ -117,7 +118,20 @@ function coerceVariableValues(
     if (value === undefined) {
       sources[varName] = { signature: varSignature };
       if (varDefNode.defaultValue) {
-        coerced[varName] = coerceInputLiteral(varDefNode.defaultValue, varType);
+        maybeSetDefaultValue(
+          coerced,
+          varName,
+          varSignature,
+          (error, path) => {
+            onError(
+              new GraphQLError(
+                `Variable "$${varName}" has invalid default value${printPathArray(path)}: ${error.message}`,
+                { nodes: varDefNode },
+              ),
+            );
+          },
+          hideSuggestions,
+        );
         continue;
       } else if (!isNonNullType(varType)) {
         // Non-provided values for nullable variables are omitted.
@@ -150,6 +164,49 @@ function coerceVariableValues(
   }
 
   return { sources, coerced };
+}
+
+function maybeSetDefaultValue(
+  coercedValues: ObjMap<unknown>,
+  name: string,
+  inputValue: GraphQLArgument | GraphQLVariableSignature,
+  onError: (error: GraphQLError, path: ReadonlyArray<string | number>) => void,
+  hideSuggestions?: Maybe<boolean>,
+): void {
+  try {
+    // coerceDefaultValue assumes validation has already rejected invalid
+    // defaults. If validation was skipped, invalid defaults or nested input
+    // field defaults can throw here; recover with validation-style errors below.
+    const coercedDefaultValue = coerceDefaultValue(inputValue);
+    if (coercedDefaultValue !== undefined) {
+      coercedValues[name] = coercedDefaultValue;
+    }
+  } catch (error) {
+    const defaultInput = inputValue.default;
+    // Defensive: coerceDefaultValue should only throw while coercing a default.
+    /* c8 ignore next 3 */
+    if (defaultInput === undefined) {
+      throw error;
+    }
+
+    // Prefer validation's user-facing errors for invalid defaults.
+    let reportedValidationError = false;
+    validateDefaultInput(
+      defaultInput,
+      inputValue.type,
+      (defaultError, path) => {
+        reportedValidationError = true;
+        onError(defaultError, path);
+      },
+      hideSuggestions,
+    );
+
+    if (!reportedValidationError) {
+      // The default itself validated, so coercion failed while applying a nested
+      // input field default. Surface the original coercion error.
+      onError(ensureGraphQLError(error), []);
+    }
+  }
 }
 
 export function getFragmentVariableValues(
@@ -236,6 +293,15 @@ function coerceArgument(
   hideSuggestions?: Maybe<boolean>,
 ): void {
   const argType = argDef.type;
+  const onArgDefaultValueError = (
+    error: GraphQLError,
+    path: ReadonlyArray<string | number>,
+  ): never => {
+    throw new GraphQLError(
+      `${printArgumentOrFragmentVariable(argDef, node)} has invalid default value${printPathArray(path)}: ${error.message}`,
+      { nodes: node },
+    );
+  };
 
   if (!argumentNode) {
     if (isRequiredArgument(argDef)) {
@@ -248,10 +314,13 @@ function coerceArgument(
         { nodes: node },
       );
     }
-    const coercedDefaultValue = coerceDefaultValue(argDef);
-    if (coercedDefaultValue !== undefined) {
-      coercedValues[argName] = coercedDefaultValue;
-    }
+    maybeSetDefaultValue(
+      coercedValues,
+      argName,
+      argDef,
+      onArgDefaultValueError,
+      hideSuggestions,
+    );
     return;
   }
 
@@ -269,10 +338,13 @@ function coerceArgument(
         !Object.hasOwn(scopedVariableValues.coerced, variableName)) &&
       !isRequiredArgument(argDef)
     ) {
-      const coercedDefaultValue = coerceDefaultValue(argDef);
-      if (coercedDefaultValue !== undefined) {
-        coercedValues[argName] = coercedDefaultValue;
-      }
+      maybeSetDefaultValue(
+        coercedValues,
+        argName,
+        argDef,
+        onArgDefaultValueError,
+        hideSuggestions,
+      );
       return;
     }
   }

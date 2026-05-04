@@ -1,3 +1,4 @@
+import { inspect } from '../jsutils/inspect.js';
 import { invariant } from '../jsutils/invariant.js';
 import { isIterableObject } from '../jsutils/isIterableObject.js';
 import { isObjectLike } from '../jsutils/isObjectLike.js';
@@ -316,6 +317,11 @@ interface InputValue {
 }
 
 /**
+ * Returns the coerced default value for an input value definition, if it exists.
+ *
+ * If the default value is invalid, this will throw an error. Invalid default
+ * values should be caught during validation, however, so this function assumes
+ * that the default value is valid.
  * @internal
  */
 export function coerceDefaultValue(inputValue: InputValue): unknown {
@@ -330,7 +336,12 @@ export function coerceDefaultValue(inputValue: InputValue): unknown {
     coercedDefaultValue = defaultInput.literal
       ? coerceInputLiteral(defaultInput.literal, inputValue.type)
       : coerceInputValue(defaultInput.value, inputValue.type);
-    invariant(coercedDefaultValue !== undefined);
+    invariant(
+      coercedDefaultValue !== undefined,
+      `Expected value of type "${inputValue.type}" to be valid, found: ${inspect(
+        defaultInput.literal ?? defaultInput.value,
+      )}.`,
+    );
     (inputValue as any)._memoizedCoercedDefaultValue = coercedDefaultValue;
     return coercedDefaultValue;
   }
