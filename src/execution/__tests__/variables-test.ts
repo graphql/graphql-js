@@ -1726,13 +1726,26 @@ describe('Execute: Handles inputs', () => {
       assert('variableValues' in result);
       expect(result.variableValues.coerced.toString).to.equal('value');
     });
+  });
+
+  describe('getVariableValues: explicit undefined values', () => {
+    const doc = parse(`
+      query ($input: String) {
+        fieldWithNullableStringInput(input: $input)
+      }
+    `);
+
+    const operation = doc.definitions[0];
+    assert(operation.kind === Kind.OPERATION_DEFINITION);
+    const { variableDefinitions } = operation;
+    assert(variableDefinitions != null);
 
     it('treats explicit undefined values as omitted', () => {
       const result = getVariableValues(schema, variableDefinitions, {
-        toString: undefined,
+        input: undefined,
       });
       assert('variableValues' in result);
-      expect(Object.hasOwn(result.variableValues.coerced, 'toString')).to.equal(
+      expect(Object.hasOwn(result.variableValues.coerced, 'input')).to.equal(
         false,
       );
     });
