@@ -11,8 +11,8 @@ import { spyOnMethod } from './spyOn.js';
  * The test installs spies around the real tracing methods and verifies none
  * of them were touched while `fn` ran.
  */
-export async function expectNoTracingActivity<T>(
-  channel: MinimalTracingChannel,
+export async function expectNoTracingActivity<T, TContext = unknown>(
+  channel: MinimalTracingChannel<TContext>,
   fn: () => T | Promise<T>,
 ): Promise<Awaited<T>> {
   expect(channel.hasSubscribers).to.equal(false);

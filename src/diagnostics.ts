@@ -12,6 +12,22 @@
  */
 
 import { isPromise } from './jsutils/isPromise.js';
+import type { Maybe } from './jsutils/Maybe.js';
+import type { ObjMap } from './jsutils/ObjMap.js';
+
+import type { GraphQLError } from './error/GraphQLError.js';
+
+import type {
+  DocumentNode,
+  OperationDefinitionNode,
+  OperationTypeNode,
+} from './language/ast.js';
+import type { Source } from './language/source.js';
+
+import type { GraphQLSchema } from './type/schema.js';
+
+import type { ExecutionResult } from './execution/Executor.js';
+import type { ExperimentalIncrementalExecutionResults } from './execution/incremental/IncrementalExecutor.js';
 
 /**
  * Structural subset of `DiagnosticsChannel` sufficient for publishing and
@@ -19,9 +35,9 @@ import { isPromise } from './jsutils/isPromise.js';
  *
  * @internal
  */
-export interface MinimalChannel {
+export interface MinimalChannel<TMessage = unknown> {
   readonly hasSubscribers?: boolean;
-  publish: (message: unknown) => void;
+  publish: (message: TMessage) => void;
   runStores: <T, ContextType extends object>(
     context: ContextType,
     fn: (this: ContextType, ...args: Array<unknown>) => T,
@@ -37,26 +53,109 @@ export interface MinimalChannel {
  *
  * @internal
  */
-export interface MinimalTracingChannel {
+export interface MinimalTracingChannel<TContext = unknown> {
   // `undefined` accommodates runtimes (e.g. Bun) that ship `tracingChannel`
   // without exposing the aggregate `hasSubscribers` getter.
   readonly hasSubscribers: boolean | undefined;
-  readonly start: MinimalChannel;
-  readonly end: MinimalChannel;
-  readonly asyncStart: MinimalChannel;
-  readonly asyncEnd: MinimalChannel;
-  readonly error: MinimalChannel;
+  readonly start: MinimalChannel<TContext>;
+  readonly end: MinimalChannel<TContext>;
+  readonly asyncStart: MinimalChannel<TContext>;
+  readonly asyncEnd: MinimalChannel<TContext>;
+  readonly error: MinimalChannel<TContext>;
 
   traceSync: <T>(
     fn: (...args: Array<unknown>) => T,
-    ctx: object,
+    ctx: TContext extends object ? TContext : object,
     thisArg?: unknown,
     ...args: Array<unknown>
   ) => T;
 }
 
 interface DiagnosticsChannelModule {
-  tracingChannel: (name: string) => MinimalTracingChannel;
+  tracingChannel: <TContext = unknown>(
+    name: string,
+  ) => MinimalTracingChannel<TContext>;
+}
+
+/**
+ * Context published on `graphql:parse`.
+ */
+export interface GraphQLParseCtx {
+  source: string | Source;
+  error?: unknown;
+  result?: DocumentNode;
+}
+
+/**
+ * Context published on `graphql:validate`.
+ */
+export interface GraphQLValidateCtx {
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  error?: unknown;
+  result?: ReadonlyArray<GraphQLError>;
+}
+
+/**
+ * Context published on `graphql:execute`.
+ */
+export interface GraphQLExecuteCtx {
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName: string | undefined;
+  operationType: OperationTypeNode | undefined;
+  error?: unknown;
+  result?: ExecutionResult | ExperimentalIncrementalExecutionResults;
+}
+
+/**
+ * Context published on `graphql:execute:rootSelectionSet`.
+ */
+export interface GraphQLExecuteRootSelectionSetCtx {
+  schema: GraphQLSchema;
+  operation: OperationDefinitionNode;
+  variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName: string | undefined;
+  operationType: OperationTypeNode;
+  error?: unknown;
+  result?: ExecutionResult | ExperimentalIncrementalExecutionResults;
+}
+
+/**
+ * Context published on `graphql:subscribe`.
+ */
+export interface GraphQLSubscribeCtx {
+  schema: GraphQLSchema;
+  document: DocumentNode;
+  variableValues: Maybe<{ readonly [variable: string]: unknown }>;
+  operationName: string | undefined;
+  operationType: OperationTypeNode | undefined;
+  error?: unknown;
+  result?: AsyncGenerator<ExecutionResult, void, void> | ExecutionResult;
+}
+
+/**
+ * Context published on `graphql:resolve`.
+ */
+export interface GraphQLResolveCtx {
+  fieldName: string;
+  parentType: string;
+  fieldType: string;
+  args: ObjMap<unknown>;
+  isDefaultResolver: boolean;
+  fieldPath: string;
+  error?: unknown;
+  result?: unknown;
+}
+
+export interface GraphQLChannelContextByName {
+  'graphql:parse': GraphQLParseCtx;
+  'graphql:validate': GraphQLValidateCtx;
+  'graphql:execute': GraphQLExecuteCtx;
+  'graphql:execute:rootSelectionSet': GraphQLExecuteRootSelectionSetCtx;
+  'graphql:subscribe': GraphQLSubscribeCtx;
+  'graphql:resolve': GraphQLResolveCtx;
 }
 
 /**
@@ -66,12 +165,12 @@ interface DiagnosticsChannelModule {
  * by name.
  */
 export interface GraphQLChannels {
-  execute: MinimalTracingChannel;
-  executeRootSelectionSet: MinimalTracingChannel;
-  parse: MinimalTracingChannel;
-  validate: MinimalTracingChannel;
-  resolve: MinimalTracingChannel;
-  subscribe: MinimalTracingChannel;
+  execute: MinimalTracingChannel<GraphQLExecuteCtx>;
+  executeRootSelectionSet: MinimalTracingChannel<GraphQLExecuteRootSelectionSetCtx>;
+  parse: MinimalTracingChannel<GraphQLParseCtx>;
+  validate: MinimalTracingChannel<GraphQLValidateCtx>;
+  resolve: MinimalTracingChannel<GraphQLResolveCtx>;
+  subscribe: MinimalTracingChannel<GraphQLSubscribeCtx>;
 }
 
 function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
@@ -115,23 +214,28 @@ const dc = resolveDiagnosticsChannel();
  *
  * @internal
  */
-export const parseChannel: MinimalTracingChannel | undefined =
+export const parseChannel: MinimalTracingChannel<GraphQLParseCtx> | undefined =
   dc?.tracingChannel('graphql:parse');
 /** @internal */
-export const validateChannel: MinimalTracingChannel | undefined =
-  dc?.tracingChannel('graphql:validate');
+export const validateChannel:
+  | MinimalTracingChannel<GraphQLValidateCtx>
+  | undefined = dc?.tracingChannel('graphql:validate');
 /** @internal */
-export const executeChannel: MinimalTracingChannel | undefined =
-  dc?.tracingChannel('graphql:execute');
+export const executeChannel:
+  | MinimalTracingChannel<GraphQLExecuteCtx>
+  | undefined = dc?.tracingChannel('graphql:execute');
 /** @internal */
-export const executeRootSelectionSetChannel: MinimalTracingChannel | undefined =
-  dc?.tracingChannel('graphql:execute:rootSelectionSet');
+export const executeRootSelectionSetChannel:
+  | MinimalTracingChannel<GraphQLExecuteRootSelectionSetCtx>
+  | undefined = dc?.tracingChannel('graphql:execute:rootSelectionSet');
 /** @internal */
-export const subscribeChannel: MinimalTracingChannel | undefined =
-  dc?.tracingChannel('graphql:subscribe');
+export const subscribeChannel:
+  | MinimalTracingChannel<GraphQLSubscribeCtx>
+  | undefined = dc?.tracingChannel('graphql:subscribe');
 /** @internal */
-export const resolveChannel: MinimalTracingChannel | undefined =
-  dc?.tracingChannel('graphql:resolve');
+export const resolveChannel:
+  | MinimalTracingChannel<GraphQLResolveCtx>
+  | undefined = dc?.tracingChannel('graphql:resolve');
 
 const SUB_CHANNEL_KEYS: ReadonlyArray<
   'start' | 'end' | 'asyncStart' | 'asyncEnd' | 'error'
@@ -147,9 +251,9 @@ const SUB_CHANNEL_KEYS: ReadonlyArray<
  *
  * @internal
  */
-export function shouldTrace(
-  channel: MinimalTracingChannel | undefined,
-): channel is MinimalTracingChannel {
+export function shouldTrace<TContext = unknown>(
+  channel: MinimalTracingChannel<TContext> | undefined,
+): channel is MinimalTracingChannel<TContext> {
   if (channel == null) {
     return false;
   }
@@ -174,12 +278,12 @@ export function shouldTrace(
  *
  * @internal
  */
-export function traceMixed<T>(
-  channel: MinimalTracingChannel,
-  ctxInput: object,
+export function traceMixed<T, TContext = unknown>(
+  channel: MinimalTracingChannel<TContext>,
+  ctxInput: TContext extends object ? TContext : object,
   fn: () => T | Promise<T>,
 ): T | Promise<T> {
-  const ctx = ctxInput as { error?: unknown; result?: unknown };
+  const ctx = ctxInput as TContext & { error?: unknown; result?: unknown };
 
   return channel.start.runStores(ctx, () => {
     let result: T | Promise<T>;

@@ -8,6 +8,7 @@ import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
 
+import type { OperationDefinitionNode } from '../../language/ast.js';
 import { OperationTypeNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
 
@@ -156,7 +157,7 @@ describe('subscribe diagnostics channel', () => {
 
   it('emits execute root selection set events for each event with the default per-event executor', async () => {
     const document = parse('subscription S($tick: String) { tick }');
-    const operation = document.definitions[0];
+    const operation = document.definitions[0] as OperationDefinitionNode;
     const variableValues = { tick: 'ignored by the field' };
 
     await expectEvents(
@@ -175,11 +176,13 @@ describe('subscribe diagnostics channel', () => {
           done: false,
           value: { data: { tick: 'one' } },
         });
+        assert(!firstResult.done, 'Expected first subscription event.');
         const secondResult = await subscription.next();
         expect(secondResult).to.deep.equal({
           done: false,
           value: { data: { tick: 'two' } },
         });
+        assert(!secondResult.done, 'Expected second subscription event.');
 
         const returned = subscription.return?.();
         if (returned !== undefined) {

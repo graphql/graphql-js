@@ -10,14 +10,14 @@ export type TracingSubChannelRecord<TValue> = {
   [Channel in TracingSubChannel]: TValue;
 };
 
-export type TracingSubscriptionHandler = TracingSubChannelRecord<
-  (context: unknown) => void
->;
+export type TracingSubscriptionHandler<TContext = unknown> =
+  TracingSubChannelRecord<(context: TContext) => void>;
 
-export type TestTracingChannel = MinimalTracingChannel & {
-  subscribe: (handler: TracingSubscriptionHandler) => void;
-  unsubscribe: (handler: TracingSubscriptionHandler) => void;
-};
+export type TestTracingChannel<TContext = unknown> =
+  MinimalTracingChannel<TContext> & {
+    subscribe: (handler: TracingSubscriptionHandler<TContext>) => void;
+    unsubscribe: (handler: TracingSubscriptionHandler<TContext>) => void;
+  };
 
 export const tracingSubChannels: ReadonlyArray<TracingSubChannel> = [
   'start',

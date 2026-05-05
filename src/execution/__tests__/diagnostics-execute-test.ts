@@ -8,6 +8,7 @@ import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
+import type { OperationDefinitionNode } from '../../language/ast.js';
 import { OperationTypeNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
 
@@ -370,7 +371,7 @@ describe('execute diagnostics channel', () => {
 describe('execute root selection set diagnostics channel', () => {
   it('emits start and end around a synchronous root selection set', async () => {
     const document = parse('query Q($sync: String) { sync }');
-    const operation = document.definitions[0];
+    const operation = document.definitions[0] as OperationDefinitionNode;
     const variableValues = { sync: 'ignored by the field' };
 
     await expectEvents(
@@ -410,7 +411,7 @@ describe('execute root selection set diagnostics channel', () => {
 
   it('emits the full async lifecycle when the root selection set returns a promise', async () => {
     const document = parse('query { async }');
-    const operation = document.definitions[0];
+    const operation = document.definitions[0] as OperationDefinitionNode;
     const variableValues = {};
 
     await expectEvents(

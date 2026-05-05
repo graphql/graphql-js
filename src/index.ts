@@ -29,7 +29,16 @@ export { enableDevMode, isDevModeEnabled } from './devMode.ts';
 // Tracing channel types for subscribers that want to strongly type the
 // `graphql:*` channel context payloads. Channels are auto-registered on
 // `node:diagnostics_channel` at module load.
-export type { GraphQLChannels } from './diagnostics.js';
+export type {
+  GraphQLChannelContextByName,
+  GraphQLChannels,
+  GraphQLExecuteCtx,
+  GraphQLExecuteRootSelectionSetCtx,
+  GraphQLParseCtx,
+  GraphQLResolveCtx,
+  GraphQLSubscribeCtx,
+  GraphQLValidateCtx,
+} from './diagnostics.js';
 
 // The primary entry point into fulfilling a GraphQL request.
 export type { GraphQLArgs } from './graphql.ts';

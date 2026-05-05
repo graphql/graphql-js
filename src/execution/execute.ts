@@ -29,6 +29,7 @@ import { assertValidSchema } from '../type/index.ts';
 
 import { getOperationAST } from '../utilities/getOperationAST.ts';
 
+import type { GraphQLExecuteCtx } from '../diagnostics.js';
 import {
   executeChannel,
   shouldTrace,
@@ -112,7 +113,7 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
   if (!shouldTrace(executeChannel)) {
     return executeImpl(args);
   }
-  return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
+  return traceMixed(executeChannel, buildOperationCtxFromArgs(args), () =>
     executeImpl(args),
   );
 }
@@ -122,7 +123,9 @@ export function execute(args: ExecutionArgs): PromiseOrValue<ExecutionResult> {
  * resolution of the operation AST to a lazy getter so the cost of walking
  * the document is only paid if a subscriber reads it.
  */
-function buildExecuteCtxFromArgs(args: ExecutionArgs): object {
+function buildOperationCtxFromArgs(
+  args: ExecutionArgs,
+): Omit<GraphQLExecuteCtx, 'error' | 'result'> {
   let operation: OperationDefinitionNode | null | undefined;
   const resolveOperation = (): OperationDefinitionNode | null | undefined => {
     if (operation === undefined) {
@@ -217,7 +220,7 @@ export function experimentalExecuteIncrementally(
   if (!shouldTrace(executeChannel)) {
     return experimentalExecuteIncrementallyImpl(args);
   }
-  return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
+  return traceMixed(executeChannel, buildOperationCtxFromArgs(args), () =>
     experimentalExecuteIncrementallyImpl(args),
   );
 }
@@ -243,7 +246,7 @@ export function executeIgnoringIncremental(
   if (!shouldTrace(executeChannel)) {
     return executeIgnoringIncrementalImpl(args);
   }
-  return traceMixed(executeChannel, buildExecuteCtxFromArgs(args), () =>
+  return traceMixed(executeChannel, buildOperationCtxFromArgs(args), () =>
     executeIgnoringIncrementalImpl(args),
   );
 }
@@ -544,7 +547,7 @@ export function subscribe(
   if (!shouldTrace(subscribeChannel)) {
     return subscribeImpl(args);
   }
-  return traceMixed(subscribeChannel, buildExecuteCtxFromArgs(args), () =>
+  return traceMixed(subscribeChannel, buildOperationCtxFromArgs(args), () =>
     subscribeImpl(args),
   );
 }

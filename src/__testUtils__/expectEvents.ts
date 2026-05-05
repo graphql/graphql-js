@@ -16,29 +16,39 @@ export type CollectedEvent = {
   };
 }[TracingSubChannel];
 
-type ExpectedEventsFactory<TResult> = (
+export type CollectedEventFor<TContext = unknown> = {
+  [Channel in TracingSubChannel]: {
+    channel: Channel;
+    context: TContext;
+  };
+}[TracingSubChannel];
+
+type ExpectedEventsFactory<TResult, TContext = unknown> = (
   result: Awaited<TResult>,
-) => ReadonlyArray<CollectedEvent>;
+) => ReadonlyArray<CollectedEventFor<TContext>>;
 
 /**
  * Collect graphql tracing events while `fn` runs, build the expected event
  * list from the callback result, and always unsubscribe before returning.
  */
-export async function expectEvents<TResult>(
-  channel: TestTracingChannel,
+export async function expectEvents<TContext = unknown, TResult = unknown>(
+  channel: TestTracingChannel<TContext>,
   fn: () => TResult,
-  getExpectedEvents: ExpectedEventsFactory<TResult>,
+  getExpectedEvents: ExpectedEventsFactory<TResult, TContext>,
 ): Promise<void> {
-  const events: Array<CollectedEvent> = [];
-  const handler = {} as TracingSubChannelRecord<(context: unknown) => void>;
+  const events: Array<CollectedEventFor<TContext>> = [];
+  const handler = {} as TracingSubChannelRecord<(context: TContext) => void>;
 
   for (const tracingSubChannel of tracingSubChannels) {
-    handler[tracingSubChannel] = (context: unknown) => {
+    handler[tracingSubChannel] = (context: TContext) => {
       const snapshot =
         typeof context === 'object' && context !== null
           ? { ...context }
           : context;
-      events.push({ channel: tracingSubChannel, context: snapshot });
+      events.push({
+        channel: tracingSubChannel,
+        context: snapshot,
+      });
     };
   }
 

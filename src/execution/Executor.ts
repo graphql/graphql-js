@@ -41,6 +41,10 @@ import {
 } from '../type/definition.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 
+import type {
+  GraphQLExecuteRootSelectionSetCtx,
+  GraphQLResolveCtx,
+} from '../diagnostics.js';
 import {
   executeRootSelectionSetChannel,
   resolveChannel,
@@ -268,13 +272,15 @@ export class Executor<
    * resolved operation; subscribers that need the document should read it from
    * the graphql:execute or graphql:subscribe contexts.
    */
-  buildExecuteCtxFromValidatedArgs(args: ValidatedExecutionArgs): object {
+  buildExecuteCtxFromValidatedArgs(
+    args: ValidatedExecutionArgs,
+  ): GraphQLExecuteRootSelectionSetCtx {
     let originalVariableValues: Maybe<{ [variable: string]: unknown }>;
     let hasResolvedOriginalVariableValues = false;
 
     return {
-      operation: args.operation,
       schema: args.schema,
+      operation: args.operation,
       get variableValues(): Maybe<{ readonly [variable: string]: unknown }> {
         if (!hasResolvedOriginalVariableValues) {
           originalVariableValues = {};
@@ -695,7 +701,7 @@ export class Executor<
     args: ObjMap<unknown>,
     info: GraphQLResolveInfo,
     isDefaultResolver: boolean,
-  ): object {
+  ): GraphQLResolveCtx {
     let cachedFieldPath: string | undefined;
     return {
       fieldName: info.fieldName,
