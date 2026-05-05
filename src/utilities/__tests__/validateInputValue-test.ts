@@ -443,11 +443,20 @@ describe('validateInputValue', () => {
     });
 
     it('returns error for an unknown field', () => {
-      // TODO: not technically a OneOf error, as the OneOf validation assumes known fields
       test({ foo: 123, unknownField: 123 }, TestInputObject, [
         {
           error:
             'Expected value of type "TestInputObject" not to include unknown field "unknownField", found: { foo: 123, unknownField: 123 }.',
+          path: [],
+        },
+      ]);
+    });
+
+    it('returns error for a misspelled field', () => {
+      test({ bart: 123 }, TestInputObject, [
+        {
+          error:
+            'Expected value of type "TestInputObject" not to include unknown field "bart". Did you mean "bar"? Found: { bart: 123 }.',
           path: [],
         },
         {
@@ -458,19 +467,7 @@ describe('validateInputValue', () => {
       ]);
     });
 
-    it('returns error for a misspelled field', () => {
-      // TODO: technically also a OneOf error, as the OneOf validation assumes known fields, so there are no errors here
-      test({ bart: 123 }, TestInputObject, [
-        {
-          error:
-            'Expected value of type "TestInputObject" not to include unknown field "bart". Did you mean "bar"? Found: { bart: 123 }.',
-          path: [],
-        },
-      ]);
-    });
-
     it('returns error for a misspelled field (no suggestions)', () => {
-      // TODO: technically also a OneOf error, as the OneOf validation assumes known fields, so there are no errors here
       test(
         { bart: 123 },
         TestInputObject,
@@ -478,6 +475,11 @@ describe('validateInputValue', () => {
           {
             error:
               'Expected value of type "TestInputObject" not to include unknown field "bart", found: { bart: 123 }.',
+            path: [],
+          },
+          {
+            error:
+              'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
             path: [],
           },
         ],
@@ -1016,32 +1018,20 @@ describe('validateInputLiteral', () => {
     });
 
     it('returns error for an unknown field', () => {
-      // TODO: not technically a OneOf error, as the OneOf validation assumes known fields
       test('{ foo: 123, unknownField: 123 }', TestInputObject, [
         {
           error:
             'Expected value of type "TestInputObject" not to include unknown field "unknownField", found: { foo: 123, unknownField: 123 }.',
           path: [],
         },
-        {
-          error:
-            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
-          path: [],
-        },
       ]);
     });
 
     it('returns error for a misspelled field', () => {
-      // TODO: not technically a OneOf error, as the OneOf validation assumes known fields
       test('{ foo: 123, bart: 123 }', TestInputObject, [
         {
           error:
             'Expected value of type "TestInputObject" not to include unknown field "bart". Did you mean "bar"? Found: { foo: 123, bart: 123 }.',
-          path: [],
-        },
-        {
-          error:
-            'Within OneOf Input Object type "TestInputObject", exactly one field must be specified, and the value for that field must be non-null.',
           path: [],
         },
       ]);

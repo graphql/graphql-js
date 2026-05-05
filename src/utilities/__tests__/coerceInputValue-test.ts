@@ -598,6 +598,7 @@ describe('coerceInputLiteral', () => {
     test('{ a: null }', testOneOfInputObj, undefined);
     test('{ a: 1 }', testOneOfInputObj, undefined);
     test('{ a: "abc", b: "def" }', testOneOfInputObj, undefined);
+    test('{ a: "abc", c: "def" }', testOneOfInputObj, undefined);
     test('{}', testOneOfInputObj, undefined);
     test('{ c: "abc" }', testOneOfInputObj, undefined);
   });

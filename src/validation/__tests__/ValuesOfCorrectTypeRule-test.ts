@@ -1168,6 +1168,25 @@ describe('Validate: Values of correct type', () => {
         },
       ]);
     });
+
+    it('Unknown field does not add a oneOf error', () => {
+      expectErrors(`
+          {
+            complicatedArgs {
+              oneOfArgField(oneOfArg: {
+                stringField: "abc",
+                invalidField: 123
+              })
+            }
+          }
+        `).toDeepEqual([
+        {
+          message:
+            'Expected value of type "OneOfInput" not to include unknown field "invalidField". Did you mean "intField"? Found: { stringField: "abc", invalidField: 123 }.',
+          locations: [{ line: 6, column: 17 }],
+        },
+      ]);
+    });
   });
 
   describe('Directive arguments', () => {

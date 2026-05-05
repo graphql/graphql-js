@@ -150,7 +150,6 @@ function validateInputValueImpl(
       if (inputValue[fieldName] === undefined) {
         continue;
       }
-      fields.push(fieldName);
       if (!Object.hasOwn(fieldDefs, fieldName)) {
         const suggestion = hideSuggestions
           ? ''
@@ -162,7 +161,9 @@ function validateInputValueImpl(
           }: ${inspect(inputValue)}.`,
           path,
         );
+        continue;
       }
+      fields.push(fieldName);
     }
 
     if (type.isOneOf) {
@@ -414,6 +415,7 @@ function validateInputLiteralImpl(
     }
 
     const fields = valueNode.fields;
+    const knownFields: Array<(typeof fields)[number]> = [];
     // Ensure every provided field is defined.
     for (const fieldNode of fields) {
       const fieldName = fieldNode.name.value;
@@ -429,11 +431,13 @@ function validateInputLiteralImpl(
           fieldNode,
           path,
         );
+      } else {
+        knownFields.push(fieldNode);
       }
     }
 
     if (type.isOneOf) {
-      const isNotExactlyOneField = fields.length !== 1;
+      const isNotExactlyOneField = knownFields.length !== 1;
       if (isNotExactlyOneField) {
         reportInvalidLiteral(
           context.onError,
@@ -444,9 +448,9 @@ function validateInputLiteralImpl(
         return;
       }
 
-      const fieldValueNode = fields[0].value;
+      const fieldValueNode = knownFields[0].value;
       if (fieldValueNode.kind === Kind.NULL) {
-        const fieldName = fields[0].name.value;
+        const fieldName = knownFields[0].name.value;
         reportInvalidLiteral(
           context.onError,
           getOneOfInputObjectErrorMessage(type),
