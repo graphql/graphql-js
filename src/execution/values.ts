@@ -118,7 +118,7 @@ function coerceVariableValues(
     if (value === undefined) {
       sources[varName] = { signature: varSignature };
       if (varDefNode.defaultValue) {
-        maybeSetDefaultValue(
+        maybeUseDefaultValue(
           coerced,
           varName,
           varSignature,
@@ -166,7 +166,7 @@ function coerceVariableValues(
   return { sources, coerced };
 }
 
-function maybeSetDefaultValue(
+function maybeUseDefaultValue(
   coercedValues: ObjMap<unknown>,
   name: string,
   inputValue: GraphQLArgument | GraphQLVariableSignature,
@@ -314,7 +314,7 @@ function coerceArgument(
         { nodes: node },
       );
     }
-    maybeSetDefaultValue(
+    maybeUseDefaultValue(
       coercedValues,
       argName,
       argDef,
@@ -338,7 +338,7 @@ function coerceArgument(
         !Object.hasOwn(scopedVariableValues.coerced, variableName)) &&
       !isRequiredArgument(argDef)
     ) {
-      maybeSetDefaultValue(
+      maybeUseDefaultValue(
         coercedValues,
         argName,
         argDef,
