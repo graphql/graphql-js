@@ -294,10 +294,12 @@ async function runAlsPropagationCase() {
   // A subscriber that binds a store on the `start` sub-channel should be able
   // to read it in every lifecycle handler (start, end, asyncStart, asyncEnd).
   // This is what APMs use to parent child spans to the current operation
-  // without threading state through the ctx object.
+  // without threading state through the context object.
   const als = new AsyncLocalStorage();
   const channel = dc.tracingChannel('graphql:execute');
-  channel.start.bindStore(als, (ctx) => ({ operationName: ctx.operationName }));
+  channel.start.bindStore(als, (context) => ({
+    operationName: context.operationName,
+  }));
 
   const seen = {};
   const handler = {

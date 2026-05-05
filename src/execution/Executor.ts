@@ -42,8 +42,8 @@ import {
 import type { GraphQLSchema } from '../type/schema.ts';
 
 import type {
-  GraphQLExecuteRootSelectionSetCtx,
-  GraphQLResolveCtx,
+  GraphQLExecuteRootSelectionSetContext,
+  GraphQLResolveContext,
 } from '../diagnostics.js';
 import {
   executeRootSelectionSetChannel,
@@ -260,7 +260,7 @@ export class Executor<
     }
     return traceMixed(
       executeRootSelectionSetChannel,
-      this.buildExecuteCtxFromValidatedArgs(this.validatedExecutionArgs),
+      this.buildExecuteContextFromValidatedArgs(this.validatedExecutionArgs),
       () => this.executeRootSelectionSetImpl(serially),
     );
   }
@@ -272,9 +272,9 @@ export class Executor<
    * resolved operation; subscribers that need the document should read it from
    * the graphql:execute or graphql:subscribe contexts.
    */
-  buildExecuteCtxFromValidatedArgs(
+  buildExecuteContextFromValidatedArgs(
     args: ValidatedExecutionArgs,
-  ): GraphQLExecuteRootSelectionSetCtx {
+  ): GraphQLExecuteRootSelectionSetContext {
     let originalVariableValues: Maybe<{ [variable: string]: unknown }>;
     let hasResolvedOriginalVariableValues = false;
 
@@ -622,7 +622,7 @@ export class Executor<
       resolveFn = (s, args, c, info) =>
         traceMixed(
           channel,
-          this.buildResolveCtx(args, info, fieldDef.resolve === undefined),
+          this.buildResolveContext(args, info, fieldDef.resolve === undefined),
           () => originalResolveFn(s, args, c, info),
         );
     }
@@ -697,11 +697,11 @@ export class Executor<
    * path is O(depth) and APMs that depth-filter or skip default resolvers
    * often never read it. `args` is passed through by reference.
    */
-  buildResolveCtx(
+  buildResolveContext(
     args: ObjMap<unknown>,
     info: GraphQLResolveInfo,
     isDefaultResolver: boolean,
-  ): GraphQLResolveCtx {
+  ): GraphQLResolveContext {
     let cachedFieldPath: string | undefined;
     return {
       fieldName: info.fieldName,

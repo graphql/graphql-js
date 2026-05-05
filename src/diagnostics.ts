@@ -65,7 +65,7 @@ export interface MinimalTracingChannel<TContext = unknown> {
 
   traceSync: <T>(
     fn: (...args: Array<unknown>) => T,
-    ctx: TContext extends object ? TContext : object,
+    context: TContext extends object ? TContext : object,
     thisArg?: unknown,
     ...args: Array<unknown>
   ) => T;
@@ -80,7 +80,7 @@ interface DiagnosticsChannelModule {
 /**
  * Context published on `graphql:parse`.
  */
-export interface GraphQLParseCtx {
+export interface GraphQLParseContext {
   source: string | Source;
   error?: unknown;
   result?: DocumentNode;
@@ -89,7 +89,7 @@ export interface GraphQLParseCtx {
 /**
  * Context published on `graphql:validate`.
  */
-export interface GraphQLValidateCtx {
+export interface GraphQLValidateContext {
   schema: GraphQLSchema;
   document: DocumentNode;
   error?: unknown;
@@ -99,7 +99,7 @@ export interface GraphQLValidateCtx {
 /**
  * Context published on `graphql:execute`.
  */
-export interface GraphQLExecuteCtx {
+export interface GraphQLExecuteContext {
   schema: GraphQLSchema;
   document: DocumentNode;
   variableValues: Maybe<{ readonly [variable: string]: unknown }>;
@@ -112,7 +112,7 @@ export interface GraphQLExecuteCtx {
 /**
  * Context published on `graphql:execute:rootSelectionSet`.
  */
-export interface GraphQLExecuteRootSelectionSetCtx {
+export interface GraphQLExecuteRootSelectionSetContext {
   schema: GraphQLSchema;
   operation: OperationDefinitionNode;
   variableValues: Maybe<{ readonly [variable: string]: unknown }>;
@@ -125,7 +125,7 @@ export interface GraphQLExecuteRootSelectionSetCtx {
 /**
  * Context published on `graphql:subscribe`.
  */
-export interface GraphQLSubscribeCtx {
+export interface GraphQLSubscribeContext {
   schema: GraphQLSchema;
   document: DocumentNode;
   variableValues: Maybe<{ readonly [variable: string]: unknown }>;
@@ -138,7 +138,7 @@ export interface GraphQLSubscribeCtx {
 /**
  * Context published on `graphql:resolve`.
  */
-export interface GraphQLResolveCtx {
+export interface GraphQLResolveContext {
   fieldName: string;
   parentType: string;
   fieldType: string;
@@ -150,12 +150,12 @@ export interface GraphQLResolveCtx {
 }
 
 export interface GraphQLChannelContextByName {
-  'graphql:parse': GraphQLParseCtx;
-  'graphql:validate': GraphQLValidateCtx;
-  'graphql:execute': GraphQLExecuteCtx;
-  'graphql:execute:rootSelectionSet': GraphQLExecuteRootSelectionSetCtx;
-  'graphql:subscribe': GraphQLSubscribeCtx;
-  'graphql:resolve': GraphQLResolveCtx;
+  'graphql:parse': GraphQLParseContext;
+  'graphql:validate': GraphQLValidateContext;
+  'graphql:execute': GraphQLExecuteContext;
+  'graphql:execute:rootSelectionSet': GraphQLExecuteRootSelectionSetContext;
+  'graphql:subscribe': GraphQLSubscribeContext;
+  'graphql:resolve': GraphQLResolveContext;
 }
 
 /**
@@ -165,12 +165,12 @@ export interface GraphQLChannelContextByName {
  * by name.
  */
 export interface GraphQLChannels {
-  execute: MinimalTracingChannel<GraphQLExecuteCtx>;
-  executeRootSelectionSet: MinimalTracingChannel<GraphQLExecuteRootSelectionSetCtx>;
-  parse: MinimalTracingChannel<GraphQLParseCtx>;
-  validate: MinimalTracingChannel<GraphQLValidateCtx>;
-  resolve: MinimalTracingChannel<GraphQLResolveCtx>;
-  subscribe: MinimalTracingChannel<GraphQLSubscribeCtx>;
+  execute: MinimalTracingChannel<GraphQLExecuteContext>;
+  executeRootSelectionSet: MinimalTracingChannel<GraphQLExecuteRootSelectionSetContext>;
+  parse: MinimalTracingChannel<GraphQLParseContext>;
+  validate: MinimalTracingChannel<GraphQLValidateContext>;
+  resolve: MinimalTracingChannel<GraphQLResolveContext>;
+  subscribe: MinimalTracingChannel<GraphQLSubscribeContext>;
 }
 
 function resolveDiagnosticsChannel(): DiagnosticsChannelModule | undefined {
@@ -214,27 +214,28 @@ const dc = resolveDiagnosticsChannel();
  *
  * @internal
  */
-export const parseChannel: MinimalTracingChannel<GraphQLParseCtx> | undefined =
-  dc?.tracingChannel('graphql:parse');
+export const parseChannel:
+  | MinimalTracingChannel<GraphQLParseContext>
+  | undefined = dc?.tracingChannel('graphql:parse');
 /** @internal */
 export const validateChannel:
-  | MinimalTracingChannel<GraphQLValidateCtx>
+  | MinimalTracingChannel<GraphQLValidateContext>
   | undefined = dc?.tracingChannel('graphql:validate');
 /** @internal */
 export const executeChannel:
-  | MinimalTracingChannel<GraphQLExecuteCtx>
+  | MinimalTracingChannel<GraphQLExecuteContext>
   | undefined = dc?.tracingChannel('graphql:execute');
 /** @internal */
 export const executeRootSelectionSetChannel:
-  | MinimalTracingChannel<GraphQLExecuteRootSelectionSetCtx>
+  | MinimalTracingChannel<GraphQLExecuteRootSelectionSetContext>
   | undefined = dc?.tracingChannel('graphql:execute:rootSelectionSet');
 /** @internal */
 export const subscribeChannel:
-  | MinimalTracingChannel<GraphQLSubscribeCtx>
+  | MinimalTracingChannel<GraphQLSubscribeContext>
   | undefined = dc?.tracingChannel('graphql:subscribe');
 /** @internal */
 export const resolveChannel:
-  | MinimalTracingChannel<GraphQLResolveCtx>
+  | MinimalTracingChannel<GraphQLResolveContext>
   | undefined = dc?.tracingChannel('graphql:resolve');
 
 const SUB_CHANNEL_KEYS: ReadonlyArray<
@@ -280,45 +281,48 @@ export function shouldTrace<TContext = unknown>(
  */
 export function traceMixed<T, TContext = unknown>(
   channel: MinimalTracingChannel<TContext>,
-  ctxInput: TContext extends object ? TContext : object,
+  contextInput: TContext extends object ? TContext : object,
   fn: () => T | Promise<T>,
 ): T | Promise<T> {
-  const ctx = ctxInput as TContext & { error?: unknown; result?: unknown };
+  const context = contextInput as TContext & {
+    error?: unknown;
+    result?: unknown;
+  };
 
-  return channel.start.runStores(ctx, () => {
+  return channel.start.runStores(context, () => {
     let result: T | Promise<T>;
     try {
       result = fn();
     } catch (err) {
-      ctx.error = err;
-      channel.error.publish(ctx);
-      channel.end.publish(ctx);
+      context.error = err;
+      channel.error.publish(context);
+      channel.end.publish(context);
       throw err;
     }
 
     if (!isPromise(result)) {
-      ctx.result = result;
-      channel.end.publish(ctx);
+      context.result = result;
+      channel.end.publish(context);
       return result;
     }
 
-    channel.end.publish(ctx);
-    channel.asyncStart.publish(ctx);
+    channel.end.publish(context);
+    channel.asyncStart.publish(context);
 
     return result
       .then(
         (value) => {
-          ctx.result = value;
+          context.result = value;
           return value;
         },
         (err: unknown) => {
-          ctx.error = err;
-          channel.error.publish(ctx);
+          context.error = err;
+          channel.error.publish(context);
           throw err;
         },
       )
       .finally(() => {
-        channel.asyncEnd.publish(ctx);
+        channel.asyncEnd.publish(context);
       });
   });
 }

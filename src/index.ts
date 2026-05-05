@@ -32,12 +32,12 @@ export { enableDevMode, isDevModeEnabled } from './devMode.ts';
 export type {
   GraphQLChannelContextByName,
   GraphQLChannels,
-  GraphQLExecuteCtx,
-  GraphQLExecuteRootSelectionSetCtx,
-  GraphQLParseCtx,
-  GraphQLResolveCtx,
-  GraphQLSubscribeCtx,
-  GraphQLValidateCtx,
+  GraphQLExecuteContext,
+  GraphQLExecuteRootSelectionSetContext,
+  GraphQLParseContext,
+  GraphQLResolveContext,
+  GraphQLSubscribeContext,
+  GraphQLValidateContext,
 } from './diagnostics.js';
 
 // The primary entry point into fulfilling a GraphQL request.
