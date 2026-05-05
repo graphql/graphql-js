@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { expectEvents } from '../../__testUtils__/expectEvents.js';
@@ -7,8 +7,6 @@ import { expectPromise } from '../../__testUtils__/expectPromise.js';
 import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
-
-import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
 
 import { parse } from '../../language/parser.js';
 
@@ -22,7 +20,6 @@ import {
   execute,
   executeIgnoringIncremental,
   executeSync,
-  subscribe,
 } from '../execute.js';
 
 const schema = buildSchema(`
@@ -37,6 +34,9 @@ const schema = buildSchema(`
 `);
 
 const executeChannel = getTracingChannel('graphql:execute');
+const executeRootSelectionSetChannel = getTracingChannel(
+  'graphql:execute:rootSelectionSet',
+);
 
 describe('execute diagnostics channel', () => {
   it('emits start and end around a synchronous execute', async () => {
@@ -353,91 +353,6 @@ describe('execute diagnostics channel', () => {
     );
   });
 
-  it('emits for each subscription event with resolved operation ctx', async () => {
-    async function* tickGenerator() {
-      await Promise.resolve();
-      yield { tick: 'one' };
-      yield { tick: 'two' };
-    }
-
-    const document = parse('subscription S($tick: String) { tick }');
-    const operation = document.definitions[0];
-    const variableValues = { tick: 'ignored by the field' };
-
-    await expectEvents(
-      executeChannel,
-      async () => {
-        const subscription = await subscribe({
-          schema,
-          document,
-          rootValue: { tick: tickGenerator },
-          variableValues,
-        });
-        assert(isAsyncIterable(subscription));
-
-        const firstResult = await subscription.next();
-        expect(firstResult).to.deep.equal({
-          done: false,
-          value: { data: { tick: 'one' } },
-        });
-        const secondResult = await subscription.next();
-        expect(secondResult).to.deep.equal({
-          done: false,
-          value: { data: { tick: 'two' } },
-        });
-        const returned = subscription.return?.();
-        if (returned !== undefined) {
-          await returned;
-        }
-        return [firstResult, secondResult] as const;
-      },
-      ([firstResult, secondResult]) => [
-        {
-          channel: 'start',
-          context: {
-            operation,
-            schema,
-            variableValues,
-            operationName: 'S',
-            operationType: 'subscription',
-          },
-        },
-        {
-          channel: 'end',
-          context: {
-            operation,
-            schema,
-            variableValues,
-            operationName: 'S',
-            operationType: 'subscription',
-            result: firstResult.value,
-          },
-        },
-        {
-          channel: 'start',
-          context: {
-            operation,
-            schema,
-            variableValues,
-            operationName: 'S',
-            operationType: 'subscription',
-          },
-        },
-        {
-          channel: 'end',
-          context: {
-            operation,
-            schema,
-            variableValues,
-            operationName: 'S',
-            operationType: 'subscription',
-            result: secondResult.value,
-          },
-        },
-      ],
-    );
-  });
-
   it('does not call tracing methods when no subscribers are attached', async () => {
     const document = parse('{ sync }');
     const result = await expectNoTracingActivity(executeChannel, () =>
@@ -446,6 +361,121 @@ describe('execute diagnostics channel', () => {
         document,
         rootValue: { sync: () => 'hello' },
       }),
+    );
+    expect(result).to.deep.equal({ data: { sync: 'hello' } });
+  });
+});
+
+describe('execute root selection set diagnostics channel', () => {
+  it('emits start and end around a synchronous root selection set', async () => {
+    const document = parse('query Q($sync: String) { sync }');
+    const operation = document.definitions[0];
+    const variableValues = { sync: 'ignored by the field' };
+
+    await expectEvents(
+      executeRootSelectionSetChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: { sync: () => 'hello' },
+          variableValues,
+        }),
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'Q',
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'Q',
+            operationType: 'query',
+            result,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits the full async lifecycle when the root selection set returns a promise', async () => {
+    const document = parse('query { async }');
+    const operation = document.definitions[0];
+    const variableValues = {};
+
+    await expectEvents(
+      executeRootSelectionSetChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: { async: () => Promise.resolve('hello-async') },
+        }),
+      (result) => [
+        {
+          channel: 'start',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: undefined,
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: undefined,
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'asyncStart',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: undefined,
+            operationType: 'query',
+          },
+        },
+        {
+          channel: 'asyncEnd',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: undefined,
+            operationType: 'query',
+            result,
+          },
+        },
+      ],
+    );
+  });
+
+  it('does not call tracing methods when no subscribers are attached', async () => {
+    const document = parse('{ sync }');
+    const result = await expectNoTracingActivity(
+      executeRootSelectionSetChannel,
+      () =>
+        execute({
+          schema,
+          document,
+          rootValue: { sync: () => 'hello' },
+        }),
     );
     expect(result).to.deep.equal({ data: { sync: 'hello' } });
   });

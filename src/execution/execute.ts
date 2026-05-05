@@ -1185,6 +1185,20 @@ function buildExecuteCtxFromValidatedArgs(
   };
 }
 
+function getOriginalVariableValues(
+  args: ValidatedExecutionArgs,
+): Maybe<{ readonly [variable: string]: unknown }> {
+  const originalVariableValues: { [variable: string]: unknown } = {};
+  for (const [variableName, source] of Object.entries(
+    args.variableValues.sources,
+  )) {
+    if (Object.hasOwn(source, 'value')) {
+      originalVariableValues[variableName] = source.value;
+    }
+  }
+
+  return originalVariableValues;
+}
 
 function toNodes(fieldDetailsList: FieldDetailsList): ReadonlyArray<FieldNode> {
   return fieldDetailsList.map((fieldDetails) => fieldDetails.node);

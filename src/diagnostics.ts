@@ -4,11 +4,11 @@
  *
  * graphql-js publishes lifecycle events on a set of named tracing channels
  * that APM tools can subscribe to in order to observe parse, validate,
- * execute, subscribe, and resolver behavior. At module load time graphql-js
- * resolves `node:diagnostics_channel` itself so APMs do not need to interact
- * with the graphql API to enable tracing. On runtimes that do not expose
- * `node:diagnostics_channel` (e.g., browsers) the load silently no-ops and
- * emission sites short-circuit.
+ * execute, subscribe, and resolver behavior, plus selected executor internals.
+ * At module load time graphql-js resolves `node:diagnostics_channel` itself so
+ * APMs do not need to interact with the graphql API to enable tracing. On
+ * runtimes that do not expose `node:diagnostics_channel` (e.g., browsers) the
+ * load silently no-ops and emission sites short-circuit.
  */
 
 import { isPromise } from './jsutils/isPromise.js';
@@ -67,6 +67,7 @@ interface DiagnosticsChannelModule {
  */
 export interface GraphQLChannels {
   execute: MinimalTracingChannel;
+  executeRootSelectionSet: MinimalTracingChannel;
   parse: MinimalTracingChannel;
   validate: MinimalTracingChannel;
   resolve: MinimalTracingChannel;
@@ -122,6 +123,9 @@ export const validateChannel: MinimalTracingChannel | undefined =
 /** @internal */
 export const executeChannel: MinimalTracingChannel | undefined =
   dc?.tracingChannel('graphql:execute');
+/** @internal */
+export const executeRootSelectionSetChannel: MinimalTracingChannel | undefined =
+  dc?.tracingChannel('graphql:execute:rootSelectionSet');
 /** @internal */
 export const subscribeChannel: MinimalTracingChannel | undefined =
   dc?.tracingChannel('graphql:subscribe');

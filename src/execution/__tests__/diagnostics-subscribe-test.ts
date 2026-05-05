@@ -27,6 +27,9 @@ const schema = buildSchema(`
 `);
 
 const subscribeChannel = getTracingChannel('graphql:subscribe');
+const executeRootSelectionSetChannel = getTracingChannel(
+  'graphql:execute:rootSelectionSet',
+);
 
 async function* twoTicks(): AsyncIterable<{ tick: string }> {
   await Promise.resolve();
@@ -144,6 +147,86 @@ describe('subscribe diagnostics channel', () => {
             operationName: undefined,
             operationType: 'subscription',
             result,
+          },
+        },
+      ],
+    );
+  });
+
+  it('emits execute root selection set events for each event with the default per-event executor', async () => {
+    const document = parse('subscription S($tick: String) { tick }');
+    const operation = document.definitions[0];
+    const variableValues = { tick: 'ignored by the field' };
+
+    await expectEvents(
+      executeRootSelectionSetChannel,
+      async () => {
+        const subscription = await subscribe({
+          schema,
+          document,
+          rootValue: { tick: twoTicks },
+          variableValues,
+        });
+        assert(isAsyncIterable(subscription));
+
+        const firstResult = await subscription.next();
+        expect(firstResult).to.deep.equal({
+          done: false,
+          value: { data: { tick: 'one' } },
+        });
+        const secondResult = await subscription.next();
+        expect(secondResult).to.deep.equal({
+          done: false,
+          value: { data: { tick: 'two' } },
+        });
+
+        const returned = subscription.return?.();
+        if (returned !== undefined) {
+          await returned;
+        }
+        return [firstResult.value, secondResult.value] as const;
+      },
+      ([firstResult, secondResult]) => [
+        {
+          channel: 'start',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'S',
+            operationType: 'subscription',
+            result: firstResult,
+          },
+        },
+        {
+          channel: 'start',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'S',
+            operationType: 'subscription',
+          },
+        },
+        {
+          channel: 'end',
+          context: {
+            operation,
+            schema,
+            variableValues,
+            operationName: 'S',
+            operationType: 'subscription',
+            result: secondResult,
           },
         },
       ],

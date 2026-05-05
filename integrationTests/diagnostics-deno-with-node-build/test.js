@@ -141,6 +141,51 @@ function runExecuteCase() {
   }
 }
 
+function runExecuteRootSelectionSetCase() {
+  const schema = buildSchema(`type Query { hello: String }`);
+  const document = parse('query Greeting { hello }');
+  const operation = document.definitions[0];
+
+  const events = [];
+  const handler = {
+    start: (msg) =>
+      events.push({
+        kind: 'start',
+        operationType: msg.operationType,
+        operationName: msg.operationName,
+        operation: msg.operation,
+        schema: msg.schema,
+      }),
+    end: (msg) => events.push({ kind: 'end', result: msg.result }),
+    asyncStart: () => events.push({ kind: 'asyncStart' }),
+    asyncEnd: () => events.push({ kind: 'asyncEnd' }),
+    error: (msg) => events.push({ kind: 'error', error: msg.error }),
+  };
+
+  const channel = dc.tracingChannel('graphql:execute:rootSelectionSet');
+  channel.subscribe(handler);
+
+  try {
+    const result = execute({
+      schema,
+      document,
+      rootValue: { hello: 'world' },
+    });
+    assert.equal(result.data.hello, 'world');
+    assert.deepEqual(
+      events.map((e) => e.kind),
+      ['start', 'end'],
+    );
+    assert.equal(events[0].operationType, 'query');
+    assert.equal(events[0].operationName, 'Greeting');
+    assert.equal(events[0].operation, operation);
+    assert.equal(events[0].schema, schema);
+    assert.equal(events[1].result, result);
+  } finally {
+    channel.unsubscribe(handler);
+  }
+}
+
 async function runSubscribeCase() {
   async function* ticks() {
     yield { tick: 'one' };
@@ -278,6 +323,7 @@ async function main() {
   runParseCases();
   runValidateCase();
   runExecuteCase();
+  runExecuteRootSelectionSetCase();
   await runSubscribeCase();
   runResolveCase();
   await runAlsPropagationCase();

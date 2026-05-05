@@ -5,6 +5,7 @@ import { invariant } from '../jsutils/invariant.ts';
 import { isAsyncIterable } from '../jsutils/isAsyncIterable.ts';
 import { isIterableObject } from '../jsutils/isIterableObject.ts';
 import { isPromise, isPromiseLike } from '../jsutils/isPromise.ts';
+import type { Maybe } from '../jsutils/Maybe.ts';
 import { memoize2 } from '../jsutils/memoize2.ts';
 import { memoize3 } from '../jsutils/memoize3.ts';
 import type { ObjMap } from '../jsutils/ObjMap.ts';
@@ -40,7 +41,12 @@ import {
 } from '../type/definition.ts';
 import type { GraphQLSchema } from '../type/schema.ts';
 
-import { resolveChannel, shouldTrace, traceMixed } from '../diagnostics.ts';
+import {
+  executeRootSelectionSetChannel,
+  resolveChannel,
+  shouldTrace,
+  traceMixed,
+} from '../diagnostics.ts';
 
 import { AbortedGraphQLExecutionError } from './AbortedGraphQLExecutionError.ts';
 import { buildResolveInfo } from './buildResolveInfo.ts';
@@ -243,6 +249,53 @@ export class Executor<
   }
 
   executeRootSelectionSet(
+    serially?: boolean,
+  ): PromiseOrValue<ExecutionResult | TAlternativeInitialResponse> {
+    if (!shouldTrace(executeRootSelectionSetChannel)) {
+      return this.executeRootSelectionSetImpl(serially);
+    }
+    return traceMixed(
+      executeRootSelectionSetChannel,
+      this.buildExecuteCtxFromValidatedArgs(this.validatedExecutionArgs),
+      () => this.executeRootSelectionSetImpl(serially),
+    );
+  }
+
+  /**
+   * Build an operation-scoped diagnostics context from ValidatedExecutionArgs.
+   * Used after the operation has already been resolved during argument
+   * validation. The original document is not available at this point, only the
+   * resolved operation; subscribers that need the document should read it from
+   * the graphql:execute or graphql:subscribe contexts.
+   */
+  buildExecuteCtxFromValidatedArgs(args: ValidatedExecutionArgs): object {
+    let originalVariableValues: Maybe<{ [variable: string]: unknown }>;
+    let hasResolvedOriginalVariableValues = false;
+
+    return {
+      operation: args.operation,
+      schema: args.schema,
+      get variableValues(): Maybe<{ readonly [variable: string]: unknown }> {
+        if (!hasResolvedOriginalVariableValues) {
+          originalVariableValues = {};
+          for (const [variableName, source] of Object.entries(
+            args.variableValues.sources,
+          )) {
+            if (Object.hasOwn(source, 'value')) {
+              originalVariableValues[variableName] = source.value;
+            }
+          }
+
+          hasResolvedOriginalVariableValues = true;
+        }
+        return originalVariableValues;
+      },
+      operationName: args.operation.name?.value,
+      operationType: args.operation.operation,
+    };
+  }
+
+  executeRootSelectionSetImpl(
     serially?: boolean,
   ): PromiseOrValue<ExecutionResult | TAlternativeInitialResponse> {
     const externalAbortSignal = this.validatedExecutionArgs.externalAbortSignal;
