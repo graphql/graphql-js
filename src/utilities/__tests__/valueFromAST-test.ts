@@ -224,6 +224,10 @@ describe('valueFromAST', () => {
       bool: true,
       requiredBool: false,
     });
+    expectValueFrom(
+      '{ bool: true, requiredBool: false, unknown: true }',
+      testInputObj,
+    ).to.equal(undefined);
     expectValueFrom('{ int: true, requiredBool: true }', testInputObj).to.equal(
       undefined,
     );
@@ -241,6 +245,9 @@ describe('valueFromAST', () => {
     expectValueFrom('{ a: null }', testOneOfInputObj).to.equal(undefined);
     expectValueFrom('{ a: 1 }', testOneOfInputObj).to.equal(undefined);
     expectValueFrom('{ a: "abc", b: "def" }', testOneOfInputObj).to.equal(
+      undefined,
+    );
+    expectValueFrom('{ a: "abc", c: "def" }', testOneOfInputObj).to.equal(
       undefined,
     );
     expectValueFrom('{}', testOneOfInputObj).to.equal(undefined);

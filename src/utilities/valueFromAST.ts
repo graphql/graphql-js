@@ -112,10 +112,17 @@ export function valueFromAST(
       return; // Invalid: intentionally return no value.
     }
     const coercedObj = Object.create(null);
+    const fieldDefs = type.getFields();
+    const hasUnknownField = valueNode.fields.some(
+      (field) => !Object.hasOwn(fieldDefs, field.name.value),
+    );
+    if (hasUnknownField) {
+      return; // Invalid: intentionally return no value.
+    }
     const fieldNodes = new Map(
       valueNode.fields.map((field) => [field.name.value, field]),
     );
-    for (const field of Object.values(type.getFields())) {
+    for (const field of Object.values(fieldDefs)) {
       const fieldNode = fieldNodes.get(field.name);
       if (fieldNode == null || isMissingVariable(fieldNode.value, variables)) {
         if (field.defaultValue !== undefined) {
