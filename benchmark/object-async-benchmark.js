@@ -10,6 +10,7 @@ const fieldNames = Array.from(
 
 const schema = buildSchema(
   `type Query { ${fieldNames.map((fieldName) => `${fieldName}: Int`).join(' ')} }`,
+  { assumeValid: true },
 );
 
 const document = parse(`{ ${fieldNames.join(' ')} }`);
