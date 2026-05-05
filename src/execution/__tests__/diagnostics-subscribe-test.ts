@@ -8,6 +8,7 @@ import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 
 import { isAsyncIterable } from '../../jsutils/isAsyncIterable.js';
 
+import { OperationTypeNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
 
 import type { GraphQLSchema } from '../../type/schema.js';
@@ -63,21 +64,21 @@ describe('subscribe diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema,
+            document,
             variableValues,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema,
+            document,
             variableValues,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
             result,
           },
         },
@@ -111,41 +112,41 @@ describe('subscribe diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'asyncStart',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'asyncEnd',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
             result,
           },
         },
@@ -190,42 +191,42 @@ describe('subscribe diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'end',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
             result: firstResult,
           },
         },
         {
           channel: 'start',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'end',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
             result: secondResult,
           },
         },
@@ -247,8 +248,8 @@ describe('subscribe diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
             operationType: undefined,
@@ -257,8 +258,8 @@ describe('subscribe diagnostics channel', () => {
         {
           channel: 'end',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
             operationType: undefined,
@@ -280,32 +281,32 @@ describe('subscribe diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema: invalidSchema,
+            document,
             variableValues: undefined,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'error',
           context: {
-            document,
             schema: invalidSchema,
+            document,
             variableValues: undefined,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
             error,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema: invalidSchema,
+            document,
             variableValues: undefined,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
             error,
           },
         },
@@ -334,41 +335,41 @@ describe('subscribe diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'asyncStart',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
           },
         },
         {
           channel: 'asyncEnd',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: 'S',
-            operationType: 'subscription',
+            operationType: OperationTypeNode.SUBSCRIPTION,
             result,
           },
         },

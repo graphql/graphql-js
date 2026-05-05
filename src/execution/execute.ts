@@ -131,8 +131,8 @@ function buildExecuteCtxFromArgs(args: ExecutionArgs): object {
     return operation;
   };
   return {
-    document: args.document,
     schema: args.schema,
+    document: args.document,
     variableValues: args.variableValues,
     get operationName() {
       return args.operationName ?? resolveOperation()?.name?.value;

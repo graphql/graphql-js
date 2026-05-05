@@ -51,8 +51,8 @@ describe('validate diagnostics channel', () => {
 
   it('emits start, error, and end when validate throws on an invalid schema', async () => {
     const context = {
-      document: parse('{ field }'),
       schema: {} as GraphQLSchema,
+      document: parse('{ field }'),
     };
 
     await expectEvents(

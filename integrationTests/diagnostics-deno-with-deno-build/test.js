@@ -107,10 +107,11 @@ function runExecuteCase() {
     start: (msg) =>
       events.push({
         kind: 'start',
-        operationType: msg.operationType,
-        operationName: msg.operationName,
-        document: msg.document,
         schema: msg.schema,
+        document: msg.document,
+        variableValues: msg.variableValues,
+        operationName: msg.operationName,
+        operationType: msg.operationType,
       }),
     end: () => events.push({ kind: 'end' }),
     asyncStart: () => events.push({ kind: 'asyncStart' }),
@@ -151,10 +152,11 @@ function runExecuteRootSelectionSetCase() {
     start: (msg) =>
       events.push({
         kind: 'start',
-        operationType: msg.operationType,
-        operationName: msg.operationName,
-        operation: msg.operation,
         schema: msg.schema,
+        operation: msg.operation,
+        variableValues: msg.variableValues,
+        operationName: msg.operationName,
+        operationType: msg.operationType,
       }),
     end: (msg) => events.push({ kind: 'end', result: msg.result }),
     asyncStart: () => events.push({ kind: 'asyncStart' }),
@@ -205,8 +207,11 @@ async function runSubscribeCase() {
     start: (msg) =>
       events.push({
         kind: 'start',
-        operationType: msg.operationType,
+        schema: msg.schema,
+        document: msg.document,
+        variableValues: msg.variableValues,
         operationName: msg.operationName,
+        operationType: msg.operationType,
       }),
     end: () => events.push({ kind: 'end' }),
     asyncStart: () => events.push({ kind: 'asyncStart' }),
@@ -249,8 +254,9 @@ function runResolveCase() {
         fieldName: msg.fieldName,
         parentType: msg.parentType,
         fieldType: msg.fieldType,
-        fieldPath: msg.fieldPath,
+        args: msg.args,
         isDefaultResolver: msg.isDefaultResolver,
+        fieldPath: msg.fieldPath,
       }),
     end: () => events.push({ kind: 'end' }),
     asyncStart: () => events.push({ kind: 'asyncStart' }),

@@ -8,6 +8,7 @@ import { expectToThrow } from '../../__testUtils__/expectToThrow.js';
 import { getTracingChannel } from '../../__testUtils__/getTracingChannel.js';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.js';
 
+import { OperationTypeNode } from '../../language/ast.js';
 import { parse } from '../../language/parser.js';
 
 import { GraphQLObjectType } from '../../type/definition.js';
@@ -56,21 +57,21 @@ describe('execute diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema,
+            document,
             variableValues,
             operationName: 'Q',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema,
+            document,
             variableValues,
             operationName: 'Q',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             result,
           },
         },
@@ -93,41 +94,41 @@ describe('execute diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'asyncStart',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'asyncEnd',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             result,
           },
         },
@@ -180,52 +181,52 @@ describe('execute diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema: asyncDeferSchema,
+            document,
             variableValues: undefined,
             operationName: 'Deferred',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema: asyncDeferSchema,
+            document,
             variableValues: undefined,
             operationName: 'Deferred',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'asyncStart',
           context: {
-            document,
             schema: asyncDeferSchema,
+            document,
             variableValues: undefined,
             operationName: 'Deferred',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'error',
           context: {
-            document,
             schema: asyncDeferSchema,
+            document,
             variableValues: undefined,
             operationName: 'Deferred',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             error,
           },
         },
         {
           channel: 'asyncEnd',
           context: {
-            document,
             schema: asyncDeferSchema,
+            document,
             variableValues: undefined,
             operationName: 'Deferred',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             error,
           },
         },
@@ -244,21 +245,21 @@ describe('execute diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             result,
           },
         },
@@ -281,21 +282,21 @@ describe('execute diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: 'Q',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema,
+            document,
             variableValues: undefined,
             operationName: 'Q',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             result,
           },
         },
@@ -320,32 +321,32 @@ describe('execute diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            document,
             schema: invalidSchema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'error',
           context: {
-            document,
             schema: invalidSchema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             error,
           },
         },
         {
           channel: 'end',
           context: {
-            document,
             schema: invalidSchema,
+            document,
             variableValues: undefined,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             error,
           },
         },
@@ -385,21 +386,21 @@ describe('execute root selection set diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: 'Q',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'end',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: 'Q',
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             result,
           },
         },
@@ -424,41 +425,41 @@ describe('execute root selection set diagnostics channel', () => {
         {
           channel: 'start',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'end',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'asyncStart',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
           },
         },
         {
           channel: 'asyncEnd',
           context: {
-            operation,
             schema,
+            operation,
             variableValues,
             operationName: undefined,
-            operationType: 'query',
+            operationType: OperationTypeNode.QUERY,
             result,
           },
         },
