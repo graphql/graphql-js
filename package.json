@@ -76,6 +76,6 @@
     "typescript-eslint": "8.59.0"
   },
   "publishConfig": {
-    "tag": "alpha"
+    "tag": "beta"
   }
 }
