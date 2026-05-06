@@ -286,6 +286,7 @@ interface CommitInfo {
   associatedPullRequests: {
     nodes: ReadonlyArray<{
       number: number;
+      merged: boolean;
       repository: {
         nameWithOwner: string;
       };
@@ -306,6 +307,7 @@ async function batchCommitToPR(
             associatedPullRequests(first: 10) {
               nodes {
                 number
+                merged
                 repository {
                   nameWithOwner
                 }
@@ -399,7 +401,8 @@ async function batchPRInfo(
 
 function commitInfoToPR(commit: CommitInfo): number {
   const associatedPRs = commit.associatedPullRequests.nodes.filter(
-    (pr) => pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
+    (pr) =>
+      pr.merged && pr.repository.nameWithOwner === `${githubOrg}/${githubRepo}`,
   );
   if (associatedPRs.length === 0) {
     const match = / \(#(?<prNumber>[0-9]+)\)$/m.exec(commit.message);
