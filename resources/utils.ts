@@ -280,6 +280,31 @@ export function buildESMDevModeStub(
   ].join('\n');
 }
 
+export function getPublishConfigTag(version: string): string {
+  return getPrereleaseDistTag(version) ?? 'latest';
+}
+
+export function isPrereleaseVersion(version: string): boolean {
+  return getPrereleaseDistTag(version) != null;
+}
+
+function getPrereleaseDistTag(version: string): string | null {
+  const versionMatch =
+    /^\d+\.\d+\.\d+(?:-(?<prerelease>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.exec(
+      version,
+    );
+  if (versionMatch?.groups == null) {
+    throw new Error('Version does not match semver spec: ' + version);
+  }
+
+  const { prerelease } = versionMatch.groups;
+  if (prerelease == null) {
+    return null;
+  }
+
+  return prerelease.split('.')[0];
+}
+
 interface PackageJSON {
   description: string;
   version: string;

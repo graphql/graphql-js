@@ -92,8 +92,28 @@ Releases on `17.x.x` are managed by local scripts and GitHub Actions:
 git switch 17.x.x
 git switch -c <my_release_branch>
 export GH_TOKEN=<token> # required to build changelog via GitHub API requests
+```
+
+Prepare a stable release:
+
+```bash
 npm run release:prepare -- 17.x.x patch
 ```
+
+Or, prepare a beta prerelease:
+
+```bash
+npm run release:prepare -- 17.x.x prerelease --preid beta
+```
+
+Or, prepare an rc prerelease:
+
+```bash
+npm run release:prepare -- 17.x.x prerelease --preid rc
+```
+
+When `--preid` is provided, the release script uses it as the npm publish tag.
+Without a prerelease preid, the publish tag is `latest`.
 
 Push `<my_release_branch>`, open a PR from `<my_release_branch>` to `17.x.x`, wait for CI to pass, merge the PR, and then approve the GitHub Actions release workflow. The workflow currently runs in dry-run mode for testing.
 

@@ -1,4 +1,13 @@
-import { git, npm, readPackageJSON, readPackageJSONAtRef } from './utils.js';
+import assert from 'node:assert';
+
+import {
+  getPublishConfigTag,
+  git,
+  isPrereleaseVersion,
+  npm,
+  readPackageJSON,
+  readPackageJSONAtRef,
+} from './utils.js';
 
 interface ReleaseMetadata {
   version: string;
@@ -20,8 +29,13 @@ try {
   }
 
   const tag = `v${version}`;
-  const distTag = publishConfig?.tag ?? '';
-  const prerelease = distTag === 'alpha';
+  const distTag = getPublishConfigTag(version);
+  assert.equal(
+    publishConfig?.tag,
+    distTag,
+    'Publish tag and version tag should match!',
+  );
+  const prerelease = isPrereleaseVersion(version);
   const releaseCommitSha = findReleaseCommitSha(version);
   const releaseNotes =
     releaseCommitSha == null

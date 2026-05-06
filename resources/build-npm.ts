@@ -10,6 +10,7 @@ import type { PlatformConditionalExports } from './utils.js';
 import {
   buildCJSDevModeStub,
   buildESMDevModeStub,
+  getPublishConfigTag,
   prettify,
   readPackageJSON,
   readTSConfig,
@@ -61,32 +62,13 @@ async function buildPackage(outDir: string, isESMOnly: boolean): Promise<void> {
   };
 
   // TODO: move to integration tests
-  const publishTag = packageJSON.publishConfig?.tag;
-  assert(publishTag != null, 'Should have packageJSON.publishConfig defined!');
-
   const { version } = packageJSON;
-  const versionMatch = /^\d+\.\d+\.\d+-?(?<preReleaseTag>.*)?$/.exec(version);
-  if (versionMatch?.groups == null) {
-    throw new Error('Version does not match semver spec: ' + version);
-  }
-
-  const { preReleaseTag } = versionMatch.groups;
-
-  if (preReleaseTag != null) {
-    const splittedTag = preReleaseTag.split('.');
-    // Note: `experimental-*` take precedence over `alpha`, `beta` or `rc`.
-    const versionTag = splittedTag[2] ?? splittedTag[0];
-    assert(
-      ['alpha', 'beta', 'rc'].includes(versionTag) ||
-        versionTag.startsWith('experimental-'),
-      `"${versionTag}" tag is not supported.`,
-    );
-    assert.equal(
-      versionTag,
-      publishTag,
-      'Publish tag and version tag should match!',
-    );
-  }
+  const publishTag = getPublishConfigTag(version);
+  assert.equal(
+    packageJSON.publishConfig?.tag,
+    publishTag,
+    'Publish tag and version tag should match!',
+  );
 
   if (isESMOnly) {
     packageJSON.exports = {};

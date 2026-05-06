@@ -1,4 +1,6 @@
-import { git, npm, readPackageJSON } from './utils.js';
+import fs from 'node:fs';
+
+import { getPublishConfigTag, git, npm, readPackageJSON } from './utils.js';
 
 let args: ParsedArgs;
 try {
@@ -14,6 +16,9 @@ npm().ci('--ignore-scripts');
 
 console.log('Bumping package version without creating a tag...');
 npm().version(...args.npmVersionArgs, '--no-git-tag-version');
+
+console.log('Updating publishConfig.tag...');
+updatePublishConfigTag();
 
 console.log('Updating src/version.ts...');
 npm().exec(
@@ -80,7 +85,7 @@ function parseArgs(): ParsedArgs {
 
   if (npmVersionArgs.length === 0) {
     throwUsage(
-      'Missing npm version arguments (e.g. patch, major, prerelease --preid alpha).',
+      'Missing npm version arguments (e.g. patch, major, prerelease --preid beta).',
     );
   }
 
@@ -196,6 +201,15 @@ function validateBranchState(releaseBranch: string): void {
   }
 }
 
+function updatePublishConfigTag(): void {
+  const packageJSON = readPackageJSON();
+  packageJSON.publishConfig = {
+    ...packageJSON.publishConfig,
+    tag: getPublishConfigTag(packageJSON.version),
+  };
+  fs.writeFileSync('package.json', JSON.stringify(packageJSON, null, 2) + '\n');
+}
+
 function throwUsage(message: string): never {
   throw new Error(
     `${message}\n` +
@@ -203,6 +217,7 @@ function throwUsage(message: string): never {
       'Examples:\n' +
       '  npm run release:prepare -- 17.x.x patch\n' +
       '  npm run release:prepare -- 17.x.x prerelease --preid alpha\n' +
-      '  npm run release:prepare -- --fromRev <fromRev> 17.x.x prerelease --preid alpha',
+      '  npm run release:prepare -- 17.x.x prerelease --preid beta\n' +
+      '  npm run release:prepare -- --fromRev <fromRev> 17.x.x prerelease --preid rc',
   );
 }
