@@ -212,6 +212,46 @@ describe('Schema Parser', () => {
     });
   });
 
+  it('Object extension with fields', () => {
+    const doc = parse('extend type Hello { name: String @deprecated }');
+
+    expectJSON(doc).toDeepEqual({
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'ObjectTypeExtension',
+          name: nameNode('Hello', { start: 12, end: 17 }),
+          interfaces: [],
+          directives: [],
+          fields: [
+            {
+              kind: 'FieldDefinition',
+              name: nameNode('name', { start: 20, end: 24 }),
+              arguments: [],
+              description: undefined,
+              type: {
+                kind: 'NamedType',
+                name: nameNode('String', { start: 26, end: 32 }),
+                loc: { start: 26, end: 32 },
+              },
+              directives: [
+                {
+                  kind: 'Directive',
+                  name: nameNode('deprecated', { start: 34, end: 44 }),
+                  arguments: [],
+                  loc: { start: 33, end: 44 },
+                },
+              ],
+              loc: { start: 20, end: 44 },
+            },
+          ],
+          loc: { start: 0, end: 46 },
+        },
+      ],
+      loc: { start: 0, end: 46 },
+    });
+  });
+
   it('Interface extension without fields', () => {
     const doc = parse('extend interface Hello implements Greeting');
     expectJSON(doc).toDeepEqual({

@@ -1,5 +1,7 @@
+import { ConflictingDescriptionsAndDeprecationRule } from './rules/ConflictingDescriptionsAndDeprecationRule';
 // Spec Section: "Executable Definitions"
 import { ExecutableDefinitionsRule } from './rules/ExecutableDefinitionsRule';
+import { ExtendedFieldsMatchOriginalTypeRule } from './rules/ExtendedFieldsMatchOriginalTypeRule';
 // Spec Section: "Field Selections on Objects, Interfaces, and Unions Types"
 import { FieldsOnCorrectTypeRule } from './rules/FieldsOnCorrectTypeRule';
 // Spec Section: "Fragments on Composite Types"
@@ -127,6 +129,8 @@ export const specifiedSDLRules: ReadonlyArray<SDLValidationRule> =
     KnownDirectivesRule,
     UniqueDirectivesPerLocationRule,
     PossibleTypeExtensionsRule,
+    ExtendedFieldsMatchOriginalTypeRule,
+    ConflictingDescriptionsAndDeprecationRule,
     KnownArgumentNamesOnDirectivesRule,
     UniqueArgumentNamesRule,
     UniqueInputFieldNamesRule,

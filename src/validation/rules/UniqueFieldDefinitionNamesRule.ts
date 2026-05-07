@@ -1,3 +1,5 @@
+import type { ObjMap } from '../../jsutils/ObjMap';
+
 import { GraphQLError } from '../../error/GraphQLError';
 
 import type {
@@ -6,13 +8,6 @@ import type {
   NameNode,
 } from '../../language/ast';
 import type { ASTVisitor } from '../../language/visitor';
-
-import type { GraphQLNamedType } from '../../type/definition';
-import {
-  isInputObjectType,
-  isInterfaceType,
-  isObjectType,
-} from '../../type/definition';
 
 import type { SDLValidationContext } from '../ValidationContext';
 
@@ -24,9 +19,7 @@ import type { SDLValidationContext } from '../ValidationContext';
 export function UniqueFieldDefinitionNamesRule(
   context: SDLValidationContext,
 ): ASTVisitor {
-  const schema = context.getSchema();
-  const existingTypeMap = schema ? schema.getTypeMap() : Object.create(null);
-  const knownFieldNames = Object.create(null);
+  const knownFieldNames: ObjMap<ObjMap<NameNode>> = Object.create(null);
 
   return {
     InputObjectTypeDefinition: checkFieldUniqueness,
@@ -57,14 +50,10 @@ export function UniqueFieldDefinitionNamesRule(
     for (const fieldDef of fieldNodes) {
       const fieldName = fieldDef.name.value;
 
-      if (hasField(existingTypeMap[typeName], fieldName)) {
-        context.reportError(
-          new GraphQLError(
-            `Field "${typeName}.${fieldName}" already exists in the schema. It cannot also be defined in this type extension.`,
-            { nodes: fieldDef.name },
-          ),
-        );
-      } else if (fieldNames[fieldName]) {
+      // Allow extensions to redefine existing fields for merging purposes
+      // Type compatibility will be checked by other validation rules
+
+      if (fieldNames[fieldName]) {
         context.reportError(
           new GraphQLError(
             `Field "${typeName}.${fieldName}" can only be defined once.`,
@@ -78,11 +67,4 @@ export function UniqueFieldDefinitionNamesRule(
 
     return false;
   }
-}
-
-function hasField(type: GraphQLNamedType, fieldName: string): boolean {
-  if (isObjectType(type) || isInterfaceType(type) || isInputObjectType(type)) {
-    return type.getFields()[fieldName] != null;
-  }
-  return false;
 }
