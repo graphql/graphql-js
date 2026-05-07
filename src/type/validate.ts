@@ -847,9 +847,6 @@ function createInputObjectUnbreakableCycleCheck(): (
     if (isListType(fieldType)) {
       return false;
     }
-    if (isNonNullType(fieldType)) {
-      return inputFieldTypeHasUnbreakableCycle(fieldType.ofType);
-    }
     if (!isInputObjectType(fieldType)) {
       return false;
     }
@@ -882,10 +879,13 @@ function traceUnbreakableCycle(
           target = field.type;
         }
       } else if (isNonNullType(field.type)) {
-        target = unwrapToUnbreakableCycleType(
-          field.type.ofType,
-          typesWithUnbreakableCycles,
-        );
+        const nullableType = field.type.ofType;
+        if (
+          isInputObjectType(nullableType) &&
+          typesWithUnbreakableCycles.has(nullableType)
+        ) {
+          target = nullableType;
+        }
       }
 
       if (target != null) {
@@ -902,25 +902,6 @@ function traceUnbreakableCycle(
   }
 
   return path;
-}
-
-function unwrapToUnbreakableCycleType(
-  type: GraphQLInputType,
-  typesWithUnbreakableCycles: ReadonlySet<GraphQLInputObjectType>,
-): Maybe<GraphQLInputObjectType> {
-  if (isListType(type)) {
-    return undefined;
-  }
-  if (isNonNullType(type)) {
-    return unwrapToUnbreakableCycleType(
-      type.ofType,
-      typesWithUnbreakableCycles,
-    );
-  }
-  if (isInputObjectType(type) && typesWithUnbreakableCycles.has(type)) {
-    return type;
-  }
-  return undefined;
 }
 
 function createInputObjectDefaultValueCircularRefsValidator(

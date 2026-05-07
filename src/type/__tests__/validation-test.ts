@@ -2616,6 +2616,42 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
+  it('rejects a non-OneOf/non-OneOf cycle with required scalar and list fields', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A {
+        list: [B]!
+        b: B!
+      }
+
+      input B {
+        value: Int!
+        a: A!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Input Object A references itself via the required fields: A.b, B.a.',
+        locations: [
+          { line: 8, column: 9 },
+          { line: 13, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Input Object B references itself via the required fields: B.a, A.b.',
+        locations: [
+          { line: 13, column: 9 },
+          { line: 8, column: 9 },
+        ],
+      },
+    ]);
+  });
+
   it('rejects a larger mixed OneOf/non-OneOf cycle with no escapes', () => {
     const schema = buildSchema(`
       type Query {
