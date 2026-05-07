@@ -461,15 +461,7 @@ function validateTypes(context: SchemaValidationContext): void {
     }
   }
 
-  // Report errors for Input Object types that have unbreakable cycles.
-  for (const type of typesWithUnbreakableCycles) {
-    const cyclePath = traceUnbreakableCycle(type, typesWithUnbreakableCycles);
-    const pathStr = cyclePath.map((p) => p.fieldStr).join(', ');
-    context.reportError(
-      `Input Object ${type} references itself via the required fields: ${pathStr}.`,
-      cyclePath.map((p) => p.astNode),
-    );
-  }
+  reportInputObjectUnbreakableCycles(context, typesWithUnbreakableCycles);
 }
 
 function validateFields(
@@ -950,72 +942,78 @@ function createInputObjectUnbreakableCycleCheck(): (
       }
     }
   }
+}
 
-  function getUnbreakableCycleTarget(
-    inputObj: GraphQLInputObjectType,
-    fieldType: GraphQLInputType,
-  ): Maybe<GraphQLInputObjectType> {
-    if (inputObj.isOneOf) {
-      if (isInputObjectType(fieldType)) {
-        return fieldType;
-      }
-      return undefined;
+function getUnbreakableCycleTarget(
+  inputObj: GraphQLInputObjectType,
+  fieldType: GraphQLInputType,
+): Maybe<GraphQLInputObjectType> {
+  if (inputObj.isOneOf) {
+    if (isInputObjectType(fieldType)) {
+      return fieldType;
     }
+    return undefined;
+  }
 
-    if (isNonNullType(fieldType) && isInputObjectType(fieldType.ofType)) {
-      return fieldType.ofType;
-    }
+  if (isNonNullType(fieldType) && isInputObjectType(fieldType.ofType)) {
+    return fieldType.ofType;
   }
 }
 
-// For an Input Object type with an unbreakable cycle, traces a witness cycle
-// path by following required edges to other types with unbreakable cycles.
-function traceUnbreakableCycle(
-  startType: GraphQLInputObjectType,
+function reportInputObjectUnbreakableCycles(
+  context: SchemaValidationContext,
   typesWithUnbreakableCycles: ReadonlySet<GraphQLInputObjectType>,
-): Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> {
-  const path: Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> = [];
-  const seen = new Set<GraphQLInputObjectType>();
+): void {
+  // Tracks already visited types to ensure that cycles are not redundantly
+  // reported.
+  const visitedTypes = new Set<GraphQLInputObjectType>();
 
-  let current: Maybe<GraphQLInputObjectType> = startType;
-  while (current != null && !seen.has(current)) {
-    seen.add(current);
-    let next: Maybe<GraphQLInputObjectType>;
+  // Array of fields used to produce meaningful errors.
+  const fieldPath: Array<{ fieldStr: string; astNode: Maybe<ASTNode> }> = [];
 
-    for (const field of Object.values(current.getFields())) {
-      let target: Maybe<GraphQLInputObjectType>;
+  // Position in the field path.
+  const fieldPathIndexByType = new Map<GraphQLInputObjectType, number>();
 
-      if (current.isOneOf) {
-        if (
-          isInputObjectType(field.type) &&
-          typesWithUnbreakableCycles.has(field.type)
-        ) {
-          target = field.type;
-        }
-      } else if (isNonNullType(field.type)) {
-        const nullableType = field.type.ofType;
-        if (
-          isInputObjectType(nullableType) &&
-          typesWithUnbreakableCycles.has(nullableType)
-        ) {
-          target = nullableType;
-        }
-      }
-
-      if (target != null) {
-        path.push({
-          fieldStr: `${current}.${field.name}`,
-          astNode: field.astNode,
-        });
-        next = target;
-        break;
-      }
-    }
-
-    current = next;
+  for (const type of typesWithUnbreakableCycles) {
+    reportCycleRecursive(type);
   }
 
-  return path;
+  function reportCycleRecursive(inputObj: GraphQLInputObjectType): void {
+    if (visitedTypes.has(inputObj)) {
+      return;
+    }
+
+    visitedTypes.add(inputObj);
+    fieldPathIndexByType.set(inputObj, fieldPath.length);
+
+    for (const field of Object.values(inputObj.getFields())) {
+      const target = getUnbreakableCycleTarget(inputObj, field.type);
+      if (target == null || !typesWithUnbreakableCycles.has(target)) {
+        continue;
+      }
+
+      const cycleIndex = fieldPathIndexByType.get(target);
+      fieldPath.push({
+        fieldStr: `${inputObj}.${field.name}`,
+        astNode: field.astNode,
+      });
+
+      if (cycleIndex === undefined) {
+        reportCycleRecursive(target);
+      } else {
+        const cyclePath = fieldPath.slice(cycleIndex);
+        const pathStr = cyclePath.map((p) => p.fieldStr).join(', ');
+        context.reportError(
+          `Input Object ${target} cannot be provided a finite value because it references itself through fields: ${pathStr}.`,
+          cyclePath.map((p) => p.astNode),
+        );
+      }
+
+      fieldPath.pop();
+    }
+
+    fieldPathIndexByType.delete(inputObj);
+  }
 }
 
 function createInputObjectDefaultValueCircularRefsValidator(

@@ -944,7 +944,7 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object SomeInputObject references itself via the required fields: SomeInputObject.nonNullSelf.',
+          'Input Object SomeInputObject cannot be provided a finite value because it references itself through fields: SomeInputObject.nonNullSelf.',
         locations: [{ line: 7, column: 9 }],
       },
     ]);
@@ -972,29 +972,11 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object SomeInputObject references itself via the required fields: SomeInputObject.startLoop, AnotherInputObject.nextInLoop, YetAnotherInputObject.closeLoop.',
+          'Input Object SomeInputObject cannot be provided a finite value because it references itself through fields: SomeInputObject.startLoop, AnotherInputObject.nextInLoop, YetAnotherInputObject.closeLoop.',
         locations: [
           { line: 7, column: 9 },
           { line: 11, column: 9 },
           { line: 15, column: 9 },
-        ],
-      },
-      {
-        message:
-          'Input Object AnotherInputObject references itself via the required fields: AnotherInputObject.nextInLoop, YetAnotherInputObject.closeLoop, SomeInputObject.startLoop.',
-        locations: [
-          { line: 11, column: 9 },
-          { line: 15, column: 9 },
-          { line: 7, column: 9 },
-        ],
-      },
-      {
-        message:
-          'Input Object YetAnotherInputObject references itself via the required fields: YetAnotherInputObject.closeLoop, SomeInputObject.startLoop, AnotherInputObject.nextInLoop.',
-        locations: [
-          { line: 15, column: 9 },
-          { line: 7, column: 9 },
-          { line: 11, column: 9 },
         ],
       },
     ]);
@@ -1024,7 +1006,7 @@ describe('Type System: Input Objects must have fields', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object SomeInputObject references itself via the required fields: SomeInputObject.startLoop, AnotherInputObject.closeLoop.',
+          'Input Object SomeInputObject cannot be provided a finite value because it references itself through fields: SomeInputObject.startLoop, AnotherInputObject.closeLoop.',
         locations: [
           { line: 7, column: 9 },
           { line: 11, column: 9 },
@@ -1032,20 +1014,16 @@ describe('Type System: Input Objects must have fields', () => {
       },
       {
         message:
-          'Input Object AnotherInputObject references itself via the required fields: AnotherInputObject.closeLoop, SomeInputObject.startLoop.',
+          'Input Object AnotherInputObject cannot be provided a finite value because it references itself through fields: AnotherInputObject.startSecondLoop, YetAnotherInputObject.closeSecondLoop.',
         locations: [
-          { line: 11, column: 9 },
-          { line: 7, column: 9 },
-        ],
-      },
-      {
-        message:
-          'Input Object YetAnotherInputObject references itself via the required fields: YetAnotherInputObject.closeSecondLoop, AnotherInputObject.closeLoop, SomeInputObject.startLoop.',
-        locations: [
+          { line: 12, column: 9 },
           { line: 16, column: 9 },
-          { line: 11, column: 9 },
-          { line: 7, column: 9 },
         ],
+      },
+      {
+        message:
+          'Input Object YetAnotherInputObject cannot be provided a finite value because it references itself through fields: YetAnotherInputObject.nonNullSelf.',
+        locations: [{ line: 17, column: 9 }],
       },
     ]);
   });
@@ -2601,7 +2579,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object A references itself via the required fields: A.self.',
+          'Input Object A cannot be provided a finite value because it references itself through fields: A.self.',
         locations: [{ line: 7, column: 9 }],
       },
     ]);
@@ -2625,16 +2603,8 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object T references itself via the required fields: T.self.',
+          'Input Object T cannot be provided a finite value because it references itself through fields: T.self.',
         locations: [{ line: 8, column: 9 }],
-      },
-      {
-        message:
-          'Input Object A references itself via the required fields: A.t, T.self.',
-        locations: [
-          { line: 12, column: 9 },
-          { line: 8, column: 9 },
-        ],
       },
     ]);
   });
@@ -2675,7 +2645,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
       types,
     });
 
-    expect(validateSchema(schema)).to.have.lengthOf(types.length);
+    expect(validateSchema(schema)).to.have.lengthOf(1);
     expect(
       getFieldsSpies.reduce((sum, spy) => sum + spy.callCount, 0),
     ).to.be.lessThan(500);
@@ -2698,18 +2668,49 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object A references itself via the required fields: A.b, B.a.',
+          'Input Object A cannot be provided a finite value because it references itself through fields: A.b, B.a.',
         locations: [
           { line: 7, column: 9 },
           { line: 11, column: 9 },
         ],
       },
+    ]);
+  });
+
+  it('rejects multiple OneOf branches without duplicate cycle reports', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A @oneOf {
+        b: B
+        c: C
+      }
+
+      input B {
+        a: A!
+      }
+
+      input C {
+        a: A!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object B references itself via the required fields: B.a, A.b.',
+          'Input Object A cannot be provided a finite value because it references itself through fields: A.b, B.a.',
         locations: [
-          { line: 11, column: 9 },
           { line: 7, column: 9 },
+          { line: 12, column: 9 },
+        ],
+      },
+      {
+        message:
+          'Input Object A cannot be provided a finite value because it references itself through fields: A.c, C.a.',
+        locations: [
+          { line: 8, column: 9 },
+          { line: 16, column: 9 },
         ],
       },
     ]);
@@ -2767,7 +2768,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
-  it('rejects a non-OneOf/non-OneOf cycle with required scalar and list fields', () => {
+  it('rejects a non-OneOf/non-OneOf cycle with required scalar, list, and finite input fields', () => {
     const schema = buildSchema(`
       type Query {
         test(arg: A): Int
@@ -2775,6 +2776,7 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
 
       input A {
         list: [B]!
+        finite: Finite!
         b: B!
       }
 
@@ -2782,22 +2784,18 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
         value: Int!
         a: A!
       }
+
+      input Finite {
+        value: Int!
+      }
     `);
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object A references itself via the required fields: A.b, B.a.',
+          'Input Object A cannot be provided a finite value because it references itself through fields: A.b, B.a.',
         locations: [
-          { line: 8, column: 9 },
-          { line: 13, column: 9 },
-        ],
-      },
-      {
-        message:
-          'Input Object B references itself via the required fields: B.a, A.b.',
-        locations: [
-          { line: 13, column: 9 },
-          { line: 8, column: 9 },
+          { line: 9, column: 9 },
+          { line: 14, column: 9 },
         ],
       },
     ]);
@@ -2824,29 +2822,11 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([
       {
         message:
-          'Input Object A references itself via the required fields: A.b, B.c, C.a.',
+          'Input Object A cannot be provided a finite value because it references itself through fields: A.b, B.c, C.a.',
         locations: [
           { line: 7, column: 9 },
           { line: 11, column: 9 },
           { line: 15, column: 9 },
-        ],
-      },
-      {
-        message:
-          'Input Object B references itself via the required fields: B.c, C.a, A.b.',
-        locations: [
-          { line: 11, column: 9 },
-          { line: 15, column: 9 },
-          { line: 7, column: 9 },
-        ],
-      },
-      {
-        message:
-          'Input Object C references itself via the required fields: C.a, A.b, B.c.',
-        locations: [
-          { line: 15, column: 9 },
-          { line: 7, column: 9 },
-          { line: 11, column: 9 },
         ],
       },
     ]);
