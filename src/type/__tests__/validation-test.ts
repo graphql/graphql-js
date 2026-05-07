@@ -4,6 +4,7 @@ import { assert, expect } from 'chai';
 
 import { dedent } from '../../__testUtils__/dedent.ts';
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
+import { spyOnMethod } from '../../__testUtils__/spyOn.ts';
 
 import { inspect } from '../../jsutils/inspect.ts';
 
@@ -885,6 +886,24 @@ describe('Type System: Input Objects must have fields', () => {
           { line: 6, column: 7 },
           { line: 4, column: 9 },
         ],
+      },
+    ]);
+  });
+
+  it('rejects a OneOf Input Object type with missing fields', () => {
+    const schema = buildSchema(`
+      type Query {
+        field(arg: SomeInputObject): String
+      }
+
+      input SomeInputObject @oneOf
+    `);
+
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Input Object type SomeInputObject must define one or more fields.',
+        locations: [{ line: 6, column: 7 }],
       },
     ]);
   });
@@ -2476,6 +2495,64 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
     expectJSON(validateSchema(schema)).toDeepEqual([]);
   });
 
+  it('accepts a OneOf Input Object referencing an already checked input object', () => {
+    const schema = buildSchema(`
+      type Query {
+        b(arg: B): Int
+        a(arg: A): Int
+      }
+
+      input B {
+        value: Int
+      }
+
+      input A @oneOf {
+        b: B
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf Input Object with multiple acyclic input object fields', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A @oneOf {
+        b: B
+        c: C
+      }
+
+      input B {
+        value: Int
+      }
+
+      input C {
+        value: Int
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
+  it('accepts a OneOf Input Object with an input object field and scalar escape', () => {
+    const schema = buildSchema(`
+      type Query {
+        test(arg: A): Int
+      }
+
+      input A @oneOf {
+        b: B
+        escape: Int
+      }
+
+      input B {
+        value: Int
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([]);
+  });
+
   it('accepts a OneOf/OneOf cycle with a scalar escape', () => {
     const schema = buildSchema(`
       type Query {
@@ -2528,6 +2605,80 @@ describe('Type System: Input Objects must not have unbreakable cycles', () => {
         locations: [{ line: 7, column: 9 }],
       },
     ]);
+  });
+
+  it('rejects a normal Input Object requiring an unbreakable OneOf cycle', () => {
+    const schema = buildSchema(`
+      type Query {
+        t(arg: T): Int
+        a(arg: A): Int
+      }
+
+      input T @oneOf {
+        self: T
+      }
+
+      input A {
+        t: T!
+      }
+    `);
+    expectJSON(validateSchema(schema)).toDeepEqual([
+      {
+        message:
+          'Input Object T references itself via the required fields: T.self.',
+        locations: [{ line: 8, column: 9 }],
+      },
+      {
+        message:
+          'Input Object A references itself via the required fields: A.t, T.self.',
+        locations: [
+          { line: 12, column: 9 },
+          { line: 8, column: 9 },
+        ],
+      },
+    ]);
+  });
+
+  it('caches shared unbreakable OneOf subgraphs', () => {
+    const chainLength = 16;
+    const types: Array<GraphQLInputObjectType> = [];
+    types[0] = new GraphQLInputObjectType({
+      name: 'T0',
+      isOneOf: true,
+      fields: () => ({ self: { type: types[0] } }),
+    });
+
+    for (let i = 1; i <= chainLength; ++i) {
+      const previousType = types[i - 1];
+      types[i] = new GraphQLInputObjectType({
+        name: `T${i}`,
+        isOneOf: true,
+        fields: {
+          a: { type: previousType },
+          b: { type: previousType },
+        },
+      });
+    }
+
+    const getFieldsSpies = types.map((type) => spyOnMethod(type, 'getFields'));
+
+    const schema = new GraphQLSchema({
+      query: new GraphQLObjectType({
+        name: 'Query',
+        fields: {
+          test: {
+            type: GraphQLInt,
+            args: { input: { type: types[chainLength] } },
+          },
+        },
+      }),
+      types,
+    });
+
+    expect(validateSchema(schema)).to.have.lengthOf(types.length);
+    expect(
+      getFieldsSpies.reduce((sum, spy) => sum + spy.callCount, 0),
+    ).to.be.lessThan(500);
   });
 
   it('rejects a mixed OneOf/non-OneOf cycle with no escapes', () => {

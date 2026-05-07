@@ -786,71 +786,185 @@ function validateOneOfInputObjectField(
 }
 
 // Implements the spec's InputObjectHasUnbreakableCycle algorithm.
-// Tracks already checked types to maintain O(N) and to ensure that types
-// are not redundantly checked.
+// Tracks already checked types to ensure that types are not redundantly checked.
 function createInputObjectUnbreakableCycleCheck(): (
   inputObj: GraphQLInputObjectType,
 ) => boolean {
-  const knownNoCycle = new Set<GraphQLInputObjectType>();
-  const visited = new Set<GraphQLInputObjectType>();
+  const cycleMemo = new Map<GraphQLInputObjectType, boolean>();
 
   return inputObjectHasUnbreakableCycle;
 
   function inputObjectHasUnbreakableCycle(
     inputObj: GraphQLInputObjectType,
   ): boolean {
-    if (knownNoCycle.has(inputObj)) {
-      return false;
-    }
-    if (visited.has(inputObj)) {
-      return true;
+    const cachedResult = cycleMemo.get(inputObj);
+    if (cachedResult !== undefined) {
+      return cachedResult;
     }
 
-    visited.add(inputObj);
+    // Unknown reachable types mapped to types that depend on them.
+    const candidates = new AccumulatorMap<
+      GraphQLInputObjectType,
+      GraphQLInputObjectType
+    >();
+    for (const candidate of collectReachableInputObjects(inputObj)) {
+      candidates.set(candidate, []);
+    }
 
-    let result: boolean;
+    // Tracks unresolved fields for normal Input Objects.
+    const normalTypeStates = new Map<
+      GraphQLInputObjectType,
+      { hasKnownCycleField: boolean; unresolvedFieldCount: number }
+    >();
 
-    if (inputObj.isOneOf) {
-      // OneOf Input Objects have an unbreakable cycle if every field has one.
-      result = true;
-      for (const field of Object.values(inputObj.getFields())) {
-        if (!inputFieldTypeHasUnbreakableCycle(field.type)) {
-          result = false;
-          break;
+    // Types proven not to have cycles and ready to remove.
+    const typesToRemove: Array<GraphQLInputObjectType> = [];
+
+    for (const candidate of candidates.keys()) {
+      const fields = Object.values(candidate.getFields());
+
+      if (candidate.isOneOf) {
+        // OneOf Input Objects have an unbreakable cycle if every field leads to an unbreakable cycle.
+        if (fields.length === 0) {
+          typesToRemove.push(candidate);
+          continue;
+        }
+
+        for (const field of fields) {
+          const target = getUnbreakableCycleTarget(candidate, field.type);
+
+          if (target == null) {
+            typesToRemove.push(candidate);
+            break;
+          }
+
+          const targetResult = cycleMemo.get(target);
+          if (targetResult === false) {
+            typesToRemove.push(candidate);
+            break;
+          }
+
+          if (targetResult === undefined) {
+            candidates.add(target, candidate);
+          }
+        }
+      } else {
+        // Normal Input Objects have an unbreakable cycle if any non-null field has one.
+        let hasKnownCycleField = false;
+        let unresolvedFieldCount = 0;
+
+        for (const field of fields) {
+          const target = getUnbreakableCycleTarget(candidate, field.type);
+
+          if (target == null) {
+            continue;
+          }
+
+          const targetResult = cycleMemo.get(target);
+          if (targetResult === false) {
+            continue;
+          }
+
+          if (targetResult === true) {
+            hasKnownCycleField = true;
+          } else {
+            ++unresolvedFieldCount;
+            candidates.add(target, candidate);
+          }
+        }
+
+        normalTypeStates.set(candidate, {
+          hasKnownCycleField,
+          unresolvedFieldCount,
+        });
+
+        if (!hasKnownCycleField && unresolvedFieldCount === 0) {
+          typesToRemove.push(candidate);
         }
       }
-    } else {
-      // Normal Input Objects have an unbreakable cycle if any non-null field has one.
-      result = false;
-      for (const field of Object.values(inputObj.getFields())) {
-        if (
-          isNonNullType(field.type) &&
-          inputFieldTypeHasUnbreakableCycle(field.type.ofType)
-        ) {
-          result = true;
-          break;
+    }
+
+    while (typesToRemove.length > 0) {
+      const type = typesToRemove.pop();
+      invariant(type != null);
+
+      const dependents = candidates.get(type);
+      if (dependents === undefined) {
+        continue;
+      }
+
+      candidates.delete(type);
+      cycleMemo.set(type, false);
+
+      for (const dependent of dependents) {
+        if (!candidates.has(dependent)) {
+          continue;
+        }
+
+        if (dependent.isOneOf) {
+          typesToRemove.push(dependent);
+        } else {
+          const state = normalTypeStates.get(dependent);
+          invariant(state !== undefined);
+
+          --state.unresolvedFieldCount;
+          if (!state.hasKnownCycleField && state.unresolvedFieldCount === 0) {
+            typesToRemove.push(dependent);
+          }
         }
       }
     }
 
-    visited.delete(inputObj);
-
-    if (!result) {
-      knownNoCycle.add(inputObj);
+    for (const candidate of candidates.keys()) {
+      cycleMemo.set(candidate, true);
     }
+
+    const result = cycleMemo.get(inputObj);
+    invariant(result !== undefined);
     return result;
   }
 
-  function inputFieldTypeHasUnbreakableCycle(
+  function collectReachableInputObjects(
+    inputObj: GraphQLInputObjectType,
+  ): Set<GraphQLInputObjectType> {
+    const reachable = new Set<GraphQLInputObjectType>();
+    const visited = new Set<GraphQLInputObjectType>();
+
+    collect(inputObj);
+    return reachable;
+
+    function collect(type: GraphQLInputObjectType): void {
+      if (visited.has(type) || cycleMemo.has(type)) {
+        return;
+      }
+
+      visited.add(type);
+      reachable.add(type);
+
+      for (const field of Object.values(type.getFields())) {
+        const target = getUnbreakableCycleTarget(type, field.type);
+
+        if (target != null) {
+          collect(target);
+        }
+      }
+    }
+  }
+
+  function getUnbreakableCycleTarget(
+    inputObj: GraphQLInputObjectType,
     fieldType: GraphQLInputType,
-  ): boolean {
-    if (isListType(fieldType)) {
-      return false;
+  ): Maybe<GraphQLInputObjectType> {
+    if (inputObj.isOneOf) {
+      if (isInputObjectType(fieldType)) {
+        return fieldType;
+      }
+      return undefined;
     }
-    if (!isInputObjectType(fieldType)) {
-      return false;
+
+    if (isNonNullType(fieldType) && isInputObjectType(fieldType.ofType)) {
+      return fieldType.ofType;
     }
-    return inputObjectHasUnbreakableCycle(fieldType);
   }
 }
 
