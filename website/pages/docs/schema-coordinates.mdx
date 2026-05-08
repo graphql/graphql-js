@@ -1,0 +1,128 @@
+---
+title: Schema Coordinates
+sidebarTitle: Schema Coordinates
+---
+
+import { Callout } from 'nextra/components';
+
+# Schema Coordinates
+
+<Callout type="info">
+  Schema coordinate helpers are available in GraphQL.js v17 and newer. They
+  implement the GraphQL schema-coordinate grammar and resolution semantics,
+  which have now been merged into the specification work.
+</Callout>
+
+A schema coordinate is a compact string that identifies a schema element. It is
+useful when logs, registries, schema checks, documentation tools, or policy
+systems need to refer to the same field, argument, directive, or enum value
+without embedding a whole schema document.
+
+Examples:
+
+```text
+Business
+Business.name
+Query.searchBusiness(criteria:)
+SearchCriteria.filter
+SearchFilter.OPEN_NOW
+@private
+@private(scope:)
+```
+
+## Resolving coordinates
+
+Use `resolveSchemaCoordinate(schema, coordinate)` when you want to resolve a
+coordinate string directly against a schema:
+
+```js
+import { buildSchema, resolveSchemaCoordinate } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    searchBusiness(criteria: SearchCriteria!): [Business]
+  }
+
+  input SearchCriteria {
+    name: String
+    filter: SearchFilter
+  }
+
+  enum SearchFilter {
+    OPEN_NOW
+    DELIVERS_TAKEOUT
+  }
+
+  type Business {
+    id: ID
+    name: String
+  }
+`);
+
+const resolved = resolveSchemaCoordinate(
+  schema,
+  'Query.searchBusiness(criteria:)',
+);
+
+if (resolved?.kind === 'FieldArgument') {
+  console.log(resolved.fieldArgument.type.toString());
+}
+```
+
+The result is a discriminated object. Depending on the coordinate, the `kind`
+can be `NamedType`, `Field`, `InputField`, `EnumValue`, `FieldArgument`,
+`Directive`, or `DirectiveArgument`.
+
+If the final element does not exist, GraphQL.js returns `undefined`. If the
+coordinate refers through a containing element that cannot exist, GraphQL.js
+throws. For example, `Business.unknown` returns `undefined`, but
+`Unknown.field` throws because `Unknown` is not a type in the schema.
+
+## Parsing coordinates
+
+Use `parseSchemaCoordinate()` when tooling needs the AST form before resolving:
+
+```js
+import { parseSchemaCoordinate } from 'graphql';
+
+const coordinateNode = parseSchemaCoordinate('@private(scope:)');
+```
+
+GraphQL.js exposes coordinate AST node types and kinds:
+
+- `TypeCoordinateNode`
+- `MemberCoordinateNode`
+- `ArgumentCoordinateNode`
+- `DirectiveCoordinateNode`
+- `DirectiveArgumentCoordinateNode`
+- `isSchemaCoordinateNode()`
+
+The coordinate parser uses a restricted lexer. It accepts coordinate syntax
+only; it is not the same as parsing an executable GraphQL document or SDL
+document.
+
+## Meta fields and introspection
+
+GraphQL.js can resolve meta fields and introspection schema elements:
+
+```js
+resolveSchemaCoordinate(schema, 'Business.__typename');
+resolveSchemaCoordinate(schema, '__Directive.name');
+resolveSchemaCoordinate(schema, '__DirectiveLocation.INLINE_FRAGMENT');
+```
+
+Meta-field resolution is implementation-defined rather than required for every
+GraphQL server. Treat it as GraphQL.js behavior when building tooling that must
+work across implementations.
+
+## Common uses
+
+- Store schema change approvals against coordinates such as
+  `Query.searchBusiness(criteria:)`.
+- Attach ownership metadata to fields, directives, or enum values.
+- Connect validation errors, usage metrics, and schema registry entries.
+- Build documentation links without relying on display text.
+
+Schema coordinates identify schema elements; they do not describe executable
+operation paths. For operation-specific paths, use GraphQL response paths such
+as `["viewer", "name"]`.

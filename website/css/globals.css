@@ -77,6 +77,19 @@ div[id^='headlessui-menu-items'] {
   @apply gap-6;
 }
 
+body:not(:has(.nextra-breadcrumb [title='v16 API'])):not(
+    :has(.nextra-breadcrumb [title='v17 API'])
+  )
+  :is(.nextra-menu-desktop, .nextra-menu-mobile)
+  > li:has(> button[data-href='/api-v16']),
+body:not(:has(.nextra-breadcrumb [title='v16 API'])):not(
+    :has(.nextra-breadcrumb [title='v17 API'])
+  )
+  :is(.nextra-menu-desktop, .nextra-menu-mobile)
+  > li:has(> button[data-href='/api-v17']) {
+  display: none;
+}
+
 /* Move nav links to the left */
 .nextra-nav-container nav {
   @apply justify-start;

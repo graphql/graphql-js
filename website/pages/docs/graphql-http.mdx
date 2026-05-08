@@ -1,0 +1,56 @@
+---
+title: graphql-http
+---
+
+# `graphql-http`
+
+The official [`graphql-http`](https://github.com/graphql/graphql-http) package
+provides a simple way to create a fully compliant GraphQL server. It has a
+handler for Node.js native [`http`](https://nodejs.org/api/http.html), together
+with handlers for well-known frameworks like
+[Express](https://expressjs.com/), [Fastify](https://www.fastify.io/) and
+[Koa](https://koajs.com/); as well as handlers for different runtimes like
+[Deno](https://deno.land/) and [Bun](https://bun.sh/).
+
+`graphql-http` is a companion package, not part of the `graphql` npm package's
+API surface. This page preserves the GraphQL.js docs context and points to the
+official project for full server, client, and compliance documentation.
+
+## Official Resources
+
+- [graphql-http.com](https://graphql-http.com/)
+- [GitHub repository](https://github.com/graphql/graphql-http)
+- [npm package](https://www.npmjs.com/package/graphql-http)
+
+## Express
+
+```js
+import { createHandler } from 'graphql-http/lib/use/express';
+```
+
+### `createHandler`
+
+```ts
+function createHandler({
+  schema,
+  rootValue,
+  context,
+  formatError,
+  validationRules,
+}: {
+  rootValue?: any;
+  context?: any;
+  formatError?: Function;
+  validationRules?: any[];
+}): Handler;
+```
+
+Constructs an Express handler based on a GraphQL schema.
+
+See [Running an Express GraphQL Server](/docs/running-an-express-graphql-server)
+for sample usage.
+
+See [graphql-http.com](https://graphql-http.com/) and the
+[GitHub README](https://github.com/graphql/graphql-http) for more extensive
+documentation, including how to use `graphql-http` with other server
+frameworks and runtimes.

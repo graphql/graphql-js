@@ -1,0 +1,141 @@
+---
+title: graphql/error
+---
+
+import { ApiTag } from '../../components/ApiTags';
+
+# `graphql/error`
+
+The `graphql/error` entry point contains the public error types and helpers used
+by the parser, validator, executor, and user code that wants to report GraphQL
+errors with source locations, response paths, or extension data.
+
+```js
+import { GraphQLError, locatedError, syntaxError } from 'graphql/error';
+```
+
+The same exports are also available from the root `graphql` entry point.
+
+## Contents
+
+- [Value Exports](#value-exports)
+- [Type Exports](#type-exports)
+- [`GraphQLError`](#graphqlerror)
+- [`syntaxError`](#syntaxerror)
+- [`locatedError`](#locatederror)
+- [Removed v16 Formatting Helpers](#removed-v16-formatting-helpers)
+
+```js
+const error = new GraphQLError('Name is required', {
+  extensions: { code: 'BAD_USER_INPUT' },
+});
+
+console.log(error.toString());
+return error.toJSON();
+```
+
+## Value Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `GraphQLError` <ApiTag kind="changed-v17" /> | Class | Error class for parse, validation, and execution failures. It carries `message`, `locations`, `path`, `nodes`, `source`, `positions`, `originalError`, and `extensions`. |
+| `syntaxError()` | Function | Builds a `GraphQLError` for an invalid source position. Used by the parser and useful for parser-like tooling. |
+| `locatedError()` | Function | Wraps an arbitrary thrown value as a `GraphQLError` associated with AST nodes and an execution response path. |
+
+## Type Exports
+
+| Export | Description |
+| --- | --- |
+| `GraphQLErrorOptions` | Object accepted by the `GraphQLError` constructor. |
+| `GraphQLErrorExtensions` | String-keyed extension map attached to an error. |
+| `GraphQLFormattedError` | JSON-serializable error shape returned by `error.toJSON()`. |
+| `GraphQLFormattedErrorExtensions` | Extension map in a formatted error. |
+
+## `GraphQLError`
+
+`GraphQLError` in v17 uses a single object-style `options` argument. The v16
+positional constructor overload was removed.
+
+```ts
+class GraphQLError extends Error {
+  constructor(message: string, options?: GraphQLErrorOptions);
+
+  readonly locations?: ReadonlyArray<SourceLocation>;
+  readonly path?: ReadonlyArray<string | number>;
+  readonly nodes?: ReadonlyArray<ASTNode>;
+  readonly source?: Source;
+  readonly positions?: ReadonlyArray<number>;
+  readonly originalError?: Error;
+  readonly extensions: GraphQLErrorExtensions;
+
+  toString(): string;
+  toJSON(): GraphQLFormattedError;
+}
+```
+
+Use `nodes` when the error belongs to one or more AST nodes. Use `path` when the
+error belongs to a response position during execution. Use `extensions` for
+machine-readable application metadata.
+
+```js
+throw new GraphQLError('Cannot publish an archived article', {
+  nodes: fieldNode,
+  path: ['publishArticle'],
+  extensions: {
+    code: 'ARTICLE_ARCHIVED',
+  },
+});
+```
+
+## `syntaxError`
+
+```ts
+function syntaxError(
+  source: Source,
+  position: number,
+  description: string,
+): GraphQLError;
+```
+
+`syntaxError()` is a small helper for producing parser-style errors.
+
+```js
+import { Source, syntaxError } from 'graphql';
+
+const source = new Source('query {', 'Example.graphql');
+throw syntaxError(source, source.body.length, 'Expected Name, found <EOF>.');
+```
+
+## `locatedError`
+
+```ts
+function locatedError(
+  originalError: unknown,
+  nodes?: ReadonlyArray<ASTNode>,
+  path?: ReadonlyArray<string | number>,
+): GraphQLError;
+```
+
+`locatedError()` is mostly used by execution. If the original error is already a
+located `GraphQLError`, it is returned with its existing location data.
+
+```js
+import { locatedError } from 'graphql';
+
+try {
+  await resolver();
+} catch (error) {
+  throw locatedError(error, fieldNodes, ['viewer', 'name']);
+}
+```
+
+## Removed v16 Formatting Helpers
+
+`printError()` and `formatError()` were removed in v17. Use `error.toString()`
+for the human-readable form and `error.toJSON()` for the GraphQL response
+shape.
+
+```js
+const text = error.toString(); // instead of printError(error)
+const json = error.toJSON(); // instead of formatError(error)
+```

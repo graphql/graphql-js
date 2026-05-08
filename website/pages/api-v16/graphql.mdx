@@ -2,179 +2,107 @@
 title: graphql
 ---
 
-{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+import { ApiTag } from '../../components/ApiTags';
 
 # `graphql`
 
-The `graphql` module exports a core subset of GraphQL functionality for creation
-of GraphQL type systems and servers.
+The root `graphql` entry point exports the `graphql()` request function and
+re-exports the public GraphQL.js v16 API from the original submodules. It is
+the most convenient import path for applications, while the submodule pages in
+this section document the same exports by area. You can import from the root
+package or from individual modules such as `graphql/execution` and
+`graphql/type`; the root package simply gathers those public exports in one
+place.
 
 ```js
-import { graphql } from 'graphql';
+import { graphql, GraphQLSchema, parse, execute } from 'graphql';
 ```
 
-## Overview
+## Contents
 
-### Entry Point
+- [Request Entry Points](#request-entry-points)
+- [Version Exports](#version-exports)
+- [Export Map](#export-map)
+- [Root Export Inventory](#root-export-inventory)
 
-<ul className="apiIndex">
-  <li>
-    <a href="#graphql">
-      `function graphql` Lexes, parses, validates, and executes a GraphQL
-      request on a schema.
-    </a>
-  </li>
-</ul>
+## Request Entry Points
 
-### Schema
-
-<ul className="apiIndex">
-  <li>
-    <a href="../type/#graphqlschema">
-      `class GraphQLSchema` A representation of the capabilities of a GraphQL
-      Server.
-    </a>
-  </li>
-</ul>
-
-### Type Definitions
-
-<ul className="apiIndex">
-  <li>
-    <a href="../type/#graphqlscalartype">
-      `class GraphQLScalarType` A scalar type within GraphQL.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlobjecttype">
-      `class GraphQLObjectType` An object type within GraphQL that contains
-      fields.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlinterfacetype">
-      `class GraphQLInterfaceType` An interface type within GraphQL that defines
-      fields implementations will contain.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqluniontype">
-      `class GraphQLUnionType` A union type within GraphQL that defines a list
-      of implementations.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlenumtype">
-      `class GraphQLEnumType` An enum type within GraphQL that defines a list of
-      valid values.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlinputobjecttype">
-      `class GraphQLInputObjectType` An input object type within GraphQL that
-      represents structured inputs.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqllist">
-      `class GraphQLList` A type wrapper around other types that represents a
-      list of those types.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlnonnull">
-      `class GraphQLNonNull` A type wrapper around other types that represents a
-      non-null version of those types.
-    </a>
-  </li>
-</ul>
-
-### Scalars
-
-<ul className="apiIndex">
-  <li>
-    <a href="../type/#graphqlint">
-      `const GraphQLInt` A scalar type representing integers.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlfloat">
-      `const GraphQLFloat` A scalar type representing floats.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlstring">
-      `const GraphQLString` A scalar type representing strings.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlboolean">
-      `const GraphQLBoolean` A scalar type representing booleans.
-    </a>
-  </li>
-  <li>
-    <a href="../type/#graphqlid">
-      `const GraphQLID` A scalar type representing IDs.
-    </a>
-  </li>
-</ul>
-
-### Errors
-
-<ul className="apiIndex">
-  <li>
-    <a href="../error/#formaterror">
-      `function formatError` Format an error according to the rules described by
-      the Response Format.
-    </a>
-  </li>
-</ul>
-
-## Entry Point
-
-### `graphql`
+| Export | Kind | Description |
+| --- | --- | --- |
+| `graphql()` | Function | Parses, validates, and executes one GraphQL operation. Always returns a promise for one `ExecutionResult`. |
+| `graphqlSync()` | Function | Runs the same pipeline synchronously and throws if a resolver returns a promise. |
+| `GraphQLArgs` | Type | Object accepted by `graphql()` and `graphqlSync()`. |
 
 ```ts
-function graphql(
-  schema: GraphQLSchema,
-  requestString: string,
-  rootValue?: any,
-  contextValue?: any,
-  variableValues?: { [key: string]: any },
-  operationName?: string,
-): Promise<GraphQLResult>;
+function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
+function graphqlSync(args: GraphQLArgs): ExecutionResult;
 
-interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
+interface GraphQLArgs {
+  schema: GraphQLSchema;
+  source: string | Source;
+  rootValue?: unknown;
+  contextValue?: unknown;
+  variableValues?: { readonly [variable: string]: unknown } | null;
+  operationName?: string | null;
+  fieldResolver?: GraphQLFieldResolver<any, any> | null;
+  typeResolver?: GraphQLTypeResolver<any, any> | null;
 }
 ```
 
-The `graphql` function lexes, parses, validates and executes a GraphQL request.
-It requires a `schema` and a `requestString`. Optional arguments include a
-`rootValue`, which will get passed as the root value to the executor, a `contextValue`,
-which will get passed to all resolve functions,
-`variableValues`, which will get passed to the executor to provide values for
-any variables in `requestString`, and `operationName`, which allows the caller
-to specify which operation in `requestString` will be run, in cases where
-`requestString` contains multiple top-level operations.
+```js
+const result = await graphql({
+  schema,
+  source: 'query Viewer($id: ID!) { viewer(id: $id) { name } }',
+  variableValues: { id: '1' },
+  contextValue: { currentUser },
+});
+```
 
-## Schema
+In v17, `GraphQLArgs` also accepts parser, validation, execution, abort, and
+harness options.
 
-See the [Type System API Reference](/type#schema).
+## Version Exports
 
-## Type Definitions
+| Export | Kind | Description |
+| --- | --- | --- |
+| `version` | Constant | The GraphQL.js package version string. |
+| `versionInfo` | Constant | Parsed version components: `major`, `minor`, `patch`, and `preReleaseTag`. |
 
-See the [Type System API Reference](/type#definitions).
+## Export Map
 
-## Scalars
+| Area | API reference |
+| --- | --- |
+| Request pipeline | [`graphql`](/api-v16/graphql) |
+| Errors | [`graphql/error`](/api-v16/error) |
+| Execution and subscriptions | [`graphql/execution`](/api-v16/execution) |
+| Language, AST, parser, printer, visitor | [`graphql/language`](/api-v16/language) |
+| Schema and type system | [`graphql/type`](/api-v16/type) |
+| Utilities | [`graphql/utilities`](/api-v16/utilities) |
+| Validation | [`graphql/validation`](/api-v16/validation) |
+| Legacy subscription subpath | [`graphql/subscription`](/api-v16/execution) |
 
-See the [Type System API Reference](/type#scalars).
+## Root Export Inventory
 
-## Errors
+The root entry point re-exports all public values and types documented on the
+submodule pages:
 
-See the [Errors API Reference](/error)
+- [`graphql/error`](/api-v16/error): `GraphQLError`, `syntaxError`,
+  `locatedError`, `printError` <ApiTag kind="deprecated-v16" />,
+  `formatError` <ApiTag kind="deprecated-v16" />, and formatted error types.
+- [`graphql/execution`](/api-v16/execution): `execute`, `executeSync`,
+  `subscribe`, `createSourceEventStream`, default resolvers, argument helpers,
+  execution result types, and `responsePathAsArray`.
+- [`graphql/language`](/api-v16/language): parser, printer, visitor, source,
+  token, AST, predicate, kind, token kind, and directive location exports.
+- [`graphql/type`](/api-v16/type): schema constructors, built-in scalars,
+  directives, introspection types, predicates, assertions, config types, and
+  resolver types.
+- [`graphql/utilities`](/api-v16/utilities): introspection, schema build and
+  print, AST, type, input coercion, schema coordinate, and schema comparison
+  utilities including `assertValidName()`, `isValidNameError()`, and
+  `getOperationRootType()` <ApiTag kind="deprecated-v16" />.
+- [`graphql/validation`](/api-v16/validation): `validate`, rule lists,
+  `ValidationContext`, `ValidationRule`, and every exported validation rule.
+
+For new code, prefer importing from `graphql` unless a tool specifically wants a
+smaller submodule import.

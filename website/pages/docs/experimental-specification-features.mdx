@@ -1,0 +1,56 @@
+---
+title: Experimental Specification Features
+sidebarTitle: Experimental Specification Features
+---
+
+# Experimental Specification Features
+
+GraphQL.js v17 beta includes support for several GraphQL specification
+proposals. These features are intentionally explicit: syntax usually requires a
+parser option or schema directive, and execution behavior usually requires a
+specific executor.
+
+GraphQL.js-specific runtime APIs, such as abort signals, execution hooks, and
+the harness API, are documented separately because they are not GraphQL language
+features.
+
+## Feature table
+
+| Feature | v17 API surface | Status |
+| --- | --- | --- |
+| Incremental delivery | `GraphQLDeferDirective`, `GraphQLStreamDirective`, `experimentalExecuteIncrementally()` | Experimental |
+| Fragment arguments | `experimentalFragmentArguments`, `FragmentArgumentNode` | Experimental |
+| Directives on directive definitions | `experimentalDirectivesOnDirectiveDefinitions`, `DirectiveLocation.DIRECTIVE_DEFINITION`, `DirectiveExtensionNode` | Experimental |
+
+## Incremental delivery
+
+Incremental delivery adds `@defer`, `@stream`, and execution results with
+initial and subsequent payloads.
+
+GraphQL.js exports `GraphQLDeferDirective` and `GraphQLStreamDirective`, but
+does not include them in `specifiedDirectives`. A schema that uses them should
+add them explicitly and execute matching operations with
+`experimentalExecuteIncrementally()`.
+
+See [Defer and Stream](/docs/defer-stream).
+
+## Fragment arguments
+
+Fragment arguments add fragment-local variable definitions and fragment-spread
+arguments. GraphQL.js exposes the syntax through the
+`experimentalFragmentArguments` parser option and supports the resulting values
+in execution.
+
+See [Fragment Arguments](/docs/fragment-arguments).
+
+## Directives on directive definitions
+
+Directives on directive definitions add `DIRECTIVE_DEFINITION` as a directive
+location and allow directive metadata to be attached to directive definitions
+and directive extensions.
+
+GraphQL.js exposes the syntax through
+`experimentalDirectivesOnDirectiveDefinitions`. Directive deprecation metadata
+is surfaced on `GraphQLDirective`, introspection, and schema printing.
+
+See [Directives on Directives](/docs/directives-on-directives).

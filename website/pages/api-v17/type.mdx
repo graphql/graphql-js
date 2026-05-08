@@ -21,19 +21,18 @@ The same exports are also available from the root `graphql` entry point.
 - [Schema Exports](#schema-exports)
 - [Type Constructor Exports](#type-constructor-exports)
 - [Type Predicate and Assertion Exports](#type-predicate-and-assertion-exports)
+- [Field-like Schema Element Exports](#field-like-schema-element-exports)
 - [Type Unwrapping and Requirement Helpers](#type-unwrapping-and-requirement-helpers)
 - [Scalar Exports](#scalar-exports)
 - [Directive Exports](#directive-exports)
 - [Introspection Exports](#introspection-exports)
 - [Name Assertion Exports](#name-assertion-exports)
-- [TypeScript Type Exports](#typescript-type-exports)
-- [Defaults in v16](#defaults-in-v16)
 
 ## Schema Exports
 
 | Export | Kind | Description |
 | --- | --- | --- |
-| `GraphQLSchema` | Class | GraphQL schema object containing root operation types, reachable types, directives, and extension metadata. |
+| `GraphQLSchema` <ApiTag kind="changed-v17" /> | Class | GraphQL schema object containing root operation types, reachable types, directives, and extension metadata. v17 includes `getField()` for ordinary and meta fields. |
 | `isSchema()` | Predicate | Checks whether a value is a `GraphQLSchema`. |
 | `assertSchema()` | Assertion | Returns a `GraphQLSchema` or throws. |
 | `validateSchema()` | Function | Returns schema validation errors. |
@@ -50,9 +49,13 @@ const schema = new GraphQLSchema({
 
 ## Type Constructor Exports
 
+Argument and input field configs in v17 prefer `default: { value }` or
+`default: { literal }`. The legacy `defaultValue` config still works in v17 and
+is deprecated for removal in v18.
+
 | Export | Kind | Description |
 | --- | --- | --- |
-| `GraphQLScalarType` | Class | Defines custom leaf values. |
+| `GraphQLScalarType` <ApiTag kind="changed-v17" /> | Class | Defines custom leaf values. v17 prefers the `coerce*` and `valueToLiteral` method names. |
 | `GraphQLObjectType` | Class | Defines object types with fields. |
 | `GraphQLInterfaceType` | Class | Defines shared fields and abstract runtime resolution. |
 | `GraphQLUnionType` | Class | Defines abstract types with possible object members. |
@@ -101,20 +104,47 @@ import { assertObjectType } from 'graphql';
 const objectType = assertObjectType(schema.getType('User'));
 ```
 
+## Field-like Schema Element Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `GraphQLField` <ApiTag kind="new-v17" /> | Type | Runtime field definition returned from object and interface field maps. |
+| `GraphQLArgument` <ApiTag kind="new-v17" /> | Type | Runtime field, directive, or fragment argument definition. |
+| `GraphQLInputField` <ApiTag kind="new-v17" /> | Type | Runtime input object field definition. |
+| `GraphQLEnumValue` <ApiTag kind="new-v17" /> | Type | Runtime enum value definition. |
+| `isField()` / `assertField()` <ApiTag kind="new-v17" /> | Predicate and assertion | Checks `GraphQLField` instances. |
+| `isArgument()` / `assertArgument()` <ApiTag kind="new-v17" /> | Predicate and assertion | Checks `GraphQLArgument` instances. |
+| `isInputField()` / `assertInputField()` <ApiTag kind="new-v17" /> | Predicate and assertion | Checks `GraphQLInputField` instances. |
+| `isEnumValue()` / `assertEnumValue()` <ApiTag kind="new-v17" /> | Predicate and assertion | Checks `GraphQLEnumValue` instances. |
+
+```js
+const userType = assertObjectType(schema.getType('User'));
+const nameField = userType.getFields().name;
+
+if (isField(nameField)) {
+  console.log(nameField.type.toString());
+}
+```
+
 ## Type Unwrapping and Requirement Helpers
 
 | Export | Kind | Description |
 | --- | --- | --- |
 | `getNullableType()` | Function | Removes one or more `GraphQLNonNull` wrappers. |
 | `getNamedType()` | Function | Removes all list and non-null wrappers. |
-| `isRequiredArgument()` | Function | Checks whether an argument is non-null and has no default value. |
-| `isRequiredInputField()` | Function | Checks whether an input field is non-null and has no default value. |
+| `isRequiredArgument()` <ApiTag kind="changed-v17" /> | Function | Checks whether an argument is non-null and has no default. |
+| `isRequiredInputField()` <ApiTag kind="changed-v17" /> | Function | Checks whether an input field is non-null and has no default. |
 | `resolveObjMapThunk()` | Function | Resolves a lazy object map used by schema config APIs. |
 | `resolveReadonlyArrayThunk()` | Function | Resolves a lazy readonly array used by schema config APIs. |
 | `ThunkObjMap` | Type | Object map or function returning one. |
 | `ThunkReadonlyArray` | Type | Readonly array or function returning one. |
 
 ## Scalar Exports
+
+v17 scalar configs prefer `coerceOutputValue`, `coerceInputValue`,
+`coerceInputLiteral`, and `valueToLiteral`. Legacy names (`serialize`,
+`parseValue`, `parseLiteral`) remain available for compatibility and are
+deprecated for removal in v18.
 
 | Export | Kind | Description |
 | --- | --- | --- |
@@ -131,28 +161,20 @@ const objectType = assertObjectType(schema.getType('User'));
 ```js
 import { GraphQLScalarType, Kind } from 'graphql';
 
-const Odd = new GraphQLScalarType({
-  name: 'Odd',
-  serialize(value) {
-    if (typeof value === 'number' && value % 2 === 1) {
-      return value;
-    }
-    throw new TypeError('Odd cannot represent this value');
+const DateTime = new GraphQLScalarType({
+  name: 'DateTime',
+  coerceOutputValue(value) {
+    return new Date(value).toISOString();
   },
-  parseValue(value) {
-    if (typeof value === 'number' && value % 2 === 1) {
-      return value;
+  coerceInputValue(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      throw new TypeError('DateTime cannot represent an invalid date');
     }
-    throw new TypeError('Odd cannot represent this input value');
+    return date;
   },
-  parseLiteral(ast) {
-    if (ast.kind === Kind.INT) {
-      const value = Number(ast.value);
-      if (value % 2 === 1) {
-        return value;
-      }
-    }
-    throw new TypeError('Odd cannot represent this literal');
+  valueToLiteral(value) {
+    return { kind: Kind.STRING, value: new Date(value).toISOString() };
   },
 });
 ```
@@ -171,7 +193,13 @@ const Odd = new GraphQLScalarType({
 | `GraphQLDeprecatedDirective` | Directive | Built-in `@deprecated`. |
 | `GraphQLSpecifiedByDirective` | Directive | Built-in `@specifiedBy`. |
 | `GraphQLOneOfDirective` | Directive | Built-in `@oneOf`. |
+| `GraphQLDeferDirective` <ApiTag kind="new-v17" /> | Directive | Experimental `@defer`; not included in `specifiedDirectives`. |
+| `GraphQLStreamDirective` <ApiTag kind="new-v17" /> | Directive | Experimental `@stream`; not included in `specifiedDirectives`. |
 | `DEFAULT_DEPRECATION_REASON` | Constant | Default reason text for deprecations. |
+
+`GraphQLDirective` includes `deprecationReason` and `extensionASTNodes`.
+See [Directives on Directives](/docs/directives-on-directives) for directive
+deprecation metadata.
 
 ## Introspection Exports
 
@@ -188,9 +216,9 @@ const Odd = new GraphQLScalarType({
 | `__EnumValue` | Object type | Introspection enum value type. |
 | `__TypeKind` | Enum type | Introspection type kind enum. |
 | `TypeKind` | Const object | Type kind constants used by introspection. |
-| `SchemaMetaFieldDef` | Field definition | Definition for `__schema`. |
-| `TypeMetaFieldDef` | Field definition | Definition for `__type`. |
-| `TypeNameMetaFieldDef` | Field definition | Definition for `__typename`. |
+| `SchemaMetaFieldDef` <ApiTag kind="changed-v17" /> | Field | Definition for `__schema`. In v17 this is a `GraphQLField`. |
+| `TypeMetaFieldDef` <ApiTag kind="changed-v17" /> | Field | Definition for `__type`. In v17 this is a `GraphQLField`. |
+| `TypeNameMetaFieldDef` <ApiTag kind="changed-v17" /> | Field | Definition for `__typename`. In v17 this is a `GraphQLField`. |
 
 ## Name Assertion Exports
 
@@ -199,37 +227,5 @@ const Odd = new GraphQLScalarType({
 | `assertName()` | Function | Asserts that a string is a valid GraphQL name and returns it. |
 | `assertEnumValueName()` | Function | Asserts that a string is a valid enum value name. |
 
-Use these instead of the deprecated utility exports `assertValidName()` and
+Use these instead of the removed utility exports `assertValidName()` and
 `isValidNameError()`.
-
-## TypeScript Type Exports
-
-| Group | Exports |
-| --- | --- |
-| Type unions | `GraphQLType`, `GraphQLInputType`, `GraphQLOutputType`, `GraphQLLeafType`, `GraphQLCompositeType`, `GraphQLAbstractType`, `GraphQLWrappingType`, `GraphQLNullableType`, `GraphQLNamedType`, `GraphQLNamedInputType`, `GraphQLNamedOutputType` |
-| Schema and directives | `GraphQLSchemaConfig`, `GraphQLSchemaExtensions`, `GraphQLDirectiveConfig`, `GraphQLDirectiveExtensions` |
-| Field and argument config | `GraphQLField`, `GraphQLFieldConfig`, `GraphQLFieldConfigArgumentMap`, `GraphQLFieldConfigMap`, `GraphQLFieldExtensions`, `GraphQLFieldMap`, `GraphQLFieldResolver`, `GraphQLArgument`, `GraphQLArgumentConfig`, `GraphQLArgumentExtensions` |
-| Input object config | `GraphQLInputObjectTypeConfig`, `GraphQLInputObjectTypeExtensions`, `GraphQLInputField`, `GraphQLInputFieldConfig`, `GraphQLInputFieldConfigMap`, `GraphQLInputFieldExtensions`, `GraphQLInputFieldMap` |
-| Object and abstract type config | `GraphQLObjectTypeConfig`, `GraphQLObjectTypeExtensions`, `GraphQLInterfaceTypeConfig`, `GraphQLInterfaceTypeExtensions`, `GraphQLUnionTypeConfig`, `GraphQLUnionTypeExtensions`, `GraphQLIsTypeOfFn`, `GraphQLTypeResolver` |
-| Enum config | `GraphQLEnumValue`, `GraphQLEnumTypeConfig`, `GraphQLEnumTypeExtensions`, `GraphQLEnumValueConfig`, `GraphQLEnumValueConfigMap`, `GraphQLEnumValueExtensions` |
-| Scalar config | `GraphQLScalarTypeConfig`, `GraphQLScalarTypeExtensions`, `GraphQLScalarSerializer`, `GraphQLScalarValueParser`, `GraphQLScalarLiteralParser` |
-| Resolver info and paths | `GraphQLResolveInfo`, `ResponsePath` |
-
-## Defaults in v16
-
-v16 uses `defaultValue` on argument and input field configs.
-
-```js
-const field = {
-  type: GraphQLString,
-  args: {
-    format: {
-      type: GraphQLString,
-      defaultValue: 'short',
-    },
-  },
-};
-```
-
-In v17, prefer `default: { value: 'short' }`. Use
-[Input Coercion](/docs/input-coercion-and-defaults) for the full migration.

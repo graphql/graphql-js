@@ -2,150 +2,131 @@
 title: graphql/execution
 ---
 
-{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+import { ApiTag } from '../../components/ApiTags';
 
 # `graphql/execution`
 
-The `graphql/execution` module is responsible for the execution phase of
-fulfilling a GraphQL request. You can import either from the `graphql/execution` module, or from the root `graphql` module. For example:
+The `graphql/execution` entry point executes parsed GraphQL operations and
+subscriptions. It also contains default resolvers and helpers for coercing
+variables, field arguments, and directive arguments.
 
 ```js
-import { execute } from 'graphql';
+import { execute, subscribe } from 'graphql/execution';
 ```
 
-## Overview
+The same exports are also available from the root `graphql` entry point.
 
-<ul className="apiIndex">
-  <li>
-    <a href="#execute">
-      `function execute` Executes a GraphQL request on the provided schema.
-    </a>
-  </li>
-</ul>
+## Contents
 
-## Execution
+- [Execution Exports](#execution-exports)
+- [Subscription Exports](#subscription-exports)
+- [Argument, Variable, and Directive Helpers](#argument-variable-and-directive-helpers)
+- [`graphql/subscription`](#graphqlsubscription)
 
-### execute
+## Execution Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `execute()` | Function | Executes a query, mutation, or one subscription event and returns an `ExecutionResult` or a promise for one. |
+| `executeSync()` | Function | Executes synchronously and throws if execution becomes asynchronous. |
+| `defaultFieldResolver` | Function | Default field resolver. It reads a same-named property or calls a same-named method on the source value. |
+| `defaultTypeResolver` | Function | Default abstract type resolver. It uses `__typename` first, then `isTypeOf` checks. |
+| `responsePathAsArray()` | Function | Converts an execution response path linked list into an array. |
+| `ExecutionArgs` | Type | Object accepted by `execute()`, `executeSync()`, `subscribe()`, and `createSourceEventStream()`. |
+| `ExecutionResult` | Type | Standard GraphQL result with optional `data`, `errors`, and `extensions`. |
+| `FormattedExecutionResult` | Type | JSON-serializable execution result shape. |
 
 ```ts
-export function execute({
-  schema,
-  document
-  rootValue,
-  contextValue,
-  variableValues,
-  operationName,
-  options,
-}: ExecutionParams): MaybePromise<ExecutionResult>;
-
-type ExecutionParams = {
+interface ExecutionArgs {
   schema: GraphQLSchema;
-  document: Document;
+  document: DocumentNode;
   rootValue?: unknown;
   contextValue?: unknown;
-  variableValues?: Record<string, unknown>;
-  operationName?: string;
+  variableValues?: { readonly [variable: string]: unknown } | null;
+  operationName?: string | null;
+  fieldResolver?: GraphQLFieldResolver<any, any> | null;
+  typeResolver?: GraphQLTypeResolver<any, any> | null;
+  subscribeFieldResolver?: GraphQLFieldResolver<any, any> | null;
   options?: {
-    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
     maxCoercionErrors?: number;
-  }
-};
-
-type MaybePromise<T> = Promise<T> | T;
-
-interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
+  };
 }
 ```
 
-We have another approach with positional arguments, this is however deprecated and set
-to be removed in v17.
+```js
+import { execute, parse } from 'graphql';
 
-```ts
-export function execute(
-  schema: GraphQLSchema,
-  documentAST: Document,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Record<string, unknown>,
-  operationName?: string,
-): MaybePromise<ExecutionResult>;
+const result = await execute({
+  schema,
+  document: parse('query { viewer { name } }'),
+  contextValue: { currentUser },
+});
 ```
 
-Implements the "Evaluating requests" section of the GraphQL specification.
+`execute()` resolves successfully even when field errors occur; those errors
+appear in the returned `ExecutionResult.errors` array.
 
-Returns a Promise that will eventually be resolved and never rejected.
+## Subscription Exports
 
-If the arguments to this function do not result in a legal execution context,
-a GraphQLError will be thrown immediately explaining the invalid input.
+| Export | Kind | Description |
+| --- | --- | --- |
+| `subscribe()` | Function | Runs the full subscription pipeline and returns an async iterator of `ExecutionResult` values or one error result. |
+| `createSourceEventStream()` <ApiTag kind="deprecated-v16" title="Only the positional overload is deprecated in v16." /> | Function | Runs only the source event stream phase of subscription execution. Prefer the object-argument form. |
 
-`ExecutionResult` represents the result of execution. `data` is the result of
-executing the query, `errors` is null if no errors occurred, and is a
-non-empty array if an error occurred.
-
-### executeSync
-
-This is a short-hand method that will call `execute` and when the response can
-be returned synchronously it will be returned, when a `Promise` is returned this
-method will throw an error.
-
-```ts
-export function executeSync({
+```js
+const streamOrResult = await subscribe({
   schema,
   document,
-  rootValue,
   contextValue,
-  variableValues,
-  operationName,
-  options,
-}: ExecutionParams): MaybePromise<ExecutionResult>;
+});
 
-type ExecutionParams = {
-  schema: GraphQLSchema;
-  document: Document;
-  rootValue?: unknown;
-  contextValue?: unknown;
-  variableValues?: Record<string, unknown>;
-  operationName?: string;
-  options?: {
-    /** Set the maximum number of errors allowed for coercing (defaults to 50). */
-    maxCoercionErrors?: number;
+if (Symbol.asyncIterator in Object(streamOrResult)) {
+  for await (const result of streamOrResult) {
+    send(result);
   }
-};
-
-type MaybePromise<T> = Promise<T> | T;
-
-interface ExecutionResult<
-  TData = ObjMap<unknown>,
-  TExtensions = ObjMap<unknown>,
-> {
-  errors?: ReadonlyArray<GraphQLError>;
-  data?: TData | null;
-  extensions?: TExtensions;
 }
 ```
 
-We have another approach with positional arguments, this is however deprecated and set
-to be removed in v17.
+`createSourceEventStream()` still accepts raw `ExecutionArgs` in v16. Passing
+positional arguments to `createSourceEventStream()` is deprecated. Pass one
+object instead.
 
-```ts
-export function executeSync(
-  schema: GraphQLSchema,
-  documentAST: Document,
-  rootValue?: unknown,
-  contextValue?: unknown,
-  variableValues?: Record<string, unknown>,
-  operationName?: string,
-): ExecutionResult;
+## Argument, Variable, and Directive Helpers
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `getVariableValues()` | Function | Coerces operation variable values and returns `{ coerced }` on success or `{ errors }` on failure. |
+| `getArgumentValues()` | Function | Coerces argument values for a field or directive node. |
+| `getDirectiveValues()` | Function | Coerces values for a directive usage and returns `undefined` when the directive is absent. |
+
+```js
+const result = getVariableValues(schema, variableDefinitions, rawVariables, {
+  maxErrors: 20,
+});
+
+if (result.errors) {
+  return { errors: result.errors };
+}
+
+const coercedVariables = result.coerced;
 ```
 
-#### Execution options
+In v17, `getVariableValues()` returns `{ variableValues }` on success. The new
+object preserves both source information and coerced runtime values; read
+runtime values from `variableValues.coerced`.
 
-##### maxCoercionErrors
+## `graphql/subscription` <ApiTag kind="deprecated-v16" />
 
-Set the maximum number of errors allowed for coercing variables, this implements a default limit of 50 errors.
+The `graphql/subscription` subpath exists only for v16 backwards
+compatibility.
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `subscribe()` | Function | Re-export of `graphql/execution` `subscribe()`. |
+| `createSourceEventStream()` | Function | Re-export of `graphql/execution` `createSourceEventStream()`. |
+| `SubscriptionArgs` <ApiTag kind="deprecated-v16" /> | Type | Deprecated alias of `ExecutionArgs`. |
+
+```js
+// Prefer this in v16 and v17:
+import { subscribe } from 'graphql/execution';
+```

@@ -16,38 +16,41 @@ import { validate, specifiedRules } from 'graphql/validation';
 
 The same exports are also available from the root `graphql` entry point.
 
-```js
-const errors = validate(schema, document, specifiedRules, {
-  maxErrors: 25,
-});
-```
-
 ## Contents
 
 - [Core Validation Exports](#core-validation-exports)
 - [Executable Validation Rule Exports](#executable-validation-rule-exports)
+- [Incremental Delivery Rule Exports](#incremental-delivery-rule-exports)
 - [SDL Validation Rule Exports](#sdl-validation-rule-exports)
 - [Optional Rule Exports](#optional-rule-exports)
 - [Custom Rules](#custom-rules)
+
+```js
+const errors = validate(schema, document, specifiedRules, {
+  maxErrors: 25,
+  hideSuggestions: true,
+});
+```
+
+Descriptions are no longer visited during validation because descriptions do
+not affect GraphQL validity.
 
 ## Core Validation Exports
 
 | Export | Kind | Description |
 | --- | --- | --- |
-| `validate()` <ApiTag kind="deprecated-v16" title="Only the fifth TypeInfo argument is deprecated in v16." /> | Function | Synchronously validates a document and returns an array of `GraphQLError` values. Prefer the four-argument form. |
-| `ValidationContext` | Class | Context passed to executable validation rules. |
+| `validate()` <ApiTag kind="changed-v17" /> | Function | Synchronously validates a document and returns an array of `GraphQLError` values. In v17, pass `options` as the fourth argument; the v16 custom `TypeInfo` argument was removed. |
+| `ValidationContext` <ApiTag kind="changed-v17" /> | Class | Context passed to executable validation rules. |
 | `ValidationRule` | Type | Function type for executable validation rules. |
-| `specifiedRules` | Array | All executable validation rules required by the GraphQL specification in v16. |
-| `recommendedRules` | Array | GraphQL.js recommended rules not in the core specified rule list, including `MaxIntrospectionDepthRule`. |
+| `specifiedRules` <ApiTag kind="changed-v17" /> | Array | All executable validation rules required by the GraphQL specification and supported proposals. |
+| `recommendedRules` | Array | GraphQL.js recommended rules that are not part of the core specified rule list, including `MaxIntrospectionDepthRule`. |
 
-```ts
-function validate(
-  schema: GraphQLSchema,
-  documentAST: DocumentNode,
-  rules?: ReadonlyArray<ValidationRule>,
-  options?: { maxErrors?: number },
-  typeInfo?: TypeInfo, // deprecated in v16
-): ReadonlyArray<GraphQLError>;
+```js
+const errors = validate(schema, parse(source));
+
+if (errors.length > 0) {
+  return { errors };
+}
 ```
 
 ## Executable Validation Rule Exports
@@ -60,10 +63,11 @@ function validate(
 | `KnownArgumentNamesRule` | Field and directive arguments must be defined. |
 | `KnownDirectivesRule` | Directives must be defined and used in valid locations. |
 | `KnownFragmentNamesRule` | Fragment spreads must refer to defined fragments. |
+| `KnownOperationTypesRule` <ApiTag kind="new-v17" /> | Operation types must be supported by the schema. |
 | `KnownTypeNamesRule` | Referenced types must exist in the schema. |
 | `LoneAnonymousOperationRule` | Anonymous operations must be the only operation in a document. |
 | `NoFragmentCyclesRule` | Fragments must not form cycles. |
-| `NoUndefinedVariablesRule` | Used variables must be defined by the operation. |
+| `NoUndefinedVariablesRule` | Used variables must be defined by the operation or fragment arguments. |
 | `NoUnusedFragmentsRule` | Fragment definitions must be used. |
 | `NoUnusedVariablesRule` | Variable definitions must be used. |
 | `OverlappingFieldsCanBeMergedRule` | Fields with the same response name must be merge-compatible. |
@@ -76,10 +80,21 @@ function validate(
 | `UniqueFragmentNamesRule` | Fragment names must be unique. |
 | `UniqueInputFieldNamesRule` | Input object field names must be unique. |
 | `UniqueOperationNamesRule` | Operation names must be unique. |
-| `UniqueVariableNamesRule` | Variable names in an operation must be unique. |
+| `UniqueVariableNamesRule` | Variable names in an operation or fragment must be unique. |
 | `ValuesOfCorrectTypeRule` | Literal values must be valid for their expected input type. |
 | `VariablesAreInputTypesRule` | Variables must use input types. |
 | `VariablesInAllowedPositionRule` | Variable usages must be valid for their location. |
+
+## Incremental Delivery Rule Exports
+
+These rules are new in v17 and validate `@defer` / `@stream` usage.
+
+| Export | Description |
+| --- | --- |
+| `DeferStreamDirectiveLabelRule` <ApiTag kind="new-v17" /> | `@defer` and `@stream` labels must be unique where required. |
+| `DeferStreamDirectiveOnRootFieldRule` <ApiTag kind="new-v17" /> | `@defer` and `@stream` cannot be used on invalid root fields. |
+| `DeferStreamDirectiveOnValidOperationsRule` <ApiTag kind="new-v17" /> | `@defer` and `@stream` must appear only on operations that can support them. |
+| `StreamDirectiveOnListFieldRule` <ApiTag kind="new-v17" /> | `@stream` must be used on list fields. |
 
 ## SDL Validation Rule Exports
 
@@ -103,6 +118,9 @@ function validate(
 | `NoSchemaIntrospectionCustomRule` | Disallows schema introspection fields. |
 
 ## Custom Rules
+
+Custom rules are functions that receive a `ValidationContext` and return an AST
+visitor.
 
 ```js
 import { GraphQLError, specifiedRules, validate } from 'graphql';

@@ -21,11 +21,11 @@ The same exports are also available from the root `graphql` entry point.
 - [Introspection Exports](#introspection-exports)
 - [Schema Build, Extend, Sort, and Print Exports](#schema-build-extend-sort-and-print-exports)
 - [AST, Operation, and Type Utility Exports](#ast-operation-and-type-utility-exports)
-- [Input Coercion and Value Conversion Exports](#input-coercion-and-value-conversion-exports)
+- [Input Coercion and Literal Conversion Exports](#input-coercion-and-literal-conversion-exports)
 - [Type Comparator Exports](#type-comparator-exports)
-- [Name Utility Exports](#name-utility-exports)
 - [Schema Coordinate Exports](#schema-coordinate-exports)
 - [Schema Change Exports](#schema-change-exports)
+- [Operation Root and Name Helper Exports](#operation-root-and-name-helper-exports)
 
 ## Introspection Exports
 
@@ -77,6 +77,7 @@ const clientSchema = buildClientSchema(data.data);
 | `lexicographicSortSchema()` | Function | Returns a copy of a schema sorted by name. |
 | `printSchema()` | Function | Prints a schema as SDL. |
 | `printType()` | Function | Prints one named type as SDL. |
+| `printDirective()` <ApiTag kind="new-v17" /> | Function | Prints one directive definition as SDL. |
 | `printIntrospectionSchema()` | Function | Prints the built-in introspection schema. |
 
 ```js
@@ -94,12 +95,11 @@ console.log(printSchema(lexicographicSortSchema(schema)));
 | Export | Kind | Description |
 | --- | --- | --- |
 | `getOperationAST()` | Function | Gets the named operation from a document, or the only operation when no name is provided. |
-| `getOperationRootType()` <ApiTag kind="deprecated-v16" /> | Function | Gets the root object type for an operation. Use `schema.getRootType()`. |
 | `typeFromAST()` | Function | Resolves a GraphQL type reference AST against a schema. |
 | `concatAST()` | Function | Concatenates multiple documents into one document. |
 | `separateOperations()` | Function | Splits a document into one document per operation. |
 | `stripIgnoredCharacters()` | Function | Removes insignificant characters from a GraphQL document string. |
-| `TypeInfo` <ApiTag kind="deprecated-v16" title="Only the third getFieldDefFn constructor argument is deprecated in v16." /> | Class | Tracks current output type, parent type, input type, field, directive, argument, enum value, and default while visiting an AST. |
+| `TypeInfo` <ApiTag kind="changed-v17" /> | Class | Tracks current output type, parent type, input type, field, directive, argument, enum value, and default while visiting an AST. |
 | `visitWithTypeInfo()` | Function | Wraps a visitor so it maintains a `TypeInfo` instance. |
 | `TypedQueryDocumentNode` | Type | `DocumentNode` wrapper type carrying inferred result and variable types. |
 
@@ -116,24 +116,35 @@ visit(
 );
 ```
 
-In v16, the third `TypeInfo` constructor argument can override field lookup.
-That argument is deprecated. Use schema APIs and `TypeInfo`'s default field
-lookup behavior instead.
+## Input Coercion and Literal Conversion Exports
 
-## Input Coercion and Value Conversion Exports
+v17 splits coercion from diagnostics. `coerceInputValue()` and
+`coerceInputLiteral()` return a value or `undefined`, while
+`validateInputValue()` and `validateInputLiteral()` report detailed errors.
+`valueFromAST()` and `astFromValue()` remain for compatibility and are
+deprecated for removal in v18.
 
 | Export | Kind | Description |
 | --- | --- | --- |
-| `coerceInputValue()` | Function | Coerces a JavaScript value for a GraphQL input type and reports diagnostics through an optional callback. |
-| `valueFromAST()` | Function | Coerces a GraphQL value AST for a GraphQL input type. Deprecated in v17. |
+| `coerceInputValue()` <ApiTag kind="changed-v17" /> | Function | Coerces a JavaScript value for a GraphQL input type, returning `undefined` on failure. |
+| `validateInputValue()` <ApiTag kind="new-v17" /> | Function | Validates a JavaScript value and reports every diagnostic through a callback. |
+| `coerceInputLiteral()` <ApiTag kind="new-v17" /> | Function | Coerces a GraphQL value AST for a GraphQL input type, returning `undefined` on failure. |
+| `validateInputLiteral()` <ApiTag kind="new-v17" /> | Function | Validates a GraphQL value AST and reports diagnostics through a callback. |
+| `valueToLiteral()` <ApiTag kind="new-v17" /> | Function | Converts an external JavaScript input value to a GraphQL const value AST. |
+| `replaceVariables()` <ApiTag kind="new-v17" /> | Function | Replaces variable nodes in a value AST with literal values from coerced variable maps. |
+| `valueFromAST()` <ApiTag kind="deprecated-v17" /> | Function | Deprecated literal coercion helper. Use `coerceInputLiteral()`. |
 | `valueFromASTUntyped()` | Function | Converts a value AST to an untyped JavaScript value. |
-| `astFromValue()` | Function | Converts a JavaScript value to a GraphQL value AST. Deprecated in v17. |
+| `astFromValue()` <ApiTag kind="deprecated-v17" /> | Function | Deprecated value-to-AST helper. Use `valueToLiteral()`. |
 
 ```js
 const errors = [];
-const value = coerceInputValue(rawValue, inputType, (path, invalidValue, error) => {
-  errors.push({ path, message: error.message });
+validateInputValue(rawValue, inputType, (error, path) => {
+  errors.push({ message: error.message, path });
 });
+
+if (errors.length === 0) {
+  const value = coerceInputValue(rawValue, inputType);
+}
 ```
 
 ## Type Comparator Exports
@@ -143,13 +154,6 @@ const value = coerceInputValue(rawValue, inputType, (path, invalidValue, error) 
 | `isEqualType()` | Function | Checks whether two GraphQL types are exactly equal. |
 | `isTypeSubTypeOf()` | Function | Checks whether one type is a valid subtype of another in a schema. |
 | `doTypesOverlap()` | Function | Checks whether two composite types can apply to the same runtime object. |
-
-## Name Utility Exports
-
-| Export | Kind | Description |
-| --- | --- | --- |
-| `assertValidName()` <ApiTag kind="deprecated-v16" /> | Function | Validates a GraphQL name string. Use `assertName()` from `graphql/type`. |
-| `isValidNameError()` <ApiTag kind="deprecated-v16" /> | Function | Returns a `GraphQLError` for invalid names. Use `assertName()` and normal error handling. |
 
 ## Schema Coordinate Exports
 
@@ -169,16 +173,42 @@ if (element.kind === 'FIELD') {
 
 ## Schema Change Exports
 
+`findSchemaChanges()` is the v17 schema comparison API and returns breaking,
+dangerous, and safe changes in one call. Legacy wrappers remain available for
+compatibility and are deprecated for removal in v18.
+
 | Export | Kind | Description |
 | --- | --- | --- |
-| `findBreakingChanges()` | Function | Returns breaking schema changes between two schemas. Deprecated in v17 in favor of `findSchemaChanges()`. |
-| `findDangerousChanges()` | Function | Returns potentially dangerous schema changes between two schemas. Deprecated in v17 in favor of `findSchemaChanges()`. |
+| `findSchemaChanges()` <ApiTag kind="new-v17" /> | Function | Returns breaking, dangerous, and safe schema changes. |
+| `findBreakingChanges()` <ApiTag kind="deprecated-v17" /> | Function | Deprecated wrapper returning only breaking changes. |
+| `findDangerousChanges()` <ApiTag kind="deprecated-v17" /> | Function | Deprecated wrapper returning only dangerous changes. |
 | `BreakingChangeType` | Const object and type | Breaking schema change categories. |
 | `DangerousChangeType` | Const object and type | Potentially dangerous schema change categories. |
+| `SafeChangeType` <ApiTag kind="new-v17" /> | Const object and type | Safe schema change categories. |
 | `BreakingChange` | Type | Breaking change result shape. |
 | `DangerousChange` | Type | Dangerous change result shape. |
+| `SafeChange` <ApiTag kind="new-v17" /> | Type | Safe change result shape. |
 
 ```js
-const breaking = findBreakingChanges(oldSchema, newSchema);
-const dangerous = findDangerousChanges(oldSchema, newSchema);
+const changes = findSchemaChanges(oldSchema, newSchema);
+
+for (const change of changes) {
+  console.log(change.type, change.description);
+}
+```
+
+## Operation Root and Name Helper Exports
+
+These helpers remain available in v17 for compatibility and are deprecated in
+favor of `schema.getRootType(operation)` and `assertName()`.
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `getOperationRootType()` <ApiTag kind="deprecated-v17" /> | Function | Deprecated operation root lookup helper. Use `schema.getRootType(operation)`. |
+| `assertValidName()` <ApiTag kind="deprecated-v17" /> | Function | Deprecated name assertion helper. Use `assertName()` from `graphql/type`. |
+| `isValidNameError()` <ApiTag kind="deprecated-v17" /> | Function | Deprecated name validation helper. Use `assertName()` with normal error handling. |
+
+```js
+const rootType = getOperationRootType(schema, operation);
+const safeName = assertValidName(candidateName);
 ```

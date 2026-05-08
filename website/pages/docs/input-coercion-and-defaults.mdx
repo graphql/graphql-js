@@ -1,0 +1,170 @@
+---
+title: Input Coercion and Default Values
+sidebarTitle: Input Coercion
+---
+
+import { Callout } from 'nextra/components';
+
+# Input Coercion and Default Values
+
+<Callout type="info">
+  This page describes the v17 input coercion and default value APIs, including
+  the v16 `defaultValue` shape that remains available and is deprecated for
+  removal in v18.
+</Callout>
+
+GraphQL input values can come from several places: variable JSON, inline
+GraphQL literals, SDL defaults, programmatic schema defaults, directive
+arguments, and fragment variables. v16 accepted many defaults as already
+coerced JavaScript values. v17 keeps that compatibility path, but it adds more
+explicit APIs so GraphQL.js can validate and coerce every source consistently.
+
+The practical change is that defaults are no longer something to discover late
+during execution. They are part of schema validation and input coercion.
+
+## Authoring defaults in v17
+
+For new v17 code, use `default` on argument and input field configs. Use
+`{ value }` when the default is an external JavaScript value, like the value a
+client would send in JSON:
+
+```js
+import { GraphQLInt, GraphQLObjectType } from 'graphql';
+
+const Query = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    products: {
+      type: ProductConnection,
+      args: {
+        first: {
+          type: GraphQLInt,
+          default: { value: 20 },
+        },
+      },
+      resolve(_source, args) {
+        return loadProducts({ first: args.first });
+      },
+    },
+  },
+});
+```
+
+Use `{ literal }` when the default came from GraphQL syntax and you want to
+preserve that source:
+
+```js
+import { GraphQLString, parseConstValue } from 'graphql';
+
+const defaultCurrency = parseConstValue('"USD"');
+
+const priceArg = {
+  type: GraphQLString,
+  default: { literal: defaultCurrency },
+};
+```
+
+In both cases, v17 validates the default against the declared input type.
+Invalid defaults are reported by schema validation instead of waiting until a
+query happens to use that argument or input field.
+
+## `defaultValue`
+
+`defaultValue` is still the stable v16 pattern and still works in v17:
+
+```js
+const countArg = {
+  type: GraphQLInt,
+  defaultValue: 10,
+};
+```
+
+In v17, `defaultValue` is deprecated for removal in v18. It is treated as an
+already-coerced internal value. The v17 `default` property is more explicit:
+`{ value }` represents an external value and `{ literal }` represents a
+GraphQL literal.
+
+## Fast coercion and diagnostic validation
+
+v17 separates fast coercion from diagnostic validation:
+
+- `coerceInputValue(value, type)` returns the coerced value or `undefined`.
+- `validateInputValue(value, type, onError)` collects useful errors.
+- `coerceInputLiteral(valueNode, type, variableValues)` is the literal
+  replacement for `valueFromAST()`.
+- `validateInputLiteral(valueNode, type, onError, variableValues)` collects
+  literal errors.
+
+That split lets hot execution paths use coercion after validation has already
+run, while tooling can still ask for detailed errors.
+
+```js
+import { coerceInputValue, validateInputValue } from 'graphql';
+
+const coerced = coerceInputValue(input, inputType);
+
+if (coerced === undefined) {
+  const errors = [];
+  validateInputValue(input, inputType, (error, path) => {
+    errors.push({ message: error.message, path });
+  });
+  return { errors };
+}
+
+return { value: coerced };
+```
+
+## Working with variables
+
+`getVariableValues()` now returns a `VariableValues` object on success. That
+object contains both where values came from and the coerced runtime values.
+
+```js
+import { getVariableValues } from 'graphql';
+
+const result = getVariableValues(schema, variableDefinitions, rawVariables);
+
+if (result.errors) {
+  return { errors: result.errors };
+}
+
+const variableValues = result.variableValues;
+const userId = variableValues.coerced.id;
+```
+
+Pass the whole `variableValues` object to v17 low-level helpers. Passing only
+`variableValues.coerced` loses source information that fragment variables and
+defaulted variables need.
+
+## Literal conversion
+
+`astFromValue()` is deprecated in v17. Use `valueToLiteral()` when turning an
+external input value into a GraphQL literal:
+
+```js
+import { GraphQLInt, valueToLiteral } from 'graphql';
+
+const literal = valueToLiteral(10, GraphQLInt);
+```
+
+Custom scalars can provide `valueToLiteral(value)` when their external value
+needs custom literal printing. If no custom method is provided, GraphQL.js uses
+the default scalar conversion rules.
+
+## Behavioral edge cases in v17
+
+The stricter v17 coercion model makes these cases observable:
+
+- A variable with value `undefined` is treated as absent.
+- A missing nullable variable is omitted from `variableValues.coerced`.
+- A `null` variable used for an input object field overrides that field's
+  default.
+- Unknown input object fields are rejected unless the JavaScript value is
+  `undefined`.
+- OneOf input objects must have exactly one known provided field, and that
+  field must coerce to a non-null value.
+- Argument and input field result objects use null prototypes, so use
+  `Object.hasOwn()` for presence checks.
+
+These cases are where permissive v16 behavior most often hid schema or client
+bugs that v17 now reports earlier.

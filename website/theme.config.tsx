@@ -209,20 +209,6 @@ const cfg: DocsThemeConfig = {
       </>
     );
   },
-  banner: {
-    content: (
-      <>
-        🎬 That's a Wrap for GraphQLConf 2024! • Watch the Videos •{' '}
-        <NextLink
-          href="https://graphql.org/conf/2024"
-          className="underline after:content-['_→'] after:font-sans"
-        >
-          Check out the recorded talks and workshops
-        </NextLink>
-      </>
-    ),
-    key: 'graphqlconf-2024',
-  },
   logo: graphQLLogo,
   docsRepositoryBase:
     'https://github.com/graphql/graphql-js/tree/16.x.x/website',
@@ -230,6 +216,7 @@ const cfg: DocsThemeConfig = {
     hue: 319,
   },
   sidebar: {
+    autoCollapse: true,
     defaultMenuCollapseLevel: 1,
   },
   footer: {

@@ -1,0 +1,177 @@
+---
+title: Advanced Execution Pipelines
+sidebarTitle: Advanced Execution Pipelines
+---
+
+import { Callout } from 'nextra/components';
+
+# Advanced Execution Pipelines
+
+<Callout type="info">
+  The APIs on this page are low-level GraphQL.js v17 execution APIs. Most
+  servers should call `execute()`, `subscribe()`, or a framework abstraction.
+</Callout>
+
+GraphQL.js v17 exposes validated execution argument objects so hosts can split
+the execution pipeline without rebuilding GraphQL.js internals. The central
+types are `ValidatedExecutionArgs` and `ValidatedSubscriptionArgs`.
+
+```js
+import {
+  createSourceEventStream,
+  executeRootSelectionSet,
+  executeSubscriptionEvent,
+  mapSourceToResponseEvent,
+  validateExecutionArgs,
+  validateSubscriptionArgs,
+} from 'graphql';
+```
+
+The exported validator functions are named `validateExecutionArgs()` and
+`validateSubscriptionArgs()`.
+
+## Validated query and mutation execution
+
+`validateExecutionArgs()` checks the schema, selects the operation, coerces
+variables, prepares fragment information, and fills in default resolvers and
+execution options.
+
+```js
+const validated = validateExecutionArgs({
+  schema,
+  document,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+  hideSuggestions: true,
+});
+
+const result =
+  'schema' in validated
+    ? await executeRootSelectionSet(validated)
+    : { errors: validated };
+```
+
+`executeRootSelectionSet()` expects a `ValidatedExecutionArgs` object. It is the
+stable single-result root-selection executor used by `execute()`.
+
+For incremental delivery, the matching low-level function is
+`experimentalExecuteRootSelectionSet()`.
+
+## Validated subscriptions
+
+`validateSubscriptionArgs()` performs the same base validation and also asserts
+that the selected operation is a subscription. `createSourceEventStream()` now
+expects this validated subscription object.
+
+```js
+const validated = validateSubscriptionArgs({
+  schema,
+  document,
+  rootValue,
+  contextValue,
+  variableValues,
+  operationName,
+});
+
+if (!('schema' in validated)) {
+  return { errors: validated };
+}
+
+const source = await createSourceEventStream(validated);
+
+if (!isAsyncIterableObject(source)) {
+  return source;
+}
+```
+
+Passing raw `ExecutionArgs` to `createSourceEventStream()` was removed in v17.
+
+## Per-event execution
+
+Subscription execution has two phases:
+
+1. Create the source event stream.
+2. Execute the subscription selection set once for each source event.
+
+The default per-event executor is `executeSubscriptionEvent()`. Hosts can
+replace it by passing a custom root selection set executor to
+`mapSourceToResponseEvent()`.
+
+```js
+import {
+  createSourceEventStream,
+  executeSubscriptionEvent,
+  mapSourceToResponseEvent,
+  validateSubscriptionArgs,
+} from 'graphql';
+
+const validated = validateSubscriptionArgs({
+  schema,
+  document,
+  contextValue,
+  variableValues,
+  operationName,
+});
+
+if (!('schema' in validated)) {
+  return { errors: validated };
+}
+
+const source = await createSourceEventStream(validated);
+
+if (!isAsyncIterableObject(source)) {
+  return source;
+}
+
+const stream = mapSourceToResponseEvent(
+  validated,
+  source,
+  (validatedEventArgs) =>
+    executeSubscriptionEvent({
+      ...validatedEventArgs,
+      contextValue: {
+        ...validatedEventArgs.contextValue,
+        sourceEventStartedAt: Date.now(),
+      },
+    }),
+);
+```
+
+The custom root selection set executor receives a
+`ValidatedSubscriptionArgs` object whose `rootValue` is the current source
+event payload. It can call `executeSubscriptionEvent()` or another
+host-provided executor that returns an `ExecutionResult`.
+
+## Mapping source events
+
+A host that owns the subscription transport can map the source event stream
+explicitly.
+
+```js
+const validated = validateSubscriptionArgs(args);
+
+if (!('schema' in validated)) {
+  return { errors: validated };
+}
+
+const source = await createSourceEventStream(validated);
+
+if (!isAsyncIterableObject(source)) {
+  return source;
+}
+
+return mapSourceToResponseEvent(validated, source);
+```
+
+This is the same conceptual split used by `subscribe()`, but with explicit
+control over source stream handling and response-event execution.
+
+The examples above use a local async-iterable guard:
+
+```js
+function isAsyncIterableObject(value) {
+  return value != null && typeof value[Symbol.asyncIterator] === 'function';
+}
+```

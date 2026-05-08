@@ -1,0 +1,158 @@
+---
+title: graphql
+---
+
+import { ApiTag } from '../../components/ApiTags';
+
+# `graphql`
+
+The root `graphql` entry point exports the `graphql()` request function and
+re-exports the public GraphQL.js API from the original submodules. It is the
+most convenient import path for applications, while the submodule pages in this
+section document the same exports by area. You can import from the root package
+or from individual modules such as `graphql/execution`, `graphql/language`, and
+`graphql/type`; the root package gathers those public exports in one place.
+
+```js
+import { graphql, GraphQLSchema, parse, execute } from 'graphql';
+```
+
+## Contents
+
+- [Request Entry Points](#request-entry-points)
+- [Version Exports](#version-exports)
+- [Development Mode Exports](#development-mode-exports)
+- [Root Exports by Area](#root-exports-by-area)
+- [Export Map](#export-map)
+- [`GraphQLArgs`](#graphqlargs)
+
+## Request Entry Points
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `graphql()` <ApiTag kind="changed-v17" /> | Function | Parses, validates, and executes one operation and always returns a promise for a single `ExecutionResult`. v17 accepts parser, validation, execution, and harness options through `GraphQLArgs`. |
+| `graphqlSync()` <ApiTag kind="changed-v17" /> | Function | Runs the same pipeline synchronously and throws if a phase or resolver becomes asynchronous. |
+| `GraphQLArgs` <ApiTag kind="changed-v17" /> | Type | Object accepted by `graphql()` and `graphqlSync()`. In v17 it combines parse, validation, execution, and harness options. |
+
+```ts
+function graphql(args: GraphQLArgs): Promise<ExecutionResult>;
+function graphqlSync(args: GraphQLArgs): ExecutionResult;
+```
+
+```js
+const result = await graphql({
+  schema,
+  source: 'query Viewer($id: ID!) { viewer(id: $id) { name } }',
+  variableValues: { id: '1' },
+  contextValue: { currentUser },
+});
+```
+
+## Version Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `version` | Constant | The GraphQL.js package version string. |
+| `versionInfo` | Constant | Parsed version components: `major`, `minor`, `patch`, and `preReleaseTag`. |
+
+## Development Mode Exports
+
+Development mode is documented on the root `graphql` entry point in v17. It is
+not a separate API section.
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `enableDevMode()` <ApiTag kind="new-v17" /> | Function | Enables development checks for this GraphQL.js module instance. |
+| `isDevModeEnabled()` <ApiTag kind="new-v17" /> | Function | Returns whether development mode has been enabled. |
+
+```js
+import { enableDevMode, isDevModeEnabled } from 'graphql';
+
+if (process.env.NODE_ENV === 'development') {
+  enableDevMode();
+}
+
+console.log(isDevModeEnabled());
+```
+
+In v16 and earlier, GraphQL.js development checks were controlled by
+`NODE_ENV`. In v17, `NODE_ENV` is ignored by GraphQL.js itself. Use the
+`development` package condition or call `enableDevMode()` explicitly.
+
+## Root Exports by Area
+
+| Export | Area |
+| --- | --- |
+| `enableDevMode`, `isDevModeEnabled` <ApiTag kind="new-v17" /> | Development mode. |
+| `defaultHarness`, `GraphQLHarness`, `GraphQLParseFn`, `GraphQLValidateFn`, `GraphQLExecuteFn`, `GraphQLSubscribeFn` <ApiTag kind="new-v17" /> | `graphql()` phase customization. |
+| `ExecutionArgs`, `ExecutionResult`, `FormattedExecutionResult`, `ValidatedExecutionArgs`, `ValidatedSubscriptionArgs`, `RootSelectionSetExecutor` | Execution and subscription types. |
+| `execute`, `executeSync`, `subscribe`, `createSourceEventStream`, `defaultFieldResolver`, `defaultTypeResolver`, `responsePathAsArray` | Core execution and subscription helpers. |
+| `validateExecutionArgs`, `validateSubscriptionArgs`, `executeRootSelectionSet`, `executeSubscriptionEvent`, `experimentalExecuteRootSelectionSet`, `mapSourceToResponseEvent`, `experimentalExecuteIncrementally` <ApiTag kind="new-v17" /> | Pipeline split and incremental delivery helpers. |
+| `AbortedGraphQLExecutionError` <ApiTag kind="new-v17" /> | Abort error class. |
+| `ExecutionHooks`, `AsyncWorkFinishedInfo` <ApiTag kind="new-v17" /> | Execution hook types. |
+| `ExperimentalIncrementalExecutionResults`, `InitialIncrementalExecutionResult`, `SubsequentIncrementalExecutionResult`, `IncrementalDeferResult`, `IncrementalStreamResult`, `IncrementalResult` and their `Formatted*` counterparts <ApiTag kind="new-v17" /> | Incremental delivery types. |
+| `getArgumentValues`, `getVariableValues`, `getDirectiveValues` | Argument and variable coercion helpers. |
+| `GraphQLError`, `syntaxError`, `locatedError` | Error creation and formatting helpers. |
+| `validate`, `ValidationContext`, `ValidationRule`, `specifiedRules`, `recommendedRules`, and the individual validation rules | Validation entry points and rule sets. |
+| `Source`, `Location`, `Token`, `parse`, `parseValue`, `parseConstValue`, `parseType`, `parseSchemaCoordinate`, `print`, `visit`, `visitInParallel`, `getVisitFn`, `getEnterLeaveForKind`, `BREAK`, `Kind`, `DirectiveLocation`, `OperationTypeNode` | Language and AST helpers. |
+| `GraphQLField`, `GraphQLArgument`, `GraphQLInputField`, `GraphQLEnumValue`, `isField`, `assertField`, `isArgument`, `assertArgument`, `isInputField`, `assertInputField`, `isEnumValue`, `assertEnumValue` <ApiTag kind="new-v17" /> | Public field-like schema element types and predicates. |
+| `introspectionFromSchema`, `getIntrospectionQuery`, `buildClientSchema`, `buildASTSchema`, `buildSchema`, `extendSchema`, `lexicographicSortSchema`, `printSchema`, `printType`, `printIntrospectionSchema`, `typeFromAST`, `valueFromAST`, `valueFromASTUntyped`, `astFromValue`, `TypeInfo`, `visitWithTypeInfo`, `coerceInputValue`, `concatAST`, `separateOperations`, `stripIgnoredCharacters`, `isEqualType`, `isTypeSubTypeOf`, `doTypesOverlap`, `assertValidName`, `isValidNameError`, `BreakingChangeType`, `DangerousChangeType`, `findBreakingChanges`, `findDangerousChanges`, `resolveSchemaCoordinate`, `resolveASTSchemaCoordinate` | Utility helpers. |
+| `GraphQLDeferDirective`, `GraphQLStreamDirective` <ApiTag kind="new-v17" /> | Experimental incremental delivery directives. |
+| `printDirective`, `findSchemaChanges`, `SafeChangeType`, `SafeChange` <ApiTag kind="new-v17" /> | Schema printing and schema evolution reporting. |
+| `DeferStreamDirectiveLabelRule`, `DeferStreamDirectiveOnRootFieldRule`, `DeferStreamDirectiveOnValidOperationsRule`, `KnownOperationTypesRule`, `StreamDirectiveOnListFieldRule` <ApiTag kind="new-v17" /> | Additional validation rules. |
+| `valueFromAST`, `astFromValue`, `findBreakingChanges`, `findDangerousChanges` <ApiTag kind="deprecated-v17" /> | Legacy utilities kept for compatibility. |
+
+## Export Map
+
+| Area | API reference |
+| --- | --- |
+| Request pipeline | [`graphql`](/api-v17/graphql) |
+| Errors | [`graphql/error`](/api-v17/error) |
+| Execution and subscriptions | [`graphql/execution`](/api-v17/execution) |
+| Language, AST, parser, printer, visitor | [`graphql/language`](/api-v17/language) |
+| Schema and type system | [`graphql/type`](/api-v17/type) |
+| Utilities | [`graphql/utilities`](/api-v17/utilities) |
+| Validation | [`graphql/validation`](/api-v17/validation) |
+
+## `GraphQLArgs`
+
+```ts
+interface GraphQLArgs
+  extends ParseOptions,
+    ValidationOptions,
+    Omit<ExecutionArgs, 'document'> {
+  source: string | Source;
+  rules?: ReadonlyArray<ValidationRule>;
+  harness?: GraphQLHarness;
+}
+```
+
+`GraphQLArgs` is deliberately broad in v17:
+
+- Parser options such as `noLocation` and experimental syntax flags are accepted
+  directly.
+- Validation options such as `maxErrors` and `hideSuggestions` are accepted
+  directly.
+- Execution options such as `abortSignal`, `fieldResolver`,
+  `typeResolver`, and `hooks` are accepted directly.
+- `harness` can replace the built-in parse, validation, execution, or
+  subscription phases.
+
+```js
+import { graphql } from 'graphql';
+
+const controller = new AbortController();
+
+const result = await graphql({
+  schema,
+  source,
+  variableValues,
+  operationName: 'Viewer',
+  hideSuggestions: true,
+  abortSignal: controller.signal,
+});
+```
+
+For incremental delivery, parse and validate separately, then call
+`experimentalExecuteIncrementally()`. The convenience `graphql()` function is a
+single-result API.

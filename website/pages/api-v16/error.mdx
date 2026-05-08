@@ -2,69 +2,82 @@
 title: graphql/error
 ---
 
-{/* title can be removed in Nextra 4, since sidebar title will take from first h1 */}
+import { ApiTag } from '../../components/ApiTags';
 
 # `graphql/error`
 
-The `graphql/error` module is responsible for creating and formatting
-GraphQL errors. You can import either from the `graphql/error` module, or from the root `graphql` module. For example:
+The `graphql/error` entry point contains the public error type and helpers used
+by parsing, validation, execution, and application code that wants to report
+GraphQL errors with source locations, response paths, or extension data.
 
 ```js
-import { GraphQLError } from 'graphql';
+import { GraphQLError, locatedError, syntaxError } from 'graphql/error';
 ```
 
-## Overview
+The same exports are also available from the root `graphql` entry point.
 
-<ul className="apiIndex">
-  <li>
-    <a href="#graphqlerror">
-      `class GraphQLError` A representation of an error that occurred within
-      GraphQL.
-    </a>
-  </li>
-  <li>
-    <a href="#syntaxerror">
-      `function syntaxError` Produces a GraphQLError representing a syntax
-      error.
-    </a>
-  </li>
-  <li>
-    <a href="#locatedError">
-      `function locatedError` Produces a new GraphQLError aware of the location
-      responsible for the error.
-    </a>
-  </li>
-  <li>
-    <a href="#formaterror">
-      `function formatError` Format an error according to the rules described by
-      the Response Format.
-    </a>
-  </li>
-</ul>
+## Contents
 
-## Errors
+- [Value Exports](#value-exports)
+- [Type Exports](#type-exports)
+- [`GraphQLError`](#graphqlerror)
+- [`syntaxError`](#syntaxerror)
+- [`locatedError`](#locatederror)
+- [Deprecated Formatting Helpers](#deprecated-formatting-helpers)
 
-### `GraphQLError`
+```js
+// Prefer this in v16; required in v17.
+new GraphQLError('Name is required', {
+  nodes,
+  path: ['createUser', 'name'],
+  extensions: { code: 'BAD_USER_INPUT' },
+});
+```
+
+## Value Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `GraphQLError` <ApiTag kind="deprecated-v16" title="Only the positional constructor overload is deprecated in v16." /> | Class | Error class for parse, validation, and execution failures. Prefer the object-style options constructor. |
+| `syntaxError()` | Function | Builds a `GraphQLError` for an invalid source position. |
+| `locatedError()` | Function | Wraps a thrown value as a `GraphQLError` associated with AST nodes and a response path. |
+| `printError()` <ApiTag kind="deprecated-v16" /> | Function | Prints a `GraphQLError` as a human-readable string. Use `error.toString()`. |
+| `formatError()` <ApiTag kind="deprecated-v16" /> | Function | Formats a `GraphQLError` for a GraphQL response. Use `error.toJSON()`. |
+
+## Type Exports
+
+| Export | Description |
+| --- | --- |
+| `GraphQLErrorOptions` | Object accepted by the preferred `GraphQLError` constructor overload. |
+| `GraphQLErrorExtensions` | String-keyed extension map attached to an error. |
+| `GraphQLFormattedError` | JSON-serializable error shape returned by `formatError()` or `error.toJSON()`. |
+| `GraphQLFormattedErrorExtensions` | Extension map in a formatted error. |
+
+## `GraphQLError`
+
+<ApiTag kind="deprecated-v16" title="Only the positional overload below is deprecated in v16." />
 
 ```ts
 class GraphQLError extends Error {
+  constructor(message: string, options?: GraphQLErrorOptions);
+
+  // Deprecated in v16:
   constructor(
     message: string,
-    nodes?: any[],
-    stack?: string,
+    nodes?: ASTNode | ReadonlyArray<ASTNode>,
     source?: Source,
-    positions?: number[],
+    positions?: ReadonlyArray<number>,
+    path?: ReadonlyArray<string | number>,
     originalError?: Error,
-    extensions?: Record<string, unknown>,
+    extensions?: GraphQLErrorExtensions,
   );
 }
 ```
 
-A representation of an error that occurred within GraphQL. Contains
-information about where in the query the error occurred for debugging. Most
-commonly constructed with `locatedError` below.
+Use `nodes` when the error belongs to GraphQL syntax, `path` when it belongs to
+an execution response position, and `extensions` for application metadata.
 
-### `syntaxError`
+## `syntaxError`
 
 ```ts
 function syntaxError(
@@ -74,34 +87,33 @@ function syntaxError(
 ): GraphQLError;
 ```
 
-Produces a GraphQLError representing a syntax error, containing useful
-descriptive information about the syntax error's position in the source.
+```js
+import { Source, syntaxError } from 'graphql';
 
-### `locatedError`
-
-```ts
-function locatedError(error: Error, nodes: any[]): GraphQLError;
+const source = new Source('query {', 'Example.graphql');
+throw syntaxError(source, source.body.length, 'Expected Name, found <EOF>.');
 ```
 
-Given an arbitrary Error, presumably thrown while attempting to execute a
-GraphQL operation, produce a new GraphQLError aware of the location in the
-document responsible for the original Error.
-
-### `formatError`
+## `locatedError`
 
 ```ts
-function formatError(error: GraphQLError): GraphQLFormattedError;
-
-type GraphQLFormattedError = {
-  message: string;
-  locations: GraphQLErrorLocation[];
-};
-
-type GraphQLErrorLocation = {
-  line: number;
-  column: number;
-};
+function locatedError(
+  originalError: unknown,
+  nodes?: ReadonlyArray<ASTNode>,
+  path?: ReadonlyArray<string | number>,
+): GraphQLError;
 ```
 
-Given a GraphQLError, format it according to the rules described by the
-Response Format, Errors section of the GraphQL Specification.
+`locatedError()` is mainly used by execution. If the original error is already
+a located `GraphQLError`, GraphQL.js keeps the existing location data.
+
+## Deprecated Formatting Helpers
+
+`printError()` and `formatError()` are deprecated in v16. Use
+`error.toString()` for the human-readable form and `error.toJSON()` for the
+GraphQL response shape.
+
+```js
+const text = error.toString(); // instead of printError(error)
+const json = error.toJSON();  // instead of formatError(error)
+```

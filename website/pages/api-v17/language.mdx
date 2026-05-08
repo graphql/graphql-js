@@ -24,7 +24,7 @@ The same exports are also available from the root `graphql` entry point.
 - [Language Constant Exports](#language-constant-exports)
 - [Predicate Exports](#predicate-exports)
 - [AST Type Exports](#ast-type-exports)
-- [Fragment Variables in v16](#fragment-variables-in-v16)
+- [Experimental Parser Options](#experimental-parser-options)
 
 ## Source and Location Exports
 
@@ -50,14 +50,13 @@ const location = getLocation(source, 8);
 | Export | Kind | Description |
 | --- | --- | --- |
 | `Lexer` | Class | Pull-based GraphQL lexer over a `Source`. |
-| `TokenKind` | Enum-like value | Token kind constants such as `TokenKind.NAME` and `TokenKind.EOF`. |
-| `TokenKindEnum` <ApiTag kind="deprecated-v16" /> | Type | Deprecated alias type for `TokenKind`. Use `TokenKind` as the type. |
-| `parse()` | Function | Parses a document into a `DocumentNode`. |
+| `TokenKind` <ApiTag kind="changed-v17" /> | Const object and type | Token kind constants such as `TokenKind.NAME` and `TokenKind.EOF`; use it as both value and type. |
+| `parse()` <ApiTag kind="changed-v17" /> | Function | Parses a document into a `DocumentNode`. v17 includes experimental parser options and omits many empty AST child arrays. |
 | `parseValue()` | Function | Parses a GraphQL value literal. |
 | `parseConstValue()` | Function | Parses a constant GraphQL value literal. |
 | `parseType()` | Function | Parses a GraphQL type reference. |
 | `parseSchemaCoordinate()` | Function | Parses a schema coordinate. |
-| `ParseOptions` <ApiTag kind="deprecated-v16" title="Only allowLegacyFragmentVariables is deprecated in v16." /> | Type | Parser options such as `noLocation`. The `allowLegacyFragmentVariables` option is deprecated. |
+| `ParseOptions` <ApiTag kind="changed-v17" /> | Type | Parser options, including `noLocation` and experimental syntax flags. |
 | `print()` | Function | Prints an AST back to GraphQL source text. |
 
 ```js
@@ -84,8 +83,8 @@ console.log(print(renamed));
 | --- | --- | --- |
 | `visit()` | Function | Depth-first AST traversal and editing utility. |
 | `visitInParallel()` | Function | Combines multiple visitors into one visitor. |
-| `getVisitFn()` <ApiTag kind="deprecated-v16" /> | Function | Deprecated visitor callback lookup helper. Use `getEnterLeaveForKind()`. |
-| `getEnterLeaveForKind()` | Function | Reads the enter and leave callbacks for one AST kind from a visitor. |
+| `getEnterLeaveForKind()` <ApiTag kind="changed-v17" /> | Function | Reads the enter and leave callbacks for one AST kind from a visitor. Use it instead of the removed `getVisitFn()`. |
+| `getVisitFn()` | Function | Reads the callback for one AST kind from a visitor. |
 | `BREAK` | Constant | Sentinel value that stops a visitor traversal. |
 | `ASTVisitor` | Type | Visitor object shape. |
 | `ASTVisitFn` | Type | Visitor callback shape. |
@@ -95,22 +94,18 @@ console.log(print(renamed));
 
 | Export | Kind | Description |
 | --- | --- | --- |
-| `Kind` | Enum-like value | AST node kind constants such as `Kind.FIELD`. |
-| `KindEnum` <ApiTag kind="deprecated-v16" /> | Type | Deprecated alias type for `Kind`. Use `Kind` as the type. |
-| `DirectiveLocation` | Enum-like value | Directive location constants such as `DirectiveLocation.FIELD`. |
-| `DirectiveLocationEnum` <ApiTag kind="deprecated-v16" /> | Type | Deprecated alias type for `DirectiveLocation`. Use `DirectiveLocation` as the type. |
+| `Kind` <ApiTag kind="changed-v17" /> | Const object and type | AST node kind constants such as `Kind.FIELD`; use it as both value and type. |
+| `DirectiveLocation` <ApiTag kind="changed-v17" /> | Const object and type | Directive location constants such as `DirectiveLocation.FIELD`. v17 adds `FRAGMENT_VARIABLE_DEFINITION` for experimental fragment arguments. |
 | `OperationTypeNode` | Const object | Operation type constants: `query`, `mutation`, and `subscription`. |
 
 ```ts
 import { Kind } from 'graphql';
-import type { KindEnum } from 'graphql';
+import type { Kind as KindType } from 'graphql';
 
-function isFieldKind(kind: KindEnum): boolean {
+function isFieldKind(kind: KindType): boolean {
   return kind === Kind.FIELD;
 }
 ```
-
-For v17-compatible TypeScript, replace `KindEnum` with `Kind`.
 
 ## Predicate Exports
 
@@ -134,7 +129,7 @@ For v17-compatible TypeScript, replace `KindEnum` with `Kind`.
 | --- | --- |
 | Base AST | `ASTNode`, `ASTKindToNode`, `NameNode`, `DocumentNode`, `DefinitionNode`, `ExecutableDefinitionNode` |
 | Operations | `OperationDefinitionNode`, `VariableDefinitionNode`, `VariableNode`, `SelectionSetNode`, `SelectionNode`, `FieldNode`, `ArgumentNode`, `ConstArgumentNode` |
-| Fragments | `FragmentSpreadNode`, `InlineFragmentNode`, `FragmentDefinitionNode` <ApiTag kind="deprecated-v16" title="Only FragmentDefinitionNode.variableDefinitions is deprecated in v16." /> |
+| Fragments | `FragmentSpreadNode`, `InlineFragmentNode`, `FragmentDefinitionNode` |
 | Values | `ValueNode`, `ConstValueNode`, `IntValueNode`, `FloatValueNode`, `StringValueNode`, `BooleanValueNode`, `NullValueNode`, `EnumValueNode`, `ListValueNode`, `ConstListValueNode`, `ObjectValueNode`, `ConstObjectValueNode`, `ObjectFieldNode`, `ConstObjectFieldNode` |
 | Directives | `DirectiveNode`, `ConstDirectiveNode`, `DirectiveDefinitionNode`, `DirectiveExtensionNode` |
 | Type references | `TypeNode`, `NamedTypeNode`, `ListTypeNode`, `NonNullTypeNode` |
@@ -142,9 +137,15 @@ For v17-compatible TypeScript, replace `KindEnum` with `Kind`.
 | Type system extensions | `TypeSystemExtensionNode`, `SchemaExtensionNode`, `TypeExtensionNode`, `ScalarTypeExtensionNode`, `ObjectTypeExtensionNode`, `InterfaceTypeExtensionNode`, `UnionTypeExtensionNode`, `EnumTypeExtensionNode`, `InputObjectTypeExtensionNode` |
 | Schema coordinates | `SchemaCoordinateNode`, `TypeCoordinateNode`, `MemberCoordinateNode`, `ArgumentCoordinateNode`, `DirectiveCoordinateNode`, `DirectiveArgumentCoordinateNode` |
 
-## Fragment Variables in v16
+## Experimental Parser Options
 
-v16 exposes the legacy `allowLegacyFragmentVariables` parser option and the
-deprecated `FragmentDefinitionNode.variableDefinitions` field. Prefer the
-explicit experimental fragment arguments surface in v17, documented in
-[Fragment Arguments](/docs/fragment-arguments), when testing the proposal.
+```js
+const document = parse(source, {
+  experimentalFragmentArguments: true,
+  experimentalDirectivesOnDirectiveDefinitions: true,
+});
+```
+
+Use these flags only when both the producer and consumer of the document
+understand the proposal syntax. The resulting AST nodes are public, but the
+underlying GraphQL specification features remain experimental.

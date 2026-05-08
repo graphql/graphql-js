@@ -1,0 +1,132 @@
+---
+title: GraphQL Harness
+sidebarTitle: GraphQL Harness
+---
+
+import { Callout } from 'nextra/components';
+
+# GraphQL Harness
+
+<Callout type="info">
+  `GraphQLHarness` is new in GraphQL.js v17. It customizes the phases used by
+  `graphql()` and `graphqlSync()`.
+</Callout>
+
+`graphql()` is the convenience entry point that parses, validates, and executes
+a GraphQL operation. In v17, those phases are represented by a harness:
+
+```ts
+type GraphQLHarness = {
+  parse: GraphQLParseFn;
+  validate: GraphQLValidateFn;
+  execute: GraphQLExecuteFn;
+  subscribe: GraphQLSubscribeFn;
+};
+```
+
+`defaultHarness` is the built-in harness used by `graphql()` and
+`graphqlSync()`.
+
+```js
+import { defaultHarness, graphql } from 'graphql';
+
+const result = await graphql({
+  schema,
+  source,
+  harness: defaultHarness,
+});
+```
+
+## Why this exists
+
+The harness is a host integration API. It exists to demonstrate how GraphQL.js
+can be customized along the same lines as
+[Envelop](https://the-guild.dev/graphql/envelop), The Guild's GraphQL plugin
+system, and to provide type infrastructure that supports the broadest community
+of framework, server, plugin, and runtime authors. One example is
+`GraphQLParseFn`: it can return a `DocumentNode` or a promise for a
+`DocumentNode`, even though the built-in GraphQL.js `parse()` function is
+synchronous.
+
+GraphQL.js names that type shape `PromiseOrValue`; Envelop commonly calls the
+same shape `MaybePromise`.
+
+For application servers, prefer Envelop or a framework built on Envelop over
+using a raw `GraphQLHarness` directly. The harness is useful when a library or
+runtime already owns the request pipeline and needs GraphQL.js to expose typed
+parse, validation, execution, or subscription phases.
+
+## What can be customized
+
+Each phase has the same call shape as the corresponding GraphQL.js function:
+
+```ts
+type GraphQLParseFn = typeof parse;
+type GraphQLValidateFn = typeof validate;
+type GraphQLExecuteFn = typeof execute;
+type GraphQLSubscribeFn = typeof subscribe;
+```
+
+The parse and validate phases may return synchronously or asynchronously.
+`graphqlSync()` still requires every phase and resolver it reaches to complete
+synchronously.
+
+## Cached documents
+
+A host that has a trusted document cache can replace the parse phase while
+keeping the default validation and execution behavior.
+
+```js
+import { defaultHarness, graphql } from 'graphql';
+
+const harness = {
+  ...defaultHarness,
+  parse(source, options) {
+    const cached = documents.get(String(source));
+    return cached ?? defaultHarness.parse(source, options);
+  },
+};
+
+const result = await graphql({
+  schema,
+  source,
+  variableValues,
+  operationName,
+  harness,
+});
+```
+
+## External validation
+
+A host can also replace validation. This is useful for persisted operation
+registries that validate at build time and return stored validation results at
+runtime.
+
+```js
+import { defaultHarness, graphql } from 'graphql';
+
+const harness = {
+  ...defaultHarness,
+  async validate(schema, document, rules, options) {
+    const cached = await registry.getValidationResult(document, schema);
+    return cached ?? defaultHarness.validate(schema, document, rules, options);
+  },
+};
+
+const result = await graphql({
+  schema,
+  source,
+  harness,
+});
+```
+
+## Relationship to incremental delivery
+
+`graphql()` remains a single-result operation pipeline. A harness does not make
+`graphql()` return incremental delivery payloads.
+
+Operations that use `@defer` or `@stream` should use
+`experimentalExecuteIncrementally()` after parsing and validation. See
+[Advanced Execution Pipelines](/docs/advanced-execution-pipelines) for the
+lower-level execution APIs and [Defer and Stream](/docs/defer-stream) for the
+incremental result shape.

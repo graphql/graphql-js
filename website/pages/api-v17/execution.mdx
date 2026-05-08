@@ -1,0 +1,205 @@
+---
+title: graphql/execution
+---
+
+import { ApiTag } from '../../components/ApiTags';
+
+# `graphql/execution`
+
+The `graphql/execution` entry point executes already parsed and usually already
+validated GraphQL operations. It also contains subscription helpers, argument
+and variable coercion helpers.
+
+```js
+import { execute, subscribe } from 'graphql/execution';
+```
+
+The same exports are also available from the root `graphql` entry point.
+
+`execute()` is the stable single-result executor for queries and mutations.
+`subscribe()` and `createSourceEventStream()` provide the subscription
+pipeline.
+
+## Contents
+
+- [Core Execution Exports](#core-execution-exports)
+- [Subscription Exports](#subscription-exports)
+- [Pipeline Split Helpers](#pipeline-split-helpers)
+- [Incremental Delivery Exports](#incremental-delivery-exports)
+- [Execution Hooks and Abort](#execution-hooks-and-abort)
+- [Argument, Variable, and Directive Helpers](#argument-variable-and-directive-helpers)
+- [Result and Argument Types](#result-and-argument-types)
+
+## Core Execution Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `execute()` <ApiTag kind="changed-v17" /> | Function | Executes a query or mutation and returns one `ExecutionResult` or a promise for one. |
+| `executeSync()` <ApiTag kind="changed-v17" /> | Function | Executes synchronously and throws if execution becomes asynchronous or incremental. |
+| `defaultFieldResolver` | Function | Default field resolver. It reads a same-named property or calls a same-named method on the source value. |
+| `defaultTypeResolver` | Function | Default abstract type resolver. It uses `__typename` first, then `isTypeOf` checks. |
+| `responsePathAsArray()` | Function | Converts an execution response path linked list into an array. |
+
+```js
+import { execute, parse } from 'graphql';
+
+const document = parse('{ viewer { name } }');
+const result = await execute({
+  schema,
+  document,
+  contextValue: { currentUser },
+});
+```
+
+## Subscription Exports
+
+The legacy `graphql/subscription` subpath and `SubscriptionArgs` type were
+removed in v17. Use `subscribe()` and `createSourceEventStream()` from
+`graphql` or `graphql/execution`.
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `subscribe()` <ApiTag kind="changed-v17" /> | Function | Runs the full subscription pipeline and returns an async iterator of `ExecutionResult` values or one error result. |
+| `createSourceEventStream()` <ApiTag kind="changed-v17" /> | Function | Creates the source event stream for a subscription operation. |
+
+```js
+const streamOrResult = await subscribe({
+  schema,
+  document,
+  contextValue,
+});
+
+if (Symbol.asyncIterator in Object(streamOrResult)) {
+  for await (const result of streamOrResult) {
+    send(result);
+  }
+}
+```
+
+## Argument, Variable, and Directive Helpers
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `getVariableValues()` <ApiTag kind="changed-v17" /> | Function | Coerces operation variable values and returns either `{ variableValues }` or `{ errors }`. |
+| `getArgumentValues()` <ApiTag kind="changed-v17" /> | Function | Coerces argument values for a field, directive, or fragment argument definition. |
+| `getDirectiveValues()` | Function | Coerces values for a directive usage and returns `undefined` when the directive is absent. |
+
+## Pipeline Split Helpers
+
+v17 exposes validated argument objects so hosts can split the execution pipeline
+without re-implementing GraphQL.js internals. Most applications should use
+`execute()` and `subscribe()` directly; these helpers are for framework authors
+and advanced hosts.
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `validateExecutionArgs()` <ApiTag kind="new-v17" /> | Function | Validates `ExecutionArgs` — checks the schema, selects the operation, coerces variables, and fills in defaults. Returns `ValidatedExecutionArgs` on success or an array of `GraphQLError` values on failure. |
+| `validateSubscriptionArgs()` <ApiTag kind="new-v17" /> | Function | Validates `ExecutionArgs` for a subscription. Returns `ValidatedSubscriptionArgs` on success or an array of errors. |
+| `executeRootSelectionSet()` <ApiTag kind="new-v17" /> | Function | Executes the root selection set given a pre-validated `ValidatedExecutionArgs`. The stable, single-result root executor used internally by `execute()`. |
+| `experimentalExecuteRootSelectionSet()` <ApiTag kind="new-v17" /> | Function | Executes the root selection set with incremental delivery support. Used internally by `experimentalExecuteIncrementally()`. |
+| `executeSubscriptionEvent()` <ApiTag kind="new-v17" /> | Function | Executes one subscription event given pre-validated `ValidatedSubscriptionArgs`. Used internally by `subscribe()` and `mapSourceToResponseEvent()`. |
+| `mapSourceToResponseEvent()` <ApiTag kind="new-v17" /> | Function | Maps a source event stream to a GraphQL response event stream. Used internally by `subscribe()` and available to advanced hosts that manage their own event streams. |
+
+```js
+import {
+  validateExecutionArgs,
+  executeRootSelectionSet,
+  validateSubscriptionArgs,
+  mapSourceToResponseEvent,
+} from 'graphql/execution';
+
+// Split query execution into validation and execution phases:
+const validated = validateExecutionArgs({ schema, document, variableValues });
+
+const result =
+  'schema' in validated
+    ? await executeRootSelectionSet(validated)
+    : { errors: validated };
+
+// Manage a subscription stream manually:
+const validatedSub = validateSubscriptionArgs({ schema, document });
+if (!('schema' in validatedSub)) return { errors: validatedSub };
+
+const sourceStream = await createSourceEventStream(validatedSub);
+const responseStream = mapSourceToResponseEvent(validatedSub, sourceStream);
+
+for await (const event of responseStream) {
+  send(event);
+}
+```
+
+See [Advanced Execution Pipelines](/docs/advanced-execution-pipelines) for
+full usage patterns.
+
+## Incremental Delivery Exports
+
+The experimental incremental delivery API supports `@defer` and `@stream`.
+See [Defer and Stream](/docs/defer-stream) for usage.
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `experimentalExecuteIncrementally()` <ApiTag kind="new-v17" /> | Function | Executes a query or mutation with incremental delivery support. Returns `ExperimentalIncrementalExecutionResults` for operations that use `@defer` or `@stream`, or a plain `ExecutionResult` otherwise. |
+| `ExperimentalIncrementalExecutionResults` <ApiTag kind="new-v17" /> | Type | Result when incremental delivery is active: `{ initialResult, subsequentResults }`. |
+| `InitialIncrementalExecutionResult` <ApiTag kind="new-v17" /> | Type | First incremental result, carrying optional `data`, `errors`, and `hasNext: true`. |
+| `SubsequentIncrementalExecutionResult` <ApiTag kind="new-v17" /> | Type | Subsequent incremental payload with `incremental` chunks and `hasNext`. |
+| `IncrementalDeferResult` <ApiTag kind="new-v17" /> | Type | Incremental payload for one deferred fragment. |
+| `IncrementalStreamResult` <ApiTag kind="new-v17" /> | Type | Incremental payload for one streamed list item. |
+| `IncrementalResult` <ApiTag kind="new-v17" /> | Type | Union of `IncrementalDeferResult` and `IncrementalStreamResult`. |
+| `FormattedExperimentalIncrementalExecutionResults` <ApiTag kind="new-v17" /> | Type | JSON-serializable form of `ExperimentalIncrementalExecutionResults`. |
+| `FormattedInitialIncrementalExecutionResult` <ApiTag kind="new-v17" /> | Type | JSON-serializable form of `InitialIncrementalExecutionResult`. |
+| `FormattedSubsequentIncrementalExecutionResult` <ApiTag kind="new-v17" /> | Type | JSON-serializable form of `SubsequentIncrementalExecutionResult`. |
+| `FormattedIncrementalDeferResult` <ApiTag kind="new-v17" /> | Type | JSON-serializable form of `IncrementalDeferResult`. |
+| `FormattedIncrementalStreamResult` <ApiTag kind="new-v17" /> | Type | JSON-serializable form of `IncrementalStreamResult`. |
+| `FormattedIncrementalResult` <ApiTag kind="new-v17" /> | Type | JSON-serializable form of `IncrementalResult`. |
+
+```js
+import { experimentalExecuteIncrementally } from 'graphql/execution';
+
+const result = await experimentalExecuteIncrementally({ schema, document });
+
+if ('initialResult' in result) {
+  send(result.initialResult);
+  for await (const chunk of result.subsequentResults) {
+    send(chunk);
+  }
+} else {
+  send(result);
+}
+```
+
+## Execution Hooks and Abort
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| `AbortedGraphQLExecutionError` <ApiTag kind="new-v17" /> | Class | Thrown when execution is aborted via an `AbortSignal`. Extends `Error`. Caught internally during execution and converted to a field error. |
+| `ExecutionHooks` <ApiTag kind="new-v17" /> | Type | Object with optional lifecycle hook callbacks (`beforeField`, `afterField`, `onError`) passed to `execute()` via `ExecutionArgs.hooks`. |
+| `AsyncWorkFinishedInfo` <ApiTag kind="new-v17" /> | Type | Object passed to the `afterField` hook once asynchronous resolution completes. |
+
+```ts
+import type { ExecutionHooks } from 'graphql/execution';
+
+const hooks: ExecutionHooks = {
+  beforeField(info) {
+    return { startTime: performance.now() };
+  },
+  afterField(info, context) {
+    const elapsed = performance.now() - context.startTime;
+    recordFieldTiming(info.fieldName, elapsed);
+  },
+};
+
+await execute({ schema, document, hooks });
+```
+
+See [Execution Hooks](/docs/execution-hooks) for full usage and the hook type signatures.
+
+## Result and Argument Types
+
+| Export | Description |
+| --- | --- |
+| `ExecutionArgs` <ApiTag kind="changed-v17" /> | Arguments accepted by `execute()`, `subscribe()`, `validateExecutionArgs()`, `validateSubscriptionArgs()`, and related helpers. v17 adds `hooks`, `abortSignal`, and `hideSuggestions`. |
+| `ExecutionResult` | Standard GraphQL execution result with optional `data`, `errors`, and `extensions`. |
+| `FormattedExecutionResult` | JSON-serializable execution result shape. |
+| `ValidatedExecutionArgs` <ApiTag kind="new-v17" /> | Pre-validated execution arguments returned by `validateExecutionArgs()`. Consumed by `executeRootSelectionSet()` and `experimentalExecuteRootSelectionSet()`. |
+| `ValidatedSubscriptionArgs` <ApiTag kind="new-v17" /> | Pre-validated subscription arguments returned by `validateSubscriptionArgs()`. Consumed by `executeSubscriptionEvent()` and `mapSourceToResponseEvent()`. |
+| `RootSelectionSetExecutor` <ApiTag kind="new-v17" /> | Function type for the root selection set executor hook. Accepts `ValidatedExecutionArgs` and returns a promise for `ExecutionResult`. |

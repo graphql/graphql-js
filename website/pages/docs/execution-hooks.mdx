@@ -1,0 +1,122 @@
+---
+title: Execution Hooks and Async Cleanup
+sidebarTitle: Execution Hooks
+---
+
+import { Callout } from 'nextra/components';
+
+# Execution Hooks and Async Cleanup
+
+<Callout type="info">
+  Execution hooks are experimental in GraphQL.js v17. The first hook,
+  `asyncWorkFinished`, is useful for observing async cleanup after execution
+  completes or aborts.
+</Callout>
+
+GraphQL execution can finish producing a response while background cleanup is
+still running. This often happens with async iterables, stream cancellation, or
+resolver-started side effects. The v17 hooks API lets hosts observe that final
+cleanup boundary.
+
+## `asyncWorkFinished`
+
+Pass hooks through `execute()`, `subscribe()`, `graphql()`, or
+`experimentalExecuteIncrementally()`.
+
+```js
+import { execute } from 'graphql';
+
+await execute({
+  schema,
+  document,
+  hooks: {
+    asyncWorkFinished({ validatedExecutionArgs }) {
+      metrics.record('graphql.async_work_finished', {
+        operationName: validatedExecutionArgs.operationName,
+      });
+    },
+  },
+});
+```
+
+This callback fires after GraphQL.js has stopped producing payloads and tracked
+async cleanup work has settled.
+
+## Tracking cleanup started by resolvers
+
+Resolvers can register cleanup promises that are not returned directly from the
+resolver but still matter for lifecycle instrumentation.
+
+```js
+const Query = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    ping: {
+      type: GraphQLString,
+      async resolve(_source, _args, _context, info) {
+        const { track } = info.getAsyncHelpers();
+        const cleanup = closeResourceSoon().catch(() => undefined);
+
+        track([cleanup]);
+        return 'pong';
+      },
+    },
+  },
+});
+```
+
+When `track()` is used, GraphQL.js includes those promises in the lifecycle
+seen by `asyncWorkFinished`.
+
+## Aborts and incremental delivery
+
+Hooks are especially useful when execution is aborted or incremental delivery is
+used:
+
+- Abort may stop payload production before cleanup is complete.
+- Async iterator `return()` paths can continue after the response boundary.
+- Deferred work can leave short-lived cleanup tasks after the final patch.
+
+Pair hooks with [Handling Abort Signals](/docs/abort-signals) for timeout and
+cancellation instrumentation.
+
+## Stability expectations
+
+The hooks surface is experimental in v17 beta and may expand. Build host-level
+instrumentation so additional hook fields can be adopted without breaking
+existing behavior.
+
+For application-level telemetry, keep hook handlers idempotent and resilient to
+errors.
+
+## Safe hook handlers
+
+Treat hook handlers as observability code, not request-critical code. If a
+metrics backend fails, do not break GraphQL execution.
+
+```js
+function safeAsyncWorkFinishedHook(handler) {
+  return (payload) => {
+    try {
+      handler(payload);
+    } catch (error) {
+      logger.warn({ error }, 'asyncWorkFinished hook failed');
+    }
+  };
+}
+
+await execute({
+  schema,
+  document,
+  hooks: {
+    asyncWorkFinished: safeAsyncWorkFinishedHook(({ validatedExecutionArgs }) => {
+      metrics.record('graphql.async_work_finished', {
+        operationName: validatedExecutionArgs.operationName,
+      });
+    }),
+  },
+});
+```
+
+This pattern helps avoid cascading failures where telemetry outages impact query
+handling.
