@@ -1509,6 +1509,8 @@ export class Parser {
    *   `FRAGMENT_DEFINITION`
    *   `FRAGMENT_SPREAD`
    *   `INLINE_FRAGMENT`
+   *   `VARIABLE_DEFINITION`
+   *   `FRAGMENT_VARIABLE_DEFINITION`
    *
    * TypeSystemDirectiveLocation : one of
    *   `SCHEMA`

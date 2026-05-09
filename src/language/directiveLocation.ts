@@ -11,6 +11,7 @@ export const DirectiveLocation = {
   FRAGMENT_SPREAD: 'FRAGMENT_SPREAD' as const,
   INLINE_FRAGMENT: 'INLINE_FRAGMENT' as const,
   VARIABLE_DEFINITION: 'VARIABLE_DEFINITION' as const,
+  FRAGMENT_VARIABLE_DEFINITION: 'FRAGMENT_VARIABLE_DEFINITION' as const,
   /** Type System Definitions */
   SCHEMA: 'SCHEMA' as const,
   SCALAR: 'SCALAR' as const,
@@ -24,7 +25,6 @@ export const DirectiveLocation = {
   INPUT_OBJECT: 'INPUT_OBJECT' as const,
   INPUT_FIELD_DEFINITION: 'INPUT_FIELD_DEFINITION' as const,
   DIRECTIVE_DEFINITION: 'DIRECTIVE_DEFINITION' as const,
-  FRAGMENT_VARIABLE_DEFINITION: 'FRAGMENT_VARIABLE_DEFINITION' as const,
 } as const;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type DirectiveLocation =
