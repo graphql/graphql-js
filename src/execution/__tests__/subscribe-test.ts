@@ -25,6 +25,7 @@ import type { ExecutionArgs } from '../execute.js';
 import {
   createSourceEventStream,
   executeSubscriptionEvent,
+  mapSourceToResponseEvent,
   subscribe,
   validateSubscriptionArgs,
 } from '../execute.js';
@@ -394,7 +395,7 @@ describe('Subscription Initialization Phase', () => {
     });
   });
 
-  it('uses a custom default perEventExecutor', async () => {
+  it('maps a source stream to response events with a custom rootSelectionSetExecutor', async () => {
     const schema = new GraphQLSchema({
       query: DummyQueryType,
       subscription: new GraphQLObjectType({
@@ -410,15 +411,26 @@ describe('Subscription Initialization Phase', () => {
     }
 
     let count = 0;
-    const subscription = subscribe({
+    const validatedExecutionArgs = validateSubscriptionArgs({
       schema,
       document: parse('subscription { foo }'),
       rootValue: { foo: fooGenerator },
-      perEventExecutor: (validatedArgs) => {
+    });
+    assert('schema' in validatedExecutionArgs);
+
+    const resultOrStream = await createSourceEventStream(
+      validatedExecutionArgs,
+    );
+    assert(isAsyncIterable(resultOrStream));
+
+    const subscription = mapSourceToResponseEvent(
+      validatedExecutionArgs,
+      resultOrStream,
+      (validatedArgs) => {
         count++;
         return executeSubscriptionEvent(validatedArgs);
       },
-    });
+    );
     assert(isAsyncIterable(subscription));
 
     expect(await subscription.next()).to.deep.equal({

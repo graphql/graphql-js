@@ -374,12 +374,14 @@ export {
   getDirectiveValues,
   subscribe,
   createSourceEventStream,
+  mapSourceToResponseEvent,
   validateExecutionArgs,
   validateSubscriptionArgs,
 } from './execution/index.js';
 
 export type {
   ExecutionArgs,
+  RootSelectionSetExecutor,
   AsyncWorkFinishedInfo,
   ExecutionHooks,
   ValidatedExecutionArgs,

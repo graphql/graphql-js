@@ -10,11 +10,12 @@ export {
   experimentalExecuteRootSelectionSet,
   defaultFieldResolver,
   defaultTypeResolver,
+  mapSourceToResponseEvent,
   subscribe,
   validateExecutionArgs,
   validateSubscriptionArgs,
 } from './execute.js';
-export type { ExecutionArgs } from './execute.js';
+export type { ExecutionArgs, RootSelectionSetExecutor } from './execute.js';
 
 export type { AsyncWorkFinishedInfo, ExecutionHooks } from './hooks.js';
 

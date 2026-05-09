@@ -54,6 +54,10 @@ import { getArgumentValues, getVariableValues } from './values.js';
 const UNEXPECTED_EXPERIMENTAL_DIRECTIVES =
   'The provided schema unexpectedly contains experimental directives (@defer or @stream). These directives may only be utilized if experimental execution features are explicitly enabled.';
 
+export type RootSelectionSetExecutor = (
+  validatedExecutionArgs: ValidatedSubscriptionArgs,
+) => PromiseOrValue<ExecutionResult>;
+
 /**
  * Implements the "Executing requests" section of the GraphQL specification.
  *
@@ -232,11 +236,18 @@ export function subscribe(
 
   if (isPromise(resultOrStream)) {
     return resultOrStream.then((resolvedResultOrStream) =>
-      mapSourceToResponse(validatedExecutionArgs, resolvedResultOrStream),
+      isAsyncIterable(resolvedResultOrStream)
+        ? mapSourceToResponseEvent(
+            validatedExecutionArgs,
+            resolvedResultOrStream,
+          )
+        : resolvedResultOrStream,
     );
   }
 
-  return mapSourceToResponse(validatedExecutionArgs, resultOrStream);
+  return isAsyncIterable(resultOrStream)
+    ? mapSourceToResponseEvent(validatedExecutionArgs, resultOrStream)
+    : resultOrStream;
 }
 
 /**
@@ -301,11 +312,6 @@ export interface ExecutionArgs {
   fieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
   typeResolver?: Maybe<GraphQLTypeResolver<any, any>>;
   subscribeFieldResolver?: Maybe<GraphQLFieldResolver<any, any>>;
-  perEventExecutor?: Maybe<
-    (
-      validatedExecutionArgs: ValidatedSubscriptionArgs,
-    ) => PromiseOrValue<ExecutionResult>
-  >;
   hideSuggestions?: Maybe<boolean>;
   abortSignal?: Maybe<AbortSignal>;
   enableEarlyExecution?: Maybe<boolean>;
@@ -339,7 +345,6 @@ export function validateExecutionArgs(
     fieldResolver,
     typeResolver,
     subscribeFieldResolver,
-    perEventExecutor,
     abortSignal: externalAbortSignal,
     enableEarlyExecution,
     hooks,
@@ -427,7 +432,6 @@ export function validateExecutionArgs(
     fieldResolver: fieldResolver ?? defaultFieldResolver,
     typeResolver: typeResolver ?? defaultTypeResolver,
     subscribeFieldResolver: subscribeFieldResolver ?? defaultFieldResolver,
-    perEventExecutor: perEventExecutor ?? executeSubscriptionEvent,
     hideSuggestions,
     errorPropagation,
     externalAbortSignal: externalAbortSignal ?? undefined,
@@ -534,35 +538,35 @@ export const defaultFieldResolver: GraphQLFieldResolver<unknown, unknown> =
     }
   };
 
-function mapSourceToResponse(
+/**
+ * Implements the "MapSourceToResponseEvent" algorithm described in the
+ * GraphQL specification, mapping each event from a subscription source event
+ * stream to an ExecutionResult in the response stream.
+ */
+export function mapSourceToResponseEvent(
   validatedExecutionArgs: ValidatedSubscriptionArgs,
-  resultOrStream: ExecutionResult | AsyncIterable<unknown>,
-): AsyncGenerator<ExecutionResult, void, void> | ExecutionResult {
-  if (!isAsyncIterable(resultOrStream)) {
-    return resultOrStream;
-  }
-
+  sourceEventStream: AsyncIterable<unknown>,
+  rootSelectionSetExecutor: RootSelectionSetExecutor = executeSubscriptionEvent,
+): AsyncGenerator<ExecutionResult, void, void> {
   // For each payload yielded from a subscription, map it over the normal
   // GraphQL `execute` function, with `payload` as the rootValue.
-  // This implements the "MapSourceToResponseEvent" algorithm described in
-  // the GraphQL specification..
   function mapFn(payload: unknown): PromiseOrValue<ExecutionResult> {
     const perEventExecutionArgs: ValidatedSubscriptionArgs = {
       ...validatedExecutionArgs,
       rootValue: payload,
     };
-    return validatedExecutionArgs.perEventExecutor(perEventExecutionArgs);
+    return rootSelectionSetExecutor(perEventExecutionArgs);
   }
 
   const externalAbortSignal = validatedExecutionArgs.externalAbortSignal;
   if (externalAbortSignal) {
-    const generator = mapAsyncIterable(resultOrStream, mapFn);
+    const generator = mapAsyncIterable(sourceEventStream, mapFn);
     return {
       ...generator,
       next: () => cancellablePromise(generator.next(), externalAbortSignal),
     };
   }
-  return mapAsyncIterable(resultOrStream, mapFn);
+  return mapAsyncIterable(sourceEventStream, mapFn);
 }
 
 function executeSubscription(

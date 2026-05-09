@@ -113,9 +113,6 @@ export interface ValidatedExecutionArgs {
   fieldResolver: GraphQLFieldResolver<any, any>;
   typeResolver: GraphQLTypeResolver<any, any>;
   subscribeFieldResolver: GraphQLFieldResolver<any, any>;
-  perEventExecutor: (
-    validatedExecutionArgs: ValidatedSubscriptionArgs,
-  ) => PromiseOrValue<ExecutionResult>;
   hideSuggestions: boolean;
   errorPropagation: boolean;
   externalAbortSignal: AbortSignal | undefined;
