@@ -117,11 +117,12 @@ export class Queue<T> {
         started,
       });
       if (isPromise(result)) {
-        result.catch((error: unknown) => this._stop(error));
+        result.catch(this._stop.bind(this));
       }
     } catch (error) {
       const stopped = this._stop(error);
       if (isPromise(stopped)) {
+        /* node:coverage ignore next */
         stopped.catch(() => undefined);
       }
     }
@@ -137,7 +138,7 @@ export class Queue<T> {
     return withConcurrentAbruptClose(
       generator,
       () => this.cancel(),
-      (error) => this.abort(error),
+      this.abort.bind(this),
     );
   }
 
@@ -187,9 +188,11 @@ export class Queue<T> {
       await Promise.all([reducer(wrappedBatch), drained]);
     });
 
-    for await (const _ of sub /* c8 ignore start */) {
+    // Empty loop body is intentionally used to drain the subscription.
+    /* node:coverage ignore next 3 */
+    for await (const _ of sub) {
       // intentionally empty
-    } /* c8 ignore stop */
+    }
   }
 
   setCapacity(nextCapacity: number): void {
@@ -252,10 +255,10 @@ export class Queue<T> {
         try {
           const result = cleanupCallback(reason);
           return isPromise(result) ? [result] : [];
-        } /* c8 ignore start */ catch {
+        } catch {
           // ignore errors
           return [];
-        } /* c8 ignore stop */
+        }
       },
     );
     const cleanup =
@@ -368,6 +371,7 @@ export class Queue<T> {
     });
 
     if (isPromise(stopCompletion)) {
+      /* node:coverage ignore next */
       stopCompletion.catch(() => undefined);
     }
     return stopCompletion;

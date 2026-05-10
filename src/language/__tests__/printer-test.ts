@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { dedent, dedentString } from '../../__testUtils__/dedent.ts';
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.ts';

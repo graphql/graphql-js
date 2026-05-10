@@ -297,8 +297,7 @@ export class TypeInfo {
   leave(node: ASTNode): void {
     switch (node.kind) {
       case Kind.DOCUMENT:
-        this._fragmentSignaturesByName = /* c8 ignore start */ () =>
-          null /* c8 ignore end */;
+        this._fragmentSignaturesByName = () => null;
         break;
       case Kind.SELECTION_SET:
         this._parentTypeStack.pop();

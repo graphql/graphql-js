@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.ts';
 import { viralSDL } from '../../__testUtils__/viralSDL.ts';

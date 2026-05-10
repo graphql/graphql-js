@@ -4,7 +4,7 @@
 // exercise the real syntax on newer Node versions.
 //
 // Remove when we can drop support for Node 22 and use `await using` directly in each test.
-/* c8 ignore next 10 */
+/* node:coverage ignore next 10 */
 const supportsAsyncUsing = (() => {
   try {
     // Compile the syntax probe dynamically so older Node versions can parse this file.
@@ -16,7 +16,7 @@ const supportsAsyncUsing = (() => {
   }
 })();
 
-/* c8 ignore next 2 */
+/* node:coverage ignore next 2 */
 const asyncDispose: typeof Symbol.asyncDispose =
   Symbol.asyncDispose ?? Symbol.for('Symbol.asyncDispose');
 
@@ -26,7 +26,7 @@ export async function withAsyncUsing<T>(
 ): Promise<void> {
   // On Node 24+, supportsAsyncUsing is true and this branch is unreachable.
   // On Node 22, this is the branch that gets executed.
-  /* c8 ignore start */
+  /* node:coverage ignore next 26 */
   if (!supportsAsyncUsing) {
     try {
       await useResource(value);
@@ -53,5 +53,4 @@ export async function withAsyncUsing<T>(
     const runWithAsyncUsing = createRunWithAsyncUsing();
     await runWithAsyncUsing(value, useResource);
   }
-  /* c8 ignore end */
 }

@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.ts';
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
@@ -451,7 +452,7 @@ describe('Subscription Initialization Phase', () => {
         yield { foo: 'FooValue' };
       },
       async *bar() {
-        /* c8 ignore next 0 */
+        /* node:coverage ignore next 0 */
       },
     };
 

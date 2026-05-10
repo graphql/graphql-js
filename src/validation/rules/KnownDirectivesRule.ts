@@ -132,7 +132,7 @@ function getDirectiveLocationForASTPath(
     case Kind.DIRECTIVE_EXTENSION:
       return DirectiveLocation.DIRECTIVE_DEFINITION;
     // Not reachable, all possible types have been considered.
-    /* c8 ignore next 2 */
+    /* node:coverage ignore next 2 */
     default:
       invariant(false, 'Unexpected kind: ' + inspect(appliedTo.kind));
   }

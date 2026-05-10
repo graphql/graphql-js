@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
@@ -18,9 +19,11 @@ import { GraphQLSchema } from '../../type/schema.ts';
 
 import { buildSchema } from '../../utilities/buildASTSchema.ts';
 
+import type { SharedExecutionContext } from '../createSharedExecutionContext.ts';
 import type { ExecutionArgs } from '../execute.ts';
 import { execute, experimentalExecuteIncrementally } from '../execute.ts';
-import type { ExecutionResult } from '../Executor.ts';
+import type { ExecutionResult, ValidatedExecutionArgs } from '../Executor.ts';
+import { runAsyncWorkFinishedHook } from '../hooks.ts';
 
 const executeHookSchema = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -159,6 +162,29 @@ describe('Execute: Hooks', () => {
     });
     await hooksFinished;
     expect(calls).to.deep.equal(['asyncWork']);
+  });
+
+  it('ignores async-work tracker wait rejection', async () => {
+    const validatedExecutionArgs = {} as unknown as ValidatedExecutionArgs;
+    const sharedExecutionContext = {
+      asyncWorkTracker: {
+        wait() {
+          return Promise.reject(new Error('tracker failed'));
+        },
+      },
+    } as unknown as SharedExecutionContext;
+
+    let hookCalled = false;
+    runAsyncWorkFinishedHook(
+      validatedExecutionArgs,
+      sharedExecutionContext,
+      () => {
+        hookCalled = true;
+      },
+    );
+
+    await resolveOnNextTick();
+    expect(hookCalled).to.equal(false);
   });
 
   it('does not wait for un-awaited promiseAll helper usage before asyncWorkFinished', async () => {

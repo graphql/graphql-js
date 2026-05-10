@@ -116,9 +116,7 @@ function typeToExtKind(type: GraphQLNamedType): Kind {
   }
   if (isInputObjectType(type)) {
     return Kind.INPUT_OBJECT_TYPE_EXTENSION;
-    // c8 control statement technically placed a line early secondary to
-    // slight swc source mapping error (at least as compared to ts-node without swc)
-    /* c8 ignore next 4 */
+    /* node:coverage ignore next 4 */
   }
   // Not reachable. All possible types have been considered
   invariant(false, 'Unexpected type: ' + inspect(type));
@@ -139,7 +137,7 @@ function extensionKindToTypeName(kind: Kind): string {
     case Kind.INPUT_OBJECT_TYPE_EXTENSION:
       return 'input object';
     // Not reachable. All possible types have been considered
-    /* c8 ignore next 2 */
+    /* node:coverage ignore next 2 */
     default:
       invariant(false, 'Unexpected kind: ' + inspect(kind));
   }

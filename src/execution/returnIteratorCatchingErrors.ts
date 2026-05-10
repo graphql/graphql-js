@@ -3,7 +3,7 @@ export async function returnIteratorCatchingErrors(
 ): Promise<void> {
   try {
     await iterator.return?.();
-  } catch /* c8 ignore next 2 */ {
+  } catch {
     // ignore errors
   }
 }

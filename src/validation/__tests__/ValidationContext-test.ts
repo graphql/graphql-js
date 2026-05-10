@@ -1,7 +1,6 @@
-import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { describe, it } from 'node:test';
 
-import { identityFunc } from '../../jsutils/identityFunc.ts';
+import { expect } from 'chai';
 
 import { parse } from '../../language/parser.ts';
 
@@ -20,7 +19,7 @@ describe('ValidationContext', () => {
     const schema = new GraphQLSchema({});
     const typeInfo = new TypeInfo(schema);
     const ast = parse('{ foo }');
-    const onError = identityFunc;
+    const onError = () => undefined;
 
     const astContext = new ASTValidationContext(ast, onError);
     expect(Object.prototype.toString.call(astContext)).to.equal(

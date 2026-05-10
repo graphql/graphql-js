@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.ts';
 
@@ -63,7 +64,9 @@ describe('withCancellation', () => {
       await expectPromise(withAbort.promise).toRejectWith('Cancelled!');
 
       deferred.reject(new Error('Rejected later'));
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
     } finally {
       // eslint-disable-next-line no-undef
       process.removeListener('unhandledRejection', unhandledRejectionListener);
@@ -151,7 +154,9 @@ describe('cancellablePromise', () => {
       await expectPromise(cancelledPromise).toRejectWith('Cancelled!');
 
       deferred.reject(new Error('Rejected later'));
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
     } finally {
       // eslint-disable-next-line no-undef
       process.removeListener('unhandledRejection', unhandledRejectionListener);

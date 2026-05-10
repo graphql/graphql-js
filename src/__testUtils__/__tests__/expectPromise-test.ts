@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectPromise } from '../expectPromise.ts';
 
@@ -18,8 +19,10 @@ describe('expectPromise', () => {
 
   it('toReject throws if the promise does not reject', async () => {
     try {
-      await expectPromise(Promise.resolve({})).toReject(); /* c8 ignore start */
-    } /* c8 ignore stop */ catch (err) {
+      await expectPromise(
+        Promise.resolve({}),
+      ).toReject(); /* node:coverage disable */
+    } /* node:coverage enable */ catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       expect(errorMessage).to.equal(
         "Promise should have rejected, but resolved as '{}'",
@@ -38,8 +41,8 @@ describe('expectPromise', () => {
     try {
       await expectPromise(Promise.resolve({})).toRejectWith(
         'foo',
-      ); /* c8 ignore start */
-    } /* c8 ignore stop */ catch (err) {
+      ); /* node:coverage disable */
+    } /* node:coverage enable */ catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       expect(errorMessage).to.equal(
         "Promise should have rejected with message 'foo', but resolved as '{}'",
@@ -51,8 +54,8 @@ describe('expectPromise', () => {
     try {
       await expectPromise(Promise.reject(new Error('foo'))).toRejectWith(
         'bar',
-      ); /* c8 ignore start */
-    } /* c8 ignore stop */ catch (err) {
+      ); /* node:coverage disable */
+    } /* node:coverage enable */ catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       expect(errorMessage).to.equal(
         "expected Error: foo to have property 'message' of 'bar', but got 'foo'",
@@ -64,10 +67,10 @@ describe('expectPromise', () => {
     try {
       await expectPromise(Promise.reject(new Error('foo'))).toRejectWith(
         'foo',
-      ); /* c8 ignore start */
+      ); /* node:coverage disable */
     } catch (_err) {
       // Not reached.
       expect.fail('promise threw unexpectedly');
-    } /* c8 ignore stop */
+    } /* node:coverage enable */
   });
 });

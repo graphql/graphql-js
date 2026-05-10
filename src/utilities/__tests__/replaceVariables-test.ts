@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { invariant } from '../../jsutils/invariant.ts';
 import type { ReadOnlyObjMap } from '../../jsutils/ObjMap.ts';

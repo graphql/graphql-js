@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { parse } from '../language/parser.ts';
 import { Source } from '../language/source.ts';
@@ -38,7 +39,7 @@ describe('Star Wars Validation Tests', () => {
           appearsIn
         }
       `;
-      return expect(validationErrors(query)).to.be.empty;
+      expect(validationErrors(query)).to.deep.equal([]);
     });
 
     it('Notes that non-existent fields are invalid', () => {
@@ -49,7 +50,7 @@ describe('Star Wars Validation Tests', () => {
           }
         }
       `;
-      return expect(validationErrors(query)).to.not.be.empty;
+      expect(validationErrors(query)).to.not.deep.equal([]);
     });
 
     it('Requires fields on objects', () => {
@@ -58,7 +59,7 @@ describe('Star Wars Validation Tests', () => {
           hero
         }
       `;
-      return expect(validationErrors(query)).to.not.be.empty;
+      expect(validationErrors(query)).to.not.deep.equal([]);
     });
 
     it('Disallows fields on scalars', () => {
@@ -71,7 +72,7 @@ describe('Star Wars Validation Tests', () => {
           }
         }
       `;
-      return expect(validationErrors(query)).to.not.be.empty;
+      expect(validationErrors(query)).to.not.deep.equal([]);
     });
 
     it('Disallows object fields on interfaces', () => {
@@ -83,7 +84,7 @@ describe('Star Wars Validation Tests', () => {
           }
         }
       `;
-      return expect(validationErrors(query)).to.not.be.empty;
+      expect(validationErrors(query)).to.not.deep.equal([]);
     });
 
     it('Allows object fields in fragments', () => {
@@ -99,7 +100,7 @@ describe('Star Wars Validation Tests', () => {
           primaryFunction
         }
       `;
-      return expect(validationErrors(query)).to.be.empty;
+      expect(validationErrors(query)).to.deep.equal([]);
     });
 
     it('Allows object fields in inline fragments', () => {
@@ -113,7 +114,7 @@ describe('Star Wars Validation Tests', () => {
           }
         }
       `;
-      return expect(validationErrors(query)).to.be.empty;
+      expect(validationErrors(query)).to.deep.equal([]);
     });
   });
 });

@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { identityFunc } from '../../jsutils/identityFunc.ts';
 import { invariant } from '../../jsutils/invariant.ts';

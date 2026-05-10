@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';

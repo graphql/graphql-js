@@ -263,9 +263,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
           }
           if (isNonNullType(type)) {
             return TypeKind.NON_NULL;
-            // c8 control statement technically placed a line early secondary to
-            // slight swc source mapping error (at least as compared to ts-node without swc)
-            /* c8 ignore next 4 */
+            /* node:coverage ignore next 4 */
           }
           // Not reachable, all possible types have been considered)
           invariant(false, `Unexpected type: "${inspect(type)}".`);
@@ -279,7 +277,7 @@ export const __Type: GraphQLObjectType = new GraphQLObjectType({
         type: GraphQLString,
         resolve: (type) =>
           // FIXME: add test case
-          /* c8 ignore next */
+          /* node:coverage ignore next */
           'description' in type ? type.description : undefined,
       },
       specifiedByURL: {

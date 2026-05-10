@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { version, versionInfo } from '../version.ts';
 
@@ -19,7 +20,7 @@ describe('Version', () => {
     expect(patch).to.be.a('number').at.least(0);
 
     // Can't be verified on all versions
-    /* c8 ignore start */
+    /* node:coverage disable */
     switch (preReleaseTag?.split('.').length) {
       case undefined:
         break;
@@ -36,7 +37,7 @@ describe('Version', () => {
       default:
         expect.fail('Invalid pre-release tag: ' + preReleaseTag);
     }
-    /* c8 ignore stop */
+    /* node:coverage enable */
   });
 
   it('version', () => {
@@ -45,7 +46,7 @@ describe('Version', () => {
     const { major, minor, patch, preReleaseTag } = versionInfo;
     expect(version).to.equal(
       // Can't be verified on all versions
-      /* c8 ignore next 3 */
+      /* node:coverage ignore next 3 */
       preReleaseTag === null
         ? `${major}.${minor}.${patch}`
         : `${major}.${minor}.${patch}-${preReleaseTag}`,

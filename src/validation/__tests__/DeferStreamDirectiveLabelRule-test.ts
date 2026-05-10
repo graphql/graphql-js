@@ -1,4 +1,4 @@
-import { describe, it } from 'mocha';
+import { describe, it } from 'node:test';
 
 import { DeferStreamDirectiveLabelRule } from '../rules/DeferStreamDirectiveLabelRule.ts';
 

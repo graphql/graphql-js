@@ -982,7 +982,7 @@ function getUnionMemberTypeNodes(
     astNode != null ? [astNode, ...extensionASTNodes] : extensionASTNodes;
 
   return nodes
-    .flatMap((unionNode) => /* c8 ignore next */ unionNode.types ?? [])
+    .flatMap((unionNode) => unionNode.types ?? [])
     .filter((typeNode) => typeNode.name.value === typeName);
 }
 

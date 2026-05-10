@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { inspect } from '../inspect.ts';
 
@@ -34,13 +35,13 @@ describe('inspect', () => {
   it('function', () => {
     const unnamedFuncStr = inspect(
       // Never called and used as a placeholder
-      /* c8 ignore next */
+      /* node:coverage ignore next */
       () => expect.fail('Should not be called'),
     );
     expect(unnamedFuncStr).to.equal('[function]');
 
     // Never called and used as a placeholder
-    /* c8 ignore next 3 */
+    /* node:coverage ignore next 3 */
     function namedFunc() {
       expect.fail('Should not be called');
     }

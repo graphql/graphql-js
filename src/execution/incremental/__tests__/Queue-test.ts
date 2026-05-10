@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
+import { describe, it } from 'node:test';
 
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
@@ -147,7 +146,9 @@ describe('Queue', () => {
       push(2);
       push(3);
       // awaiting macro-task delay
-      await new Promise((r) => setTimeout(r));
+      await new Promise((r) => {
+        setTimeout(r);
+      });
       push(4);
       push(5);
       push(6);
@@ -268,6 +269,51 @@ describe('Queue', () => {
     await expectPromise(
       expectSingleStop(fixture, [() => queue.abort(abortReason)]),
     ).toRejectWith('Abort!');
+  });
+
+  it('aborts future subscribers when queue.abort() has no pending requests', async () => {
+    const queue = new Queue<number>(() => {
+      // no pushes
+    });
+    const abortReason = new Error('Abort!');
+
+    queue.abort(abortReason);
+
+    await expectPromise(queue.subscribe().next()).toRejectWith('Abort!');
+  });
+
+  it('allows onStop cleanup callbacks to return non-promises', async () => {
+    let stop!: (reason?: unknown) => PromiseOrValue<void>;
+    let cleanupCallsCount = 0;
+    const queue = new Queue<number>(({ onStop, stop: savedStop }) => {
+      stop = savedStop;
+      onStop(() => {
+        cleanupCallsCount += 1;
+        return undefined;
+      });
+    });
+
+    const sub = queue.subscribe();
+    const stopResult = stop();
+
+    expect(isPromise(stopResult)).to.equal(false);
+    expect(cleanupCallsCount).to.equal(1);
+    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
+  });
+
+  it('ignores errors thrown from onStop cleanup callbacks', async () => {
+    let stop!: (reason?: unknown) => PromiseOrValue<void>;
+    const queue = new Queue<number>(({ onStop, stop: savedStop }) => {
+      stop = savedStop;
+      onStop(() => {
+        throw new Error('cleanup failed');
+      });
+    });
+
+    const sub = queue.subscribe();
+
+    expect(() => stop()).to.not.throw();
+    expect(await sub.next()).to.deep.equal({ done: true, value: undefined });
   });
 
   it('stop requests no-op after stop()', async () => {
@@ -478,7 +524,9 @@ describe('Queue', () => {
     const batches: Array<ReadonlyArray<number>> = [];
     const queue = new Queue<number>(async ({ push, stop }) => {
       push(1);
-      await new Promise((resolve) => setTimeout(resolve));
+      await new Promise((resolve) => {
+        setTimeout(resolve);
+      });
       push(2);
       stop();
     });

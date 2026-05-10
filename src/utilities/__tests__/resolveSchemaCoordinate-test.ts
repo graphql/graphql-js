@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import type {
   GraphQLEnumType,

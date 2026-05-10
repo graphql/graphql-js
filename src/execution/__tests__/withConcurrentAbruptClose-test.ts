@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.ts';
 import { spyOnMethod } from '../../__testUtils__/spyOn.ts';
@@ -62,6 +63,31 @@ describe('withConcurrentAbruptClose', () => {
       value: undefined,
       done: true,
     });
+  });
+
+  it('tracks completion when next() rejects', async () => {
+    const source: AsyncGenerator<number, void, void> = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next(): Promise<IteratorResult<number, void>> {
+        return Promise.reject(new Error('Oops'));
+      },
+      return(): Promise<IteratorResult<number, void>> {
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      throw(reason?: unknown): Promise<IteratorResult<number, void>> {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return Promise.reject(reason);
+      },
+      async [Symbol.asyncDispose]() {
+        await this.return();
+      },
+    };
+
+    const generator = withConcurrentAbruptClose(source, () => undefined);
+
+    await expectPromise(generator.next()).toRejectWith('Oops');
   });
 
   it('calls function when thrown', async () => {
@@ -329,6 +355,35 @@ describe('withConcurrentAbruptClose', () => {
 
     expect(cleanupSpy.callCount).to.equal(0);
     expect(returnSpy.callCount).to.equal(1);
+  });
+
+  it('handles disposal when wrapped generator has no async-dispose hook', async () => {
+    let cleanupCalls = 0;
+    const source = {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+      next(): Promise<IteratorResult<number, void>> {
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      return(): Promise<IteratorResult<number, void>> {
+        return Promise.resolve({ done: true, value: undefined });
+      },
+      throw(reason?: unknown): Promise<IteratorResult<number, void>> {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return Promise.reject(reason);
+      },
+    };
+
+    const wrapped = withConcurrentAbruptClose(
+      source as AsyncGenerator<number, void, void>,
+      () => {
+        cleanupCalls += 1;
+      },
+    );
+
+    await wrapped[asyncDispose]();
+    expect(cleanupCalls).to.equal(1);
   });
 
   it('returns the generator itself when the `Symbol.asyncIterator` method is called', async () => {

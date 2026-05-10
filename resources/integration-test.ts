@@ -1,6 +1,5 @@
 import fs from 'node:fs';
-
-import { describe, it } from 'mocha';
+import { describe, it } from 'node:test';
 
 import { localRepoPath, makeTmpDir, npm, readPackageJSON } from './utils.ts';
 
@@ -36,7 +35,7 @@ describe('Integration Tests', () => {
     const projectPath = tmpDirPath(projectName);
     const packageJSON = readPackageJSON(projectPath);
 
-    it(packageJSON.description, () => {
+    it(packageJSON.description, { timeout: 120000 }, () => {
       // TODO: figure out a way to run it with --ignore-scripts
       npm({ cwd: projectPath, quiet: true }).install();
       npm({
@@ -48,7 +47,7 @@ describe('Integration Tests', () => {
           DENO_VERSION,
         },
       }).run('test');
-    }).timeout(120000);
+    });
   }
 
   testOnNodeProject('ts');

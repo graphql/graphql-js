@@ -1,5 +1,6 @@
+import { before, describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { before, describe, it } from 'mocha';
 
 import { enableDevInstanceOf, instanceOf } from '../instanceOf.ts';
 

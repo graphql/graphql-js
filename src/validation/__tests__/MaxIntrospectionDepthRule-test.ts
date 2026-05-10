@@ -1,4 +1,4 @@
-import { describe, it } from 'mocha';
+import { describe, it } from 'node:test';
 
 import { getIntrospectionQuery } from '../../utilities/getIntrospectionQuery.ts';
 

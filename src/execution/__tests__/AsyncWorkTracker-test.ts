@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
@@ -94,7 +95,9 @@ describe('promiseAllTrackOnReject', () => {
     expect(tracker.pendingAsyncWork.size).to.equal(1);
 
     delayed.reject(new Error('late bad'));
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
 
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);

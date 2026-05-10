@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
@@ -1808,7 +1809,7 @@ describe('Introspection', () => {
       schemaDescription: true,
     });
 
-    /* c8 ignore start */
+    /* node:coverage disable */
     function fieldResolver(
       _1: any,
       _2: any,
@@ -1821,7 +1822,7 @@ describe('Introspection', () => {
     function typeResolver(_1: any, _2: any, info: GraphQLResolveInfo): never {
       expect.fail(`Called on ${info.parentType}::${info.fieldName}`);
     }
-    /* c8 ignore stop */
+    /* node:coverage enable */
 
     const result = graphqlSync({
       schema,

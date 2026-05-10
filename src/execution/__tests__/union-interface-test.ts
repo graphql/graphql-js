@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 
@@ -206,9 +207,11 @@ const TypeA = new GraphQLObjectType({
     nameA: { type: GraphQLString },
   }),
   isTypeOf: (_value, _context, _info) =>
-    new Promise((_resolve, reject) =>
-      setTimeout(() => reject(new Error('TypeA_isTypeOf_rejected')), 10),
-    ),
+    new Promise((_resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error('TypeA_isTypeOf_rejected'));
+      }, 10);
+    }),
 });
 
 const TypeB = new GraphQLObjectType({
@@ -744,7 +747,9 @@ describe('Execute: Union and intersection types', () => {
 
     // Give the TypeA promise a chance to reject and the listener to fire
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
 
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
@@ -768,12 +773,12 @@ describe('Execute: Union and intersection types', () => {
         nameAsyncReject: { type: GraphQLString },
       }),
       isTypeOf: (_value, _context, _info) =>
-        new Promise((_resolve, reject) =>
+        new Promise((_resolve, reject) => {
           setTimeout(
             () => reject(new Error('TypeAsyncReject_isTypeOf_rejected')),
             10,
-          ),
-        ),
+          );
+        }),
     });
 
     const TypeThrowing = new GraphQLObjectType({
@@ -830,7 +835,9 @@ describe('Execute: Union and intersection types', () => {
     });
     expect(result.errors?.[0].message).to.equal('TypeThrowing_isTypeOf_threw');
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
 
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);

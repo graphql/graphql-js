@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import type { ObjMapLike } from '../ObjMap.ts';
 import { toObjMap } from '../toObjMap.ts';

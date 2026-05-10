@@ -184,7 +184,7 @@ function maybeUseDefaultValue(
   } catch (error) {
     const defaultInput = inputValue.default;
     // Defensive: coerceDefaultValue should only throw while coercing a default.
-    /* c8 ignore next 3 */
+    /* node:coverage ignore next 3 */
     if (defaultInput === undefined) {
       throw error;
     }
@@ -372,7 +372,7 @@ function coerceArgument(
       fragmentVariableValues,
       hideSuggestions,
     );
-    /* c8 ignore next */
+    /* node:coverage ignore next */
     invariant(false, 'Invalid argument');
   }
   coercedValues[argName] = coercedValue;

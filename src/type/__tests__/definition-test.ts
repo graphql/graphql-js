@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { identityFunc } from '../../jsutils/identityFunc.ts';
 import { inspect } from '../../jsutils/inspect.ts';
@@ -55,7 +56,7 @@ const NonNullScalarType = new GraphQLNonNull(ScalarType);
 const ListOfNonNullScalarsType = new GraphQLList(NonNullScalarType);
 const NonNullListOfScalars = new GraphQLNonNull(ListOfScalarsType);
 
-/* c8 ignore next */
+/* node:coverage ignore next */
 const passThroughFunc = (arg: any) => arg;
 const dummyAny = {} as any;
 

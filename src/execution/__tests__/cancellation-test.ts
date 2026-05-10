@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectEqualPromisesOrValues } from '../../__testUtils__/expectEqualPromisesOrValues.ts';
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
@@ -83,7 +84,7 @@ describe('Execute: Cancellation', () => {
         todo: async () =>
           Promise.resolve({
             id: '1',
-            /* c8 ignore next */
+            /* node:coverage ignore next */
             author: () => expect.fail('Should not be called'),
           }),
       },
@@ -163,7 +164,7 @@ describe('Execute: Cancellation', () => {
         todo: async () =>
           Promise.resolve({
             id: '1',
-            /* c8 ignore next */
+            /* node:coverage ignore next */
             author: () => expect.fail('Should not be called'),
           }),
       },
@@ -395,7 +396,7 @@ describe('Execute: Cancellation', () => {
       rootValue: {
         todo: {
           id: '1',
-          /* c8 ignore next 3 */
+          /* node:coverage ignore next 3 */
           author: async () =>
             Promise.resolve(() => expect.fail('Should not be called')),
         },
@@ -527,8 +528,8 @@ describe('Execute: Cancellation', () => {
           async *items() {
             yield await new Promise(() => {
               /* will never resolve */
-            }); /* c8 ignore start */
-          } /* c8 ignore stop */,
+            }); /* node:coverage disable */
+          } /* node:coverage enable */,
         }),
       },
     });
@@ -666,7 +667,7 @@ describe('Execute: Cancellation', () => {
         nonNullableTodo: async () =>
           Promise.resolve({
             id: '1',
-            /* c8 ignore next */
+            /* node:coverage ignore next */
             author: () => expect.fail('Should not be called'),
           }),
       },
@@ -833,7 +834,7 @@ describe('Execute: Cancellation', () => {
       abortSignal: abortController.signal,
       rootValue: {
         foo: async () => Promise.resolve('baz'),
-        /* c8 ignore next */
+        /* node:coverage ignore next */
         bar: () => expect.fail('Should not be called'),
       },
     });
@@ -869,7 +870,7 @@ describe('Execute: Cancellation', () => {
         schema,
         abortSignal: abortController.signal,
         rootValue: {
-          /* c8 ignore next */
+          /* node:coverage ignore next */
           todo: () => expect.fail('Should not be called'),
         },
       }),

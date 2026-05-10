@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { parse, parseValue } from '../../language/parser.ts';
 import { print } from '../../language/printer.ts';
@@ -77,6 +78,16 @@ describe('TypeInfo', () => {
 });
 
 describe('visitWithTypeInfo', () => {
+  it('returns null fragment signatures after document traversal completes', () => {
+    const typeInfo = new TypeInfo(testSchema);
+    const ast = parse('{ pet { name } }');
+
+    visit(ast, visitWithTypeInfo(typeInfo, {}));
+
+    const fragmentSignatureByName = typeInfo.getFragmentSignatureByName();
+    expect(fragmentSignatureByName('UnusedFragment')).to.equal(null);
+  });
+
   it('supports different operation types', () => {
     const schema = buildSchema(`
       schema {

@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import type { Maybe } from '../../jsutils/Maybe.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';

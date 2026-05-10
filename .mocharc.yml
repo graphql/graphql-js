@@ -1,7 +1,0 @@
-fail-zero: true
-throw-deprecation: true
-check-leaks: true
-extension:
-  - ts
-node-option:
-  - 'experimental-strip-types=true'

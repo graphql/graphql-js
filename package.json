@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/graphql/graphql-js.git"
+    "url": "git+https://github.com/graphql/graphql-js.git"
   },
   "keywords": [
     "graphql",
@@ -29,7 +29,8 @@
     "node": "^22.0.0 || ^24.0.0 || >=25.0.0"
   },
   "scripts": {
-    "fuzzonly": "mocha --full-trace src/**/__tests__/**/*-fuzz.ts",
+    "node:test": "node --experimental-strip-types --throw-deprecation --test --experimental-test-isolation=none --test-concurrency=1 --test-reporter=spec",
+    "fuzzonly": "npm run node:test -- \"src/**/__tests__/**/*-fuzz.ts\"",
     "changelog": "node --experimental-strip-types resources/gen-changelog.ts",
     "release:prepare": "node --experimental-strip-types resources/release-prepare.ts",
     "release:metadata": "node --experimental-strip-types resources/release-metadata.ts",
@@ -39,25 +40,22 @@
     "check": "npm run check:ts && npm run check:deno",
     "check:ts": "tsc --pretty",
     "check:deno": "npm run build:deno && deno publish --dry-run --allow-dirty --config denoDist/jsr.json",
-    "testonly": "mocha --full-trace src/**/__tests__/**/*-test.ts",
-    "testonly:cover": "c8 npm run testonly",
-    "testonly:watch": "npm run testonly -- --watch",
+    "testonly": "npm run node:test -- \"src/**/__tests__/**/*-test.ts\"",
+    "testonly:cover": "npm run node:test -- --experimental-test-coverage --test-coverage-include=\"src/**/*.ts\" --test-coverage-exclude=\"src/**/__tests__/**\" --test-coverage-exclude=\"**/*-test.ts\" --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 \"src/**/__tests__/**/*-test.ts\"",
+    "testonly:watch": "npm run node:test -- --watch \"src/**/__tests__/**/*-test.ts\"",
     "prettier": "prettier --cache --cache-strategy metadata --write --list-different .",
     "prettier:check": "prettier --cache --cache-strategy metadata --check .",
     "precommit": "lint-staged",
     "check:spelling": "cspell --cache --no-progress \"**/*\"",
-    "check:integrations": "mocha --full-trace resources/integration-test.ts",
+    "check:integrations": "npm run node:test -- \"resources/integration-test.ts\"",
     "build:npm": "node --experimental-strip-types resources/build-npm.ts",
     "build:deno": "node --experimental-strip-types resources/build-deno.ts",
     "diff:npm": "node --experimental-strip-types resources/diff-npm-package.ts",
     "prepare": "husky"
   },
   "devDependencies": {
-    "@swc/core": "1.15.11",
     "@types/chai": "5.2.3",
-    "@types/mocha": "10.0.10",
     "@types/node": "25.3.0",
-    "c8": "10.1.3",
     "chai": "6.2.2",
     "cspell": "9.6.4",
     "eslint": "9.39.3",
@@ -69,9 +67,7 @@
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
     "mitata": "1.0.34",
-    "mocha": "11.7.5",
     "prettier": "3.8.1",
-    "ts-node": "10.9.2",
     "typescript": "6.0.3",
     "typescript-eslint": "8.59.0"
   },

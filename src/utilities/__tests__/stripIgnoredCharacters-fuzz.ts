@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert } from 'chai';
-import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.ts';
 import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings.ts';
@@ -264,32 +265,36 @@ describe('stripIgnoredCharacters', () => {
     ).toStayTheSame();
   });
 
-  it('strips ignored characters inside random block strings', () => {
-    // Testing with length >7 is taking exponentially more time. However it is
-    // highly recommended to test with increased limit if you make any change.
-    for (const fuzzStr of genFuzzStrings({
-      allowedChars: ['\n', '\t', ' ', '"', 'a', '\\'],
-      maxLength: 7,
-    })) {
-      const testStr = '"""' + fuzzStr + '"""';
+  it(
+    'strips ignored characters inside random block strings',
+    { timeout: 20000 },
+    () => {
+      // Testing with length >7 is taking exponentially more time. However it is
+      // highly recommended to test with increased limit if you make any change.
+      for (const fuzzStr of genFuzzStrings({
+        allowedChars: ['\n', '\t', ' ', '"', 'a', '\\'],
+        maxLength: 7,
+      })) {
+        const testStr = '"""' + fuzzStr + '"""';
 
-      let testValue;
-      try {
-        testValue = lexValue(testStr);
-      } catch (_e) {
-        continue; // skip invalid values
-      }
+        let testValue;
+        try {
+          testValue = lexValue(testStr);
+        } catch (_e) {
+          continue; // skip invalid values
+        }
 
-      const strippedValue = lexValue(stripIgnoredCharacters(testStr));
+        const strippedValue = lexValue(stripIgnoredCharacters(testStr));
 
-      assert(
-        testValue === strippedValue,
-        dedent`
+        assert(
+          testValue === strippedValue,
+          dedent`
           Expected lexValue(stripIgnoredCharacters(${inspectStr(testStr)}))
             to equal ${inspectStr(testValue)}
             but got  ${inspectStr(strippedValue)}
         `,
-      );
-    }
-  }).timeout(20000);
+        );
+      }
+    },
+  );
 });

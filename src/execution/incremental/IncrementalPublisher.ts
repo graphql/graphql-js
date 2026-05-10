@@ -277,8 +277,7 @@ export class IncrementalPublisher {
         continue;
       }
       const id = this._ids.get(deliveryGroup);
-      // TODO: add test case for when an group has not been released, but might be processed for the shortest path.
-      /* c8 ignore next 3 */
+      // TODO: Investigate why there is no coverage gap using node native test coverage.
       if (id === undefined) {
         continue;
       }

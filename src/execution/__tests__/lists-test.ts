@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
@@ -246,7 +247,9 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
       ],
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
 
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
@@ -297,7 +300,9 @@ describe('Execute: Handles abrupt completion in synchronous iterables', () => {
       ],
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
 
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);
@@ -477,7 +482,9 @@ describe('Execute: Accepts async iterables as list value', () => {
       ],
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
 
     // eslint-disable-next-line no-undef
     process.removeListener('unhandledRejection', unhandledRejectionListener);

@@ -703,15 +703,9 @@ export default defineConfig(
   {
     files: ['src/**/__*__/**'],
     rules: {
-      '@typescript-eslint/strict-void-return': 'off', // TODO: re-enable when mocha types allow
+      '@typescript-eslint/no-floating-promises': 'off',
       'local/require-to-string-tag': 'off',
-      'n/no-unpublished-import': [
-        'error',
-        {
-          allowModules: ['chai', 'mocha'],
-        },
-      ],
-      'import/no-deprecated': 'off',
+      'import/no-nodejs-modules': 'off',
       'import/no-restricted-paths': 'off',
       'import/no-extraneous-dependencies': [
         'error',
@@ -833,6 +827,12 @@ export default defineConfig(
       ],
       'import/no-nodejs-modules': 'off',
       'no-console': 'off',
+    },
+  },
+  {
+    files: ['resources/integration-test.ts'],
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'off',
     },
   },
   {

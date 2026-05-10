@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../../__testUtils__/resolveOnNextTick.ts';
@@ -111,7 +112,7 @@ function streamFrom(
       if (throwAfter) {
         throw error ?? streamFailureError;
       }
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
       stop();
     }, initialCapacity),
   };
@@ -963,14 +964,13 @@ describe('WorkQueue', () => {
   it('emits stream success in a later payload when stream is slow to stop', async () => {
     const stream: TestStream = {
       queue: new Queue<TestStreamItem>(async ({ push, stop }) => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         push({ value: 1 });
         const { promise: delay, resolve } =
           // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
           promiseWithResolvers<void>();
         setTimeout(resolve, 0);
         await delay;
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+
         stop();
       }, 1),
     };

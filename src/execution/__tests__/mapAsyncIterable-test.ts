@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectPromise } from '../../__testUtils__/expectPromise.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
@@ -94,7 +95,7 @@ describe('mapAsyncIterable', () => {
   it('allows returning early from mapped async generator', async () => {
     async function* source() {
       yield 1;
-      /* c8 ignore next 3 */
+      /* node:coverage ignore next 3 */
       yield 2;
       yield 3; // Shouldn't be reached.
     }
@@ -153,7 +154,7 @@ describe('mapAsyncIterable', () => {
   it('passes through early return from async values', async () => {
     async function* source() {
       yield 'a';
-      /* c8 ignore next 3 */
+      /* node:coverage ignore next 3 */
       yield 'b';
       yield 'c'; // Shouldn't be reached.
     }
@@ -313,7 +314,7 @@ describe('mapAsyncIterable', () => {
   it('passes through caught errors through async generators', async () => {
     async function* source() {
       yield 1;
-      /* c8 ignore next 2 */
+      /* node:coverage ignore next 2 */
       yield 2;
       yield 3; // Shouldn't be reached.
     }
@@ -360,7 +361,7 @@ describe('mapAsyncIterable', () => {
     async function* source() {
       try {
         yield 1;
-        /* c8 ignore next 3 */
+        /* node:coverage ignore next 3 */
         yield 2;
         yield 3; // Shouldn't be reached.
       } finally {

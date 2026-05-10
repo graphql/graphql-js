@@ -1,9 +1,9 @@
 import { isPromise } from '../jsutils/isPromise.ts';
 import type { PromiseOrValue } from '../jsutils/PromiseOrValue.ts';
 
+/* node:coverage ignore next 2 */
 const asyncDispose: typeof Symbol.asyncDispose =
-  Symbol.asyncDispose /* c8 ignore start */ ??
-  Symbol.for('Symbol.asyncDispose'); /* c8 ignore stop */
+  Symbol.asyncDispose ?? Symbol.for('Symbol.asyncDispose');
 
 /**
  * Given an AsyncGenerator and provided functions, return an AsyncGenerator

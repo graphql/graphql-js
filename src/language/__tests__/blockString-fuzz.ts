@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert } from 'chai';
-import { describe, it } from 'mocha';
 
 import { dedent } from '../../__testUtils__/dedent.ts';
 import { genFuzzStrings } from '../../__testUtils__/genFuzzStrings.ts';
@@ -47,7 +48,7 @@ function testNonPrintableBlockString(testValue: string): void {
 }
 
 describe('printBlockString', () => {
-  it('correctly print random strings', () => {
+  it('correctly print random strings', { timeout: 20000 }, () => {
     // Testing with length >7 is taking exponentially more time. However it is
     // highly recommended to test with increased limit if you make any change.
     for (const fuzzStr of genFuzzStrings({
@@ -62,5 +63,5 @@ describe('printBlockString', () => {
       testPrintableBlockString(fuzzStr);
       testPrintableBlockString(fuzzStr, { minimize: true });
     }
-  }).timeout(20000);
+  });
 });

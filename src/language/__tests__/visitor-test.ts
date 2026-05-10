@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { kitchenSinkQuery } from '../../__testUtils__/kitchenSinkQuery.ts';
 
@@ -1113,7 +1114,7 @@ describe('Visitor', () => {
                 return BREAK;
               }
             },
-            /* c8 ignore next 3 */
+            /* node:coverage ignore next 3 */
             leave() {
               expect.fail('Should not be called');
             },

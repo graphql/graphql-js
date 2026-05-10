@@ -1,5 +1,8 @@
+/* eslint-disable import/no-deprecated */
+
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { identityFunc } from '../../jsutils/identityFunc.ts';
 import type { ObjMap } from '../../jsutils/ObjMap.ts';

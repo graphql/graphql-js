@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../__testUtils__/expectJSON.ts';
 import { resolveOnNextTick } from '../../__testUtils__/resolveOnNextTick.ts';
@@ -57,7 +58,9 @@ const numberHolderType = new GraphQLObjectType({
     promiseToGetTheNumber: {
       type: GraphQLInt,
       resolve: async (root) => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 0);
+        });
         return root.theNumber;
       },
     },

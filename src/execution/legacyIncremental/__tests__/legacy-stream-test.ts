@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
 import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
@@ -1098,10 +1099,10 @@ describe('Execute: stream directive (legacy)', () => {
       async *nonNullFriendList() {
         try {
           yield await Promise.resolve(friends[0]);
-          yield await Promise.resolve(null); /* c8 ignore start */
+          yield await Promise.resolve(null); /* node:coverage disable */
           // Not reachable, early return
         } finally {
-          /* c8 ignore stop */
+          /* node:coverage enable */
           // eslint-disable-next-line no-unsafe-finally
           throw new Error('Oops');
         }
@@ -1523,8 +1524,8 @@ describe('Execute: stream directive (legacy)', () => {
         yield await Promise.resolve({ nonNullName: friends[0].name });
         yield await Promise.resolve({
           nonNullName: () => Promise.reject(new Error('Oops')),
-        }); /* c8 ignore start */
-      } /* c8 ignore stop */,
+        }); /* node:coverage disable */
+      } /* node:coverage enable */,
     });
     expectJSON(result).toDeepEqual([
       {
@@ -1578,7 +1579,7 @@ describe('Execute: stream directive (legacy)', () => {
                   },
                 });
               // Not reached
-              /* c8 ignore next 5 */
+              /* node:coverage ignore next 5 */
               case 2:
                 return Promise.resolve({
                   done: false,
@@ -1628,7 +1629,7 @@ describe('Execute: stream directive (legacy)', () => {
       nonNullFriendList: {
         [Symbol.asyncIterator]: () => ({
           next: async () => {
-            /* c8 ignore next 3 */
+            /* node:coverage ignore next 3 */
             if (returned) {
               return Promise.resolve({ done: true });
             }
@@ -1646,7 +1647,7 @@ describe('Execute: stream directive (legacy)', () => {
                   },
                 });
               // Not reached
-              /* c8 ignore next 5 */
+              /* node:coverage ignore next 5 */
               case 2:
                 return Promise.resolve({
                   done: false,
@@ -1703,8 +1704,8 @@ describe('Execute: stream directive (legacy)', () => {
       nestedObject: {
         nonNullScalarField: () => Promise.resolve(null),
         async *nestedFriendList() {
-          yield await Promise.resolve(friends[0]); /* c8 ignore start */
-        } /* c8 ignore stop */,
+          yield await Promise.resolve(friends[0]); /* node:coverage disable */
+        } /* node:coverage enable */,
       },
     });
     expectJSON(result).toDeepEqual({
@@ -1735,8 +1736,8 @@ describe('Execute: stream directive (legacy)', () => {
     const result = await complete(document, {
       nestedObject: {
         async *nestedFriendList() {
-          yield await Promise.resolve(friends[0]); /* c8 ignore start */
-        } /* c8 ignore stop */,
+          yield await Promise.resolve(friends[0]); /* node:coverage disable */
+        } /* node:coverage enable */,
         nonNullScalarField: () => null,
       },
     });
@@ -1885,8 +1886,8 @@ describe('Execute: stream directive (legacy)', () => {
         deeperNestedObject: {
           nonNullScalarField: () => Promise.resolve(null),
           async *deeperNestedFriendList() {
-            yield await Promise.resolve(friends[0]); /* c8 ignore start */
-          } /* c8 ignore stop */,
+            yield await Promise.resolve(friends[0]); /* node:coverage disable */
+          } /* node:coverage enable */,
         },
       },
     });
@@ -1975,11 +1976,11 @@ describe('Execute: stream directive (legacy)', () => {
         return this;
       },
       next() {
-        /* c8 ignore start */
+        /* node:coverage disable */
         if (requested) {
           // stream is filtered, next is not called, and so this is not reached.
           return Promise.reject(new Error('Oops'));
-        } /* c8 ignore stop */
+        } /* node:coverage enable */
         requested = true;
         const friend = friends[0];
         return Promise.resolve({
@@ -2986,7 +2987,9 @@ describe('Execute: stream directive (legacy)', () => {
       hasNext: true,
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 5);
+    });
 
     const result2 = await iterator.next();
     expectJSON(result2).toDeepEqual({
@@ -3004,7 +3007,9 @@ describe('Execute: stream directive (legacy)', () => {
       },
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 5);
+    });
 
     const result3 = await iterator.next();
     expectJSON(result3).toDeepEqual({

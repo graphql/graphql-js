@@ -152,8 +152,6 @@ export class GraphQLError extends Error {
     });
 
     // Include (non-enumerable) stack trace.
-    /* c8 ignore start */
-    // FIXME: https://github.com/graphql/graphql-js/issues/2317
     if (originalError?.stack != null) {
       Object.defineProperty(this, 'stack', {
         value: originalError.stack,
@@ -162,6 +160,8 @@ export class GraphQLError extends Error {
       });
     } else if (Error.captureStackTrace != null) {
       Error.captureStackTrace(this, GraphQLError);
+      // See: https://github.com/graphql/graphql-js/issues/2317
+      /* node:coverage ignore next 7 */
     } else {
       Object.defineProperty(this, 'stack', {
         value: Error().stack,
@@ -169,7 +169,6 @@ export class GraphQLError extends Error {
         configurable: true,
       });
     }
-    /* c8 ignore stop */
   }
 
   get [Symbol.toStringTag](): string {

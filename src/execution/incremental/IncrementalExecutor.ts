@@ -777,11 +777,11 @@ export class IncrementalExecutor<
           if (iteration.done) {
             finishedNormally = true;
             const stopped = stop();
-            /* c8 ignore start */
+            /* node:coverage disable */
             if (isPromise(stopped)) {
               stopped.catch(() => undefined);
             }
-            /* c8 ignore stop */
+            /* node:coverage enable */
             return;
           }
 

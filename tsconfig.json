@@ -37,8 +37,5 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "allowSyntheticDefaultImports": true
-  },
-  "ts-node": {
-    "swc": true
   }
 }

@@ -1,5 +1,6 @@
+import { describe, it } from 'node:test';
+
 import { assert, expect } from 'chai';
-import { describe, it } from 'mocha';
 
 import { expectJSON } from '../../../__testUtils__/expectJSON.ts';
 import { expectPromise } from '../../../__testUtils__/expectPromise.ts';
@@ -3193,7 +3194,7 @@ describe('Execute: defer directive', () => {
         todo: async () =>
           Promise.resolve({
             id: '1',
-            /* c8 ignore next */
+            /* node:coverage ignore next */
             author: () => expect.fail('Should not be called'),
           }),
       },
@@ -3228,7 +3229,7 @@ describe('Execute: defer directive', () => {
         todo: () =>
           Promise.resolve({
             id: '1',
-            /* c8 ignore next 2 */
+            /* node:coverage ignore next 2 */
             author: () =>
               Promise.resolve(() => expect.fail('Should not be called')),
           }),
