@@ -20,6 +20,12 @@
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": true,
+
+    // Disabled because TypeScript cannot choose rewrite targets per build.
+    // We need extension rewrites that differ across ESM/CJS/Deno outputs,
+    // so resources/change-extension-in-import-paths.ts handles this explicitly.
+    "rewriteRelativeImportExtensions": false,
+
     // Type Checking
     // https://www.typescriptlang.org/tsconfig#Type_Checking_6248
     "strict": true,
